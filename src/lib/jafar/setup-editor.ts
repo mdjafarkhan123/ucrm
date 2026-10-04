@@ -3,6 +3,7 @@
 // package includes.
 
 import { BUILT_IN_FACTS, type SetupQuestionKind } from '$lib/setup/catalogue';
+import type { SetupFileKind } from '$lib/setup/files';
 
 export type SetupChoice = { value: string; label: string };
 
@@ -21,6 +22,10 @@ export type SetupEditorItem = {
 	allow_other: boolean;
 	/** Tick several: the most ticks a client may give; null allows any number. */
 	max_choices: number | null;
+	/** Photo or file: the kinds of file it accepts. Null for every other type. */
+	file_kinds: SetupFileKind[] | null;
+	/** Photo or file: how many files a client may add. Null for every other type. */
+	max_files: number | null;
 	/** "Show only if": every condition must hold. Null asks the question always. */
 	show_if: SetupShowIfCondition[] | null;
 };
@@ -157,6 +162,9 @@ export type DraftItem = {
 	options: { rowId: string; value: string | null; label: string }[];
 	allow_other: boolean;
 	max_choices: number | null;
+	/** Photo or file. Kept while another type is chosen, so switching back loses nothing. */
+	file_kinds: SetupFileKind[];
+	max_files: number;
 	/** Empty asks the question always. */
 	show_if: DraftCondition[];
 };
@@ -211,9 +219,14 @@ export function draftItems(items: SetupEditorItem[]): DraftItem[] {
 		options: (item.options ?? []).map((option) => ({ rowId: option.value, ...option })),
 		allow_other: item.allow_other,
 		max_choices: item.max_choices,
+		file_kinds: item.file_kinds ?? [...NEW_FILE_QUESTION.file_kinds],
+		max_files: item.max_files ?? NEW_FILE_QUESTION.max_files,
 		show_if: draftConditions(item.show_if)
 	}));
 }
+
+/** What a question just given the photo or file type accepts until Jafar changes it. */
+export const NEW_FILE_QUESTION = { file_kinds: ['photo'] as SetupFileKind[], max_files: 1 };
 
 /** Pick one and tick several: the answer types Jafar writes the choices for. */
 export function isChoiceKind(kind: SetupQuestionKind | null) {
@@ -239,6 +252,8 @@ export function itemsPayload(items: DraftItem[]) {
 							: null,
 					allow_other: !item.built_in && isChoiceKind(item.kind) && item.allow_other,
 					max_choices: !item.built_in && item.kind === 'multi_choice' ? item.max_choices : null,
+					file_kinds: !item.built_in && item.kind === 'file' ? item.file_kinds : null,
+					max_files: !item.built_in && item.kind === 'file' ? item.max_files : null,
 					show_if: conditionsPayload(item.show_if, items)
 				}
 	);
@@ -338,7 +353,8 @@ export const SETUP_QUESTION_KIND_LABELS: Record<SetupQuestionKind, string> = {
 	percentage: 'Percentage',
 	distance: 'Distance',
 	duration: 'Length of time',
-	colours: 'Colours'
+	colours: 'Colours',
+	file: 'Photo or file'
 };
 
 export const fetchSetupEditor = () => send('/api/jafar/setup', 'GET');

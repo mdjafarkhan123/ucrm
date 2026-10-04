@@ -69,3 +69,23 @@ export type SetupAnswersInput = z.infer<ReturnType<typeof setupAnswersSchema>>;
 export const setupSectionDoneSchema = z.object({ done: z.boolean() });
 
 export const setupReminderEmailsSchema = z.object({ emails_on: z.boolean() }).strict();
+
+// Client onboarding A5c: one file a client is about to add to a photo or file answer. Shape only — whether the
+// question takes this kind of file is the route's check, against the published question.
+export const setupFileUploadSchema = z
+	.object({
+		fact_key: z.string().max(80),
+		file_name: z.string().trim().min(1).max(255),
+		// Browsers report some files with no type at all; the route stores the type the name says.
+		mime_type: z.string().trim().max(127),
+		size_bytes: z.number().int().positive()
+	})
+	.strict();
+
+const FILE_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// The files a photo or file answer holds, for the page to show: up to 20, the most one answer holds.
+export const setupFileIdsSchema = z
+	.string()
+	.transform((value) => value.split(',').filter(Boolean))
+	.pipe(z.array(z.string().regex(FILE_ID)).min(1).max(20));

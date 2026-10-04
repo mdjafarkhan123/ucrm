@@ -11,6 +11,7 @@
 	import SetupAmountField from '$lib/components/setup/SetupAmountField.svelte';
 	import SetupChoicesField from '$lib/components/setup/SetupChoicesField.svelte';
 	import SetupColoursField from '$lib/components/setup/SetupColoursField.svelte';
+	import SetupFilesField from '$lib/components/setup/SetupFilesField.svelte';
 	import { COUNTRIES } from '$lib/settings/countries';
 	import type { SetupAvailability, SetupFact } from '$lib/setup/catalogue';
 
@@ -26,6 +27,7 @@
 		suggested = false,
 		currency = null,
 		country = null,
+		userId = null,
 		onedit,
 		oncommit
 	}: {
@@ -40,6 +42,8 @@
 		currency?: string | null;
 		/** The business's country, which suggests miles or kilometres. */
 		country?: string | null;
+		/** Who is signed in, for a photo or file answer's cached file list. */
+		userId?: string | null;
 		onedit: () => void;
 		oncommit: () => void;
 	} = $props();
@@ -170,6 +174,18 @@
 			required={fact.required && !fact.canDefer}
 			invalid={Boolean(error)}
 			{onedit}
+			{oncommit}
+		/>
+	{:else if fact.kind === 'file'}
+		<SetupFilesField
+			{id}
+			factKey={fact.key}
+			label={fact.label}
+			kinds={fact.fileKinds ?? ['photo']}
+			maxFiles={fact.maxFiles ?? 1}
+			{userId}
+			bind:value
+			invalid={Boolean(error)}
 			{oncommit}
 		/>
 	{:else if fact.kind === 'colours'}

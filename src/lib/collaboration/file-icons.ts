@@ -7,6 +7,7 @@ import fileCsvIcon from '@tabler/icons/outline/file-type-csv.svg?raw';
 import fileZipIcon from '@tabler/icons/outline/file-type-zip.svg?raw';
 import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
 import fileIcon from '@tabler/icons/outline/file.svg?raw';
+import fileMusicIcon from '@tabler/icons/outline/file-music.svg?raw';
 
 // One place decides which icon a file gets, so a saved attachment and one still waiting to upload never
 // show a different icon for the same file.
@@ -20,5 +21,7 @@ export function iconForMimeType(mimeType: string) {
 	if (mimeType === 'text/csv') return fileCsvIcon;
 	if (mimeType === 'application/zip') return fileZipIcon;
 	if (mimeType === 'text/plain') return fileTextIcon;
+	// A voice recording added to a setup answer.
+	if (mimeType.startsWith('audio/')) return fileMusicIcon;
 	return fileIcon;
 }

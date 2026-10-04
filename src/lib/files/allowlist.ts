@@ -13,7 +13,8 @@
 /** Jafar approved 100 MB on 2026-09-21, matching Jobber's and CompanyCam's documented per-file limits. */
 export const MAX_FILE_SIZE_BYTES = 104_857_600;
 
-export type SignatureFamily = 'jpeg' | 'png' | 'gif' | 'webp' | 'pdf' | 'zip' | 'ole' | 'none';
+export type SignatureFamily =
+	'jpeg' | 'png' | 'gif' | 'webp' | 'pdf' | 'zip' | 'ole' | 'mp3' | 'm4a' | 'wav' | 'none';
 
 export type AllowedType = {
 	extensions: readonly string[];
@@ -45,21 +46,45 @@ export const ALLOWED_TYPES: readonly AllowedType[] = [
 	{ extensions: ['txt'], mimeTypes: ['text/plain'], signature: 'none' }
 ];
 
+/**
+ * Voice recordings — a voicemail greeting, say — accepted only as an answer to a setup question that asks for
+ * one (client onboarding A5c; Jafar, 2026-10-04). The File library itself still refuses audio. The first MIME
+ * type is the one stored; the rest are what browsers on different systems report for the same file.
+ */
+export const SETUP_AUDIO_TYPES: readonly AllowedType[] = [
+	{ extensions: ['mp3'], mimeTypes: ['audio/mpeg', 'audio/mp3'], signature: 'mp3' },
+	{ extensions: ['m4a'], mimeTypes: ['audio/mp4', 'audio/x-m4a', 'audio/m4a'], signature: 'm4a' },
+	{
+		extensions: ['wav'],
+		mimeTypes: ['audio/wav', 'audio/x-wav', 'audio/wave', 'audio/vnd.wave'],
+		signature: 'wav'
+	}
+];
+
 export function fileExtension(fileName: string): string {
 	const dot = fileName.lastIndexOf('.');
 	if (dot <= 0 || dot === fileName.length - 1) return '';
 	return fileName.slice(dot + 1).toLowerCase();
 }
 
-export function allowedTypeFor(fileName: string): AllowedType | null {
+/** The entry of `types` — the File library's list unless a caller narrows or widens it — that a name belongs to. */
+export function allowedTypeFor(
+	fileName: string,
+	types: readonly AllowedType[] = ALLOWED_TYPES
+): AllowedType | null {
 	const extension = fileExtension(fileName);
 	if (!extension) return null;
-	return ALLOWED_TYPES.find((type) => type.extensions.includes(extension)) ?? null;
+	return types.find((type) => type.extensions.includes(extension)) ?? null;
+}
+
+/** A picker's `accept` filter for `types`. */
+export function pickerAccept(types: readonly AllowedType[]): string {
+	return [
+		...types.flatMap((type) => type.extensions.map((extension) => `.${extension}`)),
+		...types.flatMap((type) => type.mimeTypes)
+	].join(',');
 }
 
 // The file picker's filter. Extensions as well as MIME types, because a browser that does not recognise a
 // type still matches the extension, and one that matches neither would grey out a file the app accepts.
-export const FILE_PICKER_ACCEPT = [
-	...ALLOWED_TYPES.flatMap((type) => type.extensions.map((extension) => `.${extension}`)),
-	...ALLOWED_TYPES.flatMap((type) => type.mimeTypes)
-].join(',');
+export const FILE_PICKER_ACCEPT = pickerAccept(ALLOWED_TYPES);

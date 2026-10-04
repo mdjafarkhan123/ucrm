@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { NO_STORE_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
 import { readOrganizationSetupCatalogue } from '$lib/server/setup/catalogue';
 import { requireSetupEditor, setupWriteError, setupWriteLimited } from '$lib/server/setup/access';
+import { unusableSetupFile } from '$lib/server/setup/files';
 import { setupAnswersSchema } from '$lib/server/validation/setup.schema';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { catalogueFacts } from '$lib/setup/catalogue';
@@ -29,8 +30,25 @@ export const PATCH: RequestHandler = async (event) => {
 	const catalogue = await readOrganizationSetupCatalogue(event.locals.supabase, organizationId);
 	if (!catalogue) return databaseError();
 
-	const parsed = setupAnswersSchema(catalogueFacts(catalogue)).safeParse(body);
+	const facts = catalogueFacts(catalogue);
+	const parsed = setupAnswersSchema(facts).safeParse(body);
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
+
+	// A photo or file answer may only hold this organization's own setup uploads that are still usable.
+	for (const answer of parsed.data.answers) {
+		if (facts.get(answer.fact_key)?.kind !== 'file' || !Array.isArray(answer.value)) continue;
+		let unusable: string | null;
+		try {
+			unusable = await unusableSetupFile(organizationId, answer.value as string[]);
+		} catch (error) {
+			console.error('Could not check setup answer files.', error);
+			return databaseError();
+		}
+		if (unusable)
+			return validationError({
+				[answer.fact_key]: 'One of these files could not be kept. Remove it and try again.'
+			});
+	}
 
 	const { data, error } = await event.locals.supabase.rpc('save_organization_setup_answers', {
 		target_organization_id: organizationId,

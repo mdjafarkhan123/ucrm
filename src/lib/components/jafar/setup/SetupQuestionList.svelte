@@ -2,11 +2,18 @@
 	import { tick } from 'svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
 	import SetupShowIf from '$lib/components/jafar/setup/SetupShowIf.svelte';
 	import { SETUP_QUESTION_KINDS } from '$lib/setup/catalogue';
+	import {
+		SETUP_FILE_KINDS,
+		SETUP_FILE_KIND_LABELS,
+		SETUP_MAX_FILES_CHOICES,
+		type SetupFileKind
+	} from '$lib/setup/files';
 	import {
 		SETUP_QUESTION_KIND_LABELS,
 		isChoiceKind,
@@ -54,6 +61,17 @@
 		value: kind,
 		label: SETUP_QUESTION_KIND_LABELS[kind]
 	}));
+
+	const maxFilesOptions = SETUP_MAX_FILES_CHOICES.map((count) => ({
+		value: String(count),
+		label: count === 1 ? '1 file' : `Up to ${count} files`
+	}));
+
+	function setFileKind(item: DraftItem, kind: SetupFileKind, ticked: boolean) {
+		item.file_kinds = ticked
+			? [...item.file_kinds, kind]
+			: item.file_kinds.filter((existing) => existing !== kind);
+	}
 
 	function kindLocked(item: DraftItem) {
 		return item.built_in || (item.fact_key !== null && answered.has(item.fact_key));
@@ -334,6 +352,45 @@
 											{/if}
 										</div>
 									{/if}
+								</fieldset>
+							{/if}
+
+							{#if item.kind === 'file'}
+								<fieldset class="setup-questions__choices">
+									<legend>Clients can add</legend>
+									{#each SETUP_FILE_KINDS as fileKind (fileKind)}
+										<Checkbox
+											id={`setup-item-${item.rowId}-file-${fileKind}`}
+											label={SETUP_FILE_KIND_LABELS[fileKind].label}
+											description={SETUP_FILE_KIND_LABELS[fileKind].formats}
+											checked={item.file_kinds.includes(fileKind)}
+											invalid={Boolean(errors[`${item.rowId}.file_kinds`])}
+											onchange={(ticked) => setFileKind(item, fileKind, ticked)}
+										/>
+									{/each}
+									{#if errors[`${item.rowId}.file_kinds`]}
+										<p class="setup-questions__error" role="alert">
+											{errors[`${item.rowId}.file_kinds`]}
+										</p>
+									{/if}
+									<div class="setup-questions__most">
+										<Select
+											id={`setup-item-${item.rowId}-max-files`}
+											label="How many files"
+											options={maxFilesOptions}
+											value={String(item.max_files)}
+											onchange={(value: string) => (item.max_files = Number(value))}
+										/>
+										{#if errors[`${item.rowId}.max_files`]}
+											<p class="setup-questions__error" role="alert">
+												{errors[`${item.rowId}.max_files`]}
+											</p>
+										{:else}
+											<p class="setup-questions__hint">
+												Each file can be up to 100 MB. Clients can also take a photo on their phone.
+											</p>
+										{/if}
+									</div>
 								</fieldset>
 							{/if}
 						{/if}

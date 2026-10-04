@@ -19,6 +19,7 @@
 	import { jafarSetupEditorKey } from '$lib/jafar/query-keys';
 	import {
 		draftItems,
+		NEW_FILE_QUESTION,
 		fetchSetupEditor,
 		isStaleSetupDraft,
 		sameItems,
@@ -105,7 +106,10 @@
 	function rowErrors(errors: Record<string, string>) {
 		const byRow: Record<string, string> = {};
 		for (const [path, message] of Object.entries(errors)) {
-			const match = /^items\.(\d+)\.(label|hint|kind|options|max_choices|show_if)/.exec(path);
+			const match =
+				/^items\.(\d+)\.(label|hint|kind|options|max_choices|file_kinds|max_files|show_if)/.exec(
+					path
+				);
 			const row = match ? items[Number(match[1])] : undefined;
 			if (row) byRow[`${row.rowId}.${match![2]}`] ??= message;
 		}
@@ -128,6 +132,8 @@
 			options: [],
 			allow_other: false,
 			max_choices: null,
+			file_kinds: [...NEW_FILE_QUESTION.file_kinds],
+			max_files: NEW_FILE_QUESTION.max_files,
 			show_if: []
 		});
 		void questionList?.openNew(rowId);

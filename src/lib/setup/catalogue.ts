@@ -19,6 +19,7 @@ import {
 	parseSetupUrl,
 	setupChoiceList
 } from '$lib/setup/answer-values';
+import { parseSetupFileIds, type SetupFileKind } from '$lib/setup/files';
 import { parseSetupHours, parseSetupHoursExceptions } from '$lib/setup/hours';
 
 export type SetupAvailability = 'have' | 'not_yet' | 'need_help';
@@ -52,7 +53,9 @@ export type SetupFactKind =
 	/** A length of time. */
 	| 'duration'
 	/** Brand colours as codes like #1A73E8. */
-	| 'colours';
+	| 'colours'
+	/** Photos or files: the File Manager ids, as described in `$lib/setup/files`. */
+	| 'file';
 
 /** The answer types Jafar can give a question that is not built in (plan §2.1). */
 export const SETUP_QUESTION_KINDS = [
@@ -71,7 +74,8 @@ export const SETUP_QUESTION_KINDS = [
 	'percentage',
 	'distance',
 	'duration',
-	'colours'
+	'colours',
+	'file'
 ] as const;
 export type SetupQuestionKind = (typeof SETUP_QUESTION_KINDS)[number];
 
@@ -88,6 +92,10 @@ type SetupFactRules = {
 	allowOther?: boolean;
 	/** `multi_choice`: the most choices a client may tick. */
 	maxChoices?: number;
+	/** `file`: the kinds of file accepted. */
+	fileKinds?: SetupFileKind[];
+	/** `file`: the most files one answer may hold. */
+	maxFiles?: number;
 };
 
 export type SetupFact = SetupFactRules & {
@@ -219,6 +227,8 @@ type CatalogueItemRow = {
 	options: { value: string; label: string }[] | null;
 	allow_other?: boolean;
 	max_choices?: number | null;
+	file_kinds?: SetupFileKind[] | null;
+	max_files?: number | null;
 	max_length: number | null;
 	show_if?: ({ fact_key: string; values: string[] } | { service_key: string })[] | null;
 };
@@ -263,6 +273,8 @@ function factRules(item: CatalogueItemRow): SetupFactRules | null {
 			...(item.allow_other ? { allowOther: true } : {}),
 			...(item.max_choices ? { maxChoices: item.max_choices } : {})
 		};
+	if (item.kind === 'file')
+		return { kind: 'file', fileKinds: item.file_kinds ?? ['photo'], maxFiles: item.max_files ?? 1 };
 	return {
 		kind: item.kind,
 		...(item.max_length ? { maxLength: item.max_length } : {}),
@@ -472,7 +484,7 @@ export function storedSetupValue(fact: SetupFact, value: string): unknown {
 	return parsedValue(fact, value)?.value ?? value;
 }
 
-/** The A5d kinds' own parse of a value, or undefined for a kind checked another way. */
+/** The A5c and A5d kinds' own parse of a value, or undefined for a kind checked another way. */
 function parsedValue(fact: SetupFact, value: string) {
 	switch (fact.kind) {
 		case 'multi_choice':
@@ -495,6 +507,8 @@ function parsedValue(fact: SetupFact, value: string) {
 			return parseSetupMeasure(value, SETUP_DURATION_UNITS, 'time');
 		case 'colours':
 			return parseSetupColours(value);
+		case 'file':
+			return parseSetupFileIds(value, fact.maxFiles ?? 1);
 		default:
 			return undefined;
 	}
@@ -533,6 +547,7 @@ export function setupValueError(fact: SetupFact, raw: string): string | null {
 		case 'distance':
 		case 'duration':
 		case 'colours':
+		case 'file':
 			return parsedValue(fact, value)?.error ?? null;
 		default:
 			if (fact.maxLength && value.length > fact.maxLength)

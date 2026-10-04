@@ -10,9 +10,12 @@
 // again by the worker once the bytes exist.
 
 import {
+	ALLOWED_TYPES,
 	MAX_FILE_SIZE_BYTES,
+	SETUP_AUDIO_TYPES,
 	allowedTypeFor,
 	fileExtension,
+	type AllowedType,
 	type SignatureFamily
 } from '$lib/files/allowlist';
 
@@ -37,9 +40,13 @@ export type PolicyRefusal = {
 export type PolicyVerdict = { allowed: true; signature: SignatureFamily } | PolicyRefusal;
 
 // The check the upload route runs before any storage key is issued. It sees only what the browser claims,
-// which is why the worker checks the bytes again afterwards.
-export function checkUploadClaim(claim: UploadClaim): PolicyVerdict {
-	const type = allowedTypeFor(claim.fileName);
+// which is why the worker checks the bytes again afterwards. A route with its own narrower or wider list —
+// a setup question's accepted kinds — passes it as `types`.
+export function checkUploadClaim(
+	claim: UploadClaim,
+	types: readonly AllowedType[] = ALLOWED_TYPES
+): PolicyVerdict {
+	const type = allowedTypeFor(claim.fileName, types);
 	if (!type)
 		return {
 			allowed: false,
@@ -87,6 +94,18 @@ export function detectSignature(sample: Uint8Array): SignatureFamily | null {
 	if (startsWith(sample, [0x50, 0x4b, 0x03, 0x04])) return 'zip';
 	// The pre-2007 Office compound-document header.
 	if (startsWith(sample, [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1])) return 'ole';
+	// WAV is the other RIFF container: "RIFF", four size bytes, "WAVE".
+	if (
+		startsWith(sample, [0x52, 0x49, 0x46, 0x46]) &&
+		startsWith(sample, [0x57, 0x41, 0x56, 0x45], 8)
+	)
+		return 'wav';
+	// M4A is an MPEG-4 file: a box size, then "ftyp".
+	if (startsWith(sample, [0x66, 0x74, 0x79, 0x70], 4)) return 'm4a';
+	// MP3 opens with an "ID3" tag, or straight on an MPEG audio frame: eleven set sync bits. JPEG's FF D8 has
+	// only eight, and was matched above anyway.
+	if (startsWith(sample, [0x49, 0x44, 0x33])) return 'mp3';
+	if (sample.length >= 2 && sample[0] === 0xff && (sample[1] & 0xe0) === 0xe0) return 'mp3';
 	return null;
 }
 
@@ -114,7 +133,9 @@ export function checkUploadedContent(
 	actualSizeBytes: number,
 	registeredSizeBytes: number
 ): ContentVerdict {
-	const type = allowedTypeFor(fileName);
+	// Setup recordings too: only the setup route can register one, and it has already checked the question
+	// asks for a recording. Here the only question is whether the bytes are what the name says.
+	const type = allowedTypeFor(fileName, [...ALLOWED_TYPES, ...SETUP_AUDIO_TYPES]);
 	if (!type) return { ok: false, reason: 'That kind of file cannot be added to the file library.' };
 
 	if (actualSizeBytes > MAX_FILE_SIZE_BYTES)

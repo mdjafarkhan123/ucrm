@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { BUILT_IN_FACTS, SETUP_QUESTION_KINDS } from '$lib/setup/catalogue';
+import { SETUP_FILE_KINDS, SETUP_MAX_FILES_CHOICES } from '$lib/setup/files';
 
 // Client onboarding A4: Jafar's setup stage editor (plan §2.1, ADR 0006). The limits mirror the database
 // checks on setup_stages, so a bad value is explained here rather than refused there.
@@ -148,6 +149,9 @@ const questionSchema = z
 		// Client onboarding A5d: pick one and tick several may add "Other"; tick several may cap its ticks.
 		allow_other: z.boolean().optional().default(false),
 		max_choices: z.number().int().min(1, 'Allow at least one tick.').nullish(),
+		// Client onboarding A5c: a photo or file question's accepted kinds and file limit.
+		file_kinds: z.array(z.enum(SETUP_FILE_KINDS)).max(3).nullish(),
+		max_files: z.number().int().nullish(),
 		// Null, or left out, asks the question always.
 		show_if: z
 			.array(conditionSchema)
@@ -165,6 +169,22 @@ const questionSchema = z
 		});
 		if (question.fact_key === null && question.kind === null)
 			context.addIssue({ code: 'custom', path: ['kind'], message: 'Choose an answer type.' });
+		if (question.kind === 'file') {
+			if (!question.file_kinds?.length)
+				context.addIssue({
+					code: 'custom',
+					path: ['file_kinds'],
+					message: 'Tick at least one kind of file.'
+				});
+			if (
+				!(SETUP_MAX_FILES_CHOICES as readonly number[]).includes(question.max_files ?? Number.NaN)
+			)
+				context.addIssue({
+					code: 'custom',
+					path: ['max_files'],
+					message: 'Choose how many files a client can add.'
+				});
+		}
 		if (!isChoiceKind(question.kind)) return;
 		const labels = (question.options ?? []).map((option) => option.label.toLowerCase());
 		if (question.allow_other && labels.includes('other'))
@@ -197,7 +217,12 @@ const questionSchema = z
 		...question,
 		options: isChoiceKind(question.kind) ? choiceValues(question.options ?? []) : null,
 		allow_other: isChoiceKind(question.kind) && question.allow_other,
-		max_choices: question.kind === 'multi_choice' ? (question.max_choices ?? null) : null
+		max_choices: question.kind === 'multi_choice' ? (question.max_choices ?? null) : null,
+		file_kinds:
+			question.kind === 'file'
+				? SETUP_FILE_KINDS.filter((kind) => question.file_kinds?.includes(kind))
+				: null,
+		max_files: question.kind === 'file' ? (question.max_files ?? null) : null
 	}));
 
 function isChoiceKind(kind: string | null) {

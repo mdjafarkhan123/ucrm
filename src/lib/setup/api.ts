@@ -116,3 +116,53 @@ export async function setSetupSectionDone(section: string, done: boolean): Promi
 	});
 	if (!response.ok) throw await writeFailure(response, 'This section could not be updated.');
 }
+
+/** One file of a photo or file answer (client onboarding A5c). Mirrors `$lib/server/setup/files`. */
+export type SetupFileInfo = {
+	id: string;
+	name: string;
+	mime_type: string;
+	size_bytes: number;
+	/** `removed`: trashed in the File library, or gone. */
+	state: 'checking' | 'ready' | 'refused' | 'removed';
+	thumb_url: string | null;
+	problem: string | null;
+};
+
+export const setupFilesKey = (userId: string | null, ids: readonly string[]) =>
+	['setup', 'files', userId, ...ids] as const;
+
+export async function fetchSetupFiles(ids: readonly string[]): Promise<SetupFileInfo[]> {
+	const response = await fetch(`/api/setup/files?ids=${ids.map(encodeURIComponent).join(',')}`);
+	if (!response.ok) throw httpError(response, 'These files could not be loaded.');
+	return ((await response.json()) as { files: SetupFileInfo[] }).files;
+}
+
+/** Where to open one file of the organization's setup answers: a photo shows, anything else downloads. */
+export const setupFileHref = (id: string) => `/api/setup/files/${encodeURIComponent(id)}`;
+
+/**
+ * Reserves a File for one file a client is adding to a photo or file answer. The bytes then go to
+ * `upload_url` with exactly `mime_type`.
+ */
+export async function startSetupFileUpload(
+	factKey: string,
+	file: File
+): Promise<{ file_id: string; mime_type: string; upload_url: string }> {
+	const response = await fetch('/api/setup/files', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({
+			fact_key: factKey,
+			file_name: file.name,
+			mime_type: file.type,
+			size_bytes: file.size
+		})
+	});
+	if (!response.ok) {
+		const failure = await writeFailure(response, 'That file could not be uploaded.');
+		// The reason under a field is the one worth reading: "This question takes photos: JPG, PNG…".
+		throw new Error(Object.values(failure.fieldErrors)[0] ?? failure.message);
+	}
+	return response.json();
+}
