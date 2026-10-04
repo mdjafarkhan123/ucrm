@@ -166,3 +166,23 @@ export function parseSetupColours(raw: string): Parsed<string[]> {
 	if (new Set(colours).size !== colours.length) return fail('A colour is listed twice.');
 	return ok(colours);
 }
+
+/** The most one stored answer may hold. Mirrors organization_setup_answers_value_size_check. */
+export const SETUP_ANSWER_MAX_BYTES = 8000;
+
+/**
+ * How many bytes a stored answer takes as the database measures it — its JSON written the way Postgres
+ * writes jsonb as text, with a space after each colon and comma. A long add-another list can pass every
+ * row's own rule and still not fit, so the save is refused in plain words instead of by the database.
+ */
+export function setupStoredBytes(value: unknown): number {
+	const text = (item: unknown): string => {
+		if (Array.isArray(item)) return `[${item.map(text).join(', ')}]`;
+		if (item && typeof item === 'object')
+			return `{${Object.entries(item)
+				.map(([key, inner]) => `${JSON.stringify(key)}: ${text(inner)}`)
+				.join(', ')}}`;
+		return JSON.stringify(item) ?? 'null';
+	};
+	return new TextEncoder().encode(text(value)).length;
+}

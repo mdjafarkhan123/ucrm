@@ -5,6 +5,7 @@ import {
 	type SetupAnswers,
 	type SetupFact
 } from '$lib/setup/catalogue';
+import { SETUP_ANSWER_MAX_BYTES, setupStoredBytes } from '$lib/setup/answer-values';
 
 // One autosave: one or more facts from the setup wizard. The published setup version decides what a fact
 // may hold, so the same rule that the page shows beside the field is the one that refuses the save here.
@@ -61,6 +62,8 @@ export const setupAnswersSchema = (facts: Map<string, SetupFact>, saved: SetupAn
 				}
 				const error = setupValueError(fact, answer.value, after);
 				if (error) issue(error);
+				else if (setupStoredBytes(storedSetupValue(fact, answer.value)) > SETUP_ANSWER_MAX_BYTES)
+					issue('This is too long to save. Shorten some entries or remove a few.');
 			}
 		})
 		.transform((input) => ({

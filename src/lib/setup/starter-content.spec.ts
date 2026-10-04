@@ -64,7 +64,7 @@ const have = (value: string) => ({ availability: 'have' as const, value, note: n
 
 describe('starter setup content', () => {
 	it('loads every stage built so far', () => {
-		expect(stages.map((stage) => stage.key)).toEqual(['business', 'services']);
+		expect(stages.map((stage) => stage.key)).toEqual(['business', 'services', 'brand']);
 	});
 
 	it('leaves no question out for want of answer rules', () => {
@@ -296,6 +296,124 @@ describe('starter setup content', () => {
 				'area.places': { availability: 'not_yet', value: null, note: null }
 			});
 			expect(deferred.has('area.promoted')).toBe(false);
+		});
+	});
+
+	describe('Brand, photos and proof', () => {
+		const brand = starter.sections.find((section) => section.key === 'brand')!;
+		const shown = (answers: SetupAnswers) => shownFacts(sectionFacts(brand), answers);
+		const fileId = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+		const save = (sent: Record<string, string>) =>
+			setupAnswersSchema(facts).safeParse({
+				answers: Object.entries(sent).map(([fact_key, value]) => ({
+					fact_key,
+					availability: 'have',
+					value,
+					note: null
+				}))
+			});
+		// The least a client with no logo, no photos and no financing gives.
+		const bare: Record<string, string> = {
+			'brand.logo_status': 'none',
+			'photos.have': 'no',
+			'proof.payment_methods': JSON.stringify(['cash', 'bank_transfer']),
+			'proof.financing': 'no',
+			'proof.reasons': JSON.stringify([{ id: 'r1', values: { reason: 'We reply within 2 hours' } }])
+		};
+		const asAnswers = (sent: Record<string, string>): SetupAnswers =>
+			Object.fromEntries(Object.entries(sent).map(([key, value]) => [key, have(value)]));
+
+		it('is shown to everyone', () => {
+			expect(brand.serviceKey).toBeNull();
+		});
+
+		it('never makes a client without a logo or photos stop', () => {
+			expect(save(bare).error?.issues ?? []).toEqual([]);
+			const answers = asAnswers(bare);
+			expect(missingRequiredFacts(brand, answers, shown(answers))).toEqual([]);
+		});
+
+		it('asks for logo files, or who has them, only on that branch', () => {
+			const upload = shown({ 'brand.logo_status': have('upload') });
+			expect(upload.has('brand.logo_files')).toBe(true);
+			expect(upload.has('brand.logo_owned')).toBe(true);
+			expect(upload.has('brand.logo_holder')).toBe(false);
+			const elsewhere = shown({ 'brand.logo_status': have('someone_else') });
+			expect(elsewhere.has('brand.logo_holder')).toBe(true);
+			expect(elsewhere.has('brand.logo_files')).toBe(false);
+			for (const status of ['need_help', 'none']) {
+				const asked = shown({ 'brand.logo_status': have(status) });
+				expect(asked.has('brand.logo_files') || asked.has('brand.logo_holder'), status).toBe(false);
+			}
+		});
+
+		it('lets the logo files and who has them wait without blocking', () => {
+			expect(facts.get('brand.logo_files')!.canDefer).toBe(true);
+			expect(facts.get('brand.logo_holder')!.canDefer).toBe(true);
+			expect(facts.get('photos.uploads')!.canDefer).toBe(true);
+		});
+
+		it('asks about photos only after the client says they have some', () => {
+			for (const key of ['photos.kinds', 'photos.uploads']) {
+				expect(shown({ 'photos.have': have('no') }).has(key), key).toBe(false);
+				expect(shown({ 'photos.have': have('yes') }).has(key), key).toBe(true);
+			}
+			expect(shown({ 'proof.financing': have('no') }).has('proof.financing_details')).toBe(false);
+			expect(shown({ 'proof.financing': have('yes') }).has('proof.financing_details')).toBe(true);
+		});
+
+		it('records, for every photo, private details and permission to publish', () => {
+			const fields = facts.get('photos.uploads')!.listFields!;
+			for (const key of ['photo', 'private_details', 'may_publish'])
+				expect(fields.find((field) => field.key === key)?.required, key).toBe(true);
+		});
+
+		it('saves a logo and 20 captioned photos and shows them again', () => {
+			const photos = Array.from({ length: 20 }, (_, n) => ({
+				id: `p${n}`,
+				values: {
+					photo: fileId(n + 10),
+					caption: `Kitchen rewire and new consumer unit in a 1930s semi, finished in two days ${n}`,
+					private_details: 'no',
+					may_publish: 'yes'
+				}
+			}));
+			const sent = {
+				...bare,
+				'brand.logo_status': 'upload',
+				'brand.logo_files': JSON.stringify([fileId(1), fileId(2)]),
+				'brand.logo_owned': 'yes',
+				'brand.colours': JSON.stringify(['#1a73e8', '#FFFFFF']),
+				'brand.feel': JSON.stringify(['dependable', 'friendly', 'Local and family-run']),
+				'photos.have': 'yes',
+				'photos.kinds': JSON.stringify(['completed_work', 'vehicles']),
+				'photos.uploads': JSON.stringify(photos),
+				'proof.years': '12',
+				'proof.social': JSON.stringify([
+					{ id: 's1', values: { platform: 'facebook', url: 'facebook.com/raadltd' } }
+				])
+			};
+			const parsed = save(sent);
+			expect(parsed.error?.issues ?? []).toEqual([]);
+			const resumed: SetupAnswers = {};
+			for (const answer of parsed.data!.answers)
+				resumed[answer.fact_key] = have(
+					typeof answer.value === 'string' ? answer.value : JSON.stringify(answer.value)
+				);
+			expect(JSON.parse(resumed['photos.uploads']!.value!)).toEqual(photos);
+			expect(JSON.parse(resumed['brand.colours']!.value!)).toEqual(['#1A73E8', '#FFFFFF']);
+			expect(missingRequiredFacts(brand, resumed, shown(resumed))).toEqual([]);
+		});
+
+		it('refuses a list too long to store in plain words, not with a database error', () => {
+			const reviews = Array.from({ length: 10 }, (_, n) => ({
+				id: `t${n}`,
+				values: { quote: 'Brilliant work. '.repeat(70), name: `Customer ${n}`, permission: 'yes' }
+			}));
+			const parsed = save({ 'proof.testimonials': JSON.stringify(reviews) });
+			expect(parsed.error?.issues.map((issue) => issue.message)).toEqual([
+				'This is too long to save. Shorten some entries or remove a few.'
+			]);
 		});
 	});
 });

@@ -10,7 +10,8 @@ import {
 	parseSetupNumber,
 	parseSetupPercentage,
 	parseSetupUrl,
-	setupChoiceList
+	setupChoiceList,
+	setupStoredBytes
 } from './answer-values';
 
 const options = [{ value: 'cash' }, { value: 'card' }, { value: 'cheque' }];
@@ -154,5 +155,14 @@ describe('colours', () => {
 			JSON.stringify(Array.from({ length: 9 }, (_, i) => `#00000${i}`))
 		])
 			expect(parseSetupColours(bad).error).not.toBeNull();
+	});
+});
+
+describe('stored size', () => {
+	it('counts bytes the way the database writes the answer', () => {
+		// The same value cast to jsonb on the dev database: octet_length(value::jsonb::text) = 72.
+		expect(setupStoredBytes({ id: 'a1', values: { name: 'Café "x"\n', n: 2, l: [1, 'b'] } })).toBe(
+			72
+		);
 	});
 });
