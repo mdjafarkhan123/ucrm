@@ -6,11 +6,16 @@ import {
 	detectSignature,
 	renameKeepingExtension
 } from './upload-policy';
+import { SETUP_AUDIO_TYPES } from '$lib/files/allowlist';
 
 const JPEG = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]);
 const PNG = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const PDF = Uint8Array.from([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31]);
 const ZIP = Uint8Array.from([0x50, 0x4b, 0x03, 0x04]);
+const MP3_TAGGED = Uint8Array.from([0x49, 0x44, 0x33, 0x04, 0x00]);
+const MP3_FRAME = Uint8Array.from([0xff, 0xfb, 0x90, 0x64]);
+const M4A = Uint8Array.from([0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70, 0x4d, 0x34, 0x41]);
+const WAV = Uint8Array.from([0x52, 0x49, 0x46, 0x46, 0x24, 0, 0, 0, 0x57, 0x41, 0x56, 0x45]);
 
 describe('checkUploadClaim', () => {
 	it('accepts a photo a contractor would actually send', () => {
@@ -52,6 +57,12 @@ describe('checkUploadClaim', () => {
 		).toMatchObject({ allowed: false, field: 'size_bytes' });
 	});
 
+	it('keeps voice recordings out of the file library, and lets the setup route allow them', () => {
+		const claim = { fileName: 'greeting.mp3', mimeType: 'audio/mpeg', sizeBytes: 300_000 };
+		expect(checkUploadClaim(claim)).toMatchObject({ allowed: false, field: 'file_name' });
+		expect(checkUploadClaim(claim, SETUP_AUDIO_TYPES)).toEqual({ allowed: true, signature: 'mp3' });
+	});
+
 	it('has no video type yet, because its limits are not measured', () => {
 		expect(
 			checkUploadClaim({ fileName: 'walkthrough.mp4', mimeType: 'video/mp4', sizeBytes: 5_000_000 })
@@ -69,6 +80,19 @@ describe('detectSignature', () => {
 
 	it('fails closed on content it does not recognise', () => {
 		expect(detectSignature(Uint8Array.from([0x00, 0x01, 0x02, 0x03]))).toBeNull();
+	});
+
+	it('reads the voice recordings a setup question accepts', () => {
+		expect(detectSignature(MP3_TAGGED)).toBe('mp3');
+		expect(detectSignature(MP3_FRAME)).toBe('mp3');
+		expect(detectSignature(M4A)).toBe('m4a');
+		expect(detectSignature(WAV)).toBe('wav');
+	});
+
+	it('tells a WAV recording from a WEBP photo, though both are RIFF files', () => {
+		const webp = Uint8Array.from([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50]);
+		expect(detectSignature(webp)).toBe('webp');
+		expect(detectSignature(WAV)).toBe('wav');
 	});
 });
 
@@ -89,6 +113,15 @@ describe('checkUploadedContent', () => {
 
 	it('refuses an object whose stored size is not the size that was approved', () => {
 		expect(checkUploadedContent('roof.jpg', JPEG, 9_000_000, 1234)).toMatchObject({ ok: false });
+	});
+
+	it('accepts a voice recording whose bytes match its name', () => {
+		expect(checkUploadedContent('greeting.m4a', M4A, 11, 11)).toEqual({ ok: true });
+		expect(checkUploadedContent('greeting.wav', WAV, 12, 12)).toEqual({ ok: true });
+	});
+
+	it('refuses a photo renamed to look like a recording', () => {
+		expect(checkUploadedContent('greeting.mp3', PNG, 8, 8)).toMatchObject({ ok: false });
 	});
 
 	it('accepts plain text, which has no signature to check', () => {

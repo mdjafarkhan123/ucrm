@@ -172,4 +172,50 @@ describe('saveSetupStageItemsSchema', () => {
 		});
 		expect(twoOthers.error?.issues[0]).toMatchObject({ path: ['items', 0, 'options'] });
 	});
+	describe('photo or file questions (A5c)', () => {
+		const fileQuestion = { ...question, kind: 'file', options: null };
+
+		it('keeps the ticked kinds in a fixed order and the chosen file limit', () => {
+			const parsed = saveSetupStageItemsSchema.parse({
+				...draft,
+				items: [{ ...fileQuestion, file_kinds: ['audio', 'photo'], max_files: 5 }]
+			});
+			expect(parsed.items[0]).toMatchObject({ file_kinds: ['photo', 'audio'], max_files: 5 });
+		});
+
+		it('needs at least one kind ticked and a limit from the list', () => {
+			const noKinds = saveSetupStageItemsSchema.safeParse({
+				...draft,
+				items: [{ ...fileQuestion, file_kinds: [], max_files: 5 }]
+			});
+			expect(noKinds.error?.issues[0]).toMatchObject({ path: ['items', 0, 'file_kinds'] });
+			const oddLimit = saveSetupStageItemsSchema.safeParse({
+				...draft,
+				items: [{ ...fileQuestion, file_kinds: ['photo'], max_files: 7 }]
+			});
+			expect(oddLimit.error?.issues[0]).toMatchObject({ path: ['items', 0, 'max_files'] });
+			const noLimit = saveSetupStageItemsSchema.safeParse({
+				...draft,
+				items: [{ ...fileQuestion, file_kinds: ['photo'] }]
+			});
+			expect(noLimit.error?.issues[0]).toMatchObject({ path: ['items', 0, 'max_files'] });
+		});
+
+		it('refuses a kind of file it does not know', () => {
+			expect(
+				saveSetupStageItemsSchema.safeParse({
+					...draft,
+					items: [{ ...fileQuestion, file_kinds: ['video'], max_files: 1 }]
+				}).success
+			).toBe(false);
+		});
+
+		it('drops file settings from a question that is not a photo or file question', () => {
+			const parsed = saveSetupStageItemsSchema.parse({
+				...draft,
+				items: [{ ...question, kind: 'date', options: null, file_kinds: ['photo'], max_files: 5 }]
+			});
+			expect(parsed.items[0]).toMatchObject({ file_kinds: null, max_files: null });
+		});
+	});
 });
