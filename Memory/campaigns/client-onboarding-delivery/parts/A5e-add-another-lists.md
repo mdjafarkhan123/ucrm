@@ -7,7 +7,7 @@ blueprint `docs/client-onboarding-setup-content-blueprint.md` "Structured" rows
 
 ## Steps
 
-- [ ] Migration `20261009110000_setup_list_answers` written; apply to dev. Outcome check: `select 1 from
+- [x] Migration `20261009110000_setup_list_answers` applied to dev; rules spot-checked in SQL; types updated. Outcome check: `select 1 from
   supabase_migrations.schema_migrations where version = '20261009110000'` and column `setup_items.list_fields` exists
 - [ ] Answer rules + tests (`$lib/setup/answer-values` or own module), catalogue kind `list`
 - [ ] Editor: list question with boxes (name, type, required, choices), row limit, starters
@@ -16,7 +16,7 @@ blueprint `docs/client-onboarding-setup-content-blueprint.md` "Structured" rows
 
 ## Next
 
-Run the outcome check, then apply the migration if it has not landed; regenerate database types.
+Write `src/lib/setup/lists.ts` (row rules) with tests, then the catalogue kind `list`.
 
 ## Notes
 
