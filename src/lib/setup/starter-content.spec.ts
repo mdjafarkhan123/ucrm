@@ -11,6 +11,8 @@ import {
 	type SetupCatalogueRow
 } from './catalogue';
 import { followUpSuggestions } from './follow-ups';
+import { setupAnswersSchema } from '../server/validation/setup.schema';
+import { missingRequiredFacts, setupAnswerShortfall } from './catalogue';
 
 // B3b–B12 load the approved starter content (docs/client-onboarding-setup-content-blueprint.md) into the setup
 // draft through private.setup_load_starter_stage. The database cannot check a "show only if" rule against a
@@ -217,6 +219,75 @@ describe('starter setup content', () => {
 			expect(byTime.has('area.max_distance')).toBe(false);
 			for (const answers of [byPlaces, byDistance, byTime])
 				expect(answers.has('area.places')).toBe(true);
+		});
+
+		it('saves a full answer and shows it again when the client comes back', () => {
+			const services20 = Array.from({ length: 20 }, (_, n) => ({
+				id: `s${n}`,
+				values: {
+					name: `Boiler repair and servicing ${n}`,
+					note: 'Gas and oil boilers, all makes',
+					season: 'all_year'
+				}
+			}));
+			const sent: Record<string, string> = {
+				'services.offered': JSON.stringify(services20),
+				'services.promoted': JSON.stringify(['s3', 's0', 's7']),
+				'services.not_offered': JSON.stringify([{ id: 'n1', values: { name: 'Solar panels' } }]),
+				'services.customer_type': 'both',
+				'services.urgent': 'yes',
+				'services.urgent_services': JSON.stringify(['s0']),
+				'services.credentials_needed': 'no',
+				'services.public_prices': 'yes',
+				'services.prices': JSON.stringify([
+					{
+						id: 'p1',
+						values: {
+							service: 'Call-out',
+							price_type: 'minimum',
+							amount: { amount: '85', currency: 'GBP' }
+						}
+					}
+				]),
+				'area.base_city': JSON.stringify({ same_as: 'business.address_city' }),
+				'area.limit_type': 'distance',
+				'area.places': JSON.stringify([
+					{ id: 'a1', values: { name: 'Leeds' } },
+					{ id: 'a2', values: { name: 'Bradford' } }
+				]),
+				'area.max_distance': JSON.stringify({ amount: 25, unit: 'mi' }),
+				'area.excluded': JSON.stringify([{ id: 'x1', values: { name: 'Ilkley' } }]),
+				'area.promoted': JSON.stringify(['a2', 'a1']),
+				'area.other_locations': 'no'
+			};
+			const earlier: SetupAnswers = { 'business.address_city': have('Leeds') };
+			const parsed = setupAnswersSchema(facts, earlier).safeParse({
+				answers: Object.entries(sent).map(([fact_key, value]) => ({
+					fact_key,
+					availability: 'have',
+					value,
+					note: null
+				}))
+			});
+			expect(parsed.error?.issues ?? []).toEqual([]);
+
+			// Coming back reads each stored value as the text the page holds (src/lib/server/setup/read.ts).
+			const resumed: SetupAnswers = { ...earlier };
+			for (const answer of parsed.data!.answers) {
+				const stored = answer.value;
+				expect(JSON.stringify(stored).length, answer.fact_key).toBeLessThan(8000);
+				resumed[answer.fact_key] = have(
+					typeof stored === 'string' ? stored : JSON.stringify(stored)
+				);
+			}
+			expect(JSON.parse(resumed['services.offered']!.value!)).toEqual(services20);
+			expect(JSON.parse(resumed['area.excluded']!.value!)).toEqual([
+				{ id: 'x1', values: { name: 'Ilkley' } }
+			]);
+			const asked = shown(resumed);
+			expect(missingRequiredFacts(services, resumed, asked)).toEqual([]);
+			for (const fact of sectionFacts(services))
+				expect(setupAnswerShortfall(fact, resumed), fact.key).toBeNull();
 		});
 
 		it('lets a client without their service area yet still send the setup', () => {
