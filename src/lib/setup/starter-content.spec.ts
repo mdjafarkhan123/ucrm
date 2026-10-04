@@ -11,6 +11,7 @@ import {
 	type SetupCatalogueRow
 } from './catalogue';
 import { followUpSuggestions } from './follow-ups';
+import { COUNTRIES } from '../settings/countries';
 import { setupAnswersSchema } from '../server/validation/setup.schema';
 import { missingRequiredFacts, setupAnswerShortfall, shownCatalogueFacts } from './catalogue';
 
@@ -69,7 +70,8 @@ describe('starter setup content', () => {
 			'services',
 			'brand',
 			'website',
-			'google'
+			'google',
+			'calls'
 		]);
 	});
 
@@ -88,7 +90,10 @@ describe('starter setup content', () => {
 				if (!('values' in condition)) continue;
 				const source = facts.get(condition.factKey);
 				expect(source, `${fact.key} depends on ${condition.factKey}`).toBeDefined();
-				const choices = source!.options?.map((option) => option.value) ?? [];
+				const choices =
+					source!.kind === 'country'
+						? COUNTRIES.map((country) => country.value)
+						: (source!.options?.map((option) => option.value) ?? []);
 				for (const value of condition.values) expect(choices, fact.key).toContain(value);
 			}
 	});
@@ -750,6 +755,191 @@ describe('starter setup content', () => {
 				'gbp.duplicates': have('no')
 			};
 			expect(missingRequiredFacts(google, answers, shown(answers))).toEqual([]);
+		});
+	});
+
+	describe('Calls and phone number', () => {
+		const calls = starter.sections.find((section) => section.key === 'calls')!;
+		const shown = (answers: SetupAnswers) => shownCatalogueFacts(starter, answers);
+		const usa = { 'business.country': have('US') };
+
+		it('is shown only to a package with Calls and texting', () => {
+			expect(calls.serviceKey).toBe('calls_texting');
+		});
+
+		it('asks each number choice only its own questions', () => {
+			const branchOnly: Record<string, string[]> = {
+				new: ['calls.new_number_area'],
+				keep: ['calls.existing_number', 'calls.keep_how'],
+				advice: []
+			};
+			const all = new Set(Object.values(branchOnly).flat());
+			for (const [branch, own] of Object.entries(branchOnly)) {
+				const asked = shown({ 'calls.number_plan': have(branch) });
+				for (const key of all) expect(asked.has(key), `${branch}: ${key}`).toBe(own.includes(key));
+			}
+		});
+
+		it('offers texting from a kept number only in the USA and Canada, and never when it moves', () => {
+			const kept = (country: string, how: string) =>
+				shown({
+					'business.country': have(country),
+					'calls.number_plan': have('keep'),
+					'calls.keep_how': have(how)
+				}).has('calls.text_from_existing');
+			expect(kept('US', 'forward')).toBe(true);
+			expect(kept('CA', 'unsure')).toBe(true);
+			expect(kept('US', 'move')).toBe(false);
+			for (const country of ['GB', 'AU', 'IE', 'DE', 'FR'])
+				expect(kept(country, 'forward'), country).toBe(false);
+		});
+
+		it('asks for the phone company details only when the number moves', () => {
+			const port = ['calls.port_carrier', 'calls.port_account', 'calls.port_approver'];
+			for (const how of ['forward', 'move', 'unsure']) {
+				const asked = shown({ 'calls.number_plan': have('keep'), 'calls.keep_how': have(how) });
+				for (const key of port) expect(asked.has(key), `${how}: ${key}`).toBe(how === 'move');
+			}
+		});
+
+		it('never asks for a password, PIN or one-time code', () => {
+			for (const fact of sectionFacts(calls)) {
+				const secret = /password|(^|[._])pin($|_)|otp|one_time/;
+				expect(fact.key).not.toMatch(secret);
+				for (const field of fact.listFields ?? []) expect(field.key).not.toMatch(secret);
+				expect(fact.label).not.toMatch(/password|\bPIN\b|one-time code/i);
+			}
+		});
+
+		it('asks the ring order, backup, emergency phone and greeting only after their answer', () => {
+			const people =
+				'[{"id":"p1","values":{"name":"Sam","phone":"+15550100"}},{"id":"p2","values":{"name":"Ali","phone":"+15550101"}}]';
+			expect(
+				shown({ 'calls.ring_people': have(people), 'calls.ring_mode': have('in_order') }).has(
+					'calls.ring_order'
+				)
+			).toBe(true);
+			expect(
+				shown({ 'calls.ring_people': have(people), 'calls.ring_mode': have('together') }).has(
+					'calls.ring_order'
+				)
+			).toBe(false);
+			for (const [question, value, follow] of [
+				['calls.no_answer', 'backup', 'calls.backup'],
+				['calls.hours_same', 'no', 'calls.hours'],
+				['calls.after_hours', 'emergency', 'calls.emergency_phone'],
+				['calls.voicemail_type', 'write', 'calls.voicemail_words'],
+				['calls.voicemail_type', 'upload', 'calls.voicemail_recording'],
+				['calls.missed_text', 'yes', 'calls.missed_text_words']
+			]) {
+				expect(shown({ [question]: have(value) }).has(follow), follow).toBe(true);
+			}
+			expect(shown({ 'calls.voicemail_type': have('standard') }).has('calls.voicemail_words')).toBe(
+				false
+			);
+			expect(shown({ 'calls.missed_text': have('no') }).has('calls.missed_text_words')).toBe(false);
+		});
+
+		it('takes the voicemail greeting only as a voice recording', () => {
+			expect(facts.get('calls.voicemail_recording')!.fileKinds).toEqual(['audio']);
+		});
+
+		it('confirms the language given earlier instead of asking again', () => {
+			expect(facts.get('calls.language')!.reuseFrom).toBe('business.language');
+		});
+
+		it('saves a full answer and shows it again when the client comes back', () => {
+			const earlier: SetupAnswers = {
+				...usa,
+				'business.language': have('English')
+			};
+			const sent: Record<string, string> = {
+				'calls.number_plan': 'keep',
+				'calls.existing_number': '+1 415 555 0100',
+				'calls.keep_how': 'move',
+				'calls.port_carrier': 'AT&T',
+				'calls.port_account': JSON.stringify([
+					{
+						id: 'a1',
+						values: { name: 'Sam Raad', line1: '12 Main St', city: 'Oakland', postal_code: '94607' }
+					}
+				]),
+				'calls.port_approver': JSON.stringify([
+					{ id: 'b1', values: { name: 'Sam Raad', email: 'sam@example.com' } }
+				]),
+				'calls.ring_people': JSON.stringify([
+					{ id: 'p1', values: { name: 'Sam', phone: '+1 415 555 0101' } },
+					{ id: 'p2', values: { name: 'Office', phone: '+1 415 555 0102' } }
+				]),
+				'calls.ring_mode': 'in_order',
+				'calls.ring_order': JSON.stringify(['p2', 'p1']),
+				'calls.ring_time': '20',
+				'calls.no_answer': 'backup',
+				'calls.backup': JSON.stringify([
+					{ id: 'k1', values: { name: 'Ali', phone: '+1 415 555 0103' } }
+				]),
+				'calls.busy': 'same',
+				'calls.hours_same': 'yes',
+				'calls.after_hours': 'emergency',
+				'calls.emergency_phone': JSON.stringify([
+					{ id: 'e1', values: { name: 'On-call', phone: '+1 415 555 0104' } }
+				]),
+				'calls.language': JSON.stringify({ same_as: 'business.language' }),
+				'calls.voicemail_type': 'write',
+				'calls.voicemail_words': 'Thanks for calling. Leave your name and number.',
+				'calls.alert_people': JSON.stringify([
+					{ id: 'n1', values: { name: 'Sam', email: 'sam@example.com' } }
+				]),
+				'calls.missed_text': 'yes',
+				'calls.missed_text_words': 'Sorry we missed you — we will ring back within the hour.',
+				'calls.test_person': JSON.stringify([
+					{ id: 't1', values: { name: 'Sam', phone: '+1 415 555 0101', when: 'Weekday mornings' } }
+				])
+			};
+			const parsed = setupAnswersSchema(facts, earlier).safeParse({
+				answers: Object.entries(sent).map(([fact_key, value]) => ({
+					fact_key,
+					availability: 'have',
+					value,
+					note: null
+				}))
+			});
+			expect(parsed.error?.issues ?? []).toEqual([]);
+
+			const resumed: SetupAnswers = { ...earlier };
+			for (const answer of parsed.data!.answers) {
+				const stored = answer.value;
+				resumed[answer.fact_key] = have(
+					typeof stored === 'string' ? stored : JSON.stringify(stored)
+				);
+			}
+			expect(JSON.parse(resumed['calls.port_account']!.value!)[0].values.postal_code).toBe('94607');
+			expect(missingRequiredFacts(calls, resumed, shown(resumed))).toEqual([]);
+			for (const fact of sectionFacts(calls))
+				expect(setupAnswerShortfall(fact, resumed), fact.key).toBeNull();
+		});
+
+		it('lets a client send the setup before they know who rings or who takes the test call', () => {
+			const later = { availability: 'not_yet' as const, value: null, note: null };
+			const answers: SetupAnswers = {
+				'business.country': have('GB'),
+				'business.language': have('English'),
+				'calls.number_plan': have('new'),
+				'calls.new_number_area': later,
+				'calls.ring_people': later,
+				'calls.ring_mode': have('together'),
+				'calls.ring_time': have('20'),
+				'calls.no_answer': have('voicemail'),
+				'calls.busy': have('same'),
+				'calls.hours_same': have('yes'),
+				'calls.after_hours': have('voicemail'),
+				'calls.language': have('{"same_as":"business.language"}'),
+				'calls.voicemail_type': have('standard'),
+				'calls.alert_people': have('[{"id":"n1","values":{"name":"Sam"}}]'),
+				'calls.missed_text': have('no'),
+				'calls.test_person': later
+			};
+			expect(missingRequiredFacts(calls, answers, shown(answers))).toEqual([]);
 		});
 	});
 });
