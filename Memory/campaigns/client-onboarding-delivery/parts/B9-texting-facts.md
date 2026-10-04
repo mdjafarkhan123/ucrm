@@ -1,20 +1,17 @@
-# B9b — Protected upload question (B9a done 2026-10-04)
+# B9c — Texting registration stage (B9a, B9b done 2026-10-04)
 
 **Campaign:** client-onboarding-delivery · **Plan:** `docs/client-onboarding-delivery-behavior-contract.md` §3.6, §9; blueprint stage 9 and "Porting or hosted-number access"
 **Code:** `main`
-**Done when:** Admin sees "received", cannot open; owner and Jafar can (in the browser)
+**Done when:** Stage in draft, Calls and texting only; once Jafar publishes, the protected bill question passes the login check below
 
 ## Steps
 
-- [x] B9a store: migration `20261018090000` (on dev), pgTAP test, `src/lib/server/setup/protected-documents*.ts`, routes under `src/routes/api/setup/protected-documents/` and `api/jafar/organizations/[organizationId]/setup/protected-documents/`, answer-save check, worker tick
-- [x] Editor: "Protected document" type; migration `20261019090000` (on dev) keeps its file limit and refuses reusing it
-- [x] Setup page field: `SetupFilesField` `secure` mode, `ProtectedDocumentHistory` popover
-- [x] Jafar's client page: new Setup tab (`SetupWorkspace.svelte`) on the organization page; list route `api/jafar/organizations/[organizationId]/setup/protected-documents`
-- [ ] Browser check with owner and admin logins
+- [ ] Load blueprint stage 9 into the draft with `private.setup_load_starter_stage` (as B3b's migration does); the moving-number bill is a `protected_file` question; no PIN or signed-letter question
+- [ ] After Jafar's publish: setup page with the admin login shows "Received", no open link or History; owner login opens it and sees History; Jafar's organization page Setup tab lists it with Open, History, "Provider step finished", "Delete now"
 
 ## Next
 
-Browser check: on dev, add a protected question to a stage of the draft is NOT allowed (never publish test questions). Instead check with a question loaded by B9c, or test the field through a harness; see Notes.
+Read blueprint stage 9 and `supabase/migrations/20261017090000_setup_starter_calls_stage.sql`, then write the B9c migration.
 
 ## Notes
 
