@@ -1,35 +1,28 @@
-# B9 — Texting registration and protected documents
+# B9b — Protected upload question (B9a done 2026-10-04)
 
 **Campaign:** client-onboarding-delivery · **Plan:** `docs/client-onboarding-delivery-behavior-contract.md` §3.6, §9; blueprint stage 9 and "Porting or hosted-number access"
 **Code:** `main`
-**Done when:** Document visible only to the owner and Jafar
+**Done when:** Admin sees "received", cannot open; owner and Jafar can (in the browser)
 
 ## Steps
 
-- [x] Read blueprint, plan, B8 migration, setup file code (`src/lib/server/setup/files.ts`)
-- [x] Research: Twilio Port In API emails an e-sign transfer letter to the approver; carrier transfer PINs expire in 4–7 days (AT&T 4, Verizon/T-Mobile 7); Stripe keeps identity-document uploads non-downloadable
-- [x] Jafar answered the protected-document questions (below)
-- [x] B9a database: migration + `supabase/tests/database/setup_protected_documents.sql` (24/24)
-- [ ] B9a server: catalogue kind `protected_file`, `src/lib/server/setup/protected-documents.ts`, API routes, virus-check worker pass, answer-save check, unit tests
-- [ ] Write stage 9 migration with `private.setup_load_starter_stage`, test, apply to dev
+- [x] B9a store: migration `20261018090000` (on dev), pgTAP test, `src/lib/server/setup/protected-documents*.ts`, routes under `src/routes/api/setup/protected-documents/` and `api/jafar/organizations/[organizationId]/setup/protected-documents/`, answer-save check, worker tick
+- [ ] Editor: add `protected_file` to `SETUP_QUESTION_KINDS` and the editor schema; new migration making `owner_save_setup_draft_stage_items` keep `max_files` for `protected_file`, and `setup_version_rule_problem` refuse reusing it (latest copies in `20261011090000_setup_reuse_answers.sql`)
+- [ ] Setup page field (reuse `SetupFilesField` look): start → upload → `/complete` → save answer; remove or clearing the answer calls DELETE; poll the list; open/history only when `can_open`
+- [ ] Jafar's client page: a list route for him, plus open, delete, "provider step finished" and history
+- [ ] Browser check with owner and admin logins
 
 ## Next
 
-Build the B9a server side (unchecked step above).
-
-## Outside actions
-
-- Apply migration `20261018090000_setup_protected_documents` to dev — check: `select 1 from supabase_migrations.schema_migrations where version = '20261018090000'` — done 2026-10-04 (db push)
+Start the editor step above.
 
 ## Notes
 
-Fact: setup files today are ordinary File library Files (role `setup_answer`); anyone with `files.view` can
-browse them, so protected documents cannot reuse that path as is. Malware scanning (`src/lib/server/files/scanner.ts`) can be reused.
-
 Testing: `supabase test db --linked` cannot reach pgTAP on dev, and local Docker lacks setup tables. Run the
-migration's section 2 onward plus the test inside one rolled-back transaction:
-`docker exec -i supabase_db_ucrm psql -U postgres -At -q < combined.sql`.
-For B9b: removing a file or clearing the answer must call the remove route; answer saves never delete documents.
+migration's section 2 onward plus `supabase/tests/database/setup_protected_documents.sql` inside one
+rolled-back transaction with `docker exec -i supabase_db_ucrm psql -U postgres -At -q`.
+Migrations go to dev with `npx supabase db push` (the Supabase MCP needed re-sign-in).
+Answer saves never delete documents; only the remove route does.
 
 Jafar's decisions (2026-10-04, after comparing with GoHighLevel's port-in and A2P flow):
 1. Only the owner and Jafar can open a protected document; an admin can upload it and sees "received"; never in the File library.
