@@ -169,7 +169,8 @@ const questionSchema = z
 		// Client onboarding A5d: pick one and tick several may add "Other"; tick several may cap its ticks.
 		allow_other: z.boolean().optional().default(false),
 		max_choices: z.number().int().min(1, 'Allow at least one tick.').nullish(),
-		// Client onboarding A5c: a photo or file question's accepted kinds and file limit.
+		// Client onboarding A5c: a photo or file question's accepted kinds and file limit. A protected document
+		// question (B9b) has the limit only: it always takes documents and photos.
 		file_kinds: z.array(z.enum(SETUP_FILE_KINDS)).max(3).nullish(),
 		max_files: z.number().int().nullish(),
 		// Client onboarding A5e: an add-another list's boxes and row limit.
@@ -214,22 +215,21 @@ const questionSchema = z
 		});
 		if (question.fact_key === null && question.kind === null)
 			context.addIssue({ code: 'custom', path: ['kind'], message: 'Choose an answer type.' });
-		if (question.kind === 'file') {
-			if (!question.file_kinds?.length)
-				context.addIssue({
-					code: 'custom',
-					path: ['file_kinds'],
-					message: 'Tick at least one kind of file.'
-				});
-			if (
-				!(SETUP_MAX_FILES_CHOICES as readonly number[]).includes(question.max_files ?? Number.NaN)
-			)
-				context.addIssue({
-					code: 'custom',
-					path: ['max_files'],
-					message: 'Choose how many files a client can add.'
-				});
-		}
+		if (question.kind === 'file' && !question.file_kinds?.length)
+			context.addIssue({
+				code: 'custom',
+				path: ['file_kinds'],
+				message: 'Tick at least one kind of file.'
+			});
+		if (
+			(question.kind === 'file' || question.kind === 'protected_file') &&
+			!(SETUP_MAX_FILES_CHOICES as readonly number[]).includes(question.max_files ?? Number.NaN)
+		)
+			context.addIssue({
+				code: 'custom',
+				path: ['max_files'],
+				message: 'Choose how many files a client can add.'
+			});
 		if (question.kind === 'list') listProblems(question, context);
 		if (question.kind === 'pick') pickProblems(question, context);
 		const reuse = question.reuse_from;
@@ -282,7 +282,10 @@ const questionSchema = z
 			question.kind === 'file'
 				? SETUP_FILE_KINDS.filter((kind) => question.file_kinds?.includes(kind))
 				: null,
-		max_files: question.kind === 'file' ? (question.max_files ?? null) : null,
+		max_files:
+			question.kind === 'file' || question.kind === 'protected_file'
+				? (question.max_files ?? null)
+				: null,
 		list_fields: question.kind === 'list' ? listFieldsPayload(question.list_fields ?? []) : null,
 		max_rows: question.kind === 'list' ? (question.max_rows ?? null) : null,
 		pick_from: question.kind === 'pick' ? (question.pick_from ?? null) : null,

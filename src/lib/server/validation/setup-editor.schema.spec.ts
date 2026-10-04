@@ -219,6 +219,32 @@ describe('saveSetupStageItemsSchema', () => {
 		});
 	});
 
+	describe('protected document questions (B9b)', () => {
+		const protectedQuestion = { ...question, kind: 'protected_file', options: null };
+
+		it('keeps the file limit and never a choice of kinds', () => {
+			const parsed = saveSetupStageItemsSchema.parse({
+				...draft,
+				items: [{ ...protectedQuestion, file_kinds: ['audio'], max_files: 5 }]
+			});
+			expect(parsed.items[0]).toMatchObject({
+				kind: 'protected_file',
+				file_kinds: null,
+				max_files: 5
+			});
+		});
+
+		it('needs a limit from the list', () => {
+			const noLimit = saveSetupStageItemsSchema.safeParse({ ...draft, items: [protectedQuestion] });
+			expect(noLimit.error?.issues[0]).toMatchObject({ path: ['items', 0, 'max_files'] });
+			const oddLimit = saveSetupStageItemsSchema.safeParse({
+				...draft,
+				items: [{ ...protectedQuestion, max_files: 3 }]
+			});
+			expect(oddLimit.error?.issues[0]).toMatchObject({ path: ['items', 0, 'max_files'] });
+		});
+	});
+
 	describe('add-another lists (A5e)', () => {
 		const list = {
 			...question,

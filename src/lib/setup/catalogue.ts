@@ -88,6 +88,7 @@ export const SETUP_QUESTION_KINDS = [
 	'duration',
 	'colours',
 	'file',
+	'protected_file',
 	'list',
 	'pick',
 	'reuse'
@@ -290,8 +291,7 @@ type CatalogueItemRow = {
 	built_in: boolean;
 	required: boolean;
 	can_defer: boolean;
-	// B9b adds 'protected_file' to the editor's kinds; until then only starter content can use it.
-	kind: SetupQuestionKind | 'protected_file' | null;
+	kind: SetupQuestionKind | null;
 	options: { value: string; label: string }[] | null;
 	allow_other?: boolean;
 	max_choices?: number | null;

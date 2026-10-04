@@ -29,7 +29,7 @@ export type SetupEditorItem = {
 	max_choices: number | null;
 	/** Photo or file: the kinds of file it accepts. Null for every other type. */
 	file_kinds: SetupFileKind[] | null;
-	/** Photo or file: how many files a client may add. Null for every other type. */
+	/** Photo or file, and protected document: how many files a client may add. Null for every other type. */
 	max_files: number | null;
 	/** Add-another list: the boxes each row holds, as the database keeps them. Null for every other type. */
 	list_fields: SetupListFieldRow[] | null;
@@ -328,6 +328,11 @@ function earlierQuestionPayload(source: string | null, items: DraftItem[]) {
 /** What a question just given the photo or file type accepts until Jafar changes it. */
 export const NEW_FILE_QUESTION = { file_kinds: ['photo'] as SetupFileKind[], max_files: 1 };
 
+/** Photo or file, and protected document: the answer types that take files, and say how many. */
+export function isFileKind(kind: SetupQuestionKind | null) {
+	return kind === 'file' || kind === 'protected_file';
+}
+
 /** Pick one and tick several: the answer types Jafar writes the choices for. */
 export function isChoiceKind(kind: SetupQuestionKind | null) {
 	return kind === 'choice' || kind === 'multi_choice';
@@ -356,7 +361,7 @@ export function itemsPayload(items: DraftItem[]) {
 							? item.max_choices
 							: null,
 					file_kinds: !item.built_in && item.kind === 'file' ? item.file_kinds : null,
-					max_files: !item.built_in && item.kind === 'file' ? item.max_files : null,
+					max_files: !item.built_in && isFileKind(item.kind) ? item.max_files : null,
 					list_fields:
 						!item.built_in && item.kind === 'list' ? item.list_fields.map(listFieldPayload) : null,
 					max_rows: !item.built_in && item.kind === 'list' ? item.max_rows : null,
@@ -500,8 +505,8 @@ export function pickSources(
 export type ReuseSource = { id: string; label: string; stageTitle: string | null };
 
 /**
- * Whether a question's answer can be shown back to confirm (A5g): built in, or any type but photo or file, pick
- * or reuse; and always asked, since a "show only if" on an earlier answer could hide it. A rule on a service is
+ * Whether a question's answer can be shown back to confirm (A5g): built in, or any type but photo or file,
+ * protected document, pick or reuse; and always asked, since a "show only if" on an earlier answer could hide it. A rule on a service is
  * fine — a client without that service is asked the reuse as a plain question.
  */
 function reusable(
@@ -509,7 +514,7 @@ function reusable(
 	answerRule: boolean
 ): boolean {
 	if (item.type !== 'question' || answerRule) return false;
-	return item.built_in || !['file', 'pick', 'reuse', null].includes(item.kind);
+	return item.built_in || !['file', 'protected_file', 'pick', 'reuse', null].includes(item.kind);
 }
 
 /**
@@ -565,6 +570,7 @@ export const SETUP_QUESTION_KIND_LABELS: Record<SetupQuestionKind, string> = {
 	duration: 'Length of time',
 	colours: 'Colours',
 	file: 'Photo or file',
+	protected_file: 'Protected document',
 	list: 'Add-another list',
 	pick: 'Pick from an earlier list',
 	reuse: 'Use an earlier answer'

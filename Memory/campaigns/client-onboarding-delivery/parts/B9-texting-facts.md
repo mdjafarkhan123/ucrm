@@ -7,14 +7,14 @@
 ## Steps
 
 - [x] B9a store: migration `20261018090000` (on dev), pgTAP test, `src/lib/server/setup/protected-documents*.ts`, routes under `src/routes/api/setup/protected-documents/` and `api/jafar/organizations/[organizationId]/setup/protected-documents/`, answer-save check, worker tick
-- [ ] Editor: add `protected_file` to `SETUP_QUESTION_KINDS` and the editor schema; new migration making `owner_save_setup_draft_stage_items` keep `max_files` for `protected_file`, and `setup_version_rule_problem` refuse reusing it (latest copies in `20261011090000_setup_reuse_answers.sql`)
+- [x] Editor: "Protected document" type; migration `20261019090000` (on dev) keeps its file limit and refuses reusing it
 - [ ] Setup page field (reuse `SetupFilesField` look): start → upload → `/complete` → save answer; remove or clearing the answer calls DELETE; poll the list; open/history only when `can_open`
 - [ ] Jafar's client page: a list route for him, plus open, delete, "provider step finished" and history
 - [ ] Browser check with owner and admin logins
 
 ## Next
 
-Start the editor step above.
+Start the setup page field step above: find the setup page's file field (`SetupFilesField`) and add a protected variant.
 
 ## Notes
 

@@ -13,11 +13,14 @@
 		SETUP_FILE_KINDS,
 		SETUP_FILE_KIND_LABELS,
 		SETUP_MAX_FILES_CHOICES,
+		PROTECTED_FILE_KINDS,
+		setupFileFormats,
 		type SetupFileKind
 	} from '$lib/setup/files';
 	import {
 		SETUP_QUESTION_KIND_LABELS,
 		isChoiceKind,
+		isFileKind,
 		pickSources,
 		reuseSources,
 		showIfSources,
@@ -388,22 +391,32 @@
 								</fieldset>
 							{/if}
 
-							{#if item.kind === 'file'}
+							{#if isFileKind(item.kind)}
 								<fieldset class="setup-questions__choices">
 									<legend>Clients can add</legend>
-									{#each SETUP_FILE_KINDS as fileKind (fileKind)}
-										<Checkbox
-											id={`setup-item-${item.rowId}-file-${fileKind}`}
-											label={SETUP_FILE_KIND_LABELS[fileKind].label}
-											description={SETUP_FILE_KIND_LABELS[fileKind].formats}
-											checked={item.file_kinds.includes(fileKind)}
-											invalid={Boolean(errors[`${item.rowId}.file_kinds`])}
-											onchange={(ticked) => setFileKind(item, fileKind, ticked)}
-										/>
-									{/each}
-									{#if errors[`${item.rowId}.file_kinds`]}
-										<p class="setup-questions__error" role="alert">
-											{errors[`${item.rowId}.file_kinds`]}
+									{#if item.kind === 'file'}
+										{#each SETUP_FILE_KINDS as fileKind (fileKind)}
+											<Checkbox
+												id={`setup-item-${item.rowId}-file-${fileKind}`}
+												label={SETUP_FILE_KIND_LABELS[fileKind].label}
+												description={SETUP_FILE_KIND_LABELS[fileKind].formats}
+												checked={item.file_kinds.includes(fileKind)}
+												invalid={Boolean(errors[`${item.rowId}.file_kinds`])}
+												onchange={(ticked) => setFileKind(item, fileKind, ticked)}
+											/>
+										{/each}
+										{#if errors[`${item.rowId}.file_kinds`]}
+											<p class="setup-questions__error" role="alert">
+												{errors[`${item.rowId}.file_kinds`]}
+											</p>
+										{/if}
+									{:else}
+										<p class="setup-questions__hint">
+											Documents or photos ({setupFileFormats(PROTECTED_FILE_KINDS)}), for papers a
+											provider asks for, such as a phone bill. Only the business owner and you can
+											open them; an admin who adds one sees only that it arrived. Every opening is
+											recorded, and the files are deleted 90 days after you mark the provider step
+											finished.
 										</p>
 									{/if}
 									<div class="setup-questions__most">

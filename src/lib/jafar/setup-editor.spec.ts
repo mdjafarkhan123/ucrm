@@ -401,6 +401,7 @@ describe('use an earlier answer (A5g)', () => {
 			items: [
 				item({ fact_key: 'business.public_phone', label: 'Public phone', built_in: true }),
 				item({ fact_key: 'business.logo', label: 'Logo', kind: 'file' }),
+				item({ fact_key: 'business.bill', label: 'Phone bill', kind: 'protected_file' }),
 				item({
 					fact_key: 'business.vat',
 					label: 'VAT number',
@@ -426,5 +427,19 @@ describe('use an earlier answer (A5g)', () => {
 			{ id: 'business.site', label: 'Website address', stageTitle: 'Your business' },
 			{ id: 'website.email', label: 'Email', stageTitle: null }
 		]);
+	});
+});
+
+describe('protected documents (B9b)', () => {
+	it('sends the file limit, but never a choice of kinds', () => {
+		const [question] = draftItems([
+			item({ fact_key: 'calls.bill', label: 'Phone bill', kind: 'protected_file', max_files: 5 })
+		]);
+		question.file_kinds = ['audio'];
+		expect(itemsPayload([question])[0]).toMatchObject({
+			kind: 'protected_file',
+			file_kinds: null,
+			max_files: 5
+		});
 	});
 });
