@@ -4,6 +4,11 @@
 
 import { BUILT_IN_FACTS, type SetupQuestionKind } from '$lib/setup/catalogue';
 import type { SetupFileKind } from '$lib/setup/files';
+import {
+	SETUP_LIST_STARTERS,
+	type SetupListField,
+	type SetupListFieldKind
+} from '$lib/setup/lists';
 
 export type SetupChoice = { value: string; label: string };
 
@@ -26,8 +31,17 @@ export type SetupEditorItem = {
 	file_kinds: SetupFileKind[] | null;
 	/** Photo or file: how many files a client may add. Null for every other type. */
 	max_files: number | null;
+	/** Add-another list: the boxes each row holds, as the database keeps them. Null for every other type. */
+	list_fields: SetupListFieldRow[] | null;
+	/** Add-another list: the most rows a client may add; 1 is a plain form. Null for every other type. */
+	max_rows: number | null;
 	/** "Show only if": every condition must hold. Null asks the question always. */
 	show_if: SetupShowIfCondition[] | null;
+};
+
+/** One box of a list question as the database keeps it. */
+export type SetupListFieldRow = Omit<SetupListField, 'fileKinds'> & {
+	file_kinds?: SetupFileKind[];
 };
 
 /** One stored "show only if" condition (plan §2.1): an earlier answer is one of `values`, or the package includes a service. */
@@ -165,9 +179,55 @@ export type DraftItem = {
 	/** Photo or file. Kept while another type is chosen, so switching back loses nothing. */
 	file_kinds: SetupFileKind[];
 	max_files: number;
+	/** Add-another list. Kept while another type is chosen, so switching back loses nothing. */
+	list_fields: DraftListField[];
+	max_rows: number;
 	/** Empty asks the question always. */
 	show_if: DraftCondition[];
 };
+
+/** One box of a list question as the form holds it. `key` is null until a new box is saved. */
+export type DraftListField = {
+	rowId: string;
+	key: string | null;
+	label: string;
+	kind: SetupListFieldKind;
+	required: boolean;
+	/** Pick one. Kept while another type is chosen. */
+	options: { rowId: string; value: string | null; label: string }[];
+	/** Photo or file. Kept while another type is chosen. */
+	file_kinds: SetupFileKind[];
+};
+
+let draftRowCount = 0;
+/** A row id for something added in the form, unique for the page's life. */
+export const newDraftRowId = (prefix: string) => `${prefix}-new-${++draftRowCount}`;
+
+/** A list box as the form holds it, from what the database keeps or a starter. */
+export function draftListField(
+	field: Partial<SetupListFieldRow> & Pick<SetupListField, 'label' | 'kind' | 'required'>
+): DraftListField {
+	return {
+		rowId: field.key ?? newDraftRowId('box'),
+		key: field.key ?? null,
+		label: field.label,
+		kind: field.kind,
+		required: field.required,
+		options: (field.options ?? []).map((option) => ({ rowId: option.value, ...option })),
+		file_kinds: field.file_kinds ?? [...NEW_FILE_QUESTION.file_kinds]
+	};
+}
+
+/** The boxes a list starts with: a starter's (Person, Address, Service, Link + note), or one empty box. */
+export function starterListFields(starterKey: string | null): DraftListField[] {
+	const starter = SETUP_LIST_STARTERS.find((each) => each.key === starterKey);
+	return (starter?.fields ?? [{ label: '', kind: 'text' as const, required: true }]).map((field) =>
+		draftListField(field)
+	);
+}
+
+/** What a question just given the list type allows until Jafar changes it. */
+export const NEW_LIST_QUESTION = { max_rows: 10 };
 
 /**
  * A "show only if" condition as the form holds it. `source` is the earlier question's key, or the row id of a
@@ -221,6 +281,8 @@ export function draftItems(items: SetupEditorItem[]): DraftItem[] {
 		max_choices: item.max_choices,
 		file_kinds: item.file_kinds ?? [...NEW_FILE_QUESTION.file_kinds],
 		max_files: item.max_files ?? NEW_FILE_QUESTION.max_files,
+		list_fields: item.list_fields ? item.list_fields.map(draftListField) : starterListFields(null),
+		max_rows: item.max_rows ?? NEW_LIST_QUESTION.max_rows,
 		show_if: draftConditions(item.show_if)
 	}));
 }
@@ -254,9 +316,30 @@ export function itemsPayload(items: DraftItem[]) {
 					max_choices: !item.built_in && item.kind === 'multi_choice' ? item.max_choices : null,
 					file_kinds: !item.built_in && item.kind === 'file' ? item.file_kinds : null,
 					max_files: !item.built_in && item.kind === 'file' ? item.max_files : null,
+					list_fields:
+						!item.built_in && item.kind === 'list' ? item.list_fields.map(listFieldPayload) : null,
+					max_rows: !item.built_in && item.kind === 'list' ? item.max_rows : null,
 					show_if: conditionsPayload(item.show_if, items)
 				}
 	);
+}
+
+function listFieldPayload(field: DraftListField) {
+	return {
+		key: field.key,
+		label: field.label.trim(),
+		kind: field.kind,
+		required: field.required,
+		...(field.kind === 'choice'
+			? {
+					options: field.options.map((option) => ({
+						value: option.value,
+						label: option.label.trim()
+					}))
+				}
+			: {}),
+		...(field.kind === 'file' ? { file_kinds: field.file_kinds } : {})
+	};
 }
 
 /**
@@ -354,7 +437,8 @@ export const SETUP_QUESTION_KIND_LABELS: Record<SetupQuestionKind, string> = {
 	distance: 'Distance',
 	duration: 'Length of time',
 	colours: 'Colours',
-	file: 'Photo or file'
+	file: 'Photo or file',
+	list: 'Add-another list'
 };
 
 export const fetchSetupEditor = () => send('/api/jafar/setup', 'GET');

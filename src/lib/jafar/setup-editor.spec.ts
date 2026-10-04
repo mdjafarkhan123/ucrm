@@ -27,6 +27,8 @@ const item = (fields: Partial<SetupEditorItem>): SetupEditorItem => ({
 	max_choices: null,
 	file_kinds: null,
 	max_files: null,
+	list_fields: null,
+	max_rows: null,
 	show_if: null,
 	...fields
 });
@@ -162,6 +164,8 @@ describe('setup question editor', () => {
 				max_choices: null,
 				file_kinds: null,
 				max_files: null,
+				list_fields: null,
+				max_rows: null,
 				show_if: null
 			},
 			{
@@ -181,6 +185,8 @@ describe('setup question editor', () => {
 				max_choices: null,
 				file_kinds: null,
 				max_files: null,
+				list_fields: null,
+				max_rows: null,
 				show_if: null
 			}
 		]);

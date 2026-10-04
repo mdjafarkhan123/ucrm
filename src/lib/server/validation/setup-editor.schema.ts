@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { BUILT_IN_FACTS, SETUP_QUESTION_KINDS } from '$lib/setup/catalogue';
 import { SETUP_FILE_KINDS, SETUP_MAX_FILES_CHOICES } from '$lib/setup/files';
+import {
+	SETUP_LIST_FIELD_KINDS,
+	SETUP_LIST_MAX_FIELDS,
+	SETUP_MAX_ROWS_CHOICES
+} from '$lib/setup/lists';
 
 // Client onboarding A4: Jafar's setup stage editor (plan §2.1, ADR 0006). The limits mirror the database
 // checks on setup_stages, so a bad value is explained here rather than refused there.
@@ -117,6 +122,34 @@ function builtInRuleProblem(factKey: string, values: string[]): string | null {
 	return values.every((value) => allowed.has(value)) ? null : 'Choose answers from the list.';
 }
 
+const choiceSchema = z.object({
+	// Null for a choice added in this draft.
+	value: z.string().regex(OPTION_VALUE).nullable(),
+	label: z
+		.string()
+		.trim()
+		.min(1, 'Write the choice, or remove it.')
+		.max(100, 'Keep each choice under 100 characters.')
+});
+
+// Client onboarding A5e: one box of an add-another list. The shape mirrors private.setup_list_fields_ok.
+const listFieldSchema = z.object({
+	// Null for a box added in this draft; its key is made from its name below.
+	key: z
+		.string()
+		.regex(/^[a-z][a-z0-9_]{0,39}$/)
+		.nullable(),
+	label: z
+		.string()
+		.trim()
+		.min(1, 'Name each box, or remove it.')
+		.max(80, 'Keep each box name under 80 characters.'),
+	kind: z.enum(SETUP_LIST_FIELD_KINDS),
+	required: z.boolean(),
+	options: z.array(choiceSchema).max(50, 'A box can offer up to 50 choices.').optional(),
+	file_kinds: z.array(z.enum(SETUP_FILE_KINDS)).max(3).optional()
+});
+
 const questionSchema = z
 	.object({
 		type: z.literal('question'),
@@ -132,26 +165,19 @@ const questionSchema = z
 		can_defer: z.boolean(),
 		// Null for a built-in question, whose answer type lives in code.
 		kind: z.enum(SETUP_QUESTION_KINDS).nullable(),
-		options: z
-			.array(
-				z.object({
-					// Null for a choice added in this draft.
-					value: z.string().regex(OPTION_VALUE).nullable(),
-					label: z
-						.string()
-						.trim()
-						.min(1, 'Write the choice, or remove it.')
-						.max(100, 'Keep each choice under 100 characters.')
-				})
-			)
-			.max(50, 'A question can offer up to 50 choices.')
-			.nullable(),
+		options: z.array(choiceSchema).max(50, 'A question can offer up to 50 choices.').nullable(),
 		// Client onboarding A5d: pick one and tick several may add "Other"; tick several may cap its ticks.
 		allow_other: z.boolean().optional().default(false),
 		max_choices: z.number().int().min(1, 'Allow at least one tick.').nullish(),
 		// Client onboarding A5c: a photo or file question's accepted kinds and file limit.
 		file_kinds: z.array(z.enum(SETUP_FILE_KINDS)).max(3).nullish(),
 		max_files: z.number().int().nullish(),
+		// Client onboarding A5e: an add-another list's boxes and row limit.
+		list_fields: z
+			.array(listFieldSchema)
+			.max(SETUP_LIST_MAX_FIELDS, `A list can have up to ${SETUP_LIST_MAX_FIELDS} boxes.`)
+			.nullish(),
+		max_rows: z.number().int().nullish(),
 		// Null, or left out, asks the question always.
 		show_if: z
 			.array(conditionSchema)
@@ -185,6 +211,7 @@ const questionSchema = z
 					message: 'Choose how many files a client can add.'
 				});
 		}
+		if (question.kind === 'list') listProblems(question, context);
 		if (!isChoiceKind(question.kind)) return;
 		const labels = (question.options ?? []).map((option) => option.label.toLowerCase());
 		if (question.allow_other && labels.includes('other'))
@@ -222,8 +249,78 @@ const questionSchema = z
 			question.kind === 'file'
 				? SETUP_FILE_KINDS.filter((kind) => question.file_kinds?.includes(kind))
 				: null,
-		max_files: question.kind === 'file' ? (question.max_files ?? null) : null
+		max_files: question.kind === 'file' ? (question.max_files ?? null) : null,
+		list_fields: question.kind === 'list' ? listFieldsPayload(question.list_fields ?? []) : null,
+		max_rows: question.kind === 'list' ? (question.max_rows ?? null) : null
 	}));
+
+type ListFieldInput = z.infer<typeof listFieldSchema>;
+
+function listProblems(
+	question: { list_fields?: ListFieldInput[] | null; max_rows?: number | null },
+	context: z.RefinementCtx
+) {
+	const fields = question.list_fields ?? [];
+	if (fields.length === 0)
+		context.addIssue({ code: 'custom', path: ['list_fields'], message: 'Add at least one box.' });
+	if (!(SETUP_MAX_ROWS_CHOICES as readonly number[]).includes(question.max_rows ?? Number.NaN))
+		context.addIssue({
+			code: 'custom',
+			path: ['max_rows'],
+			message: 'Choose how many entries a client can add.'
+		});
+	const names = fields.map((field) => field.label.toLowerCase());
+	if (new Set(names).size !== names.length)
+		context.addIssue({
+			code: 'custom',
+			path: ['list_fields'],
+			message: 'Two boxes have the same name.'
+		});
+	fields.forEach((field, index) => {
+		const issue = (message: string) =>
+			context.addIssue({ code: 'custom', path: ['list_fields', index], message });
+		if (field.kind === 'choice') {
+			const labels = (field.options ?? []).map((option) => option.label.toLowerCase());
+			if (labels.length < 2) issue(`Give "${field.label}" at least two choices.`);
+			else if (new Set(labels).size !== labels.length)
+				issue(`Two choices in "${field.label}" have the same words.`);
+		}
+		if (field.kind === 'file' && !field.file_kinds?.length)
+			issue(`Tick at least one kind of file for "${field.label}".`);
+	});
+}
+
+/**
+ * Each box's stored key and only the settings its type uses. A box keeps the key it was saved with, so the
+ * rows clients already gave still fill it after it is renamed; a new one takes its key from its name.
+ */
+function listFieldsPayload(fields: ListFieldInput[]) {
+	const used = new Set(fields.flatMap((field) => (field.key ? [field.key] : [])));
+	return fields.map((field) => {
+		let key = field.key;
+		if (!key) {
+			const words = field.label
+				.toLowerCase()
+				.replace(/[^a-z0-9]+/g, '_')
+				.replace(/^_+|_+$/g, '')
+				.slice(0, 34);
+			const base = /^[a-z]/.test(words) ? words : `box_${words}`.replace(/_+$/, '');
+			key = base;
+			for (let suffix = 2; used.has(key); suffix += 1) key = `${base}_${suffix}`;
+			used.add(key);
+		}
+		return {
+			key,
+			label: field.label,
+			kind: field.kind,
+			required: field.required,
+			...(field.kind === 'choice' ? { options: choiceValues(field.options ?? []) } : {}),
+			...(field.kind === 'file'
+				? { file_kinds: SETUP_FILE_KINDS.filter((kind) => field.file_kinds?.includes(kind)) }
+				: {})
+		};
+	});
+}
 
 function isChoiceKind(kind: string | null) {
 	return kind === 'choice' || kind === 'multi_choice';

@@ -6,6 +6,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
+	import SetupListBoxes from '$lib/components/jafar/setup/SetupListBoxes.svelte';
 	import SetupShowIf from '$lib/components/jafar/setup/SetupShowIf.svelte';
 	import { SETUP_QUESTION_KINDS } from '$lib/setup/catalogue';
 	import {
@@ -75,6 +76,12 @@
 
 	function kindLocked(item: DraftItem) {
 		return item.built_in || (item.fact_key !== null && answered.has(item.fact_key));
+	}
+
+	/** A list clients have answered keeps every box it was saved with. */
+	function lockedBoxes(item: DraftItem): ReadonlySet<string> {
+		if (item.fact_key === null || !answered.has(item.fact_key)) return new Set();
+		return new Set(item.list_fields.flatMap((field) => (field.key ? [field.key] : [])));
 	}
 
 	function kindName(item: DraftItem) {
@@ -392,6 +399,18 @@
 										{/if}
 									</div>
 								</fieldset>
+							{/if}
+
+							{#if item.kind === 'list'}
+								<SetupListBoxes
+									idPrefix={`setup-item-${item.rowId}`}
+									bind:fields={item.list_fields}
+									bind:maxRows={item.max_rows}
+									isNew={item.fact_key === null}
+									lockedKeys={lockedBoxes(item)}
+									fieldsError={errors[`${item.rowId}.list_fields`] ?? ''}
+									maxRowsError={errors[`${item.rowId}.max_rows`] ?? ''}
+								/>
 							{/if}
 						{/if}
 

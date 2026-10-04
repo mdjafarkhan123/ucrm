@@ -218,4 +218,93 @@ describe('saveSetupStageItemsSchema', () => {
 			expect(parsed.items[0]).toMatchObject({ file_kinds: null, max_files: null });
 		});
 	});
+
+	describe('add-another lists (A5e)', () => {
+		const list = {
+			...question,
+			label: 'Your services',
+			kind: 'list',
+			options: null,
+			max_rows: 10,
+			list_fields: [
+				{ key: 'name', label: 'Service name', kind: 'text', required: true },
+				{ key: null, label: 'Seasonal?', kind: 'yes_no', required: false, options: [] },
+				{
+					key: null,
+					label: 'Status',
+					kind: 'choice',
+					required: false,
+					options: [
+						{ value: null, label: 'Active' },
+						{ value: null, label: 'Paused' }
+					],
+					file_kinds: ['photo']
+				},
+				{ key: null, label: '2nd photo', kind: 'file', required: false, file_kinds: ['photo'] }
+			]
+		};
+
+		it('keeps saved box keys, makes new ones from names, and keeps only the settings each type uses', () => {
+			const parsed = saveSetupStageItemsSchema.parse({ ...draft, items: [list] });
+			expect(parsed.items[0]).toMatchObject({
+				kind: 'list',
+				options: null,
+				max_rows: 10,
+				list_fields: [
+					{ key: 'name', label: 'Service name', kind: 'text', required: true },
+					{ key: 'seasonal', label: 'Seasonal?', kind: 'yes_no', required: false },
+					{
+						key: 'status',
+						kind: 'choice',
+						options: [
+							{ value: 'active', label: 'Active' },
+							{ value: 'paused', label: 'Paused' }
+						]
+					},
+					{ key: 'box_2nd_photo', kind: 'file', file_kinds: ['photo'] }
+				]
+			});
+			const fields = (parsed.items[0] as { list_fields: Record<string, unknown>[] }).list_fields;
+			expect(fields[1]).not.toHaveProperty('options');
+			expect(fields[2]).not.toHaveProperty('file_kinds');
+		});
+
+		it('needs a box, a row limit from the list, different box names and two choices', () => {
+			const problems = (changes: object) =>
+				saveSetupStageItemsSchema
+					.safeParse({ ...draft, items: [{ ...list, ...changes }] })
+					.error?.issues.map((issue) => issue.message);
+			expect(problems({ list_fields: [] })).toContain('Add at least one box.');
+			expect(problems({ max_rows: 7 })).toContain('Choose how many entries a client can add.');
+			expect(
+				problems({
+					list_fields: [
+						{ key: null, label: 'Name', kind: 'text', required: true },
+						{ key: null, label: 'name', kind: 'text', required: false }
+					]
+				})
+			).toContain('Two boxes have the same name.');
+			expect(
+				problems({
+					list_fields: [
+						{
+							key: null,
+							label: 'Status',
+							kind: 'choice',
+							required: false,
+							options: [{ value: null, label: 'Only' }]
+						}
+					]
+				})
+			).toContain('Give "Status" at least two choices.');
+		});
+
+		it('drops the boxes from a question that is not a list', () => {
+			const parsed = saveSetupStageItemsSchema.parse({
+				...draft,
+				items: [{ ...list, kind: 'text' }]
+			});
+			expect(parsed.items[0]).toMatchObject({ kind: 'text', list_fields: null, max_rows: null });
+		});
+	});
 });
