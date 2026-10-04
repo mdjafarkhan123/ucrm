@@ -23091,6 +23091,10 @@ export type Database = {
 				Returns: Json;
 			};
 			owner_setup_editor: { Args: never; Returns: Json };
+			owner_setup_review_recipients: {
+				Args: { target_organization_id: string };
+				Returns: Json;
+			};
 			owner_setup_version_catalogue: {
 				Args: { target_version_id: string };
 				Returns: Json;
