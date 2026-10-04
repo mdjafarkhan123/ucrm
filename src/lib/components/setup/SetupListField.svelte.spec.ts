@@ -29,8 +29,7 @@ const saved = () =>
 	}[];
 
 describe('SetupListField', () => {
-	// Skipped while the new entry's focus is fixed — see the A5e part note's Next.
-	it.skip('adds, edits and removes entries; an empty entry stays out of the answer', async () => {
+	it('adds, edits and removes entries; an empty entry stays out of the answer', async () => {
 		renderList({ maxRows: 5 });
 		const names = page.getByLabelText('Service name');
 
@@ -41,7 +40,7 @@ describe('SetupListField', () => {
 		expect(saved().map((row) => row.values.name)).toEqual(['Roof repair']);
 
 		await names.nth(1).fill('Gutters');
-		await page.getByRole('radio', { name: 'Yes' }).nth(1).click();
+		await page.getByText('Yes', { exact: true }).nth(1).click();
 		expect(saved().map((row) => row.values)).toEqual([
 			{ name: 'Roof repair' },
 			{ name: 'Gutters', seasonal: 'yes' }
