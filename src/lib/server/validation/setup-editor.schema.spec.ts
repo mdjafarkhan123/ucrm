@@ -308,3 +308,67 @@ describe('saveSetupStageItemsSchema', () => {
 		});
 	});
 });
+
+describe('pick from an earlier list (A5f)', () => {
+	const pick = {
+		type: 'question',
+		fact_key: null,
+		label: 'Which services should we promote first?',
+		hint: null,
+		required: true,
+		can_defer: false,
+		kind: 'pick',
+		options: null,
+		pick_from: { fact_key: 'services.offered' },
+		min_choices: 3,
+		max_choices: 5,
+		ordered: true
+	};
+
+	it('keeps the list, the fewest and most picks, and the order switch', () => {
+		const parsed = saveSetupStageItemsSchema.parse({ ...draft, items: [pick] });
+		expect(parsed.items[0]).toMatchObject({
+			kind: 'pick',
+			pick_from: { fact_key: 'services.offered' },
+			min_choices: 3,
+			max_choices: 5,
+			ordered: true
+		});
+	});
+
+	it('needs a list to pick from', () => {
+		const result = saveSetupStageItemsSchema.safeParse({
+			...draft,
+			items: [{ ...pick, pick_from: null }]
+		});
+		expect(result.success).toBe(false);
+		expect(result.error?.issues[0]).toMatchObject({
+			path: ['items', 0, 'pick_from'],
+			message: 'Choose the list clients pick from.'
+		});
+	});
+
+	it('refuses a fewest above the most', () => {
+		const result = saveSetupStageItemsSchema.safeParse({
+			...draft,
+			items: [{ ...pick, min_choices: 6 }]
+		});
+		expect(result.error?.issues[0]).toMatchObject({
+			path: ['items', 0, 'min_choices'],
+			message: 'The fewest can’t be more than the most.'
+		});
+	});
+
+	it('drops pick settings from a question of another type', () => {
+		const parsed = saveSetupStageItemsSchema.parse({
+			...draft,
+			items: [{ ...pick, kind: 'text' }]
+		});
+		expect(parsed.items[0]).toMatchObject({
+			pick_from: null,
+			min_choices: null,
+			max_choices: null,
+			ordered: false
+		});
+	});
+});

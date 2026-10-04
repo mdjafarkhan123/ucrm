@@ -18,6 +18,7 @@
 	import {
 		SETUP_QUESTION_KIND_LABELS,
 		isChoiceKind,
+		pickSources,
 		showIfSources,
 		type DraftItem,
 		type SetupEditor,
@@ -83,6 +84,16 @@
 		if (item.fact_key === null || !answered.has(item.fact_key)) return new Set();
 		return new Set(item.list_fields.flatMap((field) => (field.key ? [field.key] : [])));
 	}
+
+	/** A pick clients have answered keeps its list: their answers name that list's entries. */
+	function pickLocked(item: DraftItem) {
+		return item.fact_key !== null && answered.has(item.fact_key);
+	}
+
+	const pickNumber = (item: DraftItem, field: 'min_choices' | 'max_choices') => ({
+		get: () => item[field],
+		set: (value: unknown) => (item[field] = typeof value === 'number' ? value : null)
+	});
 
 	function kindName(item: DraftItem) {
 		return item.kind ? SETUP_QUESTION_KIND_LABELS[item.kind] : 'No answer type';
@@ -412,6 +423,86 @@
 									maxRowsError={errors[`${item.rowId}.max_rows`] ?? ''}
 								/>
 							{/if}
+
+							{#if item.kind === 'pick'}
+								{@const sources = pickSources(earlierStages, items, index)}
+								{@const fewest = pickNumber(item, 'min_choices')}
+								{@const most = pickNumber(item, 'max_choices')}
+								<fieldset class="setup-questions__choices">
+									<legend>Clients pick from</legend>
+									{#if sources.length === 0 && !item.pick_from}
+										<p class="setup-questions__hint">
+											There's no add-another list above this question yet. Add one first — for
+											example “Add every service you offer” — then choose it here.
+										</p>
+									{:else}
+										<div class="setup-questions__most">
+											<Select
+												id={`setup-item-${item.rowId}-pick-from`}
+												label="Their answers to"
+												placeholder="Choose a list"
+												options={sources.map((source) => ({
+													value: source.id,
+													label: source.stageTitle
+														? `${source.label} (${source.stageTitle})`
+														: source.label
+												}))}
+												value={item.pick_from ?? ''}
+												disabled={pickLocked(item)}
+												onchange={(value: string) => (item.pick_from = value || null)}
+											/>
+											{#if errors[`${item.rowId}.pick_from`]}
+												<p class="setup-questions__error" role="alert">
+													{errors[`${item.rowId}.pick_from`]}
+												</p>
+											{:else if pickLocked(item)}
+												<p class="setup-questions__hint">
+													Clients have answered this, so it keeps its list.
+												</p>
+											{:else}
+												<p class="setup-questions__hint">
+													Each client sees the entries they added there, named by the list's first
+													box.
+												</p>
+											{/if}
+										</div>
+									{/if}
+									<div class="setup-questions__range">
+										<Input
+											id={`setup-item-${item.rowId}-fewest`}
+											label="Fewest (optional)"
+											type="number"
+											inputmode="numeric"
+											min={1}
+											max={50}
+											bind:value={fewest.get, fewest.set}
+											invalid={Boolean(errors[`${item.rowId}.min_choices`])}
+											errorMessage={errors[`${item.rowId}.min_choices`] ?? ''}
+										/>
+										<Input
+											id={`setup-item-${item.rowId}-most`}
+											label="Most (optional)"
+											type="number"
+											inputmode="numeric"
+											min={1}
+											max={50}
+											bind:value={most.get, most.set}
+											invalid={Boolean(errors[`${item.rowId}.max_choices`])}
+											errorMessage={errors[`${item.rowId}.max_choices`] ?? ''}
+										/>
+									</div>
+									<p class="setup-questions__hint">
+										For “Choose 3 to 5”, enter 3 and 5. A client with fewer entries than the fewest
+										picks all of them.
+									</p>
+									<Toggle
+										id={`setup-item-${item.rowId}-ordered`}
+										label="Clients put them in order"
+										description="Their picks show numbered, with buttons to move each one up or down."
+										bind:checked={item.ordered}
+									/>
+								</fieldset>
+							{/if}
 						{/if}
 
 						<SetupShowIf
@@ -628,6 +719,13 @@
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-smaller);
+			max-width: 32rem;
+		}
+
+		&__range {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: var(--space-small);
 			max-width: 32rem;
 		}
 

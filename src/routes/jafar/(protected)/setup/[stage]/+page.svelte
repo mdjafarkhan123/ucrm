@@ -21,6 +21,7 @@
 		draftItems,
 		NEW_FILE_QUESTION,
 		NEW_LIST_QUESTION,
+		NEW_PICK_QUESTION,
 		starterListFields,
 		fetchSetupEditor,
 		isStaleSetupDraft,
@@ -109,7 +110,7 @@
 		const byRow: Record<string, string> = {};
 		for (const [path, message] of Object.entries(errors)) {
 			const match =
-				/^items\.(\d+)\.(label|hint|kind|options|max_choices|file_kinds|max_files|list_fields|max_rows|show_if)/.exec(
+				/^items\.(\d+)\.(label|hint|kind|options|max_choices|file_kinds|max_files|list_fields|max_rows|pick_from|min_choices|show_if)/.exec(
 					path
 				);
 			const row = match ? items[Number(match[1])] : undefined;
@@ -138,6 +139,9 @@
 			max_files: NEW_FILE_QUESTION.max_files,
 			list_fields: starterListFields(null),
 			max_rows: NEW_LIST_QUESTION.max_rows,
+			pick_from: null,
+			min_choices: null,
+			ordered: NEW_PICK_QUESTION.ordered,
 			show_if: []
 		});
 		void questionList?.openNew(rowId);

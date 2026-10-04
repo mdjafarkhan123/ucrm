@@ -178,6 +178,17 @@ const questionSchema = z
 			.max(SETUP_LIST_MAX_FIELDS, `A list can have up to ${SETUP_LIST_MAX_FIELDS} boxes.`)
 			.nullish(),
 		max_rows: z.number().int().nullish(),
+		// Client onboarding A5f: a pick's earlier list — by key, or by `item`, the 1-based position of a list
+		// above it in this save that has no key yet — the fewest and most picks, and whether they are ordered.
+		pick_from: z
+			.object({
+				fact_key: z.string().regex(FACT_KEY).max(80).optional(),
+				item: z.number().int().positive().optional()
+			})
+			.strict()
+			.nullish(),
+		min_choices: z.number().int().nullish(),
+		ordered: z.boolean().optional().default(false),
 		// Null, or left out, asks the question always.
 		show_if: z
 			.array(conditionSchema)
@@ -212,6 +223,7 @@ const questionSchema = z
 				});
 		}
 		if (question.kind === 'list') listProblems(question, context);
+		if (question.kind === 'pick') pickProblems(question, context);
 		if (!isChoiceKind(question.kind)) return;
 		const labels = (question.options ?? []).map((option) => option.label.toLowerCase());
 		if (question.allow_other && labels.includes('other'))
@@ -244,15 +256,62 @@ const questionSchema = z
 		...question,
 		options: isChoiceKind(question.kind) ? choiceValues(question.options ?? []) : null,
 		allow_other: isChoiceKind(question.kind) && question.allow_other,
-		max_choices: question.kind === 'multi_choice' ? (question.max_choices ?? null) : null,
+		max_choices:
+			question.kind === 'multi_choice' || question.kind === 'pick'
+				? (question.max_choices ?? null)
+				: null,
 		file_kinds:
 			question.kind === 'file'
 				? SETUP_FILE_KINDS.filter((kind) => question.file_kinds?.includes(kind))
 				: null,
 		max_files: question.kind === 'file' ? (question.max_files ?? null) : null,
 		list_fields: question.kind === 'list' ? listFieldsPayload(question.list_fields ?? []) : null,
-		max_rows: question.kind === 'list' ? (question.max_rows ?? null) : null
+		max_rows: question.kind === 'list' ? (question.max_rows ?? null) : null,
+		pick_from: question.kind === 'pick' ? (question.pick_from ?? null) : null,
+		min_choices: question.kind === 'pick' ? (question.min_choices ?? null) : null,
+		ordered: question.kind === 'pick' && question.ordered
 	}));
+
+/** The most a pick can ask for: as many rows as the longest list allows. */
+export const SETUP_PICK_MAX = 50;
+
+function pickProblems(
+	question: {
+		pick_from?: { fact_key?: string; item?: number } | null;
+		min_choices?: number | null;
+		max_choices?: number | null;
+	},
+	context: z.RefinementCtx
+) {
+	const from = question.pick_from;
+	if (!from || (from.fact_key === undefined) === (from.item === undefined))
+		context.addIssue({
+			code: 'custom',
+			path: ['pick_from'],
+			message: 'Choose the list clients pick from.'
+		});
+	const least = question.min_choices;
+	const most = question.max_choices;
+	const inRange = (n: number | null | undefined) => n == null || (n >= 1 && n <= SETUP_PICK_MAX);
+	if (!inRange(least))
+		context.addIssue({
+			code: 'custom',
+			path: ['min_choices'],
+			message: `Ask for between 1 and ${SETUP_PICK_MAX}.`
+		});
+	if (!inRange(most))
+		context.addIssue({
+			code: 'custom',
+			path: ['max_choices'],
+			message: `Allow between 1 and ${SETUP_PICK_MAX}.`
+		});
+	else if (least != null && most != null && least > most)
+		context.addIssue({
+			code: 'custom',
+			path: ['min_choices'],
+			message: 'The fewest can’t be more than the most.'
+		});
+}
 
 type ListFieldInput = z.infer<typeof listFieldSchema>;
 

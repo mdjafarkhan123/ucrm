@@ -35,6 +35,12 @@ export type SetupEditorItem = {
 	list_fields: SetupListFieldRow[] | null;
 	/** Add-another list: the most rows a client may add; 1 is a plain form. Null for every other type. */
 	max_rows: number | null;
+	/** Pick from an earlier list: that list question's key. Null for every other type. */
+	pick_from: string | null;
+	/** Pick from an earlier list: the fewest picks; null asks for one. */
+	min_choices: number | null;
+	/** Pick from an earlier list: the client puts the picks in order. */
+	ordered: boolean;
 	/** "Show only if": every condition must hold. Null asks the question always. */
 	show_if: SetupShowIfCondition[] | null;
 };
@@ -182,6 +188,13 @@ export type DraftItem = {
 	/** Add-another list. Kept while another type is chosen, so switching back loses nothing. */
 	list_fields: DraftListField[];
 	max_rows: number;
+	/**
+	 * Pick from an earlier list: the list question's key, or the row id of a list above it in this stage that
+	 * has no key yet; null until one is chosen. `max_choices` is the most picks.
+	 */
+	pick_from: string | null;
+	min_choices: number | null;
+	ordered: boolean;
 	/** Empty asks the question always. */
 	show_if: DraftCondition[];
 };
@@ -283,8 +296,22 @@ export function draftItems(items: SetupEditorItem[]): DraftItem[] {
 		max_files: item.max_files ?? NEW_FILE_QUESTION.max_files,
 		list_fields: item.list_fields ? item.list_fields.map(draftListField) : starterListFields(null),
 		max_rows: item.max_rows ?? NEW_LIST_QUESTION.max_rows,
+		pick_from: item.pick_from ?? null,
+		min_choices: item.min_choices ?? null,
+		ordered: item.kind === 'pick' ? item.ordered : NEW_PICK_QUESTION.ordered,
 		show_if: draftConditions(item.show_if)
 	}));
+}
+
+/** A question just given the pick type asks clients to order their picks until Jafar changes it. */
+export const NEW_PICK_QUESTION = { ordered: true };
+
+/** What the save sends for the list a pick chooses from: as for a rule, a list above with no key yet goes by position. */
+function pickFromPayload(item: DraftItem, items: DraftItem[]) {
+	if (!item.pick_from) return null;
+	const index = items.findIndex((each) => each.rowId === item.pick_from);
+	if (index !== -1 && items[index].fact_key === null) return { item: index + 1 };
+	return { fact_key: item.pick_from };
 }
 
 /** What a question just given the photo or file type accepts until Jafar changes it. */
@@ -313,12 +340,18 @@ export function itemsPayload(items: DraftItem[]) {
 							? item.options.map((option) => ({ value: option.value, label: option.label.trim() }))
 							: null,
 					allow_other: !item.built_in && isChoiceKind(item.kind) && item.allow_other,
-					max_choices: !item.built_in && item.kind === 'multi_choice' ? item.max_choices : null,
+					max_choices:
+						!item.built_in && (item.kind === 'multi_choice' || item.kind === 'pick')
+							? item.max_choices
+							: null,
 					file_kinds: !item.built_in && item.kind === 'file' ? item.file_kinds : null,
 					max_files: !item.built_in && item.kind === 'file' ? item.max_files : null,
 					list_fields:
 						!item.built_in && item.kind === 'list' ? item.list_fields.map(listFieldPayload) : null,
 					max_rows: !item.built_in && item.kind === 'list' ? item.max_rows : null,
+					pick_from: !item.built_in && item.kind === 'pick' ? pickFromPayload(item, items) : null,
+					min_choices: !item.built_in && item.kind === 'pick' ? item.min_choices : null,
+					ordered: !item.built_in && item.kind === 'pick' && item.ordered,
 					show_if: conditionsPayload(item.show_if, items)
 				}
 	);
@@ -413,6 +446,35 @@ export function showIfSources(
 		const source = showIfSource(item, item.rowId, null);
 		return source ? [source] : [];
 	});
+	return [...earlier, ...above];
+}
+
+/** An earlier add-another list a pick can choose from. */
+export type PickSource = { id: string; label: string; stageTitle: string | null };
+
+/**
+ * The lists the question at `index` of this stage can pick from: list questions in earlier stages, as last
+ * saved, then those above it here, as they stand in the form.
+ */
+export function pickSources(
+	earlierStages: SetupEditorStage[],
+	items: DraftItem[],
+	index: number
+): PickSource[] {
+	const earlier = earlierStages.flatMap((stage) =>
+		stage.items.flatMap((item) =>
+			item.type === 'question' && item.kind === 'list' && item.fact_key
+				? [{ id: item.fact_key, label: item.label, stageTitle: stage.title }]
+				: []
+		)
+	);
+	const above = items
+		.slice(0, index)
+		.flatMap((item) =>
+			item.type === 'question' && !item.built_in && item.kind === 'list'
+				? [{ id: item.rowId, label: item.label.trim() || 'New list', stageTitle: null }]
+				: []
+		);
 	return [...earlier, ...above];
 }
 

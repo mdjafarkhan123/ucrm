@@ -12,7 +12,9 @@ import {
 import { onboardingCatalogue } from './onboarding-list';
 import { keptSetupPickIds, parseSetupPick, setupPickInstruction, setupPickRowName } from './picks';
 
-const item = (fields: Record<string, unknown>) => ({
+type ItemRow = SetupCatalogueRow['stages'][number]['items'][number];
+
+const item = (fields: Record<string, unknown>): ItemRow => ({
 	type: 'question' as const,
 	hint: null,
 	built_in: false,
@@ -20,7 +22,7 @@ const item = (fields: Record<string, unknown>) => ({
 	can_defer: false,
 	options: null,
 	max_length: null,
-	...fields
+	...(fields as Pick<ItemRow, 'fact_key' | 'label' | 'kind'>)
 });
 
 // "Add every other service you offer", then "Which 3–5 services should Uplift promote first?" in a later

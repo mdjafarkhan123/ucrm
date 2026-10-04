@@ -6,6 +6,7 @@ import {
 	sameItems,
 	publishChanges,
 	sameStages,
+	pickSources,
 	showIfSources,
 	stageAudience,
 	stagesPayload,
@@ -29,6 +30,9 @@ const item = (fields: Partial<SetupEditorItem>): SetupEditorItem => ({
 	max_files: null,
 	list_fields: null,
 	max_rows: null,
+	pick_from: null,
+	min_choices: null,
+	ordered: false,
 	show_if: null,
 	...fields
 });
@@ -166,6 +170,9 @@ describe('setup question editor', () => {
 				max_files: null,
 				list_fields: null,
 				max_rows: null,
+				pick_from: null,
+				min_choices: null,
+				ordered: false,
 				show_if: null
 			},
 			{
@@ -187,6 +194,9 @@ describe('setup question editor', () => {
 				max_files: null,
 				list_fields: null,
 				max_rows: null,
+				pick_from: null,
+				min_choices: null,
+				ordered: false,
 				show_if: null
 			}
 		]);
@@ -300,5 +310,68 @@ describe('more answer types (A5d)', () => {
 			{ value: 'no', label: 'No' },
 			{ value: 'not_sure', label: 'Not sure' }
 		]);
+	});
+});
+
+describe('pick from an earlier list (A5f)', () => {
+	const list = item({
+		fact_key: 'services.offered',
+		label: 'Add every service you offer',
+		kind: 'list',
+		list_fields: [{ key: 'name', label: 'Service name', kind: 'text', required: true }],
+		max_rows: 20
+	});
+
+	it('names a list above it by position until that list has a key', () => {
+		const items = draftItems([item({ label: 'Services', kind: 'list', max_rows: 10 })]);
+		const [pick] = draftItems([item({ label: 'Top', kind: 'pick', ordered: true })]);
+		pick.pick_from = items[0].rowId;
+		pick.min_choices = 2;
+		expect(itemsPayload([...items, pick])[1]).toMatchObject({
+			kind: 'pick',
+			pick_from: { item: 1 },
+			min_choices: 2,
+			ordered: true
+		});
+		expect(
+			itemsPayload(
+				draftItems([
+					list,
+					item({ fact_key: 'services.top', kind: 'pick', pick_from: 'services.offered' })
+				])
+			)[1]
+		).toMatchObject({
+			pick_from: { fact_key: 'services.offered' }
+		});
+	});
+
+	it('offers only list questions: earlier stages as saved, then those above it here', () => {
+		const earlier: SetupEditorStage = {
+			key: 'services',
+			title: 'Services',
+			description: '',
+			service_key: null,
+			items: [list, item({ fact_key: 'services.note', label: 'Note', kind: 'text' })]
+		};
+		const items = draftItems([
+			item({ fact_key: 'website.areas', label: 'Areas', kind: 'list', max_rows: 10 }),
+			item({ fact_key: 'website.top', label: 'Top', kind: 'pick' }),
+			item({ fact_key: 'website.later', label: 'Later', kind: 'list', max_rows: 10 })
+		]);
+		expect(pickSources([earlier], items, 1)).toEqual([
+			{ id: 'services.offered', label: 'Add every service you offer', stageTitle: 'Services' },
+			{ id: 'website.areas', label: 'Areas', stageTitle: null }
+		]);
+	});
+
+	it('sends no pick settings for another type', () => {
+		const [question] = draftItems([item({ label: 'Name', kind: 'text' })]);
+		question.pick_from = 'services.offered';
+		question.min_choices = 2;
+		expect(itemsPayload([question])[0]).toMatchObject({
+			pick_from: null,
+			min_choices: null,
+			ordered: false
+		});
 	});
 });
