@@ -2,7 +2,7 @@
 
 Each part loads one stage of the approved blueprint (B3a) into the setup draft as starter questions Jafar can
 edit and publish, building only the special controls it needs; it never invents questions. Answer types the
-editor lacked came first (A5b–A5f, Jafar 2026-10-03, "the safe way"). Live look comes with A5's publish. Every loaded stage gets its live look with A5's hands-on publish; each "For Jafar to confirm" below waits for his answer.
+editor lacked came first (A5b–A5f, Jafar 2026-10-03, "the safe way"). Every loaded stage gets its live look with A5's hands-on publish; each "For Jafar to confirm" below waits for his answer.
 
 | Part | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- |
