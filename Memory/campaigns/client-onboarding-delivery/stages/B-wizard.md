@@ -1,7 +1,7 @@
 # Client onboarding and delivery — stage B: Setup wizard
 
-Each part loads one blueprint stage (B3a) into the setup draft for Jafar to edit and publish; it never invents
-questions. Each stage gets its live look with A5's publish; each "For Jafar to confirm" waits for his answer.
+Each part loads one blueprint stage into the draft for Jafar to publish (A5); never invent questions.
+"For Jafar to confirm" waits for him.
 
 | Part | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- |
