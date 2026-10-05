@@ -11557,6 +11557,98 @@ export type Database = {
 					}
 				];
 			};
+			organization_setup_launch_approvals: {
+				Row: {
+					approval_method: string | null;
+					approval_wording: string | null;
+					approved_at: string | null;
+					approved_by_email: string | null;
+					approved_by_name: string | null;
+					approved_by_user: string | null;
+					approver_email: string;
+					approver_name: string;
+					closed_at: string | null;
+					closed_reason: string | null;
+					id: string;
+					link_expires_at: string;
+					link_sent_at: string;
+					not_yet_at: string | null;
+					not_yet_by_name: string | null;
+					not_yet_note: string | null;
+					organization_id: string;
+					recorded_by_email: string | null;
+					recorded_reason: string | null;
+					replaced_at: string | null;
+					requested_at: string;
+					requested_by_email: string;
+					status: string;
+					token_hash: string;
+					version: number;
+				};
+				Insert: {
+					approval_method?: string | null;
+					approval_wording?: string | null;
+					approved_at?: string | null;
+					approved_by_email?: string | null;
+					approved_by_name?: string | null;
+					approved_by_user?: string | null;
+					approver_email: string;
+					approver_name: string;
+					closed_at?: string | null;
+					closed_reason?: string | null;
+					id?: string;
+					link_expires_at: string;
+					link_sent_at?: string;
+					not_yet_at?: string | null;
+					not_yet_by_name?: string | null;
+					not_yet_note?: string | null;
+					organization_id: string;
+					recorded_by_email?: string | null;
+					recorded_reason?: string | null;
+					replaced_at?: string | null;
+					requested_at?: string;
+					requested_by_email: string;
+					status?: string;
+					token_hash: string;
+					version: number;
+				};
+				Update: {
+					approval_method?: string | null;
+					approval_wording?: string | null;
+					approved_at?: string | null;
+					approved_by_email?: string | null;
+					approved_by_name?: string | null;
+					approved_by_user?: string | null;
+					approver_email?: string;
+					approver_name?: string;
+					closed_at?: string | null;
+					closed_reason?: string | null;
+					id?: string;
+					link_expires_at?: string;
+					link_sent_at?: string;
+					not_yet_at?: string | null;
+					not_yet_by_name?: string | null;
+					not_yet_note?: string | null;
+					organization_id?: string;
+					recorded_by_email?: string | null;
+					recorded_reason?: string | null;
+					replaced_at?: string | null;
+					requested_at?: string;
+					requested_by_email?: string;
+					status?: string;
+					token_hash?: string;
+					version?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_launch_approval_organization_id_version_fkey';
+						columns: ['organization_id', 'version'];
+						isOneToOne: false;
+						referencedRelation: 'organization_setup_previews';
+						referencedColumns: ['organization_id', 'version'];
+					}
+				];
+			};
 			organization_setup_preview_notes: {
 				Row: {
 					card_id: string;
@@ -18380,6 +18472,15 @@ export type Database = {
 				Args: { target_client_id: string; target_organization_id: string };
 				Returns: Json;
 			};
+			client_decide_setup_launch: {
+				Args: {
+					decision: string;
+					note?: string;
+					target_organization_id: string;
+					target_version: number;
+				};
+				Returns: Json;
+			};
 			client_merge_preview: {
 				Args: { p_primary_client_id: string; p_secondary_client_id: string };
 				Returns: Json;
@@ -20408,6 +20509,10 @@ export type Database = {
 					p_note: string;
 					p_request_id: string;
 				};
+				Returns: Json;
+			};
+			decide_setup_launch_link: {
+				Args: { decision: string; note?: string; supplied_token_hash: string };
 				Returns: Json;
 			};
 			declare_marketing_campaign_result_credit: {
@@ -23360,11 +23465,37 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_record_setup_launch_approval: {
+				Args: {
+					actor_email: string;
+					reason: string;
+					target_organization_id: string;
+					target_version: number;
+				};
+				Returns: Json;
+			};
 			owner_release_setup_preview: {
 				Args: {
 					actor_email: string;
 					target_organization_id: string;
 					target_version: number;
+				};
+				Returns: Json;
+			};
+			owner_request_setup_launch_approval: {
+				Args: {
+					actor_email: string;
+					new_token_hash: string;
+					target_organization_id: string;
+					target_version: number;
+				};
+				Returns: Json;
+			};
+			owner_resend_setup_launch_approval: {
+				Args: {
+					actor_email: string;
+					new_token_hash: string;
+					target_organization_id: string;
 				};
 				Returns: Json;
 			};
@@ -25346,6 +25477,10 @@ export type Database = {
 				Returns: string;
 			};
 			resolve_review_request: {
+				Args: { supplied_token_hash: string };
+				Returns: Json;
+			};
+			resolve_setup_launch_link: {
 				Args: { supplied_token_hash: string };
 				Returns: Json;
 			};

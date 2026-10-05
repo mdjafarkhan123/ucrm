@@ -7,8 +7,8 @@
 ## Steps
 
 - [x] Jafar's choices recorded in plan §6
-- [ ] Migration `20261102090000_setup_launch_approvals.sql`: requests table, Jafar's ask / resend / record, client approve / not yet (signed in), link resolve / decide (service role), new release cancels or replaces, sent notes cancel an open ask, onboarding list next actions
-- [ ] Apply to dev, regenerate types
+- [x] Migration `20261102090000_setup_launch_approvals.sql`: requests table, Jafar's ask / resend / record, client approve / not yet (signed in), link resolve / decide (service role), new release cancels or replaces, sent notes cancel an open ask, onboarding list next actions
+- [x] Apply to dev (checked by a rolled-back trial of every command), regenerate types
 - [ ] `$lib/setup/launch-approval.ts` (wording, states) + project-state `approved`; server reads and emails (link to approver, receipt to approver + owners/admins, in-app note to Jafar)
 - [ ] Routes: Jafar ask/resend/record; client approve/not-yet; public `/launch/[token]` page + its API
 - [ ] UI: Jafar's preview panel, client Setup page, public page
@@ -16,7 +16,7 @@
 
 ## Next
 
-Write the migration (step 2).
+Write `src/lib/setup/launch-approval.ts` and add `approved` to `src/lib/setup/project-state.ts` (step 4).
 
 ## Notes
 
