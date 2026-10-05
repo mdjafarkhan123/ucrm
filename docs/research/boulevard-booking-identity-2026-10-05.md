@@ -1,7 +1,9 @@
 # Boulevard booking and identity research (P2A)
 
-**Accessed:** 2026-10-05. **Status:** P2A in progress — research complete; proposals and owner decisions are
-drafts and not approved. Part of [Boulevard-inspired industry editions](../boulevard-product-behavior-contract.md).
+**Accessed:** 2026-10-05. **Status:** P2A complete — Jafar agreed every round 1 recommendation and all proposed
+defaults on 2026-10-05. The agreed behavior, with follow-up rules, lives in the plan's
+[Booking and identity](../boulevard-product-behavior-contract.md#booking-and-identity) section; this file keeps
+the evidence and the original drafts.
 
 ## Summary
 
@@ -272,7 +274,7 @@ All Boulevard support URLs are https://support.boulevard.io/en/articles/<id>; da
   notifications; adults must accept an emailed/texted invitation; child added with birthdate; email needed to
   share appointments of someone over 18; share memberships/packages.
 
-## Proposed behavior — draft, not approved
+## Proposed behavior — original draft (agreed 2026-10-05; the plan is the source of truth)
 
 These proposals follow the reference rule: Boulevard first; a competitor pattern only where Boulevard is
 silent or weaker, and labelled. Nothing here is approved until Jafar answers the open decisions and approves
@@ -338,7 +340,7 @@ the plan. Settled answers move into the plan; this file keeps the evidence.
 - Left to later parts: automatic vs staff-decided fee charging and deposit refunds (P2C); reminder and
   text-reply confirmation rules (P2D); guardian consent forms (P2B); data deletion (P2E).
 
-## Decisions for Jafar — round 1 (draft wording, not yet asked)
+## Decisions for Jafar — round 1 (answered 2026-10-05: A, A, A, and minimum age per service yes)
 
 **Q1 — Teens and families.** A 16-year-old wants laser hair removal and her mum books it.
 - A (recommended): parents can add their under-18 children and book, pay and receive messages for them; each
