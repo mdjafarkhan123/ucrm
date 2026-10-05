@@ -11570,6 +11570,7 @@ export type Database = {
 					closed_at: string | null;
 					closed_reason: string | null;
 					id: string;
+					launch_checks: Json | null;
 					link_expires_at: string;
 					link_sent_at: string;
 					not_yet_at: string | null;
@@ -11597,6 +11598,7 @@ export type Database = {
 					closed_at?: string | null;
 					closed_reason?: string | null;
 					id?: string;
+					launch_checks?: Json | null;
 					link_expires_at: string;
 					link_sent_at?: string;
 					not_yet_at?: string | null;
@@ -11624,6 +11626,7 @@ export type Database = {
 					closed_at?: string | null;
 					closed_reason?: string | null;
 					id?: string;
+					launch_checks?: Json | null;
 					link_expires_at?: string;
 					link_sent_at?: string;
 					not_yet_at?: string | null;
@@ -11642,6 +11645,44 @@ export type Database = {
 				Relationships: [
 					{
 						foreignKeyName: 'organization_setup_launch_approval_organization_id_version_fkey';
+						columns: ['organization_id', 'version'];
+						isOneToOne: false;
+						referencedRelation: 'organization_setup_previews';
+						referencedColumns: ['organization_id', 'version'];
+					}
+				];
+			};
+			organization_setup_launch_checks: {
+				Row: {
+					check_key: string;
+					checked_at: string;
+					checked_by_email: string;
+					organization_id: string;
+					outcome: string;
+					reason: string | null;
+					version: number;
+				};
+				Insert: {
+					check_key: string;
+					checked_at?: string;
+					checked_by_email: string;
+					organization_id: string;
+					outcome: string;
+					reason?: string | null;
+					version: number;
+				};
+				Update: {
+					check_key?: string;
+					checked_at?: string;
+					checked_by_email?: string;
+					organization_id?: string;
+					outcome?: string;
+					reason?: string | null;
+					version?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_launch_checks_organization_id_version_fkey';
 						columns: ['organization_id', 'version'];
 						isOneToOne: false;
 						referencedRelation: 'organization_setup_previews';
@@ -23538,6 +23579,17 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_set_setup_launch_check: {
+				Args: {
+					actor_email: string;
+					new_outcome: string;
+					new_reason: string;
+					target_check_key: string;
+					target_organization_id: string;
+					target_version: number;
+				};
+				Returns: Json;
+			};
 			owner_set_setup_provider_wait: {
 				Args: {
 					actor_email: string;
@@ -23557,6 +23609,10 @@ export type Database = {
 				Returns: Json;
 			};
 			owner_setup_editor: { Args: never; Returns: Json };
+			owner_setup_launch_checklist: {
+				Args: { target_organization_id: string };
+				Returns: Json;
+			};
 			owner_setup_review_recipients: {
 				Args: { target_organization_id: string };
 				Returns: Json;
