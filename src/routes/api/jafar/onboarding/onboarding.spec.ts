@@ -71,6 +71,7 @@ function client(overrides: Partial<OnboardingClient> = {}): OnboardingClient {
 		ready_at: null,
 		target_from: null,
 		target_to: null,
+		project_state: 'complete_setup',
 		waiting_on: 'client',
 		next_action: 'finish_section',
 		last_activity_at: '2026-10-01T10:00:00Z',
@@ -140,6 +141,47 @@ describe('client onboarding list GET', () => {
 		]);
 	});
 
+	it('shows Ready as Building from the client’s first business day after it (E1)', async () => {
+		const { next_section_title: _, project_state: __, ...row } = client();
+		const ready = {
+			...row,
+			sent_number: 1,
+			sent_at: '2026-09-28T10:00:00Z',
+			ready_at: '2026-09-29T10:00:00Z',
+			target_from: '2026-10-08',
+			target_to: '2026-10-13'
+		};
+		const rpc = vi.fn().mockResolvedValue({
+			data: listResult({ clients: [ready, { ...row, id: 'org-2' }] }),
+			error: null
+		});
+		const inIds = vi.fn().mockResolvedValue({
+			data: [
+				{
+					organization_id: 'org-1',
+					submission_number: 1,
+					start_date: '2026-09-29',
+					time_zone: 'Europe/London'
+				}
+			],
+			error: null
+		});
+		const from = vi.fn(() => ({ select: () => ({ in: inIds }) }));
+		mockedClient.mockReturnValue({ rpc, from } as unknown as ReturnType<
+			typeof getOwnerSupabaseClient
+		>);
+
+		const page = await (await GET(event())).json();
+
+		expect(from).toHaveBeenCalledWith('organization_setup_ready');
+		expect(inIds).toHaveBeenCalledWith('organization_id', ['org-1']);
+		expect(page.clients.map((entry: OnboardingClient) => entry.project_state)).toEqual([
+			'building',
+			'complete_setup'
+		]);
+		expect(onboardingStage(page.clients[0]).label).toBe('Building their system');
+	});
+
 	it('hands back an opaque cursor that round-trips into the next page', async () => {
 		const rpc = mockRpc(
 			listResult({ next_cursor: { account_created_at: '2026-10-01T10:00:00Z', id: 'org-1' } })
@@ -177,7 +219,12 @@ describe('next step wording', () => {
 	});
 
 	it('puts a sent setup in Uplift’s hands and says when it was sent again', () => {
-		const sent = client({ next_action: 'review_setup', waiting_on: 'uplift', sent_number: 1 });
+		const sent = client({
+			next_action: 'review_setup',
+			waiting_on: 'uplift',
+			sent_number: 1,
+			project_state: 'uplift_reviewing'
+		});
 		expect(onboardingNextActionLabel(sent)).toBe('Review their setup');
 		expect(onboardingStage(sent).label).toBe('Uplift is reviewing');
 		expect(onboardingNextActionLabel({ ...sent, sent_number: 2 })).toBe(

@@ -76,7 +76,9 @@ function supabase(options: {
 		// C4: not Ready for Uplift.
 		organization_setup_ready: null,
 		// C3c: nothing Uplift has answered.
-		organization_setup_help_answers: []
+		organization_setup_help_answers: [],
+		// E1: the account was created when the payment was confirmed.
+		organizations: { created_at: '2026-09-30T08:00:00Z' }
 	};
 	const from = vi.fn((table: string) => {
 		const result = { data: rows[table], error: null };
@@ -171,6 +173,9 @@ describe('GET /api/setup', () => {
 		expect(body.progress).toEqual({ done: 0, total: 1 });
 		expect(body.next).toMatchObject({ key: 'business', status: 'not_started' });
 		expect(body.delivery.state).toBe('collecting');
+		// E1: payment is behind them; setup is the current step.
+		expect(body.project).toMatchObject({ state: 'complete_setup', position: 3, total: 10 });
+		expect(body.project.steps[1]).toMatchObject({ status: 'done', on: '2026-09-30T08:00:00Z' });
 	});
 
 	it('shows half-filled setup as in progress so it can be resumed on another device', async () => {

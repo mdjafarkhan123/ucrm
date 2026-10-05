@@ -4,6 +4,7 @@ import { PRIVATE_READ_HEADERS, databaseError } from '$lib/server/api/errors';
 import { requireSetupReader } from '$lib/server/setup/access';
 import { readOrganizationSetupCatalogue } from '$lib/server/setup/catalogue';
 import { readClientSetupReviews } from '$lib/server/setup/client-review';
+import { readSetupProject } from '$lib/server/setup/project';
 import { readSetupState, setupSummary } from '$lib/server/setup/read';
 
 // The task list and the dashboard's setup card: every section's status and Uplift's review of it, overall
@@ -34,8 +35,18 @@ export const GET: RequestHandler = async (event) => {
 		return databaseError();
 	}
 
+	const summary = setupSummary(state, catalogue, reviews);
+	// E1: the step tracker, from the same state and the tasks sent back on the newest send.
+	const project = await readSetupProject(
+		event.locals.supabase,
+		organizationId,
+		state,
+		summary.returned_count
+	);
+	if (!project) return databaseError();
+
 	return json(
-		{ ...setupSummary(state, catalogue, reviews), reminder_emails_on: optOut.data === null },
+		{ ...summary, project, reminder_emails_on: optOut.data === null },
 		{ headers: PRIVATE_READ_HEADERS }
 	);
 };

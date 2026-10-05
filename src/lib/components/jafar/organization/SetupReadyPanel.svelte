@@ -16,8 +16,10 @@
 		formatReadyDate,
 		previewSetupReadyRange,
 		setupReadyBlockerText,
+		todayIn,
 		type SetupReadyBlocker
 	} from '$lib/setup/ready';
+	import { buildStartDate } from '$lib/setup/project-state';
 	import { formatDateTime } from './format';
 
 	// Client onboarding C4 (plan §4–5, §10 journey 7): Ready for Uplift starts the client's 7–10 business-day
@@ -30,6 +32,11 @@
 	const ready = $derived(view.ready);
 	const blockers = $derived(view.ready_blockers ?? []);
 	const newest = $derived(view.sends[0]?.number ?? null);
+	// E1: the client's tracker turns Ready into Building on the first business day after it; this badge agrees.
+	const buildStart = $derived(ready ? buildStartDate(ready.start_date) : null);
+	const building = $derived(
+		ready !== null && buildStart !== null && todayIn(ready.time_zone) >= buildStart
+	);
 
 	let confirming = $state(false);
 	let withdrawing = $state(false);
@@ -119,7 +126,11 @@
 >
 	{#snippet actions()}
 		{#if ready}
-			<Badge status="success" size="small">Ready — Uplift is building</Badge>
+			<Badge status="success" size="small"
+				>{building
+					? 'Building their system'
+					: `Ready — building starts ${formatReadyDate(buildStart ?? ready.start_date)}`}</Badge
+			>
 		{:else if shownBlockers.length > 0}
 			<Badge status="warning" size="small"
 				>{shownBlockers.length} {shownBlockers.length === 1 ? 'blocker' : 'blockers'}</Badge

@@ -5,6 +5,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { fetchSetupSummary, setupSummaryKey } from '$lib/setup/api';
 	import { SETUP_CHECK_KEY } from '$lib/setup/check';
+	import { PROJECT_STATE_LABEL } from '$lib/setup/project-state';
 	import { formatReadyDate } from '$lib/setup/ready';
 
 	// The dashboard's setup card for owners and administrators: how far setup has got, the next useful
@@ -75,14 +76,18 @@
 		</div>
 
 		<p class="setup-card__status">
-			<span class="setup-card__label">Delivery</span>
+			<!-- E1: the project's step, as the Setup page's tracker names it. -->
+			<span class="setup-card__label"
+				>Delivery · step {summary.project.position} of {summary.project.total}</span
+			>
+			<strong class="setup-card__state">{PROJECT_STATE_LABEL[summary.project.state]}.</strong>
 			{#if summary.returned_count > 0}
 				Uplift sent back {summary.returned_count === 1
 					? 'one task'
 					: `${summary.returned_count} tasks`}. Change what Uplift asked for and send your setup
 				again; everything else stays as you sent it.
 			{:else if summary.delivery.state === 'ready'}
-				Uplift is building your system. It will be ready for you to review between
+				Your system will be ready for you to review between
 				{formatReadyDate(summary.delivery.target_from)} and {formatReadyDate(
 					summary.delivery.target_to,
 					true
@@ -194,6 +199,10 @@
 					text-decoration: underline;
 				}
 			}
+		}
+
+		&__state {
+			color: var(--color-heading);
 		}
 
 		&__status &__label {

@@ -5,6 +5,7 @@
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
+	import ProjectTracker from '$lib/components/setup/ProjectTracker.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -25,7 +26,6 @@
 	} from '$lib/setup/api';
 	import type { SetupSectionStatus } from '$lib/setup/catalogue';
 	import { SETUP_CHECK_DESCRIPTION, SETUP_CHECK_KEY, SETUP_CHECK_TITLE } from '$lib/setup/check';
-	import { formatReadyDate } from '$lib/setup/ready';
 	import { setupClientReviewBadge } from '$lib/setup/review';
 	import type { HttpError } from '$lib/http-error';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
@@ -257,21 +257,6 @@
 				{/if}
 			{/snippet}
 
-			{#snippet building()}
-				{#if summary.delivery.state === 'ready'}
-					<!-- C4 (plan §5): the build's start and the range it was promised in, from Uplift's Ready. -->
-					<Banner type="success">
-						<strong>Uplift is building your system.</strong> We started on
-						{formatReadyDate(summary.delivery.start_date)}. It will be ready for you to review
-						between
-						<strong>{formatReadyDate(summary.delivery.target_from)}</strong> and
-						<strong>{formatReadyDate(summary.delivery.target_to, true)}</strong>
-						(7–10 business days, Monday to Friday). You can still change your answers; Uplift sees them
-						when you send them.
-					</Banner>
-				{/if}
-			{/snippet}
-
 			{#snippet tasks()}
 				<SectionBlock title="Your setup tasks" hint="Do them in any order, a little at a time.">
 					{#snippet actions()}
@@ -355,12 +340,12 @@
 						>
 					</div>
 				</section>
-				{@render building()}
+				<ProjectTracker project={summary.project} />
 				{@render returned()}
 				{@render tasks()}
 				{@render reminders()}
 			{:else}
-				{@render building()}
+				<ProjectTracker project={summary.project} />
 				{@render returned()}
 				{@render tasks()}
 				<SectionBlock title="How setup works">

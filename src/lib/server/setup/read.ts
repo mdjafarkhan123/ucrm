@@ -16,8 +16,17 @@ import type { SetupClientReview } from '$lib/setup/review';
 /** B13: the newest Send to Uplift, without its answers. */
 export type SetupSent = { number: number; submitted_at: string; submitted_by_name: string };
 
-/** C4: Ready for Uplift as the client sees it — the build's start and target range, `YYYY-MM-DD`. */
-export type SetupReadyDates = { start_date: string; target_from: string; target_to: string };
+/**
+ * C4: Ready for Uplift as the client sees it — the build's start and target range, `YYYY-MM-DD` — with the send
+ * it was recorded on and the time zone its dates were counted in (E1's tracker reads both).
+ */
+export type SetupReadyDates = {
+	submission_number: number;
+	time_zone: string;
+	start_date: string;
+	target_from: string;
+	target_to: string;
+};
 
 export type SetupState = {
 	welcomeSeen: boolean;
@@ -74,7 +83,7 @@ export async function readSetupState(
 			.maybeSingle(),
 		supabase
 			.from('organization_setup_ready')
-			.select('start_date, target_from, target_to')
+			.select('submission_number, time_zone, start_date, target_from, target_to')
 			.eq('organization_id', organizationId)
 			.maybeSingle()
 	]);
@@ -156,7 +165,12 @@ export function setupSummary(
 		returned_count: returned.length,
 		// C4: Ready for Uplift gives the build's dates; the later delivery stages arrive with stage E.
 		delivery: state.ready
-			? { state: 'ready' as const, ...state.ready }
+			? {
+					state: 'ready' as const,
+					start_date: state.ready.start_date,
+					target_from: state.ready.target_from,
+					target_to: state.ready.target_to
+				}
 			: state.sent
 				? { state: 'sent' as const, ...state.sent }
 				: { state: 'collecting' as const }

@@ -2,6 +2,7 @@ import { httpError } from '$lib/http-error';
 import type { SetupCheck, SetupConfirmation } from '$lib/setup/check';
 import type { SetupClientReview } from '$lib/setup/review';
 import type { SetupHelpAnswer } from '$lib/setup/help';
+import type { ProjectView } from '$lib/setup/project-state';
 import type {
 	SetupAnswers,
 	SetupAvailability,
@@ -34,6 +35,8 @@ export type SetupSummary = {
 		| { state: 'sent'; number: number; submitted_at: string; submitted_by_name: string }
 		/** C4: Uplift recorded Ready for Uplift; the build's start and target range, `YYYY-MM-DD`. */
 		| { state: 'ready'; start_date: string; target_from: string; target_to: string };
+	/** E1: the client's step tracker (plan §5). */
+	project: ProjectView;
 	/** Whether the signed-in person gets setup reminder emails. */
 	reminder_emails_on: boolean;
 };

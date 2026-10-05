@@ -313,6 +313,13 @@ Client-facing project states are:
 10. Live — training next
 11. Project delivered
 
+Jafar's choices of 2026-10-05 (E1): the client sees every state as a step tracker on the Setup page, each finished
+step with the day it happened and the review step with the promised range; the dashboard card names the current
+step. Payment and its verification happen before the account exists, so the client only sees them done. "Waiting for
+your information" appears only while it is the current step. Ready for Uplift turns into Building your system by
+itself on the first business day after Ready. Once Ready is recorded the project stays on Building while the client
+sends changes or Uplift sends a task back; a note under it says which. Jafar's Onboarding list uses the same states.
+
 External provider state is an independent badge/timeline such as waiting for client access, submitted, under
 provider review, action needed, approved, or unavailable. A provider wait never makes the whole project look as if
 Uplift is working or late.

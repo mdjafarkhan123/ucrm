@@ -1,4 +1,5 @@
 import { sectionFacts, type SetupCatalogue } from '$lib/setup/catalogue';
+import { PROJECT_STATE_OWNER_LABEL, type ProjectState } from '$lib/setup/project-state';
 
 // Jafar's list of paid clients going through setup (client onboarding C1, plan §8). The database works out
 // each client's progress and whose move it is (supabase/migrations/20261006200000_client_onboarding_list.sql);
@@ -46,6 +47,8 @@ export type OnboardingClient = {
 	ready_at: string | null;
 	target_from: string | null;
 	target_to: string | null;
+	/** E1: the client-facing project state (plan §5), worked out by the route as the client's page does. */
+	project_state: ProjectState;
 	waiting_on: OnboardingWaitingOn;
 	next_action: OnboardingNextAction;
 	last_activity_at: string;
@@ -131,19 +134,23 @@ export function onboardingNextActionLabel(client: OnboardingClient): string {
 	}
 }
 
-/** Where the client stands, using the plan's client-facing project states (§5). */
+/** Where the client stands, in the plan's client-facing project states (§5) as Jafar reads them. */
 export function onboardingStage(client: OnboardingClient): {
 	label: string;
 	tone: 'informative' | 'warning' | 'critical' | 'inactive';
 } {
 	if (client.payment_reversed) return { label: 'Payment reversed', tone: 'critical' };
 	if (client.lifecycle_status !== 'active') return { label: 'Paused', tone: 'inactive' };
-	if (client.returned_count > 0) return { label: 'Waiting for their information', tone: 'warning' };
-	if (client.ready_at) return { label: 'Ready for Uplift', tone: 'informative' };
-	if (client.sent_number) return { label: 'Uplift is reviewing', tone: 'informative' };
-	if (!client.welcome_seen && client.facts_answered === 0)
+	if (
+		client.project_state === 'complete_setup' &&
+		!client.welcome_seen &&
+		client.facts_answered === 0
+	)
 		return { label: 'Not started', tone: 'warning' };
-	return { label: 'Completing setup', tone: 'informative' };
+	return {
+		label: PROJECT_STATE_OWNER_LABEL[client.project_state],
+		tone: client.project_state === 'waiting_for_information' ? 'warning' : 'informative'
+	};
 }
 
 export const onboardingWaitingOnLabel: Record<OnboardingWaitingOn, string> = {
