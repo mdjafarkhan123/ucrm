@@ -11557,6 +11557,41 @@ export type Database = {
 					}
 				];
 			};
+			organization_setup_provider_waits: {
+				Row: {
+					note: string | null;
+					organization_id: string;
+					status: string;
+					updated_at: string;
+					updated_by_email: string;
+					wait_key: string;
+				};
+				Insert: {
+					note?: string | null;
+					organization_id: string;
+					status: string;
+					updated_at?: string;
+					updated_by_email: string;
+					wait_key: string;
+				};
+				Update: {
+					note?: string | null;
+					organization_id?: string;
+					status?: string;
+					updated_at?: string;
+					updated_by_email?: string;
+					wait_key?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_provider_waits_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			organization_setup_ready: {
 				Row: {
 					organization_id: string;
@@ -23234,6 +23269,16 @@ export type Database = {
 					loaded_revision: number;
 					new_stages: Json;
 					target_version_id: string;
+				};
+				Returns: Json;
+			};
+			owner_set_setup_provider_wait: {
+				Args: {
+					actor_email: string;
+					new_note: string;
+					new_status: string;
+					target_organization_id: string;
+					target_wait_key: string;
 				};
 				Returns: Json;
 			};

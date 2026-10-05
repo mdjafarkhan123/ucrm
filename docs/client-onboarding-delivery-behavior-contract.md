@@ -324,6 +324,16 @@ External provider state is an independent badge/timeline such as waiting for cli
 provider review, action needed, approved, or unavailable. A provider wait never makes the whole project look as if
 Uplift is working or late.
 
+Jafar's choices of 2026-10-05 (E2): there are four outside waits — Google profile, texting approval, number
+transfer, and website address — each offered only when the client's package includes its service. Jafar changes
+them by hand, with an optional note: waiting for your access, sent to the provider, being reviewed, you need to
+do something (a note saying what is required), approved, or not possible. The client sees a wait once Jafar has
+started it, in a "Waiting on others" card under the step tracker: its badge, the day it changed and Jafar's note,
+and while it is with the provider, that this time is not counted in Uplift's 7–10 days. Only "You need to do
+something" emails the client's owners and administrators, linking to that card. Waits never move Uplift's dates
+or block Ready. Jafar's list tags a client with their open waits, and one needing the client makes it the client's
+move. Jafar's history keeps every change; the client sees where each wait stands now.
+
 Incomplete-setup email reminders are sent around 24 hours, 3 days, and 7 days after inactivity and link to the
 exact unfinished task. They stop after submission, opt-out where applicable, or a human deferral. SMS onboarding
 reminders remain off until lawful consent and sender readiness exist.
