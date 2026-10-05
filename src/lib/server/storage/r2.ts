@@ -142,6 +142,12 @@ export function buildSupportAttachmentObjectKey(organizationId: string, fileName
 	return `${organizationId}/support-attachments/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
 }
 
+// A screenshot on a client's setup preview (client onboarding E3), whether Jafar put it on a card or the client
+// on a note. private.check_setup_preview_screenshots accepts only this prefix.
+export function buildSetupPreviewObjectKey(organizationId: string, fileName: string): string {
+	return `${organizationId}/setup-previews/${crypto.randomUUID()}-${sanitizeFileName(fileName)}`;
+}
+
 // A stranger's photo on a public form gets its own `<org>/public-form-submissions/<form>/` prefix --
 // submit_form_response checks every photo key against exactly this prefix before it trusts one, matching
 // every other upload's isolation.

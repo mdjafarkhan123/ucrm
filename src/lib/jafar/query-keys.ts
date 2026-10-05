@@ -28,6 +28,9 @@ export const jafarOrganizationSetupKey = (
 /** E2: the client's outside waits (Google, carriers, number transfer, domain). */
 export const jafarOrganizationProviderWaitsKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'provider-waits'] as const;
+/** E3: the client's preview — Jafar's draft and every released version. */
+export const jafarOrganizationPreviewKey = (organizationId: string | undefined) =>
+	[...jafarOrganizationKey(organizationId), 'preview'] as const;
 export const jafarOrganizationAutomationAuthorityKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'automation-authority'] as const;
 export const jafarOrganizationEmailDomainsKey = (organizationId: string | undefined) =>

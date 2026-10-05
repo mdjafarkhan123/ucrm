@@ -5,6 +5,12 @@ import type { SetupHelpAnswer } from '$lib/setup/help';
 import type { ProjectView } from '$lib/setup/project-state';
 import type { ProviderWait } from '$lib/setup/provider-waits';
 import type {
+	PreviewChoice,
+	PreviewScreenshotUpload,
+	PreviewScreenshotUrls,
+	PreviewVersion
+} from '$lib/setup/preview';
+import type {
 	SetupAnswers,
 	SetupAvailability,
 	SetupSection,
@@ -313,3 +319,55 @@ export async function fetchProtectedDocumentHistory(
 	if (!response.ok) throw httpError(response, 'This history could not be loaded.');
 	return ((await response.json()) as { history: ProtectedDocumentEvent[] }).history;
 }
+
+// E3: the preview and the one correction round (plan §6) -----------------------------------------------------
+
+export type SetupPreviewData = { versions: PreviewVersion[] };
+
+export const setupPreviewKey = (userId: string | null) => ['setup', 'preview', userId] as const;
+
+export async function fetchSetupPreview(): Promise<SetupPreviewData> {
+	const response = await fetch('/api/setup/preview');
+	if (!response.ok) throw httpError(response, 'The preview could not be loaded.');
+	return response.json();
+}
+
+export type SetupPreviewNoteWrite = {
+	version: number;
+	card_id: string;
+	choice: PreviewChoice | null;
+	note: string | null;
+	screenshots: PreviewScreenshotUpload[];
+};
+
+/** Saves one card's choice and note as a draft. 'already_sent' when the notes went while this was typed. */
+export async function saveSetupPreviewNote(
+	input: SetupPreviewNoteWrite
+): Promise<{ status: 'saved' | 'already_sent' }> {
+	const response = await fetch('/api/setup/preview/notes', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	if (!response.ok) throw await writeFailure(response, 'Your note could not be saved.');
+	return response.json();
+}
+
+export async function sendSetupPreviewNotes(
+	version: number
+): Promise<{ status: 'sent' | 'already_sent'; sent_at: string }> {
+	const response = await fetch('/api/setup/preview/send', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ version })
+	});
+	if (!response.ok) throw await writeFailure(response, 'Your notes could not be sent.');
+	return response.json();
+}
+
+/** Where the client's screenshots upload to and are shown from. */
+export const setupPreviewScreenshotUrls: PreviewScreenshotUrls = {
+	presign: '/api/setup/preview/screenshots',
+	view: (key, size) =>
+		`/api/setup/preview/screenshots?key=${encodeURIComponent(key)}${size === 'thumb' ? '&size=thumb' : ''}`
+};

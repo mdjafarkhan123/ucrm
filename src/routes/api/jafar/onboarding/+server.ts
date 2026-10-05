@@ -118,6 +118,14 @@ export const GET: RequestHandler = async (event) => {
 									target_to: row.target_to
 								}
 							: null,
+					preview:
+						row.preview_version && row.preview_released_at
+							? {
+									version: row.preview_version,
+									released_at: row.preview_released_at,
+									notes_sent_at: row.preview_sent_at
+								}
+							: null,
 					today: todayIn(ready?.time_zone ?? 'UTC')
 				})
 			};

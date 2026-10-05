@@ -1,11 +1,13 @@
 import type { QueryClient } from '@tanstack/svelte-query';
 import {
 	jafarOrganizationProtectedDocumentsKey,
+	jafarOrganizationPreviewKey,
 	jafarOrganizationProviderWaitsKey,
 	jafarOrganizationSetupKey
 } from '$lib/jafar/query-keys';
 import type { ClientSetupView } from '$lib/setup/client-page';
 import type { ProviderWait, ProviderWaitKey } from '$lib/setup/provider-waits';
+import type { PreviewCard, PreviewScreenshotUrls, PreviewVersion } from '$lib/setup/preview';
 
 // The Setup tab's reads (client onboarding B9b, C2), shared by the tab and its hover prefetch so both use the same keys.
 
@@ -69,6 +71,7 @@ export function prefetchOrganizationSetup(queryClient: QueryClient, organization
 	void queryClient.prefetchQuery(organizationSetupQuery(organizationId, null));
 	void queryClient.prefetchQuery(organizationProtectedDocumentsQuery(organizationId));
 	void queryClient.prefetchQuery(organizationProviderWaitsQuery(organizationId));
+	void queryClient.prefetchQuery(organizationPreviewQuery(organizationId));
 }
 
 /** C3: where Jafar's Accept and Send back on one section go (POST). */
@@ -106,3 +109,40 @@ export const organizationProviderWaitsQuery = (organizationId: string) => ({
 	},
 	staleTime: 30_000
 });
+
+/** E3: where Jafar reads (GET), saves (POST) and discards (DELETE) a client's preview draft. */
+export const organizationPreviewUrl = (organizationId: string) =>
+	`/api/jafar/organizations/${encodeURIComponent(organizationId)}/setup/preview`;
+
+export type OwnerPreviewData = {
+	ready: boolean;
+	service_keys: string[];
+	draft: { version: number; cards: PreviewCard[]; updated_at: string } | null;
+	released: PreviewVersion[];
+};
+
+export const organizationPreviewQuery = (organizationId: string) => ({
+	queryKey: jafarOrganizationPreviewKey(organizationId),
+	queryFn: async (): Promise<OwnerPreviewData> => {
+		const response = await fetch(organizationPreviewUrl(organizationId));
+		const result = (await response.json().catch(() => ({}))) as Partial<OwnerPreviewData> & {
+			error?: string;
+		};
+		if (!response.ok || !result.released)
+			throw new Error(result.error ?? 'The preview could not be loaded.');
+		return result as OwnerPreviewData;
+	},
+	staleTime: 30_000
+});
+
+/** Where Jafar's screenshots for this client upload to and are shown from. */
+export const organizationPreviewScreenshotUrls = (
+	organizationId: string
+): PreviewScreenshotUrls => {
+	const base = `${organizationPreviewUrl(organizationId)}/screenshots`;
+	return {
+		presign: base,
+		view: (key, size) =>
+			`${base}?key=${encodeURIComponent(key)}${size === 'thumb' ? '&size=thumb' : ''}`
+	};
+};

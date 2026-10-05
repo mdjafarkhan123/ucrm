@@ -14,6 +14,17 @@ import {
 	PROVIDER_WAIT_NOTE_MAX,
 	PROVIDER_WAIT_STATUSES
 } from '$lib/setup/provider-waits';
+import {
+	PREVIEW_CARDS_MAX,
+	PREVIEW_CHOICES,
+	PREVIEW_KINDS,
+	PREVIEW_LINK_MAX,
+	PREVIEW_NOTE_MAX,
+	PREVIEW_SCREENSHOTS_MAX,
+	PREVIEW_SCREENSHOT_TYPES,
+	PREVIEW_SUMMARY_MAX,
+	PREVIEW_TITLE_MAX
+} from '$lib/setup/preview';
 
 // One autosave: one or more facts from the setup wizard. The published setup version decides what a fact
 // may hold, so the same rule that the page shows beside the field is the one that refuses the save here.
@@ -219,3 +230,111 @@ export const setupProviderWaitSchema = z
 		message: 'Say what the client needs to do.'
 	});
 export type SetupProviderWaitInput = z.infer<typeof setupProviderWaitSchema>;
+
+// Client onboarding E3: the preview (plan §6). A screenshot is already uploaded; its size is never taken from the
+// browser — the route measures it in storage.
+const previewScreenshotSchema = z
+	.object({
+		object_key: z.string().min(1).max(600),
+		file_name: z.string().trim().min(1).max(255),
+		mime_type: z.enum(PREVIEW_SCREENSHOT_TYPES, 'A screenshot must be a photo.'),
+		has_thumbnail: z.boolean().default(false),
+		// Sent back with a screenshot already stored; ignored, as the route measures it again.
+		byte_size: z.number().optional()
+	})
+	.strict();
+const previewScreenshotsSchema = z
+	.array(previewScreenshotSchema)
+	.max(PREVIEW_SCREENSHOTS_MAX, `Add up to ${PREVIEW_SCREENSHOTS_MAX} screenshots.`)
+	.default([]);
+
+const previewCardSchema = z
+	.object({
+		id: z.string().min(1).max(64),
+		title: z
+			.string()
+			.trim()
+			.min(1, 'Give the card a title.')
+			.max(PREVIEW_TITLE_MAX, `Keep the title under ${PREVIEW_TITLE_MAX} characters.`),
+		summary: z
+			.string()
+			.trim()
+			.min(1, 'Write what the client should check.')
+			.max(PREVIEW_SUMMARY_MAX, `Keep the summary under ${PREVIEW_SUMMARY_MAX} characters.`),
+		link: z
+			.string()
+			.trim()
+			.max(PREVIEW_LINK_MAX, `Keep the link under ${PREVIEW_LINK_MAX} characters.`)
+			.nullish()
+			.transform((value) => value || null)
+			.refine((value) => value === null || /^https:\/\/\S+$/.test(value), {
+				message: 'Use a full address starting with https://.'
+			}),
+		screenshots: previewScreenshotsSchema
+	})
+	.strict();
+
+// Jafar saves his draft whole: the cards in order.
+export const setupPreviewDraftSchema = z
+	.object({
+		cards: z
+			.array(previewCardSchema)
+			.min(1, 'Add at least one card.')
+			.max(PREVIEW_CARDS_MAX, `Keep it to ${PREVIEW_CARDS_MAX} cards.`)
+			.refine((cards) => new Set(cards.map((card) => card.id)).size === cards.length, {
+				message: 'Each card needs its own id.'
+			})
+	})
+	.strict();
+export type SetupPreviewDraftInput = z.infer<typeof setupPreviewDraftSchema>;
+
+export const setupPreviewVersionSchema = z
+	.object({ version: z.number().int().min(1, 'Choose a preview.') })
+	.strict();
+
+export const setupPreviewSortSchema = z
+	.object({
+		version: z.number().int().min(1),
+		card_id: z.string().min(1).max(64),
+		kind: z.enum(PREVIEW_KINDS, 'Choose a label.')
+	})
+	.strict();
+
+// The client's choice on one card; `choice` null clears it. Every choice but Looks right needs a note.
+export const setupPreviewNoteSchema = z
+	.object({
+		version: z.number().int().min(1),
+		card_id: z.string().min(1).max(64),
+		choice: z.enum(PREVIEW_CHOICES, 'Choose an option.').nullable(),
+		note: z
+			.string()
+			.trim()
+			.max(PREVIEW_NOTE_MAX, `Keep the note under ${PREVIEW_NOTE_MAX} characters.`)
+			.nullish()
+			.transform((value) => value || null),
+		screenshots: previewScreenshotsSchema
+	})
+	.strict()
+	.refine(
+		(input) => input.choice === null || input.choice === 'looks_right' || input.note !== null,
+		{
+			path: ['note'],
+			message: 'Say what should change.'
+		}
+	);
+export type SetupPreviewNoteInput = z.infer<typeof setupPreviewNoteSchema>;
+
+export const setupPreviewScreenshotPresignSchema = z
+	.object({
+		file_name: z.string().trim().min(1).max(255),
+		mime_type: z.enum(
+			PREVIEW_SCREENSHOT_TYPES,
+			'A screenshot must be a photo (JPG, PNG, WebP or GIF).'
+		),
+		size_bytes: z
+			.number()
+			.int()
+			.positive('That file is empty.')
+			.max(10 * 1024 * 1024, 'Each screenshot must be 10 MB or smaller.')
+	})
+	.strict();

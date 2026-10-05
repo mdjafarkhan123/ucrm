@@ -19,6 +19,7 @@
 	import SetupAnswerList from '$lib/components/setup/SetupAnswerList.svelte';
 	import SetupHelpAnswerDialog from './SetupHelpAnswerDialog.svelte';
 	import SetupProviderWaitsPanel from './SetupProviderWaitsPanel.svelte';
+	import SetupPreviewPanel from './SetupPreviewPanel.svelte';
 	import SetupReadyPanel from './SetupReadyPanel.svelte';
 	import SetupReturnDialog from './SetupReturnDialog.svelte';
 	import { iconForMimeType } from '$lib/collaboration/file-icons';
@@ -374,6 +375,10 @@
 	{/if}
 
 	<SetupProviderWaitsPanel {organizationId} />
+
+	{#if view.ready}
+		<SetupPreviewPanel {organizationId} />
+	{/if}
 
 	{#if help.length > 0}
 		<SectionBlock

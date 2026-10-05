@@ -7,6 +7,7 @@ const base: ProjectFacts = {
 	sent: null,
 	returned_count: 0,
 	ready: null,
+	preview: null,
 	today: '2026-10-05'
 };
 const sent = { number: 1, submitted_at: '2026-10-02T09:00:00Z' };
@@ -106,5 +107,30 @@ describe('projectView', () => {
 			kind: 'returned',
 			count: 2
 		});
+	});
+
+	it('is Ready for your review once Jafar releases a preview, and notes the client sent their notes', () => {
+		const facts = {
+			...base,
+			sent,
+			first_sent_at: sent.submitted_at,
+			ready,
+			preview: { version: 1, released_at: '2026-10-20T10:00:00Z', notes_sent_at: null },
+			today: '2026-10-20'
+		};
+		const view = projectView(facts);
+		expect(view.state).toBe('ready_for_review');
+		expect(view.steps.find((each) => each.state === 'building')).toMatchObject({ status: 'done' });
+		expect(view.steps.find((each) => each.state === 'ready_for_review')).toMatchObject({
+			status: 'current',
+			on: '2026-10-20T10:00:00Z'
+		});
+		expect(view.after_ready).toBeNull();
+		expect(
+			projectView({
+				...facts,
+				preview: { ...facts.preview, notes_sent_at: '2026-10-21T09:00:00Z' }
+			}).after_ready
+		).toEqual({ kind: 'notes_sent', at: '2026-10-21T09:00:00Z' });
 	});
 });

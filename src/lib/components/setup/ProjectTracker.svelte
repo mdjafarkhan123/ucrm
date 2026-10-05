@@ -41,6 +41,7 @@
 				if (!each.on) return null;
 				return each.status === 'upcoming' ? `Starts ${day(each.on)}` : `Started ${day(each.on)}`;
 			case 'ready_for_review':
+				if (each.status !== 'upcoming' && each.on) return `Preview sent ${day(each.on)}`;
 				return each.range
 					? `Expected ${day(each.range.from)} – ${day(each.range.to, true)}`
 					: '7–10 business days after Uplift accepts your setup';
@@ -74,6 +75,9 @@
 				{:else if project.state === 'building' && readyDay && reviewRange}
 					Uplift started on {day(buildStartDate(readyDay))}. Your system will be ready for you to
 					review {reviewRange} — 7–10 business days, Monday to Friday.
+				{:else if project.state === 'ready_for_review'}
+					Uplift has built your system. Look through each part of the preview below and tell Uplift
+					what looks right and what needs a change.
 				{/if}
 			</p>
 			{#if project.after_ready?.kind === 'returned'}
@@ -85,6 +89,11 @@
 				</p>
 			{:else if project.after_ready?.kind === 'changes_sent'}
 				<p class="project-tracker__note">Uplift is looking at the changes you sent.</p>
+			{:else if project.after_ready?.kind === 'notes_sent'}
+				<p class="project-tracker__note">
+					You sent your notes on {day(project.after_ready.at)}. Uplift is working on them and will
+					send you an updated preview.
+				</p>
 			{/if}
 		</div>
 

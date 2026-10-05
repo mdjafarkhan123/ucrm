@@ -7,8 +7,10 @@
 // Jafar's choices of 2026-10-05: "Ready for Uplift" turns into "Building your system" by itself on the first
 // business day after Ready; once Ready is recorded the tracker stays on Building while the client sends changes
 // or Uplift sends a task back, with a note saying so. Payment and verification happen before the account exists,
-// so the client only ever sees them done. States 8–11 arrive with preview, approval, launch and handover (E3–E6).
+// so the client only ever sees them done. E3 adds Ready for your review: Jafar has released a preview. States 9–11
+// arrive with approval, launch and handover (E4–E6).
 
+import type { PreviewFacts } from '$lib/setup/preview';
 import { addBusinessDays } from '$lib/setup/ready';
 
 export const PROJECT_STATES = [
@@ -66,6 +68,8 @@ export type ProjectFacts = {
 		target_from: string;
 		target_to: string;
 	} | null;
+	/** E3: the newest preview Jafar released, after Ready. */
+	preview: PreviewFacts | null;
 	/** Today in the client's time zone, `YYYY-MM-DD`. */
 	today: string;
 };
@@ -75,6 +79,7 @@ export const buildStartDate = (startDate: string) => addBusinessDays(startDate, 
 
 /** Where the project stands now. */
 export function projectState(facts: ProjectFacts): ProjectState {
+	if (facts.ready && facts.preview) return 'ready_for_review';
 	if (facts.ready)
 		return facts.today >= buildStartDate(facts.ready.start_date) ? 'building' : 'ready_for_uplift';
 	if (facts.sent && facts.returned_count > 0) return 'waiting_for_information';
@@ -98,8 +103,15 @@ export type ProjectView = {
 	position: number;
 	total: number;
 	steps: ProjectStep[];
-	/** After Ready, what is happening with a send after it: tasks sent back, or changes Uplift is looking at. */
-	after_ready: { kind: 'returned'; count: number } | { kind: 'changes_sent' } | null;
+	/**
+	 * After Ready, what is happening with a send after it: tasks sent back, or changes Uplift is looking at. On
+	 * the review step, whether the client has sent their notes on the newest preview (E3).
+	 */
+	after_ready:
+		| { kind: 'returned'; count: number }
+		| { kind: 'changes_sent' }
+		| { kind: 'notes_sent'; at: string }
+		| null;
 };
 
 /**
@@ -118,7 +130,8 @@ export function projectView(facts: ProjectFacts): ProjectView {
 		complete_setup: facts.first_sent_at,
 		uplift_reviewing: state === 'uplift_reviewing' ? (facts.sent?.submitted_at ?? null) : null,
 		ready_for_uplift: facts.ready?.start_date ?? null,
-		building: facts.ready ? buildStartDate(facts.ready.start_date) : null
+		building: facts.ready ? buildStartDate(facts.ready.start_date) : null,
+		ready_for_review: facts.ready ? (facts.preview?.released_at ?? null) : null
 	};
 
 	const steps = shown.map((step): ProjectStep => {
@@ -135,7 +148,9 @@ export function projectView(facts: ProjectFacts): ProjectView {
 	});
 
 	let afterReady: ProjectView['after_ready'] = null;
-	if (facts.ready && facts.sent && facts.sent.number > facts.ready.submission_number)
+	if (state === 'ready_for_review' && facts.preview?.notes_sent_at)
+		afterReady = { kind: 'notes_sent', at: facts.preview.notes_sent_at };
+	else if (facts.ready && facts.sent && facts.sent.number > facts.ready.submission_number)
 		afterReady =
 			facts.returned_count > 0
 				? { kind: 'returned', count: facts.returned_count }

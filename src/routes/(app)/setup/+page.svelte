@@ -7,6 +7,7 @@
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import OutsideWaits from '$lib/components/setup/OutsideWaits.svelte';
 	import ProjectTracker from '$lib/components/setup/ProjectTracker.svelte';
+	import SetupPreview from '$lib/components/setup/SetupPreview.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -354,12 +355,14 @@
 					</div>
 				</section>
 				<ProjectTracker project={summary.project} />
+				{#if summary.project.state === 'ready_for_review'}<SetupPreview {userId} />{/if}
 				{#if summary.outside_waits.length}<OutsideWaits waits={summary.outside_waits} />{/if}
 				{@render returned()}
 				{@render tasks()}
 				{@render reminders()}
 			{:else}
 				<ProjectTracker project={summary.project} />
+				{#if summary.project.state === 'ready_for_review'}<SetupPreview {userId} />{/if}
 				{#if summary.outside_waits.length}<OutsideWaits waits={summary.outside_waits} />{/if}
 				{@render returned()}
 				{@render tasks()}
