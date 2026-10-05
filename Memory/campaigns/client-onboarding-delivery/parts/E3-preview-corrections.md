@@ -7,7 +7,7 @@
 ## Steps
 
 - [x] Jafar's choices recorded in plan §6
-- [ ] Migration: previews (versioned cards), the client's notes, Jafar's save/release/sort commands, the client's save/send commands, list states
+- [x] Migration `20261101090000_setup_previews.sql`: previews (versioned cards), the client's notes, Jafar's save/release/sort commands, the client's save/send commands, list states
 - [ ] Apply to dev, regenerate types
 - [ ] `$lib/setup/preview.ts` (choices per round, labels) + spec; project state 8 "Ready for your review" and the "corrections sent" note
 - [ ] Jafar's API + Setup-tab preview panel (write cards, release, sort notes); release email to owners/admins
@@ -17,4 +17,8 @@
 
 ## Next
 
-Write the migration (next number after `20261031090000`), modelled on E2's and C4's.
+Apply the migration to dev, then regenerate types.
+
+## Outside actions
+
+- Apply migration to dev — check: `select 1 from supabase_migrations.schema_migrations where version = '20261101090000'`
