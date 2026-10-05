@@ -196,6 +196,7 @@
 <style lang="scss">
 	.launch-link {
 		display: flex;
+		align-items: flex-start;
 		justify-content: center;
 		min-height: 100vh;
 		padding: var(--space-largest) var(--space-base);

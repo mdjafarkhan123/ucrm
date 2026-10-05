@@ -8,9 +8,9 @@
 
 **Also waiting on Jafar's publish:** B9c's login check (part note `parts/B9-texting-facts.md`); the stage itself is built.
 
-**Next part:** E4 Launch approval (`stages/E-delivery.md`); E1–E3 are done. E1: the client's step tracker and
-Jafar's list share `$lib/setup/project-state.ts`; states 9–11 still need E4–E6 to add their records there.
-Raad LTD is accepted on "Your business", not Ready (dev data). Do NOT publish test stages or questions on dev;
-stage keys are never reused.
+**Next part:** E5 Launch checks (`stages/E-delivery.md`); E1–E4 are done. E5 makes Jafar's Ask for launch
+approval (`LaunchApprovalPanel.svelte`) wait for the checklist. States 10–11 still need E5–E6 to add their records
+to `$lib/setup/project-state.ts`. Raad LTD is accepted on "Your business", not Ready (dev data). Do NOT publish
+test stages or questions on dev; stage keys are never reused.
 
 **Blockers:** none for E1. Text limits max 2000. A reused question must point to one with no "show only if" rule (the database refuses otherwise).

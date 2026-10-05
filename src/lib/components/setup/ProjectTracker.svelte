@@ -45,6 +45,8 @@
 				return each.range
 					? `Expected ${day(each.range.from)} – ${day(each.range.to, true)}`
 					: '7–10 business days after Uplift accepts your setup';
+			case 'approved':
+				return each.status !== 'upcoming' && each.on ? `Approved ${day(each.on)}` : null;
 			default:
 				return null;
 		}
@@ -78,6 +80,9 @@
 				{:else if project.state === 'ready_for_review'}
 					Uplift has built your system. Look through each part of the preview below and tell Uplift
 					what looks right and what needs a change.
+				{:else if project.state === 'approved'}
+					Your system is approved to go live. Uplift is finishing the launch steps and will tell you
+					when it is live.
 				{/if}
 			</p>
 			{#if project.after_ready?.kind === 'returned'}
