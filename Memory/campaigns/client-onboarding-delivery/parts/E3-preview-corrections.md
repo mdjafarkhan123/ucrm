@@ -17,16 +17,14 @@
 
 ## Next
 
-All code is committed (session paused 2026-10-05). Route and logic tests pass, and both new components compile in
-the Svelte checker. The full type check was cut off and never finished on the screens.
-1. Run the type check (`NODE_OPTIONS=--max-old-space-size=8192 npx svelte-check --threshold error`) and fix errors in
-   `SetupPreviewPanel.svelte` (Jafar's Setup tab), `components/setup/SetupPreview.svelte`, `PreviewScreenshots.svelte`,
-   `PreviewCardBody.svelte`.
-2. Browser check on Raad LTD. It needs Ready first; Raad is accepted only on "Your business". Ask Jafar before
-   adding a Ready row on dev by hand, and remove it afterwards. Path: write cards → release (email) → client marks
-   cards and sends once → Jafar sorts → client sees the labels → version 2 offers only "Uplift made a mistake" and
-   "Something new". Also check that a screenshot upload works on both sides.
-3. Then mark E3 done and point NOW.md at E4.
+Type check passes (fix on branch `e3-preview-checks`, not yet on `main`). Browser check underway on Raad LTD:
+Jafar's side checked — 3 starting cards, summaries typed, draft saved, a screenshot uploaded to card 3. A draft
+is saved, not released.
+1. Waiting for Jafar: may the check press "Release and email the client"? It emails Raad LTD's owner and admins
+   (Jafar's test inboxes). The tool's safety check refused it without his say-so.
+2. Then: client marks cards and sends once → Jafar sorts → client sees the labels → version 2 offers only
+   "Uplift made a mistake" and "Something new"; screenshot on a client note.
+3. Merge the branch, remove the worktree, clean up the test rows (below), mark E3 done, point NOW.md at E4.
 
 ## Outside actions
 
