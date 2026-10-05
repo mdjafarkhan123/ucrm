@@ -52,6 +52,7 @@ Confirmed means supported by a cited source, not assumed equivalent to our imple
 ## Research
 
 - [Completed P1 public-source inventory and coverage limits](research/boulevard-feature-landscape-2026-10-05.md).
+- [P2A booking and identity evidence, draft proposals and open decisions](research/boulevard-booking-identity-2026-10-05.md).
 
 Primary public entry points:
 
