@@ -232,6 +232,10 @@ Setup may prepare draft campaigns. Nothing is sent merely because onboarding was
 its own preview/test and explicit **Approve and schedule/send** action. Regional rules are applied from recipient
 location rather than one assumed global rule.
 
+Jafar's choices (2026-10-04): text campaigns are not built yet, so a text choice is drafted as email until they
+are; people who opted out are always left out, never a choice; places are optional; the reply people reuse the
+website form's.
+
 ### 3.10 Check and send to Uplift — required
 
 Show one plain-language summary with section edit links, skipped/help-needed labels, outstanding access tasks,
