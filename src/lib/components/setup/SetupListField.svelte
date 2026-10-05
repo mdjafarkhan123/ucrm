@@ -23,6 +23,7 @@
 		id,
 		factKey,
 		label,
+		labelledby,
 		fields,
 		maxRows,
 		value = $bindable(''),
@@ -36,6 +37,8 @@
 		id: string;
 		factKey: string;
 		label: string;
+		/** The id of the question shown above; the field then draws no legend of its own. */
+		labelledby?: string;
 		fields: SetupListField[];
 		maxRows: number;
 		value?: string;
@@ -150,6 +153,7 @@
 					{country}
 					{userId}
 					fileTarget={{ factKey, fieldKey: field.key }}
+					nested
 					{onedit}
 					{oncommit}
 				/>
@@ -159,8 +163,12 @@
 {/snippet}
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<fieldset class="setup-list" aria-describedby={error ? `${id}-error` : undefined}>
-	<legend class="setup-list__label">{label}</legend>
+<fieldset
+	class="setup-list"
+	aria-describedby={error ? `${id}-error` : undefined}
+	aria-labelledby={labelledby}
+>
+	{#if !labelledby}<legend class="setup-list__label">{label}</legend>{/if}
 	{#if form}
 		<div class="setup-list__form" id={`${id}-${rows[0].id}`}>{@render boxes(rows[0])}</div>
 	{:else}

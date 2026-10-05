@@ -11,6 +11,7 @@
 		invalid = false,
 		errorMessage = '',
 		required = false,
+		labelledby,
 		onchange
 	}: {
 		value?: string;
@@ -18,6 +19,8 @@
 		invalid?: boolean;
 		errorMessage?: string;
 		required?: boolean;
+		/** The id of a question already shown elsewhere; the picker then draws no "Time zone" label. */
+		labelledby?: string;
 		onchange?: (value: string) => void;
 	} = $props();
 	type IntlWithTimezones = typeof Intl & { supportedValuesOf?: (key: 'timeZone') => string[] };
@@ -120,10 +123,12 @@
 <!-- The inline SVG strings are trusted build-time Tabler icon imports. -->
 <!-- eslint-disable svelte/no-at-html-tags -->
 <div class="timezone-picker" class:timezone-picker--invalid={invalid}>
-	<label for={id}
-		>Time zone{#if required}
-			<span aria-hidden="true">*</span>{/if}</label
-	>
+	{#if !labelledby}
+		<label for={id}
+			>Time zone{#if required}
+				<span aria-hidden="true">*</span>{/if}</label
+		>
+	{/if}
 	{#key resetKey}
 		<Combobox.Root
 			type="single"
@@ -139,6 +144,7 @@
 					{id}
 					placeholder="Search by city or UTC offset"
 					autocomplete="off"
+					aria-labelledby={labelledby}
 					aria-describedby={describedBy}
 					aria-invalid={invalid}
 					onfocus={(event) => focusTimezone(event.currentTarget)}

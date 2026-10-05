@@ -19,6 +19,7 @@
 	let {
 		id,
 		label,
+		labelledby,
 		rows,
 		nameKey,
 		minChoices,
@@ -30,6 +31,8 @@
 	}: {
 		id: string;
 		label: string;
+		/** The id of the question shown above; the field then draws no legend of its own. */
+		labelledby?: string;
 		/** The earlier list's rows as they stand now. */
 		rows: SetupListRow[];
 		/** The box of each row that names it. */
@@ -86,8 +89,8 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<fieldset class="setup-pick">
-	<legend class="setup-pick__label">{label}</legend>
+<fieldset class="setup-pick" aria-labelledby={labelledby}>
+	{#if !labelledby}<legend class="setup-pick__label">{label}</legend>{/if}
 	<p class="setup-pick__limit">{instruction}</p>
 	<div class="setup-pick__options">
 		{#each rows as row (row.id)}

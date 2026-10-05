@@ -53,6 +53,12 @@ A radio chooses one discrete option from a small set (pair for binary choices, e
 - **Vertical** (default): options stack full-width; spacing flows from label height + description margins.
 - **Horizontal:** `gap: var(--space-base)` (16px) between options.
 - When volume of options > 5 (or vertical space is tight) use a Select instead; when every label is 1–2 words use a Chip instead.
+- **Cards** (`ui/RadioGroup.svelte` `variant="cards"`): on question-and-answer screens such as client setup, each
+  option is a tile — `var(--space-base)` padding, `var(--border-base)` `var(--color-border)` border,
+  `var(--radius-base)`. Hover: border → `var(--color-interactive)`. Checked: border and a 1px inset ring in
+  `var(--color-interactive)`, background `var(--color-interactive--background--subtle--hover)`, label 600.
+  Tiles sit side by side and stack full width under 560px. When the question is already shown above the
+  group, pass its id as `labelledby` and the group draws no label of its own.
 
 ## Toggle (Switch)
 

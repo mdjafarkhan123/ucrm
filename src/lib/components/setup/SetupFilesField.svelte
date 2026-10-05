@@ -48,6 +48,7 @@
 		factKey,
 		fieldKey,
 		label,
+		labelledby,
 		kinds,
 		maxFiles,
 		userId,
@@ -61,6 +62,8 @@
 		/** A5e: the file box of a list question, when this sits in one of its rows. */
 		fieldKey?: string;
 		label: string;
+		/** The id of the question shown above; the field then draws no legend of its own. */
+		labelledby?: string;
 		kinds: SetupFileKind[];
 		maxFiles: number;
 		userId: string | null;
@@ -242,8 +245,8 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<fieldset class="setup-files">
-	<legend class="setup-files__label">{label}</legend>
+<fieldset class="setup-files" aria-labelledby={labelledby}>
+	{#if !labelledby}<legend class="setup-files__label">{label}</legend>{/if}
 	<p class="setup-files__limit">
 		{maxFiles === 1 ? 'One file' : `Up to ${maxFiles} files`} · {setupFileFormats(kinds)} · up to 100
 		MB each

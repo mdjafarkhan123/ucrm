@@ -15,6 +15,7 @@
 		id,
 		label,
 		ariaLabel,
+		ariaLabelledby,
 		placeholder = 'Select an option',
 		disabled = false,
 		required = false,
@@ -30,6 +31,8 @@
 		id: string;
 		label?: string;
 		ariaLabel?: string;
+		/** The id of a question already shown elsewhere, naming the select instead of a label. */
+		ariaLabelledby?: string;
 		placeholder?: string;
 		disabled?: boolean;
 		required?: boolean;
@@ -78,7 +81,7 @@
 			{id}
 			class="select__trigger"
 			aria-label={label ? undefined : ariaLabel}
-			aria-labelledby={labelId}
+			aria-labelledby={labelId ?? ariaLabelledby}
 		>
 			{#if prefix}<span class="select__prefix">{prefix}</span>{/if}
 			<span class="select__value">{selectedLabel}</span>

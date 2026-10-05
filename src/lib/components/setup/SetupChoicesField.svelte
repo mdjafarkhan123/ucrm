@@ -10,6 +10,7 @@
 	let {
 		id,
 		label,
+		labelledby,
 		options,
 		allowOther = false,
 		maxChoices,
@@ -20,6 +21,8 @@
 	}: {
 		id: string;
 		label: string;
+		/** The id of the question shown above; the field then draws no legend of its own. */
+		labelledby?: string;
 		options: { value: string; label: string }[];
 		allowOther?: boolean;
 		maxChoices?: number;
@@ -73,8 +76,8 @@
 	}
 </script>
 
-<fieldset class="setup-choices">
-	<legend class="setup-choices__label">{label}</legend>
+<fieldset class="setup-choices" aria-labelledby={labelledby}>
+	{#if !labelledby}<legend class="setup-choices__label">{label}</legend>{/if}
 	{#if maxChoices}
 		<p class="setup-choices__limit">Tick up to {maxChoices}.</p>
 	{/if}

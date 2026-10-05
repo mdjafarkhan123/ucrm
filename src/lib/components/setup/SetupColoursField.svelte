@@ -11,6 +11,7 @@
 	let {
 		id,
 		label,
+		labelledby,
 		value = $bindable(''),
 		invalid = false,
 		onedit,
@@ -18,6 +19,8 @@
 	}: {
 		id: string;
 		label: string;
+		/** The id of the question shown above; the field then draws no legend of its own. */
+		labelledby?: string;
 		value?: string;
 		invalid?: boolean;
 		onedit: () => void;
@@ -90,8 +93,8 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<fieldset class="setup-colours">
-	<legend class="setup-colours__label">{label}</legend>
+<fieldset class="setup-colours" aria-labelledby={labelledby}>
+	{#if !labelledby}<legend class="setup-colours__label">{label}</legend>{/if}
 	{#each rows as row, index (row.rowId)}
 		<div class="setup-colours__row">
 			<input

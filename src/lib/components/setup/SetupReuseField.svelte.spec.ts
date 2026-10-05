@@ -31,7 +31,7 @@ describe('a reuse question', () => {
 		await page.getByText('Yes, use this').click();
 		await page.getByText('Use a different one here').click();
 		expect(saved()).toBe('');
-		const box = page.getByRole('textbox', { name: 'Your answer for this' });
+		const box = page.getByRole('textbox', { name: 'Which phone should the website show?' });
 		await box.fill('01632 960999');
 		expect(saved()).toBe('01632 960999');
 		await expect

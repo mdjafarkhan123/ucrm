@@ -40,6 +40,7 @@
 		reuse = null,
 		flagged = false,
 		helpAnswer = null,
+		nested = false,
 		onedit,
 		oncommit
 	}: {
@@ -69,6 +70,8 @@
 		flagged?: boolean;
 		/** C3c: what Uplift filled in, shown while the client still has "I need Uplift's help". */
 		helpAnswer?: SetupHelpAnswer | null;
+		/** A box inside a list's entry: its question reads as a smaller label. */
+		nested?: boolean;
 		onedit: () => void;
 		oncommit: () => void;
 	} = $props();
@@ -118,9 +121,6 @@
 		onedit();
 	}
 
-	// Hours and dated exceptions are editors with a heading of their own rather than one labelled box.
-	const isEditor = $derived(fact.kind === 'hours' || fact.kind === 'hours_exceptions');
-
 	// A date answer is kept as YYYY-MM-DD; anything else (an old answer of another shape) shows as empty.
 	const dateValue = $derived.by(() => {
 		if (fact.kind !== 'date' || !value) return undefined;
@@ -152,8 +152,9 @@
 		oncommit();
 	}
 
-	// The question's own box keeps its wording, unless it sits under "Use a different one here".
-	const label = $derived(reuse ? 'Your answer for this' : fact.label);
+	// Every question is shown once, above its answer, and names the answer for screen readers.
+	const label = $derived(fact.label);
+	const questionId = $derived(`${id}-question`);
 
 	function chooseAvailability(next: string) {
 		availability = next as SetupAvailability;
@@ -162,20 +163,15 @@
 </script>
 
 {#snippet control()}
-	{#if isEditor}
-		<div class="setup-field__heading">
-			<span class="setup-field__label">{label}</span>
-			{#if fact.hint}<p class="setup-field__hint">{fact.hint}</p>{/if}
-		</div>
-		{#if fact.kind === 'hours'}
-			<SetupHoursField {id} bind:value onchange={onedit} />
-		{:else}
-			<SetupHoursExceptions {id} bind:value onchange={onedit} />
-		{/if}
+	{#if fact.kind === 'hours'}
+		<SetupHoursField {id} bind:value onchange={onedit} />
+	{:else if fact.kind === 'hours_exceptions'}
+		<SetupHoursExceptions {id} bind:value onchange={onedit} />
 	{:else if fact.kind === 'multi_choice'}
 		<SetupChoicesField
 			{id}
 			{label}
+			labelledby={questionId}
 			options={fact.options ?? []}
 			allowOther={fact.allowOther}
 			maxChoices={fact.maxChoices}
@@ -188,6 +184,7 @@
 		<SetupAmountField
 			{id}
 			{label}
+			labelledby={questionId}
 			kind={fact.kind}
 			bind:value
 			{currency}
@@ -202,6 +199,7 @@
 			{id}
 			factKey={fact.key}
 			{label}
+			labelledby={questionId}
 			fields={fact.listFields ?? []}
 			maxRows={fact.maxRows ?? 1}
 			bind:value
@@ -216,6 +214,7 @@
 		<SetupPickField
 			{id}
 			{label}
+			labelledby={questionId}
 			rows={pickRows}
 			nameKey={fact.pickNameKey}
 			minChoices={fact.minChoices}
@@ -225,40 +224,44 @@
 			invalid={Boolean(error)}
 			{oncommit}
 		/>
-	{:else if fact.kind === 'file'}
+	{:else if fact.kind === 'file' || fact.kind === 'protected_file'}
 		<SetupFilesField
 			{id}
-			factKey={fileTarget?.factKey ?? fact.key}
-			fieldKey={fileTarget?.fieldKey}
+			factKey={fact.kind === 'file' ? (fileTarget?.factKey ?? fact.key) : fact.key}
+			fieldKey={fact.kind === 'file' ? fileTarget?.fieldKey : undefined}
 			{label}
-			kinds={fact.fileKinds ?? ['photo']}
+			labelledby={questionId}
+			kinds={fact.fileKinds ?? (fact.kind === 'file' ? ['photo'] : PROTECTED_FILE_KINDS)}
 			maxFiles={fact.maxFiles ?? 1}
 			{userId}
 			bind:value
 			invalid={Boolean(error)}
-			{oncommit}
-		/>
-	{:else if fact.kind === 'protected_file'}
-		<SetupFilesField
-			{id}
-			factKey={fact.key}
-			{label}
-			kinds={fact.fileKinds ?? PROTECTED_FILE_KINDS}
-			maxFiles={fact.maxFiles ?? 1}
-			{userId}
-			bind:value
-			invalid={Boolean(error)}
-			secure
+			secure={fact.kind === 'protected_file'}
 			{oncommit}
 		/>
 	{:else if fact.kind === 'colours'}
-		<SetupColoursField {id} {label} bind:value invalid={Boolean(error)} {onedit} {oncommit} />
+		<SetupColoursField
+			{id}
+			{label}
+			labelledby={questionId}
+			bind:value
+			invalid={Boolean(error)}
+			{onedit}
+			{oncommit}
+		/>
 	{:else if fact.kind === 'choice' && fact.layout === 'radio'}
-		<RadioGroup {label} options={fact.options ?? []} {value} onchange={choose} />
+		<RadioGroup
+			{label}
+			labelledby={questionId}
+			variant="cards"
+			options={fact.options ?? []}
+			{value}
+			onchange={choose}
+		/>
 	{:else if fact.kind === 'country'}
 		<Select
 			{id}
-			{label}
+			ariaLabelledby={questionId}
 			placeholder="Choose your country"
 			options={COUNTRIES}
 			bind:value
@@ -269,58 +272,58 @@
 		<CalendarPicker
 			{id}
 			{label}
+			hideLabel
 			value={dateValue}
 			required={fact.required && !fact.canDefer}
 			invalid={Boolean(error)}
 			onchange={chooseDate}
 		/>
 	{:else if fact.kind === 'timezone'}
-		<TimezonePicker {id} bind:value required={fact.required} onchange={oncommit} />
+		<TimezonePicker
+			{id}
+			labelledby={questionId}
+			bind:value
+			required={fact.required}
+			onchange={oncommit}
+		/>
 	{:else if fact.kind === 'longtext'}
 		<Textarea
 			{id}
-			{label}
+			aria-labelledby={questionId}
 			bind:value
 			maxlength={fact.maxLength}
 			oninput={onedit}
 			onblur={oncommit}
 		/>
-	{:else if fact.kind === 'choice'}
+	{:else if fact.kind === 'choice' || fact.kind === 'choice_other'}
 		<Select
 			{id}
-			{label}
+			ariaLabelledby={questionId}
 			placeholder="Choose one"
 			options={fact.options ?? []}
-			bind:value
-			required={fact.required}
-			onchange={oncommit}
-		/>
-	{:else if fact.kind === 'choice_other'}
-		<Select
-			{id}
-			{label}
-			placeholder="Choose one"
-			options={fact.options ?? []}
-			value={listChoice}
+			value={fact.kind === 'choice' ? value : listChoice}
 			required={fact.required}
 			onchange={choose}
 		/>
-		{#if listChoice === OTHER}
-			<Input
-				id={`${id}-other`}
-				label={fact.otherLabel ?? 'Tell us which'}
-				value={otherText}
-				maxlength={fact.maxLength}
-				oninput={typeOther}
-				onblur={oncommit}
-			/>
+		{#if fact.kind === 'choice_other' && listChoice === OTHER}
+			<div class="setup-field__sub">
+				<label class="setup-field__sublabel" for={`${id}-other`}
+					>{fact.otherLabel ?? 'Tell us which'}</label
+				>
+				<Input
+					id={`${id}-other`}
+					value={otherText}
+					maxlength={fact.maxLength}
+					oninput={typeOther}
+					onblur={oncommit}
+				/>
+			</div>
 		{/if}
 	{:else}
 		<Input
 			{id}
-			label={fact.canDefer ? undefined : label}
-			aria-label={fact.canDefer ? label : undefined}
-			placeholder={fact.canDefer ? label : fact.kind === 'url' ? 'example.com' : undefined}
+			aria-labelledby={questionId}
+			placeholder={fact.kind === 'url' ? 'example.com' : undefined}
 			type={inputType}
 			inputmode={fact.kind === 'url' ? 'url' : undefined}
 			{autocomplete}
@@ -334,7 +337,13 @@
 	{/if}
 {/snippet}
 
-<div class="setup-field" class:setup-field--flagged={flagged} id={`${id}-field`}>
+<div
+	class="setup-field"
+	class:setup-field--nested={nested}
+	class:setup-field--flagged={flagged}
+	class:setup-field--invalid={Boolean(error) && fact.kind !== 'list'}
+	id={`${id}-field`}
+>
 	{#if flagged}
 		<span class="setup-field__flag">
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -342,9 +351,23 @@
 			Uplift asked you to change this
 		</span>
 	{/if}
+
+	<div class="setup-field__heading">
+		<span class="setup-field__question" id={questionId}
+			>{label}{#if !fact.required}<span class="setup-field__optional">(optional)</span>{/if}</span
+		>
+		{#if fact.hint && availability === 'have'}<p class="setup-field__hint">{fact.hint}</p>{/if}
+	</div>
+
+	{#if error && fact.kind !== 'list'}
+		<p class="setup-field__error" role="alert">{error}</p>
+	{/if}
+
 	{#if fact.canDefer}
 		<RadioGroup
 			label={fact.label}
+			labelledby={questionId}
+			variant="cards"
 			options={AVAILABILITY_OPTIONS}
 			value={availability}
 			onchange={chooseAvailability}
@@ -352,14 +375,16 @@
 	{/if}
 
 	{#if availability !== 'have'}
-		<Input
-			id={`${id}-note`}
-			label="Note for Uplift (optional)"
-			bind:value={note}
-			maxlength={500}
-			oninput={onedit}
-			onblur={oncommit}
-		/>
+		<div class="setup-field__sub">
+			<label class="setup-field__sublabel" for={`${id}-note`}>Note for Uplift (optional)</label>
+			<Input
+				id={`${id}-note`}
+				bind:value={note}
+				maxlength={500}
+				oninput={onedit}
+				onblur={oncommit}
+			/>
+		</div>
 		{#if availability === 'need_help' && helpAnswer}
 			<div class="setup-field__help">
 				<span class="setup-field__help-label">Uplift filled this in</span>
@@ -388,7 +413,9 @@
 			<a class="setup-field__reuse-change" href={reuse.href}>Change</a>
 		</div>
 		<RadioGroup
-			label={fact.canDefer ? 'Use this answer?' : fact.label}
+			label={fact.label}
+			labelledby={questionId}
+			variant="cards"
 			options={REUSE_OPTIONS}
 			value={reuseChoice}
 			onchange={chooseReuse}
@@ -400,12 +427,8 @@
 		{@render control()}
 	{/if}
 
-	{#if error && fact.kind !== 'list'}
-		<p class="setup-field__error" role="alert">{error}</p>
-	{:else if suggested && availability === 'have'}
-		<p class="setup-field__hint">Filled in for you — change it if it isn’t right.</p>
-	{:else if fact.hint && availability === 'have' && !isEditor}
-		<p class="setup-field__hint">{fact.hint}</p>
+	{#if suggested && availability === 'have' && !error}
+		<p class="setup-field__suggested">Filled in for you — change it if it isn’t right.</p>
 	{/if}
 </div>
 
@@ -415,7 +438,7 @@
 		flex-direction: column;
 		gap: var(--space-small);
 		min-width: 0;
-		// Room above the field when "Mark as done" scrolls an unanswered question into view.
+		// Room above the question when "Mark as done" or a "Question to change" link brings it into view.
 		scroll-margin-top: var(--space-largest);
 
 		// C3b: the same warning tint Jafar's page gives a question he sent back.
@@ -423,6 +446,12 @@
 			padding: var(--space-base);
 			border-radius: var(--radius-base);
 			background: var(--color-warning--surface);
+		}
+
+		// A question still needing attention carries a red bar down its side, as GOV.UK's error pattern does.
+		&--invalid {
+			padding-left: var(--space-base);
+			border-left: 3px solid var(--color-critical);
 		}
 
 		&__flag {
@@ -446,28 +475,67 @@
 		&__heading {
 			display: flex;
 			flex-direction: column;
-			gap: var(--space-smaller);
+			gap: var(--space-smallest);
 		}
 
-		&__label {
+		&__question {
 			color: var(--color-heading);
-			font-size: var(--typography--fontSize-base);
+			font-size: var(--typography--fontSize-large);
 			font-weight: 600;
+			line-height: 1.4;
+			overflow-wrap: anywhere;
+		}
+
+		&__optional {
+			margin-left: var(--space-smaller);
+			color: var(--color-text--secondary);
+			font-weight: 400;
+		}
+
+		&--nested &__question {
+			font-size: var(--typography--fontSize-base);
 		}
 
 		&__hint,
+		&__suggested,
 		&__error {
-			font-size: var(--typography--fontSize-small);
-			line-height: var(--typography--lineHeight-base);
+			margin: 0;
+			font-size: var(--typography--fontSize-base);
+			line-height: 1.5;
 		}
 
 		&__hint {
 			color: var(--color-text--secondary);
 		}
 
+		&__suggested {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
 		&__error {
 			color: var(--color-critical--onSurface);
 			font-weight: 600;
+		}
+
+		// A select sits at the same height and inset as a text box, so a screen of answers lines up.
+		:global(.select__trigger) {
+			min-height: var(--space-largest);
+			padding-inline: var(--space-base);
+			font-size: var(--typography--fontSize-base);
+		}
+
+		&__sub {
+			margin-top: var(--space-smaller);
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smaller);
+		}
+
+		&__sublabel {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 500;
 		}
 
 		&__help {

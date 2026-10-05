@@ -14,6 +14,7 @@
 	let {
 		id,
 		label,
+		labelledby,
 		kind,
 		value = $bindable(''),
 		currency,
@@ -25,6 +26,8 @@
 	}: {
 		id: string;
 		label: string;
+		/** The id of the question shown above; the box then carries no label of its own. */
+		labelledby?: string;
 		kind: 'number' | 'percentage' | 'money' | 'distance' | 'duration';
 		value?: string;
 		/** The business's currency, for money. */
@@ -133,7 +136,8 @@
 		>
 			<Input
 				{id}
-				{label}
+				label={labelledby ? undefined : label}
+				aria-labelledby={labelledby}
 				inputmode="decimal"
 				autocomplete="off"
 				placeholder="0"

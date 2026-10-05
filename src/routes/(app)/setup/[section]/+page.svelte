@@ -7,7 +7,6 @@
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
-	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -44,6 +43,9 @@
 	import { setupAnswerLines } from '$lib/setup/answer-lines';
 	import { getSupportAsk } from '$lib/support/ask';
 	import askIcon from '@tabler/icons/outline/message-question.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	import arrowLeftIcon from '@tabler/icons/outline/arrow-left.svg?raw';
+	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import type { HttpError } from '$lib/http-error';
 	import type { PageProps } from './$types';
 
@@ -173,7 +175,7 @@
 				? `You told us above, in “${fact.reuseLabel}”`
 				: `You told us in ${fact.reuseSection?.title ?? 'an earlier section'}`,
 			href: here
-				? `#setup-${key.replace(/\./g, '-')}-field`
+				? fieldHref(key)
 				: resolve('/(app)/setup/[section]', { section: fact.reuseSection?.key ?? '' })
 		};
 	}
@@ -376,7 +378,17 @@
 		);
 		if (firstProblem || saveState === 'failed') {
 			finishing = false;
+			if (firstProblem) {
+				jumpingToQuestion = true;
+				// eslint-disable-next-line svelte/no-navigation-without-resolve -- stepHref builds on a resolve()d path.
+				await goto(stepHref(stepOf(firstProblem.key)), { noScroll: true });
+				toast.error(
+					'A few answers are still needed',
+					'The steps marked in red show where. Fill them in, then finish this task.'
+				);
+			}
 			await tick();
+			jumpingToQuestion = false;
 			if (firstProblem)
 				document
 					.getElementById(`setup-${firstProblem.key.replace(/\./g, '-')}-field`)
@@ -448,7 +460,71 @@
 	const flagged = $derived(new Set(review?.state === 'returned' ? review.question_keys : []));
 	const reviewedOn = (at: string | null) =>
 		at ? new Date(at).toLocaleDateString(undefined, { dateStyle: 'long' }) : '';
-	const fieldHref = (key: string) => `#setup-${key.replace(/\./g, '-')}-field`;
+
+	// One topic per screen, as Stripe's and GOV.UK's long setups do: each group of questions is a step with
+	// its own address, so the browser's Back button, a refresh and a "Question to change" link all land on
+	// the same step. A step whose questions are all hidden by earlier answers is skipped. `?step` is the
+	// group's place in the whole section, so it stays put when another step appears or disappears.
+	const steps = $derived(
+		section && fields
+			? section.groups
+					.map((group, index) => ({ group, index }))
+					.filter(({ group }) => group.facts.some((fact) => shown.has(fact.key)))
+			: []
+	);
+	const requestedStep = $derived(Number(page.url.searchParams.get('step') ?? '1') - 1);
+	const current = $derived(
+		steps.find((step) => step.index >= requestedStep) ?? steps[steps.length - 1]
+	);
+	const position = $derived(current ? steps.indexOf(current) : 0);
+	const previousStep = $derived(position > 0 ? steps[position - 1] : null);
+	const nextStep = $derived(position < steps.length - 1 ? steps[position + 1] : null);
+
+	const sectionHref = $derived(resolve('/(app)/setup/[section]', { section: sectionKey }));
+	const stepHref = (index: number) =>
+		`${sectionHref}?step=${index + 1}${fromCheck ? '&from=check' : ''}`;
+	const stepOf = (key: string) =>
+		Math.max(
+			section?.groups.findIndex((group) => group.facts.some((fact) => fact.key === key)) ?? 0,
+			0
+		);
+	const fieldHref = (key: string) =>
+		`${stepHref(stepOf(key))}#setup-${key.replace(/\./g, '-')}-field`;
+
+	const stepAsked = (index: number) =>
+		section?.groups[index].facts.filter((fact) => shown.has(fact.key)) ?? [];
+	// A step is ticked once it has an answer and every question it asks that needs one has one.
+	function stepComplete(index: number) {
+		const asked = stepAsked(index);
+		return (
+			asked.some((fact) => draftAnswer(fact.key)) &&
+			asked.every((fact) => !fact.required || draftAnswer(fact.key))
+		);
+	}
+	// The app scrolls inside its own panel, so moving to another step brings that step's title into view
+	// and puts the focus there itself, as a new page would. The first step shown needs neither.
+	let shownStep: number | null = null;
+	// Set while "Finish this task" opens the step holding a missing answer, which it scrolls to itself.
+	let jumpingToQuestion = false;
+	$effect(() => {
+		const index = current?.index ?? null;
+		if (index === null) return;
+		untrack(() => {
+			const moved = shownStep !== null && shownStep !== index;
+			shownStep = index;
+			if (!moved || page.url.hash || jumpingToQuestion) return;
+			void tick().then(() => {
+				const title = document.getElementById('setup-step-title');
+				title?.focus({ preventScroll: true });
+				document
+					.querySelector('.setup-section')
+					?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			});
+		});
+	});
+
+	const stepNeedsAttention = (index: number) =>
+		stepAsked(index).some((fact) => errors[fact.key] || flagged.has(fact.key));
 </script>
 
 <svelte:head
@@ -549,53 +625,127 @@
 				</Banner>
 			{/if}
 
-			{#each section.groups as group, index (`${index}-${group.title}`)}
-				{@const asked = group.facts.filter((fact) => shown.has(fact.key))}
-				{#if asked.length > 0}
-					<SectionBlock title={group.title} hint={group.hint} form level={2}>
-						{#each asked as fact (fact.key)}
-							<SetupField
-								{fact}
-								bind:value={form[fact.key].value}
-								bind:availability={form[fact.key].availability}
-								bind:note={form[fact.key].note}
-								error={errors[fact.key] ?? ''}
-								suggested={suggested[fact.key] ?? false}
-								{currency}
-								{country}
-								{userId}
-								pickRows={fact.kind === 'pick' ? pickRows(fact) : undefined}
-								reuse={reuseOf(fact)}
-								flagged={flagged.has(fact.key)}
-								helpAnswer={query.data?.help_answers?.[fact.key] ?? null}
-								onedit={() => edited(fact.key)}
-								oncommit={() => committed(fact.key)}
-							/>
-						{/each}
-					</SectionBlock>
-				{/if}
-			{/each}
-
-			<footer class="setup-section__footer">
-				{#if markedDone && review?.state === 'returned'}
-					<Button href={checkHref}>Go to Check and send</Button>
-					<Button variant="tertiary" href={tasksHref}>Back to setup tasks</Button>
-				{:else if markedDone}
-					<Button href={backHref}>{backLabel}</Button>
-					<Button variant="tertiary" onclick={reopen} loading={finishing}>Mark as not done</Button>
-				{:else}
-					<Button onclick={markDone} loading={finishing}>Mark as done</Button>
-					<Button variant="tertiary" href={backHref}
-						>{fromCheck ? 'Back to Check and send' : 'Save and come back later'}</Button
-					>
-					{#if unanswered.length > 0}
-						<span class="setup-section__remaining"
-							>{unanswered.length}
-							{unanswered.length === 1 ? 'question' : 'questions'} still to answer</span
-						>
+			{#if current}
+				{@const asked = current.group.facts.filter((fact) => shown.has(fact.key))}
+				<div class="setup-section__body" class:setup-section__body--steps={steps.length > 1}>
+					{#if steps.length > 1}
+						<nav class="setup-steps" aria-label={`${section.title} steps`}>
+							<p class="setup-steps__count">Step {position + 1} of {steps.length}</p>
+							<div class="setup-steps__bar" aria-hidden="true">
+								<span style:width={`${((position + 1) / steps.length) * 100}%`}></span>
+							</div>
+							<ol class="setup-steps__list">
+								{#each steps as step, number (step.index)}
+									{@const complete = stepComplete(step.index)}
+									{@const attention = stepNeedsAttention(step.index)}
+									<li>
+										<!-- eslint-disable svelte/no-navigation-without-resolve -- stepHref builds on a resolve()d path. -->
+										<a
+											class="setup-steps__link"
+											class:setup-steps__link--current={step === current}
+											class:setup-steps__link--complete={complete && !attention}
+											class:setup-steps__link--attention={attention}
+											href={stepHref(step.index)}
+											aria-current={step === current ? 'step' : undefined}
+										>
+											<span class="setup-steps__marker" aria-hidden="true">
+												{#if complete && !attention}
+													<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+													{@html checkIcon}
+												{:else}
+													{number + 1}
+												{/if}
+											</span>
+											<span class="setup-steps__name">{step.group.title || section.title}</span>
+											{#if attention}
+												<span class="setup-steps__hidden">(needs attention)</span>
+											{:else if complete}
+												<span class="setup-steps__hidden">(done)</span>
+											{/if}
+										</a>
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
+									</li>
+								{/each}
+							</ol>
+						</nav>
 					{/if}
-				{/if}
-			</footer>
+
+					<section class="setup-step" aria-labelledby="setup-step-title">
+						<header class="setup-step__header">
+							{#if steps.length > 1}
+								<p class="setup-step__eyebrow">Step {position + 1} of {steps.length}</p>
+							{/if}
+							<h2 class="setup-step__title" id="setup-step-title" tabindex="-1">
+								{current.group.title || section.title}
+							</h2>
+							{#if current.group.hint}<p class="setup-step__hint">{current.group.hint}</p>{/if}
+						</header>
+
+						<div class="setup-step__questions">
+							{#each asked as fact (fact.key)}
+								<SetupField
+									{fact}
+									bind:value={form[fact.key].value}
+									bind:availability={form[fact.key].availability}
+									bind:note={form[fact.key].note}
+									error={errors[fact.key] ?? ''}
+									suggested={suggested[fact.key] ?? false}
+									{currency}
+									{country}
+									{userId}
+									pickRows={fact.kind === 'pick' ? pickRows(fact) : undefined}
+									reuse={reuseOf(fact)}
+									flagged={flagged.has(fact.key)}
+									helpAnswer={query.data?.help_answers?.[fact.key] ?? null}
+									onedit={() => edited(fact.key)}
+									oncommit={() => committed(fact.key)}
+								/>
+							{/each}
+						</div>
+
+						<footer class="setup-step__footer">
+							{#if previousStep}
+								<Button variant="secondary" href={stepHref(previousStep.index)}>
+									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+									<span class="setup-step__arrow" aria-hidden="true">{@html arrowLeftIcon}</span>
+									Back
+								</Button>
+							{/if}
+							<div class="setup-step__forward">
+								{#if nextStep}
+									<Button variant="tertiary" href={backHref}
+										>{fromCheck ? 'Back to Check and send' : 'Save and come back later'}</Button
+									>
+									<Button href={stepHref(nextStep.index)}>
+										Continue
+										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+										<span class="setup-step__arrow" aria-hidden="true">{@html arrowRightIcon}</span>
+									</Button>
+								{:else if markedDone && review?.state === 'returned'}
+									<Button variant="tertiary" href={tasksHref}>Back to setup tasks</Button>
+									<Button href={checkHref}>Go to Check and send</Button>
+								{:else if markedDone}
+									<Button variant="tertiary" onclick={reopen} loading={finishing}
+										>Mark as not done</Button
+									>
+									<Button href={backHref}>{backLabel}</Button>
+								{:else}
+									<Button variant="tertiary" href={backHref}
+										>{fromCheck ? 'Back to Check and send' : 'Save and come back later'}</Button
+									>
+									<Button onclick={markDone} loading={finishing}>Finish this task</Button>
+								{/if}
+							</div>
+							{#if !nextStep && !markedDone && unanswered.length > 0}
+								<p class="setup-step__remaining">
+									{unanswered.length}
+									{unanswered.length === 1 ? 'question' : 'questions'} in this task still to answer
+								</p>
+							{/if}
+						</footer>
+					</section>
+				</div>
+			{/if}
 		{/if}
 	</div>
 </PageContainer>
@@ -605,7 +755,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-large);
-		max-width: 720px;
+		max-width: 1040px;
 		margin-inline: auto;
 
 		// PageHeader carries its own bottom margin; the column gap already spaces what follows.
@@ -639,13 +789,16 @@
 			}
 		}
 
-		&__footer {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: center;
-			gap: var(--space-small);
-			padding-top: var(--space-base);
-			border-top: var(--border-base) solid var(--color-border);
+		&__body {
+			display: grid;
+			max-width: 720px;
+
+			&--steps {
+				grid-template-columns: 240px minmax(0, 1fr);
+				gap: var(--space-larger);
+				align-items: start;
+				max-width: none;
+			}
 		}
 
 		&__returned-title {
@@ -685,11 +838,214 @@
 			margin-top: var(--space-small);
 			font-size: var(--typography--fontSize-small);
 		}
+	}
 
-		&__remaining {
-			margin-left: auto;
+	// The step list: where the client is in this task, and which topics already have their answers.
+	.setup-steps {
+		position: sticky;
+		top: var(--space-base);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-small);
+
+		// Shown only where the list folds away; on a wide screen the step's own heading says where you are.
+		&__count {
+			display: none;
+			margin: 0;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+			letter-spacing: 0.04em;
+			text-transform: uppercase;
+		}
+
+		&__bar {
+			display: none;
+			height: 4px;
+			border-radius: var(--radius-base);
+			background: var(--color-surface--background);
+			overflow: hidden;
+
+			span {
+				display: block;
+				height: 100%;
+				border-radius: inherit;
+				background: var(--color-interactive);
+				transition: width var(--timing-base) ease-out;
+			}
+		}
+
+		&__list {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smallest);
+			margin: 0;
+			padding: 0;
+			list-style: none;
+		}
+
+		&__link {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
+			padding: var(--space-small);
+			border-radius: var(--radius-base);
+			color: var(--color-text);
+			font-size: var(--typography--fontSize-base);
+			text-decoration: none;
+			transition: background-color var(--timing-quick) ease-out;
+
+			&:hover {
+				background: var(--color-surface--hover);
+			}
+
+			&:focus-visible {
+				outline: none;
+				box-shadow: var(--shadow-focus);
+			}
+
+			&--current {
+				background: var(--color-surface--background--subtle);
+				color: var(--color-heading);
+				font-weight: 600;
+			}
+		}
+
+		&__marker {
+			display: inline-flex;
+			flex: none;
+			align-items: center;
+			justify-content: center;
+			width: 26px;
+			height: 26px;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-circle);
+			background: var(--color-surface);
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+		}
+
+		&__link--current &__marker {
+			border-color: var(--color-interactive);
+			box-shadow: inset 0 0 0 1px var(--color-interactive);
+			color: var(--color-interactive);
+		}
+
+		&__link--complete &__marker {
+			border-color: var(--color-interactive);
+			background: var(--color-interactive);
+			color: var(--color-surface);
+		}
+
+		&__link--attention &__marker {
+			border-color: var(--color-critical);
+			background: var(--color-critical--surface);
+			color: var(--color-critical--onSurface);
+		}
+
+		&__name {
+			min-width: 0;
+			overflow-wrap: anywhere;
+		}
+
+		&__hidden {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
+		}
+	}
+
+	// One topic's questions, spaced so each reads on its own.
+	.setup-step {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-larger);
+		min-width: 0;
+		padding: var(--space-larger);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-large);
+		background: var(--color-surface);
+		box-shadow: var(--shadow-low);
+
+		&__header {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smaller);
+			padding-bottom: var(--space-large);
+			border-bottom: var(--border-base) solid var(--color-border);
+		}
+
+		&__eyebrow {
+			margin: 0;
+			color: var(--color-interactive);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 700;
+			letter-spacing: 0.04em;
+			text-transform: uppercase;
+		}
+
+		&__title {
+			margin: 0;
+			outline: none;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-largest);
+			font-weight: 700;
+			line-height: 1.25;
+		}
+
+		&__hint {
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-base);
+			line-height: 1.5;
+		}
+
+		&__questions {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-larger);
+		}
+
+		&__footer {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: var(--space-small);
+			padding-top: var(--space-large);
+			border-top: var(--border-base) solid var(--color-border);
+		}
+
+		&__forward {
+			display: flex;
+			flex-wrap: wrap;
+			gap: var(--space-small);
+			margin-left: auto;
+		}
+
+		&__arrow {
+			display: inline-flex;
+
+			:global(svg) {
+				width: 18px;
+				height: 18px;
+			}
+		}
+
+		&__remaining {
+			flex-basis: 100%;
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			text-align: right;
 		}
 	}
 
@@ -703,11 +1059,55 @@
 			&__save {
 				text-align: left;
 			}
+		}
+	}
 
-			&__remaining {
-				flex-basis: 100%;
-				margin-left: 0;
+	// On a tablet or phone the step list folds into a count and a progress bar above the questions.
+	@media (max-width: 900px) {
+		.setup-section__body--steps {
+			grid-template-columns: minmax(0, 1fr);
+			gap: var(--space-base);
+		}
+
+		.setup-steps {
+			position: static;
+
+			&__count,
+			&__bar {
+				display: block;
 			}
+
+			&__list {
+				display: none;
+			}
+		}
+
+		.setup-step__eyebrow {
+			display: none;
+		}
+	}
+
+	@media (max-width: 560px) {
+		.setup-step {
+			padding: var(--space-base);
+			border-radius: var(--radius-base);
+		}
+
+		.setup-step__forward {
+			width: 100%;
+			flex-direction: column-reverse;
+
+			:global(.button) {
+				width: 100%;
+			}
+		}
+
+		.setup-step__footer > :global(.button) {
+			width: 100%;
+		}
+
+		.setup-step__remaining {
+			text-align: left;
 		}
 	}
 </style>
