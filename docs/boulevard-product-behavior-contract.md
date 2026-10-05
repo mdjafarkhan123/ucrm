@@ -20,6 +20,10 @@ These decisions set boundaries, not final feature-level release approval. Resear
 
 The business account selects the relevant industry experience. Its subscription and employees' permissions control the available tools and records. Plan mixed-service business behavior explicitly. Shared tools retain one behavior definition, with differences recorded under the relevant industry. LifeScan is a potential validation example; its subscription does not establish that Boulevard handles every diagnostic task.
 
+## Research reference rule
+
+Follow [Reference order and missing behavior](platform-overview.md#reference-order-and-missing-behavior): Boulevard first, then relevant competitors for unresolved gaps, with source attribution and explicit uncertainty.
+
 ## Living feature plan
 
 The upcoming inventory will give each feature a stable identifier, purpose, industry relevance, sources, workflow, settings, permissions, exceptions, dependencies, existing-app reuse assessment, and completion checks. Detailed area plans will be linked here as they are researched; this document is not a completed feature inventory.

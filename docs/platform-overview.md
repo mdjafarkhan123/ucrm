@@ -18,7 +18,15 @@ The business account determines the industry experience; subscription features a
 
 Work from product vision → business types → capability areas → features → workflows and rules → completion checks. Describe shared behavior once, then record industry differences. Review complete booking-to-follow-up journeys to catch gaps between features.
 
-Boulevard is the primary reference; relevant competitors are comparisons where evidence is missing or alternatives matter. There is no Boulevard subscription available for a live tour. Use public official help, training, demonstrations, release notes, and developer documentation. Cite behavior, distinguish observed facts from recommendations, and record uncertainty. Public research cannot establish undocumented behavior or a competitor's internal architecture.
+### Reference order and missing behavior
+
+1. Research Boulevard first using official public help, training, demonstrations, release notes, and developer documentation. No subscription is available for a live tour.
+2. When a necessary feature or behavior remains undocumented, unclear, or unavailable in Boulevard, research a relevant established competitor's official sources. Vagaro is a starting comparison for beauty, wellness and medspa workflows; choose another specialist when its workflow is a better match.
+3. Record the gap, the competitor and source, the behavior proposed for our product, and why it fits. Label it as competitor-derived rather than confirmed Boulevard behavior. Missing documentation does not prove Boulevard lacks the feature.
+4. Keep the result consistent with our agreed workflows. Put meaningful trade-offs or changes to approved scope to Jafar with a recommendation. A competitor feature does not automatically enter the initial release.
+5. If reliable evidence is still missing, retain an open question or explicitly proposed behavior; do not invent a vendor rule.
+
+Public research cannot establish undocumented interactions or a competitor's private architecture.
 
 Inventory the full documented feature landscape before selecting initial versus later releases. Include add-ons, integrations, and availability restrictions. Existing inbox, marketing, automation, permissions, customer and financial work must be assessed for reuse and suitability; existence does not establish readiness for a new industry.
 
