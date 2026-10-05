@@ -279,10 +279,17 @@ Ready for Uplift requires the essential business/service facts, required approva
 alternative to perform Uplift's work. Optional assets, optional imports, deferred features, and provider decisions
 that can progress independently do not block it. The review screen states every actual blocker.
 
+Jafar's choices of 2026-10-05: Ready for Uplift needs every task of the newest send accepted (Jafar accepts a task
+whose only gaps are optional) and every help request on a required question answered by Uplift; a paused account
+or reversed payment also blocks it. Before it is recorded a confirmation shows the dates the client will see. A
+Ready pressed by mistake can be taken back with a written reason, kept in history; the client's dates disappear,
+and pressing Ready again starts a fresh range.
+
 ## 5. Delivery promise, statuses, and reminders
 
 The 7–10 business-day window starts at the recorded Ready for Uplift time, not application, payment, first login,
-or partial submission. The client sees the start date and target range. A later major client-directed scope change
+or partial submission. Business days are Monday to Friday in the client's time zone; public holidays are not
+skipped (Jafar, 2026-10-05). The range's dates are fixed when Ready is recorded. The client sees the start date and target range. A later major client-directed scope change
 may revise the target; Uplift records and shows the reason instead of silently moving it.
 
 Client-facing project states are:
