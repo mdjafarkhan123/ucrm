@@ -114,6 +114,14 @@
 		searchInput = '';
 		waitingFilter = '';
 	}
+
+	/** A `YYYY-MM-DD` target date, e.g. "14 Oct", the same day wherever it is read. */
+	const shortDate = (date: string) =>
+		new Date(`${date}T12:00:00Z`).toLocaleDateString(undefined, {
+			day: 'numeric',
+			month: 'short',
+			timeZone: 'UTC'
+		});
 </script>
 
 <svelte:head><title>Onboarding · Control Room</title></svelte:head>
@@ -232,7 +240,17 @@
 						</span>
 					</div>
 				</th>
-				<td><Badge status={stage.tone} size="small">{stage.label}</Badge></td>
+				<td>
+					<div class="onboarding-list__cell">
+						<Badge status={stage.tone} size="small">{stage.label}</Badge>
+						{#if client.target_from && client.target_to}
+							<!-- C4: the range the client was promised when Ready was recorded. -->
+							<span class="onboarding-list__sub"
+								>Due {shortDate(client.target_from)} – {shortDate(client.target_to)}</span
+							>
+						{/if}
+					</div>
+				</td>
 				<td>
 					<div class="onboarding-list__cell onboarding-list__progress">
 						<div

@@ -27,6 +27,7 @@ import { readSetupFiles } from '$lib/server/setup/files';
 import { readSetupHelpAnswers } from '$lib/server/setup/help';
 import { readSetupState, setupAnswerFromRow } from '$lib/server/setup/read';
 import { applicableHelpAnswers, setupHelpItems, type SetupHelpItem } from '$lib/setup/help';
+import { setupReadyBlockers, type SetupReady, type SetupReadyBlocker } from '$lib/setup/ready';
 
 type Client = SupabaseClient<Database>;
 
@@ -198,6 +199,50 @@ async function unsentChanges(supabase: Client, organizationId: string, newest: S
 	).changed_count;
 }
 
+/** C4: the current Ready for Uplift, and whether the account or its payment stops it. */
+async function readReadyFacts(supabase: Client, organizationId: string) {
+	const [ready, organization, provision, settings] = await Promise.all([
+		supabase
+			.from('organization_setup_ready')
+			.select(
+				'submission_number, ready_at, ready_by_email, time_zone, start_date, target_from, target_to'
+			)
+			.eq('organization_id', organizationId)
+			.maybeSingle(),
+		supabase
+			.from('organizations')
+			.select('lifecycle_status')
+			.eq('id', organizationId)
+			.maybeSingle(),
+		supabase
+			.from('platform_onboarding_application_provisions')
+			.select('platform_onboarding_applications(payment_reversed_at)')
+			.eq('organization_id', organizationId)
+			.eq('status', 'succeeded'),
+		supabase
+			.from('organization_settings')
+			.select('timezone')
+			.eq('organization_id', organizationId)
+			.maybeSingle()
+	]);
+	for (const result of [ready, organization, provision, settings])
+		if (result.error) throw result.error;
+	// The database does not limit a business to one paid application, so any reversed payment counts.
+	const reversed = (provision.data ?? []).some(
+		(row) =>
+			(row.platform_onboarding_applications as { payment_reversed_at: string | null } | null)
+				?.payment_reversed_at
+	);
+	return {
+		ready: (ready.data as SetupReady | null) ?? null,
+		account: {
+			paused: organization.data?.lifecycle_status !== 'active',
+			payment_reversed: reversed
+		},
+		timeZone: settings.data?.timezone ?? 'UTC'
+	};
+}
+
 /**
  * The Setup tab's view of one client: every send, `sendNumber` (or the newest) read back, and the reminders.
  * Returns null when the send asked for does not exist. Throws when the database cannot be read.
@@ -207,7 +252,7 @@ export async function readClientSetupView(
 	organizationId: string,
 	sendNumber: number | null
 ): Promise<ClientSetupView | null> {
-	const [sendsResult, remindersResult] = await Promise.all([
+	const [sendsResult, remindersResult, readyFacts] = await Promise.all([
 		supabase
 			.from('organization_setup_submissions')
 			.select('submission_number, submitted_at, submitted_by_name, submitted_by_email')
@@ -217,7 +262,8 @@ export async function readClientSetupView(
 			.from('organization_setup_reminders')
 			.select('paused_at, next_due_at, reminders_sent, last_sent_at')
 			.eq('organization_id', organizationId)
-			.maybeSingle()
+			.maybeSingle(),
+		readReadyFacts(supabase, organizationId)
 	]);
 	if (sendsResult.error) throw sendsResult.error;
 	if (remindersResult.error) throw remindersResult.error;
@@ -237,6 +283,7 @@ export async function readClientSetupView(
 	let help: SetupHelpItem[] | null = null;
 	let helpUnits: ClientSetupView['help_units'] = { country: null, currency: null };
 	let unsent = 0;
+	let readyBlockers: SetupReadyBlocker[] | null = null;
 	if (wanted !== null && newestNumber !== null) {
 		const [row, newest] = await Promise.all([
 			readSubmission(supabase, organizationId, wanted),
@@ -263,6 +310,12 @@ export async function readClientSetupView(
 			reviews = readReviews;
 			// C3c: Uplift's to-do — the help requests of this send, with any answer Uplift has recorded.
 			help = setupHelpItems(send.sections, facts, applicableHelpAnswers(helpAnswers, read.answers));
+			readyBlockers = setupReadyBlockers({
+				account: readyFacts.account,
+				sections: send.sections,
+				reviews,
+				help
+			});
 			helpUnits = {
 				country: read.answers['business.country']?.value ?? null,
 				currency: read.answers['business.currency']?.value ?? null
@@ -277,6 +330,12 @@ export async function readClientSetupView(
 		help,
 		help_units: helpUnits,
 		unsent_changes: unsent,
-		reminders: remindersResult.data
+		reminders: remindersResult.data,
+		ready: readyFacts.ready,
+		ready_blockers:
+			newestNumber === null
+				? setupReadyBlockers({ account: readyFacts.account, sections: null, reviews: {}, help: [] })
+				: readyBlockers,
+		time_zone: readyFacts.timeZone
 	};
 }

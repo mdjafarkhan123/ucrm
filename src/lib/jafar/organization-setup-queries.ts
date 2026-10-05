@@ -75,3 +75,7 @@ export const organizationSetupReviewsUrl = (organizationId: string) =>
 /** C3c: where Jafar records Uplift's answer to a help request (POST). */
 export const organizationSetupHelpAnswersUrl = (organizationId: string) =>
 	`/api/jafar/organizations/${encodeURIComponent(organizationId)}/setup/help-answers`;
+
+/** C4: where Jafar records Ready for Uplift (POST) or takes it back with a reason (DELETE). */
+export const organizationSetupReadyUrl = (organizationId: string) =>
+	`/api/jafar/organizations/${encodeURIComponent(organizationId)}/setup/ready`;

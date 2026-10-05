@@ -8,6 +8,7 @@ import {
 import { SETUP_ANSWER_MAX_BYTES, setupStoredBytes } from '$lib/setup/answer-values';
 import { SETUP_REVIEW_NOTE_MAX } from '$lib/setup/review';
 import { SETUP_HELP_NOTE_MAX } from '$lib/setup/help';
+import { SETUP_READY_REASON_MAX } from '$lib/setup/ready';
 
 // One autosave: one or more facts from the setup wizard. The published setup version decides what a fact
 // may hold, so the same rule that the page shows beside the field is the one that refuses the save here.
@@ -180,3 +181,16 @@ export const setupHelpAnswerSchema = z
 	})
 	.strict();
 export type SetupHelpAnswerInput = z.infer<typeof setupHelpAnswerSchema>;
+
+// Client onboarding C4: Ready for Uplift on the newest send, and taking it back with a reason.
+export const setupReadySchema = z.object({ send: z.number().int().positive() }).strict();
+
+export const setupReadyWithdrawSchema = z
+	.object({
+		reason: z
+			.string()
+			.trim()
+			.min(1, 'Say why you are taking it back.')
+			.max(SETUP_READY_REASON_MAX, `Keep it under ${SETUP_READY_REASON_MAX} characters.`)
+	})
+	.strict();

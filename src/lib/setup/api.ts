@@ -31,7 +31,9 @@ export type SetupSummary = {
 	returned_count: number;
 	delivery:
 		| { state: 'collecting' }
-		| { state: 'sent'; number: number; submitted_at: string; submitted_by_name: string };
+		| { state: 'sent'; number: number; submitted_at: string; submitted_by_name: string }
+		/** C4: Uplift recorded Ready for Uplift; the build's start and target range, `YYYY-MM-DD`. */
+		| { state: 'ready'; start_date: string; target_from: string; target_to: string };
 	/** Whether the signed-in person gets setup reminder emails. */
 	reminder_emails_on: boolean;
 };

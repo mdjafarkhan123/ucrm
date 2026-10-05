@@ -17,6 +17,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import SetupAnswerList from '$lib/components/setup/SetupAnswerList.svelte';
 	import SetupHelpAnswerDialog from './SetupHelpAnswerDialog.svelte';
+	import SetupReadyPanel from './SetupReadyPanel.svelte';
 	import SetupReturnDialog from './SetupReturnDialog.svelte';
 	import { iconForMimeType } from '$lib/collaboration/file-icons';
 	import {
@@ -312,6 +313,10 @@
 			{/if}
 		{/if}
 	</SectionBlock>
+
+	{#if view.ready || (view.sends.length > 0 && view.ready_blockers)}
+		<SetupReadyPanel {organizationId} {view} />
+	{/if}
 
 	{#if help.length > 0}
 		<SectionBlock

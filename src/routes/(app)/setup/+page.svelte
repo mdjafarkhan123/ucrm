@@ -25,6 +25,7 @@
 	} from '$lib/setup/api';
 	import type { SetupSectionStatus } from '$lib/setup/catalogue';
 	import { SETUP_CHECK_DESCRIPTION, SETUP_CHECK_KEY, SETUP_CHECK_TITLE } from '$lib/setup/check';
+	import { formatReadyDate } from '$lib/setup/ready';
 	import { setupClientReviewBadge } from '$lib/setup/review';
 	import type { HttpError } from '$lib/http-error';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
@@ -144,7 +145,7 @@
 		label: string;
 		badge: 'inactive' | 'informative' | 'success';
 	} {
-		if (summary.delivery.state === 'sent') {
+		if (summary.delivery.state !== 'collecting') {
 			// C3b: a task Uplift sent back is changed before the setup goes again.
 			if (summary.next?.returned) return { label: 'Waiting for your changes', badge: 'inactive' };
 			return summary.sections.some((section) => section.review?.changed)
@@ -256,6 +257,21 @@
 				{/if}
 			{/snippet}
 
+			{#snippet building()}
+				{#if summary.delivery.state === 'ready'}
+					<!-- C4 (plan §5): the build's start and the range it was promised in, from Uplift's Ready. -->
+					<Banner type="success">
+						<strong>Uplift is building your system.</strong> We started on
+						{formatReadyDate(summary.delivery.start_date)}. It will be ready for you to review
+						between
+						<strong>{formatReadyDate(summary.delivery.target_from)}</strong> and
+						<strong>{formatReadyDate(summary.delivery.target_to, true)}</strong>
+						(7–10 business days, Monday to Friday). You can still change your answers; Uplift sees them
+						when you send them.
+					</Banner>
+				{/if}
+			{/snippet}
+
 			{#snippet tasks()}
 				<SectionBlock title="Your setup tasks" hint="Do them in any order, a little at a time.">
 					{#snippet actions()}
@@ -339,10 +355,12 @@
 						>
 					</div>
 				</section>
+				{@render building()}
 				{@render returned()}
 				{@render tasks()}
 				{@render reminders()}
 			{:else}
+				{@render building()}
 				{@render returned()}
 				{@render tasks()}
 				<SectionBlock title="How setup works">

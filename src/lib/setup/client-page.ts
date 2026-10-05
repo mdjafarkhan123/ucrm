@@ -4,6 +4,7 @@
 
 import type { SetupCheckSection, SetupConfirmation } from '$lib/setup/check';
 import type { SetupHelpItem } from '$lib/setup/help';
+import type { SetupReady, SetupReadyBlocker } from '$lib/setup/ready';
 import type { SetupSectionReview } from '$lib/setup/review';
 
 /** One file of a photo or file answer. Mirrors `SetupFileInfo` in `$lib/server/setup/files`. */
@@ -62,6 +63,12 @@ export type ClientSetupView = {
 	unsent_changes: number;
 	/** Null for a business that has no reminder timer (not provisioned as a paid client). */
 	reminders: ClientSetupReminders | null;
+	/** C4: the current Ready for Uplift, or null. */
+	ready: SetupReady | null;
+	/** C4: what stops Ready for Uplift now; empty when it can be recorded. Null while an earlier send is shown. */
+	ready_blockers: SetupReadyBlocker[] | null;
+	/** The client's time zone, for the dates Ready would give. */
+	time_zone: string;
 };
 
 /** The reminders' state in words, for the Setup tab. `sent`: setup is with Uplift, nothing sent back. */

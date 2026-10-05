@@ -36,6 +36,9 @@ function fakeSupabase(rows: {
 	reminders: unknown;
 	reviews?: unknown[];
 	help?: unknown[];
+	ready?: unknown;
+	lifecycle?: string;
+	paymentReversed?: boolean;
 }) {
 	const rpc = vi.fn(async () => ({ data: SETUP_VERSION_1, error: null }));
 	const from = (table: string) => {
@@ -44,6 +47,17 @@ function fakeSupabase(rows: {
 			if (table === 'organization_setup_reminders') return rows.reminders;
 			if (table === 'organization_setup_section_reviews') return rows.reviews ?? [];
 			if (table === 'organization_setup_help_answers') return rows.help ?? [];
+			if (table === 'organization_setup_ready') return rows.ready ?? null;
+			if (table === 'organizations') return { lifecycle_status: rows.lifecycle ?? 'active' };
+			if (table === 'organization_settings') return { timezone: 'Europe/London' };
+			if (table === 'platform_onboarding_application_provisions')
+				return [
+					{
+						platform_onboarding_applications: {
+							payment_reversed_at: rows.paymentReversed ? '2026-10-03T10:00:00Z' : null
+						}
+					}
+				];
 			return rows.submissions
 				.filter((row) =>
 					'submission_number' in filters
@@ -91,7 +105,8 @@ describe('readClientSetupView', () => {
 				'business.public_name': { availability: 'have', value: 'Acme Roofing Ltd', note: null }
 			},
 			doneSections: new Set(['business']),
-			sent: null
+			sent: null,
+			ready: null
 		});
 	});
 
@@ -105,8 +120,65 @@ describe('readClientSetupView', () => {
 			help: null,
 			help_units: { country: null, currency: null },
 			unsent_changes: 0,
+			reminders: REMINDERS,
+			ready: null,
+			ready_blockers: [{ kind: 'not_sent' }],
+			time_zone: 'Europe/London'
+		});
+	});
+
+	it('names every task not accepted on the newest send, and the account, as blockers to Ready', async () => {
+		const { client } = fakeSupabase({
+			submissions: [submission(1, { 'business.public_name': have('Acme Roofing') })],
+			reminders: REMINDERS,
+			lifecycle: 'suspended',
+			paymentReversed: true
+		});
+		const view = await readClientSetupView(client, ORG, null);
+		expect(view?.ready_blockers).toEqual([
+			{ kind: 'account_paused' },
+			{ kind: 'payment_reversed' },
+			...view!.send!.sections.map((section) => ({
+				kind: 'task',
+				section_key: section.key,
+				section_title: section.title,
+				state: 'to_review'
+			}))
+		]);
+	});
+
+	it('has no blockers once every task of the newest send is accepted, and reads a recorded Ready', async () => {
+		const ready = {
+			submission_number: 1,
+			ready_at: '2026-10-05T09:00:00Z',
+			ready_by_email: 'jafar@example.com',
+			time_zone: 'Europe/London',
+			start_date: '2026-10-05',
+			target_from: '2026-10-14',
+			target_to: '2026-10-19'
+		};
+		const first = fakeSupabase({
+			submissions: [submission(1, { 'business.public_name': have('Acme Roofing') })],
 			reminders: REMINDERS
 		});
+		const sections = (await readClientSetupView(first.client, ORG, null))!.send!.sections;
+		const { client } = fakeSupabase({
+			submissions: [submission(1, { 'business.public_name': have('Acme Roofing') })],
+			reminders: REMINDERS,
+			reviews: sections.map((section) => ({
+				section_key: section.key,
+				decision: 'accepted',
+				submission_number: 1,
+				note: null,
+				question_keys: [],
+				reviewed_by_email: 'jafar@example.com',
+				reviewed_at: '2026-10-05T08:00:00Z'
+			})),
+			ready
+		});
+		const view = await readClientSetupView(client, ORG, null);
+		expect(view?.ready_blockers).toEqual([]);
+		expect(view?.ready).toEqual(ready);
 	});
 
 	it('reads the newest send against its own version and marks what changed since the one before', async () => {
@@ -138,7 +210,8 @@ describe('readClientSetupView', () => {
 			welcomeSeen: true,
 			answers: { 'business.public_name': have('Acme Roofing & Sons') } as never,
 			doneSections: new Set(['business']),
-			sent: null
+			sent: null,
+			ready: null
 		});
 		const { client } = fakeSupabase({
 			submissions: [submission(1, { 'business.public_name': have('Acme Roofing') })],

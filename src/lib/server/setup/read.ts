@@ -16,11 +16,15 @@ import type { SetupClientReview } from '$lib/setup/review';
 /** B13: the newest Send to Uplift, without its answers. */
 export type SetupSent = { number: number; submitted_at: string; submitted_by_name: string };
 
+/** C4: Ready for Uplift as the client sees it — the build's start and target range, `YYYY-MM-DD`. */
+export type SetupReadyDates = { start_date: string; target_from: string; target_to: string };
+
 export type SetupState = {
 	welcomeSeen: boolean;
 	answers: SetupAnswers;
 	doneSections: Set<string>;
 	sent: SetupSent | null;
+	ready: SetupReadyDates | null;
 };
 
 /** A stored answer as the page works with it: hours, lists and the like are JSON, read as text. */
@@ -42,12 +46,12 @@ export function setupAnswerFromRow(row: {
 }
 
 // Everything the wizard has saved for one organization: at most one row per fact and per section, and the
-// newest send, so four small reads keyed by the organization.
+// newest send and Ready for Uplift, so five small reads keyed by the organization.
 export async function readSetupState(
 	supabase: SupabaseClient<Database>,
 	organizationId: string
 ): Promise<SetupState | null> {
-	const [setupResult, answersResult, sectionsResult, sentResult] = await Promise.all([
+	const [setupResult, answersResult, sectionsResult, sentResult, readyResult] = await Promise.all([
 		supabase
 			.from('organization_setup')
 			.select('welcome_seen_at')
@@ -67,9 +71,20 @@ export async function readSetupState(
 			.eq('organization_id', organizationId)
 			.order('submission_number', { ascending: false })
 			.limit(1)
+			.maybeSingle(),
+		supabase
+			.from('organization_setup_ready')
+			.select('start_date, target_from, target_to')
+			.eq('organization_id', organizationId)
 			.maybeSingle()
 	]);
-	if (setupResult.error || answersResult.error || sectionsResult.error || sentResult.error)
+	if (
+		setupResult.error ||
+		answersResult.error ||
+		sectionsResult.error ||
+		sentResult.error ||
+		readyResult.error
+	)
 		return null;
 
 	const answers: SetupAnswers = {};
@@ -87,7 +102,8 @@ export async function readSetupState(
 					submitted_at: sentResult.data.submitted_at,
 					submitted_by_name: sentResult.data.submitted_by_name
 				}
-			: null
+			: null,
+		ready: readyResult.data ?? null
 	};
 }
 
@@ -138,9 +154,11 @@ export function setupSummary(
 		next,
 		// Sections Uplift sent back on the newest send.
 		returned_count: returned.length,
-		// The delivery stages arrive with later parts.
-		delivery: state.sent
-			? { state: 'sent' as const, ...state.sent }
-			: { state: 'collecting' as const }
+		// C4: Ready for Uplift gives the build's dates; the later delivery stages arrive with stage E.
+		delivery: state.ready
+			? { state: 'ready' as const, ...state.ready }
+			: state.sent
+				? { state: 'sent' as const, ...state.sent }
+				: { state: 'collecting' as const }
 	};
 }

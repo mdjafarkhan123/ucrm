@@ -5,6 +5,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { fetchSetupSummary, setupSummaryKey } from '$lib/setup/api';
 	import { SETUP_CHECK_KEY } from '$lib/setup/check';
+	import { formatReadyDate } from '$lib/setup/ready';
 
 	// The dashboard's setup card for owners and administrators: how far setup has got, the next useful
 	// thing to do, and where delivery stands. It never gates anything — the CRM around it is complete and
@@ -80,6 +81,12 @@
 					? 'one task'
 					: `${summary.returned_count} tasks`}. Change what Uplift asked for and send your setup
 				again; everything else stays as you sent it.
+			{:else if summary.delivery.state === 'ready'}
+				Uplift is building your system. It will be ready for you to review between
+				{formatReadyDate(summary.delivery.target_from)} and {formatReadyDate(
+					summary.delivery.target_to,
+					true
+				)}.
 			{:else if summary.delivery.state === 'sent'}
 				Sent to Uplift on {new Date(summary.delivery.submitted_at).toLocaleDateString(undefined, {
 					dateStyle: 'long'

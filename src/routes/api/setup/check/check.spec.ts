@@ -83,6 +83,7 @@ function state(overrides: Partial<SetupState> = {}): SetupState {
 		answers: { 'business.name': { availability: 'have', value: 'Raad Plumbing', note: null } },
 		doneSections: new Set(['business']),
 		sent: null,
+		ready: null,
 		...overrides
 	};
 }

@@ -23,7 +23,8 @@ const sentState: SetupState = {
 	welcomeSeen: true,
 	answers,
 	doneSections: new Set(['business', 'services']),
-	sent: { number: 1, submitted_at: '2026-10-04T10:00:00Z', submitted_by_name: 'Sam' }
+	sent: { number: 1, submitted_at: '2026-10-04T10:00:00Z', submitted_by_name: 'Sam' },
+	ready: null
 };
 
 const review = (state: SetupClientReview['state'], changed = false): SetupClientReview => ({

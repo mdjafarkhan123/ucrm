@@ -73,6 +73,8 @@ function supabase(options: {
 		profiles: { full_name: options.profileName ?? null },
 		// B13: nothing sent to Uplift yet.
 		organization_setup_submissions: null,
+		// C4: not Ready for Uplift.
+		organization_setup_ready: null,
 		// C3c: nothing Uplift has answered.
 		organization_setup_help_answers: []
 	};

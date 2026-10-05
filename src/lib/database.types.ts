@@ -11557,6 +11557,54 @@ export type Database = {
 					}
 				];
 			};
+			organization_setup_ready: {
+				Row: {
+					organization_id: string;
+					ready_at: string;
+					ready_by_email: string;
+					start_date: string;
+					submission_number: number;
+					target_from: string;
+					target_to: string;
+					time_zone: string;
+				};
+				Insert: {
+					organization_id: string;
+					ready_at?: string;
+					ready_by_email: string;
+					start_date: string;
+					submission_number: number;
+					target_from: string;
+					target_to: string;
+					time_zone: string;
+				};
+				Update: {
+					organization_id?: string;
+					ready_at?: string;
+					ready_by_email?: string;
+					start_date?: string;
+					submission_number?: number;
+					target_from?: string;
+					target_to?: string;
+					time_zone?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_ready_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: true;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_setup_ready_organization_id_submission_number_fkey';
+						columns: ['organization_id', 'submission_number'];
+						isOneToOne: false;
+						referencedRelation: 'organization_setup_submissions';
+						referencedColumns: ['organization_id', 'submission_number'];
+					}
+				];
+			};
 			organization_setup_reminder_opt_outs: {
 				Row: {
 					created_at: string;
@@ -23050,6 +23098,14 @@ export type Database = {
 				Args: { candidate_email: string };
 				Returns: boolean;
 			};
+			owner_mark_setup_ready: {
+				Args: {
+					actor_email: string;
+					seen_number: number;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			owner_onboarding_activation_preview: {
 				Args: {
 					offer_code?: string;
@@ -23157,6 +23213,14 @@ export type Database = {
 			};
 			owner_start_setup_draft: {
 				Args: { actor_owner_email: string };
+				Returns: Json;
+			};
+			owner_withdraw_setup_ready: {
+				Args: {
+					actor_email: string;
+					target_organization_id: string;
+					withdraw_reason: string;
+				};
 				Returns: Json;
 			};
 			pause_automation_enrollment: {
