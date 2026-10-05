@@ -15,12 +15,13 @@
 
 ## Next
 
-Only the look on screen is left (step 6): Chrome wasn't connected on 2026-10-05. Already proven: database rules
-(rolled-back block) and the private link page's server render with a kept list (ticked, doesn't apply with reason,
-an open Google wait named). Recreate test data by SQL on Raad (`organization_setup_ready` row, released preview v1,
-a `google_profile` wait, all `browser-check@example.com`), then look at Jafar's Setup tab (Launch checks panel: tick,
-Doesn't apply dialog, Undo, "N left" badge, Ask locked then unlocked) and the client's Setup card summary (owner
-login). Delete the preview (cascades checks and request), wait and Ready row afterwards. Then close E5.
+Jafar's side checked in Chrome on 2026-10-05: tick, Doesn't apply dialog, Undo, "N left", Ask locked then unlocked,
+list frozen after the request, and the link page summary all look right (two small look fixes committed).
+**Left:** the client owner's Setup card summary. Test data is LIVE on Raad now: Ready row, released preview v1,
+`google_profile` wait, 4 checks, and an approval request made by SQL (no email). Jafar signs in as the contractor
+owner, then open `/setup` and look for "What Uplift checked before asking". Then delete Raad's preview v1 (cascades
+checks and request), the `google_profile` wait and the Ready row (all `browser-check@example.com`); confirm counts
+are 0. Then close E5.
 
 ## Notes
 
