@@ -79,3 +79,7 @@ export const organizationSetupHelpAnswersUrl = (organizationId: string) =>
 /** C4: where Jafar records Ready for Uplift (POST) or takes it back with a reason (DELETE). */
 export const organizationSetupReadyUrl = (organizationId: string) =>
 	`/api/jafar/organizations/${encodeURIComponent(organizationId)}/setup/ready`;
+
+/** C5: where Jafar fills a client's CRM settings from their accepted answers again (POST). */
+export const organizationSetupSettingsCopyUrl = (organizationId: string) =>
+	`/api/jafar/organizations/${encodeURIComponent(organizationId)}/setup/settings-copy`;

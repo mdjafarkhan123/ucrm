@@ -3,11 +3,13 @@ import { POST } from './+server';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { SETUP_VERSION_1 } from '$lib/setup/catalogue.fixture';
+import { copyAcceptedSetupSettings } from '$lib/server/setup/settings-copy';
 
 // Client onboarding C3c: Jafar records the answer Uplift found for a question the client asked help with.
 
 vi.mock('$lib/server/auth/owner', () => ({ getOwnerSession: vi.fn() }));
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
+vi.mock('$lib/server/setup/settings-copy', () => ({ copyAcceptedSetupSettings: vi.fn() }));
 
 const ORGANIZATION_ID = '11111111-1111-4111-8111-111111111111';
 const rpc = vi.fn();
@@ -130,5 +132,21 @@ describe('setup help answer POST', () => {
 		).toBe(422);
 		expect((await call('not json')).status).toBe(422);
 		expect(rpc).not.toHaveBeenCalled();
+	});
+
+	it('copies accepted answers into CRM settings after recording, and survives a failed copy (C5)', async () => {
+		vi.mocked(copyAcceptedSetupSettings).mockRejectedValue(new Error('down'));
+		const response = await call({
+			send: 1,
+			fact_key: 'business.public_phone',
+			value: '+44 20 7946 0000'
+		});
+		expect(response.status).toBe(200);
+		expect(copyAcceptedSetupSettings).toHaveBeenCalledWith(
+			expect.anything(),
+			ORGANIZATION_ID,
+			'owner@example.com'
+		);
+		expect(await response.json()).toMatchObject({ settings_copied: false });
 	});
 });

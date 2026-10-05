@@ -8,13 +8,16 @@ import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { env } from '$env/dynamic/private';
 import { sendSetupReturnEmails } from '$lib/server/setup/return-email';
 import { recordSectionReview } from '$lib/server/setup/review';
+import { copyAcceptedSetupSettings } from '$lib/server/setup/settings-copy';
 import { setupSectionReviewSchema } from '$lib/server/validation/setup.schema';
 
 // Client onboarding C3: Jafar accepts one section of a client's newest send, or sends it back with a note and
 // the questions to change (plan §4). A decision on an earlier send is refused with 409, so Jafar never accepts
 // answers he has not seen. A return emails the client's owners and administrators straight to the section (C3b);
 // the decision stands even if that email cannot be queued, and the reply says so, so Jafar can press Send back
-// again, which queues only what is missing.
+// again, which queues only what is missing. An acceptance copies the section's built-in answers into the
+// matching CRM settings (C5); it stands even if that copy fails, and the reply says so, so pressing Accept again
+// retries it.
 
 export const POST: RequestHandler = async (event) => {
 	const session = await getOwnerSession(event);
@@ -71,5 +74,17 @@ export const POST: RequestHandler = async (event) => {
 			console.error('Could not queue the email about a returned setup section.', error);
 			emailed = false;
 		}
-	return json({ ...result, emailed }, { headers: NO_STORE_HEADERS });
+
+	let settingsCopied = true;
+	if (parsed.data.decision === 'accepted')
+		try {
+			await copyAcceptedSetupSettings(client, organizationId.data, session.email);
+		} catch (error) {
+			console.error('Could not copy accepted setup answers into CRM settings.', error);
+			settingsCopied = false;
+		}
+	return json(
+		{ ...result, emailed, settings_copied: settingsCopied },
+		{ headers: NO_STORE_HEADERS }
+	);
 };

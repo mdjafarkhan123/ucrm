@@ -3,11 +3,13 @@ import { POST } from './+server';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { SETUP_VERSION_1 } from '$lib/setup/catalogue.fixture';
+import { copyAcceptedSetupSettings } from '$lib/server/setup/settings-copy';
 
 // Client onboarding C3: Jafar accepts or sends back one section of a client's newest send.
 
 vi.mock('$lib/server/auth/owner', () => ({ getOwnerSession: vi.fn() }));
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
+vi.mock('$lib/server/setup/settings-copy', () => ({ copyAcceptedSetupSettings: vi.fn() }));
 
 const ORGANIZATION_ID = '11111111-1111-4111-8111-111111111111';
 const rpc = vi.fn();
@@ -129,5 +131,24 @@ describe('setup section review POST', () => {
 		const response = await call({ decision: 'accepted', section_key: 'business', send: 1 });
 		expect(response.status).toBe(409);
 		expect(await response.json()).toMatchObject({ latest_number: 2 });
+	});
+
+	it('copies accepted answers into CRM settings on an acceptance only (C5)', async () => {
+		await call({ decision: 'accepted', section_key: 'business', send: 1 });
+		expect(copyAcceptedSetupSettings).toHaveBeenCalledWith(
+			expect.anything(),
+			ORGANIZATION_ID,
+			'owner@example.com'
+		);
+		vi.mocked(copyAcceptedSetupSettings).mockClear();
+		await call({ decision: 'returned', section_key: 'business', send: 1, note: 'Fix it' });
+		expect(copyAcceptedSetupSettings).not.toHaveBeenCalled();
+	});
+
+	it('keeps the acceptance when the copy fails, and says so', async () => {
+		vi.mocked(copyAcceptedSetupSettings).mockRejectedValue(new Error('down'));
+		const response = await call({ decision: 'accepted', section_key: 'business', send: 1 });
+		expect(response.status).toBe(200);
+		expect(await response.json()).toMatchObject({ status: 'saved', settings_copied: false });
 	});
 });

@@ -4,6 +4,7 @@
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import clipboardIcon from '@tabler/icons/outline/clipboard-check.svg?raw';
 	import lifebuoyIcon from '@tabler/icons/outline/lifebuoy.svg?raw';
+	import settingsIcon from '@tabler/icons/outline/settings.svg?raw';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -24,13 +25,15 @@
 		organizationSetupHelpAnswersUrl,
 		organizationSetupQuery,
 		organizationSetupRemindersUrl,
-		organizationSetupReviewsUrl
+		organizationSetupReviewsUrl,
+		organizationSetupSettingsCopyUrl
 	} from '$lib/jafar/organization-setup-queries';
 	import { jafarOrganizationKey } from '$lib/jafar/query-keys';
 	import { SETUP_CHECK_STATUS } from '$lib/setup/check';
 	import { clientSetupRemindersText, type ClientSetupFile } from '$lib/setup/client-page';
 	import type { SetupHelpAnswer, SetupHelpItem } from '$lib/setup/help';
 	import { SETUP_REVIEW_STATE, type SetupSectionReview } from '$lib/setup/review';
+	import { SETUP_SETTING_LABELS, type SetupSettingOutcome } from '$lib/setup/settings-copy';
 	import { formatDateTime } from './format';
 
 	// Client onboarding C2 (plan §8): the setup a client sent to Uplift, read back by task the way they saw it
@@ -149,12 +152,13 @@
 					'Your decision could not be saved. Try again.';
 				throw new Error(message);
 			}
-			return (await response.json()) as { emailed?: boolean };
+			return (await response.json()) as { emailed?: boolean; settings_copied?: boolean };
 		},
 		onMutate: () => {
 			reviewError = null;
 		},
 		onSuccess: (data, input) => {
+			if (data.settings_copied === false) settingsCopyFailed();
 			if (input.decision !== 'returned') return;
 			returning = null;
 			// C3b: the client is emailed about a return. The decision stands without it; sending back again
@@ -204,18 +208,68 @@
 						'Uplift’s answer could not be saved. Try again.'
 				);
 			}
+			return (await response.json()) as { settings_copied?: boolean };
 		},
 		onMutate: () => {
 			helpError = '';
 		},
-		onSuccess: () => {
+		onSuccess: (data) => {
 			answering = null;
+			if (data.settings_copied === false) settingsCopyFailed();
 		},
 		onError: (error) => {
 			helpError = error.message;
 		},
 		onSettled: () => {
 			// The answer shows on this tab, and is in the Activity tab's history.
+			void queryClient.invalidateQueries({ queryKey: jafarOrganizationKey(organizationId) });
+		}
+	}));
+
+	// C5 (plan §4): accepted answers fill the client's CRM settings; a newer change the owner made is kept.
+	const SETTING_OUTCOME: Record<
+		SetupSettingOutcome,
+		{ label: string; badge: 'success' | 'informative' | 'warning' | 'inactive'; note?: string }
+	> = {
+		copied: { label: 'Filled in', badge: 'success' },
+		same: { label: 'Already matched', badge: 'inactive' },
+		kept: {
+			label: 'Kept their change',
+			badge: 'informative',
+			note: 'The client changed this in Settings after sending their answer, so their change stays.'
+		},
+		locked: {
+			label: 'Not changed',
+			badge: 'warning',
+			note: 'They have already sent a quote, so their currency can no longer change. Ask them in Support if it is wrong.'
+		}
+	};
+
+	function settingsCopyFailed() {
+		toast.error(
+			'Saved, but their CRM settings were not filled in',
+			'Your decision stands. Press “Fill in again” under CRM settings to retry.'
+		);
+	}
+
+	const anyAccepted = $derived(
+		Object.values(view?.reviews ?? {}).some((entry) => entry.state === 'accepted')
+	);
+
+	const settingsCopy = createMutation(() => ({
+		mutationFn: async () => {
+			const response = await fetch(organizationSetupSettingsCopyUrl(organizationId), {
+				method: 'POST'
+			});
+			if (!response.ok) {
+				const result = (await response.json().catch(() => ({}))) as { error?: string };
+				throw new Error(result.error ?? 'Their settings could not be filled in. Try again.');
+			}
+		},
+		onError: (error) => {
+			toast.error('Their CRM settings were not filled in', error.message);
+		},
+		onSettled: () => {
 			void queryClient.invalidateQueries({ queryKey: jafarOrganizationKey(organizationId) });
 		}
 	}));
@@ -361,6 +415,46 @@
 					</li>
 				{/each}
 			</ul>
+		</SectionBlock>
+	{/if}
+
+	{#if view.settings_copies.length > 0 || anyAccepted}
+		<SectionBlock
+			title="CRM settings"
+			icon={settingsIcon}
+			hint="Accepting a task fills the client’s matching CRM settings with its answers. A setting the client changed in Settings after sending their answer is kept."
+		>
+			{#snippet actions()}
+				<Button
+					size="small"
+					variant="tertiary"
+					loading={settingsCopy.isPending}
+					onclick={() => settingsCopy.mutate()}>Fill in again</Button
+				>
+			{/snippet}
+			{#if view.settings_copies.length === 0}
+				<p class="client-setup__muted">
+					Nothing has been filled in yet. The accepted tasks have no answers that match a CRM
+					setting, or filling them in did not finish.
+				</p>
+			{:else}
+				<ul class="client-setup__help">
+					{#each view.settings_copies as copy (copy.setting)}
+						{@const outcome = SETTING_OUTCOME[copy.outcome]}
+						<li class="client-setup__help-item">
+							<div class="client-setup__help-text">
+								<span class="client-setup__help-question">{SETUP_SETTING_LABELS[copy.setting]}</span
+								>
+								{#if outcome.note}
+									<span class="client-setup__muted">{outcome.note}</span>
+								{/if}
+								<span class="client-setup__muted">Checked {formatDateTime(copy.checked_at)}</span>
+							</div>
+							<Badge status={outcome.badge} size="small">{outcome.label}</Badge>
+						</li>
+					{/each}
+				</ul>
+			{/if}
 		</SectionBlock>
 	{/if}
 

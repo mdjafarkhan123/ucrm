@@ -28,6 +28,12 @@ import { readSetupHelpAnswers } from '$lib/server/setup/help';
 import { readSetupState, setupAnswerFromRow } from '$lib/server/setup/read';
 import { applicableHelpAnswers, setupHelpItems, type SetupHelpItem } from '$lib/setup/help';
 import { setupReadyBlockers, type SetupReady, type SetupReadyBlocker } from '$lib/setup/ready';
+import {
+	SETUP_SETTING_LABELS,
+	type SetupSettingCopy,
+	type SetupSettingKey,
+	type SetupSettingOutcome
+} from '$lib/setup/settings-copy';
 
 type Client = SupabaseClient<Database>;
 
@@ -46,7 +52,7 @@ type SubmissionRow = {
 const SUBMISSION_COLUMNS =
 	'submission_number, setup_version_id, service_keys, answers, confirmations, confirmations_version, submitted_by_name, submitted_by_email, submitted_at';
 
-function snapshotAnswers(raw: unknown): SetupAnswers {
+export function snapshotAnswers(raw: unknown): SetupAnswers {
 	const answers: SetupAnswers = {};
 	for (const [key, row] of Object.entries((raw ?? {}) as Record<string, never>))
 		answers[key] = setupAnswerFromRow(row);
@@ -243,6 +249,26 @@ async function readReadyFacts(supabase: Client, organizationId: string) {
 	};
 }
 
+/** C5: the last copy of each CRM setting from accepted answers, in the Setup tab's order. */
+async function readSetupSettingCopies(
+	supabase: Client,
+	organizationId: string
+): Promise<SetupSettingCopy[]> {
+	const { data, error } = await supabase
+		.from('organization_setup_settings_copies')
+		.select('setting_key, outcome, checked_at')
+		.eq('organization_id', organizationId);
+	if (error) throw error;
+	const order = Object.keys(SETUP_SETTING_LABELS);
+	return data
+		.map((row) => ({
+			setting: row.setting_key as SetupSettingKey,
+			outcome: row.outcome as SetupSettingOutcome,
+			checked_at: row.checked_at
+		}))
+		.sort((a, b) => order.indexOf(a.setting) - order.indexOf(b.setting));
+}
+
 /**
  * The Setup tab's view of one client: every send, `sendNumber` (or the newest) read back, and the reminders.
  * Returns null when the send asked for does not exist. Throws when the database cannot be read.
@@ -252,7 +278,7 @@ export async function readClientSetupView(
 	organizationId: string,
 	sendNumber: number | null
 ): Promise<ClientSetupView | null> {
-	const [sendsResult, remindersResult, readyFacts] = await Promise.all([
+	const [sendsResult, remindersResult, readyFacts, settingsCopies] = await Promise.all([
 		supabase
 			.from('organization_setup_submissions')
 			.select('submission_number, submitted_at, submitted_by_name, submitted_by_email')
@@ -263,7 +289,8 @@ export async function readClientSetupView(
 			.select('paused_at, next_due_at, reminders_sent, last_sent_at')
 			.eq('organization_id', organizationId)
 			.maybeSingle(),
-		readReadyFacts(supabase, organizationId)
+		readReadyFacts(supabase, organizationId),
+		readSetupSettingCopies(supabase, organizationId)
 	]);
 	if (sendsResult.error) throw sendsResult.error;
 	if (remindersResult.error) throw remindersResult.error;
@@ -336,6 +363,7 @@ export async function readClientSetupView(
 			newestNumber === null
 				? setupReadyBlockers({ account: readyFacts.account, sections: null, reviews: {}, help: [] })
 				: readyBlockers,
-		time_zone: readyFacts.timeZone
+		time_zone: readyFacts.timeZone,
+		settings_copies: settingsCopies
 	};
 }

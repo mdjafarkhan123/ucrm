@@ -6,6 +6,7 @@ import type { SetupCheckSection, SetupConfirmation } from '$lib/setup/check';
 import type { SetupHelpItem } from '$lib/setup/help';
 import type { SetupReady, SetupReadyBlocker } from '$lib/setup/ready';
 import type { SetupSectionReview } from '$lib/setup/review';
+import type { SetupSettingCopy } from '$lib/setup/settings-copy';
 
 /** One file of a photo or file answer. Mirrors `SetupFileInfo` in `$lib/server/setup/files`. */
 export type ClientSetupFile = {
@@ -69,6 +70,8 @@ export type ClientSetupView = {
 	ready_blockers: SetupReadyBlocker[] | null;
 	/** The client's time zone, for the dates Ready would give. */
 	time_zone: string;
+	/** C5: how the last copy of each CRM setting from accepted answers went; empty before the first. */
+	settings_copies: SetupSettingCopy[];
 };
 
 /**

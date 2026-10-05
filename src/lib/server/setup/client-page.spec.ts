@@ -48,6 +48,7 @@ function fakeSupabase(rows: {
 			if (table === 'organization_setup_section_reviews') return rows.reviews ?? [];
 			if (table === 'organization_setup_help_answers') return rows.help ?? [];
 			if (table === 'organization_setup_ready') return rows.ready ?? null;
+			if (table === 'organization_setup_settings_copies') return [];
 			if (table === 'organizations') return { lifecycle_status: rows.lifecycle ?? 'active' };
 			if (table === 'organization_settings') return { timezone: 'Europe/London' };
 			if (table === 'platform_onboarding_application_provisions')
@@ -123,7 +124,8 @@ describe('readClientSetupView', () => {
 			reminders: REMINDERS,
 			ready: null,
 			ready_blockers: [{ kind: 'not_sent' }],
-			time_zone: 'Europe/London'
+			time_zone: 'Europe/London',
+			settings_copies: []
 		});
 	});
 

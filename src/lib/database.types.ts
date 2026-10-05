@@ -11749,6 +11749,41 @@ export type Database = {
 					}
 				];
 			};
+			organization_setup_settings_copies: {
+				Row: {
+					checked_at: string;
+					copied_value: Json | null;
+					organization_id: string;
+					outcome: string;
+					proposed_value: Json;
+					setting_key: string;
+				};
+				Insert: {
+					checked_at?: string;
+					copied_value?: Json | null;
+					organization_id: string;
+					outcome: string;
+					proposed_value: Json;
+					setting_key: string;
+				};
+				Update: {
+					checked_at?: string;
+					copied_value?: Json | null;
+					organization_id?: string;
+					outcome?: string;
+					proposed_value?: Json;
+					setting_key?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_settings_copies_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			organization_setup_submissions: {
 				Row: {
 					answers: Json;
@@ -23087,6 +23122,14 @@ export type Database = {
 					search_term?: string;
 					setup_catalogue: Json;
 					waiting_filter?: string;
+				};
+				Returns: Json;
+			};
+			owner_copy_setup_settings: {
+				Args: {
+					actor_email: string;
+					proposals: Json;
+					target_organization_id: string;
 				};
 				Returns: Json;
 			};
