@@ -8,9 +8,8 @@
 
 **Also waiting on Jafar's publish:** B9c's login check (part note `parts/B9-texting-facts.md`); the stage itself is built.
 
-**Next part:** E5 Launch checks is built; only its on-screen look check is left (part note
-`parts/E5-launch-checks.md`). Then E6. States 10–11 still need E5–E6 to add their records
-to `$lib/setup/project-state.ts`. Raad LTD is accepted on "Your business", not Ready (dev data). Do NOT publish
+**Next part:** E6 Training + handover (roadmap line in `stages/E-delivery.md`). It adds states 10–11
+(Live — training next, Project delivered) to `$lib/setup/project-state.ts`. Raad LTD is accepted on "Your business", not Ready (dev data). Do NOT publish
 test stages or questions on dev; stage keys are never reused.
 
 **Blockers:** none for E1. Text limits max 2000. A reused question must point to one with no "show only if" rule (the database refuses otherwise).
