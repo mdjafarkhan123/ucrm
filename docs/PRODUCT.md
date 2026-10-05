@@ -1,5 +1,7 @@
 # UpliftContractor CRM — Complete Product Blueprint
 
+This document defines the contractor edition. For the wider platform direction and new-edition planning, read [Platform overview](platform-overview.md). Existing contractor behavior contracts remain authoritative for contractor work.
+
 ## 1. Product definition
 
 The product connects the full customer journey:
