@@ -11557,6 +11557,106 @@ export type Database = {
 					}
 				];
 			};
+			organization_setup_preview_notes: {
+				Row: {
+					card_id: string;
+					choice: string;
+					note: string | null;
+					organization_id: string;
+					screenshots: Json;
+					sorted_at: string | null;
+					sorted_by_email: string | null;
+					sorted_kind: string | null;
+					updated_at: string;
+					updated_by: string | null;
+					version: number;
+				};
+				Insert: {
+					card_id: string;
+					choice: string;
+					note?: string | null;
+					organization_id: string;
+					screenshots?: Json;
+					sorted_at?: string | null;
+					sorted_by_email?: string | null;
+					sorted_kind?: string | null;
+					updated_at?: string;
+					updated_by?: string | null;
+					version: number;
+				};
+				Update: {
+					card_id?: string;
+					choice?: string;
+					note?: string | null;
+					organization_id?: string;
+					screenshots?: Json;
+					sorted_at?: string | null;
+					sorted_by_email?: string | null;
+					sorted_kind?: string | null;
+					updated_at?: string;
+					updated_by?: string | null;
+					version?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_preview_notes_organization_id_version_fkey';
+						columns: ['organization_id', 'version'];
+						isOneToOne: false;
+						referencedRelation: 'organization_setup_previews';
+						referencedColumns: ['organization_id', 'version'];
+					}
+				];
+			};
+			organization_setup_previews: {
+				Row: {
+					cards: Json;
+					correction_round: boolean | null;
+					notes_sent_at: string | null;
+					notes_sent_by: string | null;
+					notes_sent_by_name: string | null;
+					organization_id: string;
+					released_at: string | null;
+					released_by_email: string | null;
+					updated_at: string;
+					updated_by_email: string;
+					version: number;
+				};
+				Insert: {
+					cards: Json;
+					correction_round?: boolean | null;
+					notes_sent_at?: string | null;
+					notes_sent_by?: string | null;
+					notes_sent_by_name?: string | null;
+					organization_id: string;
+					released_at?: string | null;
+					released_by_email?: string | null;
+					updated_at?: string;
+					updated_by_email: string;
+					version: number;
+				};
+				Update: {
+					cards?: Json;
+					correction_round?: boolean | null;
+					notes_sent_at?: string | null;
+					notes_sent_by?: string | null;
+					notes_sent_by_name?: string | null;
+					organization_id?: string;
+					released_at?: string | null;
+					released_by_email?: string | null;
+					updated_at?: string;
+					updated_by_email?: string;
+					version?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_previews_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			organization_setup_provider_waits: {
 				Row: {
 					note: string | null;
@@ -18284,6 +18384,17 @@ export type Database = {
 				Args: { p_primary_client_id: string; p_secondary_client_id: string };
 				Returns: Json;
 			};
+			client_save_setup_preview_note: {
+				Args: {
+					new_choice: string;
+					new_note: string;
+					new_screenshots: Json;
+					target_card_id: string;
+					target_organization_id: string;
+					target_version: number;
+				};
+				Returns: Json;
+			};
 			client_schedule_rows: {
 				Args: {
 					past_limit: number;
@@ -18308,6 +18419,10 @@ export type Database = {
 					title: string;
 					visit_date: string;
 				}[];
+			};
+			client_send_setup_preview_notes: {
+				Args: { target_organization_id: string; target_version: number };
+				Returns: Json;
 			};
 			client_spendable_credit: {
 				Args: { target_client_id: string; target_organization_id: string };
@@ -23172,6 +23287,10 @@ export type Database = {
 				Args: { loaded_revision: number; target_version_id: string };
 				Returns: Json;
 			};
+			owner_discard_setup_preview_draft: {
+				Args: { actor_email: string; target_organization_id: string };
+				Returns: Json;
+			};
 			owner_email_is_available: {
 				Args: { candidate_email: string };
 				Returns: boolean;
@@ -23241,6 +23360,14 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_release_setup_preview: {
+				Args: {
+					actor_email: string;
+					target_organization_id: string;
+					target_version: number;
+				};
+				Returns: Json;
+			};
 			owner_review_setup_section: {
 				Args: {
 					actor_email: string;
@@ -23272,6 +23399,14 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_save_setup_preview: {
+				Args: {
+					actor_email: string;
+					new_cards: Json;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			owner_set_setup_provider_wait: {
 				Args: {
 					actor_email: string;
@@ -23297,6 +23432,16 @@ export type Database = {
 			};
 			owner_setup_version_catalogue: {
 				Args: { target_version_id: string };
+				Returns: Json;
+			};
+			owner_sort_setup_preview_note: {
+				Args: {
+					actor_email: string;
+					new_kind: string;
+					target_card_id: string;
+					target_organization_id: string;
+					target_version: number;
+				};
 				Returns: Json;
 			};
 			owner_start_setup_draft: {

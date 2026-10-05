@@ -117,7 +117,7 @@ create table public.organization_setup_preview_notes (
   primary key (organization_id, version, card_id),
   foreign key (organization_id, version)
     references public.organization_setup_previews (organization_id, version) on delete cascade,
-  constraint organization_setup_preview_notes_note_check check (
+  constraint organization_setup_preview_notes_choice_note_check check (
     case when choice = 'looks_right'
       then note is null and screenshots = '[]'::jsonb and sorted_kind is null
       else note is not null
