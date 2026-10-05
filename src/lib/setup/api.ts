@@ -4,6 +4,7 @@ import type { SetupClientReview } from '$lib/setup/review';
 import type { SetupHelpAnswer } from '$lib/setup/help';
 import type { ProjectView } from '$lib/setup/project-state';
 import type { ProviderWait } from '$lib/setup/provider-waits';
+import type { LaunchApprovalRequest } from '$lib/setup/launch-approval';
 import type {
 	PreviewChoice,
 	PreviewScreenshotUpload,
@@ -373,3 +374,35 @@ export const setupPreviewScreenshotUrls: PreviewScreenshotUrls = {
 	view: (key, size) =>
 		`/api/setup/preview/screenshots?key=${encodeURIComponent(key)}${size === 'thumb' ? '&size=thumb' : ''}`
 };
+
+// E4: launch approval (plan §6) ---------------------------------------------------------------------------------
+
+export type SetupLaunchApprovalData = {
+	request: LaunchApprovalRequest | null;
+	is_approver: boolean;
+};
+
+export const setupLaunchApprovalKey = (userId: string | null) =>
+	['setup', 'launch-approval', userId] as const;
+
+export async function fetchSetupLaunchApproval(): Promise<SetupLaunchApprovalData> {
+	const response = await fetch('/api/setup/launch-approval');
+	if (!response.ok) throw httpError(response, 'The launch approval could not be loaded.');
+	return response.json();
+}
+
+/** The named approver's answer on the Setup page. */
+export async function decideSetupLaunch(input: {
+	version: number;
+	decision: 'approve' | 'not_yet';
+	agreed?: boolean;
+	note?: string | null;
+}): Promise<{ status: 'approved' | 'not_yet' | 'already_approved' }> {
+	const response = await fetch('/api/setup/launch-approval', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(input)
+	});
+	if (!response.ok) throw await writeFailure(response, 'Your answer could not be saved.');
+	return response.json();
+}

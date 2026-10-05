@@ -16,6 +16,7 @@
 	import PreviewCardBody from '$lib/components/setup/PreviewCardBody.svelte';
 	import PreviewScreenshots from '$lib/components/setup/PreviewScreenshots.svelte';
 	import {
+		organizationLaunchApprovalQuery,
 		organizationPreviewQuery,
 		organizationPreviewScreenshotUrls,
 		organizationPreviewUrl
@@ -35,6 +36,7 @@
 		type PreviewScreenshotUpload,
 		type PreviewVersion
 	} from '$lib/setup/preview';
+	import { currentLaunchApproval } from '$lib/setup/launch-approval';
 	import { formatDateTime } from './format';
 
 	// Client onboarding E3 (plan §6): the preview Jafar writes once Ready is recorded — one card per part of the
@@ -45,6 +47,9 @@
 
 	const queryClient = useQueryClient();
 	const query = createQuery(() => organizationPreviewQuery(organizationId));
+	// E4: what a release would cancel or replace, said in the Release dialog.
+	const approvals = createQuery(() => organizationLaunchApprovalQuery(organizationId));
+	const launch = $derived(currentLaunchApproval(approvals.data ?? []));
 	const urls = $derived(organizationPreviewScreenshotUrls(organizationId));
 
 	type EditCard = {
@@ -452,6 +457,16 @@
 	</p>
 	{#if newest && !newest.notes_sent_at}
 		<p>It replaces version {newest.version}, which the client has not sent notes on yet.</p>
+	{/if}
+	{#if launch?.status === 'open'}
+		<p>
+			It cancels the launch approval request on version {launch.version}; ask again on this one.
+		</p>
+	{:else if launch?.status === 'approved'}
+		<p>
+			Version {launch.version} is approved for launch. Releasing marks that approval replaced, and you
+			ask for approval again.
+		</p>
 	{/if}
 </ConfirmDialog>
 

@@ -11,12 +11,12 @@
 - [x] Apply to dev (checked by a rolled-back trial of every command), regenerate types
 - [x] `$lib/setup/launch-approval.ts` (wording, states) + project-state `approved`; server reads and emails (link to approver, receipt to approver + owners/admins, in-app note to Jafar)
 - [x] Routes: Jafar ask/resend/record; client approve/not-yet; public `/launch/[token]` page + its API
-- [ ] UI: Jafar's preview panel, client Setup page, public page
+- [x] UI: Jafar's preview panel, client Setup page, public page
 - [ ] Tests, full type check, browser check on Raad LTD, remove test data
 
 ## Next
 
-UI (step 6): Jafar's launch approval card in `SetupPreviewPanel.svelte` (GET/POST `/api/jafar/organizations/[id]/setup/launch-approval`, `/resend`, `/record`); the client's card on `/setup` (GET/POST `/api/setup/launch-approval`), shown in states ready_for_review and approved; the public page `src/routes/(public)/launch/[token]/+page.svelte` (load done; POST `/api/public/launch/[token]`).
+Browser check on Raad LTD (step 7): needs a Ready row and a released preview — make them through Jafar's panel (record Ready, write and release a preview), then Ask, approve via the emailed link (read the link from the email outbox), check the Setup page receipt, tracker and Onboarding list; then remove the test data (Ready, previews, approvals).
 
 ## Notes
 

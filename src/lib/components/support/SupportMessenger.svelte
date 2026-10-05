@@ -220,10 +220,14 @@
 		conversation?.focusComposer();
 	}
 
-	/** Opens a new message about one setup section, with that section attached (D6). */
-	export function ask(context: SupportAskContext) {
+	/**
+	 * Opens a new message about one setup section, with that section attached (D6); with no section, a new
+	 * message about setup in general, as "Not yet — talk to Uplift" on a launch approval opens it (E4).
+	 */
+	export function ask(context: SupportAskContext | null) {
 		open = true;
 		void go({ kind: 'new' }, context);
+		if (!context) newTopic = 'setup';
 	}
 
 	async function closePanel() {

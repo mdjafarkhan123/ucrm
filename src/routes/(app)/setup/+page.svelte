@@ -8,6 +8,7 @@
 	import OutsideWaits from '$lib/components/setup/OutsideWaits.svelte';
 	import ProjectTracker from '$lib/components/setup/ProjectTracker.svelte';
 	import SetupPreview from '$lib/components/setup/SetupPreview.svelte';
+	import LaunchApproval from '$lib/components/setup/LaunchApproval.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -355,6 +356,9 @@
 					</div>
 				</section>
 				<ProjectTracker project={summary.project} />
+				{#if summary.project.state === 'ready_for_review' || summary.project.state === 'approved'}<LaunchApproval
+						{userId}
+					/>{/if}
 				{#if summary.project.state === 'ready_for_review'}<SetupPreview {userId} />{/if}
 				{#if summary.outside_waits.length}<OutsideWaits waits={summary.outside_waits} />{/if}
 				{@render returned()}
@@ -362,6 +366,9 @@
 				{@render reminders()}
 			{:else}
 				<ProjectTracker project={summary.project} />
+				{#if summary.project.state === 'ready_for_review' || summary.project.state === 'approved'}<LaunchApproval
+						{userId}
+					/>{/if}
 				{#if summary.project.state === 'ready_for_review'}<SetupPreview {userId} />{/if}
 				{#if summary.outside_waits.length}<OutsideWaits waits={summary.outside_waits} />{/if}
 				{@render returned()}

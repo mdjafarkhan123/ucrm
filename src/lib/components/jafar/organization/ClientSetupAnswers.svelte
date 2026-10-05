@@ -20,6 +20,7 @@
 	import SetupHelpAnswerDialog from './SetupHelpAnswerDialog.svelte';
 	import SetupProviderWaitsPanel from './SetupProviderWaitsPanel.svelte';
 	import SetupPreviewPanel from './SetupPreviewPanel.svelte';
+	import LaunchApprovalPanel from './LaunchApprovalPanel.svelte';
 	import SetupReadyPanel from './SetupReadyPanel.svelte';
 	import SetupReturnDialog from './SetupReturnDialog.svelte';
 	import { iconForMimeType } from '$lib/collaboration/file-icons';
@@ -378,6 +379,7 @@
 
 	{#if view.ready}
 		<SetupPreviewPanel {organizationId} />
+		<LaunchApprovalPanel {organizationId} />
 	{/if}
 
 	{#if help.length > 0}

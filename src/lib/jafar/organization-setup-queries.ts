@@ -2,12 +2,14 @@ import type { QueryClient } from '@tanstack/svelte-query';
 import {
 	jafarOrganizationProtectedDocumentsKey,
 	jafarOrganizationPreviewKey,
+	jafarOrganizationLaunchApprovalKey,
 	jafarOrganizationProviderWaitsKey,
 	jafarOrganizationSetupKey
 } from '$lib/jafar/query-keys';
 import type { ClientSetupView } from '$lib/setup/client-page';
 import type { ProviderWait, ProviderWaitKey } from '$lib/setup/provider-waits';
 import type { PreviewCard, PreviewScreenshotUrls, PreviewVersion } from '$lib/setup/preview';
+import type { LaunchApprovalRequest } from '$lib/setup/launch-approval';
 
 // The Setup tab's reads (client onboarding B9b, C2), shared by the tab and its hover prefetch so both use the same keys.
 
@@ -72,6 +74,7 @@ export function prefetchOrganizationSetup(queryClient: QueryClient, organization
 	void queryClient.prefetchQuery(organizationProtectedDocumentsQuery(organizationId));
 	void queryClient.prefetchQuery(organizationProviderWaitsQuery(organizationId));
 	void queryClient.prefetchQuery(organizationPreviewQuery(organizationId));
+	void queryClient.prefetchQuery(organizationLaunchApprovalQuery(organizationId));
 }
 
 /** C3: where Jafar's Accept and Send back on one section go (POST). */
@@ -146,3 +149,22 @@ export const organizationPreviewScreenshotUrls = (
 			`${base}?key=${encodeURIComponent(key)}${size === 'thumb' ? '&size=thumb' : ''}`
 	};
 };
+
+/** E4: where Jafar asks for launch approval (POST), and reads every request (GET); `/resend` and `/record` below. */
+export const organizationLaunchApprovalUrl = (organizationId: string) =>
+	`/api/jafar/organizations/${encodeURIComponent(organizationId)}/setup/launch-approval`;
+
+export const organizationLaunchApprovalQuery = (organizationId: string) => ({
+	queryKey: jafarOrganizationLaunchApprovalKey(organizationId),
+	queryFn: async (): Promise<LaunchApprovalRequest[]> => {
+		const response = await fetch(organizationLaunchApprovalUrl(organizationId));
+		const result = (await response.json().catch(() => ({}))) as {
+			requests?: LaunchApprovalRequest[];
+			error?: string;
+		};
+		if (!response.ok || !result.requests)
+			throw new Error(result.error ?? 'The launch approvals could not be loaded.');
+		return result.requests;
+	},
+	staleTime: 30_000
+});
