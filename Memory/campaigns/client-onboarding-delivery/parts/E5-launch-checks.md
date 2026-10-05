@@ -15,14 +15,12 @@
 
 ## Next
 
-Browser check (step 6) on Raad LTD. Raad's package has no services, so only the four everyone-lines show; to see a
-waiting line, add a test wait/package by SQL and remove it after (test rows use `t@example.com`/`browser-check@example.com`).
-Needs a released preview: release one on Jafar's Setup tab, tick lines, Ask, open the link page and the client Setup
-card, then delete the test preview, checks and request.
-
-## Outside actions
-
-- Migration applied to dev — check: `select 1 from supabase_migrations.schema_migrations where version = '20261103090000'` — done
+Only the look on screen is left (step 6): Chrome wasn't connected on 2026-10-05. Already proven: database rules
+(rolled-back block) and the private link page's server render with a kept list (ticked, doesn't apply with reason,
+an open Google wait named). Recreate test data by SQL on Raad (`organization_setup_ready` row, released preview v1,
+a `google_profile` wait, all `browser-check@example.com`), then look at Jafar's Setup tab (Launch checks panel: tick,
+Doesn't apply dialog, Undo, "N left" badge, Ask locked then unlocked) and the client's Setup card summary (owner
+login). Delete the preview (cascades checks and request), wait and Ready row afterwards. Then close E5.
 
 ## Notes
 

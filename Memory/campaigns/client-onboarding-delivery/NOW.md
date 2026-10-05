@@ -8,8 +8,8 @@
 
 **Also waiting on Jafar's publish:** B9c's login check (part note `parts/B9-texting-facts.md`); the stage itself is built.
 
-**Next part:** E5 Launch checks (`stages/E-delivery.md`); E1–E4 are done. E5 makes Jafar's Ask for launch
-approval (`LaunchApprovalPanel.svelte`) wait for the checklist. States 10–11 still need E5–E6 to add their records
+**Next part:** E5 Launch checks is built; only its on-screen look check is left (part note
+`parts/E5-launch-checks.md`). Then E6. States 10–11 still need E5–E6 to add their records
 to `$lib/setup/project-state.ts`. Raad LTD is accepted on "Your business", not Ready (dev data). Do NOT publish
 test stages or questions on dev; stage keys are never reused.
 
