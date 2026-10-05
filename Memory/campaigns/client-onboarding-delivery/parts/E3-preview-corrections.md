@@ -30,4 +30,6 @@ the Svelte checker. The full type check was cut off and never finished on the sc
 
 ## Outside actions
 
+- Test-only Ready row for Raad LTD (`18f0d717-904e-48d8-bd99-9df7e3844cda`), inserted by hand 2026-10-05 with Jafar's OK for the browser check — check: `select * from organization_setup_ready where organization_id = '18f0d717-904e-48d8-bd99-9df7e3844cda' and ready_by_email = 'e3-browser-check@uplift.test'`. Remove it and Raad's previews afterwards.
+- Code fixes are on branch `e3-preview-checks` in worktree `../Ucrm-e3` (a Codex session holds the main folder).
 - Apply migration to dev — check: `select 1 from supabase_migrations.schema_migrations where version = '20261101090000'`
