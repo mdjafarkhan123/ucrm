@@ -123,6 +123,7 @@
 		&__waits-title {
 			margin: var(--space-smaller) 0 0;
 			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
 			font-weight: 600;
 		}
 
