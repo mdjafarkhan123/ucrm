@@ -1,6 +1,6 @@
 # Boulevard-inspired industry editions
 
-**Status:** Planning — overall direction agreed 2026-10-05; feature inventory, detailed behavior, and release scope await research and approval.
+**Status:** Planning — overall direction agreed 2026-10-05; public-source inventory completed 2026-10-05; detailed behavior and release scope remain in planning.
 
 ## Summary
 
@@ -26,7 +26,7 @@ Follow [Reference order and missing behavior](platform-overview.md#reference-ord
 
 ## Living feature plan
 
-The upcoming inventory will give each feature a stable identifier, purpose, industry relevance, sources, workflow, settings, permissions, exceptions, dependencies, existing-app reuse assessment, and completion checks. Detailed area plans will be linked here as they are researched; this document is not a completed feature inventory.
+The [public-source inventory](research/boulevard-feature-landscape-2026-10-05.md) records stable identifiers, purposes, sources and availability boundaries. P2 will add detailed workflows, settings, permissions, exceptions and dependencies. P3 will record existing-app suitability, release assignments and completion checks. Detailed area plans will be linked here as they are researched.
 
 Track these independently:
 
@@ -40,7 +40,7 @@ Confirmed means supported by a cited source, not assumed equivalent to our imple
 
 ## Still unclear
 
-- The source-backed feature inventory, detailed behaviors, reuse findings, release assignments, and measurable quality targets; settle these in planning parts, not by assumption.
+- Detailed behaviors, unresolved evidence gaps, reuse findings, release assignments, and measurable quality targets; settle these in planning parts, not by assumption.
 
 ## Not doing
 
@@ -51,9 +51,9 @@ Confirmed means supported by a cited source, not assumed equivalent to our imple
 
 ## Research
 
-- [Feature landscape and coverage checklist — first pass](research/boulevard-feature-landscape-2026-10-05.md). Inventory remains in progress.
+- [Completed P1 public-source inventory and coverage limits](research/boulevard-feature-landscape-2026-10-05.md).
 
-Starting sources, not a completed audit:
+Primary public entry points:
 
 - [Boulevard feature catalog](https://www.joinblvd.com/)
 - [Boulevard support center](https://support.boulevard.io/)
