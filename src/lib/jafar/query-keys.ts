@@ -33,6 +33,9 @@ export const jafarOrganizationPreviewKey = (organizationId: string | undefined) 
 	[...jafarOrganizationKey(organizationId), 'preview'] as const;
 export const jafarOrganizationLaunchApprovalKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'launch-approval'] as const;
+/** E5: the newest released preview's launch checklist. */
+export const jafarOrganizationLaunchChecksKey = (organizationId: string | undefined) =>
+	[...jafarOrganizationKey(organizationId), 'launch-checks'] as const;
 export const jafarOrganizationAutomationAuthorityKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'automation-authority'] as const;
 export const jafarOrganizationEmailDomainsKey = (organizationId: string | undefined) =>

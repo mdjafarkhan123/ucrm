@@ -8,6 +8,7 @@
 	import Banner from '$lib/components/ui/Banner.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import LaunchChecksSummary from '$lib/components/setup/LaunchChecksSummary.svelte';
 	import { LAUNCH_NOT_YET_NOTE_MAX } from '$lib/setup/launch-approval';
 
 	// Client onboarding E4 (plan §6): the final approver's private link, for someone who may have no login. It
@@ -138,6 +139,8 @@
 						</li>
 					{/each}
 				</ol>
+
+				<LaunchChecksSummary checks={doc.launch_checks} askedAt={doc.requested_at} />
 
 				<div class="launch-link__agree">
 					<Checkbox

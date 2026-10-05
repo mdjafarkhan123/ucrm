@@ -34,6 +34,7 @@ const request = (overrides: Partial<LaunchApprovalRequest> = {}): LaunchApproval
 	approval_wording: null,
 	recorded_reason: null,
 	replaced_at: null,
+	launch_checks: null,
 	...overrides
 });
 

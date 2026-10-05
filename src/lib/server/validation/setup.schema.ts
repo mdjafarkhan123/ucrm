@@ -10,6 +10,7 @@ import { SETUP_REVIEW_NOTE_MAX } from '$lib/setup/review';
 import { SETUP_HELP_NOTE_MAX } from '$lib/setup/help';
 import { SETUP_READY_REASON_MAX } from '$lib/setup/ready';
 import { LAUNCH_NOT_YET_NOTE_MAX, LAUNCH_RECORD_REASON_MAX } from '$lib/setup/launch-approval';
+import { LAUNCH_CHECK_KEYS, LAUNCH_CHECK_REASON_MAX } from '$lib/setup/launch-checks';
 import {
 	PROVIDER_WAITS,
 	PROVIDER_WAIT_NOTE_MAX,
@@ -385,3 +386,24 @@ export const setupLaunchRecordSchema = z
 			.max(LAUNCH_RECORD_REASON_MAX, `Keep it under ${LAUNCH_RECORD_REASON_MAX} characters.`)
 	})
 	.strict();
+
+// Client onboarding E5: Jafar ticks one launch check ('checked'), marks it Doesn't apply with a reason, or clears it
+// (`outcome` null), on the version he is checking.
+export const setupLaunchCheckSchema = z
+	.object({
+		version: z.number().int().min(1, 'Choose a preview.'),
+		check_key: z.enum(LAUNCH_CHECK_KEYS, 'Choose a check.'),
+		outcome: z.enum(['checked', 'not_applicable'], 'Choose tick or doesn’t apply.').nullable(),
+		reason: z
+			.string()
+			.trim()
+			.max(LAUNCH_CHECK_REASON_MAX, `Keep the reason under ${LAUNCH_CHECK_REASON_MAX} characters.`)
+			.nullish()
+			.transform((value) => value || null)
+	})
+	.strict()
+	.refine((input) => input.outcome !== 'not_applicable' || input.reason !== null, {
+		path: ['reason'],
+		message: 'Say why this check doesn’t apply.'
+	});
+export type SetupLaunchCheckInput = z.infer<typeof setupLaunchCheckSchema>;

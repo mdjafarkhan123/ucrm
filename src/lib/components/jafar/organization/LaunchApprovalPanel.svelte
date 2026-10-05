@@ -12,12 +12,14 @@
 	import {
 		organizationLaunchApprovalQuery,
 		organizationLaunchApprovalUrl,
+		organizationLaunchChecksQuery,
 		organizationPreviewQuery
 	} from '$lib/jafar/organization-setup-queries';
 	import {
 		jafarOnboardingKey,
 		jafarOrganizationKey,
-		jafarOrganizationLaunchApprovalKey
+		jafarOrganizationLaunchApprovalKey,
+		jafarOrganizationLaunchChecksKey
 	} from '$lib/jafar/query-keys';
 	import {
 		LAUNCH_APPROVAL_METHOD_LABEL,
@@ -25,10 +27,11 @@
 		currentLaunchApproval,
 		launchApprovalOutcome
 	} from '$lib/setup/launch-approval';
+	import { uncheckedLaunchLines } from '$lib/setup/launch-checks';
 	import { formatDateTime } from './format';
 
 	// Client onboarding E4 (plan §6): Jafar asks the final approver named in the client's setup to approve the
-	// newest released preview, once Uplift's checks are done (E5 will make Ask wait for its checklist). The approver
+	// newest released preview, once Uplift's launch checks (E5) are done — Ask waits for them. The approver
 	// is emailed a private link; Jafar can send a fresh one, or record an approval given by phone or email with a
 	// reason. A newer release cancels an open request and marks an approval replaced. Every request stays listed.
 	let { organizationId }: { organizationId: string } = $props();
@@ -36,10 +39,17 @@
 	const queryClient = useQueryClient();
 	const previews = createQuery(() => organizationPreviewQuery(organizationId));
 	const approvals = createQuery(() => organizationLaunchApprovalQuery(organizationId));
+	const checks = createQuery(() => organizationLaunchChecksQuery(organizationId));
 
 	const newest = $derived(previews.data?.released[0] ?? null);
 	const current = $derived(currentLaunchApproval(approvals.data ?? []));
 	const earlier = $derived((approvals.data ?? []).filter((request) => request !== current));
+	// The checks Ask still waits for on the newest version; null while they load.
+	const checksLeft = $derived(
+		checks.data && checks.data.version === newest?.version
+			? uncheckedLaunchLines(checks.data).length
+			: null
+	);
 
 	let confirmAsk = $state(false);
 	let recording = $state(false);
@@ -53,7 +63,8 @@
 				queryKey: jafarOrganizationLaunchApprovalKey(organizationId)
 			}),
 			queryClient.invalidateQueries({ queryKey: jafarOrganizationKey(organizationId) }),
-			queryClient.invalidateQueries({ queryKey: jafarOnboardingKey })
+			queryClient.invalidateQueries({ queryKey: jafarOnboardingKey }),
+			queryClient.invalidateQueries({ queryKey: jafarOrganizationLaunchChecksKey(organizationId) })
 		]);
 
 	async function post(path: string, body: unknown = {}) {
@@ -204,11 +215,18 @@
 				</p>
 			{:else if newest}
 				<p class="launch-panel__muted">
-					When Uplift’s launch checks are done, ask the final approver named in their setup to
-					approve version {newest.version}. They are emailed a private link that needs no login.
+					{#if checksLeft === 0}
+						Ask the final approver named in their setup to approve version {newest.version}. They
+						are emailed a private link that needs no login, and see what Uplift checked.
+					{:else if checksLeft}
+						Finish the launch checks above first — {checksLeft}
+						{checksLeft === 1 ? 'line is' : 'lines are'} left on version {newest.version}.
+					{:else}
+						Loading the launch checks…
+					{/if}
 				</p>
 				<div class="launch-panel__actions">
-					<Button disabled={busy} onclick={() => (confirmAsk = true)}
+					<Button disabled={busy || checksLeft !== 0} onclick={() => (confirmAsk = true)}
 						>Ask for launch approval</Button
 					>
 				</div>
@@ -243,7 +261,8 @@
 	>
 		<p>
 			The final approver named in their newest send is emailed a private link to approve version
-			{newest?.version}. Ask only once Uplift’s launch checks are done.
+			{newest?.version}, with Uplift’s launch checks as they stand now. The checks for this version
+			can’t change after you ask.
 		</p>
 	</ConfirmDialog>
 

@@ -36,10 +36,12 @@ export type LaunchApprovalRequest = {
 	approval_wording: string | null;
 	recorded_reason: string | null;
 	replaced_at: string | null;
+	/** E5: Uplift's launch checks as they stood when Jafar asked; read with launchChecklistFrom. */
+	launch_checks: unknown;
 };
 
 export const LAUNCH_APPROVAL_COLUMNS =
-	'id, version, requested_at, approver_name, approver_email, link_sent_at, link_expires_at, status, closed_reason, closed_at, not_yet_at, not_yet_by_name, not_yet_note, approved_at, approved_by_name, approved_by_email, approval_method, approval_wording, recorded_reason, replaced_at';
+	'id, version, requested_at, approver_name, approver_email, link_sent_at, link_expires_at, status, closed_reason, closed_at, not_yet_at, not_yet_by_name, not_yet_note, approved_at, approved_by_name, approved_by_email, approval_method, approval_wording, recorded_reason, replaced_at, launch_checks';
 
 /** The open request or the standing approval: the one the client acts on or sees as a receipt. */
 export function currentLaunchApproval(requests: LaunchApprovalRequest[]) {
@@ -78,5 +80,8 @@ export type LaunchLinkDocument = {
 	wording: string;
 	approved_at: string | null;
 	not_yet_at: string | null;
+	requested_at: string;
+	/** E5: read with launchChecklistFrom. */
+	launch_checks: unknown;
 	cards: { id: string; title: string; summary: string; link: string | null }[];
 };

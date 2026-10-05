@@ -8,16 +8,17 @@
 
 - [x] Jafar's choices recorded in the plan (hand ticks with Doesn't apply; open waits named, never block; approver sees a summary; each version has its own list)
 - [x] Migration `20261103090000_setup_launch_checks.sql`: per-version checks table, owner tick/untick command, Ask refuses until the list is done and keeps a snapshot on the request, link page returns it; push to dev; types
-- [ ] `$lib/setup/launch-checks.ts` (lines per package, linked waits, done rule) + spec
-- [ ] Jafar's API route and Launch checks panel above Launch approval; Ask waits for it
-- [ ] Approver summary on the Setup page card and the link page
+- [x] `$lib/setup/launch-checks.ts` (lines per package, linked waits, done rule) + spec
+- [x] Jafar's API route and Launch checks panel above Launch approval; Ask waits for it
+- [x] Approver summary on the Setup page card and the link page
 - [ ] Browser check on Raad LTD, remove test data
 
 ## Next
 
-Write `$lib/setup/launch-checks.ts` (step 3). Database rules were tested on dev in a block that undid itself
-(Raad's package has no services: borrow "Practice Package" (website) by inserting an agreement with
-`alter table organization_package_agreements disable trigger user` inside the same block).
+Browser check (step 6) on Raad LTD. Raad's package has no services, so only the four everyone-lines show; to see a
+waiting line, add a test wait/package by SQL and remove it after (test rows use `t@example.com`/`browser-check@example.com`).
+Needs a released preview: release one on Jafar's Setup tab, tick lines, Ask, open the link page and the client Setup
+card, then delete the test preview, checks and request.
 
 ## Outside actions
 

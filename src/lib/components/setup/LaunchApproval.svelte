@@ -9,6 +9,7 @@
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import LaunchChecksSummary from './LaunchChecksSummary.svelte';
 	import {
 		decideSetupLaunch,
 		fetchSetupLaunchApproval,
@@ -146,6 +147,7 @@
 						through with you in Chat with Uplift. You can still approve here when you are happy.
 					</Banner>
 				{/if}
+				<LaunchChecksSummary checks={request.launch_checks} askedAt={request.requested_at} />
 				<div class="launch-approval__agree">
 					<Checkbox
 						id="launch-approval-agree"
@@ -185,6 +187,7 @@
 						{day(request.not_yet_at)}. Uplift will talk it through with them.
 					</Banner>
 				{/if}
+				<LaunchChecksSummary checks={request.launch_checks} askedAt={request.requested_at} />
 				<p class="launch-approval__muted">
 					Should someone else approve? Change the final approver in Your business, send your changes
 					to Uplift, and Uplift will ask again.

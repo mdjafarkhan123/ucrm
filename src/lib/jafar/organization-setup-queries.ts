@@ -3,6 +3,7 @@ import {
 	jafarOrganizationProtectedDocumentsKey,
 	jafarOrganizationPreviewKey,
 	jafarOrganizationLaunchApprovalKey,
+	jafarOrganizationLaunchChecksKey,
 	jafarOrganizationProviderWaitsKey,
 	jafarOrganizationSetupKey
 } from '$lib/jafar/query-keys';
@@ -10,6 +11,7 @@ import type { ClientSetupView } from '$lib/setup/client-page';
 import type { ProviderWait, ProviderWaitKey } from '$lib/setup/provider-waits';
 import type { PreviewCard, PreviewScreenshotUrls, PreviewVersion } from '$lib/setup/preview';
 import type { LaunchApprovalRequest } from '$lib/setup/launch-approval';
+import type { OwnerLaunchChecklist } from '$lib/setup/launch-checks';
 
 // The Setup tab's reads (client onboarding B9b, C2), shared by the tab and its hover prefetch so both use the same keys.
 
@@ -75,6 +77,7 @@ export function prefetchOrganizationSetup(queryClient: QueryClient, organization
 	void queryClient.prefetchQuery(organizationProviderWaitsQuery(organizationId));
 	void queryClient.prefetchQuery(organizationPreviewQuery(organizationId));
 	void queryClient.prefetchQuery(organizationLaunchApprovalQuery(organizationId));
+	void queryClient.prefetchQuery(organizationLaunchChecksQuery(organizationId));
 }
 
 /** C3: where Jafar's Accept and Send back on one section go (POST). */
@@ -165,6 +168,25 @@ export const organizationLaunchApprovalQuery = (organizationId: string) => ({
 		if (!response.ok || !result.requests)
 			throw new Error(result.error ?? 'The launch approvals could not be loaded.');
 		return result.requests;
+	},
+	staleTime: 30_000
+});
+
+/** E5: where Jafar reads (GET) and ticks (POST) the newest released preview's launch checklist. */
+export const organizationLaunchChecksUrl = (organizationId: string) =>
+	`/api/jafar/organizations/${encodeURIComponent(organizationId)}/setup/launch-checks`;
+
+export const organizationLaunchChecksQuery = (organizationId: string) => ({
+	queryKey: jafarOrganizationLaunchChecksKey(organizationId),
+	queryFn: async (): Promise<OwnerLaunchChecklist | null> => {
+		const response = await fetch(organizationLaunchChecksUrl(organizationId));
+		const result = (await response.json().catch(() => ({}))) as {
+			checklist?: OwnerLaunchChecklist | null;
+			error?: string;
+		};
+		if (!response.ok || result.checklist === undefined)
+			throw new Error(result.error ?? 'The launch checks could not be loaded.');
+		return result.checklist;
 	},
 	staleTime: 30_000
 });
