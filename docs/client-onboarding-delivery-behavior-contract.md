@@ -275,6 +275,13 @@ Keep the client's original answer, any later answer, and the final accepted valu
 update matching CRM settings. Repeating a safe provisioning/configuration operation must not duplicate records or
 messages. Material owner changes are visible in history.
 
+Jafar's choices of 2026-10-05 (C5): accepting a section copies its accepted built-in answers into the matching CRM
+settings at once — business name, trade, public phone, address and whether it is public, time zone, currency and
+weekly hours — and Uplift's answer to a help question is copied when Jafar records it. The newest word from the
+business wins: a setting the owner changed in Settings after the answer reached Uplift is kept, and the Setup tab
+says so. Copying the same answers again changes nothing. The client's own time zone and currency choice in setup
+counts as their confirmation, except that currency never changes once a quote has been sent; the Setup tab says so.
+
 Ready for Uplift requires the essential business/service facts, required approvals, and enough access or an agreed
 alternative to perform Uplift's work. Optional assets, optional imports, deferred features, and provider decisions
 that can progress independently do not block it. The review screen states every actual blocker.
