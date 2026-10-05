@@ -44,7 +44,7 @@ Skills live under `.claude/skills/`. Load every skill relevant to the current ta
 | ---------------------------------------------------------------------------------- | ---------------------------------------------------------- |
 | Any design, styling, ui or frontend task                                           | `.claude/skills/design/SKILL.md`                           |
 | Complex interactive controls                                                       | `.claude/skills/bits-ui/SKILL.md`                          |
-| Contractor CRM behavior, workflow, model, jobber research                          | `.claude/skills/jobber/SKILL.md`                           |
+| Contractor CRM behavior/workflow/model/research                                    | `.claude/skills/jobber/SKILL.md`                           |
 | Supabase, Auth, Storage, Edge Functions, or Realtime                               | `.claude/skills/supabase/SKILL.md`                         |
 | Postgres, migrations, RLS, SQL, functions, or indexes                              | `.claude/skills/supabase-postgres-best-practices/SKILL.md` |
 | Any Svelte component or module, page                                               | `.claude/skills/svelte/SKILL.md`                           |
