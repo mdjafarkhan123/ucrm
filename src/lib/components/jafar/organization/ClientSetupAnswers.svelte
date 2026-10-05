@@ -373,7 +373,7 @@
 			{#if withUplift && remindersOn}
 				<!-- Sent setup stops them by itself, so there is nothing to switch. -->
 				<p class="client-setup__muted">
-					{clientSetupRemindersText(view.reminders, true, formatDateTime)}
+					{clientSetupRemindersText(view.reminders, true, formatDateTime, Boolean(view.ready))}
 				</p>
 			{:else}
 				<Toggle

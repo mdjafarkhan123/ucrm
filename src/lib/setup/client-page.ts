@@ -71,13 +71,18 @@ export type ClientSetupView = {
 	time_zone: string;
 };
 
-/** The reminders' state in words, for the Setup tab. `sent`: setup is with Uplift, nothing sent back. */
+/**
+ * The reminders' state in words, for the Setup tab. `sent`: setup is with Uplift, nothing sent back; `ready`:
+ * Uplift recorded Ready for Uplift (C4).
+ */
 export function clientSetupRemindersText(
 	reminders: ClientSetupReminders,
 	sent: boolean,
-	formatDate: (iso: string) => string
+	formatDate: (iso: string) => string,
+	ready = false
 ): string {
 	if (reminders.paused_at) return `Paused by Uplift on ${formatDate(reminders.paused_at)}.`;
+	if (sent && ready) return 'Off — Uplift is building their system.';
 	if (sent) return 'Off while Uplift reviews — the client has sent their setup.';
 	if (reminders.next_due_at)
 		return `On. The next one goes out around ${formatDate(reminders.next_due_at)} if the client stays quiet.`;

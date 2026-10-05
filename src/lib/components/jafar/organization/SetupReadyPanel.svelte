@@ -210,15 +210,17 @@
 	onConfirm={() => markReady.mutate()}
 	onClose={() => (confirming = false)}
 >
-	<p>
-		The build starts today, {formatReadyDate(preview.start_date)}. The client is shown that their
-		system will be ready for their review between
-		<strong>{formatReadyDate(preview.target_from)}</strong> and
-		<strong>{formatReadyDate(preview.target_to, true)}</strong>.
-	</p>
-	<p class="setup-ready__muted">
-		Counted Monday to Friday in {view.time_zone}. Their setup reminders stay off.
-	</p>
+	<div class="setup-ready__dialog">
+		<p>
+			The build starts today, {formatReadyDate(preview.start_date)}. The client is shown that their
+			system will be ready for their review between
+			<strong>{formatReadyDate(preview.target_from)}</strong> and
+			<strong>{formatReadyDate(preview.target_to, true)}</strong>.
+		</p>
+		<p class="setup-ready__muted">
+			Counted Monday to Friday in {view.time_zone}. Their setup reminders stay off.
+		</p>
+	</div>
 </ConfirmDialog>
 
 <ConfirmDialog
@@ -231,20 +233,22 @@
 	onConfirm={confirmWithdraw}
 	onClose={() => (withdrawing = false)}
 >
-	<p>
-		The client’s dates disappear. Recording Ready again later starts a fresh
-		{SETUP_READY_DAYS.from}–{SETUP_READY_DAYS.to} business days.
-	</p>
-	<Textarea
-		id="setup-ready-withdraw-reason"
-		label="Why are you taking it back?"
-		rows={3}
-		maxlength={SETUP_READY_REASON_MAX}
-		required
-		bind:value={reason}
-		invalid={Boolean(reasonError)}
-		errorMessage={reasonError}
-	/>
+	<div class="setup-ready__dialog">
+		<p>
+			The client’s dates disappear. Recording Ready again later starts a fresh
+			{SETUP_READY_DAYS.from}–{SETUP_READY_DAYS.to} business days.
+		</p>
+		<Textarea
+			id="setup-ready-withdraw-reason"
+			label="Why are you taking it back?"
+			rows={3}
+			maxlength={SETUP_READY_REASON_MAX}
+			required
+			bind:value={reason}
+			invalid={Boolean(reasonError)}
+			errorMessage={reasonError}
+		/>
+	</div>
 </ConfirmDialog>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
@@ -255,6 +259,15 @@
 			display: block;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
+			font-weight: 400;
+		}
+
+		// The confirmations' paragraphs, which ConfirmDialog renders inside this component.
+		&__dialog {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-small);
+			line-height: var(--typography--lineHeight-base);
 		}
 
 		&__error {
