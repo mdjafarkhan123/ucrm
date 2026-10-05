@@ -19,7 +19,7 @@ vi.mock('$lib/server/setup/preview', () => ({
 const ORGANIZATION_ID = '11111111-1111-4111-8111-111111111111';
 const rpc = vi.fn();
 
-function call(handler: typeof postDraft, body: unknown) {
+function call(handler: (event: never) => Response | Promise<Response>, body: unknown) {
 	return handler({
 		params: { organizationId: ORGANIZATION_ID },
 		url: new URL('http://localhost/api'),

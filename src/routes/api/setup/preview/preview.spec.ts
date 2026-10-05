@@ -28,7 +28,7 @@ vi.mock('$lib/server/storage/r2', async () => {
 const ORGANIZATION_ID = 'org-1';
 const rpc = vi.fn();
 
-function call(handler: typeof postNote, body: unknown) {
+function call(handler: (event: never) => Response | Promise<Response>, body: unknown) {
 	return handler({
 		locals: { supabase: { rpc } },
 		url: new URL('http://localhost/api'),
