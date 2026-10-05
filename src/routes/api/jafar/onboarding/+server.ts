@@ -126,6 +126,10 @@ export const GET: RequestHandler = async (event) => {
 									notes_sent_at: row.preview_sent_at
 								}
 							: null,
+					approval:
+						row.approval_status === 'approved' && row.approval_version && row.approved_at
+							? { version: row.approval_version, approved_at: row.approved_at }
+							: null,
 					today: todayIn(ready?.time_zone ?? 'UTC')
 				})
 			};

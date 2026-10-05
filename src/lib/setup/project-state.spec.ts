@@ -8,6 +8,7 @@ const base: ProjectFacts = {
 	returned_count: 0,
 	ready: null,
 	preview: null,
+	approval: null,
 	today: '2026-10-05'
 };
 const sent = { number: 1, submitted_at: '2026-10-02T09:00:00Z' };
@@ -132,5 +133,25 @@ describe('projectView', () => {
 				preview: { ...facts.preview, notes_sent_at: '2026-10-21T09:00:00Z' }
 			}).after_ready
 		).toEqual({ kind: 'notes_sent', at: '2026-10-21T09:00:00Z' });
+	});
+
+	it('is Approved — preparing launch once the final approver approves, dated that day', () => {
+		const view = projectView({
+			...base,
+			sent,
+			first_sent_at: sent.submitted_at,
+			ready,
+			preview: { version: 2, released_at: '2026-10-21T10:00:00Z', notes_sent_at: null },
+			approval: { version: 2, approved_at: '2026-10-22T15:00:00Z' },
+			today: '2026-10-22'
+		});
+		expect(view.state).toBe('approved');
+		expect(view.steps.find((each) => each.state === 'ready_for_review')).toMatchObject({
+			status: 'done'
+		});
+		expect(view.steps.find((each) => each.state === 'approved')).toMatchObject({
+			status: 'current',
+			on: '2026-10-22T15:00:00Z'
+		});
 	});
 });

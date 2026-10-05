@@ -9,6 +9,7 @@ import { SETUP_ANSWER_MAX_BYTES, setupStoredBytes } from '$lib/setup/answer-valu
 import { SETUP_REVIEW_NOTE_MAX } from '$lib/setup/review';
 import { SETUP_HELP_NOTE_MAX } from '$lib/setup/help';
 import { SETUP_READY_REASON_MAX } from '$lib/setup/ready';
+import { LAUNCH_NOT_YET_NOTE_MAX, LAUNCH_RECORD_REASON_MAX } from '$lib/setup/launch-approval';
 import {
 	PROVIDER_WAITS,
 	PROVIDER_WAIT_NOTE_MAX,
@@ -336,5 +337,51 @@ export const setupPreviewScreenshotPresignSchema = z
 			.int()
 			.positive('That file is empty.')
 			.max(10 * 1024 * 1024, 'Each screenshot must be 10 MB or smaller.')
+	})
+	.strict();
+
+// E4: the approver's answer to a launch approval request, signed in or through the link.
+const launchNoteField = z
+	.string()
+	.trim()
+	.max(LAUNCH_NOT_YET_NOTE_MAX, `Keep the note under ${LAUNCH_NOT_YET_NOTE_MAX} characters.`)
+	.nullish()
+	.transform((value) => value || null);
+
+export const setupLaunchDecisionSchema = z
+	.object({
+		version: z.number().int().min(1, 'Choose a preview.'),
+		decision: z.enum(['approve', 'not_yet'], 'Choose Approve or Not yet.'),
+		// The box the approver ticks; the server records the wording, not this flag.
+		agreed: z.boolean().optional(),
+		note: launchNoteField
+	})
+	.strict()
+	.refine((input) => input.decision !== 'approve' || input.agreed === true, {
+		message: 'Tick the box to approve.',
+		path: ['agreed']
+	});
+
+export const setupLaunchLinkDecisionSchema = z
+	.object({
+		decision: z.enum(['approve', 'not_yet'], 'Choose Approve or Not yet.'),
+		agreed: z.boolean().optional(),
+		note: launchNoteField
+	})
+	.strict()
+	.refine((input) => input.decision !== 'approve' || input.agreed === true, {
+		message: 'Tick the box to approve.',
+		path: ['agreed']
+	});
+
+// E4: Jafar records an approval given by phone or email, saying how it was given.
+export const setupLaunchRecordSchema = z
+	.object({
+		version: z.number().int().min(1, 'Choose a preview.'),
+		reason: z
+			.string()
+			.trim()
+			.min(1, 'Say how the approval was given.')
+			.max(LAUNCH_RECORD_REASON_MAX, `Keep it under ${LAUNCH_RECORD_REASON_MAX} characters.`)
 	})
 	.strict();

@@ -7,8 +7,9 @@
 // Jafar's choices of 2026-10-05: "Ready for Uplift" turns into "Building your system" by itself on the first
 // business day after Ready; once Ready is recorded the tracker stays on Building while the client sends changes
 // or Uplift sends a task back, with a note saying so. Payment and verification happen before the account exists,
-// so the client only ever sees them done. E3 adds Ready for your review: Jafar has released a preview. States 9–11
-// arrive with approval, launch and handover (E4–E6).
+// so the client only ever sees them done. E3 adds Ready for your review: Jafar has released a preview. E4 adds
+// Approved — preparing launch: the final approver approved the newest preview. States 10–11 arrive with launch and
+// handover (E5–E6).
 
 import type { PreviewFacts } from '$lib/setup/preview';
 import { addBusinessDays } from '$lib/setup/ready';
@@ -70,6 +71,8 @@ export type ProjectFacts = {
 	} | null;
 	/** E3: the newest preview Jafar released, after Ready. */
 	preview: PreviewFacts | null;
+	/** E4: the standing launch approval, on the newest preview; a newer release replaces it. */
+	approval: { version: number; approved_at: string } | null;
 	/** Today in the client's time zone, `YYYY-MM-DD`. */
 	today: string;
 };
@@ -79,6 +82,7 @@ export const buildStartDate = (startDate: string) => addBusinessDays(startDate, 
 
 /** Where the project stands now. */
 export function projectState(facts: ProjectFacts): ProjectState {
+	if (facts.ready && facts.preview && facts.approval) return 'approved';
 	if (facts.ready && facts.preview) return 'ready_for_review';
 	if (facts.ready)
 		return facts.today >= buildStartDate(facts.ready.start_date) ? 'building' : 'ready_for_uplift';
@@ -131,7 +135,8 @@ export function projectView(facts: ProjectFacts): ProjectView {
 		uplift_reviewing: state === 'uplift_reviewing' ? (facts.sent?.submitted_at ?? null) : null,
 		ready_for_uplift: facts.ready?.start_date ?? null,
 		building: facts.ready ? buildStartDate(facts.ready.start_date) : null,
-		ready_for_review: facts.ready ? (facts.preview?.released_at ?? null) : null
+		ready_for_review: facts.ready ? (facts.preview?.released_at ?? null) : null,
+		approved: facts.ready && facts.preview ? (facts.approval?.approved_at ?? null) : null
 	};
 
 	const steps = shown.map((step): ProjectStep => {

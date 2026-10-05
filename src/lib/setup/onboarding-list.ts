@@ -16,6 +16,9 @@ export type OnboardingNextAction =
 	| 'review_preview'
 	| 'sort_corrections'
 	| 'make_corrections'
+	| 'approve_launch'
+	| 'approver_not_yet'
+	| 'prepare_launch'
 	| 'build_system'
 	| 'help_with_answers'
 	| 'reply_to_support'
@@ -59,6 +62,12 @@ export type OnboardingClient = {
 	preview_released_at: string | null;
 	preview_sent_at: string | null;
 	preview_unsorted: number;
+	/** E4: the open launch approval request or the standing approval, if any. */
+	approval_status: 'open' | 'approved' | null;
+	approval_version: number | null;
+	approval_requested_at: string | null;
+	approval_not_yet_at: string | null;
+	approved_at: string | null;
 	/** E1: the client-facing project state (plan §5), worked out by the route as the client's page does. */
 	project_state: ProjectState;
 	waiting_on: OnboardingWaitingOn;
@@ -145,6 +154,12 @@ export function onboardingNextActionLabel(client: OnboardingClient): string {
 			return `Sort ${plural(client.preview_unsorted, 'preview note', 'preview notes')}`;
 		case 'make_corrections':
 			return 'Make their preview corrections';
+		case 'approve_launch':
+			return 'Waiting for their launch approval';
+		case 'approver_not_yet':
+			return 'Talk to them — their approver said not yet';
+		case 'prepare_launch':
+			return 'Approved — prepare their launch';
 		case 'build_system':
 			return 'Build their system';
 		case 'account_paused':
