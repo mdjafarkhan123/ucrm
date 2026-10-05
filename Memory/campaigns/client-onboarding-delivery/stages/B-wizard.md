@@ -18,4 +18,4 @@ Each part loads one blueprint stage into the draft for Jafar to publish (A5); ne
 | B11 CRM defaults + import | Blueprint stages 4–5 | B3a | Skipping imports never blocks | Done 2026-10-04. Jafar to confirm: stages after Reviews; "(recommended)" labels; work hours pre-filled; approver asked to all |
 | B12 Marketing | §3.9 drafts only | B3a | Nothing can send from setup | Done 2026-10-04; Jafar's choices are in plan §3.9 |
 | B13 Check and send | §3.10 summary, confirmations, frozen snapshot | B4–B12 | Send freezes answers; later edits show as changes | Done 2026-10-04 — `/setup/check-and-send`; Jafar's choices are in plan §3.10 |
-| B14 Question screens | One topic per screen, question above its answer (Stripe, GOV.UK) | B13 | Client can tell each question and its answer apart | Done 2026-10-05 — browser-checked on Raad, desktop and phone width. Not pressed: Finish this task's jump to a missing answer |
+| B14 Question screens | One topic per screen, question above answer (Stripe, GOV.UK) | B13 | Each question reads clearly | Done 2026-10-05, checked desktop and phone; Finish's jump to a missing answer untried |
