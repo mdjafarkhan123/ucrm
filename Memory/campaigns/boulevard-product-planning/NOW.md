@@ -1,12 +1,10 @@
 # Boulevard product planning — now
 
-**Goal:** Produce a researched, plain-language product plan for industry editions, prioritizing Medspa & Clinical Wellness, with a complete documented feature inventory and initial/later release assignments.
+**Goal:** Produce a researched, plain-language product plan for industry editions, prioritizing Medspa & Clinical Wellness, with the documented feature inventory and initial/later release assignments.
 **Plan:** `docs/boulevard-product-behavior-contract.md`
 
-**In progress:**
+**In progress:** P1 — `parts/P1.md`. All three initial scope recommendations were approved on 2026-10-05. The first sourced area map exists in `docs/research/boulevard-feature-landscape-2026-10-05.md`; it is explicitly incomplete.
 
-- P1 — source inventory and scope; see `parts/P1.md`. Project context and planning structure are saved. No application work has started.
+**Next part:** Continue P1's coverage checklist: setup, payments, apps, add-ons, integrations and release changes; expand areas into individually sourced features. Then split detailed behavior research into focused parts.
 
-**Next part:** P1 — research the official public feature landscape while collecting the three scope answers in the part note; then select the first area for detailed behavior research.
-
-**Blockers:** None for public inventory research. Jafar's country, clinical boundary, and customer-size decisions are needed before initial-release approval.
+**Blockers:** None for inventory research. Feature-level release scope still needs research and later approval. No application work is authorized by this planning checkpoint.

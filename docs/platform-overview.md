@@ -26,4 +26,4 @@ Inventory the full documented feature landscape before selecting initial versus 
 
 Each release must support complete agreed workflows with observable completion checks. Keep research confidence, release assignment, and delivery status separate. Capacity and reliability claims require measured evidence for the relevant workload; no promise of unlimited scale or zero slowdown follows from choosing a design.
 
-Keep existing contractor work and infrastructure rules in force. This planning campaign authorizes research and documentation, not application, database, provider, or infrastructure changes. Initial countries, customer sizes, and the clinical boundary remain open decisions in the plan.
+Keep existing contractor work and infrastructure rules in force. This planning campaign authorizes research and documentation, not application, database, provider, or infrastructure changes. Jafar approved US first, single-location teams first, and Boulevard-style clinical/business workflows with specialist diagnostic test/report systems outside the initial promise on 2026-10-05. Feature-level release assignments remain open in the plan.

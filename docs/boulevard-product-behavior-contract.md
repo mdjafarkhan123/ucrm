@@ -6,6 +6,16 @@
 
 The platform will provide an industry-appropriate experience for medspas, clinical wellness businesses, salons, barbers, and spas. Medspa & Clinical Wellness is the first expansion priority. Its shared booking and business capabilities are planned alongside its specialist needs. Beauty & Spa follows using shared capabilities. The existing contractor edition continues to follow its own contracts. Boulevard is the primary product reference, with competitors used for focused comparison. The product serves a market rather than one individual business.
 
+## Initial scope approved 2026-10-05
+
+Jafar approved all three initial recommendations:
+
+- US first; other countries remain on the roadmap.
+- Boulevard-style booking, forms, consent, charting, and payments define the initial clinical direction. Specialist diagnostic test/report systems are outside the initial promise; any essential gap gets a separate decision.
+- Single-location teams first; multi-location capabilities remain in the complete inventory for later planning.
+
+These decisions set boundaries, not final feature-level release approval. Research still inventories the full documented Boulevard landscape.
+
 ## Experience and access
 
 The business account selects the relevant industry experience. Its subscription and employees' permissions control the available tools and records. Plan mixed-service business behavior explicitly. Shared tools retain one behavior definition, with differences recorded under the relevant industry. LifeScan is a potential validation example; its subscription does not establish that Boulevard handles every diagnostic task.
@@ -26,9 +36,6 @@ Confirmed means supported by a cited source, not assumed equivalent to our imple
 
 ## Still unclear
 
-- First launch countries for the new editions.
-- Initial clinical scope: Boulevard-style appointment, consent, charting and business workflows versus diagnostic test/report workflows too.
-- Initial customer size: single-location teams or multi-location groups at launch.
 - The source-backed feature inventory, detailed behaviors, reuse findings, release assignments, and measurable quality targets; settle these in planning parts, not by assumption.
 
 ## Not doing
@@ -40,7 +47,9 @@ Confirmed means supported by a cited source, not assumed equivalent to our imple
 
 ## Research
 
-Research records and detailed area plans will be linked here as completed. Starting sources, not a completed audit:
+- [Feature landscape and coverage checklist — first pass](research/boulevard-feature-landscape-2026-10-05.md). Inventory remains in progress.
+
+Starting sources, not a completed audit:
 
 - [Boulevard feature catalog](https://www.joinblvd.com/)
 - [Boulevard support center](https://support.boulevard.io/)
