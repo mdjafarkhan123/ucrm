@@ -25,6 +25,9 @@ export const jafarOrganizationSetupKey = (
 	organizationId: string | undefined,
 	send: number | null
 ) => [...jafarOrganizationKey(organizationId), 'setup', send] as const;
+/** E2: the client's outside waits (Google, carriers, number transfer, domain). */
+export const jafarOrganizationProviderWaitsKey = (organizationId: string | undefined) =>
+	[...jafarOrganizationKey(organizationId), 'provider-waits'] as const;
 export const jafarOrganizationAutomationAuthorityKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'automation-authority'] as const;
 export const jafarOrganizationEmailDomainsKey = (organizationId: string | undefined) =>

@@ -1,9 +1,11 @@
 import type { QueryClient } from '@tanstack/svelte-query';
 import {
 	jafarOrganizationProtectedDocumentsKey,
+	jafarOrganizationProviderWaitsKey,
 	jafarOrganizationSetupKey
 } from '$lib/jafar/query-keys';
 import type { ClientSetupView } from '$lib/setup/client-page';
+import type { ProviderWait, ProviderWaitKey } from '$lib/setup/provider-waits';
 
 // The Setup tab's reads (client onboarding B9b, C2), shared by the tab and its hover prefetch so both use the same keys.
 
@@ -66,6 +68,7 @@ export const organizationSetupRemindersUrl = (organizationId: string) =>
 export function prefetchOrganizationSetup(queryClient: QueryClient, organizationId: string) {
 	void queryClient.prefetchQuery(organizationSetupQuery(organizationId, null));
 	void queryClient.prefetchQuery(organizationProtectedDocumentsQuery(organizationId));
+	void queryClient.prefetchQuery(organizationProviderWaitsQuery(organizationId));
 }
 
 /** C3: where Jafar's Accept and Send back on one section go (POST). */
@@ -83,3 +86,23 @@ export const organizationSetupReadyUrl = (organizationId: string) =>
 /** C5: where Jafar fills a client's CRM settings from their accepted answers again (POST). */
 export const organizationSetupSettingsCopyUrl = (organizationId: string) =>
 	`/api/jafar/organizations/${encodeURIComponent(organizationId)}/setup/settings-copy`;
+
+/** E2: where Jafar reads (GET) and changes (POST) a client's outside waits. */
+export const organizationProviderWaitsUrl = (organizationId: string) =>
+	`/api/jafar/organizations/${encodeURIComponent(organizationId)}/setup/provider-waits`;
+
+export const organizationProviderWaitsQuery = (organizationId: string) => ({
+	queryKey: jafarOrganizationProviderWaitsKey(organizationId),
+	queryFn: async (): Promise<{ offered: ProviderWaitKey[]; waits: ProviderWait[] }> => {
+		const response = await fetch(organizationProviderWaitsUrl(organizationId));
+		const result = (await response.json().catch(() => ({}))) as {
+			offered?: ProviderWaitKey[];
+			waits?: ProviderWait[];
+			error?: string;
+		};
+		if (!response.ok || !result.offered || !result.waits)
+			throw new Error(result.error ?? 'The outside waits could not be loaded.');
+		return { offered: result.offered, waits: result.waits };
+	},
+	staleTime: 30_000
+});

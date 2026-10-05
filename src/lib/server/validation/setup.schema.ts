@@ -9,6 +9,11 @@ import { SETUP_ANSWER_MAX_BYTES, setupStoredBytes } from '$lib/setup/answer-valu
 import { SETUP_REVIEW_NOTE_MAX } from '$lib/setup/review';
 import { SETUP_HELP_NOTE_MAX } from '$lib/setup/help';
 import { SETUP_READY_REASON_MAX } from '$lib/setup/ready';
+import {
+	PROVIDER_WAITS,
+	PROVIDER_WAIT_NOTE_MAX,
+	PROVIDER_WAIT_STATUSES
+} from '$lib/setup/provider-waits';
 
 // One autosave: one or more facts from the setup wizard. The published setup version decides what a fact
 // may hold, so the same rule that the page shows beside the field is the one that refuses the save here.
@@ -194,3 +199,23 @@ export const setupReadyWithdrawSchema = z
 			.max(SETUP_READY_REASON_MAX, `Keep it under ${SETUP_READY_REASON_MAX} characters.`)
 	})
 	.strict();
+
+// Client onboarding E2: Jafar moves one outside wait to a stage, or clears it back to not started (`status`
+// null). "You need to do something" needs a note saying what to do.
+export const setupProviderWaitSchema = z
+	.object({
+		wait_key: z.enum(PROVIDER_WAITS, 'Choose a wait.'),
+		status: z.enum(PROVIDER_WAIT_STATUSES, 'Choose a stage.').nullable(),
+		note: z
+			.string()
+			.trim()
+			.max(PROVIDER_WAIT_NOTE_MAX, `Keep the note under ${PROVIDER_WAIT_NOTE_MAX} characters.`)
+			.nullish()
+			.transform((value) => value || null)
+	})
+	.strict()
+	.refine((input) => input.status !== 'action_needed' || input.note !== null, {
+		path: ['note'],
+		message: 'Say what the client needs to do.'
+	});
+export type SetupProviderWaitInput = z.infer<typeof setupProviderWaitSchema>;

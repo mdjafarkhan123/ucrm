@@ -249,6 +249,15 @@
 								>Due {shortDate(client.target_from)} – {shortDate(client.target_to)}</span
 							>
 						{/if}
+						{#if client.provider_waits_open > 0}
+							<!-- E2: Google, carrier, number-transfer or domain steps still running beside the build. -->
+							<span
+								class="onboarding-list__sub"
+								class:onboarding-list__waits--action={client.provider_waits_action > 0}
+								>{client.provider_waits_open}
+								{client.provider_waits_open === 1 ? 'outside wait' : 'outside waits'}</span
+							>
+						{/if}
 					</div>
 				</td>
 				<td>
@@ -440,7 +449,8 @@
 		white-space: nowrap;
 	}
 
-	.onboarding-list__quiet {
+	.onboarding-list__quiet,
+	.onboarding-list__waits--action {
 		color: var(--color-warning--onSurface);
 		font-weight: 700;
 	}

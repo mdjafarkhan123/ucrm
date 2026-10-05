@@ -51,6 +51,7 @@
 		'organization.setup_help_answered': 'Uplift answered a help request',
 		'organization.setup_ready': 'Ready for Uplift recorded',
 		'organization.setup_ready_withdrawn': 'Ready for Uplift taken back',
+		'organization.setup_provider_wait': 'Outside wait changed',
 		'package.updated': 'Package changed',
 		'package.legacy_assigned': 'Legacy package assigned',
 		'feature_override.updated': 'Feature override changed',

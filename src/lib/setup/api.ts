@@ -3,6 +3,7 @@ import type { SetupCheck, SetupConfirmation } from '$lib/setup/check';
 import type { SetupClientReview } from '$lib/setup/review';
 import type { SetupHelpAnswer } from '$lib/setup/help';
 import type { ProjectView } from '$lib/setup/project-state';
+import type { ProviderWait } from '$lib/setup/provider-waits';
 import type {
 	SetupAnswers,
 	SetupAvailability,
@@ -37,6 +38,8 @@ export type SetupSummary = {
 		| { state: 'ready'; start_date: string; target_from: string; target_to: string };
 	/** E1: the client's step tracker (plan §5). */
 	project: ProjectView;
+	/** E2: the outside waits Uplift has started (Google, carriers, number transfer, domain). */
+	outside_waits: ProviderWait[];
 	/** Whether the signed-in person gets setup reminder emails. */
 	reminder_emails_on: boolean;
 };

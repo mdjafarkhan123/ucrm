@@ -10,15 +10,19 @@
 - [x] Migration `20261031090000_setup_provider_waits.sql` written (table, `owner_set_setup_provider_wait`, list counts)
 - [x] Apply migration to dev
 - [x] Regenerate types
-- [ ] `$lib/setup/provider-waits.ts` (keys, labels, provider words) + spec
-- [ ] Jafar API `POST/…/setup/provider-waits` (Zod) + "You need to do something" email
-- [ ] Jafar's Setup tab panel; Onboarding list tag and `provider_action`
-- [ ] Client "Waiting on others" card under the tracker on `/setup`
+- [x] `$lib/setup/provider-waits.ts` (keys, labels, provider words) + spec
+- [x] Jafar API `POST/…/setup/provider-waits` (Zod) + "You need to do something" email
+- [x] Jafar's Setup tab panel; Onboarding list tag and `provider_action`
+- [x] Client "Waiting on others" card under the tracker on `/setup`
 - [ ] Checks, browser check on Raad LTD, commit
 
 ## Next
 
-Write `src/lib/setup/provider-waits.ts` (keys, service, provider words, status labels) with a spec.
+Browser check: no dev client's package has Google/texting/website, so put one wait on Raad LTD by SQL
+(`insert into organization_setup_provider_waits … 'google_profile','action_needed'`), check the client's
+`/setup` card and the "You need to do something" email in the outbox, Jafar's Setup tab panel (shows started
+waits outside the package so they can be cleared) and the Onboarding tag; then clear it from the panel.
+Database rules were already tested in a self-undoing block (all passed).
 
 ## Outside actions
 

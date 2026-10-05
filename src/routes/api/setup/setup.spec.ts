@@ -62,6 +62,7 @@ function supabase(options: {
 	settings?: Record<string, string | null>;
 	hours?: HoursRow[];
 	profileName?: string | null;
+	waits?: { wait_key: string; status: string; note: string | null; updated_at: string }[];
 }) {
 	const rpc = vi.fn().mockResolvedValue({ data: { status: 'saved' }, error: null });
 	const rows: Record<string, unknown> = {
@@ -78,7 +79,9 @@ function supabase(options: {
 		// C3c: nothing Uplift has answered.
 		organization_setup_help_answers: [],
 		// E1: the account was created when the payment was confirmed.
-		organizations: { created_at: '2026-09-30T08:00:00Z' }
+		organizations: { created_at: '2026-09-30T08:00:00Z' },
+		// E2: the outside waits Uplift has started.
+		organization_setup_provider_waits: options.waits ?? []
 	};
 	const from = vi.fn((table: string) => {
 		const result = { data: rows[table], error: null };
@@ -175,7 +178,35 @@ describe('GET /api/setup', () => {
 		expect(body.delivery.state).toBe('collecting');
 		// E1: payment is behind them; setup is the current step.
 		expect(body.project).toMatchObject({ state: 'complete_setup', position: 3, total: 10 });
+		expect(body.outside_waits).toEqual([]);
 		expect(body.project.steps[1]).toMatchObject({ status: 'done', on: '2026-09-30T08:00:00Z' });
+	});
+
+	it('shows the outside waits Uplift has started, apart from the project tracker', async () => {
+		const at = '2026-10-05T10:00:00Z';
+		const body = await (
+			await getSummary(
+				event(
+					supabase({
+						waits: [
+							{ wait_key: 'google_profile', status: 'in_review', note: null, updated_at: at },
+							{
+								wait_key: 'texting_approval',
+								status: 'action_needed',
+								note: 'Upload a bill',
+								updated_at: at
+							}
+						]
+					})
+				)
+			)
+		).json();
+		expect(body.outside_waits).toEqual([
+			{ key: 'google_profile', status: 'in_review', note: null, updated_at: at },
+			{ key: 'texting_approval', status: 'action_needed', note: 'Upload a bill', updated_at: at }
+		]);
+		// A wait on Google never moves the client's own project.
+		expect(body.project.state).toBe('complete_setup');
 	});
 
 	it('shows half-filled setup as in progress so it can be resumed on another device', async () => {

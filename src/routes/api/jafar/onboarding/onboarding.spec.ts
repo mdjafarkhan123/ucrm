@@ -71,6 +71,8 @@ function client(overrides: Partial<OnboardingClient> = {}): OnboardingClient {
 		ready_at: null,
 		target_from: null,
 		target_to: null,
+		provider_waits_open: 0,
+		provider_waits_action: 0,
 		project_state: 'complete_setup',
 		waiting_on: 'client',
 		next_action: 'finish_section',

@@ -5,6 +5,7 @@
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
+	import OutsideWaits from '$lib/components/setup/OutsideWaits.svelte';
 	import ProjectTracker from '$lib/components/setup/ProjectTracker.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
@@ -57,6 +58,18 @@
 			firstVisit = !summary.welcome_seen;
 			if (firstVisit) void recordWelcomeSeen();
 		});
+	});
+
+	// E2: the "You need to do something" email links to #outside-waits, which only exists once the answer has
+	// arrived, so the browser's own jump to it happens too early. Scroll there once, after it renders.
+	let scrolledToHash = false;
+	$effect(() => {
+		if (!query.data?.outside_waits.length || scrolledToHash) return;
+		scrolledToHash = true;
+		if (window.location.hash !== '#outside-waits') return;
+		requestAnimationFrame(() =>
+			document.getElementById('outside-waits')?.scrollIntoView({ block: 'start' })
+		);
 	});
 
 	async function recordWelcomeSeen() {
@@ -341,11 +354,13 @@
 					</div>
 				</section>
 				<ProjectTracker project={summary.project} />
+				{#if summary.outside_waits.length}<OutsideWaits waits={summary.outside_waits} />{/if}
 				{@render returned()}
 				{@render tasks()}
 				{@render reminders()}
 			{:else}
 				<ProjectTracker project={summary.project} />
+				{#if summary.outside_waits.length}<OutsideWaits waits={summary.outside_waits} />{/if}
 				{@render returned()}
 				{@render tasks()}
 				<SectionBlock title="How setup works">

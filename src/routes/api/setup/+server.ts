@@ -5,6 +5,7 @@ import { requireSetupReader } from '$lib/server/setup/access';
 import { readOrganizationSetupCatalogue } from '$lib/server/setup/catalogue';
 import { readClientSetupReviews } from '$lib/server/setup/client-review';
 import { readSetupProject } from '$lib/server/setup/project';
+import { readClientProviderWaits } from '$lib/server/setup/provider-waits';
 import { readSetupState, setupSummary } from '$lib/server/setup/read';
 
 // The task list and the dashboard's setup card: every section's status and Uplift's review of it, overall
@@ -37,16 +38,15 @@ export const GET: RequestHandler = async (event) => {
 
 	const summary = setupSummary(state, catalogue, reviews);
 	// E1: the step tracker, from the same state and the tasks sent back on the newest send.
-	const project = await readSetupProject(
-		event.locals.supabase,
-		organizationId,
-		state,
-		summary.returned_count
-	);
-	if (!project) return databaseError();
+	// E2: the outside waits Uplift has started, at most four rows keyed by the organization.
+	const [project, outsideWaits] = await Promise.all([
+		readSetupProject(event.locals.supabase, organizationId, state, summary.returned_count),
+		readClientProviderWaits(event.locals.supabase, organizationId)
+	]);
+	if (!project || !outsideWaits) return databaseError();
 
 	return json(
-		{ ...summary, project, reminder_emails_on: optOut.data === null },
+		{ ...summary, project, outside_waits: outsideWaits, reminder_emails_on: optOut.data === null },
 		{ headers: PRIVATE_READ_HEADERS }
 	);
 };

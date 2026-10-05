@@ -12,6 +12,7 @@ export type OnboardingNextAction =
 	| 'send_to_uplift'
 	| 'review_setup'
 	| 'fix_returned'
+	| 'provider_action'
 	| 'build_system'
 	| 'help_with_answers'
 	| 'reply_to_support'
@@ -47,6 +48,9 @@ export type OnboardingClient = {
 	ready_at: string | null;
 	target_from: string | null;
 	target_to: string | null;
+	/** E2: outside waits not yet approved or ruled out, and those needing the client. */
+	provider_waits_open: number;
+	provider_waits_action: number;
 	/** E1: the client-facing project state (plan §5), worked out by the route as the client's page does. */
 	project_state: ProjectState;
 	waiting_on: OnboardingWaitingOn;
@@ -125,6 +129,8 @@ export function onboardingNextActionLabel(client: OnboardingClient): string {
 				: 'Review their setup';
 		case 'fix_returned':
 			return `Waiting for them to change ${plural(client.returned_count, 'sent-back task', 'sent-back tasks')}`;
+		case 'provider_action':
+			return `Waiting for them on ${plural(client.provider_waits_action, 'outside wait', 'outside waits')}`;
 		case 'build_system':
 			return 'Build their system';
 		case 'account_paused':
