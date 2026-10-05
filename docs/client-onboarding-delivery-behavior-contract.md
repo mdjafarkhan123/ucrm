@@ -345,6 +345,19 @@ phone/text behavior, Google facts, CRM defaults, and import counts relevant to t
 organized factual-correction round; Uplift errors are always corrected. A new direction or expanded scope is
 reviewed separately.
 
+Jafar's choices of 2026-10-05 (E3; the proofing pattern of Filestage and Ziflow, deliverable review in Rocketlane
+and GuideCX, and agencies' "one revision round included"). Once Ready is recorded, Jafar writes the preview as cards,
+one per part of the package, each with a short summary, an optional link (such as the website preview address) and
+optional screenshots, and releases it; the client's owners and administrators are emailed and the project shows
+Ready for your review. On each card the client picks Looks right or Needs a change, with a note and optional
+screenshots; notes save as drafts and one Send my corrections sends them all, once. That send uses the correction
+round. Jafar sorts each note as Correction, Our mistake (free), or New request — we'll talk about it separately, and
+the client sees the label beside their note; no prices are shown, extra work is discussed in Chat with Uplift. On a
+preview released after the round is used, a card's choices are Looks right, Uplift made a mistake (always fixed
+free), or something new, which arrives already marked New request. Each release is a new version; earlier versions
+and their notes stay readable. A new release replaces the one the client was reviewing and leaves an unused round
+unused.
+
 Before requesting launch approval, Uplift checks domain/DNS/TLS, mobile presentation, form-to-CRM delivery, email
 delivery, call/no-answer/text/reply behavior, STOP/HELP, import counts, access ownership, and every purchased
 feature. Provider items still pending are named and never presented as complete.
