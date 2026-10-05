@@ -362,6 +362,17 @@ Before requesting launch approval, Uplift checks domain/DNS/TLS, mobile presenta
 delivery, call/no-answer/text/reply behavior, STOP/HELP, import counts, access ownership, and every purchased
 feature. Provider items still pending are named and never presented as complete.
 
+Jafar's choices of 2026-10-05 (E5; milestone gating in Rocketlane and GuideCX, and agencies' go-live QA checklists
+with a "doesn't apply" option). Each released preview version has its own launch checklist, one line per check the
+package needs; a new release starts a fresh list and earlier lists stay readable. Jafar ticks each line by hand
+after testing it, or marks it Doesn't apply with a short reason; each tick keeps who and when. A line that depends
+on an outside wait still open (§5) — the web address on the website-address wait, calls and texts on texting
+approval and number transfer, STOP/HELP on texting approval — shows Waiting on that provider instead of a tick and
+cannot be ticked while the wait is open. Ask for launch approval stays locked until every line is ticked, marked
+Doesn't apply, or waiting on a provider; open waits never block it. When Jafar asks, the list is kept with the
+request and no longer changes for that version. The approver sees a short "What Uplift checked" summary beside the
+approve box — ticked lines, lines that don't apply, and what is still waiting on whom; only Jafar changes it.
+
 The final approver explicitly approves the website/system to go live. Record the approved version, approver, and
 time. Launch cannot rely on a support-chat message that is unclear about what was approved.
 
