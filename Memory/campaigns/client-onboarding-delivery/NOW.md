@@ -8,8 +8,8 @@
 
 **Also waiting on Jafar's publish:** B9c's login check (part note `parts/B9-texting-facts.md`); the stage itself is built.
 
-**Next part:** E3 Preview + correction is built and paused before its checks (`parts/E3-preview-corrections.md`); E1 and E2 are done. E1: the client's step tracker and
-Jafar's list share `$lib/setup/project-state.ts`; states 8–11 still need E3–E6 to add their records there.
+**Next part:** E4 Launch approval (`stages/E-delivery.md`); E1–E3 are done. E1: the client's step tracker and
+Jafar's list share `$lib/setup/project-state.ts`; states 9–11 still need E4–E6 to add their records there.
 Raad LTD is accepted on "Your business", not Ready (dev data). Do NOT publish test stages or questions on dev;
 stage keys are never reused.
 
