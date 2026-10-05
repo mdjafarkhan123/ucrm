@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { beforeNavigate } from '$app/navigation';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import presentationIcon from '@tabler/icons/outline/presentation.svg?raw';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -94,7 +95,42 @@
 	const savedNote = (cardId: string): PreviewNote | undefined =>
 		current?.notes.find((note) => note.card_id === cardId);
 
-	async function save(cardId: string) {
+	// One card's saves run one after another, so an older note can never land after a newer one.
+	const saving: Record<string, Promise<void>> = {};
+	const timers: Record<string, ReturnType<typeof setTimeout>> = {};
+
+	function save(cardId: string, options: { keepalive?: boolean } = {}): Promise<void> {
+		clearTimeout(timers[cardId]);
+		const next = (saving[cardId] ?? Promise.resolve())
+			.catch(() => {})
+			.then(() => write(cardId, options));
+		saving[cardId] = next;
+		return next;
+	}
+
+	// Typing waits for a pause before saving, as the setup sections do, so a note is kept without leaving the box.
+	function typed(cardId: string) {
+		clearTimeout(timers[cardId]);
+		timers[cardId] = setTimeout(() => void save(cardId), 900);
+	}
+
+	// Leaving the page — or a phone putting it in the background — sends whatever is still waiting.
+	function saveAll() {
+		for (const cardId of Object.keys(drafts)) void save(cardId, { keepalive: true });
+	}
+	beforeNavigate(saveAll);
+	$effect(() => {
+		const onHide = () => {
+			if (document.visibilityState === 'hidden') saveAll();
+		};
+		document.addEventListener('visibilitychange', onHide);
+		return () => {
+			document.removeEventListener('visibilitychange', onHide);
+			for (const timer of Object.values(timers)) clearTimeout(timer);
+		};
+	});
+
+	async function write(cardId: string, options: { keepalive?: boolean }) {
 		const version = current;
 		const draft = drafts[cardId];
 		if (!version || !draft || sent) return;
@@ -113,13 +149,16 @@
 		draft.state = 'saving';
 		draft.error = '';
 		try {
-			const result = await saveSetupPreviewNote({
-				version: version.version,
-				card_id: cardId,
-				choice: draft.choice,
-				note: draft.choice === 'looks_right' ? null : note || null,
-				screenshots: draft.choice === 'looks_right' ? [] : draft.screenshots
-			});
+			const result = await saveSetupPreviewNote(
+				{
+					version: version.version,
+					card_id: cardId,
+					choice: draft.choice,
+					note: draft.choice === 'looks_right' ? null : note || null,
+					screenshots: draft.choice === 'looks_right' ? [] : draft.screenshots
+				},
+				options
+			);
 			draft.state = 'saved';
 			if (result.status === 'already_sent')
 				draft.error = 'Your team already sent the notes on this preview.';
@@ -317,6 +356,7 @@
 											rows={3}
 											maxlength={PREVIEW_NOTE_MAX}
 											bind:value={draft.note}
+											oninput={() => typed(card.id)}
 											onblur={() => save(card.id)}
 										/>
 										<PreviewScreenshots

@@ -342,12 +342,14 @@ export type SetupPreviewNoteWrite = {
 
 /** Saves one card's choice and note as a draft. 'already_sent' when the notes went while this was typed. */
 export async function saveSetupPreviewNote(
-	input: SetupPreviewNoteWrite
+	input: SetupPreviewNoteWrite,
+	options: { keepalive?: boolean } = {}
 ): Promise<{ status: 'saved' | 'already_sent' }> {
 	const response = await fetch('/api/setup/preview/notes', {
 		method: 'POST',
 		headers: { 'content-type': 'application/json' },
-		body: JSON.stringify(input)
+		body: JSON.stringify(input),
+		keepalive: options.keepalive
 	});
 	if (!response.ok) throw await writeFailure(response, 'Your note could not be saved.');
 	return response.json();
