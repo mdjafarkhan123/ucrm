@@ -365,6 +365,20 @@ feature. Provider items still pending are named and never presented as complete.
 The final approver explicitly approves the website/system to go live. Record the approved version, approver, and
 time. Launch cannot rely on a support-chat message that is unclear about what was approved.
 
+Jafar's choices of 2026-10-05 (E4; DocuSign's emailed signing link, Jobber's online quote approval, and approvals in
+Rocketlane and GuideCX). Uplift's checks come first: Jafar presses **Ask for launch approval** on the newest released
+preview once they are done (E5 makes the button wait for its checklist). The request is for that one version; a
+newer release cancels it and Jafar asks again. Only the final approver named in the newest send may approve: on the
+Setup page when they are signed in with that email, otherwise through a private link emailed to them that needs no
+login. They see the preview's cards, tick one box — "I approve this website and system to go live, as shown in
+preview version N" — and press Approve; no typed name or signature. Their name, email, the time, the version, how
+they approved, and the exact wording are kept. Instead they may choose **Not yet — talk to Uplift**, which opens
+Chat with Uplift and tells Jafar; it never counts as approval. Jafar may also record an approval given by phone or
+email, with a reason he must write. Once approved the project shows Approved — preparing launch; the approver and
+the client's owners and administrators are emailed a receipt and Jafar is told. The client cannot undo it; if
+something must change, Jafar releases a new version and asks again, and the earlier approval stays in the history
+marked replaced.
+
 Training asks for attendees/roles, time zone, preferred meeting times, language/accessibility needs, top tasks to
 demonstrate, recording consent, and recording/guide recipients. Training must be scheduled before delivery is
 closed, but it does not block starting the build. The handover pack contains the recording when allowed, guides,
