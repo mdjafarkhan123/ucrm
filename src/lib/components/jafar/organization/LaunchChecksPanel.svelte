@@ -200,7 +200,7 @@
 			save.mutate({ check_key: marking, outcome: 'not_applicable', reason: reason.trim() })}
 		onClose={() => (marking = null)}
 	>
-		<p>
+		<p class="launch-checks__dialog-text">
 			{marking ? LAUNCH_CHECK_TITLE[marking] : ''}. The approver sees this line as not applying,
 			with your reason.
 		</p>
@@ -208,7 +208,6 @@
 			id="launch-check-reason"
 			label="Why doesn’t it apply?"
 			placeholder="For example: they had no clients to import"
-			rows={2}
 			maxlength={LAUNCH_CHECK_REASON_MAX}
 			bind:value={reason}
 		/>
@@ -254,7 +253,8 @@
 		}
 
 		&__reason {
-			margin: 0 0 0 var(--space-large);
+			// Lines up with the checkbox's own text: its 20px box plus the gap beside it.
+			margin: 0 0 0 calc(20px + var(--space-small));
 			color: var(--color-text);
 			font-size: var(--typography--fontSize-small);
 		}
@@ -263,6 +263,10 @@
 			margin: 0;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
+		}
+
+		&__dialog-text {
+			margin-bottom: var(--space-base);
 		}
 
 		&__waits {
