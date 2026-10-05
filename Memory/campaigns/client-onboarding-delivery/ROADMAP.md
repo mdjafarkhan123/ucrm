@@ -12,6 +12,6 @@ plan subsection and a few files, so a session's context stays light. Each stage'
 | --- | --- | --- | --- |
 | A Groundwork | Buy/pay journey checked; packages say which managed services they include | In progress — A1 done | `stages/A-groundwork.md` |
 | B Setup wizard | Every setup section, autosaved, shown by package, ending in Send to Uplift | Built — B1–B13 done; A5's and B9c's checks wait for Jafar's publish | `stages/B-wizard.md` |
-| C Uplift review | Jafar reviews, returns, and accepts setup; Ready for Uplift starts the countdown | In progress — C1 done | `stages/C-review.md` |
+| C Uplift review | Jafar reviews, returns, and accepts setup; Ready for Uplift starts the countdown; accepted answers fill CRM settings | Done 2026-10-05 — C1–C6 built and browser-checked; Setup tab photo viewer not yet seen with real photos | — |
 | D Support chat | Chat with Uplift everywhere, with Jafar's Support Inbox (built alongside B) | Done 2026-10-03 — D1–D6 all built and browser-checked | `stages/D-support.md` |
 | E Delivery | Status timeline, preview, launch approval, training, handover, final proof | Not started | `stages/E-delivery.md` |

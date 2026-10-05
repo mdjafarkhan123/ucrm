@@ -8,10 +8,8 @@
 
 **Also waiting on Jafar's publish:** B9c's login check (part note `parts/B9-texting-facts.md`); the stage itself is built.
 
-**Next part:** C5 Fill CRM settings (`stages/C-review.md`, plan §4, §10 journey 6). Accepted values come from
-`readSectionReviews` (`$lib/server/setup/client-page.ts`); a help question's accepted value is Uplift's answer
-(`$lib/setup/help.ts`). Raad LTD's "Your business" is accepted on send 1, not Ready, and its public phone has a
-test Uplift answer (dev data). Do NOT publish test
-stages or questions on dev; stage keys are never reused.
+**Next part:** E1 Status timeline (`stages/E-delivery.md`, plan §5). Stage C is done: accepting a task now
+fills the client's CRM settings (C5, `$lib/server/setup/settings-copy.ts`). Raad LTD is accepted on "Your
+business", not Ready (dev data). Do NOT publish test stages or questions on dev; stage keys are never reused.
 
-**Blockers:** none for C2. Text limits max 2000. A reused question must point to one with no "show only if" rule (the database refuses otherwise).
+**Blockers:** none for E1. Text limits max 2000. A reused question must point to one with no "show only if" rule (the database refuses otherwise).

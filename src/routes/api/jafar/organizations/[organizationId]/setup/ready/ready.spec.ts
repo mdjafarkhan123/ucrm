@@ -33,6 +33,7 @@ function view(overrides: Partial<ClientSetupView> = {}): ClientSetupView {
 		ready: null,
 		ready_blockers: [],
 		time_zone: 'Europe/London',
+		settings_copies: [],
 		...overrides
 	};
 }
