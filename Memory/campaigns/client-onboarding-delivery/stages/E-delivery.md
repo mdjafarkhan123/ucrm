@@ -3,7 +3,7 @@
 | Part | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- |
 | E1 Status timeline | §5 the 11 client-facing project states as a step tracker; Jafar's Onboarding list shows the same state | C4 | Client sees the current state and dates | Done 2026-10-05 |
-| E2 Provider waits | Separate Google/carrier wait badges | E1 | A provider wait never shows Uplift as late or done | Built; browser check left (part note) |
+| E2 Provider waits | Separate Google/carrier wait badges | E1 | A provider wait never shows Uplift as late or done | Done 2026-10-05 |
 | E3 Preview + correction | §6 organized preview, one correction round, Uplift errors kept separate | E1 | Client submits corrections once; extra scope is flagged | Not started |
 | E4 Launch approval | Versioned final approval by the final approver | E3 | Approval records version, person, and time | Not started |
 | E5 Launch checks | Uplift's pre-launch checklist with pending provider items named | E4 | Pending item cannot show as complete | Not started |
