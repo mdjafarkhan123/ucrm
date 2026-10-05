@@ -8,7 +8,7 @@
 
 **Also waiting on Jafar's publish:** B9c's login check (part note `parts/B9-texting-facts.md`); the stage itself is built.
 
-**Next part:** E2 Provider waits (`stages/E-delivery.md`, plan §5). E1 is done: the client's step tracker and
+**Next part:** E2 Provider waits is built and committed; only its browser check remains (`parts/E2-provider-waits.md`). Then E3 (`stages/E-delivery.md`). E1 is done: the client's step tracker and
 Jafar's list share `$lib/setup/project-state.ts`; states 8–11 still need E3–E6 to add their records there.
 Raad LTD is accepted on "Your business", not Ready (dev data). Do NOT publish test stages or questions on dev;
 stage keys are never reused.

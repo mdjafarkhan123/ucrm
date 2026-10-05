@@ -20,6 +20,7 @@
 
 <SectionBlock
 	id="outside-waits"
+	class="outside-waits-block"
 	title="Waiting on others"
 	hint="Steps that Google, the phone companies or your domain company take. They run alongside your build."
 >
@@ -45,6 +46,11 @@
 </SectionBlock>
 
 <style lang="scss">
+	// The email's link jumps here; keep the title on the border line clear of the top edge.
+	:global(.outside-waits-block) {
+		scroll-margin-top: var(--space-largest);
+	}
+
 	.outside-waits {
 		display: grid;
 		gap: var(--space-small);

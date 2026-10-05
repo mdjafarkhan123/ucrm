@@ -18,11 +18,14 @@
 
 ## Next
 
-Browser check: no dev client's package has Google/texting/website, so put one wait on Raad LTD by SQL
-(`insert into organization_setup_provider_waits … 'google_profile','action_needed'`), check the client's
-`/setup` card and the "You need to do something" email in the outbox, Jafar's Setup tab panel (shows started
-waits outside the package so they can be cleared) and the Onboarding tag; then clear it from the panel.
-Database rules were already tested in a self-undoing block (all passed).
+Finish the browser check, then close E2. Already seen working in the browser: Jafar's panel on Raad LTD's Setup
+tab, the client's "Waiting on others" card on `/setup` (link `/setup#outside-waits` jumps to it; a scroll margin
+was added after the title sat under the top edge — recheck it), the dialog asking for a note, and the plain
+"package does not include that service" refusal. Still to check: choosing "Not started" in the dialog clears
+the wait (the last try did not seem to change the dropdown — check if it is a real bug), and the Onboarding
+list's "outside waits" tag. No dev client's package has Google, texting or website, so put a test wait on Raad
+by SQL (`updated_by_email = 'browser-check@example.com'`) and delete it afterwards. Then mark E2 done.
+Database rules were all tested in a block that undid itself.
 
 ## Outside actions
 
