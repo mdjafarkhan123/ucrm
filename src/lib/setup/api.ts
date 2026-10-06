@@ -6,6 +6,12 @@ import type { ProjectView } from '$lib/setup/project-state';
 import type { ProviderWait } from '$lib/setup/provider-waits';
 import type { LaunchApprovalRequest } from '$lib/setup/launch-approval';
 import type {
+	HandoverEvent,
+	SetupHandover,
+	SetupTraining,
+	TrainingAttendee
+} from '$lib/setup/training';
+import type {
 	PreviewChoice,
 	PreviewScreenshotUpload,
 	PreviewScreenshotUrls,
@@ -404,5 +410,70 @@ export async function decideSetupLaunch(input: {
 		body: JSON.stringify(input)
 	});
 	if (!response.ok) throw await writeFailure(response, 'Your answer could not be saved.');
+	return response.json();
+}
+
+// E6: training and the handover pack (plan §6) -------------------------------------------------------------------
+
+export type SetupTrainingData = { training: SetupTraining | null; is_owner: boolean };
+
+export const setupTrainingKey = (userId: string | null) => ['setup', 'training', userId] as const;
+
+export async function fetchSetupTraining(): Promise<SetupTrainingData> {
+	const response = await fetch('/api/setup/training');
+	if (!response.ok) throw httpError(response, 'Your training details could not be loaded.');
+	return response.json();
+}
+
+export type SetupTrainingWrite = {
+	attendees: TrainingAttendee[];
+	time_zone: string;
+	preferred_times: string;
+	needs: string | null;
+	top_tasks: string | null;
+	recording_consent: boolean;
+};
+
+async function postSetup(url: string, body: unknown, fallback: string) {
+	const response = await fetch(url, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(body)
+	});
+	if (!response.ok) throw await writeFailure(response, fallback);
+	return response.json();
+}
+
+export const saveSetupTraining = (input: SetupTrainingWrite) =>
+	postSetup('/api/setup/training', input, 'Your training details could not be saved.');
+
+/** The owner's "We don't need training". */
+export const skipSetupTraining = () =>
+	postSetup('/api/setup/training/skip', {}, 'That could not be saved.');
+
+export const setSetupTrainingConsent = (consent: boolean) =>
+	postSetup(
+		'/api/setup/training/consent',
+		{ recording_consent: consent },
+		'Your recording choice could not be saved.'
+	);
+
+export type SetupHandoverData =
+	| { delivered: false }
+	| {
+			delivered: true;
+			handover: SetupHandover;
+			training: SetupTraining | null;
+			approvals: LaunchApprovalRequest[];
+			open_waits: ProviderWait[];
+			events: HandoverEvent[];
+			recording_url: string | null;
+	  };
+
+export const setupHandoverKey = (userId: string | null) => ['setup', 'handover', userId] as const;
+
+export async function fetchSetupHandover(): Promise<SetupHandoverData> {
+	const response = await fetch('/api/setup/handover');
+	if (!response.ok) throw httpError(response, 'Your handover pack could not be loaded.');
 	return response.json();
 }

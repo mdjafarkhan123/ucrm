@@ -17,6 +17,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import Toggle from '$lib/components/ui/Toggle.svelte';
 	import { jafarOnboardingListKey } from '$lib/jafar/query-keys';
 	import {
 		onboardingNextActionLabel,
@@ -34,6 +35,8 @@
 	let searchInput = $state('');
 	let debouncedSearch = $state('');
 	let waitingFilter = $state<'' | OnboardingFilter>('');
+	// E6: delivered clients leave the list unless asked for, which keeps it to the clients still in progress.
+	let showDelivered = $state(false);
 
 	$effect(() => {
 		const value = searchInput;
@@ -44,13 +47,14 @@
 	});
 
 	const clients = createInfiniteQuery<OnboardingListPage>(() => ({
-		queryKey: jafarOnboardingListKey(debouncedSearch.trim(), waitingFilter),
+		queryKey: jafarOnboardingListKey(debouncedSearch.trim(), waitingFilter, showDelivered),
 		queryFn: async ({ pageParam }) => {
 			// Built once per request and thrown away, so it needs no reactivity.
 			// eslint-disable-next-line svelte/prefer-svelte-reactivity
 			const params = new URLSearchParams();
 			if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
 			if (waitingFilter) params.set('waiting_on', waitingFilter);
+			if (showDelivered) params.set('delivered', '1');
 			if (typeof pageParam === 'string') params.set('cursor', pageParam);
 			const response = await fetch(`/api/jafar/onboarding?${params.toString()}`);
 			const result = await response.json();
@@ -64,9 +68,9 @@
 	const pages = $derived(clients.data?.pages ?? []);
 	const clientList = $derived(pages.flatMap((page) => page.clients));
 	const totals = $derived(
-		pages[0]?.totals ?? { all: 0, uplift: 0, client: 0, quiet: 0, matching: 0 }
+		pages[0]?.totals ?? { all: 0, uplift: 0, client: 0, quiet: 0, matching: 0, delivered: 0 }
 	);
-	const filtersApplied = $derived(Boolean(searchInput || waitingFilter));
+	const filtersApplied = $derived(Boolean(searchInput || waitingFilter || showDelivered));
 
 	const filterOptions = $derived([
 		{ value: '', label: 'All clients' },
@@ -113,6 +117,7 @@
 	function clearFilters() {
 		searchInput = '';
 		waitingFilter = '';
+		showDelivered = false;
 	}
 
 	/** A `YYYY-MM-DD` target date, e.g. "14 Oct", the same day wherever it is read. */
@@ -185,6 +190,14 @@
 				bind:value={waitingFilter}
 				options={filterOptions}
 				ariaLabel="Filter clients by whose move it is"
+			/>
+		</div>
+		<div class="onboarding-list__delivered">
+			<Toggle
+				id="onboarding-delivered"
+				label={`Show delivered (${totals.delivered})`}
+				checked={showDelivered}
+				onchange={(checked) => (showDelivered = checked)}
 			/>
 		</div>
 		<Button
@@ -346,6 +359,12 @@
 		:global(.button) {
 			margin-left: auto;
 		}
+	}
+
+	.onboarding-list__delivered {
+		display: flex;
+		align-items: center;
+		min-height: 4.4rem;
 	}
 
 	.onboarding-list__field {

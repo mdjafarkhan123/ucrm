@@ -9,6 +9,7 @@
 	import ProjectTracker from '$lib/components/setup/ProjectTracker.svelte';
 	import SetupPreview from '$lib/components/setup/SetupPreview.svelte';
 	import LaunchApproval from '$lib/components/setup/LaunchApproval.svelte';
+	import TrainingCard from '$lib/components/setup/TrainingCard.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -38,6 +39,7 @@
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import layoutDashboardIcon from '@tabler/icons/outline/layout-dashboard.svg?raw';
 	import lifebuoyIcon from '@tabler/icons/outline/lifebuoy.svg?raw';
+	import packageIcon from '@tabler/icons/outline/package.svg?raw';
 	import type { PageProps } from './$types';
 
 	let { data: shell }: PageProps = $props();
@@ -339,6 +341,24 @@
 				</section>
 			{/snippet}
 
+			<!-- E6: once delivered, the handover pack; its own page loads only when opened. -->
+			{#snippet handover()}
+				{#if summary.project.state === 'delivered'}
+					<section class="setup__handover" aria-labelledby="setup-handover-heading">
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						<span class="setup__handover-icon" aria-hidden="true">{@html packageIcon}</span>
+						<div>
+							<h2 id="setup-handover-heading">Your project is delivered</h2>
+							<p>
+								Your handover pack has who owns which account, guides for your team and your launch
+								approval.
+							</p>
+						</div>
+						<Button href={resolve('/(app)/setup/handover')}>Open the handover pack</Button>
+					</section>
+				{/if}
+			{/snippet}
+
 			{#if firstVisit}
 				<section class="setup__welcome" aria-labelledby="setup-welcome-heading">
 					<h2 id="setup-welcome-heading">Welcome — here is how setup works</h2>
@@ -360,6 +380,8 @@
 						{userId}
 					/>{/if}
 				{#if summary.project.state === 'ready_for_review'}<SetupPreview {userId} />{/if}
+				{@render handover()}
+				{#if summary.delivery.state === 'ready'}<TrainingCard {userId} />{/if}
 				{#if summary.outside_waits.length}<OutsideWaits waits={summary.outside_waits} />{/if}
 				{@render returned()}
 				{@render tasks()}
@@ -370,6 +392,8 @@
 						{userId}
 					/>{/if}
 				{#if summary.project.state === 'ready_for_review'}<SetupPreview {userId} />{/if}
+				{@render handover()}
+				{#if summary.delivery.state === 'ready'}<TrainingCard {userId} />{/if}
 				{#if summary.outside_waits.length}<OutsideWaits waits={summary.outside_waits} />{/if}
 				{@render returned()}
 				{@render tasks()}
@@ -393,6 +417,50 @@
 		// PageHeader carries its own bottom margin; the column gap already spaces what follows.
 		:global(.page-header) {
 			margin-bottom: 0;
+		}
+
+		&__handover {
+			display: grid;
+			grid-template-columns: auto minmax(0, 1fr) auto;
+			gap: var(--space-base);
+			align-items: center;
+			padding: var(--space-large);
+			border: 1px solid var(--color-success);
+			border-radius: var(--radius-large);
+			background: var(--color-surface);
+
+			h2 {
+				margin: 0 0 var(--space-smallest);
+				font-size: var(--typography--fontSize-large);
+			}
+
+			p {
+				margin: 0;
+				color: var(--color-text--secondary);
+			}
+
+			@media (max-width: 640px) {
+				grid-template-columns: auto minmax(0, 1fr);
+
+				:global(> :last-child) {
+					grid-column: 1 / -1;
+				}
+			}
+		}
+
+		&__handover-icon {
+			display: grid;
+			place-items: center;
+			width: 4.8rem;
+			height: 4.8rem;
+			border-radius: 50%;
+			background: var(--color-success--surface);
+			color: var(--color-success);
+
+			:global(svg) {
+				width: 2.4rem;
+				height: 2.4rem;
+			}
 		}
 
 		&__welcome {

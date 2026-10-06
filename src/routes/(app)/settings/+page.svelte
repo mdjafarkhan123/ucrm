@@ -35,6 +35,7 @@
 	import bellIcon from '@tabler/icons/outline/bell-ringing.svg?raw';
 	import robotIcon from '@tabler/icons/outline/robot.svg?raw';
 	import starIcon from '@tabler/icons/outline/star.svg?raw';
+	import packageIcon from '@tabler/icons/outline/package.svg?raw';
 
 	const query = createQuery(() => ({
 		queryKey: settingsHomeKey,
@@ -128,6 +129,14 @@
 								icon={layoutKanbanIcon}
 								title="Pipeline"
 								description="How the Pipeline board groups the Assessment stages."
+							/>
+						{/if}
+						{#if home.readiness.handover_delivered}
+							<SettingsDestinationCard
+								href={resolve('/(app)/setup/handover')}
+								icon={packageIcon}
+								title="Handover pack"
+								description="Who owns which account, your team’s guides, and your launch approval from Uplift."
 							/>
 						{/if}
 						<SettingsDestinationCard

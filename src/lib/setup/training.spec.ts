@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+	deliveredCardShowing,
 	deliveryBlockers,
+	momentToWallClock,
+	wallClockToMoment,
 	trainingDetailsOpen,
 	trainingStatus,
 	type SetupHandover,
@@ -73,5 +76,33 @@ describe('deliveryBlockers', () => {
 
 	it('is blocked again when a booking is cancelled before delivery', () => {
 		expect(deliveryBlockers(handover, { ...booked, meeting_at: null })).toEqual(['training']);
+	});
+});
+
+describe('wallClockToMoment and momentToWallClock', () => {
+	it('reads the typed time in the client’s time zone, summer and winter', () => {
+		expect(wallClockToMoment('2026-10-20T10:00', 'Europe/London')).toBe('2026-10-20T09:00:00.000Z');
+		expect(wallClockToMoment('2026-11-20T10:00', 'Europe/London')).toBe('2026-11-20T10:00:00.000Z');
+		expect(wallClockToMoment('2026-10-20T10:00', 'Asia/Dhaka')).toBe('2026-10-20T04:00:00.000Z');
+		expect(wallClockToMoment('2026-10-20T10:00', null)).toBe('2026-10-20T10:00:00.000Z');
+	});
+
+	it('refuses a half-typed time', () => {
+		expect(wallClockToMoment('2026-10-20', 'Europe/London')).toBeNull();
+		expect(wallClockToMoment('', 'Europe/London')).toBeNull();
+	});
+
+	it('turns a stored moment back into the client’s wall-clock time', () => {
+		expect(momentToWallClock('2026-10-20T09:00:00Z', 'Europe/London')).toBe('2026-10-20T10:00');
+		expect(momentToWallClock('2026-10-20T04:00:00+00:00', 'Asia/Dhaka')).toBe('2026-10-20T10:00');
+	});
+});
+
+describe('deliveredCardShowing', () => {
+	it('shows Project delivered for 14 days, then hides', () => {
+		const delivered = '2026-10-01T12:00:00Z';
+		expect(deliveredCardShowing(delivered, new Date('2026-10-01T12:00:00Z'))).toBe(true);
+		expect(deliveredCardShowing(delivered, new Date('2026-10-15T11:59:00Z'))).toBe(true);
+		expect(deliveredCardShowing(delivered, new Date('2026-10-15T12:00:00Z'))).toBe(false);
 	});
 });

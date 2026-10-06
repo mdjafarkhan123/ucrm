@@ -19,40 +19,58 @@ export const GET: RequestHandler = async (event) => {
 	if ('response' in check) return check.response;
 
 	const communicationsManage = hasPermission(check.access, 'conversations.manage_connections');
+	// E6: the handover pack is for owners and administrators, and its card shows once the project is delivered.
+	const ownerOrAdmin =
+		check.auth.organization.role === 'owner' || check.auth.organization.role === 'admin';
 
-	const [settingsResult, profileResult, currencyLockResult, smsReadinessResult, inquiryAlerts] =
-		await Promise.all([
-			event.locals.supabase
-				.from('organization_settings')
-				.select('timezone_confirmed_at, currency_confirmed_at, hours_mode')
-				.eq('organization_id', check.auth.organization.id)
-				.maybeSingle(),
-			event.locals.supabase
-				.from('profiles')
-				.select('full_name')
-				.eq('id', check.auth.user.id)
-				.maybeSingle(),
-			event.locals.supabase.rpc('organization_currency_is_locked', {
-				target_organization_id: check.auth.organization.id
-			}),
-			// Read-only, so a member without the Communications permission never sees the SMS RPC skipped as an
-			// error -- the card itself stays hidden by permission and the readiness call is simply not needed.
-			communicationsManage
-				? getOwnerSupabaseClient().rpc('communication_sms_readiness', {
-						p_organization_id: check.auth.organization.id,
-						p_country_code: SMS_REGISTRATION_COUNTRY_CODE,
-						p_sender_type: SMS_REGISTRATION_SENDER_TYPE,
-						p_use_case: SMS_REGISTRATION_USE_CASE
-					})
-				: Promise.resolve(null),
-			// Only the owner hears about website inquiries when nobody is chosen — worth a warning on the card.
-			communicationsManage
-				? loadInquiryAlertSettings(check.auth.organization.id).catch((error) => {
-						console.error('Could not load inquiry alert readiness for the Settings home.', error);
-						return null;
-					})
-				: Promise.resolve(null)
-		]);
+	const [
+		settingsResult,
+		profileResult,
+		currencyLockResult,
+		smsReadinessResult,
+		inquiryAlerts,
+		handoverResult
+	] = await Promise.all([
+		event.locals.supabase
+			.from('organization_settings')
+			.select('timezone_confirmed_at, currency_confirmed_at, hours_mode')
+			.eq('organization_id', check.auth.organization.id)
+			.maybeSingle(),
+		event.locals.supabase
+			.from('profiles')
+			.select('full_name')
+			.eq('id', check.auth.user.id)
+			.maybeSingle(),
+		event.locals.supabase.rpc('organization_currency_is_locked', {
+			target_organization_id: check.auth.organization.id
+		}),
+		// Read-only, so a member without the Communications permission never sees the SMS RPC skipped as an
+		// error -- the card itself stays hidden by permission and the readiness call is simply not needed.
+		communicationsManage
+			? getOwnerSupabaseClient().rpc('communication_sms_readiness', {
+					p_organization_id: check.auth.organization.id,
+					p_country_code: SMS_REGISTRATION_COUNTRY_CODE,
+					p_sender_type: SMS_REGISTRATION_SENDER_TYPE,
+					p_use_case: SMS_REGISTRATION_USE_CASE
+				})
+			: Promise.resolve(null),
+		// Only the owner hears about website inquiries when nobody is chosen — worth a warning on the card.
+		communicationsManage
+			? loadInquiryAlertSettings(check.auth.organization.id).catch((error) => {
+					console.error('Could not load inquiry alert readiness for the Settings home.', error);
+					return null;
+				})
+			: Promise.resolve(null),
+		ownerOrAdmin
+			? event.locals.supabase
+					.from('organization_setup_handover')
+					.select('delivered_at')
+					.eq('organization_id', check.auth.organization.id)
+					.maybeSingle()
+			: Promise.resolve(null)
+	]);
+	if (handoverResult?.error)
+		console.error('Could not read the handover for the Settings home.', handoverResult.error);
 
 	if (settingsResult.error || currencyLockResult.error) return databaseError();
 	if (!settingsResult.data) return notFound('These business settings could not be found.');
@@ -114,7 +132,8 @@ export const GET: RequestHandler = async (event) => {
 				sms_registration: communicationsManage
 					? { readiness_state: smsReadinessRow?.readiness_state ?? 'needs_setup' }
 					: null,
-				inquiry_alerts_owner_only: inquiryAlerts?.owner_only ?? false
+				inquiry_alerts_owner_only: inquiryAlerts?.owner_only ?? false,
+				handover_delivered: Boolean(handoverResult?.data?.delivered_at)
 			}
 		},
 		{ headers: PRIVATE_READ_HEADERS }

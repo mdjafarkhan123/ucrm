@@ -59,8 +59,9 @@ export const POST: RequestHandler = async (event) => {
 		new_attendees: parsed.data.attendees,
 		new_time_zone: parsed.data.time_zone,
 		new_preferred_times: parsed.data.preferred_times,
-		new_needs: parsed.data.needs ?? undefined,
-		new_top_tasks: parsed.data.top_tasks ?? undefined,
+		// Blank answers go as null: the function has no default for them, so leaving them out would miss it.
+		new_needs: parsed.data.needs as string,
+		new_top_tasks: parsed.data.top_tasks as string,
 		consent: parsed.data.recording_consent
 	});
 	if (error) return setupWriteError(error);

@@ -37,7 +37,7 @@ function listResult(overrides: Record<string, unknown> = {}) {
 	return {
 		clients: [],
 		next_cursor: null,
-		totals: { all: 0, uplift: 0, client: 0, quiet: 0, matching: 0 },
+		totals: { all: 0, uplift: 0, client: 0, quiet: 0, matching: 0, delivered: 0 },
 		...overrides
 	};
 }
@@ -82,6 +82,10 @@ function client(overrides: Partial<OnboardingClient> = {}): OnboardingClient {
 		approval_requested_at: null,
 		approval_not_yet_at: null,
 		approved_at: null,
+		live_at: null,
+		delivered_at: null,
+		training_booked_at: null,
+		training_skipped: false,
 		project_state: 'complete_setup',
 		waiting_on: 'client',
 		next_action: 'finish_section',
@@ -138,6 +142,18 @@ describe('client onboarding list GET', () => {
 		expect(business.required).toContain('business.public_name');
 		expect(business.required).not.toContain('business.legal_name');
 		expect(business.facts).toContain('business.legal_name');
+	});
+
+	it('hides delivered clients unless asked for them (E6)', async () => {
+		const rpc = mockRpc(listResult());
+		await GET(event());
+		expect(rpc.mock.calls[0][1].include_delivered).toBe(false);
+
+		await GET(event('http://localhost/api/jafar/onboarding?delivered=1'));
+		expect(rpc.mock.calls[1][1].include_delivered).toBe(true);
+
+		const refused = await GET(event('http://localhost/api/jafar/onboarding?delivered=yes'));
+		expect(refused.status).toBe(422);
 	});
 
 	it('names the next section as the published setup version titles it', async () => {

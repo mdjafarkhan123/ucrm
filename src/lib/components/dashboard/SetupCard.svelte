@@ -7,6 +7,7 @@
 	import { SETUP_CHECK_KEY } from '$lib/setup/check';
 	import { PROJECT_STATE_LABEL } from '$lib/setup/project-state';
 	import { formatReadyDate } from '$lib/setup/ready';
+	import { deliveredCardShowing } from '$lib/setup/training';
 
 	// The dashboard's setup card for owners and administrators: how far setup has got, the next useful
 	// thing to do, and where delivery stands. It never gates anything — the CRM around it is complete and
@@ -19,6 +20,14 @@
 	}));
 
 	const summary = $derived(query.data);
+	// E6: once delivered, the card says so for 14 days and then leaves the dashboard; the handover pack stays
+	// in Settings.
+	const deliveredOn = $derived(
+		summary?.project.state === 'delivered'
+			? (summary.project.steps.find((step) => step.state === 'delivered')?.on ?? null)
+			: null
+	);
+	const hidden = $derived(deliveredOn !== null && !deliveredCardShowing(deliveredOn));
 	const percent = $derived(
 		summary?.progress.total ? Math.round((summary.progress.done / summary.progress.total) * 100) : 0
 	);
@@ -31,7 +40,23 @@
 	});
 </script>
 
-{#if summary?.welcome_seen}
+{#if summary?.welcome_seen && deliveredOn && !hidden}
+	<section class="setup-card setup-card--delivered" aria-labelledby="setup-card-heading">
+		<header class="setup-card__header">
+			<div>
+				<span class="setup-card__eyebrow">Uplift project</span>
+				<h2 id="setup-card-heading">Project delivered</h2>
+			</div>
+			<Button size="small" href={resolve('/(app)/setup/handover')}>Open the handover pack</Button>
+		</header>
+		<p class="setup-card__status">
+			Uplift delivered your project on {new Date(deliveredOn).toLocaleDateString(undefined, {
+				dateStyle: 'long'
+			})}. Your handover pack has who owns which account and guides for your team; it stays in
+			Settings after this card goes.
+		</p>
+	</section>
+{:else if summary?.welcome_seen && !deliveredOn}
 	<section class="setup-card" aria-labelledby="setup-card-heading">
 		<header class="setup-card__header">
 			<div>
@@ -86,6 +111,10 @@
 					? 'one task'
 					: `${summary.returned_count} tasks`}. Change what Uplift asked for and send your setup
 				again; everything else stays as you sent it.
+			{:else if summary.project.state === 'live'}
+				Your system is live. Next is training — tell Uplift who is coming on the Setup page.
+			{:else if summary.project.state === 'approved'}
+				Approved for launch. Uplift is finishing the launch steps.
 			{:else if summary.delivery.state === 'ready'}
 				Your system will be ready for you to review between
 				{formatReadyDate(summary.delivery.target_from)} and {formatReadyDate(
@@ -112,6 +141,10 @@
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 		background: var(--color-surface);
+
+		&--delivered {
+			border-color: var(--color-success);
+		}
 
 		&__header {
 			display: flex;

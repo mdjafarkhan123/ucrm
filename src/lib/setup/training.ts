@@ -5,6 +5,14 @@
 // tasks and completion milestones in GUIDEcx and Rocketlane. Mirrors
 // supabase/migrations/20261104090000_setup_training_handover.sql.
 
+import {
+	parseAbsolute,
+	parseDateTime,
+	toCalendarDateTime,
+	toTimeZone,
+	toZoned
+} from '@internationalized/date';
+
 export const TRAINING_ATTENDEES_MAX = 10;
 export const TRAINING_NAME_MAX = 120;
 export const TRAINING_ROLE_MAX = 120;
@@ -17,6 +25,12 @@ export const LINK_MAX = 500;
 
 /** The dashboard card shows Project delivered this many days, then hides. */
 export const DELIVERED_CARD_DAYS = 14;
+
+/** Whether the dashboard card still shows Project delivered: for DELIVERED_CARD_DAYS days after delivery. */
+export function deliveredCardShowing(deliveredAt: string, now: Date = new Date()) {
+	const delivered = new Date(deliveredAt).getTime();
+	return now.getTime() - delivered < DELIVERED_CARD_DAYS * 24 * 60 * 60 * 1000;
+}
 
 export type TrainingAttendee = { name: string; role: string; email: string };
 
@@ -164,5 +178,28 @@ export function formatMeetingTime(value: string, timeZone: string | null) {
 		}).format(new Date(value));
 	} catch {
 		return new Date(value).toUTCString();
+	}
+}
+
+/**
+ * Jafar types the training time as the client reads it — wall-clock date and time in the time zone they gave —
+ * and the server stores the exact moment. `YYYY-MM-DDTHH:mm` in `timeZone` → an ISO moment with its offset.
+ */
+export function wallClockToMoment(local: string, timeZone: string | null): string | null {
+	if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(local)) return null;
+	try {
+		return toZoned(parseDateTime(local), timeZone || 'UTC').toAbsoluteString();
+	} catch {
+		return null;
+	}
+}
+
+/** The reverse: a stored moment as `YYYY-MM-DDTHH:mm` in the client's time zone, to prefill a change. */
+export function momentToWallClock(value: string, timeZone: string | null): string {
+	try {
+		const zoned = toTimeZone(parseAbsolute(value, 'UTC'), timeZone || 'UTC');
+		return toCalendarDateTime(zoned).toString().slice(0, 16);
+	} catch {
+		return '';
 	}
 }

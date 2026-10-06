@@ -4,6 +4,7 @@ import {
 	jafarOrganizationPreviewKey,
 	jafarOrganizationLaunchApprovalKey,
 	jafarOrganizationLaunchChecksKey,
+	jafarOrganizationHandoverKey,
 	jafarOrganizationProviderWaitsKey,
 	jafarOrganizationSetupKey
 } from '$lib/jafar/query-keys';
@@ -12,6 +13,7 @@ import type { ProviderWait, ProviderWaitKey } from '$lib/setup/provider-waits';
 import type { PreviewCard, PreviewScreenshotUrls, PreviewVersion } from '$lib/setup/preview';
 import type { LaunchApprovalRequest } from '$lib/setup/launch-approval';
 import type { OwnerLaunchChecklist } from '$lib/setup/launch-checks';
+import type { HandoverEvent, SetupHandover, SetupTraining } from '$lib/setup/training';
 
 // The Setup tab's reads (client onboarding B9b, C2), shared by the tab and its hover prefetch so both use the same keys.
 
@@ -78,6 +80,7 @@ export function prefetchOrganizationSetup(queryClient: QueryClient, organization
 	void queryClient.prefetchQuery(organizationPreviewQuery(organizationId));
 	void queryClient.prefetchQuery(organizationLaunchApprovalQuery(organizationId));
 	void queryClient.prefetchQuery(organizationLaunchChecksQuery(organizationId));
+	void queryClient.prefetchQuery(organizationHandoverQuery(organizationId));
 }
 
 /** C3: where Jafar's Accept and Send back on one section go (POST). */
@@ -187,6 +190,36 @@ export const organizationLaunchChecksQuery = (organizationId: string) => ({
 		if (!response.ok || result.checklist === undefined)
 			throw new Error(result.error ?? 'The launch checks could not be loaded.');
 		return result.checklist;
+	},
+	staleTime: 30_000
+});
+
+/** E6: where Jafar reads training and handover (GET) and saves his summary and guides (POST); `/live`, `/delivered`. */
+export const organizationHandoverUrl = (organizationId: string) =>
+	`/api/jafar/organizations/${encodeURIComponent(organizationId)}/setup/handover`;
+
+/** E6: where Jafar books (`/booking`), cancels (`/cancel`) and sets the recording link (`/recording`). */
+export const organizationTrainingUrl = (organizationId: string) =>
+	`/api/jafar/organizations/${encodeURIComponent(organizationId)}/setup/training`;
+
+export type OwnerHandoverData = {
+	handover: SetupHandover | null;
+	training: SetupTraining | null;
+	recording_url: string | null;
+	recording_added_at: string | null;
+	events: HandoverEvent[];
+};
+
+export const organizationHandoverQuery = (organizationId: string) => ({
+	queryKey: jafarOrganizationHandoverKey(organizationId),
+	queryFn: async (): Promise<OwnerHandoverData> => {
+		const response = await fetch(organizationHandoverUrl(organizationId));
+		const result = (await response.json().catch(() => ({}))) as Partial<OwnerHandoverData> & {
+			error?: string;
+		};
+		if (!response.ok || !result.events)
+			throw new Error(result.error ?? 'Training and handover could not be loaded.');
+		return result as OwnerHandoverData;
 	},
 	staleTime: 30_000
 });

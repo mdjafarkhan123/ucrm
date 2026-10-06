@@ -69,7 +69,8 @@ export const POST: RequestHandler = async (event) => {
 
 	const { data, error } = await getOwnerSupabaseClient().rpc('owner_save_setup_handover', {
 		target_organization_id: organizationId.data,
-		new_access_summary: parsed.data.access_summary ?? undefined,
+		// Null clears the summary; the generated type does not know the argument takes null.
+		new_access_summary: parsed.data.access_summary as string,
 		new_guides: parsed.data.guides,
 		actor_email: session.email
 	});

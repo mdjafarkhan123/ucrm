@@ -83,6 +83,12 @@
 				{:else if project.state === 'approved'}
 					Your system is approved to go live. Uplift is finishing the launch steps and will tell you
 					when it is live.
+				{:else if project.state === 'live'}
+					Your system is live. Next is training: tell Uplift who is coming and when suits you,
+					below.
+				{:else if project.state === 'delivered'}
+					Uplift has delivered your project. Your handover pack has everything you need to run it
+					yourself.
 				{/if}
 			</p>
 			{#if project.after_ready?.kind === 'returned'}

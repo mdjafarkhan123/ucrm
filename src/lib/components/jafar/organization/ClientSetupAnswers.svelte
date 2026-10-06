@@ -22,6 +22,7 @@
 	import SetupPreviewPanel from './SetupPreviewPanel.svelte';
 	import LaunchApprovalPanel from './LaunchApprovalPanel.svelte';
 	import LaunchChecksPanel from './LaunchChecksPanel.svelte';
+	import TrainingHandoverPanel from './TrainingHandoverPanel.svelte';
 	import SetupReadyPanel from './SetupReadyPanel.svelte';
 	import SetupReturnDialog from './SetupReturnDialog.svelte';
 	import { iconForMimeType } from '$lib/collaboration/file-icons';
@@ -382,6 +383,7 @@
 		<SetupPreviewPanel {organizationId} />
 		<LaunchChecksPanel {organizationId} />
 		<LaunchApprovalPanel {organizationId} />
+		<TrainingHandoverPanel {organizationId} />
 	{/if}
 
 	{#if help.length > 0}

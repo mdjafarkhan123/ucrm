@@ -36,6 +36,9 @@ export const jafarOrganizationLaunchApprovalKey = (organizationId: string | unde
 /** E5: the newest released preview's launch checklist. */
 export const jafarOrganizationLaunchChecksKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'launch-checks'] as const;
+/** E6: training and handover — the client's training details, the booking, Live, the handover and its history. */
+export const jafarOrganizationHandoverKey = (organizationId: string | undefined) =>
+	[...jafarOrganizationKey(organizationId), 'handover'] as const;
 export const jafarOrganizationAutomationAuthorityKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'automation-authority'] as const;
 export const jafarOrganizationEmailDomainsKey = (organizationId: string | undefined) =>
@@ -166,6 +169,6 @@ export const jafarPackageChangePreviewKey = (
 export const jafarOrganizationExceptionsKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'exceptions'] as const;
 export const jafarOnboardingKey = ['jafar', 'onboarding'] as const;
-export const jafarOnboardingListKey = (search: string, waitingOn: string) =>
-	[...jafarOnboardingKey, search, waitingOn] as const;
+export const jafarOnboardingListKey = (search: string, waitingOn: string, delivered: boolean) =>
+	[...jafarOnboardingKey, search, waitingOn, delivered] as const;
 export const jafarSetupEditorKey = ['jafar', 'setup-editor'] as const;

@@ -29,7 +29,8 @@ export const POST: RequestHandler = async (event) => {
 
 	const { data, error } = await getOwnerSupabaseClient().rpc('owner_set_setup_training_recording', {
 		target_organization_id: organizationId.data,
-		new_recording_url: parsed.data.recording_url ?? undefined,
+		// Null removes the link. It must be sent, not left out: the function has no default for it.
+		new_recording_url: parsed.data.recording_url as string,
 		actor_email: session.email
 	});
 	if (error) {
