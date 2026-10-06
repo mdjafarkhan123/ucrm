@@ -217,7 +217,10 @@
 		position: relative;
 		display: flex;
 		height: 100dvh;
-		overflow: hidden;
+		/* `clip`, not `hidden`: a `hidden` box is still a scroll container, so a step's scrollIntoView
+		 * (or focus, or a #link) could slide the whole frame up and push the top bar off screen. Only
+		 * `.app-shell__main` and the panels inside it scroll. */
+		overflow: clip;
 		background: var(--color-surface--background);
 		padding: var(--shell-edge);
 		gap: var(--space-base);
@@ -228,7 +231,7 @@
 		min-width: 0;
 		min-height: 0;
 		flex-direction: column;
-		overflow: hidden;
+		overflow: clip;
 	}
 	.app-shell__main {
 		flex: 1;
