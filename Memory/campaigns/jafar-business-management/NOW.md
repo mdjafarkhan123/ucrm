@@ -5,8 +5,8 @@
 
 **In progress:**
 
-- P2 Sending and reuse limits — inspect Uplift's actual sender and inbox, official channel/country rules, and current reusable components.
+- P2 Sending and reuse limits — research and code check saved; awaiting Jafar's real sales mailbox details.
 
 **Next part:** P3 Team and conversion details — agree starting team access, meeting and offer path, and payment-to-onboarding handoff.
 
-**Blockers:** None for planning. No build or live sending is authorized.
+**Blockers:** P2 needs Jafar to identify Uplift's real sales mailbox and where replies arrive. No build or live sending is authorized.

@@ -30,7 +30,7 @@ For example, if 29 approved leads have never been contacted, Jafar selects those
 
 Each sequence step may be an email, a permitted connected message, or a task for a person to complete in the original channel. Jafar controls the time of each step. The editor prefills **five minutes** for the next step, as requested, and Jafar may change it. A channel or provider rule can require a longer wait or prevent the send, with a visible reason. The system never silently bypasses that rule. Sending is paced, safe to retry without creating a second copy, and checked again immediately before delivery. A reply or opt-out stops remaining automatic steps; Jafar can also pause or cancel a person or an entire batch. Failed, pending, skipped, and delivered outcomes are visible per person. An open or view count is never treated as proof of interest.
 
-Email automation is considered only where the sender, recipient, country, opt-out handling, and provider policy are ready. WhatsApp needs the recipient's permission; Instagram and Messenger cannot be promised as cold-message automation. For those channels, the first useful workflow is a personal task and a logged result. Connected two-way messaging can be added only after its official channel rules and provider access are checked. A shared sales conversation view should show connected replies; other-channel activity can be logged manually until connected. Existing client Support remains identifiable as a different purpose, even when staff can see both conversations.
+Email automation is considered only where the sender, recipient, country, opt-out handling, and provider policy are ready. The existing Brevo platform sender is for expected platform messages and is not an approved cold-prospect sender. WhatsApp needs the recipient's permission; Instagram and Messenger cannot be promised as cold-message automation. For those channels, the first useful workflow is a personal task and a logged result. Connected two-way messaging can be added only after its official channel rules and provider access are checked. A shared sales conversation view should show connected replies; other-channel activity can be logged manually until connected. Existing client Support remains identifiable as a different purpose, even when staff can see both conversations.
 
 ### 4. Turn interest into a deal
 
@@ -56,12 +56,12 @@ Contractor team permissions are a useful pattern, but they are scoped to each co
 
 Reuse the existing automation editor, minute-based waits and background execution, marketing recipient preview and paced delivery, inbox interface patterns, task and pipeline presentation, package data, onboarding, and permission design **where their behavior proves suitable**. This plan does not assume that current contractor automation can already send a five-minute cold follow-up: its existing safety rule separates two outgoing customer messages by 60 minutes. Uplift's outreach needs its own reviewed policy without weakening contractor protection. The contractor pipeline follows Requests and Quotes, so Uplift sales Deals need distinct business records while sharing suitable interface patterns. Contractor customer marketing is designed for existing customer relationships and cannot be copied as a cold-prospect permission rule.
 
-The simple first useful journey is manual lead capture, clear approval, individually reviewed and scheduled outreach through ready channels, replies and tasks, a small deal pipeline, and a handoff to existing client operations. Build no extra message channel merely to make every icon look connected. Where a provider cannot safely send, show a human task and allow its outcome to be recorded.
+The simple first useful journey is manual lead capture, clear approval, individually reviewed and scheduled outreach through ready channels, replies and tasks, a small deal pipeline, and a handoff to existing client operations. All trade businesses outside Asia can be recorded; automated outreach is available only for recipient/channel combinations whose rules and sender are verified. Build no extra message channel merely to make every icon look connected. Where a lawful contact method has no integration, show a human task and allow its outcome to be recorded; where permission is missing, hold contact until it is resolved.
 
 ## Still unclear
 
 - Which email sender/provider and real reply inbox should Uplift use for its own prospect outreach? Verify the current setup and provider policy before promising automated cold email.
-- Which countries should be in the first automated outreach launch? The business can record leads outside Asia broadly, but each country's rules and sender capability need checking before enabling automatic sends there.
+- What country and channel checks must be proved before a particular automated send is enabled? The market remains all trade businesses outside Asia; there is no narrower lead-list geography.
 - Which existing calendar/booking and proposal tools should the first release use, and what is the smallest complete experience if none is ready?
 - What exact access should each starting team role have by default? Jafar will be able to change it.
 
@@ -77,6 +77,7 @@ The simple first useful journey is manual lead capture, clear approval, individu
 
 - [Mature sales workflow patterns](research/founder-sales-system-patterns-2026-10-06.md)
 - [Outreach channel and source rules](research/founder-outreach-channel-rules-2026-10-06.md)
+- [Current sender, country, and reuse check](research/jafar-outreach-sending-reuse-2026-10-06.md)
 - [Existing Jafar controls](jafar-completion-contract.md)
 - [Contractor marketing blueprint](marketing-product-blueprint.md)
 - [Contractor pipeline behavior](sales-pipeline-behavior-contract.md)
