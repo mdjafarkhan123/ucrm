@@ -8,7 +8,7 @@
 
 **Also waiting on Jafar's publish:** B9c's login check (part note `parts/B9-texting-facts.md`); the stage itself is built.
 
-**Next part:** E6 Training + handover (roadmap line in `stages/E-delivery.md`). It adds states 10–11
+**In progress too:** E6 Training + handover — round 1 questions wait for Jafar (`parts/E6-training-handover.md`). It adds states 10–11
 (Live — training next, Project delivered) to `$lib/setup/project-state.ts`. Raad LTD is accepted on "Your business", not Ready (dev data). Do NOT publish
 test stages or questions on dev; stage keys are never reused.
 
