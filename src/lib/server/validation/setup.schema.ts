@@ -12,6 +12,17 @@ import { SETUP_READY_REASON_MAX } from '$lib/setup/ready';
 import { LAUNCH_NOT_YET_NOTE_MAX, LAUNCH_RECORD_REASON_MAX } from '$lib/setup/launch-approval';
 import { LAUNCH_CHECK_KEYS, LAUNCH_CHECK_REASON_MAX } from '$lib/setup/launch-checks';
 import {
+	HANDOVER_GUIDES_MAX,
+	HANDOVER_GUIDE_TITLE_MAX,
+	HANDOVER_SUMMARY_MAX,
+	LINK_MAX,
+	TRAINING_ATTENDEES_MAX,
+	TRAINING_NAME_MAX,
+	TRAINING_ROLE_MAX,
+	TRAINING_TASKS_MAX,
+	TRAINING_TEXT_MAX
+} from '$lib/setup/training';
+import {
 	PROVIDER_WAITS,
 	PROVIDER_WAIT_NOTE_MAX,
 	PROVIDER_WAIT_STATUSES
@@ -407,3 +418,106 @@ export const setupLaunchCheckSchema = z
 		message: 'Say why this check doesn’t apply.'
 	});
 export type SetupLaunchCheckInput = z.infer<typeof setupLaunchCheckSchema>;
+
+// Client onboarding E6: training and handover (plan §6).
+const optionalText = (max: number) =>
+	z
+		.string()
+		.trim()
+		.max(max, `Keep it under ${max} characters.`)
+		.nullish()
+		.transform((value) => value || null);
+
+const httpsLink = (missing: string) =>
+	z
+		.string()
+		.trim()
+		.min(1, missing)
+		.max(LINK_MAX, `Keep the link under ${LINK_MAX} characters.`)
+		.regex(/^https:\/\/\S+$/, 'Use a full address starting with https://.');
+
+const isTimeZone = (value: string) => {
+	try {
+		new Intl.DateTimeFormat('en-GB', { timeZone: value });
+		return true;
+	} catch {
+		return false;
+	}
+};
+
+export const setupTrainingSchema = z
+	.object({
+		attendees: z
+			.array(
+				z
+					.object({
+						name: z
+							.string()
+							.trim()
+							.min(1, 'Give each person’s name.')
+							.max(TRAINING_NAME_MAX, `Keep names under ${TRAINING_NAME_MAX} characters.`),
+						role: z
+							.string()
+							.trim()
+							.max(TRAINING_ROLE_MAX, `Keep roles under ${TRAINING_ROLE_MAX} characters.`)
+							.default(''),
+						email: z.email('Give each person’s email address.').max(320)
+					})
+					.strict()
+			)
+			.min(1, 'Add at least one person.')
+			.max(TRAINING_ATTENDEES_MAX, `Add up to ${TRAINING_ATTENDEES_MAX} people.`),
+		time_zone: z.string().trim().min(1, 'Choose your time zone.').max(64).refine(isTimeZone, {
+			message: 'Choose your time zone.'
+		}),
+		preferred_times: z
+			.string()
+			.trim()
+			.min(1, 'Say which days and times suit you.')
+			.max(TRAINING_TEXT_MAX, `Keep it under ${TRAINING_TEXT_MAX} characters.`),
+		needs: optionalText(TRAINING_TEXT_MAX),
+		top_tasks: optionalText(TRAINING_TASKS_MAX),
+		recording_consent: z.boolean('Say whether Uplift may record the training.')
+	})
+	.strict();
+export type SetupTrainingInput = z.infer<typeof setupTrainingSchema>;
+
+export const setupTrainingConsentSchema = z
+	.object({ recording_consent: z.boolean('Choose yes or no.') })
+	.strict();
+
+// Jafar books or moves training: an exact moment (the browser sends it with its offset) and the meeting link.
+export const setupTrainingBookingSchema = z
+	.object({
+		meeting_at: z.iso.datetime({ offset: true, error: 'Choose the training time.' }),
+		meeting_url: httpsLink('Add the Meet or Zoom link.')
+	})
+	.strict();
+
+export const setupTrainingRecordingSchema = z
+	.object({ recording_url: httpsLink('Add the recording link.').nullable() })
+	.strict();
+
+export const setupHandoverSchema = z
+	.object({
+		access_summary: optionalText(HANDOVER_SUMMARY_MAX),
+		guides: z
+			.array(
+				z
+					.object({
+						title: z
+							.string()
+							.trim()
+							.min(1, 'Give each guide a title.')
+							.max(
+								HANDOVER_GUIDE_TITLE_MAX,
+								`Keep titles under ${HANDOVER_GUIDE_TITLE_MAX} characters.`
+							),
+						url: httpsLink('Give each guide its link.')
+					})
+					.strict()
+			)
+			.max(HANDOVER_GUIDES_MAX, `Add up to ${HANDOVER_GUIDES_MAX} guides.`)
+	})
+	.strict();
+export type SetupHandoverInput = z.infer<typeof setupHandoverSchema>;

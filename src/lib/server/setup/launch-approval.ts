@@ -71,12 +71,12 @@ function escapeHtml(value: string) {
 	return value.replace(/[&<>"']/g, (character) => HTML_ESCAPE[character] ?? character);
 }
 
-function greetingName(name: string | null) {
+export function greetingName(name: string | null) {
 	const first = name?.trim().split(/\s+/)[0] ?? '';
 	return first && !first.includes('@') ? first : 'there';
 }
 
-function emailBody(
+export function emailBody(
 	paragraphs: string[],
 	button: { label: string; url: string } | null,
 	after: string

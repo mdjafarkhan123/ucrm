@@ -9,6 +9,7 @@ const base: ProjectFacts = {
 	ready: null,
 	preview: null,
 	approval: null,
+	handover: null,
 	today: '2026-10-05'
 };
 const sent = { number: 1, submitted_at: '2026-10-02T09:00:00Z' };
@@ -153,5 +154,35 @@ describe('projectView', () => {
 			status: 'current',
 			on: '2026-10-22T15:00:00Z'
 		});
+	});
+
+	it('is Live, then Project delivered, each dated the day Uplift marked it', () => {
+		const launched = {
+			...base,
+			sent,
+			first_sent_at: sent.submitted_at,
+			ready,
+			preview: { version: 2, released_at: '2026-10-21T10:00:00Z', notes_sent_at: null },
+			approval: { version: 2, approved_at: '2026-10-22T15:00:00Z' },
+			today: '2026-10-26'
+		};
+		const live = projectView({
+			...launched,
+			handover: { live_at: '2026-10-24T09:00:00Z', delivered_at: null }
+		});
+		expect(live.state).toBe('live');
+		expect(live.steps.find((each) => each.state === 'live')).toMatchObject({
+			status: 'current',
+			on: '2026-10-24T09:00:00Z'
+		});
+		expect(live.steps.find((each) => each.state === 'delivered')?.status).toBe('upcoming');
+
+		const delivered = projectView({
+			...launched,
+			handover: { live_at: '2026-10-24T09:00:00Z', delivered_at: '2026-10-28T09:00:00Z' }
+		});
+		expect(delivered.state).toBe('delivered');
+		expect(delivered.position).toBe(delivered.total);
+		expect(delivered.steps.every((each) => each.status !== 'upcoming')).toBe(true);
 	});
 });

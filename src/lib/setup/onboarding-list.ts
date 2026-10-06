@@ -19,6 +19,10 @@ export type OnboardingNextAction =
 	| 'approve_launch'
 	| 'approver_not_yet'
 	| 'prepare_launch'
+	| 'give_training_details'
+	| 'book_training'
+	| 'finish_handover'
+	| 'delivered'
 	| 'build_system'
 	| 'help_with_answers'
 	| 'reply_to_support'
@@ -68,6 +72,11 @@ export type OnboardingClient = {
 	approval_requested_at: string | null;
 	approval_not_yet_at: string | null;
 	approved_at: string | null;
+	/** E6: Live and Delivered, and the training booking or the owner's skip. */
+	live_at: string | null;
+	delivered_at: string | null;
+	training_booked_at: string | null;
+	training_skipped: boolean;
 	/** E1: the client-facing project state (plan §5), worked out by the route as the client's page does. */
 	project_state: ProjectState;
 	waiting_on: OnboardingWaitingOn;
@@ -82,6 +91,8 @@ export type OnboardingTotals = {
 	client: number;
 	quiet: number;
 	matching: number;
+	/** E6: delivered clients, whether or not they are listed. */
+	delivered: number;
 };
 
 export type OnboardingListPage = {
@@ -160,6 +171,14 @@ export function onboardingNextActionLabel(client: OnboardingClient): string {
 			return 'Talk to them — their approver said not yet';
 		case 'prepare_launch':
 			return 'Approved — prepare their launch';
+		case 'give_training_details':
+			return 'Live — waiting for their training details';
+		case 'book_training':
+			return 'Book their training';
+		case 'finish_handover':
+			return 'Finish the handover and mark delivered';
+		case 'delivered':
+			return 'Delivered';
 		case 'build_system':
 			return 'Build their system';
 		case 'account_paused':

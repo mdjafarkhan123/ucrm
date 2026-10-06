@@ -42,7 +42,8 @@ export const GET: RequestHandler = async (event) => {
 		search: event.url.searchParams.get('search') ?? undefined,
 		waiting_on: event.url.searchParams.get('waiting_on') ?? undefined,
 		cursor: event.url.searchParams.get('cursor') ?? undefined,
-		limit: event.url.searchParams.get('limit') ?? undefined
+		limit: event.url.searchParams.get('limit') ?? undefined,
+		delivered: event.url.searchParams.get('delivered') ?? undefined
 	});
 	if (!parsed.success)
 		return json({ error: 'The client list filter is invalid.' }, { status: 422 });
@@ -63,7 +64,8 @@ export const GET: RequestHandler = async (event) => {
 		waiting_filter: parsed.data.waiting_on,
 		cursor_account_created_at: cursor?.account_created_at,
 		cursor_id: cursor?.id,
-		page_size: parsed.data.limit ?? 50
+		page_size: parsed.data.limit ?? 50,
+		include_delivered: parsed.data.delivered ?? false
 	});
 	if (error) {
 		console.error('Could not list onboarding clients.', error);
@@ -130,6 +132,7 @@ export const GET: RequestHandler = async (event) => {
 						row.approval_status === 'approved' && row.approval_version && row.approved_at
 							? { version: row.approval_version, approved_at: row.approved_at }
 							: null,
+					handover: { live_at: row.live_at, delivered_at: row.delivered_at },
 					today: todayIn(ready?.time_zone ?? 'UTC')
 				})
 			};

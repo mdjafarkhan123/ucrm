@@ -7,8 +7,8 @@ import { todayIn } from '$lib/setup/ready';
 /**
  * Client onboarding E1: the client's step tracker (plan §5). Besides what the setup read already holds, it needs
  * the day the account was created — which follows Jafar's confirmation of the payment — the first send, and after
- * Ready the newest released preview (E3) and the standing launch approval (E4): single-row reads keyed by the
- * organization. Null when one fails.
+ * Ready the newest released preview (E3), the standing launch approval (E4), and Live and Delivered (E6):
+ * single-row reads keyed by the organization. Null when one fails.
  */
 export async function readSetupProject(
 	supabase: SupabaseClient<Database>,
@@ -16,7 +16,7 @@ export async function readSetupProject(
 	state: SetupState,
 	returnedCount: number
 ): Promise<ProjectView | null> {
-	const [organization, firstSend, preview, approval] = await Promise.all([
+	const [organization, firstSend, preview, approval, handover] = await Promise.all([
 		supabase.from('organizations').select('created_at').eq('id', organizationId).maybeSingle(),
 		state.sent && state.sent.number > 1
 			? supabase
@@ -44,9 +44,17 @@ export async function readSetupProject(
 					.eq('status', 'approved')
 					.is('replaced_at', null)
 					.maybeSingle()
+			: Promise.resolve({ data: null, error: null }),
+		state.ready
+			? supabase
+					.from('organization_setup_handover')
+					.select('live_at, delivered_at')
+					.eq('organization_id', organizationId)
+					.maybeSingle()
 			: Promise.resolve({ data: null, error: null })
 	]);
-	if (organization.error || firstSend.error || preview.error || approval.error) return null;
+	if (organization.error || firstSend.error || preview.error || approval.error || handover.error)
+		return null;
 
 	return projectView({
 		paid_at: organization.data?.created_at ?? null,
@@ -64,6 +72,7 @@ export async function readSetupProject(
 		approval: approval.data?.approved_at
 			? { version: approval.data.version, approved_at: approval.data.approved_at }
 			: null,
+		handover: handover.data,
 		// Only Ready's dates depend on the day, and they were counted in the zone Ready recorded.
 		today: todayIn(state.ready?.time_zone ?? 'UTC')
 	});
