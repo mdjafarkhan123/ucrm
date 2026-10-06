@@ -1,6 +1,6 @@
 # Jafar Business Management
 
-**Status:** Planning — draft for Jafar's review, 2026-10-06. No build is authorized by this plan.
+**Status:** Planning — the lead-to-client journey and first useful release direction were approved by Jafar on 2026-10-06. Sending, team defaults, and handoff details remain under review. No build is authorized by this plan.
 
 ## The vision
 
@@ -60,7 +60,6 @@ The simple first useful journey is manual lead capture, clear approval, individu
 
 ## Still unclear
 
-- Does Jafar approve this overall lead-to-client journey and the proposed first useful release boundary, or what should change before we split it into build parts?
 - Which email sender/provider and real reply inbox should Uplift use for its own prospect outreach? Verify the current setup and provider policy before promising automated cold email.
 - Which countries should be in the first automated outreach launch? The business can record leads outside Asia broadly, but each country's rules and sender capability need checking before enabling automatic sends there.
 - Which existing calendar/booking and proposal tools should the first release use, and what is the smallest complete experience if none is ready?

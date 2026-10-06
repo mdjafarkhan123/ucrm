@@ -5,8 +5,8 @@
 
 **In progress:**
 
-- P1 Review the journey — `parts/p1-review-journey.md`
+- P2 Sending and reuse limits — inspect Uplift's actual sender and inbox, official channel/country rules, and current reusable components.
 
-**Next part:** P2 Check the sending and reuse limits — verify the real email sender, country rollout, channel rules, and what existing components can safely support.
+**Next part:** P3 Team and conversion details — agree starting team access, meeting and offer path, and payment-to-onboarding handoff.
 
 **Blockers:** None for planning. No build or live sending is authorized.
