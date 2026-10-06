@@ -32,6 +32,8 @@ Each sequence step may be an email, a permitted connected message, or a task for
 
 Email automation is considered only where the sender, recipient, country, opt-out handling, and provider policy are ready. The existing Brevo platform sender is for expected platform messages and is not an approved cold-prospect sender. WhatsApp needs the recipient's permission; Instagram and Messenger cannot be promised as cold-message automation. For those channels, the first useful workflow is a personal task and a logged result. Connected two-way messaging can be added only after its official channel rules and provider access are checked. A shared sales conversation view should show connected replies; other-channel activity can be logged manually until connected. Existing client Support remains identifiable as a different purpose, even when staff can see both conversations.
 
+Jafar wants `info@upliftcontractor.com` to work as a real sales inbox inside `/jafar`, including incoming mail, replies, and team access. The current contractor email feature is a sending-address and CRM-reply system, not a general mailbox. The choice of mailbox provider remains under review; the team should not have to work in another email interface every day.
+
 ### 4. Turn interest into a deal
 
 A reply showing real interest, or a booked discovery call, can create a **Uplift sales Deal** linked to the business. The proposed pipeline is **Interested → Call booked → Needs understood → Offer sent → Awaiting decision/payment → Won or Lost**. **Later** holds people who asked to revisit at a particular date; it requires a next action. The active board contains buying conversations, while the Leads list continues to hold early research and outreach. A stage records a real event, not a guessed chance of winning.
@@ -60,7 +62,7 @@ The simple first useful journey is manual lead capture, clear approval, individu
 
 ## Still unclear
 
-- Which email sender/provider and real reply inbox should Uplift use for its own prospect outreach? Verify the current setup and provider policy before promising automated cold email.
+- Should Uplift keep one Hostinger mailbox as the behind-the-scenes provider for `info@upliftcontractor.com`, while reading, sending, and replying inside `/jafar`? This is the recommended simple path. Canceling Hostinger would require UCRM to build and operate a full mailbox over SES; either route still needs a separate provider-approved answer for cold outreach automation.
 - What country and channel checks must be proved before a particular automated send is enabled? The market remains all trade businesses outside Asia; there is no narrower lead-list geography.
 - Which existing calendar/booking and proposal tools should the first release use, and what is the smallest complete experience if none is ready?
 - What exact access should each starting team role have by default? Jafar will be able to change it.
@@ -78,6 +80,7 @@ The simple first useful journey is manual lead capture, clear approval, individu
 - [Mature sales workflow patterns](research/founder-sales-system-patterns-2026-10-06.md)
 - [Outreach channel and source rules](research/founder-outreach-channel-rules-2026-10-06.md)
 - [Current sender, country, and reuse check](research/jafar-outreach-sending-reuse-2026-10-06.md)
+- [Full inbox options for `info@upliftcontractor.com`](research/jafar-full-mailbox-options-2026-10-06.md)
 - [Existing Jafar controls](jafar-completion-contract.md)
 - [Contractor marketing blueprint](marketing-product-blueprint.md)
 - [Contractor pipeline behavior](sales-pipeline-behavior-contract.md)
