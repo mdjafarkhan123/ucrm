@@ -27,6 +27,8 @@ export type PackageSummary = {
 		published_at: string;
 	} | null;
 	organization_count: number;
+	/** Why a delete would be refused, in words for Jafar, or null when nobody ever used the package. */
+	delete_blocker: string | null;
 	website_update_pending_since: string | null;
 	website_changes: Pick<CatalogEvent, 'event_type' | 'edition_number' | 'detail' | 'created_at'>[];
 };
@@ -203,6 +205,10 @@ export function deletePackageDraft(
 		'DELETE',
 		input
 	);
+}
+
+export function deletePackage(packageId: string) {
+	return send<{ deleted: boolean }>(`/api/jafar/packages/${packageId}`, 'DELETE');
 }
 
 export function publishPackageDraft(

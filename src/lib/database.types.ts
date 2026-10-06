@@ -20861,6 +20861,10 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			delete_package: {
+				Args: { actor_owner_email: string; target_package_id: string };
+				Returns: Json;
+			};
 			delete_package_draft: {
 				Args: {
 					actor_owner_email?: string;
@@ -20868,6 +20872,10 @@ export type Database = {
 					loaded_revision: number;
 					target_package_id: string;
 				};
+				Returns: Json;
+			};
+			delete_package_offer: {
+				Args: { actor_owner_email: string; offer_id: string };
 				Returns: Json;
 			};
 			delete_property: { Args: { p_property_id: string }; Returns: undefined };

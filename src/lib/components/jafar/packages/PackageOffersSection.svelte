@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
 	import restoreIcon from '@tabler/icons/outline/archive-off.svg?raw';
@@ -13,11 +14,13 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
+	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import PackageOfferDialog from '$lib/components/jafar/packages/PackageOfferDialog.svelte';
 	import { jafarPackageOffersKey } from '$lib/jafar/query-keys';
 	import type { PackageSummary } from '$lib/jafar/packages';
 	import {
+		deletePackageOffer,
 		describeOfferTerms,
 		eligibilityLabels,
 		fetchPackageOffers,
@@ -27,8 +30,9 @@
 		type PackageOffer
 	} from '$lib/jafar/package-offers';
 
-	// Package builder P11b: Jafar's introductory offers under his packages, the way Stripe keeps coupons
-	// beside products. Each row says what the offer takes off, where it applies, and how many have claimed it.
+	// Package builder P11b: Jafar's introductory offers, the way Stripe keeps coupons beside products. Each
+	// row says what the offer takes off, where it applies, and how many have claimed it. The Packages page
+	// owns the tab and the "New offer" button, which reaches this list through `openNew`.
 	let { packages }: { packages: PackageSummary[] } = $props();
 
 	const queryClient = useQueryClient();
@@ -40,10 +44,19 @@
 		staleTime: 30_000
 	}));
 	const offers = $derived(offersQuery.data ?? []);
+	const activeOffers = $derived(offers.filter((offer) => !offer.archived_at));
+	const archivedOffers = $derived(offers.filter((offer) => offer.archived_at));
+
+	let view = $state('active');
+	// With nothing archived the switch is hidden, so a stale "archived" choice must not show an empty list.
+	const shownView = $derived(archivedOffers.length ? view : 'active');
+	const shown = $derived(shownView === 'archived' ? archivedOffers : activeOffers);
 
 	let editing = $state<PackageOffer | null>(null);
 	let dialogOpen = $state(false);
 	let archiveTarget = $state<PackageOffer | null>(null);
+	let destroyTarget = $state<PackageOffer | null>(null);
+	let blocked = $state<{ name: string; reason: string } | null>(null);
 
 	const columns: DataTableColumn[] = [
 		{ key: 'name', label: 'Offer' },
@@ -81,7 +94,7 @@
 		});
 	}
 
-	function openNew() {
+	export function openNew() {
 		editing = null;
 		dialogOpen = true;
 	}
@@ -121,6 +134,19 @@
 		onSettled: invalidateOffers
 	}));
 
+	const destroy = createMutation(() => ({
+		mutationFn: (offer: PackageOffer) => deletePackageOffer(offer.id),
+		onSuccess: () => {
+			destroyTarget = null;
+			toast.success('Offer deleted.');
+		},
+		onError: (error) => {
+			destroyTarget = null;
+			toast.error(error.message);
+		},
+		onSettled: invalidateOffers
+	}));
+
 	function menuItems(offer: PackageOffer) {
 		return [
 			{ label: 'Edit', icon: pencilIcon, onSelect: () => openEdit(offer) },
@@ -130,25 +156,44 @@
 						icon: restoreIcon,
 						onSelect: () => archive.mutate({ offer, archived: false })
 					}
-				: { label: 'Archive', icon: archiveIcon, onSelect: () => (archiveTarget = offer) }
+				: { label: 'Archive', icon: archiveIcon, onSelect: () => (archiveTarget = offer) },
+			// A claimed offer is the record of a discount someone was given, so the item explains instead of acting.
+			{
+				label: 'Delete offer',
+				icon: trashIcon,
+				destructive: true,
+				muted: offer.delete_blocker !== null,
+				trailingIcon: offer.delete_blocker ? infoIcon : undefined,
+				note: offer.delete_blocker ? 'cannot be deleted, select to see why' : undefined,
+				onSelect: () =>
+					offer.delete_blocker
+						? (blocked = { name: offer.name, reason: offer.delete_blocker })
+						: (destroyTarget = offer)
+			}
 		];
 	}
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<section class="package-offers" aria-labelledby="package-offers-heading">
-	<div class="package-offers__header">
-		<div>
-			<h2 id="package-offers-heading" class="package-offers__title">Introductory offers</h2>
-			<p class="package-offers__hint">
-				A discount for a customer's first months or first year. After that they pay the package's
-				normal price.
-			</p>
+<section class="package-offers" aria-label="Introductory offers">
+	<p class="package-offers__hint">
+		A discount for a customer's first months or first year. After that they pay the package's normal
+		price.
+	</p>
+
+	{#if archivedOffers.length}
+		<div class="package-offers__switch">
+			<SegmentedControl
+				bind:value={view}
+				size="small"
+				ariaLabel="Show active or archived offers"
+				options={[
+					{ value: 'active', label: `Active (${activeOffers.length})` },
+					{ value: 'archived', label: `Archived (${archivedOffers.length})` }
+				]}
+			/>
 		</div>
-		<Button variant="secondary" onclick={openNew}
-			><span class="package-offers__button-icon" aria-hidden="true">{@html plusIcon}</span>New offer</Button
-		>
-	</div>
+	{/if}
 
 	{#if offersQuery.isPending}
 		<LoadingSkeleton variant="table" rows={2} label="Loading offers" />
@@ -166,10 +211,16 @@
 		>
 			{#snippet action()}<Button onclick={openNew}>New offer</Button>{/snippet}
 		</EmptyState>
+	{:else if shown.length === 0}
+		<EmptyState
+			title="Every offer is archived"
+			description="Restore one from the Archived list, or create a new offer."
+			icon={discountIcon}
+		/>
 	{:else}
 		<DataTable
 			{columns}
-			items={offers}
+			items={shown}
 			rowId={(offer) => offer.id}
 			caption="Introductory offers"
 			onRowActivate={openEdit}
@@ -220,6 +271,35 @@
 {/if}
 
 <ConfirmDialog
+	open={destroyTarget !== null}
+	title="Delete this offer?"
+	icon={trashIcon}
+	tone="critical"
+	destructive
+	confirmLabel="Delete offer"
+	loading={destroy.isPending}
+	onConfirm={() => destroyTarget && destroy.mutate(destroyTarget)}
+	onClose={() => (destroyTarget = null)}
+>
+	<p>
+		Nobody has claimed “{destroyTarget?.name}”, so deleting it removes nothing that a customer
+		received. It is deleted for good and cannot be restored.
+	</p>
+</ConfirmDialog>
+
+<ConfirmDialog
+	open={blocked !== null}
+	title="This offer cannot be deleted"
+	icon={infoIcon}
+	confirmLabel="Got it"
+	cancelLabel={null}
+	onConfirm={() => (blocked = null)}
+	onClose={() => (blocked = null)}
+>
+	<p><strong>{blocked?.name}</strong>: {blocked?.reason}</p>
+</ConfirmDialog>
+
+<ConfirmDialog
 	open={archiveTarget !== null}
 	title="Archive this offer?"
 	icon={archiveIcon}
@@ -239,38 +319,15 @@
 	.package-offers {
 		display: grid;
 		gap: var(--space-small);
-		margin-top: var(--space-largest);
 
-		&__header {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: flex-end;
-			justify-content: space-between;
-			gap: var(--space-base);
-		}
-
-		&__title {
-			margin: 0;
-			color: var(--color-heading);
-			font-size: var(--typography--fontSize-large);
-			font-weight: 600;
+		&__switch {
+			justify-self: start;
 		}
 
 		&__hint {
-			margin: var(--space-smallest) 0 0;
+			margin: 0;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
-		}
-
-		&__button-icon {
-			display: inline-flex;
-			width: 1.8rem;
-			height: 1.8rem;
-
-			:global(svg) {
-				width: 100%;
-				height: 100%;
-			}
 		}
 
 		&__name {

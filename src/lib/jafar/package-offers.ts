@@ -29,6 +29,8 @@ export type PackageOffer = {
 	/** Once anyone has claimed it, its discount, billing, and length are fixed. */
 	terms_locked: boolean;
 	claim_count: number;
+	/** Why a delete would be refused, or null when no customer ever claimed the offer. */
+	delete_blocker: string | null;
 	package_ids: string[];
 	claims: {
 		id: string;
@@ -97,6 +99,10 @@ export function setPackageOfferArchived(offerId: string, archived: boolean) {
 	return send<{ result: { offer_id: string } }>(`/api/jafar/package-offers/${offerId}`, 'PATCH', {
 		action: archived ? 'archive' : 'restore'
 	});
+}
+
+export function deletePackageOffer(offerId: string) {
+	return send<{ deleted: boolean }>(`/api/jafar/package-offers/${offerId}`, 'DELETE');
 }
 
 export function formFromOffer(offer: PackageOffer): OfferForm {

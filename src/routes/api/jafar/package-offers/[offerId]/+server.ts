@@ -66,3 +66,26 @@ export const PATCH: RequestHandler = async (event) => {
 	}
 	return json({ result: data });
 };
+
+// Deleting removes an offer no customer ever claimed. A claimed offer is the record of a discount someone
+// was given, so the database refuses it and says to archive instead.
+export const DELETE: RequestHandler = async (event) => {
+	const session = await getOwnerSession(event);
+	if (!session) return ownerUnauthorized();
+
+	const offerId = packageOfferIdSchema.safeParse(event.params.offerId);
+	if (!offerId.success) return json({ error: offerId.error.issues[0].message }, { status: 422 });
+
+	const { error } = await getOwnerSupabaseClient().rpc('delete_package_offer', {
+		offer_id: offerId.data,
+		actor_owner_email: session.email
+	});
+	if (error) {
+		if (error.code === '23503') return json({ error: error.message }, { status: 404 });
+		const refused = ownerPackageCommandError(error);
+		if (refused) return refused;
+		console.error('Could not delete the offer.', error);
+		return json({ error: 'The offer could not be deleted.' }, { status: 500 });
+	}
+	return json({ deleted: true });
+};

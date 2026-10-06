@@ -9,6 +9,7 @@
 	import packageIcon from '@tabler/icons/outline/package.svg?raw';
 	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
 	import restoreIcon from '@tabler/icons/outline/archive-off.svg?raw';
+	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
 	import arrowUpIcon from '@tabler/icons/outline/arrow-up.svg?raw';
 	import arrowDownIcon from '@tabler/icons/outline/arrow-down.svg?raw';
 	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
@@ -22,13 +23,18 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
+	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
+	import Tabs from '$lib/components/ui/Tabs.svelte';
+	import TabPanel from '$lib/components/ui/TabPanel.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import PackageCreateDialog from '$lib/components/jafar/packages/PackageCreateDialog.svelte';
 	import PackageWebsiteReminder from '$lib/components/jafar/packages/PackageWebsiteReminder.svelte';
 	import PackageOffersSection from '$lib/components/jafar/packages/PackageOffersSection.svelte';
-	import { jafarPackageKey, jafarPackagesKey } from '$lib/jafar/query-keys';
+	import { jafarPackageKey, jafarPackageOffersKey, jafarPackagesKey } from '$lib/jafar/query-keys';
+	import { fetchPackageOffers } from '$lib/jafar/package-offers';
 	import {
 		changePackage,
+		deletePackage,
 		deletePackageDraft,
 		fetchPackageBuilder,
 		fetchPackages,
@@ -39,7 +45,8 @@
 	} from '$lib/jafar/packages';
 
 	// Package builder P6: every package Jafar has made, with its draft and published edition. P7 adds the
-	// catalog order, public or private, archive and restore, and the marketing-site reminders.
+	// catalog order, public or private, archive and restore, and the marketing-site reminders. Offers sit
+	// in their own tab, and archived items behind an Active / Archived switch, the way Stripe lists products.
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
 
@@ -53,10 +60,27 @@
 	const archived = $derived(packages.filter((pkg) => pkg.archived_at));
 	const reminders = $derived(packages.filter((pkg) => pkg.website_update_pending_since));
 
+	let tab = $state('packages');
+	let view = $state('active');
+	// With nothing archived the switch is hidden, so a stale "archived" choice must not show an empty list.
+	const shownView = $derived(archived.length ? view : 'active');
+	let offersSection = $state<{ openNew: () => void }>();
+
+	// The Offers tab loads only once Jafar reaches for it: hovering the tab warms the same query it reads.
+	function prefetchOffers() {
+		void queryClient.prefetchQuery({
+			queryKey: jafarPackageOffersKey,
+			queryFn: fetchPackageOffers,
+			staleTime: 30_000
+		});
+	}
+
 	let createOpen = $state(false);
 	let copyFrom = $state<PackageSummary | null>(null);
 	let deleteTarget = $state<PackageSummary | null>(null);
 	let archiveTarget = $state<PackageSummary | null>(null);
+	let destroyTarget = $state<PackageSummary | null>(null);
+	let blocked = $state<{ name: string; reason: string } | null>(null);
 
 	const columns: DataTableColumn[] = [
 		{ key: 'name', label: 'Package' },
@@ -158,6 +182,23 @@
 							onSelect: () => (deleteTarget = pkg)
 						}
 					]
+				: []),
+			// A package customers once used stays for their history, so the item explains instead of acting.
+			...(pkg.published
+				? [
+						{
+							label: 'Delete package',
+							icon: trashIcon,
+							destructive: true,
+							muted: pkg.delete_blocker !== null,
+							trailingIcon: pkg.delete_blocker ? infoIcon : undefined,
+							note: pkg.delete_blocker ? 'cannot be deleted, select to see why' : undefined,
+							onSelect: () =>
+								pkg.delete_blocker
+									? (blocked = { name: current(pkg)?.name ?? pkg.slug, reason: pkg.delete_blocker })
+									: (destroyTarget = pkg)
+						}
+					]
 				: [])
 		];
 	}
@@ -189,6 +230,21 @@
 		}
 	}));
 
+	const destroy = createMutation(() => ({
+		mutationFn: (pkg: PackageSummary) => deletePackage(pkg.id),
+		onSuccess: async (_result, pkg) => {
+			destroyTarget = null;
+			toast.success('Package deleted.');
+			queryClient.removeQueries({ queryKey: jafarPackageKey(pkg.id) });
+			await queryClient.invalidateQueries({ queryKey: jafarPackagesKey });
+		},
+		onError: async (error) => {
+			destroyTarget = null;
+			toast.error(error.message);
+			await queryClient.invalidateQueries({ queryKey: jafarPackagesKey });
+		}
+	}));
+
 	const remove = createMutation(() => ({
 		mutationFn: (pkg: PackageSummary) =>
 			deletePackageDraft(pkg.id, {
@@ -215,13 +271,20 @@
 	<PageHeader
 		eyebrow="Platform owner"
 		title="Packages"
-		description="What contractors can buy: the app features, allowances, services, and prices in each offer."
+		description="What contractors can buy: the packages, and the introductory offers that discount them."
 	>
 		{#snippet actions()}
-			<Button onclick={startCreate}
-				><span class="packages-page__button-icon" aria-hidden="true">{@html plusIcon}</span>New
-				package</Button
-			>
+			{#if packagesQuery.isSuccess && packages.length && tab === 'offers'}
+				<Button onclick={() => offersSection?.openNew()}
+					><span class="packages-page__button-icon" aria-hidden="true">{@html plusIcon}</span>New
+					offer</Button
+				>
+			{:else}
+				<Button onclick={startCreate}
+					><span class="packages-page__button-icon" aria-hidden="true">{@html plusIcon}</span>New
+					package</Button
+				>
+			{/if}
 		{/snippet}
 	</PageHeader>
 
@@ -264,27 +327,48 @@
 			</div>
 		{/if}
 
-		{#if currentPackages.length}
-			{@render packageTable(currentPackages, 'Packages')}
-		{:else}
-			<EmptyState
-				title="Every package is archived"
-				description="Restore one below, or create a new package."
-				icon={packageIcon}
-			/>
-		{/if}
+		<Tabs
+			tabs={[
+				{ value: 'packages', label: 'Packages' },
+				{ value: 'offers', label: 'Offers', onhover: prefetchOffers }
+			]}
+			bind:value={tab}
+			label="Packages and offers"
+		>
+			<TabPanel value="packages">
+				{#if archived.length}
+					<div class="packages-page__switch">
+						<SegmentedControl
+							bind:value={view}
+							size="small"
+							ariaLabel="Show active or archived packages"
+							options={[
+								{ value: 'active', label: `Active (${currentPackages.length})` },
+								{ value: 'archived', label: `Archived (${archived.length})` }
+							]}
+						/>
+					</div>
+				{/if}
 
-		{#if archived.length}
-			<section class="packages-page__archived" aria-labelledby="archived-packages-heading">
-				<h2 id="archived-packages-heading" class="packages-page__section-title">Archived</h2>
-				<p class="packages-page__section-hint">
-					New customers cannot choose these. Customers already on them keep their edition.
-				</p>
-				{@render packageTable(archived, 'Archived packages')}
-			</section>
-		{/if}
-
-		<PackageOffersSection {packages} />
+				{#if shownView === 'archived'}
+					<p class="packages-page__section-hint">
+						New customers cannot choose these. Customers already on them keep their edition.
+					</p>
+					{@render packageTable(archived, 'Archived packages')}
+				{:else if currentPackages.length}
+					{@render packageTable(currentPackages, 'Packages')}
+				{:else}
+					<EmptyState
+						title="Every package is archived"
+						description="Restore one from the Archived list, or create a new package."
+						icon={packageIcon}
+					/>
+				{/if}
+			</TabPanel>
+			<TabPanel value="offers">
+				<PackageOffersSection bind:this={offersSection} {packages} />
+			</TabPanel>
+		</Tabs>
 	{/if}
 </main>
 
@@ -300,26 +384,23 @@
 		{#snippet row(pkg: PackageSummary)}
 			<th scope="row">
 				<a class="packages-page__name" href={packageHref(pkg)}>{current(pkg)?.name}</a>
-				<span class="packages-page__slug">/{pkg.slug}</span>
+				<span class="packages-page__slug"
+					>/{pkg.slug}{pkg.published ? ` · Edition ${pkg.published.edition_number}` : ''}</span
+				>
+				{#if pkg.published && pkg.draft}
+					<span class="packages-page__note">Unpublished changes</span>
+				{/if}
 			</th>
 			<td>
-				<div class="packages-page__badges">
-					{#if pkg.published}
-						<Badge status="success" size="small">Edition {pkg.published.edition_number}</Badge>
-					{/if}
-					{#if pkg.draft}
-						<Badge status={pkg.published ? 'warning' : 'inactive'} size="small"
-							>{pkg.published ? 'Unpublished changes' : 'Draft'}</Badge
-						>
-					{/if}
-					{#if pkg.archived_at}
-						<Badge size="small">Archived</Badge>
-					{:else if isListed(pkg)}
-						<Badge status="informative" size="small">Public</Badge>
-					{:else if pkg.published}
-						<Badge status="inactive" size="small">Private</Badge>
-					{/if}
-				</div>
+				{#if pkg.archived_at}
+					<Badge size="small">Archived</Badge>
+				{:else if !pkg.published}
+					<Badge status="inactive" size="small">Draft</Badge>
+				{:else if isListed(pkg)}
+					<Badge status="success" size="small">Live</Badge>
+				{:else}
+					<Badge status="informative" size="small">Live · private</Badge>
+				{/if}
 			</td>
 			<td class="packages-page__number align-end"
 				>{formatUsd(current(pkg)?.monthly_price_usd_cents ?? null)}</td
@@ -362,6 +443,36 @@
 			? `The ${archiveTarget.organization_count} ${archiveTarget.organization_count === 1 ? 'customer' : 'customers'} already on it keep their edition, price, and access.`
 			: 'Nobody is on it today.'} You can restore it at any time.
 	</p>
+</ConfirmDialog>
+
+<ConfirmDialog
+	open={destroyTarget !== null}
+	title="Delete this package?"
+	icon={trashIcon}
+	tone="critical"
+	destructive
+	confirmLabel="Delete package"
+	loading={destroy.isPending}
+	onConfirm={() => destroyTarget && destroy.mutate(destroyTarget)}
+	onClose={() => (destroyTarget = null)}
+>
+	<p>
+		No customer, application, or offer has ever used “{destroyTarget
+			? current(destroyTarget)?.name
+			: ''}”. It, its editions, and its web address are deleted for good. This cannot be undone.
+	</p>
+</ConfirmDialog>
+
+<ConfirmDialog
+	open={blocked !== null}
+	title="This package cannot be deleted"
+	icon={infoIcon}
+	confirmLabel="Got it"
+	cancelLabel={null}
+	onConfirm={() => (blocked = null)}
+	onClose={() => (blocked = null)}
+>
+	<p><strong>{blocked?.name}</strong>: {blocked?.reason}</p>
 </ConfirmDialog>
 
 <ConfirmDialog
@@ -428,29 +539,22 @@
 			margin-bottom: var(--space-base);
 		}
 
-		&__archived {
-			display: grid;
-			gap: var(--space-small);
-			margin-top: var(--space-large);
+		&__switch {
+			align-self: flex-start;
 		}
 
-		&__section-title {
-			margin: 0;
-			color: var(--color-heading);
-			font-size: var(--typography--fontSize-large);
-			font-weight: 600;
+		&__note {
+			display: block;
+			margin-top: var(--space-smallest);
+			color: var(--color-warning--onSurface);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
 		}
 
 		&__section-hint {
 			margin: 0;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
-		}
-
-		&__badges {
-			display: flex;
-			flex-wrap: wrap;
-			gap: var(--space-smaller);
 		}
 
 		&__number {

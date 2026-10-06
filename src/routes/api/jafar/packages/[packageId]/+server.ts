@@ -98,3 +98,25 @@ export const PATCH: RequestHandler = async (event) => {
 	}
 	return json({ applied: result.applied ?? false });
 };
+
+// Deleting removes a package nobody ever used, editions and all. The database refuses, with the reason in
+// plain words, once a customer, application, offer, template, or public listing depends on it.
+export const DELETE: RequestHandler = async (event) => {
+	const session = await getOwnerSession(event);
+	if (!session) return ownerUnauthorized();
+	const parsedId = packageIdSchema.safeParse(event.params.packageId);
+	if (!parsedId.success)
+		return json({ error: 'The package identifier is invalid.' }, { status: 422 });
+
+	const { error } = await getOwnerSupabaseClient().rpc('delete_package', {
+		target_package_id: parsedId.data,
+		actor_owner_email: session.email
+	});
+	if (error) {
+		const refused = ownerPackageCommandError(error);
+		if (refused) return refused;
+		console.error('Could not delete the package.', error);
+		return json({ error: 'The package could not be deleted.' }, { status: 500 });
+	}
+	return json({ deleted: true });
+};
