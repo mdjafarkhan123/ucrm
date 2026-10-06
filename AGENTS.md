@@ -92,7 +92,7 @@ before changing files (`--mode read` for research). Release after safe integrati
 
 - Jafar is a non-technical 15-year-old project owner. Talk with him with real senario context using everyday plain english, no jargon.
 - Never guesswork, no overengineering. Think / research critically and deeply considering all edge cases.
-- For any feature / workflow / behavior / mechanism / planning / question / decision / choice or to fix any problem, first research how mature products/leading industries handle it or solve it. Discuss choices with Jafar, use the `grilling` or `grill-me` skill when needed. Use the best proven pattern/robust one and established engineering convention that fits. Do not create a custom solution when an established/robust one fits. If valid approaches have meaningful trade-offs, compare them and recommend the best fit before building. Tell Jafar which industry method you followed.
+- For any feature / workflow / behavior / mechanism / planning / question / decision / choice or to fix any problem, first research how mature products/leading industries handle it or solve it. Discuss choices/questions with Jafar, use the `grilling/grill-with-docs/grill-me` skill when needed. After asking question pause for answer. Use the best proven pattern/robust one and established engineering convention that fits. Do not create a custom solution when an established/robust one fits. If valid approaches have meaningful trade-offs, compare them and recommend the best fit before building. Tell Jafar which industry method you followed.
 - **Frontend design.** Designs must be Premium, beautiful, professional, and modern.
 - **Svelte 5 only.** No Svelte 4 syntax anywhere.
 - SCSS + BEM for all styling. Tabler icons for all icons.
