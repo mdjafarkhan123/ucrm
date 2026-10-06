@@ -1,6 +1,6 @@
 # Boulevard-inspired industry editions
 
-**Status:** Planning — overall direction agreed 2026-10-05; public-source inventory completed 2026-10-05; booking and identity behavior agreed 2026-10-05; other areas and release scope remain in planning.
+**Status:** Planning — overall direction and booking/identity behavior agreed 2026-10-05; clinical-record behavior agreed 2026-10-06; other areas and release scope remain in planning.
 
 ## Summary
 
@@ -26,7 +26,7 @@ Follow [Reference order and missing behavior](platform-overview.md#reference-ord
 
 ## Living feature plan
 
-The [public-source inventory](research/boulevard-feature-landscape-2026-10-05.md) records stable identifiers, purposes, sources and availability boundaries. P2 will add detailed workflows, settings, permissions, exceptions and dependencies. P3 will record existing-app suitability, release assignments and completion checks. Detailed area plans will be linked here as they are researched.
+The [public-source inventory](research/boulevard-feature-landscape-2026-10-05.md) records stable identifiers, purposes, sources and availability boundaries. P2 adds detailed workflows, settings, permissions, exceptions and dependencies. P3 will record existing-app suitability, release assignments and completion checks. Area research is linked below.
 
 Track these independently:
 
@@ -80,10 +80,10 @@ Evidence: [P2A research](research/boulevard-booking-identity-2026-10-05.md). Rel
 - In the medspa edition, online booking for an under-age client is done by a linked parent. An under-age
   client who signs in alone is asked to have a parent book or to contact the business. Staff can always book
   them. *Ours, following the parent-proxy pattern.*
-- On the child's adult birthday, every parent link ends automatically. Future appointments stay booked, and
-  staff get an alert to add the client's own phone or email so they can sign in. *MyChart proxy ends at 18.*
-- What a parent may see of a child's forms and treatment records, and parent consent forms, belong to the
-  clinical records part (P2B). *Jane shows shared chart entries only in the patient's own login.*
+- On the child's adult birthday, minor-based parent access ends automatically. Future appointments stay booked,
+  and staff get an alert to add the client's own phone or email so they can sign in. An adult may later grant
+  separate representative authority; [Clinical records](#clinical-records) defines record access. *HHS
+  personal-representative guidance; MyChart proxy transition.*
 
 ### May this client book this treatment?
 
@@ -164,15 +164,45 @@ Evidence: [P2A research](research/boulevard-booking-identity-2026-10-05.md). Rel
 - Holding times, gap avoidance, rooms, requirements and ages run on our own data, with no provider limit.
   Gap avoidance gets a performance design review before it is built.
 
+## Clinical records
+
+Agreed by Jafar 2026-10-06: all four P2B recommendations on parent access, treatment clearance, chart review, and prescribing boundaries. Sources and evidence limits: [P2B clinical research](research/boulevard-clinical-records-2026-10-06.md). These rules describe Medspa & Clinical Wellness behavior; P3 assigns release timing and checks existing-app suitability.
+
+### Intake and consent
+
+- Each treated person owns their own forms, charts, photos, and clearance results, including every member of a group booking and every child booked by a parent. The appointment links to the person's record; a payer or booking organizer does not become the clinical subject.
+- A clinic creates reusable intake, history, treatment consent, and chart templates and chooses the services that require each. It can ask for a form once, each visit, or again after a set expiry. Forms may be completed before the visit or at check-in. A pending form does not cancel an appointment; staff can see what remains before treatment.
+- The clinic supplies its own consent wording and clinician conversation. A recorded signature shows who agreed, in what capacity, to which version, and when. It does not itself certify treatment suitability. Keep treatment consent separate from optional permission to use before/after photos in publicity; refusal or withdrawal of publicity permission must not erase the clinical photo or change treatment consent.
+- Submitted answers and signatures remain part of the person's history, including old versions and expired submissions. Staff may record that an outside or paper form was completed, naming the source and responsible staff member; that marker is not a digital signature. Corrections are attributed, dated additions, not silent edits to a signed response.
+
+### Children and representative access
+
+- Staff verify and record who may act for a child, including the scope and end of that authority. A parent or guardian answers and signs on the child's record, with their own identity and capacity recorded. Where law allows a child to consent to particular care independently, that treatment's record and access rules follow the applicable law; staff do not assume every parent link covers every record.
+- A verified parent or guardian can see the child's legally accessible records, including treatment notes, through the authenticated portal. Staff can restrict specific records when applicable law or an individualized clinician safety decision requires it; the reason, decision maker, scope, and review are recorded. A staff-managed route handles legally required access that the portal cannot express. There is no blanket rule hiding all charts from parents.
+- Minor-based access ends at the applicable adult age or earlier legal change. An adult may grant a separate, legally effective representative authority. The clinic needs state-specific legal guidance before using minor consent and access settings in a state; the product does not supply one universal legal age or consent rule.
+
+### Clinical chart and treatment clearance
+
+- Staff document each person's visit in a staff-only chart, with notes, treatment details, and clinical photos where needed. Photos keep their capture context and annotations. Copying previous text into a new draft is explicit; a prior image is never presented as newly captured. Submitted charts are locked and corrected with attributed, time-stamped additions.
+- A required consultation, patch test, or good faith exam has an explicit clinician result: cleared, not cleared, or needs follow-up. Record the clinician, date, applicable treatments, validity or expiry, and linked visit or chart. The clinic chooses its service-specific validity and timing rules in line with its state and clinical policy. A completed visit alone is not clearance.
+- If clearance is missing, expired, reversed, or not passed, an existing treatment booking remains on the calendar and is flagged for staff. A staff member's permission to book past a warning does not grant medical clearance. Treatment cannot be marked started until an authorized clinician records current clearance.
+
+### Review and prescribing
+
+- The clinic chooses which form or chart templates require a named supervisor's review. The record distinguishes draft, submitted and awaiting review, signed off by a named reviewer, and explicitly completed without review by an authorized person. A bulk action or an appointment's checkout is never presented as an individual review. Checkout may finish while review is pending; the queue keeps pending and overdue work visible.
+- Intake can collect current medicines and allergies. A clinician must reconcile that information into any future prescribing system before relying on interaction or allergy checks; free-text answers alone are not such checks. Electronic prescription creation is planned only through a qualified provider integration with prescriber credentialing, required controlled-substance controls, and an outage path. P3 decides release timing; no native prescribing capability is promised by this planning part.
+
+Clinical details and photos stay in protected records; appointment texts and emails do not expose them. Staff access, audit, deletion/export, notification, and integration details belong to P2D, P2E, and P2G. The final US launch behavior needs state-specific review of minor consent/access, consent text, clinical policy, and prescribing requirements.
+
 ## Still unclear
 
 - Detailed behaviors, unresolved evidence gaps, reuse findings, release assignments, and measurable quality targets; settle these in planning parts, not by assumption.
 - Booking and identity items owned by later parts:
   - Charging late-cancel and no-show fees automatically or by staff decision, and refunding deposits (P2C).
   - Reminders and text-reply confirmations, and where waitlist alerts appear (P2D).
-  - Parent consent forms, parent access to child records, and recording a passed requirement (P2B).
   - Who holds the requirement-override permission, and client data deletion (P2E).
   - How client sign-in is built alongside the existing staff sign-in, and how saved cards fit the current Stripe key (P3).
+- Clinical records: which agreed capabilities belong in the initial release, what can be reused, and which qualified prescribing provider could support an integration (P3). State-specific minor access and clinical-policy review must be completed for the states served before launch.
 - Whether Beauty & Spa lets under-age clients book online on their own; settle this when that edition is planned.
 
 ## Not doing
@@ -186,6 +216,7 @@ Evidence: [P2A research](research/boulevard-booking-identity-2026-10-05.md). Rel
 
 - [Completed P1 public-source inventory and coverage limits](research/boulevard-feature-landscape-2026-10-05.md).
 - [P2A booking and identity evidence and original drafts](research/boulevard-booking-identity-2026-10-05.md); agreed behavior is in [Booking and identity](#booking-and-identity).
+- [P2B clinical-record sources and evidence limits](research/boulevard-clinical-records-2026-10-06.md); agreed behavior is in [Clinical records](#clinical-records).
 
 Primary public entry points:
 
