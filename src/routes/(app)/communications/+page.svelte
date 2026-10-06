@@ -92,15 +92,14 @@
 	// The Client that link asked for. Their conversation may be older than the inbox's latest page, or not
 	// exist yet, so it is opened from their own history instead of quietly showing someone else's. Picking
 	// another conversation clears it; a key that merely drops out of the list later falls back as before.
-	let requestedClientId = $state<string | null>(
-		(() => {
-			const key = page.url.searchParams.get('client');
-			return key && !key.includes(':') ? key : null;
-		})()
-	);
+	const linkedClientId = (() => {
+		const key = page.url.searchParams.get('client');
+		return key && !key.includes(':') ? key : null;
+	})();
+	let requestedClientId = $state<string | null>(linkedClientId);
 	// A message written elsewhere for this Client (a file share's "Send by email" / "Send by text"), held for
 	// the whole visit so switching channel tabs and back restores it.
-	const handedDraft = requestedClientId ? takeComposerDraft(requestedClientId) : null;
+	const handedDraft = linkedClientId ? takeComposerDraft(linkedClientId) : null;
 	let resendTarget = $state<OutboundInboxMessage | null>(null);
 	let cancelScheduledTarget = $state<OutboundInboxMessage | null>(null);
 	let detailsMessage = $state<InboundInboxMessage | null>(null);
