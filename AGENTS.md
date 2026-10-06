@@ -93,20 +93,16 @@ before changing files (`--mode read` for research). Release after safe integrati
 - Jafar is a non-technical 15-year-old project owner. Talk with him with real senario context using everyday plain english, no jargon.
 - Never guesswork, no overengineering. Think / research critically and deeply considering all edge cases.
 - For any feature / workflow / behavior / mechanism / planning / question / decision / choice or to fix any problem, first research how mature products/leading industries handle it or solve it. Discuss choices with Jafar, use the `grilling` or `grill-me` skill when needed. Use the best proven pattern/robust one and established engineering convention that fits. Do not create a custom solution when an established/robust one fits. If valid approaches have meaningful trade-offs, compare them and recommend the best fit before building. Tell Jafar which industry method you followed.
-- **Frontend design.** Designs must be beautiful, professional, and modern like Notion, Vercel, Linear
+- **Frontend design.** Designs must be Premium, beautiful, professional, and modern.
 - **Svelte 5 only.** No Svelte 4 syntax anywhere.
 - SCSS + BEM for all styling. Tabler icons for all icons.
 - Component styles live inside the component's own `<style lang="scss">` block. Never import component styles through `app.scss`. `app.scss` contains only the global baseline, no per-component import is needed. SCSS variables and mixins are available in every component automatically via Vite `additionalData` — no import needed.
-- **No duplicated UI.** Before designing or creating any part, check `src/lib/components`. Reuse or extend an existing component when its structure and behavior are the same.
-- **TanStack Query owns server state.** The `src/routes/(app)/+layout.svelte` shell is SSR. All page content under `src/routes/(app)/` is CSR only. Never block navigation on data loading. Render the shell immediately, show cached data or skeletons, and revalidate in the background. Move between pages with links — `href` on `Button`, or an `<a>` — so SvelteKit fetches the page on hover, and keep the warm list in `src/routes/(app)/+layout.svelte` to the sidebar's daily pages and their record pages (Jafar, 2026-09-28: it costs crews mobile data), dropping entries whose routes go away. `resolve()` wants the full route id including the group, e.g. `'/(app)/clients/[id]'`. **Content the user has to reveal — a tab panel, an accordion, a dialog's contents — does not load with the page. Its query stays off until the control is hovered, prefetches then, and shows a skeleton if the click still beats it.** Cache the result so reopening is instant. After any mutation or external event, invalidate all affected caches. No ad-hoc caching systems.
-- Server secrets stay server-side
 - All writes go through `/api/*` routes. Every `POST` and `PATCH` validates with Zod before database access.
 - **Performance — proportional evidence:** Follow `performance-review`'s invocation gate and two-stage completion contract. Never claim user or traffic capacity beyond the workload its evidence actually supports.
 - **One final application.** The main folder on `main` is the integration point. Temporary Git worktrees and
   branches are allowed only for simultaneous code writers under `docs/agent-concurrency.md`; remove them
   after their work is integrated. Do not create another clone or product copy.
 - Whenever you complete any work always commit to to git as soon as possible at a good point so it saves permanently rather than having in computer only. So if any files get deleted it can be bring back.
-
 ---
 
 ## Working Procedure:
