@@ -11512,6 +11512,88 @@ export type Database = {
 					}
 				];
 			};
+			organization_setup_handover: {
+				Row: {
+					access_summary: string | null;
+					delivered_at: string | null;
+					delivered_by_email: string | null;
+					guides: Json;
+					live_at: string | null;
+					live_by_email: string | null;
+					live_version: number | null;
+					organization_id: string;
+					updated_at: string | null;
+				};
+				Insert: {
+					access_summary?: string | null;
+					delivered_at?: string | null;
+					delivered_by_email?: string | null;
+					guides?: Json;
+					live_at?: string | null;
+					live_by_email?: string | null;
+					live_version?: number | null;
+					organization_id: string;
+					updated_at?: string | null;
+				};
+				Update: {
+					access_summary?: string | null;
+					delivered_at?: string | null;
+					delivered_by_email?: string | null;
+					guides?: Json;
+					live_at?: string | null;
+					live_by_email?: string | null;
+					live_version?: number | null;
+					organization_id?: string;
+					updated_at?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_handover_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: true;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			organization_setup_handover_events: {
+				Row: {
+					actor_kind: string;
+					actor_name: string;
+					detail: Json;
+					happened_at: string;
+					id: number;
+					kind: string;
+					organization_id: string;
+				};
+				Insert: {
+					actor_kind: string;
+					actor_name: string;
+					detail?: Json;
+					happened_at?: string;
+					id?: never;
+					kind: string;
+					organization_id: string;
+				};
+				Update: {
+					actor_kind?: string;
+					actor_name?: string;
+					detail?: Json;
+					happened_at?: string;
+					id?: never;
+					kind?: string;
+					organization_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_handover_events_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			organization_setup_help_answers: {
 				Row: {
 					fact_key: string;
@@ -12108,6 +12190,80 @@ export type Database = {
 						columns: ['setup_version_id'];
 						isOneToOne: false;
 						referencedRelation: 'setup_versions';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			organization_setup_training: {
+				Row: {
+					attendees: Json;
+					booked_at: string | null;
+					booked_by_email: string | null;
+					consent_changed_at: string | null;
+					consent_changed_by_name: string | null;
+					details_updated_at: string | null;
+					details_updated_by_name: string | null;
+					meeting_at: string | null;
+					meeting_url: string | null;
+					needs: string | null;
+					organization_id: string;
+					preferred_times: string | null;
+					recording_added_at: string | null;
+					recording_consent: boolean | null;
+					recording_url: string | null;
+					skipped_at: string | null;
+					skipped_by_name: string | null;
+					time_zone: string | null;
+					top_tasks: string | null;
+				};
+				Insert: {
+					attendees?: Json;
+					booked_at?: string | null;
+					booked_by_email?: string | null;
+					consent_changed_at?: string | null;
+					consent_changed_by_name?: string | null;
+					details_updated_at?: string | null;
+					details_updated_by_name?: string | null;
+					meeting_at?: string | null;
+					meeting_url?: string | null;
+					needs?: string | null;
+					organization_id: string;
+					preferred_times?: string | null;
+					recording_added_at?: string | null;
+					recording_consent?: boolean | null;
+					recording_url?: string | null;
+					skipped_at?: string | null;
+					skipped_by_name?: string | null;
+					time_zone?: string | null;
+					top_tasks?: string | null;
+				};
+				Update: {
+					attendees?: Json;
+					booked_at?: string | null;
+					booked_by_email?: string | null;
+					consent_changed_at?: string | null;
+					consent_changed_by_name?: string | null;
+					details_updated_at?: string | null;
+					details_updated_by_name?: string | null;
+					meeting_at?: string | null;
+					meeting_url?: string | null;
+					needs?: string | null;
+					organization_id?: string;
+					preferred_times?: string | null;
+					recording_added_at?: string | null;
+					recording_consent?: boolean | null;
+					recording_url?: string | null;
+					skipped_at?: string | null;
+					skipped_by_name?: string | null;
+					time_zone?: string | null;
+					top_tasks?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_training_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: true;
+						referencedRelation: 'organizations';
 						referencedColumns: ['id'];
 					}
 				];
@@ -18537,6 +18693,18 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			client_save_setup_training: {
+				Args: {
+					consent?: boolean;
+					new_attendees: Json;
+					new_needs: string;
+					new_preferred_times: string;
+					new_time_zone: string;
+					new_top_tasks: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			client_schedule_rows: {
 				Args: {
 					past_limit: number;
@@ -18564,6 +18732,14 @@ export type Database = {
 			};
 			client_send_setup_preview_notes: {
 				Args: { target_organization_id: string; target_version: number };
+				Returns: Json;
+			};
+			client_set_setup_training_consent: {
+				Args: { consent: boolean; target_organization_id: string };
+				Returns: Json;
+			};
+			client_skip_setup_training: {
+				Args: { target_organization_id: string };
 				Returns: Json;
 			};
 			client_spendable_credit: {
@@ -23410,10 +23586,24 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_book_setup_training: {
+				Args: {
+					actor_email: string;
+					new_meeting_at: string;
+					new_meeting_url: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			owner_cancel_setup_training: {
+				Args: { actor_email: string; target_organization_id: string };
+				Returns: Json;
+			};
 			owner_client_onboarding_list: {
 				Args: {
 					cursor_account_created_at?: string;
 					cursor_id?: string;
+					include_delivered?: boolean;
 					page_size?: number;
 					search_term?: string;
 					setup_catalogue: Json;
@@ -23440,6 +23630,14 @@ export type Database = {
 			owner_email_is_available: {
 				Args: { candidate_email: string };
 				Returns: boolean;
+			};
+			owner_mark_setup_delivered: {
+				Args: { actor_email: string; target_organization_id: string };
+				Returns: Json;
+			};
+			owner_mark_setup_live: {
+				Args: { actor_email: string; target_organization_id: string };
+				Returns: Json;
 			};
 			owner_mark_setup_ready: {
 				Args: {
@@ -23571,6 +23769,15 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_save_setup_handover: {
+				Args: {
+					actor_email: string;
+					new_access_summary: string;
+					new_guides: Json;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			owner_save_setup_preview: {
 				Args: {
 					actor_email: string;
@@ -23604,6 +23811,14 @@ export type Database = {
 				Args: {
 					actor_email: string;
 					pause: boolean;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			owner_set_setup_training_recording: {
+				Args: {
+					actor_email: string;
+					new_recording_url: string;
 					target_organization_id: string;
 				};
 				Returns: Json;
