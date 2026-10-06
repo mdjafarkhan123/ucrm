@@ -1,6 +1,6 @@
 # Client onboarding and delivery — behavior contract
 
-**Status:** Approved by Jafar on 2026-10-01
+**Status:** Approved by Jafar on 2026-10-01; E6 training and handover choices approved 2026-10-06
 
 ## Summary
 
@@ -31,8 +31,8 @@ package/payment model, this contract and the newer package contract win.
 - **Ready for Uplift** means Uplift accepted the essential brief and the build window can begin.
 - **External wait** means Google, a telecom carrier, a registrar, or another provider is reviewing or waiting
   for something outside Uplift's control. It is shown separately from Uplift's build time.
-- **Project delivered** means the approved system is live, training is completed or scheduled, and the
-  handover pack is available.
+- **Project delivered** means the approved system is live, training is booked or the owner explicitly skipped it,
+  and the handover pack is available.
 - **Uplift Support Messenger** is contractor-to-Uplift support. It is separate from Website Chat, which is
   contractor-to-customer messaging.
 
@@ -394,10 +394,38 @@ the client's owners and administrators are emailed a receipt and Jafar is told. 
 something must change, Jafar releases a new version and asks again, and the earlier approval stays in the history
 marked replaced.
 
-Training asks for attendees/roles, time zone, preferred meeting times, language/accessibility needs, top tasks to
-demonstrate, recording consent, and recording/guide recipients. Training must be scheduled before delivery is
-closed, but it does not block starting the build. The handover pack contains the recording when allowed, guides,
-ownership/access summary, open external actions, support route, and launch approvals.
+Jafar's choices of 2026-10-06 (E6; client tasks and completion milestones in GUIDEcx and Rocketlane): once the
+newest preview has standing launch approval and the system has actually launched, Jafar presses **Mark as live**
+and the client's owners and administrators receive an email.
+From Ready for Uplift onward, an owner or administrator can give training details on Setup: attendee names, roles,
+and email addresses, time zone, preferred meeting times, language or accessibility needs, top tasks to demonstrate,
+and recording consent. The client offers times; Jafar sets the confirmed time and a Meet or Zoom link, and the
+attendee addresses the client gave receive the meeting details by email. There is no
+booking calendar in this release. Until Jafar books, owners and administrators can change those details. After
+booking, they ask for a change through Chat with Uplift;
+only Jafar changes the confirmed time and meeting link. If a booking is cancelled before delivery closes, another
+booking or an owner skip is required before it can close.
+
+An owner may say **We don't need training** instead of booking it. A booking or that explicit skip settles the
+training requirement; training does not hold up the build. If the owner asks for training later through Chat with
+Uplift, Jafar can add a booking without reopening a delivered project. A changed booking after delivery also keeps
+the project delivered, updates the handover history, and emails the attendee addresses.
+
+An owner or administrator gives or withdraws recording consent, with the date kept. After training, Jafar may add
+a private video link only while the client has consented; video files are not uploaded here. The link appears only
+on the protected handover page and is never emailed. Withdrawing consent hides the link there immediately and
+creates a task for Jafar to restrict or delete the video at its host, since a previously copied link may still
+work there. Jafar can remove the link from the handover record.
+
+**Mark as delivered** is available only after Jafar has marked the approved system Live, training is booked or the
+owner has explicitly skipped it, and the handover page has Jafar's access and ownership summary plus at least one
+guide link. Open external actions remain clearly listed but do not block delivery. The handover pack is an in-app
+page that can be printed as a PDF. It shows launch approvals, open external actions, the support route, guides,
+and the recording when allowed. Only the client's owners and administrators can open it; they may share individual
+guide links with staff as needed. Jafar presses **Mark as
+delivered**; owners and administrators receive an email linking to the handover page. The dashboard card shows
+**Project delivered** for 14 days, then hides; the handover page stays reachable from Settings. Jafar's Onboarding
+list hides delivered clients by default.
 
 ## 7. Uplift Support Messenger
 
@@ -497,8 +525,7 @@ The feature is not complete until these journeys work end to end:
 
 ## Still unclear
 
-None. Implementation sequencing and internal architecture are the next planning part; they may not change this
-approved behavior without Jafar's approval.
+None. Implementation may not change this approved behavior without Jafar's approval.
 
 ## Not doing
 
@@ -523,6 +550,8 @@ approved behavior without Jafar's approval.
 - [Google review policy research](research/google-review-campaign-policy-and-fallback-2026-09-25.md)
 - [GOV.UK: Complete multiple tasks](https://design-system.service.gov.uk/patterns/complete-multiple-tasks/)
 - [GOV.UK: Check answers](https://design-system.service.gov.uk/patterns/check-answers/)
+- [GUIDEcx customer onboarding project tasks and milestones](https://help.guidecx.com/en/articles/5611145-getting-started-with-guidecx)
+- [Rocketlane onboarding stages and handover](https://www.rocketlane.com/blogs/gantt-chart)
 - [Google: Business Profile ownership and third parties](https://support.google.com/business/answer/13763036?hl=en)
 - [Google: Guidelines for representing a business](https://support.google.com/business/answer/3038177?hl=en)
 - [Google: Prohibited and restricted review content](https://support.google.com/business/answer/7400114?hl=en)
