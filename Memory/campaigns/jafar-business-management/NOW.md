@@ -5,8 +5,8 @@
 
 **In progress:**
 
-- P2 Sending and reuse limits — Jafar wants `info@upliftcontractor.com` fully in-app; mailbox options researched; awaiting his provider choice.
+- P2 Sending and reuse limits — Jafar chose multiple UCRM-managed Uplift addresses, per-address inboxes, and a permission-aware Unified Inbox. Contractor Inbox reuse was audited; sending and live mailbox readiness still need verification.
 
 **Next part:** P3 Team and conversion details — agree starting team access, meeting and offer path, and payment-to-onboarding handoff.
 
-**Blockers:** P2 needs Jafar's choice between a quiet Hostinger mailbox behind the app and a larger UCRM-run mailbox. No purchase, build, or live sending is authorized.
+**Next:** Verify the exact Uplift email transport, domain cutover and recovery needs, and provider-approved outbound path; then finish P2. No purchase, build, DNS change, or live sending is authorized.
