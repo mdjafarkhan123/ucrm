@@ -448,9 +448,13 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	/* Held to the app's content area (a plain auto row would grow to fit the form), so the form
+	 * layout's two columns can scroll on their own. */
 	.setup-editor {
 		min-width: 0;
+		height: 100%;
 		display: grid;
+		grid-template-rows: minmax(0, 1fr);
 		gap: var(--space-large);
 	}
 

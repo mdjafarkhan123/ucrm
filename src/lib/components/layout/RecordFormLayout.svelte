@@ -120,6 +120,26 @@
 		}
 	}
 
+	/* Two columns side by side: when the page gives this layout the screen's height, the form and the rail
+	 * each scroll on their own, as RecordDetailLayout does, so scrolling over the rail never carries the
+	 * form away and leaves an empty column. Where the page does not (its wrapper has no set height),
+	 * `height: 100%` falls back to auto and the page keeps scrolling as one. No `overscroll-behavior:
+	 * contain` here: in that fallback it would stop the wheel from reaching the page at all. */
+	@media (min-width: 1080px) {
+		.record-form {
+			height: 100%;
+		}
+		.record-form__grid {
+			flex: 1 1 auto;
+			min-height: 0;
+		}
+		.record-form__main,
+		.record-form__rail {
+			max-height: 100%;
+			overflow-y: auto;
+		}
+	}
+
 	@media (max-width: 1079px) {
 		.record-form__grid {
 			grid-template-columns: 1fr;
