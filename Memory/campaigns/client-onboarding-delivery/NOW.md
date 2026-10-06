@@ -4,9 +4,9 @@
 7–10-business-day delivery, approve launch, receive training, and contact Uplift throughout.
 **Plan:** `docs/client-onboarding-delivery-behavior-contract.md`
 
-**In progress:** A5 is built and still waits for Jafar's hands-on publish (part note), which also gives A5b–A5g their live client-side look.
+**In progress:** A5 is built. Setup version 2 was published on 2026-10-05 under Jafar's login (asked him if it was him); his hands-on proof still waits (part note).
 
-**Also waiting on Jafar's publish:** B9c's login check (part note `parts/B9-texting-facts.md`); the stage itself is built.
+**Also waiting:** B9c's login check needs a client whose package includes Calls and texting — Raad has no services (`parts/B9-texting-facts.md`). E8 swept; waits for Jafar's answer (`parts/E8-security-sweep.md`).
 
 **Next to build:** E6 Training + handover is built (2026-10-06); its full-flow browser check needs a client at Ready (`parts/E6-training-handover.md`). Raad LTD is accepted on "Your business", not Ready (dev data). Do NOT publish
 test stages or questions on dev; stage keys are never reused.

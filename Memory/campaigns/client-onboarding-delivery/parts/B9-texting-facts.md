@@ -11,8 +11,7 @@
 
 ## Next
 
-Stage 9 ("texting") and stage 8 with the bill (`calls.port_bill`) are in the dev draft (migration `20261020090000`).
-When Jafar has published, run the login check in Steps. Until then B10 can go ahead.
+Stage 9 ("texting") and stage 8 with the bill (`calls.port_bill`) are published (version 2, 2026-10-05). Raad LTD's package includes no services, so the Calls stage never shows to it: the login check needs a client whose package includes Calls and texting. Until then B10 can go ahead.
 Open question for Jafar (not blocking): stage 9 adds "When may automatic texts go out?" (8am–9pm recommended), which plan §3.6 asks for but the blueprint table leaves out.
 
 ## Notes
