@@ -68,9 +68,9 @@
 			/>
 		</div>
 		<PageHeader
-			eyebrow="Project delivered"
+			eyebrow={pack ? 'Project delivered' : 'Setup'}
 			title="Your handover pack"
-			description="Everything you need to run your Uplift system yourself. Keep it handy — you can open it any time from Settings."
+			description="Everything you need to run your Uplift system yourself. Once delivered, you can open it any time from Settings."
 		>
 			{#snippet actions()}
 				{#if pack}

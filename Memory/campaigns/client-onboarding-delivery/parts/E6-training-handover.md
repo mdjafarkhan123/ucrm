@@ -12,11 +12,12 @@
 - [x] Routes. Client: `/api/setup/training` (GET, POST), `/training/skip`, `/training/consent`, `/api/setup/handover`. Jafar: `/api/jafar/organizations/[id]/setup/handover` (GET, POST), `/handover/live`, `/handover/delivered`, `/training/booking`, `/training/cancel`, `/training/recording`
 - [x] Screens: Jafar's `TrainingHandoverPanel` (+ `HandoverPackEditor`) under LaunchApprovalPanel; client `TrainingCard` on Setup (from Ready); `/setup/handover` printable page + Settings card; dashboard SetupCard delivered for 14 days; list "Show delivered" toggle; tracker text. Jafar types the training time in the client's time zone (`wallClockToMoment`)
 - [x] svelte-check clean (needs `NODE_OPTIONS=--max-old-space-size=12288`), route specs for both sides; fixed blank values being dropped from three database calls
-- [ ] Browser-check
+- [x] Browser-check of what is reachable (2026-10-06): list "Show delivered" toggle works; `/setup/handover` shows its not-ready state; Setup page unchanged, no console errors
+- [ ] Full-flow browser check: training card, Jafar's panel, Live → Delivered, handover pack, dashboard card, Settings card
 
 ## Next
 
-Browser-check what is reachable without a Ready client: Jafar's Onboarding toggle, `/setup/handover` empty state, Setup page unchanged. The full flow (training card, Jafar's panel, Live → Delivered) needs a client at Ready with an approved preview; Raad LTD is not there yet, so it waits for Jafar's hands-on run with A5.
+The full flow needs a client at Ready with an approved preview; Raad LTD is not there yet. Run it during Jafar's hands-on run with A5 (`parts/A5-question-editor.md`), then mark E6 done.
 
 ## Notes
 

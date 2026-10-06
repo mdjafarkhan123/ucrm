@@ -8,7 +8,7 @@
 
 **Also waiting on Jafar's publish:** B9c's login check (part note `parts/B9-texting-facts.md`); the stage itself is built.
 
-**Next to build:** E6 Training + handover — database and server done on 2026-10-06; screens next (`parts/E6-training-handover.md`). Raad LTD is accepted on "Your business", not Ready (dev data). Do NOT publish
+**Next to build:** E6 Training + handover is built (2026-10-06); its full-flow browser check needs a client at Ready (`parts/E6-training-handover.md`). Raad LTD is accepted on "Your business", not Ready (dev data). Do NOT publish
 test stages or questions on dev; stage keys are never reused.
 
 **Blockers:** none for E1. Text limits max 2000. A reused question must point to one with no "show only if" rule (the database refuses otherwise).
