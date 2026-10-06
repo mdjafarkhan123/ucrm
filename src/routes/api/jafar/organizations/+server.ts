@@ -61,6 +61,12 @@ export const GET: RequestHandler = async (event) => {
 				updated_at: string;
 				member_count: number;
 				attention_reasons: string[];
+				package: {
+					package_id: string;
+					name: string;
+					edition_number: number | null;
+					billing_interval: 'month' | 'year';
+				} | null;
 			}>;
 			next_cursor: DirectoryCursor | null;
 			totals: {

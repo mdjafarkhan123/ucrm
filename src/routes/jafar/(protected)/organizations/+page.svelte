@@ -35,6 +35,13 @@
 		updated_at: string;
 		member_count: number;
 		attention_reasons: AttentionReason[];
+		// The package the organization is on today, or null when it has none.
+		package: {
+			package_id: string;
+			name: string;
+			edition_number: number | null;
+			billing_interval: 'month' | 'year';
+		} | null;
 	};
 	type DirectoryTotals = {
 		all: number;
@@ -256,6 +263,7 @@
 					<thead>
 						<tr>
 							<th scope="col">Organization</th>
+							<th scope="col">Package</th>
 							<th scope="col">Lifecycle</th>
 							<th scope="col">Attention</th>
 							<th scope="col">Team members</th>
@@ -270,6 +278,22 @@
 									<strong>{organization.name}</strong>
 									<small>{organization.slug}</small>
 								</th>
+								<td>
+									{#if organization.package}
+										<strong class="organization-directory__package-name"
+											>{organization.package.name}</strong
+										>
+										<small
+											>{organization.package.billing_interval === 'year'
+												? 'Yearly'
+												: 'Monthly'}{organization.package.edition_number
+												? ` · Edition ${organization.package.edition_number}`
+												: ''}</small
+										>
+									{:else}
+										<span class="organization-directory__no-attention">No package</span>
+									{/if}
+								</td>
 								<td
 									><Badge status={lifecycleTone(organization.lifecycle_status)}
 										>{lifecycleLabel(organization.lifecycle_status)}</Badge
@@ -444,7 +468,7 @@
 
 	.organization-directory table {
 		width: 100%;
-		min-width: 960px;
+		min-width: 1040px;
 		border-collapse: collapse;
 		color: var(--color-text);
 		font-size: var(--typography--fontSize-base);
@@ -507,6 +531,19 @@
 
 	.organization-directory__no-attention {
 		color: var(--color-text--secondary);
+	}
+
+	.organization-directory__package-name {
+		display: block;
+		color: var(--color-heading);
+		font-weight: 600;
+	}
+
+	.organization-directory tbody td small {
+		display: block;
+		margin-top: var(--space-smaller);
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
 	}
 
 	.organization-directory__row-action {
