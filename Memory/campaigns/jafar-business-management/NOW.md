@@ -4,10 +4,8 @@
 **Plan:** `docs/jafar-business-management-behavior-contract.md`
 **Planning boundary:** Decide user-facing features, facilities, workflows, behavior, permissions, edge cases, and first release scope in plain language. Do not turn this campaign into a coding or technical implementation plan; that comes only after Jafar approves the product plan and asks for build work.
 
-**In progress:**
+**In progress:** P3 Team and conversion details. Jafar chose four starting roles despite working alone initially, a `/jafar` sales calendar and reminders, pricing-page links instead of a separate offer document, Sales marking Won only after payment confirmation, and an assigned onboarding owner (Jafar by default). See the plan and `parts/p3-team-conversion.md`.
 
-- P2 Sending and reuse limits — Jafar chose multiple UCRM-managed Uplift addresses, per-address inboxes, and a permission-aware Unified Inbox. Contractor Inbox reuse was audited; sending and live mailbox readiness still need verification.
+**Next part:** P4 First release scope, after P3.
 
-**Next part:** P3 Team and conversion details — agree starting team access, meeting and offer path, and payment-to-onboarding handoff.
-
-**Next:** Verify the exact Uplift email transport, domain cutover and recovery needs, and provider-approved outbound path; then finish P2. No purchase, build, DNS change, or live sending is authorized.
+**Next:** Settle the remaining P3 choices about reminder delivery/timing, self-booking, and starting role permissions with Jafar, then ask for his approval of the complete behavior plan. Prospect email automation still waits for a provider-approved route; this is a product gate, not a reason to change live mail during planning.
