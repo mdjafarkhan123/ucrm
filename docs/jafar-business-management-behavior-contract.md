@@ -1,6 +1,6 @@
 # Jafar Business Management
 
-**Status:** Planning — the lead-to-client journey and first useful release direction were approved by Jafar on 2026-10-06. Sending, team defaults, and handoff details remain under review. No build is authorized by this plan.
+**Status:** Product planning — the lead-to-client journey and first useful release direction were approved by Jafar on 2026-10-06. Sending, team defaults, handoff details, and final release scope remain under review. This plan describes what people can do and how the business workflow behaves; it is not a coding plan and authorizes no build.
 
 ## The vision
 

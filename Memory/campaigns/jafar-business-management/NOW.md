@@ -2,6 +2,7 @@
 
 **Goal:** Jafar and his team can find suitable trade businesses, approve and run personal outreach, manage replies and sales Deals, and hand paid clients into existing onboarding within one `/jafar` panel.
 **Plan:** `docs/jafar-business-management-behavior-contract.md`
+**Planning boundary:** Decide user-facing features, facilities, workflows, behavior, permissions, edge cases, and first release scope in plain language. Do not turn this campaign into a coding or technical implementation plan; that comes only after Jafar approves the product plan and asks for build work.
 
 **In progress:**
 
