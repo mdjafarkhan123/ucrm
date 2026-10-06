@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { createInfiniteQuery } from '@tanstack/svelte-query';
+	import { page } from '$app/state';
+	import { createInfiniteQuery, keepPreviousData } from '@tanstack/svelte-query';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import buildingIcon from '@tabler/icons/outline/building.svg?raw';
@@ -12,20 +14,18 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import SearchInput from '$lib/components/ui/SearchInput.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
+	import DirectoryFilters from '$lib/components/jafar/organization/DirectoryFilters.svelte';
+	import {
+		directoryFilterParams,
+		directoryFiltersAreComplete,
+		readDirectoryFilters,
+		type DirectoryAttentionReason as AttentionReason,
+		type DirectoryFilters as Filters,
+		type DirectoryLifecycle as LifecycleStatus,
+		type DirectoryTotals
+	} from '$lib/jafar/organization-directory-filters';
 	import { jafarOrganizationsListKey } from '$lib/jafar/query-keys';
 
-	type LifecycleStatus = 'active' | 'suspended' | 'pending_closure' | 'closed';
-	type AttentionReason =
-		| 'access_overdue'
-		| 'payment_overdue'
-		| 'renewal_due'
-		| 'expiring_soon'
-		| 'administrator_missing'
-		| 'administrator_ownership_unclear'
-		| 'setup_or_recovery_failed'
-		| 'email_setup_requested';
 	type Organization = {
 		id: string;
 		name: string;
@@ -42,13 +42,6 @@
 			edition_number: number | null;
 			billing_interval: 'month' | 'year';
 		} | null;
-	};
-	type DirectoryTotals = {
-		all: number;
-		active: number;
-		suspended: number;
-		matching: number;
-		attention: Record<AttentionReason, number>;
 	};
 	type DirectoryPage = {
 		organizations: Organization[];
@@ -69,12 +62,18 @@
 		expiring_soon: { label: 'Expiring soon', tone: 'warning' },
 		email_setup_requested: { label: 'Email setup requested', tone: 'warning' }
 	};
-	const attentionReasonOrder = Object.keys(attentionMeta) as AttentionReason[];
+	const attentionLabels = Object.fromEntries(
+		Object.entries(attentionMeta).map(([reason, meta]) => [reason, meta.label])
+	) as Record<AttentionReason, string>;
 
 	const emptyTotals: DirectoryTotals = {
 		all: 0,
 		active: 0,
 		suspended: 0,
+		pending_closure: 0,
+		closed: 0,
+		no_package: 0,
+		packages: [],
 		matching: 0,
 		attention: {
 			access_overdue: 0,
@@ -88,52 +87,51 @@
 		}
 	};
 
-	let searchInput = $state('');
-	let debouncedSearch = $state('');
-	let attentionFilter = $state<'' | AttentionReason>('');
+	// The filters live in the address, so a refresh, the Back button and a shared link all keep them. A link
+	// that names something the page does not know falls back to "no filter" for that part.
+	const filters = $derived(readDirectoryFilters(page.url.searchParams));
+	// A custom range with no dates is not a question the server can answer yet; the list keeps what it had.
+	const applied = $derived(
+		directoryFiltersAreComplete(filters) ? filters : { ...filters, joined: '' as const }
+	);
+	const filterQuery = $derived(directoryFilterParams(applied).toString());
 
-	$effect(() => {
-		const value = searchInput;
-		const timeout = setTimeout(() => {
-			debouncedSearch = value;
-		}, 300);
-		return () => clearTimeout(timeout);
-	});
+	function setFilters(next: Filters, options?: { replace?: boolean }) {
+		const query = directoryFilterParams(next).toString();
+		// Each change is its own history entry, so Back steps through the filters the way it steps through
+		// pages. Typing a search is the exception: it replaces the entry. Focus stays where it was and the page
+		// does not jump to the top.
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- the path comes from resolve(); only the query string is added.
+		void goto(`${resolve('/jafar/organizations')}${query ? `?${query}` : ''}`, {
+			keepFocus: true,
+			noScroll: true,
+			replaceState: options?.replace ?? false
+		});
+	}
 
+	// One request per change, and the rows already on screen stay until the new ones arrive, so ticking
+	// filters never flashes a skeleton. The request does not take TanStack's abort signal: the Svelte adapter
+	// re-subscribes on every key change, and a consumed signal turns that into cancel-and-fetch-again (two
+	// requests per click). Without it the second subscribe joins the request already in flight.
 	const organizations = createInfiniteQuery<DirectoryPage>(() => ({
-		queryKey: jafarOrganizationsListKey(debouncedSearch.trim(), attentionFilter),
-		queryFn: async ({ pageParam }) => {
-			const params = new URLSearchParams();
-			if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
-			if (attentionFilter) params.set('attention_reason', attentionFilter);
-			if (typeof pageParam === 'string') params.set('cursor', pageParam);
-			const response = await fetch(`/api/jafar/organizations?${params.toString()}`);
+		queryKey: jafarOrganizationsListKey(filterQuery),
+		queryFn: async ({ queryKey, pageParam }) => {
+			// The filters this answer is cached under, never whatever the page has moved on to since.
+			const cursor = typeof pageParam === 'string' ? `cursor=${encodeURIComponent(pageParam)}` : '';
+			const query = [queryKey[3], cursor].filter(Boolean).join('&');
+			const response = await fetch(`/api/jafar/organizations?${query}`);
 			const result = (await response.json()) as DirectoryPage;
 			if (!response.ok) throw new Error(result.error ?? 'Organizations could not be loaded.');
 			return result;
 		},
 		initialPageParam: null as string | null,
-		getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined
+		getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
+		placeholderData: keepPreviousData
 	}));
 
 	const pages = $derived(organizations.data?.pages ?? []);
-	const organizationList = $derived(pages.flatMap((page) => page.organizations));
+	const organizationList = $derived(pages.flatMap((entry) => entry.organizations));
 	const totals = $derived(pages[0]?.totals ?? emptyTotals);
-
-	const attentionOptions = $derived([
-		{ value: '', label: 'All organizations' },
-		...attentionReasonOrder.map((reason) => ({
-			value: reason,
-			label: `${attentionMeta[reason].label} (${totals.attention[reason]})`
-		}))
-	]);
-
-	const filtersApplied = $derived(Boolean(searchInput || attentionFilter));
-
-	function clearFilters() {
-		searchInput = '';
-		attentionFilter = '';
-	}
 
 	function lifecycleLabel(lifecycle: LifecycleStatus) {
 		if (lifecycle === 'active') return 'Active';
@@ -200,39 +198,20 @@
 		/>
 	</section>
 
-	<section class="organization-directory__filters" aria-label="Organization filters">
-		<div class="organization-directory__filter-field organization-directory__filter-field--search">
-			<label for="organization-search">Search organizations</label>
-			<SearchInput
-				id="organization-search"
-				bind:value={searchInput}
-				placeholder="Search by name, slug, or administrator email"
-				ariaLabel="Search organizations"
-			/>
-		</div>
-		<div class="organization-directory__filter-field">
-			<label for="organization-attention">Needs attention</label>
-			<Select
-				id="organization-attention"
-				bind:value={attentionFilter}
-				options={attentionOptions}
-				ariaLabel="Filter organizations by attention reason"
-			/>
-		</div>
-		<Button
-			type="button"
-			variant="secondary"
-			variation="destructive"
-			disabled={!filtersApplied}
-			onclick={clearFilters}>Clear filters</Button
-		>
-	</section>
+	<DirectoryFilters {filters} {totals} {attentionLabels} onChange={setFilters} />
 
 	<div class="organization-directory__list-meta" aria-live="polite">
 		<span><strong>{organizationList.length}</strong> of {totals.matching} organizations shown</span>
 	</div>
 
-	<section class="organization-directory__table-panel" aria-labelledby="organization-list-title">
+	<section
+		class={[
+			'organization-directory__table-panel',
+			organizations.isPlaceholderData && 'organization-directory__table-panel--refreshing'
+		]}
+		aria-labelledby="organization-list-title"
+		aria-busy={organizations.isPlaceholderData}
+	>
 		<h2 id="organization-list-title" class="organization-directory__sr-only">
 			Organization directory
 		</h2>
@@ -254,7 +233,7 @@
 					title={totals.all === 0 ? 'No organizations yet' : 'No matching organizations'}
 					description={totals.all === 0
 						? 'Organizations will appear here once they are provisioned.'
-						: 'Try another search term or attention filter.'}
+						: 'Try another search term or loosen a filter.'}
 				/>
 			</div>
 		{:else}
@@ -407,38 +386,6 @@
 		gap: var(--space-base);
 	}
 
-	.organization-directory__filters {
-		display: flex;
-		align-items: flex-end;
-		gap: var(--space-base);
-		padding: var(--space-base);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background: var(--color-surface);
-		box-shadow: var(--shadow-low);
-	}
-
-	.organization-directory__filter-field {
-		display: grid;
-		width: min(260px, 100%);
-		gap: var(--space-small);
-
-		label {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 700;
-		}
-	}
-
-	.organization-directory__filter-field--search {
-		width: min(420px, 100%);
-		flex: 1 1 320px;
-	}
-
-	.organization-directory__filters :global(.button) {
-		margin-left: auto;
-	}
-
 	.organization-directory__list-meta,
 	.organization-directory__table-footer {
 		color: var(--color-text--secondary);
@@ -460,6 +407,12 @@
 		border-radius: var(--radius-base);
 		background: var(--color-surface);
 		box-shadow: var(--shadow-low);
+		transition: opacity var(--timing-quick);
+	}
+
+	// While a changed filter is on its way, the rows already shown stay and soften instead of vanishing.
+	.organization-directory__table-panel--refreshing {
+		opacity: 0.6;
 	}
 
 	.organization-directory__table-wrap {
@@ -602,15 +555,10 @@
 
 	@media (max-width: 767px) {
 		.organization-directory__header,
-		.organization-directory__filters,
 		.organization-directory__list-meta,
 		.organization-directory__table-footer {
 			align-items: stretch;
 			flex-direction: column;
-		}
-
-		.organization-directory__filters :global(.button) {
-			margin-left: 0;
 		}
 	}
 

@@ -66,10 +66,10 @@ select is(pg_temp.reasons('90000000-0000-0000-2222-000000000006'), '[]'::jsonb,
 select is((select (result -> 'totals' -> 'attention' ->> 'renewal_due')::int from fixture_directory) >= 2, true,
   'the renewal_due total counts the flagged organizations');
 select is(
-  (select (public.owner_organization_directory('p4b-renewal', 'renewal_due', null, null, 50) -> 'totals' ->> 'matching')::int),
+  (select (public.owner_organization_directory('p4b-renewal', array['renewal_due'], null, null, 50) -> 'totals' ->> 'matching')::int),
   2, 'filtering by renewal_due returns only those organizations');
 select is(
-  (select (public.owner_organization_directory('p4b-renewal', 'payment_overdue', null, null, 50) -> 'totals' ->> 'matching')::int),
+  (select (public.owner_organization_directory('p4b-renewal', array['payment_overdue'], null, null, 50) -> 'totals' ->> 'matching')::int),
   1, 'filtering by payment_overdue returns only the organization in its grace week');
 
 select * from finish();

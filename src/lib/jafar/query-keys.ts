@@ -4,8 +4,10 @@
 // notificationsKey lives in notifications.ts instead, next to the fetch it belongs to.
 
 export const jafarOrganizationsKey = ['jafar', 'organizations'] as const;
-export const jafarOrganizationsListKey = (search: string, attentionFilter: string) =>
-	['jafar', 'organizations', search, attentionFilter] as const;
+// The directory's filters as their query string (see `directoryFilterParams`), so the cache entry and the
+// request it answers can never describe different filters.
+export const jafarOrganizationsListKey = (filters: string) =>
+	['jafar', 'organizations', 'list', filters] as const;
 export const jafarOrganizationKey = (organizationId: string | undefined) =>
 	['jafar', 'organizations', organizationId] as const;
 export const jafarOrganizationAccessKey = (organizationId: string | undefined) =>

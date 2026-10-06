@@ -41,6 +41,19 @@ function directoryResult(overrides: Partial<Record<string, unknown>> = {}) {
 	};
 }
 
+// What the directory function is asked when no filter is set: every filter absent, none half-applied.
+const noFilters = {
+	attention_filter: undefined,
+	lifecycle_filter: undefined,
+	package_filter: undefined,
+	no_package_filter: false,
+	billing_filter: undefined,
+	renews_filter: undefined,
+	joined_from_filter: undefined,
+	joined_before_filter: undefined,
+	team_size_filter: undefined
+};
+
 describe('platform owner organization directory GET boundary', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -96,7 +109,7 @@ describe('platform owner organization directory GET boundary', () => {
 		expect(response.status).toBe(200);
 		expect(rpc).toHaveBeenCalledWith('owner_organization_directory', {
 			search_term: undefined,
-			attention_reason: undefined,
+			...noFilters,
 			cursor_created_at: undefined,
 			cursor_id: undefined,
 			page_size: 50
@@ -117,7 +130,8 @@ describe('platform owner organization directory GET boundary', () => {
 		expect(response.status).toBe(200);
 		expect(rpc).toHaveBeenCalledWith('owner_organization_directory', {
 			search_term: 'raad',
-			attention_reason: 'access_overdue',
+			...noFilters,
+			attention_filter: ['access_overdue'],
 			cursor_created_at: undefined,
 			cursor_id: undefined,
 			page_size: 10
@@ -142,7 +156,7 @@ describe('platform owner organization directory GET boundary', () => {
 		expect(response.status).toBe(200);
 		expect(rpc).toHaveBeenCalledWith('owner_organization_directory', {
 			search_term: undefined,
-			attention_reason: undefined,
+			...noFilters,
 			cursor_created_at: '2026-08-01T00:00:00Z',
 			cursor_id: '123e4567-e89b-12d3-a456-426614174000',
 			page_size: 50
@@ -213,5 +227,85 @@ describe('platform owner organization directory GET boundary', () => {
 
 		expect(response.status).toBe(500);
 		expect(await response.json()).toEqual({ error: 'Organizations could not be loaded.' });
+	});
+	it.each([
+		['an unknown lifecycle', 'lifecycle=active,gone'],
+		['an unknown billing interval', 'billing=weekly'],
+		['an unknown renewal window', 'renews=90'],
+		['an unknown team size', 'team=huge'],
+		['a package that is not an id', 'package=starter'],
+		['a range without the custom option', 'from=2026-01-01'],
+		['a custom range with no dates', 'joined=custom'],
+		['a range that ends before it starts', 'joined=custom&from=2026-02-01&to=2026-01-01'],
+		['a malformed date', 'joined=custom&from=01-02-2026']
+	])('rejects %s', async (_name, query) => {
+		mockedOwnerSession.mockResolvedValue(session());
+
+		const response = await GET(event(`http://localhost/api/jafar/organizations?${query}`));
+
+		expect(response.status).toBe(422);
+		expect(mockedClient).not.toHaveBeenCalled();
+	});
+
+	it('passes every filter through, splitting packages from the no-package choice', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+		const rpc = vi.fn().mockResolvedValue({ data: directoryResult(), error: null });
+		mockedClient.mockReturnValue({ rpc } as never);
+		const packageId = '123e4567-e89b-12d3-a456-426614174000';
+
+		const response = await GET(
+			event(
+				`http://localhost/api/jafar/organizations?attention_reason=renewal_due,payment_overdue&lifecycle=active,suspended&package=${packageId},none&billing=year&renews=14&team=small`
+			)
+		);
+
+		expect(response.status).toBe(200);
+		expect(rpc).toHaveBeenCalledWith(
+			'owner_organization_directory',
+			expect.objectContaining({
+				attention_filter: ['renewal_due', 'payment_overdue'],
+				lifecycle_filter: ['active', 'suspended'],
+				package_filter: [packageId],
+				no_package_filter: true,
+				billing_filter: 'year',
+				renews_filter: '14',
+				team_size_filter: 'small'
+			})
+		);
+	});
+
+	it('turns a custom joined range into whole days with both ends included', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+		const rpc = vi.fn().mockResolvedValue({ data: directoryResult(), error: null });
+		mockedClient.mockReturnValue({ rpc } as never);
+
+		await GET(
+			event('http://localhost/api/jafar/organizations?joined=custom&from=2026-01-05&to=2026-01-31')
+		);
+
+		expect(rpc).toHaveBeenCalledWith(
+			'owner_organization_directory',
+			expect.objectContaining({
+				joined_from_filter: '2026-01-05T00:00:00Z',
+				joined_before_filter: '2026-02-01T00:00:00.000Z'
+			})
+		);
+	});
+
+	it('counts a joined preset back from now', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+		const rpc = vi.fn().mockResolvedValue({ data: directoryResult(), error: null });
+		mockedClient.mockReturnValue({ rpc } as never);
+		const before = Date.now();
+
+		await GET(event('http://localhost/api/jafar/organizations?joined=30'));
+
+		const args = rpc.mock.calls[0][1] as {
+			joined_from_filter: string;
+			joined_before_filter?: string;
+		};
+		const expected = before - 30 * 24 * 60 * 60 * 1000;
+		expect(Math.abs(Date.parse(args.joined_from_filter) - expected)).toBeLessThan(5000);
+		expect(args.joined_before_filter).toBeUndefined();
 	});
 });

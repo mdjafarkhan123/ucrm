@@ -34,11 +34,11 @@ describe('jafar query-key factories', () => {
 	});
 
 	it('changes the key when a filter changes', () => {
-		expect(jafarOrganizationsListKey('acme', '')).not.toEqual(
-			jafarOrganizationsListKey('other', '')
+		expect(jafarOrganizationsListKey('search=acme')).not.toEqual(
+			jafarOrganizationsListKey('search=other')
 		);
-		expect(jafarOrganizationsListKey('acme', '')).not.toEqual(
-			jafarOrganizationsListKey('acme', 'access_overdue')
+		expect(jafarOrganizationsListKey('search=acme')).not.toEqual(
+			jafarOrganizationsListKey('search=acme&billing=year')
 		);
 		expect(jafarProspectsListKey('new', '')).not.toEqual(jafarProspectsListKey('awaiting', ''));
 		expect(jafarOperationTargetKey('org-1')).not.toEqual(jafarOperationTargetKey('org-2'));

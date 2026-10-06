@@ -23669,11 +23669,19 @@ export type Database = {
 			};
 			owner_organization_directory: {
 				Args: {
-					attention_reason?: string;
+					attention_filter?: string[];
+					billing_filter?: string;
 					cursor_created_at?: string;
 					cursor_id?: string;
+					joined_before_filter?: string;
+					joined_from_filter?: string;
+					lifecycle_filter?: string[];
+					no_package_filter?: boolean;
+					package_filter?: string[];
 					page_size?: number;
+					renews_filter?: string;
 					search_term?: string;
+					team_size_filter?: string;
 				};
 				Returns: Json;
 			};

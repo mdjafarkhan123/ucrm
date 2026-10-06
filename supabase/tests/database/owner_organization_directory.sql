@@ -8,15 +8,15 @@ select plan(26);
 -- Privileges -------------------------------------------------------------------
 
 select is(
-  has_function_privilege('anon', 'public.owner_organization_directory(text, text, timestamptz, uuid, integer)', 'execute'),
+  has_function_privilege('anon', 'public.owner_organization_directory(text, text[], timestamptz, uuid, integer, text[], uuid[], boolean, text, text, timestamptz, timestamptz, text)', 'execute'),
   false, 'anonymous callers cannot read the organization directory'
 );
 select is(
-  has_function_privilege('authenticated', 'public.owner_organization_directory(text, text, timestamptz, uuid, integer)', 'execute'),
+  has_function_privilege('authenticated', 'public.owner_organization_directory(text, text[], timestamptz, uuid, integer, text[], uuid[], boolean, text, text, timestamptz, timestamptz, text)', 'execute'),
   false, 'contractors cannot read the organization directory'
 );
 select is(
-  has_function_privilege('service_role', 'public.owner_organization_directory(text, text, timestamptz, uuid, integer)', 'execute'),
+  has_function_privilege('service_role', 'public.owner_organization_directory(text, text[], timestamptz, uuid, integer, text[], uuid[], boolean, text, text, timestamptz, timestamptz, text)', 'execute'),
   true, 'the owner service role can read the organization directory'
 );
 
@@ -191,11 +191,11 @@ select is(
 -- Attention filter ---------------------------------------------------------------
 
 select is(
-  (select (public.owner_organization_directory('6f-fixture', 'access_overdue', null, null, 50) -> 'totals' ->> 'matching')::int),
+  (select (public.owner_organization_directory('6f-fixture', array['access_overdue'], null, null, 50) -> 'totals' ->> 'matching')::int),
   2, 'filtering by access_overdue returns only the organizations carrying that reason'
 );
 select is(
-  (select (public.owner_organization_directory('6f-fixture', 'administrator_ownership_unclear', null, null, 50) -> 'totals' ->> 'matching')::int),
+  (select (public.owner_organization_directory('6f-fixture', array['administrator_ownership_unclear'], null, null, 50) -> 'totals' ->> 'matching')::int),
   1, 'filtering by administrator_ownership_unclear returns only the multi-owner organization'
 );
 
