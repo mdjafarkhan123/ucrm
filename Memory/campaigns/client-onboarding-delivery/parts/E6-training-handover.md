@@ -10,13 +10,13 @@
 - [x] Database applied to dev: migration `20261104090000_setup_training_handover` (outcome check: `select version from supabase_migrations.schema_migrations where name = 'setup_training_handover'`); types regenerated
 - [x] Server: shared rules `$lib/setup/training.ts` (+spec), `$lib/server/setup/training.ts` (reads, Live/Delivered/booking/cancel emails, recording-withdrawn alert), Zod schemas, tracker states 10–11, list types
 - [x] Routes. Client: `/api/setup/training` (GET, POST), `/training/skip`, `/training/consent`, `/api/setup/handover`. Jafar: `/api/jafar/organizations/[id]/setup/handover` (GET, POST), `/handover/live`, `/handover/delivered`, `/training/booking`, `/training/cancel`, `/training/recording`
-- [ ] Screens: client training card on Setup (from Ready onward; owner-only skip; consent switch); `/setup/handover` printable page (owners/admins, opens once delivered) plus a Settings card; dashboard SetupCard hides 14 days after delivery (`DELIVERED_CARD_DAYS`); Jafar's `TrainingHandoverPanel` under LaunchApprovalPanel in `ClientSetupAnswers.svelte` (Mark as live, booking, recording, summary + guides, blockers, Mark as delivered, history); query keys and `$lib/setup/api.ts` fetchers; Jafar's list "Show delivered (N)" toggle passing `delivered=1`; ProjectTracker text for live/delivered
-- [ ] `npx svelte-check` (it ran out of memory this session; `tsc` was clean), then route specs like `launch-checks.spec.ts`
-- [ ] Browser-check on Raad LTD, remove test data
+- [x] Screens: Jafar's `TrainingHandoverPanel` (+ `HandoverPackEditor`) under LaunchApprovalPanel; client `TrainingCard` on Setup (from Ready); `/setup/handover` printable page + Settings card; dashboard SetupCard delivered for 14 days; list "Show delivered" toggle; tracker text. Jafar types the training time in the client's time zone (`wallClockToMoment`)
+- [x] svelte-check clean (needs `NODE_OPTIONS=--max-old-space-size=12288`), route specs for both sides; fixed blank values being dropped from three database calls
+- [ ] Browser-check
 
 ## Next
 
-Build the screens, starting with Jafar's panel, then the client training card, handover page, dashboard card, and list toggle. Reuse `OutsideWaits`, `ConfirmDialog`, `SectionBlock`, `TimezonePicker`.
+Browser-check what is reachable without a Ready client: Jafar's Onboarding toggle, `/setup/handover` empty state, Setup page unchanged. The full flow (training card, Jafar's panel, Live → Delivered) needs a client at Ready with an approved preview; Raad LTD is not there yet, so it waits for Jafar's hands-on run with A5.
 
 ## Notes
 
