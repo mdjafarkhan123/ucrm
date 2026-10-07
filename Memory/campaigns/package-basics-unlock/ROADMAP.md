@@ -2,7 +2,7 @@
 
 | Part                         | Delivers                                                                                                                                       | Waits for | Done when                                                                               | State       |
 | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------- | ----------- |
-| 1 Plan: unlocking the basics | Settles which basics stay in every package, the full "needs" list, what a business sees when a feature is off, and moving to a smaller package | —         | Still unclear is empty or holds only what Jafar left for later; Jafar approves the plan | Not started |
+| 1 Plan: unlocking the basics | Settles which basics stay in every package, the full "needs" list, what a business sees when a feature is off, and moving to a smaller package | —         | Still unclear is empty or holds only what Jafar left for later; Jafar approves the plan | Done 2026-10-07 |
 | 2 Split into build parts     | Build parts written into this roadmap, riskiest first                                                                                          | 1         | Jafar approves the part list                                                            | Not started |
 
 **Campaign done-check (Jafar, 2026-10-07):** Jafar builds a package with Review requests and only the basics that

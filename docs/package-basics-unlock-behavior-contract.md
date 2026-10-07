@@ -1,6 +1,6 @@
 # Package basics unlock
 
-**Status:** Planning
+**Status:** Approved by Jafar on 2026-10-07
 
 ## Summary
 
@@ -28,7 +28,7 @@ Agreed with Jafar on 2026-10-07, following software installers and Salesforce CP
 - When a feature needs either of two features and neither is ticked, the builder asks Jafar which one to add.
   It never guesses.
 - Publishing still refuses a package whose needs are not met, as a last safety net.
-- Once this plan is approved, these rules replace the "Every package includes …" rule in the
+- These rules replace the old "Every package includes …" rule in the
   [package builder plan](package-builder-behavior-contract.md).
 
 ## Unlocking the basics one at a time

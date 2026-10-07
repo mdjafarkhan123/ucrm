@@ -9,7 +9,7 @@ Jafar builds named packages by selecting working CRM capabilities and setting us
 ## Builder and catalog
 
 - Only Jafar's platform workspace creates, copies, edits, publishes, archives, restores, orders, and assigns packages. Any number of packages may be named. An offer may be public or private.
-- Every package includes customers and properties, requests, quotes, jobs, invoices, recording of the contractor's customer payments, normal scheduling, and essential customer access to their quotes and invoices.
+- Every package includes Customers, Team, and Dashboard. The other basics start ticked and can be unticked once each is ready, under the rules in the [package basics unlock plan](package-basics-unlock-behavior-contract.md) (Jafar, 2026-10-07).
 - Jafar can separately include sales pipeline, shared inbox, website chat, marketing email, Google review requests, custom automations, and advanced reports. An item appears as sellable only after its actual screens, commands, background work, and access enforcement have been verified. A catalog label alone is insufficient.
 - Without the shared inbox, a contractor has no Inbox and cannot reply, assign, or forward conversations in the app. Quote, invoice, and receipt emails still send, and each customer's messages, including replies, stay readable on that customer's page (Jafar, 2026-09-30, following Jobber, which keeps two-way messaging to its higher plan). Pipeline records keep being created from requests and quotes while Pipeline is off, so switching it on shows current work.
 - The builder explains required supporting capabilities, lets Jafar include them, and refuses to publish a broken combination. It distinguishes business allowances from safety controls that apply to every package.

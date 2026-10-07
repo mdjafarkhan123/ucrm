@@ -7,7 +7,7 @@ Review Generation package itself is later work (`Memory/deferred/review-generati
 
 **In progress:** none
 
-**Next part:** 1 Plan: unlocking the basics — research each of its questions, then ask Jafar in one round.
+**Next part:** 2 Split into build parts — proposed list waits for Jafar (see `parts/2-split.md`).
 
 **Blockers:** none. Build parts that change the package builder wait for the package-builder campaign's P16
 tour.
