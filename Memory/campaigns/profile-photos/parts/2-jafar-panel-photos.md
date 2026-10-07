@@ -15,7 +15,7 @@
 
 ## Next
 
-Code is committed on the branch, with tests passing. Next: check it in the browser from the worktree's dev server on port 5180, as Jafar (`/jafar`) and as Sam Seller: add a photo, see it in the top bar and in Settings → Team, then remove it. Then merge into `main`.
+Code is committed on the branch, with tests passing. Next: check it in the browser from the worktree's dev server on port 5181, as Jafar (`/jafar`) and as Sam Seller: add a photo, see it in the top bar and in Settings → Team, then remove it. Then merge into `main`.
 
 ## Outside actions
 
