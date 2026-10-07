@@ -8,4 +8,4 @@
 
 **Next part:** P4 First release scope, after P3.
 
-**Next:** Jafar chose immediate confirmation by default, clear Busy rules, visitor emails, and phone or Zoom/Google Meet per meeting type. Finish the remaining booking choices in `parts/p3-team-conversion.md`, then ask for approval of the complete product plan. Prospect email automation still waits for a provider-approved route; do not change live mail during planning.
+**Next:** Jafar chose immediate booking by default, clear Busy rules, visitor emails, and phone or Zoom/Google Meet with automatic or custom links. Ask him to approve the behavior plan using `parts/p3-team-conversion.md`; then P4 selects release scope. Prospect email automation waits for a provider-approved route. No live mail changes during planning.

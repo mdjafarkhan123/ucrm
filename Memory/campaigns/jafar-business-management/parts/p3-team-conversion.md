@@ -15,15 +15,15 @@
 - [x] Settle `/jafar` as the only calendar, secure self-reschedule/cancel, configurable meeting types with named eligible hosts, and the six-group Settings home.
 - [x] Settle instant confirmation versus approval, which calendar items block a host, visitor notices, and phone/video choices.
 - [x] Verify Zoom and Google Meet can provide a separate link for each booking; see `docs/research/jafar-video-booking-links-2026-10-07.md`.
-- [ ] Settle how Zoom or Google Meet links are made and delivered.
+- [x] Settle video links: automatic by default, with custom-link mode and one-booking replacement available.
 - [ ] Walk Jafar through the updated product plan and record his approval or corrections.
 
 ## Next
 
-Jafar accepted immediate booking confirmation by default with a setting to require approval; meetings, calendar events, and Busy blocks hide slots, while ordinary tasks do not; confirmation, reminders, and changes email the visitor. He wants each meeting type to choose phone or video, with Zoom and Google Meet as video options. The plan records these choices. Ask the question below and wait. Then update the plan, walk him through it, and seek approval before P4. No coding or live changes.
+Jafar accepted both automatic and manually supplied video links. The plan now makes automatic the default and offers custom-link mode or replacement per booking. It also spells out how pending link details, approval requests, and named hosts work for his review. Ask the plan-approval question below and wait. If approved, record the approval, close P3, and start P4 first-release scope. No coding or live changes.
 
 ## Waiting for Jafar
 
-❓ **Q1 — Video link for a booked call:** Imagine a visitor books Tuesday at 3 pm for a Google Meet call. Should UCRM create a fresh Meet link automatically and email it with the booking confirmation? If you choose Zoom for that meeting type, it would do the same with Zoom. You would connect your chosen provider account once in Booking settings, and UCRM would update or cancel that provider meeting when the booking changes. Or would you rather paste a link into each booking yourself, so UCRM emails it afterward?
+❓ **Q1 — Approve the behavior plan:** Does the complete `/jafar` Business Management plan match how you want to find leads, choose whom to contact, start individual or scheduled outreach, handle replies and sales Deals, book calls, use the organized Settings page, give team access, and hand paid clients into onboarding? For video calls, automatic Zoom/Google Meet links are the default, and you can instead add a custom link for each booking or replace an automatic one. A meeting type has one named default host; if you turn on booking approval, a visitor's requested time is checked again before you approve it. [Read the full plan](/home/jafar-khan/Documents/Projects/Ucrm/docs/jafar-business-management-behavior-contract.md). If anything is wrong, please give me the real scenario and change.
 
-➡️ I recommend automatic links. They fit immediate booking and remove a step you could forget. Your `/jafar` calendar would still decide when you are free; connecting Meet or Zoom for a video link would not make its outside calendar the source of availability.
+➡️ I recommend approving this behavior plan if it matches your intent. We will then choose what belongs in the first release; planning and coding are separate.
