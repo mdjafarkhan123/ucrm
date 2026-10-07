@@ -13465,6 +13465,7 @@ export type Database = {
 					contact_direction: string | null;
 					contact_method_id: string | null;
 					created_at: string;
+					deal_id: string | null;
 					details: Json | null;
 					edited_at: string | null;
 					id: string;
@@ -13481,6 +13482,7 @@ export type Database = {
 					contact_direction?: string | null;
 					contact_method_id?: string | null;
 					created_at?: string;
+					deal_id?: string | null;
 					details?: Json | null;
 					edited_at?: string | null;
 					id?: string;
@@ -13497,6 +13499,7 @@ export type Database = {
 					contact_direction?: string | null;
 					contact_method_id?: string | null;
 					created_at?: string;
+					deal_id?: string | null;
 					details?: Json | null;
 					edited_at?: string | null;
 					id?: string;
@@ -13518,6 +13521,13 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'platform_business_contact_methods';
 						referencedColumns: ['relationship_id', 'id'];
+					},
+					{
+						foreignKeyName: 'platform_business_history_deal_id_fkey';
+						columns: ['deal_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_deals';
+						referencedColumns: ['id'];
 					},
 					{
 						foreignKeyName: 'platform_business_history_relationship_id_fkey';
@@ -13596,6 +13606,131 @@ export type Database = {
 					website_host?: string | null;
 				};
 				Relationships: [];
+			};
+			platform_deal_price_shares: {
+				Row: {
+					actor_email: string;
+					deal_id: string;
+					edition_id: string | null;
+					id: string;
+					link: string;
+					monthly_price_usd_cents: number | null;
+					offers: Json;
+					package_name: string;
+					package_slug: string;
+					position: number;
+					shared_at: string;
+					yearly_price_usd_cents: number | null;
+				};
+				Insert: {
+					actor_email: string;
+					deal_id: string;
+					edition_id?: string | null;
+					id?: string;
+					link: string;
+					monthly_price_usd_cents?: number | null;
+					offers?: Json;
+					package_name: string;
+					package_slug: string;
+					position?: number;
+					shared_at?: string;
+					yearly_price_usd_cents?: number | null;
+				};
+				Update: {
+					actor_email?: string;
+					deal_id?: string;
+					edition_id?: string | null;
+					id?: string;
+					link?: string;
+					monthly_price_usd_cents?: number | null;
+					offers?: Json;
+					package_name?: string;
+					package_slug?: string;
+					position?: number;
+					shared_at?: string;
+					yearly_price_usd_cents?: number | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'platform_deal_price_shares_deal_id_fkey';
+						columns: ['deal_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_deals';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'platform_deal_price_shares_edition_id_fkey';
+						columns: ['edition_id'];
+						isOneToOne: false;
+						referencedRelation: 'package_editions';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			platform_deals: {
+				Row: {
+					agreed_terms: string | null;
+					agreed_terms_at: string | null;
+					agreed_terms_by_email: string | null;
+					created_at: string;
+					created_by_email: string;
+					id: string;
+					lost_at: string | null;
+					lost_by_email: string | null;
+					lost_from_stage: string | null;
+					lost_note: string | null;
+					lost_reason: string | null;
+					relationship_id: string;
+					stage: string;
+					stage_entered_at: string;
+					updated_at: string;
+					value_monthly_usd_cents: number | null;
+				};
+				Insert: {
+					agreed_terms?: string | null;
+					agreed_terms_at?: string | null;
+					agreed_terms_by_email?: string | null;
+					created_at?: string;
+					created_by_email: string;
+					id?: string;
+					lost_at?: string | null;
+					lost_by_email?: string | null;
+					lost_from_stage?: string | null;
+					lost_note?: string | null;
+					lost_reason?: string | null;
+					relationship_id: string;
+					stage: string;
+					stage_entered_at?: string;
+					updated_at?: string;
+					value_monthly_usd_cents?: number | null;
+				};
+				Update: {
+					agreed_terms?: string | null;
+					agreed_terms_at?: string | null;
+					agreed_terms_by_email?: string | null;
+					created_at?: string;
+					created_by_email?: string;
+					id?: string;
+					lost_at?: string | null;
+					lost_by_email?: string | null;
+					lost_from_stage?: string | null;
+					lost_note?: string | null;
+					lost_reason?: string | null;
+					relationship_id?: string;
+					stage?: string;
+					stage_entered_at?: string;
+					updated_at?: string;
+					value_monthly_usd_cents?: number | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'platform_deals_relationship_id_fkey';
+						columns: ['relationship_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_business_relationships';
+						referencedColumns: ['id'];
+					}
+				];
 			};
 			platform_email_template_packages: {
 				Row: {
@@ -14021,8 +14156,8 @@ export type Database = {
 			platform_onboarding_applications: {
 				Row: {
 					billing_interval: string;
-					business_relationship_id: string | null;
 					business_name: string;
+					business_relationship_id: string | null;
 					city_country: string;
 					duplicate_acknowledged_at: string | null;
 					duplicate_acknowledged_by_owner_email: string | null;
@@ -14047,8 +14182,8 @@ export type Database = {
 				};
 				Insert: {
 					billing_interval: string;
-					business_relationship_id?: string | null;
 					business_name: string;
+					business_relationship_id?: string | null;
 					city_country: string;
 					duplicate_acknowledged_at?: string | null;
 					duplicate_acknowledged_by_owner_email?: string | null;
@@ -14073,8 +14208,8 @@ export type Database = {
 				};
 				Update: {
 					billing_interval?: string;
-					business_relationship_id?: string | null;
 					business_name?: string;
+					business_relationship_id?: string | null;
 					city_country?: string;
 					duplicate_acknowledged_at?: string | null;
 					duplicate_acknowledged_by_owner_email?: string | null;
@@ -23894,6 +24029,10 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_business_deals: {
+				Args: { target_relationship_id: string };
+				Returns: Json;
+			};
 			owner_cancel_setup_training: {
 				Args: { actor_email: string; target_organization_id: string };
 				Returns: Json;
@@ -23933,6 +24072,74 @@ export type Database = {
 					target_source_detail?: string;
 					target_trade: string;
 					target_website?: string;
+				};
+				Returns: string;
+			};
+			owner_deal_board: {
+				Args: {
+					cursor_due_on?: string;
+					cursor_id?: string;
+					cursor_lost_at?: string;
+					page_size?: number;
+					target_stage: string;
+				};
+				Returns: Json;
+			};
+			owner_deal_board_summary: { Args: never; Returns: Json };
+			owner_deal_mark_lost: {
+				Args: {
+					actor_email: string;
+					note?: string;
+					reason: string;
+					target_deal_id: string;
+				};
+				Returns: boolean;
+			};
+			owner_deal_move: {
+				Args: {
+					actor_email: string;
+					next_action_mode?: string;
+					target_deal_id: string;
+					target_due_on?: string;
+					target_next_action?: string;
+					target_stage: string;
+				};
+				Returns: boolean;
+			};
+			owner_deal_remove: {
+				Args: { actor_email: string; target_deal_id: string };
+				Returns: boolean;
+			};
+			owner_deal_reopen: {
+				Args: {
+					actor_email: string;
+					target_deal_id: string;
+					target_due_on: string;
+					target_next_action: string;
+				};
+				Returns: boolean;
+			};
+			owner_deal_set_terms: {
+				Args: { actor_email: string; target_deal_id: string; terms: string };
+				Returns: boolean;
+			};
+			owner_deal_share_pricing: {
+				Args: {
+					actor_email: string;
+					follow_up: string;
+					follow_up_on: string;
+					shared_packages: Json;
+					target_deal_id: string;
+				};
+				Returns: boolean;
+			};
+			owner_deal_start: {
+				Args: {
+					actor_email: string;
+					target_due_on: string;
+					target_next_action: string;
+					target_relationship_id: string;
+					target_stage: string;
 				};
 				Returns: string;
 			};
@@ -23997,6 +24204,7 @@ export type Database = {
 					cursor_created_at?: string;
 					cursor_due_on?: string;
 					cursor_id?: string;
+					deal_filter?: string;
 					page_size?: number;
 					search_term?: string;
 					sort_order?: string;
@@ -24018,7 +24226,11 @@ export type Database = {
 				Returns: Json;
 			};
 			owner_lead_review_queue: {
-				Args: { cursor_created_at?: string; cursor_id?: string; page_size?: number };
+				Args: {
+					cursor_created_at?: string;
+					cursor_id?: string;
+					page_size?: number;
+				};
 				Returns: Json;
 			};
 			owner_lead_send_back: {
@@ -24026,7 +24238,12 @@ export type Database = {
 				Returns: string;
 			};
 			owner_lead_set_do_not_contact: {
-				Args: { actor_email: string; reason?: string; target_id: string; turn_on: boolean };
+				Args: {
+					actor_email: string;
+					reason?: string;
+					target_id: string;
+					turn_on: boolean;
+				};
 				Returns: string;
 			};
 			owner_lead_update_details: {

@@ -12,7 +12,6 @@
 -- 6. owner_lead_list: a business with a Deal leaves the Leads list unless asked for.
 --
 -- Won arrives with B5 (payment confirmation). Nothing here sends a message. Platform owner's server only.
-begin;
 
 -- 1. Deals ----------------------------------------------------------------------------------------------------
 
@@ -945,4 +944,3 @@ revoke all on function public.owner_lead_list(text, text[], text[], text[], text
 grant execute on function public.owner_lead_list(text, text[], text[], text[], text, timestamptz, date, uuid, integer, text)
   to service_role;
 
-commit;
