@@ -8,6 +8,10 @@ export const jafarOrganizationsKey = ['jafar', 'organizations'] as const;
 // request it answers can never describe different filters.
 export const jafarOrganizationsListKey = (filters: string) =>
 	['jafar', 'organizations', 'list', filters] as const;
+/** B1: Uplift's own Leads. */
+export const jafarLeadsKey = ['jafar', 'leads'] as const;
+// The list's filters as their query string (see `leadFilterParams`), like the Organizations directory.
+export const jafarLeadsListKey = (filters: string) => ['jafar', 'leads', 'list', filters] as const;
 export const jafarOrganizationKey = (organizationId: string | undefined) =>
 	['jafar', 'organizations', organizationId] as const;
 export const jafarOrganizationAccessKey = (organizationId: string | undefined) =>
