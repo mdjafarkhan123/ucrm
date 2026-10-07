@@ -229,10 +229,13 @@
 								<div class="jafar-team__person-text">
 									<strong>{displayName(member)}</strong>
 									{#if member.full_name}<span>{member.email}</span>{/if}
+									<span class="jafar-team__person-role">{TEAM_ROLE_LABELS[member.role]}</span>
 								</div>
 							</div>
 						</th>
-						<td><Badge dot={false}>{TEAM_ROLE_LABELS[member.role]}</Badge></td>
+						<td class="jafar-team__role"
+							><Badge dot={false}>{TEAM_ROLE_LABELS[member.role]}</Badge></td
+						>
 						<td>
 							{#if member.status === 'active'}
 								<StatusBadge status="success">Active</StatusBadge>
@@ -412,6 +415,10 @@
 			font-weight: 400;
 			overflow-wrap: anywhere;
 		}
+
+		.jafar-team__person-role {
+			display: none;
+		}
 	}
 
 	.jafar-team__status {
@@ -488,6 +495,23 @@
 	@media (max-width: 1023px) {
 		.jafar-team__layout {
 			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+
+	// On a phone the role moves under the name, so status and the actions menu stay on screen.
+	@media (max-width: 489px) {
+		.jafar-team__main :global(th:nth-child(2)),
+		.jafar-team__main :global(.jafar-team__role) {
+			display: none;
+		}
+
+		// A long email wraps instead of pushing status and actions off screen.
+		.jafar-team__main :global(tbody th) {
+			white-space: normal;
+		}
+
+		.jafar-team__person-text .jafar-team__person-role {
+			display: block;
 		}
 	}
 </style>
