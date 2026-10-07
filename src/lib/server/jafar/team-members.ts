@@ -27,6 +27,7 @@ export type TeamMemberSummary = {
 	id: string;
 	email: string;
 	full_name: string | null;
+	avatar_url: string | null;
 	role: TeamRole;
 	status: TeamMemberStatus;
 	invited_at: string;
@@ -85,7 +86,7 @@ export function hashTeamPassword(password: string) {
 }
 
 const SUMMARY_COLUMNS =
-	'id, email, full_name, role, status, invited_at, invitation_expires_at, accepted_at, invited_by_email';
+	'id, email, full_name, avatar_url, role, status, invited_at, invitation_expires_at, accepted_at, invited_by_email';
 
 function toSummary(row: Record<string, unknown>): TeamMemberSummary {
 	return row as unknown as TeamMemberSummary;

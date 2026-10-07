@@ -25,7 +25,8 @@
 		navigation = fallbackContractorNavigation,
 		supportUnread = 0,
 		ownerCanOpen = () => true,
-		ownerNotificationsVisible = true
+		ownerNotificationsVisible = true,
+		ownerPhoto = null
 	}: {
 		children: import('svelte').Snippet;
 		/** An account-wide message shown above every page, such as the overdue-payment banner. */
@@ -48,14 +49,28 @@
 		ownerCanOpen?: (href: string) => boolean;
 		/** Owner variant: the platform alerts bell, which is the owner's alone. */
 		ownerNotificationsVisible?: boolean;
+		/** Owner variant: the signed-in person's own photo — Jafar's, or a teammate's. */
+		ownerPhoto?: { id: string; url: string | null; name: string | null } | null;
 	} = $props();
 	let mobileOpen = $state(false);
 	let sidebarCollapsed = $state(false);
 	let signOutError = $state('');
 	let searchOpen = $state(false);
 	let photoOpen = $state(false);
-	// A contractor's own photo, in the top bar and its menu. The owner's Control Room has no profile row.
-	const photoEditable = $derived(variant === 'contractor' && Boolean(userId) && Boolean(account));
+	// The signed-in person's own photo, in the top bar and its menu. A contractor's lives on their profile;
+	// Jafar and his teammates are separate logins (ADR 0008), so theirs has its own address.
+	const photo = $derived.by(() => {
+		if (variant === 'owner') {
+			return ownerPhoto ? { ...ownerPhoto, endpoint: '/api/jafar/account/photo' } : null;
+		}
+		if (!userId || !account) return null;
+		return {
+			id: userId,
+			url: account.avatarUrl ?? null,
+			name: account.name ?? account.email,
+			endpoint: '/api/profile/photo'
+		};
+	});
 
 	function handleGlobalShortcut(event: KeyboardEvent) {
 		if (variant !== 'contractor' || !userId || event.altKey || event.shiftKey) return;
@@ -215,8 +230,8 @@
 		<Topbar
 			{accountLabel}
 			{account}
-			avatar={photoEditable && userId ? { id: userId, url: account?.avatarUrl ?? null } : null}
-			onEditPhoto={photoEditable ? () => (photoOpen = true) : undefined}
+			avatar={photo}
+			onEditPhoto={photo ? () => (photoOpen = true) : undefined}
 			showSecurityLink={variant === 'contractor'}
 			{isSigningOut}
 			{signOutError}
@@ -239,12 +254,13 @@
 	{#if variant === 'contractor' && userId}
 		<GlobalSearchDialog open={searchOpen} {userId} onClose={() => (searchOpen = false)} />
 	{/if}
-	{#if photoEditable && userId}
+	{#if photo}
 		<ProfilePhotoDialog
 			open={photoOpen}
-			{userId}
-			name={account?.name ?? account?.email ?? null}
-			avatarUrl={account?.avatarUrl ?? null}
+			avatarId={photo.id}
+			name={photo.name}
+			avatarUrl={photo.url}
+			endpoint={photo.endpoint}
 			onClose={() => (photoOpen = false)}
 		/>
 	{/if}

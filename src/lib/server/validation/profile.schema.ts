@@ -18,3 +18,6 @@ export const profilePhotoUploadSchema = z.object({
 		)
 		.refine((file) => file.size <= PROFILE_PHOTO_MAX_BYTES, 'That photo is too large.')
 });
+
+/** Whose Jafar Panel photo: `owner` for Jafar, or a teammate's member id. */
+export const platformPhotoSubjectSchema = z.union([z.literal('owner'), z.uuid()]);

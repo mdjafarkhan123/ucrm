@@ -15,15 +15,19 @@
 	// re-encodes whatever arrives. Like the other settings dialogs it writes straight away.
 	let {
 		open,
-		userId,
+		avatarId,
 		name,
 		avatarUrl,
+		endpoint,
 		onClose
 	}: {
 		open: boolean;
-		userId: string;
+		/** Picks the initials' colour, matching this person's avatar everywhere else. */
+		avatarId: string;
 		name: string | null;
 		avatarUrl: string | null;
+		/** The signed-in person's own photo address: the contractor app's or the Jafar Panel's. */
+		endpoint: string;
 		onClose: () => void;
 	} = $props();
 
@@ -187,7 +191,7 @@
 		}
 		busy = 'save';
 		try {
-			await uploadProfilePhoto(blob);
+			await uploadProfilePhoto(endpoint, blob);
 			await refreshEverywhere();
 			toast.success('Profile photo saved.');
 			busy = null;
@@ -202,7 +206,7 @@
 		error = '';
 		busy = 'remove';
 		try {
-			await removeProfilePhoto();
+			await removeProfilePhoto(endpoint);
 			await refreshEverywhere();
 			toast.success('Profile photo removed.');
 			busy = null;
@@ -285,7 +289,7 @@
 			>
 		{:else}
 			<div class="profile-photo__current">
-				<Avatar id={userId} {name} src={avatarUrl} size="xlarge" />
+				<Avatar id={avatarId} {name} src={avatarUrl} size="xlarge" />
 				<p id="profile-photo-hint" class="profile-photo__hint" tabindex="-1">
 					{avatarUrl
 						? 'Your teammates see this photo next to your name.'

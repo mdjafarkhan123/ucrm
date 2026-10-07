@@ -59,9 +59,10 @@
 
 <ProfilePhotoDialog
 	open={photoOpen}
-	{userId}
+	avatarId={userId}
 	name={page.data.account?.name ?? page.data.account?.email ?? null}
 	{avatarUrl}
+	endpoint="/api/profile/photo"
 	onClose={() => (photoOpen = false)}
 />
 

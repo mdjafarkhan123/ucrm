@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
@@ -13,6 +14,7 @@
 		role: string;
 		created_at: string;
 		full_name: string | null;
+		avatar_url: string | null;
 		email: string | null;
 		permission_overrides: { permission_key: string; override_state: string }[];
 	};
@@ -254,7 +256,17 @@
 		<tbody>
 			{#each members as member (member.user_id)}
 				<tr>
-					<td>{member.full_name ?? 'Unnamed'}</td>
+					<td>
+						<span class="team-access-actions__person">
+							<Avatar
+								id={member.user_id}
+								name={member.full_name ?? member.email}
+								src={member.avatar_url}
+								size="small"
+							/>
+							{member.full_name ?? 'Unnamed'}
+						</span>
+					</td>
 					<td>{member.email ?? 'Not recorded'}</td>
 					<td>
 						{ROLE_LABELS[member.role] ?? member.role}
@@ -423,6 +435,11 @@
 	.team-access-actions td:first-child {
 		color: var(--color-heading);
 		font-weight: 700;
+	}
+	.team-access-actions__person {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-small);
 	}
 	.team-access-actions__overrides {
 		display: flex;

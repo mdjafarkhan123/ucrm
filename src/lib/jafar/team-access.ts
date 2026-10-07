@@ -202,6 +202,15 @@ const ALSO_NEEDS: ReadonlyArray<readonly [JafarArea, PathRule]> = [
 	['applications', { pattern: '/api/jafar/leads/*/applications', subtree: true }]
 ];
 
+/**
+ * Paths open to everyone signed in, whatever their areas: changing their own profile photo, and seeing the
+ * photos of the people they work with. Whose photo changes comes from the session, never the request.
+ */
+const EVERY_SIGNED_IN_PERSON: readonly PathRule[] = [
+	{ pattern: '/api/jafar/account/photo' },
+	{ pattern: '/api/jafar/photos/*' }
+];
+
 const READ_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 function matchesPrefix(pathname: string, prefix: string) {
@@ -309,6 +318,7 @@ function viewerAccess(viewer: JafarViewer & { role: TeamRole }) {
 /** Whether this person may make this request. The owner always may; an unmapped path is owner-only. */
 export function canUseJafarPath(viewer: JafarViewer, pathname: string, method = 'GET') {
 	if (viewer.role === null) return true;
+	if (EVERY_SIGNED_IN_PERSON.some((rule) => matchesRule(pathname, rule))) return true;
 
 	const area = areaForPath(pathname);
 	if (!area) return false;

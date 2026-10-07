@@ -35,7 +35,7 @@
 		notifications?: Snippet;
 		account?: { name: string | null; email: string | null; role: string } | null;
 		/** The signed-in person's own avatar, drawn in place of the generic account icon. */
-		avatar?: { id: string; url: string | null } | null;
+		avatar?: { id: string; url: string | null; name: string | null } | null;
 		/** Opens the profile photo dialog from the account menu. */
 		onEditPhoto?: () => void;
 		showSecurityLink?: boolean;
@@ -121,12 +121,7 @@
 		<DropdownMenu.Trigger class="topbar__account" aria-label={`Account menu for ${accountLabel}`}>
 			{#if avatar}
 				<span class="topbar__avatar" aria-hidden="true">
-					<Avatar
-						id={avatar.id}
-						name={account?.name ?? account?.email ?? null}
-						src={avatar.url}
-						size="medium"
-					/>
+					<Avatar id={avatar.id} name={avatar.name} src={avatar.url} size="medium" />
 				</span>
 			{:else}
 				<span class="topbar__avatar" aria-hidden="true">{@html userIcon}</span>

@@ -14370,6 +14370,8 @@ export type Database = {
 			};
 			platform_owner_settings: {
 				Row: {
+					owner_avatar_object_key: string | null;
+					owner_avatar_url: string | null;
 					alert_recipient_emails: string[];
 					created_at: string;
 					id: boolean;
@@ -14381,6 +14383,8 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
+					owner_avatar_object_key?: string | null;
+					owner_avatar_url?: string | null;
 					alert_recipient_emails?: string[];
 					created_at?: string;
 					id?: boolean;
@@ -14392,6 +14396,8 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
+					owner_avatar_object_key?: string | null;
+					owner_avatar_url?: string | null;
 					alert_recipient_emails?: string[];
 					created_at?: string;
 					id?: boolean;
@@ -14477,6 +14483,8 @@ export type Database = {
 			};
 			platform_team_members: {
 				Row: {
+					avatar_object_key: string | null;
+					avatar_url: string | null;
 					accepted_at: string | null;
 					access_revision: number;
 					action_grants: string[];
@@ -14500,6 +14508,8 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
+					avatar_object_key?: string | null;
+					avatar_url?: string | null;
 					accepted_at?: string | null;
 					access_revision?: number;
 					action_grants?: string[];
@@ -14523,6 +14533,8 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
+					avatar_object_key?: string | null;
+					avatar_url?: string | null;
 					accepted_at?: string | null;
 					access_revision?: number;
 					action_grants?: string[];
@@ -27166,6 +27178,14 @@ export type Database = {
 					target_package_id: string;
 				};
 				Returns: Json;
+			};
+			set_platform_owner_photo: {
+				Args: { new_photo_id?: string };
+				Returns: string;
+			};
+			set_platform_team_member_photo: {
+				Args: { new_photo_id?: string; target_member_id: string };
+				Returns: string;
 			};
 			set_profile_photo: {
 				Args: { new_photo_id?: string; target_user_id: string };
