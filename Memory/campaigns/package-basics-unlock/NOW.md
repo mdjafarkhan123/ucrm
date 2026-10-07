@@ -1,9 +1,9 @@
-# Review Generation package — now
+# Package basics unlock — now
 
-**Goal:** Jafar can sell a reviews-only "Review Generation" package like Review Harvest. A business on it sees
-only what asking for Google reviews needs, and the package builder lets Jafar untick the basics while it
-automatically adds whatever a ticked feature needs.
-**Plan:** `docs/review-generation-package-behavior-contract.md`
+**Goal:** Jafar can build smaller packages by unticking the basics a package does not need. The builder adds
+whatever a ticked feature needs, and a business on such a package sees no trace of what it lacks. The reviews-only
+Review Generation package itself is later work (`Memory/deferred/review-generation-package.md`).
+**Plan:** `docs/package-basics-unlock-behavior-contract.md`
 
 **In progress:** none
 

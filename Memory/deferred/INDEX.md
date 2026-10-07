@@ -40,3 +40,4 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P2 | [Phone and browser push alerts, and per-person notification settings](push-alerts-and-per-person-notification-settings.md) |
 | P2 | [Send a quote by text message](send-a-quote-by-text.md) |
 | P3 | [Recording voice with the microphone, across the whole app](microphone-recording-across-the-app.md) |
+| P2 | [Review Generation package, like Review Harvest (after package-basics-unlock)](review-generation-package.md) |
