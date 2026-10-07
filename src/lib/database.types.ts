@@ -13408,6 +13408,7 @@ export type Database = {
 					normalized_value: string | null;
 					position: number;
 					relationship_id: string;
+					removed_at: string | null;
 					value: string;
 				};
 				Insert: {
@@ -13418,6 +13419,7 @@ export type Database = {
 					normalized_value?: string | null;
 					position?: number;
 					relationship_id: string;
+					removed_at?: string | null;
 					value: string;
 				};
 				Update: {
@@ -13428,6 +13430,7 @@ export type Database = {
 					normalized_value?: string | null;
 					position?: number;
 					relationship_id?: string;
+					removed_at?: string | null;
 					value?: string;
 				};
 				Relationships: [
@@ -23979,6 +23982,15 @@ export type Database = {
 					website?: string;
 				};
 				Returns: Json;
+			};
+			owner_lead_update_details: {
+				Args: {
+					actor_email: string;
+					contact_methods?: Json;
+					fields?: Json;
+					target_id: string;
+				};
+				Returns: string;
 			};
 			owner_mark_setup_delivered: {
 				Args: { actor_email: string; target_organization_id: string };
