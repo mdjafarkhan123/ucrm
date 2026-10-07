@@ -4,8 +4,8 @@
 **Plan:** `docs/jafar-business-management-behavior-contract.md`
 **Planning boundary:** Decide user-facing features, facilities, workflows, behavior, permissions, edge cases, and first release scope in plain language. Do not turn this campaign into a coding or technical implementation plan; that comes only after Jafar approves the product plan and asks for build work.
 
-**In progress:** P3 Team and conversion details. Jafar chose four starting roles despite working alone initially, a `/jafar` sales calendar and reminders, pricing-page links instead of a separate offer document, Sales marking Won only after payment confirmation, and an assigned onboarding owner (Jafar by default). See the plan and `parts/p3-team-conversion.md`.
+**In progress:** P4 First release scope. Jafar approved the complete product behavior plan on 2026-10-07. Choose the first useful, complete workflows and what waits.
 
-**Next part:** P4 First release scope, after P3.
+**Next part:** P4 First release scope.
 
-**Next:** Jafar chose immediate booking by default, clear Busy rules, visitor emails, and phone or Zoom/Google Meet with automatic or custom links. Ask him to approve the behavior plan using `parts/p3-team-conversion.md`; then P4 selects release scope. Prospect email automation waits for a provider-approved route. No live mail changes during planning.
+**Next:** Use the approved plan, `ROADMAP.md`, and current readiness research to propose a first release with complete user journeys. Ask Jafar which capabilities must ship first. Prospect email automation waits for a provider-approved route. No coding or live mail changes during planning.

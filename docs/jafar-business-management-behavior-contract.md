@@ -1,6 +1,6 @@
 # Jafar Business Management
 
-**Status:** Product planning — the lead-to-client journey and first useful release direction were approved by Jafar on 2026-10-06. The complete behavior plan is awaiting Jafar's review; exact first release scope is the next planning part. This plan describes what people can do and how the business workflow behaves; it is not a coding plan and authorizes no build.
+**Status:** Product behavior approved by Jafar on 2026-10-07. The exact first release scope remains a separate planning decision. This plan describes what people can do and how the business workflow behaves; it is not a coding plan and authorizes no build.
 
 ## The vision
 
