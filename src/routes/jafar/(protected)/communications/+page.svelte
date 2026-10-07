@@ -25,7 +25,11 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
-	import { jafarEmailHealthKey, jafarSmsWorkerHealthKey } from '$lib/jafar/query-keys';
+	import {
+		jafarEmailHealthKey,
+		jafarSettingsKey,
+		jafarSmsWorkerHealthKey
+	} from '$lib/jafar/query-keys';
 
 	type PlatformPause = {
 		id: string;
@@ -118,6 +122,8 @@
 			},
 			onSuccess: (next, variables) => {
 				applyHealth(next);
+				// The Settings home marks Email safety while all email is paused.
+				void queryClient.invalidateQueries({ queryKey: jafarSettingsKey, exact: true });
 				closeDialog();
 				toast.success(
 					variables.engage ? 'All email sending is paused.' : 'Email sending has resumed.'

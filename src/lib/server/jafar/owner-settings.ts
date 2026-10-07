@@ -31,3 +31,29 @@ export async function getOrCreateOwnerSettings(client: SupabaseClient<Database>)
 
 	return data;
 }
+
+/**
+ * What the Settings home flags beside the setting it concerns: all email paused for every organization,
+ * and organization deletions whose outside cleanup failed and waits for a retry. Both are small reads —
+ * at most one active platform pause exists, and failed receipts are rare.
+ */
+export async function readOwnerSettingsAttention(client: SupabaseClient<Database>) {
+	const [pause, cleanups] = await Promise.all([
+		client
+			.from('communication_email_sending_pauses')
+			.select('id', { count: 'exact', head: true })
+			.eq('scope', 'platform')
+			.is('released_at', null),
+		client
+			.from('organization_deletion_receipts')
+			.select('operation_id', { count: 'exact', head: true })
+			.eq('status', 'failed_partial')
+	]);
+	if (pause.error) throw pause.error;
+	if (cleanups.error) throw cleanups.error;
+
+	return {
+		email_sending_paused: (pause.count ?? 0) > 0,
+		unfinished_cleanups: cleanups.count ?? 0
+	};
+}

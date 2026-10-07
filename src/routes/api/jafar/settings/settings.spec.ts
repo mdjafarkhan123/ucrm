@@ -26,6 +26,32 @@ const validSettings = {
 	alert_recipient_emails: ['owner@example.com']
 };
 
+// The Settings home's two attention reads: an awaitable count query, whatever filters are chained on it.
+function countQuery(count: number) {
+	const result = { count, error: null };
+	const chain: Record<string, unknown> = {
+		eq: () => chain,
+		is: () => chain,
+		then: (resolve: (value: typeof result) => unknown) => Promise.resolve(result).then(resolve)
+	};
+	return chain;
+}
+
+function settingsClient(
+	settingsTable: Record<string, unknown>,
+	counts: { pauses?: number; cleanups?: number } = {}
+) {
+	return {
+		from: (table: string) => {
+			if (table === 'communication_email_sending_pauses')
+				return { select: () => countQuery(counts.pauses ?? 0) };
+			if (table === 'organization_deletion_receipts')
+				return { select: () => countQuery(counts.cleanups ?? 0) };
+			return settingsTable;
+		}
+	} as never;
+}
+
 function getEvent(url = 'http://localhost/api/jafar/settings') {
 	return { url: new URL(url), params: {}, cookies: {} } as Parameters<typeof GET>[0];
 }
@@ -66,9 +92,9 @@ describe('platform owner settings API boundary', () => {
 				data: { ...validSettings, updated_at: '2026-08-12T00:00:00Z' },
 				error: null
 			});
-			mockedClient.mockReturnValue({
-				from: () => ({ upsert, select: () => ({ eq: () => ({ single }) }) })
-			} as never);
+			mockedClient.mockReturnValue(
+				settingsClient({ upsert, select: () => ({ eq: () => ({ single }) }) })
+			);
 
 			const response = await GET(getEvent());
 
@@ -79,6 +105,31 @@ describe('platform owner settings API boundary', () => {
 			);
 			const body = await response.json();
 			expect(body.settings.reply_to_address).toBe('hello@example.com');
+			expect(body.attention).toEqual({ email_sending_paused: false, unfinished_cleanups: 0 });
+		});
+
+		it('reports a platform email pause and unfinished cleanups for the Settings home', async () => {
+			mockedOwnerSession.mockResolvedValue({
+				email: 'owner@example.com',
+				sessionId: 'session-id'
+			});
+			const single = vi.fn().mockResolvedValue({
+				data: { ...validSettings, updated_at: '2026-08-12T00:00:00Z' },
+				error: null
+			});
+			mockedClient.mockReturnValue(
+				settingsClient(
+					{
+						upsert: vi.fn().mockResolvedValue({ error: null }),
+						select: () => ({ eq: () => ({ single }) })
+					},
+					{ pauses: 1, cleanups: 2 }
+				)
+			);
+
+			const body = await (await GET(getEvent())).json();
+
+			expect(body.attention).toEqual({ email_sending_paused: true, unfinished_cleanups: 2 });
 		});
 
 		it('returns a safe error when the read fails', async () => {
@@ -86,8 +137,8 @@ describe('platform owner settings API boundary', () => {
 				email: 'owner@example.com',
 				sessionId: 'session-id'
 			});
-			mockedClient.mockReturnValue({
-				from: () => ({
+			mockedClient.mockReturnValue(
+				settingsClient({
 					upsert: vi.fn().mockResolvedValue({ error: null }),
 					select: () => ({
 						eq: () => ({
@@ -95,7 +146,7 @@ describe('platform owner settings API boundary', () => {
 						})
 					})
 				})
-			} as never);
+			);
 
 			const response = await GET(getEvent());
 
@@ -141,7 +192,9 @@ describe('platform owner settings API boundary', () => {
 				sessionId: 'session-id'
 			});
 
-			const response = await PATCH(patchEvent({ ...validSettings, reply_to_address: 'not-an-email' }));
+			const response = await PATCH(
+				patchEvent({ ...validSettings, reply_to_address: 'not-an-email' })
+			);
 
 			expect(response.status).toBe(422);
 			const body = await response.json();
@@ -200,6 +253,62 @@ describe('platform owner settings API boundary', () => {
 				new_reply_to_address: validSettings.reply_to_address,
 				new_alert_recipient_emails: validSettings.alert_recipient_emails
 			});
+		});
+
+		it('saves one section alone, sending null for every field it left out', async () => {
+			mockedOwnerSession.mockResolvedValue({
+				email: 'owner@example.com',
+				sessionId: 'session-id'
+			});
+			const rpc = vi.fn().mockResolvedValue({
+				data: {
+					...validSettings,
+					sender_display_name: 'Uplift',
+					updated_at: '2026-08-12T01:00:00Z'
+				},
+				error: null
+			});
+			mockedClient.mockReturnValue({ rpc } as never);
+
+			const response = await PATCH(
+				patchEvent({ sender_display_name: 'Uplift', reply_to_address: 'Hello@Example.com' })
+			);
+
+			expect(response.status).toBe(200);
+			expect(rpc).toHaveBeenCalledWith('update_owner_settings', {
+				actor_email: 'owner@example.com',
+				new_privacy_policy_url: null,
+				new_privacy_policy_version: null,
+				new_payment_instructions: null,
+				new_sender_display_name: 'Uplift',
+				new_reply_to_address: 'hello@example.com',
+				new_alert_recipient_emails: null
+			});
+		});
+
+		it('rejects an empty body and fields it does not know', async () => {
+			mockedOwnerSession.mockResolvedValue({
+				email: 'owner@example.com',
+				sessionId: 'session-id'
+			});
+
+			expect((await PATCH(patchEvent({}))).status).toBe(422);
+			expect((await PATCH(patchEvent({ sender_display_name: 'Uplift', extra: 1 }))).status).toBe(
+				422
+			);
+			expect(mockedClient).not.toHaveBeenCalled();
+		});
+
+		it('still refuses to clear a field it was sent', async () => {
+			mockedOwnerSession.mockResolvedValue({
+				email: 'owner@example.com',
+				sessionId: 'session-id'
+			});
+
+			const response = await PATCH(patchEvent({ sender_display_name: '   ' }));
+
+			expect(response.status).toBe(422);
+			expect((await response.json()).field_errors.sender_display_name).toBeDefined();
 		});
 	});
 });

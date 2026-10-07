@@ -1,469 +1,254 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
-	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
-	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
-	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
-	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import { goto } from '$app/navigation';
+	import { createQuery } from '@tanstack/svelte-query';
+	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import searchIcon from '@tabler/icons/outline/search.svg?raw';
+	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
+	import SettingsDestinationCard from '$lib/components/settings/SettingsDestinationCard.svelte';
+	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
+	import Banner from '$lib/components/ui/Banner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import { jafarSettingsKey } from '$lib/jafar/query-keys';
+	import {
+		fetchOwnerSettings,
+		searchSettings,
+		settingsGroups,
+		type SettingsDestination
+	} from '$lib/jafar/owner-settings';
 
-	const queryClient = useQueryClient();
-	const toast = getToastManager();
+	// The directory is fixed, so every group and card draws at once; only the "needs attention" marks wait
+	// for the saved values, and fill in when they arrive.
+	const query = createQuery(() => ({ queryKey: jafarSettingsKey, queryFn: fetchOwnerSettings }));
 
-	type OwnerSettings = {
-		privacy_policy_url: string;
-		privacy_policy_version: string;
-		payment_instructions: string;
-		sender_display_name: string;
-		reply_to_address: string;
-		alert_recipient_emails: string[];
-		updated_at: string;
-	};
-	type SettingsResponse = { settings: OwnerSettings; error?: string };
-	type MutationResponse = {
-		settings?: OwnerSettings;
-		error?: string;
-		field_errors?: Record<string, string>;
-	};
-	type SettingsDraft = Omit<OwnerSettings, 'updated_at'>;
+	let search = $state('');
+	const searching = $derived(search.trim() !== '');
+	const groups = $derived(searchSettings(settingsGroups, search));
+	const firstResult = $derived(groups[0]?.destinations[0]);
 
-	let initialized = $state(false);
-	let privacyPolicyUrl = $state('');
-	let privacyPolicyVersion = $state('');
-	let paymentInstructions = $state('');
-	let senderDisplayName = $state('');
-	let replyToAddress = $state('');
-	let alertRecipientEmails = $state<string[]>([]);
-	let savedDraft = $state<SettingsDraft | null>(null);
-	let actionError = $state('');
-	let fieldErrors = $state<Record<string, string>>({});
-	let isDirty = $derived(
-		savedDraft !== null && JSON.stringify(savedDraft) !== JSON.stringify(getDraft())
+	function statusOf(destination: SettingsDestination) {
+		return query.data ? destination.status?.(query.data) : undefined;
+	}
+
+	const needsAttention = $derived(
+		settingsGroups.flatMap((group) =>
+			group.destinations.filter((destination) => statusOf(destination) !== undefined)
+		)
 	);
 
-	function getDraft(): SettingsDraft {
-		return {
-			privacy_policy_url: privacyPolicyUrl,
-			privacy_policy_version: privacyPolicyVersion,
-			payment_instructions: paymentInstructions,
-			sender_display_name: senderDisplayName,
-			reply_to_address: replyToAddress,
-			alert_recipient_emails: alertRecipientEmails.map((email) => email.trim()).filter(Boolean)
-		};
-	}
-
-	function draftFromSettings(data: OwnerSettings): SettingsDraft {
-		return {
-			privacy_policy_url: data.privacy_policy_url,
-			privacy_policy_version: data.privacy_policy_version,
-			payment_instructions: data.payment_instructions,
-			sender_display_name: data.sender_display_name,
-			reply_to_address: data.reply_to_address,
-			alert_recipient_emails: data.alert_recipient_emails
-		};
-	}
-
-	const settings = createQuery<SettingsResponse>(() => ({
-		queryKey: jafarSettingsKey,
-		queryFn: async () => {
-			const response = await fetch('/api/jafar/settings');
-			const result = (await response.json()) as SettingsResponse;
-			if (!response.ok) throw new Error(result.error ?? 'Settings could not be loaded.');
-			return result;
-		}
-	}));
-
-	$effect(() => {
-		const data = settings.data?.settings;
-		if (data && !initialized) {
-			privacyPolicyUrl = data.privacy_policy_url;
-			privacyPolicyVersion = data.privacy_policy_version;
-			paymentInstructions = data.payment_instructions;
-			senderDisplayName = data.sender_display_name;
-			replyToAddress = data.reply_to_address;
-			alertRecipientEmails = data.alert_recipient_emails.length
-				? [...data.alert_recipient_emails]
-				: [''];
-			savedDraft = draftFromSettings(data);
-			initialized = true;
-		}
-	});
-
-	const save = createMutation<MutationResponse, Error, void>(() => ({
-		mutationFn: async () => {
-			const response = await fetch('/api/jafar/settings', {
-				method: 'PATCH',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({
-					privacy_policy_url: privacyPolicyUrl,
-					privacy_policy_version: privacyPolicyVersion,
-					payment_instructions: paymentInstructions,
-					sender_display_name: senderDisplayName,
-					reply_to_address: replyToAddress,
-					alert_recipient_emails: alertRecipientEmails.map((email) => email.trim()).filter(Boolean)
-				})
-			});
-			const result = (await response.json()) as MutationResponse;
-			if (!response.ok) {
-				fieldErrors = result.field_errors ?? {};
-				throw new Error(result.error ?? 'Settings could not be saved.');
-			}
-			return result;
-		},
-		onMutate: () => clearFeedback(),
-		onError: (error) => (actionError = error.message),
-		onSuccess: (result) => {
-			toast.success('Settings saved.');
-			savedDraft = result.settings ? draftFromSettings(result.settings) : getDraft();
-			void queryClient.invalidateQueries({ queryKey: jafarSettingsKey });
-		}
-	}));
-
-	function clearFeedback() {
-		actionError = '';
-		fieldErrors = {};
-	}
-
-	function addAlertRecipient() {
-		alertRecipientEmails = [...alertRecipientEmails, ''];
-	}
-
-	function removeAlertRecipient(index: number) {
-		alertRecipientEmails = alertRecipientEmails.filter((_, current) => current !== index);
-	}
-
-	function formatDate(value: string) {
-		return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(
-			new Date(value)
-		);
+	// Enter opens the best match, so "sender ⏎" goes straight to the setting.
+	function openFirstResult(event: KeyboardEvent) {
+		if (event.key !== 'Enter' || !searching || !firstResult) return;
+		event.preventDefault();
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- the directory's links are resolved where they are defined.
+		void goto(firstResult.href);
 	}
 </script>
 
 <svelte:head><title>Settings · Control Room</title></svelte:head>
 
-<!-- eslint-disable svelte/no-at-html-tags -->
-<main class="owner-settings">
-	<header class="owner-settings__header">
-		<div>
-			<p class="owner-settings__eyebrow">Platform configuration</p>
-			<h1>Settings</h1>
-			<p class="owner-settings__description">
-				The payment instructions, privacy-policy link, and email details shown to prospects and used
-				for owner alerts.
-			</p>
-		</div>
-	</header>
+<main class="jafar-settings">
+	<PageHeader
+		eyebrow="Control Room"
+		title="Settings"
+		description="How Uplift and the platform are set up — find a setting by what it does."
+	/>
 
-	{#if actionError}<p class="owner-settings__feedback owner-settings__feedback--error" role="alert">
-			{actionError}
-		</p>{/if}
-
-	{#if settings.isPending}
-		<LoadingSkeleton variant="table" rows={5} label="Loading settings" />
-	{:else if settings.isError}
-		<ErrorState
-			title="Settings could not be loaded"
-			description={settings.error.message}
-			retry={() => settings.refetch()}
+	<div class="jafar-settings__tools">
+		<SearchInput
+			id="settings-search"
+			bind:value={search}
+			placeholder="Search settings"
+			ariaLabel="Search settings"
+			class="jafar-settings__search"
+			onkeydown={openFirstResult}
 		/>
-	{:else}
-		<form
-			class="owner-settings__form"
-			onsubmit={(event) => {
-				event.preventDefault();
-				save.mutate();
-			}}
-		>
-			<section class="owner-settings__section">
-				<h2>Privacy policy</h2>
-				<div class="owner-settings__grid">
-					<label
-						><span>Privacy-policy URL</span><input
-							type="url"
-							bind:value={privacyPolicyUrl}
-							required
-							maxlength="500"
-						/>{#if fieldErrors.privacy_policy_url}<small class="owner-settings__field-error"
-								>{fieldErrors.privacy_policy_url}</small
-							>{/if}</label
-					>
-					<label
-						><span>Privacy-policy version</span><input
-							bind:value={privacyPolicyVersion}
-							required
-							maxlength="40"
-						/>{#if fieldErrors.privacy_policy_version}<small class="owner-settings__field-error"
-								>{fieldErrors.privacy_policy_version}</small
-							>{/if}</label
-					>
-				</div>
-			</section>
+		{#if !searching}
+			<nav class="jafar-settings__jump" aria-label="Settings groups">
+				{#each settingsGroups as group (group.id)}
+					<a href={`#${group.id}`}>{group.title}</a>
+				{/each}
+			</nav>
+		{/if}
+	</div>
 
-			<section class="owner-settings__section">
-				<h2>Payment instructions</h2>
-				<p class="owner-settings__hint">
-					Shown on the application-received page and in the receipt email. Do not include the
-					package name or price here — those are inserted automatically.
-				</p>
-				<label class="owner-settings__wide"
-					><span>Instructions</span><textarea
-						bind:value={paymentInstructions}
-						required
-						maxlength="5000"></textarea>{#if fieldErrors.payment_instructions}<small
-							class="owner-settings__field-error">{fieldErrors.payment_instructions}</small
-						>{/if}</label
-				>
-			</section>
-
-			<section class="owner-settings__section">
-				<h2>Outgoing email</h2>
-				<div class="owner-settings__grid">
-					<label
-						><span>Sender display name</span><input
-							bind:value={senderDisplayName}
-							required
-							maxlength="200"
-						/>{#if fieldErrors.sender_display_name}<small class="owner-settings__field-error"
-								>{fieldErrors.sender_display_name}</small
-							>{/if}</label
-					>
-					<label
-						><span>Reply-to address</span><input
-							type="email"
-							bind:value={replyToAddress}
-							required
-							maxlength="254"
-						/>{#if fieldErrors.reply_to_address}<small class="owner-settings__field-error"
-								>{fieldErrors.reply_to_address}</small
-							>{/if}</label
-					>
-				</div>
-			</section>
-
-			<section class="owner-settings__section">
-				<h2>Owner alert recipients</h2>
-				<p class="owner-settings__hint">
-					These addresses get emailed when a new application arrives or something needs attention.
-				</p>
-				<div class="owner-settings__recipients">
-					{#each alertRecipientEmails as email, index (index)}
-						<div class="owner-settings__recipient-row">
-							<input
-								type="email"
-								value={email}
-								required
-								maxlength="254"
-								placeholder="owner@example.com"
-								oninput={(event) =>
-									(alertRecipientEmails = alertRecipientEmails.map((current, currentIndex) =>
-										currentIndex === index ? event.currentTarget.value : current
-									))}
-							/>
-							<Button
-								type="button"
-								variant="tertiary"
-								disabled={alertRecipientEmails.length <= 1}
-								onclick={() => removeAlertRecipient(index)}
-								><span aria-hidden="true">{@html trashIcon}</span>Remove</Button
-							>
-						</div>
-					{/each}
-				</div>
-				{#if fieldErrors.alert_recipient_emails}<small class="owner-settings__field-error"
-						>{fieldErrors.alert_recipient_emails}</small
-					>{/if}
-				<Button type="button" variant="tertiary" onclick={addAlertRecipient}>Add email</Button>
-			</section>
-
-			<footer class="owner-settings__actions">
-				{#if settings.data}<p class="owner-settings__updated">
-						Last saved {formatDate(settings.data.settings.updated_at)}
-					</p>{/if}
-				<Button type="submit" loading={save.isPending} disabled={save.isPending || !isDirty}
-					>Save settings</Button
-				>
-			</footer>
-		</form>
+	{#if !searching && needsAttention.length > 0}
+		<Banner type="warning" icon={alertTriangleIcon}>
+			<p class="jafar-settings__attention">
+				{needsAttention.length === 1
+					? '1 setting needs attention:'
+					: `${needsAttention.length} settings need attention:`}
+				{#each needsAttention as destination, index (destination.id)}
+					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- the directory's links are resolved where they are defined. -->
+					<a href={destination.href}>{destination.title}</a>{index < needsAttention.length - 1
+						? ', '
+						: ''}
+				{/each}
+			</p>
+		</Banner>
+	{:else if query.isError && !query.data}
+		<Banner type="notice">
+			<p class="jafar-settings__attention">
+				Could not check which settings need attention. Every setting still opens as normal.
+			</p>
+			{#snippet action()}
+				<Button size="small" variant="secondary" onclick={() => query.refetch()}>Try again</Button>
+			{/snippet}
+		</Banner>
 	{/if}
 
-	<section class="owner-settings__section">
-		<h2>Organization cleanup</h2>
-		<p class="owner-settings__hint">
-			Organizations currently in their 30-day recovery window after closure, with an option to
-			delete one early.
-		</p>
-		<a class="owner-settings__cleanup-link" href={resolve('/jafar/settings/cleanup')}
-			>View cleanup queue <span aria-hidden="true">{@html arrowRightIcon}</span></a
+	{#if groups.length === 0}
+		<EmptyState
+			title={`No settings match “${search.trim()}”`}
+			description="Try another word for what you want to change, like “email” or “payment”."
+			icon={searchIcon}
 		>
-	</section>
+			{#snippet action()}
+				<Button variant="secondary" onclick={() => (search = '')}>Clear search</Button>
+			{/snippet}
+		</EmptyState>
+	{:else}
+		<div class="jafar-settings__groups">
+			{#each groups as group (group.id)}
+				<SectionBlock
+					title={group.title}
+					hint={group.destinations.length > 0 ? group.hint : undefined}
+					icon={group.icon}
+					id={group.id}
+					level={2}
+				>
+					{#if group.destinations.length > 0}
+						<div class="jafar-settings__grid">
+							{#each group.destinations as destination (destination.id)}
+								<SettingsDestinationCard
+									href={destination.href}
+									icon={destination.icon}
+									title={destination.title}
+									description={destination.description}
+									status={statusOf(destination)}
+								/>
+							{/each}
+						</div>
+					{:else}
+						<p class="jafar-settings__upcoming">{group.upcoming}</p>
+					{/if}
+				</SectionBlock>
+			{/each}
+		</div>
+	{/if}
 </main>
 
-<!-- eslint-enable svelte/no-at-html-tags -->
-
 <style lang="scss">
-	.owner-settings {
+	.jafar-settings {
+		--section-block-notch: var(--color-surface);
+		display: flex;
 		min-width: 0;
-		display: grid;
+		flex-direction: column;
 		gap: var(--space-large);
 	}
-	.owner-settings__header {
-		padding-bottom: var(--space-large);
-		border-bottom: var(--border-base) solid var(--color-border);
-	}
-	.owner-settings__eyebrow {
-		margin: 0 0 var(--space-small);
-		color: var(--color-interactive);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 700;
-		letter-spacing: var(--typography--letterSpacing-loose);
-		text-transform: uppercase;
-	}
-	h1,
-	h2,
-	p {
-		margin: 0;
-	}
-	h1 {
-		color: var(--color-heading);
-		font-family: var(--typography--fontFamily-display);
-		font-size: var(--typography--fontSize-jumbo);
-		font-weight: 900;
-		line-height: var(--typography--lineHeight-minuscule);
-	}
-	h2 {
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-large);
-		line-height: var(--typography--lineHeight-tightest);
-	}
-	.owner-settings__description {
-		max-width: 65ch;
-		margin-top: var(--space-small);
-		color: var(--color-text--secondary);
-		line-height: var(--typography--lineHeight-large);
-	}
-	.owner-settings__feedback {
-		padding: var(--space-small) var(--space-base);
-		border-radius: var(--radius-base);
-	}
-	.owner-settings__feedback--error {
-		color: var(--color-critical--onSurface);
-		background: var(--color-critical--surface);
-	}
-	.owner-settings__form {
-		display: grid;
-		gap: var(--space-large);
-	}
-	.owner-settings__section {
-		display: grid;
-		gap: var(--space-base);
-		padding: var(--space-large);
+
+	.jafar-settings__tools {
+		position: sticky;
+		top: var(--space-base);
+		z-index: var(--elevation-base);
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-small);
+		padding: var(--space-small);
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 		background: var(--color-surface);
-		box-shadow: var(--shadow-low);
 	}
-	.owner-settings__hint {
+
+	.jafar-settings__tools :global(.jafar-settings__search) {
+		flex: 1 1 280px;
+		max-width: 420px;
+	}
+
+	.jafar-settings__jump {
+		display: flex;
+		min-width: 0;
+		flex: 1 1 auto;
+		gap: var(--space-smaller);
+		overflow-x: auto;
+		scrollbar-width: none;
+
+		a {
+			flex: 0 0 auto;
+			padding: var(--space-small) var(--space-base);
+			border-radius: var(--radius-large);
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+			text-decoration: none;
+			white-space: nowrap;
+
+			&:hover {
+				color: var(--color-heading);
+				background: var(--color-surface--hover);
+			}
+
+			&:focus-visible {
+				outline: none;
+				box-shadow: var(--shadow-focus);
+			}
+		}
+	}
+
+	.jafar-settings__attention {
+		margin: 0;
+
+		a {
+			color: inherit;
+			font-weight: 700;
+		}
+	}
+
+	.jafar-settings__groups {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-larger);
+	}
+
+	.jafar-settings__grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: var(--space-base);
+	}
+
+	.jafar-settings__upcoming {
+		margin: 0;
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 	}
-	.owner-settings__grid {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: var(--space-base);
+
+	:global(.jafar-settings__groups section[id]) {
+		scroll-margin-top: calc(var(--space-largest) * 2);
 	}
-	.owner-settings__wide {
-		grid-column: 1 / -1;
+
+	@media (max-width: 1079px) {
+		.jafar-settings__grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
 	}
-	label {
-		display: grid;
-		gap: var(--space-small);
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-base);
-		font-weight: 600;
-	}
-	input,
-	textarea {
-		width: 100%;
-		min-height: 40px;
-		box-sizing: border-box;
-		padding: var(--space-small);
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		color: var(--color-text);
-		background: var(--color-surface);
-		font: inherit;
-	}
-	textarea {
-		min-height: 120px;
-		resize: vertical;
-	}
-	input:focus-visible,
-	textarea:focus-visible {
-		outline: none;
-		border-color: var(--color-interactive);
-		box-shadow: var(--shadow-focus);
-	}
-	.owner-settings__cleanup-link {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-smallest);
-		width: fit-content;
-		color: var(--color-interactive);
-		font-weight: 600;
-		text-decoration: none;
-	}
-	.owner-settings__cleanup-link:hover {
-		text-decoration: underline;
-	}
-	.owner-settings__cleanup-link :global(svg) {
-		width: 16px;
-		height: 16px;
-	}
-	.owner-settings__field-error {
-		color: var(--color-critical);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 400;
-	}
-	.owner-settings__recipients {
-		display: grid;
-		gap: var(--space-small);
-	}
-	.owner-settings__recipient-row {
-		display: flex;
-		gap: var(--space-small);
-		align-items: center;
-	}
-	.owner-settings__recipient-row input {
-		flex: 1;
-	}
-	.owner-settings__recipient-row :global(svg) {
-		width: 18px;
-		height: 18px;
-	}
-	.owner-settings__actions {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: flex-end;
-		align-items: center;
-		gap: var(--space-base);
-	}
-	.owner-settings__updated {
-		margin-right: auto;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-	}
-	@media (max-width: 767px) {
-		.owner-settings__grid {
+
+	@media (max-width: 639px) {
+		.jafar-settings {
+			gap: var(--space-base);
+		}
+
+		.jafar-settings__tools {
+			position: static;
+		}
+
+		.jafar-settings__tools :global(.jafar-settings__search) {
+			max-width: none;
+		}
+
+		.jafar-settings__grid {
 			grid-template-columns: 1fr;
-		}
-		.owner-settings__actions {
-			align-items: stretch;
-			flex-direction: column;
-		}
-		.owner-settings__updated {
-			margin-right: 0;
 		}
 	}
 </style>

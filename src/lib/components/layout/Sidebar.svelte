@@ -36,6 +36,8 @@
 		icon: string;
 		unavailable?: boolean;
 		count?: number;
+		/** Other pages that belong to this item, so it stays highlighted while one of them is open. */
+		matches?: string[];
 	};
 	export type NavGroup = { label?: string; items: NavItem[] };
 
@@ -94,7 +96,9 @@
 			.filter(
 				(item) =>
 					!item.unavailable &&
-					(pathname === item.href || (item.href !== '/' && pathname.startsWith(`${item.href}/`)))
+					[item.href, ...(item.matches ?? [])].some(
+						(href) => pathname === href || (href !== '/' && pathname.startsWith(`${href}/`))
+					)
 			)
 			.sort((left, right) => right.href.length - left.href.length)[0]?.href;
 	});

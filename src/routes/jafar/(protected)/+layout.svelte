@@ -112,7 +112,11 @@
 		if (pathname === '/jafar/communications') {
 			return hasCachedData(jafarEmailHealthKey);
 		}
+		// The Settings home draws its directory without waiting for data.
 		if (pathname === '/jafar/settings') {
+			return true;
+		}
+		if (pathname.startsWith('/jafar/settings/') && pathname !== '/jafar/settings/cleanup') {
 			return hasCachedData(jafarSettingsKey);
 		}
 		if (pathname === '/jafar/support') {
