@@ -100,7 +100,7 @@ describe('Lead page GET', () => {
 
 	it('names who did each thing and hides the cursor behind an opaque string', async () => {
 		signedIn();
-		const rpc = rpcReturning({
+		const leadPage = {
 			lead: { id: LEAD_ID },
 			contact_methods: [],
 			applications: [],
@@ -115,7 +115,15 @@ describe('Lead page GET', () => {
 				],
 				next_cursor: { occurred_at: '2026-10-07T03:00:00Z', id: ENTRY_ID }
 			}
-		});
+		};
+		// No Deals and no Client box: only the page itself answers.
+		const rpc = rpcReturning(null);
+		rpc.mockImplementation((name: string) =>
+			Promise.resolve({
+				data: name === 'owner_lead_page' ? leadPage : name === 'owner_business_deals' ? [] : null,
+				error: null
+			})
+		);
 		const response = await GET_PAGE(event({ id: LEAD_ID }));
 		expect(rpc).toHaveBeenCalledWith('owner_lead_page', { target_id: LEAD_ID });
 		const page = await response.json();
@@ -144,7 +152,7 @@ describe('Client box (B5)', () => {
 		setup_owner: null
 	};
 
-	function pageWithClient() {
+	function pageWithClient(deals: unknown[] = []) {
 		const rpc = vi.fn((name: string) =>
 			Promise.resolve({
 				data:
@@ -155,7 +163,7 @@ describe('Client box (B5)', () => {
 								history: { entries: [], next_cursor: null }
 							}
 						: name === 'owner_business_deals'
-							? []
+							? deals
 							: WON,
 				error: null
 			})
@@ -190,6 +198,13 @@ describe('Client box (B5)', () => {
 		expect(page.client.won_at).toBe(WON.won_at);
 		expect(page.client.application).toBeNull();
 		expect(page.client.payments).toEqual([]);
+	});
+
+	it('names Jafar, not his email, as who confirmed the winning payment', async () => {
+		signedIn();
+		pageWithClient([{ id: ENTRY_ID, stage: 'won', won_by_email: 'owner@example.com' }]);
+		const page = await (await GET_PAGE(event({ id: LEAD_ID }))).json();
+		expect(page.deals[0].won_by).toBe('Jafar');
 	});
 });
 
@@ -469,5 +484,16 @@ describe('Linking an Application', () => {
 			'owner_lead_link_application',
 			expect.objectContaining({ target_link: false })
 		);
+	});
+
+	it('says why an Application that paid for a Won Deal stays linked', async () => {
+		signedIn();
+		const message = 'This Application paid for a Won Deal, so it stays linked to that business.';
+		rpcReturning(null, { code: '22023', message });
+		const response = await UNLINK_APPLICATION(
+			event({ id: LEAD_ID, applicationId: APPLICATION_ID }, { method: 'DELETE' })
+		);
+		expect(response.status).toBe(409);
+		expect((await response.json()).field_errors.form).toBe(message);
 	});
 });

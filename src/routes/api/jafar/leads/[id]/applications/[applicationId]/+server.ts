@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { RequestHandler } from './$types';
-import { databaseError, notFound } from '$lib/server/api/errors';
+import { databaseError, notFound, validationError } from '$lib/server/api/errors';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
@@ -25,7 +25,11 @@ export const DELETE: RequestHandler = async (event) => {
 			target_application_id: event.params.applicationId,
 			target_link: false
 		});
-		if (error) throw error;
+		if (error) {
+			// The database's own refusal: an Application that paid for a Won Deal stays with its business.
+			if (error.code === '22023') return validationError({ form: error.message }, 409);
+			throw error;
+		}
 		return linkResultResponse(data);
 	} catch (error) {
 		console.error('Could not unlink the Application.', error);

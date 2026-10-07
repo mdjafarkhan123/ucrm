@@ -165,8 +165,8 @@
 			<div>
 				<dt>Package</dt>
 				<dd>
-					{application.package_name ?? 'Package'}{#if priceLine}<span class="client-panel__muted">
-							· {priceLine}</span
+					{application.package_name ?? 'Package'}{#if priceLine}{' '}<span
+							class="client-panel__muted">· {priceLine}</span
 						>{/if}
 				</dd>
 			</div>

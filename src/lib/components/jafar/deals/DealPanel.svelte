@@ -280,7 +280,7 @@
 		<dl class="deal-panel__facts">
 			<div>
 				<dt>How</dt>
-				<dd>Payment confirmed{lastWon.won_by_email ? ` by ${lastWon.won_by_email}` : ''}</dd>
+				<dd>Payment confirmed{lastWon.won_by ? ` by ${lastWon.won_by}` : ''}</dd>
 			</div>
 			{#if lastWon.value_monthly_usd_cents !== null}
 				<div>

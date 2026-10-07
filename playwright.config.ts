@@ -1,9 +1,11 @@
 import { defineConfig } from '@playwright/test';
+import { loadEnv } from 'vite';
 
-try {
-	process.loadEnvFile('.env');
-} catch {
-	// .env is optional locally and absent in some environments; tests that need it self-skip.
+// Read .env with Vite's parser, the one the app uses: Node's `process.loadEnvFile` keeps `\$` escapes
+// literally, and the preview server would inherit the broken owner password hash. Values already set in
+// the shell win, as with `process.loadEnvFile`. An absent .env leaves tests that need it to self-skip.
+for (const [key, value] of Object.entries(loadEnv('production', process.cwd(), ''))) {
+	process.env[key] ??= value;
 }
 
 export default defineConfig({

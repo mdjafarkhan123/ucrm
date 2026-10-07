@@ -10,7 +10,7 @@ import {
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
-import { presentHistory, type RawHistoryPage } from '$lib/server/jafar/lead-history';
+import { actorLabel, presentHistory, type RawHistoryPage } from '$lib/server/jafar/lead-history';
 import { leadChangeSchema } from '$lib/server/validation/lead.schema';
 import type { LeadPage } from '$lib/jafar/lead-history';
 import { canUseJafarPath } from '$lib/jafar/team-access';
@@ -88,7 +88,10 @@ export const GET: RequestHandler = async (event) => {
 			{
 				...page,
 				applications,
-				deals: deals.data as unknown as BusinessDeal[],
+				deals: (deals.data as unknown as Omit<BusinessDeal, 'won_by'>[]).map((deal) => ({
+					...deal,
+					won_by: actorLabel(deal.won_by_email, null)
+				})),
 				client: await presentClient(
 					client,
 					won.data as unknown as Omit<BusinessClient, 'onboarding'> | null,

@@ -182,6 +182,8 @@ export type BusinessDeal = {
 	/** B5: who confirmed the payment that won it, and on which Application. */
 	won_at: string | null;
 	won_by_email: string | null;
+	/** Who confirmed it, for reading: "Jafar", or the teammate's email. Set by the server. */
+	won_by: string | null;
 	won_application_id: string | null;
 	created_at: string;
 	/** Newest share first; one share's packages keep the order they were chosen in. */

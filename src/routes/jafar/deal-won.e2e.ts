@@ -76,7 +76,9 @@ test.describe.serial('Won and the Client box', () => {
 		).newPage();
 		await openBusiness(page);
 		const deal = page.locator('.deal-panel');
-		const applications = page.getByRole('region', { name: /Applications/ });
+		const applications = page
+			.locator('.rail-card')
+			.filter({ has: page.getByRole('heading', { name: /^Applications/ }) });
 
 		// The paid Application is linked to start with; unlink it so a Deal can wait for payment.
 		const unlink = page.getByRole('button', { name: /Unlink .* Application/ });
@@ -119,7 +121,7 @@ test.describe.serial('Won and the Client box', () => {
 
 		// The Client box: package, payment, account, setup stage, and Jafar looking after setup.
 		const client = page.locator('.client-panel');
-		await expect(client.getByText('Client', { exact: true })).toBeVisible();
+		await expect(client.getByRole('heading', { name: 'Client', exact: true })).toBeVisible();
 		await expect(client.getByText('Starter Check')).toBeVisible();
 		await expect(
 			client.getByRole('region', { name: 'Payments' }).getByRole('listitem')
