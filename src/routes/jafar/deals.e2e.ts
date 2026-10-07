@@ -45,6 +45,22 @@ async function changeStage(page: Page, item: string) {
 	await page.getByRole('menuitem', { name: item }).click();
 }
 
+async function dragCard(page: Page, card: Locator, column: Locator) {
+	// The drag library watches pointer movement over time, so move like a hand would, with short pauses.
+	await column.scrollIntoViewIfNeeded();
+	await card.scrollIntoViewIfNeeded();
+	const from = await card.boundingBox();
+	const to = await column.boundingBox();
+	if (!from || !to) throw new Error('The card or column is not on screen.');
+	await page.mouse.move(from.x + from.width / 2, from.y + 20);
+	await page.mouse.down();
+	await page.mouse.move(from.x + from.width / 2 + 10, from.y + 30, { steps: 5 });
+	await page.waitForTimeout(150);
+	await page.mouse.move(to.x + to.width / 2, to.y + 120, { steps: 25 });
+	await page.waitForTimeout(300);
+	await page.mouse.up();
+}
+
 async function removeDealIfAny(page: Page) {
 	await openBusiness(page);
 	const remove = dealBox(page).getByRole('button', { name: 'Remove Deal' });
@@ -69,7 +85,9 @@ test.describe.serial('Deals', () => {
 
 	test('one Deal from start to Lost, reopened and removed', async ({ browser }) => {
 		test.setTimeout(180_000);
-		const page = await (await browser.newContext({ storageState: signedIn })).newPage();
+		const page = await (
+			await browser.newContext({ viewport: { width: 1800, height: 1000 }, storageState: signedIn })
+		).newPage();
 		await removeDealIfAny(page);
 		const box = dealBox(page);
 
@@ -139,12 +157,27 @@ test.describe.serial('Deals', () => {
 			await expect(awaiting.locator('.deal-card', { hasText: businessName })).toBeVisible();
 			if (shots) await page.screenshot({ path: `${shots}/board-desktop.png`, fullPage: true });
 
+			// Drag: onto Later asks for a date, and cancelling puts the card back; onto Needs understood
+			// saves at once.
+			const later = page.getByRole('region', { name: /^Later/ });
+			await dragCard(page, awaiting.locator('.deal-card', { hasText: businessName }), later);
+			await expect(dialog.getByRole('group', { name: 'Revisit on' })).toBeVisible();
+			await dialog.getByRole('button', { name: 'Cancel' }).click();
+			await expect(awaiting.locator('.deal-card', { hasText: businessName })).toBeVisible();
+			await expect(later.locator('.deal-card', { hasText: businessName })).toHaveCount(0);
+
+			const needs = page.getByRole('region', { name: /Needs understood/ });
+			await dragCard(page, awaiting.locator('.deal-card', { hasText: businessName }), needs);
+			await expect(page.getByText(`${businessName} moved to Needs understood`)).toBeVisible();
+			await page.reload();
+			await expect(needs.locator('.deal-card', { hasText: businessName })).toBeVisible();
+
 			// Lost, then reopened from the business page.
 			await openBusiness(page);
 			await changeStage(page, 'Mark as Lost…');
 			dialog = page.getByRole('dialog', { name: 'Mark as Lost' });
 			await dialog.getByRole('button', { name: 'Cancel' }).click();
-			await expect(box.getByText('Awaiting decision', { exact: true })).toBeVisible();
+			await expect(box.getByText('Needs understood', { exact: true })).toBeVisible();
 
 			await changeStage(page, 'Mark as Lost…');
 			await dialog.getByLabel('Why was it lost?').first().click();
@@ -158,7 +191,7 @@ test.describe.serial('Deals', () => {
 			await fillStep(dialog, 'Try again after their busy season');
 			await dialog.getByRole('button', { name: 'Reopen' }).click();
 			await expect(page.getByText('Deal reopened', { exact: true })).toBeVisible();
-			await expect(box.getByText('Awaiting decision', { exact: true })).toBeVisible();
+			await expect(box.getByText('Needs understood', { exact: true })).toBeVisible();
 
 			// History lines.
 			const history = page.locator('main');
@@ -176,6 +209,7 @@ test.describe.serial('Deals', () => {
 		).newPage();
 		await page.goto('/jafar/deals');
 		await expect(page.getByRole('region', { name: /Interested/ })).toBeVisible();
+		await expect(page.getByText(/open Deals?/)).toBeVisible();
 		const pageOverflow = await page.evaluate(
 			() => document.documentElement.scrollWidth - document.documentElement.clientWidth
 		);
