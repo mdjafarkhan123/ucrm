@@ -70,7 +70,9 @@ test.describe('platform owner admin pages (authenticated, read-only)', () => {
 
 	test('prospects page loads the review list', async ({ page }) => {
 		await page.goto('/jafar/prospects');
-		await expect(page.getByRole('main').getByRole('heading', { name: 'Prospects' })).toBeVisible();
+		await expect(
+			page.getByRole('main').getByRole('heading', { name: 'Applications' })
+		).toBeVisible();
 	});
 
 	test('organizations list loads and links into a real organization detail page', async ({

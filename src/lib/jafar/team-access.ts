@@ -66,7 +66,12 @@ export const TEAM_ROLE_AREAS: Record<TeamRole, Partial<Record<JafarArea, AreaLev
 	platform_operations: { organizations: 'look', packages: 'look', operations: 'look' }
 };
 
-export const SENSITIVE_ACTIONS = ['payments', 'client_setup', 'packages', 'client_accounts'] as const;
+export const SENSITIVE_ACTIONS = [
+	'payments',
+	'client_setup',
+	'packages',
+	'client_accounts'
+] as const;
 export type SensitiveAction = (typeof SENSITIVE_ACTIONS)[number];
 
 /** Each sensitive action lives in one area, which must be open for the action to be granted. */
@@ -178,6 +183,14 @@ const OWNER_ONLY_CHANGES: readonly PathRule[] = [
 	{ pattern: '/api/jafar/organizations/*/communications/sms/refunds', subtree: true }
 ];
 
+/**
+ * Paths in one area that also show or change another area's records. A Lead's Application picker lists
+ * Applications with their contact details, and linking one changes it, so it needs Applications open too.
+ */
+const ALSO_NEEDS: ReadonlyArray<readonly [JafarArea, PathRule]> = [
+	['applications', { pattern: '/api/jafar/leads/*/applications', subtree: true }]
+];
+
 const READ_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 function matchesPrefix(pathname: string, prefix: string) {
@@ -187,7 +200,8 @@ function matchesPrefix(pathname: string, prefix: string) {
 function matchesRule(pathname: string, rule: PathRule) {
 	const path = pathname.split('/');
 	const pattern = rule.pattern.split('/');
-	if (path.length < pattern.length || (!rule.subtree && path.length !== pattern.length)) return false;
+	if (path.length < pattern.length || (!rule.subtree && path.length !== pattern.length))
+		return false;
 	return pattern.every((segment, index) => segment === '*' || segment === path[index]);
 }
 
@@ -291,6 +305,8 @@ export function canUseJafarPath(viewer: JafarViewer, pathname: string, method = 
 	const access = viewerAccess(viewer as JafarViewer & { role: TeamRole });
 	const level = access.areas[area];
 	if (!level) return false;
+	if (ALSO_NEEDS.some(([other, rule]) => matchesRule(pathname, rule) && !access.areas[other]))
+		return false;
 
 	if (READ_METHODS.has(method.toUpperCase())) return true;
 	if (isOwnerOnlyChange(pathname)) return false;

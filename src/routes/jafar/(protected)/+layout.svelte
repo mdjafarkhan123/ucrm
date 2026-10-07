@@ -7,6 +7,7 @@
 	import {
 		jafarEmailHealthKey,
 		jafarEmailTemplatesKey,
+		jafarLeadKey,
 		jafarLeadsKey,
 		jafarMessageTemplatesKey,
 		jafarOnboardingKey,
@@ -91,6 +92,13 @@
 		}
 		if (pathname === '/jafar/leads') {
 			return hasCachedData(jafarLeadsKey);
+		}
+		// The add form needs no data; a Lead's page draws its own skeleton until its one request answers.
+		if (pathname === '/jafar/leads/new') {
+			return true;
+		}
+		if (pathname.startsWith('/jafar/leads/')) {
+			return hasCachedData(jafarLeadKey(pathname.slice('/jafar/leads/'.length).split('/')[0]));
 		}
 		if (pathname.startsWith('/jafar/prospects')) {
 			return hasCachedData(jafarProspectsKey);
