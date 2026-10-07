@@ -13401,6 +13401,9 @@ export type Database = {
 			};
 			platform_business_contact_methods: {
 				Row: {
+					approved_at: string | null;
+					approved_by_email: string | null;
+					approved_value: string | null;
 					created_at: string;
 					found_at: string;
 					id: string;
@@ -13410,8 +13413,12 @@ export type Database = {
 					relationship_id: string;
 					removed_at: string | null;
 					value: string;
+					whatsapp_permission: boolean;
 				};
 				Insert: {
+					approved_at?: string | null;
+					approved_by_email?: string | null;
+					approved_value?: string | null;
 					created_at?: string;
 					found_at: string;
 					id?: string;
@@ -13421,8 +13428,12 @@ export type Database = {
 					relationship_id: string;
 					removed_at?: string | null;
 					value: string;
+					whatsapp_permission?: boolean;
 				};
 				Update: {
+					approved_at?: string | null;
+					approved_by_email?: string | null;
+					approved_value?: string | null;
 					created_at?: string;
 					found_at?: string;
 					id?: string;
@@ -13432,6 +13443,7 @@ export type Database = {
 					relationship_id?: string;
 					removed_at?: string | null;
 					value?: string;
+					whatsapp_permission?: boolean;
 				};
 				Relationships: [
 					{
@@ -13523,11 +13535,15 @@ export type Database = {
 					country_code: string;
 					created_at: string;
 					created_by_email: string;
+					do_not_contact_at: string | null;
+					do_not_contact_by_email: string | null;
+					do_not_contact_reason: string | null;
 					fit_notes: string | null;
 					id: string;
 					lead_status: string;
 					next_action: string | null;
 					next_action_due_on: string | null;
+					next_action_kind: string | null;
 					source: string;
 					source_detail: string | null;
 					trade: string;
@@ -13541,11 +13557,15 @@ export type Database = {
 					country_code: string;
 					created_at?: string;
 					created_by_email: string;
+					do_not_contact_at?: string | null;
+					do_not_contact_by_email?: string | null;
+					do_not_contact_reason?: string | null;
 					fit_notes?: string | null;
 					id?: string;
 					lead_status?: string;
 					next_action?: string | null;
 					next_action_due_on?: string | null;
+					next_action_kind?: string | null;
 					source: string;
 					source_detail?: string | null;
 					trade: string;
@@ -13559,11 +13579,15 @@ export type Database = {
 					country_code?: string;
 					created_at?: string;
 					created_by_email?: string;
+					do_not_contact_at?: string | null;
+					do_not_contact_by_email?: string | null;
+					do_not_contact_reason?: string | null;
 					fit_notes?: string | null;
 					id?: string;
 					lead_status?: string;
 					next_action?: string | null;
 					next_action_due_on?: string | null;
+					next_action_kind?: string | null;
 					source?: string;
 					source_detail?: string | null;
 					trade?: string;
@@ -23928,6 +23952,16 @@ export type Database = {
 				Args: { search_term?: string; target_id: string };
 				Returns: Json;
 			};
+			owner_lead_approve: {
+				Args: {
+					actor_email: string;
+					method_ids: string[];
+					target_id: string;
+					task_due_on: string;
+					whatsapp_permission_ids?: string[];
+				};
+				Returns: string;
+			};
 			owner_lead_change: {
 				Args: {
 					actor_email: string;
@@ -23982,6 +24016,18 @@ export type Database = {
 					website?: string;
 				};
 				Returns: Json;
+			};
+			owner_lead_review_queue: {
+				Args: { cursor_created_at?: string; cursor_id?: string; page_size?: number };
+				Returns: Json;
+			};
+			owner_lead_send_back: {
+				Args: { actor_email: string; reason: string; target_id: string };
+				Returns: string;
+			};
+			owner_lead_set_do_not_contact: {
+				Args: { actor_email: string; reason?: string; target_id: string; turn_on: boolean };
+				Returns: string;
 			};
 			owner_lead_update_details: {
 				Args: {
