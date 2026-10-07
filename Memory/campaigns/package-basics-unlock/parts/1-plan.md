@@ -12,14 +12,5 @@
 
 ## Next
 
-Asked Jafar 2026-10-07 (one round): (1) which basics always stay — recommended Customers, Team, Dashboard;
-(2) approve the needs list in the research file, including the new Jobs → Scheduling and Scheduling → Jobs or
-Requests; (3) "no trace" means hidden by package everywhere the research lists, including Settings and
-automation triggers; (4) losing a basic: records kept and hidden, automations using it paused, customer links
-already sent keep working, and Jafar sees open items in the preview before confirming. Write his answers in.
-
-## Notes
-
-Jafar, 2026-10-07: (1) Customers, Team, Dashboard always stay; (2) needs list approved as in the research file;
-(3) hide every listed place by package, including Settings and automation triggers. (4) open — he asked to
-clarify the downgrade question before answering.
+All four answers are in the plan (Still unclear: Nothing). Waiting for Jafar to approve the plan; then write
+"Approved by Jafar on <date>" in its status line, mark Part 1 done, and start Part 2 (split into build parts).

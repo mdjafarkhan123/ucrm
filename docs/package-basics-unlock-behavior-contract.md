@@ -38,26 +38,57 @@ screens, commands, background work, and access are verified.
 
 - A basic can be unticked only after every screen has been checked without it. Until then it stays ticked and
   locked in the builder, with a short reason.
-- Some basics stay in every package; which ones is still unclear.
+- Customers, Team, and Dashboard stay in every package and can never be unticked, because every business needs
+  a customer list, a way to add staff, and a home screen (Jafar, 2026-10-07). Requests, Quotes, Jobs,
+  Scheduling, Invoices, and Customer access can be unticked once each is ready.
+
+## What each feature needs
+
+Agreed with Jafar on 2026-10-07, from how the records connect.
+
+| Feature | Needs |
+| --- | --- |
+| Quotes | Jobs — an approved quote becomes a job |
+| Requests | Quotes or Jobs — a request becomes one or the other |
+| Customer access | Quotes or Invoices — customers approve quotes and pay invoices there |
+| Jobs | Scheduling — a job's visits are booked on the calendar |
+| Scheduling | Jobs or Requests — nothing else puts work on the calendar |
+| Sales pipeline | Requests or Quotes — its cards come only from these |
+| Website chat | Shared inbox |
+
+Invoices, Marketing email, Review requests, and Custom automations need nothing beyond the always-kept basics.
+The automatic review ask is an automation that runs when a job's work is completed, so it is offered only when
+Jobs and Custom automations are both in the package; asking by hand needs only Customers.
 
 ## A business without a feature
 
 - A business on a package without a feature sees no trace of it: no menu item, and no broken or empty part of
   any other page that belongs to it.
+- This covers every place, decided by the package and not only by the person's role (Jafar, 2026-10-07): the
+  menu (no flash of an item that then disappears), dashboard boxes, the customer page's summary numbers and
+  tabs, the Create menu, search, Settings pages for that feature (such as Quote, Invoice, Payment, Tax, and
+  Price book settings), automation triggers and steps, notifications, setup steps, and the job choice in the
+  review-request panel. A business never reads "You do not have access" about something its package leaves
+  out.
+
+## Moving a business to a smaller package
+
+Agreed with Jafar on 2026-10-07, following HubSpot: records are kept, automations that rely on a removed
+feature are turned off, and what customers already received keeps working.
+
+- Before Jafar confirms the move, the preview lists the open items of every feature being removed: unpaid
+  invoices, quotes awaiting a decision, upcoming visits, and automations that use the feature. He confirms with
+  that list in front of him. The existing rule still applies: anything above the new package's limits is
+  resolved first.
+- After the move, those records are kept but hidden from the business. They come back unchanged if the
+  business moves to a package with the feature again.
+- Automations that rely on a removed feature pause and do not run.
+- Links the business's customers already have, such as an invoice pay link, keep working, so the business can
+  still be paid for work already done.
 
 ## Still unclear
 
-- Which basics stay in every package. Suggested: Customers, Team, and Dashboard, because every business needs
-  them.
-- The full "needs" list. Known so far: Quotes needs Jobs; Website chat needs Shared inbox; the automatic review
-  ask needs Jobs and Custom automations; Requests needs Quotes or Jobs; Customer access needs Quotes or
-  Invoices. Not yet checked: Jobs and Scheduling, Invoices and online payments, Sales pipeline, Marketing email,
-  and automation triggers.
-- What a business sees, place by place, when a feature is off: the menu, dashboard cards, the customer page's
-  tabs and timeline, the Create menu, search, automation triggers, notifications, setup steps, and the job
-  choice in the review-request panel.
-- Whether the existing rules for moving a customer to a smaller package (records kept, anything over a limit
-  resolved first) are enough when the feature removed is a basic.
+- Nothing.
 
 ## Not doing
 
@@ -69,6 +100,8 @@ screens, commands, background work, and access are verified.
 
 ## Research
 
+- [Unlocking package basics research, 2026-10-07](research/package-basics-unlock-2026-10-07.md) — what each
+  feature needs, where a missing feature still shows today, and how HubSpot and Zoho handle a lost feature.
 - [Review generation package research, 2026-10-07](research/review-generation-package-2026-10-07.md) — Review
   Harvest, NiceJob, Jobber Reviews, how installers and Salesforce CPQ add what an item needs, and what UCRM has
   today.
