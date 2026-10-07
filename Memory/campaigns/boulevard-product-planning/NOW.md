@@ -3,8 +3,8 @@
 **Goal:** Produce a researched, plain-language product plan for industry editions, prioritizing Medspa & Clinical Wellness, with the documented feature inventory and initial/later release assignments.
 **Plan:** `docs/boulevard-product-behavior-contract.md`
 
-**Completed:** P1 inventory and P2A–P2H behavior planning are in the plan with linked research. Jafar accepted all four P2H recommendations on 2026-10-07, including changing the future Contractor Setup version rule. The current app still uses live updates; P3 must assess the change. Performance direction is agreed; P3A will settle its details.
+**Completed:** P1 inventory and P2A–P2H behavior planning are in the plan. P3 has a sourced reuse and provider-feasibility checkpoint, including the verified Boulevard historical-file guide and the current Contractor Setup live-update gap. Jafar rejected premature release-scope questions; no feature-level scope was approved.
 
-**Next part:** P3 reuse and release — map agreed capabilities to the existing app, test provider and migration feasibility, assign initial/later release scope and completion checks. Include the approved Setup version transition and the current Contractor behavior gap. P2G's unverified Boulevard historical-file PDF format and actual source-vendor imports, and P2F's prepaid-unit valuation and payout-provider availability, belong to P3 feasibility.
+**Next part:** Continue P3 from `parts/P3.md`: propose feature-level release assignments, first-clinic eligibility and completion checks using the feasibility note. Actual source-vendor imports and prepaid-unit valuation remain open. P3A follows after scope settles.
 
-**Blockers:** None for P3 research. Feature-level release scope is unapproved. No application work is authorized by this planning checkpoint.
+**Blockers:** None for P3 research. Feature-level release scope is unapproved. No application, provider or infrastructure work is authorized by this planning checkpoint.

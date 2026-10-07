@@ -103,7 +103,7 @@ Follow [Reference order and missing behavior](platform-overview.md#reference-ord
 
 ## Living feature plan
 
-The [public-source inventory](research/boulevard-feature-landscape-2026-10-05.md) records stable identifiers, purposes, sources and availability boundaries. P2 adds detailed workflows, settings, permissions, exceptions and dependencies. P3 will record existing-app suitability, release assignments and completion checks. Area research is linked below.
+The [public-source inventory](research/boulevard-feature-landscape-2026-10-05.md) records stable identifiers, purposes, sources and availability boundaries. P2 adds detailed workflows, settings, permissions, exceptions and dependencies. [P3 feasibility research](research/boulevard-p3-feasibility-2026-10-07.md) now maps reuse candidates and provider limits; initial/later release assignments and completion checks remain open. Area research is linked below.
 
 Track these independently:
 
@@ -522,8 +522,8 @@ P3 must check complete journeys across these boundaries: outside booking through
   must settle these before build parts are approved; implemented slices must then supply the stated evidence.
 - How client sign-in is built alongside the existing staff sign-in, and how saved cards fit the current Stripe key (P3).
 - Clinical records: which agreed capabilities belong in the initial release, what can be reused, and which qualified prescribing provider could support an integration (P3). State-specific minor access and clinical-policy review must be completed for the states served before launch.
-- Reporting: the accounting method for valuing unused prepaid product units, provider payout-data availability, and initial report selection need P3 verification before a monetary liability, automatic bank match or release promise.
-- Connections and migration: which specific integrations, mobile surfaces and source-vendor imports pass P3 feasibility and belong in the initial release. The attached Boulevard historical-file PDF's import format remains unverified; do not promise automatic clinical-history migration from it.
+- Reporting: the accounting method for valuing unused prepaid product units and initial report selection need P3 verification. Stripe payout data is available with additional permissions, but does not prove bank arrival; no automatic bank match or release promise follows.
+- Connections and migration: which specific integrations, mobile surfaces and source-vendor imports pass P3 feasibility and belong in the initial release. Boulevard's historical-file guide has been checked: it describes attributed file attachments, not structured chart conversion; its current export guide says clinical files cannot be bulk-exported. Actual source data and clinic-specific migrations remain unverified.
 - Whether Beauty & Spa lets under-age clients book online on their own; settle this when that edition is planned.
 
 ## Not doing
@@ -543,6 +543,7 @@ P3 must check complete journeys across these boundaries: outside booking through
 - [P2E operations sources and clinical stock gap](research/boulevard-operations-2026-10-07.md); agreed behavior is in [Operations](#operations), while release timing and existing-app reuse belong to P3.
 - [P2F reporting measures, reconciliation, permissions and source limits](research/boulevard-reporting-2026-10-07.md); agreed direction is in [Reporting and reconciliation](#reporting-and-reconciliation), while release timing and existing-app reuse belong to P3.
 - [P2G connected-journey evidence, approved safeguards and migration limits](research/boulevard-connected-journeys-2026-10-07.md); agreed behavior is in [Connected journeys](#connected-journeys), while release timing and feasibility belong to P3.
+- [P3 existing-app and provider feasibility checkpoint](research/boulevard-p3-feasibility-2026-10-07.md); includes the corrected industry-led release recommendation, while feature-level scope remains unapproved.
 - [Industry entry and onboarding patterns](research/industry-onboarding-entry-patterns-2026-10-07.md); agreed direction is in [Business entry and onboarding](#business-entry-and-onboarding).
 
 Primary public entry points:
