@@ -1,6 +1,6 @@
 # Jafar Business Management — first release proposal
 
-**Status:** Proposal for Jafar's review, 2026-10-07. No release scope is approved yet. This describes user-visible scope, not a coding plan.
+**Status:** Approved by Jafar on 2026-10-07. This describes user-visible scope, not a coding plan or permission to build.
 
 ## What the first release should achieve
 
@@ -20,8 +20,8 @@ The first release should also include the organized six-group `/jafar` Settings 
 
 Social-channel cold-message automation, scraping business listings into a prospect database, AI outreach writing, advanced scoring, a separate offer-document maker, and elaborate branching are already outside the approved behavior plan's first useful journey. Other connected channels can follow their own official approval and integration checks. No outbound prospect email is enabled merely because UCRM has a working mailbox.
 
-## What Jafar still needs to choose
+## Approved choices
 
-1. Public self-booking in release one, or Jafar-managed meeting entry first.
-2. Full Uplift mailboxes in release one, or logged external mail first.
-3. Launch with manual permitted contact while provider-approved first-contact automation follows, or hold the entire release for provider approval.
+1. Include the complete public self-booking experience in release one.
+2. Use the current external email route and log important activity in release one; add full Uplift mailboxes after safe cutover and recovery are proven.
+3. Launch with personal permitted contact and logged outcomes; add automated first-contact email only after provider approval and recipient checks are proven.

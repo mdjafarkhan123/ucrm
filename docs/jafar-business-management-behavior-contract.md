@@ -1,6 +1,6 @@
 # Jafar Business Management
 
-**Status:** Product behavior approved by Jafar on 2026-10-07. The exact first release scope remains a separate planning decision. This plan describes what people can do and how the business workflow behaves; it is not a coding plan and authorizes no build.
+**Status:** Product behavior and first release scope approved by Jafar on 2026-10-07. Planning is complete. This plan describes what people can do and how the business workflow behaves; it is not a coding plan and authorizes no build.
 
 ## The vision
 
@@ -9,6 +9,14 @@ Jafar and the Uplift team can run the business journey in `/jafar`: find suitabl
 This is one UCRM application. Business Management and Platform Operations are two clear entrances to the same `/jafar` panel, with navigation between them. A teammate sees only permitted areas. Existing Applications, Organizations, Packages, Onboarding, and Support remain the underlying records; a business-facing view may link to them without making a second copy. The two entrances organize the work. They are not a promise of faster loading by themselves.
 
 The market is trade businesses in countries outside Asia. A business's country and contact method matter when deciding whether an outreach channel can be used. Finding a possible client does not by itself make that person eligible to receive a message.
+
+## Approved first release
+
+The first release delivers one usable lead-to-client path: capture and review Leads, decide whether personal contact is permitted, record contact and replies, manage next actions and sales Deals, share the website pricing link, confirm payment through the existing controls, and hand a won client into onboarding. It includes the Business Management home and calendar, the small activity report, the organized `/jafar` Settings home, and the agreed team invitations, role areas, permissions, and sensitive-action controls. Unassigned work defaults to Jafar.
+
+The complete public sales-booking experience is in release one. Prospects can choose an available time from UCRM, and the approved availability, host, reminder, reschedule, cancellation, phone, Zoom, and Google Meet behavior applies.
+
+Full Uplift mailboxes move to the next release. Until existing mail, delivery, recovery, and a safe domain cutover are proven, the team continues using the current external email route and logs important email activity against the Lead or Deal. Automated first-contact email also follows later, only after a provider explicitly permits the proposed use and the country, source, recipient, and opt-out checks are proven. Release one instead supports personal contact tasks and logged outcomes where that contact method is permitted. These two later items do not hold back the usable CRM journey.
 
 ## The work, from first discovery to client
 
@@ -76,7 +84,7 @@ Reuse the existing automation editor, minute-based waits and background executio
 
 The simple first useful journey is manual lead capture, clear approval, individually reviewed and scheduled outreach through ready channels, replies and tasks, a small deal pipeline, and a handoff to existing client operations. All trade businesses outside Asia can be recorded; automated outreach is available only for recipient/channel combinations whose rules and sender are verified. Build no extra message channel merely to make every icon look connected. Where a lawful contact method has no integration, show a human task and allow its outcome to be recorded; where permission is missing, hold contact until it is resolved.
 
-## Still unclear
+## Later-release dependencies
 
 - Which provider, if any, will explicitly permit the proposed first-contact email workflow? SES is the chosen Uplift mailbox transport, but technical sender setup and provider permission for prospecting are separate checks. Live domain cutover and recovery need proof before activation.
 - What country and channel checks must be proved before a particular automated send is enabled? The market remains all trade businesses outside Asia; there is no narrower lead-list geography.
