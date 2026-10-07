@@ -24,7 +24,8 @@ function getEvent(url = 'http://localhost/api/jafar/leads') {
 	return { url: new URL(url), params: {}, cookies: {} } as unknown as Parameters<typeof GET>[0];
 }
 
-function postEvent(body: unknown, url = 'http://localhost/api/jafar/leads') {
+// Shaped as any route's event, so the same helper serves both the Leads and the duplicate-check endpoints.
+function postEvent(body: unknown, url = 'http://localhost/api/jafar/leads'): never {
 	return {
 		url: new URL(url),
 		params: {},
@@ -34,7 +35,7 @@ function postEvent(body: unknown, url = 'http://localhost/api/jafar/leads') {
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify(body)
 		})
-	} as unknown as Parameters<typeof POST>[0];
+	} as never;
 }
 
 const listResult = {
