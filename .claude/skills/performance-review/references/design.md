@@ -104,6 +104,9 @@ browser server-state caching; do not create a parallel client cache.
   virtualization, or `content-visibility` from the UX and measured DOM/render cost, not a universal row count.
 - Keep query keys tenant/authorization scoped, choose freshness from correctness, and specify mutation/external-event
   invalidation.
+- Skeletons, images, and late-arriving panels reserve the final content's size, so arriving data never shifts
+  the layout. Frequent interactions (drag, tick, save) update the screen at once and reconcile with the server
+  after, keeping them inside the INP target.
 - Evaluate a browser dependency by the route’s production critical path and baseline. Dynamically load optional
   heavy interactions when that materially reduces initial work.
 

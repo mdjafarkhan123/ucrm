@@ -5,6 +5,6 @@
 
 **In progress:** none
 
-**Next part:** P5 Design and build roadmap — audit the approved first release against reusable product capabilities, define the premium screen direction, split it into thin complete build parts, and get Jafar's approval before coding.
+**Next part:** A1 One access check and two entrances — see `stages/A-foundations.md`. Every screen part runs the `performance-review` design branch first and verification before Done (plan § Speed).
 
 **Blockers:** none. Product behavior and first-release scope are approved; full Uplift mailboxes and automated first-contact email remain later-release work.

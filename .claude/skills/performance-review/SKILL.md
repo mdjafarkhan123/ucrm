@@ -22,6 +22,7 @@ or when a change creates or materially alters a path whose work grows with usage
 - growing queries, searches, aggregates, reports, lists, pagination, bulk operations, and tenant/RLS access;
 - high-traffic or public APIs, external fan-out, queues, workers, shared pools, and contention points;
 - Realtime subscriptions, server caches, large client datasets, rendered collections, and browser dependencies;
+- a new or materially changed screen's first load and its main interactions (open, filter, drag, save);
 - algorithms whose time or memory grows with user-controlled or persistent input.
 
 A filename is not a trigger by itself. Skip the full skill for copy, ordinary styling, documentation, tests,
@@ -50,6 +51,10 @@ usually needs one. Do not load both references by default.
   Never turn registered-user count into a capacity claim.
 - **Complexity budget.** Every index, cache, denormalized value, queue, dependency, abstraction, and service must
   address a named risk and earn its read benefit against write, consistency, operating, and maintenance cost.
+- **User-felt speed.** Screens target Google's Core Web Vitals "good" thresholds — LCP ≤ 2.5 s, INP ≤ 200 ms,
+  CLS ≤ 0.1 at the 75th percentile ([web.dev](https://web.dev/articles/vitals)) — judged on phone first. Without
+  field data, measure a production build under a slowed CPU and mobile network with representative data, and
+  label the result lab evidence.
 - **Evidence over folklore.** Prefer representative plans, timings, request counts, payload sizes, profiles, and
   load results. A reasoned bound is acceptable when measurement is unavailable; label the claim unverified.
 - **Affected path only.** Inspect every changed layer in the path and omit unrelated layers and general cleanup.

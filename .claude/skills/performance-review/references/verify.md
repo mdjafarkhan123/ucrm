@@ -87,6 +87,8 @@ rule files. Do not change RLS semantics for speed.
   server is not a production navigation benchmark.
 - Count requests, transferred bytes, route chunks, DOM nodes, long tasks, and repeated reactive work relevant to the
   change. Compare route weight with its prior baseline or an approved budget rather than a universal chunk limit.
+- For each changed screen, record LCP, CLS, and INP for its main interactions at phone and desktop width under
+  the slowed profile (for example, Playwright with Chrome DevTools Protocol CPU and network throttling).
 - Key stateful lists by stable identity. Choose pagination, incremental rendering, virtualization, or
   `content-visibility` from interaction requirements and observed render cost.
 - Measure optional heavy dependencies on the initial critical path and dynamically load them when the evidence and

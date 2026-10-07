@@ -1,6 +1,6 @@
 # Jafar Business Management
 
-**Status:** Product behavior and first release scope approved by Jafar on 2026-10-07. The build has not started. This plan describes what people can do and how the business workflow behaves; it is not a coding plan by itself.
+**Status:** Product behavior and first release scope approved by Jafar on 2026-10-07. Build parts and their order approved on 2026-10-07; the build has not started. This plan describes what people can do and how the business workflow behaves; it is not a coding plan by itself.
 
 ## The vision
 
@@ -70,6 +70,8 @@ A visitor's free slot is confirmed immediately by default, and Jafar can switch 
 
 Jafar controls team invitations, access, and removal for the entire panel. The starting roles are Sales, Delivery, Support, and Platform Operations, but Jafar can turn specific areas and sensitive actions on or off for each teammate. These team features are built even though Jafar is the only user at first; unassigned work defaults to him. In particular, researching a lead, approving recipients, launching a batch, changing commercial terms, confirming payment, provisioning an account, managing teammates, and operating providers are separate abilities. Jafar initially keeps outreach approval, payment confirmation, provisioning, package changes, and teammate access unless he explicitly grants them. Sales can mark a Deal Won only after the payment confirmation already exists. Jafar retains the final owner powers. Screens and server actions enforce the same permissions; hiding a menu is insufficient. Important approvals, sends, commercial changes, and access changes retain an actor and time.
 
+Teammates sign in at the `/jafar` login with their email address and the password they set when accepting the invitation; a forgotten password is reset by email. No extra sign-in code is required (Jafar, 2026-10-07). Removing a teammate ends their sign-in immediately.
+
 Contractor team permissions are a useful pattern, but they are scoped to each contractor organization. `/jafar` currently has a configured single-owner login. Platform-team accounts and permissions therefore need their own secure scope and cannot inherit contractor access to customer organizations.
 
 Starting access follows the work: Sales sees permitted Leads, Deals, sales conversations, and the sales calendar; Delivery sees assigned onboarding and client progress; Support sees permitted support conversations and the context needed to answer; Platform Operations sees organization and provider status. Jafar can change each teammate's access and separately grant sensitive actions. A teammate does not gain access to every customer organization simply by holding a platform role.
@@ -77,6 +79,10 @@ Starting access follows the work: Sales sees permitted Leads, Deals, sales conve
 ## Settings across `/jafar`
 
 `/jafar/settings` becomes a clear home for Uplift and platform settings rather than one long form. Jafar can find a setting by its purpose, see whether setup needs attention, open one focused section, understand the effect of a change, and save it explicitly. The starting groups are **My preferences**, **Business & booking**, **Team & access**, **Mail & notifications**, **Payments & client setup**, and **Platform & safety**. Booking availability, meeting types, and the public link live in Business & booking; personal reminder choices live in My preferences. Existing privacy, payment-instruction, sender-name, alert-recipient, email-template, email-safety, and cleanup controls keep their established behavior as the navigation is organized. Day-to-day meetings, Leads, Deals, and client work remain in their work areas. A teammate sees only settings they are allowed to use. The experience must work on desktop and mobile and meet the project's premium, professional design standard.
+
+## Speed
+
+Every screen feels fast on a phone over a mobile network, not only on a desktop: the main content appears within about 2.5 seconds, a tap or drag responds within 0.2 seconds, and nothing jumps around while data arrives. A screen shows its layout or remembered data at once and fills in as fresh data loads. Each list, board, calendar, and report is checked with a realistically large amount of test data before it counts as done; the result states the amount tested rather than promising unlimited size.
 
 ## Reuse and simplicity
 
