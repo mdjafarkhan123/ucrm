@@ -103,7 +103,7 @@ Follow [Reference order and missing behavior](platform-overview.md#reference-ord
 
 ## Living feature plan
 
-The [public-source inventory](research/boulevard-feature-landscape-2026-10-05.md) records stable identifiers, purposes, sources and availability boundaries. P2 adds detailed workflows, settings, permissions, exceptions and dependencies. [P3 feasibility research](research/boulevard-p3-feasibility-2026-10-07.md) now maps reuse candidates and provider limits; initial/later release assignments and completion checks remain open. Area research is linked below.
+The [public-source inventory](research/boulevard-feature-landscape-2026-10-05.md) records stable identifiers, purposes, sources and availability boundaries. P2 adds detailed workflows, settings, permissions, exceptions and dependencies. [P3 feasibility research](research/boulevard-p3-feasibility-2026-10-07.md) maps reuse candidates and provider limits. The [P3 release proposal](research/boulevard-p3-release-proposal-2026-10-08.md) maps inventory families, first-clinic eligibility and completion checks for Jafar's review; its assignments are recommendations, not approved scope. Area research is linked below.
 
 Track these independently:
 
@@ -544,6 +544,7 @@ P3 must check complete journeys across these boundaries: outside booking through
 - [P2F reporting measures, reconciliation, permissions and source limits](research/boulevard-reporting-2026-10-07.md); agreed direction is in [Reporting and reconciliation](#reporting-and-reconciliation), while release timing and existing-app reuse belong to P3.
 - [P2G connected-journey evidence, approved safeguards and migration limits](research/boulevard-connected-journeys-2026-10-07.md); agreed behavior is in [Connected journeys](#connected-journeys), while release timing and feasibility belong to P3.
 - [P3 existing-app and provider feasibility checkpoint](research/boulevard-p3-feasibility-2026-10-07.md); includes the corrected industry-led release recommendation, while feature-level scope remains unapproved.
+- [P3 proposed release map and first-clinic readiness checks](research/boulevard-p3-release-proposal-2026-10-08.md); awaiting Jafar's scope decisions.
 - [Industry entry and onboarding patterns](research/industry-onboarding-entry-patterns-2026-10-07.md); agreed direction is in [Business entry and onboarding](#business-entry-and-onboarding).
 
 Primary public entry points:
