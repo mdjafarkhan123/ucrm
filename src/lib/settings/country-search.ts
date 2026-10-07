@@ -1,4 +1,5 @@
 import { Country } from 'country-state-city';
+import { browserCountryName } from '$lib/settings/country-names';
 
 // The searchable country list behind CountryPicker. It follows GOV.UK's accessible-autocomplete country
 // picker: match the official name, the ISO code, and the everyday names people actually type ("UK", "USA",
@@ -58,24 +59,10 @@ export function normaliseCountryText(text: string) {
 		.trim();
 }
 
-function browserName(code: string, names: Intl.DisplayNames | null) {
-	try {
-		return names?.of(code) ?? null;
-	} catch {
-		return null;
-	}
-}
-
 function buildIndex(): IndexedCountry[] {
-	let displayNames: Intl.DisplayNames | null = null;
-	try {
-		displayNames = new Intl.DisplayNames(['en'], { type: 'region' });
-	} catch {
-		displayNames = null;
-	}
 	return Country.getAllCountries()
 		.map((country) => {
-			const name = browserName(country.isoCode, displayNames) ?? country.name;
+			const name = browserCountryName(country.isoCode) ?? country.name;
 			const names = [
 				...new Set(
 					[name, country.name, ...(ALIASES[country.isoCode] ?? [])].map(normaliseCountryText)
@@ -94,16 +81,10 @@ function buildIndex(): IndexedCountry[] {
 
 let index: IndexedCountry[] | null = null;
 
-/** Every country, alphabetical. Built once, on first use. */
+/** Every country, alphabetical. Built once, on first use — callers wait until someone reaches for the list. */
 export function allCountryOptions(): CountryOption[] {
 	index ??= buildIndex();
 	return index;
-}
-
-export function findCountryOption(code: string | null | undefined) {
-	if (!code) return undefined;
-	const upper = code.toUpperCase();
-	return allCountryOptions().find((country) => country.code === upper);
 }
 
 function matchRank(country: IndexedCountry, query: string) {

@@ -3,6 +3,8 @@
 // button and a shared link keep what is on screen; a hand-edited link falls back to "no filter" for whatever it
 // got wrong instead of putting an error on screen.
 
+import { countryDisplayName } from '$lib/settings/country-names';
+
 export const LEAD_STATUSES = [
 	'new',
 	'researching',
@@ -161,16 +163,9 @@ export function hasLeadFilters(filters: LeadFilters) {
 	);
 }
 
-let regionNames: Intl.DisplayNames | null = null;
-
 /** "GB" -> "United Kingdom", from the browser's own names, so the list ships no country table. */
 export function countryName(code: string) {
-	try {
-		regionNames ??= new Intl.DisplayNames(['en'], { type: 'region' });
-		return regionNames.of(code) ?? code;
-	} catch {
-		return code;
-	}
+	return countryDisplayName(code);
 }
 
 export type LeadContactMethod = { kind: ContactMethodKind; value: string };

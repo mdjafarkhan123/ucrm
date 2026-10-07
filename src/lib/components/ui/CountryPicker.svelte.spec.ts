@@ -18,15 +18,34 @@ describe('CountryPicker', () => {
 		await expect.element(input).toHaveValue('United Kingdom');
 	});
 
-	it('shows the saved country and the whole list when reopened', async () => {
+	it('shows the saved country, and the whole list a page at a time when reopened', async () => {
 		render(CountryPicker, { props: { id: 'country', label: 'Country', value: 'PK' } });
 
 		const input = page.getByLabelText('Country');
 		await expect.element(input).toHaveValue('Pakistan');
 		await input.click();
+		const options = () => document.querySelectorAll('[role="option"]');
+		await expect.poll(() => options().length).toBe(50);
+
+		const viewport = document.querySelector('.country-picker__viewport') as HTMLElement;
+		for (let i = 0; i < 10 && !document.body.textContent?.includes('Zimbabwe'); i++) {
+			viewport.scrollTop = viewport.scrollHeight;
+			viewport.dispatchEvent(new Event('scroll'));
+			await new Promise((resolve) => requestAnimationFrame(resolve));
+		}
+		await expect.element(page.getByRole('option', { name: 'Zimbabwe' })).toBeInTheDocument();
+	});
+
+	it('keeps adding rows as the arrow keys move past the first page', async () => {
+		const onchange = vi.fn();
+		render(CountryPicker, { props: { id: 'country', label: 'Country', onchange } });
+
+		await page.getByLabelText('Country').click();
+		await expect.poll(() => document.querySelectorAll('[role="option"]').length).toBe(50);
+		await userEvent.keyboard('{ArrowDown>60/}');
 		await expect
 			.poll(() => document.querySelectorAll('[role="option"]').length)
-			.toBeGreaterThan(240);
+			.toBeGreaterThan(50);
 	});
 
 	it('says so when nothing matches', async () => {
