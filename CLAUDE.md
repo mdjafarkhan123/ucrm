@@ -102,6 +102,7 @@ before changing files (`--mode read` for research). Release after safe integrati
 - Server secrets stay server-side
 - All writes go through `/api/*` routes. Every `POST` and `PATCH` validates with Zod before database access.
 - **Performance — proportional evidence:** Follow `performance-review`'s invocation gate and two-stage completion contract. Design qualifying paths before code, verify them after the coherent slice exists, and run its whole-application branch before an industry release. Never claim user or traffic capacity beyond the workload its evidence actually supports.
+- Before doing any work keep in mind about performance, everything should be build such way that it performance become super, the way top industry build keeping in mind about performance. After completing that task review that for performance about all edge cases when appropriate to test.
 - **One final application.** The main folder on `main` is the integration point. Temporary Git worktrees and
   branches are allowed only for simultaneous code writers under `docs/agent-concurrency.md`; remove them
   after their work is integrated. Do not create another clone or product copy.
