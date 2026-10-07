@@ -4,6 +4,7 @@
 	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import arrowsMoveIcon from '@tabler/icons/outline/arrows-move.svg?raw';
+	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 	import refreshIcon from '@tabler/icons/outline/refresh.svg?raw';
 	import externalLinkIcon from '@tabler/icons/outline/external-link.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
@@ -208,23 +209,27 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <RailCard title="Deal" icon={briefcaseIcon} class="deal-panel">
-	{#snippet actions()}
-		{#if open && canChange}
-			<DropdownMenu
-				items={moveItems}
-				footer={moveFooter}
-				triggerLabel="Move or change this Deal"
-				triggerIcon={arrowsMoveIcon}
-				disabled={moving}
-				bind:open={menuOpen}
-			/>
-		{/if}
-	{/snippet}
-
 	{#if open}
 		<div class="deal-panel__stage">
 			<Badge status="informative" dot={false}>{DEAL_STAGE_LABELS[open.stage]}</Badge>
 			<span class="deal-panel__since">{daysLabel(open.stage_entered_at)}</span>
+			{#if canChange}
+				<DropdownMenu
+					items={moveItems}
+					footer={moveFooter}
+					triggerLabel="Change this Deal's stage"
+					triggerClass="deal-panel__move"
+					disabled={moving}
+					bind:open={menuOpen}
+				>
+					{#snippet trigger()}
+						<span class="deal-panel__button-icon" aria-hidden="true">{@html arrowsMoveIcon}</span
+						>Change stage<span class="deal-panel__chevron" aria-hidden="true"
+							>{@html chevronDownIcon}</span
+						>
+					{/snippet}
+				</DropdownMenu>
+			{/if}
 		</div>
 		{#if open.value_monthly_usd_cents !== null}
 			<p class="deal-panel__value">
@@ -446,6 +451,46 @@
 			flex-wrap: wrap;
 			align-items: center;
 			gap: var(--space-small);
+
+			:global(.deal-panel__move) {
+				display: inline-flex;
+				align-items: center;
+				margin-left: auto;
+				padding: var(--space-smaller) var(--space-small);
+				border: var(--border-base) solid var(--color-border);
+				border-radius: var(--radius-base);
+				background: var(--color-surface);
+				color: var(--color-heading);
+				font: inherit;
+				font-size: var(--typography--fontSize-small);
+				font-weight: 600;
+				cursor: pointer;
+				transition: background-color var(--timing-quick);
+
+				&:hover:not(:disabled) {
+					background: var(--color-surface--hover);
+				}
+
+				&:focus-visible {
+					outline: none;
+					box-shadow: var(--shadow-focus);
+				}
+
+				&:disabled {
+					cursor: progress;
+					opacity: 0.6;
+				}
+			}
+		}
+
+		&__chevron {
+			display: inline-flex;
+			margin-left: var(--space-smaller);
+
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
 		}
 
 		&__since,
