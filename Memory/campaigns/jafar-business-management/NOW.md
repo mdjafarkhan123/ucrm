@@ -8,4 +8,4 @@
 
 **Next part:** P4 First release scope, after P3.
 
-**Next:** Jafar will use only the `/jafar` calendar; he approved self-reschedule/cancel, named eligible hosts, and the six Settings groups. Wait for his answers to the four booking questions in `parts/p3-team-conversion.md`, then update the plan and ask for approval. Prospect email automation still waits for a provider-approved route; do not change live mail during planning.
+**Next:** Jafar chose immediate confirmation by default, clear Busy rules, visitor emails, and phone or Zoom/Google Meet per meeting type. Finish the remaining booking choices in `parts/p3-team-conversion.md`, then ask for approval of the complete product plan. Prospect email automation still waits for a provider-approved route; do not change live mail during planning.
