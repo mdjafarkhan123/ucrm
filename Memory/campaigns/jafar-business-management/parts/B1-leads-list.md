@@ -16,7 +16,7 @@
 
 ## Next
 
-Merge the branch into `main`. The D1 session (`opus-d1-team`) writes in the main folder: ask it before merging, or merge after it commits. Expected overlap: `AppShell.svelte`, `Sidebar.svelte`, `database.types.ts`, `query-keys.ts`, `src/routes/jafar/(protected)/+layout.svelte`.
+Merge the branch into `main`. The D1 session (`opus-d1-team`) writes in the main folder: ask it before merging, or merge after it commits. D1 said it will commit to `main` first, and its regenerated `database.types.ts` already includes the Leads tables and functions (on a conflict there, keep `main`'s copy). Expected overlap: `AppShell.svelte`, `Sidebar.svelte`, `database.types.ts`, `query-keys.ts`, `src/routes/jafar/(protected)/+layout.svelte`.
 
 ## Notes
 
