@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { TEAM_ROLES } from '$lib/jafar/team-access';
+import { JAFAR_AREAS, SENSITIVE_ACTIONS, TEAM_ROLES } from '$lib/jafar/team-access';
 
 // Jafar business D1: the Jafar Panel's teammates (ADR 0008). Passwords follow the contractor login rule,
 // 8 to 72 characters (Jafar, 2026-10-07); 72 is bcrypt's limit.
@@ -52,3 +52,12 @@ export const teamPasswordResetCompleteSchema = z
 		message: 'The passwords do not match.',
 		path: ['password_confirmation']
 	});
+
+// D2: Jafar sets a teammate's role and the access they end up with; the server stores only what differs
+// from the role. The revision is the one the editor loaded, so a save never overwrites a newer change.
+export const teamAccessSaveSchema = z.object({
+	role: z.enum(TEAM_ROLES, { message: 'Choose a role.' }),
+	areas: z.partialRecord(z.enum(JAFAR_AREAS), z.enum(['look', 'work'])),
+	actions: z.array(z.enum(SENSITIVE_ACTIONS)).max(SENSITIVE_ACTIONS.length),
+	expected_access_revision: z.number().int().min(0)
+});

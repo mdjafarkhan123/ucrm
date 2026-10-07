@@ -105,6 +105,7 @@ describe('owner session registry seam', () => {
 				email: 'owner@example.com',
 				sessionId: VALID_SESSION_ID,
 				role: null,
+				access: null,
 				memberId: null,
 				name: null
 			});

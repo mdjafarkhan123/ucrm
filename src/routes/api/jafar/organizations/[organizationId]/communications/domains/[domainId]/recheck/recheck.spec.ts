@@ -73,6 +73,7 @@ describe('owner sending-domain recheck boundary', () => {
 			email: 'owner@example.com',
 			sessionId: 'session-1',
 			role: null,
+			access: null,
 			memberId: null,
 			name: null
 		});

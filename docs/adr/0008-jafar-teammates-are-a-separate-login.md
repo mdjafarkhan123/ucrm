@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted 2026-10-07, with Jafar business management part D1. Follows § Team access across `/jafar` of the
+Accepted 2026-10-07, with Jafar business management part D1; decision 7 added with D2. Follows § Team access across `/jafar` of the
 [Jafar business management plan](../jafar-business-management-behavior-contract.md) and extends
 [ADR 0007](0007-jafar-panel-front-door-gate.md).
 
@@ -39,6 +39,18 @@ carrying only a session id, and the `platform_owner_sessions` registry that the 
    email exists, and a reset signs out the member's other sessions. Their pages send no referrer.
 6. **Only the owner has step-up and the owner's powers.** `/api/jafar/reconfirm` verifies the configured
    owner password and stays owner-only, so every step-up-protected action remains Jafar's.
+7. **Per-teammate access is the role plus stored differences (D2).** `platform_team_members` keeps only
+   where Jafar set an area differently (`off`, `look`, or `work`) and which sensitive actions he granted, so a
+   later change to a role's starting set still reaches teammates not adjusted there. Every role starts with no
+   sensitive actions: confirming and undoing payments, setting up client accounts, changing packages and
+   prices, and client account controls. Each needs its area open and is the only way to reach its paths, even
+   for a teammate who can otherwise change that area; Packages itself opens only to look. The gate reads the
+   effective access from the session on every request. One database function saves a change only at the
+   revision the editor loaded and writes its `platform_audit_events` row (target `platform_team_member`) in
+   the same transaction, so a stale editor is refused and history records who changed what. Managing the
+   team, Settings, and the step-up paths stay Jafar's whatever is granted, and a teammate keeps at least one
+   area; taking everything away means removing them. A role change asks whether to keep the differences or
+   start from the new role's standard access, as the contractor team editor does.
 
 ## Rejected
 

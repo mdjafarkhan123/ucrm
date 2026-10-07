@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import adjustmentsIcon from '@tabler/icons/outline/adjustments-horizontal.svg?raw';
 	import mailForwardIcon from '@tabler/icons/outline/mail-forward.svg?raw';
 	import userMinusIcon from '@tabler/icons/outline/user-minus.svg?raw';
 	import userPlusIcon from '@tabler/icons/outline/user-plus.svg?raw';
@@ -21,9 +22,11 @@
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import TeamMemberAccessPanel from '$lib/components/jafar/team/TeamMemberAccessPanel.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
-	import { jafarTeamKey } from '$lib/jafar/query-keys';
+	import { jafarTeamKey, jafarTeamMemberAccessKey } from '$lib/jafar/query-keys';
 	import {
+		JAFAR_AREA_LABELS,
 		TEAM_ROLES,
 		TEAM_ROLE_AREAS,
 		TEAM_ROLE_LABELS,
@@ -33,14 +36,15 @@
 	import {
 		TeamRequestError,
 		fetchTeam,
+		fetchTeamMemberAccess,
 		inviteTeammate,
 		removeTeammate,
 		resendTeamInvitation,
 		type TeamMember
 	} from '$lib/jafar/team';
 
-	// Jafar's team (D1, ADR 0008): who works in the panel, waiting invitations, and what each role opens.
-	// Per-teammate switches arrive with D2; until then a teammate gets their role's starting access.
+	// Jafar's team (D1, D2, ADR 0008): who works in the panel, waiting invitations, what each role opens,
+	// and each teammate's own access, managed in a side panel that loads when its button is reached.
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -48,21 +52,22 @@
 	const teamQuery = createQuery(() => ({ queryKey: jafarTeamKey, queryFn: fetchTeam }));
 	const members = $derived(teamQuery.data ?? []);
 
-	const AREA_LABELS: Record<JafarArea, string> = {
-		leads: 'Leads',
-		applications: 'Applications',
-		onboarding: 'Onboarding',
-		support: 'Support inbox',
-		organizations: 'Organizations',
-		packages: 'Packages',
-		operations: 'Operations'
-	};
-
 	function roleAccess(role: TeamRole) {
 		return Object.entries(TEAM_ROLE_AREAS[role]).map(([area, level]) => ({
-			label: AREA_LABELS[area as JafarArea],
-			level: level === 'work' ? 'can change' : 'look only'
+			label: JAFAR_AREA_LABELS[area as JafarArea],
+			level: level === 'work' ? 'can change' : 'view only'
 		}));
+	}
+
+	// Manage access
+	let accessTarget = $state<TeamMember | null>(null);
+
+	function prefetchAccess(member: TeamMember) {
+		void queryClient.prefetchQuery({
+			queryKey: jafarTeamMemberAccessKey(member.id),
+			queryFn: () => fetchTeamMemberAccess(member.id),
+			staleTime: 30_000
+		});
 	}
 
 	const columns: DataTableColumn[] = [
@@ -253,11 +258,26 @@
 						</td>
 					{/snippet}
 					{#snippet rowActions(member: TeamMember)}
-						<DropdownMenu
-							items={menuItems(member)}
-							triggerLabel={`Actions for ${displayName(member)}`}
-							align="end"
-						/>
+						<div class="jafar-team__row-actions">
+							<Button
+								variant="secondary"
+								variation="subtle"
+								size="small"
+								onhover={() => prefetchAccess(member)}
+								onclick={() => (accessTarget = member)}
+								><span class="jafar-team__icon" aria-hidden="true">{@html adjustmentsIcon}</span
+								><span class="jafar-team__access-label"
+									>Manage access<span class="jafar-team__visually-hidden">
+										for {displayName(member)}</span
+									></span
+								></Button
+							>
+							<DropdownMenu
+								items={menuItems(member)}
+								triggerLabel={`Actions for ${displayName(member)}`}
+								align="end"
+							/>
+						</div>
 					{/snippet}
 				</DataTable>
 			{/if}
@@ -277,9 +297,9 @@
 				{/each}
 			</ul>
 			<p class="jafar-team__note">
-				Overview, Settings, Client setup, the Team, confirming payments, creating client accounts,
-				changing packages, and provider controls stay with you. Choosing more or less for one person
-				arrives next.
+				These are starting points. Use Manage access to open more or less for one person, or to turn
+				on sensitive actions like confirming payments. Overview, Settings, and the Team always stay
+				with you.
 			</p>
 		</Card>
 	</div>
@@ -339,6 +359,12 @@
 	</Dialog>
 {/if}
 
+<TeamMemberAccessPanel
+	memberId={accessTarget?.id ?? null}
+	memberName={accessTarget ? displayName(accessTarget) : ''}
+	onClose={() => (accessTarget = null)}
+/>
+
 <ConfirmDialog
 	open={removeTarget !== null}
 	title={removeTarget?.status === 'invited' ? 'Cancel this invitation?' : 'Remove from your team?'}
@@ -389,6 +415,22 @@
 			width: 18px;
 			height: 18px;
 		}
+	}
+
+	.jafar-team__row-actions {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: var(--space-smaller);
+	}
+
+	.jafar-team__visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
 	}
 
 	.jafar-team__person {
@@ -512,6 +554,16 @@
 
 		.jafar-team__person-text .jafar-team__person-role {
 			display: block;
+		}
+
+		// The access button keeps its icon and spoken name; the words would push the menu off screen.
+		.jafar-team__access-label {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
 		}
 	}
 </style>

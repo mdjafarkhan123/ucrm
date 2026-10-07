@@ -33,7 +33,7 @@
 	const queryClient = useQueryClient();
 
 	// The owner sees everything; a teammate's sidebar and live Support data follow their role (ADR 0008).
-	const viewer = $derived({ role: data.owner.role });
+	const viewer = $derived({ role: data.owner.role, access: data.owner.access });
 	const canOpen = (href: string) => canUseJafarPath(viewer, href);
 	const supportVisible = $derived(canOpen('/jafar/support'));
 	const account = $derived(
