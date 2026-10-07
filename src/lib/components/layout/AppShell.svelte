@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Sidebar, { type NavGroup } from './Sidebar.svelte';
+	import Sidebar, { type NavGroup, type NavItem } from './Sidebar.svelte';
 	import Topbar from './Topbar.svelte';
 	import MobileNav from './MobileNav.svelte';
 	import GlobalSearchDialog from '$lib/components/search/GlobalSearchDialog.svelte';
@@ -9,6 +9,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { useQueryClient } from '@tanstack/svelte-query';
+	import { fallbackContractorNavigation, type ContractorNavigation } from '$lib/account/navigation';
 
 	import logoutIcon from '@tabler/icons/outline/logout.svg?raw';
 
@@ -20,14 +21,7 @@
 		logoUrl = null,
 		account = null,
 		userId,
-		inboxVisible = true,
-		pipelineVisible = true,
-		clientsVisible = true,
-		quotesVisible = true,
-		invoicesVisible = true,
-		marketingVisible = false,
-		reviewsVisible = false,
-		filesVisible = true,
+		navigation = fallbackContractorNavigation,
 		supportUnread = 0,
 		ownerCanOpen = () => true,
 		ownerNotificationsVisible = true
@@ -40,14 +34,8 @@
 		logoUrl?: string | null;
 		account?: { name: string | null; email: string | null; role: string } | null;
 		userId?: string;
-		inboxVisible?: boolean;
-		pipelineVisible?: boolean;
-		clientsVisible?: boolean;
-		quotesVisible?: boolean;
-		invoicesVisible?: boolean;
-		marketingVisible?: boolean;
-		reviewsVisible?: boolean;
-		filesVisible?: boolean;
+		/** Contractor variant: the menu items this member may open, from their package and permissions. */
+		navigation?: ContractorNavigation;
 		/** Owner only: support conversations waiting unread for Uplift, shown on the Support item. */
 		supportUnread?: number;
 		/** Owner variant: whether the signed-in person may open a page; a teammate sees only their areas. */
@@ -68,39 +56,38 @@
 		searchOpen = true;
 	}
 
-	const contractorGroups: NavGroup[] = $derived.by(() => [
+	type ContractorNavItem = NavItem & { area?: keyof ContractorNavigation };
+	const allContractorGroups: Array<{ label: string; items: ContractorNavItem[] }> = [
 		{
 			label: 'Overview',
 			items: [
 				{ label: 'Dashboard', href: '/dashboard', icon: 'dashboard' },
-				{ label: 'Schedule', href: '/schedule', icon: 'calendar' }
+				{ label: 'Schedule', href: '/schedule', icon: 'calendar', area: 'schedule' }
 			]
 		},
 		{
 			label: 'Customers',
 			items: [
-				...(inboxVisible ? [{ label: 'Inbox', href: '/communications', icon: 'inbox' }] : []),
-				...(clientsVisible ? [{ label: 'Clients', href: '/clients', icon: 'users' }] : []),
-				{ label: 'Requests', href: '/requests', icon: 'route' },
-				...(pipelineVisible ? [{ label: 'Pipeline', href: '/pipeline', icon: 'chartBar' }] : [])
+				{ label: 'Inbox', href: '/communications', icon: 'inbox', area: 'inbox' },
+				{ label: 'Clients', href: '/clients', icon: 'users', area: 'clients' },
+				{ label: 'Requests', href: '/requests', icon: 'route', area: 'requests' },
+				{ label: 'Pipeline', href: '/pipeline', icon: 'chartBar', area: 'pipeline' }
 			]
 		},
 		{
 			label: 'Work & Money',
 			items: [
-				{ label: 'Jobs', href: '/jobs', icon: 'tools' },
-				...(quotesVisible ? [{ label: 'Quotes', href: '/quotes', icon: 'fileInvoice' }] : []),
-				...(invoicesVisible ? [{ label: 'Invoices', href: '/invoices', icon: 'receipt' }] : []),
-				...(filesVisible ? [{ label: 'Files', href: '/files', icon: 'files' }] : [])
+				{ label: 'Jobs', href: '/jobs', icon: 'tools', area: 'jobs' },
+				{ label: 'Quotes', href: '/quotes', icon: 'fileInvoice', area: 'quotes' },
+				{ label: 'Invoices', href: '/invoices', icon: 'receipt', area: 'invoices' },
+				{ label: 'Files', href: '/files', icon: 'files', area: 'files' }
 			]
 		},
 		{
 			label: 'Growth',
 			items: [
-				...(marketingVisible
-					? [{ label: 'Marketing', href: '/marketing', icon: 'speakerphone' }]
-					: []),
-				...(reviewsVisible ? [{ label: 'Reviews', href: '/reviews', icon: 'star' }] : []),
+				{ label: 'Marketing', href: '/marketing', icon: 'speakerphone', area: 'marketing' },
+				{ label: 'Reviews', href: '/reviews', icon: 'star', area: 'reviews' },
 				{ label: 'Growth Feed', href: '/growth', icon: 'trendingUp', unavailable: true }
 			]
 		},
@@ -113,7 +100,16 @@
 				{ label: 'Usage', href: '/usage', icon: 'chartBar', unavailable: true }
 			]
 		}
-	]);
+	];
+	// An item shows only when its area is open to this member, and a section with none left disappears.
+	const contractorGroups: NavGroup[] = $derived(
+		allContractorGroups
+			.map((group) => ({
+				label: group.label,
+				items: group.items.filter((item) => !item.area || navigation[item.area])
+			}))
+			.filter((group) => group.items.length > 0)
+	);
 	// The Jafar Panel's two entrances: running Uplift's own business (finding, selling to, and looking
 	// after clients) and running the platform those clients use. Settings serves both.
 	const allOwnerGroups: NavGroup[] = $derived([

@@ -95,7 +95,9 @@ export class OrganizationAccessNotFoundError extends Error {
 	}
 }
 
-const permissionFeaturePrefixes: Array<[string, string]> = [
+// Which package feature a permission belongs to. A list means the permission serves any one of those
+// features, so it stays on while at least one of them is in the package.
+const permissionFeaturePrefixes: Array<[string, string | string[]]> = [
 	['customer.', 'core.customers_properties'],
 	['customers.', 'core.customers_properties'],
 	['property.', 'core.customers_properties'],
@@ -123,7 +125,20 @@ const permissionFeaturePrefixes: Array<[string, string]> = [
 	['reviews.', 'growth.reputation'],
 	['report.', 'reporting.advanced'],
 	['reports.', 'reporting.advanced'],
-	['team.', 'core.team']
+	['team.', 'core.team'],
+	// Time, expenses and field records are kept against a job's visits, so they go with Jobs.
+	['time.', 'core.jobs'],
+	['expenses.', 'core.jobs'],
+	['field_records.', 'core.jobs'],
+	// A feature's own Settings pages go with it. Business details have no feature and always show.
+	['settings.quotes.', 'core.quotes'],
+	['settings.price_book.', 'core.quotes'],
+	['settings.invoices.', 'core.invoices_payments'],
+	['settings.payments.', 'core.invoices_payments'],
+	['settings.taxes.', ['core.quotes', 'core.invoices_payments']],
+	['settings.checklists.', 'core.jobs'],
+	// Online forms create a request, an assessment, or a job.
+	['settings.forms.', ['core.requests_assessments', 'core.jobs']]
 ];
 
 function todayInTimeZone(timezone: string, now: Date) {
@@ -331,7 +346,10 @@ function resolveMemberPermissions(
 
 export function permissionIsEnabled(permissionKey: string, features: Record<string, boolean>) {
 	const featureKey = featureForPermission(permissionKey);
-	return featureKey ? features[featureKey] === true : true;
+	if (!featureKey) return true;
+	return Array.isArray(featureKey)
+		? featureKey.some((key) => features[key] === true)
+		: features[featureKey] === true;
 }
 
 function effectiveLimit(row: LimitRow | null, label: string) {

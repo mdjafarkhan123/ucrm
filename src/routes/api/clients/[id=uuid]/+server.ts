@@ -150,7 +150,9 @@ export const GET: RequestHandler = async (event) => {
 		};
 	}
 
-	const workSummaryRow = ((workSummary ?? {}) as Record<string, ClientWorkSummary>)[clientId] ?? {
+	const workSummaryRow = (
+		(workSummary ?? {}) as Record<string, Omit<ClientWorkSummary, 'included'>>
+	)[clientId] ?? {
 		currency_code: 'USD',
 		lifetime_billed_minor: null,
 		open_quotes_count: null,
@@ -187,7 +189,15 @@ export const GET: RequestHandler = async (event) => {
 			can_archive: hasPermission(access.access, 'customers.archive'),
 			// Whether this member may merge another client into this one (customers.merge).
 			can_merge: hasPermission(access.access, 'customers.merge'),
-			work_summary: workSummaryRow
+			// A tile whose feature the package leaves out is not shown at all, rather than reading as a refusal.
+			work_summary: {
+				...workSummaryRow,
+				included: {
+					billing: access.access.features['core.invoices_payments'] === true,
+					quotes: access.access.features['core.quotes'] === true,
+					jobs: access.access.features['core.jobs'] === true
+				}
+			}
 		}
 	});
 };

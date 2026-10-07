@@ -104,31 +104,37 @@
 	}
 
 	// Each figure is null when this member lacks the permission that gates it (customers.view_financials,
-	// quotes.view, jobs.view) -- it then says why instead of showing a zero that may not be true.
+	// quotes.view, jobs.view) -- it then says why instead of showing a zero that may not be true. A tile
+	// whose feature the business's package leaves out is not shown at all.
 	const summary = $derived(client.work_summary);
-	const stats = $derived([
-		{
-			icon: coinIcon,
-			label: 'Lifetime',
-			value:
-				summary.lifetime_billed_minor === null
-					? null
-					: formatMoney(summary.lifetime_billed_minor, summary.currency_code),
-			waiting: 'You do not have access to this client’s billing'
-		},
-		{
-			icon: fileIcon,
-			label: 'Open quotes',
-			value: summary.open_quotes_count === null ? null : String(summary.open_quotes_count),
-			waiting: 'You do not have access to quotes'
-		},
-		{
-			icon: toolIcon,
-			label: 'Active jobs',
-			value: summary.active_jobs_count === null ? null : String(summary.active_jobs_count),
-			waiting: 'You do not have access to jobs'
-		}
-	]);
+	const stats = $derived(
+		[
+			{
+				included: summary.included.billing,
+				icon: coinIcon,
+				label: 'Lifetime',
+				value:
+					summary.lifetime_billed_minor === null
+						? null
+						: formatMoney(summary.lifetime_billed_minor, summary.currency_code),
+				waiting: 'You do not have access to this client’s billing'
+			},
+			{
+				included: summary.included.quotes,
+				icon: fileIcon,
+				label: 'Open quotes',
+				value: summary.open_quotes_count === null ? null : String(summary.open_quotes_count),
+				waiting: 'You do not have access to quotes'
+			},
+			{
+				included: summary.included.jobs,
+				icon: toolIcon,
+				label: 'Active jobs',
+				value: summary.active_jobs_count === null ? null : String(summary.active_jobs_count),
+				waiting: 'You do not have access to jobs'
+			}
+		].filter((stat) => stat.included)
+	);
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -219,17 +225,19 @@
 				</div>
 			</dl>
 
-			<ul class="client-header__stats">
-				{#each stats as stat (stat.label)}
-					<li class="client-header__stat">
-						<span class="client-header__stat-icon" aria-hidden="true">{@html stat.icon}</span>
-						<span class="client-header__stat-text">
-							<span class="client-header__stat-label">{stat.label}</span>
-							<span class="client-header__stat-value">{stat.value ?? stat.waiting}</span>
-						</span>
-					</li>
-				{/each}
-			</ul>
+			{#if stats.length > 0}
+				<ul class="client-header__stats">
+					{#each stats as stat (stat.label)}
+						<li class="client-header__stat">
+							<span class="client-header__stat-icon" aria-hidden="true">{@html stat.icon}</span>
+							<span class="client-header__stat-text">
+								<span class="client-header__stat-label">{stat.label}</span>
+								<span class="client-header__stat-value">{stat.value ?? stat.waiting}</span>
+							</span>
+						</li>
+					{/each}
+				</ul>
+			{/if}
 		</div>
 	{/if}
 </section>
