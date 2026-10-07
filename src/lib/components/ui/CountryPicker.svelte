@@ -50,6 +50,7 @@
 	let inputValue = $derived(open ? query : (selected?.name ?? ''));
 	// Reopening on a chosen country shows the whole list, not just that one country.
 	let results = $derived(searchCountries(query === selected?.name ? '' : query));
+	let searchKey = $derived(results.length === allCountryOptions().length ? '' : query);
 	let describedBy = $derived(errorMessage ? `${id}-error` : undefined);
 
 	function focusInput(input: HTMLInputElement) {
@@ -139,20 +140,25 @@
 					collisionPadding={8}
 				>
 					<Combobox.Viewport class="country-picker__viewport">
-						{#each results as country (country.code)}
-							<Combobox.Item
-								value={country.code}
-								label={country.name}
-								class="country-picker__option"
-							>
-								<span class="country-picker__flag" aria-hidden="true">{country.flag}</span>
-								<span class="country-picker__name">{country.name}</span>
-								{#if value === country.code}<span class="country-picker__check" aria-hidden="true"
-										>{@html checkIcon}</span
-									>{:else}<span class="country-picker__code" aria-hidden="true">{country.code}</span
-									>{/if}
-							</Combobox.Item>
-						{:else}<div class="country-picker__empty">No countries match “{query}”.</div>{/each}
+						<!-- A fresh list per search: bits-ui highlights the top match only when items mount, so
+						     Enter picks it the way every country autocomplete does. -->
+						{#key searchKey}
+							{#each results as country (country.code)}
+								<Combobox.Item
+									value={country.code}
+									label={country.name}
+									class="country-picker__option"
+								>
+									<span class="country-picker__flag" aria-hidden="true">{country.flag}</span>
+									<span class="country-picker__name">{country.name}</span>
+									{#if value === country.code}<span class="country-picker__check" aria-hidden="true"
+											>{@html checkIcon}</span
+										>{:else}<span class="country-picker__code" aria-hidden="true"
+											>{country.code}</span
+										>{/if}
+								</Combobox.Item>
+							{:else}<div class="country-picker__empty">No countries match “{query}”.</div>{/each}
+						{/key}
 					</Combobox.Viewport>
 				</Combobox.Content>
 			</Combobox.Portal>
