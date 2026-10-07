@@ -14,7 +14,7 @@ export type ContactDirection = (typeof CONTACT_DIRECTIONS)[number];
 
 export const CONTACT_DIRECTION_LABELS: Record<ContactDirection, string> = {
 	outbound: 'We contacted them',
-	inbound: 'They replied or contacted us'
+	inbound: 'They contacted us'
 };
 
 export const CONTACT_CHANNELS = [

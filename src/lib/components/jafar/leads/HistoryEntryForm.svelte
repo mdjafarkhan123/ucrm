@@ -74,6 +74,9 @@
 	let methodId = $state(start?.contact_method?.id ?? '');
 	let callOutcome = $state<CallOutcome | ''>(start?.call_outcome ?? '');
 	let occurredLocal = $state(start ? localFromIso(start.occurred_at) : nowLocal());
+	// The picker shows minutes only. Left at "now", the exact moment is sent, so contact logged right after
+	// adding a Lead is not listed before "Lead added".
+	let occurredUntouched = $state(!start);
 	let body = $state(start?.body ?? '');
 
 	let fieldErrors = $state<Record<string, string>>({});
@@ -133,7 +136,10 @@
 			contact_channel: channel || undefined,
 			contact_method_id: chosenMethod || null,
 			call_outcome: needsOutcome ? callOutcome || null : null,
-			occurred_at: localDateTimeToIso(occurredLocal) || undefined,
+			occurred_at:
+				occurredUntouched && occurredLocal === nowLocal()
+					? new Date().toISOString()
+					: localDateTimeToIso(occurredLocal) || undefined,
 			body
 		};
 	}
@@ -180,6 +186,7 @@
 			body = '';
 			callOutcome = '';
 			occurredLocal = nowLocal();
+			occurredUntouched = true;
 		}
 		onSaved?.();
 	}
@@ -205,6 +212,7 @@
 			<SegmentedControl
 				label="Who reached out"
 				name={`${idPrefix}-direction`}
+				size="small"
 				fullWidth
 				bind:value={direction}
 				options={directionOptions}
@@ -267,8 +275,10 @@
 					required
 					invalid={Boolean(fieldErrors.occurred_at)}
 					value={pickerValue}
-					onchange={(value: DateTimePickerValue) =>
-						(occurredLocal = dateTimePickerValueToLocalString(value))}
+					onchange={(value: DateTimePickerValue) => {
+						occurredLocal = dateTimePickerValueToLocalString(value);
+						occurredUntouched = false;
+					}}
 				/>
 				{#if fieldErrors.occurred_at}<p class="history-form__error">
 						{fieldErrors.occurred_at}
