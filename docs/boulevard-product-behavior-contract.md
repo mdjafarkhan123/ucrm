@@ -1,6 +1,6 @@
 # Boulevard-inspired industry editions
 
-**Status:** Planning — overall direction and booking/identity behavior agreed 2026-10-05; clinical-record behavior agreed 2026-10-06; commerce, communications, operations, business-entry, onboarding-program and performance direction settled 2026-10-07; other areas and release scope remain in planning.
+**Status:** Planning — behavior direction agreed through 2026-10-07; first-release boundary agreed 2026-10-08. Performance workloads, final plan review and build parts remain in planning.
 
 ## Summary
 
@@ -14,7 +14,13 @@ Jafar approved all three initial recommendations:
 - Boulevard-style booking, forms, consent, charting, and payments define the initial clinical direction. Specialist diagnostic test/report systems are outside the initial promise; any essential gap gets a separate decision.
 - Single-location teams first; multi-location capabilities remain in the complete inventory for later planning.
 
-These decisions set boundaries, not final feature-level release approval. Research still inventories the full documented Boulevard landscape.
+Those earlier decisions set direction; the first-release boundary was settled after the inventory and feasibility research below.
+
+## First-release boundary agreed 2026-10-08
+
+Jafar approved the [P3 release boundary and clinic-readiness checks](research/boulevard-p3-release-proposal-2026-10-08.md): a complete single-location booking-to-closeout clinical journey, with extra capabilities built and verified before accepting a clinic that depends on them. The first clinic may be an existing business; its services, age groups, appointments, old paid benefits, stock practice and source records determine eligibility. One-time packages and service vouchers are part of the first-release core. Recurring memberships remain dependent on the selected clinic's needs. A clinic may keep injectable stock in a reviewed outside record that traces person, visit, lot, expiry, quantity and recalls; the application must not imply it manages that stock. In-product injectable tracking requires its full trace before use.
+
+These are release-scope decisions, not evidence that the features or provider safeguards are ready. Source-specific migration, paid-unit valuation, saved-card permissions, protected-information agreements and state-specific clinical review remain launch checks. P3A defines the measurable performance work; P4 reviews the complete plan and build parts.
 
 ## Experience and access
 
@@ -103,7 +109,7 @@ Follow [Reference order and missing behavior](platform-overview.md#reference-ord
 
 ## Living feature plan
 
-The [public-source inventory](research/boulevard-feature-landscape-2026-10-05.md) records stable identifiers, purposes, sources and availability boundaries. P2 adds detailed workflows, settings, permissions, exceptions and dependencies. [P3 feasibility research](research/boulevard-p3-feasibility-2026-10-07.md) maps reuse candidates and provider limits. The [P3 release proposal](research/boulevard-p3-release-proposal-2026-10-08.md) maps inventory families, first-clinic eligibility and completion checks for Jafar's review; its assignments are recommendations, not approved scope. Area research is linked below.
+The [public-source inventory](research/boulevard-feature-landscape-2026-10-05.md) records stable identifiers, purposes, sources and availability boundaries. P2 adds detailed workflows, settings, permissions, exceptions and dependencies. [P3 feasibility research](research/boulevard-p3-feasibility-2026-10-07.md) maps reuse candidates and provider limits. The [P3 release boundary](research/boulevard-p3-release-proposal-2026-10-08.md) maps inventory families, first-clinic eligibility and completion checks. Its family-level release scope was agreed on 2026-10-08; individual Boulevard features do not thereby become product-parity promises. Area research is linked below.
 
 Track these independently:
 
@@ -243,7 +249,7 @@ Evidence: [P2A research](research/boulevard-booking-identity-2026-10-05.md). Rel
 
 ## Clinical records
 
-Agreed by Jafar 2026-10-06: all four P2B recommendations on parent access, treatment clearance, chart review, and prescribing boundaries. Sources and evidence limits: [P2B clinical research](research/boulevard-clinical-records-2026-10-06.md). These rules describe Medspa & Clinical Wellness behavior; P3 assigns release timing and checks existing-app suitability.
+Agreed by Jafar 2026-10-06: all four P2B recommendations on parent access, treatment clearance, chart review, and prescribing boundaries. Sources and evidence limits: [P2B clinical research](research/boulevard-clinical-records-2026-10-06.md). These rules describe Medspa & Clinical Wellness behavior; the [P3 release boundary](research/boulevard-p3-release-proposal-2026-10-08.md) assigns timing and records existing-app suitability.
 
 ### Intake and consent
 
@@ -267,7 +273,7 @@ Agreed by Jafar 2026-10-06: all four P2B recommendations on parent access, treat
 ### Review and prescribing
 
 - The clinic chooses which form or chart templates require a named supervisor's review. The record distinguishes draft, submitted and awaiting review, signed off by a named reviewer, and explicitly completed without review by an authorized person. A bulk action or an appointment's checkout is never presented as an individual review. Checkout may finish while review is pending; the queue keeps pending and overdue work visible.
-- Intake can collect current medicines and allergies. A clinician must reconcile that information into any future prescribing system before relying on interaction or allergy checks; free-text answers alone are not such checks. Electronic prescription creation is planned only through a qualified provider integration with prescriber credentialing, required controlled-substance controls, and an outage path. P3 decides release timing; no native prescribing capability is promised by this planning part.
+- Intake can collect current medicines and allergies. A clinician must reconcile that information into any future prescribing system before relying on interaction or allergy checks; free-text answers alone are not such checks. Electronic prescription creation is planned only through a qualified provider integration with prescriber credentialing, required controlled-substance controls, and an outage path. Prescribing is later; no native prescribing capability is promised.
 
 Clinical details and photos stay in protected records; appointment texts and emails do not expose them. Staff access, audit, deletion/export, notification, and integration details belong to P2D, P2E, and P2G. The final US launch behavior needs state-specific review of minor consent/access, consent text, clinical policy, and prescribing requirements.
 
@@ -275,7 +281,7 @@ Clinical details and photos stay in protected records; appointment texts and ema
 
 Settled 2026-10-07 from the strongest documented Boulevard pattern, with Vagaro and Zenoti used only where
 Boulevard is unclear or weaker. Evidence and limits: [P2C commerce research](research/boulevard-commerce-2026-10-07.md).
-Release assignment remains P3's job.
+The [P3 release boundary](research/boulevard-p3-release-proposal-2026-10-08.md) assigns first-release and later commerce capabilities.
 
 ### Checkout and financial history
 
@@ -361,16 +367,16 @@ Release assignment remains P3's job.
   after checkout becomes a linked tip-only purchase rather than rewriting the closed service order.
 
 Before a US state launch, renewing-plan cancellation, paid-value expiry and gift-card terms receive
-state-specific review. Payment-provider capability, saved cards, hardware, financing, tax calculation, release
-scope and reuse of the contractor payment system remain for P3 feasibility and release assignment.
+state-specific review. The P3 feasibility and release notes state the payment-provider and reuse limits;
+saved-card permissions, hardware and tax calculation still need the checks named there.
 
 ## Communications
 
 Settled 2026-10-07 using Boulevard's documented operational pattern and Jafar's direction to use the
 recommended safe rule where Boulevard or an established competitor does not answer a gap. Evidence, limits and
-vendor differences: [P2D communications research](research/boulevard-communications-2026-10-07.md). P3 still
-assigns release timing and checks whether existing Communications, Reviews and Automation work suits these
-industries.
+vendor differences: [P2D communications research](research/boulevard-communications-2026-10-07.md). The P3
+release boundary assigns timing and checks whether existing Communications, Reviews and Automation work suits
+these industries.
 
 ### Appointment notices and the staff inbox
 
@@ -416,7 +422,7 @@ industries.
   opt-outs, exclusions and recent-contact limits; eligibility is checked again at send time. The send history
   records who launched it and who was eligible, sent to, skipped or failed. Replies return to a staffed route.
   One-time campaigns and preset rebooking campaigns are inventoried, but their initial-versus-later release
-  assignment remains P3's decision.
+  assignment is later under the P3 boundary.
 
 ### Feedback and AI boundaries
 
@@ -424,19 +430,19 @@ industries.
   public review regardless of an internal score. All may also leave private feedback. A low score can alert
   authorized staff for recovery, but must not hide or bury the public link. Rewards cannot depend on a
   review's rating or wording. Public replies do not confirm patient status or reveal treatment details.
-  Ratings and review-request release timing remains with P3.
+  Ratings and review requests are later under the P3 boundary.
 - Any future AI receptionist or writing aid is separately enabled and reviewed for its provider, privacy and
   handoff behavior. It may answer basic business questions and provide a booking link; it does not diagnose,
   give treatment clearance, disclose charts, provide medical advice or claim to complete a clinical booking.
   An unresolved or urgent call becomes a human transfer or callback task with a reviewable summary. AI release
-  timing remains with P3; Boulevard's beta does not establish that our providers meet these conditions.
+  timing is later under the P3 boundary; Boulevard's beta does not establish that our providers meet these conditions.
 
 ## Operations
 
 Agreed by Jafar 2026-10-07. Boulevard's documented operations are the primary reference; Zenoti and
 Aesthetic Record supply the clinical lot-and-expiry pattern where Boulevard has a documented gap. Evidence
 and limits: [P2E operations research](research/boulevard-operations-2026-10-07.md). Release timing and
-existing-app suitability remain P3.
+existing-app suitability are recorded in the P3 boundary and feasibility note.
 
 ### Staff access and daily work
 
@@ -501,29 +507,29 @@ Agreed direction 2026-10-07 after checking official Boulevard guidance and Zenot
 - Effective permissions govern reports, underlying rows, downloads and saved views consistently. Finance access controls business money and payout details; clinicians may see only their own permitted performance; stock staff may see counts without automatically gaining cost, sale-price or clinical-record access. A download cannot expose fields hidden on screen. No financial or stock export includes protected clinical notes merely because it identifies an appointment or product.
 - The daily unresolved-work view includes open orders, failed or pending payments, unexplained cash variance, payout exceptions and the operational exceptions already agreed. Each item has an owner and resolution history. A day may close with visible exceptions; closing does not mark missing money as received.
 
-The existing contractor financial reconciliation rules and readers are reuse candidates only. P3 checks their suitability for appointments, prepaid value, stock, commission, payout data and reporting permissions before assigning release scope. Reports use the organization's timezone and one named currency; source dates and stable IDs permit accountant tracing. No capacity or accounting-software claim follows from this planning section.
+The existing contractor financial reconciliation rules and readers are reuse candidates only. The P3 feasibility and release notes assess their suitability for appointments, prepaid value, stock, commission, payout data and reporting permissions. Reports use the organization's timezone and one named currency; source dates and stable IDs permit accountant tracing. No capacity or accounting-software claim follows from this planning section.
 
 ## Connected journeys
 
-Agreed by Jafar 2026-10-07 using Boulevard's published connection, migration, mobile and location behavior, with Zenoti as a focused comparison for old balances and cross-location redemption. Evidence and limits: [P2G connected-journey research](research/boulevard-connected-journeys-2026-10-07.md). P3 still chooses actual first-release integrations and mobile surfaces and checks provider and existing-app suitability.
+Agreed by Jafar 2026-10-07 using Boulevard's published connection, migration, mobile and location behavior, with Zenoti as a focused comparison for old balances and cross-location redemption. Evidence and limits: [P2G connected-journey research](research/boulevard-connected-journeys-2026-10-07.md). The P3 boundary selects booking links and responsive browser surfaces first; further integrations and native surfaces need separate provider and existing-app checks.
 
 - Website, social and other booking entry points use the same appointment, person identity, service eligibility, deposit and notification rules. The appointment in this platform is the booking record. A personal calendar may block time or show a neutral event, but its delayed or failed sync does not become a second booking authority. Staff can see and resolve connection failures.
 - The business owner approves each external connection's purpose, permitted data and actions. The business sees its connection status and last success or failure. General business, marketing, calendar and accounting connections do not receive clinical charts, forms, photos, treatment details or confidential minor records. Disconnecting stops future sharing; staff are told that copies already held by another provider may need separate removal. Booking, clinical, financial, export and audit permissions apply on every connected surface.
 - Moving from old software starts with a source-specific sample and a review of person matches, unmatched/conflicting records, future appointments, history and prepaid balances. Authorized staff approve mappings and totals before imported data is used. Keep the source and import date visible; unresolved records stay in a review queue. An imported phone number or opt-in flag alone never grants marketing permission. Imported clinical files are historical material until a qualified clinician reviews what is relevant to current care. Import does not create treatment clearance, chart sign-off or a current prescription. The clinic is told which source data can be moved automatically and which needs individual handling; no full clinical-history migration is promised without source-specific proof.
-- A mobile or customer-facing surface follows the same identity, clinical privacy, staff access and money rules as the main workspace. If it does not support an action, it directs the user to a supported surface rather than appearing to complete it. Native staff apps, customer kiosks and card-present hardware have separate release and provider checks in P3.
+- A mobile or customer-facing surface follows the same identity, clinical privacy, staff access and money rules as the main workspace. If it does not support an action, it directs the user to a supported surface rather than appearing to complete it. Native staff apps, customer kiosks and card-present hardware are later and need separate provider checks.
 - The first release serves one location. In a later multi-location experience, a person may keep one business-level identity while appointments, staff access, prices, stock, payments and prepaid benefits retain their location. Cross-location use of a membership, package, gift card or other prepaid value needs an explicit clinic rule and a traceable purchase/use/settlement history before it is enabled. Shared identity never grants unrestricted clinical access at another location.
 
-P3 must check complete journeys across these boundaries: outside booking through clearance and checkout; migration of a duplicate client with old chart, balance and opt-out; a failed stock or accounting sync after a sale; and a later visit at another location. A connection failure must not quietly create a booking, balance, payment, stock or permission claim that the platform cannot support.
+The P3 release boundary checks complete journeys across these boundaries: outside booking through clearance and checkout; migration of a duplicate client with old chart, balance and opt-out; a failed stock or accounting sync after a sale; and a later visit at another location. A connection failure must not quietly create a booking, balance, payment, stock or permission claim that the platform cannot support.
 
 ## Still unclear
 
-- Detailed behaviors, unresolved evidence gaps, reuse findings, release assignments, and measurable quality targets; settle these in planning parts, not by assumption.
+- Remaining source and provider evidence, clinic-specific eligibility, and measurable quality targets; settle these in planning parts and launch checks, not by assumption.
 - Performance: representative workloads and per-route/browser budgets for the agreed initial release. P3A
   must settle these before build parts are approved; implemented slices must then supply the stated evidence.
-- How client sign-in is built alongside the existing staff sign-in, and how saved cards fit the current Stripe key (P3).
-- Clinical records: which agreed capabilities belong in the initial release, what can be reused, and which qualified prescribing provider could support an integration (P3). State-specific minor access and clinical-policy review must be completed for the states served before launch.
-- Reporting: the accounting method for valuing unused prepaid product units and initial report selection need P3 verification. Stripe payout data is available with additional permissions, but does not prove bank arrival; no automatic bank match or release promise follows.
-- Connections and migration: which specific integrations, mobile surfaces and source-vendor imports pass P3 feasibility and belong in the initial release. Boulevard's historical-file guide has been checked: it describes attributed file attachments, not structured chart conversion; its current export guide says clinical files cannot be bulk-exported. Actual source data and clinic-specific migrations remain unverified.
+- Client code sign-in and saved-card consent still need build design and provider-key verification. The existing staff sign-in and Stripe checkout do not establish readiness for those new flows.
+- State-specific minor access and clinical-policy review must be completed for the states served before launch. Prescribing remains later and requires a qualified provider decision.
+- The accounting method for valuing unused prepaid product units remains unverified. Stripe payout data is available with additional permissions, but does not prove bank arrival; no automatic bank match follows.
+- Source-vendor samples and clinic-specific imports remain unverified. Boulevard's historical-file guide describes attributed file attachments, not structured chart conversion; its current export guide says clinical files cannot be bulk-exported. The first-release connection is a link into our booking flow; further integrations need their own failure and data-sharing review.
 - Whether Beauty & Spa lets under-age clients book online on their own; settle this when that edition is planned.
 
 ## Not doing
@@ -539,12 +545,12 @@ P3 must check complete journeys across these boundaries: outside booking through
 - [P2A booking and identity evidence and original drafts](research/boulevard-booking-identity-2026-10-05.md); agreed behavior is in [Booking and identity](#booking-and-identity).
 - [P2B clinical-record sources and evidence limits](research/boulevard-clinical-records-2026-10-06.md); agreed behavior is in [Clinical records](#clinical-records).
 - [P2C commerce sources, vendor gaps and selected mature patterns](research/boulevard-commerce-2026-10-07.md); agreed behavior is in [Commerce](#commerce).
-- [P2D communications sources, vendor gaps and selected safeguards](research/boulevard-communications-2026-10-07.md); agreed behavior is in [Communications](#communications), while marketing, reviews and AI release timing belongs to P3.
-- [P2E operations sources and clinical stock gap](research/boulevard-operations-2026-10-07.md); agreed behavior is in [Operations](#operations), while release timing and existing-app reuse belong to P3.
-- [P2F reporting measures, reconciliation, permissions and source limits](research/boulevard-reporting-2026-10-07.md); agreed direction is in [Reporting and reconciliation](#reporting-and-reconciliation), while release timing and existing-app reuse belong to P3.
-- [P2G connected-journey evidence, approved safeguards and migration limits](research/boulevard-connected-journeys-2026-10-07.md); agreed behavior is in [Connected journeys](#connected-journeys), while release timing and feasibility belong to P3.
-- [P3 existing-app and provider feasibility checkpoint](research/boulevard-p3-feasibility-2026-10-07.md); includes the corrected industry-led release recommendation, while feature-level scope remains unapproved.
-- [P3 proposed release map and first-clinic readiness checks](research/boulevard-p3-release-proposal-2026-10-08.md); awaiting Jafar's scope decisions.
+- [P2D communications sources, vendor gaps and selected safeguards](research/boulevard-communications-2026-10-07.md); agreed behavior is in [Communications](#communications), with release timing in the P3 boundary.
+- [P2E operations sources and clinical stock gap](research/boulevard-operations-2026-10-07.md); agreed behavior is in [Operations](#operations), with release timing and reuse in the P3 notes.
+- [P2F reporting measures, reconciliation, permissions and source limits](research/boulevard-reporting-2026-10-07.md); agreed direction is in [Reporting and reconciliation](#reporting-and-reconciliation), with release timing and reuse in the P3 notes.
+- [P2G connected-journey evidence, approved safeguards and migration limits](research/boulevard-connected-journeys-2026-10-07.md); agreed behavior is in [Connected journeys](#connected-journeys), with release timing and feasibility in the P3 notes.
+- [P3 existing-app and provider feasibility checkpoint](research/boulevard-p3-feasibility-2026-10-07.md); records reuse limits and provider gates before the approved family-level release boundary.
+- [P3 release map and first-clinic readiness checks](research/boulevard-p3-release-proposal-2026-10-08.md); family-level release boundary agreed 2026-10-08.
 - [Industry entry and onboarding patterns](research/industry-onboarding-entry-patterns-2026-10-07.md); agreed direction is in [Business entry and onboarding](#business-entry-and-onboarding).
 
 Primary public entry points:
