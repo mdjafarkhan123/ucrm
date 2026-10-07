@@ -1,6 +1,6 @@
 # Boulevard-inspired industry editions
 
-**Status:** Planning — overall direction and booking/identity behavior agreed 2026-10-05; clinical-record behavior agreed 2026-10-06; commerce, communications, business-entry, onboarding-program and performance direction settled 2026-10-07; other areas and release scope remain in planning.
+**Status:** Planning — overall direction and booking/identity behavior agreed 2026-10-05; clinical-record behavior agreed 2026-10-06; commerce, communications, operations, business-entry, onboarding-program and performance direction settled 2026-10-07; other areas and release scope remain in planning.
 
 ## Summary
 
@@ -410,6 +410,64 @@ industries.
   An unresolved or urgent call becomes a human transfer or callback task with a reviewable summary. AI release
   timing remains with P3; Boulevard's beta does not establish that our providers meet these conditions.
 
+## Operations
+
+Agreed by Jafar 2026-10-07. Boulevard's documented operations are the primary reference; Zenoti and
+Aesthetic Record supply the clinical lot-and-expiry pattern where Boulevard has a documented gap. Evidence
+and limits: [P2E operations research](research/boulevard-operations-2026-10-07.md). Release timing and
+existing-app suitability remain P3.
+
+### Staff access and daily work
+
+- Start with distinct owner/operator, front desk, treating clinician, clinical reviewer/medical director,
+  and stock manager access templates. The person's actual permissions, not their title, decide access. A
+  business owner or staff administrator does not automatically see clinical records. Separately control
+  personal details, clinical-record reading, chart editing, clinical clearance, sign-off, bypassing review,
+  stock adjustments, refunds, exports, and team access. No one can grant themselves broader access. Enforce
+  these checks on pages, API actions, files, exports, and integrations.
+- The booking requirement override is a named permission for an owner/operator or explicitly authorized
+  front-desk manager; ordinary front-desk and treating-clinician templates do not receive it automatically.
+  A reason and actor are recorded. It allows staff to book past a warning, never to supply medical clearance
+  or override an age or legal restriction. Clinical clearance stays with an authorized clinician.
+- When someone leaves, suspend their account and end active sessions immediately. Keep their future
+  appointments visible with a reassignment owner and their past actions attributed to them. Staff see a
+  daily unresolved-work list for unfinished visits and orders, pending charts and sign-off, clearance flags,
+  timecards, stock variances, and recall holds. Each item has an owner and due date; closing the day does
+  not silently dismiss it.
+
+### Products and stock
+
+- Keep retail items, ordinary professional supplies, and clinical products distinct. Receiving, sales,
+  actual treatment use, returns, loss, damage, and counted corrections change stock through attributed
+  movements. A refund changes money, but returning a physical item to usable stock is a separate decision.
+  Partial deliveries and count differences remain visible for follow-up.
+- A clinic can designate an injectable or other selected clinical product for lot and expiry tracking.
+  Receiving records each lot, expiry, and quantity. Use records the exact lot and quantity against the
+  treated person and visit; wastage and corrections are separate attributed movements. Expired or
+  quarantined stock cannot be selected for treatment. A recall lookup identifies affected remaining stock
+  and visits. Do not promise managed injectable stock in a release unless this complete trace is verified;
+  until then the clinic keeps those products in its external stock record.
+- Staff can propose a stock count difference. A stock manager reviews material loss or adjustments with a
+  reason; returned clinical products stay quarantined until a qualified person documents that they may be
+  used again. The clinic sets materiality, storage, and product-specific policies before use. Do not silently
+  permit negative stock or erase an earlier movement.
+
+### Clinical privacy and security
+
+- Each staff member uses their own identity. Clinical and privileged staff use stronger sign-in verification
+  and a short inactivity timeout; suspension revokes sessions. A record of clinical reads, edits, sign-off,
+  exports, downloads, access changes, and emergency access shows who acted, when, which person's record was
+  involved, and the reason where relevant. Authorized clinic leadership reviews exceptions. An audit entry
+  does not imply the action was clinically approved.
+- An authorized clinician may use a time-limited emergency access route when normal permissions would delay
+  necessary care. They must state a reason; the access is recorded and sent for later review. Emergency
+  record access does not create missing treatment clearance or override consent. Exact emergency policy
+  needs clinic and state review before launch.
+- A client deletion request becomes a reviewed privacy case. Restrict access while preserving medical,
+  payment, and audit records for applicable obligations; offer access or amendment through the appropriate
+  route. When disposal is permitted, record what was removed, when, and by whom. Do not set one US-wide
+  retention period. The applicable states and provider contracts must be reviewed before clinical launch.
+
 ## Still unclear
 
 - Detailed behaviors, unresolved evidence gaps, reuse findings, release assignments, and measurable quality targets; settle these in planning parts, not by assumption.
@@ -418,9 +476,7 @@ industries.
   and the exact Platform Owner preview/publish workflow (P2H).
 - Performance: representative workloads and per-route/browser budgets for the agreed initial release. P3A
   must settle these before build parts are approved; implemented slices must then supply the stated evidence.
-- Booking and identity items owned by later parts:
-  - Who holds the requirement-override permission, and client data deletion (P2E).
-  - How client sign-in is built alongside the existing staff sign-in, and how saved cards fit the current Stripe key (P3).
+- How client sign-in is built alongside the existing staff sign-in, and how saved cards fit the current Stripe key (P3).
 - Clinical records: which agreed capabilities belong in the initial release, what can be reused, and which qualified prescribing provider could support an integration (P3). State-specific minor access and clinical-policy review must be completed for the states served before launch.
 - Whether Beauty & Spa lets under-age clients book online on their own; settle this when that edition is planned.
 
@@ -438,6 +494,7 @@ industries.
 - [P2B clinical-record sources and evidence limits](research/boulevard-clinical-records-2026-10-06.md); agreed behavior is in [Clinical records](#clinical-records).
 - [P2C commerce sources, vendor gaps and selected mature patterns](research/boulevard-commerce-2026-10-07.md); agreed behavior is in [Commerce](#commerce).
 - [P2D communications sources, vendor gaps and selected safeguards](research/boulevard-communications-2026-10-07.md); agreed behavior is in [Communications](#communications), while marketing, reviews and AI release timing belongs to P3.
+- [P2E operations sources and clinical stock gap](research/boulevard-operations-2026-10-07.md); agreed behavior is in [Operations](#operations), while release timing and existing-app reuse belong to P3.
 - [Industry entry and onboarding patterns](research/industry-onboarding-entry-patterns-2026-10-07.md); agreed direction is in [Business entry and onboarding](#business-entry-and-onboarding).
 
 Primary public entry points:
