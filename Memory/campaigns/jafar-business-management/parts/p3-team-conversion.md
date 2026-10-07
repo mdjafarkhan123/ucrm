@@ -12,20 +12,20 @@
 - [x] Record Jafar's sales calendar requirement and his pricing-page link as the first offer path; preserve the price/terms shared in the Deal.
 - [x] Agree flexible reminder count and timing, a public prospect booking link with a `/jafar` Booking settings tab, and starting role areas.
 - [x] Check contractor booking and current `/jafar` Settings against official HubSpot, Calendly, Pipedrive, and Jobber patterns; save `docs/research/jafar-booking-settings-patterns-2026-10-07.md`.
-- [ ] Settle booking availability, confirmation, rescheduling/cancellation, meeting location, and future team-host behavior.
-- [ ] Settle the section map for a proper `/jafar` Settings home; preserve current controls while making Booking, team, and communication settings easy to find.
+- [x] Settle `/jafar` as the only calendar, secure self-reschedule/cancel, configurable meeting types with named eligible hosts, and the six-group Settings home.
+- [ ] Settle instant confirmation versus approval, which calendar items block a host, visitor notices, and online meeting-link behavior.
 - [ ] Walk Jafar through the updated product plan and record his approval or corrections.
 
 ## Next
 
-Wait for Jafar's answers below. Then settle dependent booking confirmation rules, update the plan, and ask for approval of the whole product plan before P4 release-scope selection. No coding, purchase, DNS change, or live sending is authorized by this planning part.
+Wait for Jafar's answers below. Then update the plan and ask for approval of the whole product plan before P4 release-scope selection. No coding, purchase, DNS change, or live sending is authorized by this planning part.
 
 ## Waiting for Jafar
 
-Q1 If you are busy in Google or Outlook at 3 pm but `/jafar` shows free, what should booking show? A (recommended): connect that calendar and hide busy times; without a connection, visitors request a time and you confirm it. B: use only `/jafar`; you block outside commitments manually.
+Q1 When a visitor picks a free time, should UCRM confirm it immediately? A (recommended): yes, and Booking settings let you switch to “request my approval” when needed. B: every booking waits for your approval.
 
-Q2 After a visitor books, should their confirmation include secure Reschedule and Cancel links with a deadline you set? A (recommended): yes; update the calendar and reminders. B: they contact your team.
+Q2 If you add a task due at 3 pm, does that make you busy for a 3 pm call? A (recommended): meetings, calendar events, and explicit Busy blocks hide a time; a task does not unless you mark its time Busy. B: every timed task blocks booking.
 
-Q3 With future teammates, how should the booking page assign calls? A (recommended): you configure meeting types and eligible hosts; each booking has one named host. B: rotate calls automatically across Sales staff.
+Q3 After a visitor books, should UCRM email them a confirmation and optional reminders you set, and email changes when they reschedule or cancel? A (recommended): yes. B: only show confirmation on screen.
 
-Q4 Should `/jafar` Settings open to these groups: My preferences, Business & booking, Team & access, Mail & notifications, Payments & client setup, Platform & safety? A (recommended): yes. B: tell me what to group differently.
+Q4 For an online call, how should the visitor get the video link? A (recommended): you add a unique meeting link to that booking, and UCRM sends it in an updated confirmation. B: UCRM creates a fresh Google Meet or Zoom link for each booking.

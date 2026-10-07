@@ -8,4 +8,4 @@
 
 **Next part:** P4 First release scope, after P3.
 
-**Next:** Jafar chose flexible reminders, public sales booking, starting role areas, and an organized `/jafar` Settings home. Settle booking behavior and the Settings section map with him using the linked research. Then ask for plan approval. Prospect email automation still waits for a provider-approved route; do not change live mail during planning.
+**Next:** Jafar will use only the `/jafar` calendar; he approved self-reschedule/cancel, named eligible hosts, and the six Settings groups. Wait for his answers to the four booking questions in `parts/p3-team-conversion.md`, then update the plan and ask for approval. Prospect email automation still waits for a provider-approved route; do not change live mail during planning.
