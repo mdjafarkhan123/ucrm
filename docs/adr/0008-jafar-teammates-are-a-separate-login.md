@@ -51,6 +51,10 @@ carrying only a session id, and the `platform_owner_sessions` registry that the 
    team, Settings, and the step-up paths stay Jafar's whatever is granted, and a teammate keeps at least one
    area; taking everything away means removing them. A role change asks whether to keep the differences or
    start from the new role's standard access, as the contractor team editor does.
+8. **A path that reaches another area's records needs that area too.** `ALSO_NEEDS` in `team-access.ts` lists
+   them: a Lead's Application picker and linking (`/api/jafar/leads/*/applications`) also need Applications
+   open, and the Lead page leaves linked Applications out for anyone without it, because they carry contact
+   details. Add a row there whenever one area's screen starts showing or changing another area's records.
 
 ## Rejected
 
