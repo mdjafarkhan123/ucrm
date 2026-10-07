@@ -40,28 +40,27 @@ paths out in full.
 
 Skills live under `.claude/skills/`. Load every skill relevant to the current task; do not load the full library by default.
 
-| Work / Subject / Topic / Stage                                                     | Skill                                                      |
-| ---------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| Any design, styling, ui or frontend task                                           | `.claude/skills/design/SKILL.md`                           |
-| Complex interactive controls                                                       | `.claude/skills/bits-ui/SKILL.md`                          |
-| Contractor CRM behavior/workflow/model/research                                    | `.claude/skills/jobber/SKILL.md`                           |
-| Supabase, Auth, Storage, Edge Functions, or Realtime                               | `.claude/skills/supabase/SKILL.md`                         |
-| Postgres, migrations, RLS, SQL, functions, or indexes                              | `.claude/skills/supabase-postgres-best-practices/SKILL.md` |
-| Any Svelte component or module, page                                               | `.claude/skills/svelte/SKILL.md`                           |
-| Sending email (transactional, marketing, notifications)                            | `.claude/skills/aws-ses/SKILL.md`                          |
-| Receiving and processing inbound email (routing, filtering, archiving, SMTP relay) | `.claude/skills/aws-mail-manager/SKILL.md`                 |
-| Agent-facing instructions or skills                                                | `.claude/skills/writing-for-agents/SKILL.md`               |
-| Set up or repair parallel agent coordination                                       | `.claude/skills/agent-coordination/SKILL.md`               |
-| Campaign start, resume, checkpoint, deferral, completion, or cleanup               | `.claude/skills/campaign-memory/SKILL.md`                  |
-| Stress-testing a plan, design, or unresolved decision with Jafar                   | `.claude/skills/grilling/SKILL.md`                         |
-| Researching how mature products/industries handle a workflow before building it    | `.claude/skills/research/SKILL.md`                         |
-| Naming project terminology, or recording an architectural decision                 | `.claude/skills/domain-modeling/SKILL.md`                  |
-| Diagnosing a hard firmware/toolchain bug, crash, or performance regression         | `.claude/skills/diagnosing-bugs/SKILL.md`                  |
-| Scale-sensitive design, performance verification, or reported slowness             | `.claude/skills/performance-review/SKILL.md`               |
-| Before planning or implementing a scale-sensitive path                             | `.claude/skills/performance-review` design branch          |
-| After implementing that coherent scale-sensitive path                              | `.claude/skills/performance-review` verification branch    |
-
-Load `.claude/skills/grilling/SKILL.md` for product decisions about user-facing behavior, workflows, or the mental model.
+| Work / Subject / Topic / Stage                                                                                            | Skill                                                      |
+| ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Any design, styling, ui or frontend task                                                                                  | `.claude/skills/design/SKILL.md`                           |
+| Complex interactive controls                                                                                              | `.claude/skills/bits-ui/SKILL.md`                          |
+| Contractor CRM behavior/workflow/model/research                                                                           | `.claude/skills/jobber/SKILL.md`                           |
+| Supabase, Auth, Storage, Edge Functions, or Realtime                                                                      | `.claude/skills/supabase/SKILL.md`                         |
+| Postgres, migrations, RLS, SQL, functions, or indexes                                                                     | `.claude/skills/supabase-postgres-best-practices/SKILL.md` |
+| Any Svelte component or module, page                                                                                      | `.claude/skills/svelte/SKILL.md`                           |
+| Sending email (transactional, marketing, notifications)                                                                   | `.claude/skills/aws-ses/SKILL.md`                          |
+| Receiving and processing inbound email (routing, filtering, archiving, SMTP relay)                                        | `.claude/skills/aws-mail-manager/SKILL.md`                 |
+| Agent-facing instructions or skills                                                                                       | `.claude/skills/writing-for-agents/SKILL.md`               |
+| Set up or repair parallel agent coordination                                                                              | `.claude/skills/agent-coordination/SKILL.md`               |
+| Campaign start, resume, checkpoint, deferral, completion, or cleanup                                                      | `.claude/skills/campaign-memory/SKILL.md`                  |
+| Stress-testing a plan, design, or unresolved decision with Jafar                                                          | `.claude/skills/grilling/SKILL.md`                         |
+| Researching how mature products/industries handle a workflow before building it                                           | `.claude/skills/research/SKILL.md`                         |
+| Naming project terminology, or recording an architectural decision                                                        | `.claude/skills/domain-modeling/SKILL.md`                  |
+| Diagnosing a hard firmware/toolchain bug, crash, or performance regression                                                | `.claude/skills/diagnosing-bugs/SKILL.md`                  |
+| Material screen/journey performance, scale-sensitive paths, reported slowness, or a release performance audit             | `.claude/skills/performance-review/SKILL.md`               |
+| Before planning or implementing a scale-sensitive path                                                                    | `.claude/skills/performance-review` design branch          |
+| After implementing that coherent scale-sensitive path                                                                     | `.claude/skills/performance-review` verification branch    |
+| Load `.claude/skills/grilling/SKILL.md` for product decisions about user-facing behavior, workflows, or the mental model. |
 
 **MCP:** SvelteKit and Supabase MCP servers are installed and configured.
 
@@ -101,7 +100,7 @@ before changing files (`--mode read` for research). Release after safe integrati
 - **TanStack Query owns server state.** The `src/routes/(app)/+layout.svelte` shell is SSR. All page content under `src/routes/(app)/` is CSR only. Never block navigation on data loading. Render the shell immediately, show cached data or skeletons, and revalidate in the background. Move between pages with links — `href` on `Button`, or an `<a>` — so SvelteKit fetches the page on hover, and keep the warm list in `src/routes/(app)/+layout.svelte` to the sidebar's daily pages and their record pages (Jafar, 2026-09-28: it costs crews mobile data), dropping entries whose routes go away. `resolve()` wants the full route id including the group, e.g. `'/(app)/clients/[id]'`. **Content the user has to reveal — a tab panel, an accordion, a dialog's contents — does not load with the page. Its query stays off until the control is hovered, prefetches then, and shows a skeleton if the click still beats it.** Cache the result so reopening is instant. After any mutation or external event, invalidate all affected caches. No ad-hoc caching systems.
 - Server secrets stay server-side
 - All writes go through `/api/*` routes. Every `POST` and `PATCH` validates with Zod before database access.
-- **Performance — proportional evidence:** Follow `performance-review`'s invocation gate and two-stage completion contract. Never claim user or traffic capacity beyond the workload its evidence actually supports.
+- **Performance — proportional evidence:** Follow `performance-review`'s invocation gate and two-stage completion contract. Design qualifying paths before code, verify them after the coherent slice exists, and run its whole-application branch before an industry release. Never claim user or traffic capacity beyond the workload its evidence actually supports.
 - **One final application.** The main folder on `main` is the integration point. Temporary Git worktrees and
   branches are allowed only for simultaneous code writers under `docs/agent-concurrency.md`; remove them
   after their work is integrated. Do not create another clone or product copy.
