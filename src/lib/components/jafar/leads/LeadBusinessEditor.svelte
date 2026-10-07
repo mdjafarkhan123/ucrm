@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import Input from '$lib/components/ui/Input.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
-	import { COUNTRIES } from '$lib/settings/countries';
+	import CountryPicker from '$lib/components/ui/CountryPicker.svelte';
 	import { TRADES } from '$lib/settings/trades';
 	import type { LeadDetail } from '$lib/jafar/lead-history';
 	import LeadBlockEditor from './LeadBlockEditor.svelte';
@@ -81,16 +80,14 @@
 			/>
 		</div>
 		<div class="lead-business-editor__field">
-			<Select
+			<CountryPicker
 				id="lead-edit-country"
 				label="Country"
 				required
-				options={COUNTRIES}
 				bind:value={draft.country_code}
+				invalid={Boolean(error_('country_code'))}
+				errorMessage={error_('country_code')}
 			/>
-			{#if error_('country_code')}
-				<p class="lead-business-editor__error">{error_('country_code')}</p>
-			{/if}
 		</div>
 		<Input
 			id="lead-edit-trade"
@@ -150,11 +147,6 @@
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-small);
-		}
-
-		&__error {
-			color: var(--color-critical--onSurface);
-			font-size: var(--typography--fontSize-small);
 		}
 	}
 

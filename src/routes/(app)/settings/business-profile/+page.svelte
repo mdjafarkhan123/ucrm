@@ -9,6 +9,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import CountryPicker from '$lib/components/ui/CountryPicker.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
 	import TimezonePicker from '$lib/components/ui/TimezonePicker.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -26,7 +27,6 @@
 		type SettingsBusiness
 	} from '$lib/settings/api';
 	import { TRADES } from '$lib/settings/trades';
-	import { COUNTRIES } from '$lib/settings/countries';
 	import buildingIcon from '@tabler/icons/outline/building-store.svg?raw';
 
 	const queryClient = useQueryClient();
@@ -418,11 +418,10 @@
 									disabled={!canEdit}
 								/>
 							</div>
-							<Select
+							<CountryPicker
 								id="bp-country"
 								ariaLabel="Country"
 								placeholder="Country"
-								options={COUNTRIES}
 								bind:value={f.country_code}
 								disabled={!canEdit}
 							/>

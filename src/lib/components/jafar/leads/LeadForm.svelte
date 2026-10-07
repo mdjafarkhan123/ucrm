@@ -8,6 +8,7 @@
 	import targetIcon from '@tabler/icons/outline/target.svg?raw';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import CountryPicker from '$lib/components/ui/CountryPicker.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -15,7 +16,6 @@
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import FormNotesCard from '$lib/components/forms/FormNotesCard.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
-	import { COUNTRIES } from '$lib/settings/countries';
 	import { TRADES } from '$lib/settings/trades';
 	import {
 		LEAD_SOURCES,
@@ -166,7 +166,6 @@
 		}
 	}
 
-	const countryOptions = COUNTRIES;
 	const sourceOptions = LEAD_SOURCES.map((source) => ({
 		value: source,
 		label: LEAD_SOURCE_LABELS[source]
@@ -202,17 +201,14 @@
 						/>
 					</div>
 					<div class="lead-form__field">
-						<Select
+						<CountryPicker
 							id="lead-country"
 							label="Country"
-							placeholder="Choose the country"
 							required
-							options={countryOptions}
 							bind:value={form.country_code}
+							invalid={Boolean(fieldErrors.country_code)}
+							errorMessage={fieldErrors.country_code ?? ''}
 						/>
-						{#if fieldErrors.country_code}
-							<p class="lead-form__error">{fieldErrors.country_code}</p>
-						{/if}
 					</div>
 					<Input
 						id="lead-trade"

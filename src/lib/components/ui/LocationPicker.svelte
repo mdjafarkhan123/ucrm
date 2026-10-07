@@ -3,6 +3,7 @@
 	import { Country } from 'country-state-city';
 	import { createQuery, keepPreviousData } from '@tanstack/svelte-query';
 	import { Combobox } from 'bits-ui';
+	import CountryPicker from '$lib/components/ui/CountryPicker.svelte';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 	import exclamationCircleIcon from '@tabler/icons/outline/exclamation-circle.svg?raw';
@@ -26,31 +27,12 @@
 	} = $props();
 
 	const countries = Country.getAllCountries().sort((a, b) => a.name.localeCompare(b.name));
-	const countryItems = countries.map((country) => ({
-		value: country.isoCode,
-		label: country.name
-	}));
 	let countryCode = $state('');
-	let countryQuery = $state('');
 	let cityQuery = $state('');
 	let selectedCityValue = $state('');
-	let countryOpen = $state(false);
 	let cityOpen = $state(false);
 
 	let selectedCountry = $derived(countries.find((country) => country.isoCode === countryCode));
-	let countryInputValue = $derived(countryOpen ? countryQuery : (selectedCountry?.name ?? ''));
-	let normalizedCountryQuery = $derived(
-		countryQuery === selectedCountry?.name ? '' : countryQuery.trim().toLowerCase()
-	);
-	let countryResults = $derived(
-		countries
-			.filter(
-				(country) =>
-					country.name.toLowerCase().includes(normalizedCountryQuery) ||
-					country.isoCode.toLowerCase().includes(normalizedCountryQuery)
-			)
-			.slice(0, 80)
-	);
 	let selectedCityName = $derived(selectedCityValue.split('|')[0] ?? '');
 	let cityInputValue = $derived(cityOpen ? cityQuery : selectedCityName || cityQuery);
 	let citySearch = $derived(cityQuery === selectedCityName ? '' : cityQuery.trim());
@@ -87,12 +69,6 @@
 		return `${city.name}|${city.stateCode}`;
 	}
 
-	function focusCountry(input: HTMLInputElement) {
-		countryQuery = selectedCountry?.name ?? '';
-		countryOpen = true;
-		input.select();
-	}
-
 	function focusCity(input: HTMLInputElement) {
 		if (!selectedCountry) return;
 		cityQuery = selectedCityName;
@@ -101,14 +77,11 @@
 	}
 
 	function chooseCountry(code: string) {
-		lastCommittedCountry = code;
 		countryCode = code;
 		const country = countries.find((item) => item.isoCode === code);
-		countryQuery = country?.name ?? '';
 		selectedCityValue = '';
 		cityQuery = '';
 		value = country?.name ?? '';
-		countryOpen = false;
 		cityOpen = false;
 		oncountrychange?.((country?.timezones ?? []).map((zone) => zone.zoneName));
 	}
@@ -133,7 +106,6 @@
 		);
 		if (!country) return;
 		countryCode = country.isoCode;
-		countryQuery = country.name;
 		const initialCityName = parts.length > 1 ? parts.slice(0, -1).join(', ') : '';
 		selectedCityValue = initialCityName ? `${initialCityName}|` : '';
 		cityQuery = initialCityName;
@@ -146,14 +118,6 @@
 	// externally (a form Cancel) would then leave the stale label on screen. Only remount the
 	// affected combobox for that external case — remounting on every selection would drop focus and
 	// break keyboard tabbing to the next field.
-	let lastCommittedCountry = untrack(() => countryCode);
-	let countryResetKey = $state(0);
-	$effect(() => {
-		if (countryCode !== lastCommittedCountry) {
-			lastCommittedCountry = countryCode;
-			countryResetKey++;
-		}
-	});
 	let lastCommittedCity = untrack(() => selectedCityValue);
 	let cityResetKey = $state(0);
 	$effect(() => {
@@ -169,71 +133,14 @@
 <div class="location-picker" class:location-picker--invalid={invalid}>
 	<div class="location-picker__fields">
 		<div class="location-picker__field">
-			<label for={`${id}-country`}
-				>Country{#if required}
-					<span aria-hidden="true">*</span>{/if}</label
-			>
-			{#key countryResetKey}
-				<Combobox.Root
-					type="single"
-					bind:value={countryCode}
-					bind:open={countryOpen}
-					inputValue={countryInputValue}
-					items={countryItems}
-					onValueChange={chooseCountry}
-				>
-					<div class="location-picker__control">
-						<span class="location-picker__search" aria-hidden="true">{@html searchIcon}</span>
-						<Combobox.Input
-							id={`${id}-country`}
-							placeholder="Search by country or code"
-							autocomplete="country-name"
-							aria-describedby={describedBy}
-							aria-invalid={invalid}
-							onfocus={(event) => focusCountry(event.currentTarget)}
-							onclick={() => (countryOpen = true)}
-							oninput={(event) => {
-								countryQuery = event.currentTarget.value;
-								countryOpen = true;
-							}}
-						/>
-						<Combobox.Trigger class="location-picker__trigger" aria-label="Show countries">
-							<span aria-hidden="true">{@html chevronDownIcon}</span>
-						</Combobox.Trigger>
-					</div>
-					<Combobox.Portal>
-						<Combobox.Content
-							class="location-picker__menu"
-							data-elevation="elevated"
-							align="start"
-							sideOffset={4}
-							collisionPadding={8}
-						>
-							<Combobox.Viewport class="location-picker__viewport">
-								{#each countryResults as country (country.isoCode)}
-									<Combobox.Item
-										value={country.isoCode}
-										label={country.name}
-										class="location-picker__option"
-									>
-										<span class="location-picker__country-code" aria-hidden="true"
-											>{country.isoCode}</span
-										>
-										<span class="location-picker__option-copy"><strong>{country.name}</strong></span
-										>
-										{#if countryCode === country.isoCode}<span
-												class="location-picker__check"
-												aria-hidden="true">{@html checkIcon}</span
-											>{/if}
-									</Combobox.Item>
-								{:else}<div class="location-picker__empty">
-										No countries match “{countryQuery}”.
-									</div>{/each}
-							</Combobox.Viewport>
-						</Combobox.Content>
-					</Combobox.Portal>
-				</Combobox.Root>
-			{/key}
+			<CountryPicker
+				id={`${id}-country`}
+				label="Country"
+				{required}
+				{invalid}
+				bind:value={countryCode}
+				onchange={chooseCountry}
+			/>
 		</div>
 
 		<div class="location-picker__field">
@@ -466,20 +373,6 @@
 	}
 	:global(.location-picker__option[data-selected]) {
 		color: var(--color-heading);
-	}
-	.location-picker__country-code {
-		display: grid;
-		width: 32px;
-		height: 24px;
-		flex: 0 0 32px;
-		place-items: center;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-small);
-		color: var(--color-text--secondary);
-		background: var(--color-surface--background--subtle);
-		font-size: var(--typography--fontSize-smaller);
-		font-weight: 700;
-		letter-spacing: var(--typography--letterSpacing-loose);
 	}
 	.location-picker__option-copy {
 		display: flex;
