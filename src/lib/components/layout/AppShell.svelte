@@ -28,7 +28,9 @@
 		marketingVisible = false,
 		reviewsVisible = false,
 		filesVisible = true,
-		supportUnread = 0
+		supportUnread = 0,
+		ownerCanOpen = () => true,
+		ownerNotificationsVisible = true
 	}: {
 		children: import('svelte').Snippet;
 		/** An account-wide message shown above every page, such as the overdue-payment banner. */
@@ -48,6 +50,10 @@
 		filesVisible?: boolean;
 		/** Owner only: support conversations waiting unread for Uplift, shown on the Support item. */
 		supportUnread?: number;
+		/** Owner variant: whether the signed-in person may open a page; a teammate sees only their areas. */
+		ownerCanOpen?: (href: string) => boolean;
+		/** Owner variant: the platform alerts bell, which is the owner's alone. */
+		ownerNotificationsVisible?: boolean;
 	} = $props();
 	let mobileOpen = $state(false);
 	let sidebarCollapsed = $state(false);
@@ -110,7 +116,7 @@
 	]);
 	// The Jafar Panel's two entrances: running Uplift's own business (finding, selling to, and looking
 	// after clients) and running the platform those clients use. Settings serves both.
-	const ownerGroups: NavGroup[] = $derived([
+	const allOwnerGroups: NavGroup[] = $derived([
 		{
 			label: 'Business Management',
 			items: [
@@ -141,15 +147,26 @@
 			]
 		}
 	]);
+	// A teammate sees only the pages their access opens, and a section with none left disappears.
+	const ownerGroups = $derived(
+		allOwnerGroups
+			.map((group) => ({ ...group, items: group.items.filter((item) => ownerCanOpen(item.href)) }))
+			.filter((group) => group.items.length > 0)
+	);
 	const groups = $derived(variant === 'owner' ? ownerGroups : contractorGroups);
 	// The sidebar identifies the signed-in business by its own saved name and logo once one exists, rather
 	// than the product's generic mark — but never for the owner's Control Room, which is never a business.
 	const brand = $derived(
 		variant === 'owner' ? 'Control Room' : (organizationName ?? 'Contractor CRM')
 	);
-	const eyebrow = $derived(variant === 'owner' ? 'Platform owner' : 'Workspace');
+	// The owner's own view passes no `account`; a teammate's carries their name and role.
+	const eyebrow = $derived(
+		variant === 'owner' ? (account ? 'Uplift team' : 'Platform owner') : 'Workspace'
+	);
 	const sidebarLogoUrl = $derived(variant === 'contractor' ? logoUrl : null);
-	const accountLabel = $derived(variant === 'owner' ? 'Platform owner' : 'Your account');
+	const accountLabel = $derived(
+		variant === 'owner' ? (account ? 'Uplift team' : 'Platform owner') : 'Your account'
+	);
 	let isSigningOut = $state(false);
 	const queryClient = useQueryClient();
 
@@ -200,7 +217,7 @@
 			onSearchOpen={variant === 'contractor' && userId ? () => (searchOpen = true) : undefined}
 		>
 			{#snippet notifications()}
-				{#if variant === 'owner'}
+				{#if variant === 'owner' && ownerNotificationsVisible}
 					<NotificationBell />
 				{:else if variant === 'contractor' && userId}
 					<TeamNotificationBell />

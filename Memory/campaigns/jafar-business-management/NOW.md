@@ -5,6 +5,8 @@
 
 **In progress:** B1 Leads — built and browser-checked in worktree `jafar-b1-leads`; only the merge into `main` is left (see `parts/B1-leads-list.md`)
 
+**Paused:** D1 teammate sign-in — built and on `main`; a few browser checks left (see `parts/D1.md`)
+
 **Next part:** B1 Leads list and adding a Lead — see `stages/B-leads-to-client.md`. Every screen part runs the `performance-review` design branch first and verification before Done (plan § Speed).
 
 **Blockers:** none. Product behavior and first-release scope are approved; full Uplift mailboxes and automated first-contact email remain later-release work.

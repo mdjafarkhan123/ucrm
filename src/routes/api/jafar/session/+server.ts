@@ -1,11 +1,13 @@
 import { json } from '@sveltejs/kit';
 import {
 	clearOwnerSession,
+	isOwnerEmail,
 	ownerLoginRateLimitBucketKey,
 	recordOwnerLoginAttempt,
 	setOwnerSession,
 	verifyOwnerCredentials
 } from '$lib/server/auth/owner';
+import { verifyTeammateCredentials } from '$lib/server/jafar/team-members';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import { ownerLoginSchema, zodOwnerFieldErrors } from '$lib/server/validation/owner.schema';
@@ -40,13 +42,38 @@ export async function POST(event) {
 			await recordOwnerLoginAttempt('rate_limited');
 			return rateLimitedResponse(rateLimit.retryAfterSeconds);
 		}
-
-		if (!verifyOwnerCredentials(parsed.data.email, parsed.data.password)) {
-			await recordOwnerLoginAttempt('failed');
-			return json({ error: 'The email or password is not correct.' }, { status: 401 });
+		// Teammates share this sign-in, so guessing is also capped per account, not only per address.
+		const accountLimit = await checkRateLimit(rateLimitClient, {
+			bucketKey: ownerLoginRateLimitBucketKey(`account:${parsed.data.email.trim().toLowerCase()}`),
+			windowSeconds: 900,
+			maxAttempts: 10
+		});
+		if (!accountLimit.allowed) {
+			await recordOwnerLoginAttempt('rate_limited');
+			return rateLimitedResponse(accountLimit.retryAfterSeconds);
 		}
 
-		await setOwnerSession(event, parsed.data.email);
+		// The owner's own email is checked only against the configured owner password; any other email
+		// can only be an active teammate (ADR 0008).
+		if (isOwnerEmail(parsed.data.email)) {
+			if (!verifyOwnerCredentials(parsed.data.email, parsed.data.password)) {
+				await recordOwnerLoginAttempt('failed');
+				return json({ error: 'The email or password is not correct.' }, { status: 401 });
+			}
+			await setOwnerSession(event, parsed.data.email);
+		} else {
+			const teammate = await verifyTeammateCredentials(
+				rateLimitClient,
+				parsed.data.email,
+				parsed.data.password
+			);
+			if (!teammate) {
+				await recordOwnerLoginAttempt('failed');
+				return json({ error: 'The email or password is not correct.' }, { status: 401 });
+			}
+			await setOwnerSession(event, teammate.email, teammate.memberId);
+		}
+
 		await recordOwnerLoginAttempt('succeeded');
 		return json({ ok: true });
 	} catch (error) {

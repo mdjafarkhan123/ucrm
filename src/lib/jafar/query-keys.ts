@@ -144,6 +144,8 @@ export const jafarSettingsKey = ['jafar', 'settings'] as const;
 export const jafarSettingsCleanupKey = ['jafar', 'settings', 'cleanup'] as const;
 export const jafarSettingsCleanupImpactKey = (organizationId: string | undefined) =>
 	['jafar', 'settings', 'cleanup', 'impact', organizationId] as const;
+/** D1: Jafar's teammates and waiting invitations. */
+export const jafarTeamKey = ['jafar', 'team'] as const;
 
 export const jafarPackagesKey = ['jafar', 'packages'] as const;
 // Package builder P11b: every introductory offer, with its claims.

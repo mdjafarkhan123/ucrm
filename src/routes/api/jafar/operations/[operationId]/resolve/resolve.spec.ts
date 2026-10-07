@@ -24,7 +24,13 @@ function event(id: string, body: unknown) {
 }
 
 function session() {
-	return { email: 'owner@example.com', sessionId: 'session-id' };
+	return {
+		email: 'owner@example.com',
+		sessionId: 'session-id',
+		role: null,
+		memberId: null,
+		name: null
+	};
 }
 
 function clientWith(options: {

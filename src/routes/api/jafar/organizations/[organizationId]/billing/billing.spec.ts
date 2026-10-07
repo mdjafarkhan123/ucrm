@@ -20,7 +20,13 @@ const idempotencyKey = '423e4567-e89b-12d3-a456-426614174000';
 const billing = { today: '2026-09-30', charges: [], receipts: [] };
 
 function session() {
-	return { email: 'owner@example.com', sessionId: 'session-id' };
+	return {
+		email: 'owner@example.com',
+		sessionId: 'session-id',
+		role: null,
+		memberId: null,
+		name: null
+	};
 }
 
 function event(body?: unknown, org = organizationId) {

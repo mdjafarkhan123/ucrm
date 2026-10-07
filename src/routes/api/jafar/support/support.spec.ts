@@ -119,7 +119,13 @@ function use(value: ReturnType<typeof client>) {
 
 beforeEach(() => {
 	vi.clearAllMocks();
-	mockedOwnerSession.mockResolvedValue({ email: 'owner@example.com', sessionId: 'session-id' });
+	mockedOwnerSession.mockResolvedValue({
+		email: 'owner@example.com',
+		sessionId: 'session-id',
+		role: null,
+		memberId: null,
+		name: null
+	});
 });
 
 describe('Support Inbox API boundary', () => {

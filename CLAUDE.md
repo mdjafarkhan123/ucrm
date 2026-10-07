@@ -13,6 +13,7 @@ This file is the single source of project instructions for Claude Code and Codex
 
 - **Login details:** `/jafar`: `dev.jafarkhan@gmail.com` / `.Asdedjk12.`. Contractor owner: `info.socialmediauser1@gmail.com` / `11223344`. Field member: `dev.jafarkhan@gmail.com` / `11223344`. Admin: `jafarkhaninupwork@gmail.com` / `11223344`.
 - **Test-only role logins (Raad LTD):** `office` role — `dev.jafarkhan+office@gmail.com` / `PaidLaunch16!`. `sales` role — `dev.jafarkhan+sales@gmail.com` / `PaidLaunch16!`. `finance` role — `dev.jafarkhan+finance@gmail.com` / `PaidLaunch16!`. Created by driving the real invite-and-accept flow (`$lib/server/team/invitations.ts`) directly, not raw SQL.
+- **Test-only `/jafar` teammate (D1):** Sales role "Sam Seller" — `dev.jafarkhan+uplift-sales@gmail.com` / `PaidLaunch16!`. Created through the real invite and join pages.
 
 ---
 

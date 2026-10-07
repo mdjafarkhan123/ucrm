@@ -3,6 +3,7 @@ import { redirect, type RequestEvent } from '@sveltejs/kit';
 import { compareSync } from 'bcryptjs';
 import { getServerEnv } from '$lib/server/env';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
+import { TEAM_ROLES, type TeamRole } from '$lib/jafar/team-access';
 
 const OWNER_SESSION_COOKIE = 'jafar_session';
 const OWNER_SESSION_TTL_SECONDS = 60 * 60 * 8;
@@ -10,9 +11,16 @@ const OWNER_STEP_UP_COOKIE = 'jafar_step_up';
 const OWNER_STEP_UP_TTL_SECONDS = 60 * 5;
 const SESSION_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/**
+ * Whoever holds a live `/jafar` session: the platform owner (`role` null) or an invited teammate
+ * (ADR 0008). `email` is the actor recorded in audit history either way.
+ */
 export type OwnerSession = {
 	email: string;
 	sessionId: string;
+	role: TeamRole | null;
+	memberId: string | null;
+	name: string | null;
 };
 
 type OwnerStepUp = {
@@ -98,6 +106,11 @@ export function verifyOwnerCredentials(email: string, password: string) {
 	return email.trim().toLowerCase() === config.email && compareSync(password, config.passwordHash);
 }
 
+/** Whether this email is the configured platform owner's, which no teammate may use. */
+export function isOwnerEmail(email: string) {
+	return email.trim().toLowerCase() === getOwnerConfig().email;
+}
+
 /** A keyed hash, never the raw IP, so the rate-limit bucket table never stores caller identity. */
 export function ownerLoginRateLimitBucketKey(ipAddress: string) {
 	const { secret } = getOwnerConfig();
@@ -151,15 +164,35 @@ async function resolveOwnerSession(event: RequestEvent): Promise<OwnerSession | 
 		const client = getOwnerSupabaseClient();
 		const { data, error } = await client
 			.from('platform_owner_sessions')
-			.select('owner_email, expires_at, revoked_at')
+			.select(
+				'owner_email, expires_at, revoked_at, team_member_id, platform_team_members(email, role, status, full_name)'
+			)
 			.eq('id', sessionId)
 			.maybeSingle();
 		if (error) throw error;
 		if (!data || data.revoked_at) return null;
 		if (new Date(data.expires_at).getTime() <= Date.now()) return null;
-		if (data.owner_email !== configuredEmail) return null;
 
-		return { email: data.owner_email, sessionId };
+		if (!data.team_member_id) {
+			if (data.owner_email !== configuredEmail) return null;
+			return { email: data.owner_email, sessionId, role: null, memberId: null, name: null };
+		}
+
+		// A teammate passes only while still active under the same email, so removal ends access on the
+		// very next request even before their session rows are revoked.
+		const member = Array.isArray(data.platform_team_members)
+			? data.platform_team_members[0]
+			: data.platform_team_members;
+		if (!member || member.status !== 'active' || member.email !== data.owner_email) return null;
+		if (!(TEAM_ROLES as readonly string[]).includes(member.role)) return null;
+
+		return {
+			email: member.email,
+			sessionId,
+			role: member.role as TeamRole,
+			memberId: data.team_member_id,
+			name: member.full_name
+		};
 	} catch (error) {
 		console.error('The owner session registry could not be checked.', error);
 		return null;
@@ -169,9 +202,13 @@ async function resolveOwnerSession(event: RequestEvent): Promise<OwnerSession | 
 /**
  * Issues a fresh session on every successful login. If the browser already presented a session
  * cookie, that session is revoked first ("rotated") so a login can never leave two live sessions
- * for the same browser -- one always replaces the other.
+ * for the same browser -- one always replaces the other. A teammate's session names their record.
  */
-export async function setOwnerSession(event: RequestEvent, email: string) {
+export async function setOwnerSession(
+	event: RequestEvent,
+	email: string,
+	teamMemberId: string | null = null
+) {
 	const { secret } = getOwnerConfig();
 	const client = getOwnerSupabaseClient();
 	const normalizedEmail = email.trim().toLowerCase();
@@ -191,7 +228,7 @@ export async function setOwnerSession(event: RequestEvent, email: string) {
 	const expiresAt = new Date(Date.now() + OWNER_SESSION_TTL_SECONDS * 1000).toISOString();
 	const { data, error } = await client
 		.from('platform_owner_sessions')
-		.insert({ owner_email: normalizedEmail, expires_at: expiresAt })
+		.insert({ owner_email: normalizedEmail, expires_at: expiresAt, team_member_id: teamMemberId })
 		.select('id')
 		.single();
 	if (error || !data) throw error ?? new Error('The owner session could not be created.');
@@ -251,7 +288,8 @@ export function consumeOwnerStepUp(event: RequestEvent, session: OwnerSession) {
 
 	const { secret } = getOwnerConfig();
 	const stepUp = decodeStepUp(value, secret);
-	return stepUp !== null && stepUp.email === session.email;
+	// Step-up reconfirms the owner's own password, so it never authorizes a teammate (ADR 0008).
+	return session.role === null && stepUp !== null && stepUp.email === session.email;
 }
 
 export async function requireOwner(event: RequestEvent) {

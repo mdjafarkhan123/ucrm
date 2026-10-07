@@ -31,7 +31,10 @@ describe('owner everyday email domain list', () => {
 	it('rejects an invalid organization identifier before database access', async () => {
 		vi.mocked(getOwnerSession).mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-1'
+			sessionId: 'session-1',
+			role: null,
+			memberId: null,
+			name: null
 		});
 		const response = await GET(event('not-a-uuid'));
 		expect(response.status).toBe(422);

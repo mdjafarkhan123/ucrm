@@ -20,13 +20,21 @@ function query(data: unknown, error: null | { message: string } = null) {
 }
 
 function event() {
-	return { url: new URL('http://localhost/api/jafar/message-templates'), params: {}, cookies: {} } as Parameters<
-		typeof GET
-	>[0];
+	return {
+		url: new URL('http://localhost/api/jafar/message-templates'),
+		params: {},
+		cookies: {}
+	} as Parameters<typeof GET>[0];
 }
 
 function session() {
-	return { email: 'owner@example.com', sessionId: 'session-id' };
+	return {
+		email: 'owner@example.com',
+		sessionId: 'session-id',
+		role: null,
+		memberId: null,
+		name: null
+	};
 }
 
 describe('platform owner message template list API boundary', () => {

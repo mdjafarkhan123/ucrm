@@ -30,7 +30,10 @@ describe('platform owner team API boundary', () => {
 	it('rejects an invalid organization identifier', async () => {
 		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-id'
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
 		});
 
 		const response = await GET(event('not-a-uuid'));
@@ -42,7 +45,10 @@ describe('platform owner team API boundary', () => {
 	it('returns 404 when the organization does not exist', async () => {
 		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-id'
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
 		});
 		mockedClient.mockReturnValue({
 			from: () => ({
@@ -59,7 +65,9 @@ describe('platform owner team API boundary', () => {
 
 	function mockTeamClient(options: {
 		overrides?: Array<{ user_id: string; permission_key: string; override_state: string }>;
-		getUserById?: (userId: string) => Promise<{ data: { user: { email: string } | null }; error: unknown }>;
+		getUserById?: (
+			userId: string
+		) => Promise<{ data: { user: { email: string } | null }; error: unknown }>;
 	}) {
 		return {
 			from: (table: string) => {
@@ -128,7 +136,10 @@ describe('platform owner team API boundary', () => {
 	it('returns members joined with profile name and auth email, and flags administrator readiness', async () => {
 		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-id'
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
 		});
 		mockedClient.mockReturnValue(mockTeamClient({}));
 
@@ -160,7 +171,10 @@ describe('platform owner team API boundary', () => {
 	it('groups permission overrides per member', async () => {
 		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-id'
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
 		});
 		mockedClient.mockReturnValue(
 			mockTeamClient({
@@ -183,7 +197,10 @@ describe('platform owner team API boundary', () => {
 	it('degrades a single member to a null email instead of failing the whole list', async () => {
 		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-id'
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
 		});
 		mockedClient.mockReturnValue(
 			mockTeamClient({

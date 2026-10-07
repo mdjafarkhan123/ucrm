@@ -15,7 +15,13 @@ const mockedConsumeStepUp = vi.mocked(consumeOwnerStepUp);
 const mockedClient = vi.mocked(getOwnerSupabaseClient);
 
 function session() {
-	return { email: 'owner@example.com', sessionId: 'session-id' };
+	return {
+		email: 'owner@example.com',
+		sessionId: 'session-id',
+		role: null,
+		memberId: null,
+		name: null
+	};
 }
 
 function getEvent() {

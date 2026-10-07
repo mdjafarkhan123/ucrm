@@ -17,7 +17,13 @@ const organizationId = '123e4567-e89b-12d3-a456-426614174000';
 const idempotencyKey = '223e4567-e89b-12d3-a456-426614174000';
 
 function session() {
-	return { email: 'owner@example.com', sessionId: 'session-id' };
+	return {
+		email: 'owner@example.com',
+		sessionId: 'session-id',
+		role: null,
+		memberId: null,
+		name: null
+	};
 }
 
 function event(id = organizationId, body: unknown = {}) {
@@ -44,12 +50,17 @@ function organizationRow(overrides: Record<string, unknown> = {}) {
 	return { id: organizationId, name: 'Acme Roofing', lifecycle_status: 'active', ...overrides };
 }
 
-function clientMock(rpcResult: { data: unknown; error: unknown }, organization: unknown = organizationRow()) {
+function clientMock(
+	rpcResult: { data: unknown; error: unknown },
+	organization: unknown = organizationRow()
+) {
 	const rpc = vi.fn().mockResolvedValue(rpcResult);
 	return {
 		rpc,
 		from: () => ({
-			select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: organization, error: null }) }) })
+			select: () => ({
+				eq: () => ({ maybeSingle: async () => ({ data: organization, error: null }) })
+			})
 		})
 	} as never;
 }

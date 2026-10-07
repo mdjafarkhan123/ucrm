@@ -22,10 +22,19 @@ function event(templateKey = 'password_setup') {
 }
 
 function session() {
-	return { email: 'owner@example.com', sessionId: 'session-id' };
+	return {
+		email: 'owner@example.com',
+		sessionId: 'session-id',
+		role: null,
+		memberId: null,
+		name: null
+	};
 }
 
-function clientWith(readResult: { data: unknown; error: null | { message: string } }, rpc?: ReturnType<typeof vi.fn>) {
+function clientWith(
+	readResult: { data: unknown; error: null | { message: string } },
+	rpc?: ReturnType<typeof vi.fn>
+) {
 	return {
 		from: () => ({ select: () => ({ eq: () => single(readResult.data, readResult.error) }) }),
 		rpc: rpc ?? vi.fn()
@@ -86,7 +95,9 @@ describe('platform owner message template publish API boundary', () => {
 
 	it('publishes when every required tag is present', async () => {
 		mockedOwnerSession.mockResolvedValue(session());
-		const rpc = vi.fn().mockResolvedValue({ data: { template_key: 'password_setup' }, error: null });
+		const rpc = vi
+			.fn()
+			.mockResolvedValue({ data: { template_key: 'password_setup' }, error: null });
 		mockedClient.mockReturnValue(
 			clientWith(
 				{
@@ -107,7 +118,9 @@ describe('platform owner message template publish API boundary', () => {
 
 	it('returns a safe server error when the publish RPC fails', async () => {
 		mockedOwnerSession.mockResolvedValue(session());
-		const rpc = vi.fn().mockResolvedValue({ data: null, error: { message: 'internal database details' } });
+		const rpc = vi
+			.fn()
+			.mockResolvedValue({ data: null, error: { message: 'internal database details' } });
 		mockedClient.mockReturnValue(
 			clientWith(
 				{ data: { subject_draft: null, body_draft: 'Click {{setup_link}}.' }, error: null },
@@ -117,6 +130,8 @@ describe('platform owner message template publish API boundary', () => {
 
 		const response = await POST(event());
 		expect(response.status).toBe(500);
-		expect(await response.json()).toEqual({ error: 'The message template could not be published.' });
+		expect(await response.json()).toEqual({
+			error: 'The message template could not be published.'
+		});
 	});
 });

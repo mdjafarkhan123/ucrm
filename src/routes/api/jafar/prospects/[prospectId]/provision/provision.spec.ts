@@ -38,7 +38,13 @@ function event(id: string, body: unknown = reviewedDates) {
 }
 
 function session() {
-	return { email: 'owner@example.com', sessionId: 'session-id' };
+	return {
+		email: 'owner@example.com',
+		sessionId: 'session-id',
+		role: null,
+		memberId: null,
+		name: null
+	};
 }
 
 type ClaimRow = {

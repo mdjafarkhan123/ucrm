@@ -71,7 +71,10 @@ describe('owner sending-domain recheck boundary', () => {
 		vi.mocked(checkRateLimit).mockResolvedValue({ allowed: true, retryAfterSeconds: 0 });
 		vi.mocked(getOwnerSession).mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-1'
+			sessionId: 'session-1',
+			role: null,
+			memberId: null,
+			name: null
 		});
 	});
 

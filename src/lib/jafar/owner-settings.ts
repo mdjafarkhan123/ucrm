@@ -1,6 +1,7 @@
 import userIcon from '@tabler/icons/outline/user.svg?raw';
 import calendarIcon from '@tabler/icons/outline/calendar-event.svg?raw';
 import usersIcon from '@tabler/icons/outline/users.svg?raw';
+import userPlusIcon from '@tabler/icons/outline/user-plus.svg?raw';
 import mailIcon from '@tabler/icons/outline/mail.svg?raw';
 import mailForwardIcon from '@tabler/icons/outline/mail-forward.svg?raw';
 import bellIcon from '@tabler/icons/outline/bell-ringing.svg?raw';
@@ -122,9 +123,25 @@ export const settingsGroups: SettingsGroup[] = [
 		title: 'Team & access',
 		hint: 'Who works in this panel and what each person can do.',
 		icon: usersIcon,
-		upcoming:
-			'Inviting teammates and choosing what each one can see and do arrive here with team access.',
-		destinations: []
+		destinations: [
+			{
+				id: 'team',
+				title: 'Team',
+				description: 'Invite teammates, see who has joined, and remove someone’s access.',
+				keywords: [
+					'teammates',
+					'invite',
+					'staff',
+					'employees',
+					'roles',
+					'remove',
+					'access',
+					'users'
+				],
+				href: resolve('/jafar/settings/team'),
+				icon: userPlusIcon
+			}
+		]
 	},
 	{
 		id: 'mail-notifications',

@@ -70,7 +70,13 @@ const reply = (objectKey: string) => ({
 
 beforeEach(() => {
 	vi.clearAllMocks();
-	mockedOwnerSession.mockResolvedValue({ email: 'owner@example.com', sessionId: 'session-id' });
+	mockedOwnerSession.mockResolvedValue({
+		email: 'owner@example.com',
+		sessionId: 'session-id',
+		role: null,
+		memberId: null,
+		name: null
+	});
 	mockedHead.mockResolvedValue({ contentLength: 1024, contentType: 'application/pdf' });
 	mockedUploadUrl.mockImplementation(async (key) => `https://storage.example/${key}`);
 	mockedDownloadUrl.mockResolvedValue('https://storage.example/signed-download');

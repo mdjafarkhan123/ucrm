@@ -16,7 +16,8 @@
 		jafarPackagesKey,
 		jafarProspectsKey,
 		jafarSetupEditorKey,
-		jafarSettingsKey
+		jafarSettingsKey,
+		jafarTeamKey
 	} from '$lib/jafar/query-keys';
 	import {
 		fetchSupportInboxUnread,
@@ -26,19 +27,32 @@
 		jafarSupportUnreadKey
 	} from '$lib/support/api';
 	import { SUPPORT_FALLBACK_REFRESH_MS, listenForSupportActivity } from '$lib/support/live';
-	let { children } = $props();
+	import { TEAM_ROLE_LABELS, canUseJafarPath } from '$lib/jafar/team-access';
+	let { children, data } = $props();
 	const queryClient = useQueryClient();
+
+	// The owner sees everything; a teammate's sidebar and live Support data follow their role (ADR 0008).
+	const viewer = $derived({ role: data.owner.role });
+	const canOpen = (href: string) => canUseJafarPath(viewer, href);
+	const supportVisible = $derived(canOpen('/jafar/support'));
+	const account = $derived(
+		data.owner.role
+			? { name: data.owner.name, email: data.owner.email, role: TEAM_ROLE_LABELS[data.owner.role] }
+			: null
+	);
 
 	// Support conversations waiting unread for Uplift: the number on the Support menu item, on every page.
 	const supportUnread = createQuery(() => ({
 		queryKey: jafarSupportUnreadKey,
-		queryFn: fetchSupportInboxUnread
+		queryFn: fetchSupportInboxUnread,
+		enabled: supportVisible
 	}));
 
 	// Support Inbox activity arrives live on this session's own secret channel (D2). Each ping refreshes the
 	// count, and the inbox and open conversation when they are on screen, and the onboarding list's unread
 	// column. If the channel cannot be issued, the same refresh runs every 30 seconds instead.
 	$effect(() => {
+		if (!supportVisible) return;
 		const refresh = () => {
 			void queryClient.invalidateQueries({ queryKey: jafarSupportKey });
 			void queryClient.invalidateQueries({ queryKey: jafarOnboardingKey });
@@ -112,6 +126,9 @@
 		if (pathname === '/jafar/settings') {
 			return true;
 		}
+		if (pathname === '/jafar/settings/team') {
+			return hasCachedData(jafarTeamKey);
+		}
 		if (pathname.startsWith('/jafar/settings/') && pathname !== '/jafar/settings/cleanup') {
 			return hasCachedData(jafarSettingsKey);
 		}
@@ -130,7 +147,13 @@
 	});
 </script>
 
-<AppShell variant="owner" supportUnread={supportUnread.data?.unread ?? 0}>
+<AppShell
+	variant="owner"
+	supportUnread={supportUnread.data?.unread ?? 0}
+	ownerCanOpen={canOpen}
+	ownerNotificationsVisible={data.owner.role === null}
+	{account}
+>
 	{#if showLoadingSkeleton}
 		<RouteSkeleton />
 	{:else}

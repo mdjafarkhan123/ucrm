@@ -4,6 +4,7 @@ import { join, relative } from 'node:path';
 import { isRedirect, type RequestEvent } from '@sveltejs/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
+import { canUseJafarPath } from '$lib/jafar/team-access';
 import { handle } from './hooks.server';
 
 const SECRET = 'test-session-secret';
@@ -11,6 +12,11 @@ const OWNER_EMAIL = 'owner@example.com';
 const LIVE_SESSION_ID = '11111111-1111-4111-8111-111111111111';
 const UNKNOWN_SESSION_ID = '22222222-2222-4222-8222-222222222222';
 const REVOKED_SESSION_ID = '33333333-3333-4333-8333-333333333333';
+const SALES_SESSION_ID = '44444444-4444-4444-8444-444444444444';
+const SUPPORT_SESSION_ID = '55555555-5555-4555-8555-555555555555';
+const REMOVED_TEAMMATE_SESSION_ID = '66666666-6666-4666-8666-666666666666';
+const SALES_MEMBER_ID = '77777777-7777-4777-8777-777777777777';
+const SALES_EMAIL = 'sam@uplift.example';
 
 vi.mock('@supabase/ssr', () => ({
 	createServerClient: () => ({ auth: { getClaims: async () => ({ data: null }) } })
@@ -26,20 +32,45 @@ vi.mock('$lib/server/env', () => ({
 	})
 }));
 
-const registry: Record<
-	string,
-	{ owner_email: string; expires_at: string; revoked_at: string | null }
-> = {
+type RegistryRow = {
+	owner_email: string;
+	expires_at: string;
+	revoked_at: string | null;
+	team_member_id: string | null;
+	platform_team_members: {
+		email: string;
+		role: string;
+		status: string;
+		full_name: string | null;
+	} | null;
+};
+const inAnHour = new Date(Date.now() + 3_600_000).toISOString();
+const ownerRow = { team_member_id: null, platform_team_members: null };
+const teammateRow = (email: string, role: string, status: string, memberId = SALES_MEMBER_ID) => ({
+	owner_email: email,
+	expires_at: inAnHour,
+	revoked_at: null,
+	team_member_id: memberId,
+	platform_team_members: { email, role, status, full_name: 'Sam Seller' }
+});
+
+const registry: Record<string, RegistryRow> = {
 	[LIVE_SESSION_ID]: {
 		owner_email: OWNER_EMAIL,
-		expires_at: new Date(Date.now() + 3_600_000).toISOString(),
-		revoked_at: null
+		expires_at: inAnHour,
+		revoked_at: null,
+		...ownerRow
 	},
 	[REVOKED_SESSION_ID]: {
 		owner_email: OWNER_EMAIL,
-		expires_at: new Date(Date.now() + 3_600_000).toISOString(),
-		revoked_at: new Date().toISOString()
-	}
+		expires_at: inAnHour,
+		revoked_at: new Date().toISOString(),
+		...ownerRow
+	},
+	[SALES_SESSION_ID]: teammateRow(SALES_EMAIL, 'sales', 'active'),
+	[SUPPORT_SESSION_ID]: teammateRow('sue@uplift.example', 'support', 'active'),
+	// Removed a moment ago: the session row is not revoked yet, but the teammate is no longer active.
+	[REMOVED_TEAMMATE_SESSION_ID]: teammateRow('rem@uplift.example', 'sales', 'removed')
 };
 const registryLookups = vi.fn();
 
@@ -79,7 +110,16 @@ function jafarRoutes() {
 	return found;
 }
 
-const OPEN_ROUTES = new Set(['/jafar/login', '/api/jafar/session']);
+const OPEN_ROUTES = new Set([
+	'/jafar/login',
+	'/api/jafar/session',
+	'/jafar/join',
+	'/jafar/forgot-password',
+	'/jafar/reset-password',
+	'/api/jafar/account/join',
+	'/api/jafar/account/password-reset',
+	'/api/jafar/account/password-reset/complete'
+]);
 const isSecretAuthenticated = (pathname: string) => pathname.startsWith('/api/jafar/internal/');
 
 function cookieJar(sessionCookie?: string) {
@@ -92,10 +132,10 @@ function cookieJar(sessionCookie?: string) {
 	};
 }
 
-async function visit(pathname: string, sessionCookie?: string) {
+async function visit(pathname: string, sessionCookie?: string, method = 'GET') {
 	const event = {
 		url: new URL(`https://app.example.com${pathname}`),
-		request: new Request(`https://app.example.com${pathname}`),
+		request: new Request(`https://app.example.com${pathname}`, { method }),
 		cookies: cookieJar(sessionCookie),
 		locals: {}
 	} as unknown as RequestEvent;
@@ -142,7 +182,8 @@ describe('the Jafar Panel front door', () => {
 		['a logged-out visitor', undefined],
 		['a forged session cookie', `${LIVE_SESSION_ID}.not-the-real-signature`],
 		['a signed cookie for a session that does not exist', signedCookie(UNKNOWN_SESSION_ID)],
-		['a signed-out session', signedCookie(REVOKED_SESSION_ID)]
+		['a signed-out session', signedCookie(REVOKED_SESSION_ID)],
+		['a removed teammate', signedCookie(REMOVED_TEAMMATE_SESSION_ID)]
 	] as const;
 
 	describe.each(visitors)('%s', (_label, cookie) => {
@@ -173,7 +214,10 @@ describe('the Jafar Panel front door', () => {
 			expect(result.routeRan, pathname).toBe(true);
 			expect(await result.event.locals.ownerSession).toEqual({
 				email: OWNER_EMAIL,
-				sessionId: LIVE_SESSION_ID
+				sessionId: LIVE_SESSION_ID,
+				role: null,
+				memberId: null,
+				name: null
 			});
 			expect(registryLookups).toHaveBeenCalledTimes(1);
 		}
@@ -190,12 +234,93 @@ describe('the Jafar Panel front door', () => {
 				'/api/jafar/internal/sms-usage-reconciliation-cron',
 				'/api/jafar/internal/trust-hub-status-cron',
 				'/api/jafar/session',
-				'/jafar/login'
+				'/jafar/login',
+				'/jafar/join',
+				'/jafar/forgot-password',
+				'/jafar/reset-password',
+				'/api/jafar/account/join',
+				'/api/jafar/account/password-reset',
+				'/api/jafar/account/password-reset/complete'
 			].sort()
 		);
 		for (const { pathname } of open) {
 			expect((await visit(pathname)).routeRan, pathname).toBe(true);
 		}
+	});
+
+	describe('a Sales teammate', () => {
+		const cookie = signedCookie(SALES_SESSION_ID);
+
+		it('is known by name and role', async () => {
+			const result = await visit('/jafar/prospects', cookie);
+			expect(result.routeRan).toBe(true);
+			expect(await result.event.locals.ownerSession).toEqual({
+				email: SALES_EMAIL,
+				sessionId: SALES_SESSION_ID,
+				role: 'sales',
+				memberId: SALES_MEMBER_ID,
+				name: 'Sam Seller'
+			});
+		});
+
+		it('reaches exactly the routes its role opens, for reading', async () => {
+			for (const { pathname, kind } of guarded) {
+				const result = await visit(pathname, cookie);
+				const allowed = canUseJafarPath({ role: 'sales' }, pathname, 'GET');
+				expect(result.routeRan, pathname).toBe(allowed);
+				if (allowed) continue;
+				if (kind === 'api') expect(result.response?.status, pathname).toBe(403);
+				else expect(result.redirect?.location, pathname).toBe('/jafar/leads');
+			}
+		});
+
+		it('only looks at Applications: confirming a payment is refused', async () => {
+			const result = await visit(
+				`/api/jafar/prospects/${SAMPLE_ID}/confirm-payment`,
+				cookie,
+				'POST'
+			);
+			expect(result.routeRan).toBe(false);
+			expect(result.response?.status).toBe(403);
+		});
+
+		it('cannot manage the team or step up as the owner', async () => {
+			for (const [pathname, method] of [
+				['/api/jafar/team', 'GET'],
+				['/api/jafar/team', 'POST'],
+				[`/api/jafar/team/${SAMPLE_ID}`, 'DELETE'],
+				['/api/jafar/reconfirm', 'POST']
+			] as const) {
+				const result = await visit(pathname, cookie, method);
+				expect(result.routeRan, `${method} ${pathname}`).toBe(false);
+				expect(result.response?.status).toBe(403);
+			}
+		});
+
+		it('lands on Leads from the Overview and from Settings', async () => {
+			for (const pathname of ['/jafar', '/jafar/settings', '/jafar/settings/team']) {
+				expect((await visit(pathname, cookie)).redirect?.location, pathname).toBe('/jafar/leads');
+			}
+		});
+	});
+
+	describe('a Support teammate', () => {
+		const cookie = signedCookie(SUPPORT_SESSION_ID);
+
+		it('replies in the Support inbox', async () => {
+			const result = await visit(
+				`/api/jafar/support/threads/${SAMPLE_ID}/messages`,
+				cookie,
+				'POST'
+			);
+			expect(result.routeRan).toBe(true);
+		});
+
+		it('cannot change who Support replies appear from', async () => {
+			const result = await visit('/api/jafar/support/settings', cookie, 'PATCH');
+			expect(result.routeRan).toBe(false);
+			expect(result.response?.status).toBe(403);
+		});
 	});
 
 	it('does not touch the contractor app', async () => {

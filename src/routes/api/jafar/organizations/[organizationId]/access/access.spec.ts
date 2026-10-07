@@ -37,7 +37,10 @@ describe('platform owner access API boundary', () => {
 	it('validates organization identifiers after owner authentication', async () => {
 		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-id'
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
 		});
 
 		const response = await GET(event('not-a-uuid'));

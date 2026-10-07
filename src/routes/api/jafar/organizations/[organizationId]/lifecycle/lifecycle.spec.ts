@@ -25,7 +25,13 @@ const organizationId = '123e4567-e89b-12d3-a456-426614174000';
 const idempotencyKey = '223e4567-e89b-12d3-a456-426614174000';
 
 function session() {
-	return { email: 'owner@example.com', sessionId: 'session-id' };
+	return {
+		email: 'owner@example.com',
+		sessionId: 'session-id',
+		role: null,
+		memberId: null,
+		name: null
+	};
 }
 
 function event(id = organizationId, body: unknown = {}) {

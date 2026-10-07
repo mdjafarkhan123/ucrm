@@ -79,7 +79,13 @@ function event(url = 'http://localhost/api/jafar/notifications') {
 }
 
 function session() {
-	return { email: 'owner@example.com', sessionId: 'session-id' };
+	return {
+		email: 'owner@example.com',
+		sessionId: 'session-id',
+		role: null,
+		memberId: null,
+		name: null
+	};
 }
 
 describe('platform owner notifications list API boundary', () => {

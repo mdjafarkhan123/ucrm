@@ -25,7 +25,13 @@ function event(id: string, body: unknown = {}) {
 }
 
 function session() {
-	return { email: 'owner@example.com', sessionId: 'session-id' };
+	return {
+		email: 'owner@example.com',
+		sessionId: 'session-id',
+		role: null,
+		memberId: null,
+		name: null
+	};
 }
 
 function clientWith(rpcError: { message: string } | null = null) {
@@ -89,7 +95,9 @@ describe('platform owner prospect not-proceeding API boundary', () => {
 		const client = clientWith();
 		mockedClient.mockReturnValue(client as never);
 
-		const response = await POST(event(prospectId, { reason: 'Same business, different form fill.' }));
+		const response = await POST(
+			event(prospectId, { reason: 'Same business, different form fill.' })
+		);
 		expect(response.status).toBe(200);
 		expect(client.__rpc).toHaveBeenCalledWith('mark_onboarding_application_not_proceeding', {
 			target_application_id: prospectId,
@@ -101,7 +109,9 @@ describe('platform owner prospect not-proceeding API boundary', () => {
 	it('returns 422 with a field error when closing an unacknowledged duplicate without a reason', async () => {
 		mockedOwnerSession.mockResolvedValue(session());
 		mockedClient.mockReturnValue(
-			clientWith({ message: 'A private reason is required to close a possible duplicate.' }) as never
+			clientWith({
+				message: 'A private reason is required to close a possible duplicate.'
+			}) as never
 		);
 
 		const response = await POST(event(prospectId));

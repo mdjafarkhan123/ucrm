@@ -30,7 +30,10 @@ describe('platform owner history API boundary', () => {
 	it('rejects an invalid organization identifier', async () => {
 		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-id'
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
 		});
 
 		const response = await GET(event('not-a-uuid'));
@@ -42,7 +45,10 @@ describe('platform owner history API boundary', () => {
 	it('returns 404 when the organization does not exist', async () => {
 		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-id'
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
 		});
 		mockedClient.mockReturnValue({
 			from: () => ({
@@ -60,7 +66,10 @@ describe('platform owner history API boundary', () => {
 	it('merges audit, free-access, and commercial events into one feed sorted newest first', async () => {
 		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-id'
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
 		});
 		mockedClient.mockReturnValue({
 			from: (table: string) => {
@@ -100,8 +109,8 @@ describe('platform owner history API boundary', () => {
 							eq: () => ({
 								order: () => ({
 									limit: async () => ({
-						data: [
-							{
+										data: [
+											{
 												id: 'audit-1',
 												event_type: 'organization.lifecycle_changed',
 												target_type: 'organization.lifecycle_status',
@@ -255,10 +264,13 @@ describe('platform owner history API boundary', () => {
 		]);
 	});
 
-	it('merges the linked application\'s onboarding trail into the same feed', async () => {
+	it("merges the linked application's onboarding trail into the same feed", async () => {
 		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-id'
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
 		});
 		const applicationId = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
 		mockedClient.mockReturnValue({
@@ -278,7 +290,9 @@ describe('platform owner history API boundary', () => {
 				if (table === 'platform_onboarding_application_provisions') {
 					return {
 						select: () => ({
-							eq: () => ({ maybeSingle: async () => ({ data: { application_id: applicationId }, error: null }) })
+							eq: () => ({
+								maybeSingle: async () => ({ data: { application_id: applicationId }, error: null })
+							})
 						})
 					};
 				}

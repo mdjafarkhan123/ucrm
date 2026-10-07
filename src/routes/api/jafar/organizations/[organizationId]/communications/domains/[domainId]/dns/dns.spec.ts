@@ -35,7 +35,10 @@ describe('owner sending-domain DNS setup boundary', () => {
 	it('returns only the DNS fields Jafar needs to configure the domain', async () => {
 		vi.mocked(getOwnerSession).mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-1'
+			sessionId: 'session-1',
+			role: null,
+			memberId: null,
+			name: null
 		});
 		const builder: Record<string, ReturnType<typeof vi.fn>> = {};
 		builder.select = vi.fn(() => builder);

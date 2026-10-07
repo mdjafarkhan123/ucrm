@@ -101,7 +101,13 @@ describe('owner session registry seam', () => {
 			} as never);
 
 			const session = await getOwnerSession(fakeEvent(cookies));
-			expect(session).toEqual({ email: 'owner@example.com', sessionId: VALID_SESSION_ID });
+			expect(session).toEqual({
+				email: 'owner@example.com',
+				sessionId: VALID_SESSION_ID,
+				role: null,
+				memberId: null,
+				name: null
+			});
 		});
 
 		it('rejects a revoked session', async () => {
@@ -177,7 +183,9 @@ describe('owner session registry seam', () => {
 
 	describe('setOwnerSession', () => {
 		it('rotates out a previously presented session before issuing a new one', async () => {
-			const previousCookieValue = await signSessionIdForTest('22222222-2222-2222-2222-222222222222');
+			const previousCookieValue = await signSessionIdForTest(
+				'22222222-2222-2222-2222-222222222222'
+			);
 			const cookies = cookieJar();
 			cookies.set('jafar_session', previousCookieValue);
 
@@ -225,9 +233,7 @@ describe('owner session registry seam', () => {
 
 			await clearOwnerSession(fakeEvent(cookies));
 
-			expect(update).toHaveBeenCalledWith(
-				expect.objectContaining({ revoked_reason: 'logout' })
-			);
+			expect(update).toHaveBeenCalledWith(expect.objectContaining({ revoked_reason: 'logout' }));
 			expect(updateEq).toHaveBeenCalledWith('id', VALID_SESSION_ID);
 			expect(cookies.get('jafar_session')).toBeUndefined();
 		});

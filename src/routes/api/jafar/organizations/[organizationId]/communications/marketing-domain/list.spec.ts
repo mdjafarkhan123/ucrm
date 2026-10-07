@@ -61,7 +61,10 @@ describe('owner Marketing domain list boundary', () => {
 	it('returns the domain list plus a suggested root domain from the receiving domain', async () => {
 		vi.mocked(getOwnerSession).mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-1'
+			sessionId: 'session-1',
+			role: null,
+			memberId: null,
+			name: null
 		});
 		const domains = [
 			{ id: 'domain-1', domain_name: 'news.contractor.com', lifecycle_state: 'verified' }
@@ -86,7 +89,10 @@ describe('owner Marketing domain list boundary', () => {
 	it('reports a database failure on the domain list as a 500', async () => {
 		vi.mocked(getOwnerSession).mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-1'
+			sessionId: 'session-1',
+			role: null,
+			memberId: null,
+			name: null
 		});
 		vi.mocked(getOwnerSupabaseClient).mockReturnValue(
 			clientWith(

@@ -24,13 +24,21 @@ function event(templateKey: string, body?: unknown) {
 				headers: { 'content-type': 'application/json' }
 			}
 		),
-		url: new URL('http://localhost/api/jafar/message-templates/' + templateKey + '/restore-version'),
+		url: new URL(
+			'http://localhost/api/jafar/message-templates/' + templateKey + '/restore-version'
+		),
 		cookies: {}
 	} as Parameters<typeof POST>[0];
 }
 
 function session() {
-	return { email: 'owner@example.com', sessionId: 'session-id' };
+	return {
+		email: 'owner@example.com',
+		sessionId: 'session-id',
+		role: null,
+		memberId: null,
+		name: null
+	};
 }
 
 const originalVersion = { subject: 'Original subject', body: 'Original body {{setup_link}}' };
@@ -42,7 +50,11 @@ function clientWith(
 	return {
 		from: (table: string) =>
 			table === 'platform_message_template_versions'
-				? { select: () => ({ eq: () => ({ eq: () => single(versionResult.data, versionResult.error) }) }) }
+				? {
+						select: () => ({
+							eq: () => ({ eq: () => single(versionResult.data, versionResult.error) })
+						})
+					}
 				: {
 						update: () => ({
 							eq: () => ({

@@ -38,7 +38,10 @@ describe('platform owner reconfirm API boundary', () => {
 	it('validates the request body before checking the password', async () => {
 		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-id'
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
 		});
 
 		const response = await POST(event({ password: '' }));
@@ -50,7 +53,10 @@ describe('platform owner reconfirm API boundary', () => {
 	it('rejects an incorrect password without issuing a step-up', async () => {
 		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-id'
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
 		});
 		mockedVerifyCredentials.mockReturnValue(false);
 
@@ -63,7 +69,10 @@ describe('platform owner reconfirm API boundary', () => {
 	it('issues a step-up token for the session email once the password is confirmed', async () => {
 		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-id'
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
 		});
 		mockedVerifyCredentials.mockReturnValue(true);
 

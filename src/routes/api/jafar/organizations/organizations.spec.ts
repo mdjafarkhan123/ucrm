@@ -10,7 +10,13 @@ const mockedOwnerSession = vi.mocked(getOwnerSession);
 const mockedClient = vi.mocked(getOwnerSupabaseClient);
 
 function session() {
-	return { email: 'owner@example.com', sessionId: 'session-id' };
+	return {
+		email: 'owner@example.com',
+		sessionId: 'session-id',
+		role: null,
+		memberId: null,
+		name: null
+	};
 }
 
 function event(url = 'http://localhost/api/jafar/organizations') {

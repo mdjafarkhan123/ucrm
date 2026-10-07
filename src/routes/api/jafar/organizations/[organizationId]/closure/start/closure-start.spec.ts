@@ -20,7 +20,13 @@ const organizationId = '123e4567-e89b-12d3-a456-426614174000';
 const idempotencyKey = '223e4567-e89b-12d3-a456-426614174000';
 
 function session() {
-	return { email: 'owner@example.com', sessionId: 'session-id' };
+	return {
+		email: 'owner@example.com',
+		sessionId: 'session-id',
+		role: null,
+		memberId: null,
+		name: null
+	};
 }
 
 function event(id = organizationId, body: unknown = {}) {
@@ -53,9 +59,14 @@ function clientMock(options: {
 	rpcResult?: { data: unknown; error: unknown };
 	refreshedOrganization?: Record<string, unknown> | null;
 }) {
-	const rpc = vi.fn().mockResolvedValue(options.rpcResult ?? { data: { applied: true }, error: null });
+	const rpc = vi
+		.fn()
+		.mockResolvedValue(options.rpcResult ?? { data: { applied: true }, error: null });
 	let call = 0;
-	const organizations = [options.organization, options.refreshedOrganization ?? options.organization];
+	const organizations = [
+		options.organization,
+		options.refreshedOrganization ?? options.organization
+	];
 	return {
 		rpc,
 		from: () => ({
@@ -130,7 +141,12 @@ describe('platform owner closure-start API boundary', () => {
 
 	it('starts closure, sends the closure_started notice, and returns the refreshed organization', async () => {
 		const rpcResult = {
-			data: { applied: true, event_id: 'evt-1', closure_record_id: 'closure-1', deadline_at: '2026-09-14' },
+			data: {
+				applied: true,
+				event_id: 'evt-1',
+				closure_record_id: 'closure-1',
+				deadline_at: '2026-09-14'
+			},
 			error: null
 		};
 		mockedClient.mockReturnValue(

@@ -98,7 +98,13 @@ function client(overrides: Partial<OnboardingClient> = {}): OnboardingClient {
 describe('client onboarding list GET', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockedOwnerSession.mockResolvedValue({ email: 'owner@example.com', sessionId: 'session-id' });
+		mockedOwnerSession.mockResolvedValue({
+			email: 'owner@example.com',
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
+		});
 	});
 
 	it('rejects callers without the separate owner session', async () => {

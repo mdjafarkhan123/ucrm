@@ -48,7 +48,10 @@ describe('platform owner prospect read API boundary', () => {
 	it('returns filtered prospect summaries', async () => {
 		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-id'
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
 		});
 		mockedClient.mockReturnValue({
 			from: () => query([{ id: 'prospect-1', stage: 'new', business_name: 'Bright Co' }])
@@ -64,7 +67,10 @@ describe('platform owner prospect read API boundary', () => {
 	it('escapes search syntax before building the database filter', async () => {
 		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-id'
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
 		});
 		mockedClient.mockReturnValue({ from: () => query([]) } as never);
 
@@ -81,7 +87,10 @@ describe('platform owner prospect read API boundary', () => {
 	it('returns a safe server error when the prospect list query fails', async () => {
 		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-id'
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
 		});
 		mockedClient.mockReturnValue({
 			from: () => query([], { message: 'internal database details' })
@@ -96,7 +105,10 @@ describe('platform owner prospect read API boundary', () => {
 	it('returns the application and immutable history', async () => {
 		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-id'
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
 		});
 		mockedClient.mockReturnValue({
 			from: (table: string) =>
@@ -126,7 +138,10 @@ describe('platform owner prospect read API boundary', () => {
 	it('rejects an invalid prospect identifier', async () => {
 		mockedOwnerSession.mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-id'
+			sessionId: 'session-id',
+			role: null,
+			memberId: null,
+			name: null
 		});
 		const response = await detail({
 			...event(),

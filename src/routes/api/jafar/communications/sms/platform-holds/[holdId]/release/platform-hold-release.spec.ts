@@ -17,7 +17,13 @@ const mockedClient = vi.mocked(getOwnerSupabaseClient);
 const holdId = '223e4567-e89b-12d3-a456-426614174000';
 
 function session() {
-	return { email: 'owner@example.com', sessionId: 'session-id' };
+	return {
+		email: 'owner@example.com',
+		sessionId: 'session-id',
+		role: null,
+		memberId: null,
+		name: null
+	};
 }
 
 function postEvent(body: unknown, hold = holdId) {

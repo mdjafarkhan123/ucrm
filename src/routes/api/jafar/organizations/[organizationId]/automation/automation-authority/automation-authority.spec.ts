@@ -39,7 +39,10 @@ describe('Automation owner authority boundary', () => {
 		vi.clearAllMocks();
 		vi.mocked(getOwnerSession).mockResolvedValue({
 			email: 'owner@example.com',
-			sessionId: 'session-1'
+			sessionId: 'session-1',
+			role: null,
+			memberId: null,
+			name: null
 		});
 	});
 

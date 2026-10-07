@@ -46,7 +46,13 @@ function patchEvent(templateKey: string, body: unknown) {
 }
 
 function session() {
-	return { email: 'owner@example.com', sessionId: 'session-id' };
+	return {
+		email: 'owner@example.com',
+		sessionId: 'session-id',
+		role: null,
+		memberId: null,
+		name: null
+	};
 }
 
 describe('platform owner single message template API boundary', () => {
@@ -73,7 +79,11 @@ describe('platform owner single message template API boundary', () => {
 				from: (table: string) =>
 					table === 'platform_message_templates'
 						? { select: () => ({ eq: () => single(null) }) }
-						: { select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: [], error: null }) }) }) }
+						: {
+								select: () => ({
+									eq: () => ({ order: () => Promise.resolve({ data: [], error: null }) })
+								})
+							}
 			} as never);
 
 			const response = await GET(readEvent());
@@ -122,8 +132,14 @@ describe('platform owner single message template API boundary', () => {
 			mockedClient.mockReturnValue({
 				from: (table: string) =>
 					table === 'platform_message_templates'
-						? { select: () => ({ eq: () => single(null, { message: 'internal database details' }) }) }
-						: { select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: [], error: null }) }) }) }
+						? {
+								select: () => ({ eq: () => single(null, { message: 'internal database details' }) })
+							}
+						: {
+								select: () => ({
+									eq: () => ({ order: () => Promise.resolve({ data: [], error: null }) })
+								})
+							}
 			} as never);
 
 			const response = await GET(readEvent());
@@ -155,9 +171,7 @@ describe('platform owner single message template API boundary', () => {
 
 		it('rejects a draft body that is too long', async () => {
 			mockedOwnerSession.mockResolvedValue(session());
-			const response = await PATCH(
-				patchEvent('password_setup', { body_draft: 'x'.repeat(20001) })
-			);
+			const response = await PATCH(patchEvent('password_setup', { body_draft: 'x'.repeat(20001) }));
 			expect(response.status).toBe(422);
 			const body = await response.json();
 			expect(body.field_errors.body_draft).toBeDefined();
@@ -177,7 +191,10 @@ describe('platform owner single message template API boundary', () => {
 			} as never);
 
 			const response = await PATCH(
-				patchEvent('password_setup', { subject_draft: 'New subject', body_draft: 'New body {{setup_link}}' })
+				patchEvent('password_setup', {
+					subject_draft: 'New subject',
+					body_draft: 'New body {{setup_link}}'
+				})
 			);
 			expect(response.status).toBe(200);
 			const body = await response.json();

@@ -1,6 +1,8 @@
 <script lang="ts">
-	import shieldLockIcon from '@tabler/icons/outline/shield-lock.svg?raw';
-	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
+	import { resolve } from '$app/paths';
+	import JafarAuthCard from '$lib/components/jafar/JafarAuthCard.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Input from '$lib/components/ui/Input.svelte';
 
 	let email = $state('');
 	let password = $state('');
@@ -32,198 +34,78 @@
 
 			window.location.assign('/jafar');
 		} catch {
-			errorMessage = 'We could not reach the platform owner service.';
+			errorMessage = 'We could not reach the sign-in service. Check your connection and try again.';
 		} finally {
 			isSubmitting = false;
 		}
 	}
 </script>
 
-<svelte:head><title>Platform owner sign in · Contractor CRM</title></svelte:head>
+<svelte:head><title>Sign in · Uplift team</title></svelte:head>
 
-<!-- eslint-disable svelte/no-at-html-tags -->
-<main class="owner-auth-page">
-	<section class="owner-auth-card" aria-labelledby="owner-login-title">
-		<div class="owner-auth-card__eyebrow">
-			<span aria-hidden="true">{@html shieldLockIcon}</span>
-			Platform owner
-		</div>
-		<h1 id="owner-login-title">Sign in to the control room</h1>
-		<p class="owner-auth-card__intro">
-			Manage contractor organizations and platform setup from this private workspace.
-		</p>
+<JafarAuthCard
+	eyebrow="Uplift team"
+	title="Sign in to the control room"
+	intro="Run Uplift's business and the platform from this private workspace."
+	titleId="jafar-login-title"
+>
+	<form
+		onsubmit={(event) => {
+			event.preventDefault();
+			void submit();
+		}}
+	>
+		<Input
+			id="jafar-login-email"
+			label="Email"
+			type="email"
+			bind:value={email}
+			autocomplete="username"
+			required
+			invalid={Boolean(fieldErrors.email)}
+			errorMessage={fieldErrors.email}
+		/>
+		<Input
+			id="jafar-login-password"
+			label="Password"
+			type="password"
+			bind:value={password}
+			autocomplete="current-password"
+			required
+			invalid={Boolean(fieldErrors.password)}
+			errorMessage={fieldErrors.password}
+		/>
+		<a class="jafar-login__forgot" href={resolve('/jafar/forgot-password')}>Forgot password?</a>
 
-		<form
-			onsubmit={(event) => {
-				event.preventDefault();
-				void submit();
-			}}
-		>
-			<label for="owner-email">Email</label>
-			<input
-				id="owner-email"
-				class={fieldErrors.email ? 'error' : ''}
-				type="email"
-				bind:value={email}
-				autocomplete="username"
-				aria-describedby={fieldErrors.email ? 'owner-email-error' : undefined}
-				required
-			/>
-			{#if fieldErrors.email}<p id="owner-email-error" class="owner-auth-card__field-error">
-					{fieldErrors.email}
-				</p>{/if}
-
-			<label for="owner-password">Password</label>
-			<input
-				id="owner-password"
-				class={fieldErrors.password ? 'error' : ''}
-				type="password"
-				bind:value={password}
-				autocomplete="current-password"
-				aria-describedby={fieldErrors.password ? 'owner-password-error' : undefined}
-				required
-			/>
-			{#if fieldErrors.password}<p id="owner-password-error" class="owner-auth-card__field-error">
-					{fieldErrors.password}
-				</p>{/if}
-
-			{#if errorMessage}<p class="owner-auth-card__error" role="alert">{errorMessage}</p>{/if}
-			<button type="submit" disabled={isSubmitting}>
-				<span aria-hidden="true">{@html lockIcon}</span>
-				{isSubmitting ? 'Signing in…' : 'Sign in securely'}
-			</button>
-		</form>
-	</section>
-</main>
-
-<!-- eslint-enable svelte/no-at-html-tags -->
+		{#if errorMessage}<p class="jafar-login__error" role="alert">{errorMessage}</p>{/if}
+		<Button type="submit" size="large" fullWidth loading={isSubmitting}>
+			{isSubmitting ? 'Signing in…' : 'Sign in securely'}
+		</Button>
+	</form>
+</JafarAuthCard>
 
 <style lang="scss">
-	.owner-auth-page {
-		min-height: 100vh;
-		display: grid;
-		place-items: center;
-		padding: var(--space-large);
-		background:
-			radial-gradient(
-				circle at 15% 10%,
-				var(--color-interactive--background--subtle--hover),
-				transparent 30%
-			),
-			var(--color-surface--background);
-	}
+	.jafar-login__forgot {
+		justify-self: end;
+		color: var(--color-interactive);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		text-decoration: none;
 
-	.owner-auth-card {
-		width: min(100%, 440px);
-		padding: var(--space-largest);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-large);
-		background: var(--color-surface);
-		box-shadow: var(--shadow-high);
-
-		.owner-auth-card__eyebrow {
-			display: flex;
-			align-items: center;
-			gap: var(--space-small);
-			margin-bottom: var(--space-small);
-			color: var(--color-interactive);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 700;
-			letter-spacing: var(--typography--letterSpacing-loose);
-			text-transform: uppercase;
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
+		&:hover {
+			text-decoration: underline;
 		}
 
-		h1 {
-			margin-bottom: var(--space-small);
-			color: var(--color-heading);
-			font-size: var(--typography--fontSize-jumbo);
-			line-height: var(--typography--lineHeight-minuscule);
-		}
-
-		.owner-auth-card__intro {
-			margin-bottom: var(--space-large);
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-large);
-			line-height: var(--typography--lineHeight-large);
-		}
-
-		form {
-			display: grid;
-			gap: var(--space-small);
-		}
-
-		label {
-			margin-top: var(--space-small);
-			color: var(--color-heading);
-			font-weight: 600;
-		}
-
-		input {
-			width: 100%;
-			min-height: 44px;
-			padding: var(--space-small) var(--space-slim);
-			border: var(--border-base) solid var(--color-border);
-			border-radius: var(--radius-base);
-			color: var(--color-text);
-			background: var(--color-surface);
-
-			&:focus {
-				border-color: var(--color-border--interactive);
-			}
-
-			&.error {
-				border-color: var(--color-critical);
-			}
-		}
-
-		button {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			gap: var(--space-small);
-			min-height: 44px;
-			margin-top: var(--space-base);
-			padding: var(--space-small) var(--space-base);
-			border: 0;
-			border-radius: var(--radius-base);
-			color: var(--color-text--reverse);
-			background: var(--color-interactive);
-			font-weight: 700;
-			transition: background var(--timing-quick) ease;
-
-			&:hover:not(:disabled) {
-				background: var(--color-interactive--hover);
-			}
-
-			&:disabled {
-				opacity: 0.6;
-			}
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
-		}
-
-		.owner-auth-card__error,
-		.owner-auth-card__field-error {
-			color: var(--color-critical);
-			font-size: var(--typography--fontSize-small);
+		&:focus-visible {
+			outline: 2px solid var(--color-focus);
+			outline-offset: 2px;
+			border-radius: var(--radius-small);
 		}
 	}
 
-	@media (max-width: 639px) {
-		.owner-auth-card {
-			padding: var(--space-large);
-
-			h1 {
-				font-size: 28px;
-			}
-		}
+	.jafar-login__error {
+		margin: 0;
+		color: var(--color-critical);
+		font-size: var(--typography--fontSize-small);
 	}
 </style>
