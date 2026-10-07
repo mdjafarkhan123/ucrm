@@ -8,4 +8,4 @@
 
 **Next part:** P4 First release scope, after P3.
 
-**Next:** Settle the remaining P3 choices about reminder delivery/timing, self-booking, and starting role permissions with Jafar, then ask for his approval of the complete behavior plan. Prospect email automation still waits for a provider-approved route; this is a product gate, not a reason to change live mail during planning.
+**Next:** Jafar chose flexible reminders, public sales booking, starting role areas, and an organized `/jafar` Settings home. Settle booking behavior and the Settings section map with him using the linked research. Then ask for plan approval. Prospect email automation still waits for a provider-approved route; do not change live mail during planning.

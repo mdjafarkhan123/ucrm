@@ -50,13 +50,21 @@ After the handoff, the same business appears as a Client. The Business Managemen
 
 ### 6. Know what to do today
 
-The opening view should lead with **next actions**, not a wall of charts: leads waiting for Jafar's approval, approved people awaiting first contact, replies to answer, overdue follow-ups, calls, shared pricing awaiting a decision, onboarding handoffs, and client renewal attention. A Business Management calendar in `/jafar` shows sales calls and dated follow-ups, with their owner, time, linked business or Deal, outcome, and reminder. Jafar sees his own upcoming and overdue work; an assigned teammate sees theirs. It may reuse the contractor Schedule's calendar presentation, but contractor jobs and visits do not become Uplift sales events. A booked, missed, cancelled, or moved call updates the next action; the reminder reaches the assigned person, or Jafar when nobody is assigned. Every active lead or deal has one responsible teammate and either a dated next action or a visible reason it is waiting. A small report then shows researched, approved, contacted, replied, calls, pricing shared, won, and lost by source and time period. Counts distinguish people reached from messages sent, and a channel's delivery from an actual reply. Reports describe association with a source; they do not claim that a message caused a sale.
+The opening view should lead with **next actions**, not a wall of charts: leads waiting for Jafar's approval, approved people awaiting first contact, replies to answer, overdue follow-ups, calls, shared pricing awaiting a decision, onboarding handoffs, and client renewal attention. A Business Management calendar in `/jafar` shows sales calls and dated follow-ups, with their owner, time, linked business or Deal, outcome, and reminders. Jafar sees his own upcoming and overdue work; an assigned teammate sees theirs. It may reuse the contractor Schedule's calendar presentation, but contractor jobs and visits do not become Uplift sales events. Jafar can choose how many reminders a meeting or follow-up has and when each fires, including in-app and email reminders; an assigned person receives theirs, or Jafar does when nobody is assigned. Moving or cancelling a call updates its next action and stops reminders for the old time. Every active lead or deal has one responsible teammate and either a dated next action or a visible reason it is waiting. A small report then shows researched, approved, contacted, replied, calls, pricing shared, won, and lost by source and time period. Counts distinguish people reached from messages sent, and a channel's delivery from an actual reply. Reports describe association with a source; they do not claim that a message caused a sale.
+
+Prospects can book a sales call themselves from a public Uplift booking link. Jafar controls this from Booking in `/jafar` Settings, following the contractor booking experience where its rules fit a sales meeting. Only times known to be free in the chosen availability source appear, and two people cannot take the same UCRM slot. A confirmed booking appears on the Business Management calendar and the linked business history, with a responsible person and reminders. Jafar can turn the public link on or off without losing past bookings. The exact outside-calendar, confirmation, rescheduling, and team-host defaults are being settled in this planning part.
 
 ## Team access across `/jafar`
 
 Jafar controls team invitations, access, and removal for the entire panel. The starting roles are Sales, Delivery, Support, and Platform Operations, but Jafar can turn specific areas and sensitive actions on or off for each teammate. These team features are built even though Jafar is the only user at first; unassigned work defaults to him. In particular, researching a lead, approving recipients, launching a batch, changing commercial terms, confirming payment, provisioning an account, managing teammates, and operating providers are separate abilities. Jafar initially keeps outreach approval, payment confirmation, provisioning, package changes, and teammate access unless he explicitly grants them. Sales can mark a Deal Won only after the payment confirmation already exists. Jafar retains the final owner powers. Screens and server actions enforce the same permissions; hiding a menu is insufficient. Important approvals, sends, commercial changes, and access changes retain an actor and time.
 
 Contractor team permissions are a useful pattern, but they are scoped to each contractor organization. `/jafar` currently has a configured single-owner login. Platform-team accounts and permissions therefore need their own secure scope and cannot inherit contractor access to customer organizations.
+
+Starting access follows the work: Sales sees permitted Leads, Deals, sales conversations, and the sales calendar; Delivery sees assigned onboarding and client progress; Support sees permitted support conversations and the context needed to answer; Platform Operations sees organization and provider status. Jafar can change each teammate's access and separately grant sensitive actions. A teammate does not gain access to every customer organization simply by holding a platform role.
+
+## Settings across `/jafar`
+
+`/jafar/settings` becomes a clear home for Uplift and platform settings rather than one long form. Jafar can find a setting by its purpose, see whether setup needs attention, open one focused section, understand the effect of a change, and save it explicitly. The Booking settings belong here, alongside the team, communication, business, and platform controls that Jafar is permitted to manage. Existing privacy, payment-instruction, sender-name, alert-recipient, email-template, email-safety, and cleanup controls keep their established behavior as the navigation is organized. A teammate sees only settings they are allowed to use. The experience must work on desktop and mobile and meet the project's premium, professional design standard. The final section grouping is still being decided.
 
 ## Reuse and simplicity
 
@@ -68,8 +76,8 @@ The simple first useful journey is manual lead capture, clear approval, individu
 
 - Which provider, if any, will explicitly permit the proposed first-contact email workflow? SES is the chosen Uplift mailbox transport, but technical sender setup and provider permission for prospecting are separate checks. Live domain cutover and recovery need proof before activation.
 - What country and channel checks must be proved before a particular automated send is enabled? The market remains all trade businesses outside Asia; there is no narrower lead-list geography.
-- What reminder timing and delivery choices should the Business Management calendar provide, and should a prospect-facing self-booking link be in the first release?
-- What exact access should each starting team role have by default? Jafar will be able to change it.
+- What exact availability source, confirmation, rescheduling, cancellation, meeting-location, and team-host settings should the public Uplift sales-booking link offer? The booking link, configurable reminders, and starting role areas are settled.
+- How should the existing and planned controls be grouped in the organized `/jafar` Settings home so Jafar can find them quickly without mixing business settings with platform recovery work?
 
 ## Not doing
 
@@ -87,6 +95,7 @@ The simple first useful journey is manual lead capture, clear approval, individu
 - [Current sender, country, and reuse check](research/jafar-outreach-sending-reuse-2026-10-06.md)
 - [Uplift mailbox options and chosen direction](research/jafar-full-mailbox-options-2026-10-06.md)
 - [Live mail readiness and provider permission check](research/jafar-mail-readiness-2026-10-07.md)
+- [Sales booking and Settings patterns](research/jafar-booking-settings-patterns-2026-10-07.md)
 - [Existing Jafar controls](jafar-completion-contract.md)
 - [Contractor marketing blueprint](marketing-product-blueprint.md)
 - [Contractor pipeline behavior](sales-pipeline-behavior-contract.md)

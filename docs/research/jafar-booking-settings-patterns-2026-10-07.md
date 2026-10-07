@@ -1,0 +1,19 @@
+# Sales booking and Settings patterns for `/jafar` (7 October 2026)
+
+This is planning evidence, not a build plan. It compares the live contractor booking foundation with official mature-product behavior.
+
+## What UCRM already has
+
+Contractor Settings > Forms has a Booking tab for assessment and job forms. It saves booking approval, minimum notice, slot interval, visit duration, buffer, and service rules (`src/routes/(app)/settings/forms/[id]/+page.svelte`, `/api/settings/forms/[id]/booking`). Public contractor forms show available slots and submit a booking (`src/routes/forms/[orgSlug]/[formSlug]/+page.svelte`, `/api/public/forms/[orgSlug]/[formSlug]`). The submission path reserves a slot so two people cannot take it together. These records and permissions belong to contractor organizations; `/jafar` has no sales-booking route, public page, or sales meeting calendar. No public self-reschedule/cancel route was found. Public time-zone presentation needs review before reuse.
+
+The current `/jafar/settings` page is one long form for privacy URL/version, payment instructions, sender name/reply-to, and owner alert recipients, followed by a cleanup link. System email templates and email safety are separate sidebar links. It is a real Settings page, but not the organized home Jafar requested. `docs/contractor-settings-blueprint.md` already uses a settings-directory approach for the contractor side.
+
+## Mature booking behavior
+
+[HubSpot scheduling pages](https://knowledge.hubspot.com/meetings-tool/create-and-edit-scheduling-pages) offer one-to-one, group, and round-robin meetings with organizer, duration, weekly availability, time-zone display, booking horizon, minimum notice, buffer, start interval, form, confirmation, reminders, and optional cancel/reschedule links. [HubSpot's calendar guide](https://knowledge.hubspot.com/meetings-tool/use-meetings) says a connected calendar is required for its automatic booking; otherwise the page becomes request-only. [Calendly](https://help.calendly.com/hc/en-us/articles/223145667-Working-with-multiple-calendars-and-email-accounts) also checks connected calendars for busy times. These patterns support a clear choice for UCRM: either connect an outside calendar, or have Jafar maintain all busy times in UCRM and accept that outside events are unknown. A page must not promise conflict-free booking against a calendar it cannot see.
+
+[HubSpot's booking flow](https://knowledge.hubspot.com/meetings-tool/share-scheduling-pages) confirms to both sides, supplies calendar details, and updates the meeting after cancellation or rescheduling. These are distinct from staff reminders. UCRM can reuse its contractor slot and reservation ideas, but a sales booking must link to a Lead or Deal, name its host, preserve the visitor's chosen time zone, and update the next action and reminders when the time changes. A request-only mode is safer if availability cannot be trusted. Team round-robin requires a clear eligible-host and allocation rule; it should not be implied by merely adding team accounts.
+
+## Mature Settings organization
+
+[HubSpot](https://knowledge.hubspot.com/help-and-resources/a-guide-to-hubspots-navigation) gathers product and account settings in one place and limits visible menu items by access. [Pipedrive](https://support.pipedrive.com/en/article/pipedrive-settings) separates company settings from personal preferences. For `/jafar`, the evidence supports one Settings home with focused destinations for Uplift business/sales (booking), team/access, mailboxes/communication, platform/commercial controls, and safety/advanced work. The exact labels and grouping are a Jafar product choice. Day-to-day meetings belong in Business Management; configuring availability and booking rules belongs in Settings. Status should say what is ready or needs attention without hiding existing controls behind an empty card.
