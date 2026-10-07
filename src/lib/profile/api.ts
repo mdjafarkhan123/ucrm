@@ -1,4 +1,5 @@
-// The signed-in person's own profile photo. The server answers with the new address for every avatar.
+// The signed-in person's own profile photo, at the contractor app's address or the Jafar Panel's. The
+// server answers with the new address for every avatar.
 
 type PhotoResult = { avatar_url: string | null };
 
@@ -12,14 +13,14 @@ async function readResult(response: Response, fallback: string): Promise<PhotoRe
 	return { avatar_url: result.avatar_url ?? null };
 }
 
-export async function uploadProfilePhoto(photo: Blob): Promise<PhotoResult> {
+export async function uploadProfilePhoto(endpoint: string, photo: Blob): Promise<PhotoResult> {
 	const body = new FormData();
 	body.append('photo', photo, 'profile-photo.jpg');
-	const response = await fetch('/api/profile/photo', { method: 'POST', body });
+	const response = await fetch(endpoint, { method: 'POST', body });
 	return readResult(response, 'Your photo could not be saved. Please try again.');
 }
 
-export async function removeProfilePhoto(): Promise<PhotoResult> {
-	const response = await fetch('/api/profile/photo', { method: 'DELETE' });
+export async function removeProfilePhoto(endpoint: string): Promise<PhotoResult> {
+	const response = await fetch(endpoint, { method: 'DELETE' });
 	return readResult(response, 'Your photo could not be removed. Please try again.');
 }

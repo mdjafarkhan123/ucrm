@@ -29,6 +29,17 @@ describe('Jafar Panel team access', () => {
 		}
 	});
 
+	it('lets every teammate change their own photo and see the team’s photos', () => {
+		for (const role of TEAM_ROLES) {
+			expect(canUseJafarPath({ role }, '/api/jafar/account/photo', 'POST'), role).toBe(true);
+			expect(canUseJafarPath({ role }, '/api/jafar/account/photo', 'DELETE'), role).toBe(true);
+			expect(canUseJafarPath({ role }, '/api/jafar/photos/owner', 'GET'), role).toBe(true);
+			// Only those two addresses: the rest of the account paths stay closed.
+			expect(canUseJafarPath({ role }, '/api/jafar/account/photo/x', 'POST'), role).toBe(false);
+			expect(canUseJafarPath({ role }, '/api/jafar/account', 'POST'), role).toBe(false);
+		}
+	});
+
 	it('matches whole path segments only', () => {
 		expect(areaForPath('/jafar/leads')).toBe('leads');
 		expect(areaForPath('/jafar/leads/new')).toBe('leads');

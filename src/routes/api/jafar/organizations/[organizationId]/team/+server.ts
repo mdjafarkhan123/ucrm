@@ -4,9 +4,10 @@ import { getOwnerSession } from '$lib/server/auth/owner';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { organizationIdSchema } from '$lib/server/validation/access.schema';
+import { contractorPhotoUrlInPanel } from '$lib/server/jafar/profile-photo';
 
 export const GET: RequestHandler = async (event) => {
-	if (!await getOwnerSession(event)) return ownerUnauthorized();
+	if (!(await getOwnerSession(event))) return ownerUnauthorized();
 	const parsedId = organizationIdSchema.safeParse(event.params.organizationId);
 	if (!parsedId.success)
 		return json({ error: 'The organization identifier is invalid.' }, { status: 422 });
@@ -34,7 +35,7 @@ export const GET: RequestHandler = async (event) => {
 
 		const [profilesResult, overridesResult] = await Promise.all([
 			userIds.length
-				? client.from('profiles').select('id, full_name').in('id', userIds)
+				? client.from('profiles').select('id, full_name, avatar_url').in('id', userIds)
 				: Promise.resolve({ data: [], error: null }),
 			userIds.length
 				? client
@@ -46,8 +47,8 @@ export const GET: RequestHandler = async (event) => {
 		if (profilesResult.error) throw profilesResult.error;
 		if (overridesResult.error) throw overridesResult.error;
 
-		const nameByUserId = new Map(
-			(profilesResult.data ?? []).map((profile) => [profile.id, profile.full_name])
+		const profileByUserId = new Map(
+			(profilesResult.data ?? []).map((profile) => [profile.id, profile])
 		);
 
 		const overridesByUserId = new Map<
@@ -56,7 +57,10 @@ export const GET: RequestHandler = async (event) => {
 		>();
 		for (const override of overridesResult.data ?? []) {
 			const list = overridesByUserId.get(override.user_id) ?? [];
-			list.push({ permission_key: override.permission_key, override_state: override.override_state });
+			list.push({
+				permission_key: override.permission_key,
+				override_state: override.override_state
+			});
 			overridesByUserId.set(override.user_id, list);
 		}
 
@@ -80,7 +84,12 @@ export const GET: RequestHandler = async (event) => {
 			user_id: member.user_id,
 			role: member.role,
 			created_at: member.created_at,
-			full_name: nameByUserId.get(member.user_id) ?? null,
+			full_name: profileByUserId.get(member.user_id)?.full_name ?? null,
+			avatar_url: contractorPhotoUrlInPanel(
+				parsedId.data,
+				member.user_id,
+				profileByUserId.get(member.user_id)?.avatar_url ?? null
+			),
 			email: emailByUserId.get(member.user_id) ?? null,
 			permission_overrides: overridesByUserId.get(member.user_id) ?? []
 		}));

@@ -169,6 +169,7 @@
 	ownerCanOpen={canOpen}
 	ownerNotificationsVisible={data.owner.role === null}
 	{account}
+	ownerPhoto={{ ...data.photo, name: data.owner.name ?? data.owner.email }}
 >
 	{#if showLoadingSkeleton}
 		<RouteSkeleton />

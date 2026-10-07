@@ -20,6 +20,7 @@ export type TeamMember = {
 	id: string;
 	email: string;
 	full_name: string | null;
+	avatar_url: string | null;
 	role: TeamRole;
 	status: 'invited' | 'active';
 	invited_at: string;

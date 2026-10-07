@@ -230,7 +230,12 @@
 					{#snippet row(member: TeamMember)}
 						<th scope="row">
 							<div class="jafar-team__person">
-								<Avatar id={member.id} name={displayName(member)} size="small" />
+								<Avatar
+									id={member.id}
+									name={displayName(member)}
+									src={member.avatar_url}
+									size="small"
+								/>
 								<div class="jafar-team__person-text">
 									<strong>{displayName(member)}</strong>
 									{#if member.full_name}<span>{member.email}</span>{/if}

@@ -105,8 +105,12 @@ describe('platform owner team API boundary', () => {
 						select: () => ({
 							in: async () => ({
 								data: [
-									{ id: 'user-1', full_name: 'Rae Owner' },
-									{ id: 'user-2', full_name: 'Fin Tech' }
+									{
+										id: 'user-1',
+										full_name: 'Rae Owner',
+										avatar_url: '/api/profile-photos/user-1?v=photo-1'
+									},
+									{ id: 'user-2', full_name: 'Fin Tech', avatar_url: null }
 								],
 								error: null
 							})
@@ -157,6 +161,8 @@ describe('platform owner team API boundary', () => {
 				role: 'owner',
 				created_at: '2026-01-01T00:00:00Z',
 				full_name: 'Rae Owner',
+				// The panel's own address: the contractor app's checks for a contractor session.
+				avatar_url: `/api/jafar/organizations/${organizationId}/team/user-1/photo?v=photo-1`,
 				email: 'user-1@example.com',
 				permission_overrides: []
 			},
@@ -165,6 +171,7 @@ describe('platform owner team API boundary', () => {
 				role: 'field',
 				created_at: '2026-02-01T00:00:00Z',
 				full_name: 'Fin Tech',
+				avatar_url: null,
 				email: 'user-2@example.com',
 				permission_overrides: []
 			}

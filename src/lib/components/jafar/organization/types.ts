@@ -405,6 +405,7 @@ export type TeamMember = {
 	role: string;
 	created_at: string;
 	full_name: string | null;
+	avatar_url: string | null;
 	email: string | null;
 	permission_overrides: { permission_key: string; override_state: string }[];
 };
