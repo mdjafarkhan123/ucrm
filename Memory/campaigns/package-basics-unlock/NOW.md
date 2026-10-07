@@ -5,7 +5,7 @@ whatever a ticked feature needs, and a business on such a package sees no trace 
 Review Generation package itself is later work (`Memory/deferred/review-generation-package.md`).
 **Plan:** `docs/package-basics-unlock-behavior-contract.md`
 
-**In progress:** none
+**In progress:** Part 3 — built, on `main`; waits for Jafar's answer on the browser proof, see `parts/3.md`
 
 **Next part:** 3 The package decides what shows. Where a missing feature still shows today:
 `docs/research/package-basics-unlock-2026-10-07.md`.
