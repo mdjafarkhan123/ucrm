@@ -11,7 +11,7 @@
 		id: string;
 		name: string | null | undefined;
 		src?: string | null;
-		size?: 'small' | 'base' | 'medium' | 'large';
+		size?: 'small' | 'base' | 'medium' | 'large' | 'xlarge';
 	} = $props();
 
 	let color = $derived<TagColor>(colorForId(id));
@@ -60,6 +60,12 @@
 		width: 44px;
 		height: 44px;
 		font-size: var(--typography--fontSize-base);
+	}
+
+	:global(.avatar--xlarge) {
+		width: 64px;
+		height: 64px;
+		font-size: var(--typography--fontSize-larger);
 	}
 
 	:global(.avatar__image) {
