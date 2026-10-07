@@ -74,7 +74,7 @@ describe('Leads list GET', () => {
 
 	it('refuses a status the list does not know', async () => {
 		mockedOwnerSession.mockResolvedValue(session());
-		const response = await GET(getEvent('http://localhost/api/jafar/leads?status=approved'));
+		const response = await GET(getEvent('http://localhost/api/jafar/leads?status=contacted'));
 		expect(response.status).toBe(422);
 		expect(mockedClient).not.toHaveBeenCalled();
 	});

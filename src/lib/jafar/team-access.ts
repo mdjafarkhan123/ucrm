@@ -67,6 +67,7 @@ export const TEAM_ROLE_AREAS: Record<TeamRole, Partial<Record<JafarArea, AreaLev
 };
 
 export const SENSITIVE_ACTIONS = [
+	'approve_outreach',
 	'payments',
 	'client_setup',
 	'packages',
@@ -79,6 +80,12 @@ export const SENSITIVE_ACTION_DETAILS: Record<
 	SensitiveAction,
 	{ label: string; description: string; area: JafarArea }
 > = {
+	approve_outreach: {
+		label: 'Approve who to contact',
+		description:
+			'Approve a Lead’s contact details for first contact, send a Lead back, and lift Do not contact.',
+		area: 'leads'
+	},
 	payments: {
 		label: 'Confirm and undo payments',
 		description: 'Confirm an Application was paid, reverse a payment, or correct its package.',
@@ -142,6 +149,10 @@ type PathRule = { pattern: string; subtree?: boolean };
 
 /** Changes that need a sensitive action, whatever the area's level. */
 const SENSITIVE_ACTION_PATHS: Record<SensitiveAction, readonly PathRule[]> = {
+	approve_outreach: [
+		{ pattern: '/api/jafar/leads/*/approval', subtree: true },
+		{ pattern: '/api/jafar/leads/*/do-not-contact/clear' }
+	],
 	payments: [
 		{ pattern: '/api/jafar/prospects/*/confirm-payment' },
 		{ pattern: '/api/jafar/prospects/*/reverse-payment' },

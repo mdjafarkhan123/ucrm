@@ -3,15 +3,20 @@
 // button and a shared link keep what is on screen; a hand-edited link falls back to "no filter" for whatever it
 // got wrong instead of putting an error on screen.
 
-// Approval for a contact method arrives with part B3; until then a Lead is in one of these.
 export const LEAD_STATUSES = [
 	'new',
 	'researching',
 	'ready_for_review',
+	'approved',
 	'later',
 	'unsuitable'
 ] as const;
 export type LeadStatus = (typeof LEAD_STATUSES)[number];
+
+/** Approved is reached only by approving contact details in the review queue, never chosen from a list. */
+export const LEAD_SETTABLE_STATUSES = LEAD_STATUSES.filter(
+	(status): status is Exclude<LeadStatus, 'approved'> => status !== 'approved'
+) as [Exclude<LeadStatus, 'approved'>, ...Exclude<LeadStatus, 'approved'>[]];
 
 export const LEAD_SOURCES = [
 	'own_website',
@@ -47,6 +52,7 @@ export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
 	new: 'New',
 	researching: 'Researching',
 	ready_for_review: 'Ready for review',
+	approved: 'Approved to contact',
 	later: 'Saved for later',
 	unsuitable: 'Unsuitable'
 };
@@ -58,6 +64,7 @@ export const LEAD_STATUS_TONES: Record<
 	new: 'informative',
 	researching: 'informative',
 	ready_for_review: 'warning',
+	approved: 'success',
 	later: 'inactive',
 	unsuitable: 'inactive'
 };

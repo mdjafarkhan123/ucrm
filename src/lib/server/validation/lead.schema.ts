@@ -6,6 +6,7 @@ import {
 	LEAD_SEARCH_MAX,
 	LEAD_SORTS,
 	LEAD_SOURCES,
+	LEAD_SETTABLE_STATUSES,
 	LEAD_STATUSES,
 	isCountryCode
 } from '$lib/jafar/leads';
@@ -102,7 +103,7 @@ const leadDetailFields = {
 export const leadCreateSchema = z
 	.object({
 		...leadDetailFields,
-		lead_status: z.enum(LEAD_STATUSES).default('new'),
+		lead_status: z.enum(LEAD_SETTABLE_STATUSES).default('new'),
 		next_action: optionalText(200),
 		next_action_due_on: calendarDate.nullish().transform((value) => value ?? null),
 		contact_methods: z
@@ -157,7 +158,7 @@ const nextActionText = z.string().trim().min(1, 'Say what the next action is.').
  */
 export const leadChangeSchema = z
 	.object({
-		lead_status: z.enum(LEAD_STATUSES).optional(),
+		lead_status: z.enum(LEAD_SETTABLE_STATUSES).optional(),
 		next_action: z
 			.discriminatedUnion('mode', [
 				z.object({ mode: z.literal('set'), text: nextActionText, due_on: calendarDate }),
@@ -311,3 +312,46 @@ export const leadDetailsEditSchema = z
 	});
 
 export type LeadDetailsEditInput = z.infer<typeof leadDetailsEditSchema>;
+
+// --- B3: approving who to contact ----------------------------------------------------------------------------
+
+export const leadReviewQuerySchema = z.object({ cursor: z.string().max(300).optional() });
+
+/** Approving exactly these contact details for first contact, with the day the first contact is due. */
+export const leadApprovalSchema = z
+	.object({
+		method_ids: z
+			.array(z.uuid())
+			.min(1, 'Choose at least one contact detail to approve.')
+			.max(LEAD_CONTACT_METHODS_MAX),
+		whatsapp_permission_ids: z.array(z.uuid()).max(LEAD_CONTACT_METHODS_MAX).default([]),
+		due_on: calendarDate
+	})
+	.superRefine((approval, context) => {
+		if (new Set(approval.method_ids).size !== approval.method_ids.length)
+			context.addIssue({
+				code: 'custom',
+				path: ['method_ids'],
+				message: 'A detail is listed twice.'
+			});
+		if (approval.whatsapp_permission_ids.some((id) => !approval.method_ids.includes(id)))
+			context.addIssue({
+				code: 'custom',
+				path: ['whatsapp_permission_ids'],
+				message: 'WhatsApp permission can only be recorded for a number being approved.'
+			});
+	});
+
+export type LeadApprovalInput = z.infer<typeof leadApprovalSchema>;
+
+export const leadSendBackSchema = z.object({
+	reason: z
+		.string()
+		.trim()
+		.min(1, 'Say what needs fixing.')
+		.max(500, 'Keep it under 500 characters.')
+});
+
+export const leadDoNotContactSchema = z.object({
+	reason: optionalText(500, 'Keep it under 500 characters.')
+});

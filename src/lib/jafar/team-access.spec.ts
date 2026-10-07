@@ -165,6 +165,23 @@ describe('individual access (D2)', () => {
 		expect(canUseJafarPath(payer, '/api/jafar/prospects/x/mark-reviewed', 'POST')).toBe(false);
 	});
 
+	it('approves who to contact only with that action (B3); anyone working on Leads can record an opt-out', () => {
+		const researcher = sales({ areas: { leads: 'work' }, actions: [] });
+		expect(canUseJafarPath(researcher, '/api/jafar/leads/review', 'GET')).toBe(true);
+		expect(canUseJafarPath(researcher, '/api/jafar/leads/x/approval', 'POST')).toBe(false);
+		expect(canUseJafarPath(researcher, '/api/jafar/leads/x/approval/send-back', 'POST')).toBe(
+			false
+		);
+		expect(canUseJafarPath(researcher, '/api/jafar/leads/x/do-not-contact', 'POST')).toBe(true);
+		expect(canUseJafarPath(researcher, '/api/jafar/leads/x/do-not-contact/clear', 'POST')).toBe(
+			false
+		);
+
+		const approver = sales({ areas: { leads: 'work' }, actions: ['approve_outreach'] });
+		expect(canUseJafarPath(approver, '/api/jafar/leads/x/approval', 'POST')).toBe(true);
+		expect(canUseJafarPath(approver, '/api/jafar/leads/x/do-not-contact/clear', 'POST')).toBe(true);
+	});
+
 	it('changes packages only with the packages action', () => {
 		const looker = sales({ areas: { packages: 'look' }, actions: [] });
 		expect(canUseJafarPath(looker, '/api/jafar/packages/x', 'GET')).toBe(true);
