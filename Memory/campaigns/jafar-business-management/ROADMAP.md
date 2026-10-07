@@ -12,7 +12,7 @@ Build stages (approved 2026-10-07, built in this order):
 
 | Stage | Delivers | State | Parts |
 | --- | --- | --- | --- |
-| A Foundations | One shared access check, two entrances, Settings home | Not started | `stages/A-foundations.md` |
+| A Foundations | One shared access check, two entrances, Settings home | In progress — A1 done 2026-10-07 | `stages/A-foundations.md` |
 | B Leads to client | Leads, history, contact approval, Deals, Won and handover | Not started | `stages/B-leads-to-client.md` |
 | C Your day | Home next actions, calendar and reminders, activity report | Not started | `stages/C-your-day.md` |
 | D Team | Teammate invitations and sign-in, permissions, assignments | Not started | `stages/D-team.md` |

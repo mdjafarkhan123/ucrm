@@ -10,6 +10,8 @@ declare global {
 		interface Locals {
 			supabase: import('@supabase/supabase-js').SupabaseClient;
 			getUser: () => Promise<SessionUser | null>;
+			/** The Jafar Panel session, resolved once per request by the front-door gate and reused by routes. */
+			ownerSession?: Promise<import('$lib/server/auth/owner').OwnerSession | null>;
 		}
 		interface PageData {
 			user?: SessionUser;

@@ -108,22 +108,32 @@
 			]
 		}
 	]);
+	// The Jafar Panel's two entrances: running Uplift's own business (finding, selling to, and looking
+	// after clients) and running the platform those clients use. Settings serves both.
 	const ownerGroups: NavGroup[] = $derived([
 		{
+			label: 'Business Management',
 			items: [
 				{ label: 'Overview', href: '/jafar', icon: 'dashboard' },
 				{ label: 'Prospects', href: '/jafar/prospects', icon: 'users' },
-				{ label: 'Organizations', href: '/jafar/organizations', icon: 'building' },
 				{ label: 'Onboarding', href: '/jafar/onboarding', icon: 'rocket' },
 				{ label: 'Client setup', href: '/jafar/setup', icon: 'listCheck' },
-				{ label: 'Support', href: '/jafar/support', icon: 'messages', count: supportUnread },
+				{ label: 'Support', href: '/jafar/support', icon: 'messages', count: supportUnread }
+			]
+		},
+		{
+			label: 'Platform Operations',
+			items: [
+				{ label: 'Organizations', href: '/jafar/organizations', icon: 'building' },
 				{ label: 'Packages', href: '/jafar/packages', icon: 'package' },
 				{ label: 'Operations', href: '/jafar/operations', icon: 'alertTriangle' },
 				{ label: 'System emails', href: '/jafar/message-templates', icon: 'mail' },
 				{ label: 'Email templates', href: '/jafar/email-templates', icon: 'fileText' },
-				{ label: 'Email safety', href: '/jafar/communications', icon: 'shieldCheck' },
-				{ label: 'Settings', href: '/jafar/settings', icon: 'settings' }
+				{ label: 'Email safety', href: '/jafar/communications', icon: 'shieldCheck' }
 			]
+		},
+		{
+			items: [{ label: 'Settings', href: '/jafar/settings', icon: 'settings' }]
 		}
 	]);
 	const groups = $derived(variant === 'owner' ? ownerGroups : contractorGroups);

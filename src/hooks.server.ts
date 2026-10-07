@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import type { Handle } from '@sveltejs/kit';
 import { getPublicEnv } from '$lib/config/public';
 import { getServerEnv } from '$lib/server/env';
+import { guardJafarRequest } from '$lib/server/auth/platform-access';
 import { enforceApiRateLimit } from '$lib/server/security/rate-limit';
 
 const publicEnv = getPublicEnv();
@@ -39,6 +40,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	const limited = await enforceApiRateLimit(event, claims?.claims.sub ?? null);
 	if (limited) return limited;
+
+	const refused = await guardJafarRequest(event);
+	if (refused) return refused;
 
 	return resolve(event);
 };

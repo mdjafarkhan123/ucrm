@@ -10,7 +10,7 @@ const OWNER_STEP_UP_COOKIE = 'jafar_step_up';
 const OWNER_STEP_UP_TTL_SECONDS = 60 * 5;
 const SESSION_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-type OwnerSession = {
+export type OwnerSession = {
 	email: string;
 	sessionId: string;
 };
@@ -130,7 +130,16 @@ export async function recordOwnerLoginAttempt(outcome: 'succeeded' | 'failed' | 
  * so nothing downstream can run ahead of an unrevoked, unexpired session check. Any registry lookup
  * failure fails closed (returns null) rather than letting a database hiccup fall open into access.
  */
-export async function getOwnerSession(event: RequestEvent): Promise<OwnerSession | null> {
+export function getOwnerSession(event: RequestEvent): Promise<OwnerSession | null> {
+	// The front-door gate resolves the session first; the route's own check reuses that answer through
+	// `locals` instead of asking the registry a second time in the same request.
+	const { locals } = event;
+	if (!locals) return resolveOwnerSession(event);
+	locals.ownerSession ??= resolveOwnerSession(event);
+	return locals.ownerSession;
+}
+
+async function resolveOwnerSession(event: RequestEvent): Promise<OwnerSession | null> {
 	const value = event.cookies.get(OWNER_SESSION_COOKIE);
 	if (!value) return null;
 
@@ -166,6 +175,7 @@ export async function setOwnerSession(event: RequestEvent, email: string) {
 	const { secret } = getOwnerConfig();
 	const client = getOwnerSupabaseClient();
 	const normalizedEmail = email.trim().toLowerCase();
+	if (event.locals) delete event.locals.ownerSession;
 
 	const existingValue = event.cookies.get(OWNER_SESSION_COOKIE);
 	const previousSessionId = existingValue ? decodeSignedSessionId(existingValue, secret) : null;
@@ -196,6 +206,7 @@ export async function setOwnerSession(event: RequestEvent, email: string) {
 export async function clearOwnerSession(event: RequestEvent) {
 	const value = event.cookies.get(OWNER_SESSION_COOKIE);
 	event.cookies.delete(OWNER_SESSION_COOKIE, { path: '/' });
+	if (event.locals) delete event.locals.ownerSession;
 	if (!value) return;
 
 	const { secret } = getOwnerConfig();

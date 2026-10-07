@@ -5,6 +5,6 @@
 
 **In progress:** none
 
-**Next part:** A1 One access check and two entrances — see `stages/A-foundations.md`. Every screen part runs the `performance-review` design branch first and verification before Done (plan § Speed).
+**Next part:** A2 Settings home — see `stages/A-foundations.md`. Every screen part runs the `performance-review` design branch first and verification before Done (plan § Speed).
 
 **Blockers:** none. Product behavior and first-release scope are approved; full Uplift mailboxes and automated first-contact email remain later-release work.
