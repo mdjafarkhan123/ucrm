@@ -3,6 +3,7 @@
 	import Topbar from './Topbar.svelte';
 	import MobileNav from './MobileNav.svelte';
 	import GlobalSearchDialog from '$lib/components/search/GlobalSearchDialog.svelte';
+	import ProfilePhotoDialog from '$lib/components/profile/ProfilePhotoDialog.svelte';
 	import NotificationBell from '$lib/components/jafar/NotificationBell.svelte';
 	import TeamNotificationBell from '$lib/components/team/TeamNotificationBell.svelte';
 	import { goto } from '$app/navigation';
@@ -32,7 +33,12 @@
 		variant?: 'contractor' | 'owner';
 		organizationName?: string | null;
 		logoUrl?: string | null;
-		account?: { name: string | null; email: string | null; role: string } | null;
+		account?: {
+			name: string | null;
+			email: string | null;
+			role: string;
+			avatarUrl?: string | null;
+		} | null;
 		userId?: string;
 		/** Contractor variant: the menu items this member may open, from their package and permissions. */
 		navigation?: ContractorNavigation;
@@ -47,6 +53,9 @@
 	let sidebarCollapsed = $state(false);
 	let signOutError = $state('');
 	let searchOpen = $state(false);
+	let photoOpen = $state(false);
+	// A contractor's own photo, in the top bar and its menu. The owner's Control Room has no profile row.
+	const photoEditable = $derived(variant === 'contractor' && Boolean(userId) && Boolean(account));
 
 	function handleGlobalShortcut(event: KeyboardEvent) {
 		if (variant !== 'contractor' || !userId || event.altKey || event.shiftKey) return;
@@ -207,6 +216,8 @@
 		<Topbar
 			{accountLabel}
 			{account}
+			avatar={photoEditable && userId ? { id: userId, url: account?.avatarUrl ?? null } : null}
+			onEditPhoto={photoEditable ? () => (photoOpen = true) : undefined}
 			showSecurityLink={variant === 'contractor'}
 			{isSigningOut}
 			{signOutError}
@@ -228,6 +239,15 @@
 	<MobileNav bind:open={mobileOpen} {groups} {brand} {eyebrow} logoUrl={sidebarLogoUrl} />
 	{#if variant === 'contractor' && userId}
 		<GlobalSearchDialog open={searchOpen} {userId} onClose={() => (searchOpen = false)} />
+	{/if}
+	{#if photoEditable && userId}
+		<ProfilePhotoDialog
+			open={photoOpen}
+			{userId}
+			name={account?.name ?? account?.email ?? null}
+			avatarUrl={account?.avatarUrl ?? null}
+			onClose={() => (photoOpen = false)}
+		/>
 	{/if}
 </div>
 

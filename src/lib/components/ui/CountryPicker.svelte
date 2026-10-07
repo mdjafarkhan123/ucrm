@@ -4,11 +4,8 @@
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 	import exclamationCircleIcon from '@tabler/icons/outline/exclamation-circle.svg?raw';
 	import searchIcon from '@tabler/icons/outline/search.svg?raw';
-	import {
-		allCountryOptions,
-		findCountryOption,
-		searchCountries
-	} from '$lib/settings/country-search';
+	import { allCountryOptions, searchCountries } from '$lib/settings/country-search';
+	import { countryDisplayName, countryFlag } from '$lib/settings/country-names';
 
 	// A type-to-search country box saving the ISO code, the way GOV.UK's country autocomplete and
 	// Shopify's Polaris combobox work: type "uk", "ger" or "ivory", pick with arrows and Enter.
@@ -40,21 +37,43 @@
 		onchange?: (code: string) => void;
 	} = $props();
 
-	const items = allCountryOptions().map((country) => ({
-		value: country.code,
-		label: country.name
-	}));
+	// The full list costs about 30 ms to build on a desktop (several times that on a phone), so it waits until
+	// someone points at or focuses the box; a saved country is named and flagged straight from its code.
+	let warmed = $state(false);
+	let items = $derived(
+		warmed
+			? allCountryOptions().map((country) => ({ value: country.code, label: country.name }))
+			: []
+	);
 	let query = $state('');
 	let open = $state(false);
-	let selected = $derived(findCountryOption(value));
-	let inputValue = $derived(open ? query : (selected?.name ?? ''));
+	let selectedName = $derived(value ? countryDisplayName(value) : '');
+	let selectedFlag = $derived(countryFlag(value));
+	let inputValue = $derived(open ? query : selectedName);
 	// Reopening on a chosen country shows the whole list, not just that one country.
-	let results = $derived(searchCountries(query === selected?.name ? '' : query));
-	let searchKey = $derived(results.length === allCountryOptions().length ? '' : query);
+	let results = $derived(warmed ? searchCountries(query === selectedName ? '' : query) : []);
+	let searchKey = $derived(query === selectedName ? '' : query);
+	// Drawing all 250 rows at once took about 125 ms on a desktop, so the list grows as it is scrolled,
+	// the way Polaris's combobox loads more results; typing still searches every country.
+	const ROWS_PER_PAGE = 50;
+	let shownRows = $state(ROWS_PER_PAGE);
+	let shownResults = $derived(results.slice(0, shownRows));
+
+	function showMoreNearBottom(viewport: HTMLElement) {
+		const nearBottom =
+			viewport.scrollTop + viewport.clientHeight >= viewport.scrollHeight - viewport.clientHeight;
+		if (nearBottom && shownRows < results.length) shownRows += ROWS_PER_PAGE * 2;
+	}
 	let describedBy = $derived(errorMessage ? `${id}-error` : undefined);
 
+	function warm() {
+		warmed = true;
+	}
+
 	function focusInput(input: HTMLInputElement) {
-		query = selected?.name ?? '';
+		warm();
+		shownRows = ROWS_PER_PAGE;
+		query = selectedName;
 		open = true;
 		input.select();
 	}
@@ -62,7 +81,7 @@
 	function choose(code: string) {
 		lastCommitted = code;
 		value = code;
-		query = findCountryOption(code)?.name ?? '';
+		query = countryDisplayName(code);
 		open = false;
 		onchange?.(code);
 	}
@@ -105,9 +124,9 @@
 			onValueChange={choose}
 		>
 			<div class="country-picker__control">
-				{#if selected && !open}
+				{#if selectedFlag && !open}
 					<span class="country-picker__lead country-picker__flag" aria-hidden="true"
-						>{selected.flag}</span
+						>{selectedFlag}</span
 					>
 				{:else}
 					<span class="country-picker__lead" aria-hidden="true">{@html searchIcon}</span>
@@ -121,13 +140,19 @@
 					aria-describedby={describedBy}
 					aria-invalid={invalid}
 					onfocus={(event) => focusInput(event.currentTarget)}
+					onpointerenter={warm}
 					onclick={() => (open = true)}
 					oninput={(event) => {
 						query = event.currentTarget.value;
+						shownRows = ROWS_PER_PAGE;
 						open = true;
 					}}
 				/>
-				<Combobox.Trigger class="country-picker__trigger" aria-label="Show countries">
+				<Combobox.Trigger
+					class="country-picker__trigger"
+					aria-label="Show countries"
+					onpointerenter={warm}
+				>
 					<span aria-hidden="true">{@html chevronDownIcon}</span>
 				</Combobox.Trigger>
 			</div>
@@ -139,11 +164,14 @@
 					sideOffset={4}
 					collisionPadding={8}
 				>
-					<Combobox.Viewport class="country-picker__viewport">
+					<Combobox.Viewport
+						class="country-picker__viewport"
+						onscroll={(event: Event) => showMoreNearBottom(event.currentTarget as HTMLElement)}
+					>
 						<!-- A fresh list per search: bits-ui highlights the top match only when items mount, so
 						     Enter picks it the way every country autocomplete does. -->
 						{#key searchKey}
-							{#each results as country (country.code)}
+							{#each shownResults as country (country.code)}
 								<Combobox.Item
 									value={country.code}
 									label={country.name}

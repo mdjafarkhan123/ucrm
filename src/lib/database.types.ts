@@ -14684,6 +14684,7 @@ export type Database = {
 			};
 			profiles: {
 				Row: {
+					avatar_object_key: string | null;
 					avatar_url: string | null;
 					created_at: string;
 					full_name: string | null;
@@ -14691,6 +14692,7 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
+					avatar_object_key?: string | null;
 					avatar_url?: string | null;
 					created_at?: string;
 					full_name?: string | null;
@@ -14698,6 +14700,7 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
+					avatar_object_key?: string | null;
 					avatar_url?: string | null;
 					created_at?: string;
 					full_name?: string | null;
@@ -27380,6 +27383,10 @@ export type Database = {
 					target_package_id: string;
 				};
 				Returns: Json;
+			};
+			set_profile_photo: {
+				Args: { new_photo_id?: string; target_user_id: string };
+				Returns: string;
 			};
 			set_quote_draft_copy: {
 				Args: {

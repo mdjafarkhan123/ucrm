@@ -1,10 +1,6 @@
+import { countryDisplayName, countryFlag } from './country-names';
 import { describe, expect, it } from 'vitest';
-import {
-	allCountryOptions,
-	findCountryOption,
-	normaliseCountryText,
-	searchCountries
-} from './country-search';
+import { allCountryOptions, normaliseCountryText, searchCountries } from './country-search';
 
 const codes = (query: string) => searchCountries(query).map((country) => country.code);
 
@@ -50,8 +46,9 @@ describe('country search', () => {
 		expect(codes('zzqx')).toEqual([]);
 	});
 
-	it('looks up a saved code in either case', () => {
-		expect(findCountryOption('pk')?.code).toBe('PK');
-		expect(findCountryOption('')).toBeUndefined();
+	it('names and flags a saved code without building the list', () => {
+		expect(countryDisplayName('pk')).toBe('Pakistan');
+		expect(countryFlag('PK')).toBe('🇵🇰');
+		expect(countryFlag('')).toBe('');
 	});
 });
