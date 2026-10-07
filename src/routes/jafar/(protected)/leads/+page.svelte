@@ -84,6 +84,11 @@
 	}
 	const today = localToday();
 
+	const countFormat = new Intl.NumberFormat();
+	function formatCount(value: number) {
+		return countFormat.format(value);
+	}
+
 	function formatDay(day: string) {
 		const [year, month, date] = day.split('-').map(Number);
 		return new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' }).format(
@@ -125,28 +130,28 @@
 	<section class="leads__summary" aria-label="Lead summary">
 		<KpiCard
 			label="All Leads"
-			value={String(totals.all)}
+			value={formatCount(totals.all)}
 			note="Every business on file"
 			icon={targetIcon}
 			variant="compact"
 		/>
 		<KpiCard
 			label="New"
-			value={String(totals.statuses.new ?? 0)}
+			value={formatCount(totals.statuses.new ?? 0)}
 			note="Not looked into yet"
 			icon={sparklesIcon}
 			variant="compact"
 		/>
 		<KpiCard
 			label="Researching"
-			value={String(totals.statuses.researching ?? 0)}
+			value={formatCount(totals.statuses.researching ?? 0)}
 			note="Being checked"
 			icon={searchIcon}
 			variant="compact"
 		/>
 		<KpiCard
 			label="Ready for review"
-			value={String(totals.statuses.ready_for_review ?? 0)}
+			value={formatCount(totals.statuses.ready_for_review ?? 0)}
 			note="Waiting for your decision"
 			icon={eyeIcon}
 			tone="warning"
@@ -157,7 +162,10 @@
 	<LeadFilters {filters} {totals} onChange={setFilters} />
 
 	<div class="leads__list-meta" aria-live="polite">
-		<span><strong>{leadList.length}</strong> of {totals.matching} Leads shown</span>
+		<span
+			><strong>{formatCount(leadList.length)}</strong> of {formatCount(totals.matching)}
+			{totals.matching === 1 ? 'Lead' : 'Leads'} shown</span
+		>
 	</div>
 
 	<section
@@ -414,6 +422,7 @@
 	}
 
 	.leads__business {
+		min-width: 220px;
 		color: var(--color-heading);
 		font-weight: 700;
 
@@ -444,6 +453,10 @@
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 		overflow-wrap: anywhere;
+	}
+
+	.leads__due {
+		white-space: nowrap;
 	}
 
 	.leads__due--overdue {
@@ -542,6 +555,7 @@
 
 		.leads__table .leads__business {
 			grid-column: 1 / -1;
+			min-width: 0;
 		}
 
 		.leads__table td::before {

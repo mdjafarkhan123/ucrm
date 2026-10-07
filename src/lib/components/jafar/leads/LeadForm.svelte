@@ -694,12 +694,10 @@
 			font-weight: 600;
 		}
 
-		&__duplicate-why {
-			color: var(--color-text--secondary);
-		}
-
+		// Full-strength text: secondary grey is too faint on the warning tint.
+		&__duplicate-why,
 		&__duplicates-hint {
-			color: var(--color-text--secondary);
+			color: var(--color-text);
 		}
 
 		&__actions-primary {
