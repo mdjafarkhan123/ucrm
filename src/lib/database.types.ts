@@ -13554,6 +13554,7 @@ export type Database = {
 					next_action: string | null;
 					next_action_due_on: string | null;
 					next_action_kind: string | null;
+					setup_owner_member_id: string | null;
 					source: string;
 					source_detail: string | null;
 					trade: string;
@@ -13576,6 +13577,7 @@ export type Database = {
 					next_action?: string | null;
 					next_action_due_on?: string | null;
 					next_action_kind?: string | null;
+					setup_owner_member_id?: string | null;
 					source: string;
 					source_detail?: string | null;
 					trade: string;
@@ -13598,6 +13600,7 @@ export type Database = {
 					next_action?: string | null;
 					next_action_due_on?: string | null;
 					next_action_kind?: string | null;
+					setup_owner_member_id?: string | null;
 					source?: string;
 					source_detail?: string | null;
 					trade?: string;
@@ -13685,6 +13688,10 @@ export type Database = {
 					stage_entered_at: string;
 					updated_at: string;
 					value_monthly_usd_cents: number | null;
+					won_application_id: string | null;
+					won_at: string | null;
+					won_by_email: string | null;
+					won_from_stage: string | null;
 				};
 				Insert: {
 					agreed_terms?: string | null;
@@ -13703,6 +13710,10 @@ export type Database = {
 					stage_entered_at?: string;
 					updated_at?: string;
 					value_monthly_usd_cents?: number | null;
+					won_application_id?: string | null;
+					won_at?: string | null;
+					won_by_email?: string | null;
+					won_from_stage?: string | null;
 				};
 				Update: {
 					agreed_terms?: string | null;
@@ -13721,6 +13732,10 @@ export type Database = {
 					stage_entered_at?: string;
 					updated_at?: string;
 					value_monthly_usd_cents?: number | null;
+					won_application_id?: string | null;
+					won_at?: string | null;
+					won_by_email?: string | null;
+					won_from_stage?: string | null;
 				};
 				Relationships: [
 					{
@@ -13728,6 +13743,13 @@ export type Database = {
 						columns: ['relationship_id'];
 						isOneToOne: false;
 						referencedRelation: 'platform_business_relationships';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'platform_deals_won_application_id_fkey';
+						columns: ['won_application_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_onboarding_applications';
 						referencedColumns: ['id'];
 					}
 				];
@@ -24044,9 +24066,17 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_business_client: {
+				Args: { target_relationship_id: string };
+				Returns: Json;
+			};
 			owner_business_deals: {
 				Args: { target_relationship_id: string };
 				Returns: Json;
+			};
+			owner_business_set_setup_owner: {
+				Args: { actor_email: string; target_member_id: string; target_relationship_id: string };
+				Returns: boolean;
 			};
 			owner_cancel_setup_training: {
 				Args: { actor_email: string; target_organization_id: string };
@@ -24057,6 +24087,7 @@ export type Database = {
 					cursor_account_created_at?: string;
 					cursor_id?: string;
 					include_delivered?: boolean;
+					only_organization_id?: string;
 					page_size?: number;
 					search_term?: string;
 					setup_catalogue: Json;
