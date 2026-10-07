@@ -334,7 +334,7 @@
 
 								{#if entry.kind === 'status_changed' && entry.details?.from}
 									<p class="lead-history__detail">
-										Was {LEAD_STATUS_LABELS[entry.details.from]}
+										Was {LEAD_STATUS_LABELS[entry.details.from as LeadStatus]}
 									</p>
 								{/if}
 
