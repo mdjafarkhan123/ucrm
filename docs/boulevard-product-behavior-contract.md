@@ -1,6 +1,6 @@
 # Boulevard-inspired industry editions
 
-**Status:** Planning — overall direction and booking/identity behavior agreed 2026-10-05; clinical-record behavior agreed 2026-10-06; other areas and release scope remain in planning.
+**Status:** Planning — overall direction and booking/identity behavior agreed 2026-10-05; clinical-record behavior agreed 2026-10-06; business-entry, onboarding-program and performance direction agreed 2026-10-07; other areas and release scope remain in planning.
 
 ## Summary
 
@@ -19,6 +19,62 @@ These decisions set boundaries, not final feature-level release approval. Resear
 ## Experience and access
 
 The business account selects the relevant industry experience. Its subscription and employees' permissions control the available tools and records. Plan mixed-service business behavior explicitly. Shared tools retain one behavior definition, with differences recorded under the relevant industry. LifeScan is a potential validation example; its subscription does not establish that Boulevard handles every diagnostic task.
+
+The planned top-level experiences are **Contractor**, **Beauty & Spa**, and **Medspa & Clinical Wellness**.
+Salon, barbershop and spa are business types within Beauty & Spa rather than separate products. “Clinic” and
+“lifecare” do not promise a general healthcare edition: a medical specialty outside the agreed Medspa &
+Clinical Wellness boundary needs its own research and scope decision.
+
+One primary industry experience controls a mixed business. Extra services add capabilities without combining
+separate products. When a business provides regulated clinical services alongside salon or spa services,
+Medspa & Clinical Wellness is normally primary so its stricter record and safety rules remain in force.
+
+## Business entry and onboarding
+
+Agreed by Jafar 2026-10-07. Evidence: [industry onboarding research](research/industry-onboarding-entry-patterns-2026-10-07.md).
+
+- Industry-specific marketing pages may speak directly to salons, barbers, spas or medspas, but they feed one
+  shared application and purchase journey. The link may preselect a business type and suitable package; it
+  does not create a separate onboarding system.
+- The initial journey remains assisted: the business applies, Jafar confirms its industry experience,
+  business type, package and offsite payment, and only then is its organization created. Provisioning sends a
+  secure, organization-specific invitation; there is no reusable public “salon onboarding” or “medspa
+  onboarding” link.
+- After sign-in, the shared `/setup` destination shows the onboarding program selected for that organization.
+  An onboarding program is separate from the package and staff permissions: the industry experience chooses
+  the program, purchased capabilities decide which relevant branches appear, and permissions decide who may
+  complete or review them.
+- Contractor, Beauty & Spa, and Medspa & Clinical Wellness have independently publishable onboarding
+  programs. They reuse shared sections such as business identity, branding, team and imports, while keeping
+  industry-specific work separate. The current questionnaire becomes the Contractor program; it is not
+  duplicated or discarded.
+- The Platform Owner can manage, preview and publish each program, including previewing the exact combination
+  of industry, business type and package. The detailed version-change, migration and later industry-change
+  rules remain for the onboarding planning part.
+
+## Performance contract
+
+Jafar approved performance as a build constraint on 2026-10-07, not a cleanup saved for the end.
+
+- Every screen that materially changes a critical journey, payload, hydration work, rendered collection or
+  interaction cost, and every path whose cost grows with data, users, requests, subscribers or browser payload,
+  completes the project performance design gate before implementation and measured verification after its coherent
+  build slice exists.
+- Public entry, purchase, sign-in and initial workspace content use server rendering where it reduces the
+  first wait. Browser code is reserved for interaction; unavailable industries and capabilities do not ship
+  their feature code or assets to that organization. Optional heavy tools load only when needed.
+- Global CSS remains the small shared baseline. Component styles stay with their component, and route- or
+  industry-specific styles and assets are not placed in the global bundle. Images use appropriately sized
+  derivatives and lazy loading outside the first view; versioned static assets use long-lived caching.
+- Phone-first screens target Google's “good” Core Web Vitals thresholds: LCP at most 2.5 seconds, INP at most
+  200 milliseconds and CLS at most 0.1 at the 75th percentile. Until real-user data exists, a production
+  build is tested with representative data under a slowed phone CPU and mobile network and reported as lab
+  evidence.
+- Verification records route JavaScript and CSS bytes, font and image bytes, request count, server response
+  time, database work, rendered-item count and the main interaction timing. It also checks that an industry
+  loads only its own navigation and capabilities.
+- No registered-user number becomes a capacity promise. Traffic, concurrent sessions, rows per tenant,
+  payload, burst length and background work must be exercised before stating capacity.
 
 ## Research reference rule
 
@@ -197,6 +253,11 @@ Clinical details and photos stay in protected records; appointment texts and ema
 ## Still unclear
 
 - Detailed behaviors, unresolved evidence gaps, reuse findings, release assignments, and measurable quality targets; settle these in planning parts, not by assumption.
+- Business entry and onboarding: program version changes while a client is in progress, moving an existing
+  organization to another primary experience, mixed businesses that do not have a clear clinical boundary,
+  and the exact Platform Owner preview/publish workflow (P2H).
+- Performance: representative workloads and per-route/browser budgets for the agreed initial release. P3A
+  must settle these before build parts are approved; implemented slices must then supply the stated evidence.
 - Booking and identity items owned by later parts:
   - Charging late-cancel and no-show fees automatically or by staff decision, and refunding deposits (P2C).
   - Reminders and text-reply confirmations, and where waitlist alerts appear (P2D).
@@ -217,6 +278,7 @@ Clinical details and photos stay in protected records; appointment texts and ema
 - [Completed P1 public-source inventory and coverage limits](research/boulevard-feature-landscape-2026-10-05.md).
 - [P2A booking and identity evidence and original drafts](research/boulevard-booking-identity-2026-10-05.md); agreed behavior is in [Booking and identity](#booking-and-identity).
 - [P2B clinical-record sources and evidence limits](research/boulevard-clinical-records-2026-10-06.md); agreed behavior is in [Clinical records](#clinical-records).
+- [Industry entry and onboarding patterns](research/industry-onboarding-entry-patterns-2026-10-07.md); agreed direction is in [Business entry and onboarding](#business-entry-and-onboarding).
 
 Primary public entry points:
 

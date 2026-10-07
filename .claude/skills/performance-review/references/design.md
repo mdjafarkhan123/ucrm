@@ -100,15 +100,36 @@ browser server-state caching; do not create a parallel client cache.
 
 ### Browser delivery
 
+- Choose SSR, prerendering, hydration and browser-only rendering from the route's freshness, personalization,
+  interaction and indexing needs. A server-rendered shell that immediately repeats its data reads in the browser
+  has not removed the waterfall.
+- Keep the root layout and global stylesheet to true cross-route essentials. Route and capability code, CSS and
+  assets load only where used; a tenant does not download another industry's unavailable experience. Measure a
+  dependency before promoting it to a shared chunk.
+- Give JavaScript, CSS, fonts, images and third-party resources an explicit critical-path role. Prefer responsive
+  image derivatives, deferred off-screen media, self-hosted/subset fonts where they improve the measured path,
+  immutable hashed assets, compression, and cache rules that match how each asset changes.
 - Return and render only what the interaction needs. Choose server pagination, incremental rendering,
   virtualization, or `content-visibility` from the UX and measured DOM/render cost, not a universal row count.
 - Keep query keys tenant/authorization scoped, choose freshness from correctness, and specify mutation/external-event
   invalidation.
 - Skeletons, images, and late-arriving panels reserve the final content's size, so arriving data never shifts
-  the layout. Frequent interactions (drag, tick, save) update the screen at once and reconcile with the server
-  after, keeping them inside the INP target.
+  the layout. Give interactions immediate feedback. Use optimistic state only when reversal, conflict handling and
+  authoritative reconciliation are safe; payments, contested availability, clinical records, permissions and
+  irreversible actions normally show a pending state until the server confirms them.
 - Evaluate a browser dependency by the route’s production critical path and baseline. Dynamically load optional
   heavy interactions when that materially reduces initial work.
+
+### Production delivery
+
+- Include the intended adapter, container/runtime, CDN or proxy, static-asset origin, database region and external
+  storage/provider boundaries in the path. Region distance, connection reuse, HTTP protocol, compression and cache
+  behavior can dominate a fast application handler.
+- State the finite CPU, memory, database connections, worker slots and sockets when they can saturate. Prefer
+  horizontal or vertical scaling only after the limiting resource and deployment behavior are known.
+- Keep probes lightweight and telemetry bounded, sampled or asynchronous where suitable. Measure its overhead and
+  avoid synchronous export in a user's request. Add telemetry only when it exposes a named risk and its
+  collection/storage cost is acceptable.
 
 ## 4. Challenge complexity and failure modes
 

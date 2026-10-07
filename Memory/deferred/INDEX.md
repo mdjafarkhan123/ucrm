@@ -9,6 +9,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P1 | [Production AWS account needs the one-time SES branded-click-links setup](production-aws-ses-branded-click-links-setup.md) |
 | P1 | [Closing an organization cannot purge it once it sent a quote](organization-purge-fails-on-history-triggers.md) |
 | P1 | [Pre-launch speed pass on the staging servers (HTTP/2, service worker, real-region timings)](pre-launch-speed-pass.md) |
+| P1 | [Industry editions need design-time and post-build performance gates](industry-editions-performance-verification.md) |
 | P2 | [Contractor account, offers, and notification history](contractor-account-offers-and-notification-history.md) |
 | P2 | [Signing in does not return to the page you came from](sign-in-does-not-return-to-the-page.md) |
 | P2 | [Delete client, exactly like Jobber (Jafar decided; waits for "go")](delete-client-like-jobber.md) |

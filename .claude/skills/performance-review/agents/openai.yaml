@@ -1,4 +1,4 @@
 interface:
   display_name: 'Performance Review'
-  short_description: 'Design and verify scale-sensitive paths'
-  default_prompt: 'Use $performance-review to design or verify this scale-sensitive path with proportional evidence.'
+  short_description: 'Design, verify, or audit application performance'
+  default_prompt: 'Use $performance-review to design, investigate, verify, or audit this application path with proportional evidence.'

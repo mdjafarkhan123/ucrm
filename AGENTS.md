@@ -57,7 +57,7 @@ Skills live under `.claude/skills/`. Load every skill relevant to the current ta
 | Researching how mature products/industries handle a workflow before building it    | `.claude/skills/research/SKILL.md`                         |
 | Naming project terminology, or recording an architectural decision                 | `.claude/skills/domain-modeling/SKILL.md`                  |
 | Diagnosing a hard firmware/toolchain bug, crash, or performance regression         | `.claude/skills/diagnosing-bugs/SKILL.md`                  |
-| Scale-sensitive design, performance verification, or reported slowness             | `.claude/skills/performance-review/SKILL.md`               |
+| Material screen/journey performance, scale-sensitive paths, reported slowness, or a release performance audit | `.claude/skills/performance-review/SKILL.md`               |
 | Before planning or implementing a scale-sensitive path                             | `.claude/skills/performance-review` design branch          |
 | After implementing that coherent scale-sensitive path                              | `.claude/skills/performance-review` verification branch    |
 
@@ -98,7 +98,7 @@ before changing files (`--mode read` for research). Release after safe integrati
 - SCSS + BEM for all styling. Tabler icons for all icons.
 - Component styles live inside the component's own `<style lang="scss">` block. Never import component styles through `app.scss`. `app.scss` contains only the global baseline, no per-component import is needed. SCSS variables and mixins are available in every component automatically via Vite `additionalData` — no import needed.
 - All writes go through `/api/*` routes. Every `POST` and `PATCH` validates with Zod before database access.
-- **Performance — proportional evidence:** Follow `performance-review`'s invocation gate and two-stage completion contract. Never claim user or traffic capacity beyond the workload its evidence actually supports.
+- **Performance — proportional evidence:** Follow `performance-review`'s invocation gate and two-stage completion contract. Design qualifying paths before code, verify them after the coherent slice exists, and run its whole-application branch before an industry release. Never claim user or traffic capacity beyond the workload its evidence actually supports.
 - **One final application.** The main folder on `main` is the integration point. Temporary Git worktrees and
   branches are allowed only for simultaneous code writers under `docs/agent-concurrency.md`; remove them
   after their work is integrated. Do not create another clone or product copy.

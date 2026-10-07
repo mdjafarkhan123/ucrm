@@ -49,11 +49,14 @@
 
 ## Platform onboarding
 
-- **Prospect** — A contractor business that has submitted the platform onboarding form but does not yet have an UpliftContractor organization, a contractor login, or tenant data.
+- **Industry experience** — The organization's primary operating experience: Contractor, Beauty & Spa, or Medspa & Clinical Wellness. It controls industry language and workflows and is separate from package access and staff permissions. _Avoid_: Package edition.
+- **Business type** — A more specific category inside an Industry experience, such as salon, barbershop, spa, or medspa. It can shape defaults without creating a separate product. _Avoid_: Industry experience when referring to the narrower category.
+- **Onboarding program** — The published, versioned setup journey selected by an organization's Industry experience and narrowed by its purchased capabilities. Shared stages may be reused across programs. _Avoid_: Niche onboarding link.
+- **Prospect** — A business that has submitted the platform onboarding form but does not yet have an UpliftContractor organization, administrator login, or tenant data.
 - **Onboarding application** — The platform-owned record of a prospect's submitted business, administrator, and selected-package information.
 - **Payment confirmed** — The Platform Owner has manually verified that the prospect's offsite subscription payment is received. It is not a payment record held or processed by UpliftContractor.
-- **Organization** — An active or suspended contractor tenant created only after payment confirmation and successful account provisioning.
-- **Initial contractor administrator** — The first user for a newly provisioned organization. This person administers that contractor tenant; the Platform Owner never becomes a tenant member.
+- **Organization** — An active or suspended business tenant created only after payment confirmation and successful account provisioning.
+- **Initial organization administrator** — The first user for a newly provisioned organization. This person administers that tenant; the Platform Owner never becomes a tenant member.
 - **Activated package** — The package edition applied to an organization at provisioning. It normally matches the prospect's selected edition, but the Platform Owner may correct it to match the edition actually paid for and must record a private reason.
 - **Not proceeding** — A platform-owned final prospect outcome used when no account will be created. It is not an organization lifecycle state.
 - **Needs attention** — A prospect outcome meaning payment is confirmed but safe account provisioning cannot proceed without an owner resolving a specific problem. It is not an organization lifecycle state.

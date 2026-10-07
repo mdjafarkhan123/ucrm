@@ -69,6 +69,12 @@ rule files. Do not change RLS semantics for speed.
 - For a server cache, verify tenant/authorization dimensions in the key, TTL, invalidation coverage, maximum
   cardinality/eviction, stampede control, deployment consistency, and behavior on cache failure. Authenticated
   tenant data stays private unless shared-cache isolation is explicitly proven.
+- Separate public hashed assets from personalized HTML, API responses and protected media. Inspect origin, CDN and
+  browser directives; `Authorization`, cookies, `Set-Cookie`, `Vary`, `private`, `no-store`, cache rules and the
+  observed cache status. Shared caching of authenticated content requires proof that its cache key and rules carry
+  every tenant and authorization dimension. Verify the deployed provider's current behavior; for Cloudflare use
+  [Origin Cache Control](https://developers.cloudflare.com/cache/concepts/cache-control/) and
+  [cache responses](https://developers.cloudflare.com/cache/concepts/cache-responses/).
 - For TanStack Query, verify stable scoped keys, freshness based on correctness, precise invalidation after every
   relevant mutation/external event, and request waterfalls. Components may observe the same query key; rely on the
   library’s shared query/cache behavior instead of adding a second client cache or lifting data without need.
@@ -80,19 +86,45 @@ rule files. Do not change RLS semantics for speed.
 - For Realtime, record connections, channel joins, filters, event rate, payload, recipients per event, authorization
   work, and cleanup. Verify current Supabase guidance when choosing Broadcast or Postgres Changes; high fan-out or
   an explicit capacity claim requires representative concurrency evidence.
+- When a long-running server or worker can retain state, repeat representative requests or jobs and observe RSS/heap
+  trend, event-loop delay, active handles, garbage-collection pressure, queue lag and OOM/restart behavior. Start a
+  deep memory or CPU profile only after the bounded repeat/soak evidence shows drift. Use current runtime evidence,
+  such as [Node diagnostic reports](https://nodejs.org/api/report.html), within the container's documented
+  [resource constraints](https://docs.docker.com/engine/containers/resource_constraints/).
 
 ### Svelte and browser delivery
 
 - Use a production build and browser/network/profile evidence for a changed loading or interaction path. The dev
   server is not a production navigation benchmark.
-- Count requests, transferred bytes, route chunks, DOM nodes, long tasks, and repeated reactive work relevant to the
-  change. Compare route weight with its prior baseline or an approved budget rather than a universal chunk limit.
-- For each changed screen, record LCP, CLS, and INP for its main interactions at phone and desktop width under
-  the slowed profile (for example, Playwright with Chrome DevTools Protocol CPU and network throttling).
+- Count requests, transferred and uncompressed bytes, route JavaScript and CSS chunks, fonts, images, third-party
+  code, DOM nodes, long tasks, and repeated reactive work relevant to the change. Compare route weight with its
+  prior baseline or an approved budget rather than a universal chunk limit.
+- Trace the critical request chain from HTML through CSS, fonts, images, route data and hydration. Check whether
+  browser loads repeat server work, public routes inherit authenticated-app dependencies, or unavailable industries
+  and capabilities ship unused code or styles.
+- For a cold/full navigation, record LCP, CLS and interaction evidence at phone and desktop width under the slowed
+  profile. For warm client navigation, use supported soft-navigation Web Vitals where available; otherwise record a
+  named route-content timing and layout stability. Scripted lab interactions record their latency and observed INP,
+  but do not claim the field 75th percentile without field data. Follow current
+  [SPA measurement limits](https://web.dev/articles/vitals-spa-faq) and
+  [INP lab/field guidance](https://web.dev/articles/inp).
+- Check responsive image dimensions and encodings, off-screen loading, decoded size, reserved layout space, font
+  requests/fallback shifts, CSS coverage on the critical route, content encoding, immutable asset cache headers and
+  the production HTTP protocol. Treat a synthetic score as a clue; preserve the request/profile evidence behind it.
+- When an interaction animates, resizes, filters, drags or mutates a substantial DOM, inspect style recalculation,
+  forced layout, paint and non-composited animation in the trace. Do not turn a bounded static page into a universal
+  CSS runtime audit.
 - Key stateful lists by stable identity. Choose pagination, incremental rendering, virtualization, or
   `content-visibility` from interaction requirements and observed render cost.
 - Measure optional heavy dependencies on the initial critical path and dynamically load them when the evidence and
   interaction boundary justify it.
+- Include serialized route-data bytes and link/code/data preloads in the request count. Record false-positive
+  requests, stale or repeated work and server load, and keep eager/hover/tap preloading only when it measurably
+  improves the intended navigation. Verify the current framework behavior in
+  [SvelteKit link options](https://svelte.dev/docs/kit/link-options) and
+  [performance guidance](https://svelte.dev/docs/kit/performance).
+- Repeat representative navigation and long-lived interaction when the changed path retains subscriptions, maps,
+  editors, object URLs, timers or large caches; use memory evidence to find growth that one page load cannot show.
 
 Load the Svelte skill before changing `.svelte`, `.svelte.ts`, or `.svelte.js` files and run its required validation.
 
@@ -105,6 +137,18 @@ Load the Svelte skill before changing `.svelte`, `.svelte.ts`, or `.svelte.js` f
   authorizes it; missing optional dashboards or a new telemetry stack is not a feature-level performance failure.
 - Judge alerts and slow-operation thresholds against an approved service target or observed baseline rather than a
   universal number.
+
+### Production delivery
+
+- Separate network/region time, proxy/CDN time, application time, database time, storage/provider time and client
+  rendering so a quick local handler is not mistaken for a quick user journey.
+- Verify compression, cache headers, connection reuse and the actual HTTP version on the production-like path.
+  Check container CPU/memory and database/worker/connection saturation only for resources the workload can pressure.
+- Verify public hashed assets and personalized responses follow different cache policies. Inspect the observed CDN
+  cache status and any edge rule that can override the origin; protected HTML, APIs and media remain isolated by
+  every tenant and authorization dimension.
+- Compare cold and warm behavior when startup, cache fill, connection establishment or scale-to-zero can affect the
+  user. Record the deployment shape and region with the result.
 
 ## 4. Decide whether load testing is required
 
