@@ -1,6 +1,6 @@
 # Boulevard-inspired industry editions
 
-**Status:** Planning — overall direction and booking/identity behavior agreed 2026-10-05; clinical-record behavior agreed 2026-10-06; business-entry, onboarding-program and performance direction agreed 2026-10-07; other areas and release scope remain in planning.
+**Status:** Planning — overall direction and booking/identity behavior agreed 2026-10-05; clinical-record behavior agreed 2026-10-06; commerce, communications, business-entry, onboarding-program and performance direction settled 2026-10-07; other areas and release scope remain in planning.
 
 ## Summary
 
@@ -343,6 +343,73 @@ Before a US state launch, renewing-plan cancellation, paid-value expiry and gift
 state-specific review. Payment-provider capability, saved cards, hardware, financing, tax calculation, release
 scope and reuse of the contractor payment system remain for P3 feasibility and release assignment.
 
+## Communications
+
+Settled 2026-10-07 using Boulevard's documented operational pattern and Jafar's direction to use the
+recommended safe rule where Boulevard or an established competitor does not answer a gap. Evidence, limits and
+vendor differences: [P2D communications research](research/boulevard-communications-2026-10-07.md). P3 still
+assigns release timing and checks whether existing Communications, Reviews and Automation work suits these
+industries.
+
+### Appointment notices and the staff inbox
+
+- A booking sends a confirmation immediately to an available, permitted channel. By default, an unconfirmed
+  appointment receives an email reminder two days before the visit. The business can choose a reminder time
+  from a small set within one to five days. A same-day text reminder is optional; it can be enabled only when
+  the business's texting is approved and the client permits appointment texts. When a channel is unavailable or
+  delivery fails, staff see that outcome rather than a false delivered or confirmed state. A client without an
+  email address can use a permitted text or the authenticated appointment page; lack of a sendable channel does
+  not secretly cancel a booking.
+- Confirmation changes an appointment only through its secure appointment action or an exact standalone reply
+  to the current, uniquely identified text prompt. A reply containing other words, including “yes, cancel my
+  appointment,” is a staff message, not confirmation. A text asking to cancel or move an appointment goes to
+  staff; the secure appointment page follows the cancellation deadline and fee rules in Booking and identity.
+  Confirmed, cancelled or moved appointments stop obsolete pending reminders.
+- One business conversation history shows staff messages and replies to operational or promotional texts,
+  including failed sends, the source of an automated message, an owner, unread state and last-response time.
+  Automation does not silently close a client request. After-hours replies identify when a human can follow
+  up and avoid repeated auto-replies. Clinical concerns or urgent wording go to trained staff; an automated
+  response is not presented as medical advice.
+- A new waitlist entry and a newly opened time that matches existing entries appear in the calendar/front-desk
+  work queue. Staff see the eligible requests, choose one client, and contact or book them. This does not send
+  competing clients a promise of the same slot. No separate staff email or push alert is the default; that
+  channel can be reconsidered after observing the workflow. Automatic client offers remain a separate later
+  release choice.
+
+### Consent, privacy and marketing
+
+- Booking never enrolls a client in promotions. Appointment, care and payment notices are kept distinct from
+  promotional email and promotional text, with channel and purpose preferences, evidence of consent where
+  required, and withdrawal history. Promotional choices are separate and optional; leaving them unchecked
+  cannot block booking. An imported phone number or past purchase is not marketing consent. A text opt-out
+  blocks the relevant sends until a valid re-opt-in; a saved audience or staff action cannot bypass it.
+- A child remains the subject of their appointment and clinical record. Notices go only to verified contacts
+  authorized for that communication. Changing or ending a guardian's authority updates notice routing before
+  the next send. Confidential care follows its restricted contact route rather than a blanket parent copy.
+  Ordinary email and text use neutral wording and a safe link; treatment, diagnosis, form answers, photos,
+  medication and chart details remain behind authenticated access. State-specific minor confidentiality and
+  healthcare communication rules must be reviewed before serving that state.
+- Marketing audiences may use nonclinical service and purchase activity only where the relevant industry,
+  permissions and channel consent allow it. Ordinary campaigns do not target a condition, chart answer,
+  medication, treatment outcome or a child's care. Before a campaign sends, staff see the eligible count after
+  opt-outs, exclusions and recent-contact limits; eligibility is checked again at send time. The send history
+  records who launched it and who was eligible, sent to, skipped or failed. Replies return to a staffed route.
+  One-time campaigns and preset rebooking campaigns are inventoried, but their initial-versus-later release
+  assignment remains P3's decision.
+
+### Feedback and AI boundaries
+
+- When review requests are enabled, every completed-visit client gets the same neutral chance to leave a
+  public review regardless of an internal score. All may also leave private feedback. A low score can alert
+  authorized staff for recovery, but must not hide or bury the public link. Rewards cannot depend on a
+  review's rating or wording. Public replies do not confirm patient status or reveal treatment details.
+  Ratings and review-request release timing remains with P3.
+- Any future AI receptionist or writing aid is separately enabled and reviewed for its provider, privacy and
+  handoff behavior. It may answer basic business questions and provide a booking link; it does not diagnose,
+  give treatment clearance, disclose charts, provide medical advice or claim to complete a clinical booking.
+  An unresolved or urgent call becomes a human transfer or callback task with a reviewable summary. AI release
+  timing remains with P3; Boulevard's beta does not establish that our providers meet these conditions.
+
 ## Still unclear
 
 - Detailed behaviors, unresolved evidence gaps, reuse findings, release assignments, and measurable quality targets; settle these in planning parts, not by assumption.
@@ -352,7 +419,6 @@ scope and reuse of the contractor payment system remain for P3 feasibility and r
 - Performance: representative workloads and per-route/browser budgets for the agreed initial release. P3A
   must settle these before build parts are approved; implemented slices must then supply the stated evidence.
 - Booking and identity items owned by later parts:
-  - Reminders and text-reply confirmations, and where waitlist alerts appear (P2D).
   - Who holds the requirement-override permission, and client data deletion (P2E).
   - How client sign-in is built alongside the existing staff sign-in, and how saved cards fit the current Stripe key (P3).
 - Clinical records: which agreed capabilities belong in the initial release, what can be reused, and which qualified prescribing provider could support an integration (P3). State-specific minor access and clinical-policy review must be completed for the states served before launch.
@@ -371,6 +437,7 @@ scope and reuse of the contractor payment system remain for P3 feasibility and r
 - [P2A booking and identity evidence and original drafts](research/boulevard-booking-identity-2026-10-05.md); agreed behavior is in [Booking and identity](#booking-and-identity).
 - [P2B clinical-record sources and evidence limits](research/boulevard-clinical-records-2026-10-06.md); agreed behavior is in [Clinical records](#clinical-records).
 - [P2C commerce sources, vendor gaps and selected mature patterns](research/boulevard-commerce-2026-10-07.md); agreed behavior is in [Commerce](#commerce).
+- [P2D communications sources, vendor gaps and selected safeguards](research/boulevard-communications-2026-10-07.md); agreed behavior is in [Communications](#communications), while marketing, reviews and AI release timing belongs to P3.
 - [Industry entry and onboarding patterns](research/industry-onboarding-entry-patterns-2026-10-07.md); agreed direction is in [Business entry and onboarding](#business-entry-and-onboarding).
 
 Primary public entry points:
