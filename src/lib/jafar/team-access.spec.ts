@@ -193,6 +193,28 @@ describe('individual access (D2)', () => {
 		expect(canUseJafarPath(approver, '/api/jafar/leads/x/do-not-contact/clear', 'POST')).toBe(true);
 	});
 
+	it('runs Deals with Leads work; special terms need their action; only Jafar removes a Deal (B4)', () => {
+		const looker = sales({ areas: { leads: 'look' }, actions: [] });
+		expect(canUseJafarPath(looker, '/jafar/deals', 'GET')).toBe(true);
+		expect(canUseJafarPath(looker, '/api/jafar/deals/x', 'PATCH')).toBe(false);
+
+		const worker = sales({ areas: { leads: 'work' }, actions: [] });
+		expect(canUseJafarPath(worker, '/api/jafar/deals', 'POST')).toBe(true);
+		expect(canUseJafarPath(worker, '/api/jafar/deals/x', 'PATCH')).toBe(true);
+		expect(canUseJafarPath(worker, '/api/jafar/deals/x/pricing', 'POST')).toBe(true);
+		expect(canUseJafarPath(worker, '/api/jafar/deals/x/lost', 'POST')).toBe(true);
+		expect(canUseJafarPath(worker, '/api/jafar/deals/x/reopen', 'POST')).toBe(true);
+		expect(canUseJafarPath(worker, '/api/jafar/deals/x/terms', 'PATCH')).toBe(false);
+		expect(canUseJafarPath(worker, '/api/jafar/deals/x/remove', 'POST')).toBe(false);
+
+		const agreer = sales({ areas: { leads: 'work' }, actions: ['deal_terms'] });
+		expect(canUseJafarPath(agreer, '/api/jafar/deals/x/terms', 'PATCH')).toBe(true);
+		expect(canUseJafarPath(agreer, '/api/jafar/deals/x/remove', 'POST')).toBe(false);
+
+		expect(canUseJafarPath(owner, '/api/jafar/deals/x/terms', 'PATCH')).toBe(true);
+		expect(canUseJafarPath(owner, '/api/jafar/deals/x/remove', 'POST')).toBe(true);
+	});
+
 	it('changes packages only with the packages action', () => {
 		const looker = sales({ areas: { packages: 'look' }, actions: [] });
 		expect(canUseJafarPath(looker, '/api/jafar/packages/x', 'GET')).toBe(true);

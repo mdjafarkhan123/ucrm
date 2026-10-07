@@ -10,6 +10,7 @@ import {
 	type LeadSource,
 	type LeadStatus
 } from './leads';
+import type { BusinessDeal, DealStage } from './deals';
 import { CALL_OUTCOMES, CALL_OUTCOME_LABELS, type CallOutcome } from '$lib/pipeline/calls';
 
 // The contractor Brief's call outcomes, so a call reads the same wherever it is logged.
@@ -89,6 +90,13 @@ export type HistoryKind =
 	| 'sent_back'
 	| 'do_not_contact_set'
 	| 'do_not_contact_cleared'
+	| 'deal_started'
+	| 'deal_stage_changed'
+	| 'pricing_shared'
+	| 'deal_lost'
+	| 'deal_reopened'
+	| 'deal_terms_changed'
+	| 'deal_removed'
 	| 'lead_added'
 	| 'application_submitted';
 
@@ -104,8 +112,8 @@ export type HistoryEntry = {
 	call_outcome: CallOutcome | null;
 	application_id: string | null;
 	details: {
-		from?: LeadStatus;
-		to?: LeadStatus;
+		from?: LeadStatus | DealStage;
+		to?: LeadStatus | DealStage;
 		next_action?: string;
 		due_on?: string;
 		business_name?: string;
@@ -113,8 +121,18 @@ export type HistoryEntry = {
 		changes?: DetailChange[];
 		/** B3: the details approved or withdrawn. */
 		methods?: Array<{ kind: ContactMethodKind; value: string; whatsapp_permission?: boolean }>;
-		/** B3: why it was sent back, or why Do not contact was set or lifted; for a withdrawal, a reason key. */
+		/** B3: why it was sent back, or why Do not contact was set or lifted; for a withdrawal, a reason key.
+		 * B4: a Lost Deal's reason key. */
 		reason?: string;
+		/** B4: the Deal's stage when started or removed; for a stage change, `from`/`to` hold Deal stages. */
+		stage?: DealStage;
+		note?: string;
+		packages?: Array<{
+			name: string;
+			monthly_price_usd_cents?: number;
+			yearly_price_usd_cents?: number;
+		}>;
+		terms?: string | null;
 	} | null;
 	/** Who did it, as a name: "Jafar", a teammate, or their email. Null when nobody did (an Application arriving). */
 	actor: string | null;
@@ -190,6 +208,8 @@ export type LeadPage = {
 	applications: LinkedApplication[];
 	last_contacted_at: string | null;
 	last_heard_from_at: string | null;
+	/** B4: the business's Deals, newest first; at most one is open. */
+	deals: BusinessDeal[];
 	history: HistoryPage;
 };
 

@@ -26,7 +26,7 @@ describe('teammate history wording', () => {
 			})
 		);
 		expect(lines).toEqual([
-			'Leads: can change → off',
+			'Leads & Deals: can change → off',
 			'Applications: view only → can change',
 			'Turned on: Confirm and undo payments'
 		]);

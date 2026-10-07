@@ -47,6 +47,8 @@ export const leadListQuerySchema = z.object({
 		.optional(),
 	source: list(LEAD_SOURCES).optional(),
 	sort: z.enum(LEAD_SORTS).optional(),
+	/** B4: `with` lists only businesses that have a Deal; without it they are left out. */
+	deal: z.enum(['with']).optional(),
 	/** Opaque cursor from the previous page's `next_cursor`. */
 	cursor: z.string().max(300).optional(),
 	limit: z.coerce.number().int().min(1).max(100).optional()

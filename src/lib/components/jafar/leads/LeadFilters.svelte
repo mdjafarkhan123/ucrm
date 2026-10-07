@@ -84,13 +84,18 @@
 		}))
 	);
 	const sortOptions = LEAD_SORTS.map((value) => ({ value, label: LEAD_SORT_LABELS[value] }));
+	// B4: a business with a Deal moves to the Deals board and leaves this list; it is one choice away here.
+	const showOptions = $derived([
+		{ value: 'leads', label: 'Leads' },
+		{ value: 'in_deal', label: `In a Deal (${totals.in_deal.toLocaleString()})` }
+	]);
 
 	const filtering = $derived(hasLeadFilters(filters));
 
 	function clearAll() {
 		search = '';
 		sent = '';
-		onChange({ ...EMPTY_LEAD_FILTERS, sort: filters.sort });
+		onChange({ ...EMPTY_LEAD_FILTERS, sort: filters.sort, inDeal: filters.inDeal });
 	}
 </script>
 
@@ -133,6 +138,13 @@
 			value={filters.sort}
 			options={sortOptions}
 			onchange={(value) => onChange({ ...filters, sort: value as LeadSort })}
+		/>
+		<FilterChip
+			id="lead-show"
+			label="Show"
+			value={filters.inDeal ? 'in_deal' : 'leads'}
+			options={showOptions}
+			onchange={(value) => onChange({ ...filters, inDeal: value === 'in_deal' })}
 		/>
 
 		{#if filtering || search}

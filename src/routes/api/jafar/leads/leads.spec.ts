@@ -93,8 +93,19 @@ describe('Leads list GET', () => {
 			cursor_created_at: undefined,
 			cursor_due_on: undefined,
 			cursor_id: undefined,
-			page_size: 50
+			page_size: 50,
+			deal_filter: 'without'
 		});
+	});
+
+	it('shows only businesses in a Deal when asked (B4)', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+		const rpc = rpcReturning(listResult);
+		await GET(getEvent('http://localhost/api/jafar/leads?deal=with'));
+		expect(rpc).toHaveBeenCalledWith(
+			'owner_lead_list',
+			expect.objectContaining({ deal_filter: 'with' })
+		);
 	});
 
 	it('passes status and country filters through, countries upper-cased and each once', async () => {

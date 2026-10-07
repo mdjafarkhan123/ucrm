@@ -30,12 +30,14 @@
 		type LeadListPage,
 		type LeadListTotals
 	} from '$lib/jafar/leads';
+	import { DEAL_STAGE_LABELS } from '$lib/jafar/deals';
 	import { jafarLeadsListKey } from '$lib/jafar/query-keys';
 
 	// Jafar business management B1: the businesses Uplift has found before they applied or became a client.
 
 	const emptyTotals: LeadListTotals = {
 		all: 0,
+		in_deal: 0,
 		matching: 0,
 		statuses: {},
 		countries: [],
@@ -203,6 +205,11 @@
 						title="No matching Leads"
 						description="Try another search term or loosen a filter."
 					/>
+				{:else if filters.inDeal}
+					<EmptyState
+						title="No business is in a Deal yet"
+						description="Start a Deal from a Lead's page when they show real interest or book a call."
+					/>
 				{:else}
 					<EmptyState
 						title="No Leads yet"
@@ -252,9 +259,16 @@
 									{/if}
 								</td>
 								<td data-label="Status">
-									<Badge status={LEAD_STATUS_TONES[lead.lead_status]} size="small"
-										>{LEAD_STATUS_LABELS[lead.lead_status]}</Badge
-									>
+									{#if lead.deal_stage}
+										<Badge
+											status={lead.deal_stage === 'lost' ? 'inactive' : 'informative'}
+											size="small">Deal · {DEAL_STAGE_LABELS[lead.deal_stage]}</Badge
+										>
+									{:else}
+										<Badge status={LEAD_STATUS_TONES[lead.lead_status]} size="small"
+											>{LEAD_STATUS_LABELS[lead.lead_status]}</Badge
+										>
+									{/if}
 								</td>
 								<td data-label="Next action">
 									{#if lead.next_action}

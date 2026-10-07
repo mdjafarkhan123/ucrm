@@ -31,7 +31,7 @@ export const JAFAR_AREAS = [
 export type JafarArea = (typeof JAFAR_AREAS)[number];
 
 export const JAFAR_AREA_LABELS: Record<JafarArea, string> = {
-	leads: 'Leads',
+	leads: 'Leads & Deals',
 	applications: 'Applications',
 	onboarding: 'Onboarding',
 	support: 'Support inbox',
@@ -71,7 +71,8 @@ export const SENSITIVE_ACTIONS = [
 	'payments',
 	'client_setup',
 	'packages',
-	'client_accounts'
+	'client_accounts',
+	'deal_terms'
 ] as const;
 export type SensitiveAction = (typeof SENSITIVE_ACTIONS)[number];
 
@@ -101,6 +102,11 @@ export const SENSITIVE_ACTION_DETAILS: Record<
 		description: 'Edit, publish, and remove packages, offers, and services on the pricing page.',
 		area: 'packages'
 	},
+	deal_terms: {
+		label: 'Agree special terms',
+		description: 'Write, change, or remove a discount or other exception agreed on a Deal.',
+		area: 'leads'
+	},
 	client_accounts: {
 		label: 'Client account controls',
 		description:
@@ -125,7 +131,7 @@ export type TeamAccessAdjustments = {
 export type JafarViewer = { role: TeamRole | null; access?: TeamAccess | null };
 
 const AREA_PREFIXES: ReadonlyArray<readonly [JafarArea, readonly string[]]> = [
-	['leads', ['/jafar/leads', '/api/jafar/leads']],
+	['leads', ['/jafar/leads', '/api/jafar/leads', '/jafar/deals', '/api/jafar/deals']],
 	['applications', ['/jafar/prospects', '/api/jafar/prospects']],
 	['onboarding', ['/jafar/onboarding', '/api/jafar/onboarding']],
 	['support', ['/jafar/support', '/api/jafar/support']],
@@ -167,6 +173,7 @@ const SENSITIVE_ACTION_PATHS: Record<SensitiveAction, readonly PathRule[]> = {
 		{ pattern: '/api/jafar/package-offers', subtree: true },
 		{ pattern: '/api/jafar/package-services', subtree: true }
 	],
+	deal_terms: [{ pattern: '/api/jafar/deals/*/terms' }],
 	client_accounts: [
 		{ pattern: '/api/jafar/organizations/*/automation', subtree: true },
 		{ pattern: '/api/jafar/organizations/*/communications', subtree: true },
@@ -181,6 +188,8 @@ const SENSITIVE_ACTION_PATHS: Record<SensitiveAction, readonly PathRule[]> = {
  * step-up (money, closing an account, recovering a client's administrator) and platform-wide settings.
  */
 const OWNER_ONLY_CHANGES: readonly PathRule[] = [
+	// B4: removing a Deal started by mistake.
+	{ pattern: '/api/jafar/deals/*/remove' },
 	// Who Support replies appear from, for every contractor.
 	{ pattern: '/api/jafar/support/settings' },
 	{ pattern: '/api/jafar/organizations/*/billing', subtree: true },

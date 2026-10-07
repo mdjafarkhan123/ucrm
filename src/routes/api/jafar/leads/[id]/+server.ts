@@ -14,6 +14,7 @@ import { presentHistory, type RawHistoryPage } from '$lib/server/jafar/lead-hist
 import { leadChangeSchema } from '$lib/server/validation/lead.schema';
 import type { LeadPage } from '$lib/jafar/lead-history';
 import { canUseJafarPath } from '$lib/jafar/team-access';
+import type { BusinessDeal } from '$lib/jafar/deals';
 
 // Jafar business management B2: one Lead's page in one request, and changing its status or next action. Each
 // change is written to the Lead's history in the same database transaction.
@@ -26,17 +27,28 @@ export const GET: RequestHandler = async (event) => {
 	if (!z.uuid().safeParse(event.params.id).success) return notFound(LEAD_NOT_FOUND);
 
 	try {
-		const { data, error } = await getOwnerSupabaseClient().rpc('owner_lead_page', {
-			target_id: event.params.id
-		});
+		// B4: the business's Deals are read alongside, in the same request.
+		const client = getOwnerSupabaseClient();
+		const [{ data, error }, deals] = await Promise.all([
+			client.rpc('owner_lead_page', { target_id: event.params.id }),
+			client.rpc('owner_business_deals', { target_relationship_id: event.params.id })
+		]);
 		if (error) throw error;
+		if (deals.error) throw deals.error;
 		if (!data) return notFound(LEAD_NOT_FOUND);
 
-		const page = data as unknown as Omit<LeadPage, 'history'> & { history: RawHistoryPage };
+		const page = data as unknown as Omit<LeadPage, 'history' | 'deals'> & {
+			history: RawHistoryPage;
+		};
 		// Linked Applications carry their contact's details: only for someone who can open Applications.
 		const applications = canUseJafarPath(session, '/api/jafar/prospects') ? page.applications : [];
 		return json(
-			{ ...page, applications, history: presentHistory(page.history) } satisfies LeadPage,
+			{
+				...page,
+				applications,
+				deals: deals.data as unknown as BusinessDeal[],
+				history: presentHistory(page.history)
+			} satisfies LeadPage,
 			{
 				headers: PRIVATE_READ_HEADERS
 			}
