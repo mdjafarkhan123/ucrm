@@ -21,5 +21,6 @@ Read this registry only to select a campaign. After selection, open its NOW.md; 
 | contractor-website-cms | Planning 2026-10-02 — Jafar is deciding if self-editing is a first-customer promise | Contractor website control through the CRM, managed publishing, and service-end handover | Memory/campaigns/contractor-website-cms/NOW.md | Contractor website CMS, Astro site publishing, website source buyout, or website offboarding |
 
 | boulevard-product-planning | Paused 2026-10-06 — P2B clinical records agreed and in the plan; next: P2C commerce research | Boulevard-inspired industry editions, Medspa & Clinical Wellness first | Memory/campaigns/boulevard-product-planning/NOW.md | Boulevard research, new industry editions, medspa, salon, or expansion product planning |
+| review-generation-package | Planning 2026-10-07 — opened; next: Part 1, unlocking the basics | A reviews-only package like Review Harvest; basics can be unticked, and needed features are added automatically | Memory/campaigns/review-generation-package/NOW.md | Review Generation package, Review Harvest, reviews-only package, or unticking package basics |
 
 Deferred work is indexed separately at Memory/deferred/INDEX.md; read it only when explicitly required.
