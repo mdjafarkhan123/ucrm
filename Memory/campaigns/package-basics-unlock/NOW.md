@@ -7,7 +7,8 @@ Review Generation package itself is later work (`Memory/deferred/review-generati
 
 **In progress:** none
 
-**Next part:** 2 Split into build parts — proposed list waits for Jafar (see `parts/2-split.md`).
+**Next part:** 3 The package decides what shows. Where a missing feature still shows today:
+`docs/research/package-basics-unlock-2026-10-07.md`.
 
 **Blockers:** none. Build parts that change the package builder wait for the package-builder campaign's P16
 tour.
@@ -16,4 +17,4 @@ The basics are forced in three places: the builder screen (`normalize` in
 `src/routes/jafar/(protected)/packages/[packageId]/+page.svelte`), the draft save
 (`supabase/migrations/20260930200000_package_drafts.sql`), and package exceptions
 (`supabase/migrations/20261001090000_package_changes_and_exceptions.sql`). `src/lib/server/access/effective.ts`
-already ties each permission to its feature, basics included.
+ties permissions to features, but `settings.*`, `time.*`, `expenses.*`, `field_records.*`, `files.*` belong to none.
