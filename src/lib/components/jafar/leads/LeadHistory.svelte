@@ -34,6 +34,8 @@
 	import thumbDownIcon from '@tabler/icons/outline/thumb-down.svg?raw';
 	import refreshIcon from '@tabler/icons/outline/refresh.svg?raw';
 	import discountIcon from '@tabler/icons/outline/discount.svg?raw';
+	import trophyIcon from '@tabler/icons/outline/trophy.svg?raw';
+	import userCheckIcon from '@tabler/icons/outline/user-check.svg?raw';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
@@ -179,6 +181,10 @@
 				return discountIcon;
 			case 'deal_removed':
 				return briefcaseOffIcon;
+			case 'deal_won':
+				return trophyIcon;
+			case 'setup_owner_changed':
+				return userCheckIcon;
 			default:
 				return historyIcon;
 		}
@@ -249,6 +255,10 @@
 				return details.terms ? 'Special terms agreed' : 'Special terms removed';
 			case 'deal_removed':
 				return 'Deal removed';
+			case 'deal_won':
+				return 'Deal Won — payment confirmed';
+			case 'setup_owner_changed':
+				return `Setup now looked after by ${details.to || 'Jafar'}`;
 			default:
 				return 'Update';
 		}
@@ -462,6 +472,26 @@
 									<p class="lead-history__detail">
 										It was at {DEAL_STAGE_LABELS[entry.details.stage]}
 									</p>
+								{/if}
+
+								{#if entry.kind === 'deal_won'}
+									<p class="lead-history__detail">
+										{[
+											entry.details?.package_name,
+											entry.details?.amount_usd_cents !== undefined
+												? `${formatUsd(entry.details.amount_usd_cents)} received`
+												: null,
+											entry.details?.from
+												? `was at ${DEAL_STAGE_LABELS[entry.details.from as DealStage]}`
+												: null
+										]
+											.filter(Boolean)
+											.join(' · ')}
+									</p>
+								{/if}
+
+								{#if entry.kind === 'setup_owner_changed'}
+									<p class="lead-history__detail">Was {entry.details?.from || 'Jafar'}</p>
 								{/if}
 
 								{#if entry.kind === 'lead_added' && entry.details?.source}

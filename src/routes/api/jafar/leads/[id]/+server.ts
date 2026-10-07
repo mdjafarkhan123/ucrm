@@ -14,12 +14,50 @@ import { presentHistory, type RawHistoryPage } from '$lib/server/jafar/lead-hist
 import { leadChangeSchema } from '$lib/server/validation/lead.schema';
 import type { LeadPage } from '$lib/jafar/lead-history';
 import { canUseJafarPath } from '$lib/jafar/team-access';
-import type { BusinessDeal } from '$lib/jafar/deals';
+import type { BusinessClient, BusinessDeal } from '$lib/jafar/deals';
+import type { Json } from '$lib/database.types';
+import { readSetupCatalogue } from '$lib/server/setup/catalogue';
+import { presentOnboardingRows, type RawOnboardingClient } from '$lib/server/setup/onboarding-list';
+import { onboardingCatalogue } from '$lib/setup/onboarding-list';
 
 // Jafar business management B2: one Lead's page in one request, and changing its status or next action. Each
 // change is written to the Lead's history in the same database transaction.
 
 const LEAD_NOT_FOUND = 'This Lead no longer exists.';
+
+/**
+ * B5: the Client box with its onboarding row, read only once the account exists and only for someone who can
+ * open Onboarding. Payments and the package are Application details, shown only to someone who can open those.
+ */
+async function presentClient(
+	client: ReturnType<typeof getOwnerSupabaseClient>,
+	won: Omit<BusinessClient, 'onboarding'> | null,
+	sees: { applications: boolean; onboarding: boolean }
+): Promise<BusinessClient | null> {
+	if (!won) return null;
+	const organizationId = won.account?.organization_id ?? null;
+	let onboarding: BusinessClient['onboarding'] = null;
+	if (organizationId && sees.onboarding) {
+		const catalogue = await readSetupCatalogue(client);
+		if (catalogue) {
+			const { data, error } = await client.rpc('owner_client_onboarding_list', {
+				setup_catalogue: onboardingCatalogue(catalogue) as Json,
+				include_delivered: true,
+				only_organization_id: organizationId,
+				page_size: 1
+			});
+			if (error) throw error;
+			const rows = (data as { clients: RawOnboardingClient[] } | null)?.clients ?? [];
+			onboarding = (await presentOnboardingRows(client, catalogue, rows))?.[0] ?? null;
+		}
+	}
+	return {
+		...won,
+		application: sees.applications ? won.application : null,
+		payments: sees.applications ? won.payments : [],
+		onboarding
+	};
+}
 
 export const GET: RequestHandler = async (event) => {
 	const session = await getOwnerSession(event);
@@ -28,25 +66,37 @@ export const GET: RequestHandler = async (event) => {
 
 	try {
 		// B4: the business's Deals are read alongside, in the same request.
+		// B5: and its Client box, once a Deal is Won.
 		const client = getOwnerSupabaseClient();
-		const [{ data, error }, deals] = await Promise.all([
+		const [{ data, error }, deals, won] = await Promise.all([
 			client.rpc('owner_lead_page', { target_id: event.params.id }),
-			client.rpc('owner_business_deals', { target_relationship_id: event.params.id })
+			client.rpc('owner_business_deals', { target_relationship_id: event.params.id }),
+			client.rpc('owner_business_client', { target_relationship_id: event.params.id })
 		]);
 		if (error) throw error;
 		if (deals.error) throw deals.error;
+		if (won.error) throw won.error;
 		if (!data) return notFound(LEAD_NOT_FOUND);
 
-		const page = data as unknown as Omit<LeadPage, 'history' | 'deals'> & {
+		const page = data as unknown as Omit<LeadPage, 'history' | 'deals' | 'client'> & {
 			history: RawHistoryPage;
 		};
 		// Linked Applications carry their contact's details: only for someone who can open Applications.
-		const applications = canUseJafarPath(session, '/api/jafar/prospects') ? page.applications : [];
+		const seesApplications = canUseJafarPath(session, '/api/jafar/prospects');
+		const applications = seesApplications ? page.applications : [];
 		return json(
 			{
 				...page,
 				applications,
 				deals: deals.data as unknown as BusinessDeal[],
+				client: await presentClient(
+					client,
+					won.data as unknown as Omit<BusinessClient, 'onboarding'> | null,
+					{
+						applications: seesApplications,
+						onboarding: canUseJafarPath(session, '/api/jafar/onboarding')
+					}
+				),
 				history: presentHistory(page.history)
 			} satisfies LeadPage,
 			{

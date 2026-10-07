@@ -10,7 +10,7 @@ import {
 	type LeadSource,
 	type LeadStatus
 } from './leads';
-import type { BusinessDeal, DealStage } from './deals';
+import type { BusinessClient, BusinessDeal, DealStage } from './deals';
 import { CALL_OUTCOMES, CALL_OUTCOME_LABELS, type CallOutcome } from '$lib/pipeline/calls';
 
 // The contractor Brief's call outcomes, so a call reads the same wherever it is logged.
@@ -97,6 +97,8 @@ export type HistoryKind =
 	| 'deal_reopened'
 	| 'deal_terms_changed'
 	| 'deal_removed'
+	| 'deal_won'
+	| 'setup_owner_changed'
 	| 'lead_added'
 	| 'application_submitted';
 
@@ -112,8 +114,9 @@ export type HistoryEntry = {
 	call_outcome: CallOutcome | null;
 	application_id: string | null;
 	details: {
-		from?: LeadStatus | DealStage;
-		to?: LeadStatus | DealStage;
+		/** For setup_owner_changed (B5), teammates' names; null is Jafar. */
+		from?: LeadStatus | DealStage | string | null;
+		to?: LeadStatus | DealStage | string | null;
 		next_action?: string;
 		due_on?: string;
 		business_name?: string;
@@ -133,6 +136,9 @@ export type HistoryEntry = {
 			yearly_price_usd_cents?: number;
 		}>;
 		terms?: string | null;
+		/** B5: the payment and package that won the Deal (`from` holds the stage it was at). */
+		amount_usd_cents?: number;
+		package_name?: string;
 	} | null;
 	/** Who did it, as a name: "Jafar", a teammate, or their email. Null when nobody did (an Application arriving). */
 	actor: string | null;
@@ -210,6 +216,8 @@ export type LeadPage = {
 	last_heard_from_at: string | null;
 	/** B4: the business's Deals, newest first; at most one is open. */
 	deals: BusinessDeal[];
+	/** B5: the Client box, once a Deal is Won; null before. */
+	client: BusinessClient | null;
 	history: HistoryPage;
 };
 

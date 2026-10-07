@@ -190,6 +190,8 @@ const SENSITIVE_ACTION_PATHS: Record<SensitiveAction, readonly PathRule[]> = {
 const OWNER_ONLY_CHANGES: readonly PathRule[] = [
 	// B4: removing a Deal started by mistake.
 	{ pattern: '/api/jafar/deals/*/remove' },
+	// B5: who looks after a new client's setup.
+	{ pattern: '/api/jafar/leads/*/setup-owner' },
 	// Who Support replies appear from, for every contractor.
 	{ pattern: '/api/jafar/support/settings' },
 	{ pattern: '/api/jafar/organizations/*/billing', subtree: true },

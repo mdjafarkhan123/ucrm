@@ -6,11 +6,9 @@ import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { readSetupCatalogue } from '$lib/server/setup/catalogue';
 import { clientOnboardingListQuerySchema } from '$lib/server/validation/client-onboarding-list.schema';
-import { projectState } from '$lib/setup/project-state';
-import { todayIn } from '$lib/setup/ready';
+import { presentOnboardingRows, type RawOnboardingClient } from '$lib/server/setup/onboarding-list';
 import {
 	onboardingCatalogue,
-	type OnboardingClient,
 	type OnboardingListPage,
 	type OnboardingTotals
 } from '$lib/setup/onboarding-list';
@@ -73,70 +71,15 @@ export const GET: RequestHandler = async (event) => {
 	}
 
 	const result = data as {
-		clients: Omit<OnboardingClient, 'next_section_title' | 'project_state'>[];
+		clients: RawOnboardingClient[];
 		next_cursor: ListCursor | null;
 		totals: OnboardingTotals;
 	};
-	// E1: Ready turns into Building on the client's first business day after it, so the list needs each Ready
-	// client's start date and time zone — one primary-key read for at most a page of clients.
-	const readyIds = result.clients.filter((row) => row.ready_at).map((row) => row.id);
-	const readyRows = new Map<
-		string,
-		{ submission_number: number; start_date: string; time_zone: string }
-	>();
-	if (readyIds.length > 0) {
-		const ready = await client
-			.from('organization_setup_ready')
-			.select('organization_id, submission_number, start_date, time_zone')
-			.in('organization_id', readyIds);
-		if (ready.error) {
-			console.error('Could not read Ready for Uplift dates.', ready.error);
-			return json({ error: 'The client list could not be loaded.' }, { status: 500 });
-		}
-		for (const row of ready.data) readyRows.set(row.organization_id, row);
-	}
+	const clients = await presentOnboardingRows(client, catalogue, result.clients);
+	if (!clients) return json({ error: 'The client list could not be loaded.' }, { status: 500 });
 
 	const page: OnboardingListPage = {
-		clients: result.clients.map((row) => {
-			const ready = readyRows.get(row.id);
-			return {
-				...row,
-				next_section_title:
-					catalogue.sections.find((section) => section.key === row.next_section_key)?.title ?? null,
-				project_state: projectState({
-					paid_at: row.account_created_at,
-					first_sent_at: null,
-					sent:
-						row.sent_number && row.sent_at
-							? { number: row.sent_number, submitted_at: row.sent_at }
-							: null,
-					returned_count: row.returned_count,
-					ready:
-						ready && row.target_from && row.target_to
-							? {
-									submission_number: ready.submission_number,
-									start_date: ready.start_date,
-									target_from: row.target_from,
-									target_to: row.target_to
-								}
-							: null,
-					preview:
-						row.preview_version && row.preview_released_at
-							? {
-									version: row.preview_version,
-									released_at: row.preview_released_at,
-									notes_sent_at: row.preview_sent_at
-								}
-							: null,
-					approval:
-						row.approval_status === 'approved' && row.approval_version && row.approved_at
-							? { version: row.approval_version, approved_at: row.approved_at }
-							: null,
-					handover: { live_at: row.live_at, delivered_at: row.delivered_at },
-					today: todayIn(ready?.time_zone ?? 'UTC')
-				})
-			};
-		}),
+		clients,
 		next_cursor: result.next_cursor ? encodeCursor(result.next_cursor) : null,
 		totals: result.totals
 	};

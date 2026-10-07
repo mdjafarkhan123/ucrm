@@ -1,10 +1,11 @@
 import type { QueryClient } from '@tanstack/svelte-query';
+import type { OnboardingClient } from '$lib/setup/onboarding-list';
 import { formatUsd } from './packages';
 import { jafarDealsKey, jafarLeadKey, jafarLeadsKey } from './query-keys';
 
 // Jafar business management B4: Uplift's sales Deals -- the words the board, the Deal box on a business's page,
 // and the API share. A Deal is one buying conversation with a business; its next step is the business's one next
-// action. Won arrives with B5, once payment confirmation is linked.
+// action. B5: a Deal becomes Won by itself when payment is confirmed on the Application linked to it.
 
 export const OPEN_DEAL_STAGES = [
 	'interested',
@@ -15,7 +16,9 @@ export const OPEN_DEAL_STAGES = [
 	'later'
 ] as const;
 export type OpenDealStage = (typeof OPEN_DEAL_STAGES)[number];
-export type DealStage = OpenDealStage | 'lost';
+/** Lost and Won are closed: off the board, behind their own buttons. Nobody moves a Deal to Won by hand. */
+export type ClosedDealStage = 'lost' | 'won';
+export type DealStage = OpenDealStage | ClosedDealStage;
 
 export const DEAL_STAGE_LABELS: Record<DealStage, string> = {
 	interested: 'Interested',
@@ -24,7 +27,8 @@ export const DEAL_STAGE_LABELS: Record<DealStage, string> = {
 	pricing_shared: 'Pricing shared',
 	awaiting_decision: 'Awaiting decision',
 	later: 'Later',
-	lost: 'Lost'
+	lost: 'Lost',
+	won: 'Won'
 };
 
 /** What each column holds, under its title on an empty board. */
@@ -134,6 +138,10 @@ export type DealCard = {
 	next_action_due_on: string | null;
 	lost_reason: LostReason | null;
 	lost_at: string | null;
+	/** B5: when payment won it, whether that payment was later reversed, and the package paid for. */
+	won_at: string | null;
+	payment_reversed: boolean;
+	won_package_name: string | null;
 };
 
 export type DealColumnPage = { deals: DealCard[]; next_cursor: string | null };
@@ -141,6 +149,7 @@ export type DealColumnPage = { deals: DealCard[]; next_cursor: string | null };
 export type DealBoardSummary = {
 	columns: Partial<Record<OpenDealStage, { count: number; value_monthly_usd_cents: number }>>;
 	lost: number;
+	won: number;
 };
 
 /** One package as it was shared -- the copy the business saw, kept whatever happens to prices later. */
@@ -167,9 +176,53 @@ export type BusinessDeal = {
 	lost_note: string | null;
 	lost_from_stage: OpenDealStage | null;
 	lost_at: string | null;
+	/** B5: who confirmed the payment that won it, and on which Application. */
+	won_at: string | null;
+	won_by_email: string | null;
+	won_application_id: string | null;
 	created_at: string;
 	/** Newest share first; one share's packages keep the order they were chosen in. */
 	shares: DealPriceShare[];
+};
+
+/** B5: a teammate who can look after a new client's setup. */
+export type SetupOwnerChoice = { id: string; name: string; avatar_url: string | null };
+
+/**
+ * B5: the Client box on a business's page, from its newest Won Deal: the paid Application and its payments, the
+ * account made from it, who looks after setup (null is Jafar), and where onboarding stands. Each part the
+ * viewer's access does not open comes back null or empty.
+ */
+export type BusinessClient = {
+	deal_id: string;
+	won_at: string;
+	won_by_email: string;
+	application: {
+		id: string;
+		stage: string;
+		package_name: string | null;
+		billing_interval: 'month' | 'year' | null;
+		monthly_price_usd_cents: number | null;
+		yearly_price_usd_cents: number | null;
+		payment_reversed_at: string | null;
+	} | null;
+	payments: {
+		id: string;
+		amount_usd_cents: number;
+		received_on: string;
+		/** Free text as Jafar typed it ("Wise"); may be empty. */
+		method: string | null;
+		reversed_at: string | null;
+	}[];
+	account: {
+		status: string;
+		organization_id: string | null;
+		organization_name: string | null;
+		lifecycle_status: string | null;
+	} | null;
+	setup_owner: SetupOwnerChoice | null;
+	/** The business's row on the onboarding list, once its account exists. */
+	onboarding: OnboardingClient | null;
 };
 
 /** Today's local date compared with a due date: overdue only once the day has passed. */

@@ -14,7 +14,7 @@ const nextStepText = z.string().trim().min(1, 'Say what the next step is.').max(
 const nextStep = z.object({ text: nextStepText, due_on: calendarDate });
 
 export const dealBoardQuerySchema = z.object({
-	stage: z.enum([...OPEN_DEAL_STAGES, 'lost']),
+	stage: z.enum([...OPEN_DEAL_STAGES, 'lost', 'won']),
 	/** Opaque cursor from the previous page's `next_cursor`. */
 	cursor: z.string().max(300).optional()
 });
@@ -62,3 +62,6 @@ export const dealTermsSchema = z.object({
 		.nullable()
 		.transform((value) => value || null)
 });
+
+/** B5: who looks after the new client's setup; null is Jafar. */
+export const setupOwnerSchema = z.object({ member_id: z.uuid().nullable() });
