@@ -64,5 +64,5 @@ export async function guardJafarRequest(event: RequestEvent): Promise<Response |
 	if (isApi) {
 		return json({ error: 'Your access does not include this action.' }, { status: 403 });
 	}
-	redirect(303, teammateHomePath(session.role!));
+	redirect(303, teammateHomePath({ role: session.role!, access: session.access }));
 }

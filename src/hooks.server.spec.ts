@@ -17,6 +17,7 @@ const SUPPORT_SESSION_ID = '55555555-5555-4555-8555-555555555555';
 const REMOVED_TEAMMATE_SESSION_ID = '66666666-6666-4666-8666-666666666666';
 const SALES_MEMBER_ID = '77777777-7777-4777-8777-777777777777';
 const SALES_EMAIL = 'sam@uplift.example';
+const ADJUSTED_SALES_SESSION_ID = '88888888-8888-4888-8888-888888888888';
 
 vi.mock('@supabase/ssr', () => ({
 	createServerClient: () => ({ auth: { getClaims: async () => ({ data: null }) } })
@@ -42,16 +43,31 @@ type RegistryRow = {
 		role: string;
 		status: string;
 		full_name: string | null;
+		area_adjustments: unknown;
+		action_grants: string[];
 	} | null;
 };
 const inAnHour = new Date(Date.now() + 3_600_000).toISOString();
 const ownerRow = { team_member_id: null, platform_team_members: null };
-const teammateRow = (email: string, role: string, status: string, memberId = SALES_MEMBER_ID) => ({
+const teammateRow = (
+	email: string,
+	role: string,
+	status: string,
+	memberId = SALES_MEMBER_ID,
+	adjustments: { area_adjustments?: unknown; action_grants?: string[] } = {}
+) => ({
 	owner_email: email,
 	expires_at: inAnHour,
 	revoked_at: null,
 	team_member_id: memberId,
-	platform_team_members: { email, role, status, full_name: 'Sam Seller' }
+	platform_team_members: {
+		email,
+		role,
+		status,
+		full_name: 'Sam Seller',
+		area_adjustments: adjustments.area_adjustments ?? {},
+		action_grants: adjustments.action_grants ?? []
+	}
 });
 
 const registry: Record<string, RegistryRow> = {
@@ -69,6 +85,14 @@ const registry: Record<string, RegistryRow> = {
 	},
 	[SALES_SESSION_ID]: teammateRow(SALES_EMAIL, 'sales', 'active'),
 	[SUPPORT_SESSION_ID]: teammateRow('sue@uplift.example', 'support', 'active'),
+	// Jafar let this Sales teammate confirm payments and closed Leads for them.
+	[ADJUSTED_SALES_SESSION_ID]: teammateRow(
+		'pat@uplift.example',
+		'sales',
+		'active',
+		'99999999-9999-4999-8999-999999999999',
+		{ area_adjustments: { leads: 'none' }, action_grants: ['payments'] }
+	),
 	// Removed a moment ago: the session row is not revoked yet, but the teammate is no longer active.
 	[REMOVED_TEAMMATE_SESSION_ID]: teammateRow('rem@uplift.example', 'sales', 'removed')
 };
@@ -216,6 +240,7 @@ describe('the Jafar Panel front door', () => {
 				email: OWNER_EMAIL,
 				sessionId: LIVE_SESSION_ID,
 				role: null,
+				access: null,
 				memberId: null,
 				name: null
 			});
@@ -258,6 +283,7 @@ describe('the Jafar Panel front door', () => {
 				email: SALES_EMAIL,
 				sessionId: SALES_SESSION_ID,
 				role: 'sales',
+				access: { areas: { leads: 'work', applications: 'look' }, actions: [] },
 				memberId: SALES_MEMBER_ID,
 				name: 'Sam Seller'
 			});
@@ -301,6 +327,42 @@ describe('the Jafar Panel front door', () => {
 			for (const pathname of ['/jafar', '/jafar/settings', '/jafar/settings/team']) {
 				expect((await visit(pathname, cookie)).redirect?.location, pathname).toBe('/jafar/leads');
 			}
+		});
+	});
+
+	describe('a Sales teammate with individual access', () => {
+		const cookie = signedCookie(ADJUSTED_SALES_SESSION_ID);
+
+		it('confirms a payment Jafar allowed, but still cannot set up the account', async () => {
+			const confirm = await visit(`/api/jafar/prospects/${SAMPLE_ID}/confirm-payment`, cookie, 'POST');
+			expect(confirm.routeRan).toBe(true);
+			const provision = await visit(`/api/jafar/prospects/${SAMPLE_ID}/provision`, cookie, 'POST');
+			expect(provision.routeRan).toBe(false);
+			expect(provision.response?.status).toBe(403);
+		});
+
+		it('loses the payment action on the next request once Jafar turns it off', async () => {
+			const row = registry[ADJUSTED_SALES_SESSION_ID].platform_team_members!;
+			const granted = row.action_grants;
+			row.action_grants = [];
+			try {
+				const result = await visit(
+					`/api/jafar/prospects/${SAMPLE_ID}/confirm-payment`,
+					cookie,
+					'POST'
+				);
+				expect(result.routeRan).toBe(false);
+				expect(result.response?.status).toBe(403);
+			} finally {
+				row.action_grants = granted;
+			}
+		});
+
+		it('no longer reaches the Leads Jafar closed, and lands on Applications', async () => {
+			const api = await visit('/api/jafar/leads', cookie);
+			expect(api.routeRan).toBe(false);
+			expect(api.response?.status).toBe(403);
+			expect((await visit('/jafar/leads', cookie)).redirect?.location).toBe('/jafar/prospects');
 		});
 	});
 

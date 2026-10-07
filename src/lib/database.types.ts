@@ -14368,6 +14368,9 @@ export type Database = {
 			platform_team_members: {
 				Row: {
 					accepted_at: string | null;
+					access_revision: number;
+					action_grants: string[];
+					area_adjustments: Json;
 					created_at: string;
 					email: string;
 					full_name: string | null;
@@ -14388,6 +14391,9 @@ export type Database = {
 				};
 				Insert: {
 					accepted_at?: string | null;
+					access_revision?: number;
+					action_grants?: string[];
+					area_adjustments?: Json;
 					created_at?: string;
 					email: string;
 					full_name?: string | null;
@@ -14408,6 +14414,9 @@ export type Database = {
 				};
 				Update: {
 					accepted_at?: string | null;
+					access_revision?: number;
+					action_grants?: string[];
+					area_adjustments?: Json;
 					created_at?: string;
 					email?: string;
 					full_name?: string | null;
@@ -24604,6 +24613,19 @@ export type Database = {
 					status: string;
 					title: string;
 					updated_at: string;
+				}[];
+			};
+			platform_team_set_access: {
+				Args: {
+					p_action_grants: string[];
+					p_actor_email: string;
+					p_area_adjustments: Json;
+					p_expected_revision: number;
+					p_member_id: string;
+					p_role: string;
+				};
+				Returns: {
+					access_revision: number;
 				}[];
 			};
 			post_website_chat_message: {

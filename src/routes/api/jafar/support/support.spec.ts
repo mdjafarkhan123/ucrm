@@ -123,6 +123,7 @@ beforeEach(() => {
 		email: 'owner@example.com',
 		sessionId: 'session-id',
 		role: null,
+		access: null,
 		memberId: null,
 		name: null
 	});

@@ -3,7 +3,13 @@ import { redirect, type RequestEvent } from '@sveltejs/kit';
 import { compareSync } from 'bcryptjs';
 import { getServerEnv } from '$lib/server/env';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
-import { TEAM_ROLES, type TeamRole } from '$lib/jafar/team-access';
+import {
+	TEAM_ROLES,
+	effectiveTeamAccess,
+	storedTeamAccessAdjustments,
+	type TeamAccess,
+	type TeamRole
+} from '$lib/jafar/team-access';
 
 const OWNER_SESSION_COOKIE = 'jafar_session';
 const OWNER_SESSION_TTL_SECONDS = 60 * 60 * 8;
@@ -19,6 +25,8 @@ export type OwnerSession = {
 	email: string;
 	sessionId: string;
 	role: TeamRole | null;
+	/** A teammate's role with Jafar's adjustments (D2); null for the owner, who has everything. */
+	access: TeamAccess | null;
 	memberId: string | null;
 	name: string | null;
 };
@@ -165,7 +173,7 @@ async function resolveOwnerSession(event: RequestEvent): Promise<OwnerSession | 
 		const { data, error } = await client
 			.from('platform_owner_sessions')
 			.select(
-				'owner_email, expires_at, revoked_at, team_member_id, platform_team_members(email, role, status, full_name)'
+				'owner_email, expires_at, revoked_at, team_member_id, platform_team_members(email, role, status, full_name, area_adjustments, action_grants)'
 			)
 			.eq('id', sessionId)
 			.maybeSingle();
@@ -175,7 +183,14 @@ async function resolveOwnerSession(event: RequestEvent): Promise<OwnerSession | 
 
 		if (!data.team_member_id) {
 			if (data.owner_email !== configuredEmail) return null;
-			return { email: data.owner_email, sessionId, role: null, memberId: null, name: null };
+			return {
+				email: data.owner_email,
+				sessionId,
+				role: null,
+				access: null,
+				memberId: null,
+				name: null
+			};
 		}
 
 		// A teammate passes only while still active under the same email, so removal ends access on the
@@ -190,6 +205,10 @@ async function resolveOwnerSession(event: RequestEvent): Promise<OwnerSession | 
 			email: member.email,
 			sessionId,
 			role: member.role as TeamRole,
+			access: effectiveTeamAccess(
+				member.role as TeamRole,
+				storedTeamAccessAdjustments(member.area_adjustments, member.action_grants)
+			),
 			memberId: data.team_member_id,
 			name: member.full_name
 		};
