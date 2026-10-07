@@ -524,8 +524,10 @@ The P3 release boundary checks complete journeys across these boundaries: outsid
 ## Still unclear
 
 - Remaining source and provider evidence, clinic-specific eligibility, and measurable quality targets; settle these in planning parts and launch checks, not by assumption.
-- Performance: representative workloads and per-route/browser budgets for the agreed initial release. P3A
-  must settle these before build parts are approved; implemented slices must then supply the stated evidence.
+- Performance: the [P3A design and test envelope](research/boulevard-p3a-performance-design-2026-10-08.md)
+  proposes representative workloads and route budgets for P4 review. The selected clinic's real workload and
+  approved deployment still need checking before any go-live speed or capacity claim; implemented slices must
+  supply the stated evidence.
 - Client code sign-in and saved-card consent still need build design and provider-key verification. The existing staff sign-in and Stripe checkout do not establish readiness for those new flows.
 - State-specific minor access and clinical-policy review must be completed for the states served before launch. Prescribing remains later and requires a qualified provider decision.
 - The accounting method for valuing unused prepaid product units remains unverified. Stripe payout data is available with additional permissions, but does not prove bank arrival; no automatic bank match follows.
@@ -551,6 +553,7 @@ The P3 release boundary checks complete journeys across these boundaries: outsid
 - [P2G connected-journey evidence, approved safeguards and migration limits](research/boulevard-connected-journeys-2026-10-07.md); agreed behavior is in [Connected journeys](#connected-journeys), with release timing and feasibility in the P3 notes.
 - [P3 existing-app and provider feasibility checkpoint](research/boulevard-p3-feasibility-2026-10-07.md); records reuse limits and provider gates before the approved family-level release boundary.
 - [P3 release map and first-clinic readiness checks](research/boulevard-p3-release-proposal-2026-10-08.md); family-level release boundary agreed 2026-10-08.
+- [P3A first-release performance design](research/boulevard-p3a-performance-design-2026-10-08.md); proposed workload, route budgets and required verification, pending P4 review.
 - [Industry entry and onboarding patterns](research/industry-onboarding-entry-patterns-2026-10-07.md); agreed direction is in [Business entry and onboarding](#business-entry-and-onboarding).
 
 Primary public entry points:
