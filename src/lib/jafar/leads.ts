@@ -106,8 +106,16 @@ export type LeadFilters = {
 	countries: string[];
 	sources: LeadSource[];
 	sort: LeadSort;
-	/** B4: show the businesses that have a Deal instead of the ones still being worked as Leads. */
-	inDeal: boolean;
+	/** B4: the businesses still worked as Leads, those in a Deal, or (B5) those that paid and became clients. */
+	show: LeadListShow;
+};
+
+export const LEAD_LIST_SHOWS = ['leads', 'in_deal', 'clients'] as const;
+export type LeadListShow = (typeof LEAD_LIST_SHOWS)[number];
+const SHOW_PARAM: Record<LeadListShow, string | null> = {
+	leads: null,
+	in_deal: 'with',
+	clients: 'clients'
 };
 
 export const EMPTY_LEAD_FILTERS: LeadFilters = {
@@ -116,7 +124,7 @@ export const EMPTY_LEAD_FILTERS: LeadFilters = {
 	countries: [],
 	sources: [],
 	sort: 'newest',
-	inDeal: false
+	show: 'leads'
 };
 
 const COUNTRY_CODE = /^[A-Z]{2}$/;
@@ -147,7 +155,9 @@ export function readLeadFilters(params: URLSearchParams): LeadFilters {
 		countries: countries.slice(0, LEAD_COUNTRY_FILTER_MAX),
 		sources: readList(params.get('source'), LEAD_SOURCES),
 		sort: sort === 'next_action' ? 'next_action' : 'newest',
-		inDeal: params.get('deal') === 'with'
+		show:
+			LEAD_LIST_SHOWS.find((show) => SHOW_PARAM[show] && SHOW_PARAM[show] === params.get('deal')) ??
+			'leads'
 	};
 }
 
@@ -160,7 +170,8 @@ export function leadFilterParams(filters: LeadFilters): URLSearchParams {
 	if (filters.countries.length) params.set('country', filters.countries.join(','));
 	if (filters.sources.length) params.set('source', filters.sources.join(','));
 	if (filters.sort !== 'newest') params.set('sort', filters.sort);
-	if (filters.inDeal) params.set('deal', 'with');
+	const show = SHOW_PARAM[filters.show];
+	if (show) params.set('deal', show);
 	return params;
 }
 
@@ -196,8 +207,10 @@ export type LeadListItem = {
 
 export type LeadListTotals = {
 	all: number;
-	/** B4: businesses with a Deal, open or Lost; they leave the default list. */
+	/** B4: businesses with a Deal, open or Lost, that are not clients; they leave the default list. */
 	in_deal: number;
+	/** B5: businesses with a Won Deal. */
+	clients: number;
 	matching: number;
 	statuses: Partial<Record<LeadStatus, number>>;
 	countries: Array<{ code: string; count: number }>;

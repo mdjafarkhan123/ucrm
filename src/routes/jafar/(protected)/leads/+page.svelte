@@ -38,6 +38,7 @@
 	const emptyTotals: LeadListTotals = {
 		all: 0,
 		in_deal: 0,
+		clients: 0,
 		matching: 0,
 		statuses: {},
 		countries: [],
@@ -205,10 +206,15 @@
 						title="No matching Leads"
 						description="Try another search term or loosen a filter."
 					/>
-				{:else if filters.inDeal}
+				{:else if filters.show === 'in_deal'}
 					<EmptyState
 						title="No business is in a Deal yet"
 						description="Start a Deal from a Lead's page when they show real interest or book a call."
+					/>
+				{:else if filters.show === 'clients'}
+					<EmptyState
+						title="No clients yet"
+						description="A business becomes a client by itself once its Application's payment is confirmed."
 					/>
 				{:else}
 					<EmptyState

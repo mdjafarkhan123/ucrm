@@ -12,6 +12,8 @@
 	import { page } from '$app/state';
 	import { markRecordNotificationsRead, notificationsKey } from '$lib/jafar/notifications';
 	import {
+		jafarDealsKey,
+		jafarLeadsKey,
 		jafarOrganizationsKey,
 		jafarProspectKey,
 		jafarProspectsKey,
@@ -633,6 +635,13 @@
 		}
 	}));
 
+	// Jafar business B5: a confirmed payment makes the business's Deal Won and the business a client; a reversal,
+	// a package change, or a new account changes its Client box. The board and the business's page follow.
+	function refreshSales() {
+		void queryClient.invalidateQueries({ queryKey: jafarDealsKey });
+		void queryClient.invalidateQueries({ queryKey: jafarLeadsKey });
+	}
+
 	const confirmPayment = createMutation<ActionResponse, Error, void>(() => ({
 		mutationFn: async () => {
 			if (!selectedProspectId) throw new Error('Choose an Application first.');
@@ -658,6 +667,7 @@
 		onSuccess: () => {
 			confirmingPayment = false;
 			actionMessage = 'Payment confirmed.';
+			refreshSales();
 			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
 			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
 		}
@@ -686,6 +696,7 @@
 		onSuccess: () => {
 			changingPackage = false;
 			actionMessage = 'Package changed.';
+			refreshSales();
 			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
 			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
 		}
@@ -732,6 +743,7 @@
 			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
 			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
 			void queryClient.invalidateQueries({ queryKey: jafarOrganizationsKey });
+			refreshSales();
 		}
 	}));
 
@@ -753,6 +765,7 @@
 			confirmingReversal = false;
 			changingPackage = false;
 			actionMessage = 'Payment reversed. The application now needs attention.';
+			refreshSales();
 			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
 			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
 		}

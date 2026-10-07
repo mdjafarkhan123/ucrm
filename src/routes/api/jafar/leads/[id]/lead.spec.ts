@@ -131,6 +131,68 @@ describe('Lead page GET', () => {
 	});
 });
 
+describe('Client box (B5)', () => {
+	beforeEach(() => vi.clearAllMocks());
+
+	const WON = {
+		deal_id: ENTRY_ID,
+		won_at: '2026-10-07T10:00:00Z',
+		won_by_email: 'owner@example.com',
+		application: { id: APPLICATION_ID, package_name: 'Pro', payment_reversed_at: null },
+		payments: [{ id: 'p', amount_usd_cents: 12900, received_on: '2026-10-07', method: 'Wise' }],
+		account: null,
+		setup_owner: null
+	};
+
+	function pageWithClient() {
+		const rpc = vi.fn((name: string) =>
+			Promise.resolve({
+				data:
+					name === 'owner_lead_page'
+						? {
+								lead: { id: LEAD_ID },
+								applications: [],
+								history: { entries: [], next_cursor: null }
+							}
+						: name === 'owner_business_deals'
+							? []
+							: WON,
+				error: null
+			})
+		);
+		mockedClient.mockReturnValue({ rpc } as unknown as ReturnType<typeof getOwnerSupabaseClient>);
+		return rpc;
+	}
+
+	it('shows the client, its package and payments to Jafar', async () => {
+		signedIn();
+		const rpc = pageWithClient();
+		const page = await (await GET_PAGE(event({ id: LEAD_ID }))).json();
+		expect(rpc).toHaveBeenCalledWith('owner_business_client', { target_relationship_id: LEAD_ID });
+		expect(page.client.application.package_name).toBe('Pro');
+		expect(page.client.payments).toHaveLength(1);
+		// No account yet, so no onboarding stage to read.
+		expect(page.client.onboarding).toBeNull();
+		expect(rpc).not.toHaveBeenCalledWith('owner_client_onboarding_list', expect.anything());
+	});
+
+	it('hides payments from a teammate who cannot open Applications', async () => {
+		mockedOwnerSession.mockResolvedValue({
+			email: 'sam@example.com',
+			sessionId: 'session-id',
+			role: 'sales',
+			access: { areas: { leads: 'work' }, actions: [] },
+			memberId: 'member-id',
+			name: 'Sam Seller'
+		});
+		pageWithClient();
+		const page = await (await GET_PAGE(event({ id: LEAD_ID }))).json();
+		expect(page.client.won_at).toBe(WON.won_at);
+		expect(page.client.application).toBeNull();
+		expect(page.client.payments).toEqual([]);
+	});
+});
+
 describe('Changing a Lead', () => {
 	beforeEach(() => vi.clearAllMocks());
 

@@ -15,6 +15,7 @@
 		countryName,
 		hasLeadFilters,
 		type LeadFilters,
+		type LeadListShow,
 		type LeadListTotals,
 		type LeadSort,
 		type LeadSource,
@@ -84,10 +85,12 @@
 		}))
 	);
 	const sortOptions = LEAD_SORTS.map((value) => ({ value, label: LEAD_SORT_LABELS[value] }));
-	// B4: a business with a Deal moves to the Deals board and leaves this list; it is one choice away here.
+	// B4: a business with a Deal moves to the Deals board and leaves this list; it is one choice away here. B5: so
+	// does one that became a client.
 	const showOptions = $derived([
 		{ value: 'leads', label: 'Leads' },
-		{ value: 'in_deal', label: `In a Deal (${totals.in_deal.toLocaleString()})` }
+		{ value: 'in_deal', label: `In a Deal (${totals.in_deal.toLocaleString()})` },
+		{ value: 'clients', label: `Clients (${totals.clients.toLocaleString()})` }
 	]);
 
 	const filtering = $derived(hasLeadFilters(filters));
@@ -95,7 +98,7 @@
 	function clearAll() {
 		search = '';
 		sent = '';
-		onChange({ ...EMPTY_LEAD_FILTERS, sort: filters.sort, inDeal: filters.inDeal });
+		onChange({ ...EMPTY_LEAD_FILTERS, sort: filters.sort, show: filters.show });
 	}
 </script>
 
@@ -142,9 +145,9 @@
 		<FilterChip
 			id="lead-show"
 			label="Show"
-			value={filters.inDeal ? 'in_deal' : 'leads'}
+			value={filters.show}
 			options={showOptions}
-			onchange={(value) => onChange({ ...filters, inDeal: value === 'in_deal' })}
+			onchange={(value) => onChange({ ...filters, show: value as LeadListShow })}
 		/>
 
 		{#if filtering || search}

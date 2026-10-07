@@ -10,6 +10,7 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import { APPLICATION_STAGE_LABELS, type ApplicationCandidate } from '$lib/jafar/lead-history';
 	import {
+		jafarDealsKey,
 		jafarLeadApplicationCandidatesKey,
 		jafarProspectKey,
 		jafarProspectsKey
@@ -72,6 +73,8 @@
 		}
 		await Promise.all([
 			refreshLead(queryClient, leadId),
+			// B5: linking an Application that is already paid makes the business's Deal Won.
+			queryClient.invalidateQueries({ queryKey: jafarDealsKey }),
 			queryClient.invalidateQueries({ queryKey: jafarProspectsKey }),
 			queryClient.invalidateQueries({ queryKey: jafarProspectKey(candidate.id) })
 		]);

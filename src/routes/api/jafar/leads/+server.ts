@@ -65,7 +65,7 @@ export const GET: RequestHandler = async (event) => {
 			cursor_due_on: cursor?.due_on,
 			cursor_id: cursor?.id,
 			page_size: filters.limit ?? 50,
-			deal_filter: filters.deal === 'with' ? 'with' : 'without'
+			deal_filter: filters.deal ?? 'without'
 		});
 		if (error) throw error;
 

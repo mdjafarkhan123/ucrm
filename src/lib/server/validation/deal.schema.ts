@@ -34,7 +34,13 @@ export const dealMoveSchema = z.object({
 
 export const dealShareSchema = z.object({
 	package_slugs: z
-		.array(z.string().trim().toLowerCase().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/))
+		.array(
+			z
+				.string()
+				.trim()
+				.toLowerCase()
+				.regex(/^[a-z0-9]+(-[a-z0-9]+)*$/)
+		)
 		.min(1, 'Choose the package you shared.')
 		.max(SHARED_PACKAGES_MAX)
 		.refine((slugs) => new Set(slugs).size === slugs.length, 'Choose each package once.'),

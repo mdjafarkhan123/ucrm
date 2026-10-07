@@ -95,7 +95,10 @@ export function suggestedNextStep(
 		case 'needs_understood':
 			return { text: `Share pricing with ${businessName}`, due_on: plus(1) };
 		case 'pricing_shared':
-			return { text: `Follow up on pricing with ${businessName}`, due_on: plus(PRICING_FOLLOW_UP_DAYS) };
+			return {
+				text: `Follow up on pricing with ${businessName}`,
+				due_on: plus(PRICING_FOLLOW_UP_DAYS)
+			};
 		case 'awaiting_decision':
 			return { text: `Check ${businessName}'s decision`, due_on: plus(3) };
 		case 'later':

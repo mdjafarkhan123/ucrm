@@ -40,6 +40,7 @@
 	import LeadAboutEditor from '$lib/components/jafar/leads/LeadAboutEditor.svelte';
 	import LeadContactPermission from '$lib/components/jafar/leads/LeadContactPermission.svelte';
 	import DealPanel from '$lib/components/jafar/deals/DealPanel.svelte';
+	import ClientPanel from '$lib/components/jafar/deals/ClientPanel.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import {
 		CONTACT_METHOD_LABELS,
@@ -55,7 +56,12 @@
 		applicationHref,
 		type LinkedApplication
 	} from '$lib/jafar/lead-history';
-	import { jafarLeadKey, jafarProspectKey, jafarProspectsKey } from '$lib/jafar/query-keys';
+	import {
+		jafarDealsKey,
+		jafarLeadKey,
+		jafarProspectKey,
+		jafarProspectsKey
+	} from '$lib/jafar/query-keys';
 	import { canUseJafarPath } from '$lib/jafar/team-access';
 	import {
 		fetchLeadPage,
@@ -119,6 +125,27 @@
 		canUseJafarPath(
 			{ role: page.data.owner.role, access: page.data.owner.access },
 			`${DEAL_PATH}/remove`,
+			'POST'
+		)
+	);
+	// B5: the Client box links to Onboarding and Support only for someone who can open them; only Jafar chooses
+	// who looks after setup.
+	const canSeeOnboarding = $derived(
+		canUseJafarPath(
+			{ role: page.data.owner.role, access: page.data.owner.access },
+			'/jafar/onboarding'
+		)
+	);
+	const canSeeSupport = $derived(
+		canUseJafarPath(
+			{ role: page.data.owner.role, access: page.data.owner.access },
+			'/jafar/support'
+		)
+	);
+	const canChangeSetupOwner = $derived(
+		canUseJafarPath(
+			{ role: page.data.owner.role, access: page.data.owner.access },
+			`/api/jafar/leads/${leadId}/setup-owner`,
 			'POST'
 		)
 	);
@@ -305,6 +332,7 @@
 		if (result.ok)
 			await Promise.all([
 				refreshLead(queryClient, leadId),
+				queryClient.invalidateQueries({ queryKey: jafarDealsKey }),
 				queryClient.invalidateQueries({ queryKey: jafarProspectsKey }),
 				queryClient.invalidateQueries({ queryKey: jafarProspectKey(application.id) })
 			]);
@@ -378,7 +406,7 @@
 			{:else}
 				<div class="lead-page__hero-top">
 					<div class="lead-page__identity">
-						<p class="lead-page__eyebrow">Lead</p>
+						<p class="lead-page__eyebrow">{data.client ? 'Client' : 'Lead'}</p>
 						<div class="lead-page__title-row">
 							<h1>{details.business_name}</h1>
 							{#if canEditDetails}
@@ -461,6 +489,16 @@
 
 		<div class="lead-page__layout">
 			<aside class="lead-page__rail" aria-label="About this Lead">
+				{#if data.client}
+					<ClientPanel
+						relationshipId={leadId}
+						client={data.client}
+						{canSeeOnboarding}
+						{canSeeSupport}
+						{canChangeSetupOwner}
+					/>
+				{/if}
+
 				<LeadContactPermission {data} {canApprove} {canMarkDoNotContact} />
 
 				<DealPanel

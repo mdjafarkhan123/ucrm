@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import { createInfiniteQuery, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
+	import trophyIcon from '@tabler/icons/outline/trophy.svg?raw';
 	import layoutKanbanIcon from '@tabler/icons/outline/layout-kanban.svg?raw';
 	import Button from '$lib/components/ui/Button.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
@@ -30,19 +31,23 @@
 		monthlyValue,
 		prefetchDealPackages,
 		refreshDeals,
+		type ClosedDealStage,
 		type DealCard,
 		type DealColumnPage,
 		type OpenDealStage
 	} from '$lib/jafar/deals';
 
-	// Jafar business management B4: Uplift's buying conversations, one column per stage (plan § 4). Lost Deals
-	// stay out of the way behind their own view. A move that needs something -- a date, the packages shared, a
+	// Jafar business management B4: Uplift's buying conversations, one column per stage (plan § 4). Lost and (B5)
+	// Won Deals stay out of the way behind their own views. A move that needs something -- a date, the packages shared, a
 	// reason -- asks for it first; the rest save straight away.
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
 
-	const showLost = $derived(page.url.searchParams.get('view') === 'lost');
+	const view = $derived.by((): ClosedDealStage | null => {
+		const param = page.url.searchParams.get('view');
+		return param === 'lost' || param === 'won' ? param : null;
+	});
 	const today = isoDate(new Date());
 
 	const canChange = $derived(
@@ -69,32 +74,46 @@
 		)
 	);
 
-	const lostList = createInfiniteQuery(() => ({
-		queryKey: dealColumnKey('lost'),
-		queryFn: ({ pageParam }: { pageParam: string | null }) => fetchDealColumn('lost', pageParam),
-		initialPageParam: null as string | null,
-		getNextPageParam: (lastPage: DealColumnPage) => lastPage.next_cursor ?? undefined,
-		staleTime: 30_000,
-		enabled: showLost
-	}));
-	const lostDeals = $derived(lostList.data?.pages.flatMap((entry) => entry.deals) ?? []);
+	function closedListOptions(stage: ClosedDealStage) {
+		return {
+			queryKey: dealColumnKey(stage),
+			queryFn: ({ pageParam }: { pageParam: string | null }) => fetchDealColumn(stage, pageParam),
+			initialPageParam: null as string | null,
+			getNextPageParam: (lastPage: DealColumnPage) => lastPage.next_cursor ?? undefined,
+			staleTime: 30_000
+		};
+	}
 
-	function showView(lost: boolean) {
+	const closedList = createInfiniteQuery(() => ({
+		...closedListOptions(view ?? 'lost'),
+		enabled: view !== null
+	}));
+	const closedDeals = $derived(closedList.data?.pages.flatMap((entry) => entry.deals) ?? []);
+
+	const CLOSED_VIEW = {
+		lost: {
+			title: 'Lost Deals',
+			hint: 'Most recent first. Open one to see why it was lost or to reopen it.',
+			empty: 'Deals marked Lost will be listed here.'
+		},
+		won: {
+			title: 'Won Deals',
+			hint: 'Most recent first. A Deal is Won when its payment is confirmed. Open one to see the client.',
+			empty: 'A Deal moves here by itself once its Application’s payment is confirmed.'
+		}
+	} as const;
+
+	function showView(next: ClosedDealStage | null) {
 		// eslint-disable-next-line svelte/no-navigation-without-resolve -- the path comes from resolve(); only the query string is added.
-		void goto(`${resolve('/jafar/deals')}${lost ? '?view=lost' : ''}`, {
+		void goto(`${resolve('/jafar/deals')}${next ? `?view=${next}` : ''}`, {
 			keepFocus: true,
 			noScroll: true
 		});
 	}
 
-	// Warms the Lost view while its button is hovered, so opening it is instant.
-	function prefetchLost() {
-		void queryClient.prefetchInfiniteQuery({
-			queryKey: dealColumnKey('lost'),
-			queryFn: ({ pageParam }: { pageParam: string | null }) => fetchDealColumn('lost', pageParam),
-			initialPageParam: null as string | null,
-			staleTime: 30_000
-		});
+	// Warms a closed view while its button is hovered, so opening it is instant.
+	function prefetchClosed(stage: ClosedDealStage) {
+		void queryClient.prefetchInfiniteQuery(closedListOptions(stage));
 	}
 
 	function prefetchPackages() {
@@ -162,13 +181,28 @@
 			</p>
 		</div>
 		<div class="deals__header-actions">
-			{#if showLost}
-				<Button variant="secondary" onclick={() => showView(false)}>
+			{#if view}
+				<Button variant="secondary" onclick={() => showView(null)}>
 					<span class="deals__button-icon" aria-hidden="true">{@html layoutKanbanIcon}</span>Open
 					Deals
 				</Button>
-			{:else}
-				<Button variant="secondary" onclick={() => showView(true)} onhover={prefetchLost}>
+			{/if}
+			{#if view !== 'won'}
+				<Button
+					variant="secondary"
+					onclick={() => showView('won')}
+					onhover={() => prefetchClosed('won')}
+				>
+					<span class="deals__button-icon" aria-hidden="true">{@html trophyIcon}</span>Won
+					{#if summary.data}<span class="deals__count">{summary.data.won}</span>{/if}
+				</Button>
+			{/if}
+			{#if view !== 'lost'}
+				<Button
+					variant="secondary"
+					onclick={() => showView('lost')}
+					onhover={() => prefetchClosed('lost')}
+				>
 					<span class="deals__button-icon" aria-hidden="true">{@html archiveIcon}</span>Lost
 					{#if summary.data}<span class="deals__count">{summary.data.lost}</span>{/if}
 				</Button>
@@ -176,29 +210,30 @@
 		</div>
 	</header>
 
-	{#if showLost}
-		<section class="deals__lost" aria-labelledby="deals-lost-title">
+	{#if view}
+		{@const copy = CLOSED_VIEW[view]}
+		<section class="deals__lost" aria-labelledby="deals-closed-title">
 			<div class="deals__lost-head">
-				<h2 id="deals-lost-title">Lost Deals</h2>
-				<p>Most recent first. Open one to see why it was lost or to reopen it.</p>
+				<h2 id="deals-closed-title">{copy.title}</h2>
+				<p>{copy.hint}</p>
 			</div>
-			{#if lostList.isPending}
+			{#if closedList.isPending}
 				<div class="deals__lost-grid">
 					{#each { length: 6 }, index (index)}
-						<LoadingSkeleton variant="card" label="Loading Lost Deals" />
+						<LoadingSkeleton variant="card" label={`Loading ${copy.title}`} />
 					{/each}
 				</div>
-			{:else if lostList.isError}
+			{:else if closedList.isError}
 				<ErrorState
-					title="Lost Deals could not be loaded"
-					description={lostList.error.message}
-					retry={() => lostList.refetch()}
+					title={`${copy.title} could not be loaded`}
+					description={closedList.error.message}
+					retry={() => closedList.refetch()}
 				/>
-			{:else if lostDeals.length === 0}
-				<EmptyState title="No Lost Deals" description="Deals marked Lost will be listed here." />
+			{:else if closedDeals.length === 0}
+				<EmptyState title={`No ${copy.title}`} description={copy.empty} />
 			{:else}
 				<div class="deals__lost-grid">
-					{#each lostDeals as deal (deal.id)}
+					{#each closedDeals as deal (deal.id)}
 						<DealBoardCard
 							{deal}
 							canChange={false}
@@ -210,11 +245,11 @@
 						/>
 					{/each}
 				</div>
-				{#if lostList.hasNextPage}
+				{#if closedList.hasNextPage}
 					<ListLoadMore
-						hasNextPage={lostList.hasNextPage}
-						isFetchingNextPage={lostList.isFetchingNextPage}
-						onLoadMore={() => lostList.fetchNextPage()}
+						hasNextPage={closedList.hasNextPage}
+						isFetchingNextPage={closedList.isFetchingNextPage}
+						onLoadMore={() => closedList.fetchNextPage()}
 					/>
 				{/if}
 			{/if}

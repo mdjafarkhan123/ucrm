@@ -42,10 +42,18 @@
 		onPrefetchPackages: () => void;
 	} = $props();
 
-	const lost = $derived(deal.stage === 'lost');
+	const won = $derived(deal.stage === 'won');
+	// Lost and Won are closed: no menu, no next step, no time-in-stage.
+	const lost = $derived(deal.stage === 'lost' || won);
 	const overdue = $derived(!lost && isOverdue(deal.next_action_due_on, today));
 	const days = $derived(daysSince(deal.stage_entered_at));
 	const value = $derived(monthlyValue(deal.value_monthly_usd_cents));
+
+	const dateFormat = new Intl.DateTimeFormat(undefined, {
+		day: 'numeric',
+		month: 'short',
+		year: 'numeric'
+	});
 
 	function formatDay(day: string) {
 		const [year, month, date] = day.split('-').map(Number);
@@ -67,7 +75,7 @@
 		if (menuOpen && !lost) onPrefetchPackages();
 	});
 
-	// A Lost Deal has no menu: it is reopened from the business's page, where its history is.
+	// A closed Deal has no menu: a Lost one is reopened from the business's page, where its history is.
 	const menuItems = $derived([
 		...OPEN_DEAL_STAGES.filter((stage) => stage !== deal.stage && stage !== 'pricing_shared').map(
 			(stage) => ({
@@ -117,7 +125,13 @@
 		</p>
 	{/if}
 
-	{#if lost}
+	{#if won}
+		<p class="deal-card__lost">
+			Won{deal.won_at ? ` · ${dateFormat.format(new Date(deal.won_at))}` : ''}{deal.won_package_name
+				? ` · ${deal.won_package_name} paid`
+				: ''}
+		</p>
+	{:else if lost}
 		<p class="deal-card__lost">
 			Lost · {deal.lost_reason ? LOST_REASON_LABELS[deal.lost_reason] : 'No reason'}
 		</p>
@@ -136,6 +150,9 @@
 	{/if}
 
 	<div class="deal-card__foot">
+		{#if won && deal.payment_reversed}
+			<Badge size="small" status="critical" dot={false}>Payment reversed</Badge>
+		{/if}
 		{#if deal.has_agreed_terms}
 			<Badge size="small" status="informative" dot={false}>Special terms</Badge>
 		{/if}

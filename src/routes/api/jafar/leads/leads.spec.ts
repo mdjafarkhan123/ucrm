@@ -108,6 +108,16 @@ describe('Leads list GET', () => {
 		);
 	});
 
+	it('shows only businesses that became clients when asked (B5)', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+		const rpc = rpcReturning(listResult);
+		await GET(getEvent('http://localhost/api/jafar/leads?deal=clients'));
+		expect(rpc).toHaveBeenCalledWith(
+			'owner_lead_list',
+			expect.objectContaining({ deal_filter: 'clients' })
+		);
+	});
+
 	it('passes status and country filters through, countries upper-cased and each once', async () => {
 		mockedOwnerSession.mockResolvedValue(session());
 		const rpc = rpcReturning(listResult);

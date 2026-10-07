@@ -39,7 +39,8 @@
 
 	// Jafar business management B4: the Deal box on a business's page (plan § 4). It shows the open Deal -- its
 	// stage, the prices exactly as they were shared, and any special terms -- or, when there is none, the latest
-	// Lost one with a way to reopen it. The Deal's next step is the business's next action, shown in its own box.
+	// closed one: a Lost one with a way to reopen it, or (B5) a Won one, which nobody can move or remove. The
+	// Deal's next step is the business's next action, shown in its own box.
 	let {
 		relationshipId,
 		businessName,
@@ -66,9 +67,14 @@
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
 
-	const open = $derived(deals.find((deal) => deal.stage !== 'lost') ?? null);
-	const lastLost = $derived(open ? null : (deals.find((deal) => deal.stage === 'lost') ?? null));
-	const shown = $derived(open ?? lastLost);
+	const open = $derived(
+		deals.find((deal) => deal.stage !== 'lost' && deal.stage !== 'won') ?? null
+	);
+	// Deals arrive newest first, so the first closed one is the latest.
+	const lastClosed = $derived(open ? null : (deals[0] ?? null));
+	const lastLost = $derived(lastClosed?.stage === 'lost' ? lastClosed : null);
+	const lastWon = $derived(lastClosed?.stage === 'won' ? lastClosed : null);
+	const shown = $derived(open ?? lastClosed);
 	const shared = $derived(shown ? latestShare(shown) : []);
 
 	const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' });
@@ -264,6 +270,25 @@
 				</div>
 			{/if}
 		</dl>
+	{:else if lastWon}
+		<div class="deal-panel__stage">
+			<Badge status="success" dot={false}>Won</Badge>
+			{#if lastWon.won_at}
+				<span class="deal-panel__since">{dateFormat.format(new Date(lastWon.won_at))}</span>
+			{/if}
+		</div>
+		<dl class="deal-panel__facts">
+			<div>
+				<dt>How</dt>
+				<dd>Payment confirmed{lastWon.won_by_email ? ` by ${lastWon.won_by_email}` : ''}</dd>
+			</div>
+			{#if lastWon.value_monthly_usd_cents !== null}
+				<div>
+					<dt>Value</dt>
+					<dd>{monthlyValue(lastWon.value_monthly_usd_cents)}</dd>
+				</div>
+			{/if}
+		</dl>
 	{:else}
 		<p class="deal-panel__empty">
 			{doNotContact
@@ -358,11 +383,11 @@
 				</Button>
 			{/if}
 			<Button
-				variant={lastLost ? 'tertiary' : 'primary'}
+				variant={lastClosed ? 'tertiary' : 'primary'}
 				size="small"
 				onclick={() => (dialog = { kind: 'start' })}
 			>
-				<span class="deal-panel__button-icon" aria-hidden="true">{@html plusIcon}</span>{lastLost
+				<span class="deal-panel__button-icon" aria-hidden="true">{@html plusIcon}</span>{lastClosed
 					? 'Start a new Deal'
 					: 'Start a Deal'}
 			</Button>
@@ -373,8 +398,12 @@
 		<div class="deal-panel__footer">
 			{#if open}
 				<a href={resolve('/jafar/deals')}>See the board</a>
+			{:else if lastWon}
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- the path comes from resolve(); only the view is added. -->
+				<a href={`${resolve('/jafar/deals')}?view=won`}>See Won Deals</a>
 			{/if}
-			{#if canRemove}
+			<!-- A Won Deal is the record of a payment: it cannot be removed. -->
+			{#if canRemove && !lastWon}
 				<button
 					type="button"
 					class="deal-panel__remove"

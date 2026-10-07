@@ -68,11 +68,24 @@ describe('Deals board column', () => {
 		expect(response.status).toBe(401);
 	});
 
+	it('reads the Won list like the Lost one (B5)', async () => {
+		signedIn();
+		const rpc = rpcReturning({ deals: [], next_cursor: null });
+		const response = await GET_COLUMN(
+			event({}, { url: 'http://localhost/api/jafar/deals?stage=won' })
+		);
+		expect(response.status).toBe(200);
+		expect(rpc).toHaveBeenCalledWith(
+			'owner_deal_board',
+			expect.objectContaining({ target_stage: 'won' })
+		);
+	});
+
 	it('refuses an unknown stage and a forged cursor', async () => {
 		signedIn();
 		rpcReturning({ deals: [], next_cursor: null });
 		expect(
-			(await GET_COLUMN(event({}, { url: 'http://localhost/api/jafar/deals?stage=won' }))).status
+			(await GET_COLUMN(event({}, { url: 'http://localhost/api/jafar/deals?stage=sold' }))).status
 		).toBe(422);
 		expect(
 			(
