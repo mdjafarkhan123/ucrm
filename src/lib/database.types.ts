@@ -13399,6 +13399,104 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			platform_business_contact_methods: {
+				Row: {
+					created_at: string;
+					found_at: string;
+					id: string;
+					kind: string;
+					normalized_value: string | null;
+					position: number;
+					relationship_id: string;
+					value: string;
+				};
+				Insert: {
+					created_at?: string;
+					found_at: string;
+					id?: string;
+					kind: string;
+					normalized_value?: string | null;
+					position?: number;
+					relationship_id: string;
+					value: string;
+				};
+				Update: {
+					created_at?: string;
+					found_at?: string;
+					id?: string;
+					kind?: string;
+					normalized_value?: string | null;
+					position?: number;
+					relationship_id?: string;
+					value?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'platform_business_contact_methods_relationship_id_fkey';
+						columns: ['relationship_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_business_relationships';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			platform_business_relationships: {
+				Row: {
+					business_name: string;
+					contact_name: string | null;
+					country_code: string;
+					created_at: string;
+					created_by_email: string;
+					fit_notes: string | null;
+					id: string;
+					lead_status: string;
+					next_action: string | null;
+					next_action_due_on: string | null;
+					source: string;
+					source_detail: string | null;
+					trade: string;
+					updated_at: string;
+					website: string | null;
+					website_host: string | null;
+				};
+				Insert: {
+					business_name: string;
+					contact_name?: string | null;
+					country_code: string;
+					created_at?: string;
+					created_by_email: string;
+					fit_notes?: string | null;
+					id?: string;
+					lead_status?: string;
+					next_action?: string | null;
+					next_action_due_on?: string | null;
+					source: string;
+					source_detail?: string | null;
+					trade: string;
+					updated_at?: string;
+					website?: string | null;
+					website_host?: string | null;
+				};
+				Update: {
+					business_name?: string;
+					contact_name?: string | null;
+					country_code?: string;
+					created_at?: string;
+					created_by_email?: string;
+					fit_notes?: string | null;
+					id?: string;
+					lead_status?: string;
+					next_action?: string | null;
+					next_action_due_on?: string | null;
+					source?: string;
+					source_detail?: string | null;
+					trade?: string;
+					updated_at?: string;
+					website?: string | null;
+					website_host?: string | null;
+				};
+				Relationships: [];
+			};
 			platform_email_template_packages: {
 				Row: {
 					created_at: string;
@@ -23627,6 +23725,24 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_create_lead: {
+				Args: {
+					actor_email: string;
+					target_business_name: string;
+					target_contact_methods: Json;
+					target_contact_name?: string;
+					target_country_code: string;
+					target_fit_notes?: string;
+					target_lead_status: string;
+					target_next_action?: string;
+					target_next_action_due_on?: string;
+					target_source: string;
+					target_source_detail?: string;
+					target_trade: string;
+					target_website?: string;
+				};
+				Returns: string;
+			};
 			owner_discard_setup_draft: {
 				Args: { loaded_revision: number; target_version_id: string };
 				Returns: Json;
@@ -23638,6 +23754,31 @@ export type Database = {
 			owner_email_is_available: {
 				Args: { candidate_email: string };
 				Returns: boolean;
+			};
+			owner_lead_list: {
+				Args: {
+					country_filter?: string[];
+					cursor_created_at?: string;
+					cursor_due_on?: string;
+					cursor_id?: string;
+					page_size?: number;
+					search_term?: string;
+					sort_order?: string;
+					source_filter?: string[];
+					status_filter?: string[];
+				};
+				Returns: Json;
+			};
+			owner_lead_possible_duplicates: {
+				Args: {
+					business_name?: string;
+					country_code?: string;
+					emails?: string[];
+					exclude_id?: string;
+					phones?: string[];
+					website?: string;
+				};
+				Returns: Json;
 			};
 			owner_mark_setup_delivered: {
 				Args: { actor_email: string; target_organization_id: string };

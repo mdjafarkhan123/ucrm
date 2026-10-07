@@ -25,6 +25,7 @@
 	import filesIcon from '@tabler/icons/outline/files.svg?raw';
 	import rocketIcon from '@tabler/icons/outline/rocket.svg?raw';
 	import listCheckIcon from '@tabler/icons/outline/list-check.svg?raw';
+	import targetIcon from '@tabler/icons/outline/target.svg?raw';
 	import collapseIcon from '@tabler/icons/outline/layout-sidebar-left-collapse.svg?raw';
 	import expandIcon from '@tabler/icons/outline/layout-sidebar-left-expand.svg?raw';
 
@@ -81,7 +82,8 @@
 		chartBar: chartBarIcon,
 		files: filesIcon,
 		rocket: rocketIcon,
-		listCheck: listCheckIcon
+		listCheck: listCheckIcon,
+		target: targetIcon
 	};
 
 	const allItems = $derived(groups.flatMap((group) => group.items));

@@ -7,6 +7,7 @@
 	import {
 		jafarEmailHealthKey,
 		jafarEmailTemplatesKey,
+		jafarLeadsKey,
 		jafarMessageTemplatesKey,
 		jafarOnboardingKey,
 		jafarOperationsKey,
@@ -73,6 +74,9 @@
 	function hasCachedRouteData(pathname: string) {
 		if (pathname === '/jafar') {
 			return hasCachedData(jafarOrganizationsKey);
+		}
+		if (pathname === '/jafar/leads') {
+			return hasCachedData(jafarLeadsKey);
 		}
 		if (pathname.startsWith('/jafar/prospects')) {
 			return hasCachedData(jafarProspectsKey);
