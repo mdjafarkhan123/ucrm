@@ -49,7 +49,7 @@
 		type HistoryPage,
 		type LeadContactMethodDetail
 	} from '$lib/jafar/lead-history';
-	import { LEAD_SOURCE_LABELS, LEAD_STATUS_LABELS } from '$lib/jafar/leads';
+	import { LEAD_SOURCE_LABELS, LEAD_STATUS_LABELS, type LeadStatus } from '$lib/jafar/leads';
 	import { jafarLeadHistoryKey } from '$lib/jafar/query-keys';
 	import { fetchOlderHistory, refreshLead, sendLeadWrite } from '$lib/jafar/lead-page-api';
 
@@ -166,7 +166,7 @@
 					? contactHeadline(entry.contact_direction, entry.contact_channel)
 					: 'Contact logged';
 			case 'status_changed':
-				return `Status changed to ${details.to ? LEAD_STATUS_LABELS[details.to] : 'another status'}`;
+				return `Status changed to ${details.to ? LEAD_STATUS_LABELS[details.to as LeadStatus] : 'another status'}`;
 			case 'next_action_set':
 				return 'Next action set';
 			case 'next_action_done':

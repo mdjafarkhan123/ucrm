@@ -1,3 +1,5 @@
+import type { DealStage } from './deals';
+
 // Uplift's Leads (Jafar business management B1): the words the list, the add form, the query key and the API
 // route all share. Like the Organizations directory, the list's filters live in the URL, so a refresh, the Back
 // button and a shared link keep what is on screen; a hand-edited link falls back to "no filter" for whatever it
@@ -102,6 +104,8 @@ export type LeadFilters = {
 	countries: string[];
 	sources: LeadSource[];
 	sort: LeadSort;
+	/** B4: show the businesses that have a Deal instead of the ones still being worked as Leads. */
+	inDeal: boolean;
 };
 
 export const EMPTY_LEAD_FILTERS: LeadFilters = {
@@ -109,7 +113,8 @@ export const EMPTY_LEAD_FILTERS: LeadFilters = {
 	statuses: [],
 	countries: [],
 	sources: [],
-	sort: 'newest'
+	sort: 'newest',
+	inDeal: false
 };
 
 const COUNTRY_CODE = /^[A-Z]{2}$/;
@@ -139,7 +144,8 @@ export function readLeadFilters(params: URLSearchParams): LeadFilters {
 		statuses: readList(params.get('status'), LEAD_STATUSES),
 		countries: countries.slice(0, LEAD_COUNTRY_FILTER_MAX),
 		sources: readList(params.get('source'), LEAD_SOURCES),
-		sort: sort === 'next_action' ? 'next_action' : 'newest'
+		sort: sort === 'next_action' ? 'next_action' : 'newest',
+		inDeal: params.get('deal') === 'with'
 	};
 }
 
@@ -152,6 +158,7 @@ export function leadFilterParams(filters: LeadFilters): URLSearchParams {
 	if (filters.countries.length) params.set('country', filters.countries.join(','));
 	if (filters.sources.length) params.set('source', filters.sources.join(','));
 	if (filters.sort !== 'newest') params.set('sort', filters.sort);
+	if (filters.inDeal) params.set('deal', 'with');
 	return params;
 }
 
@@ -188,10 +195,14 @@ export type LeadListItem = {
 	next_action: string | null;
 	next_action_due_on: string | null;
 	created_at: string;
+	/** B4: the stage of the business's latest Deal, when it has one. */
+	deal_stage: DealStage | null;
 };
 
 export type LeadListTotals = {
 	all: number;
+	/** B4: businesses with a Deal, open or Lost; they leave the default list. */
+	in_deal: number;
 	matching: number;
 	statuses: Partial<Record<LeadStatus, number>>;
 	countries: Array<{ code: string; count: number }>;

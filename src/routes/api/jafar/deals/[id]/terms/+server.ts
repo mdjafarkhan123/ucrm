@@ -22,7 +22,7 @@ export const PATCH: RequestHandler = async (event) => {
 	const result = await getOwnerSupabaseClient().rpc('owner_deal_set_terms', {
 		actor_email: session.email,
 		target_deal_id: event.params.id,
-		terms: body.data.terms ?? undefined
+		terms: body.data.terms ?? ''
 	});
 	return dealCommandResponse(result, 'save the agreed terms');
 };

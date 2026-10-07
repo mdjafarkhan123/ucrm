@@ -41,6 +41,7 @@ export const GET: RequestHandler = async (event) => {
 		country: query.get('country') ?? undefined,
 		source: query.get('source') ?? undefined,
 		sort: query.get('sort') ?? undefined,
+		deal: query.get('deal') ?? undefined,
 		cursor: query.get('cursor') ?? undefined,
 		limit: query.get('limit') ?? undefined
 	});
@@ -63,7 +64,8 @@ export const GET: RequestHandler = async (event) => {
 			cursor_created_at: cursor?.created_at,
 			cursor_due_on: cursor?.due_on,
 			cursor_id: cursor?.id,
-			page_size: filters.limit ?? 50
+			page_size: filters.limit ?? 50,
+			deal_filter: filters.deal === 'with' ? 'with' : 'without'
 		});
 		if (error) throw error;
 
