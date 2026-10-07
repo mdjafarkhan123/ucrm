@@ -16,6 +16,8 @@ export const jafarLeadsListKey = (filters: string) => ['jafar', 'leads', 'list',
 export const jafarLeadReviewKey = ['jafar', 'leads', 'review'] as const;
 /** B4: the Deals board -- each column and the summary sit under it. */
 export const jafarDealsKey = ['jafar', 'deals'] as const;
+/** C1: the Business Management home -- the counts and the to-do list, one entry per local date. */
+export const jafarHomeKey = ['jafar', 'home'] as const;
 /** B2: one Lead's page -- details, linked Applications, and the newest history. Under `jafarLeadsKey`, so a change
  * that refreshes the list refreshes the page too. */
 export const jafarLeadKey = (leadId: string | undefined) =>

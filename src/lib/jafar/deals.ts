@@ -1,7 +1,7 @@
 import type { QueryClient } from '@tanstack/svelte-query';
 import type { OnboardingClient } from '$lib/setup/onboarding-list';
 import { formatUsd } from './packages';
-import { jafarDealsKey, jafarLeadKey, jafarLeadsKey } from './query-keys';
+import { jafarDealsKey, jafarHomeKey, jafarLeadKey, jafarLeadsKey } from './query-keys';
 
 // Jafar business management B4: Uplift's sales Deals -- the words the board, the Deal box on a business's page,
 // and the API share. A Deal is one buying conversation with a business; its next step is the business's one next
@@ -294,9 +294,11 @@ export async function fetchDealSummary() {
 	return result as DealBoardSummary;
 }
 
-/** After any Deal change: the board, the business's page, and the Leads list (a Deal moves a business off it). */
+/** After any Deal change: the board, the business's page, the Leads list (a Deal moves a business off it), and
+ * the home's to-do list. */
 export function refreshDeals(queryClient: QueryClient, relationshipId: string) {
 	return Promise.all([
+		queryClient.invalidateQueries({ queryKey: jafarHomeKey }),
 		queryClient.invalidateQueries({ queryKey: jafarDealsKey }),
 		queryClient.invalidateQueries({ queryKey: jafarLeadKey(relationshipId) }),
 		queryClient.invalidateQueries({ queryKey: [...jafarLeadsKey, 'list'] })

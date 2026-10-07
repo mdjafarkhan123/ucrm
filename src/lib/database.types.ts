@@ -24066,6 +24066,10 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_business_home: {
+				Args: { agenda_limit?: number; today_date: string };
+				Returns: Json;
+			};
 			owner_business_client: {
 				Args: { target_relationship_id: string };
 				Returns: Json;

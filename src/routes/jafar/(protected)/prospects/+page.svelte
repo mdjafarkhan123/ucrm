@@ -256,7 +256,11 @@
 	const reversibleStages: ProspectStage[] = ['payment_confirmed', 'needs_attention'];
 
 	let search = $state('');
-	let stageFilter = $state('');
+	// The home's "Accounts to create" count opens this list already filtered (?stage=payment_confirmed).
+	const linkedStage = page.url.searchParams.get('stage');
+	let stageFilter = $state(
+		stages.some((stage) => stage.value && stage.value === linkedStage) ? (linkedStage ?? '') : ''
+	);
 	let selectedProspectId = $state<string | null>(null);
 	let editingCorrection = $state(false);
 	let confirmingNotProceeding = $state(false);

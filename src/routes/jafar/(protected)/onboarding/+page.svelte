@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { createInfiniteQuery } from '@tanstack/svelte-query';
 	import clockIcon from '@tabler/icons/outline/clock-pause.svg?raw';
 	import headsetIcon from '@tabler/icons/outline/headset.svg?raw';
@@ -24,6 +25,7 @@
 		onboardingStage,
 		onboardingWaitingOnLabel,
 		type OnboardingClient,
+		ONBOARDING_FILTERS,
 		type OnboardingFilter,
 		type OnboardingListPage
 	} from '$lib/setup/onboarding-list';
@@ -34,7 +36,11 @@
 
 	let searchInput = $state('');
 	let debouncedSearch = $state('');
-	let waitingFilter = $state<'' | OnboardingFilter>('');
+	// The home's "Setups waiting" count opens this list already showing those clients (?waiting_on=uplift).
+	const linkedFilter = page.url.searchParams.get('waiting_on');
+	let waitingFilter = $state<'' | OnboardingFilter>(
+		ONBOARDING_FILTERS.find((filter) => filter === linkedFilter) ?? ''
+	);
 	// E6: delivered clients leave the list unless asked for, which keeps it to the clients still in progress.
 	let showDelivered = $state(false);
 

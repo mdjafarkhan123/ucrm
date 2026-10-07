@@ -1,6 +1,7 @@
 import type { QueryClient } from '@tanstack/svelte-query';
 import type { ApplicationCandidate, HistoryPage, LeadPage } from './lead-history';
 import {
+	jafarHomeKey,
 	jafarLeadApplicationCandidatesKey,
 	jafarLeadKey,
 	jafarLeadReviewKey,
@@ -58,9 +59,11 @@ export async function sendLeadWrite(
 	}
 }
 
-/** After any change on a Lead: its page (and older history under it), the Leads list, and the review queue. */
+/** After any change on a Lead: its page (and older history under it), the Leads list, the review queue, and the
+ * home's counts and to-do list. */
 export function refreshLead(queryClient: QueryClient, leadId: string) {
 	return Promise.all([
+		queryClient.invalidateQueries({ queryKey: jafarHomeKey }),
 		queryClient.invalidateQueries({ queryKey: jafarLeadKey(leadId) }),
 		queryClient.invalidateQueries({ queryKey: [...jafarLeadsKey, 'list'] }),
 		queryClient.invalidateQueries({ queryKey: jafarLeadReviewKey })

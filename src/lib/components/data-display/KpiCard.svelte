@@ -8,7 +8,8 @@
 		note,
 		icon,
 		tone = 'default',
-		variant = 'standard'
+		variant = 'standard',
+		href
 	}: {
 		label: string;
 		value: string;
@@ -16,18 +17,31 @@
 		icon: string;
 		tone?: KpiTone;
 		variant?: KpiVariant;
+		/** Makes the whole card a link to the list behind the number. Pass a resolved path. */
+		href?: string;
 	} = $props();
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<article class={`kpi-card kpi-card--${tone} kpi-card--${variant}`}>
+{#snippet body()}
 	<div class="kpi-card__topline">
 		<span>{label}</span>
 		<span class="kpi-card__icon" aria-hidden="true">{@html icon}</span>
 	</div>
 	<strong>{value}</strong>
 	<small>{note}</small>
-</article>
+{/snippet}
+
+{#if href}
+	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- the caller passes a resolved path. -->
+	<a class={`kpi-card kpi-card--${tone} kpi-card--${variant} kpi-card--link`} {href}>
+		{@render body()}
+	</a>
+{:else}
+	<article class={`kpi-card kpi-card--${tone} kpi-card--${variant}`}>
+		{@render body()}
+	</article>
+{/if}
 
 <!-- eslint-enable svelte/no-at-html-tags -->
 
@@ -38,6 +52,25 @@
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 		background: var(--color-surface);
+	}
+
+	.kpi-card--link {
+		display: block;
+		color: inherit;
+		text-decoration: none;
+		transition:
+			border-color 120ms ease,
+			box-shadow 120ms ease;
+
+		&:hover {
+			border-color: var(--color-border--interactive);
+			box-shadow: var(--shadow-low);
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--color-interactive);
+			outline-offset: 2px;
+		}
 	}
 
 	.kpi-card--brand {

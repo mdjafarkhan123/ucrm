@@ -1,0 +1,100 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { GET } from './+server';
+import { getOwnerSession } from '$lib/server/auth/owner';
+import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
+import { readSetupCatalogue } from '$lib/server/setup/catalogue';
+
+vi.mock('$lib/server/auth/owner', () => ({ getOwnerSession: vi.fn() }));
+vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
+vi.mock('$lib/server/setup/catalogue', () => ({ readSetupCatalogue: vi.fn() }));
+vi.mock('$lib/setup/onboarding-list', () => ({ onboardingCatalogue: () => ({}) }));
+
+const mockedSession = vi.mocked(getOwnerSession);
+const mockedClient = vi.mocked(getOwnerSupabaseClient);
+const mockedCatalogue = vi.mocked(readSetupCatalogue);
+
+const CORE = {
+	review: 2,
+	first_contact: 1,
+	accounts_to_create: 0,
+	overdue: 1,
+	today: 0,
+	upcoming: 0,
+	items: [{ id: 'lead-1', due_on: '2026-10-06' }]
+};
+
+function call(today: string | null) {
+	const url = new URL('http://localhost/api/jafar/home');
+	if (today !== null) url.searchParams.set('today', today);
+	return GET({ url } as unknown as Parameters<typeof GET>[0]);
+}
+
+function client(rpcs: Record<string, { data?: unknown; error?: unknown }>) {
+	const rpc = vi.fn(async (name: string) => rpcs[name] ?? { data: null, error: new Error(name) });
+	mockedClient.mockReturnValue({ rpc } as unknown as ReturnType<typeof getOwnerSupabaseClient>);
+	return rpc;
+}
+
+beforeEach(() => {
+	vi.clearAllMocks();
+	vi.spyOn(console, 'error').mockImplementation(() => {});
+	mockedSession.mockResolvedValue({ email: 'owner@example.com' } as Awaited<
+		ReturnType<typeof getOwnerSession>
+	>);
+	mockedCatalogue.mockResolvedValue({} as Awaited<ReturnType<typeof readSetupCatalogue>>);
+});
+
+describe('GET /api/jafar/home', () => {
+	it('refuses someone who is not signed in', async () => {
+		mockedSession.mockResolvedValue(null);
+		expect((await call('2026-10-07')).status).toBe(401);
+	});
+
+	it('refuses a missing or malformed date before touching the database', async () => {
+		const rpc = client({});
+		expect((await call(null)).status).toBe(422);
+		expect((await call('07/10/2026')).status).toBe(422);
+		expect(rpc).not.toHaveBeenCalled();
+	});
+
+	it("asks for Jafar's own day and adds the onboarding and renewal counts", async () => {
+		const rpc = client({
+			owner_business_home: { data: CORE, error: null },
+			owner_client_onboarding_list: { data: { totals: { uplift: 3 } }, error: null },
+			owner_organization_directory: {
+				data: { totals: { attention: { renewal_due: 2, payment_overdue: 1 } } },
+				error: null
+			}
+		});
+		const response = await call('2026-10-07');
+		expect(response.status).toBe(200);
+		expect(await response.json()).toEqual({ ...CORE, setups_waiting: 3, renewals: 3 });
+		expect(rpc).toHaveBeenCalledWith('owner_business_home', {
+			today_date: '2026-10-07',
+			agenda_limit: 60
+		});
+		expect(rpc).toHaveBeenCalledWith(
+			'owner_client_onboarding_list',
+			expect.objectContaining({ waiting_filter: 'uplift', page_size: 1 })
+		);
+	});
+
+	it('still loads the day when a side count fails, showing that count as unknown', async () => {
+		client({
+			owner_business_home: { data: CORE, error: null },
+			owner_organization_directory: { data: null, error: new Error('down') }
+		});
+		mockedCatalogue.mockResolvedValue(null);
+		const body = await (await call('2026-10-07')).json();
+		expect(body.setups_waiting).toBeNull();
+		expect(body.renewals).toBeNull();
+		expect(body.review).toBe(2);
+	});
+
+	it('fails plainly when the to-do list itself cannot be read', async () => {
+		client({ owner_business_home: { data: null, error: new Error('down') } });
+		const response = await call('2026-10-07');
+		expect(response.status).toBe(500);
+		expect(await response.json()).toEqual({ error: 'Your day could not be loaded.' });
+	});
+});
