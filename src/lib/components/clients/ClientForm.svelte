@@ -3,6 +3,7 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import CountryPicker from '$lib/components/ui/CountryPicker.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -55,13 +56,6 @@
 		job_follow_ups: true,
 		review_requests: true
 	};
-
-	const COUNTRIES = [
-		{ value: 'US', label: 'United States' },
-		{ value: 'CA', label: 'Canada' },
-		{ value: 'GB', label: 'United Kingdom' },
-		{ value: 'AU', label: 'Australia' }
-	];
 
 	type FormState = {
 		client_type: 'person' | 'company';
@@ -222,10 +216,10 @@
 	const probeHasInput = $derived(
 		Boolean(
 			duplicateProbe.email ||
-				duplicateProbe.billingEmail ||
-				duplicateProbe.phone ||
-				duplicateProbe.name ||
-				duplicateProbe.address
+			duplicateProbe.billingEmail ||
+			duplicateProbe.phone ||
+			duplicateProbe.name ||
+			duplicateProbe.address
 		)
 	);
 
@@ -559,10 +553,7 @@
 							errorMessage={fieldErrors['property.state_region'] ?? ''}
 							autocomplete="address-level1"
 						/>
-						<div class="client-form__policy">
-							<label class="client-form__policy-label" for="client-country">Country</label>
-							<Select id="client-country" bind:value={form.country} options={COUNTRIES} />
-						</div>
+						<CountryPicker id="client-country" label="Country" bind:value={form.country} />
 					</div>
 				</SectionBlock>
 			{/if}

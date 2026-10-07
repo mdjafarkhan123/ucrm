@@ -8,6 +8,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import CountryPicker from '$lib/components/ui/CountryPicker.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
@@ -644,17 +645,16 @@
 								disabled={!isEditable}
 								bind:value={draft.business_address.postal_code}
 							/>
-							<Input
+							<CountryPicker
 								id="sms-address-country"
-								label="Country code"
-								maxlength={2}
+								label="Country"
 								disabled={!isEditable}
 								bind:value={draft.business_address.country_code}
 							/>
 							{#if isSoleProprietorship && !hasRegistrationId}
 								<p class="sms-settings__hint">
 									Sole proprietors with no registration number must use a US or Canada address --
-									enter "US" or "CA" here.
+									choose United States or Canada here.
 								</p>
 							{/if}
 						</div>

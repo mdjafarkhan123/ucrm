@@ -7,9 +7,9 @@
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
+	import CountryPicker from '$lib/components/ui/CountryPicker.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
-	import Input from '$lib/components/ui/Input.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -130,7 +130,7 @@
 		event.preventDefault();
 		if (!editingId) return;
 		if (!/^[A-Za-z]{2}$/.test(countryCode.trim())) {
-			fieldErrors = { country_code: 'Enter a 2-letter country code.' };
+			fieldErrors = { country_code: 'Choose a country.' };
 			return;
 		}
 		capabilitiesMutation.mutate({
@@ -205,11 +205,10 @@
 
 					{#if editingId === sender.id}
 						<form class="sms-sender-actions__form" onsubmit={submit}>
-							<Input
+							<CountryPicker
 								id={`sms-sender-country-${sender.id}`}
-								label="Country code (e.g. US)"
+								label="Country"
 								bind:value={countryCode}
-								maxlength={2}
 								invalid={Boolean(fieldErrors.country_code)}
 								errorMessage={fieldErrors.country_code}
 							/>

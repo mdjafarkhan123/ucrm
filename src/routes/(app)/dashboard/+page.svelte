@@ -2,6 +2,7 @@
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import SetupCard from '$lib/components/dashboard/SetupCard.svelte';
+	import CountryPicker from '$lib/components/ui/CountryPicker.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import type { PageProps } from './$types';
@@ -472,9 +473,12 @@
 							>
 						</div>
 						<div class="form-grid">
-							<label>Postal code<input bind:value={propertyForm.postal_code} /></label><label
-								>Country<input bind:value={propertyForm.country} maxlength="2" /></label
-							>
+							<label>Postal code<input bind:value={propertyForm.postal_code} /></label>
+							<CountryPicker
+								id="dashboard-property-country"
+								label="Country"
+								bind:value={propertyForm.country}
+							/>
 						</div>
 						<label
 							>Access notes<textarea rows="3" bind:value={propertyForm.access_notes}

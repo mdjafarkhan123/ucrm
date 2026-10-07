@@ -5,6 +5,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import CountryPicker from '$lib/components/ui/CountryPicker.svelte';
 	import RecordFilesCard from '$lib/components/files/RecordFilesCard.svelte';
 	import {
 		createProperty,
@@ -70,13 +71,6 @@
 
 	const isEdit = $derived(property !== null);
 	const busy = $derived(saving || deleting);
-
-	const COUNTRIES = [
-		{ value: 'US', label: 'United States' },
-		{ value: 'CA', label: 'Canada' },
-		{ value: 'GB', label: 'United Kingdom' },
-		{ value: 'AU', label: 'Australia' }
-	];
 
 	// Business default only — a property has nothing of its own to fall back to besides that, and it can
 	// never inherit from itself. `enabled: open` keeps this off until the dialog is actually showing, in
@@ -249,10 +243,7 @@
 				bind:value={draft.postal_code}
 				autocomplete="postal-code"
 			/>
-			<div class="property-dialog__field">
-				<label class="property-dialog__label" for="property-dialog-country">Country</label>
-				<Select id="property-dialog-country" bind:value={draft.country} options={COUNTRIES} />
-			</div>
+			<CountryPicker id="property-dialog-country" label="Country" bind:value={draft.country} />
 			<div class="property-dialog__field property-dialog__grid-full">
 				<label class="property-dialog__label" for="property-dialog-tax">Tax</label>
 				<Select
