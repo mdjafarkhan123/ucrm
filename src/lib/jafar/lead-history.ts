@@ -3,7 +3,13 @@
 // and replies), status and next-action changes, and linked Applications, newest first.
 
 import { resolve } from '$app/paths';
-import type { ContactMethodKind, LeadSource, LeadStatus } from './leads';
+import {
+	LEAD_SOURCE_LABELS,
+	countryName,
+	type ContactMethodKind,
+	type LeadSource,
+	type LeadStatus
+} from './leads';
 import { CALL_OUTCOMES, CALL_OUTCOME_LABELS, type CallOutcome } from '$lib/pipeline/calls';
 
 // The contractor Brief's call outcomes, so a call reads the same wherever it is logged.
@@ -77,6 +83,7 @@ export type HistoryKind =
 	| 'next_action_cleared'
 	| 'application_linked'
 	| 'application_unlinked'
+	| 'details_changed'
 	| 'lead_added'
 	| 'application_submitted';
 
@@ -87,7 +94,8 @@ export type HistoryEntry = {
 	body: string | null;
 	contact_direction: ContactDirection | null;
 	contact_channel: ContactChannel | null;
-	contact_method: { id: string; kind: ContactMethodKind; value: string } | null;
+	/** `removed`: the detail was later taken off the Lead; the entry still names it. */
+	contact_method: { id: string; kind: ContactMethodKind; value: string; removed?: boolean } | null;
 	call_outcome: CallOutcome | null;
 	application_id: string | null;
 	details: {
@@ -97,6 +105,7 @@ export type HistoryEntry = {
 		due_on?: string;
 		business_name?: string;
 		source?: LeadSource;
+		changes?: DetailChange[];
 	} | null;
 	/** Who did it, as a name: "Jafar", a teammate, or their email. Null when nobody did (an Application arriving). */
 	actor: string | null;
@@ -200,4 +209,79 @@ const INBOUND_HEADLINES: Record<ContactChannel, string> = {
 /** "Emailed them", "They called": the line a logged contact reads as in the history. */
 export function contactHeadline(direction: ContactDirection, channel: ContactChannel) {
 	return (direction === 'outbound' ? OUTBOUND_HEADLINES : INBOUND_HEADLINES)[channel];
+}
+
+// --- B2b: a Lead's details edited ----------------------------------------------------------------------------
+
+/** One change in a 'details_changed' entry, as the database records it. */
+export type DetailChange =
+	| { field: 'fit_notes' }
+	| {
+			field:
+				| 'business_name'
+				| 'country_code'
+				| 'trade'
+				| 'website'
+				| 'contact_name'
+				| 'source'
+				| 'source_detail';
+			from: string | null;
+			to: string | null;
+	  }
+	| {
+			field: 'contact_method';
+			action: 'added' | 'changed' | 'removed';
+			kind: ContactMethodKind;
+			value: string;
+			from?: string;
+			to?: string;
+			found_at_changed?: boolean;
+	  };
+
+const FIELD_NAMES = {
+	business_name: 'Business name',
+	country_code: 'Country',
+	trade: 'Trade',
+	website: 'Website',
+	contact_name: 'Contact person',
+	source: 'How you found them',
+	source_detail: 'Source details'
+} as const;
+
+/** The words for one stored value: a country or source by its name, anything else as typed. */
+function fieldValue(field: keyof typeof FIELD_NAMES, value: string) {
+	if (field === 'country_code') return countryName(value);
+	if (field === 'source') return LEAD_SOURCE_LABELS[value as LeadSource] ?? value;
+	return value;
+}
+
+// How a detail reads inside a sentence: "Added WhatsApp number +44…".
+const DETAIL_WORDS: Record<ContactMethodKind, string> = {
+	email: 'email',
+	phone: 'phone number',
+	whatsapp: 'WhatsApp number',
+	instagram: 'Instagram profile',
+	facebook: 'Facebook page',
+	linkedin: 'LinkedIn profile',
+	contact_form: 'contact form link',
+	other: 'contact detail'
+};
+
+/** "Email changed from info@smithplumbng.co.uk to info@smithplumbing.co.uk": one line per change. */
+export function detailChangeLine(change: DetailChange): string {
+	if (change.field === 'fit_notes') return 'Updated why they may fit';
+	if (change.field === 'contact_method') {
+		const words = DETAIL_WORDS[change.kind] ?? 'contact detail';
+		if (change.action === 'added') return `Added ${words} ${change.value}`;
+		if (change.action === 'removed') return `Removed ${words} ${change.value}`;
+		const where = change.found_at_changed ? ', and where it was found' : '';
+		if (change.from && change.to)
+			return `${words[0].toUpperCase()}${words.slice(1)} changed from ${change.from} to ${change.to}${where}`;
+		return `Updated where the ${words} ${change.value} was found`;
+	}
+	const name = FIELD_NAMES[change.field];
+	if (!change.from && change.to) return `${name} added: ${fieldValue(change.field, change.to)}`;
+	if (change.from && !change.to)
+		return `${name} removed (was ${fieldValue(change.field, change.from)})`;
+	return `${name} changed from ${fieldValue(change.field, change.from ?? '')} to ${fieldValue(change.field, change.to ?? '')}`;
 }

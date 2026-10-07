@@ -68,16 +68,40 @@ export const leadContactMethodSchema = z.object({
 	found_at: z.string().trim().min(1, 'Say where you found this detail.').max(300)
 });
 
+// An email must look like one; a phone or WhatsApp number needs its country code.
+function checkContactValue(
+	method: { kind: string; value: string },
+	path: (string | number)[],
+	context: z.RefinementCtx
+) {
+	if (method.kind === 'email' && !z.email().safeParse(method.value).success)
+		context.addIssue({ code: 'custom', path, message: 'Enter a valid email address.' });
+	if (
+		(method.kind === 'phone' || method.kind === 'whatsapp') &&
+		method.value.replace(/\D/g, '').length < 7
+	)
+		context.addIssue({
+			code: 'custom',
+			path,
+			message: 'Enter the full phone number, with its country code.'
+		});
+}
+
+// The details a Lead is added with and can later be edited: the business and how Uplift came across it.
+const leadDetailFields = {
+	business_name: z.string().trim().min(1, 'Enter the business name.').max(200),
+	country_code: countryCode,
+	trade: z.string().trim().min(1, 'Enter the trade.').max(120),
+	source: z.enum(LEAD_SOURCES, { message: 'Choose how you found this business.' }),
+	source_detail: optionalText(300),
+	website: optionalText(300),
+	contact_name: optionalText(120),
+	fit_notes: optionalText(4000)
+};
+
 export const leadCreateSchema = z
 	.object({
-		business_name: z.string().trim().min(1, 'Enter the business name.').max(200),
-		country_code: countryCode,
-		trade: z.string().trim().min(1, 'Enter the trade.').max(120),
-		source: z.enum(LEAD_SOURCES, { message: 'Choose how you found this business.' }),
-		source_detail: optionalText(300),
-		website: optionalText(300),
-		contact_name: optionalText(120),
-		fit_notes: optionalText(4000),
+		...leadDetailFields,
 		lead_status: z.enum(LEAD_STATUSES).default('new'),
 		next_action: optionalText(200),
 		next_action_due_on: calendarDate.nullish().transform((value) => value ?? null),
@@ -100,23 +124,9 @@ export const leadCreateSchema = z
 				path: ['next_action'],
 				message: 'Say what the next action is.'
 			});
-		lead.contact_methods.forEach((method, index) => {
-			if (method.kind === 'email' && !z.email().safeParse(method.value).success)
-				context.addIssue({
-					code: 'custom',
-					path: ['contact_methods', index, 'value'],
-					message: 'Enter a valid email address.'
-				});
-			if (
-				(method.kind === 'phone' || method.kind === 'whatsapp') &&
-				method.value.replace(/\D/g, '').length < 7
-			)
-				context.addIssue({
-					code: 'custom',
-					path: ['contact_methods', index, 'value'],
-					message: 'Enter the full phone number, with its country code.'
-				});
-		});
+		lead.contact_methods.forEach((method, index) =>
+			checkContactValue(method, ['contact_methods', index, 'value'], context)
+		);
 	});
 
 export type LeadCreateInput = z.infer<typeof leadCreateSchema>;
@@ -132,7 +142,9 @@ export const leadDuplicateCheckSchema = z.object({
 		.optional(),
 	website: z.string().trim().max(300).optional(),
 	emails: z.array(z.string().trim().max(300)).max(LEAD_CONTACT_METHODS_MAX).default([]),
-	phones: z.array(z.string().trim().max(300)).max(LEAD_CONTACT_METHODS_MAX).default([])
+	phones: z.array(z.string().trim().max(300)).max(LEAD_CONTACT_METHODS_MAX).default([]),
+	/** The Lead being edited, so it does not match itself. */
+	exclude_id: z.uuid().optional()
 });
 
 // --- B2: the Lead page ---------------------------------------------------------------------------------------
@@ -251,3 +263,51 @@ export const leadApplicationSearchSchema = z.object({
 });
 
 export const leadApplicationLinkSchema = z.object({ application_id: z.uuid() });
+
+// --- B2b: editing a Lead's details ---------------------------------------------------------------------------
+
+/**
+ * One save from the Lead page. `fields` holds only the details being changed. Contact details arrive as
+ * operations so two people editing at once do not undo each other: `change` corrects a detail in place (history
+ * that used it follows the correction) and never changes its type; `remove` keeps it for history but stops
+ * offering it.
+ */
+export const leadDetailsEditSchema = z
+	.object({
+		fields: z.object(leadDetailFields).partial().strict().default({}),
+		contact_methods: z
+			.object({
+				add: z.array(leadContactMethodSchema).max(LEAD_CONTACT_METHODS_MAX).default([]),
+				change: z
+					.array(leadContactMethodSchema.extend({ id: z.uuid() }))
+					.max(LEAD_CONTACT_METHODS_MAX)
+					.default([]),
+				remove: z.array(z.uuid()).max(LEAD_CONTACT_METHODS_MAX).default([])
+			})
+			.default({ add: [], change: [], remove: [] })
+	})
+	.superRefine((edit, context) => {
+		const methods = edit.contact_methods;
+		if (
+			Object.keys(edit.fields).length === 0 &&
+			!methods.add.length &&
+			!methods.change.length &&
+			!methods.remove.length
+		)
+			context.addIssue({ code: 'custom', path: ['form'], message: 'Nothing to change.' });
+		methods.add.forEach((method, index) =>
+			checkContactValue(method, ['contact_methods', 'add', index, 'value'], context)
+		);
+		methods.change.forEach((method, index) =>
+			checkContactValue(method, ['contact_methods', 'change', index, 'value'], context)
+		);
+		const ids = [...methods.change.map((method) => method.id), ...methods.remove];
+		if (new Set(ids).size !== ids.length)
+			context.addIssue({
+				code: 'custom',
+				path: ['form'],
+				message: 'A contact detail can be changed or removed, not both.'
+			});
+	});
+
+export type LeadDetailsEditInput = z.infer<typeof leadDetailsEditSchema>;

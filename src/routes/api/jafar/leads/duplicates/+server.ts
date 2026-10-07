@@ -7,7 +7,7 @@ import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { leadDuplicateCheckSchema } from '$lib/server/validation/lead.schema';
 import type { LeadDuplicate } from '$lib/jafar/leads';
 
-// Jafar business management B1: while a Lead is being added, the Leads, Applications and Organizations that look
+// Jafar business management B1: while a Lead is being added or edited, the Leads, Applications and Organizations that look
 // like the same business -- same website, email, phone, or name. Shown for review; nothing is merged or blocked.
 // A POST so email addresses and phone numbers stay out of URLs and logs; it changes nothing.
 
@@ -36,7 +36,8 @@ export const POST: RequestHandler = async (event) => {
 			country_code: input.country_code || undefined,
 			website: input.website || undefined,
 			emails,
-			phones
+			phones,
+			exclude_id: input.exclude_id
 		});
 		if (error) throw error;
 		return json(

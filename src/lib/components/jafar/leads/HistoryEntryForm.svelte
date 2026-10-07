@@ -86,18 +86,24 @@
 	const editing = $derived(Boolean(entry));
 	const needsOutcome = $derived(channel !== '' && takesCallOutcome(channel, direction));
 
+	// A detail removed from the Lead since this contact was logged is still the one it used: correcting the
+	// entry's words keeps it, though it is never offered for new contact.
+	const keptRemoved = untrack(() =>
+		start?.contact_method?.removed ? [{ ...start.contact_method, found_at: '' }] : []
+	);
+
 	// Only the details this channel could have used: a call or a text goes to a phone number.
 	function methodsFor(value: ContactChannel | '') {
 		if (value === '') return [];
 		const kinds = CHANNEL_METHOD_KINDS[value];
-		return contactMethods.filter((method) => kinds.includes(method.kind));
+		return [...contactMethods, ...keptRemoved].filter((method) => kinds.includes(method.kind));
 	}
 	const methodChoices = $derived(methodsFor(channel));
 	const methodOptions = $derived([
 		{ value: '', label: 'Not one saved on this Lead' },
 		...methodChoices.map((method) => ({
 			value: method.id,
-			label: `${CONTACT_METHOD_LABELS[method.kind]}: ${method.value}`
+			label: `${CONTACT_METHOD_LABELS[method.kind]}: ${method.value}${'removed' in method && method.removed ? ' (removed)' : ''}`
 		}))
 	]);
 	// A detail chosen for another channel is not sent for this one.

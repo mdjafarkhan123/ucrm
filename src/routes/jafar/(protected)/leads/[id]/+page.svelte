@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
@@ -32,6 +33,12 @@
 	import LeadHistory from '$lib/components/jafar/leads/LeadHistory.svelte';
 	import NextActionDialog from '$lib/components/jafar/leads/NextActionDialog.svelte';
 	import LinkApplicationDialog from '$lib/components/jafar/leads/LinkApplicationDialog.svelte';
+	import LeadBusinessEditor from '$lib/components/jafar/leads/LeadBusinessEditor.svelte';
+	import LeadContactsEditor, {
+		type ContactEdit
+	} from '$lib/components/jafar/leads/LeadContactsEditor.svelte';
+	import LeadAboutEditor from '$lib/components/jafar/leads/LeadAboutEditor.svelte';
+	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import {
 		CONTACT_METHOD_LABELS,
 		LEAD_SOURCE_LABELS,
@@ -65,6 +72,14 @@
 		canUseJafarPath(
 			{ role: page.data.owner.role, access: page.data.owner.access },
 			'/jafar/prospects'
+		)
+	);
+	// A teammate who can only look at Leads sees no pencils; the server refuses the change either way.
+	const canEditDetails = $derived(
+		canUseJafarPath(
+			{ role: page.data.owner.role, access: page.data.owner.access },
+			`/api/jafar/leads/${leadId}/details`,
+			'PATCH'
 		)
 	);
 	const queryClient = useQueryClient();
@@ -126,6 +141,66 @@
 		if (kind === 'phone') return `tel:${value.replace(/[^\d+]/g, '')}`;
 		if (/^https?:\/\//i.test(value)) return value;
 		return null;
+	}
+
+	// --- Editing details (B2b) -----------------------------------------------------------------------
+	// Jafar chose editing in place (2026-10-07), as on a client's page: one block opens at a time and its own
+	// Save writes there and then, adding one line to the history.
+
+	type DetailsBlock = 'business' | 'contacts' | 'about';
+	let editingBlock = $state<DetailsBlock | null>(null);
+	let blockSaving = $state(false);
+	let blockError = $state('');
+	let blockFieldErrors = $state<Record<string, string>>({});
+
+	function openBlock(block: DetailsBlock) {
+		editingBlock = block;
+		blockError = '';
+		blockFieldErrors = {};
+	}
+
+	function closeBlock() {
+		editingBlock = null;
+		blockError = '';
+		blockFieldErrors = {};
+	}
+
+	// Another Lead in the same page component starts with every block closed. `untrack` keeps the closing
+	// itself out of what this watches.
+	$effect(() => {
+		void leadId;
+		untrack(closeBlock);
+	});
+
+	const SAVED_MESSAGES: Record<DetailsBlock, string> = {
+		business: 'Business details saved',
+		contacts: 'Contact details saved',
+		about: 'Saved'
+	};
+
+	async function saveDetails(change: {
+		fields?: Record<string, string>;
+		contact_methods?: ContactEdit;
+	}) {
+		const block = editingBlock;
+		if (!block || blockSaving) return;
+		blockSaving = true;
+		blockError = '';
+		blockFieldErrors = {};
+		const result = await sendLeadWrite(
+			`/api/jafar/leads/${encodeURIComponent(leadId)}/details`,
+			'PATCH',
+			change
+		);
+		if (result.ok) await refreshLead(queryClient, leadId);
+		blockSaving = false;
+		if (!result.ok) {
+			blockFieldErrors = result.fieldErrors;
+			blockError = result.error;
+			return;
+		}
+		toast.success(SAVED_MESSAGES[block]);
+		closeBlock();
 	}
 
 	// --- Status ---------------------------------------------------------------------------------------
@@ -247,47 +322,69 @@
 		{@const lastHeard = sinceLabel(data.last_heard_from_at)}
 
 		<header class="lead-page__hero">
-			<div class="lead-page__hero-top">
-				<div class="lead-page__identity">
-					<p class="lead-page__eyebrow">Lead</p>
-					<h1>{details.business_name}</h1>
-					<ul class="lead-page__facts">
-						<li>
-							<span aria-hidden="true">{@html toolIcon}</span>{details.trade}
-						</li>
-						<li>
-							<span aria-hidden="true">{@html mapPinIcon}</span>{countryName(details.country_code)}
-						</li>
-						{#if details.website}
-							<li>
-								<span aria-hidden="true">{@html worldIcon}</span>
-								<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- the business's own website. -->
-								<a href={details.website} target="_blank" rel="noopener noreferrer"
-									>{details.website_host ?? details.website}</a
-								>
-							</li>
-						{/if}
-						{#if details.contact_name}
-							<li><span aria-hidden="true">{@html userIcon}</span>{details.contact_name}</li>
-						{/if}
-					</ul>
+			{#if editingBlock === 'business'}
+				<div class="lead-page__hero-edit">
+					<p class="lead-page__eyebrow">Lead · editing business details</p>
+					<LeadBusinessEditor
+						lead={details}
+						saving={blockSaving}
+						error={blockError}
+						fieldErrors={blockFieldErrors}
+						onSave={(fields) => void saveDetails({ fields })}
+						onCancel={closeBlock}
+					/>
 				</div>
+			{:else}
+				<div class="lead-page__hero-top">
+					<div class="lead-page__identity">
+						<p class="lead-page__eyebrow">Lead</p>
+						<div class="lead-page__title-row">
+							<h1>{details.business_name}</h1>
+							{#if canEditDetails}
+								<PencilButton label="Edit business details" onclick={() => openBlock('business')} />
+							{/if}
+						</div>
+						<ul class="lead-page__facts">
+							<li>
+								<span aria-hidden="true">{@html toolIcon}</span>{details.trade}
+							</li>
+							<li>
+								<span aria-hidden="true">{@html mapPinIcon}</span>{countryName(
+									details.country_code
+								)}
+							</li>
+							{#if details.website}
+								<li>
+									<span aria-hidden="true">{@html worldIcon}</span>
+									<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- the business's own website. -->
+									<a href={details.website} target="_blank" rel="noopener noreferrer"
+										>{details.website_host ?? details.website}</a
+									>
+								</li>
+							{/if}
+							{#if details.contact_name}
+								<li><span aria-hidden="true">{@html userIcon}</span>{details.contact_name}</li>
+							{/if}
+						</ul>
+					</div>
 
-				<DropdownMenu
-					items={statusItems}
-					triggerLabel={`Status: ${LEAD_STATUS_LABELS[details.lead_status]}. Change status`}
-					triggerClass="lead-page__status-trigger"
-					disabled={statusSaving}
-				>
-					{#snippet trigger()}
-						<Badge status={LEAD_STATUS_TONES[details.lead_status]}
-							>{LEAD_STATUS_LABELS[details.lead_status]}</Badge
-						>
-						<span class="lead-page__status-chevron" aria-hidden="true">{@html chevronDownIcon}</span
-						>
-					{/snippet}
-				</DropdownMenu>
-			</div>
+					<DropdownMenu
+						items={statusItems}
+						triggerLabel={`Status: ${LEAD_STATUS_LABELS[details.lead_status]}. Change status`}
+						triggerClass="lead-page__status-trigger"
+						disabled={statusSaving}
+					>
+						{#snippet trigger()}
+							<Badge status={LEAD_STATUS_TONES[details.lead_status]}
+								>{LEAD_STATUS_LABELS[details.lead_status]}</Badge
+							>
+							<span class="lead-page__status-chevron" aria-hidden="true"
+								>{@html chevronDownIcon}</span
+							>
+						{/snippet}
+					</DropdownMenu>
+				</div>
+			{/if}
 
 			<dl class="lead-page__stats">
 				<div>
@@ -369,7 +466,22 @@
 					icon={addressBookIcon}
 					count={data.contact_methods.length}
 				>
-					{#if data.contact_methods.length}
+					{#snippet actions()}
+						{#if canEditDetails && editingBlock !== 'contacts'}
+							<PencilButton label="Edit contact details" onclick={() => openBlock('contacts')} />
+						{/if}
+					{/snippet}
+					{#if editingBlock === 'contacts'}
+						<LeadContactsEditor
+							{leadId}
+							methods={data.contact_methods}
+							saving={blockSaving}
+							error={blockError}
+							fieldErrors={blockFieldErrors}
+							onSave={(contact_methods) => void saveDetails({ contact_methods })}
+							onCancel={closeBlock}
+						/>
+					{:else if data.contact_methods.length}
 						<ul class="lead-page__contacts">
 							{#each data.contact_methods as method (method.id)}
 								{@const href = contactHref(method.kind, method.value)}
@@ -445,22 +557,42 @@
 					</RailCard>
 				{/if}
 
-				{#if details.fit_notes || details.source_detail}
+				{#if canEditDetails || details.fit_notes || details.source_detail}
 					<RailCard title="About" icon={infoIcon}>
-						<dl class="lead-page__about">
-							{#if details.source_detail}
-								<div>
-									<dt>Source details</dt>
-									<dd>{details.source_detail}</dd>
-								</div>
+						{#snippet actions()}
+							{#if canEditDetails && editingBlock !== 'about'}
+								<PencilButton label="Edit about this Lead" onclick={() => openBlock('about')} />
 							{/if}
-							{#if details.fit_notes}
-								<div>
-									<dt>Why they may fit</dt>
-									<dd class="lead-page__prewrap">{details.fit_notes}</dd>
-								</div>
-							{/if}
-						</dl>
+						{/snippet}
+						{#if editingBlock === 'about'}
+							<LeadAboutEditor
+								lead={details}
+								saving={blockSaving}
+								error={blockError}
+								fieldErrors={blockFieldErrors}
+								onSave={(fields) => void saveDetails({ fields })}
+								onCancel={closeBlock}
+							/>
+						{:else if details.fit_notes || details.source_detail}
+							<dl class="lead-page__about">
+								{#if details.source_detail}
+									<div>
+										<dt>Source details</dt>
+										<dd>{details.source_detail}</dd>
+									</div>
+								{/if}
+								{#if details.fit_notes}
+									<div>
+										<dt>Why they may fit</dt>
+										<dd class="lead-page__prewrap">{details.fit_notes}</dd>
+									</div>
+								{/if}
+							</dl>
+						{:else}
+							<p class="lead-page__empty">
+								Nothing noted yet. Add where you found them and why they may fit.
+							</p>
+						{/if}
 					</RailCard>
 				{/if}
 			</aside>
@@ -607,6 +739,19 @@
 			min-width: 0;
 			flex-direction: column;
 			gap: var(--space-small);
+		}
+
+		&__title-row {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
+			min-width: 0;
+		}
+
+		&__hero-edit {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-base);
 		}
 
 		&__eyebrow {

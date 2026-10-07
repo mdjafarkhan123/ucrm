@@ -35,6 +35,7 @@
 		CONTACT_CHANNEL_LABELS,
 		applicationHref,
 		contactHeadline,
+		detailChangeLine,
 		isEditableEntry,
 		type ContactChannel,
 		type HistoryEntry,
@@ -129,6 +130,8 @@
 				return unlinkIcon;
 			case 'application_submitted':
 				return fileTextIcon;
+			case 'details_changed':
+				return pencilIcon;
 			case 'lead_added':
 				return sparklesIcon;
 			default:
@@ -159,6 +162,8 @@
 				return 'Application unlinked';
 			case 'application_submitted':
 				return 'Application submitted';
+			case 'details_changed':
+				return 'Details changed';
 			case 'lead_added':
 				return 'Lead added';
 			default:
@@ -290,6 +295,9 @@
 									<p class="lead-history__detail">
 										{entry.contact_direction === 'outbound' ? 'To' : 'From'}
 										<span class="lead-history__value">{entry.contact_method.value}</span>
+										{#if entry.contact_method.removed}
+											<Badge size="small" dot={false} status="inactive">Removed</Badge>
+										{/if}
 									</p>
 								{:else if entry.kind === 'contact' && entry.contact_channel && entry.contact_channel !== 'in_person'}
 									<p class="lead-history__detail">
@@ -315,6 +323,14 @@
 											· due {formatDay(entry.details.due_on)}
 										{/if}
 									</p>
+								{/if}
+
+								{#if entry.kind === 'details_changed' && entry.details?.changes?.length}
+									<ul class="lead-history__changes">
+										{#each entry.details.changes as change, index (index)}
+											<li>{detailChangeLine(change)}</li>
+										{/each}
+									</ul>
 								{/if}
 
 								{#if entry.kind === 'lead_added' && entry.details?.source}
@@ -533,6 +549,17 @@
 		&__value {
 			color: var(--color-text);
 			font-weight: 600;
+		}
+
+		&__changes {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smallest);
+			margin: 0;
+			padding-left: var(--space-base);
+			color: var(--color-text);
+			font-size: var(--typography--fontSize-small);
+			overflow-wrap: anywhere;
 		}
 
 		&__text {
