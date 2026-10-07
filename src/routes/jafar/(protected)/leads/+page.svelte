@@ -8,6 +8,7 @@
 	import sparklesIcon from '@tabler/icons/outline/sparkles.svg?raw';
 	import searchIcon from '@tabler/icons/outline/zoom-check.svg?raw';
 	import eyeIcon from '@tabler/icons/outline/eye-check.svg?raw';
+	import shieldCheckIcon from '@tabler/icons/outline/shield-check.svg?raw';
 	import KpiCard from '$lib/components/data-display/KpiCard.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
@@ -76,6 +77,8 @@
 	const pages = $derived(leads.data?.pages ?? []);
 	const leadList = $derived(pages.flatMap((entry) => entry.leads));
 	const totals = $derived(pages[0]?.totals ?? emptyTotals);
+	// B3: the review queue holds every Lead marked Ready for review, whatever the list's filters.
+	const waitingForReview = $derived(totals.statuses.ready_for_review ?? 0);
 
 	// Today in Jafar's own time zone, as `YYYY-MM-DD`, to compare with a due date without a time-zone shift.
 	function localToday() {
@@ -122,9 +125,16 @@
 				Trade businesses Uplift has found or heard from, before they apply or become a client.
 			</p>
 		</div>
-		<Button href={resolve('/jafar/leads/new')} variant="primary">
-			<span class="leads__button-icon" aria-hidden="true">{@html plusIcon}</span>Add Lead
-		</Button>
+		<div class="leads__header-actions">
+			<Button href={resolve('/jafar/leads/review')} variant="secondary">
+				<span class="leads__button-icon" aria-hidden="true">{@html shieldCheckIcon}</span>To approve
+				{#if waitingForReview > 0}<span class="leads__count">{formatCount(waitingForReview)}</span
+					>{/if}
+			</Button>
+			<Button href={resolve('/jafar/leads/new')} variant="primary">
+				<span class="leads__button-icon" aria-hidden="true">{@html plusIcon}</span>Add Lead
+			</Button>
+		</div>
 	</header>
 
 	<section class="leads__summary" aria-label="Lead summary">
@@ -340,6 +350,25 @@
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-large);
 		line-height: var(--typography--lineHeight-large);
+	}
+
+	.leads__header-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-small);
+	}
+
+	.leads__count {
+		min-width: 22px;
+		margin-left: var(--space-small);
+		padding: 0 var(--space-smaller);
+		border-radius: var(--radius-circle);
+		background: var(--color-warning--surface);
+		color: var(--color-warning--onSurface);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 700;
+		line-height: 22px;
+		text-align: center;
 	}
 
 	.leads__button-icon {

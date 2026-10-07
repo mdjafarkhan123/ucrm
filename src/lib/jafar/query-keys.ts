@@ -12,6 +12,8 @@ export const jafarOrganizationsListKey = (filters: string) =>
 export const jafarLeadsKey = ['jafar', 'leads'] as const;
 // The list's filters as their query string (see `leadFilterParams`), like the Organizations directory.
 export const jafarLeadsListKey = (filters: string) => ['jafar', 'leads', 'list', filters] as const;
+/** B3: the Leads ready for review, under `jafarLeadsKey`. */
+export const jafarLeadReviewKey = ['jafar', 'leads', 'review'] as const;
 /** B2: one Lead's page -- details, linked Applications, and the newest history. Under `jafarLeadsKey`, so a change
  * that refreshes the list refreshes the page too. */
 export const jafarLeadKey = (leadId: string | undefined) =>

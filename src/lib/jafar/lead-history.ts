@@ -84,6 +84,11 @@ export type HistoryKind =
 	| 'application_linked'
 	| 'application_unlinked'
 	| 'details_changed'
+	| 'contact_approved'
+	| 'approval_withdrawn'
+	| 'sent_back'
+	| 'do_not_contact_set'
+	| 'do_not_contact_cleared'
 	| 'lead_added'
 	| 'application_submitted';
 
@@ -106,6 +111,10 @@ export type HistoryEntry = {
 		business_name?: string;
 		source?: LeadSource;
 		changes?: DetailChange[];
+		/** B3: the details approved or withdrawn. */
+		methods?: Array<{ kind: ContactMethodKind; value: string; whatsapp_permission?: boolean }>;
+		/** B3: why it was sent back, or why Do not contact was set or lifted; for a withdrawal, a reason key. */
+		reason?: string;
 	} | null;
 	/** Who did it, as a name: "Jafar", a teammate, or their email. Null when nobody did (an Application arriving). */
 	actor: string | null;
@@ -140,6 +149,8 @@ export type ApplicationCandidate = LinkedApplication & {
 	linked_to: { id: string; business_name: string } | null;
 };
 
+export type LeadDoNotContact = { at: string; by: string; reason: string | null };
+
 export type LeadDetail = {
 	id: string;
 	business_name: string;
@@ -154,6 +165,11 @@ export type LeadDetail = {
 	lead_status: LeadStatus;
 	next_action: string | null;
 	next_action_due_on: string | null;
+	/** 'first_contact' when approval created the next action; logging outbound contact ticks it off. */
+	next_action_kind: 'first_contact' | null;
+	do_not_contact: LeadDoNotContact | null;
+	/** A linked Application is paid or has its account. */
+	is_client: boolean;
 	created_by_email: string;
 	created_at: string;
 	updated_at: string;
@@ -164,6 +180,8 @@ export type LeadContactMethodDetail = {
 	kind: ContactMethodKind;
 	value: string;
 	found_at: string;
+	approved_at: string | null;
+	whatsapp_permission: boolean;
 };
 
 export type LeadPage = {
@@ -284,4 +302,39 @@ export function detailChangeLine(change: DetailChange): string {
 	if (change.from && !change.to)
 		return `${name} removed (was ${fieldValue(change.field, change.from)})`;
 	return `${name} changed from ${fieldValue(change.field, change.from ?? '')} to ${fieldValue(change.field, change.to ?? '')}`;
+}
+
+// --- B3: approving who to contact ------------------------------------------------------------------------------
+
+const APPROVAL_METHOD_WORDS: Record<ContactMethodKind, string> = {
+	email: 'Email',
+	phone: 'Phone',
+	whatsapp: 'WhatsApp',
+	instagram: 'Instagram',
+	facebook: 'Facebook',
+	linkedin: 'LinkedIn',
+	contact_form: 'Contact form',
+	other: 'Other'
+};
+
+/** "Email info@smithplumbing.co.uk", with "(they asked for WhatsApp)" where that permission was recorded. */
+export function approvalMethodLine(method: {
+	kind: ContactMethodKind;
+	value: string;
+	whatsapp_permission?: boolean;
+}) {
+	const permission = method.whatsapp_permission ? ' (they asked to talk on WhatsApp)' : '';
+	return `${APPROVAL_METHOD_WORDS[method.kind] ?? 'Contact'} ${method.value}${permission}`;
+}
+
+const WITHDRAWN_BECAUSE: Record<string, string> = {
+	details_changed: 'because the detail changed',
+	sent_back: 'because the Lead was sent back',
+	do_not_contact: 'because they asked not to be contacted',
+	status_changed: 'because the status changed'
+};
+
+/** The line under an "Approval withdrawn" entry. */
+export function withdrawnBecause(reason: string | undefined) {
+	return (reason && WITHDRAWN_BECAUSE[reason]) ?? '';
 }

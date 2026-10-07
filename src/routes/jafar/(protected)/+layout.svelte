@@ -8,6 +8,7 @@
 		jafarEmailHealthKey,
 		jafarEmailTemplatesKey,
 		jafarLeadKey,
+		jafarLeadReviewKey,
 		jafarLeadsKey,
 		jafarMessageTemplatesKey,
 		jafarOnboardingKey,
@@ -96,6 +97,9 @@
 		// The add form needs no data; a Lead's page draws its own skeleton until its one request answers.
 		if (pathname === '/jafar/leads/new') {
 			return true;
+		}
+		if (pathname === '/jafar/leads/review') {
+			return hasCachedData(jafarLeadReviewKey);
 		}
 		if (pathname.startsWith('/jafar/leads/')) {
 			return hasCachedData(jafarLeadKey(pathname.slice('/jafar/leads/'.length).split('/')[0]));

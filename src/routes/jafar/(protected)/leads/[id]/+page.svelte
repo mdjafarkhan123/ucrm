@@ -38,11 +38,12 @@
 		type ContactEdit
 	} from '$lib/components/jafar/leads/LeadContactsEditor.svelte';
 	import LeadAboutEditor from '$lib/components/jafar/leads/LeadAboutEditor.svelte';
+	import LeadContactPermission from '$lib/components/jafar/leads/LeadContactPermission.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import {
 		CONTACT_METHOD_LABELS,
 		LEAD_SOURCE_LABELS,
-		LEAD_STATUSES,
+		LEAD_SETTABLE_STATUSES,
 		LEAD_STATUS_LABELS,
 		LEAD_STATUS_TONES,
 		countryName,
@@ -80,6 +81,21 @@
 			{ role: page.data.owner.role, access: page.data.owner.access },
 			`/api/jafar/leads/${leadId}/details`,
 			'PATCH'
+		)
+	);
+	// B3: approving and lifting Do not contact need "Approve who to contact"; recording an opt-out only Leads work.
+	const canApprove = $derived(
+		canUseJafarPath(
+			{ role: page.data.owner.role, access: page.data.owner.access },
+			`/api/jafar/leads/${leadId}/approval`,
+			'POST'
+		)
+	);
+	const canMarkDoNotContact = $derived(
+		canUseJafarPath(
+			{ role: page.data.owner.role, access: page.data.owner.access },
+			`/api/jafar/leads/${leadId}/do-not-contact`,
+			'POST'
 		)
 	);
 	const queryClient = useQueryClient();
@@ -219,8 +235,9 @@
 		else toast.error('The status could not be changed.', result.error);
 	}
 
+	// Approved is reached only from the review queue; leaving it withdraws the approval.
 	const statusItems = $derived(
-		LEAD_STATUSES.map((status) => ({
+		LEAD_SETTABLE_STATUSES.map((status) => ({
 			label: LEAD_STATUS_LABELS[status],
 			icon: lead.data?.lead.lead_status === status ? checkIcon : undefined,
 			onSelect: () => changeStatus(status)
@@ -420,6 +437,8 @@
 
 		<div class="lead-page__layout">
 			<aside class="lead-page__rail" aria-label="About this Lead">
+				<LeadContactPermission {data} {canApprove} {canMarkDoNotContact} />
+
 				<RailCard title="Next action" icon={calendarIcon} class="lead-page__next">
 					{#if details.next_action}
 						<div class="lead-page__next-body">
@@ -486,7 +505,12 @@
 							{#each data.contact_methods as method (method.id)}
 								{@const href = contactHref(method.kind, method.value)}
 								<li>
-									<span class="lead-page__contact-kind">{CONTACT_METHOD_LABELS[method.kind]}</span>
+									<span class="lead-page__contact-kind"
+										>{CONTACT_METHOD_LABELS[method.kind]}{#if method.approved_at}<Badge
+												size="small"
+												status="success">Approved</Badge
+											>{/if}</span
+									>
 									{#if href}
 										<!-- eslint-disable svelte/no-navigation-without-resolve -- an email, phone or outside link. -->
 										<a
@@ -990,6 +1014,9 @@
 		}
 
 		&__contact-kind {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
 			font-weight: 700;
 		}
 

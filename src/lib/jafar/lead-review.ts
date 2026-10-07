@@ -108,22 +108,9 @@ export function previousContactLine(contact: ReviewLead['contact']): string {
 	return line[0].toUpperCase() + line.slice(1);
 }
 
-/** The details a reviewer can tick: everything except where the whole business is excluded. */
-export function approvableMethods(lead: ReviewLead): ReviewContactMethod[] {
-	return leadExclusion(lead) ? [] : lead.contact_methods;
-}
-
 /** Today's date where the reviewer is, as the API expects it (YYYY-MM-DD). */
 export function localToday(now = new Date()) {
 	const month = String(now.getMonth() + 1).padStart(2, '0');
 	const day = String(now.getDate()).padStart(2, '0');
 	return `${now.getFullYear()}-${month}-${day}`;
 }
-
-/** The reason an approval was withdrawn, for the Lead's history. */
-export const APPROVAL_WITHDRAWN_REASONS: Record<string, string> = {
-	details_changed: 'the detail changed',
-	sent_back: 'it was sent back',
-	do_not_contact: 'they asked not to be contacted',
-	status_changed: 'the status changed'
-};

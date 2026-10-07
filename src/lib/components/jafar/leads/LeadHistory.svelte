@@ -22,6 +22,11 @@
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import shieldCheckIcon from '@tabler/icons/outline/shield-check.svg?raw';
+	import shieldXIcon from '@tabler/icons/outline/shield-x.svg?raw';
+	import arrowBackIcon from '@tabler/icons/outline/arrow-back-up.svg?raw';
+	import bellOffIcon from '@tabler/icons/outline/bell-off.svg?raw';
+	import bellIcon from '@tabler/icons/outline/bell.svg?raw';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
@@ -36,6 +41,8 @@
 		applicationHref,
 		contactHeadline,
 		detailChangeLine,
+		approvalMethodLine,
+		withdrawnBecause,
 		isEditableEntry,
 		type ContactChannel,
 		type HistoryEntry,
@@ -132,6 +139,16 @@
 				return fileTextIcon;
 			case 'details_changed':
 				return pencilIcon;
+			case 'contact_approved':
+				return shieldCheckIcon;
+			case 'approval_withdrawn':
+				return shieldXIcon;
+			case 'sent_back':
+				return arrowBackIcon;
+			case 'do_not_contact_set':
+				return bellOffIcon;
+			case 'do_not_contact_cleared':
+				return bellIcon;
 			case 'lead_added':
 				return sparklesIcon;
 			default:
@@ -164,6 +181,16 @@
 				return 'Application submitted';
 			case 'details_changed':
 				return 'Details changed';
+			case 'contact_approved':
+				return 'Approved for first contact';
+			case 'approval_withdrawn':
+				return `Approval withdrawn ${withdrawnBecause(details.reason)}`.trim();
+			case 'sent_back':
+				return 'Sent back for more research';
+			case 'do_not_contact_set':
+				return 'Asked not to be contacted';
+			case 'do_not_contact_cleared':
+				return 'Contact allowed again';
 			case 'lead_added':
 				return 'Lead added';
 			default:
@@ -331,6 +358,18 @@
 											<li>{detailChangeLine(change)}</li>
 										{/each}
 									</ul>
+								{/if}
+
+								{#if (entry.kind === 'contact_approved' || entry.kind === 'approval_withdrawn') && entry.details?.methods?.length}
+									<ul class="lead-history__changes">
+										{#each entry.details.methods as method, index (index)}
+											<li>{approvalMethodLine(method)}</li>
+										{/each}
+									</ul>
+								{/if}
+
+								{#if (entry.kind === 'sent_back' || entry.kind === 'do_not_contact_set' || entry.kind === 'do_not_contact_cleared') && entry.details?.reason}
+									<p class="lead-history__detail">“{entry.details.reason}”</p>
 								{/if}
 
 								{#if entry.kind === 'lead_added' && entry.details?.source}

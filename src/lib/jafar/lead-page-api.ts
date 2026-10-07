@@ -1,6 +1,11 @@
 import type { QueryClient } from '@tanstack/svelte-query';
 import type { ApplicationCandidate, HistoryPage, LeadPage } from './lead-history';
-import { jafarLeadApplicationCandidatesKey, jafarLeadKey, jafarLeadsKey } from './query-keys';
+import {
+	jafarLeadApplicationCandidatesKey,
+	jafarLeadKey,
+	jafarLeadReviewKey,
+	jafarLeadsKey
+} from './query-keys';
 
 // Jafar business management B2: the browser side of the Lead page's routes. Every write answers the same
 // shape, so each form shows the server's own words against the field they belong to.
@@ -53,11 +58,12 @@ export async function sendLeadWrite(
 	}
 }
 
-/** After any change on a Lead: its page (and older history under it) and the Leads list. */
+/** After any change on a Lead: its page (and older history under it), the Leads list, and the review queue. */
 export function refreshLead(queryClient: QueryClient, leadId: string) {
 	return Promise.all([
 		queryClient.invalidateQueries({ queryKey: jafarLeadKey(leadId) }),
-		queryClient.invalidateQueries({ queryKey: [...jafarLeadsKey, 'list'] })
+		queryClient.invalidateQueries({ queryKey: [...jafarLeadsKey, 'list'] }),
+		queryClient.invalidateQueries({ queryKey: jafarLeadReviewKey })
 	]);
 }
 
