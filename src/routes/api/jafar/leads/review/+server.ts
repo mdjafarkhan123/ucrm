@@ -4,8 +4,9 @@ import { PRIVATE_READ_HEADERS } from '$lib/server/api/errors';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
+import { actorLabel } from '$lib/server/jafar/lead-history';
 import { leadReviewQuerySchema } from '$lib/server/validation/lead.schema';
-import type { ReviewQueuePage } from '$lib/jafar/lead-review';
+import type { ReviewLead, ReviewQueuePage } from '$lib/jafar/lead-review';
 
 // Jafar business management B3: the Leads ready for review, oldest first, one page at a time.
 
@@ -52,12 +53,21 @@ export const GET: RequestHandler = async (event) => {
 			page_size: 20
 		});
 		if (error) throw error;
-		const result = data as unknown as Omit<ReviewQueuePage, 'next_cursor'> & {
+		const result = data as unknown as Omit<ReviewQueuePage, 'leads' | 'next_cursor'> & {
+			leads: (ReviewLead & { prepared_by_email: string })[];
 			next_cursor: ReviewCursor | null;
 		};
 		return json(
 			{
-				leads: result.leads,
+				// The database names a teammate, or falls back to the email; the owner is "Jafar", as in the history.
+				leads: result.leads.map(({ prepared_by_email, ...lead }) => ({
+					...lead,
+					prepared_by:
+						actorLabel(
+							prepared_by_email,
+							lead.prepared_by === prepared_by_email ? null : lead.prepared_by
+						) ?? lead.prepared_by
+				})),
 				next_cursor: result.next_cursor ? encodeCursor(result.next_cursor) : null,
 				total: result.total
 			} satisfies ReviewQueuePage,
