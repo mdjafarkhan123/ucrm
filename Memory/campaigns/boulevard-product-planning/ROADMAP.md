@@ -9,7 +9,7 @@
 | P2C Commerce | Checkout, credits, units, memberships and packages | P2A, P2B | Purchase, redemption, refund and renewal journeys agreed | Done 2026-10-07 |
 | P2D Communications | Notifications, messaging, marketing, reviews and AI | P2A–P2C | Consent, targeting and handoff behavior agreed | Done 2026-10-07 |
 | P2E Operations | Staff access, stock, audit and security | P2A–P2C | Daily operations and exception rules agreed | Done 2026-10-07 |
-| P2F Reporting | Reports and financial reconciliation | P2C, P2E | Measures, access and reconciliation rules agreed | Not started |
+| P2F Reporting | Reports and financial reconciliation | P2C, P2E | Measures, access and reconciliation rules agreed | Done 2026-10-07 |
 | P2G Connected journeys | Integrations, migration, apps and later location boundaries | P2A–P2F | Cross-area journeys checked and necessary source gaps resolved | Not started |
 | P2H Business entry and onboarding | Marketing-to-account journey, industry assignment, setup programs and mixed-business changes | P2A–P2G | Detailed routing, version, change and Platform Owner rules agreed | Not started |
 | P3 Reuse and release | Existing-app mapping, feasibility limits, initial/later assignments and quality targets | P2H | Each initial capability has a reuse decision, feasible behavior and completion checks | Not started |

@@ -468,6 +468,20 @@ existing-app suitability remain P3.
   route. When disposal is permitted, record what was removed, when, and by whom. Do not set one US-wide
   retention period. The applicable states and provider contracts must be reviewed before clinical launch.
 
+## Reporting and reconciliation
+
+Agreed direction 2026-10-07 after checking official Boulevard guidance and Zenoti where needed. Evidence, version limits and proposed safeguards: [P2F reporting research](research/boulevard-reporting-2026-10-07.md). This sets behavior, not first-release assignment or a claim that the contractor reports already support it.
+
+- A business summary separates **closed sales**, **new money received**, **previously paid value redeemed**, **care and products delivered**, and **processor payouts**. Each total names its date basis, currency, tax/tip treatment and included states. An open order, failed payment or unconfirmed outside payment does not appear as collected money. Using a gift card, credit, voucher or product unit never creates a second card receipt. Prepaid purchase and later fulfillment may each appear in their respective views, but they are not added together as one new-money or revenue total.
+- Staff can follow a difference from the summary to its order, line item, payment, refund, benefit movement or payout. Refunds and voids retain the original and correction. Payment date, settlement date, payout date and bank-arrival confirmation stay distinct. Processor fees, disputes, holds, releases and adjustments explain why card receipts differ from a bank deposit. Cash-drawer counts reconcile physical cash only. Recorded outside payments remain visibly unverified by our processor.
+- A client and permitted finance staff can see unused account credit, gift cards, service vouchers and prepaid product **unit quantities** separately, as of a chosen date, with dated issue, use, refund and correction history. Business reports show outstanding value for the money-based balances without offsetting it against a client's unpaid bill. Unit purchase value and redemption are traceable, but a monetary liability total for product units requires a verified valuation and accounting rule before it is promised.
+- Stock reporting separates on-hand physical quantity, each attributed movement, and estimated stock value. It labels the cost method, valuation date and excluded products. A current estimated value is not presented as historical treatment cost or as proof of a physical count. Lot-tracked clinical use and wastage link back to the treated person and visit under the clinical permissions agreed in Operations.
+- A selected pay period shows each staff member's permitted sales, tips, commission basis, refund clawback and approved corrections or reassignments. Earlier entries remain visible when a later correction changes the amount. The report is reviewed and exported for the clinic's payroll process; it does not claim wages, overtime, tax withholding or that staff have been paid.
+- Effective permissions govern reports, underlying rows, downloads and saved views consistently. Finance access controls business money and payout details; clinicians may see only their own permitted performance; stock staff may see counts without automatically gaining cost, sale-price or clinical-record access. A download cannot expose fields hidden on screen. No financial or stock export includes protected clinical notes merely because it identifies an appointment or product.
+- The daily unresolved-work view includes open orders, failed or pending payments, unexplained cash variance, payout exceptions and the operational exceptions already agreed. Each item has an owner and resolution history. A day may close with visible exceptions; closing does not mark missing money as received.
+
+The existing contractor financial reconciliation rules and readers are reuse candidates only. P3 checks their suitability for appointments, prepaid value, stock, commission, payout data and reporting permissions before assigning release scope. Reports use the organization's timezone and one named currency; source dates and stable IDs permit accountant tracing. No capacity or accounting-software claim follows from this planning section.
+
 ## Still unclear
 
 - Detailed behaviors, unresolved evidence gaps, reuse findings, release assignments, and measurable quality targets; settle these in planning parts, not by assumption.
@@ -478,6 +492,7 @@ existing-app suitability remain P3.
   must settle these before build parts are approved; implemented slices must then supply the stated evidence.
 - How client sign-in is built alongside the existing staff sign-in, and how saved cards fit the current Stripe key (P3).
 - Clinical records: which agreed capabilities belong in the initial release, what can be reused, and which qualified prescribing provider could support an integration (P3). State-specific minor access and clinical-policy review must be completed for the states served before launch.
+- Reporting: the accounting method for valuing unused prepaid product units, provider payout-data availability, and initial report selection need P3 verification before a monetary liability, automatic bank match or release promise.
 - Whether Beauty & Spa lets under-age clients book online on their own; settle this when that edition is planned.
 
 ## Not doing
@@ -495,6 +510,7 @@ existing-app suitability remain P3.
 - [P2C commerce sources, vendor gaps and selected mature patterns](research/boulevard-commerce-2026-10-07.md); agreed behavior is in [Commerce](#commerce).
 - [P2D communications sources, vendor gaps and selected safeguards](research/boulevard-communications-2026-10-07.md); agreed behavior is in [Communications](#communications), while marketing, reviews and AI release timing belongs to P3.
 - [P2E operations sources and clinical stock gap](research/boulevard-operations-2026-10-07.md); agreed behavior is in [Operations](#operations), while release timing and existing-app reuse belong to P3.
+- [P2F reporting measures, reconciliation, permissions and source limits](research/boulevard-reporting-2026-10-07.md); agreed direction is in [Reporting and reconciliation](#reporting-and-reconciliation), while release timing and existing-app reuse belong to P3.
 - [Industry entry and onboarding patterns](research/industry-onboarding-entry-patterns-2026-10-07.md); agreed direction is in [Business entry and onboarding](#business-entry-and-onboarding).
 
 Primary public entry points:
