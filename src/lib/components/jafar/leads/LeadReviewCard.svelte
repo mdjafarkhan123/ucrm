@@ -103,13 +103,20 @@
 			'POST',
 			{ method_ids: chosen, whatsapp_permission_ids: permitted, due_on: dueOn.toString() }
 		);
-		if (result.ok) await refreshLead(queryClient, lead.id);
-		saving = false;
 		if (!result.ok) {
+			saving = false;
 			formError = result.error;
 			return;
 		}
-		onDone(`${lead.business_name} approved — first contact is on their next action`);
+		decided(`${lead.business_name} approved — first contact is on their next action`);
+	}
+
+	// Tell the page before the queue reloads: once it does, this Lead has left the list, and the page could no
+	// longer tell which card comes next (the next one would be skipped) -- and `lead` would already be that card.
+	function decided(message: string) {
+		const id = lead.id;
+		onDone(message);
+		void refreshLead(queryClient, id);
 	}
 
 	async function markUnsuitable() {
@@ -118,13 +125,12 @@
 		const result = await sendLeadWrite(`/api/jafar/leads/${encodeURIComponent(lead.id)}`, 'PATCH', {
 			lead_status: 'unsuitable'
 		});
-		if (result.ok) await refreshLead(queryClient, lead.id);
-		saving = false;
 		if (!result.ok) {
+			saving = false;
 			toast.error('The Lead could not be marked unsuitable.', result.error);
 			return;
 		}
-		onDone(`${lead.business_name} marked unsuitable`);
+		decided(`${lead.business_name} marked unsuitable`);
 	}
 
 	// --- Sending back --------------------------------------------------------------------------------
@@ -147,14 +153,13 @@
 			'POST',
 			{ reason: sendBackReason.trim() }
 		);
-		if (result.ok) await refreshLead(queryClient, lead.id);
-		saving = false;
 		if (!result.ok) {
+			saving = false;
 			sendBackError = result.fieldErrors.reason ?? result.error;
 			return;
 		}
 		sendBackOpen = false;
-		onDone(`${lead.business_name} sent back to Researching`);
+		decided(`${lead.business_name} sent back to Researching`);
 	}
 
 	const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' });
