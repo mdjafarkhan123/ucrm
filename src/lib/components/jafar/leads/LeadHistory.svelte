@@ -27,6 +27,13 @@
 	import arrowBackIcon from '@tabler/icons/outline/arrow-back-up.svg?raw';
 	import bellOffIcon from '@tabler/icons/outline/bell-off.svg?raw';
 	import bellIcon from '@tabler/icons/outline/bell.svg?raw';
+	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
+	import briefcaseOffIcon from '@tabler/icons/outline/briefcase-off.svg?raw';
+	import stageIcon from '@tabler/icons/outline/arrows-right-left.svg?raw';
+	import receiptIcon from '@tabler/icons/outline/receipt-2.svg?raw';
+	import thumbDownIcon from '@tabler/icons/outline/thumb-down.svg?raw';
+	import refreshIcon from '@tabler/icons/outline/refresh.svg?raw';
+	import discountIcon from '@tabler/icons/outline/discount.svg?raw';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
@@ -50,6 +57,13 @@
 		type LeadContactMethodDetail
 	} from '$lib/jafar/lead-history';
 	import { LEAD_SOURCE_LABELS, LEAD_STATUS_LABELS, type LeadStatus } from '$lib/jafar/leads';
+	import {
+		DEAL_STAGE_LABELS,
+		LOST_REASON_LABELS,
+		type DealStage,
+		type LostReason
+	} from '$lib/jafar/deals';
+	import { formatUsd } from '$lib/jafar/packages';
 	import { jafarLeadHistoryKey } from '$lib/jafar/query-keys';
 	import { fetchOlderHistory, refreshLead, sendLeadWrite } from '$lib/jafar/lead-page-api';
 
@@ -151,9 +165,37 @@
 				return bellIcon;
 			case 'lead_added':
 				return sparklesIcon;
+			case 'deal_started':
+				return briefcaseIcon;
+			case 'deal_stage_changed':
+				return stageIcon;
+			case 'pricing_shared':
+				return receiptIcon;
+			case 'deal_lost':
+				return thumbDownIcon;
+			case 'deal_reopened':
+				return refreshIcon;
+			case 'deal_terms_changed':
+				return discountIcon;
+			case 'deal_removed':
+				return briefcaseOffIcon;
 			default:
 				return historyIcon;
 		}
+	}
+
+	/** "Pro · $129 a month · $1,290 a year", as it was shared. */
+	function sharedPackageLine(shared: {
+		name: string;
+		monthly_price_usd_cents?: number;
+		yearly_price_usd_cents?: number;
+	}) {
+		const parts = [shared.name];
+		if (shared.monthly_price_usd_cents !== undefined)
+			parts.push(`${formatUsd(shared.monthly_price_usd_cents)} a month`);
+		if (shared.yearly_price_usd_cents !== undefined)
+			parts.push(`${formatUsd(shared.yearly_price_usd_cents)} a year`);
+		return parts.join(' · ');
 	}
 
 	function headline(entry: HistoryEntry) {
@@ -193,6 +235,20 @@
 				return 'Contact allowed again';
 			case 'lead_added':
 				return 'Lead added';
+			case 'deal_started':
+				return `Deal started at ${details.stage ? DEAL_STAGE_LABELS[details.stage] : 'its first stage'}`;
+			case 'deal_stage_changed':
+				return `Deal moved to ${details.to ? DEAL_STAGE_LABELS[details.to as DealStage] : 'another stage'}`;
+			case 'pricing_shared':
+				return 'Pricing shared';
+			case 'deal_lost':
+				return 'Deal marked Lost';
+			case 'deal_reopened':
+				return `Deal reopened at ${details.to ? DEAL_STAGE_LABELS[details.to as DealStage] : 'its last stage'}`;
+			case 'deal_terms_changed':
+				return details.terms ? 'Special terms agreed' : 'Special terms removed';
+			case 'deal_removed':
+				return 'Deal removed';
 			default:
 				return 'Update';
 		}
@@ -370,6 +426,42 @@
 
 								{#if (entry.kind === 'sent_back' || entry.kind === 'do_not_contact_set' || entry.kind === 'do_not_contact_cleared') && entry.details?.reason}
 									<p class="lead-history__detail">“{entry.details.reason}”</p>
+								{/if}
+
+								{#if entry.kind === 'deal_stage_changed' && entry.details?.from}
+									<p class="lead-history__detail">
+										Was {DEAL_STAGE_LABELS[entry.details.from as DealStage]}
+									</p>
+								{/if}
+
+								{#if entry.kind === 'pricing_shared' && entry.details?.packages?.length}
+									<ul class="lead-history__changes">
+										{#each entry.details.packages as shared, index (index)}
+											<li>{sharedPackageLine(shared)}</li>
+										{/each}
+									</ul>
+								{/if}
+
+								{#if entry.kind === 'deal_lost' && entry.details?.reason}
+									<p class="lead-history__detail">
+										{LOST_REASON_LABELS[entry.details.reason as LostReason] ?? entry.details.reason}
+										{#if entry.details.from}
+											· was at {DEAL_STAGE_LABELS[entry.details.from as DealStage]}
+										{/if}
+									</p>
+									{#if entry.details.note}
+										<p class="lead-history__detail">“{entry.details.note}”</p>
+									{/if}
+								{/if}
+
+								{#if entry.kind === 'deal_terms_changed' && entry.details?.terms}
+									<p class="lead-history__detail">“{entry.details.terms}”</p>
+								{/if}
+
+								{#if entry.kind === 'deal_removed' && entry.details?.stage}
+									<p class="lead-history__detail">
+										It was at {DEAL_STAGE_LABELS[entry.details.stage]}
+									</p>
 								{/if}
 
 								{#if entry.kind === 'lead_added' && entry.details?.source}

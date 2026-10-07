@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { CalendarDate, today, getLocalTimeZone } from '@internationalized/date';
 	import copyIcon from '@tabler/icons/outline/copy.svg?raw';
@@ -50,7 +51,8 @@
 
 	let chosen = $state<string[]>([]);
 	let billing = $state<string>('month');
-	const suggestion = suggestedNextStep('pricing_shared', businessName);
+	// Prefilled once, when the dialog opens.
+	const suggestion = untrack(() => suggestedNextStep('pricing_shared', businessName));
 	let text = $state(suggestion.text);
 	let dueOn = $state<CalendarDate | undefined>(calendarDateFromString(suggestion.due_on));
 	let fieldErrors = $state<Record<string, string>>({});

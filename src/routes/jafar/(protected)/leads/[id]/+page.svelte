@@ -39,6 +39,7 @@
 	} from '$lib/components/jafar/leads/LeadContactsEditor.svelte';
 	import LeadAboutEditor from '$lib/components/jafar/leads/LeadAboutEditor.svelte';
 	import LeadContactPermission from '$lib/components/jafar/leads/LeadContactPermission.svelte';
+	import DealPanel from '$lib/components/jafar/deals/DealPanel.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import {
 		CONTACT_METHOD_LABELS,
@@ -95,6 +96,29 @@
 		canUseJafarPath(
 			{ role: page.data.owner.role, access: page.data.owner.access },
 			`/api/jafar/leads/${leadId}/do-not-contact`,
+			'POST'
+		)
+	);
+	// B4: moving a Deal is Leads work; special terms need "Agree special terms"; only Jafar removes a Deal.
+	const DEAL_PATH = '/api/jafar/deals/00000000-0000-0000-0000-000000000000';
+	const canChangeDeal = $derived(
+		canUseJafarPath(
+			{ role: page.data.owner.role, access: page.data.owner.access },
+			DEAL_PATH,
+			'PATCH'
+		)
+	);
+	const canAgreeTerms = $derived(
+		canUseJafarPath(
+			{ role: page.data.owner.role, access: page.data.owner.access },
+			`${DEAL_PATH}/terms`,
+			'PATCH'
+		)
+	);
+	const canRemoveDeal = $derived(
+		canUseJafarPath(
+			{ role: page.data.owner.role, access: page.data.owner.access },
+			`${DEAL_PATH}/remove`,
 			'POST'
 		)
 	);
@@ -438,6 +462,19 @@
 		<div class="lead-page__layout">
 			<aside class="lead-page__rail" aria-label="About this Lead">
 				<LeadContactPermission {data} {canApprove} {canMarkDoNotContact} />
+
+				<DealPanel
+					relationshipId={leadId}
+					businessName={details.business_name}
+					deals={data.deals}
+					doNotContact={details.do_not_contact !== null}
+					current={details.next_action && details.next_action_due_on
+						? { text: details.next_action, due_on: details.next_action_due_on }
+						: null}
+					canChange={canChangeDeal}
+					{canAgreeTerms}
+					canRemove={canRemoveDeal}
+				/>
 
 				<RailCard title="Next action" icon={calendarIcon} class="lead-page__next">
 					{#if details.next_action}
