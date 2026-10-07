@@ -5,6 +5,6 @@
 
 **Paused:** D1 teammate sign-in — built and on `main`; a few browser checks left, now including Sales landing on Leads (see `parts/D1.md`)
 
-**Next part:** B2 Lead page and history (B1 done 2026-10-07) — see `stages/B-leads-to-client.md`. Every screen part runs the `performance-review` design branch first and verification before Done (plan § Speed).
+**Paused:** B2 Lead page and history — database and server done in worktree `../Ucrm-worktrees/jafar-b2`; see `parts/B2.md`. Every screen part runs the `performance-review` design branch first and verification before Done (plan § Speed).
 
 **Blockers:** none. Product behavior and first-release scope are approved; full Uplift mailboxes and automated first-contact email remain later-release work.
