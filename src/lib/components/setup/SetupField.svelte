@@ -3,6 +3,7 @@
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import CountryPicker from '$lib/components/ui/CountryPicker.svelte';
 	import RadioGroup from '$lib/components/ui/RadioGroup.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import TimezonePicker from '$lib/components/ui/TimezonePicker.svelte';
@@ -16,7 +17,6 @@
 	import SetupPickField from '$lib/components/setup/SetupPickField.svelte';
 	import type { SetupHelpAnswer } from '$lib/setup/help';
 	import type { SetupListRow } from '$lib/setup/lists';
-	import { COUNTRIES } from '$lib/settings/countries';
 	import { PROTECTED_FILE_KINDS } from '$lib/setup/files';
 	import type { SetupAvailability, SetupFact } from '$lib/setup/catalogue';
 	import { setupReuseSource, setupReuseValue } from '$lib/setup/reuse';
@@ -259,11 +259,10 @@
 			onchange={choose}
 		/>
 	{:else if fact.kind === 'country'}
-		<Select
+		<CountryPicker
 			{id}
 			ariaLabelledby={questionId}
-			placeholder="Choose your country"
-			options={COUNTRIES}
+			placeholder="Search for your country"
 			bind:value
 			required={fact.required}
 			onchange={oncommit}
