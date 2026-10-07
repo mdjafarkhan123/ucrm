@@ -18,4 +18,14 @@
 
 ## Next
 
-Check the current contractor booking flow, existing `/jafar` Settings, and primary mature-product sources. Ask Jafar the ready booking-rule and Settings-group questions in one round. Update the plan from his answers and ask for approval of the whole product plan before P4 release-scope selection. No coding, purchase, DNS change, or live sending is authorized by this planning part.
+Wait for Jafar's answers below. Then settle dependent booking confirmation rules, update the plan, and ask for approval of the whole product plan before P4 release-scope selection. No coding, purchase, DNS change, or live sending is authorized by this planning part.
+
+## Waiting for Jafar
+
+Q1 If you are busy in Google or Outlook at 3 pm but `/jafar` shows free, what should booking show? A (recommended): connect that calendar and hide busy times; without a connection, visitors request a time and you confirm it. B: use only `/jafar`; you block outside commitments manually.
+
+Q2 After a visitor books, should their confirmation include secure Reschedule and Cancel links with a deadline you set? A (recommended): yes; update the calendar and reminders. B: they contact your team.
+
+Q3 With future teammates, how should the booking page assign calls? A (recommended): you configure meeting types and eligible hosts; each booking has one named host. B: rotate calls automatically across Sales staff.
+
+Q4 Should `/jafar` Settings open to these groups: My preferences, Business & booking, Team & access, Mail & notifications, Payments & client setup, Platform & safety? A (recommended): yes. B: tell me what to group differently.
