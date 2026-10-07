@@ -218,7 +218,11 @@
 						{#each leadList as lead (lead.id)}
 							<tr>
 								<th scope="row" class="leads__business">
-									<strong>{lead.business_name}</strong>
+									<a
+										class="leads__business-link"
+										href={resolve('/jafar/(protected)/leads/[id]', { id: lead.id })}
+										>{lead.business_name}</a
+									>
 									<small>{lead.trade}{lead.website_host ? ` · ${lead.website_host}` : ''}</small>
 								</th>
 								<td data-label="Country">{countryName(lead.country_code)}</td>
@@ -409,6 +413,8 @@
 	}
 
 	.leads__table tbody tr {
+		position: relative;
+		cursor: pointer;
 		transition: background-color var(--timing-quick);
 
 		&:hover {
@@ -426,9 +432,35 @@
 		color: var(--color-heading);
 		font-weight: 700;
 
-		strong,
+		.leads__business-link,
 		small {
 			display: block;
+		}
+
+		// The whole row opens the Lead: the link's hit area stretches over it.
+		.leads__business-link {
+			color: inherit;
+			text-decoration: none;
+
+			&::after {
+				content: '';
+				position: absolute;
+				inset: 0;
+			}
+
+			&:focus-visible {
+				outline: none;
+
+				&::after {
+					box-shadow: inset var(--shadow-focus);
+				}
+			}
+		}
+
+		tr:hover & .leads__business-link {
+			color: var(--color-interactive);
+			text-decoration: underline;
+			text-underline-offset: 3px;
 		}
 
 		small {

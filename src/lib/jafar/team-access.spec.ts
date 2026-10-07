@@ -87,6 +87,20 @@ describe('individual access (D2)', () => {
 		});
 	});
 
+	it('keeps a Lead’s Application picker and linking closed while Applications is off', () => {
+		const leadsOnly = {
+			role: 'sales' as const,
+			access: effectiveTeamAccess('sales', { areas: { applications: 'none' }, actions: [] })
+		};
+		const candidates = '/api/jafar/leads/lead-id/applications';
+		expect(canUseJafarPath(leadsOnly, '/api/jafar/leads/lead-id', 'GET')).toBe(true);
+		expect(canUseJafarPath(leadsOnly, candidates, 'GET')).toBe(false);
+		expect(canUseJafarPath(leadsOnly, candidates, 'POST')).toBe(false);
+		expect(canUseJafarPath(leadsOnly, `${candidates}/application-id`, 'DELETE')).toBe(false);
+		// The standard Sales role looks at Applications, so it may link them from a Lead it works.
+		expect(canUseJafarPath({ role: 'sales' }, candidates, 'POST')).toBe(true);
+	});
+
 	it('drops an action whose area is closed and caps Packages at looking', () => {
 		const access = effectiveTeamAccess('sales', {
 			areas: { packages: 'work' },
@@ -130,7 +144,9 @@ describe('individual access (D2)', () => {
 
 	it('explains access that cannot be saved', () => {
 		expect(teamAccessProblem({ areas: {}, actions: [] })).toMatch(/at least one area/);
-		expect(teamAccessProblem({ areas: { packages: 'work' }, actions: [] })).toMatch(/only be opened/);
+		expect(teamAccessProblem({ areas: { packages: 'work' }, actions: [] })).toMatch(
+			/only be opened/
+		);
 		expect(teamAccessProblem({ areas: { leads: 'work' }, actions: ['payments'] })).toMatch(
 			/Applications/
 		);
@@ -160,7 +176,9 @@ describe('individual access (D2)', () => {
 
 	it('keeps client account controls separate from onboarding work in Organizations', () => {
 		const delivery = sales({ areas: { organizations: 'work' }, actions: [] });
-		expect(canUseJafarPath(delivery, '/api/jafar/organizations/x/setup/reviews', 'POST')).toBe(true);
+		expect(canUseJafarPath(delivery, '/api/jafar/organizations/x/setup/reviews', 'POST')).toBe(
+			true
+		);
 		expect(
 			canUseJafarPath(delivery, '/api/jafar/organizations/x/communications/sending-pause', 'POST')
 		).toBe(false);

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import targetIcon from '@tabler/icons/outline/target.svg?raw';
 	import {
 		createMutation,
 		createQuery,
@@ -86,6 +87,8 @@
 		duplicate_acknowledged_at: string | null;
 		duplicate_acknowledged_by_owner_email: string | null;
 		payment_reversed_at: string | null;
+		/** B2: the Lead this Application belongs to, when someone linked it. */
+		linked_lead: { id: string; business_name: string } | null;
 	};
 	type DuplicateMatch = {
 		id: string;
@@ -462,7 +465,7 @@
 			const query = params.toString();
 			const response = await fetch(`/api/jafar/prospects${query ? `?${query}` : ''}`);
 			const result = (await response.json()) as ProspectListResponse;
-			if (!response.ok) throw new Error(result.error ?? 'Prospects could not be loaded.');
+			if (!response.ok) throw new Error(result.error ?? 'Applications could not be loaded.');
 			return result;
 		}
 	}));
@@ -471,10 +474,10 @@
 		queryKey: jafarProspectKey(selectedProspectId),
 		enabled: Boolean(selectedProspectId),
 		queryFn: async () => {
-			if (!selectedProspectId) throw new Error('Choose a prospect first.');
+			if (!selectedProspectId) throw new Error('Choose an Application first.');
 			const response = await fetch(`/api/jafar/prospects/${selectedProspectId}`);
 			const result = (await response.json()) as ProspectDetailResponse;
-			if (!response.ok) throw new Error(result.error ?? 'Prospect could not be loaded.');
+			if (!response.ok) throw new Error(result.error ?? 'This Application could not be loaded.');
 			return result;
 		}
 	}));
@@ -544,7 +547,7 @@
 
 	const correctProspect = createMutation<ActionResponse, Error, void>(() => ({
 		mutationFn: async () => {
-			if (!selectedProspectId) throw new Error('Choose a prospect first.');
+			if (!selectedProspectId) throw new Error('Choose an Application first.');
 			const response = await fetch(`/api/jafar/prospects/${selectedProspectId}/correct`, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
@@ -571,7 +574,7 @@
 
 	const markNotProceeding = createMutation<ActionResponse, Error, void>(() => ({
 		mutationFn: async () => {
-			if (!selectedProspectId) throw new Error('Choose a prospect first.');
+			if (!selectedProspectId) throw new Error('Choose an Application first.');
 			const response = await fetch(`/api/jafar/prospects/${selectedProspectId}/not-proceeding`, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
@@ -593,7 +596,7 @@
 
 	const markReviewed = createMutation<ActionResponse, Error, void>(() => ({
 		mutationFn: async () => {
-			if (!selectedProspectId) throw new Error('Choose a prospect first.');
+			if (!selectedProspectId) throw new Error('Choose an Application first.');
 			const response = await fetch(`/api/jafar/prospects/${selectedProspectId}/mark-reviewed`, {
 				method: 'POST'
 			});
@@ -612,7 +615,7 @@
 
 	const acknowledgeDuplicate = createMutation<ActionResponse, Error, void>(() => ({
 		mutationFn: async () => {
-			if (!selectedProspectId) throw new Error('Choose a prospect first.');
+			if (!selectedProspectId) throw new Error('Choose an Application first.');
 			const response = await fetch(
 				`/api/jafar/prospects/${selectedProspectId}/acknowledge-duplicate`,
 				{ method: 'POST' }
@@ -632,7 +635,7 @@
 
 	const confirmPayment = createMutation<ActionResponse, Error, void>(() => ({
 		mutationFn: async () => {
-			if (!selectedProspectId) throw new Error('Choose a prospect first.');
+			if (!selectedProspectId) throw new Error('Choose an Application first.');
 			const amountCents = parseUsdCents(paymentForm.amountDollars);
 			if (amountCents === null) throw new Error('Enter the amount received, like 1290.00.');
 			const response = await fetch(`/api/jafar/prospects/${selectedProspectId}/confirm-payment`, {
@@ -662,7 +665,7 @@
 
 	const correctPackage = createMutation<ActionResponse, Error, void>(() => ({
 		mutationFn: async () => {
-			if (!selectedProspectId) throw new Error('Choose a prospect first.');
+			if (!selectedProspectId) throw new Error('Choose an Application first.');
 			const editionId = chosenPackage?.published?.edition_id;
 			if (!editionId) throw new Error('Choose a package.');
 			const response = await fetch(`/api/jafar/prospects/${selectedProspectId}/correct-package`, {
@@ -694,7 +697,7 @@
 		void
 	>(() => ({
 		mutationFn: async () => {
-			if (!selectedProspectId) throw new Error('Choose a prospect first.');
+			if (!selectedProspectId) throw new Error('Choose an Application first.');
 			if (!activation) throw new Error('Wait for the dates to cover to load.');
 			const response = await fetch(`/api/jafar/prospects/${selectedProspectId}/provision`, {
 				method: 'POST',
@@ -734,7 +737,7 @@
 
 	const reversePayment = createMutation<ActionResponse, Error, void>(() => ({
 		mutationFn: async () => {
-			if (!selectedProspectId) throw new Error('Choose a prospect first.');
+			if (!selectedProspectId) throw new Error('Choose an Application first.');
 			const response = await fetch(`/api/jafar/prospects/${selectedProspectId}/reverse-payment`, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
@@ -757,7 +760,7 @@
 
 	const resendSetupEmail = createMutation<ActionResponse, Error, void>(() => ({
 		mutationFn: async () => {
-			if (!selectedProspectId) throw new Error('Choose a prospect first.');
+			if (!selectedProspectId) throw new Error('Choose an Application first.');
 			const response = await fetch(`/api/jafar/prospects/${selectedProspectId}/send-setup-email`, {
 				method: 'POST'
 			});
@@ -966,24 +969,25 @@
 </script>
 
 <svelte:head>
-	<title>Prospects · Control Room</title>
+	<title>Applications · Control Room</title>
 </svelte:head>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <main class="prospects">
 	<header class="prospects__header">
 		<div>
-			<p class="prospects__eyebrow">Onboarding queue</p>
-			<h1>Prospects</h1>
+			<p class="prospects__eyebrow">Business management</p>
+			<h1>Applications</h1>
 			<p class="prospects__description">
-				Review onboarding applications before they become contractor workspaces.
+				Businesses that applied on the website. Review each one before it becomes a client
+				workspace.
 			</p>
 		</div>
 	</header>
 
-	<section class="prospects__summary" aria-label="Prospect summary">
+	<section class="prospects__summary" aria-label="Application summary">
 		<KpiCard
-			label="All prospects"
+			label="All Applications"
 			value={String(prospectList.length)}
 			note="Current results"
 			icon={usersIcon}
@@ -1015,7 +1019,7 @@
 		/>
 	</section>
 
-	<section class="prospects__filters" aria-label="Prospect filters">
+	<section class="prospects__filters" aria-label="Application filters">
 		<div class="prospects__filter-field prospects__filter-field--search">
 			<label for="prospect-search">Search applications</label>
 			<SearchInput
@@ -1031,7 +1035,7 @@
 				id="prospect-stage"
 				bind:value={stageFilter}
 				options={stages}
-				ariaLabel="Filter prospects by stage"
+				ariaLabel="Filter Applications by stage"
 				onchange={clearSelection}
 			/>
 		</div>
@@ -1041,20 +1045,23 @@
 	</section>
 
 	<div class="prospects__list-meta" aria-live="polite">
-		<span><strong>{prospectList.length}</strong> prospects shown</span>
+		<span
+			><strong>{prospectList.length}</strong>
+			{prospectList.length === 1 ? 'Application' : 'Applications'} shown</span
+		>
 		<span>Updated from the onboarding queue</span>
 	</div>
 
 	<section class="prospects__table-panel" aria-labelledby="prospect-list-title">
-		<h2 id="prospect-list-title" class="prospects__sr-only">Prospect list</h2>
+		<h2 id="prospect-list-title" class="prospects__sr-only">Application list</h2>
 		{#if prospects.isPending}
 			<div class="prospects__state">
-				<LoadingSkeleton variant="table" rows={5} label="Loading prospects" />
+				<LoadingSkeleton variant="table" rows={5} label="Loading Applications" />
 			</div>
 		{:else if prospects.isError}
 			<div class="prospects__state">
 				<ErrorState
-					title="Prospects could not be loaded"
+					title="Applications could not be loaded"
 					description={prospects.error.message}
 					retry={() => prospects.refetch()}
 				/>
@@ -1062,7 +1069,7 @@
 		{:else if prospectList.length === 0}
 			<div class="prospects__state">
 				<EmptyState
-					title="No matching prospects"
+					title="No matching Applications"
 					description="Try another search or stage filter."
 				/>
 			</div>
@@ -1135,12 +1142,12 @@
 		<section class="prospects__review" aria-labelledby="prospect-review-title">
 			{#if prospectDetail.isPending}
 				<div class="prospects__review-state">
-					<LoadingSkeleton variant="card" label="Loading prospect review" />
+					<LoadingSkeleton variant="card" label="Loading the Application" />
 				</div>
 			{:else if prospectDetail.isError}
 				<div class="prospects__review-state">
 					<ErrorState
-						title="Prospect review could not be loaded"
+						title="This Application could not be loaded"
 						description={prospectDetail.error.message}
 						retry={() => prospectDetail.refetch()}
 					/>
@@ -1149,11 +1156,20 @@
 				{@const detail = prospectDetail.data.prospect}
 				<div class="prospects__review-icon" aria-hidden="true">{@html checkIcon}</div>
 				<div class="prospects__review-content">
-					<p class="prospects__eyebrow">Selected review</p>
+					<p class="prospects__eyebrow">Application</p>
 					<div class="prospects__review-heading">
 						<h2 id="prospect-review-title">{detail.business_name}</h2>
 						<Badge status={stageTone(detail.stage)}>{stageLabel(detail.stage)}</Badge>
 					</div>
+					{#if detail.linked_lead}
+						<p class="prospects__linked-lead">
+							<span aria-hidden="true">{@html targetIcon}</span>
+							Part of the Lead
+							<a href={resolve('/jafar/(protected)/leads/[id]', { id: detail.linked_lead.id })}
+								>{detail.linked_lead.business_name}</a
+							>
+						</p>
+					{/if}
 					<p>
 						{#if detail.possible_duplicate}
 							This application may duplicate an existing onboarding record. Compare it before
@@ -2252,6 +2268,29 @@
 		> p:not(.prospects__eyebrow) {
 			margin-top: var(--space-small);
 			line-height: var(--typography--lineHeight-large);
+		}
+	}
+
+	.prospects__linked-lead {
+		display: inline-flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-smaller);
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+
+		span :global(svg) {
+			display: block;
+			width: 16px;
+			height: 16px;
+			color: var(--color-icon--secondary);
+		}
+
+		a {
+			color: var(--color-interactive);
+			font-weight: 700;
+			text-decoration: underline;
+			text-underline-offset: 3px;
 		}
 	}
 

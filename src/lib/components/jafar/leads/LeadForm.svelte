@@ -35,6 +35,7 @@
 		type LeadSource,
 		type LeadStatus
 	} from '$lib/jafar/leads';
+	import { applicationHref } from '$lib/jafar/lead-history';
 	import { jafarLeadsKey } from '$lib/jafar/query-keys';
 
 	// Jafar business management B1: adding one Lead -- the business, every way to reach it with where each
@@ -385,8 +386,13 @@
 												organizationId: match.id
 											})}>{match.name}</a
 										>
+									{:else if match.kind === 'lead'}
+										<a href={resolve('/jafar/(protected)/leads/[id]', { id: match.id })}
+											>{match.name}</a
+										>
 									{:else}
-										<strong>{match.name}</strong>
+										<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- applicationHref resolves the path. -->
+										<a href={applicationHref(match.id)}>{match.name}</a>
 									{/if}
 									{#if match.country_code}<span>· {countryName(match.country_code)}</span>{/if}
 									<span class="lead-form__duplicate-why">{matchSentence(match)}</span>
