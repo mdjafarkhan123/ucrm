@@ -5,10 +5,9 @@ uploads, crops, changes, or removes their own profile photo, and it shows wherev
 **Plan:** no plan document yet. Approved 2026-10-07: each person changes only their own photo; only
 teammates in the same business see it (customers do not); contractor app first, `/jafar` after.
 
-**In progress:**
+**Done:** 1 Contractor app photos (on `main` 2026-10-07).
 
-- 1 Contractor app photos — `parts/1-contractor-app.md`
-
-**Next part:** 2 `/jafar` panel photos — after Part 1 is on `main`.
+**Next part:** 2 `/jafar` panel photos — see `ROADMAP.md`. The photo database column and its database
+changes are already live; reuse `ProfilePhotoDialog` and the `/api/profile/photo` route.
 
 **Blockers:** none
