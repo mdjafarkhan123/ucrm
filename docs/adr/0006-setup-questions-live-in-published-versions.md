@@ -2,7 +2,10 @@
 
 ## Status
 
-Accepted 2026-10-03, with client onboarding part A3. Follows plan §2.1 of the
+Accepted 2026-10-03, with client onboarding part A3. Describes the current implementation. Jafar approved a
+future change on 2026-10-07: a business already filling Setup will stay on its started program version until
+an owner-reviewed move. That change remains to be designed and built; do not treat this ADR's live-update
+rule as the target behavior for the industry expansion. Follows plan §2.1 of the
 [client onboarding and delivery plan](../client-onboarding-delivery-behavior-contract.md) (Jafar writes the
 setup). Revises [ADR 0005](0005-client-setup-answers-draft-snapshot-accepted.md) decision 3; the rest of
 ADR 0005 stands.

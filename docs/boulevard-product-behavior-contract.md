@@ -31,7 +31,7 @@ Medspa & Clinical Wellness is normally primary so its stricter record and safety
 
 ## Business entry and onboarding
 
-Agreed by Jafar 2026-10-07. Evidence: [industry onboarding research](research/industry-onboarding-entry-patterns-2026-10-07.md).
+Agreed by Jafar 2026-10-07. Evidence: [industry onboarding research](research/industry-onboarding-entry-patterns-2026-10-07.md) and [P2H change and publishing research](research/boulevard-business-entry-onboarding-2026-10-07.md). The detailed rules below are our product choices where Boulevard's public guidance is silent.
 
 - Industry-specific marketing pages may speak directly to salons, barbers, spas or medspas, but they feed one
   shared application and purchase journey. The link may preselect a business type and suitable package; it
@@ -48,9 +48,30 @@ Agreed by Jafar 2026-10-07. Evidence: [industry onboarding research](research/in
   programs. They reuse shared sections such as business identity, branding, team and imports, while keeping
   industry-specific work separate. The current questionnaire becomes the Contractor program; it is not
   duplicated or discarded.
-- The Platform Owner can manage, preview and publish each program, including previewing the exact combination
-  of industry, business type and package. The detailed version-change, migration and later industry-change
-  rules remain for the onboarding planning part.
+- A business that has started Setup stays on the published program version it started with. A newly published
+  version goes to new businesses. Publishing does not reopen a submitted setup. Moving an existing business to
+  a newer program requires a Platform Owner review of its completed tasks, saved answers and unfinished work.
+  Carry a completed task forward only when its meaning and completion rule still match; preserve earlier
+  answers, submissions and times. New or changed required work is shown clearly. A safety-critical change
+  receives an explicit affected-business review instead of silently rewriting a live checklist. This approved
+  direction replaces the Contractor plan's earlier live-update rule; the current application still needs a
+  later build change.
+- A change to an existing organization's primary experience is assisted, not inferred from its service names.
+  The Platform Owner reviews existing records, purchased capabilities, staff access, unfinished setup and
+  clinical readiness, then explicitly approves an in-place transition of the same business account. Existing
+  history remains attributable and protected under its original access rules. If those records or safeguards
+  cannot be carried safely, the change waits for a supported migration; it does not silently create a second
+  account or grant clinical access.
+- For a mixed business with an unclear clinical boundary, the assisted application asks for its actual
+  services, state and who performs or supervises them. Hold provisioning until the boundary is resolved.
+  Confirmed regulated clinical services make Medspa & Clinical Wellness the primary experience, subject to
+  its clinical safeguards and the state-specific review required before launch. A salon, spa or laser label
+  alone does not decide the experience.
+- The Platform Owner edits a draft for one program and previews the exact industry, business type, package
+  and staff role, including shown and hidden branches and required completion. The owner tests the journey in
+  a safe test organization and sees which businesses a publication or deliberate migration could affect.
+  Publication needs an explicit confirmation and creates a fixed version. It does not silently move businesses
+  already partway through Setup.
 
 ## Performance contract
 
@@ -497,9 +518,6 @@ P3 must check complete journeys across these boundaries: outside booking through
 ## Still unclear
 
 - Detailed behaviors, unresolved evidence gaps, reuse findings, release assignments, and measurable quality targets; settle these in planning parts, not by assumption.
-- Business entry and onboarding: program version changes while a client is in progress, moving an existing
-  organization to another primary experience, mixed businesses that do not have a clear clinical boundary,
-  and the exact Platform Owner preview/publish workflow (P2H).
 - Performance: representative workloads and per-route/browser budgets for the agreed initial release. P3A
   must settle these before build parts are approved; implemented slices must then supply the stated evidence.
 - How client sign-in is built alongside the existing staff sign-in, and how saved cards fit the current Stripe key (P3).

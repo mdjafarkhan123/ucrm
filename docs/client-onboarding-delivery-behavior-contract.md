@@ -1,6 +1,6 @@
 # Client onboarding and delivery — behavior contract
 
-**Status:** Approved by Jafar on 2026-10-01; E6 training and handover choices approved 2026-10-06
+**Status:** Approved by Jafar on 2026-10-01; E6 training and handover choices approved 2026-10-06; future Setup version rule revised 2026-10-07 for the industry expansion, with implementation pending
 
 ## Summary
 
@@ -107,9 +107,14 @@ buy. Common identity facts are collected once and reused in every purchased bran
   name, public phone, hours, time zone, currency, country, and texting-registration facts — can be reworded and
   moved, never deleted or given a different answer type. A question clients have answered never changes answer
   type; Jafar adds a new one instead. A removed question is hidden; clients' answers to it are kept.
-- **Draft and publish.** Jafar edits a draft and publishes it. Clients see only published questions. Clients still
-  filling in setup see a published change at once. Clients who already sent setup to Uplift are not reopened;
-  Jafar asks in Support chat or returns a section.
+- **Draft and publish.** Jafar edits a draft and publishes it. Clients see only published questions. Under the
+  approved industry-program direction, a client who has started Setup finishes the version they started;
+  publishing gives the new version to new clients. Jafar may move a client in progress after reviewing saved
+  answers, completed tasks and newly required work. A completed task carries forward only when its meaning
+  and completion rule still match. Previous answers and submissions remain available. Clients who already
+  sent setup to Uplift are not reopened; Jafar asks in Support chat or returns a section. The current
+  Contractor implementation still applies published changes to unfinished setups immediately until this
+  planned version rule is built and verified.
 
 ## 3. Setup tasks and exact information
 
