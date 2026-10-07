@@ -14,7 +14,8 @@
 	import {
 		jafarOrganizationsKey,
 		jafarSettingsCleanupImpactKey,
-		jafarSettingsCleanupKey
+		jafarSettingsCleanupKey,
+		jafarSettingsKey
 	} from '$lib/jafar/query-keys';
 
 	type ClosingOrganization = {
@@ -181,6 +182,8 @@
 			pendingStepUpInput = null;
 			toast.success('Organization permanently deleted.');
 			void queryClient.invalidateQueries({ queryKey: jafarSettingsCleanupKey });
+			// The Settings home counts deletions still waiting for a retry.
+			void queryClient.invalidateQueries({ queryKey: jafarSettingsKey, exact: true });
 			void queryClient.invalidateQueries({ queryKey: jafarOrganizationsKey });
 		}
 	}));
@@ -225,6 +228,8 @@
 					'Some cleanup steps still failed. They will keep retrying automatically each night.'
 				);
 			void queryClient.invalidateQueries({ queryKey: jafarSettingsCleanupKey });
+			// The Settings home counts deletions still waiting for a retry.
+			void queryClient.invalidateQueries({ queryKey: jafarSettingsKey, exact: true });
 		},
 		onError: (error) => toast.error(error.message)
 	}));

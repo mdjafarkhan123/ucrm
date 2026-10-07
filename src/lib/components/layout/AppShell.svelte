@@ -126,14 +126,19 @@
 			items: [
 				{ label: 'Organizations', href: '/jafar/organizations', icon: 'building' },
 				{ label: 'Packages', href: '/jafar/packages', icon: 'package' },
-				{ label: 'Operations', href: '/jafar/operations', icon: 'alertTriangle' },
-				{ label: 'System emails', href: '/jafar/message-templates', icon: 'mail' },
-				{ label: 'Email templates', href: '/jafar/email-templates', icon: 'fileText' },
-				{ label: 'Email safety', href: '/jafar/communications', icon: 'shieldCheck' }
+				{ label: 'Operations', href: '/jafar/operations', icon: 'alertTriangle' }
 			]
 		},
 		{
-			items: [{ label: 'Settings', href: '/jafar/settings', icon: 'settings' }]
+			// System emails, Email templates and Email safety are set up from Settings (Jafar, 2026-10-07).
+			items: [
+				{
+					label: 'Settings',
+					href: '/jafar/settings',
+					icon: 'settings',
+					matches: ['/jafar/message-templates', '/jafar/email-templates', '/jafar/communications']
+				}
+			]
 		}
 	]);
 	const groups = $derived(variant === 'owner' ? ownerGroups : contractorGroups);

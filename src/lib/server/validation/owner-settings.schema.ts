@@ -20,3 +20,9 @@ export const ownerSettingsSchema = z.object({
 		.min(1, 'At least one alert recipient is required.')
 		.max(10, 'No more than 10 alert recipients.')
 });
+
+// Each Settings section saves only its own fields; whatever is left out keeps its saved value.
+export const ownerSettingsPatchSchema = ownerSettingsSchema
+	.partial()
+	.strict()
+	.refine((value) => Object.keys(value).length > 0, 'Choose a setting to save.');
