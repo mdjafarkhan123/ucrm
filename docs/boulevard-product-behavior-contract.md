@@ -250,6 +250,99 @@ Agreed by Jafar 2026-10-06: all four P2B recommendations on parent access, treat
 
 Clinical details and photos stay in protected records; appointment texts and emails do not expose them. Staff access, audit, deletion/export, notification, and integration details belong to P2D, P2E, and P2G. The final US launch behavior needs state-specific review of minor consent/access, consent text, clinical policy, and prescribing requirements.
 
+## Commerce
+
+Settled 2026-10-07 from the strongest documented Boulevard pattern, with Vagaro and Zenoti used only where
+Boulevard is unclear or weaker. Evidence and limits: [P2C commerce research](research/boulevard-commerce-2026-10-07.md).
+Release assignment remains P3's job.
+
+### Checkout and financial history
+
+- Appointment checkout records what actually happened: treated client, performed services, responsible staff,
+  used products or units, retail items, discounts, tips, taxes and payment sources. Staff may correct the bill
+  before completing it; every price or item change is attributed and remains visible in the order history.
+- One order may use several payment sources. Card, cash, gift card, client credit, voucher, prepaid units and a
+  recorded outside payment remain named separately. Recording an outside payment does not claim the platform
+  processed or verified it. A processing or failed payment never counts as collected.
+- The full total must be accounted for before checkout closes. An unfinished order stays open for staff to
+  resolve. Completion records the appointment and purchase, updates applicable stock and value balances, and
+  produces a receipt the client can view later. Email is available without marketing consent; text follows
+  transactional-message consent.
+- A closed order is not silently rewritten. A same-day full correction is a permissioned void with a reason and
+  linked replacement. Later or partial corrections are refunds against named line items. The original, refund,
+  restored value, stock decision and any commission reversal all remain visible.
+- Group checkout may choose one payer, but each service stays attached to the person treated. Payer, treated
+  client and owner of a voucher or prepaid balance remain separate roles.
+
+### Deposits, cancellation fees and client credit
+
+- A booking deposit is card money reserved for one appointment, not unrestricted store credit. The client and
+  staff can see the appointment, amount and status. At checkout it applies automatically to that appointment.
+- Rescheduling moves the deposit to the replacement appointment. If the business cancels, or the client cancels
+  before the disclosed deadline, the deposit returns automatically to the original payment method. The client
+  may deliberately choose account credit instead; the business cannot silently force that choice.
+- A late-cancel or no-show fee follows the policy shown when booking and never exceeds the appointment value.
+  The system calculates the fee and applies the linked deposit first, but staff confirm or waive it and record
+  why. Only any remainder is charged; excess deposit is returned or credited according to the disclosed policy.
+  Automatic charging may be planned later as a business opt-in, not assumed for the first release.
+- Account credit is unrestricted client money, does not expire, and keeps an attributed history of purchases,
+  refunds and permissioned adjustments. It remains distinct from deposits, gift cards, service vouchers and
+  product units even though checkout can combine them.
+
+### Memberships and packages
+
+- A membership is a recurring agreement with a price, billing cadence, commitment or notice where used, and
+  benefits such as member prices, service vouchers or account credit. A package is a one-time purchase of
+  named benefits. Neither is a clinical treatment plan or proof the person is cleared for treatment.
+- The client sees and accepts the exact version of price, cadence, commitment, cancellation notice, benefit
+  end, expiry and refund terms before payment. Later catalog edits do not silently rewrite an existing
+  purchase. A material change needs its own effective date and any consent the applicable rule requires.
+- A successful term payment issues that term's benefits once. Retriable card failures receive bounded retries
+  and clear client/staff alerts; a terminal failure is not repeatedly charged. During retry or past due, no
+  duplicate or new benefits issue and active-member discounts stop.
+- Payment trouble, pause or cancellation never erases value already paid for. Existing credit, vouchers and
+  units follow the terms disclosed when issued. Billing end and benefit end are recorded separately. A client
+  can stop future renewal through the portal without first paying arrears; the effective date and confirmation
+  are clear and retained.
+- Money-style account credit never expires. A service voucher or unit balance expires only when an expiry was
+  clearly shown before purchase and is lawful for the state served. If no expiry was disclosed, it remains.
+- A partly used membership or package is normally refundable only up to its unused paid value. Before approval,
+  staff see the amount paid, value issued and used, remaining liability, benefits being removed and proposed
+  refund. A permissioned manager may make a recorded goodwill exception. State law or the accepted agreement
+  may require a more generous result.
+
+### Vouchers, prepaid product units and sharing
+
+- A service voucher pays for an eligible service; it is not a general discount. Refund of that service restores
+  the voucher unless the refund deliberately resolves the original benefit purchase instead. The oldest valid
+  eligible voucher is suggested first, with the source and expiry visible.
+- Product units represent measured product used in treatment. Staff record the actual units used against the
+  treated person's service. Refunding that redemption restores the exact reversed units. Refunding the unit
+  purchase removes only unused units and returns their actual paid value; it can never create a negative unit
+  balance.
+- A membership, package or unit balance may be bought and used during the same visit. Payment succeeds first,
+  then the benefit is issued, then it is redeemed. The staff sees one guided journey, while the history keeps
+  the purchase and use as two linked events.
+- A benefit is personal unless its purchase terms allow sharing. Another person may use it only through an
+  existing owner authorization or explicit owner consent recorded by staff. Being in the same group checkout
+  is never permission. History names the owner, recipient, appointment, source benefit and staff member.
+
+### Gift cards, offers, discounts and tips
+
+- Gift cards have their own balance and history and may pay part of an order. Sale, delivery, redemption,
+  refund, permitted adjustment and deactivation stay traceable; they never merge into a client's account-credit
+  balance. State-specific gift-card rules are checked before launch.
+- A named offer is a reusable promotion with eligibility, timing, item and usage rules. A manual discount is a
+  staff decision requiring a reason and appropriate permission. Each reduction stays attached to its line item.
+  Offers stack only when their setup explicitly allows it; the system does not accidentally combine every
+  matching promotion.
+- Tips remain separate from service price and tax and are attributed to the intended staff member. A tip added
+  after checkout becomes a linked tip-only purchase rather than rewriting the closed service order.
+
+Before a US state launch, renewing-plan cancellation, paid-value expiry and gift-card terms receive
+state-specific review. Payment-provider capability, saved cards, hardware, financing, tax calculation, release
+scope and reuse of the contractor payment system remain for P3 feasibility and release assignment.
+
 ## Still unclear
 
 - Detailed behaviors, unresolved evidence gaps, reuse findings, release assignments, and measurable quality targets; settle these in planning parts, not by assumption.
@@ -259,7 +352,6 @@ Clinical details and photos stay in protected records; appointment texts and ema
 - Performance: representative workloads and per-route/browser budgets for the agreed initial release. P3A
   must settle these before build parts are approved; implemented slices must then supply the stated evidence.
 - Booking and identity items owned by later parts:
-  - Charging late-cancel and no-show fees automatically or by staff decision, and refunding deposits (P2C).
   - Reminders and text-reply confirmations, and where waitlist alerts appear (P2D).
   - Who holds the requirement-override permission, and client data deletion (P2E).
   - How client sign-in is built alongside the existing staff sign-in, and how saved cards fit the current Stripe key (P3).
@@ -278,6 +370,7 @@ Clinical details and photos stay in protected records; appointment texts and ema
 - [Completed P1 public-source inventory and coverage limits](research/boulevard-feature-landscape-2026-10-05.md).
 - [P2A booking and identity evidence and original drafts](research/boulevard-booking-identity-2026-10-05.md); agreed behavior is in [Booking and identity](#booking-and-identity).
 - [P2B clinical-record sources and evidence limits](research/boulevard-clinical-records-2026-10-06.md); agreed behavior is in [Clinical records](#clinical-records).
+- [P2C commerce sources, vendor gaps and selected mature patterns](research/boulevard-commerce-2026-10-07.md); agreed behavior is in [Commerce](#commerce).
 - [Industry entry and onboarding patterns](research/industry-onboarding-entry-patterns-2026-10-07.md); agreed direction is in [Business entry and onboarding](#business-entry-and-onboarding).
 
 Primary public entry points:
