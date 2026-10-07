@@ -7,15 +7,15 @@
 ## Steps
 
 - [x] Database: photo columns on `platform_team_members` and `platform_owner_settings`, plus `set_platform_team_member_photo` / `set_platform_owner_photo`
-- [ ] Server: `/api/jafar/account/photo` (POST/DELETE, own photo) and `/api/jafar/photos/[who]` (GET); open both to every signed-in person in `team-access.ts`
-- [ ] Contractor staff photo route under `/api/jafar/organizations/*/team/*/photo`; team API returns it
-- [ ] Shell: photo in the `/jafar` top bar and menu; `ProfilePhotoDialog` takes the endpoint
-- [ ] Avatars with photos in `/jafar` Settings → Team and a client's Team tab
+- [x] Server: `/api/jafar/account/photo` (POST/DELETE, own photo) and `/api/jafar/photos/[who]` (GET); open both to every signed-in person in `team-access.ts`
+- [x] Contractor staff photo route under `/api/jafar/organizations/*/team/*/photo`; team API returns it
+- [x] Shell: photo in the `/jafar` top bar and menu; `ProfilePhotoDialog` takes the endpoint
+- [x] Avatars with photos in `/jafar` Settings → Team and a client's Team tab
 - [ ] Tests, checks, browser check, merge to `main`
 
 ## Next
 
-Write the server routes in the worktree.
+Code is committed on the branch, with tests passing. Next: check it in the browser from the worktree's dev server on port 5180, as Jafar (`/jafar`) and as Sam Seller: add a photo, see it in the top bar and in Settings → Team, then remove it. Then merge into `main`.
 
 ## Outside actions
 
