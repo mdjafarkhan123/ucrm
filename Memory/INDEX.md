@@ -22,5 +22,6 @@ Read this registry only to select a campaign. After selection, open its NOW.md; 
 
 | boulevard-product-planning | Planning 2026-10-07 — P2F reporting behavior settled; next: P2G connected journeys | Boulevard-inspired industry editions, Medspa & Clinical Wellness first | Memory/campaigns/boulevard-product-planning/NOW.md | Boulevard research, new industry editions, medspa, salon, or expansion product planning |
 | package-basics-unlock | In progress 2026-10-07 — plan and build parts approved; next: Part 3, the package decides what shows | Smaller packages: basics can be unticked, needed features are added automatically, missing features leave no trace | Memory/campaigns/package-basics-unlock/NOW.md | Unticking package basics, smaller packages, feature needs in the package builder, or a reviews-only package |
+| profile-photos | In progress 2026-10-07 — contractor app part built on branch; one click bug to fix, then merge | Each person's own profile photo in the contractor app and `/jafar` | Memory/campaigns/profile-photos/NOW.md | Profile photos, avatars, or a person's picture |
 
 Deferred work is indexed separately at Memory/deferred/INDEX.md; read it only when explicitly required.
