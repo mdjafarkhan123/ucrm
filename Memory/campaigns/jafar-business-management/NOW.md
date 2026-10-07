@@ -3,7 +3,7 @@
 **Goal:** Jafar and his team can run Uplift's complete lead-to-client journey in `/jafar`, through researched product behavior, premium UI/UX, working software, tests, and final desktop and mobile approval.
 **Plan:** `docs/jafar-business-management-behavior-contract.md`
 
-**In progress:** B1 (worktree `../Ucrm-b1-leads`); D1 on `main` — `parts/D1.md`
+**In progress:** B1 Leads — built and browser-checked in worktree `jafar-b1-leads`; only the merge into `main` is left (see `parts/B1-leads-list.md`)
 
 **Next part:** B1 Leads list and adding a Lead — see `stages/B-leads-to-client.md`. Every screen part runs the `performance-review` design branch first and verification before Done (plan § Speed).
 
