@@ -482,6 +482,18 @@ Agreed direction 2026-10-07 after checking official Boulevard guidance and Zenot
 
 The existing contractor financial reconciliation rules and readers are reuse candidates only. P3 checks their suitability for appointments, prepaid value, stock, commission, payout data and reporting permissions before assigning release scope. Reports use the organization's timezone and one named currency; source dates and stable IDs permit accountant tracing. No capacity or accounting-software claim follows from this planning section.
 
+## Connected journeys
+
+Agreed by Jafar 2026-10-07 using Boulevard's published connection, migration, mobile and location behavior, with Zenoti as a focused comparison for old balances and cross-location redemption. Evidence and limits: [P2G connected-journey research](research/boulevard-connected-journeys-2026-10-07.md). P3 still chooses actual first-release integrations and mobile surfaces and checks provider and existing-app suitability.
+
+- Website, social and other booking entry points use the same appointment, person identity, service eligibility, deposit and notification rules. The appointment in this platform is the booking record. A personal calendar may block time or show a neutral event, but its delayed or failed sync does not become a second booking authority. Staff can see and resolve connection failures.
+- The business owner approves each external connection's purpose, permitted data and actions. The business sees its connection status and last success or failure. General business, marketing, calendar and accounting connections do not receive clinical charts, forms, photos, treatment details or confidential minor records. Disconnecting stops future sharing; staff are told that copies already held by another provider may need separate removal. Booking, clinical, financial, export and audit permissions apply on every connected surface.
+- Moving from old software starts with a source-specific sample and a review of person matches, unmatched/conflicting records, future appointments, history and prepaid balances. Authorized staff approve mappings and totals before imported data is used. Keep the source and import date visible; unresolved records stay in a review queue. An imported phone number or opt-in flag alone never grants marketing permission. Imported clinical files are historical material until a qualified clinician reviews what is relevant to current care. Import does not create treatment clearance, chart sign-off or a current prescription. The clinic is told which source data can be moved automatically and which needs individual handling; no full clinical-history migration is promised without source-specific proof.
+- A mobile or customer-facing surface follows the same identity, clinical privacy, staff access and money rules as the main workspace. If it does not support an action, it directs the user to a supported surface rather than appearing to complete it. Native staff apps, customer kiosks and card-present hardware have separate release and provider checks in P3.
+- The first release serves one location. In a later multi-location experience, a person may keep one business-level identity while appointments, staff access, prices, stock, payments and prepaid benefits retain their location. Cross-location use of a membership, package, gift card or other prepaid value needs an explicit clinic rule and a traceable purchase/use/settlement history before it is enabled. Shared identity never grants unrestricted clinical access at another location.
+
+P3 must check complete journeys across these boundaries: outside booking through clearance and checkout; migration of a duplicate client with old chart, balance and opt-out; a failed stock or accounting sync after a sale; and a later visit at another location. A connection failure must not quietly create a booking, balance, payment, stock or permission claim that the platform cannot support.
+
 ## Still unclear
 
 - Detailed behaviors, unresolved evidence gaps, reuse findings, release assignments, and measurable quality targets; settle these in planning parts, not by assumption.
@@ -493,6 +505,7 @@ The existing contractor financial reconciliation rules and readers are reuse can
 - How client sign-in is built alongside the existing staff sign-in, and how saved cards fit the current Stripe key (P3).
 - Clinical records: which agreed capabilities belong in the initial release, what can be reused, and which qualified prescribing provider could support an integration (P3). State-specific minor access and clinical-policy review must be completed for the states served before launch.
 - Reporting: the accounting method for valuing unused prepaid product units, provider payout-data availability, and initial report selection need P3 verification before a monetary liability, automatic bank match or release promise.
+- Connections and migration: which specific integrations, mobile surfaces and source-vendor imports pass P3 feasibility and belong in the initial release. The attached Boulevard historical-file PDF's import format remains unverified; do not promise automatic clinical-history migration from it.
 - Whether Beauty & Spa lets under-age clients book online on their own; settle this when that edition is planned.
 
 ## Not doing
@@ -511,6 +524,7 @@ The existing contractor financial reconciliation rules and readers are reuse can
 - [P2D communications sources, vendor gaps and selected safeguards](research/boulevard-communications-2026-10-07.md); agreed behavior is in [Communications](#communications), while marketing, reviews and AI release timing belongs to P3.
 - [P2E operations sources and clinical stock gap](research/boulevard-operations-2026-10-07.md); agreed behavior is in [Operations](#operations), while release timing and existing-app reuse belong to P3.
 - [P2F reporting measures, reconciliation, permissions and source limits](research/boulevard-reporting-2026-10-07.md); agreed direction is in [Reporting and reconciliation](#reporting-and-reconciliation), while release timing and existing-app reuse belong to P3.
+- [P2G connected-journey evidence, approved safeguards and migration limits](research/boulevard-connected-journeys-2026-10-07.md); agreed behavior is in [Connected journeys](#connected-journeys), while release timing and feasibility belong to P3.
 - [Industry entry and onboarding patterns](research/industry-onboarding-entry-patterns-2026-10-07.md); agreed direction is in [Business entry and onboarding](#business-entry-and-onboarding).
 
 Primary public entry points:
