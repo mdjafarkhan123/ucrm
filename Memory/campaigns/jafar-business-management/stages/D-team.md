@@ -1,6 +1,6 @@
 # Jafar Business Management — stage D: Team
 
-Sign-in is email address and password only, with email password reset (Jafar, 2026-10-07). D1 settles and records (ADR) how teammate accounts stay separate from contractor accounts before building.
+Sign-in is email address and password only, with email password reset (Jafar, 2026-10-07). D1 settles and records (ADR) how teammate accounts stay separate from contractor accounts before building. Stage A left: one front-door gate in `src/hooks.server.ts` (ADR 0007) — extend it, not each route; the sidebar sections in `src/lib/components/layout/AppShell.svelte`; the Settings directory, where Team & access cards and per-teammate filtering go, in `src/lib/jafar/owner-settings.ts`.
 
 | Part | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- |

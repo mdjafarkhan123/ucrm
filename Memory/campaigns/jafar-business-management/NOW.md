@@ -5,6 +5,6 @@
 
 **In progress:** none
 
-**Next part:** A2 Settings home — see `stages/A-foundations.md`. Every screen part runs the `performance-review` design branch first and verification before Done (plan § Speed).
+**Next part:** B1 Leads list and adding a Lead — see `stages/B-leads-to-client.md`. Every screen part runs the `performance-review` design branch first and verification before Done (plan § Speed).
 
 **Blockers:** none. Product behavior and first-release scope are approved; full Uplift mailboxes and automated first-contact email remain later-release work.

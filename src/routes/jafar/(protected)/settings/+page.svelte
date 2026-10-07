@@ -59,7 +59,7 @@
 		<SearchInput
 			id="settings-search"
 			bind:value={search}
-			placeholder="Search settings, like “sender” or “privacy”"
+			placeholder="Search settings"
 			ariaLabel="Search settings"
 			class="jafar-settings__search"
 			onkeydown={openFirstResult}
@@ -113,7 +113,7 @@
 			{#each groups as group (group.id)}
 				<SectionBlock
 					title={group.title}
-					hint={group.hint}
+					hint={group.destinations.length > 0 ? group.hint : undefined}
 					icon={group.icon}
 					id={group.id}
 					level={2}

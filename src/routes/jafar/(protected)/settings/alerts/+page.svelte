@@ -28,8 +28,9 @@
 							variant="tertiary"
 							disabled={draft.alert_recipient_emails.length <= 1}
 							onclick={() => draft.alert_recipient_emails.splice(index, 1)}
-							><span class="alert-recipients__icon" aria-hidden="true">{@html trashIcon}</span
-							>Remove</Button
+							><span class="alert-recipients__icon" aria-hidden="true">{@html trashIcon}</span><span
+								class="alert-recipients__remove-label">Remove</span
+							></Button
 						>
 					</li>
 				{/each}
@@ -83,6 +84,18 @@
 		:global(svg) {
 			width: 18px;
 			height: 18px;
+		}
+	}
+
+	/* On a phone the email needs the width, so Remove shows as its icon; the word stays for screen readers. */
+	@media (max-width: 639px) {
+		.alert-recipients__remove-label {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
 		}
 	}
 

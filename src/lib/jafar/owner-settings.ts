@@ -135,7 +135,8 @@ export const settingsGroups: SettingsGroup[] = [
 			{
 				id: 'email-sender',
 				title: 'Sender name & reply-to',
-				description: 'The name prospects see on Uplift’s emails, and where their replies go.',
+				description:
+					'The “From” name and reply address kept ready for Uplift’s emails — not used by emails yet.',
 				keywords: ['from', 'from name', 'reply to', 'email address', 'display name'],
 				href: resolve('/jafar/settings/email-sender'),
 				icon: mailForwardIcon,
