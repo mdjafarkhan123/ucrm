@@ -162,6 +162,8 @@ export type ClientWorkSummary = {
 	open_quotes_count: number | null;
 	/** Null without jobs.view. */
 	active_jobs_count: number | null;
+	/** Whether the package includes the feature behind each tile; a tile it leaves out is not shown. */
+	included: { billing: boolean; quotes: boolean; jobs: boolean };
 };
 
 export type DuplicateCandidates = {

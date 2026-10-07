@@ -396,6 +396,33 @@ describe('permission entitlements', () => {
 		expect(permissionIsEnabled('catalog.view', {})).toBe(false);
 	});
 
+	it("ties a feature's Settings pages and job records to that feature", () => {
+		const withoutQuotes = { 'core.jobs': true, 'core.invoices_payments': true };
+		expect(permissionIsEnabled('settings.quotes.manage', withoutQuotes)).toBe(false);
+		expect(permissionIsEnabled('settings.price_book.manage', withoutQuotes)).toBe(false);
+		expect(permissionIsEnabled('settings.invoices.manage', withoutQuotes)).toBe(true);
+		expect(permissionIsEnabled('settings.payments.manage', {})).toBe(false);
+		expect(permissionIsEnabled('settings.checklists.manage', { 'core.jobs': false })).toBe(false);
+		for (const key of ['time.track_own', 'expenses.record', 'field_records.record']) {
+			expect(permissionIsEnabled(key, { 'core.jobs': true })).toBe(true);
+			expect(permissionIsEnabled(key, { 'core.jobs': false })).toBe(false);
+		}
+		expect(permissionIsEnabled('settings.business.edit', {})).toBe(true);
+	});
+
+	it('keeps a permission shared by two features on while either is in the package', () => {
+		expect(permissionIsEnabled('settings.taxes.manage', { 'core.quotes': true })).toBe(true);
+		expect(permissionIsEnabled('settings.taxes.manage', { 'core.invoices_payments': true })).toBe(
+			true
+		);
+		expect(permissionIsEnabled('settings.taxes.manage', {})).toBe(false);
+		expect(permissionIsEnabled('settings.forms.manage', { 'core.jobs': true })).toBe(true);
+		expect(
+			permissionIsEnabled('settings.forms.manage', { 'core.requests_assessments': true })
+		).toBe(true);
+		expect(permissionIsEnabled('settings.forms.manage', { 'core.quotes': true })).toBe(false);
+	});
+
 	it('leaves a permission with no feature of its own always on', () => {
 		expect(permissionIsEnabled('organization.view', {})).toBe(true);
 	});
