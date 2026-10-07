@@ -10,6 +10,8 @@
 	import logoutIcon from '@tabler/icons/outline/logout.svg?raw';
 	import { resolve } from '$app/paths';
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import photoIcon from '@tabler/icons/outline/user-circle.svg?raw';
 	import searchIcon from '@tabler/icons/outline/search.svg?raw';
 
 	let {
@@ -19,6 +21,8 @@
 		accountLabel,
 		notifications,
 		account = null,
+		avatar = null,
+		onEditPhoto,
 		showSecurityLink = false,
 		isSigningOut = false,
 		signOutError = '',
@@ -30,6 +34,10 @@
 		accountLabel: string;
 		notifications?: Snippet;
 		account?: { name: string | null; email: string | null; role: string } | null;
+		/** The signed-in person's own avatar, drawn in place of the generic account icon. */
+		avatar?: { id: string; url: string | null } | null;
+		/** Opens the profile photo dialog from the account menu. */
+		onEditPhoto?: () => void;
 		showSecurityLink?: boolean;
 		isSigningOut?: boolean;
 		signOutError?: string;
@@ -111,7 +119,18 @@
 
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger class="topbar__account" aria-label={`Account menu for ${accountLabel}`}>
-			<span class="topbar__avatar" aria-hidden="true">{@html userIcon}</span>
+			{#if avatar}
+				<span class="topbar__avatar" aria-hidden="true">
+					<Avatar
+						id={avatar.id}
+						name={account?.name ?? account?.email ?? null}
+						src={avatar.url}
+						size="medium"
+					/>
+				</span>
+			{:else}
+				<span class="topbar__avatar" aria-hidden="true">{@html userIcon}</span>
+			{/if}
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Portal disabled>
 			<DropdownMenu.Content class="topbar__menu-panel" align="end" sideOffset={8}>
@@ -124,6 +143,12 @@
 						</div>
 						{#if account.email}<span>{account.email}</span>{/if}
 					</div>
+				{/if}
+				{#if onEditPhoto}
+					<DropdownMenu.Item class="topbar__menu-item" onSelect={onEditPhoto}>
+						<span aria-hidden="true">{@html photoIcon}</span>
+						Profile photo
+					</DropdownMenu.Item>
 				{/if}
 				{#if showSecurityLink}
 					<a class="topbar__menu-item" href={resolve('/settings/security')}>Password and security</a
@@ -295,6 +320,11 @@
 		place-items: center;
 		color: var(--color-brand);
 		background: var(--color-surface--active);
+	}
+	// The person's own avatar fills the whole round button, border to border.
+	:global(.topbar__avatar .avatar) {
+		width: 100%;
+		height: 100%;
 	}
 	:global(.topbar__avatar svg) {
 		width: 20px;

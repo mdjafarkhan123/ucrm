@@ -1,11 +1,14 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import SettingsDestinationCard from '$lib/components/settings/SettingsDestinationCard.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import ProfilePhotoDialog from '$lib/components/profile/ProfilePhotoDialog.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import { fetchSettingsHome, settingsHomeKey } from '$lib/settings/api';
@@ -42,12 +45,25 @@
 		queryFn: fetchSettingsHome
 	}));
 
+	// The photo comes from the shell's own load, which the dialog refreshes after a change.
+	const userId = $derived(page.data.user?.id as string);
+	const avatarUrl = $derived((page.data.account?.avatarUrl as string | null | undefined) ?? null);
+	let photoOpen = $state(false);
+
 	// Automation has a working access decision and shell (Part 6B) but the contractor journey is a limited
 	// pilot, so its card stays hidden from ordinary packages until the shared journey flag flips. The
 	// permission gate below already handles who may see it once it is on.
 </script>
 
 <svelte:head><title>Settings · Contractor CRM</title></svelte:head>
+
+<ProfilePhotoDialog
+	open={photoOpen}
+	{userId}
+	name={page.data.account?.name ?? page.data.account?.email ?? null}
+	{avatarUrl}
+	onClose={() => (photoOpen = false)}
+/>
 
 <PageContainer variant="fill">
 	<div class="settings-page">
@@ -69,14 +85,18 @@
 			{@const showAutomation = home.permissions.automations_view && AUTOMATION_JOURNEY_READY}
 			<div class="settings-page__member">
 				<Avatar
-					id={home.member.email ?? 'me'}
+					id={userId}
 					name={home.member.name ?? home.member.email ?? 'You'}
+					src={avatarUrl}
 					size="large"
 				/>
 				<div class="settings-page__member-copy">
 					<span class="settings-page__member-name">{home.member.name ?? 'Your account'}</span>
 					<span class="settings-page__member-role">{home.member.role}</span>
 				</div>
+				<Button size="small" variant="tertiary" onclick={() => (photoOpen = true)}>
+					{avatarUrl ? 'Change photo' : 'Add photo'}
+				</Button>
 				<a class="settings-page__member-link" href={resolve('/settings/security')}
 					>Password and security</a
 				>

@@ -40,7 +40,11 @@ export const load: LayoutServerLoad = async (event) => {
 			.select('logo_object_key, branding_revision')
 			.eq('organization_id', context.organization.id)
 			.maybeSingle(),
-		event.locals.supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle(),
+		event.locals.supabase
+			.from('profiles')
+			.select('full_name, avatar_url')
+			.eq('id', user.id)
+			.maybeSingle(),
 		resolveOrganizationAccess(event.locals.supabase, context.organization.id, user.id).then(
 			(access): ContractorNavigation => contractorNavigation(access),
 			(error): ContractorNavigation => {
@@ -57,6 +61,7 @@ export const load: LayoutServerLoad = async (event) => {
 		account: {
 			name: profileResult.data?.full_name ?? null,
 			email: user.email ?? null,
+			avatarUrl: profileResult.data?.avatar_url ?? null,
 			role: context.organization.role
 		},
 		navigation,
