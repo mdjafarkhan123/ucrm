@@ -1,6 +1,6 @@
 # Jafar Business Management
 
-**Status:** Product behavior and first release scope approved by Jafar on 2026-10-07. Planning is complete. This plan describes what people can do and how the business workflow behaves; it is not a coding plan and authorizes no build.
+**Status:** Product behavior and first release scope approved by Jafar on 2026-10-07. The build has not started. This plan describes what people can do and how the business workflow behaves; it is not a coding plan by itself.
 
 ## The vision
 

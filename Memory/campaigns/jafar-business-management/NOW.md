@@ -1,0 +1,10 @@
+# Jafar Business Management — now
+
+**Goal:** Jafar and his team can run Uplift's complete lead-to-client journey in `/jafar`, through researched product behavior, premium UI/UX, working software, tests, and final desktop and mobile approval.
+**Plan:** `docs/jafar-business-management-behavior-contract.md`
+
+**In progress:** none
+
+**Next part:** P5 Design and build roadmap — audit the approved first release against reusable product capabilities, define the premium screen direction, split it into thin complete build parts, and get Jafar's approval before coding.
+
+**Blockers:** none. Product behavior and first-release scope are approved; full Uplift mailboxes and automated first-contact email remain later-release work.
