@@ -23,6 +23,8 @@ Browser-check `/jafar/leads` from the worktree dev server (port 5180) on desktop
 
 - Apply `uplift_leads` to remote — check: `select to_regclass('public.platform_business_relationships') is not null` returns true and the migration history lists `uplift_leads` — done (version 20261007032401; file renamed to match)
 
+- Temporary test data in the live project: 20,000 fake Leads (`created_by_email = 'perf-seed@uplift.test'`) and one "Claude Test Plumbing" Lead — delete both after the browser check; check: `select count(*) from platform_business_relationships where created_by_email = 'perf-seed@uplift.test' or business_name = 'Claude Test Plumbing'` returns 0 — pending
+
 ## Notes
 
 Owner is not stored yet: everything shows Jafar until stage D adds teammates. "Approved" status arrives with B3.
