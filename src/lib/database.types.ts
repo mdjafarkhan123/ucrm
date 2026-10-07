@@ -13440,6 +13440,79 @@ export type Database = {
 					}
 				];
 			};
+			platform_business_history: {
+				Row: {
+					actor_email: string;
+					application_id: string | null;
+					body: string | null;
+					call_outcome: string | null;
+					contact_channel: string | null;
+					contact_direction: string | null;
+					contact_method_id: string | null;
+					created_at: string;
+					details: Json | null;
+					edited_at: string | null;
+					id: string;
+					kind: string;
+					occurred_at: string;
+					relationship_id: string;
+				};
+				Insert: {
+					actor_email: string;
+					application_id?: string | null;
+					body?: string | null;
+					call_outcome?: string | null;
+					contact_channel?: string | null;
+					contact_direction?: string | null;
+					contact_method_id?: string | null;
+					created_at?: string;
+					details?: Json | null;
+					edited_at?: string | null;
+					id?: string;
+					kind: string;
+					occurred_at?: string;
+					relationship_id: string;
+				};
+				Update: {
+					actor_email?: string;
+					application_id?: string | null;
+					body?: string | null;
+					call_outcome?: string | null;
+					contact_channel?: string | null;
+					contact_direction?: string | null;
+					contact_method_id?: string | null;
+					created_at?: string;
+					details?: Json | null;
+					edited_at?: string | null;
+					id?: string;
+					kind?: string;
+					occurred_at?: string;
+					relationship_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'platform_business_history_application_id_fkey';
+						columns: ['application_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_onboarding_applications';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'platform_business_history_contact_method_fkey';
+						columns: ['relationship_id', 'contact_method_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_business_contact_methods';
+						referencedColumns: ['relationship_id', 'id'];
+					},
+					{
+						foreignKeyName: 'platform_business_history_relationship_id_fkey';
+						columns: ['relationship_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_business_relationships';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			platform_business_relationships: {
 				Row: {
 					business_name: string;
@@ -13921,6 +13994,7 @@ export type Database = {
 			platform_onboarding_applications: {
 				Row: {
 					billing_interval: string;
+					business_relationship_id: string | null;
 					business_name: string;
 					city_country: string;
 					duplicate_acknowledged_at: string | null;
@@ -13946,6 +14020,7 @@ export type Database = {
 				};
 				Insert: {
 					billing_interval: string;
+					business_relationship_id?: string | null;
 					business_name: string;
 					city_country: string;
 					duplicate_acknowledged_at?: string | null;
@@ -13971,6 +14046,7 @@ export type Database = {
 				};
 				Update: {
 					billing_interval?: string;
+					business_relationship_id?: string | null;
 					business_name?: string;
 					city_country?: string;
 					duplicate_acknowledged_at?: string | null;
@@ -13995,6 +14071,13 @@ export type Database = {
 					updated_at?: string;
 				};
 				Relationships: [
+					{
+						foreignKeyName: 'platform_onboarding_applications_business_relationship_id_fkey';
+						columns: ['business_relationship_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_business_relationships';
+						referencedColumns: ['id'];
+					},
 					{
 						foreignKeyName: 'platform_onboarding_applications_package_edition_id_fkey';
 						columns: ['package_edition_id'];
@@ -23829,6 +23912,39 @@ export type Database = {
 				Args: { candidate_email: string };
 				Returns: boolean;
 			};
+			owner_lead_application_candidates: {
+				Args: { search_term?: string; target_id: string };
+				Returns: Json;
+			};
+			owner_lead_change: {
+				Args: {
+					actor_email: string;
+					next_action_mode?: string;
+					target_due_on?: string;
+					target_id: string;
+					target_next_action?: string;
+					target_status?: string;
+				};
+				Returns: boolean;
+			};
+			owner_lead_history: {
+				Args: {
+					cursor_id?: string;
+					cursor_occurred_at?: string;
+					page_size?: number;
+					target_id: string;
+				};
+				Returns: Json;
+			};
+			owner_lead_link_application: {
+				Args: {
+					actor_email: string;
+					target_application_id: string;
+					target_id: string;
+					target_link: boolean;
+				};
+				Returns: string;
+			};
 			owner_lead_list: {
 				Args: {
 					country_filter?: string[];
@@ -23843,6 +23959,7 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_lead_page: { Args: { target_id: string }; Returns: Json };
 			owner_lead_possible_duplicates: {
 				Args: {
 					business_name?: string;

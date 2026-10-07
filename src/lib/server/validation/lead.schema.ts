@@ -9,6 +9,16 @@ import {
 	LEAD_STATUSES,
 	isCountryCode
 } from '$lib/jafar/leads';
+import {
+	CALL_OUTCOMES,
+	CONTACT_CHANNELS,
+	CONTACT_DIRECTIONS,
+	CONTACT_FUTURE_SKEW_MS,
+	HISTORY_BODY_MAX,
+	takesCallOutcome,
+	type ContactChannel,
+	type ContactDirection
+} from '$lib/jafar/lead-history';
 import { calendarDate } from './owner.schema';
 
 // A list arrives as one comma-separated value: `?status=new,later`. Every item must be allowed and none repeated,
@@ -124,3 +134,120 @@ export const leadDuplicateCheckSchema = z.object({
 	emails: z.array(z.string().trim().max(300)).max(LEAD_CONTACT_METHODS_MAX).default([]),
 	phones: z.array(z.string().trim().max(300)).max(LEAD_CONTACT_METHODS_MAX).default([])
 });
+
+// --- B2: the Lead page ---------------------------------------------------------------------------------------
+
+const nextActionText = z.string().trim().min(1, 'Say what the next action is.').max(200);
+
+/**
+ * One change from the Lead page: the status, the next action, or both. `next_action.mode`:
+ * `set` replaces it, `done` records the current one as done and optionally sets the next, `clear` removes it.
+ */
+export const leadChangeSchema = z
+	.object({
+		lead_status: z.enum(LEAD_STATUSES).optional(),
+		next_action: z
+			.discriminatedUnion('mode', [
+				z.object({ mode: z.literal('set'), text: nextActionText, due_on: calendarDate }),
+				z.object({
+					mode: z.literal('done'),
+					text: nextActionText.nullish().transform((value) => value ?? null),
+					due_on: calendarDate.nullish().transform((value) => value ?? null)
+				}),
+				z.object({ mode: z.literal('clear') })
+			])
+			.optional()
+	})
+	.superRefine((change, context) => {
+		if (!change.lead_status && !change.next_action)
+			context.addIssue({ code: 'custom', path: ['form'], message: 'Nothing to change.' });
+		const next = change.next_action;
+		if (next?.mode === 'done' && Boolean(next.text) !== Boolean(next.due_on))
+			context.addIssue({
+				code: 'custom',
+				path: next.text ? ['next_action', 'due_on'] : ['next_action', 'text'],
+				message: next.text ? 'Choose when the next action is due.' : 'Say what the next action is.'
+			});
+	});
+
+export type LeadChangeInput = z.infer<typeof leadChangeSchema>;
+
+// Logged contact happened already: a time up to a few minutes ahead is a fast clock, anything later is a mistake.
+const occurredAt = z.iso
+	.datetime({ offset: true, message: 'Choose when it happened.' })
+	.refine(
+		(value) => Date.parse(value) <= Date.now() + CONTACT_FUTURE_SKEW_MS,
+		'Contact you log has already happened — choose a time that is not in the future.'
+	)
+	.refine(
+		(value) => Date.parse(value) >= Date.parse('2000-01-01T00:00:00Z'),
+		'Choose when it happened.'
+	);
+
+const historyBody = z
+	.string()
+	.trim()
+	.max(HISTORY_BODY_MAX, `Keep it under ${HISTORY_BODY_MAX} characters.`);
+
+const contactFields = {
+	contact_direction: z.enum(CONTACT_DIRECTIONS, { message: 'Choose who reached out.' }),
+	contact_channel: z.enum(CONTACT_CHANNELS, { message: 'Choose how.' }),
+	contact_method_id: z
+		.uuid()
+		.nullish()
+		.transform((value) => value ?? null),
+	call_outcome: z
+		.enum(CALL_OUTCOMES)
+		.nullish()
+		.transform((value) => value ?? null),
+	occurred_at: occurredAt,
+	body: historyBody.nullish().transform((value) => (value ? value : null))
+};
+
+function checkCallOutcome(
+	entry: {
+		contact_direction: ContactDirection;
+		contact_channel: ContactChannel;
+		call_outcome: unknown;
+	},
+	context: z.RefinementCtx
+) {
+	const needsOutcome = takesCallOutcome(entry.contact_channel, entry.contact_direction);
+	if (needsOutcome && !entry.call_outcome)
+		context.addIssue({
+			code: 'custom',
+			path: ['call_outcome'],
+			message: 'Choose how the call went.'
+		});
+	if (!needsOutcome && entry.call_outcome)
+		context.addIssue({
+			code: 'custom',
+			path: ['call_outcome'],
+			message: 'Only a call you made has an outcome.'
+		});
+}
+
+export const leadNoteSchema = z.object({
+	kind: z.literal('note'),
+	body: historyBody.min(1, 'Write the note.')
+});
+
+/** Adding to a Lead's history: a note, or contact that happened outside UCRM. */
+export const leadHistoryEntrySchema = z
+	.discriminatedUnion('kind', [
+		leadNoteSchema,
+		z.object({ kind: z.literal('contact'), ...contactFields })
+	])
+	.superRefine((entry, context) => {
+		if (entry.kind === 'contact') checkCallOutcome(entry, context);
+	});
+
+export type LeadHistoryEntryInput = z.infer<typeof leadHistoryEntrySchema>;
+
+export const leadHistoryQuerySchema = z.object({ cursor: z.string().max(300) });
+
+export const leadApplicationSearchSchema = z.object({
+	search: z.string().trim().max(LEAD_SEARCH_MAX).optional()
+});
+
+export const leadApplicationLinkSchema = z.object({ application_id: z.uuid() });
