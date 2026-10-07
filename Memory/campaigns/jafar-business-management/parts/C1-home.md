@@ -7,21 +7,18 @@
 ## Steps
 
 - [x] Layout and old-numbers decisions from Jafar (see Notes)
-- [ ] Migration `owner_business_home` + due index, applied to remote and renamed to its version
-- [ ] `GET /api/jafar/home` (per-tile access checks, browser's date) + spec
-- [ ] Home page in `src/routes/jafar/(protected)/+page.svelte`; Done reuses `NextActionDialog`; home key invalidated by `refreshLead`/`refreshDeals`
-- [ ] Onboarding and Applications pages read their filter from the tile link (`?waiting_on=uplift`, `?stage=payment_confirmed`)
-- [ ] Performance verification (large test data) and browser test of the done-check
+- [x] Migrations `20261007162236_uplift_business_home` and `20261007163244_uplift_business_home_paid_only` applied to remote (check: `select to_regprocedure('public.owner_business_home(date,integer)')` not null)
+- [x] `GET /api/jafar/home` + spec; home page; Done reuses `NextActionDialog`; `refreshLead`/`refreshDeals` invalidate `jafarHomeKey`
+- [x] Onboarding and Applications pages read the tile's filter from the URL
+- [x] Browser test `src/routes/jafar/home.e2e.ts` passed (done-check)
+- [ ] Finish the uncommitted polish (see Next)
+- [ ] Performance verification branch with large test data; then mark C1 done, point NOW at C2
 
 ## Next
 
-Apply `supabase/migrations/uplift_business_home.sql` with the Supabase MCP, then rename the file to the version it got.
-
-## Outside actions
-
-- Apply migration `uplift_business_home` — check: `select to_regprocedure('public.owner_business_home(date,integer)')` is not null — pending
+`src/routes/jafar/(protected)/+page.svelte` has an uncommitted, unchecked change: tiles always render from a `tiles` $derived (value "–" until data, no skeleton) and become a sideways-swipe row under 640px. Run prettier, eslint (`NODE_OPTIONS=--max-old-space-size=8192`), svelte-check, rerun `npx playwright test src/routes/jafar/home.e2e.ts` with `E2E_SCREENSHOT_DIR`, look at the phone screenshot, commit. Then `performance-review` verification: seed thousands of test Leads with next actions, time `owner_business_home` (EXPLAIN) and the home route on a slowed phone profile, delete the seed.
 
 ## Notes
 
-Jafar, 2026-10-07: layout is counters on top ("Waiting on you": to review, first contacts, accounts to create, setups waiting on Uplift, renewals due) then one to-do list Overdue → Today → Next 7 days, each row with a tag and Done. Keep unread alerts on the home; drop the organisation counts (they live on Organizations). Replies have no inbox yet: an Interested Deal's "Reply to …" step stands in. Call hours arrive with C2.
+Jafar, 2026-10-07: layout is counters on top ("Waiting on you": to review, first contacts, accounts to create, setups waiting on Uplift, renewals due) then one to-do list Overdue → Today → Next 7 days, each row with a tag and Done. Keep unread alerts on the home; drop the organisation counts (they live on Organizations). Replies have no inbox yet: an Interested Deal's "Reply to …" step stands in. Call hours arrive with C2. Home stays Jafar-only (no area claims `/jafar` or `/api/jafar/home`); D3 gives teammates theirs. Known gap: the First contacts tile links to all Approved Leads (sorted by next action), so the list can include ones already contacted.
 Speed design: one request; list capped at 60 with totals per bucket and a link to Leads sorted by next action; partial index on (next_action_due_on, id). Assumed up to 20k businesses, 2k organisations.
