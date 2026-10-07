@@ -6,12 +6,13 @@
 	// Remounts the form for "Save & add another" so every field and warning starts clean.
 	let formKey = $state(0);
 
-	function handleSaved(_lead: { id: string; business_name: string }, andAnother: boolean) {
+	// A saved Lead opens on its own page, where its first contact can be logged.
+	function handleSaved(lead: { id: string; business_name: string }, andAnother: boolean) {
 		if (andAnother) {
 			formKey += 1;
 			return;
 		}
-		void goto(resolve('/jafar/leads'));
+		void goto(resolve('/jafar/(protected)/leads/[id]', { id: lead.id }));
 	}
 </script>
 

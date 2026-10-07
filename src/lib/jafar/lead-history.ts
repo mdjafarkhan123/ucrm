@@ -2,6 +2,7 @@
 // share. The history shows notes, contact logged from outside UCRM (an email sent from Gmail, a call, a message,
 // and replies), status and next-action changes, and linked Applications, newest first.
 
+import { resolve } from '$app/paths';
 import type { ContactMethodKind, LeadSource, LeadStatus } from './leads';
 import { CALL_OUTCOMES, CALL_OUTCOME_LABELS, type CallOutcome } from '$lib/pipeline/calls';
 
@@ -167,5 +168,36 @@ export type LeadPage = {
 
 /** The link that opens one Application in the Applications screen's review drawer. */
 export function applicationHref(applicationId: string) {
-	return `/jafar/prospects?application=${encodeURIComponent(applicationId)}`;
+	return `${resolve('/jafar/prospects')}?application=${encodeURIComponent(applicationId)}`;
+}
+
+const OUTBOUND_HEADLINES: Record<ContactChannel, string> = {
+	email: 'Emailed them',
+	phone: 'Called them',
+	text: 'Texted them',
+	whatsapp: 'Messaged them on WhatsApp',
+	linkedin: 'Messaged them on LinkedIn',
+	instagram: 'Messaged them on Instagram',
+	facebook: 'Messaged them on Facebook',
+	contact_form: 'Sent their website contact form',
+	in_person: 'Met them in person',
+	other: 'Contacted them'
+};
+
+const INBOUND_HEADLINES: Record<ContactChannel, string> = {
+	email: 'They emailed',
+	phone: 'They called',
+	text: 'They texted',
+	whatsapp: 'They messaged on WhatsApp',
+	linkedin: 'They messaged on LinkedIn',
+	instagram: 'They messaged on Instagram',
+	facebook: 'They messaged on Facebook',
+	contact_form: 'They used our contact form',
+	in_person: 'They came to us in person',
+	other: 'They got in touch'
+};
+
+/** "Emailed them", "They called": the line a logged contact reads as in the history. */
+export function contactHeadline(direction: ContactDirection, channel: ContactChannel) {
+	return (direction === 'outbound' ? OUTBOUND_HEADLINES : INBOUND_HEADLINES)[channel];
 }

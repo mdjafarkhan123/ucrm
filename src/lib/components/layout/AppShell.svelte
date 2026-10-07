@@ -122,7 +122,7 @@
 			items: [
 				{ label: 'Overview', href: '/jafar', icon: 'dashboard' },
 				{ label: 'Leads', href: '/jafar/leads', icon: 'target' },
-				{ label: 'Prospects', href: '/jafar/prospects', icon: 'users' },
+				{ label: 'Applications', href: '/jafar/prospects', icon: 'users' },
 				{ label: 'Onboarding', href: '/jafar/onboarding', icon: 'rocket' },
 				{ label: 'Client setup', href: '/jafar/setup', icon: 'listCheck' },
 				{ label: 'Support', href: '/jafar/support', icon: 'messages', count: supportUnread }
