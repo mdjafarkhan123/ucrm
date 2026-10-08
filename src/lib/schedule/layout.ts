@@ -23,18 +23,22 @@ export function clockMinutes(value: string | null): number | null {
 	return Math.max(0, Math.min(MINUTES_IN_DAY, hour * 60 + minute));
 }
 
-export type TimedVisitSpan = {
-	item: ScheduleItem;
+/** Anything a time grid places: the contractor Schedule's items and the Jafar sales calendar's entries alike. */
+export type TimedSpan<T extends { id: string } = ScheduleItem> = {
+	item: T;
 	/** Minutes from midnight. */
 	start: number;
 	end: number;
 };
 
-export type TimedVisitBlock = TimedVisitSpan & {
+export type TimedBlock<T extends { id: string } = ScheduleItem> = TimedSpan<T> & {
 	/** Which side-by-side lane this block takes, and how many lanes its overlapping group needs. */
 	column: number;
 	columns: number;
 };
+
+export type TimedVisitSpan = TimedSpan<ScheduleItem>;
+export type TimedVisitBlock = TimedBlock<ScheduleItem>;
 
 export type DayVisitSplit = {
 	/** Dated, no clock time. These never get invented a time; they sit in the Anytime lane. */
@@ -66,13 +70,15 @@ export function splitDayVisits(items: ScheduleItem[]): DayVisitSplit {
 // each other, and give each one the first lane that is free at its start time. The group is only as wide as
 // the most it ever stacks, so two visits at nine o'clock take half the column each rather than the whole
 // day being split into as many lanes as the day has visits.
-export function layoutTimedVisits(spans: TimedVisitSpan[]): TimedVisitBlock[] {
+export function layoutTimedVisits<T extends { id: string }>(
+	spans: TimedSpan<T>[]
+): TimedBlock<T>[] {
 	const sorted = [...spans].sort(
 		(a, b) => a.start - b.start || b.end - a.end || a.item.id.localeCompare(b.item.id)
 	);
 
-	const blocks: TimedVisitBlock[] = [];
-	let group: TimedVisitBlock[] = [];
+	const blocks: TimedBlock<T>[] = [];
+	let group: TimedBlock<T>[] = [];
 	let groupEnd = -1;
 	// The last minute each lane is busy until, for the group being built.
 	let laneEnds: number[] = [];

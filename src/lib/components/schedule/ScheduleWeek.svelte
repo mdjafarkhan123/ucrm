@@ -1,19 +1,14 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
-	import type { Attachment } from 'svelte/attachments';
+	import CalendarWeekGrid, {
+		type WeekGridGhost
+	} from '$lib/components/calendar/CalendarWeekGrid.svelte';
 	import VisitCard from '$lib/components/schedule/VisitCard.svelte';
 	import AssessmentCard from '$lib/components/schedule/AssessmentCard.svelte';
 	import EventCard from '$lib/components/schedule/EventCard.svelte';
 	import TaskCard from '$lib/components/schedule/TaskCard.svelte';
 	import { bucketVisitsByDay } from '$lib/schedule/grouping';
-	import {
-		itemCountLabel,
-		type AssessmentItem,
-		type EventItem,
-		type ScheduleItem
-	} from '$lib/schedule/items';
+	import { type AssessmentItem, type EventItem, type ScheduleItem } from '$lib/schedule/items';
 	import { earliestWorkingMinute, weekdayOf, type WorkingWeek } from '$lib/schedule/hours';
-	import { formatCalendarDay } from '$lib/schedule/labels';
 	import {
 		cardDensity,
 		layoutTimedVisits,
@@ -42,10 +37,8 @@
 	import type { ScheduleVisit } from '$lib/schedule/api';
 	import type { TeamMember } from '$lib/team/api';
 
-	// The week, as seven day columns over one shared time axis.
-	//
-	// Hour lines and the working-hours band are painted rather than built: a grid of 7 x 24 cells would be
-	// 168 elements of pure decoration, and this view has real cards to spend that budget on.
+	// The week, as seven day columns over one shared time axis. The frame is the shared CalendarWeekGrid; this
+	// draws the contractor's cards into it and owns dragging.
 	//
 	// Dragging works on coordinates rather than drop targets, because the grid the pointer lands on is
 	// painted and has no elements to drop onto. Each day column and each Anytime cell is measured, and the
@@ -107,7 +100,6 @@
 
 	/** One hour of the grid, in pixels, from the reader's zoom. Everything vertical is worked out from this. */
 	const HOUR_HEIGHT = $derived(WEEK_HOUR_PX[zoom]);
-	const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
 	const days = $derived(eachDayInWindow(activeWindow));
 	const byDay = $derived(bucketVisitsByDay(items));
@@ -117,24 +109,13 @@
 			const split = splitDayVisits(byDay.get(day) ?? []);
 			return {
 				day,
-				weekday: weekdayOf(day),
 				anytime: split.anytime,
 				blocks: layoutTimedVisits(split.timed),
-				count: (byDay.get(day) ?? []).length
+				count: (byDay.get(day) ?? []).length,
+				working: workingWeek?.get(weekdayOf(day)) ?? []
 			};
 		})
 	);
-
-	const anyAnytime = $derived(columns.some((column) => column.anytime.length > 0));
-
-	function percent(minutes: number) {
-		return `${(minutes / MINUTES_IN_DAY) * 100}%`;
-	}
-
-	function hourLabel(hour: number) {
-		if (hour === 0 || hour === 12) return hour === 0 ? '12am' : '12pm';
-		return hour < 12 ? `${hour}am` : `${hour - 12}pm`;
-	}
 
 	// Midnight is almost never where the work is. The grid opens just before the earliest thing it could
 	// show -- the business opening, or the first visit of the week when that is earlier.
@@ -148,13 +129,6 @@
 		const anchor = candidates.length > 0 ? Math.min(...candidates) : 8 * 60;
 		return Math.max(0, anchor - 30);
 	});
-
-	// The opening minute is read without subscribing to it, so this runs once when the grid mounts. Tracking
-	// it would scroll the view back to the top of the working day every time a visit changed, while
-	// somebody was reading further down.
-	const openAtWorkingHours: Attachment<HTMLElement> = (node) => {
-		node.scrollTop = (untrack(() => openingMinute) / 60) * untrack(() => HOUR_HEIGHT);
-	};
 
 	// --- Dragging ------------------------------------------------------------------------------------
 
@@ -526,380 +500,134 @@
 		};
 	});
 
+	const ghosts = $derived(
+		[
+			ghost && { ...ghost, tone: 'move' as const },
+			createGhost && { ...createGhost, tone: 'create' as const },
+			externalGhost && { ...externalGhost, tone: 'create' as const }
+		].filter((value): value is WeekGridGhost => Boolean(value))
+	);
+
 	function clockText(minutes: number) {
 		const hour = Math.floor(minutes / 60);
 		return `${String(hour).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
 	}
 </script>
 
-<div class="week" style:--week-hour="{HOUR_HEIGHT}px">
-	<div class="week__row week__head">
-		<div class="week__corner"></div>
-		{#each columns as column (column.day)}
-			<div class="week__day" class:week__day--today={column.day === today}>
-				<span class="week__weekday">{formatCalendarDay(column.day, { weekday: 'short' })}</span>
-				<span class="week__date">{formatCalendarDay(column.day, { day: 'numeric' })}</span>
-				{#if column.count > 0}
-					<span class="week__count">{itemCountLabel(column.count)}</span>
-				{/if}
-			</div>
-		{/each}
-	</div>
-
-	{#if anyAnytime}
-		<div class="week__row week__anytime">
-			<div class="week__anytime-label">Anytime</div>
-			{#each columns as column, index (column.day)}
-				<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
-				<!-- A pointer affordance for booking a date-only visit; the keyboard path is the New Visit
-				     button in the page header. -->
-				<div
-					class="week__anytime-column"
-					class:week__anytime-column--target={(drag !== null && drag.day === column.day) ||
-						(externalStart === null && externalDay === column.day)}
-					class:week__anytime-column--bookable={canCreate}
-					bind:this={anytimeEls[index]}
-					onclick={(event) => createAnytime(event, column.day)}
-				>
-					{#each column.anytime as item (item.id)}
-						{#if item.kind === 'visit'}
-							<div
-								class="week__pickup"
-								class:week__pickup--dragging={drag?.visit.id === item.id}
-								class:week__pickup--pending={movingVisitId === item.id}
-								onclickcapture={afterDrag}
-							>
-								<VisitCard
-									visit={item}
-									density="compact"
-									{today}
-									{employeesById}
-									selected={item.id === selectedItemId}
-									keyboardMovable={canDragVisit(item, canSchedule)}
-									{onselect}
-									onpickup={(event) => beginMove(event, item, null)}
-									onkeydown={(event) => handleVisitKey(event, item, null)}
-									onblur={(event) => handleVisitBlur(event, item)}
-								/>
-							</div>
-						{:else if item.kind === 'assessment'}
-							<AssessmentCard
-								assessment={item}
-								density="compact"
-								{today}
-								{employeesById}
-								selected={item.id === selectedItemId}
-								onselect={onselectassessment}
-							/>
-						{:else if item.kind === 'task'}
-							<TaskCard task={item} density="compact" {today} {employeesById} />
-						{:else}
-							<EventCard
-								event={item}
-								density="compact"
-								selected={item.id === selectedItemId}
-								onselect={onselectevent}
-							/>
-						{/if}
-					{/each}
-				</div>
-			{/each}
-		</div>
-	{/if}
-
-	<div class="week__row week__body" {@attach openAtWorkingHours}>
-		<div class="week__times" style:height="{24 * HOUR_HEIGHT}px">
-			{#each HOURS as hour (hour)}
-				<span class="week__hour" style:top="{hour * HOUR_HEIGHT}px">{hourLabel(hour)}</span>
-			{/each}
-		</div>
-
-		{#each columns as column, index (column.day)}
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
-			<!-- A pointer affordance for booking a visit on empty time; the keyboard path is the New Visit
-			     button in the page header. -->
+<CalendarWeekGrid
+	{columns}
+	{today}
+	{nowMinutes}
+	hourHeight={HOUR_HEIGHT}
+	{openingMinute}
+	{ghosts}
+	bookable={canCreate}
+	anytimeTarget={(day) =>
+		(drag !== null && drag.day === day) || (externalStart === null && externalDay === day)}
+	bind:columnEls
+	bind:anytimeEls
+	oncolumnpointerdown={beginCreate}
+	onanytimeclick={createAnytime}
+>
+	{#snippet anytimeItem(item)}
+		{#if item.kind === 'visit'}
 			<div
-				class="week__column"
-				class:week__column--bookable={canCreate}
-				style:height="{24 * HOUR_HEIGHT}px"
-				bind:this={columnEls[index]}
-				onpointerdown={(event) => beginCreate(event, index)}
+				class="week__pickup"
+				class:week__pickup--dragging={drag?.visit.id === item.id}
+				class:week__pickup--pending={movingVisitId === item.id}
+				onclickcapture={afterDrag}
 			>
-				{#each workingWeek?.get(column.weekday) ?? [] as band (band.start)}
-					<div
-						class="week__working"
-						style:top={percent(band.start)}
-						style:height={percent(band.end - band.start)}
-					></div>
-				{/each}
+				<VisitCard
+					visit={item}
+					density="compact"
+					{today}
+					{employeesById}
+					selected={item.id === selectedItemId}
+					keyboardMovable={canDragVisit(item, canSchedule)}
+					{onselect}
+					onpickup={(event) => beginMove(event, item, null)}
+					onkeydown={(event) => handleVisitKey(event, item, null)}
+					onblur={(event) => handleVisitBlur(event, item)}
+				/>
+			</div>
+		{:else if item.kind === 'assessment'}
+			<AssessmentCard
+				assessment={item}
+				density="compact"
+				{today}
+				{employeesById}
+				selected={item.id === selectedItemId}
+				onselect={onselectassessment}
+			/>
+		{:else if item.kind === 'task'}
+			<TaskCard task={item} density="compact" {today} {employeesById} />
+		{:else}
+			<EventCard
+				event={item}
+				density="compact"
+				selected={item.id === selectedItemId}
+				onselect={onselectevent}
+			/>
+		{/if}
+	{/snippet}
 
-				<div class="week__lines" aria-hidden="true"></div>
-
-				{#each column.blocks as block (block.item.id)}
-					{#if block.item.kind === 'visit'}
-						{@const visit = block.item}
-						<div
-							class="week__block week__pickup"
-							class:week__pickup--dragging={drag?.visit.id === visit.id}
-							class:week__pickup--pending={movingVisitId === visit.id}
-							style:top={percent(block.start)}
-							style:height={percent(block.end - block.start)}
-							style:left="{(block.column / block.columns) * 100}%"
-							style:width="{(1 / block.columns) * 100}%"
-							onclickcapture={afterDrag}
-						>
-							<VisitCard
-								{visit}
-								density={cardDensity(((block.end - block.start) / 60) * HOUR_HEIGHT, block.columns)}
-								{today}
-								{employeesById}
-								selected={visit.id === selectedItemId}
-								keyboardMovable={canDragVisit(visit, canSchedule)}
-								{onselect}
-								onpickup={(event) => beginMove(event, visit, block)}
-								onkeydown={(event) => handleVisitKey(event, visit, block)}
-								onblur={(event) => handleVisitBlur(event, visit)}
-							/>
-							{#if canDragVisit(visit, canSchedule)}
-								<!-- The bottom edge, for changing how long the work should take. It is a handle on a
-								     card that is already reachable by keyboard through Reschedule, so it is decoration
-								     to a screen reader rather than a second control saying the same thing. -->
-								<span
-									class="week__resize"
-									aria-hidden="true"
-									onpointerdown={(event) => beginResize(event, visit, block)}
-								></span>
-							{/if}
-						</div>
-					{:else if block.item.kind === 'assessment'}
-						<!-- An assessment sits on the same time axis but is Request-owned: no pickup, no resize,
-						     and its click opens the Request rather than a visit editor. -->
-						<div
-							class="week__block"
-							style:top={percent(block.start)}
-							style:height={percent(block.end - block.start)}
-							style:left="{(block.column / block.columns) * 100}%"
-							style:width="{(1 / block.columns) * 100}%"
-						>
-							<AssessmentCard
-								assessment={block.item}
-								density={cardDensity(((block.end - block.start) / 60) * HOUR_HEIGHT, block.columns)}
-								{today}
-								{employeesById}
-								selected={block.item.id === selectedItemId}
-								onselect={onselectassessment}
-							/>
-						</div>
-					{:else if block.item.kind === 'event'}
-						<!-- A Schedule-owned event on the time axis: no pickup, no resize; its click opens the
-						     event's own popover. -->
-						<div
-							class="week__block"
-							style:top={percent(block.start)}
-							style:height={percent(block.end - block.start)}
-							style:left="{(block.column / block.columns) * 100}%"
-							style:width="{(1 / block.columns) * 100}%"
-						>
-							<EventCard
-								event={block.item}
-								density={cardDensity(((block.end - block.start) / 60) * HOUR_HEIGHT, block.columns)}
-								selected={block.item.id === selectedItemId}
-								onselect={onselectevent}
-							/>
-						</div>
-					{/if}
-				{/each}
-
-				{#if ghost && ghost.day === column.day}
-					<div
-						class="week__ghost"
-						style:top={percent(ghost.start)}
-						style:height={percent(Math.max(15, ghost.end - ghost.start))}
+	{#snippet block(block)}
+		{@const density = cardDensity(((block.end - block.start) / 60) * HOUR_HEIGHT, block.columns)}
+		{#if block.item.kind === 'visit'}
+			{@const visit = block.item}
+			<div
+				class="week__pickup week__pickup--timed"
+				class:week__pickup--dragging={drag?.visit.id === visit.id}
+				class:week__pickup--pending={movingVisitId === visit.id}
+				onclickcapture={afterDrag}
+			>
+				<VisitCard
+					{visit}
+					{density}
+					{today}
+					{employeesById}
+					selected={visit.id === selectedItemId}
+					keyboardMovable={canDragVisit(visit, canSchedule)}
+					{onselect}
+					onpickup={(event) => beginMove(event, visit, block)}
+					onkeydown={(event) => handleVisitKey(event, visit, block)}
+					onblur={(event) => handleVisitBlur(event, visit)}
+				/>
+				{#if canDragVisit(visit, canSchedule)}
+					<!-- The bottom edge, for changing how long the work should take. It is a handle on a card that is
+					     already reachable by keyboard through Reschedule, so it is decoration to a screen reader
+					     rather than a second control saying the same thing. -->
+					<span
+						class="week__resize"
 						aria-hidden="true"
-					>
-						<span class="week__ghost-label">{ghost.label}</span>
-					</div>
-				{/if}
-
-				{#if createGhost && createGhost.day === column.day}
-					<div
-						class="week__ghost week__ghost--create"
-						style:top={percent(createGhost.start)}
-						style:height={percent(Math.max(15, createGhost.end - createGhost.start))}
-						aria-hidden="true"
-					>
-						<span class="week__ghost-label">{createGhost.label}</span>
-					</div>
-				{/if}
-
-				{#if externalGhost && externalGhost.day === column.day}
-					<div
-						class="week__ghost week__ghost--create"
-						style:top={percent(externalGhost.start)}
-						style:height={percent(Math.max(15, externalGhost.end - externalGhost.start))}
-						aria-hidden="true"
-					>
-						<span class="week__ghost-label">{externalGhost.label}</span>
-					</div>
-				{/if}
-
-				{#if nowMinutes !== null && column.day === today}
-					<div class="week__now" style:top={percent(nowMinutes)} aria-hidden="true"></div>
+						onpointerdown={(event) => beginResize(event, visit, block)}
+					></span>
 				{/if}
 			</div>
-		{/each}
-	</div>
-</div>
+		{:else if block.item.kind === 'assessment'}
+			<!-- An assessment sits on the same time axis but is Request-owned: no pickup, no resize, and its click
+			     opens the Request rather than a visit editor. -->
+			<AssessmentCard
+				assessment={block.item}
+				{density}
+				{today}
+				{employeesById}
+				selected={block.item.id === selectedItemId}
+				onselect={onselectassessment}
+			/>
+		{:else if block.item.kind === 'event'}
+			<!-- A Schedule-owned event on the time axis: no pickup, no resize; its click opens its own popover. -->
+			<EventCard
+				event={block.item}
+				{density}
+				selected={block.item.id === selectedItemId}
+				onselect={onselectevent}
+			/>
+		{/if}
+	{/snippet}
+</CalendarWeekGrid>
 
 <style lang="scss">
-	.week {
-		--week-gutter: 56px;
-
-		display: flex;
-		flex-direction: column;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background-color: var(--color-surface);
-		overflow: hidden;
-	}
-
-	.week__row {
-		display: grid;
-		grid-template-columns: var(--week-gutter) repeat(7, minmax(0, 1fr));
-	}
-
-	.week__head {
-		border-bottom: var(--border-base) solid var(--color-border);
-		background-color: var(--color-surface);
-	}
-
-	.week__corner {
-		border-right: var(--border-base) solid var(--color-border);
-	}
-
-	.week__day {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: var(--space-smallest);
-		padding: var(--space-small) var(--space-smaller);
-		border-left: var(--border-base) solid var(--color-border);
-	}
-
-	.week__weekday {
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		text-transform: uppercase;
-		letter-spacing: var(--typography--letterSpacing-loose);
-	}
-
-	.week__date {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-width: 28px;
-		height: 28px;
-		border-radius: var(--radius-circle);
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-large);
-		font-weight: 700;
-	}
-
-	.week__day--today .week__date {
-		background-color: var(--color-interactive);
-		color: var(--color-surface);
-	}
-
-	.week__count {
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-smaller);
-		line-height: var(--typography--lineHeight-tight);
-	}
-
-	.week__anytime {
-		border-bottom: var(--border-base) solid var(--color-border);
-		background-color: var(--color-surface--background--subtle);
-	}
-
-	.week__anytime-label {
-		display: flex;
-		align-items: center;
-		justify-content: flex-end;
-		padding: var(--space-small) var(--space-smaller);
-		border-right: var(--border-base) solid var(--color-border);
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 700;
-	}
-
-	.week__anytime-column {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-smallest);
-		padding: var(--space-smaller);
-		max-height: 112px;
-		overflow-y: auto;
-		border-left: var(--border-base) solid var(--color-border);
-	}
-
-	.week__body {
-		// The gutter scrolls with the columns, so the hour labels can never drift away from their lines.
-		height: clamp(360px, calc(100vh - 340px), 900px);
-		overflow-y: auto;
-		scrollbar-gutter: stable;
-	}
-
-	.week__times {
-		position: relative;
-		border-right: var(--border-base) solid var(--color-border);
-	}
-
-	.week__hour {
-		position: absolute;
-		right: var(--space-small);
-		// Sat on its own line rather than inside the hour it opens, so a label reads as the line's time.
-		transform: translateY(-50%);
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-smaller);
-		line-height: var(--typography--lineHeight-tight);
-		white-space: nowrap;
-	}
-
-	.week__column {
-		position: relative;
-		border-left: var(--border-base) solid var(--color-border);
-		// Outside working hours the column recedes; the working band below paints itself back to the
-		// ordinary surface. With no confirmed weekly pattern nothing is painted and the whole day recedes
-		// equally, which is honest -- the calendar does not know the hours.
-		background-color: var(--color-surface--background);
-	}
-
-	.week__working {
-		position: absolute;
-		left: 0;
-		width: 100%;
-		background-color: var(--color-surface);
-	}
-
-	.week__lines {
-		position: absolute;
-		inset: 0;
-		background-image: repeating-linear-gradient(
-			to bottom,
-			var(--color-border) 0,
-			var(--color-border) 1px,
-			transparent 1px,
-			transparent var(--week-hour)
-		);
-		pointer-events: none;
-	}
-
-	.week__block {
-		position: absolute;
-		box-sizing: border-box;
-		padding-right: var(--space-smallest);
-	}
-
 	// A card you can pick up says so before you touch it, and steps out of the way while it is being moved:
 	// the ghost is the thing to watch during a drag, not the card's old position.
 	.week__pickup {
@@ -915,9 +643,15 @@
 		}
 	}
 
+	// On the time axis the pickup fills the box the grid placed, so the resize handle sits on its bottom edge.
+	.week__pickup--timed {
+		position: relative;
+		height: 100%;
+	}
+
 	.week__resize {
 		position: absolute;
-		right: var(--space-smallest);
+		right: 0;
 		bottom: 0;
 		left: 0;
 		height: 8px;
@@ -938,71 +672,7 @@
 		}
 	}
 
-	.week__block:hover .week__resize::after {
+	.week__pickup--timed:hover .week__resize::after {
 		opacity: 1;
-	}
-
-	.week__ghost {
-		position: absolute;
-		right: var(--space-smallest);
-		left: 0;
-		box-sizing: border-box;
-		display: flex;
-		align-items: flex-start;
-		padding: var(--space-smallest) var(--space-smaller);
-		border: var(--border-thick) dashed var(--color-interactive);
-		border-radius: var(--radius-small);
-		background-color: var(--color-informative--surface);
-		pointer-events: none;
-	}
-
-	// The new-visit ghost reads as a fresh, additive block rather than a moved one.
-	.week__ghost--create {
-		border-style: dashed;
-		border-color: var(--color-success);
-		background-color: var(--color-success--surface);
-	}
-
-	.week__ghost-label {
-		color: var(--color-informative--onSurface);
-		font-size: var(--typography--fontSize-smaller);
-		font-weight: 700;
-		line-height: var(--typography--lineHeight-tight);
-		white-space: nowrap;
-	}
-
-	.week__ghost--create .week__ghost-label {
-		color: var(--color-success--onSurface);
-	}
-
-	.week__column--bookable {
-		cursor: cell;
-	}
-
-	.week__anytime-column--bookable {
-		cursor: cell;
-	}
-
-	.week__anytime-column--target {
-		background-color: var(--color-informative--surface);
-	}
-
-	.week__now {
-		position: absolute;
-		left: 0;
-		width: 100%;
-		border-top: var(--border-thick) solid var(--color-critical);
-		pointer-events: none;
-
-		&::before {
-			content: '';
-			position: absolute;
-			top: -4px;
-			left: 0;
-			width: 8px;
-			height: 8px;
-			border-radius: var(--radius-circle);
-			background-color: var(--color-critical);
-		}
 	}
 </style>

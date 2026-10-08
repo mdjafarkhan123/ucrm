@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Popover } from 'bits-ui';
-	import Button from '$lib/components/ui/Button.svelte';
+	import CalendarBar from '$lib/components/calendar/CalendarBar.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import {
@@ -12,8 +12,6 @@
 	import type { ScheduleFilters } from '$lib/schedule/filters';
 	import { SCHEDULE_ZOOMS, SCHEDULE_ZOOM_LABELS, type ScheduleZoom } from '$lib/schedule/density';
 	import type { TeamMember } from '$lib/team/api';
-	import chevronLeftIcon from '@tabler/icons/outline/chevron-left.svg?raw';
-	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
 	import mapIcon from '@tabler/icons/outline/map-2.svg?raw';
 	import filterIcon from '@tabler/icons/outline/filter.svg?raw';
 
@@ -115,40 +113,15 @@
 
 <!-- The icons are Tabler SVG files imported at build time, not user content. -->
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div class="schedule-controls">
-	<div class="schedule-controls__date">
-		<div class="schedule-controls__stepper">
-			<button
-				type="button"
-				class="schedule-controls__step"
-				aria-label="Previous {filters.view}"
-				onclick={() => onstep(-1)}
-			>
-				{@html chevronLeftIcon}
-			</button>
-			<button
-				type="button"
-				class="schedule-controls__step"
-				aria-label="Next {filters.view}"
-				onclick={() => onstep(1)}
-			>
-				{@html chevronRightIcon}
-			</button>
-		</div>
-
-		<Button variant="secondary" size="small" onclick={ontoday}>Today</Button>
-
-		<p class="schedule-controls__range" aria-live="polite">{rangeLabel}</p>
-	</div>
-
-	<div class="schedule-controls__filters">
-		<SegmentedControl
-			value={filters.view}
-			options={viewOptions}
-			size="small"
-			onchange={(view) => onchange({ view: view as ScheduleFilters['view'] })}
-		/>
-
+<CalendarBar
+	view={filters.view}
+	views={viewOptions}
+	{rangeLabel}
+	{onstep}
+	{ontoday}
+	onview={(view) => onchange({ view })}
+>
+	{#snippet extras()}
 		{#if onunscheduled}
 			<button
 				type="button"
@@ -244,29 +217,10 @@
 				</Popover.Content>
 			</Popover.Portal>
 		</Popover.Root>
-	</div>
-</div>
+	{/snippet}
+</CalendarBar>
 
 <style lang="scss">
-	.schedule-controls {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: flex-end;
-		justify-content: space-between;
-		gap: var(--space-base);
-	}
-
-	.schedule-controls__date {
-		display: flex;
-		align-items: center;
-		gap: var(--space-small);
-	}
-
-	.schedule-controls__stepper {
-		display: flex;
-		gap: var(--space-smaller);
-	}
-
 	/* Global, not scoped: the Filters trigger is a Bits UI Popover.Trigger, which renders its own <button>
 	   outside the reach of Svelte's per-component style scoping. A scoped .schedule-controls__unscheduled
 	   rule silently never matches it, so it fell back to the browser's raw default button border. Making the
@@ -339,48 +293,6 @@
 		color: var(--color-surface);
 		font-size: var(--typography--fontSize-smaller);
 		font-weight: 700;
-	}
-
-	.schedule-controls__step {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 32px;
-		height: 32px;
-		padding: 0;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background-color: var(--color-surface);
-		color: var(--color-icon);
-		cursor: pointer;
-		transition: background-color var(--timing-quick) ease;
-
-		&:hover {
-			background-color: var(--color-surface--hover);
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-
-		:global(svg) {
-			width: 18px;
-			height: 18px;
-		}
-	}
-
-	.schedule-controls__range {
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-large);
-		font-weight: 700;
-		line-height: var(--typography--lineHeight-large);
-	}
-
-	.schedule-controls__filters {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: flex-end;
-		gap: var(--space-slim);
 	}
 
 	/* The floating Filters panel, on the design skill's popover tokens (surface, base border, --shadow-base,
