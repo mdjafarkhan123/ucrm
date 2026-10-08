@@ -10,4 +10,4 @@ export type OperationType = (typeof OPERATION_TYPES)[number];
 
 export type TargetKind = 'onboarding_application' | 'organization' | 'platform';
 
-export type NotificationTargetKind = TargetKind | 'operation_attempt';
+export type NotificationTargetKind = TargetKind | 'operation_attempt' | 'business_relationship';

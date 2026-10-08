@@ -6,6 +6,7 @@ import { env } from '$env/dynamic/private';
 import { runMonitoredEmailWake } from '$lib/server/communications/email-worker';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { emailDatabaseRaisedOwnerAlerts } from '$lib/server/jafar/owner-alerts';
+import { sendDuePlatformReminders } from '$lib/server/jafar/reminders';
 import { sendDueSetupReminderEmails } from '$lib/server/setup/reminder-emails';
 import { sendDueSupportUnseenReplyEmails } from '$lib/server/support/unseen-reply-emails';
 
@@ -58,6 +59,14 @@ export const POST: RequestHandler = async ({ request }) => {
 			await sendDueSetupReminderEmails(getOwnerSupabaseClient(), { origin });
 		} catch (error) {
 			console.error('Could not send setup reminder emails.', error);
+		}
+
+		// Business Management calls and follow-ups (Jafar business management C2): their alerts and emails. Same
+		// lease, same best effort.
+		try {
+			await sendDuePlatformReminders(getOwnerSupabaseClient(), { origin });
+		} catch (error) {
+			console.error('Could not send calendar reminders.', error);
 		}
 	}
 

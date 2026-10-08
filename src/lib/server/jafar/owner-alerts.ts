@@ -54,7 +54,11 @@ function escapeHtml(value: string) {
  * filed against the platform itself rather than inventing a fourth kind for the email row.
  */
 function emailTarget(target: RaiseOwnerAlertParams['target']) {
-	if (target.targetKind === 'operation_attempt' || target.targetKind === 'platform') {
+	if (
+		target.targetKind === 'operation_attempt' ||
+		target.targetKind === 'platform' ||
+		target.targetKind === 'business_relationship'
+	) {
 		return { targetKind: 'platform' as TargetKind, targetId: null };
 	}
 	return { targetKind: target.targetKind as TargetKind, targetId: target.targetId };

@@ -207,6 +207,8 @@ begin
 end;
 $$;
 
+-- Converting a time is the check: Postgres refuses a zone it does not know. (pg_timezone_names reads every zone
+-- file, about 800 ms, so the calendar read must not use it.)
 create or replace function private.calendar_check_time_zone(zone text)
 returns void
 language plpgsql
@@ -214,9 +216,13 @@ stable
 set search_path to 'pg_catalog'
 as $$
 begin
-  if zone is null or not exists (select 1 from pg_catalog.pg_timezone_names where name = zone) then
+  if zone is null or char_length(zone) > 64 then
     raise exception 'That time zone is not known.' using errcode = '22023';
   end if;
+  perform now() at time zone zone;
+exception
+  when invalid_parameter_value then
+    raise exception 'That time zone is not known.' using errcode = '22023';
 end;
 $$;
 
