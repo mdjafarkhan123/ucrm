@@ -140,7 +140,10 @@ export const PATCH: RequestHandler = async (event) => {
 			target_status: change.lead_status,
 			next_action_mode: next?.mode ?? 'keep',
 			target_next_action: next && next.mode !== 'clear' ? (next.text ?? undefined) : undefined,
-			target_due_on: next && next.mode !== 'clear' ? (next.due_on ?? undefined) : undefined
+			target_due_on: next && next.mode !== 'clear' ? (next.due_on ?? undefined) : undefined,
+			target_due_at: next && next.mode !== 'clear' ? (next.due_at ?? undefined) : undefined,
+			target_reminders:
+				next && next.mode !== 'clear' ? ((next.reminders as Json | null) ?? undefined) : undefined
 		});
 		if (error) {
 			// The database's own refusals (e.g. "There is no next action to mark done.") are already in plain words.
