@@ -13,12 +13,12 @@
 - [x] Browser test `src/routes/jafar/home.e2e.ts` passed (done-check)
 - [x] Polish: tiles draw at once, phone swipe row, Done keeps its spinner until the home reloads
 - [x] Speed check at 20k Leads / 6k due this week (seed deleted, 0 left): home SQL 23 ms; phone slow-4G LCP ≤0.5 s, CLS 0.008, Done dialog ≈0.2 s
-- [ ] Fix the slow "Setups waiting" count (approved), then mark C1 done, point NOW at C2
+- [x] Fix the slow "Setups waiting" count: migration `20261008003000_uplift_onboarding_list_hidden_fence` (check: function body contains `offset 0`); ~1.9 s → ~0.1 s, answers unchanged
 - [ ] Find out what the 264 requests on a cold home load are; fix any waste
 
 ## Next
 
-`/api/jafar/home` takes ~2.2 s; all of it is `owner_client_onboarding_list` (client-onboarding area, 2.3 s mean for 5 clients). Cause proven by EXPLAIN: its `hidden` lateral (`setup_hidden_fact_keys`) is pulled up and re-run per fact and per required key; `offset 0` in that lateral cut a test from 698 ms to 23 ms. Jafar, 2026-10-08: fix both slow spots first thing next session. Do: migration re-creating the live (8-argument) function with the fence, re-time, rerun onboarding tests. Then trace the 264 cold-load requests (likely code chunks and link preloads) and remove any that aren't needed. The onboarding function belongs to campaign `client-onboarding-delivery`: check the register for a write claim on it before changing it.
+Trace the 264 requests on a cold home load (production build, not dev) and remove any that aren't needed. Then mark C1 done and point NOW at C2. Work happens in worktree `../Ucrm-wt-jafar-c1`, branch `jafar-c1-speed`; remove both when C1 is done.
 
 ## Notes
 
