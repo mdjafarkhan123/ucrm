@@ -67,6 +67,55 @@
 	}));
 	const alertList = $derived(alerts.data?.notifications ?? []);
 
+	// The cards draw at once with a dash and fill in, so the numbers arriving never move the page.
+	const tiles = $derived.by(() => {
+		const data = home.data;
+		const tone = <Tone extends string>(value: number | null | undefined, active: Tone) =>
+			value ? active : ('default' as const);
+		return [
+			{
+				label: 'Leads to review',
+				value: count(data?.review),
+				note: 'Ready for your yes',
+				icon: clipboardCheckIcon,
+				tone: tone(data?.review, 'warning' as const),
+				href: resolve('/jafar/leads/review')
+			},
+			{
+				label: 'First contacts',
+				value: count(data?.first_contact),
+				note: 'Approved, not contacted yet',
+				icon: sendIcon,
+				tone: tone(data?.first_contact, 'success' as const),
+				href: `${resolve('/jafar/leads')}?status=approved&sort=next_action`
+			},
+			{
+				label: 'Accounts to create',
+				value: count(data?.accounts_to_create),
+				note: 'Paid, account not made',
+				icon: userPlusIcon,
+				tone: tone(data?.accounts_to_create, 'informative' as const),
+				href: `${resolve('/jafar/prospects')}?stage=payment_confirmed`
+			},
+			{
+				label: 'Setups waiting',
+				value: count(data?.setups_waiting),
+				note: 'Clients waiting on Uplift',
+				icon: rocketIcon,
+				tone: tone(data?.setups_waiting, 'informative' as const),
+				href: `${resolve('/jafar/onboarding')}?waiting_on=uplift`
+			},
+			{
+				label: 'Renewals',
+				value: count(data?.renewals),
+				note: 'Due this week or late',
+				icon: refreshIcon,
+				tone: tone(data?.renewals, 'critical' as const),
+				href: `${resolve('/jafar/organizations')}?attention_reason=payment_overdue,renewal_due`
+			}
+		];
+	});
+
 	const groups = $derived(home.data ? groupAgenda(home.data.items, today) : []);
 	const groupTotals = $derived({
 		overdue: home.data?.overdue ?? 0,
@@ -138,57 +187,9 @@
 	<section class="business-home__waiting" aria-labelledby="waiting-title">
 		<h2 id="waiting-title" class="business-home__section-title">Waiting on you</h2>
 		<div class="business-home__tiles">
-			{#if home.data}
-				<KpiCard
-					variant="compact"
-					label="Leads to review"
-					value={count(home.data.review)}
-					note="Ready for your yes"
-					icon={clipboardCheckIcon}
-					tone={home.data.review ? 'warning' : 'default'}
-					href={resolve('/jafar/leads/review')}
-				/>
-				<KpiCard
-					variant="compact"
-					label="First contacts"
-					value={count(home.data.first_contact)}
-					note="Approved, not contacted yet"
-					icon={sendIcon}
-					tone={home.data.first_contact ? 'success' : 'default'}
-					href={`${resolve('/jafar/leads')}?status=approved&sort=next_action`}
-				/>
-				<KpiCard
-					variant="compact"
-					label="Accounts to create"
-					value={count(home.data.accounts_to_create)}
-					note="Paid, account not made"
-					icon={userPlusIcon}
-					tone={home.data.accounts_to_create ? 'informative' : 'default'}
-					href={`${resolve('/jafar/prospects')}?stage=payment_confirmed`}
-				/>
-				<KpiCard
-					variant="compact"
-					label="Setups waiting"
-					value={count(home.data.setups_waiting)}
-					note="Clients waiting on Uplift"
-					icon={rocketIcon}
-					tone={home.data.setups_waiting ? 'informative' : 'default'}
-					href={`${resolve('/jafar/onboarding')}?waiting_on=uplift`}
-				/>
-				<KpiCard
-					variant="compact"
-					label="Renewals"
-					value={count(home.data.renewals)}
-					note="Due this week or late"
-					icon={refreshIcon}
-					tone={home.data.renewals ? 'critical' : 'default'}
-					href={`${resolve('/jafar/organizations')}?attention_reason=payment_overdue,renewal_due`}
-				/>
-			{:else}
-				{#each [0, 1, 2, 3, 4] as tile (tile)}
-					<div class="business-home__tile-skeleton"><LoadingSkeleton label="Loading counts" /></div>
-				{/each}
-			{/if}
+			{#each tiles as tile (tile.label)}
+				<KpiCard variant="compact" {...tile} />
+			{/each}
 		</div>
 	</section>
 
@@ -329,6 +330,8 @@
 	.business-home {
 		min-width: 0;
 		display: grid;
+		// One column that may shrink, so the phone's swipe row of cards can't widen the page.
+		grid-template-columns: minmax(0, 1fr);
 		gap: var(--space-large);
 	}
 	h1,
@@ -366,14 +369,6 @@
 		display: grid;
 		grid-template-columns: repeat(5, minmax(0, 1fr));
 		gap: var(--space-base);
-	}
-	// The same height as a compact card, so the counts arriving never push the list down.
-	.business-home__tile-skeleton {
-		min-height: 120px;
-		:global(.skeleton) {
-			height: 100%;
-			min-height: 120px;
-		}
 	}
 	.business-home__grid {
 		display: grid;
@@ -635,8 +630,21 @@
 		h1 {
 			font-size: 28px;
 		}
+		// A row to swipe through, so the to-do list stays near the top of a phone screen.
 		.business-home__tiles {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
+			grid-template-columns: none;
+			grid-auto-columns: minmax(150px, 44%);
+			grid-auto-flow: column;
+			margin-inline: calc(-1 * var(--space-base));
+			padding: 2px var(--space-base) var(--space-small);
+			overflow-x: auto;
+			overscroll-behavior-x: contain;
+			scroll-padding-inline: var(--space-base);
+			scroll-snap-type: x mandatory;
+			scrollbar-width: none;
+			> :global(*) {
+				scroll-snap-align: start;
+			}
 		}
 		.business-home__list {
 			padding: 0 var(--space-base) var(--space-small);

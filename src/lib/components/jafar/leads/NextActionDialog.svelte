@@ -78,13 +78,15 @@
 		const result = await sendLeadWrite(`/api/jafar/leads/${encodeURIComponent(leadId)}`, 'PATCH', {
 			next_action: nextAction
 		});
-		saving = false;
 		if (!result.ok) {
+			saving = false;
 			fieldErrors = result.fieldErrors;
 			formError = result.error;
 			return;
 		}
+		// Still saving while the lists reload, so the button can't be pressed twice and the old step never flashes back.
 		await refreshLead(queryClient, leadId);
+		saving = false;
 		toast.success(mode === 'done' ? 'Marked done' : 'Next action saved');
 		onClose();
 	}

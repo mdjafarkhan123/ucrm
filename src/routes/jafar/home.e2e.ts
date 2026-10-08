@@ -66,7 +66,8 @@ test('an overdue step leads the home and Done removes it', async ({ browser }) =
 		const dialog = page.getByRole('dialog', { name: 'Mark next action done' });
 		await expect(dialog.getByText(step)).toBeVisible();
 		await dialog.getByRole('button', { name: 'Mark done' }).click();
-		await expect(dialog).toBeHidden();
+		// The dialog closes once the home has reloaded from the remote database, which can pass five seconds.
+		await expect(dialog).toBeHidden({ timeout: 15_000 });
 		await expect(page.getByText(step)).toHaveCount(0);
 
 		await page.setViewportSize({ width: 390, height: 844 });
