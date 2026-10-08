@@ -18,6 +18,8 @@
 
 `performance-review` verification branch: seed thousands of test Leads with next actions (tag them so they can be deleted; record the tag here before seeding), time `owner_business_home` with EXPLAIN and the home route on a slowed phone profile, delete the seed and confirm none remain. Run the browser test as `npx playwright test "$PWD/src/routes/jafar/home.e2e.ts"` — a bare path also matches copies inside `.claude/worktrees/`, which then collide on the shared test business.
 
+**Seed in progress (2026-10-08):** fake Leads carry `source_detail = 'perf-seed-c1-20261008'`. Check: `select count(*) from platform_business_relationships where source_detail = 'perf-seed-c1-20261008'` — must end at 0; delete them (their Deals cascade) if any remain.
+
 ## Notes
 
 Jafar, 2026-10-07: layout is counters on top ("Waiting on you": to review, first contacts, accounts to create, setups waiting on Uplift, renewals due) then one to-do list Overdue → Today → Next 7 days, each row with a tag and Done. Keep unread alerts on the home; drop the organisation counts (they live on Organizations). Replies have no inbox yet: an Interested Deal's "Reply to …" step stands in. Call hours arrive with C2. Home stays Jafar-only (no area claims `/jafar` or `/api/jafar/home`); D3 gives teammates theirs. Known gap: the First contacts tile links to all Approved Leads (sorted by next action), so the list can include ones already contacted.
