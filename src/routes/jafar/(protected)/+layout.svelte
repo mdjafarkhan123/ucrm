@@ -8,6 +8,7 @@
 	import { warmPagesWhenIdle } from '$lib/components/layout/warm-pages';
 	import { notificationsKey } from '$lib/jafar/notifications';
 	import {
+		jafarCalendarKey,
 		jafarEmailHealthKey,
 		jafarEmailTemplatesKey,
 		jafarLeadKey,
@@ -42,7 +43,7 @@
 	const canOpen = (href: string) => canUseJafarPath(viewer, href);
 	const supportVisible = $derived(canOpen('/jafar/support'));
 
-	// The pages a day of selling moves between — Leads, a Lead, Deals — are fetched once the browser is idle,
+	// The pages a day of selling moves between — Leads, a Lead, Deals, the Calendar — are fetched once the browser is idle,
 	// only those this viewer may open; the rest of the sidebar loads on hover. Only code, never data, so the
 	// placeholder id never points at a real Lead. Pushed one by one: as one array literal the resolve() calls'
 	// route types grow too complex for TypeScript, as in the contractor layout.
@@ -52,6 +53,7 @@
 		resolve('/jafar/(protected)/leads/[id]', { id: '00000000-0000-0000-0000-000000000000' })
 	);
 	warmRoutes.push(resolve('/jafar/(protected)/deals'));
+	warmRoutes.push(resolve('/jafar/(protected)/calendar'));
 	onMount(() =>
 		warmPagesWhenIdle(
 			warmRoutes.filter((path) => canOpen(path)),
@@ -124,6 +126,9 @@
 		if (pathname.startsWith('/jafar/leads/')) {
 			return hasCachedData(jafarLeadKey(pathname.slice('/jafar/leads/'.length).split('/')[0]));
 		}
+		if (pathname === '/jafar/calendar') {
+			return hasCachedData(jafarCalendarKey);
+		}
 		if (pathname.startsWith('/jafar/prospects')) {
 			return hasCachedData(jafarProspectsKey);
 		}
@@ -161,6 +166,9 @@
 		// The Settings home draws its directory without waiting for data.
 		if (pathname === '/jafar/settings') {
 			return true;
+		}
+		if (pathname === '/jafar/settings/preferences') {
+			return hasCachedData(jafarCalendarKey);
 		}
 		if (pathname === '/jafar/settings/team') {
 			return hasCachedData(jafarTeamKey);

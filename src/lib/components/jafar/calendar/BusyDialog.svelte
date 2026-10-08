@@ -57,7 +57,11 @@
 				}
 			};
 		}
-		const place = seed ?? { day: zonedPlace(new Date().toISOString(), zone).day, start: 12 * 60, end: 13 * 60 };
+		const place = seed ?? {
+			day: zonedPlace(new Date().toISOString(), zone).day,
+			start: 12 * 60,
+			end: 13 * 60
+		};
 		return {
 			title: '',
 			when: {
@@ -93,11 +97,15 @@
 		const span = { starts_at: zonedInstant(day, from, zone), ends_at: zonedInstant(day, to, zone) };
 		saving = true;
 		const result = entry
-			? await sendLeadWrite(`/api/jafar/calendar/entries/${encodeURIComponent(entry.id)}`, 'PATCH', {
-					action: 'busy',
-					...span,
-					title: title.trim() || null
-				})
+			? await sendLeadWrite(
+					`/api/jafar/calendar/entries/${encodeURIComponent(entry.id)}`,
+					'PATCH',
+					{
+						action: 'busy',
+						...span,
+						title: title.trim() || null
+					}
+				)
 			: await sendLeadWrite('/api/jafar/calendar/entries', 'POST', {
 					kind: 'busy',
 					...span,
@@ -134,7 +142,13 @@
 	}
 </script>
 
-<Dialog open={true} title={entry ? 'Busy time' : 'Block out busy time'} size="small" initialFocusId="busy-title" {onClose}>
+<Dialog
+	open={true}
+	title={entry ? 'Busy time' : 'Block out busy time'}
+	size="small"
+	initialFocusId="busy-title"
+	{onClose}
+>
 	<form class="busy-form" onsubmit={save} novalidate>
 		<p class="busy-form__hint">Time you are not free for calls. Only you see the label.</p>
 		<Input

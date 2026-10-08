@@ -143,6 +143,7 @@
 				{ label: 'Overview', href: '/jafar', icon: 'dashboard' },
 				{ label: 'Leads', href: '/jafar/leads', icon: 'target' },
 				{ label: 'Deals', href: '/jafar/deals', icon: 'trendingUp' },
+				{ label: 'Calendar', href: '/jafar/calendar', icon: 'calendar' },
 				{ label: 'Applications', href: '/jafar/prospects', icon: 'users' },
 				{ label: 'Onboarding', href: '/jafar/onboarding', icon: 'rocket' },
 				{ label: 'Client setup', href: '/jafar/setup', icon: 'listCheck' },

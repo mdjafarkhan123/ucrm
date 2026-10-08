@@ -18,7 +18,7 @@
 	} from '$lib/components/ui/date-time';
 	import BusinessPicker from './BusinessPicker.svelte';
 	import ReminderPicker from './ReminderPicker.svelte';
-	import { sendLeadWrite } from '$lib/jafar/lead-page-api';
+	import { sendLeadWrite, type WriteResult } from '$lib/jafar/lead-page-api';
 	import {
 		CALL_OUTCOME_LABELS,
 		browserTimeZone,
@@ -104,7 +104,10 @@
 	}
 
 	function nextHour() {
-		const now = zonedPlace(new Date().toISOString(), untrack(() => zone));
+		const now = zonedPlace(
+			new Date().toISOString(),
+			untrack(() => zone)
+		);
 		const start = Math.min(Math.ceil((now.minutes + 1) / 60) * 60, 23 * 60);
 		return { day: now.day, start, end: start + 30 };
 	}
@@ -161,7 +164,7 @@
 		if (Object.keys(fieldErrors).length || !times) return;
 
 		saving = true;
-		const results = [];
+		const results: WriteResult[] = [];
 		if (entryId === null) {
 			results.push(
 				await sendLeadWrite('/api/jafar/calendar/entries', 'POST', {
@@ -276,12 +279,7 @@
 				bind:value={when}
 			/>
 
-			<ReminderPicker
-				id="call-reminders"
-				timed
-				defaults={defaults.call}
-				bind:value={reminders}
-			/>
+			<ReminderPicker id="call-reminders" timed defaults={defaults.call} bind:value={reminders} />
 
 			<Textarea
 				id="call-notes"

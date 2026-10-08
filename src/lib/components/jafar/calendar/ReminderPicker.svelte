@@ -53,7 +53,7 @@
 
 	// Defaults of the wrong shape (a timed list for a day-only item) are not offered; the rows start empty.
 	const fitting = (rules: ReminderRule[]) =>
-		rules.filter((rule) => ('minutes_before' in rule) === timed);
+		rules.filter((rule) => 'minutes_before' in rule === timed);
 
 	const rows = $derived(value === null ? null : fitting(value));
 
@@ -144,9 +144,7 @@
 	}
 
 	const defaultWords = $derived(
-		fitting(defaults).length
-			? fitting(defaults).map(reminderLabel).join(' · ')
-			: 'No reminders'
+		fitting(defaults).length ? fitting(defaults).map(reminderLabel).join(' · ') : 'No reminders'
 	);
 </script>
 

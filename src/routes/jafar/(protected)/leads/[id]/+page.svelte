@@ -20,6 +20,8 @@
 	import linkIcon from '@tabler/icons/outline/link.svg?raw';
 	import unlinkIcon from '@tabler/icons/outline/unlink.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
+	import phonePlusIcon from '@tabler/icons/outline/phone-plus.svg?raw';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
@@ -32,6 +34,14 @@
 	import HistoryEntryForm from '$lib/components/jafar/leads/HistoryEntryForm.svelte';
 	import LeadHistory from '$lib/components/jafar/leads/LeadHistory.svelte';
 	import NextActionDialog from '$lib/components/jafar/leads/NextActionDialog.svelte';
+	import CallDialog from '$lib/components/jafar/calendar/CallDialog.svelte';
+	import CallOutcomeDialog from '$lib/components/jafar/calendar/CallOutcomeDialog.svelte';
+	import {
+		CALL_OUTCOME_LABELS as CALENDAR_OUTCOME_LABELS,
+		browserTimeZone,
+		calendarPreferencesKey,
+		fetchCalendarPreferences
+	} from '$lib/jafar/calendar';
 	import LinkApplicationDialog from '$lib/components/jafar/leads/LinkApplicationDialog.svelte';
 	import LeadBusinessEditor from '$lib/components/jafar/leads/LeadBusinessEditor.svelte';
 	import LeadContactsEditor, {
@@ -295,6 +305,43 @@
 		}))
 	);
 
+	// --- Calls (C2) ----------------------------------------------------------------------------------
+	// Booking and changing calls is Jafar's until teammates get their own calendars (D3). The reminder defaults are
+	// read when he reaches for a call, not with the page.
+
+	const canBookCalls = $derived(
+		canUseJafarPath(
+			{ role: page.data.owner.role, access: page.data.owner.access },
+			'/api/jafar/calendar/entries',
+			'POST'
+		)
+	);
+	let callsWarm = $state(false);
+	let callOpen = $state<{ entryId: string | null } | null>(null);
+	let outcomeOpen = $state<{ entryId: string; cancelling: boolean } | null>(null);
+	const preferences = createQuery(() => ({
+		queryKey: calendarPreferencesKey,
+		queryFn: fetchCalendarPreferences,
+		staleTime: 5 * 60_000,
+		enabled: canBookCalls && (callsWarm || callOpen !== null || outcomeOpen !== null)
+	}));
+	const callZone = $derived(preferences.data?.time_zone ?? browserTimeZone());
+
+	const clockFormat = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
+	const callTimeFormat = new Intl.DateTimeFormat(undefined, {
+		weekday: 'short',
+		day: 'numeric',
+		month: 'short',
+		hour: 'numeric',
+		minute: '2-digit'
+	});
+
+	function askCallOutcome(entryId: string) {
+		const call = lead.data?.calls.find((candidate) => candidate.id === entryId);
+		callOpen = null;
+		outcomeOpen = { entryId, cancelling: call ? Date.parse(call.ends_at) > Date.now() : false };
+	}
+
 	// --- Next action, Applications --------------------------------------------------------------------
 
 	let nextActionMode = $state<'set' | 'done' | null>(null);
@@ -519,22 +566,39 @@
 						<div class="lead-page__next-body">
 							<p class="lead-page__next-text">{details.next_action}</p>
 							{#if due}
-								<span class={['lead-page__due', `lead-page__due--${due.tone}`]}>{due.label}</span>
+								<span class={['lead-page__due', `lead-page__due--${due.tone}`]}
+									>{due.label}{#if details.next_action_at}
+										· {clockFormat.format(new Date(details.next_action_at))}{/if}</span
+								>
 							{/if}
 						</div>
-						<div class="lead-page__next-actions">
-							<Button variant="primary" size="small" onclick={() => (nextActionMode = 'done')}>
-								<span class="lead-page__button-icon" aria-hidden="true">{@html checkIcon}</span>Mark
-								done
-							</Button>
-							<Button variant="secondary" size="small" onclick={() => (nextActionMode = 'set')}>
-								<span class="lead-page__button-icon" aria-hidden="true">{@html pencilIcon}</span
-								>Change
-							</Button>
-							<Button variant="tertiary" size="small" onclick={() => (clearingNextAction = true)}>
-								<span class="lead-page__button-icon" aria-hidden="true">{@html xIcon}</span>Remove
-							</Button>
-						</div>
+						{#if details.next_action_entry_id && canBookCalls}
+							<div class="lead-page__next-actions">
+								<Button
+									variant="secondary"
+									size="small"
+									onhover={() => (callsWarm = true)}
+									onclick={() => (callOpen = { entryId: details.next_action_entry_id })}
+								>
+									<span class="lead-page__button-icon" aria-hidden="true">{@html phoneIcon}</span
+									>Open call
+								</Button>
+							</div>
+						{:else}
+							<div class="lead-page__next-actions">
+								<Button variant="primary" size="small" onclick={() => (nextActionMode = 'done')}>
+									<span class="lead-page__button-icon" aria-hidden="true">{@html checkIcon}</span
+									>Mark done
+								</Button>
+								<Button variant="secondary" size="small" onclick={() => (nextActionMode = 'set')}>
+									<span class="lead-page__button-icon" aria-hidden="true">{@html pencilIcon}</span
+									>Change
+								</Button>
+								<Button variant="tertiary" size="small" onclick={() => (clearingNextAction = true)}>
+									<span class="lead-page__button-icon" aria-hidden="true">{@html xIcon}</span>Remove
+								</Button>
+							</div>
+						{/if}
 					{:else}
 						<p
 							class={[
@@ -554,6 +618,60 @@
 						</div>
 					{/if}
 				</RailCard>
+
+				{#if canBookCalls || data.calls.length}
+					<RailCard title="Calls" icon={phoneIcon} count={data.calls.length}>
+						{#snippet actions()}
+							{#if canBookCalls}
+								<Button
+									variant="secondary"
+									size="small"
+									onhover={() => (callsWarm = true)}
+									onclick={() => (callOpen = { entryId: null })}
+								>
+									<span class="lead-page__button-icon" aria-hidden="true"
+										>{@html phonePlusIcon}</span
+									>Book a call
+								</Button>
+							{/if}
+						{/snippet}
+						{#if data.calls.length}
+							<ul class="lead-page__calls">
+								{#each data.calls as call (call.id)}
+									{@const ended = Date.parse(call.ends_at) <= Date.now()}
+									<li>
+										<button
+											type="button"
+											class="lead-page__call"
+											disabled={!canBookCalls}
+											onmouseenter={() => (callsWarm = true)}
+											onclick={() => (callOpen = { entryId: call.id })}
+										>
+											<span class="lead-page__call-title">{call.title ?? 'Call'}</span>
+											<span class="lead-page__call-time"
+												>{callTimeFormat.format(new Date(call.starts_at))}</span
+											>
+										</button>
+										{#if call.status !== 'scheduled'}
+											<Badge
+												size="small"
+												dot={false}
+												status={call.status === 'held' ? 'success' : 'inactive'}
+												>{CALENDAR_OUTCOME_LABELS[call.status]}</Badge
+											>
+										{:else if ended}
+											<Badge size="small" dot={false} status="warning">Outcome?</Badge>
+										{:else}
+											<Badge size="small" dot={false} status="informative">Upcoming</Badge>
+										{/if}
+									</li>
+								{/each}
+							</ul>
+						{:else}
+							<p class="lead-page__empty">No calls yet.</p>
+						{/if}
+					</RailCard>
+				{/if}
 
 				<RailCard
 					title="Contact details"
@@ -715,9 +833,38 @@
 				{leadId}
 				mode={nextActionMode}
 				current={details.next_action && details.next_action_due_on
-					? { text: details.next_action, due_on: details.next_action_due_on }
+					? {
+							text: details.next_action,
+							due_on: details.next_action_due_on,
+							due_at: details.next_action_at,
+							reminders: details.next_action_reminders
+						}
 					: null}
 				onClose={() => (nextActionMode = null)}
+			/>
+		{/if}
+
+		{#if callOpen}
+			<CallDialog
+				entryId={callOpen.entryId}
+				business={{ id: leadId, name: details.business_name }}
+				zone={callZone}
+				defaults={preferences.data?.reminder_defaults ?? {
+					call: [],
+					follow_up_day: [],
+					follow_up_timed: []
+				}}
+				onClose={() => (callOpen = null)}
+				onOutcome={askCallOutcome}
+			/>
+		{/if}
+
+		{#if outcomeOpen}
+			<CallOutcomeDialog
+				entryId={outcomeOpen.entryId}
+				zone={callZone}
+				cancelling={outcomeOpen.cancelling}
+				onClose={() => (outcomeOpen = null)}
 			/>
 		{/if}
 
@@ -1109,6 +1256,67 @@
 
 		&__contact-source {
 			overflow-wrap: anywhere;
+		}
+
+		&__calls {
+			display: flex;
+			flex-direction: column;
+			margin: 0;
+			padding: 0;
+			list-style: none;
+
+			li {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: var(--space-small);
+			}
+
+			li + li {
+				margin-top: var(--space-slim);
+				padding-top: var(--space-slim);
+				border-top: var(--border-base) solid var(--color-border);
+			}
+		}
+
+		&__call {
+			display: flex;
+			min-width: 0;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: var(--space-smallest);
+			padding: 0;
+			border: 0;
+			background: none;
+			color: inherit;
+			font: inherit;
+			text-align: left;
+			cursor: pointer;
+
+			&:disabled {
+				cursor: default;
+			}
+
+			&:hover:not(:disabled) .lead-page__call-title {
+				text-decoration: underline;
+				text-underline-offset: 3px;
+			}
+
+			&:focus-visible {
+				outline: none;
+				box-shadow: var(--shadow-focus);
+			}
+		}
+
+		&__call-title {
+			color: var(--color-heading);
+			font-weight: 700;
+			overflow-wrap: anywhere;
+		}
+
+		&__call-time {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
 		}
 
 		&__applications li {

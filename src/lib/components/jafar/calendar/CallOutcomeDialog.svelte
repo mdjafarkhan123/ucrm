@@ -53,7 +53,10 @@
 		{ value: 'cancelled', label: 'Cancelled' }
 	];
 
-	const todayPlace = zonedPlace(new Date().toISOString(), untrack(() => zone));
+	const todayPlace = zonedPlace(
+		new Date().toISOString(),
+		untrack(() => zone)
+	);
 	const todayDate = calendarDateFromString(todayPlace.day) as CalendarDate;
 
 	let outcome = $state<CallOutcome | ''>(untrack(() => (cancelling ? 'cancelled' : '')));
@@ -156,12 +159,7 @@
 			<p class="call-outcome__call">{callWords}</p>
 
 			{#if !cancelling}
-				<RadioGroup
-					label="Outcome"
-					options={OPTIONS}
-					value={outcome}
-					onchange={choose}
-				/>
+				<RadioGroup label="Outcome" options={OPTIONS} value={outcome} onchange={choose} />
 				{#if fieldErrors.outcome}
 					<p class="call-outcome__error" role="alert">{fieldErrors.outcome}</p>
 				{/if}

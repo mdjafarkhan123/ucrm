@@ -35,7 +35,8 @@
 	);
 	const tag = $derived.by(() => {
 		if (item.kind === 'busy') return 'Busy';
-		if (item.kind === 'follow_up') return item.followUp.first_contact ? 'First contact' : 'Follow-up';
+		if (item.kind === 'follow_up')
+			return item.followUp.first_contact ? 'First contact' : 'Follow-up';
 		if (item.entry.status !== 'scheduled')
 			return CALL_OUTCOME_LABELS[item.entry.status as keyof typeof CALL_OUTCOME_LABELS];
 		return passed ? 'Outcome?' : 'Call';
@@ -102,7 +103,8 @@
 		width: 100%;
 		height: 100%;
 		min-width: 0;
-		padding: var(--space-smaller) var(--space-small) var(--space-smaller) calc(var(--space-small) + 2px);
+		padding: var(--space-smaller) var(--space-small) var(--space-smaller)
+			calc(var(--space-small) + 2px);
 		overflow: hidden;
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-small);

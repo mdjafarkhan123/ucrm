@@ -11,6 +11,7 @@ import {
 	type LeadStatus
 } from './leads';
 import type { BusinessClient, BusinessDeal, DealStage } from './deals';
+import type { CallStatus, ReminderRule } from './calendar';
 import { CALL_OUTCOMES, CALL_OUTCOME_LABELS, type CallOutcome } from '$lib/pipeline/calls';
 
 // The contractor Brief's call outcomes, so a call reads the same wherever it is logged.
@@ -99,6 +100,11 @@ export type HistoryKind =
 	| 'deal_removed'
 	| 'deal_won'
 	| 'setup_owner_changed'
+	| 'call_booked'
+	| 'call_moved'
+	| 'call_held'
+	| 'call_no_show'
+	| 'call_cancelled'
 	| 'lead_added'
 	| 'application_submitted';
 
@@ -139,6 +145,12 @@ export type HistoryEntry = {
 		/** B5: the payment and package that won the Deal (`from` holds the stage it was at). */
 		amount_usd_cents?: number;
 		package_name?: string;
+		/** C2: a call's title and time; a move also keeps the time it moved from. A next action may carry its time. */
+		title?: string | null;
+		starts_at?: string;
+		ends_at?: string;
+		from_starts_at?: string;
+		due_at?: string | null;
 	} | null;
 	/** Who did it, as a name: "Jafar", a teammate, or their email. Null when nobody did (an Application arriving). */
 	actor: string | null;
@@ -191,6 +203,12 @@ export type LeadDetail = {
 	next_action_due_on: string | null;
 	/** 'first_contact' when approval created the next action; logging outbound contact ticks it off. */
 	next_action_kind: 'first_contact' | null;
+	/** C2: the next action's time, when it has one; for a call, its start. */
+	next_action_at: string | null;
+	/** C2: set when the next action is a booked call -- the call owns its time and reminders. */
+	next_action_entry_id: string | null;
+	/** C2: its own reminders, or null to follow My preferences. */
+	next_action_reminders: ReminderRule[] | null;
 	do_not_contact: LeadDoNotContact | null;
 	/** A linked Application is paid or has its account. */
 	is_client: boolean;
@@ -218,7 +236,17 @@ export type LeadPage = {
 	deals: BusinessDeal[];
 	/** B5: the Client box, once a Deal is Won; null before. */
 	client: BusinessClient | null;
+	/** C2: the business's calls -- upcoming first, then the ten most recent. */
+	calls: LeadCall[];
 	history: HistoryPage;
+};
+
+export type LeadCall = {
+	id: string;
+	title: string | null;
+	starts_at: string;
+	ends_at: string;
+	status: CallStatus;
 };
 
 /** The link that opens one Application in the Applications screen's review drawer. */

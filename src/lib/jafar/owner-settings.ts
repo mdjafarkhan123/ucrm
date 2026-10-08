@@ -11,6 +11,7 @@ import creditCardIcon from '@tabler/icons/outline/credit-card.svg?raw';
 import shieldLockIcon from '@tabler/icons/outline/shield-lock.svg?raw';
 import fileCertificateIcon from '@tabler/icons/outline/file-certificate.svg?raw';
 import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+import alarmIcon from '@tabler/icons/outline/alarm.svg?raw';
 
 import { resolve } from '$app/paths';
 
@@ -106,8 +107,26 @@ export const settingsGroups: SettingsGroup[] = [
 		title: 'My preferences',
 		hint: 'Choices that affect only you.',
 		icon: userIcon,
-		upcoming: 'Your own meeting reminders arrive here with sales booking.',
-		destinations: []
+		destinations: [
+			{
+				id: 'preferences',
+				title: 'Time zone & reminders',
+				description: 'Your time zone, and the reminders new calls and follow-ups start with.',
+				keywords: [
+					'time zone',
+					'timezone',
+					'reminders',
+					'alerts',
+					'notifications',
+					'calendar',
+					'calls',
+					'follow-ups',
+					'email'
+				],
+				href: resolve('/jafar/settings/preferences'),
+				icon: alarmIcon
+			}
+		]
 	},
 	{
 		id: 'business-booking',
