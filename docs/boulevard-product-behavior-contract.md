@@ -1,6 +1,6 @@
 # Boulevard-inspired industry editions
 
-**Status:** Planning — behavior direction agreed through 2026-10-07; first-release boundary agreed 2026-10-08. Performance workloads, final plan review and build parts remain in planning.
+**Status:** Medspa & Clinical Wellness first-release behavior, test assumptions and build order approved by Jafar, 2026-10-08. Application delivery and first-clinic readiness remain unverified; Beauty & Spa details follow later.
 
 ## Summary
 
@@ -20,7 +20,7 @@ Those earlier decisions set direction; the first-release boundary was settled af
 
 Jafar approved the [P3 release boundary and clinic-readiness checks](research/boulevard-p3-release-proposal-2026-10-08.md): a complete single-location booking-to-closeout clinical journey, with extra capabilities built and verified before accepting a clinic that depends on them. The first clinic may be an existing business; its services, age groups, appointments, old paid benefits, stock practice and source records determine eligibility. One-time packages and service vouchers are part of the first-release core. Recurring memberships remain dependent on the selected clinic's needs. A clinic may keep injectable stock in a reviewed outside record that traces person, visit, lot, expiry, quantity and recalls; the application must not imply it manages that stock. In-product injectable tracking requires its full trace before use.
 
-These are release-scope decisions, not evidence that the features or provider safeguards are ready. Source-specific migration, paid-unit valuation, saved-card permissions, protected-information agreements and state-specific clinical review remain launch checks. P3A defines the measurable performance work; P4 reviews the complete plan and build parts.
+These are release-scope decisions, not evidence that the features or provider safeguards are ready. Source-specific migration, paid-unit valuation, saved-card permissions, protected-information agreements and state-specific clinical review remain launch checks. The P3A test assumptions and P4 build order were approved on 2026-10-08; every implemented slice still needs verification.
 
 ## Experience and access
 
@@ -523,11 +523,7 @@ The P3 release boundary checks complete journeys across these boundaries: outsid
 
 ## Still unclear
 
-- Remaining source and provider evidence, clinic-specific eligibility, and measurable quality targets; settle these in planning parts and launch checks, not by assumption.
-- Performance: the [P3A design and test envelope](research/boulevard-p3a-performance-design-2026-10-08.md)
-  proposes representative workloads and route budgets for P4 review. The selected clinic's real workload and
-  approved deployment still need checking before any go-live speed or capacity claim; implemented slices must
-  supply the stated evidence.
+- Remaining source and provider evidence, clinic-specific eligibility, and measured quality results; settle these through the relevant build and launch checks, not by assumption.
 - Client code sign-in and saved-card consent still need build design and provider-key verification. The existing staff sign-in and Stripe checkout do not establish readiness for those new flows.
 - State-specific minor access and clinical-policy review must be completed for the states served before launch. Prescribing remains later and requires a qualified provider decision.
 - The accounting method for valuing unused prepaid product units remains unverified. Stripe payout data is available with additional permissions, but does not prove bank arrival; no automatic bank match follows.
@@ -536,7 +532,7 @@ The P3 release boundary checks complete journeys across these boundaries: outsid
 
 ## Not doing
 
-- Application or infrastructure implementation during this planning campaign; build parts follow approval.
+- Application or infrastructure implementation through this planning record; build parts and infrastructure migration use their own authorization and checks.
 - Treating undocumented vendor behavior, market leadership, or private architecture as verified facts.
 - Assuming support for every medical specialty from the term clinical wellness.
 - Replacing or relaxing existing contractor behavior through this expansion plan.
@@ -553,8 +549,8 @@ The P3 release boundary checks complete journeys across these boundaries: outsid
 - [P2G connected-journey evidence, approved safeguards and migration limits](research/boulevard-connected-journeys-2026-10-07.md); agreed behavior is in [Connected journeys](#connected-journeys), with release timing and feasibility in the P3 notes.
 - [P3 existing-app and provider feasibility checkpoint](research/boulevard-p3-feasibility-2026-10-07.md); records reuse limits and provider gates before the approved family-level release boundary.
 - [P3 release map and first-clinic readiness checks](research/boulevard-p3-release-proposal-2026-10-08.md); family-level release boundary agreed 2026-10-08.
-- [P3A first-release performance design](research/boulevard-p3a-performance-design-2026-10-08.md); proposed workload, route budgets and required verification, pending P4 review.
-- [P4 consistency review and proposed build order](research/boulevard-p4-review-proposal-2026-10-08.md); proposed parts and owner decisions, pending Jafar's review.
+- [P3A first-release performance design](research/boulevard-p3a-performance-design-2026-10-08.md); approved test assumptions and budgets, with implementation evidence still required.
+- [P4 consistency review and approved build order](research/boulevard-p4-review-proposal-2026-10-08.md); approved stage order and first-clinic gates.
 - [Industry entry and onboarding patterns](research/industry-onboarding-entry-patterns-2026-10-07.md); agreed direction is in [Business entry and onboarding](#business-entry-and-onboarding).
 
 Primary public entry points:

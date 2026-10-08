@@ -1,16 +1,16 @@
-# Boulevard P4 — plan review and proposed build order
+# Boulevard P4 — plan review and approved build order
 
-**Status:** Proposal for Jafar's review, 2026-10-08. This is a build sequence, not permission to build or a claim that the first clinic is ready. The agreed behavior remains in the [product plan](../boulevard-product-behavior-contract.md), the [P3 release boundary](boulevard-p3-release-proposal-2026-10-08.md), and the [P3A performance design](boulevard-p3a-performance-design-2026-10-08.md).
+**Status:** Build order and performance test assumptions approved by Jafar, 2026-10-08. This is a build sequence, not permission to build or a claim that the first clinic is ready. The agreed behavior remains in the [product plan](../boulevard-product-behavior-contract.md), the [P3 release boundary](boulevard-p3-release-proposal-2026-10-08.md), and the [P3A performance design](boulevard-p3a-performance-design-2026-10-08.md).
 
 ## Consistency review
 
 The approved first release has one connected path: a business is provisioned for the Medspa experience; staff set services, availability and permissions; a client books under the clinic's rules; the treated person completes intake and consent; a clinician clears and charts; checkout applies deposits and prepaid benefits; staff can reconcile money, outstanding work and access history. One-time packages and service vouchers are core. The first clinic's actual services and old obligations decide which conditional capabilities must also be ready. The release boundary does not imply that all Boulevard inventory features are built.
 
-The plan keeps three different questions separate: **what the product should do**, **what has been built and verified**, and **whether a particular clinic can safely switch**. The P3A numbers are proposed test data and speed targets; they do not establish capacity. Public sources support the described vendor patterns but do not establish our Stripe permissions, protected-information agreements, state-specific clinical rules or source-vendor import mappings. Those remain named gates rather than hidden assumptions.
+The plan keeps three different questions separate: **what the product should do**, **what has been built and verified**, and **whether a particular clinic can safely switch**. The approved P3A numbers are test assumptions and speed targets; they do not establish capacity. Public sources support the described vendor patterns but do not establish our Stripe permissions, protected-information agreements, state-specific clinical rules or source-vendor import mappings. Those remain named gates rather than hidden assumptions.
 
 The following rules need care in each build part: a 30-minute slot hold must expire after abandonment; staff booking overrides cannot grant treatment clearance; the payer and treated person may differ; a paid package benefit is used once; clinical photos and messages stay behind the right access boundary; a failed payment or notice leaves visible work; and a historical imported file never becomes current consent or clearance. A conditional feature enters the first clinic's release only after its whole journey is verified.
 
-## Proposed build order
+## Approved build order
 
 Each row should become one or more focused parts with a working screen, server path, data rules and a visible check. The project should split a row further if its implementation cannot be reviewed in one focused session. Building can use synthetic clinic data while provider agreements and the first clinic's source samples are pending.
 
@@ -30,10 +30,10 @@ Each row should become one or more focused parts with a working screen, server p
 
 Order 3 and order 5 deliberately share the card/deposit boundary: the booking slice must prove the card flow before a card-required clinic is accepted, while order 5 finishes appointment money and reconciliation. Workload and speed evidence from [P3A](boulevard-p3a-performance-design-2026-10-08.md) belongs to each material slice and is repeated at the whole-app release audit where shared resources interact.
 
-## Decisions for Jafar
+## Decisions recorded 2026-10-08
 
-1. Approve or change the **provisional performance test envelope and screen targets** in P3A. The first clinic's real size and busy periods replace the assumptions before its go-live test; no registered-user capacity promise follows.
-2. Approve or change the **build order** above. Conditional features are selected from the first clinic's actual needs, then inserted before its connected release proof.
-3. Confirm that the current source/provider/state checks remain **launch gates**, so core building may start with synthetic data while the clinic-specific agreements, source files and policies are still being verified.
+1. Jafar approved the **performance test envelope and screen targets** in P3A. The first clinic's real size and busy periods replace the assumptions before its go-live test; no registered-user capacity promise follows.
+2. Jafar approved the **build order** above, with any row that proves too large split into focused build parts. Conditional features are selected from the first clinic's actual needs, then inserted before its connected release proof.
+3. The existing source/provider/state checks remain **launch gates**. Core build planning can use synthetic data while the clinic-specific agreements, source files and policies are verified.
 
-After these decisions, record the approved build parts in the campaign plan or a new build campaign. A build start and any production infrastructure migration need their own approval under the project rules.
+Before implementation, split each approved row into focused build parts with a working journey and visible done-check. A build start and any production infrastructure migration need their own approval under the project rules.

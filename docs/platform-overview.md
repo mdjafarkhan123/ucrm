@@ -1,6 +1,6 @@
 # Platform overview
 
-**Status:** Direction agreed with Jafar, 2026-10-05. New editions are in product planning; their release scope and detailed behavior are not yet approved.
+**Status:** Direction agreed 2026-10-05. Medspa & Clinical Wellness first-release behavior and build order approved by Jafar 2026-10-08; delivery and first-clinic readiness remain unverified. Beauty & Spa details follow later.
 
 ## Product direction
 
@@ -11,8 +11,8 @@ The business account determines the industry experience; subscription features a
 ## Sources of truth
 
 - [Contractor blueprint](PRODUCT.md): existing contractor behavior and links to its detailed contracts.
-- [Boulevard product plan](boulevard-product-behavior-contract.md): settled expansion direction, unresolved choices, and the entry point for the feature inventory and detailed plans as research proceeds.
-- [Planning checkpoint](../Memory/campaigns/boulevard-product-planning/NOW.md): current work and exact next action. Memory records progress, not permanent product rules.
+- [Boulevard product plan](boulevard-product-behavior-contract.md): approved Medspa behavior, release boundary, research gaps and first-clinic gates.
+- [Approved build order](research/boulevard-p4-review-proposal-2026-10-08.md): sequence to split into focused parts before implementation.
 
 ## Planning method
 
@@ -34,4 +34,4 @@ Inventory the full documented feature landscape before selecting initial versus 
 
 Each release must support complete agreed workflows with observable completion checks. Keep research confidence, release assignment, and delivery status separate. Capacity and reliability claims require measured evidence for the relevant workload; no promise of unlimited scale or zero slowdown follows from choosing a design.
 
-Keep existing contractor work and infrastructure rules in force. This planning campaign authorizes research and documentation, not application, database, provider, or infrastructure changes. Jafar approved US first, single-location teams first, and Boulevard-style clinical/business workflows with specialist diagnostic test/report systems outside the initial promise on 2026-10-05. Feature-level release assignments remain open in the plan.
+Keep existing contractor work and infrastructure rules in force. The approved plan records behavior and build order; it does not establish application, provider, infrastructure or clinic readiness. Jafar approved US first, single-location teams first, and Boulevard-style clinical/business workflows with specialist diagnostic test/report systems outside the initial promise on 2026-10-05. The 2026-10-08 first-release map assigns inventory families; clinic-dependent capabilities are selected from the actual first clinic's needs before go-live.

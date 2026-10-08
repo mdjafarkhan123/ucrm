@@ -1,6 +1,6 @@
 # Boulevard P3A — first-release performance design
 
-**Status:** Planning test contract, 2026-10-08. These are targets and assumed test loads, not measured results or a promise that the current app supports a clinic. The [P3 release boundary](boulevard-p3-release-proposal-2026-10-08.md) sets the first clinic's actual eligibility; its real profile replaces these assumptions before a go-live claim. No infrastructure change is approved here.
+**Status:** Planning test contract approved by Jafar, 2026-10-08. These are targets and assumed test loads, not measured results or a promise that the current app supports a clinic. The [P3 release boundary](boulevard-p3-release-proposal-2026-10-08.md) sets the first clinic's actual eligibility; its real profile replaces these assumptions before a go-live claim. No infrastructure change is approved here.
 
 ## Workload to design and test
 
@@ -40,7 +40,7 @@ The following are **acceptance targets for a production build in a production-li
 | Chart open and sign-off | Selected chart's usable text/metadata ≤ 1 s p95; signing ≤ 1 s p95 after local write | File thumbnails/content separately; denied access and revision conflict remain correct. |
 | Checkout and daily report | Local order/benefit action ≤ 1 s p95; one-day report ≤ 2 s p95 | Reconciliation, large clinic, refund and benefit history; provider time and export completion reported separately. |
 
-These API times are our proposed budgets, not Boulevard or Google standards. Google defines the Core Web Vitals thresholds at the 75th percentile; lab tools without user interaction cannot measure real INP. Use scripted representative interactions and later real-user measurements for INP. Before each slice is accepted, record compressed initial JavaScript/CSS, fonts/images, request count, API response bytes, server and database time, DOM size and interaction trace. Compare route bytes with the contractor baseline, and set an explicit route byte cap once the first medspa production build exists; an arbitrary cap today could hide the true shared-shell cost. Unavailable industry/capability code and assets must contribute **zero route-specific bytes** to that clinic's initial journey. Reserve space for late panels; do not use an optimistic success state for contested booking, payment or clinical approval.
+These API times are our approved planning budgets, not Boulevard or Google standards. Google defines the Core Web Vitals thresholds at the 75th percentile; lab tools without user interaction cannot measure real INP. Use scripted representative interactions and later real-user measurements for INP. Before each slice is accepted, record compressed initial JavaScript/CSS, fonts/images, request count, API response bytes, server and database time, DOM size and interaction trace. Compare route bytes with the contractor baseline, and set an explicit route byte cap once the first medspa production build exists; an arbitrary cap today could hide the true shared-shell cost. Unavailable industry/capability code and assets must contribute **zero route-specific bytes** to that clinic's initial journey. Reserve space for late panels; do not use an optimistic success state for contested booking, payment or clinical approval.
 
 ## Delivery, correctness and failure rules
 
