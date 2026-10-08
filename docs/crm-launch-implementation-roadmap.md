@@ -163,6 +163,34 @@ native mobile apps, route optimization, Good/Better/Best proposals, saved cards/
 arbitrary report building, and multi-host high availability require a later customer, trade, region, payment or
 uptime decision. UCRM will make no 40,000-user capacity claim until a named workload is exercised.
 
+## Feature checklist
+
+This is the single list of what is missing. A large item becomes its own campaign when work starts. When that
+campaign finishes, tick the item here. Last checked 2026-10-08 against the code; the 2026-09-10 gap audit is the
+original list.
+
+**Built since the gap audit:** Client/Price Book/opening-balance import; Client, Price Book, financial and file
+export; Client merge and archive; public request and booking forms; issued-Invoice credit, replacement and void
+notice; Stripe card payments and refunds; contractor alert bell for inquiries and payments; Google review funnel;
+email campaigns; setup wizard and paid-client delivery; accountant CSV; Website Chat and email delivery.
+
+**Before the first launch:** server work (Part 9). The postponed-work list's P1 items are reviewed at that gate.
+
+**Before advertising widely (Part 8):**
+
+- [ ] Customer portal: one place for appointments, quotes, invoices, balances and asking for more work
+- [ ] Phone and browser push alerts, and each person's alert settings
+      (`Memory/deferred/push-alerts-and-per-person-notification-settings.md` holds the agreed constraints;
+      Jafar asked on 2026-10-01 for it to be planned before launch)
+- [ ] Reports screen (today only the accountant CSV exists)
+- [ ] More automation recipes beyond Quote follow-up
+- [ ] Reassign or reschedule many Visits across Jobs at once (moving Visits within one Job exists)
+- [ ] Final accessibility, security, browser and phone-web audit
+
+**After business registration:** live text messages, then missed-call text-back (Part 5).
+
+**Later, on customer demand:** the items under "Explicitly outside this launch".
+
 ## Final launch gate
 
 Jafar may open the controlled first launch only after Parts 1–4 and 9 pass. Begin with a few closely supported
