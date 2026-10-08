@@ -15,9 +15,12 @@ production evidence.
 
 ## Exact next action
 
-Obtain Jafar's explicit P9A approval or requested changes for the hybrid pilot topology, proposed 15-minute RPO,
-four-hour RTO, one-VPS application limitation, separate staging/restore resource, and staged delivery gates.
-After approval, start P9B application packaging only. Do not provision infrastructure or touch production data.
+Jafar agreed the order on 2026-10-08: keep building and testing features locally; do P9B app packaging alongside
+feature work (no server, no cost); then a cheap disposable practice server for P9C–P9F; real server and first
+customers last. Still open for P9A: managed-Supabase-first (recommended) versus self-hosted from day one — he
+wants CLAUDE.md's self-hosted destination honored. Whether a VPS is already bought is unconfirmed; advice given: buy nothing until P9C, then
+an hourly-billed practice server (e.g. Hetzner CX33) deleted after tests. Do not provision infrastructure or touch
+production data without his separate approval.
 
 ## Essential pointers
 
