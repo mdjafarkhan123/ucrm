@@ -13,9 +13,9 @@ CX33) for P9C–P9F; real server and first customers last. No infrastructure is 
 
 ## Exact next action
 
-Part 10 research is written into the Feature checklist (§ Gap research, 2026-10-08). Ask Jafar to agree the
-labels, especially the two Urgent items (team alert on online Quote approval; client reminder switches that send
-nothing). Once agreed, mark Part 10 done and decide where the Urgent items go before first launch.
+Part 10 done 2026-10-08: Jafar agreed the labels and chose to build the Urgent items next, before the server
+work, with the client reminder switches made to really send (not hidden). Start Part 11 as its own campaign
+(campaign-memory planning.md): plan, then build.
 
 Open for Jafar: P9A — managed Supabase first (recommended) or self-hosted from day one (he wants CLAUDE.md's
 self-hosted destination honored); push alerts before first customers or before advertising.

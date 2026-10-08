@@ -191,10 +191,11 @@ email campaigns; setup wizard and paid-client delivery; accountant CSV; Website 
 
 **Later, on customer demand:** the items under "Explicitly outside this launch".
 
-### Gap research, 2026-10-08 (labels await Jafar's agreement)
+### Gap research, 2026-10-08 (labels agreed by Jafar 2026-10-08)
 
 Jobber's public pricing table, features pages, changelog and help centre, plus a brief Housecall Pro check, were
 compared with the code and the live database. Sources: `docs/research/jobber-feature-catalog-2026-10-08.md`.
+Jafar agreed the labels on 2026-10-08 and asked for the Urgent items to be built next, before the server work.
 Urgent = blocks a paying contractor in week one; High = contractors expect it; Medium = some will ask; Later =
 trade- or size-specific. Jobber plan in brackets.
 
@@ -202,8 +203,8 @@ trade- or size-specific. Jobber plan in brackets.
 
 - [ ] Team alert when a customer approves a Quote or asks for changes online (Core). Today only a decline
       alerts. Example: a customer approves an $8,000 roof at 9 pm; nobody knows until someone opens the Quote.
-- [ ] Client "Upcoming visit reminders" and "Overdue invoice reminders" switches send nothing. Build the messages
-      (next items) or hide the switches before launch, so a contractor is never told something is on when it is not.
+- [ ] Client "Upcoming visit reminders" and "Overdue invoice reminders" switches send nothing. Jafar chose
+      2026-10-08 to make them work rather than hide them, so the first two High items below are built with this one.
 
 **High**
 
