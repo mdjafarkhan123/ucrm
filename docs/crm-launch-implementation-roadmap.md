@@ -191,6 +191,49 @@ email campaigns; setup wizard and paid-client delivery; accountant CSV; Website 
 
 **Later, on customer demand:** the items under "Explicitly outside this launch".
 
+### Gap research, 2026-10-08 (labels await Jafar's agreement)
+
+Jobber's public pricing table, features pages, changelog and help centre, plus a brief Housecall Pro check, were
+compared with the code and the live database. Sources: `docs/research/jobber-feature-catalog-2026-10-08.md`.
+Urgent = blocks a paying contractor in week one; High = contractors expect it; Medium = some will ask; Later =
+trade- or size-specific. Jobber plan in brackets.
+
+**Urgent**
+
+- [ ] Team alert when a customer approves a Quote or asks for changes online (Core). Today only a decline
+      alerts. Example: a customer approves an $8,000 roof at 9 pm; nobody knows until someone opens the Quote.
+- [ ] Client "Upcoming visit reminders" and "Overdue invoice reminders" switches send nothing. Build the messages
+      (next items) or hide the switches before launch, so a contractor is never told something is on when it is not.
+
+**High**
+
+- [ ] Customer visit and assessment reminders, and a "your visit is booked" confirmation, by email now and text
+      after registration (Connect). Example: a Tuesday 9 am booking with no reminder becomes a no-show.
+- [ ] Overdue invoice follow-ups to the customer (Connect). Today invoice reminders are internal to-dos only.
+- [ ] Tell a teammate when they are put on a Visit or Assessment (email now, push with the push-alert item).
+      Example: a helper added to tomorrow's job learns about it only by opening the Schedule.
+- [ ] "On my way" text from the Visit (Connect, with client notifications) — after business registration.
+- [ ] Home screen that shows today's work, what needs action, and money owed (Core "Insights"); today the
+      Dashboard shows only customers and requests. Belongs with the Reports screen item above.
+
+**Medium**
+
+- [ ] Quote templates: save a common Quote and start new ones from it. Copying a Quote exists.
+- [ ] Custom fields on Clients, Properties, Jobs (Connect); shelved by contractor-settings as "later".
+- [ ] Clock in and out for the day, not only time on a Job (Connect time tracking). Job time entries exist.
+- [ ] Auto-archive Requests and Quotes left untouched for a set time (Connect).
+
+**Later**
+
+GPS tracking, Find a Time, crew clock-in and breaks (Plus), high-value quote alerts, job-profit alerts and
+revenue goals, consumer financing (US), Tap to Pay and instant payouts (need a native app), AI quote drafting and
+AI receptionist, service plans or memberships (Housecall Pro), and customer referral rewards (Marketing Suite).
+
+**Already built** (confirmed in code, often a higher Jobber plan): optional quote items with recommended choice,
+photos on items, deposits and payment schedules, tips, card and bank payments, batch invoicing, recurring Jobs
+with per-visit or month-end billing, route map, Job checklists, Job time, expenses and profit, Price Book with
+costs and target margin, two-way inbox, custom automation builder, email campaigns, reviews, Pipeline, client merge.
+
 ## Final launch gate
 
 Jafar may open the controlled first launch only after Parts 1–4 and 9 pass. Begin with a few closely supported
