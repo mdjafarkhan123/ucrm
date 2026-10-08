@@ -112,7 +112,7 @@
 	class:sidebar--collapsed={collapsed}
 	aria-label={`${eyebrow} navigation`}
 	data-sveltekit-preload-data="false"
-	data-sveltekit-preload-code="eager"
+	data-sveltekit-preload-code="hover"
 >
 	<div class="sidebar__brand-row">
 		<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- brandHref is one of this variant's own static nav destinations, resolved at render time from approved config, not a literal route id. -->

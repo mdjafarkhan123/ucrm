@@ -1,8 +1,11 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { navigating } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import AppShell from '$lib/components/layout/AppShell.svelte';
 	import RouteSkeleton from '$lib/components/layout/RouteSkeleton.svelte';
+	import { warmPagesWhenIdle } from '$lib/components/layout/warm-pages';
 	import { notificationsKey } from '$lib/jafar/notifications';
 	import {
 		jafarEmailHealthKey,
@@ -38,6 +41,23 @@
 	const viewer = $derived({ role: data.owner.role, access: data.owner.access });
 	const canOpen = (href: string) => canUseJafarPath(viewer, href);
 	const supportVisible = $derived(canOpen('/jafar/support'));
+
+	// The pages a day of selling moves between — Leads, a Lead, Deals — are fetched once the browser is idle,
+	// only those this viewer may open; the rest of the sidebar loads on hover. Only code, never data, so the
+	// placeholder id never points at a real Lead. Pushed one by one: as one array literal the resolve() calls'
+	// route types grow too complex for TypeScript, as in the contractor layout.
+	const warmRoutes: string[] = [];
+	warmRoutes.push(resolve('/jafar/(protected)/leads'));
+	warmRoutes.push(
+		resolve('/jafar/(protected)/leads/[id]', { id: '00000000-0000-0000-0000-000000000000' })
+	);
+	warmRoutes.push(resolve('/jafar/(protected)/deals'));
+	onMount(() =>
+		warmPagesWhenIdle(
+			warmRoutes.filter((path) => canOpen(path)),
+			queryClient
+		)
+	);
 	const account = $derived(
 		data.owner.role
 			? { name: data.owner.name, email: data.owner.email, role: TEAM_ROLE_LABELS[data.owner.role] }
