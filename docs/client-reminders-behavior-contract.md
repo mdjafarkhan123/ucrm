@@ -43,31 +43,35 @@ client notifications, visit reminders, invoice and job follow-ups).
 
 ## Visit and assessment reminders
 
-- One reminder before each scheduled visit or assessment; default 1 day before, adjustable from 1 hour to 7
-  days.
+- One reminder before each scheduled visit or assessment; default 1 day before, at the same time of day as
+  the visit (a Thursday 7 am visit is reminded Wednesday 7 am), as Jobber does. The owner can change it, from
+  1 hour to 7 days before, and can pick a fixed time of day instead.
 - A visit booked inside that window (say, tomorrow morning when the reminder is a day ahead) gets no reminder;
   the confirmation covers it.
-- A visit with a date but no set time is reminded at the start of the business's sending hours the day
-  before.
+- A visit with a date but no set time is reminded at 9 am the day before (Housecall Pro's default), so no one
+  is messaged at midnight.
 - If the visit moves, the reminder follows the new time. If it is cancelled, deleted or completed first,
   nothing is sent.
 
 ## Overdue invoice reminders
 
-- Up to two reminders after an invoice's due date; default 3 and 10 days after, each adjustable up to 90
-  days. Each carries the invoice's pay link and balance.
+- Up to two reminders after an invoice's due date, sent shortly after 8 am local time (Jobber's limits and
+  send time). Defaults: 1 day after and 7 days after the due date — the first two after-due steps in Jobber's
+  own payment-reminder advice. Each is adjustable up to 90 days and carries the invoice's pay link and
+  balance.
 - Stopped by: the invoice being paid in full, voided or replaced, or the client's switch being turned off.
 - A draft or unsent invoice is never chased.
 
 ## Job follow-up
 
-- A thank-you email after a job's work is completed; default 1 day later, adjustable.
+- A thank-you email when a job's work is completed, as Jobber sends its job follow-up when a job is closed;
+  sent within the business's sending hours. The owner can add a delay.
 - It can run beside the Google review request; the owner can edit either so the customer is not asked twice.
 
 ## Still unclear
 
-- Nothing. The defaults above (1 day before, 3 and 10 days after due, 1 day after the job) are proposals for
-  Jafar's approval.
+- Nothing. Every timing is a default the owner can change. Jobber does not publish its own starting numbers;
+  the defaults above follow Jobber's documented behavior and advice and Housecall Pro's published default.
 
 ## Not doing
 
@@ -83,3 +87,10 @@ client notifications, visit reminders, invoice and job follow-ups).
 - [Jobber feature catalog, 2026-10-08](research/jobber-feature-catalog-2026-10-08.md)
 - [Jobber email gap review](research/jobber-email-gap-review.md)
 - Jobber reference: `.claude/skills/jobber/jobber-06-automations-clienthub.md`
+- Timing defaults, checked 2026-10-08: Jobber
+  [Assessment and Visit Reminders](https://help.getjobber.com/hc/en-us/articles/360033608974-Assessment-and-Visit-Reminders),
+  [Automations — Invoice Follow-ups](https://help.getjobber.com/hc/en-us/articles/360021573434--Invoice-Follow-ups),
+  [Job Follow-ups](https://help.getjobber.com/hc/en-us/articles/115009739988-Job-Follow-ups),
+  [overdue payment reminder advice](https://www.getjobber.com/academy/overdue-payment-reminder-templates/);
+  Housecall Pro [SMS job reminders](https://help.housecallpro.com/en/articles/8688152-setting-up-sms-job-reminders)
+  and [invoice reminders](https://help.housecallpro.com/en/articles/4249157-how-do-i-set-up-invoice-reminders).
