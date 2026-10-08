@@ -207,3 +207,92 @@ export function refreshCalendar(queryClient: QueryClient) {
 		queryClient.invalidateQueries({ queryKey: jafarLeadsKey })
 	]);
 }
+
+// --- Placing things on the calendar ----------------------------------------------------------------------------------
+
+/** One thing drawn on the calendar: a call, a Busy block, or a dated next action. */
+export type CalendarItem =
+	| { id: string; kind: 'call' | 'busy'; entry: CalendarEntry }
+	| { id: string; kind: 'follow_up'; followUp: CalendarFollowUp };
+
+/** How long a follow-up with a time is drawn; it has no end of its own. */
+export const FOLLOW_UP_DRAWN_MINUTES = 30;
+
+const MINUTES_IN_DAY = 24 * 60;
+
+export type CalendarDay = {
+	/** Follow-ups with only a day: the grid's top lane. */
+	anytime: CalendarItem[];
+	timed: { item: CalendarItem; start: number; end: number }[];
+};
+
+/**
+ * Each day's items in the calendar's time zone. Something running past midnight is drawn on both days, cut at
+ * midnight, as Google Calendar does; a cancelled call is not drawn.
+ */
+export function placeCalendarItems(
+	data: CalendarWindowData,
+	zone: string
+): Map<string, CalendarDay> {
+	const days = new Map<string, CalendarDay>();
+	const dayOf = (day: string) => {
+		let found = days.get(day);
+		if (!found) {
+			found = { anytime: [], timed: [] };
+			days.set(day, found);
+		}
+		return found;
+	};
+
+	for (const entry of data.entries) {
+		if (entry.status === 'cancelled') continue;
+		const item: CalendarItem = { id: `entry:${entry.id}`, kind: entry.kind, entry };
+		const start = zonedPlace(entry.starts_at, zone);
+		const end = zonedPlace(entry.ends_at, zone);
+		let day = start.day;
+		// At most two days: nothing lasts longer than 24 hours.
+		for (let guard = 0; guard < 3; guard += 1) {
+			const from = day === start.day ? start.minutes : 0;
+			const to = day === end.day ? end.minutes : MINUTES_IN_DAY;
+			if (to > from) dayOf(day).timed.push({ item, start: from, end: to });
+			if (day === end.day) break;
+			day = parseDate(day).add({ days: 1 }).toString();
+		}
+	}
+
+	for (const followUp of data.follow_ups) {
+		const item: CalendarItem = { id: `follow-up:${followUp.id}`, kind: 'follow_up', followUp };
+		if (!followUp.due_at) {
+			dayOf(followUp.due_on).anytime.push(item);
+			continue;
+		}
+		const place = zonedPlace(followUp.due_at, zone);
+		dayOf(place.day).timed.push({
+			item,
+			start: place.minutes,
+			end: Math.min(MINUTES_IN_DAY, place.minutes + FOLLOW_UP_DRAWN_MINUTES)
+		});
+	}
+	return days;
+}
+
+/** A day's items in reading order -- the month cell and the phone's day list: day-only follow-ups, then by time. */
+export function orderCalendarDay(day: CalendarDay | undefined): CalendarItem[] {
+	if (!day) return [];
+	return [
+		...day.anytime,
+		...[...day.timed].sort((a, b) => a.start - b.start || a.end - b.end).map((span) => span.item)
+	];
+}
+
+/** "9am", "2:30pm" from minutes past midnight. */
+export function minutesWords(minutes: number): string {
+	return clockWords(clockText(minutes % MINUTES_IN_DAY));
+}
+
+/** What a card or a list row calls an item. */
+export function calendarItemTitle(item: CalendarItem): string {
+	if (item.kind === 'follow_up') return item.followUp.next_action;
+	if (item.kind === 'busy') return item.entry.title ?? 'Busy';
+	return item.entry.title ?? `Call with ${item.entry.business_name}`;
+}

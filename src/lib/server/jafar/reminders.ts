@@ -165,7 +165,7 @@ async function deliver(
 		...buildReminderEmail(
 			words,
 			`${origin}/jafar/leads/${encodeURIComponent(reminder.relationship_id)}`,
-			`${origin}/jafar/preferences`
+			`${origin}/jafar/settings/preferences`
 		)
 	});
 }

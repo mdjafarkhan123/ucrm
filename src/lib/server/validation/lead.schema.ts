@@ -50,8 +50,9 @@ export const leadListQuerySchema = z.object({
 	source: list(LEAD_SOURCES).optional(),
 	sort: z.enum(LEAD_SORTS).optional(),
 	/** B4: `with` lists only businesses that have a Deal; without it they are left out. B5: `clients` lists only
-	 * businesses with a Won Deal, which `with` leaves out. */
-	deal: z.enum(['with', 'clients']).optional(),
+	 * businesses with a Won Deal, which `with` leaves out. C2: `any` lists every business, for the calendar's
+	 * business picker. */
+	deal: z.enum(['with', 'clients', 'any']).optional(),
 	/** Opaque cursor from the previous page's `next_cursor`. */
 	cursor: z.string().max(300).optional(),
 	limit: z.coerce.number().int().min(1).max(100).optional()
