@@ -1,6 +1,6 @@
 # Quote alerts and client reminders
 
-**Status:** Planning — Jafar's four choices recorded 2026-10-08; whole plan awaits his approval
+**Status:** Approved by Jafar on 2026-10-08
 
 ## Summary
 

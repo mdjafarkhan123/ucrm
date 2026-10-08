@@ -5,9 +5,10 @@ get the confirmation, visit reminders, overdue-invoice reminders and job thank-y
 promise (email now, texts after registration).
 **Plan:** `docs/client-reminders-behavior-contract.md`
 
-**In progress:** none
+**In progress:**
 
-**Next part:** 1 Plan approval — show Jafar the plan's proposed defaults and the build parts; on approval, write
-the date into the plan's status line and start Part 2.
+- 2 Quote alerts — started 2026-10-08
+
+**Next part:** 3 Visit reminder — engine learns visits and "before the visit" timing.
 
 **Blockers:** none. Parent: `crm-launch-readiness` Part 11.
