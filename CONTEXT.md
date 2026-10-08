@@ -49,6 +49,9 @@
 
 ## Platform onboarding
 
+- **Uplift Control Room** — The protected `/jafar` workspace where Jafar and authorized Uplift teammates run Uplift Business Management and Platform Operations. It is separate from every customer Organization. _Avoid_: Jafar role or administrator portal.
+- **Business Workspace** — The signed-in operating workspace used by one Organization's Team members. Its Industry experience, Package and Team-member permissions shape what appears and what actions succeed. _Avoid_: Contractor app when referring to the cross-industry surface.
+- **Customer-facing surface** — A permitted request, booking, portal, form, payment or communication journey used by an Organization's own customers. It is not the Organization's Business Workspace or the Uplift Control Room.
 - **Industry experience** — The organization's primary operating experience: Contractor, Beauty & Spa, or Medspa & Clinical Wellness. It controls industry language and workflows and is separate from package access and staff permissions. _Avoid_: Package edition.
 - **Business type** — A more specific category inside an Industry experience, such as salon, barbershop, spa, or medspa. It can shape defaults without creating a separate product. _Avoid_: Industry experience when referring to the narrower category.
 - **Onboarding program** — The published, versioned setup journey selected by an organization's Industry experience and narrowed by its purchased capabilities. Shared stages may be reused across programs. _Avoid_: Niche onboarding link.
@@ -56,6 +59,11 @@
 - **Onboarding application** — The platform-owned record of a prospect's submitted business, administrator, and selected-package information.
 - **Payment confirmed** — The Platform Owner has manually verified that the prospect's offsite subscription payment is received. It is not a payment record held or processed by UpliftContractor.
 - **Organization** — An active or suspended business tenant created only after payment confirmation and successful account provisioning.
+- **Commercial access** — Whether an Organization may use the capabilities and coverage in its Agreement. It does not by itself mean the administrator, Setup, real-world operations or public surfaces are ready.
+- **Administrator readiness** — Whether the initial Organization administrator can securely enter and administer the Business Workspace. It is separate from Organization lifecycle and operational readiness.
+- **Setup progress** — Where an Organization stands in its assigned Onboarding program. Completing or entering Setup does not by itself authorize public launch.
+- **Operational readiness** — The reviewed conclusion that an Organization may use a named real-world workflow under its configured rules and required safeguards. It is capability- and experience-specific. _Avoid_: Active account.
+- **Public launch** — The deliberate opening of an approved Customer-facing surface after its readiness requirements pass. It is separate from payment confirmation and Business Workspace access.
 - **Initial organization administrator** — The first user for a newly provisioned organization. This person administers that tenant; the Platform Owner never becomes a tenant member.
 - **Activated package** — The package edition applied to an organization at provisioning. It normally matches the prospect's selected edition, but the Platform Owner may correct it to match the edition actually paid for and must record a private reason.
 - **Not proceeding** — A platform-owned final prospect outcome used when no account will be created. It is not an organization lifecycle state.

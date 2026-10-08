@@ -1,6 +1,6 @@
 # Platform overview
 
-**Status:** Direction agreed 2026-10-05. Medspa & Clinical Wellness first-release behavior and build order approved by Jafar 2026-10-08; delivery and first-clinic readiness remain unverified. Beauty & Spa details follow later.
+**Status:** Direction agreed 2026-10-05 and multi-industry foundation direction confirmed 2026-10-08. Medspa & Clinical Wellness first-release behavior and build order are approved, but implementation waits for the shared platform foundation and connected Contractor proof. Delivery and first-clinic readiness remain unverified; Beauty & Spa details follow later.
 
 ## Product direction
 
@@ -8,9 +8,12 @@ One platform serves different business types through focused industry experience
 
 The business account determines the industry experience; subscription features and staff permissions further determine access. Relevant terminology, navigation, workflows, forms, and reports should fit that business. Access must be enforced beyond hiding controls. A separate product copy is not created for each customer. Mixed-service businesses need an explicitly planned combination of capabilities.
 
+Uplift is the visible product, not a white-label reseller system. The protected `/jafar` workspace is the **Uplift Control Room**; an organization's signed-in staff use its **Business Workspace**; and that organization's own customers use permitted request, booking, portal, form, payment and communication surfaces. Confirmed payment may open Setup access, while operational readiness and public launch remain separate facts. Existing behavior is audited for reuse before it is changed.
+
 ## Sources of truth
 
 - [Contractor blueprint](PRODUCT.md): existing contractor behavior and links to its detailed contracts.
+- [Multi-industry platform foundation](multi-industry-platform-foundation-behavior-contract.md): the agreed platform direction and the decisions still required before implementation.
 - [Boulevard product plan](boulevard-product-behavior-contract.md): approved Medspa behavior, release boundary, research gaps and first-clinic gates.
 - [Approved build order](research/boulevard-p4-review-proposal-2026-10-08.md): sequence to split into focused parts before implementation.
 
