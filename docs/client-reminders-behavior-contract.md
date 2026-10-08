@@ -19,7 +19,10 @@ client notifications, visit reminders, invoice and job follow-ups).
   alert and an email: the deal's owner, else whoever sent the quote, else the account owner — the same person
   the "declined" alert reaches today.
 - "Changes requested" shows the customer's message in the alert.
-- A quote marked approved by a teammate inside the app sends no alert; that person already knows.
+- Only the customer's own online answer alerts the team. Jobber's published alerts are about the client
+  approving; a teammate recording an approval in the app already knows.
+- Jobber also shows approvals to every admin in its activity feed and emails one chosen person; Jafar chose
+  the deal owner, by bell and email (2026-10-08).
 - Answering twice, or a double-click, never produces two alerts.
 
 ## Customer messages: shared rules
@@ -37,17 +40,18 @@ client notifications, visit reminders, invoice and job follow-ups).
 
 ## "You're booked" confirmation
 
-- Sent when a visit or assessment first gets a date and time. Example: a Tuesday 9 am booking gets "You're
-  booked for Tuesday at 9 am" within a minute.
-- A recurring job sends one confirmation listing the first visit, not one per visit.
+- One confirmation per job or assessment, not one per visit: Jobber calls it a one-time message, while
+  reminders cover each upcoming visit.
+- How it is triggered is in Still unclear.
 
 ## Visit and assessment reminders
 
 - One reminder before each scheduled visit or assessment; default 1 day before, at the same time of day as
   the visit (a Thursday 7 am visit is reminded Wednesday 7 am), as Jobber does. The owner can change it, from
   1 hour to 7 days before, and can pick a fixed time of day instead.
-- A visit booked inside that window (say, tomorrow morning when the reminder is a day ahead) gets no reminder;
-  the confirmation covers it.
+- A visit booked after its reminder time has already passed (say, booked tonight for 8 am tomorrow) gets no
+  reminder, so the customer is not sent a "reminder" moments after booking. Jobber and Housecall Pro publish
+  no rule for this; it is UCRM's own choice.
 - A visit with a date but no set time is reminded at 9 am the day before (Housecall Pro's default), so no one
   is messaged at midnight.
 - If the visit moves, the reminder follows the new time. If it is cancelled, deleted or completed first,
@@ -70,8 +74,14 @@ client notifications, visit reminders, invoice and job follow-ups).
 
 ## Still unclear
 
-- Nothing. Every timing is a default the owner can change. Jobber does not publish its own starting numbers;
-  the defaults above follow Jobber's documented behavior and advice and Housecall Pro's published default.
+- **Booking confirmation trigger.** Jobber: a button the contractor presses on the job or request. Housecall
+  Pro: sent automatically when a job is scheduled, with a "Notify customer" tick box to skip it, and sent again
+  when the time changes.
+- **Approval thank-you to the customer.** Jobber automatically emails the client when they approve, with next
+  steps. UCRM sends nothing today. Add it to Part 2?
+
+Every timing is a default the owner can change. Jobber does not publish its starting numbers; the defaults
+above follow Jobber's documented behavior and advice and Housecall Pro's published default.
 
 ## Not doing
 
@@ -92,5 +102,8 @@ client notifications, visit reminders, invoice and job follow-ups).
   [Automations — Invoice Follow-ups](https://help.getjobber.com/hc/en-us/articles/360021573434--Invoice-Follow-ups),
   [Job Follow-ups](https://help.getjobber.com/hc/en-us/articles/115009739988-Job-Follow-ups),
   [overdue payment reminder advice](https://www.getjobber.com/academy/overdue-payment-reminder-templates/);
-  Housecall Pro [SMS job reminders](https://help.housecallpro.com/en/articles/8688152-setting-up-sms-job-reminders)
+  Jobber [Booking Confirmation](https://help.getjobber.com/hc/en-us/articles/360060143753-Booking-Confirmation),
+  [Quote Approvals](https://help.getjobber.com/hc/en-us/articles/115012715008-Quote-Approvals);
+  Housecall Pro [customer notifications](https://help.housecallpro.com/en/articles/357613-customer-notifications-overview),
+  [SMS job reminders](https://help.housecallpro.com/en/articles/8688152-setting-up-sms-job-reminders)
   and [invoice reminders](https://help.housecallpro.com/en/articles/4249157-how-do-i-set-up-invoice-reminders).
