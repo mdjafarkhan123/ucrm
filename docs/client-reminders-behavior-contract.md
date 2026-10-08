@@ -19,6 +19,9 @@ client notifications, visit reminders, invoice and job follow-ups).
   alert and an email: the deal's owner, else whoever sent the quote, else the account owner — the same person
   the "declined" alert reaches today.
 - "Changes requested" shows the customer's message in the alert.
+- When the customer approves, they also get a thank-you email at once: their quote is approved and the
+  business will be in touch about next steps (Jobber does this; Jafar added it 2026-10-08). It answers the
+  customer's own action, so it goes out even when follow-up switches are off; "Do not disturb" still stops it.
 - Only the customer's own online answer alerts the team. Jobber's published alerts are about the client
   approving; a teammate recording an approval in the app already knows.
 - Jobber also shows approvals to every admin in its activity feed and emails one chosen person; Jafar chose
@@ -42,7 +45,12 @@ client notifications, visit reminders, invoice and job follow-ups).
 
 - One confirmation per job or assessment, not one per visit: Jobber calls it a one-time message, while
   reminders cover each upcoming visit.
-- How it is triggered is in Still unclear.
+- Sent automatically when a visit or assessment is scheduled, once its automation is on (Housecall Pro's way;
+  Jafar chose it 2026-10-08). The scheduling screen shows a "Notify customer" tick box, ticked by default;
+  unticking it skips the email for that booking. The box does not appear while the automation is off.
+- When the date or time changes later, the customer gets an updated "Your visit has moved to …" email, with
+  the same tick box.
+- It follows the client's "Upcoming assessment and visit reminders" switch, the closest existing one.
 
 ## Visit and assessment reminders
 
@@ -74,11 +82,7 @@ client notifications, visit reminders, invoice and job follow-ups).
 
 ## Still unclear
 
-- **Booking confirmation trigger.** Jobber: a button the contractor presses on the job or request. Housecall
-  Pro: sent automatically when a job is scheduled, with a "Notify customer" tick box to skip it, and sent again
-  when the time changes.
-- **Approval thank-you to the customer.** Jobber automatically emails the client when they approve, with next
-  steps. UCRM sends nothing today. Add it to Part 2?
+- Nothing.
 
 Every timing is a default the owner can change. Jobber does not publish its starting numbers; the defaults
 above follow Jobber's documented behavior and advice and Housecall Pro's published default.
@@ -86,8 +90,6 @@ above follow Jobber's documented behavior and advice and Housecall Pro's publish
 ## Not doing
 
 - Text messages — waits for business registration; the automations gain a text step then.
-- A "your visit has moved" message on reschedule — the reminder follows the new time; a notice the staff
-  member chooses to send is later work (Jobber asks the staff member each time).
 - "On my way" texts — High list, after registration.
 - Telling a teammate they were put on a visit — separate High item.
 - Push alerts — separate deferred feature.
