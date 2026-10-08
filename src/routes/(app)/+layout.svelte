@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { navigating, page } from '$app/state';
-	import { preloadCode } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import AppShell from '$lib/components/layout/AppShell.svelte';
+	import { warmPagesWhenIdle } from '$lib/components/layout/warm-pages';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import RouteSkeleton from '$lib/components/layout/RouteSkeleton.svelte';
 	import AccountGraceBanner from '$lib/components/layout/AccountGraceBanner.svelte';
@@ -28,13 +28,9 @@
 	// it is complete on the first paint: nothing flashes in, and nothing leads only to a refusal screen.
 	const navigation = $derived(data.navigation ?? fallbackContractorNavigation);
 
-	// Every page is its own JavaScript file, so the first visit to one waits for that file to arrive and
-	// the click feels stuck. Once the browser is idle this fetches the code for the pages the office moves
-	// between all day — the sidebar's daily pages and their record pages — so those clicks paint straight
-	// away. Everything else loads on hover, like any link. Skipped on data saver or 2G (Google quicklink's
-	// rule), so a crew member on site doesn't spend mobile data on pages they may never open.
-	// The id in the detail paths is a placeholder — only the page's code is fetched, never its data.
-	// It must still satisfy the `uuid` route matcher, or `resolve()` yields a path the router can't match
+	// The pages the office moves between all day — the sidebar's daily pages and their record pages — are
+	// fetched once the browser is idle (`warmPagesWhenIdle`); everything else loads on hover. The id in the
+	// detail paths is a placeholder — only the page's code is fetched, never its data. It must still satisfy the `uuid` route matcher, or `resolve()` yields a path the router can't match
 	// and `preloadCode` throws; a nil uuid matches the shape without ever pointing at a real record.
 	const WARM_UUID = '00000000-0000-0000-0000-000000000000';
 	// Built with individual push() calls, not an array literal: checking that many resolve() calls'
@@ -55,13 +51,6 @@
 	warmRoutes.push(resolve('/(app)/jobs/[id=uuid]', { id: WARM_UUID }));
 	warmRoutes.push(resolve('/(app)/invoices'));
 	warmRoutes.push(resolve('/(app)/invoices/[id=uuid]', { id: WARM_UUID }));
-
-	function onConstrainedConnection() {
-		const connection = (
-			navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }
-		).connection;
-		return Boolean(connection?.saveData || connection?.effectiveType?.includes('2g'));
-	}
 
 	// SvelteKit keeps the old page on screen until the next page's code has arrived, so a click on a page
 	// whose code isn't here yet looks like nothing happened. Once a move to another page has taken longer
@@ -84,19 +73,8 @@
 	});
 
 	onMount(() => {
-		if (paused || onConstrainedConnection()) return;
-
-		const warm = () => {
-			for (const path of warmRoutes) void preloadCode(path);
-		};
-
-		if ('requestIdleCallback' in window) {
-			const handle = requestIdleCallback(warm, { timeout: 3000 });
-			return () => cancelIdleCallback(handle);
-		}
-
-		const handle = setTimeout(warm, 1000);
-		return () => clearTimeout(handle);
+		if (paused) return;
+		return warmPagesWhenIdle(warmRoutes);
 	});
 </script>
 
