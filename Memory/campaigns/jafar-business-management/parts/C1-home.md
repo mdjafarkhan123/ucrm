@@ -12,13 +12,12 @@
 - [x] Onboarding and Applications pages read the tile's filter from the URL
 - [x] Browser test `src/routes/jafar/home.e2e.ts` passed (done-check)
 - [x] Polish: tiles draw at once, phone swipe row, Done keeps its spinner until the home reloads
-- [ ] Performance verification branch with large test data; then mark C1 done, point NOW at C2
+- [x] Speed check at 20k Leads / 6k due this week (seed deleted, 0 left): home SQL 23 ms; phone slow-4G LCP ≤0.5 s, CLS 0.008, Done dialog ≈0.2 s
+- [ ] Fix the slow "Setups waiting" count (waiting on Jafar), then mark C1 done, point NOW at C2
 
 ## Next
 
-`performance-review` verification branch: seed thousands of test Leads with next actions (tag them so they can be deleted; record the tag here before seeding), time `owner_business_home` with EXPLAIN and the home route on a slowed phone profile, delete the seed and confirm none remain. Run the browser test as `npx playwright test "$PWD/src/routes/jafar/home.e2e.ts"` — a bare path also matches copies inside `.claude/worktrees/`, which then collide on the shared test business.
-
-**Seed in progress (2026-10-08):** fake Leads carry `source_detail = 'perf-seed-c1-20261008'`. Check: `select count(*) from platform_business_relationships where source_detail = 'perf-seed-c1-20261008'` — must end at 0; delete them (their Deals cascade) if any remain.
+`/api/jafar/home` takes ~2.2 s; all of it is `owner_client_onboarding_list` (client-onboarding area, 2.3 s mean for 5 clients). Cause proven by EXPLAIN: its `hidden` lateral (`setup_hidden_fact_keys`) is pulled up and re-run per fact and per required key; `offset 0` in that lateral cut a test from 698 ms to 23 ms. Question to Jafar, word for word: "Your Onboarding list is slow because of a mistake in how it was built. Should I fix it now?" If yes: migration re-creating the live (8-argument) function with the fence, re-time, rerun onboarding tests. Open: the home page made 264 requests on a cold load — check what they are.
 
 ## Notes
 
