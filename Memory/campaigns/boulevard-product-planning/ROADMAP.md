@@ -14,6 +14,6 @@
 | P2H Business entry and onboarding | Marketing-to-account journey, industry assignment, setup programs and mixed-business changes | P2A–P2G | Detailed routing, version, change and Platform Owner rules agreed | Done 2026-10-07 |
 | P3 Reuse and release | Existing-app mapping, feasibility limits, initial/later assignments and quality targets | P2H | Each initial capability has a reuse decision, feasible behavior and completion checks | Done 2026-10-08 |
 | P3A Performance design | Workloads, browser/data budgets and evidence required for the initial release | P3 | Every material growth path has the smallest sound design and a verification plan | Done 2026-10-08 |
-| P4 Review | Consistent, reviewable plan and agreed next build scope | P3A | Sources and gaps checked; Jafar approves the release behavior and subsequent build parts | Not started |
+| P4 Review | Consistent, reviewable plan and agreed next build scope | P3A | Sources and gaps checked; Jafar approves the release behavior and subsequent build parts | In progress — waiting for Jafar's review |
 
 P2 parts organize research. P3's family-level release boundary is approved. P3A supplies proposed test workloads and budgets; P4 reviews them with Jafar alongside the final build plan. This campaign completes a plan; its completion does not mean the application is built.
