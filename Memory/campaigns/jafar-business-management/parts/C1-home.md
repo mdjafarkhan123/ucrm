@@ -11,12 +11,12 @@
 - [x] `GET /api/jafar/home` + spec; home page; Done reuses `NextActionDialog`; `refreshLead`/`refreshDeals` invalidate `jafarHomeKey`
 - [x] Onboarding and Applications pages read the tile's filter from the URL
 - [x] Browser test `src/routes/jafar/home.e2e.ts` passed (done-check)
-- [ ] Finish the uncommitted polish (see Next)
+- [x] Polish: tiles draw at once, phone swipe row, Done keeps its spinner until the home reloads
 - [ ] Performance verification branch with large test data; then mark C1 done, point NOW at C2
 
 ## Next
 
-`src/routes/jafar/(protected)/+page.svelte` has an uncommitted, unchecked change: tiles always render from a `tiles` $derived (value "–" until data, no skeleton) and become a sideways-swipe row under 640px. Run prettier, eslint (`NODE_OPTIONS=--max-old-space-size=8192`), svelte-check, rerun `npx playwright test src/routes/jafar/home.e2e.ts` with `E2E_SCREENSHOT_DIR`, look at the phone screenshot, commit. Then `performance-review` verification: seed thousands of test Leads with next actions, time `owner_business_home` (EXPLAIN) and the home route on a slowed phone profile, delete the seed.
+`performance-review` verification branch: seed thousands of test Leads with next actions (tag them so they can be deleted; record the tag here before seeding), time `owner_business_home` with EXPLAIN and the home route on a slowed phone profile, delete the seed and confirm none remain. Run the browser test as `npx playwright test "$PWD/src/routes/jafar/home.e2e.ts"` — a bare path also matches copies inside `.claude/worktrees/`, which then collide on the shared test business.
 
 ## Notes
 
