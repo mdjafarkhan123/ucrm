@@ -172,7 +172,7 @@
 		}
 
 		&__not-sending {
-			margin: var(--space-smallest) 0 0 calc(var(--space-large) + var(--space-small));
+			margin: var(--space-smallest) 0 0 calc(var(--space-large) + var(--space-smaller));
 			color: var(--color-warning--onSurface);
 			font-size: var(--typography--fontSize-small);
 		}
