@@ -37,7 +37,8 @@ function sendFailureReason(error: DbError): string {
 	}
 	if (error.code === '42501') return 'You do not have access to send this invoice.';
 	if (error.code === 'P0404') return message || 'That invoice could not be found.';
-	if (error.code === 'P0409') return message || 'Someone changed this invoice. Reload and try again.';
+	if (error.code === 'P0409')
+		return message || 'Someone changed this invoice. Reload and try again.';
 	if (error.code === '23514' || error.code === '23503')
 		return message || 'This invoice cannot be sent as it stands.';
 	return 'This invoice could not be sent. Please try again.';

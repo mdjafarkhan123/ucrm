@@ -23,7 +23,9 @@ export function getR2Env(): R2Env {
 	});
 
 	if (!result.success) {
-		throw new Error('Cloudflare R2 is not configured. Set the R2_* variables to enable file storage.');
+		throw new Error(
+			'Cloudflare R2 is not configured. Set the R2_* variables to enable file storage.'
+		);
 	}
 
 	return result.data;

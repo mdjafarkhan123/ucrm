@@ -1,9 +1,5 @@
 import type { ScheduleEmployeeFilter } from '$lib/schedule/filters';
-import {
-	visitClientLabel,
-	visitPlaceLabel,
-	visitWorkLabel
-} from '$lib/schedule/labels';
+import { visitClientLabel, visitPlaceLabel, visitWorkLabel } from '$lib/schedule/labels';
 import type { UnscheduledVisit } from '$lib/schedule/api';
 
 // What the Unscheduled drawer does to the backlog before it draws it: narrow it by a search box and an

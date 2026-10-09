@@ -62,9 +62,10 @@ describe('outcome tiles', () => {
 
 	it('omits value totals entirely without pipeline.view_value', async () => {
 		mockedHasPermission.mockReturnValue(false);
-		const rpc = vi
-			.fn()
-			.mockResolvedValue({ data: [{ outcome_key: 'lost', closed_count: 4, value_total: 1200 }], error: null });
+		const rpc = vi.fn().mockResolvedValue({
+			data: [{ outcome_key: 'lost', closed_count: 4, value_total: 1200 }],
+			error: null
+		});
 
 		const response = await GET(event(rpc));
 		const body = await response.json();

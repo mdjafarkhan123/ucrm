@@ -25,7 +25,13 @@ function serve() {
 						notes_sent_at: null,
 						notes_sent_by_name: null,
 						cards: [
-							{ id: 'c1', title: 'Services', summary: 'Your services.', link: null, screenshots: [] }
+							{
+								id: 'c1',
+								title: 'Services',
+								summary: 'Your services.',
+								link: null,
+								screenshots: []
+							}
 						],
 						notes
 					}

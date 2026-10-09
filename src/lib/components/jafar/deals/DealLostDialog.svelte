@@ -6,12 +6,7 @@
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import { sendLeadWrite } from '$lib/jafar/lead-page-api';
-	import {
-		DEAL_NOTE_MAX,
-		LOST_REASONS,
-		LOST_REASON_LABELS,
-		refreshDeals
-	} from '$lib/jafar/deals';
+	import { DEAL_NOTE_MAX, LOST_REASONS, LOST_REASON_LABELS, refreshDeals } from '$lib/jafar/deals';
 
 	// Jafar business management B4: mark a Deal Lost. A reason from the fixed list (B4 Q5) and an optional note.
 	// The Deal leaves the board, keeps its history, and can be reopened.

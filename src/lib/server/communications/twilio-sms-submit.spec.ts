@@ -85,7 +85,9 @@ describe('submitTwilioSms', () => {
 	});
 
 	it('treats a 2xx without a usable Message SID as an unknown submission', async () => {
-		vi.mocked(fetch).mockResolvedValueOnce(new Response(JSON.stringify({ status: 'queued' }), { status: 201 }));
+		vi.mocked(fetch).mockResolvedValueOnce(
+			new Response(JSON.stringify({ status: 'queued' }), { status: 201 })
+		);
 
 		await expect(submitTwilioSms(input)).rejects.toMatchObject({
 			outcome: 'submission_unknown',

@@ -273,5 +273,4 @@
 		justify-content: flex-end;
 		gap: var(--space-small);
 	}
-
 </style>

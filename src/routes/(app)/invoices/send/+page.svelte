@@ -343,7 +343,8 @@
 					bind:selectedIds
 					rowLabel={(invoice) =>
 						`Select invoice #${invoice.invoice_number} for ${clientName(invoice)}`}
-					onRowActivate={(invoice) => goto(resolve('/(app)/invoices/[id=uuid]', { id: invoice.id }))}
+					onRowActivate={(invoice) =>
+						goto(resolve('/(app)/invoices/[id=uuid]', { id: invoice.id }))}
 				>
 					{#snippet row(invoice: DeliverableInvoice)}
 						<th scope="row">

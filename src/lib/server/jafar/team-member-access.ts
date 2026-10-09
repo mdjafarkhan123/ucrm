@@ -42,7 +42,9 @@ export async function getTeamMemberAccess(
 	const [memberResult, historyResult] = await Promise.all([
 		client
 			.from('platform_team_members')
-			.select('id, email, full_name, role, status, access_revision, area_adjustments, action_grants')
+			.select(
+				'id, email, full_name, role, status, access_revision, area_adjustments, action_grants'
+			)
 			.eq('id', memberId)
 			.neq('status', 'removed')
 			.maybeSingle(),
@@ -75,16 +77,14 @@ export async function getTeamMemberAccess(
 		},
 		adjustments,
 		access: effectiveTeamAccess(role, adjustments),
-		history: (historyResult.data ?? []).map(
-			(event): TeamAccessHistoryEntry => ({
-				id: event.id,
-				event_type: event.event_type,
-				actor_email: event.actor_owner_email,
-				created_at: event.created_at,
-				before_state: event.before_state,
-				after_state: event.after_state
-			})
-		)
+		history: (historyResult.data ?? []).map((event): TeamAccessHistoryEntry => ({
+			id: event.id,
+			event_type: event.event_type,
+			actor_email: event.actor_owner_email,
+			created_at: event.created_at,
+			before_state: event.before_state,
+			after_state: event.after_state
+		}))
 	};
 }
 

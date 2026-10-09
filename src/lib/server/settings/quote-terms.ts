@@ -22,6 +22,9 @@ export function sanitizeQuoteTerms(rawHtml: string): string {
 	// A contenteditable box leaves a lone <br> behind after "select all, delete" -- that is empty to the
 	// person looking at it, but `<br>` is an allowed tag, so without this check it would sanitize to a
 	// non-empty string and get copied into every new Quote draft as a meaningless default line.
-	const hasVisibleContent = sanitized.replace(/<br\s*\/?>/gi, '').replace(/&nbsp;/gi, '').trim();
+	const hasVisibleContent = sanitized
+		.replace(/<br\s*\/?>/gi, '')
+		.replace(/&nbsp;/gi, '')
+		.trim();
 	return hasVisibleContent ? sanitized : '';
 }

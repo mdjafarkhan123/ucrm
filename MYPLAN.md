@@ -182,12 +182,12 @@ Each part gets only:
 Example:
 
 ```md
-| Part | Outcome | Status | Depends on | Packet |
-| --- | --- | --- | --- | --- |
-| 1 | Reconcile foundations | complete | none | archived in Git |
-| 2 | Durable operations | complete | 1 | archived in Git |
-| 6 | Commercial access | active | 1 to 5 | `parts/06-organization-commercial-access.md` |
-| 7 | Team recovery | pending | 6 | `parts/07-team-access-recovery.md` |
+| Part | Outcome               | Status   | Depends on | Packet                                       |
+| ---- | --------------------- | -------- | ---------- | -------------------------------------------- |
+| 1    | Reconcile foundations | complete | none       | archived in Git                              |
+| 2    | Durable operations    | complete | 1          | archived in Git                              |
+| 6    | Commercial access     | active   | 1 to 5     | `parts/06-organization-commercial-access.md` |
+| 7    | Team recovery         | pending  | 6          | `parts/07-team-access-recovery.md`           |
 ```
 
 The roadmap lets an agent understand how today's work contributes to the final goal, but it does not include all implementation detail.
@@ -271,17 +271,17 @@ This matters: `NOW.md` is a current-state projection, not an append-only log. Gi
 
 Every fact should have one home:
 
-| Information | Authoritative home |
-| --- | --- |
-| Agent working procedure | `AGENTS.md` or a skill |
-| Approved product behavior | Product or domain document |
-| Important technical decision and reason | ADR |
-| Full campaign outcome and ordering | Campaign `ROADMAP.md` |
-| Current execution position | Campaign `NOW.md` |
-| Current slice detail | Active part packet |
-| Implemented behavior | Code, schema, and tests |
-| Old execution history | Git |
-| Work intentionally postponed | Deferred index or packet |
+| Information                             | Authoritative home         |
+| --------------------------------------- | -------------------------- |
+| Agent working procedure                 | `AGENTS.md` or a skill     |
+| Approved product behavior               | Product or domain document |
+| Important technical decision and reason | ADR                        |
+| Full campaign outcome and ordering      | Campaign `ROADMAP.md`      |
+| Current execution position              | Campaign `NOW.md`          |
+| Current slice detail                    | Active part packet         |
+| Implemented behavior                    | Code, schema, and tests    |
+| Old execution history                   | Git                        |
+| Work intentionally postponed            | Deferred index or packet   |
 
 If the same decision appears in several places, future agents can see conflicting versions. Links are safer than copies.
 
@@ -305,16 +305,16 @@ The agent should never compact an unresolved product rule into vague wording. If
 
 The analogy is useful:
 
-| Database idea | Repository memory equivalent |
-| --- | --- |
-| Primary index | `Memory/INDEX.md` |
-| Row for current state | `NOW.md` |
-| Data pages | Part packets |
-| Normalized tables | Product docs and ADRs with one source of truth |
-| Query plan | Index, checkpoint, active part, relevant sources |
-| Materialized view | Small current checkpoint derived from the real project |
-| Cold storage | Git or optional archive |
-| Vacuum or compaction | Remove completed narration and stale duplicates |
+| Database idea         | Repository memory equivalent                           |
+| --------------------- | ------------------------------------------------------ |
+| Primary index         | `Memory/INDEX.md`                                      |
+| Row for current state | `NOW.md`                                               |
+| Data pages            | Part packets                                           |
+| Normalized tables     | Product docs and ADRs with one source of truth         |
+| Query plan            | Index, checkpoint, active part, relevant sources       |
+| Materialized view     | Small current checkpoint derived from the real project |
+| Cold storage          | Git or optional archive                                |
+| Vacuum or compaction  | Remove completed narration and stale duplicates        |
 
 The checkpoint can become stale just like a materialized view. That is why every session verifies it against code, Git status, and canonical docs before making changes.
 

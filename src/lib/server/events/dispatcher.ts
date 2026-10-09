@@ -72,7 +72,9 @@ export async function dispatchOutboxDelivery(
 ) {
 	const { data: delivery, error: loadError } = await client
 		.from('platform_outbox_deliveries')
-		.select('id, recipient_email, attempt_count, target_kind, target_id, correlation_id, payload, status')
+		.select(
+			'id, recipient_email, attempt_count, target_kind, target_id, correlation_id, payload, status'
+		)
 		.eq('id', deliveryId)
 		.maybeSingle();
 	if (loadError) throw loadError;

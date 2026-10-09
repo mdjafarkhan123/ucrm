@@ -4,16 +4,8 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
-	import {
-		billableWorkKey,
-		fetchBillableWork,
-		type BillableWorkItem
-	} from '$lib/invoices/api';
-	import {
-		JOB_STATUS_LABELS,
-		JOB_STATUS_TONES,
-		type JobDerivedStatus
-	} from '$lib/jobs/statuses';
+	import { billableWorkKey, fetchBillableWork, type BillableWorkItem } from '$lib/invoices/api';
+	import { JOB_STATUS_LABELS, JOB_STATUS_TONES, type JobDerivedStatus } from '$lib/jobs/statuses';
 
 	// "Select work to invoice" — the step between pressing Create invoice on a job and filling the form.
 	//

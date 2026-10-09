@@ -38,7 +38,10 @@ export const POST: RequestHandler = async (event) => {
 	const parsed = organizationClosureRestoreSchema.safeParse(body);
 	if (!parsed.success) {
 		return json(
-			{ error: 'Please review the restoration details.', field_errors: zodOwnerFieldErrors(parsed.error) },
+			{
+				error: 'Please review the restoration details.',
+				field_errors: zodOwnerFieldErrors(parsed.error)
+			},
 			{ status: 422 }
 		);
 	}

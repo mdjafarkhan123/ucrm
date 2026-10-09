@@ -334,7 +334,11 @@ describe('the Jafar Panel front door', () => {
 		const cookie = signedCookie(ADJUSTED_SALES_SESSION_ID);
 
 		it('confirms a payment Jafar allowed, but still cannot set up the account', async () => {
-			const confirm = await visit(`/api/jafar/prospects/${SAMPLE_ID}/confirm-payment`, cookie, 'POST');
+			const confirm = await visit(
+				`/api/jafar/prospects/${SAMPLE_ID}/confirm-payment`,
+				cookie,
+				'POST'
+			);
 			expect(confirm.routeRan).toBe(true);
 			const provision = await visit(`/api/jafar/prospects/${SAMPLE_ID}/provision`, cookie, 'POST');
 			expect(provision.routeRan).toBe(false);

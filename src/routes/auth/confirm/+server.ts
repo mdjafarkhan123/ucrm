@@ -18,7 +18,10 @@ export async function GET(event) {
 		try {
 			({ error } = await event.locals.supabase.auth.exchangeCodeForSession(code));
 		} catch (caught) {
-			error = caught instanceof Error ? caught : new Error('Unable to complete the authentication code exchange.');
+			error =
+				caught instanceof Error
+					? caught
+					: new Error('Unable to complete the authentication code exchange.');
 		}
 	} else {
 		error = new Error('Missing authentication confirmation parameters.');

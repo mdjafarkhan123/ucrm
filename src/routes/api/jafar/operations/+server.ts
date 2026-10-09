@@ -9,14 +9,13 @@ const summarySelect =
 	'id, correlation_id, operation_type, target_kind, target_id, status, attempt_count, last_error, acknowledged_at, acknowledged_by_owner_email, resolved_at, resolved_by_owner_email, resolution_note, created_at, updated_at';
 
 export const GET: RequestHandler = async (event) => {
-	if (!await getOwnerSession(event)) return ownerUnauthorized();
+	if (!(await getOwnerSession(event))) return ownerUnauthorized();
 
 	const parsed = operationListQuerySchema.safeParse({
 		status: event.url.searchParams.get('status') ?? undefined,
 		target_id: event.url.searchParams.get('target_id') ?? undefined
 	});
-	if (!parsed.success)
-		return json({ error: 'The operations filter is invalid.' }, { status: 422 });
+	if (!parsed.success) return json({ error: 'The operations filter is invalid.' }, { status: 422 });
 
 	try {
 		let query = getOwnerSupabaseClient()

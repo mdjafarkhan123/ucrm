@@ -1,9 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import {
-	requireLinkedEntityAccess,
-	type LinkedEntityType
-} from '$lib/server/access/collaboration';
+import { requireLinkedEntityAccess, type LinkedEntityType } from '$lib/server/access/collaboration';
 import { databaseError } from '$lib/server/api/errors';
 import { deleteObject } from '$lib/server/storage/r2';
 
