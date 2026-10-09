@@ -1,0 +1,6 @@
+[mcp_servers.svelte]
+command = "npx"
+args = ["-y", "@sveltejs/mcp@latest"]
+
+[mcp_servers.supabase]
+url = "https://mcp.supabase.com/mcp?project_ref=lgerqoeyusspmgzecwjs&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching"
