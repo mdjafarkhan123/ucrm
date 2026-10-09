@@ -14,11 +14,11 @@ function clientWith(error: { message: string } | null = null) {
 	const chain: Record<string, unknown> = {
 		then: (resolve: (value: unknown) => unknown) => Promise.resolve({ error }).then(resolve)
 	};
-	const is = vi.fn((..._args: unknown[]) => chain);
-	const inFilter = vi.fn((..._args: unknown[]) => chain);
-	const eq = vi.fn((..._args: unknown[]) => chain);
+	const is = vi.fn<(...args: unknown[]) => typeof chain>(() => chain);
+	const inFilter = vi.fn<(...args: unknown[]) => typeof chain>(() => chain);
+	const eq = vi.fn<(...args: unknown[]) => typeof chain>(() => chain);
 	Object.assign(chain, { is, in: inFilter, eq });
-	const update = vi.fn((..._args: unknown[]) => chain);
+	const update = vi.fn<(...args: unknown[]) => typeof chain>(() => chain);
 
 	return {
 		from: () => ({ update }),
