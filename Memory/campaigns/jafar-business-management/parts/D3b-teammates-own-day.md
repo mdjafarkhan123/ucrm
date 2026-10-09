@@ -16,7 +16,7 @@
 
 ## Next
 
-Prove it as Sam and Jafar in the browser (design screen check, desktop and phone), then the 50k-Lead speed check.
+Sign in as Jafar (CLAUDE.md test login) and check the home: Mine hides Sam's "Intro call (D3b check)" on A1 Test Roofing (booked for 10 Oct), Everyone shows it with "Sam Seller" — at desktop and phone width. The browser window will not shrink, so show phone width in 390px iframes. Sign-in was rate-limited at 15:30 on 2026-10-09 (15-minute window). An uncommitted phone fix in `src/routes/jafar/(protected)/+page.svelte` (the to-do header wraps under its title) belongs to this part: check it on the phone screenshot, then commit it. Speed is done (lab, live data); no 50k seed was run on the shared database.
 
 ## Outside actions
 
