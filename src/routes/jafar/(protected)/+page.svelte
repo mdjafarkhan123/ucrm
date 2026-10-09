@@ -807,6 +807,16 @@
 		.business-home__panel-header {
 			padding-inline: var(--space-base);
 		}
+		// The title keeps one line; the count and Mine/Everyone drop beneath it when they don't fit beside it.
+		.business-home__panel-header {
+			flex-wrap: wrap;
+			h2 {
+				white-space: nowrap;
+			}
+		}
+		.business-home__panel-tools {
+			margin-inline-start: auto;
+		}
 		// On a phone the step and business take the full width; the tag, date and Done sit underneath.
 		.business-home__item {
 			flex-wrap: wrap;

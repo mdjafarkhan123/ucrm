@@ -15,7 +15,7 @@ Build stages (approved 2026-10-07, built in this order):
 | A Foundations | One shared access check, two entrances, Settings home | Done 2026-10-07 | — |
 | B Leads to client | Leads, history, contact approval, Deals, Won and handover | Done 2026-10-07 | — |
 | C Your day | Home next actions, calendar and reminders, activity report | In progress — C1, C2, C2a done; C3 not started | `stages/C-your-day.md` |
-| D Team | Teammate invitations and sign-in, permissions, assignments | In progress — D1, D2 done; D3 ready | `stages/D-team.md` |
+| D Team | Teammate invitations and sign-in, permissions, assignments | Done 2026-10-09 — invitations, area and action switches, Lead owners, teammates' own home and calendar, Jafar's Mine/Everyone switch | — |
 | E Public booking | Booking page, reschedule and approval, hosts, Zoom, Google Meet | Not started | `stages/E-booking.md` |
 | F Final tour | Jafar's desktop and phone approval of release one | Not started | `stages/F-finish.md` |
 
