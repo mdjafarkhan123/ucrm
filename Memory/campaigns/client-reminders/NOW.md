@@ -8,8 +8,9 @@ promise (email now, texts after registration).
 **In progress:**
 
 - 2 Quote alerts — started 2026-10-08; paused 2026-10-09 (Codex session stopped), unclaimed
-- 3 Visit reminder — built on branch 2026-10-09; next: apply its migration (see part note)
 
-**Next part:** 3 Visit reminder — engine learns visits and "before the visit" timing.
+**Next part:** 4 Booking confirmation (needs 3, done 2026-10-09), or resume paused Part 2.
+
+**Note:** background wakes reach the app only through the Cloudflare Tunnel; while it is down (HTTP 530 in `net._http_response`), no automation or email runs.
 
 **Blockers:** none. Parent: `crm-launch-readiness` Part 11.
