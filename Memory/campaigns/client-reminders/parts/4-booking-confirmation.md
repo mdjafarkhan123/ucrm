@@ -23,13 +23,13 @@
 
 ## Steps
 
-- [ ] Migration written
+- [x] Migration written
 - [ ] Catalog, presets, worker, routes (Zod `notify_customer`), automation-status endpoint
 - [ ] Tick box on every scheduling screen
 - [ ] Unit tests
-- [ ] Apply migration (outcome check: `select version from supabase_migrations.schema_migrations where version = '20261113090000'`)
+- [x] Applied 2026-10-09 through `execute_sql` (the `apply_migration` tool kept failing with "Invalid or expired requestState"); live function bodies match the file (outcome check: `select version from supabase_migrations.schema_migrations where version = '20261113090000'`)
 - [ ] Prove in the app; merge to `main`; remove worktree
 
 ## Next
 
-Write the migration in the worktree.
+Catalog, presets, worker, routes and status endpoint (TypeScript), in the worktree.
