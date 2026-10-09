@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { DatePicker, Popover } from 'bits-ui';
 	import type { CalendarDate, DateValue } from '@internationalized/date';
 	import type { DateMatcher, DateOnInvalid, DateValidator } from 'bits-ui';
@@ -13,7 +14,7 @@
 		label = 'Date',
 		hideLabel = false,
 		placeholder,
-		locale = 'en-US',
+		locale,
 		weekStartsOn = 0,
 		minValue,
 		maxValue,
@@ -55,6 +56,14 @@
 
 	type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 	let open = $state(false);
+	// Day, month and year are typed in the order of the viewer's browser language, as the browser's own date boxes
+	// do: a US browser shows 10/09/2026 for 9 October, a UK one 09/10/2026. The server cannot know it, so a page
+	// drawn there starts in US order until it reaches the browser.
+	let browserLocale = $state('en-US');
+	onMount(() => {
+		browserLocale = navigator.language || 'en-US';
+	});
+	const fieldLocale = $derived(locale ?? browserLocale);
 	const labelClass = $derived(
 		hideLabel ? 'calendar-picker__label calendar-picker__label--hidden' : 'calendar-picker__label'
 	);
@@ -77,126 +86,129 @@
 	class:calendar-picker--invalid={invalid}
 	class:calendar-picker--disabled={disabled}
 >
-	<DatePicker.Root
-		bind:open
-		{value}
-		{placeholder}
-		{locale}
-		{weekStartsOn}
-		{minValue}
-		{maxValue}
-		{isDateDisabled}
-		{isDateUnavailable}
-		{validate}
-		{onInvalid}
-		{disabled}
-		{readonly}
-		{required}
-		calendarLabel={label}
-		onValueChange={handleValueChange}
-	>
-		<DatePicker.Label class={labelClass}>{label}</DatePicker.Label>
+	<!-- Bits UI reads the language once, so the field is drawn again when the browser's arrives. -->
+	{#key fieldLocale}
+		<DatePicker.Root
+			bind:open
+			{value}
+			{placeholder}
+			locale={fieldLocale}
+			{weekStartsOn}
+			{minValue}
+			{maxValue}
+			{isDateDisabled}
+			{isDateUnavailable}
+			{validate}
+			{onInvalid}
+			{disabled}
+			{readonly}
+			{required}
+			calendarLabel={label}
+			onValueChange={handleValueChange}
+		>
+			<DatePicker.Label class={labelClass}>{label}</DatePicker.Label>
 
-		<div class="calendar-picker__control">
-			<DatePicker.Input
-				{id}
-				{name}
-				class="calendar-picker__input"
-				aria-invalid={invalid}
-				aria-describedby={errorMessage ? `${id}-error` : undefined}
-			>
-				{#snippet children({ segments })}
-					{#each segments as segment, segmentIndex (segment.part + '-' + segmentIndex)}
-						{#if segment.part === 'literal'}
-							<span class="calendar-picker__literal" aria-hidden="true">{segment.value}</span>
-						{:else}
-							<DatePicker.Segment class="calendar-picker__segment" part={segment.part}>
-								{segment.value}
-							</DatePicker.Segment>
-						{/if}
-					{/each}
-				{/snippet}
-			</DatePicker.Input>
-
-			<DatePicker.Trigger
-				class="calendar-picker__trigger"
-				aria-label={`Open ${label.toLowerCase()} calendar`}
-			>
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-				{@html calendarIcon}
-			</DatePicker.Trigger>
-		</div>
-
-		<DatePicker.Portal>
-			<Popover.Content
-				class="calendar-picker__content"
-				data-elevation="elevated"
-				sideOffset={6}
-				collisionPadding={8}
-				onOpenAutoFocus={focusCalendarWithoutScrolling}
-			>
-				<DatePicker.Calendar>
-					{#snippet children({ months, weekdays })}
-						<DatePicker.Header class="calendar-picker__header">
-							<DatePicker.PrevButton class="calendar-picker__nav" aria-label="Previous month">
-								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-								{@html chevronLeftIcon}
-							</DatePicker.PrevButton>
-							<DatePicker.Heading class="calendar-picker__heading" />
-							<DatePicker.NextButton class="calendar-picker__nav" aria-label="Next month">
-								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-								{@html chevronRightIcon}
-							</DatePicker.NextButton>
-						</DatePicker.Header>
-
-						{#each months as month (month.value.toString())}
-							<DatePicker.Grid class="calendar-picker__grid">
-								<DatePicker.GridHead>
-									<DatePicker.GridRow>
-										{#each weekdays as weekday, weekdayIndex (weekday + '-' + weekdayIndex)}
-											<DatePicker.HeadCell class="calendar-picker__weekday"
-												>{weekday}</DatePicker.HeadCell
-											>
-										{/each}
-									</DatePicker.GridRow>
-								</DatePicker.GridHead>
-
-								<DatePicker.GridBody>
-									{#each month.weeks as week (week[0]?.toString() ?? 'week')}
-										<DatePicker.GridRow>
-											{#each week as date (date.toString())}
-												<DatePicker.Cell {date} month={month.value}>
-													{#snippet children({ selected, disabled: dayDisabled, unavailable })}
-														<DatePicker.Day>
-															{#snippet children({ day })}
-																<span
-																	class={[
-																		'calendar-picker__day',
-																		selected && 'is-selected',
-																		dayDisabled && 'is-disabled',
-																		unavailable && 'is-unavailable'
-																	]}>{day}</span
-																>
-															{/snippet}
-														</DatePicker.Day>
-													{/snippet}
-												</DatePicker.Cell>
-											{/each}
-										</DatePicker.GridRow>
-									{/each}
-								</DatePicker.GridBody>
-							</DatePicker.Grid>
+			<div class="calendar-picker__control">
+				<DatePicker.Input
+					{id}
+					{name}
+					class="calendar-picker__input"
+					aria-invalid={invalid}
+					aria-describedby={errorMessage ? `${id}-error` : undefined}
+				>
+					{#snippet children({ segments })}
+						{#each segments as segment, segmentIndex (segment.part + '-' + segmentIndex)}
+							{#if segment.part === 'literal'}
+								<span class="calendar-picker__literal" aria-hidden="true">{segment.value}</span>
+							{:else}
+								<DatePicker.Segment class="calendar-picker__segment" part={segment.part}>
+									{segment.value}
+								</DatePicker.Segment>
+							{/if}
 						{/each}
 					{/snippet}
-				</DatePicker.Calendar>
+				</DatePicker.Input>
 
-				<footer class="calendar-picker__footer">
-					<span>Use arrow keys to navigate</span>
-					{#if value}<span class="calendar-picker__selected-date">Selected</span>{/if}
-				</footer>
-			</Popover.Content>
-		</DatePicker.Portal>
-	</DatePicker.Root>
+				<DatePicker.Trigger
+					class="calendar-picker__trigger"
+					aria-label={`Open ${label.toLowerCase()} calendar`}
+				>
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					{@html calendarIcon}
+				</DatePicker.Trigger>
+			</div>
+
+			<DatePicker.Portal>
+				<Popover.Content
+					class="calendar-picker__content"
+					data-elevation="elevated"
+					sideOffset={6}
+					collisionPadding={8}
+					onOpenAutoFocus={focusCalendarWithoutScrolling}
+				>
+					<DatePicker.Calendar>
+						{#snippet children({ months, weekdays })}
+							<DatePicker.Header class="calendar-picker__header">
+								<DatePicker.PrevButton class="calendar-picker__nav" aria-label="Previous month">
+									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+									{@html chevronLeftIcon}
+								</DatePicker.PrevButton>
+								<DatePicker.Heading class="calendar-picker__heading" />
+								<DatePicker.NextButton class="calendar-picker__nav" aria-label="Next month">
+									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+									{@html chevronRightIcon}
+								</DatePicker.NextButton>
+							</DatePicker.Header>
+
+							{#each months as month (month.value.toString())}
+								<DatePicker.Grid class="calendar-picker__grid">
+									<DatePicker.GridHead>
+										<DatePicker.GridRow>
+											{#each weekdays as weekday, weekdayIndex (weekday + '-' + weekdayIndex)}
+												<DatePicker.HeadCell class="calendar-picker__weekday"
+													>{weekday}</DatePicker.HeadCell
+												>
+											{/each}
+										</DatePicker.GridRow>
+									</DatePicker.GridHead>
+
+									<DatePicker.GridBody>
+										{#each month.weeks as week (week[0]?.toString() ?? 'week')}
+											<DatePicker.GridRow>
+												{#each week as date (date.toString())}
+													<DatePicker.Cell {date} month={month.value}>
+														{#snippet children({ selected, disabled: dayDisabled, unavailable })}
+															<DatePicker.Day>
+																{#snippet children({ day })}
+																	<span
+																		class={[
+																			'calendar-picker__day',
+																			selected && 'is-selected',
+																			dayDisabled && 'is-disabled',
+																			unavailable && 'is-unavailable'
+																		]}>{day}</span
+																	>
+																{/snippet}
+															</DatePicker.Day>
+														{/snippet}
+													</DatePicker.Cell>
+												{/each}
+											</DatePicker.GridRow>
+										{/each}
+									</DatePicker.GridBody>
+								</DatePicker.Grid>
+							{/each}
+						{/snippet}
+					</DatePicker.Calendar>
+
+					<footer class="calendar-picker__footer">
+						<span>Use arrow keys to navigate</span>
+						{#if value}<span class="calendar-picker__selected-date">Selected</span>{/if}
+					</footer>
+				</Popover.Content>
+			</DatePicker.Portal>
+		</DatePicker.Root>
+	{/key}
 
 	{#if errorMessage}
 		<p class="calendar-picker__error" id={`${id}-error`} role="alert">{errorMessage}</p>

@@ -21,6 +21,8 @@ export type HomeAgendaItem = {
 	first_contact: boolean;
 	/** The business's open Deal, if it has one. */
 	deal_stage: DealStage | null;
+	/** Set when the next action stands for a call: Done then asks how the call went. */
+	call_id: string | null;
 };
 
 /** A count is null when it could not be worked out; the page then shows a dash rather than a wrong zero. */

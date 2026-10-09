@@ -11,6 +11,7 @@ function item(id: string, due_on: string, extra: Partial<HomeAgendaItem> = {}): 
 		due_on,
 		first_contact: false,
 		deal_stage: null,
+		call_id: null,
 		...extra
 	};
 }

@@ -144,3 +144,81 @@ test('moving a call moves its reminders', async ({ browser }) => {
 		expect(restored.ok(), await restored.text()).toBe(true);
 	}
 });
+
+/**
+ * C2a: Done on a to-do item that stands for a call asks how the call went, and the date boxes follow the browser's
+ * language — a UK browser types the day first. A call is booked tomorrow on the test business, the home's Done opens
+ * "How did it go?", and choosing Held shows the next step's Due box in day/month/year order. The call is cancelled
+ * and removed afterwards, and the business gets back the next action it had.
+ */
+test('Done on a call asks how it went, in the browser language', async ({ browser }) => {
+	test.skip(
+		!ownerEmail || !ownerPassword || !supabaseUrl || !serviceKey,
+		'Set SUPER_ADMIN_* and the Supabase service key to run the calendar check.'
+	);
+	test.setTimeout(120_000);
+	const page = await (
+		await browser.newContext({
+			viewport: { width: 390, height: 844 },
+			timezoneId: zone,
+			locale: 'en-GB'
+		})
+	).newPage();
+	await signIn(page);
+
+	const before = await (await page.request.get(`/api/jafar/leads/${businessId}`)).json();
+	const original = before.lead.next_action
+		? {
+				mode: 'set',
+				text: before.lead.next_action,
+				due_on: before.lead.next_action_due_on,
+				due_at: before.lead.next_action_at ?? null
+			}
+		: { mode: 'clear' };
+	const title = `Outcome check ${Date.now()}`;
+	let entryId: string | null = null;
+
+	try {
+		const day = dhakaDay(1);
+		const booked = await page.request.post('/api/jafar/calendar/entries', {
+			data: {
+				kind: 'call',
+				relationship_id: businessId,
+				starts_at: dhakaInstant(day, '15:00'),
+				ends_at: dhakaInstant(day, '15:30'),
+				title,
+				reminders: [],
+				time_zone: zone
+			}
+		});
+		expect(booked.status(), await booked.text()).toBe(201);
+		entryId = ((await booked.json()) as { id: string }).id;
+
+		await page.goto('/jafar');
+		const row = page.locator('.business-home__item', { hasText: title });
+		await row.getByRole('button', { name: /^Done/ }).click();
+		const dialog = page.getByRole('dialog', { name: 'How did it go?' });
+		await expect(dialog).toBeVisible();
+		await dialog.getByText('Held', { exact: true }).click();
+
+		const due = dialog.locator('#call-outcome-day');
+		await expect(due).toBeVisible();
+		const order = await due
+			.locator('[data-segment]:not([data-segment="literal"])')
+			.evaluateAll((parts) => parts.map((part) => part.getAttribute('data-segment')));
+		expect(order).toEqual(['day', 'month', 'year']);
+		if (shots) await page.screenshot({ path: `${shots}/home-call-outcome-phone.png` });
+	} finally {
+		if (entryId) {
+			await page.request.patch(`/api/jafar/calendar/entries/${entryId}`, {
+				data: { action: 'close', outcome: 'cancelled' }
+			});
+			const removed = await database().from('platform_calendar_entries').delete().eq('id', entryId);
+			expect(removed.error).toBeNull();
+		}
+		const restored = await page.request.patch(`/api/jafar/leads/${businessId}`, {
+			data: { next_action: original }
+		});
+		expect(restored.ok(), await restored.text()).toBe(true);
+	}
+});

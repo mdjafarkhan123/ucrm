@@ -16,7 +16,7 @@
 		dateLabel = 'Date',
 		timeLabel = 'Time',
 		id,
-		locale = 'en-US',
+		locale,
 		hourCycle = 12,
 		disabled = false,
 		readonly = false,

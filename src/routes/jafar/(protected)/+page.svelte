@@ -88,7 +88,7 @@
 		queryKey: calendarPreferencesKey,
 		queryFn: fetchCalendarPreferences,
 		staleTime: 5 * 60_000,
-		enabled: unclosedCalls.length > 0
+		enabled: unclosedCalls.length > 0 || recording !== null
 	}));
 	const callTimeFormat = new Intl.DateTimeFormat(undefined, {
 		weekday: 'short',
@@ -318,7 +318,15 @@
 												class={['business-home__due', `business-home__due--${group.key}`]}
 												title={item.due_on}>{dueLabel(item.due_on)}</span
 											>
-											<Button variant="secondary" size="small" onclick={() => (completing = item)}>
+											<Button
+												variant="secondary"
+												size="small"
+												onclick={() => {
+													// A call's next action is finished by saying how the call went.
+													if (item.call_id) recording = item.call_id;
+													else completing = item;
+												}}
+											>
 												<span class="business-home__button-icon" aria-hidden="true"
 													>{@html checkIcon}</span
 												>Done<span class="visually-hidden"
