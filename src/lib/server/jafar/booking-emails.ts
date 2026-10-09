@@ -22,7 +22,9 @@ export type BookingEmailKind =
 	| { kind: 'approved'; requestedStartsAt?: string }
 	| { kind: 'declined' }
 	| { kind: 'moved'; fromStartsAt: string; by: 'visitor' | 'staff' }
-	| { kind: 'cancelled'; by: 'visitor' | 'staff' };
+	| { kind: 'cancelled'; by: 'visitor' | 'staff' }
+	/** E3: the call is now with another host; `changeId` tells one change from the next. */
+	| { kind: 'host_changed'; fromHostName: string; changeId: string };
 
 function escapeHtml(value: string) {
 	return value
@@ -151,7 +153,9 @@ export function bookingEmail(booking: BookingView, email: BookingEmailKind, orig
 /** One send per booking event; moving twice to different times sends twice, a retried request once. */
 function idempotencyKey(booking: BookingView, email: BookingEmailKind) {
 	const base = `booking:${booking.booking_id}:${email.kind}`;
-	return email.kind === 'moved' ? `${base}:${booking.starts_at}` : base;
+	if (email.kind === 'moved') return `${base}:${booking.starts_at}`;
+	if (email.kind === 'host_changed') return `${base}:${email.changeId}`;
+	return base;
 }
 
 export async function sendBookingEmail(

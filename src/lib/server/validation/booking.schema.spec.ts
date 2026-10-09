@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
 	bookingChangeSchema,
 	bookingDecisionSchema,
+	bookingHostChangeSchema,
 	bookingHoursSchema,
 	bookingSlotsQuerySchema,
+	meetingTypeSchema,
 	publicBookingSchema
 } from './booking.schema';
 
@@ -119,5 +121,49 @@ describe("Jafar's answer to a request", () => {
 		expect(
 			bookingDecisionSchema.safeParse({ decision: 'approve', starts_at: 'tomorrow' }).success
 		).toBe(false);
+	});
+});
+
+describe('meeting type (E3)', () => {
+	const sam = '7d1c3c4e-5d0b-4a8e-9a39-0b1f2c3d4e5f';
+	const type = {
+		slug: 'pricing-call',
+		name: 'Pricing call',
+		description: '',
+		duration_minutes: 30,
+		min_notice_minutes: 240,
+		horizon_days: 60,
+		buffer_minutes: 0,
+		slot_interval_minutes: 30,
+		requires_approval: false,
+		change_deadline_minutes: 240,
+		is_active: true,
+		host_member_id: sam,
+		host_member_ids: [null, sam, sam]
+	};
+
+	it('accepts a teammate as default host when they are one of the hosts, once each', () => {
+		const result = meetingTypeSchema.safeParse(type);
+		expect(result.data?.host_member_ids).toEqual([null, sam]);
+		expect(result.data?.description).toBeNull();
+	});
+
+	it('refuses a default host who is not one of the hosts', () => {
+		const result = meetingTypeSchema.safeParse({ ...type, host_member_ids: [null] });
+		expect(result.error?.issues[0]).toMatchObject({
+			path: ['host_member_id'],
+			message: 'The default host must be one of the hosts.'
+		});
+	});
+
+	it('needs at least one host', () => {
+		const result = meetingTypeSchema.safeParse({ ...type, host_member_id: null, host_member_ids: [] });
+		expect(result.error?.issues[0].message).toBe('Choose at least one host.');
+	});
+
+	it('takes Jafar (null) or a teammate id as the new host of a call', () => {
+		expect(bookingHostChangeSchema.safeParse({ member_id: null }).success).toBe(true);
+		expect(bookingHostChangeSchema.safeParse({ member_id: sam }).success).toBe(true);
+		expect(bookingHostChangeSchema.safeParse({ member_id: 'sam' }).success).toBe(false);
 	});
 });

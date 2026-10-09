@@ -10,7 +10,7 @@ import {
 } from '$lib/jafar/booking';
 import { timeZoneSchema } from './calendar.schema';
 
-// Jafar business management E1: what the booking routes accept. The database checks the same rules again; these
+// Jafar business management E1/E3: what the booking routes accept. The database checks the same rules again; these
 // give each field its own message first.
 
 const clock = z.string().regex(/^([01][0-9]|2[0-3]):[0-5][0-9]$/, 'Choose a time.');
@@ -52,10 +52,17 @@ export const bookingHoursSchema = z
 		});
 	});
 
-export const bookingSettingsSchema = z.strictObject({
+/** E3: the public link on or off. */
+export const bookingEnabledSchema = z.strictObject({
 	enabled: z.boolean(),
-	meeting_type: z.strictObject({
-		id: z.uuid(),
+	time_zone: timeZoneSchema.optional()
+});
+
+const hostId = z.uuid().nullable();
+
+/** E3: one meeting type, added or saved; its default host is one of its hosts. */
+export const meetingTypeSchema = z
+	.strictObject({
 		slug: z
 			.string()
 			.trim()
@@ -78,11 +85,30 @@ export const bookingSettingsSchema = z.strictObject({
 		buffer_minutes: oneOf(BUFFER_CHOICES, 'Choose a gap.'),
 		slot_interval_minutes: oneOf(INTERVAL_CHOICES, 'Choose how often a time can start.'),
 		requires_approval: z.boolean(),
-		change_deadline_minutes: oneOf(CHANGE_DEADLINE_CHOICES, 'Choose when changes stop.')
-	}),
+		change_deadline_minutes: oneOf(CHANGE_DEADLINE_CHOICES, 'Choose when changes stop.'),
+		is_active: z.boolean(),
+		host_member_id: hostId,
+		host_member_ids: z
+			.array(hostId)
+			.min(1, 'Choose at least one host.')
+			.max(50)
+			.transform((ids) => [...new Set(ids)])
+	})
+	.refine((type) => type.host_member_ids.includes(type.host_member_id), {
+		message: 'The default host must be one of the hosts.',
+		path: ['host_member_id']
+	});
+
+export type MeetingTypeBody = z.infer<typeof meetingTypeSchema>;
+
+/** E3: one person's weekly hours. */
+export const bookingHoursBodySchema = z.strictObject({
 	hours: bookingHoursSchema,
 	time_zone: timeZoneSchema.optional()
 });
+
+/** E3: hand a booked call to another eligible host (null is Jafar). */
+export const bookingHostChangeSchema = z.strictObject({ member_id: hostId });
 
 /** The public page's request for open times: a span of at most 45 days. */
 export const bookingSlotsQuerySchema = z

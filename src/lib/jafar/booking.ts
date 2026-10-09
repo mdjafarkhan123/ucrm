@@ -1,4 +1,4 @@
-// Jafar business management E1: sales booking -- the public page where a prospect books a call, and Jafar's
+// Jafar business management E1/E3: sales booking -- the public page where a prospect books a call, and Jafar's
 // Booking settings. The database decides which times are open (private.booking_open_slots); this module holds the
 // shapes, the choices the settings offer, and the words both pages share.
 
@@ -19,17 +19,29 @@ export type MeetingType = {
 	requires_approval: boolean;
 	/** E2: how long before the call the visitor's change and cancel links stop working. */
 	change_deadline_minutes: number;
+	/** E3: an Off type's link says booking is closed; its past bookings keep working. */
+	is_active: boolean;
+	/** E3: who takes every new booking (null is Jafar); always one of `host_member_ids`. */
+	host_member_id: string | null;
+	/** E3: who may host it (null is Jafar). */
+	host_member_ids: (string | null)[];
+	bookings_count: number;
 };
 
 /** One weekly range; weekday 0 is Sunday. Times are "HH:MM" in the host's time zone. */
 export type BookingHours = { weekday: number; start: string; end: string };
 
+/** E3: a person on the booking settings -- Jafar (null id) or a teammate who hosts or has hours -- with their zone. */
+export type BookingPerson = { id: string | null; name: string; time_zone: string };
+
 export type BookingSettings = {
 	enabled: boolean;
 	/** Jafar's saved time zone; null until he saves one (the browser's is then saved with the settings). */
 	time_zone: string | null;
-	meeting_type: MeetingType;
-	hours: BookingHours[];
+	meeting_types: MeetingType[];
+	/** Every host's weekly ranges; `member_id` null is Jafar. */
+	hours: (BookingHours & { member_id: string | null })[];
+	people: BookingPerson[];
 	bookings_count: number;
 };
 
@@ -72,13 +84,46 @@ export type BookingView = BookedCall & {
 	visitor_phone: string;
 	visitor_time_zone: string;
 	business_name: string;
+	meeting_type_id: string | null;
+	/** E3: the call's host (null is Jafar); a request's is the type's default host. */
+	host_member_id: string | null;
 	/** The visitor's links stop working at this time (Jafar's deadline before the call). */
 	change_until: string;
 	can_change: boolean;
 };
 
+/**
+ * E3: one of a booked call's hosts and whether they can take it at its time: `current` host, `free`, `busy` (a
+ * call or Busy block then), `outside_hours` (not in their weekly hours), `no_access` (cannot change Leads & Deals)
+ * or `removed` from the team.
+ */
+export type HostChoice = {
+	member_id: string | null;
+	name: string;
+	state: 'current' | 'free' | 'busy' | 'outside_hours' | 'no_access' | 'removed';
+};
+
+export type HostChoices = {
+	/** False once the call is over or closed, or for someone who cannot change calls. */
+	can_change: boolean;
+	host_member_id: string | null;
+	choices: HostChoice[];
+};
+
+export const HOST_STATE_WORDS: Record<HostChoice['state'], string> = {
+	current: 'Hosting now',
+	free: 'Free then',
+	busy: 'Busy then',
+	outside_hours: 'Outside their hours',
+	no_access: 'No Leads & Deals access',
+	removed: 'No longer on the team'
+};
+
 /** What the visitor's link page shows: the booking and where to book again. */
-export type ManagedBooking = Omit<BookingView, 'visitor_email' | 'relationship_id' | 'entry_id'>;
+export type ManagedBooking = Omit<
+	BookingView,
+	'visitor_email' | 'relationship_id' | 'entry_id' | 'meeting_type_id' | 'host_member_id'
+>;
 
 // --- Choices -------------------------------------------------------------------------------------------------
 
@@ -203,10 +248,35 @@ export async function fetchBookingSettings(): Promise<BookingSettings> {
 	return result;
 }
 
-/** What the settings page sends; `time_zone` is the browser's, saved as Jafar's when he has none yet. */
-export type BookingSettingsInput = {
-	enabled: boolean;
-	meeting_type: Omit<MeetingType, 'location_kind'>;
-	hours: BookingHours[];
-	time_zone?: string;
-};
+/** E3: what a meeting type's page sends; no id adds a type. */
+export type MeetingTypeInput = Omit<
+	MeetingType,
+	'id' | 'location_kind' | 'bookings_count' | 'description'
+> & { description: string | null };
+
+/** E3: "jafar" or a teammate's id, as the hours routes name a person. */
+export const personKey = (id: string | null) => id ?? 'jafar';
+
+/** E3: a person's weekly ranges out of the settings. */
+export const hoursOf = (settings: BookingSettings, id: string | null): BookingHours[] =>
+	settings.hours
+		.filter((range) => range.member_id === id)
+		.map(({ weekday, start, end }) => ({ weekday, start, end }));
+
+/** E3: "Mon–Fri, 9:00 – 17:00" style summary of weekly ranges; "No hours" when empty. */
+export function hoursSummary(hours: BookingHours[]) {
+	if (hours.length === 0) return 'No hours yet';
+	const days = WEEKDAYS.filter((day) => hours.some((range) => range.weekday === day.value));
+	const spans = new Set(hours.map((range) => `${range.start} – ${range.end}`));
+	const dayWords =
+		days.length === 7
+			? 'Every day'
+			: isRun(days.map((day) => WEEKDAYS.indexOf(day))) && days.length > 2
+				? `${days[0].short}–${days[days.length - 1].short}`
+				: days.map((day) => day.short).join(', ');
+	return spans.size === 1 ? `${dayWords}, ${[...spans][0]}` : `${dayWords}, varied times`;
+}
+
+function isRun(indexes: number[]) {
+	return indexes.every((value, index) => index === 0 || value === indexes[index - 1] + 1);
+}
