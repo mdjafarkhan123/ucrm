@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { assignmentLabel, scheduleLabel } from '$lib/schedule/labels';
 	import type { MoveScope, ScheduleChange, ScheduleProposal } from '$lib/schedule/drag';
@@ -26,7 +27,8 @@
 		saving = false,
 		error = '',
 		onsave,
-		oncancel
+		oncancel,
+		notice
 	}: {
 		visit: ScheduleVisit;
 		proposal: ScheduleProposal;
@@ -41,6 +43,8 @@
 		error?: string;
 		onsave: (scope: MoveScope) => void;
 		oncancel: () => void;
+		/** Client reminders Part 4: the "Notify customer" box, shown above the buttons. */
+		notice?: Snippet;
 	} = $props();
 
 	let scope = $state<MoveScope>('single');
@@ -131,6 +135,8 @@
 			visits on the job to change the whole series.
 		</p>
 	{/if}
+
+	{@render notice?.()}
 
 	<div class="move-confirm__actions">
 		<Button variant="tertiary" size="small" onclick={oncancel} disabled={saving}>Cancel</Button>

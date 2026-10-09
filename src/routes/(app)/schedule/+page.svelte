@@ -18,6 +18,8 @@
 	import EventPreview from '$lib/components/schedule/EventPreview.svelte';
 	import ScheduleEventDialog from '$lib/components/schedule/ScheduleEventDialog.svelte';
 	import MoveConfirm from '$lib/components/schedule/MoveConfirm.svelte';
+	import NotifyCustomerCheckbox from '$lib/components/schedule/NotifyCustomerCheckbox.svelte';
+	import { customerNoticeToast } from '$lib/schedule/customer-notices';
 	import ScheduleUnscheduledDrawer from '$lib/components/schedule/ScheduleUnscheduledDrawer.svelte';
 	import ScheduleRoute from '$lib/components/schedule/ScheduleRoute.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
@@ -522,6 +524,12 @@
 	let moveSaving = $state(false);
 	let moveError = $state('');
 
+	// Client reminders Part 4: one "Notify customer" box for whichever save is open -- a landed drag, the edit
+	// dialog or the quick new-job form -- ticked again each time one opens. Only a visible, ticked box emails.
+	let notifyCustomer = $state(true);
+	let noticeVisible = $state(false);
+	const notify = $derived(notifyCustomer && noticeVisible);
+
 	/** The visit whose full Jobs edit dialog is open -- the keyboard and button path to the same changes. */
 	let rescheduleVisitId = $state<string | null>(null);
 	let rescheduleSaving = $state(false);
@@ -548,6 +556,13 @@
 		);
 	});
 	const workingJobId = $derived(workingVisit?.job_id ?? null);
+
+	$effect(() => {
+		void pending;
+		void rescheduleVisitId;
+		void createOpen;
+		notifyCustomer = true;
+	});
 
 	const jobQuery = createQuery(() => ({
 		queryKey: workingJobId ? jobDetailKey(workingJobId) : (['jobs', 'detail', 'idle'] as const),
@@ -753,7 +768,16 @@
 				instructions: jobVisit.instructions,
 				assignee_ids: current.proposal.assignee_ids
 			};
-			await updateJobVisit(current.visit.job_id, current.visit.id, jobVisit.revision, payload);
+			// The customer hears about this visit's own new time; the later visits it carries forward ride along
+			// without a second email.
+			const saved = await updateJobVisit(
+				current.visit.job_id,
+				current.visit.id,
+				jobVisit.revision,
+				payload,
+				notify
+			);
+			const noticeMessage = customerNoticeToast(saved.customer_notice) ?? undefined;
 
 			if (scope === 'future') {
 				const fields = futureScopeFields(change);
@@ -767,10 +791,11 @@
 				toast.success(
 					result.updated_count === 1
 						? 'Visit moved, and 1 later visit updated'
-						: `Visit moved, and ${result.updated_count} later visits updated`
+						: `Visit moved, and ${result.updated_count} later visits updated`,
+					noticeMessage
 				);
 			} else {
-				toast.success('Visit moved');
+				toast.success('Visit moved', noticeMessage);
 			}
 
 			pending = null;
@@ -801,12 +826,12 @@
 		rescheduleSaving = true;
 		rescheduleError = '';
 		try {
-			await updateJobVisit(visit.job_id, visit.id, jobVisit.revision, payload);
+			const saved = await updateJobVisit(visit.job_id, visit.id, jobVisit.revision, payload, notify);
 			const jobId = visit.job_id;
 			const laterFrom = payload.visit_date;
 			closeReschedule();
 			await refreshAfterWrite(jobId);
-			toast.success('Visit saved');
+			toast.success('Visit saved', customerNoticeToast(saved.customer_notice) ?? undefined);
 			// "Save and update future visits" asks which settings to carry forward, exactly as it does on the
 			// Job page. A visit with no date has no "later" to measure from, so it never opens.
 			if (thenFuture && laterFrom) {
@@ -1029,12 +1054,16 @@
 			const payload: CreateJobPayload = {
 				...core,
 				idempotency_key: crypto.randomUUID(),
-				request_hash: fingerprint(core)
+				request_hash: fingerprint(core),
+				notify_customer: notify
 			};
 			const result = await createJob(payload);
 			closeCreate();
 			await refreshAfterWrite(result.job_id);
-			toast.success(`Job #${result.job_number} created`);
+			toast.success(
+				`Job #${result.job_number} created`,
+				customerNoticeToast(result.customer_notice) ?? undefined
+			);
 		} catch (caught) {
 			const error = caught as JobWriteError;
 			createError = error.fieldErrors?.form ?? error.message ?? 'That job could not be saved.';
@@ -1521,7 +1550,17 @@
 			error={moveError}
 			onsave={saveMove}
 			oncancel={cancelMove}
-		/>
+		>
+			{#snippet notice()}
+				<NotifyCustomerCheckbox
+					id="move-visit-notify-customer"
+					bind:checked={notifyCustomer}
+					bind:visible={noticeVisible}
+					kinds={pending?.visit.visit_date ? ['rescheduled'] : ['booked', 'rescheduled']}
+					disabled={moveSaving}
+				/>
+			{/snippet}
+		</MoveConfirm>
 	</Popover>
 {/if}
 
@@ -1537,7 +1576,17 @@
 	onSave={(payload) => void saveReschedule(payload, false)}
 	onSaveFuture={(payload) => void saveReschedule(payload, true)}
 	onClose={closeReschedule}
-/>
+>
+	{#snippet notice()}
+		<NotifyCustomerCheckbox
+			id="reschedule-visit-notify-customer"
+			bind:checked={notifyCustomer}
+			bind:visible={noticeVisible}
+			kinds={workingJobVisit?.visit_date ? ['rescheduled'] : ['booked', 'rescheduled']}
+			disabled={rescheduleSaving}
+		/>
+	{/snippet}
+</JobVisitDialog>
 
 <!-- Starting a job from empty calendar space: a compact create form seeded with the gesture's day, time and
      team, writing through the same Jobs-owned create command the New Job page uses. More Options carries the
@@ -1552,7 +1601,17 @@
 	onCreateRequest={openRequestCreate}
 	onCreateEvent={openEventFromChooser}
 	onClose={closeCreate}
-/>
+>
+	{#snippet notice()}
+		<NotifyCustomerCheckbox
+			id="quick-job-notify-customer"
+			bind:checked={notifyCustomer}
+			bind:visible={noticeVisible}
+			kinds={['booked']}
+			disabled={createSaving}
+		/>
+	{/snippet}
+</ScheduleJobCreate>
 
 <!-- The one form for a Schedule-owned event, opened either to create (seeded with a clicked slot, or empty
      from the chooser's Event tab) or to edit an existing one. It shapes and validates the draft; this page
