@@ -24390,7 +24390,7 @@ export type Database = {
 				Returns: number;
 			};
 			owner_activity_report: {
-				Args: { from_date: string; to_date: string; viewer_member_id?: string };
+				Args: { from_date: string | null; to_date: string; viewer_member_id?: string };
 				Returns: Json;
 			};
 			owner_answer_setup_help: {
