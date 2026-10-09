@@ -1,5 +1,6 @@
 import type { PricingCategory, RequestPricingLine, RequestPricingLineInput } from '$lib/quotes/api';
 import type { JobDerivedStatus, JobType } from './statuses';
+import type { CustomerNoticeSent } from '$lib/schedule/customer-notices';
 
 export type JobWriteError = Error & {
 	fieldErrors?: Record<string, string>;
@@ -210,6 +211,8 @@ export type CreateJobPayload = {
 	// conflict, not a replay.
 	idempotency_key: string;
 	request_hash: string;
+	/** The "Notify customer" box (client reminders Part 4). Left out, the customer is not emailed. */
+	notify_customer?: boolean;
 };
 
 export type CreateJobResult = {
@@ -221,6 +224,7 @@ export type CreateJobResult = {
 	visit_count: number;
 	line_count: number;
 	total_minor: number;
+	customer_notice?: CustomerNoticeSent;
 };
 
 export async function createJob(payload: CreateJobPayload): Promise<CreateJobResult> {
@@ -672,13 +676,19 @@ export type AddVisitInput = {
 	copy_lines_from_visit_id?: string;
 };
 
-export type AddJobVisitsResult = { applied: boolean; added_count: number; visit_ids: string[] };
+export type AddJobVisitsResult = {
+	applied: boolean;
+	added_count: number;
+	visit_ids: string[];
+	customer_notice?: CustomerNoticeSent;
+};
 
 export async function addJobVisits(
 	jobId: string,
 	visits: AddVisitInput[],
 	idempotencyKey: string,
-	requestHash: string
+	requestHash: string,
+	notifyCustomer = false
 ): Promise<AddJobVisitsResult> {
 	const response = await fetch(`/api/jobs/${jobId}/visits`, {
 		method: 'POST',
@@ -686,7 +696,8 @@ export async function addJobVisits(
 		body: JSON.stringify({
 			visits,
 			idempotency_key: idempotencyKey,
-			request_hash: requestHash
+			request_hash: requestHash,
+			notify_customer: notifyCustomer
 		})
 	});
 	return readOrThrow<AddJobVisitsResult>(response, 'Those visits could not be added.');
@@ -704,18 +715,23 @@ export type UpdateVisitInput = {
 	assignee_ids: string[];
 };
 
-export type UpdateJobVisitResult = { revision: number };
+export type UpdateJobVisitResult = { revision: number; customer_notice?: CustomerNoticeSent };
 
 export async function updateJobVisit(
 	jobId: string,
 	visitId: string,
 	expectedRevision: number,
-	visit: UpdateVisitInput
+	visit: UpdateVisitInput,
+	notifyCustomer = false
 ): Promise<UpdateJobVisitResult> {
 	const response = await fetch(`/api/jobs/${jobId}/visits/${visitId}`, {
 		method: 'PATCH',
 		headers: { 'content-type': 'application/json' },
-		body: JSON.stringify({ expected_revision: expectedRevision, ...visit })
+		body: JSON.stringify({
+			expected_revision: expectedRevision,
+			...visit,
+			notify_customer: notifyCustomer
+		})
 	});
 	return readOrThrow<UpdateJobVisitResult>(response, 'That visit could not be saved.');
 }
@@ -733,14 +749,19 @@ export async function deleteJobVisit(
 	return readOrThrow<{ applied: boolean }>(response, 'That visit could not be removed.');
 }
 
-export type MoveJobVisitsResult = { applied: boolean; moved_count: number };
+export type MoveJobVisitsResult = {
+	applied: boolean;
+	moved_count: number;
+	customer_notice?: CustomerNoticeSent;
+};
 
 export async function moveJobVisits(
 	jobId: string,
 	visitIds: string[],
 	dayOffset: number,
 	idempotencyKey: string,
-	requestHash: string
+	requestHash: string,
+	notifyCustomer = false
 ): Promise<MoveJobVisitsResult> {
 	const response = await fetch(`/api/jobs/${jobId}/visits/bulk-move`, {
 		method: 'POST',
@@ -749,7 +770,8 @@ export async function moveJobVisits(
 			visit_ids: visitIds,
 			day_offset: dayOffset,
 			idempotency_key: idempotencyKey,
-			request_hash: requestHash
+			request_hash: requestHash,
+			notify_customer: notifyCustomer
 		})
 	});
 	return readOrThrow<MoveJobVisitsResult>(response, 'Those visits could not be moved.');
@@ -765,6 +787,7 @@ export type RescheduleJobVisitsResult = {
 	first_date: string | null;
 	last_date: string | null;
 	revision: number;
+	customer_notice?: CustomerNoticeSent;
 };
 
 // "Edit all visits". Replaces the repeat rule and rebuilds every incomplete visit from it, keeping completed
@@ -774,7 +797,8 @@ export async function rescheduleJobVisits(
 	expectedRevision: number,
 	recurrence: JobRecurrenceInput,
 	idempotencyKey: string,
-	requestHash: string
+	requestHash: string,
+	notifyCustomer = false
 ): Promise<RescheduleJobVisitsResult> {
 	const response = await fetch(`/api/jobs/${jobId}/schedule`, {
 		method: 'POST',
@@ -783,13 +807,18 @@ export async function rescheduleJobVisits(
 			expected_revision: expectedRevision,
 			recurrence,
 			idempotency_key: idempotencyKey,
-			request_hash: requestHash
+			request_hash: requestHash,
+			notify_customer: notifyCustomer
 		})
 	});
 	return readOrThrow<RescheduleJobVisitsResult>(response, 'That schedule could not be saved.');
 }
 
-export type ApplyVisitToFutureResult = { applied: boolean; updated_count: number };
+export type ApplyVisitToFutureResult = {
+	applied: boolean;
+	updated_count: number;
+	customer_notice?: CustomerNoticeSent;
+};
 
 // "Save and update future visits". Copies this visit's time of day and/or crew onto the job's later
 // incomplete visits; completed and undated ones are skipped by the command itself.
@@ -798,7 +827,8 @@ export async function applyVisitToFuture(
 	visitId: string,
 	fields: { time_of_day: boolean; assigned_team: boolean },
 	idempotencyKey: string,
-	requestHash: string
+	requestHash: string,
+	notifyCustomer = false
 ): Promise<ApplyVisitToFutureResult> {
 	const response = await fetch(`/api/jobs/${jobId}/visits/${visitId}/apply-to-future`, {
 		method: 'POST',
@@ -806,7 +836,8 @@ export async function applyVisitToFuture(
 		body: JSON.stringify({
 			...fields,
 			idempotency_key: idempotencyKey,
-			request_hash: requestHash
+			request_hash: requestHash,
+			notify_customer: notifyCustomer
 		})
 	});
 	return readOrThrow<ApplyVisitToFutureResult>(

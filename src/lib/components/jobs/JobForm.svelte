@@ -3,6 +3,9 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
+	import NotifyCustomerCheckbox from '$lib/components/schedule/NotifyCustomerCheckbox.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import { customerNoticeToast } from '$lib/schedule/customer-notices';
 	import PrimaryInfoCard from '$lib/components/work/PrimaryInfoCard.svelte';
 	import ClientPicker from '$lib/components/work/ClientPicker.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
@@ -96,6 +99,11 @@
 	let fieldErrors = $state<Record<string, string>>({});
 	let formError = $state('');
 	let saving = $state(false);
+	// Client reminders Part 4: the "Notify customer" box, ticked by default; it only shows while the booking
+	// confirmation is switched on.
+	let notifyCustomer = $state(true);
+	let noticeVisible = $state(false);
+	const toast = getToastManager();
 	let layout = $state<RecordFormLayout>();
 
 	// One idempotency key per save intent: the same details retried keep it, so a double click or a network
@@ -240,8 +248,11 @@
 			const result = await createJob({
 				...core,
 				idempotency_key: idempotencyKey,
-				request_hash: hash
+				request_hash: hash,
+				notify_customer: notifyCustomer && noticeVisible
 			});
+			const noticeMessage = customerNoticeToast(result.customer_notice);
+			if (noticeMessage) toast.info(noticeMessage);
 			await queryClient.invalidateQueries({ queryKey: ['jobs', 'list'] });
 			await queryClient.invalidateQueries({ queryKey: jobCountsKey });
 			if (sourceRequest) await refreshSourceRequest(sourceRequest.id);
@@ -370,7 +381,16 @@
 				seed={seed?.first_visit ?? null}
 				onCountChange={(count) => (visitCount = count)}
 				onKindChange={(kind) => (scheduleKind = kind)}
-			/>
+			>
+				{#snippet footer()}
+					<NotifyCustomerCheckbox
+						id="job-notify-customer"
+						bind:checked={notifyCustomer}
+						bind:visible={noticeVisible}
+						kinds={['booked']}
+					/>
+				{/snippet}
+			</JobVisitsBlock>
 
 			<SectionBlock title="Billing" icon={receiptIcon} form>
 				{#if scheduleKind === 'recurring'}

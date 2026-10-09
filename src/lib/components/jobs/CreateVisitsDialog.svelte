@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { Calendar } from 'bits-ui';
 	import {
 		type DateValue,
@@ -21,7 +22,8 @@
 		open,
 		onClose,
 		onCreate,
-		mode = 'multiple'
+		mode = 'multiple',
+		notice
 	}: {
 		open: boolean;
 		onClose: () => void;
@@ -29,6 +31,8 @@
 		onCreate: (result: { dates: string[]; scheduleLater: boolean }) => void;
 		/** `single` picks exactly one day (Add one visit); `multiple` picks many (Add multiple visits). */
 		mode?: 'single' | 'multiple';
+		/** Client reminders Part 4: the "Notify customer" box, shown above the buttons. */
+		notice?: Snippet;
 	} = $props();
 
 	let picked = $state<DateValue[]>([]);
@@ -145,6 +149,8 @@
 					{picked.length === 1 ? 'visit' : 'visits'} will be added.
 				</p>
 			{/if}
+
+			{@render notice?.()}
 
 			<div class="create-visits__actions">
 				<Button variant="tertiary" onclick={cancel}>Cancel</Button>

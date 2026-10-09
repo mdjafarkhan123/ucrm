@@ -1,4 +1,5 @@
 <script lang="ts">
+	import NotifyCustomerCheckbox from '$lib/components/schedule/NotifyCustomerCheckbox.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
@@ -41,7 +42,8 @@
 		onSave,
 		onRemove,
 		onComplete,
-		onDraftChange
+		onDraftChange,
+		notify = $bindable(false)
 	}: {
 		assessment: RequestAssessment | null;
 		/** The organization's own timezone. A day/time typed here is booked in it, not the browser's. */
@@ -58,7 +60,16 @@
 		onComplete?: (complete: boolean) => void | Promise<void>;
 		/** Draft mode only: tells the page whether a visit is waiting to be saved with it. */
 		onDraftChange?: (booked: boolean) => void;
+		/** Client reminders Part 4: true when the "Notify customer" box is showing and ticked. The page sends it
+		 *  with the save. */
+		notify?: boolean;
 	} = $props();
+
+	let notifyCustomer = $state(true);
+	let noticeVisible = $state(false);
+	$effect(() => {
+		notify = notifyCustomer && noticeVisible;
+	});
 
 	let editing = $state(false);
 
@@ -355,6 +366,16 @@
 
 			{#if fieldError || error}
 				<p class="assessment__error" role="alert">{fieldError || error}</p>
+			{/if}
+
+			{#if !scheduleLater}
+				<NotifyCustomerCheckbox
+					id="assessment-notify-customer"
+					bind:checked={notifyCustomer}
+					bind:visible={noticeVisible}
+					kinds={assessment?.starts_at ? ['rescheduled'] : ['booked']}
+					disabled={saving}
+				/>
 			{/if}
 
 			<div class="assessment__panel-actions">

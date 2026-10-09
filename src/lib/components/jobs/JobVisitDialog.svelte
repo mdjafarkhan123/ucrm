@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
@@ -41,7 +42,8 @@
 		currencyCode = 'USD',
 		onSave,
 		onSaveFuture,
-		onClose
+		onClose,
+		notice
 	}: {
 		open: boolean;
 		visit: JobVisit | null;
@@ -65,6 +67,8 @@
 		onSave: (payload: UpdateVisitInput, pricing: RequestPricingLineInput[] | null) => void;
 		onSaveFuture?: (payload: UpdateVisitInput, pricing: RequestPricingLineInput[] | null) => void;
 		onClose: () => void;
+		/** Client reminders Part 4: the "Notify customer" box, shown above the buttons. */
+		notice?: Snippet;
 	} = $props();
 
 	let title = $state('');
@@ -316,6 +320,8 @@
 				{/if}
 			</div>
 		{/if}
+
+		{@render notice?.()}
 
 		<div class="visit-dialog__actions">
 			<Button variant="tertiary" onclick={onClose} disabled={saving}>Cancel</Button>

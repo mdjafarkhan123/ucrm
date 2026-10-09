@@ -156,7 +156,9 @@ export const assessmentWriteSchema = z
 		ends_at: z.iso.datetime({ offset: true }).nullable().default(null),
 		all_day: z.boolean().default(false),
 		instructions: z.string().trim().max(2000).nullable().default(null),
-		assignee_ids: z.array(z.string().uuid()).max(20).default([])
+		assignee_ids: z.array(z.string().uuid()).max(20).default([]),
+		// Client reminders Part 4: the panel's "Notify customer" box. Left out, the customer is not emailed.
+		notify_customer: z.boolean().default(false)
 	})
 	.refine((value) => (value.starts_at === null) === (value.ends_at === null), {
 		path: ['starts_at'],

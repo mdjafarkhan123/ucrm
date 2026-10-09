@@ -192,6 +192,27 @@ const triggers: CatalogEntry[] = [
 		subject: 'appointment',
 		availability: enabled,
 		configSchema: appointmentReminderTimingConfig
+	},
+	// Client reminders Part 4: sent when someone saves a booking with "Notify customer" ticked.
+	{
+		key: 'appointment.booked',
+		kind: 'trigger',
+		label: 'A visit or assessment is booked',
+		summary:
+			'Runs once per job or assessment when it is first scheduled with "Notify customer" ticked. A recurring job runs once, not once per visit.',
+		subject: 'appointment',
+		availability: enabled,
+		configSchema: NO_CONFIG
+	},
+	{
+		key: 'appointment.rescheduled',
+		kind: 'trigger',
+		label: 'A visit or assessment is moved',
+		summary:
+			'Runs when someone changes the date or time of a booked visit or assessment with "Notify customer" ticked.',
+		subject: 'appointment',
+		availability: enabled,
+		configSchema: NO_CONFIG
 	}
 ];
 
@@ -347,8 +368,9 @@ const actions: CatalogEntry[] = [
 	{
 		key: 'action.send_appointment_email',
 		kind: 'action',
-		label: 'Send a reminder email',
-		summary: 'Emails the customer about their upcoming visit or assessment.',
+		label: 'Email the customer about the visit',
+		summary:
+			'Emails the customer about their visit or assessment: a booking, a change or a reminder.',
 		subject: 'appointment',
 		availability: enabled,
 		// The visit's date, time and address are filled at sending time, so a moved visit is always described right.

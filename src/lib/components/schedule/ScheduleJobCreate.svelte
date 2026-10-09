@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -42,7 +43,8 @@
 		onMoreOptions,
 		onCreateRequest,
 		onCreateEvent,
-		onClose
+		onClose,
+		notice
 	}: {
 		open: boolean;
 		/** The day and time the calendar gesture proposed. Null means no slot -- the header action -- and the
@@ -67,6 +69,8 @@
 			} | null
 		) => void;
 		onClose: () => void;
+		/** Client reminders Part 4: the "Notify customer" box, shown above Save job. */
+		notice?: Snippet;
 	} = $props();
 
 	// Which kind of work this slot becomes. Job is the default, exactly as Jobber's chooser opens; Request and
@@ -419,6 +423,8 @@
 			/>
 
 			<TeamPicker id="job-create-team" bind:value={assigneeIds} {open} />
+
+			{@render notice?.()}
 
 			<div class="job-create__actions">
 				<Button variant="tertiary" onclick={moreOptions} disabled={saving}>More options</Button>

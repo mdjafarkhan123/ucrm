@@ -29,15 +29,15 @@ export const GET: RequestHandler = async (event) => {
 		.select('active_trigger_key')
 		.eq('organization_id', organizationId)
 		.eq('status', 'active')
-		.in('active_trigger_key', Object.values(MESSAGE_SWITCH_TRIGGERS));
+		.in('active_trigger_key', Object.values(MESSAGE_SWITCH_TRIGGERS).flat());
 	if (error) return databaseError();
 
-	const activeTriggers = new Set((data ?? []).map((row) => row.active_trigger_key));
+	const activeTriggers = new Set((data ?? []).map((row) => row.active_trigger_key ?? ''));
 	const running = automation.included && automation.authority_state === 'enabled';
 	const sending = Object.fromEntries(
-		Object.entries(MESSAGE_SWITCH_TRIGGERS).map(([flag, trigger]) => [
+		Object.entries(MESSAGE_SWITCH_TRIGGERS).map(([flag, triggers]) => [
 			flag,
-			running && activeTriggers.has(trigger)
+			running && triggers.some((trigger) => activeTriggers.has(trigger))
 		])
 	) as MessageAutomationStatus['sending'];
 

@@ -53,6 +53,8 @@
 	import copyIcon from '@tabler/icons/outline/copy.svg?raw';
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
 	import pencilCheckIcon from '@tabler/icons/outline/pencil-check.svg?raw';
+	import { messageAutomationStatusKey } from '$lib/clients/api';
+	import { customerNoticeStatusKey } from '$lib/schedule/customer-notices';
 
 	let { recipeId }: { recipeId: string } = $props();
 
@@ -223,7 +225,10 @@
 			queryClient.invalidateQueries({ queryKey: automationRecipeHistoryKey(recipeId) }),
 			queryClient.invalidateQueries({ queryKey: automationActivationPreviewKey(recipeId) }),
 			queryClient.invalidateQueries({ queryKey: ['settings', 'automation', 'recipes'] }),
-			queryClient.invalidateQueries({ queryKey: automationSettingsKey })
+			queryClient.invalidateQueries({ queryKey: automationSettingsKey }),
+			// Turning a customer message on or off changes what client switches and scheduling screens promise.
+			queryClient.invalidateQueries({ queryKey: messageAutomationStatusKey }),
+			queryClient.invalidateQueries({ queryKey: customerNoticeStatusKey })
 		]);
 	}
 

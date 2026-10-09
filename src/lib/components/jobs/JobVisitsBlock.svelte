@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
+	import type { Snippet } from 'svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -35,7 +36,8 @@
 		locale = 'en-US',
 		seed = null,
 		onCountChange,
-		onKindChange
+		onKindChange,
+		footer
 	}: {
 		jobTitle?: string;
 		locale?: string;
@@ -46,6 +48,8 @@
 		/** The page hides the one-off billing reminder when the job repeats; billing for repeating work is
 		 * its own decision and belongs to the billing part, not to this checkbox. */
 		onKindChange?: (kind: 'one_off' | 'recurring') => void;
+		/** Shown under the visits, inside the section: the New Job page's "Notify customer" box. */
+		footer?: Snippet;
 	} = $props();
 
 	type VisitDraft = {
@@ -475,6 +479,8 @@
 	{#if fieldError}
 		<p class="job-visits__error" role="alert">{fieldError}</p>
 	{/if}
+
+	{@render footer?.()}
 </SectionBlock>
 
 <CreateVisitsDialog open={creating} onClose={() => (creating = false)} onCreate={addVisits} />

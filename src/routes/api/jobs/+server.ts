@@ -18,6 +18,7 @@ import {
 } from '$lib/server/validation/jobs.schema';
 import { requireOrganization } from '$lib/server/auth/organization';
 import { createJobError } from '$lib/server/jobs/errors';
+import { settleCustomerNotice } from '$lib/server/jobs/customer-notices';
 import { organizationFormatting } from '$lib/server/requests/timezone';
 import { asMoneyMap } from '$lib/server/quotes/money';
 
@@ -237,5 +238,13 @@ export const POST: RequestHandler = async (event) => {
 
 	if (error) return createJobError(error);
 
-	return json(data, { status: 201, headers: NO_STORE_HEADERS });
+	const created = data as { job_id: string } & Record<string, unknown>;
+	const customer_notice = await settleCustomerNotice(
+		event.locals.supabase,
+		auth.organization.id,
+		{ type: 'job', id: created.job_id },
+		input.notify_customer
+	);
+
+	return json({ ...created, customer_notice }, { status: 201, headers: NO_STORE_HEADERS });
 };

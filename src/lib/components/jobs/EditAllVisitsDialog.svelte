@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -30,7 +31,8 @@
 		saving = false,
 		error = '',
 		onSave,
-		onClose
+		onClose,
+		notice
 	}: {
 		open: boolean;
 		visits: JobVisit[];
@@ -40,6 +42,8 @@
 		error?: string;
 		onSave: (rule: JobRecurrenceInput) => void;
 		onClose: () => void;
+		/** Client reminders Part 4: the "Notify customer" box, shown above the buttons. */
+		notice?: Snippet;
 	} = $props();
 
 	function blankRule(): JobRecurrenceInput {
@@ -166,6 +170,8 @@
 			checked={acknowledged}
 			onchange={(checked) => (acknowledged = checked)}
 		/>
+
+		{@render notice?.()}
 
 		<div class="edit-all-visits__actions">
 			<Button variant="tertiary" onclick={onClose} disabled={saving}>Cancel</Button>

@@ -21,6 +21,8 @@
 		type VisitChecklistRows
 	} from '$lib/checklists/api';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import NotifyCustomerCheckbox from '$lib/components/schedule/NotifyCustomerCheckbox.svelte';
+	import { customerNoticeToast, type CustomerNoticeKind } from '$lib/schedule/customer-notices';
 	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
 	import type { JobType } from '$lib/jobs/statuses';
 	import {
@@ -362,13 +364,19 @@
 		creating = true;
 	}
 
-	async function runAdd(items: AddVisitInput[], successLabel: string) {
+	async function runAdd(items: AddVisitInput[], successLabel: string, sendNotice = false) {
 		addSaving = true;
 		addError = '';
 		try {
-			await addJobVisits(jobId, items, crypto.randomUUID(), fingerprint(items));
+			const result = await addJobVisits(
+				jobId,
+				items,
+				crypto.randomUUID(),
+				fingerprint(items),
+				sendNotice
+			);
 			await refreshAll();
-			toast.success(successLabel);
+			toast.success(successLabel, customerNoticeToast(result.customer_notice) ?? undefined);
 		} catch (caught) {
 			addError = (caught as JobWriteError).message ?? 'Those visits could not be added.';
 		} finally {
@@ -403,7 +411,7 @@
 					assignee_ids: [],
 					source
 				}));
-		void runAdd(items, items.length === 1 ? 'Visit added' : `${items.length} visits added`);
+		void runAdd(items, items.length === 1 ? 'Visit added' : `${items.length} visits added`, notify);
 	}
 
 	function duplicateVisit(visit: JobVisit) {
@@ -458,10 +466,10 @@
 		editError = '';
 		try {
 			const revision = await savePricingFirst(target, pricing);
-			await updateJobVisit(jobId, target.id, revision, payload);
+			const saved = await updateJobVisit(jobId, target.id, revision, payload, notify);
 			editVisit = null;
 			await refreshAll();
-			toast.success('Visit saved');
+			toast.success('Visit saved', customerNoticeToast(saved.customer_notice) ?? undefined);
 		} catch (caught) {
 			const err = caught as JobWriteError;
 			if (err.reason === 'stale' || err.reason === 'locked') {
@@ -516,10 +524,10 @@
 		editError = '';
 		try {
 			const revision = await savePricingFirst(target, pricing);
-			await updateJobVisit(jobId, target.id, revision, payload);
+			const saved = await updateJobVisit(jobId, target.id, revision, payload, notify);
 			editVisit = null;
 			await refreshAll();
-			toast.success('Visit saved');
+			toast.success('Visit saved', customerNoticeToast(saved.customer_notice) ?? undefined);
 			applyTarget = {
 				visitId: target.id,
 				label: target.title?.trim() || jobTitle.trim() || 'this visit',
@@ -572,6 +580,29 @@
 	let rescheduleSaving = $state(false);
 	let rescheduleError = $state('');
 
+	// --- Notify customer (client reminders Part 4) ------------------------------------------------------------
+
+	// One box for whichever scheduling dialog is open, ticked again each time one opens or closes.
+	let notifyCustomer = $state(true);
+	let noticeVisible = $state(false);
+	const notify = $derived(notifyCustomer && noticeVisible);
+	$effect(() => {
+		void creating;
+		void editVisit;
+		void editingAll;
+		notifyCustomer = true;
+	});
+
+	// A job with nothing on the calendar yet is being booked for the first time; once it has a dated visit,
+	// a date change is a move. Adding more visits to a booked job sends nothing.
+	const hasBookedVisit = $derived(
+		visits.some((visit) => visit.visit_date !== null && !visit.completed_at)
+	);
+	const addNoticeKinds = $derived<CustomerNoticeKind[]>(hasBookedVisit ? [] : ['booked']);
+	const editNoticeKinds = $derived<CustomerNoticeKind[]>(
+		editVisit?.visit_date ? ['rescheduled'] : hasBookedVisit ? [] : ['booked']
+	);
+
 	async function saveReschedule(rule: JobRecurrenceInput) {
 		rescheduleSaving = true;
 		rescheduleError = '';
@@ -581,7 +612,8 @@
 				jobRevision,
 				rule,
 				crypto.randomUUID(),
-				fingerprint(rule)
+				fingerprint(rule),
+				notify
 			);
 			editingAll = false;
 			await refreshAll();
@@ -591,7 +623,8 @@
 			toast.success(
 				removed > 0
 					? `Schedule updated — ${createdLabel} scheduled, ${removed} old ${removed === 1 ? 'one' : 'ones'} cleared`
-					: `Schedule updated — ${createdLabel} scheduled`
+					: `Schedule updated — ${createdLabel} scheduled`,
+				customerNoticeToast(result.customer_notice) ?? undefined
 			);
 		} catch (caught) {
 			const err = caught as JobWriteError;
@@ -1007,7 +1040,16 @@
 		createSource = 'manual';
 	}}
 	onCreate={handleCreate}
-/>
+>
+	{#snippet notice()}
+		<NotifyCustomerCheckbox
+			id="add-visits-notify-customer"
+			bind:checked={notifyCustomer}
+			bind:visible={noticeVisible}
+			kinds={addNoticeKinds}
+		/>
+	{/snippet}
+</CreateVisitsDialog>
 
 <FinalVisitDialog
 	open={finalVisitOpen}
@@ -1047,7 +1089,17 @@
 	onSave={saveEdit}
 	onSaveFuture={saveEditThenFuture}
 	onClose={() => (editVisit = null)}
-/>
+>
+	{#snippet notice()}
+		<NotifyCustomerCheckbox
+			id="edit-visit-notify-customer"
+			bind:checked={notifyCustomer}
+			bind:visible={noticeVisible}
+			kinds={editNoticeKinds}
+			disabled={editSaving}
+		/>
+	{/snippet}
+</JobVisitDialog>
 
 <VisitRecordsDialog
 	open={recordsVisit !== null}
@@ -1088,7 +1140,17 @@
 	error={rescheduleError}
 	onSave={(rule) => void saveReschedule(rule)}
 	onClose={() => (editingAll = false)}
-/>
+>
+	{#snippet notice()}
+		<NotifyCustomerCheckbox
+			id="edit-all-visits-notify-customer"
+			bind:checked={notifyCustomer}
+			bind:visible={noticeVisible}
+			kinds={hasBookedVisit ? ['rescheduled'] : ['booked']}
+			disabled={rescheduleSaving}
+		/>
+	{/snippet}
+</EditAllVisitsDialog>
 
 <ApplyToFutureDialog
 	open={applyTarget !== null}

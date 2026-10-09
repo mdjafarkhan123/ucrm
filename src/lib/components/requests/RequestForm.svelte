@@ -86,6 +86,8 @@
 	let assessmentBlock = $state<AssessmentBlock>();
 	let productsAndServices = $state<ProductsAndServicesBlock>();
 	let visitBooked = $state(false);
+	// Client reminders Part 4: the visit panel's "Notify customer" box, true only while it shows and is ticked.
+	let visitNotify = $state(false);
 	let lines = $state<RequestPricingLineInput[]>([]);
 
 	function snapshot(values: FormState) {
@@ -172,7 +174,7 @@
 			savedRequestId = request.id;
 
 			if (!visitSaved && visit.draft) {
-				await saveAssessment(request.id, visit.draft);
+				await saveAssessment(request.id, visit.draft, visitNotify);
 				visitSaved = true;
 			}
 
@@ -327,6 +329,7 @@
 				{timezone}
 				assessment={null}
 				onDraftChange={(booked) => (visitBooked = booked)}
+				bind:notify={visitNotify}
 			/>
 
 			<ProductsAndServicesBlock

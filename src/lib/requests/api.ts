@@ -1,4 +1,5 @@
 import type { DisplayRequestStatus, StoredRequestStatus } from './statuses';
+import type { CustomerNoticeSent } from '$lib/schedule/customer-notices';
 
 export type RequestSortKey = 'requested' | 'title';
 
@@ -213,13 +214,13 @@ export async function patchRequest(id: string, patch: Record<string, unknown>) {
 	return readOrThrow<{ request: { id: string } }>(response, 'That change could not be saved.');
 }
 
-export async function saveAssessment(id: string, draft: AssessmentDraft) {
+export async function saveAssessment(id: string, draft: AssessmentDraft, notifyCustomer = false) {
 	const response = await fetch(`/api/requests/${id}/assessment`, {
 		method: 'PUT',
 		headers: { 'content-type': 'application/json' },
-		body: JSON.stringify(draft)
+		body: JSON.stringify({ ...draft, notify_customer: notifyCustomer })
 	});
-	return readOrThrow<{ assessment: RequestAssessment }>(
+	return readOrThrow<{ assessment: RequestAssessment; customer_notice?: CustomerNoticeSent }>(
 		response,
 		'The assessment could not be saved.'
 	);

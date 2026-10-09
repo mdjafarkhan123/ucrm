@@ -5,6 +5,7 @@ import { NO_STORE_HEADERS, validationError } from '$lib/server/api/errors';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { addJobVisitsSchema } from '$lib/server/validation/jobs.schema';
 import { scheduleVisitError } from '$lib/server/jobs/errors';
+import { settleCustomerNotice } from '$lib/server/jobs/customer-notices';
 
 // Add 1-20 visits to a job that already exists. `add_job_visits` checks jobs.schedule itself (and answers the
 // same way for a job in another organization), appends the visits after the job's existing ones, and is
@@ -36,5 +37,12 @@ export const POST: RequestHandler = async (event) => {
 
 	if (error) return scheduleVisitError(error);
 
-	return json(data, { status: 201, headers: NO_STORE_HEADERS });
+	const customer_notice = await settleCustomerNotice(
+		event.locals.supabase,
+		check.auth.organization.id,
+		{ type: 'job', id: event.params.id },
+		parsed.data.notify_customer
+	);
+
+	return json({ ...(data as Record<string, unknown>), customer_notice }, { status: 201, headers: NO_STORE_HEADERS });
 };
