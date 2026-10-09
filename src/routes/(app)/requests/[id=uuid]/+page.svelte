@@ -55,6 +55,7 @@
 	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
 	import InquiryAutomationCard from '$lib/components/automation/InquiryAutomationCard.svelte';
 	import { AUTOMATION_JOURNEY_READY } from '$lib/automation/journey';
+	import { customerNoticeToast, type CustomerNoticeSent } from '$lib/schedule/customer-notices';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -198,14 +199,17 @@
 	let assessmentSaving = $state(false);
 	let assessmentError = $state('');
 
+	// Client reminders Part 4: the panel's "Notify customer" box, true only while it shows and is ticked.
+	let assessmentNotify = $state(false);
+
 	async function runAssessmentWrite(work: () => Promise<unknown>, successMessage: string) {
 		if (assessmentSaving) return;
 		assessmentSaving = true;
 		assessmentError = '';
 		try {
-			await work();
+			const result = (await work()) as { customer_notice?: CustomerNoticeSent } | undefined;
 			await refresh();
-			toast.success(successMessage);
+			toast.success(successMessage, customerNoticeToast(result?.customer_notice) ?? undefined);
 		} catch (error) {
 			assessmentError =
 				error instanceof Error ? error.message : 'The visit could not be saved. Try again.';
@@ -481,8 +485,12 @@
 					timezone={saved.timezone}
 					saving={assessmentSaving}
 					error={assessmentError}
+					bind:notify={assessmentNotify}
 					onSave={(draft: AssessmentDraft) =>
-						runAssessmentWrite(() => saveAssessment(requestId, draft), 'Visit saved')}
+						runAssessmentWrite(
+							() => saveAssessment(requestId, draft, assessmentNotify),
+							'Visit saved'
+						)}
 					onRemove={() => runAssessmentWrite(() => removeAssessment(requestId), 'Visit removed')}
 					onComplete={(complete: boolean) =>
 						runAssessmentWrite(

@@ -826,7 +826,13 @@
 		rescheduleSaving = true;
 		rescheduleError = '';
 		try {
-			const saved = await updateJobVisit(visit.job_id, visit.id, jobVisit.revision, payload, notify);
+			const saved = await updateJobVisit(
+				visit.job_id,
+				visit.id,
+				jobVisit.revision,
+				payload,
+				notify
+			);
 			const jobId = visit.job_id;
 			const laterFrom = payload.visit_date;
 			closeReschedule();
