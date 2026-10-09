@@ -11,9 +11,9 @@
 - [x] Screens: shared `components/jafar/OwnerPicker.svelte` (ClientPanel now uses it too), Owner first in the Lead page header, Owner column and filter on Leads, "Now owned by …" history line.
 - [x] Unit tests written and passing (owner route, Leads filter, bell scoping, reminder recipient, gate).
 - [x] `npm run check` clean (0 errors).
-- [ ] Database proof: as Jafar, hand a test Lead with a due follow-up to Sam; confirm `platform_reminders.recipient_member_id` is Sam's id; book a call and confirm it is Sam's; remove-then-restore is NOT safe on Sam (removal is final) — prove removal on a throwaway invited-and-accepted teammate instead, or in a rolled-back transaction.
+- [x] Database proof (2026-10-09, rolled-back transaction: follow-up reminder, call and its 3 reminders moved to Sam; throwaway teammate's removal returned Lead, call and reminders to Jafar with a "removed" history line): as Jafar, hand a test Lead with a due follow-up to Sam; confirm `platform_reminders.recipient_member_id` is Sam's id; book a call and confirm it is Sam's; remove-then-restore is NOT safe on Sam (removal is final) — prove removal on a throwaway invited-and-accepted teammate instead, or in a rolled-back transaction.
 - [ ] Browser screen check (design skill): Lead page owner picker, Leads Owner column/filter, Sam's bell — desktop and phone.
 - [ ] Speed: Leads list with owner filter on the 50k lab data (`stages/C-your-day.md` baseline method).
 - [ ] Mark Done in `stages/D-team.md`, delete this note.
 
-**Next:** the database proof above.
+**Next:** the browser screen check.
