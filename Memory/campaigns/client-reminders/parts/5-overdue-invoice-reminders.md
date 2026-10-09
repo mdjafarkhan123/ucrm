@@ -23,13 +23,13 @@
 - [x] Migration `20261115090000_invoice_reminders.sql` written on the branch
 - [x] Catalog, validator, email variables, preset, worker, builder trigger timing, summary, client switch status
 - [x] Unit tests; `npm run check` clean (on the branch)
-- [ ] Apply migration `20261115090000` in three repeatable transactions via MCP `execute_sql` (Part 4's method;
+- [x] Apply migration `20261115090000` (all applied and recorded 2026-10-09) in three repeatable transactions via MCP `execute_sql` (Part 4's method;
   no `apply_migration`, it stamps today's version). The file's sections map to them:
   - [x] A — §1–3 (constraints, helpers, `emit_due_invoice_reminders`): applied 2026-10-09.
     Check: `select to_regproc('public.emit_due_invoice_reminders')` is not null.
-  - [ ] B — §4 (`intake_automation_events`, `advance_automation_work_item`; file lines ~197–705).
+  - [x] B — §4 (`intake_automation_events`, `advance_automation_work_item`; file lines ~197–705).
     Check: `select prosrc like '%action_due_invoice_email%' from pg_proc where proname = 'advance_automation_work_item'`.
-  - [ ] C — §5 (email functions) plus `insert into supabase_migrations.schema_migrations (version, name) values
+  - [x] C — §5 (email functions) plus `insert into supabase_migrations.schema_migrations (version, name) values
     ('20261115090000', 'invoice_reminders')`. Check: `select to_regproc('public.perform_automation_invoice_email_effect')`
     and `select version from supabase_migrations.schema_migrations where version = '20261115090000'`.
 - [ ] Regenerate `database.types.ts`; EXPLAIN `emit_due_invoice_reminders`
@@ -39,5 +39,5 @@
 
 ## Next
 
-Run each outcome check above, then apply B and C (each wrapped in `begin; … commit;`). A alone is harmless: the
-live worker on `main` never calls the new function. Worktree `.env` is a copy of the main one (ignored).
+Regenerate `database.types.ts` in the worktree (MCP `generate_typescript_types`), EXPLAIN
+`emit_due_invoice_reminders`, then the live proof. Worktree `.env` is a copy of the main one (ignored).
