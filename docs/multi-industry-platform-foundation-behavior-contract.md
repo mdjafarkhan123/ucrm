@@ -26,6 +26,8 @@ Shared platform capabilities beneath these surfaces include organizations, ident
 
 ## Business admission and launch journey
 
+**P2 direction:** Jafar confirmed on 2026-10-09 that Uplift should follow the researched industry patterns for admission and public launch. The offsite payment process and private preparation during paid Setup are Uplift-specific decisions he already approved. The rules below are product behavior, not a claim that Boulevard uses Uplift's exact records or states.
+
 The intended connected journey is:
 
 > Lead when applicable → Application → Uplift qualification → Industry experience and Business type → compatible Package edition → confirmed offsite payment → Organization provisioning and administrator invitation → Setup → Uplift readiness review → permitted public launch → continuing support and commercial control
@@ -89,7 +91,6 @@ Contractor uses the field-service foundation. Medspa & Clinical Wellness uses th
 
 ## Still unclear
 
-- Whether Jafar approves the detailed P2 admission, experience-profile and readiness rules proposed above; his private-preparation decision and the Medspa mixed-business decision are already agreed.
 - The compatibility rules among Industry experience, Business type, Package capabilities, additional capabilities and mixed-service businesses.
 - The experience definition's product behavior: navigation, dashboard, terminology, defaults, Setup selection and customer-facing surfaces.
 - The complete audit of current Control Room, provisioning, Package, Setup, access, shell, routes and data behavior against this plan.
