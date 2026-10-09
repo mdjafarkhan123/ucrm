@@ -5,11 +5,9 @@ get the confirmation, visit reminders, overdue-invoice reminders and job thank-y
 promise (email now, texts after registration).
 **Plan:** `docs/client-reminders-behavior-contract.md`
 
-**In progress:**
+**In progress:** none.
 
-- 4 Booking confirmation — design recorded, building in worktree `/home/jafar/Ucrm-cr4`
-
-**Next part:** 4 Booking confirmation (2 and 3 done 2026-10-09).
+**Next part:** 5 Overdue invoice reminders (2–4 done 2026-10-09).
 
 **Note:** background wakes reach the app only through the Cloudflare Tunnel; while it is down (HTTP 530 in `net._http_response`), no automation or email runs.
 
