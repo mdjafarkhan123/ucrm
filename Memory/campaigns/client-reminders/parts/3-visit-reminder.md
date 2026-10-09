@@ -24,13 +24,21 @@
 
 ## Steps
 
-- [ ] Migration written in the worktree
-- [ ] Catalog, validator, worker, preset, email variables, builder timing editor
-- [ ] Client switch status in Communication settings
-- [ ] Unit tests
+- [x] Migration `20261107090000_appointment_reminders.sql` written in the worktree (not applied)
+- [x] Catalog, validator, worker, preset, email variables, builder timing editor
+- [x] Client switch status in Communication settings (`/api/clients/message-automations`; quote follow-ups and
+  visit reminders only — Parts 5 and 6 add invoice reminders and job follow-ups to `MESSAGE_SWITCH_TRIGGERS`)
+- [x] Unit tests; `npm run check` clean (all on the branch)
 - [ ] Apply migration (needs the `migrations`/`remote-db` areas — held by Part 2's Codex session on 2026-10-09)
 - [ ] Prove on the live app; merge to `main`; remove worktree
 
 ## Next
 
-Write the migration in the worktree.
+Apply the migration once the `migrations`/`remote-db` areas are free (`expand 74d0f418d716 --area migrations
+--area remote-db`), check with `select version from supabase_migrations.schema_migrations where version =
+'20261107090000'`, then EXPLAIN `emit_due_appointment_reminders`, regenerate `database.types.ts`, and prove it in
+the browser (design screen check of the builder timing and the client dialog's "Not sending" line).
+
+Question for Jafar (2026-10-09): "The quote-alerts session (Codex) has held the database lane since 07:01 UTC with
+no changes in its copy. Is it still working, or may I take the lane to apply the visit-reminder database change?"
+
