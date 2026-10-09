@@ -29,7 +29,7 @@
 - [x] Client switch status in Communication settings (`/api/clients/message-automations`; quote follow-ups and
   visit reminders only — Parts 5 and 6 add invoice reminders and job follow-ups to `MESSAGE_SWITCH_TRIGGERS`)
 - [x] Unit tests; `npm run check` clean (all on the branch)
-- [ ] Apply migration (lane free since 2026-10-09)
+- [x] Migration applied to the remote database as version 20261107090000 (2026-10-09)
 - [ ] Prove on the live app; merge to `main`; remove worktree
 
 ## Next
