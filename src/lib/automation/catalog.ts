@@ -70,6 +70,21 @@ export const APPOINTMENT_REMINDER_MAX_HOURS = 168;
 export const APPOINTMENT_REMINDER_MAX_DAYS = 7;
 export const APPOINTMENT_REMINDER_DEFAULT = { mode: 'before', amount: 1, unit: 'days' } as const;
 
+// The reminder's timing in words for the summary: "1 day before", "3 hours before", "the day before at 6:00 PM".
+export function appointmentReminderTimingText(config: Record<string, unknown> | undefined): string {
+	if (config?.mode === 'fixed_time') {
+		const days = typeof config.days_before === 'number' ? config.days_before : 1;
+		const [hour, minute] = String(config.time ?? '18:00')
+			.split(':')
+			.map(Number);
+		const clock = `${hour % 12 || 12}:${String(minute).padStart(2, '0')} ${hour < 12 ? 'AM' : 'PM'}`;
+		return `${days === 1 ? 'the day before' : `${days} days before`} at ${clock}`;
+	}
+	const amount = typeof config?.amount === 'number' ? config.amount : 1;
+	const unit = config?.unit === 'hours' ? 'hour' : 'day';
+	return `${amount} ${unit}${amount === 1 ? '' : 's'} before`;
+}
+
 const appointmentReminderTimingConfig = z
 	.union([
 		z

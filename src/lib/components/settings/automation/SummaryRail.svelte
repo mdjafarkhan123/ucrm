@@ -1,7 +1,12 @@
 <script lang="ts">
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import type { AuthoredDefinition } from '$lib/automation/authoring';
-	import { getCatalogEntry, sendsCustomerMessage, triggerLabel } from '$lib/automation/catalog';
+	import {
+		appointmentReminderTimingText,
+		getCatalogEntry,
+		sendsCustomerMessage,
+		triggerLabel
+	} from '$lib/automation/catalog';
 	import listCheckIcon from '@tabler/icons/outline/list-check.svg?raw';
 
 	// The builder's read-only rail: a plain-English retelling of the draft the user is editing, so they can
@@ -46,6 +51,9 @@
 	// Google review Part 4B: the job trigger's recurring-visit choice, in words.
 	const triggerLine = $derived.by(() => {
 		const base = triggerLabel(definition.trigger?.key ?? null);
+		// Client reminders Part 3: when the reminder goes out.
+		if (definition.trigger?.key === 'appointment.reminder_due')
+			return `${base} (sent ${appointmentReminderTimingText(definition.trigger.config)})`;
 		if (definition.trigger?.key !== 'job.work_completed') return base;
 		const every = Number(definition.trigger.config?.recurring_every_visits);
 		if (!Number.isFinite(every) || every < 1) return `${base} (one-time jobs only)`;
