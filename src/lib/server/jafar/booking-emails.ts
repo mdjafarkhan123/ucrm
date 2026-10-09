@@ -125,6 +125,16 @@ export function bookingEmail(booking: BookingView, email: BookingEmailKind, orig
 				)
 			];
 			break;
+		case 'host_changed':
+			subject = `New host: ${booking.name} with Uplift, ${date} at ${start}`;
+			body = [
+				[
+					`Your ${booking.name} is now with ${booking.host_name} instead of ${email.fromHostName}. The time has not changed.`
+				],
+				details,
+				changeLinks
+			];
+			break;
 	}
 
 	const paragraphs = [[`Hi ${firstName},`], ...body.filter((lines) => lines.length), ['Uplift']];

@@ -24,7 +24,8 @@ export const GET: RequestHandler = async (event) => {
 	if (!range.success) return json({ error: 'The dates are invalid.' }, { status: 422 });
 
 	const { data, error } = await getOwnerSupabaseClient().rpc('owner_activity_report', {
-		from_date: range.data.from,
+		// The generated types cannot say a date argument takes null; null means from the first activity.
+		from_date: range.data.from as string,
 		to_date: range.data.to,
 		viewer_member_id: session.memberId ?? undefined
 	});

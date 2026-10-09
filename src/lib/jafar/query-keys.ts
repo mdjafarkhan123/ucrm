@@ -207,3 +207,5 @@ export const jafarOnboardingListKey = (search: string, waitingOn: string, delive
 export const jafarSetupEditorKey = ['jafar', 'setup-editor'] as const;
 /** E1: Booking settings -- the public link, the meeting, and the weekly hours. */
 export const jafarBookingKey = ['jafar', 'settings', 'booking'] as const;
+/** E3: the teammates who can host a meeting type (Jafar is always one too). */
+export const jafarBookingHostsKey = [...jafarBookingKey, 'hosts'] as const;
