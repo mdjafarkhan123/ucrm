@@ -86,7 +86,9 @@
 		return result;
 	}
 
-	const range = $derived(month && zone ? monthRange(month, zone) : null);
+	// Keyed by the month's first day, so a new date object for the same month starts no new work.
+	const monthStart = $derived(month ? startOfMonth(month).toString() : '');
+	const range = $derived(monthStart && zone ? monthRange(parseDate(monthStart), zone) : null);
 	// A month that ends inside the window the page arrived with needs no request (times before now are never open).
 	const covered = $derived(Boolean(range && firstTo && range.to <= firstTo));
 	const monthQuery = createQuery(() => ({
@@ -163,6 +165,13 @@
 		if (fresh) firstStarts = fresh;
 	}
 
+	/** A quick visitor can press Book before Cloudflare's check hands back its token; give it up to 10 seconds. */
+	async function humanCheckDone() {
+		for (let waited = 0; !turnstileToken && waited < 10_000; waited += 200)
+			await new Promise((done) => setTimeout(done, 200));
+		return Boolean(turnstileToken);
+	}
+
 	async function book(event: SubmitEvent) {
 		event.preventDefault();
 		if (submitting) return;
@@ -170,6 +179,10 @@
 		formError = '';
 		fieldErrors = {};
 		try {
+			if (data.turnstileSiteKey && !(await humanCheckDone())) {
+				formError = 'The security check has not finished. Please wait a moment and try again.';
+				return;
+			}
 			const response = await fetch(`/api/public/book/${encodeURIComponent(slug)}`, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
@@ -365,19 +378,22 @@
 										</p>
 									{:else}
 										<h3 class="booking-page__day-title">{dateWords(dayTimes[0], zone, locale)}</h3>
-										<ul class="booking-page__time-list">
-											{#each dayTimes as start (start)}
-												<li>
-													<button
-														type="button"
-														class="booking-page__time"
-														onclick={() => choose(start)}
-													>
-														{timeWords(start, zone, locale)}
-													</button>
-												</li>
-											{/each}
-										</ul>
+										<!-- A new day starts its own list, scrolled to its first time. -->
+										{#key day?.toString()}
+											<ul class="booking-page__time-list">
+												{#each dayTimes as start (start)}
+													<li>
+														<button
+															type="button"
+															class="booking-page__time"
+															onclick={() => choose(start)}
+														>
+															{timeWords(start, zone, locale)}
+														</button>
+													</li>
+												{/each}
+											</ul>
+										{/key}
 									{/if}
 								</div>
 							</div>
@@ -424,7 +440,7 @@
 								/>
 								<Input
 									id="book-phone"
-									label="Phone number we should call"
+									label="Phone, with country code"
 									type="tel"
 									required
 									autocomplete="tel"
@@ -432,7 +448,7 @@
 									maxlength={40}
 									placeholder="+44 7700 900123"
 									invalid={Boolean(fieldErrors.phone)}
-									errorMessage={fieldErrors.phone ?? 'Include your country code.'}
+									errorMessage={fieldErrors.phone ?? ''}
 									bind:value={form.phone}
 								/>
 								<Input

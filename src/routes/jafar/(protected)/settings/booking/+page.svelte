@@ -271,10 +271,14 @@
 							required
 							maxlength={60}
 							invalid={Boolean(fieldErrors['meeting_type.slug'])}
-							errorMessage={fieldErrors['meeting_type.slug'] ??
-								'Changing it stops the old link working.'}
+							errorMessage={fieldErrors['meeting_type.slug'] ?? ''}
 							bind:value={draft.meeting_type.slug}
 						/>
+						{#if savedSlug && draft.meeting_type.slug !== savedSlug && !fieldErrors['meeting_type.slug']}
+							<p class="booking-form__note">
+								After you save, the old link <strong>{bookingPath(savedSlug)}</strong> stops working.
+							</p>
+						{/if}
 						<Textarea
 							id="booking-description"
 							label="Description"

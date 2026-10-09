@@ -78,23 +78,27 @@
 				<div class="weekly-hours__ranges">
 					{#each ranges as { range, index } (index)}
 						<div class="weekly-hours__range">
-							<TimePickerField
-								id={`hours-${index}-start`}
-								label={`${day.name} start`}
-								hideLabel
-								value={toTime(range.start)}
-								invalid={Boolean(errors[index])}
-								onchange={(time) => setTime(index, 'start', time)}
-							/>
+							<div class="weekly-hours__time">
+								<TimePickerField
+									id={`hours-${index}-start`}
+									label={`${day.name} start`}
+									hideLabel
+									value={toTime(range.start)}
+									invalid={Boolean(errors[index])}
+									onchange={(time) => setTime(index, 'start', time)}
+								/>
+							</div>
 							<span class="weekly-hours__dash" aria-hidden="true">–</span>
-							<TimePickerField
-								id={`hours-${index}-end`}
-								label={`${day.name} end`}
-								hideLabel
-								value={toTime(range.end)}
-								invalid={Boolean(errors[index])}
-								onchange={(time) => setTime(index, 'end', time)}
-							/>
+							<div class="weekly-hours__time">
+								<TimePickerField
+									id={`hours-${index}-end`}
+									label={`${day.name} end`}
+									hideLabel
+									value={toTime(range.end)}
+									invalid={Boolean(errors[index])}
+									onchange={(time) => setTime(index, 'end', time)}
+								/>
+							</div>
 							<button
 								type="button"
 								class="weekly-hours__icon"
@@ -182,6 +186,11 @@
 		flex-wrap: wrap;
 		align-items: center;
 		gap: var(--space-small);
+	}
+
+	// The time field fills its parent, so this box sets its width.
+	.weekly-hours__time {
+		width: 10rem;
 	}
 
 	.weekly-hours__dash {

@@ -32,9 +32,9 @@ describe('Jafar Settings directory', () => {
 		]);
 	});
 
-	it('says what is coming for every group that has nothing to set yet', () => {
+	it('gives every group something to set, or says what is coming', () => {
 		for (const group of settingsGroups) {
-			if (group.destinations.length === 0) expect(group.upcoming).toBeTruthy();
+			expect(group.destinations.length > 0 || Boolean(group.upcoming)).toBe(true);
 		}
 	});
 

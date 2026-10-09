@@ -47,7 +47,9 @@
 	bind:placeholder={
 		() => month,
 		(next) => {
-			if (next) month = next as CalendarDate;
+			// Bits UI moves its placeholder to the chosen day; only a different month is news to the page.
+			if (next && (next.year !== month.year || next.month !== month.month))
+				month = next as CalendarDate;
 		}
 	}
 >
