@@ -36,6 +36,7 @@
 	import NextActionDialog from '$lib/components/jafar/leads/NextActionDialog.svelte';
 	import CallDialog from '$lib/components/jafar/calendar/CallDialog.svelte';
 	import CallOutcomeDialog from '$lib/components/jafar/calendar/CallOutcomeDialog.svelte';
+	import BookingRequestCard from '$lib/components/jafar/leads/BookingRequestCard.svelte';
 	import {
 		CALL_OUTCOME_LABELS as CALENDAR_OUTCOME_LABELS,
 		browserTimeZone,
@@ -345,6 +346,14 @@
 			'POST'
 		)
 	);
+	// E2: answering a visitor's booking request is Leads work.
+	const canDecideBookings = $derived(
+		canUseJafarPath(
+			{ role: page.data.owner.role, access: page.data.owner.access },
+			`/api/jafar/leads/${leadId}/booking-requests/00000000-0000-0000-0000-000000000000`,
+			'POST'
+		)
+	);
 	let callsWarm = $state(false);
 	let callOpen = $state<{ entryId: string | null } | null>(null);
 	let outcomeOpen = $state<{ entryId: string; cancelling: boolean } | null>(null);
@@ -589,6 +598,8 @@
 						{canChangeSetupOwner}
 					/>
 				{/if}
+
+				<BookingRequestCard {leadId} zone={callZone} canDecide={canDecideBookings} />
 
 				<LeadContactPermission {data} {canApprove} {canMarkDoNotContact} />
 

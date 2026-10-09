@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { bookingHoursSchema, bookingSlotsQuerySchema, publicBookingSchema } from './booking.schema';
+import {
+	bookingChangeSchema,
+	bookingDecisionSchema,
+	bookingHoursSchema,
+	bookingSlotsQuerySchema,
+	publicBookingSchema
+} from './booking.schema';
 
 const visitor = {
 	starts_at: '2026-10-14T09:00:00Z',
@@ -73,5 +79,45 @@ describe('a visitor booking', () => {
 
 	it('refuses fields the page never sends', () => {
 		expect(publicBookingSchema.safeParse({ ...visitor, host_member_id: 'x' }).success).toBe(false);
+	});
+});
+
+describe("a visitor's change", () => {
+	it('moves to a time, or cancels with an optional reason', () => {
+		expect(
+			bookingChangeSchema.safeParse({ action: 'move', starts_at: '2026-10-14T09:00:00Z' }).success
+		).toBe(true);
+		expect(bookingChangeSchema.safeParse({ action: 'move' }).success).toBe(false);
+		expect(bookingChangeSchema.parse({ action: 'cancel', reason: '  ' })).toEqual({
+			action: 'cancel',
+			reason: null
+		});
+		expect(
+			bookingChangeSchema.safeParse({ action: 'cancel', reason: 'x'.repeat(501) }).success
+		).toBe(false);
+	});
+});
+
+describe("Jafar's answer to a request", () => {
+	it('approves as asked or at another time, or declines', () => {
+		expect(bookingDecisionSchema.safeParse({ decision: 'approve' }).success).toBe(true);
+		expect(
+			bookingDecisionSchema.safeParse({
+				decision: 'approve',
+				starts_at: '2026-10-14T09:00:00+06:00'
+			}).success
+		).toBe(true);
+		expect(bookingDecisionSchema.safeParse({ decision: 'decline' }).success).toBe(true);
+	});
+
+	it('refuses a time on a decline and anything else', () => {
+		expect(
+			bookingDecisionSchema.safeParse({ decision: 'decline', starts_at: '2026-10-14T09:00:00Z' })
+				.success
+		).toBe(false);
+		expect(bookingDecisionSchema.safeParse({ decision: 'maybe' }).success).toBe(false);
+		expect(
+			bookingDecisionSchema.safeParse({ decision: 'approve', starts_at: 'tomorrow' }).success
+		).toBe(false);
 	});
 });
