@@ -23,9 +23,21 @@
 - [x] Migration `20261115090000_invoice_reminders.sql` written on the branch
 - [x] Catalog, validator, email variables, preset, worker, builder trigger timing, summary, client switch status
 - [x] Unit tests; `npm run check` clean (on the branch)
-- [ ] Apply migration (outcome check: `select version from supabase_migrations.schema_migrations where version = '20261115090000'`)
-- [ ] Prove on the live app; merge to `main`; remove worktree
+- [ ] Apply migration `20261115090000` in three repeatable transactions via MCP `execute_sql` (Part 4's method;
+  no `apply_migration`, it stamps today's version). The file's sections map to them:
+  - [x] A — §1–3 (constraints, helpers, `emit_due_invoice_reminders`): applied 2026-10-09.
+    Check: `select to_regproc('public.emit_due_invoice_reminders')` is not null.
+  - [ ] B — §4 (`intake_automation_events`, `advance_automation_work_item`; file lines ~197–705).
+    Check: `select prosrc like '%action_due_invoice_email%' from pg_proc where proname = 'advance_automation_work_item'`.
+  - [ ] C — §5 (email functions) plus `insert into supabase_migrations.schema_migrations (version, name) values
+    ('20261115090000', 'invoice_reminders')`. Check: `select to_regproc('public.perform_automation_invoice_email_effect')`
+    and `select version from supabase_migrations.schema_migrations where version = '20261115090000'`.
+- [ ] Regenerate `database.types.ts`; EXPLAIN `emit_due_invoice_reminders`
+- [ ] Prove on the live app (preset turns on; builder "Days after the due date" field; client switch "Not
+  sending" line; an invoice due yesterday gets one email after 8 am; paying stops the second); design screen
+  check; merge to `main`; remove worktree
 
 ## Next
 
-Apply migration `20261115090000` (applying now, 2026-10-09); check its outcome first with the query above. Then regenerate `database.types.ts`, EXPLAIN `emit_due_invoice_reminders`, prove in the browser.
+Run each outcome check above, then apply B and C (each wrapped in `begin; … commit;`). A alone is harmless: the
+live worker on `main` never calls the new function. Worktree `.env` is a copy of the main one (ignored).
