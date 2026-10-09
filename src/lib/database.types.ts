@@ -13439,30 +13439,57 @@ export type Database = {
 			};
 			platform_bookings: {
 				Row: {
+					cancel_reason: string | null;
 					created_at: string;
-					entry_id: string;
+					decided_at: string | null;
+					decided_by_email: string | null;
+					entry_id: string | null;
 					id: string;
+					manage_token_hash: string | null;
 					meeting_type_id: string | null;
+					relationship_id: string;
+					requested_ends_at: string | null;
+					requested_starts_at: string | null;
+					status: string;
+					updated_at: string;
 					visitor_email: string;
 					visitor_name: string;
 					visitor_phone: string;
 					visitor_time_zone: string;
 				};
 				Insert: {
+					cancel_reason?: string | null;
 					created_at?: string;
-					entry_id: string;
+					decided_at?: string | null;
+					decided_by_email?: string | null;
+					entry_id?: string | null;
 					id?: string;
+					manage_token_hash?: string | null;
 					meeting_type_id?: string | null;
+					relationship_id: string;
+					requested_ends_at?: string | null;
+					requested_starts_at?: string | null;
+					status?: string;
+					updated_at?: string;
 					visitor_email: string;
 					visitor_name: string;
 					visitor_phone: string;
 					visitor_time_zone: string;
 				};
 				Update: {
+					cancel_reason?: string | null;
 					created_at?: string;
-					entry_id?: string;
+					decided_at?: string | null;
+					decided_by_email?: string | null;
+					entry_id?: string | null;
 					id?: string;
+					manage_token_hash?: string | null;
 					meeting_type_id?: string | null;
+					relationship_id?: string;
+					requested_ends_at?: string | null;
+					requested_starts_at?: string | null;
+					status?: string;
+					updated_at?: string;
 					visitor_email?: string;
 					visitor_name?: string;
 					visitor_phone?: string;
@@ -13481,6 +13508,13 @@ export type Database = {
 						columns: ['meeting_type_id'];
 						isOneToOne: false;
 						referencedRelation: 'platform_meeting_types';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'platform_bookings_relationship_id_fkey';
+						columns: ['relationship_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_business_relationships';
 						referencedColumns: ['id'];
 					}
 				];
@@ -14012,6 +14046,7 @@ export type Database = {
 			platform_meeting_types: {
 				Row: {
 					buffer_minutes: number;
+					change_deadline_minutes: number;
 					created_at: string;
 					description: string | null;
 					duration_minutes: number;
@@ -14022,12 +14057,14 @@ export type Database = {
 					location_kind: string;
 					min_notice_minutes: number;
 					name: string;
+					requires_approval: boolean;
 					slot_interval_minutes: number;
 					slug: string;
 					updated_at: string;
 				};
 				Insert: {
 					buffer_minutes?: number;
+					change_deadline_minutes?: number;
 					created_at?: string;
 					description?: string | null;
 					duration_minutes?: number;
@@ -14038,12 +14075,14 @@ export type Database = {
 					location_kind?: string;
 					min_notice_minutes?: number;
 					name: string;
+					requires_approval?: boolean;
 					slot_interval_minutes?: number;
 					slug: string;
 					updated_at?: string;
 				};
 				Update: {
 					buffer_minutes?: number;
+					change_deadline_minutes?: number;
 					created_at?: string;
 					description?: string | null;
 					duration_minutes?: number;
@@ -14054,6 +14093,7 @@ export type Database = {
 					location_kind?: string;
 					min_notice_minutes?: number;
 					name?: string;
+					requires_approval?: boolean;
 					slot_interval_minutes?: number;
 					slug?: string;
 					updated_at?: string;
@@ -21848,6 +21888,10 @@ export type Database = {
 				Args: { p_limit?: number };
 				Returns: number;
 			};
+			emit_due_invoice_reminders: {
+				Args: { p_limit?: number };
+				Returns: number;
+			};
 			end_organization_free_access: {
 				Args: {
 					actor_owner_email: string;
@@ -24413,9 +24457,27 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_booking_decide: {
+				Args: {
+					actor_email: string;
+					decision: string;
+					target_booking_id: string;
+					target_starts_at?: string;
+				};
+				Returns: Json;
+			};
+			owner_booking_for_entry: {
+				Args: { target_entry_id: string };
+				Returns: Json;
+			};
+			owner_booking_requests: {
+				Args: { target_relationship_id: string };
+				Returns: Json;
+			};
 			owner_booking_save: {
 				Args: {
 					target_buffer_minutes: number;
+					target_change_deadline_minutes: number;
 					target_description: string;
 					target_duration_minutes: number;
 					target_enabled: boolean;
@@ -24423,6 +24485,7 @@ export type Database = {
 					target_hours: Json;
 					target_min_notice_minutes: number;
 					target_name: string;
+					target_requires_approval: boolean;
 					target_slot_interval_minutes: number;
 					target_slug: string;
 					target_type_id: string;
@@ -25673,11 +25736,35 @@ export type Database = {
 					target_slug: string;
 					target_starts_at: string;
 					target_time_zone: string;
+					target_token_hash: string;
 					target_trade: string;
 				};
 				Returns: Json;
 			};
+			public_booking_cancel: {
+				Args: { target_reason?: string; target_token_hash: string };
+				Returns: Json;
+			};
+			public_booking_manage: {
+				Args: { target_token_hash: string };
+				Returns: Json;
+			};
+			public_booking_manage_slots: {
+				Args: {
+					range_from: string;
+					range_to: string;
+					target_token_hash: string;
+				};
+				Returns: {
+					ends_at: string;
+					starts_at: string;
+				}[];
+			};
 			public_booking_page: { Args: { target_slug: string }; Returns: Json };
+			public_booking_reschedule: {
+				Args: { target_starts_at: string; target_token_hash: string };
+				Returns: Json;
+			};
 			public_booking_slots: {
 				Args: { range_from: string; range_to: string; target_slug: string };
 				Returns: {
@@ -28027,6 +28114,15 @@ export type Database = {
 			set_support_thread_topic_by_uplift: {
 				Args: { new_topic: string; target_thread_id: string };
 				Returns: boolean;
+			};
+			settle_appointment_notices: {
+				Args: {
+					notify_customer: boolean;
+					target_booking_id: string;
+					target_booking_type: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
 			};
 			settle_team_invitation_identity_cleanup: {
 				Args: { target_invitation_id: string; target_lease_nonce: string };

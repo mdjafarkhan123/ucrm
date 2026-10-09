@@ -5,7 +5,7 @@ get the confirmation, visit reminders, overdue-invoice reminders and job thank-y
 promise (email now, texts after registration).
 **Plan:** `docs/client-reminders-behavior-contract.md`
 
-**In progress:** none.
+**In progress:** Part 5 — `parts/5-overdue-invoice-reminders.md`.
 
 **Next part:** 5 Overdue invoice reminders (2–4 done 2026-10-09).
 
