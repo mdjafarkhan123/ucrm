@@ -134,3 +134,37 @@ export const automationInquirySmsBodySchema = withKnownVariablesOnly(
 	z.string().trim().min(1).max(1000),
 	unknownInquiryVariables
 );
+
+// Client reminders Part 3: a visit or assessment reminder has no quote; it names the visit instead.
+// private.enqueue_automation_appointment_email fills these from the visit's current date, time and address.
+export const AUTOMATION_APPOINTMENT_VARIABLES = [
+	{ token: 'customer_name', label: 'Customer name' },
+	{ token: 'business_name', label: 'Your business name' },
+	{ token: 'appointment_when', label: 'Visit date and time' },
+	{ token: 'appointment_address', label: 'Visit address' }
+] as const;
+
+const APPOINTMENT_ALLOWED_TOKENS = new Set<string>(
+	AUTOMATION_APPOINTMENT_VARIABLES.map((v) => v.token)
+);
+
+export function unknownAppointmentVariables(text: string): string[] {
+	return unknownVariablesAgainst(APPOINTMENT_ALLOWED_TOKENS, text);
+}
+
+export const automationAppointmentEmailSubjectSchema = withKnownVariablesOnly(
+	z
+		.string()
+		.trim()
+		.min(1)
+		.max(300)
+		.refine((value) => !/[\r\n]/.test(value), {
+			message: 'The subject cannot span multiple lines.'
+		}),
+	unknownAppointmentVariables
+);
+
+export const automationAppointmentEmailBodySchema = withKnownVariablesOnly(
+	z.string().trim().min(1).max(5000),
+	unknownAppointmentVariables
+);

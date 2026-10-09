@@ -42,6 +42,8 @@ function workClient(
 		performMessage?: (id: string) => string;
 		reviewDraft?: unknown;
 		performReview?: (id: string) => string;
+		performAppointment?: (id: string) => string;
+		remindersDue?: number;
 		fallbacks?: number;
 		claimError?: string;
 		retryError?: string;
@@ -93,6 +95,16 @@ function workClient(
 				error: null
 			};
 		}
+		if (name === 'perform_automation_appointment_email_effect') {
+			const id = String(args?.p_work_item_id);
+			return {
+				data: options.performAppointment ? options.performAppointment(id) : 'action_sent',
+				error: null
+			};
+		}
+		if (name === 'emit_due_appointment_reminders') {
+			return { data: options.remindersDue ?? 0, error: null };
+		}
 		if (name === 'claim_review_reminders') return { data: [], error: null };
 		if (name === 'process_automation_sms_email_fallbacks') {
 			return { data: options.fallbacks ?? 0, error: null };
@@ -124,6 +136,7 @@ describe('drainAutomationWork', () => {
 		const result = await drainAutomationWork({ client, now: () => 0 });
 
 		expect(result).toEqual({
+			remindersDue: 0,
 			eventsProcessed: 0,
 			claimed: 0,
 			waited: 0,
@@ -162,6 +175,37 @@ describe('drainAutomationWork', () => {
 			'claim_automation_work_items',
 			expect.objectContaining({ p_per_organization_cap: 5, p_worker: AUTOMATION_WORKER_NAME })
 		);
+	});
+
+	it('finds due visit reminders before intake, so their events are enrolled in the same wake', async () => {
+		const { client, rpc } = workClient({ remindersDue: 3, intake: [3], claims: [] });
+
+		const result = await drainAutomationWork({ client, now: () => 0 });
+
+		expect(result).toMatchObject({ remindersDue: 3, eventsProcessed: 3 });
+		const order = rpc.mock.calls.map(([name]) => name);
+		expect(order.indexOf('emit_due_appointment_reminders')).toBeLessThan(
+			order.indexOf('intake_automation_events')
+		);
+		expect(rpc).toHaveBeenCalledWith('emit_due_appointment_reminders', { p_limit: 200 });
+	});
+
+	it('runs a due visit reminder through its own email effect', async () => {
+		const { client, rpc } = workClient({
+			intake: [0],
+			claims: [[item('a'), item('b')]],
+			advance: () => 'action_due_appointment_email',
+			performAppointment: (id) => (id === 'a' ? 'action_sent' : 'action_cancelled')
+		});
+
+		const result = await drainAutomationWork({ client, now: () => 0 });
+
+		expect(result).toMatchObject({ claimed: 2, sent: 1, cancelled: 1 });
+		expect(rpc).toHaveBeenCalledWith('perform_automation_appointment_email_effect', {
+			p_work_item_id: 'a',
+			p_claim_token: 'claim-a'
+		});
+		expect(rpc).not.toHaveBeenCalledWith('perform_automation_email_effect', expect.anything());
 	});
 
 	it('stops at the claim cap and never claims past it', async () => {

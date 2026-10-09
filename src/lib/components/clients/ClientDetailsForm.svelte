@@ -5,7 +5,13 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import CommunicationSettingsDialog from './CommunicationSettingsDialog.svelte';
-	import type { ClientIdentityDraft, ClientPreferences } from '$lib/clients/api';
+	import { useQueryClient } from '@tanstack/svelte-query';
+	import {
+		fetchMessageAutomationStatus,
+		messageAutomationStatusKey,
+		type ClientIdentityDraft,
+		type ClientPreferences
+	} from '$lib/clients/api';
 	import settingsIcon from '@tabler/icons/outline/settings.svg?raw';
 
 	// The client's own details, edited where they sit on the client page (Jobber's pattern 1). Its Save
@@ -27,6 +33,16 @@
 		onSave: (next: ClientIdentityDraft) => void;
 		onCancel: () => void;
 	} = $props();
+
+	// The settings dialog says which switches are not sending; warm that answer on hover.
+	const queryClient = useQueryClient();
+	function prefetchMessageStatus() {
+		void queryClient.prefetchQuery({
+			queryKey: messageAutomationStatusKey,
+			queryFn: fetchMessageAutomationStatus,
+			staleTime: 30_000
+		});
+	}
 
 	// A one-time copy taken when the form mounts. The page mounts it fresh each time it opens, so every
 	// visit starts from what is saved, and a background refetch can never overwrite half-typed fields.
@@ -195,6 +211,8 @@
 				<button
 					type="button"
 					class="client-details-form__configure"
+					onmouseenter={prefetchMessageStatus}
+					onfocus={prefetchMessageStatus}
 					onclick={() => (settingsOpen = true)}
 				>
 					<span aria-hidden="true">{@html settingsIcon}</span>Configure

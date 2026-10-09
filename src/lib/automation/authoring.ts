@@ -44,7 +44,8 @@ export function emptyAuthoredDefinition(): AuthoredDefinition {
 export function sendEmailStepsMissingContent(definition: AuthoredDefinition): number[] {
 	const missing: number[] = [];
 	definition.steps.forEach((step, index) => {
-		if (step.key === 'action.send_email') {
+		// Client reminders Part 3: a reminder email has the same subject and message.
+		if (step.key === 'action.send_email' || step.key === 'action.send_appointment_email') {
 			const subject = typeof step.config?.subject === 'string' ? step.config.subject.trim() : '';
 			const body = typeof step.config?.body === 'string' ? step.config.body.trim() : '';
 			if (!subject || !body) missing.push(index);

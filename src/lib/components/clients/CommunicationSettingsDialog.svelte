@@ -2,7 +2,15 @@
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
-	import type { ClientPreferences } from '$lib/clients/api';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { resolve } from '$app/paths';
+	import {
+		fetchMessageAutomationStatus,
+		messageAutomationStatusKey,
+		MESSAGE_SWITCH_TRIGGERS,
+		type ClientPreferences,
+		type MessageSwitch
+	} from '$lib/clients/api';
 
 	type PreferenceFlag = Exclude<keyof ClientPreferences, 'contact_policy'>;
 
@@ -20,6 +28,22 @@
 	// wipes the choices underneath — switch back to Allow and the client's settings are exactly as saved.
 	const allPaused = $derived(preferences.contact_policy === 'do_not_disturb');
 	const marketingPaused = $derived(allPaused || preferences.contact_policy === 'no_marketing');
+
+	// Client reminders Part 3: a switch only sends while its business-wide automation is on, so say so plainly
+	// when it is off rather than let the tick promise a message that never goes out.
+	const statusQuery = createQuery(() => ({
+		queryKey: messageAutomationStatusKey,
+		queryFn: fetchMessageAutomationStatus,
+		enabled: open,
+		staleTime: 30_000
+	}));
+	const automationsHref = resolve('/(app)/settings/automation');
+
+	function notSending(key: PreferenceFlag): boolean {
+		const status = statusQuery.data;
+		if (!status || !(key in MESSAGE_SWITCH_TRIGGERS)) return false;
+		return !status.sending[key as MessageSwitch];
+	}
 
 	const groups: {
 		title: string;
@@ -95,6 +119,14 @@
 						description={item.description}
 						bind:checked={preferences[item.key]}
 					/>
+					{#if notSending(item.key)}
+						<p class="communication-settings__not-sending">
+							Not sending — {#if statusQuery.data?.can_manage}<a
+									class="communication-settings__link"
+									href={automationsHref}>turn it on in Automations</a
+								>{:else}your business has this automation turned off{/if}.
+						</p>
+					{/if}
 				</div>
 			{/each}
 		</section>
@@ -137,6 +169,18 @@
 			font-weight: 700;
 			letter-spacing: 0.04em;
 			text-transform: uppercase;
+		}
+
+		&__not-sending {
+			margin: var(--space-smallest) 0 0 calc(var(--space-large) + var(--space-small));
+			color: var(--color-warning--onSurface);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__link {
+			color: var(--color-interactive);
+			font-weight: 600;
+			text-decoration: underline;
 		}
 
 		&__item--paused {

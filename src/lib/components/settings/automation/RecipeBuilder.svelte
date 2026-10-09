@@ -16,6 +16,9 @@
 	import CustomerMessageEditor from './CustomerMessageEditor.svelte';
 	import ReviewRequestActionEditor from './ReviewRequestActionEditor.svelte';
 	import {
+		APPOINTMENT_REMINDER_DEFAULT,
+		APPOINTMENT_REMINDER_MAX_DAYS,
+		APPOINTMENT_REMINDER_MAX_HOURS,
 		alwaysOnStopKeys,
 		catalogEntriesByKind,
 		fitsSubject,
@@ -33,6 +36,8 @@
 		type AuthoredStep
 	} from '$lib/automation/authoring';
 	import {
+		AUTOMATION_APPOINTMENT_VARIABLES,
+		unknownAppointmentVariables,
 		unknownEmailVariables,
 		unknownInquiryVariables,
 		unknownSmsVariables
@@ -170,7 +175,12 @@
 	// --- When ------------------------------------------------------------------------------------------
 	function setTrigger(key: string) {
 		const previousSubject = subject;
-		definition.trigger = key ? { key, config: {} } : null;
+		definition.trigger = key
+			? {
+					key,
+					config: key === 'appointment.reminder_due' ? { ...APPOINTMENT_REMINDER_DEFAULT } : {}
+				}
+			: null;
 		if (key) errors = { ...errors, trigger: '' };
 
 		// Switching between a quote and a website inquiry drops what cannot run on the new one, and ticks the
@@ -209,6 +219,48 @@
 			);
 		definition.trigger = { ...definition.trigger, config };
 	}
+
+	// Client reminders Part 3: when a visit reminder goes out — a set time before, or a fixed time of day.
+	const reminderTiming = $derived.by(() => {
+		const config = definition.trigger?.config ?? {};
+		if (config.mode === 'fixed_time') {
+			return {
+				mode: 'fixed_time' as const,
+				daysBefore: typeof config.days_before === 'number' ? config.days_before : 1,
+				time: typeof config.time === 'string' ? config.time : '18:00'
+			};
+		}
+		return {
+			mode: 'before' as const,
+			amount: typeof config.amount === 'number' ? config.amount : 1,
+			unit: config.unit === 'hours' ? ('hours' as const) : ('days' as const)
+		};
+	});
+
+	function setReminderTiming(config: Record<string, unknown>) {
+		if (!definition.trigger) return;
+		definition.trigger = { ...definition.trigger, config };
+		errors = { ...errors, trigger: '' };
+	}
+
+	function setReminderMode(mode: string) {
+		setReminderTiming(
+			mode === 'fixed_time'
+				? { mode: 'fixed_time', days_before: 1, time: '18:00' }
+				: { ...APPOINTMENT_REMINDER_DEFAULT }
+		);
+	}
+
+	function setReminderBefore(amount: number, unit: 'hours' | 'days') {
+		const max = unit === 'days' ? APPOINTMENT_REMINDER_MAX_DAYS : APPOINTMENT_REMINDER_MAX_HOURS;
+		const whole = Number.isFinite(amount) ? Math.floor(amount) : 1;
+		setReminderTiming({ mode: 'before', amount: Math.min(max, Math.max(1, whole)), unit });
+	}
+
+	const reminderDayOptions = Array.from({ length: APPOINTMENT_REMINDER_MAX_DAYS }, (_, index) => ({
+		value: String(index + 1),
+		label: index === 0 ? 'The day before' : `${index + 1} days before`
+	}));
 
 	// --- If --------------------------------------------------------------------------------------------
 	function addCondition(key: string) {
@@ -263,6 +315,11 @@
 
 	function addCustomerMessage() {
 		const step: AuthoredStep = { type: 'action', key: 'action.send_customer_message', config: {} };
+		definition.steps = [...definition.steps, step];
+	}
+
+	function addAppointmentEmail() {
+		const step: AuthoredStep = { type: 'action', key: 'action.send_appointment_email', config: {} };
 		definition.steps = [...definition.steps, step];
 	}
 
@@ -447,10 +504,12 @@
 		// here so a save that the server would reject never leaves the builder.
 		definition.steps.forEach((step, index) => {
 			if (next.steps[index]) return;
-			if (step.key === 'action.send_email') {
+			if (step.key === 'action.send_email' || step.key === 'action.send_appointment_email') {
 				const subject = typeof step.config?.subject === 'string' ? step.config.subject : '';
 				const body = typeof step.config?.body === 'string' ? step.config.body : '';
-				const unknown = [...unknownEmailVariables(subject), ...unknownEmailVariables(body)];
+				const unknownIn =
+					step.key === 'action.send_email' ? unknownEmailVariables : unknownAppointmentVariables;
+				const unknown = [...unknownIn(subject), ...unknownIn(body)];
 				if (unknown.length > 0) {
 					next.steps[index] = `"{{${unknown[0]}}}" is not a value you can use here.`;
 					ok = false;
@@ -660,6 +719,83 @@
 						One-time jobs are asked once, when the job is closed with its work done.
 					</p>
 				{/if}
+				{#if definition.trigger?.key === 'appointment.reminder_due'}
+					<div class="builder__recurring">
+						<Select
+							id="builder-trigger-reminder-mode"
+							label="Send the reminder"
+							value={reminderTiming.mode}
+							options={[
+								{ value: 'before', label: 'A set time before the visit' },
+								{ value: 'fixed_time', label: 'At a set time of day' }
+							]}
+							onchange={setReminderMode}
+						/>
+						{#if reminderTiming.mode === 'before'}
+							<Input
+								id="builder-trigger-reminder-amount"
+								type="number"
+								label="How long before"
+								min="1"
+								max={String(
+									reminderTiming.unit === 'days'
+										? APPOINTMENT_REMINDER_MAX_DAYS
+										: APPOINTMENT_REMINDER_MAX_HOURS
+								)}
+								value={String(reminderTiming.amount)}
+								oninput={(event: Event) =>
+									setReminderBefore(
+										Number((event.currentTarget as HTMLInputElement).value),
+										reminderTiming.mode === 'before' ? reminderTiming.unit : 'days'
+									)}
+							/>
+							<Select
+								id="builder-trigger-reminder-unit"
+								label="Unit"
+								value={reminderTiming.unit}
+								options={[
+									{ value: 'hours', label: 'Hours before' },
+									{ value: 'days', label: 'Days before' }
+								]}
+								onchange={(unit) =>
+									setReminderBefore(
+										reminderTiming.mode === 'before' ? reminderTiming.amount : 1,
+										unit === 'hours' ? 'hours' : 'days'
+									)}
+							/>
+						{:else}
+							<Select
+								id="builder-trigger-reminder-days"
+								label="Which day"
+								value={String(reminderTiming.daysBefore)}
+								options={reminderDayOptions}
+								onchange={(value) =>
+									setReminderTiming({
+										mode: 'fixed_time',
+										days_before: Number(value),
+										time: reminderTiming.mode === 'fixed_time' ? reminderTiming.time : '18:00'
+									})}
+							/>
+							<Input
+								id="builder-trigger-reminder-time"
+								type="time"
+								label="Time of day"
+								value={reminderTiming.time}
+								oninput={(event: Event) =>
+									setReminderTiming({
+										mode: 'fixed_time',
+										days_before:
+											reminderTiming.mode === 'fixed_time' ? reminderTiming.daysBefore : 1,
+										time: (event.currentTarget as HTMLInputElement).value
+									})}
+							/>
+						{/if}
+					</div>
+					<p class="builder__muted-note">
+						Each visit and assessment gets one reminder. Visits with no set time are reminded at 9
+						am. A visit booked after its reminder time has passed gets none.
+					</p>
+				{/if}
 			</SectionBlock>
 
 			<!-- If -->
@@ -739,7 +875,8 @@
 									<span class="builder__step-index">{index + 1}</span>
 									<span class="builder__step-icon" aria-hidden="true">
 										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-										{@html step.key === 'action.send_email'
+										{@html step.key === 'action.send_email' ||
+										step.key === 'action.send_appointment_email'
 											? mailIcon
 											: step.key === 'action.send_sms' ||
 												  step.key === 'action.send_customer_message'
@@ -832,6 +969,17 @@
 											onSubjectChange={(value) => setEmailField(index, 'subject', value)}
 											onBodyChange={(value) => setEmailField(index, 'body', value)}
 										/>
+									{:else if step.key === 'action.send_appointment_email'}
+										<EmailActionEditor
+											idPrefix={`builder-step-${index}`}
+											subject={stepEmailField(index, 'subject')}
+											body={stepEmailField(index, 'body')}
+											errorMessage={errors.steps[index] ?? ''}
+											variables={AUTOMATION_APPOINTMENT_VARIABLES}
+											subjectPlaceholder={'e.g. Reminder: your visit {{appointment_when}}'}
+											onSubjectChange={(value) => setEmailField(index, 'subject', value)}
+											onBodyChange={(value) => setEmailField(index, 'body', value)}
+										/>
 									{:else if step.key === 'action.send_customer_message'}
 										<CustomerMessageEditor
 											idPrefix={`builder-step-${index}`}
@@ -888,6 +1036,13 @@
 							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 							<span class="builder__button-icon" aria-hidden="true">{@html plusIcon}</span> Add a reply
 							by text or email
+						</Button>
+					{/if}
+					{#if canAdd('action.send_appointment_email')}
+						<Button variant="tertiary" size="small" onclick={addAppointmentEmail}>
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							<span class="builder__button-icon" aria-hidden="true">{@html plusIcon}</span> Add a reminder
+							email
 						</Button>
 					{/if}
 					{#if canAdd('action.send_review_request')}

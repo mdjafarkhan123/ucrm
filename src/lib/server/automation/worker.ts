@@ -18,6 +18,10 @@
 //
 // Google review Part 4B: advance also returns 'action_due_review_request' for a job's review request. The message
 // is written here from Review settings with its own customer link (src/lib/server/reviews/automatic.ts).
+//
+// Client reminders Part 3: each wake first asks the database for visits and assessments whose reminder time has
+// arrived (emit_due_appointment_reminders), so intake enrolls them in the same wake; advance then returns
+// 'action_due_appointment_email' for the reminder itself.
 
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { createQuoteEmailAccessLink } from '$lib/server/communications/quote-email';
@@ -63,6 +67,7 @@ type AdvanceOutcome =
 	| 'action_due_sms'
 	| 'action_due_customer_message'
 	| 'action_due_review_request'
+	| 'action_due_appointment_email'
 	| 'action_not_available';
 
 // What running an action effect settled to. `claim_lost` mirrors advance: the lease moved on.
@@ -72,6 +77,8 @@ type ActionEffectOutcome = 'action_sent' | 'action_cancelled' | 'action_deferred
 export type QuoteAccessLink = { url: string; tokenHash: string };
 
 export type AutomationDrainCounts = {
+	// Visit and assessment reminders found due this wake (Client reminders Part 3).
+	remindersDue: number;
 	eventsProcessed: number;
 	claimed: number;
 	waited: number;
@@ -118,6 +125,7 @@ const DEFAULT_TIME_BUDGET_MS = 20_000;
 const DEFAULT_INTAKE_BATCH_SIZE = 50;
 const DEFAULT_MAX_INTAKE_BATCHES = 20;
 const DEFAULT_FALLBACK_BATCH_SIZE = 25;
+const DEFAULT_REMINDER_BATCH_SIZE = 200;
 
 export const AUTOMATION_WORKER_NAME = 'automation-worker';
 
@@ -229,6 +237,19 @@ async function runReviewRequestAction(
 	return performed.data as ActionEffectOutcome;
 }
 
+// Runs one visit or assessment reminder. No link to mint: the effect fills the visit's details and settles the row.
+async function runAppointmentEmailAction(
+	client: AutomationWorkerClient,
+	item: ClaimedWorkItem
+): Promise<ActionEffectOutcome> {
+	const performed = await client.rpc('perform_automation_appointment_email_effect', {
+		p_work_item_id: item.work_item_id,
+		p_claim_token: item.claim_token
+	});
+	if (performed.error) throw new Error(performed.error.message);
+	return performed.data as ActionEffectOutcome;
+}
+
 // One claimed transition. Any failure is reported back through retry_automation_work_item so the row backs off
 // and stays visible instead of silently waiting out its lease.
 async function advanceOne(
@@ -250,7 +271,8 @@ async function advanceOne(
 			outcome === 'action_due_email' ||
 			outcome === 'action_due_sms' ||
 			outcome === 'action_due_customer_message' ||
-			outcome === 'action_due_review_request'
+			outcome === 'action_due_review_request' ||
+			outcome === 'action_due_appointment_email'
 		) {
 			// The effect settles the row itself. An infrastructure failure here (not a step outcome) falls to the
 			// catch below, which backs the row off exactly as an advance failure would.
@@ -261,7 +283,9 @@ async function advanceOne(
 						? await runSmsAction(client, item)
 						: outcome === 'action_due_review_request'
 							? await runReviewRequestAction(client, item, origin)
-							: await runCustomerMessageAction(client, item);
+							: outcome === 'action_due_appointment_email'
+								? await runAppointmentEmailAction(client, item)
+								: await runCustomerMessageAction(client, item);
 			if (effect === 'action_sent') counts.sent += 1;
 			else if (effect === 'action_cancelled') counts.cancelled += 1;
 			else if (effect === 'action_deferred') counts.retried += 1;
@@ -312,6 +336,7 @@ export async function drainAutomationWork(
 	const origin = options.reviewLinkOrigin ?? reviewLinkOrigin;
 
 	const counts: AutomationDrainCounts = {
+		remindersDue: 0,
 		eventsProcessed: 0,
 		claimed: 0,
 		waited: 0,
@@ -323,6 +348,13 @@ export async function drainAutomationWork(
 		fallbacks: 0,
 		reviewReminders: 0
 	};
+
+	// Reminders first: a visit whose reminder time has arrived becomes an event that the intake below enrolls.
+	const reminders = await client.rpc('emit_due_appointment_reminders', {
+		p_limit: DEFAULT_REMINDER_BATCH_SIZE
+	});
+	if (reminders.error) throw rpcError('Could not find due visit reminders', reminders.error);
+	counts.remindersDue = typeof reminders.data === 'number' ? reminders.data : 0;
 
 	// Intake first: an event that arrives with this wake should get its enrollment and its first work item
 	// before the work drain looks for due rows, so one wake can carry a delivery all the way to its first step.

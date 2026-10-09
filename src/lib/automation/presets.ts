@@ -11,7 +11,7 @@
 // nothing here references another tenant's data.
 
 import type { AuthoredDefinition } from '$lib/automation/authoring';
-import { AUTOMATION_SCHEMA_VERSION } from '$lib/automation/catalog';
+import { APPOINTMENT_REMINDER_DEFAULT, AUTOMATION_SCHEMA_VERSION } from '$lib/automation/catalog';
 
 export type AutomationPreset = {
 	key: string;
@@ -142,10 +142,46 @@ const googleReviewRequest: AutomationPreset = {
 	}
 };
 
+// Client reminders Part 3: one reminder before each visit or assessment, 1 day before at the visit's own time of
+// day, as Jobber does. Like every customer message it is off until the owner turns it on; the timing and copy are
+// starting values the owner can change.
+const visitReminder: AutomationPreset = {
+	key: 'visit_reminder',
+	version: 1,
+	name: 'Visit reminder',
+	summary:
+		'Email each customer a reminder 1 day before their visit or assessment. If the visit moves, the reminder moves with it.',
+	triggerKey: 'appointment.reminder_due',
+	channels: ['email'],
+	blueprint: {
+		schema_version: AUTOMATION_SCHEMA_VERSION,
+		trigger: { key: 'appointment.reminder_due', config: { ...APPOINTMENT_REMINDER_DEFAULT } },
+		conditions: [],
+		steps: [
+			{
+				type: 'action',
+				key: 'action.send_appointment_email',
+				config: {
+					subject: 'Reminder: {{business_name}} is visiting {{appointment_when}}',
+					body:
+						'Hi {{customer_name}},\n\n' +
+						'This is a friendly reminder that {{business_name}} is scheduled to visit ' +
+						'{{appointment_when}}.\n\n' +
+						'Address: {{appointment_address}}\n\n' +
+						'If you need to change the time, just reply to this email.\n\n' +
+						'Thanks,\n{{business_name}}'
+				}
+			}
+		],
+		stops: [{ key: 'stop.appointment_not_ahead' }, { key: 'stop.client_reminder_opt_out' }]
+	}
+};
+
 export const AUTOMATION_PRESETS: readonly AutomationPreset[] = [
 	quoteFollowUp,
 	websiteSpeedToLead,
-	googleReviewRequest
+	googleReviewRequest,
+	visitReminder
 ];
 
 const PRESETS_BY_KEY = new Map(AUTOMATION_PRESETS.map((preset) => [preset.key, preset]));

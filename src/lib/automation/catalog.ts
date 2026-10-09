@@ -11,6 +11,8 @@
 
 import { z } from 'zod';
 import {
+	automationAppointmentEmailBodySchema,
+	automationAppointmentEmailSubjectSchema,
 	automationEmailBodySchema,
 	automationEmailSubjectSchema,
 	automationInquiryEmailBodySchema,
@@ -28,8 +30,8 @@ export type CatalogAvailability = { status: 'enabled' } | { status: 'blocked'; r
 // What a recipe acts on, fixed by its trigger. CRM launch readiness Part 4 Stage 6 added the website inquiry (a
 // form submission or chat session). Google review Part 4B added the job whose work was completed. Every
 // condition, step and stop must match the trigger's subject, except entries marked 'any' (a wait means the same
-// thing for every subject).
-export type CatalogSubject = 'quote' | 'website_inquiry' | 'job';
+// thing for every subject). Client reminders Part 3 added the appointment: a job visit or an assessment.
+export type CatalogSubject = 'quote' | 'website_inquiry' | 'job' | 'appointment';
 
 export type CatalogEntry = {
 	key: string;
@@ -61,6 +63,41 @@ const jobWorkCompletedConfig = z
 		recurring_every_visits: z.number().int().min(1).max(RECURRING_EVERY_VISITS_MAX).optional()
 	})
 	.strict();
+
+// Client reminders Part 3: when a visit or assessment reminder goes out. Jobber's default is 1 day before, at
+// the visit's own time of day; the owner can choose 1 hour to 7 days before, or a fixed time of day instead.
+export const APPOINTMENT_REMINDER_MAX_HOURS = 168;
+export const APPOINTMENT_REMINDER_MAX_DAYS = 7;
+export const APPOINTMENT_REMINDER_DEFAULT = { mode: 'before', amount: 1, unit: 'days' } as const;
+
+const appointmentReminderTimingConfig = z
+	.union([
+		z
+			.object({
+				mode: z.literal('before'),
+				unit: z.enum(['hours', 'days']),
+				amount: z.number().int().min(1)
+			})
+			.strict(),
+		z
+			.object({
+				mode: z.literal('fixed_time'),
+				days_before: z.number().int().min(1).max(APPOINTMENT_REMINDER_MAX_DAYS),
+				time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Choose a time of day.')
+			})
+			.strict()
+	])
+	.superRefine((value, ctx) => {
+		if (value.mode !== 'before') return;
+		const hours = value.unit === 'days' ? value.amount * 24 : value.amount;
+		if (hours > APPOINTMENT_REMINDER_MAX_HOURS) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['amount'],
+				message: 'A reminder can go out at most 7 days before.'
+			});
+		}
+	});
 
 const blocked = (reason: string): CatalogAvailability => ({ status: 'blocked', reason });
 const enabled: CatalogAvailability = { status: 'enabled' };
@@ -130,6 +167,16 @@ const triggers: CatalogEntry[] = [
 		subject: 'job',
 		availability: enabled,
 		configSchema: jobWorkCompletedConfig
+	},
+	{
+		key: 'appointment.reminder_due',
+		kind: 'trigger',
+		label: 'A visit or assessment is coming up',
+		summary:
+			'Runs once for each scheduled visit or assessment, at the chosen time before it starts. Moving the visit moves the reminder.',
+		subject: 'appointment',
+		availability: enabled,
+		configSchema: appointmentReminderTimingConfig
 	}
 ];
 
@@ -283,6 +330,21 @@ const actions: CatalogEntry[] = [
 		configSchema: z.object({ channel: z.enum(['sms', 'email']) }).strict()
 	},
 	{
+		key: 'action.send_appointment_email',
+		kind: 'action',
+		label: 'Send a reminder email',
+		summary: 'Emails the customer about their upcoming visit or assessment.',
+		subject: 'appointment',
+		availability: enabled,
+		// The visit's date, time and address are filled at sending time, so a moved visit is always described right.
+		configSchema: z
+			.object({
+				subject: automationAppointmentEmailSubjectSchema,
+				body: automationAppointmentEmailBodySchema
+			})
+			.strict()
+	},
+	{
 		key: 'action.notify_staff',
 		kind: 'action',
 		label: 'Notify a team member',
@@ -376,6 +438,27 @@ const stops: CatalogEntry[] = [
 		alwaysOn: true,
 		availability: enabled,
 		configSchema: NO_CONFIG
+	},
+	// Client reminders Part 3 engine rules, applied to every reminder (plan § Customer messages: shared rules).
+	{
+		key: 'stop.appointment_not_ahead',
+		kind: 'stop',
+		label: 'The visit was cancelled, completed or has started',
+		summary: 'Nothing is sent for a visit that is no longer coming up.',
+		subject: 'appointment',
+		alwaysOn: true,
+		availability: enabled,
+		configSchema: NO_CONFIG
+	},
+	{
+		key: 'stop.client_reminder_opt_out',
+		kind: 'stop',
+		label: 'The client turned off visit reminders or is on Do not disturb',
+		summary: 'Nothing is sent once the client no longer wants reminders.',
+		subject: 'appointment',
+		alwaysOn: true,
+		availability: enabled,
+		configSchema: NO_CONFIG
 	}
 ];
 
@@ -409,7 +492,8 @@ const CUSTOMER_MESSAGE_ACTION_KEYS = new Set([
 	'action.send_email',
 	'action.send_sms',
 	'action.send_customer_message',
-	'action.send_review_request'
+	'action.send_review_request',
+	'action.send_appointment_email'
 ]);
 
 export function sendsCustomerMessage(key: string): boolean {

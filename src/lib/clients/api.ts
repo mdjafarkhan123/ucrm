@@ -221,6 +221,29 @@ export async function fetchClient(clientId: string): Promise<ClientDetail> {
 	return result.client;
 }
 
+// Client reminders Part 3: the client switches that only send while a business-wide automation runs, and the
+// trigger of that automation. Review requests are left out: a teammate can still send one by hand.
+export const MESSAGE_SWITCH_TRIGGERS = {
+	quote_follow_ups: 'quote.delivery_succeeded',
+	appointment_reminders: 'appointment.reminder_due'
+} as const;
+
+export type MessageSwitch = keyof typeof MESSAGE_SWITCH_TRIGGERS;
+
+export type MessageAutomationStatus = {
+	sending: Record<MessageSwitch, boolean>;
+	// Whether this person may open Automations to turn one on.
+	can_manage: boolean;
+};
+
+export const messageAutomationStatusKey = ['clients', 'message-automations'] as const;
+
+export async function fetchMessageAutomationStatus(): Promise<MessageAutomationStatus> {
+	const response = await fetch('/api/clients/message-automations');
+	if (!response.ok) throw await readError(response, 'Message settings could not be loaded.');
+	return response.json();
+}
+
 export async function fetchDuplicateCandidates(input: {
 	email?: string;
 	billingEmail?: string;

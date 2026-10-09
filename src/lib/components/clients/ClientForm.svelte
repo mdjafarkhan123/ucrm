@@ -21,7 +21,9 @@
 		type ClientDetail,
 		type ClientPreferences,
 		type ClientWriteValues,
-		type DuplicateCandidates
+		type DuplicateCandidates,
+		fetchMessageAutomationStatus,
+		messageAutomationStatusKey
 	} from '$lib/clients/api';
 	import { LEAD_SOURCES } from '$lib/clients/lead-sources';
 	import userIcon from '@tabler/icons/outline/user.svg?raw';
@@ -46,6 +48,15 @@
 	const isEdit = $derived(Boolean(client));
 
 	const queryClient = useQueryClient();
+
+	// The settings dialog says which switches are not sending; warm that answer on hover.
+	function prefetchMessageStatus() {
+		void queryClient.prefetchQuery({
+			queryKey: messageAutomationStatusKey,
+			queryFn: fetchMessageAutomationStatus,
+			staleTime: 30_000
+		});
+	}
 	const toast = getToastManager();
 
 	const DEFAULT_PREFERENCES: ClientPreferences = {
@@ -480,6 +491,8 @@
 							<button
 								type="button"
 								class="client-form__configure"
+								onmouseenter={prefetchMessageStatus}
+								onfocus={prefetchMessageStatus}
 								onclick={() => (settingsOpen = true)}
 							>
 								<span aria-hidden="true">{@html settingsIcon}</span>Configure

@@ -324,4 +324,81 @@ describe('validateDefinition', () => {
 			).toBe('steps');
 		});
 	});
+
+	describe('visit reminders', () => {
+		const reminder = (config: Record<string, unknown>, body = 'See you {{appointment_when}}.') => ({
+			schema_version: AUTOMATION_SCHEMA_VERSION,
+			trigger: { key: 'appointment.reminder_due', config },
+			conditions: [],
+			steps: [
+				{
+					type: 'action',
+					key: 'action.send_appointment_email',
+					config: { subject: 'Your visit {{appointment_when}}', body }
+				}
+			],
+			stops: []
+		});
+
+		it('accepts the default 1 day before and adds the stops the engine always applies', () => {
+			const result = validateDefinition(
+				reminder({ mode: 'before', amount: 1, unit: 'days' }),
+				noLimits,
+				'activation'
+			);
+			expect(result.ok).toBe(true);
+			if (!result.ok) return;
+			expect(result.definition.stops.map((stop) => stop.key)).toEqual([
+				'stop.appointment_not_ahead',
+				'stop.client_reminder_opt_out'
+			]);
+		});
+
+		it('allows 1 hour to 7 days before, and no more', () => {
+			const ok = (config: Record<string, unknown>) =>
+				validateDefinition(reminder(config), noLimits, 'activation').ok;
+			expect(ok({ mode: 'before', amount: 1, unit: 'hours' })).toBe(true);
+			expect(ok({ mode: 'before', amount: 168, unit: 'hours' })).toBe(true);
+			expect(ok({ mode: 'before', amount: 7, unit: 'days' })).toBe(true);
+			expect(ok({ mode: 'before', amount: 8, unit: 'days' })).toBe(false);
+			expect(ok({ mode: 'before', amount: 169, unit: 'hours' })).toBe(false);
+			expect(ok({ mode: 'before', amount: 30, unit: 'minutes' })).toBe(false);
+			expect(ok({})).toBe(false);
+		});
+
+		it('accepts a fixed time of day and refuses an impossible one', () => {
+			const ok = (config: Record<string, unknown>) =>
+				validateDefinition(reminder(config), noLimits, 'activation').ok;
+			expect(ok({ mode: 'fixed_time', days_before: 1, time: '18:00' })).toBe(true);
+			expect(ok({ mode: 'fixed_time', days_before: 0, time: '18:00' })).toBe(false);
+			expect(ok({ mode: 'fixed_time', days_before: 1, time: '25:00' })).toBe(false);
+		});
+
+		it('accepts the ready-made Visit reminder as shipped', async () => {
+			const { getAutomationPreset } = await import('$lib/automation/presets');
+			const preset = getAutomationPreset('visit_reminder');
+			expect(preset).toBeDefined();
+			expect(validateDefinition(preset!.blueprint, noLimits, 'activation').ok).toBe(true);
+		});
+
+		it('refuses quote values in a reminder, and a reminder step on a quote', () => {
+			expect(
+				validateDefinition(
+					reminder({ mode: 'before', amount: 1, unit: 'days' }, 'Quote {{quote_link}}'),
+					noLimits,
+					'activation'
+				).ok
+			).toBe(false);
+			const onQuote = validInput({
+				steps: [
+					{
+						type: 'action',
+						key: 'action.send_appointment_email',
+						config: { subject: 'Hi', body: 'Hi' }
+					}
+				]
+			});
+			expect(validateDefinition(onQuote, noLimits, 'activation').ok).toBe(false);
+		});
+	});
 });
