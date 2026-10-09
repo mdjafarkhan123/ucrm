@@ -73,6 +73,38 @@ The intended connected journey is:
 
 Contractor uses the field-service foundation. Medspa & Clinical Wellness uses the appointment-business foundation plus the clinical extension. Beauty & Spa later uses the appointment-business foundation without receiving clinical capabilities merely because both industries schedule services.
 
+### P3 proposed capability boundary — awaiting Jafar's approval
+
+The experience definition lists **eligible** capability families, supported customer-facing journeys and safe defaults. A Package edition chooses which eligible commercial capabilities the business has bought. A person's permissions then narrow their access. Operational readiness and public release are further gates on real-world actions; neither a Package nor a role can bypass them. The resolved answer is shared by navigation, page loads, APIs, background actions and customer-facing entry points. An unknown experience, missing profile, unknown capability or unclassified permission fails closed and leaves existing history available through a reviewed recovery path.
+
+| Family | Common meaning and reuse | Eligibility and boundary |
+| --- | --- | --- |
+| Shared platform | Organization, membership, commercial Agreement, Uplift support, contact identity, business-facing communication transport, Files infrastructure and audit machinery remain one platform. | Contractor and Medspa use the same foundations, but a shared engine does not make all its records visible. A contact's ordinary details and marketing consent are distinct from protected clinical details. Message templates, recipients, attachment access and automation triggers need experience-specific suitability checks. |
+| Field service | Requests, assessments, Quotes, Jobs, Visits, field schedule and contractor invoice journeys retain their current meaning. | Contractor only. An appointment is not a renamed Visit, an appointment sale is not a contractor Invoice, and a clinical service is not a Job. |
+| Appointment business | Service catalogue, provider/resource availability, appointment lifecycle, booking policies, deposits, checkout, rebooking and applicable paid benefits share one appointment model. | Medspa first; Beauty & Spa becomes eligible after its own planning and proof. The existing Contractor schedule and booking forms are reuse candidates for infrastructure, not evidence this family is built. |
+| Clinical extension | Person-specific intake, consent, clearance, chart, clinical photo, review, protected access history and clinical safety gates. | Medspa only, for a reviewed service and authorized clinical staff. Package changes cannot remove required safety controls for a clinical workflow already in use. Beauty & Spa and Contractor never receive these records through generic customer or file permissions. |
+
+One primary experience governs a business. Business type adjusts approved copy, Setup branches, initial settings and workflow defaults **within** that experience; it cannot add a capability or relax a safety rule. A mixed business may offer supplemental services only when the primary experience definition explicitly supports their workflow, record and permission model. Confirmed clinical services keep Medspa primary and keep clinical safeguards. An unsupported combination remains under Uplift review instead of being assembled from attractive menu items.
+
+### P3 proposed definition and presentation — awaiting approval
+
+Each supported experience has a reviewable, versioned definition: identifier and supported Business types; eligible families and commercial capability keys; required safety controls; terminology; primary navigation and dashboard modules; default settings; Setup program selection; supported public surfaces; and the readiness checks those surfaces require. Contractor's existing shell, labels and Setup questions are the first Contractor definition. Medspa receives its own appointment-led shell and clinical access rules. Beauty & Spa is not selectable until its definition and journeys have been planned and verified.
+
+The definition supplies starting values, not an editable copy per Organization. A published change states which organizations it affects and is reviewed for record, permission, Setup and customer-facing impact before rollout. A started Setup program remains on its own version under the approved Setup rule. Day-to-day experience changes do not silently rewrite an Agreement, historical records or previously released public surfaces.
+
+- **Contractor example:** a field member whose Package includes Jobs and Scheduling and whose role permits assigned Jobs sees the relevant schedule and assigned work. They cannot reach appointments or charts by a copied URL. A Contractor Package can omit a field feature only under the existing package-dependency and hidden-feature rules.
+- **Medspa example:** a front desk member may see appointment times and a booking requirement warning when their Package includes scheduling and their role allows it. That does not grant chart, photo, medication or clearance access. A treating clinician needs separately granted clinical rights and a service's readiness checks still govern starting treatment. Contractor Quotes and Jobs stay absent from the Medspa menu and direct routes.
+- **Mixed Medspa example:** a clinic also offering ordinary facials may use supported nonclinical services in its appointment catalogue. Its clinical records remain protected and regulated treatments retain clinical checks; a facial service does not downgrade the whole Organization to Beauty & Spa.
+
+### P3 proposed Package and permission rules — awaiting approval
+
+- A published Package edition declares which supported experiences may buy it. It may serve more than one experience only if **every** included software capability, promised managed service, highlight, allowance and dependency has valid meaning and delivery for each one. Experience-neutral branding is insufficient. The builder previews compatibility and refuses publication of a broken combination; a published edition's eligibility and promises are fixed with that edition. A later edition can have a different audience without moving existing Agreements.
+- Public comparison and Application selection show only editions compatible with the proposed Industry experience and Business type, while making clear that Uplift will confirm classification. Uplift review checks the final profile and every purchased capability again before requesting payment and provisioning. An old link or corrected classification that changes eligibility requires an explained new edition and buyer agreement; it never silently drops an included item.
+- Temporary capability exceptions and later Package moves may grant only a capability eligible for the Organization's confirmed experience, with its dependencies and readiness met. Removing a capability keeps its historical records under the existing downgrade rules and stops new dependent actions. Safety controls such as clinical audit, clearance and consent are mandatory parts of supported clinical operation, not optional upsells or overrideable extras.
+- Effective access is the intersection of Organization membership and status, confirmed experience eligibility, current Package edition plus valid exceptions, and the member's explicit role/individual permissions. A permission never manufactures an absent entitlement. Clinical record read, chart edit, clearance, sign-off, bypass, export and access administration remain separate; owner, administrator and job title do not automatically imply clinical visibility. Record-level subject/scope and clinical safety rules narrow access further.
+- Navigation and dashboard modules come from that same effective answer, so unavailable capabilities leave no trace in a business's normal workspace. Direct URLs, API reads and writes, database policies, background work, exports, Files, search and customer-facing tokens enforce the equivalent boundary. A refusal identifies the relevant cause without leaking protected record existence. Uplift Control Room access remains a separate platform-team grant, never an Organization role.
+- Readiness is checked at the action or public surface it protects. Staff can prepare permitted private work during paid Setup; real customer intake, public booking, business-originating automation and treatment wait for their own gates. Existing customer links, replies and payment recovery during a hold require the preservation review in P4.
+
 ## Experience, Package and permission controls
 
 - The **Industry experience** controls operating language, primary navigation, workflows, applicable capability families, Setup program and safety posture.
@@ -91,8 +123,8 @@ Contractor uses the field-service foundation. Medspa & Clinical Wellness uses th
 
 ## Still unclear
 
-- The compatibility rules among Industry experience, Business type, Package capabilities, additional capabilities and mixed-service businesses.
-- The experience definition's product behavior: navigation, dashboard, terminology, defaults, Setup selection and customer-facing surfaces.
+- Jafar's approval of the P3 proposed capability boundary, experience definitions, Package compatibility and access rules above.
+- Whether a multi-experience Package edition should be allowed when all of its promises and dependencies are valid for each experience, or whether every edition must be exclusive to one experience.
 - The complete audit of current Control Room, provisioning, Package, Setup, access, shell, routes and data behavior against this plan.
 - The safe Contractor backfill, rollout, rollback and connected proof required before Medspa implementation resumes.
 
@@ -109,6 +141,7 @@ Contractor uses the field-service foundation. Medspa & Clinical Wellness uses th
 
 - [P1 current-state journey audit](research/multi-industry-current-state-audit-2026-10-09.md)
 - [Admission, readiness and launch research](research/multi-industry-admission-readiness-2026-10-09.md)
+- [P3 experience composition and access research](research/multi-industry-experience-access-2026-10-09.md)
 - [Platform overview](platform-overview.md)
 - [Contractor blueprint](PRODUCT.md)
 - [Jafar Business Management](jafar-business-management-behavior-contract.md)
