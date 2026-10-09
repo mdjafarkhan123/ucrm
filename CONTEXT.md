@@ -54,6 +54,7 @@
 - **Customer-facing surface** — A permitted request, booking, portal, form, payment or communication journey used by an Organization's own customers. It is not the Organization's Business Workspace or the Uplift Control Room.
 - **Industry experience** — The organization's primary operating experience: Contractor, Beauty & Spa, or Medspa & Clinical Wellness. It controls industry language and workflows and is separate from package access and staff permissions. _Avoid_: Package edition.
 - **Business type** — A more specific category inside an Industry experience, such as salon, barbershop, spa, or medspa. It can shape defaults without creating a separate product. _Avoid_: Industry experience when referring to the narrower category.
+- **Experience profile** — The reviewed record of one Organization's primary Industry experience, Business type and service shape, with who confirmed it, when and why. A later change adds history; it does not erase the earlier decision. _Avoid_: Trade text as an automatic classifier.
 - **Onboarding program** — The published, versioned setup journey selected by an organization's Industry experience and narrowed by its purchased capabilities. Shared stages may be reused across programs. _Avoid_: Niche onboarding link.
 - **Prospect** — A business that has submitted the platform onboarding form but does not yet have an UpliftContractor organization, administrator login, or tenant data.
 - **Onboarding application** — The platform-owned record of a prospect's submitted business, administrator, and selected-package information.
@@ -64,6 +65,7 @@
 - **Setup progress** — Where an Organization stands in its assigned Onboarding program. Completing or entering Setup does not by itself authorize public launch.
 - **Operational readiness** — The reviewed conclusion that an Organization may use a named real-world workflow under its configured rules and required safeguards. It is capability- and experience-specific. _Avoid_: Active account.
 - **Public launch** — The deliberate opening of an approved Customer-facing surface after its readiness requirements pass. It is separate from payment confirmation and Business Workspace access.
+- **Surface launch permission** — Uplift's recorded release of one Customer-facing surface after its applicable checks and approval. It does not certify other surfaces or the whole business. _Avoid_: Active account.
 - **Initial organization administrator** — The first user for a newly provisioned organization. This person administers that tenant; the Platform Owner never becomes a tenant member.
 - **Activated package** — The package edition applied to an organization at provisioning. It normally matches the prospect's selected edition, but the Platform Owner may correct it to match the edition actually paid for and must record a private reason.
 - **Not proceeding** — A platform-owned final prospect outcome used when no account will be created. It is not an organization lifecycle state.

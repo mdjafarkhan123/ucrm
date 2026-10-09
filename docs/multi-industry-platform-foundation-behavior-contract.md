@@ -36,6 +36,32 @@ The intended connected journey is:
 - Commercial access, administrator readiness, Setup progress, operational readiness and public launch are separate facts. A stricter experience may require more readiness checks without forcing every Contractor through clinical rules.
 - Unsupported or unclear businesses wait for a deliberate decision rather than receiving the closest-looking experience.
 
+### Application and qualification
+
+- The shared Application asks for the business and contact facts needed to reach its buyer, its location and time zone, the work it actually offers, and its proposed primary Business type. A clinical or mixed-service answer asks for the services involved, the US state, and who performs or supervises them. Marketing links may prefill a proposed type or Package, but the applicant can correct it; a link never settles classification.
+- The applicant can compare Packages suitable for its stated work and record a preferred published edition. That choice is a preserved Application snapshot, not an entitlement or a promise that the business is supported. Uplift reviews the actual services and confirms the Industry experience, Business type and compatible edition before requesting payment. If the reviewed offer differs from the submitted choice, Uplift explains the change to the buyer and records the agreed edition before payment.
+- An unclear or unsupported Application remains a platform-owned prospect under human review. The buyer sees what Uplift is checking and how to provide a missing fact. Uplift does not request payment or provision an Organization until it records a supported decision. If Uplift cannot serve the business, it marks the Application Not proceeding with a reason and tells the buyer plainly. A service name, trade text or Package choice never assigns an experience by itself.
+- Confirmed regulated clinical work in a mixed business uses Medspa & Clinical Wellness as the primary experience, subject to its safeguards and state review. When the clinical boundary is uncertain, qualification waits for evidence. These rules carry forward the approved [Medspa entry decision](boulevard-product-behavior-contract.md#business-entry-and-onboarding).
+
+### Organization experience profile
+
+- Provisioning requires an owner-confirmed **experience profile**: primary Industry experience, Business type, reviewed service shape, compatible Agreement, decision owner, date and reason. It is visible in the Uplift Control Room. The Business Workspace shows its experience and relevant Setup path without exposing private qualification notes. The Application's original claims and any corrections remain in history; a correction does not rewrite what the buyer submitted or paid for.
+- A later primary-experience change is an assisted transition of the same Organization. The Platform Owner reviews its records, Agreement, staff access, unfinished Setup, live customer-facing surfaces and any clinical safeguards, then records an effective-dated decision and impact. An unsupported transition stays on hold with the existing experience and access intact. Existing history retains its original meaning and access rules. The [Medspa entry decision](boulevard-product-behavior-contract.md#business-entry-and-onboarding) governs mixed and clinical transitions.
+
+### Access, readiness and launch
+
+| Fact | Who establishes it | Meaning and allowed actions |
+| --- | --- | --- |
+| Commercial access | Uplift confirms offsite payment and provisions the agreed Organization | Purchased internal capabilities may be used, subject to membership and permissions. This does not prove the initial administrator has accepted access or any operating workflow is ready. |
+| Administrator readiness | The invited administrator securely completes access | The administrator can enter the Business Workspace and Setup. Failed invitation delivery is a recoverable access task, not a reason to create another Organization. |
+| Setup progress | The business supplies answers; Uplift reviews the assigned program | Team members can prepare private records and configuration permitted by their Package and role. Setup completion or Ready for Uplift starts delivery work; neither opens a customer-facing journey. |
+| Operational readiness | Uplift reviews the checks for a named workflow, with the business supplying required facts and approvals | A workflow can be used for real customer operations only when its applicable configuration, provider and safety checks pass. Another workflow may still wait. Clinical work needs its own safeguards and first-clinic review. |
+| Public launch | Uplift releases an approved customer-facing surface after its relevant operational checks and required business approval | Customers may start the released request, booking, form or other journey. A different surface remains closed until its own checks and release pass. Publication/configuration alone is insufficient. |
+
+- Jafar approved private preparation during paid Setup on 2026-10-09. The normal workspace and purchased tools remain available for that work; a blocked real-world action explains the missing check and who can resolve it. New customer intake, public booking, business-originating customer automation and clinical treatment must wait for their respective readiness and launch gates. Administrator invitations, Uplift Setup notices, support, required security messages and reconciliation continue under their own rules.
+- The existing Contractor preview and customer approval remain part of delivery. Releasing a public surface requires the applicable approval plus that surface's checks. Uplift records **Mark as live** after the approved system actually launches, as the Contractor delivery contract requires. One live surface does not certify every other surface. An active lifecycle status, an enabled form or a published booking page never grants public use on its own.
+- Existing customer commitments and recovery paths need a separate migration review before any new gate is enforced on live Contractor organizations. P4 must identify which public links, replies, payment/reconciliation actions and automations must continue while a surface is held, rather than treating every customer-facing action as new launch traffic.
+
 ## Experience composition
 
 - **Shared platform:** organizations, identity, Packages, permissions, communication, Files, audit, support and other behavior whose meaning is truly common.
@@ -63,11 +89,8 @@ Contractor uses the field-service foundation. Medspa & Clinical Wellness uses th
 
 ## Still unclear
 
-- The [P1 current-state audit](research/multi-industry-current-state-audit-2026-10-09.md) maps the existing journey and records the concrete handoff gaps. In particular, provisioning creates an active account while published public forms check active status rather than the separate launch record; the single live Setup catalogue also conflicts with the approved per-business version rule.
-- Which facts the public Application collects before Uplift can identify a supported Industry experience and Business type, and how correction or an unresolved classification works.
-- The exact Organization experience profile, its history, and the assisted rules for changing an existing organization's primary experience.
+- Whether Jafar approves the detailed P2 admission, experience-profile and readiness rules proposed above; his private-preparation decision and the Medspa mixed-business decision are already agreed.
 - The compatibility rules among Industry experience, Business type, Package capabilities, additional capabilities and mixed-service businesses.
-- The exact readiness states, responsible people, visible explanations, and which public or staff actions each state permits.
 - The experience definition's product behavior: navigation, dashboard, terminology, defaults, Setup selection and customer-facing surfaces.
 - The complete audit of current Control Room, provisioning, Package, Setup, access, shell, routes and data behavior against this plan.
 - The safe Contractor backfill, rollout, rollback and connected proof required before Medspa implementation resumes.
@@ -84,6 +107,7 @@ Contractor uses the field-service foundation. Medspa & Clinical Wellness uses th
 ## Sources and related plans
 
 - [P1 current-state journey audit](research/multi-industry-current-state-audit-2026-10-09.md)
+- [Admission, readiness and launch research](research/multi-industry-admission-readiness-2026-10-09.md)
 - [Platform overview](platform-overview.md)
 - [Contractor blueprint](PRODUCT.md)
 - [Jafar Business Management](jafar-business-management-behavior-contract.md)
