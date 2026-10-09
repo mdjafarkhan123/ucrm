@@ -13405,6 +13405,86 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			platform_booking_hours: {
+				Row: {
+					ends_at_time: string;
+					host_member_id: string | null;
+					id: string;
+					starts_at_time: string;
+					weekday: number;
+				};
+				Insert: {
+					ends_at_time: string;
+					host_member_id?: string | null;
+					id?: string;
+					starts_at_time: string;
+					weekday: number;
+				};
+				Update: {
+					ends_at_time?: string;
+					host_member_id?: string | null;
+					id?: string;
+					starts_at_time?: string;
+					weekday?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'platform_booking_hours_host_member_id_fkey';
+						columns: ['host_member_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_team_members';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			platform_bookings: {
+				Row: {
+					created_at: string;
+					entry_id: string;
+					id: string;
+					meeting_type_id: string | null;
+					visitor_email: string;
+					visitor_name: string;
+					visitor_phone: string;
+					visitor_time_zone: string;
+				};
+				Insert: {
+					created_at?: string;
+					entry_id: string;
+					id?: string;
+					meeting_type_id?: string | null;
+					visitor_email: string;
+					visitor_name: string;
+					visitor_phone: string;
+					visitor_time_zone: string;
+				};
+				Update: {
+					created_at?: string;
+					entry_id?: string;
+					id?: string;
+					meeting_type_id?: string | null;
+					visitor_email?: string;
+					visitor_name?: string;
+					visitor_phone?: string;
+					visitor_time_zone?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'platform_bookings_entry_id_fkey';
+						columns: ['entry_id'];
+						isOneToOne: true;
+						referencedRelation: 'platform_calendar_entries';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'platform_bookings_meeting_type_id_fkey';
+						columns: ['meeting_type_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_meeting_types';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			platform_business_contact_methods: {
 				Row: {
 					approved_at: string | null;
@@ -13928,6 +14008,65 @@ export type Database = {
 					version?: number;
 				};
 				Relationships: [];
+			};
+			platform_meeting_types: {
+				Row: {
+					buffer_minutes: number;
+					created_at: string;
+					description: string | null;
+					duration_minutes: number;
+					horizon_days: number;
+					host_member_id: string | null;
+					id: string;
+					is_active: boolean;
+					location_kind: string;
+					min_notice_minutes: number;
+					name: string;
+					slot_interval_minutes: number;
+					slug: string;
+					updated_at: string;
+				};
+				Insert: {
+					buffer_minutes?: number;
+					created_at?: string;
+					description?: string | null;
+					duration_minutes?: number;
+					horizon_days?: number;
+					host_member_id?: string | null;
+					id?: string;
+					is_active?: boolean;
+					location_kind?: string;
+					min_notice_minutes?: number;
+					name: string;
+					slot_interval_minutes?: number;
+					slug: string;
+					updated_at?: string;
+				};
+				Update: {
+					buffer_minutes?: number;
+					created_at?: string;
+					description?: string | null;
+					duration_minutes?: number;
+					horizon_days?: number;
+					host_member_id?: string | null;
+					id?: string;
+					is_active?: boolean;
+					location_kind?: string;
+					min_notice_minutes?: number;
+					name?: string;
+					slot_interval_minutes?: number;
+					slug?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'platform_meeting_types_host_member_id_fkey';
+						columns: ['host_member_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_team_members';
+						referencedColumns: ['id'];
+					}
+				];
 			};
 			platform_message_template_versions: {
 				Row: {
@@ -14648,6 +14787,7 @@ export type Database = {
 			platform_owner_settings: {
 				Row: {
 					alert_recipient_emails: string[];
+					booking_enabled: boolean;
 					created_at: string;
 					id: boolean;
 					owner_avatar_object_key: string | null;
@@ -14663,6 +14803,7 @@ export type Database = {
 				};
 				Insert: {
 					alert_recipient_emails?: string[];
+					booking_enabled?: boolean;
 					created_at?: string;
 					id?: boolean;
 					owner_avatar_object_key?: string | null;
@@ -14678,6 +14819,7 @@ export type Database = {
 				};
 				Update: {
 					alert_recipient_emails?: string[];
+					booking_enabled?: boolean;
 					created_at?: string;
 					id?: boolean;
 					owner_avatar_object_key?: string | null;
@@ -24247,6 +24389,10 @@ export type Database = {
 				Args: { target_organization_id: string; target_rate_id: string };
 				Returns: number;
 			};
+			owner_activity_report: {
+				Args: { from_date: string; to_date: string; viewer_member_id?: string };
+				Returns: Json;
+			};
 			owner_answer_setup_help: {
 				Args: {
 					actor_email: string;
@@ -24267,6 +24413,23 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_booking_save: {
+				Args: {
+					target_buffer_minutes: number;
+					target_description: string;
+					target_duration_minutes: number;
+					target_enabled: boolean;
+					target_horizon_days: number;
+					target_hours: Json;
+					target_min_notice_minutes: number;
+					target_name: string;
+					target_slot_interval_minutes: number;
+					target_slug: string;
+					target_type_id: string;
+				};
+				Returns: Json;
+			};
+			owner_booking_settings: { Args: never; Returns: Json };
 			owner_business_client: {
 				Args: { target_relationship_id: string };
 				Returns: Json;
@@ -24366,7 +24529,12 @@ export type Database = {
 				Returns: Json;
 			};
 			owner_calendar_window: {
-				Args: { from_date: string; to_date: string; viewer_member_id?: string; zone: string };
+				Args: {
+					from_date: string;
+					to_date: string;
+					viewer_member_id?: string;
+					zone: string;
+				};
 				Returns: Json;
 			};
 			owner_cancel_setup_training: {
@@ -25493,6 +25661,29 @@ export type Database = {
 					target_slug: string;
 				};
 				Returns: Json;
+			};
+			public_booking_book: {
+				Args: {
+					target_business_name: string;
+					target_country_code: string;
+					target_email: string;
+					target_name: string;
+					target_note?: string;
+					target_phone: string;
+					target_slug: string;
+					target_starts_at: string;
+					target_time_zone: string;
+					target_trade: string;
+				};
+				Returns: Json;
+			};
+			public_booking_page: { Args: { target_slug: string }; Returns: Json };
+			public_booking_slots: {
+				Args: { range_from: string; range_to: string; target_slug: string };
+				Returns: {
+					ends_at: string;
+					starts_at: string;
+				}[];
 			};
 			public_package_offers: { Args: never; Returns: Json };
 			publish_form_draft: {
@@ -28413,6 +28604,7 @@ export type Database = {
 				};
 				Returns: {
 					alert_recipient_emails: string[];
+					booking_enabled: boolean;
 					created_at: string;
 					id: boolean;
 					owner_avatar_object_key: string | null;
