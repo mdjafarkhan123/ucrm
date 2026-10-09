@@ -57,7 +57,9 @@ containing `(app)`, so pass those file paths out in full.
 
 ## Before saying done
 
-- `npm run check` passes, and so do the unit tests for what you changed.
+- `npm run check` passes, and so do the unit tests for what you changed. The full check runs once per hand-off,
+  after your last edit: a run of quick tweaks and their commits shares that one run, and a rerun follows only a
+  fix for an error it reported.
 - Anything a user can see has been through the design skill's screen check.
 - Your report shows the evidence: the commands you ran and their results, or the screenshots.
 - The work is committed and pushed to GitHub, so it lives off this computer. If the push fails, tell Jafar.
