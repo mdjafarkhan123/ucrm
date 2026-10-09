@@ -20,12 +20,12 @@
 
 ## Steps
 
-- [ ] Migration written (not applied)
-- [ ] Catalog, validator, email variables, preset, worker, builder trigger timing, summary, client switch status
-- [ ] Unit tests; `npm run check`
-- [ ] Apply migration (outcome check: `select version from supabase_migrations.schema_migrations where version = '<version>'`)
+- [x] Migration `20261115090000_invoice_reminders.sql` written on the branch
+- [x] Catalog, validator, email variables, preset, worker, builder trigger timing, summary, client switch status
+- [x] Unit tests; `npm run check` clean (on the branch)
+- [ ] Apply migration (outcome check: `select version from supabase_migrations.schema_migrations where version = '20261115090000'`)
 - [ ] Prove on the live app; merge to `main`; remove worktree
 
 ## Next
 
-Write the migration in the worktree.
+Apply migration `20261115090000` (applying now, 2026-10-09); check its outcome first with the query above. Then regenerate `database.types.ts`, EXPLAIN `emit_due_invoice_reminders`, prove in the browser.
