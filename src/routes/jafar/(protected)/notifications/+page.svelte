@@ -160,8 +160,8 @@
 					description={search
 						? 'No notification matches that search.'
 						: status === 'unread'
-							? 'You are caught up. New applications and failures show up here.'
-							: 'New applications and failures show up here.'}
+							? 'You are caught up. Reminders and anything that needs you show up here.'
+							: 'Reminders and anything that needs you show up here.'}
 				/>
 			</div>
 		{:else}

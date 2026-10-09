@@ -88,7 +88,7 @@
 			: 'Notifications could not be loaded.'
 		: ''}
 	{actionError}
-	emptyText="Nothing yet. New applications and failures land here."
+	emptyText="Nothing yet. Reminders and anything that needs you land here."
 	markingAll={markAllRead.isPending}
 	onMarkAll={() => markAllRead.mutate()}
 	onOpenItem={(id) => {

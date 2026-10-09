@@ -99,10 +99,12 @@
 				triggerLabel={changeLabel}
 				triggerClass="owner-picker__trigger"
 				disabled={saving}
+				align="start"
 				bind:open={menuOpen}
 			>
 				{#snippet trigger()}
-					Change<span class="owner-picker__chevron" aria-hidden="true">{@html chevronDownIcon}</span>
+					Change<span class="owner-picker__chevron" aria-hidden="true">{@html chevronDownIcon}</span
+					>
 				{/snippet}
 			</DropdownMenu>
 		</span>
