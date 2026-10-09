@@ -44,7 +44,9 @@
 		return end ? `${start} – ${end}` : start;
 	});
 	const startLabel = $derived(
-		visitShape(assessment) === 'anytime' ? 'Anytime' : (clockLabel(assessment.start_time) ?? 'Anytime')
+		visitShape(assessment) === 'anytime'
+			? 'Anytime'
+			: (clockLabel(assessment.start_time) ?? 'Anytime')
 	);
 
 	const clientLabel = $derived(

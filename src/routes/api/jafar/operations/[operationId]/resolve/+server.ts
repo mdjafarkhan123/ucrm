@@ -3,10 +3,7 @@ import type { RequestHandler } from './$types';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
-import {
-	operationIdSchema,
-	operationResolveSchema
-} from '$lib/server/validation/operation.schema';
+import { operationIdSchema, operationResolveSchema } from '$lib/server/validation/operation.schema';
 import { zodOwnerFieldErrors } from '$lib/server/validation/owner.schema';
 
 export const POST: RequestHandler = async (event) => {

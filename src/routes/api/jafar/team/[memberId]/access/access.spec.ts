@@ -38,7 +38,10 @@ type MemberRow = {
 	action_grants: string[];
 };
 
-function fakeClient(options: { member: MemberRow | null; rpcRows?: { access_revision: number }[] }) {
+function fakeClient(options: {
+	member: MemberRow | null;
+	rpcRows?: { access_revision: number }[];
+}) {
 	const rpc = vi.fn(async () => ({ data: options.rpcRows ?? [], error: null }));
 	const builder = (result: unknown) => {
 		const chain: Record<string, unknown> = {

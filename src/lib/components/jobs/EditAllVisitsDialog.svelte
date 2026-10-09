@@ -133,7 +133,11 @@
 			<p class="edit-all-visits__consequence-title">What saving this does</p>
 			<ul class="edit-all-visits__list">
 				<li>
-					Removes {plural(incompleteCount, 'visit that has not been completed', 'visits that have not been completed')}, including any still sitting in the past.
+					Removes {plural(
+						incompleteCount,
+						'visit that has not been completed',
+						'visits that have not been completed'
+					)}, including any still sitting in the past.
 				</li>
 				<li>
 					{#if createdCount === null}

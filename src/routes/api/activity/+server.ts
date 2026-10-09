@@ -1,6 +1,9 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { requireLinkedEntityAccess, parseLinkedEntityQuery } from '$lib/server/access/collaboration';
+import {
+	requireLinkedEntityAccess,
+	parseLinkedEntityQuery
+} from '$lib/server/access/collaboration';
 import { databaseError, validationError } from '$lib/server/api/errors';
 
 const DEFAULT_LIMIT = 50;

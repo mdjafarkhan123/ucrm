@@ -143,5 +143,8 @@
 		text-decoration: underline;
 		text-underline-offset: var(--space-smaller);
 	}
-	.auth-card__link:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+	.auth-card__link:focus-visible {
+		outline: none;
+		box-shadow: var(--shadow-focus);
+	}
 </style>

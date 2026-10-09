@@ -35,7 +35,11 @@ export const PATCH: RequestHandler = async (event) => {
 		.from('notes')
 		.update({
 			...(parsed.data.body !== undefined
-				? { body: parsed.data.body, edited_by: access.auth.user.id, edited_at: new Date().toISOString() }
+				? {
+						body: parsed.data.body,
+						edited_by: access.auth.user.id,
+						edited_at: new Date().toISOString()
+					}
 				: {}),
 			...(parsed.data.pinned !== undefined ? { pinned: parsed.data.pinned } : {})
 		})

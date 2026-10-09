@@ -39,7 +39,10 @@ export const POST: RequestHandler = async (event) => {
 	const parsed = organizationClosureStartSchema.safeParse(body);
 	if (!parsed.success) {
 		return json(
-			{ error: 'Please review the closure details.', field_errors: zodOwnerFieldErrors(parsed.error) },
+			{
+				error: 'Please review the closure details.',
+				field_errors: zodOwnerFieldErrors(parsed.error)
+			},
 			{ status: 422 }
 		);
 	}
@@ -62,7 +65,9 @@ export const POST: RequestHandler = async (event) => {
 			return json(
 				{
 					error: 'The typed organization name does not match.',
-					field_errors: { typed_organization_name: 'Type the organization name exactly to confirm.' }
+					field_errors: {
+						typed_organization_name: 'Type the organization name exactly to confirm.'
+					}
 				},
 				{ status: 422 }
 			);

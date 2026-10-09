@@ -1,9 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import {
-	requireLinkedEntityAccess,
-	type LinkedEntityType
-} from '$lib/server/access/collaboration';
+import { requireLinkedEntityAccess, type LinkedEntityType } from '$lib/server/access/collaboration';
 import { databaseError } from '$lib/server/api/errors';
 
 export const DELETE: RequestHandler = async (event) => {

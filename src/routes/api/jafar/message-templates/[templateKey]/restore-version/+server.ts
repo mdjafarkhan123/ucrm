@@ -4,7 +4,10 @@ import { getOwnerSession } from '$lib/server/auth/owner';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { TEMPLATE_ROW_SELECT } from '$lib/server/jafar/message-templates';
-import { restoreVersionSchema, templateKeySchema } from '$lib/server/validation/message-template.schema';
+import {
+	restoreVersionSchema,
+	templateKeySchema
+} from '$lib/server/validation/message-template.schema';
 
 /**
  * Resets the draft only -- publishing is a separate explicit step. Omitting `version`
@@ -13,7 +16,7 @@ import { restoreVersionSchema, templateKeySchema } from '$lib/server/validation/
  * this version" action on an older entry both call this same endpoint.
  */
 export const POST: RequestHandler = async (event) => {
-	if (!await getOwnerSession(event)) return ownerUnauthorized();
+	if (!(await getOwnerSession(event))) return ownerUnauthorized();
 
 	const parsedKey = templateKeySchema.safeParse(event.params.templateKey);
 	if (!parsedKey.success) return json({ error: 'Unknown message template.' }, { status: 404 });
@@ -27,7 +30,8 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	const parsed = restoreVersionSchema.safeParse(rawBody);
-	if (!parsed.success) return json({ error: 'The version to restore is invalid.' }, { status: 422 });
+	if (!parsed.success)
+		return json({ error: 'The version to restore is invalid.' }, { status: 422 });
 	const targetVersion = parsed.data.version ?? 1;
 
 	try {

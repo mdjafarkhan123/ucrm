@@ -1,6 +1,6 @@
 ---
 name: design
-description: UpliftContractor Design skill for AI coding agents
+description: Design system and screen check for any screen, component, styling, or frontend change in this app.
 metadata:
     author: Jafar khan
     projectName: Uplift Contractor
@@ -24,6 +24,26 @@ A professional dashboard interface with clean grid layouts, data-dense card pane
 ## Before Writing Any Code
 
 1. **Read every module that applies.** For a landing page, read at minimum: `layout.md`, `typography.md`, `colors.md`, `buttons.md`, `cards.md`, `shadows.md`, `radius.md`, `borders.md`. Do NOT write JSX until you have loaded all relevant modules.
+
+---
+
+## Before Calling a Screen Done
+
+Every change a user can see ends with a **screen check**: look at the real screen the way a picky designer
+would, not at the code.
+
+1. Open each changed screen in the running app in a real browser (Claude in Chrome; Playwright screenshots
+   when no browser tool is connected), signed in with a role from the login details in `CLAUDE.md` that sees
+   the change.
+2. Screenshot it at desktop (1440px) and phone (390px) width, in every state the change touches: realistic
+   data, empty, loading, error, long names. Add dark mode when the change touches color.
+3. Critique each screenshot against the matching `Design/*.jpg` blueprint, any reference image Jafar gave,
+   and the modules below: alignment, spacing on the 4px grid, visual hierarchy, crowding, truncation,
+   overflow, and anything that reads as a spreadsheet rather than a product.
+4. Fix what the critique found, then screenshot again.
+
+Done when a fresh round at both widths turns up nothing you would fix. Cap it at three rounds, then report
+what still looks off. Tell Jafar which screens and states you checked, what you fixed, and the URL to open.
 
 ---
 

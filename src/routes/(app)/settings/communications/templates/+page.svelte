@@ -44,9 +44,10 @@
 	let search = $state('');
 	let debouncedSearch = $state('');
 	let folder = $state('');
-	let dialogState = $state<{ mode: 'create' | 'update'; template?: CommunicationEmailTemplate } | null>(
-		null
-	);
+	let dialogState = $state<{
+		mode: 'create' | 'update';
+		template?: CommunicationEmailTemplate;
+	} | null>(null);
 	let libraryOpen = $state(false);
 	let deleteTarget = $state<CommunicationEmailTemplateListItem | null>(null);
 	let deleting = $state(false);
@@ -143,7 +144,9 @@
 			toast.success('Latest version adopted.');
 		} catch (cause) {
 			toast.error(
-				cause instanceof EmailTemplateWriteError ? cause.message : 'That update could not be adopted.'
+				cause instanceof EmailTemplateWriteError
+					? cause.message
+					: 'That update could not be adopted.'
 			);
 		} finally {
 			adoptingId = null;
@@ -160,7 +163,9 @@
 			toast.success('Template deleted.');
 		} catch (cause) {
 			toast.error(
-				cause instanceof EmailTemplateWriteError ? cause.message : 'That template could not be deleted.'
+				cause instanceof EmailTemplateWriteError
+					? cause.message
+					: 'That template could not be deleted.'
 			);
 		} finally {
 			deleting = false;

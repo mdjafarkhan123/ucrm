@@ -34,7 +34,7 @@ function jsonObject(value: Json | null): Record<string, Json> {
 }
 
 export const GET: RequestHandler = async (event) => {
-	if (!await getOwnerSession(event)) return ownerUnauthorized();
+	if (!(await getOwnerSession(event))) return ownerUnauthorized();
 	const parsedId = organizationIdSchema.safeParse(event.params.organizationId);
 	if (!parsedId.success)
 		return json({ error: 'The organization identifier is invalid.' }, { status: 422 });
@@ -75,9 +75,7 @@ export const GET: RequestHandler = async (event) => {
 				.limit(100),
 			client
 				.from('organization_free_access_events')
-				.select(
-					'id, action, access_until_date, reason, actor_owner_email, occurred_at'
-				)
+				.select('id, action, access_until_date, reason, actor_owner_email, occurred_at')
 				.eq('organization_id', parsedId.data)
 				.order('occurred_at', { ascending: false })
 				.limit(100),
@@ -91,7 +89,9 @@ export const GET: RequestHandler = async (event) => {
 				.limit(100),
 			client
 				.from('platform_owner_audit_events')
-				.select('id, event_type, target_type, target_key, actor_owner_email, before_state, after_state, created_at')
+				.select(
+					'id, event_type, target_type, target_key, actor_owner_email, before_state, after_state, created_at'
+				)
 				.eq('target_type', 'organization')
 				.eq('target_key', parsedId.data)
 				.order('created_at', { ascending: false })
@@ -99,7 +99,9 @@ export const GET: RequestHandler = async (event) => {
 			applicationId
 				? client
 						.from('platform_owner_audit_events')
-						.select('id, event_type, target_type, target_key, actor_owner_email, before_state, after_state, created_at')
+						.select(
+							'id, event_type, target_type, target_key, actor_owner_email, before_state, after_state, created_at'
+						)
 						.eq('target_type', 'onboarding_application')
 						.eq('target_key', applicationId)
 						.order('created_at', { ascending: false })

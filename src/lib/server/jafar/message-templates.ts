@@ -47,7 +47,9 @@ export const TEMPLATE_PLACEHOLDERS: Record<TemplateKey, PlaceholderDefinition[]>
 		{ key: 'business_name', label: 'Business name', required: false },
 		{ key: 'closure_deadline_at', label: 'Closure deadline', required: true }
 	],
-	organization_closure_completed: [{ key: 'business_name', label: 'Business name', required: false }]
+	organization_closure_completed: [
+		{ key: 'business_name', label: 'Business name', required: false }
+	]
 };
 
 /** Returns the required tag keys missing from the given draft subject/body, e.g. `['price']`. */

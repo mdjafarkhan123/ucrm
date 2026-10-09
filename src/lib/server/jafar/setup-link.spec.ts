@@ -21,7 +21,12 @@ const DEFAULT_TEMPLATE = {
 		'<p>You\'ve been invited to administer <strong>{{business_name}}</strong>.</p><p><a href="{{setup_link}}">Set your password</a></p>'
 };
 
-function clientWith(templateRow: { subject_published: string | null; body_published: string | null } | null = DEFAULT_TEMPLATE) {
+function clientWith(
+	templateRow: {
+		subject_published: string | null;
+		body_published: string | null;
+	} | null = DEFAULT_TEMPLATE
+) {
 	const upsertCalls: unknown[] = [];
 	const updateCalls: unknown[] = [];
 	const upsert = vi.fn((payload: unknown) => {

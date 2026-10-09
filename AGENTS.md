@@ -30,9 +30,9 @@ npm run test:unit     # Vitest unit tests
 npm run test          # unit + Playwright
 ```
 
-`npm run lint` currently fails on Prettier drift in files nobody touched, so check your own work with
-`npx prettier --check <paths>` instead. Its CLI cannot match a glob containing `(app)` — pass those file
-paths out in full.
+Claude Code tidies each file it writes with Prettier automatically, and `npx prettier --check .` passes for the
+whole project. Check your own work with `npx prettier --check <paths>`; its CLI cannot match a glob
+containing `(app)`, so pass those file paths out in full.
 
 ---
 

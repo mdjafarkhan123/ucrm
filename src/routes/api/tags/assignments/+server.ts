@@ -80,9 +80,7 @@ export const POST: RequestHandler = async (event) => {
 };
 
 type ResolveTagResult =
-	| { tag: Tables<'tags'> }
-	| { fieldErrors: Record<string, string> }
-	| { failed: true };
+	{ tag: Tables<'tags'> } | { fieldErrors: Record<string, string> } | { failed: true };
 
 // Accepts either an existing tag id or a name to find-or-create, so the browser never has to make a
 // separate create call before assigning.

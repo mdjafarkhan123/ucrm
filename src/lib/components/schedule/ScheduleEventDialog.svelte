@@ -37,7 +37,12 @@
 		event?: EventItem | null;
 		/** The slot a calendar gesture proposed for a new event: its day and time. Null means no slot (the
 		 *  header create), and the form opens with today's picker empty for the person to choose a day. */
-		seed?: { event_date: string; start_time: string | null; end_time: string | null; all_day: boolean } | null;
+		seed?: {
+			event_date: string;
+			start_time: string | null;
+			end_time: string | null;
+			all_day: boolean;
+		} | null;
 		locale?: string;
 		saving?: boolean;
 		error?: string;
@@ -84,7 +89,14 @@
 		const day = calendarDateToString(when.date) || '';
 		const notes = description.trim() || null;
 		if (anytime) {
-			return { title: title.trim(), description: notes, event_date: day, start_time: null, end_time: null, all_day: true };
+			return {
+				title: title.trim(),
+				description: notes,
+				event_date: day,
+				start_time: null,
+				end_time: null,
+				all_day: true
+			};
 		}
 		return {
 			title: title.trim(),

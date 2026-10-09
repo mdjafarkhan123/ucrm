@@ -4,11 +4,14 @@ import { getOwnerSession } from '$lib/server/auth/owner';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { TEMPLATE_PLACEHOLDERS, TEMPLATE_ROW_SELECT } from '$lib/server/jafar/message-templates';
-import { templateDraftSchema, templateKeySchema } from '$lib/server/validation/message-template.schema';
+import {
+	templateDraftSchema,
+	templateKeySchema
+} from '$lib/server/validation/message-template.schema';
 import { zodOwnerFieldErrors } from '$lib/server/validation/owner.schema';
 
 export const GET: RequestHandler = async (event) => {
-	if (!await getOwnerSession(event)) return ownerUnauthorized();
+	if (!(await getOwnerSession(event))) return ownerUnauthorized();
 
 	const parsedKey = templateKeySchema.safeParse(event.params.templateKey);
 	if (!parsedKey.success) return json({ error: 'Unknown message template.' }, { status: 404 });
@@ -43,7 +46,7 @@ export const GET: RequestHandler = async (event) => {
 };
 
 export const PATCH: RequestHandler = async (event) => {
-	if (!await getOwnerSession(event)) return ownerUnauthorized();
+	if (!(await getOwnerSession(event))) return ownerUnauthorized();
 
 	const parsedKey = templateKeySchema.safeParse(event.params.templateKey);
 	if (!parsedKey.success) return json({ error: 'Unknown message template.' }, { status: 404 });

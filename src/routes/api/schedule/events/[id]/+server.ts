@@ -1,12 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
-import {
-	NO_STORE_HEADERS,
-	databaseError,
-	notFound,
-	validationError
-} from '$lib/server/api/errors';
+import { NO_STORE_HEADERS, databaseError, notFound, validationError } from '$lib/server/api/errors';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { scheduleEventWriteSchema } from '$lib/server/validation/schedule.schema';
 
