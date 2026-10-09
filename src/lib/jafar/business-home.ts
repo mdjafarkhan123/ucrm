@@ -67,8 +67,12 @@ export function homeCountsOpen(viewer: JafarViewer): Record<HomeCount, boolean> 
 export type HomeTag = { label: string; tone: 'informative' | 'success' | 'warning' | 'neutral' };
 
 /** What kind of step a row is, from the step itself and the Deal it belongs to. */
-export function agendaTag(item: Pick<HomeAgendaItem, 'first_contact' | 'deal_stage'>): HomeTag {
+export function agendaTag(
+	item: Pick<HomeAgendaItem, 'first_contact' | 'deal_stage'> & { call_id?: string | null }
+): HomeTag {
 	if (item.first_contact) return { label: 'First contact', tone: 'success' };
+	// A step that stands for a booked call is a call, whether or not the business has a Deal yet.
+	if (item.call_id) return { label: 'Call', tone: 'informative' };
 	switch (item.deal_stage) {
 		case 'interested':
 			return { label: 'Reply', tone: 'informative' };

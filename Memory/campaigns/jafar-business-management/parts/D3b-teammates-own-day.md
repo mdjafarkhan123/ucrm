@@ -10,7 +10,8 @@
 - [x] Server: home and calendar routes scoped by the session (`$lib/server/jafar/calendar.ts` `calendarViewer`); home, calendar and My preferences open to every signed-in person (`$lib/jafar/team-access.ts`); teammates land on `/jafar`
 - [x] Screens: home (own greeting, tiles they may open, Mine/Everyone for Jafar, Done only with Leads change), calendar (no "Book a call" without Leads change), sidebar "My preferences" for teammates
 - [x] Apply the migration; update unit tests (`team-access.spec.ts` teammateHomePath, `api/jafar/home/home.spec.ts`)
-- [ ] Prove it as Sam and Jafar in the browser (design screen check, desktop and phone); speed check at 50k Leads
+- [x] Sam in the browser: home (only his Lead and call, First contacts tile only, Call tag), calendar (only his call), My preferences (his own zone) — desktop and phone. Speed: same due index plus an owner filter; home 7 ms, 6-week calendar 11 ms on live data
+- [ ] Jafar in the browser: Mine hides Sam's call, Everyone shows it with "Sam Seller"; desktop and phone
 - [ ] Commit, push, mark Done
 
 ## Next

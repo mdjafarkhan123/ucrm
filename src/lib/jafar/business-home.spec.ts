@@ -12,6 +12,8 @@ function item(id: string, due_on: string, extra: Partial<HomeAgendaItem> = {}): 
 		first_contact: false,
 		deal_stage: null,
 		call_id: null,
+		owner_member_id: null,
+		owner_name: null,
 		...extra
 	};
 }
@@ -40,6 +42,12 @@ describe('groupAgenda', () => {
 });
 
 describe('agendaTag', () => {
+	it('names a booked call a call even without a Deal (D3b)', () => {
+		expect(agendaTag({ first_contact: false, deal_stage: null, call_id: 'call-1' }).label).toBe(
+			'Call'
+		);
+	});
+
 	it('names a first contact before anything else', () => {
 		expect(agendaTag({ first_contact: true, deal_stage: 'interested' }).label).toBe(
 			'First contact'
