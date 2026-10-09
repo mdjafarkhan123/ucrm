@@ -1,16 +1,16 @@
 ---
 name: proven-development
-description: Research proven product behavior before building features or changing workflows; choose maintainable engineering patterns before database design or substantial implementation. Use also when a product decision emerges midway through work or an existing feature appears to need improvement. Keep routine fixes proportional.
+description: Research proven product behavior before building features, workflows, or components; choose maintainable engineering patterns before database design or substantial implementation. Use also when a product decision emerges midway through work or an existing feature appears to need improvement. Keep routine fixes proportional.
 ---
 
 # Proven development
 
-Jafar owns product decisions. The agent owns technical planning and implementation within approved scope. Explain choices to Jafar through what contractors and customers will experience, in everyday English. Keep technical plans in working notes; present implementation detail only when requested or needed to explain a material consequence.
+Jafar owns product decisions. The agent owns technical planning and implementation within approved scope. Explain choices to Jafar through what business owners, their staff, and their clients will experience, in everyday English. Keep technical plans in working notes; present implementation detail only when requested or needed to explain a material consequence.
 
 ## Establish the product before designing its implementation
 
 1. Inspect the relevant existing behavior, approved decisions, and product blueprint. Identify the user's problem and the smallest complete workflow that solves it. Reuse settled decisions unless requirements or evidence have changed.
-2. Research unresolved behavior using the relevant mature product: start with [Jobber](../jobber/SKILL.md) for contractor workflows and HighLevel for applicable communications/marketing behavior. Use official help articles, documentation, and direct product observation. Consult another mature product when the first leaves a material gap or offers a poor fit; a fixed competitor count adds no evidence.
+2. Research unresolved behavior using the relevant mature product: start with [Jobber](../jobber/SKILL.md) for contractor workflows, Boulevard for Medspa, Beauty & Spa, and other appointment-based workflows (`docs/boulevard-product-behavior-contract.md` records what is approved), and HighLevel for applicable communications/marketing behavior. Use official help articles, documentation, and direct product observation. Consult another mature product when the first leaves a material gap or offers a poor fit; a fixed competitor count adds no evidence.
 3. Separate verified behavior, inference, and our proposed adaptation. Cite sources for the behavior that drives the decision. A competitor's screens and public API do not establish its internal database or architecture. If evidence is unavailable or contradictory, state the gap and research further; ask Jafar only for the remaining product choice, with a recommendation.
 4. Before dependent database design or implementation, resolve any unapproved product choice with Jafar. Use this short format, scaled to the decision:
    - **What happens today / what is missing.**
