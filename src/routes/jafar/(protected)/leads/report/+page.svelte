@@ -19,11 +19,11 @@
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import FilterChip from '$lib/components/ui/FilterChip.svelte';
 	import { LEAD_SOURCE_LABELS } from '$lib/jafar/leads';
-	import { jafarActivityReportKey } from '$lib/jafar/query-keys';
 	import {
 		REPORT_PERIODS,
 		REPORT_PERIOD_LABELS,
 		REPORT_STEPS,
+		activityReportKey,
 		fetchActivityReport,
 		readReportPeriod,
 		reportRange,
@@ -49,7 +49,7 @@
 	const range = $derived(reportRange(period, today));
 
 	const report = createQuery(() => ({
-		queryKey: jafarActivityReportKey(range.from, range.to),
+		queryKey: activityReportKey(range.from, range.to),
 		queryFn: () => fetchActivityReport(range),
 		staleTime: 0,
 		placeholderData: keepPreviousData

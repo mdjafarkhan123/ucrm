@@ -151,6 +151,11 @@ export function reportRange(
 	}
 }
 
+/** The report for one period. It lives here, next to its fetch, and refetches whenever the page opens, so nothing
+ * else has to refresh it. */
+export const activityReportKey = (from: string | null, to: string) =>
+	['jafar', 'leads', 'report', from, to] as const;
+
 export function reportParams(range: { from: string | null; to: string }) {
 	const params = new URLSearchParams();
 	if (range.from) params.set('from', range.from);
