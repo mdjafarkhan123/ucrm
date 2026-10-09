@@ -17,6 +17,14 @@
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import NextActionDialog from '$lib/components/jafar/leads/NextActionDialog.svelte';
+	import CallOutcomeDialog from '$lib/components/jafar/calendar/CallOutcomeDialog.svelte';
+	import {
+		browserTimeZone,
+		calendarPreferencesKey,
+		calendarUnclosedKey,
+		fetchCalendarPreferences,
+		fetchUnclosedCalls
+	} from '$lib/jafar/calendar';
 	import {
 		agendaTag,
 		businessHomeKey,
@@ -66,6 +74,29 @@
 		queryFn: () => fetchNotifications({ status: 'unread', limit: 5 })
 	}));
 	const alertList = $derived(alerts.data?.notifications ?? []);
+
+	// C2: calls that have ended without an outcome. Asked here so a business is never quietly left hanging after a
+	// call; the panel shows only when there is one.
+	const unclosed = createQuery(() => ({
+		queryKey: calendarUnclosedKey,
+		queryFn: fetchUnclosedCalls,
+		staleTime: 60_000
+	}));
+	const unclosedCalls = $derived(unclosed.data?.calls ?? []);
+	let recording = $state<string | null>(null);
+	const preferences = createQuery(() => ({
+		queryKey: calendarPreferencesKey,
+		queryFn: fetchCalendarPreferences,
+		staleTime: 5 * 60_000,
+		enabled: unclosedCalls.length > 0
+	}));
+	const callTimeFormat = new Intl.DateTimeFormat(undefined, {
+		weekday: 'short',
+		day: 'numeric',
+		month: 'short',
+		hour: 'numeric',
+		minute: '2-digit'
+	});
 
 	// The cards draw at once with a dash and fill in, so the numbers arriving never move the page.
 	const tiles = $derived.by(() => {
@@ -193,6 +224,40 @@
 		</div>
 	</section>
 
+	{#if unclosedCalls.length > 0}
+		<section class="business-home__panel business-home__panel--calls" aria-labelledby="calls-title">
+			<header class="business-home__panel-header">
+				<h2 id="calls-title">How did it go?</h2>
+				<span class="business-home__count"
+					>{unclosed.data?.count ?? unclosedCalls.length} waiting</span
+				>
+			</header>
+			<ul class="business-home__list">
+				{#each unclosedCalls as call (call.id)}
+					<li class="business-home__item">
+						<a
+							class="business-home__item-link"
+							href={resolve('/jafar/(protected)/leads/[id]', { id: call.relationship_id })}
+						>
+							<span class="business-home__item-action"
+								>{call.title ?? `Call with ${call.business_name}`}</span
+							>
+							<span class="business-home__item-meta">
+								<strong>{call.business_name}</strong>
+								<span>{callTimeFormat.format(new Date(call.starts_at))}</span>
+							</span>
+						</a>
+						<span class="business-home__item-side">
+							<Button variant="secondary" size="small" onclick={() => (recording = call.id)}>
+								Record outcome<span class="visually-hidden">: {call.business_name}</span>
+							</Button>
+						</span>
+					</li>
+				{/each}
+			</ul>
+		</section>
+	{/if}
+
 	<div class="business-home__grid">
 		<section class="business-home__panel" aria-labelledby="todo-title">
 			<header class="business-home__panel-header">
@@ -317,6 +382,14 @@
 </main>
 <!-- eslint-enable svelte/no-at-html-tags -->
 
+{#if recording}
+	<CallOutcomeDialog
+		entryId={recording}
+		zone={preferences.data?.time_zone ?? browserTimeZone()}
+		onClose={() => (recording = null)}
+	/>
+{/if}
+
 {#if completing}
 	<NextActionDialog
 		leadId={completing.id}
@@ -385,6 +458,10 @@
 		border-radius: var(--radius-base);
 		background: var(--color-surface);
 		box-shadow: var(--shadow-low);
+	}
+	// A passed call waiting for its outcome: the same panel, marked with the warning edge so it reads as asking.
+	.business-home__panel--calls {
+		border-left: 3px solid var(--color-warning);
 	}
 	.business-home__panel-header {
 		display: flex;

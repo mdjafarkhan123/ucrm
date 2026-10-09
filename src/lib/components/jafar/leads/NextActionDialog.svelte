@@ -1,18 +1,31 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { useQueryClient } from '@tanstack/svelte-query';
-	import { CalendarDate, today, getLocalTimeZone } from '@internationalized/date';
+	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import { CalendarDate, Time, today, getLocalTimeZone } from '@internationalized/date';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
+	import TimePickerField from '$lib/components/ui/TimePickerField.svelte';
+	import ReminderPicker from '$lib/components/jafar/calendar/ReminderPicker.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
-	import { calendarDateFromString } from '$lib/components/ui/date-time';
+	import { calendarDateFromString, timeToMinutes } from '$lib/components/ui/date-time';
 	import { refreshLead, sendLeadWrite } from '$lib/jafar/lead-page-api';
+	import {
+		browserTimeZone,
+		calendarPreferencesKey,
+		fetchCalendarPreferences,
+		refreshCalendar,
+		zonedInstant,
+		zonedPlace,
+		type ReminderRule
+	} from '$lib/jafar/calendar';
 
 	// Jafar business management B2: a Lead's next action -- one dated step. `set` adds or changes it; `done`
 	// records the current one as done and asks for the next, as Pipedrive does, so a Lead being worked is not
-	// left without a step. Leaving the next one empty is allowed: the Leads list then flags it.
+	// left without a step. Leaving the next one empty is allowed: the Leads list then flags it. C2: a time is
+	// optional, and the reminders follow My preferences unless changed here -- "days before at" for a day, "so long
+	// before" once there is a time.
 	let {
 		leadId,
 		mode,
@@ -21,19 +34,54 @@
 	}: {
 		leadId: string;
 		mode: 'set' | 'done';
-		current: { text: string; due_on: string } | null;
+		current: {
+			text: string;
+			due_on: string;
+			due_at?: string | null;
+			reminders?: ReminderRule[] | null;
+		} | null;
 		onClose: () => void;
 	} = $props();
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
 
+	const preferencesQuery = createQuery(() => ({
+		queryKey: calendarPreferencesKey,
+		queryFn: fetchCalendarPreferences,
+		staleTime: 5 * 60_000
+	}));
+	const zone = $derived(preferencesQuery.data?.time_zone ?? browserTimeZone());
+
 	const startText = untrack(() => (mode === 'set' ? (current?.text ?? '') : ''));
 	const startDue = untrack(() =>
 		mode === 'set' ? calendarDateFromString(current?.due_on) : undefined
 	);
+	const startTime = untrack(() => {
+		if (mode !== 'set' || !current?.due_at) return undefined;
+		const minutes = zonedPlace(
+			current.due_at,
+			preferencesQuery.data?.time_zone ?? browserTimeZone()
+		).minutes;
+		return new Time(Math.floor(minutes / 60), minutes % 60);
+	});
 	let text = $state(startText);
 	let dueOn = $state<CalendarDate | undefined>(startDue);
+	let dueTime = $state<Time | undefined>(startTime);
+	let reminders = $state<ReminderRule[] | null>(
+		untrack(() => (mode === 'set' ? (current?.reminders ?? null) : null))
+	);
+	const timed = $derived(dueTime !== undefined);
+	const defaults = $derived(
+		timed
+			? (preferencesQuery.data?.reminder_defaults.follow_up_timed ?? [])
+			: (preferencesQuery.data?.reminder_defaults.follow_up_day ?? [])
+	);
+	// Adding or removing the time changes what a reminder means, so chosen ones of the other kind go.
+	function changeTime(next: Time | undefined) {
+		const nowTimed = next !== undefined;
+		if (reminders?.some((rule) => 'minutes_before' in rule !== nowTimed)) reminders = null;
+	}
 	let fieldErrors = $state<Record<string, string>>({});
 	let formError = $state('');
 	let saving = $state(false);
@@ -66,13 +114,23 @@
 		fieldErrors = localErrors();
 		if (Object.keys(fieldErrors).length) return;
 
+		const minutes = timeToMinutes(dueTime);
+		const hasNext = Boolean(text.trim() && dueOn);
+		const timing = {
+			due_at:
+				hasNext && dueOn && minutes !== undefined
+					? zonedInstant(dueOn.toString(), minutes, zone)
+					: null,
+			reminders: hasNext ? reminders : null
+		};
 		const nextAction =
 			mode === 'set'
-				? { mode: 'set', text: text.trim(), due_on: dueOn?.toString() }
+				? { mode: 'set', text: text.trim(), due_on: dueOn?.toString(), ...timing }
 				: {
 						mode: 'done',
 						text: text.trim() || null,
-						due_on: text.trim() ? (dueOn?.toString() ?? null) : null
+						due_on: text.trim() ? (dueOn?.toString() ?? null) : null,
+						...timing
 					};
 		saving = true;
 		const result = await sendLeadWrite(`/api/jafar/leads/${encodeURIComponent(leadId)}`, 'PATCH', {
@@ -85,7 +143,7 @@
 			return;
 		}
 		// Still saving while the lists reload, so the button can't be pressed twice and the old step never flashes back.
-		await refreshLead(queryClient, leadId);
+		await Promise.all([refreshLead(queryClient, leadId), refreshCalendar(queryClient)]);
 		saving = false;
 		toast.success(mode === 'done' ? 'Marked done' : 'Next action saved');
 		onClose();
@@ -137,7 +195,21 @@
 			</div>
 		</div>
 
-		{#if formError && !fieldErrors['next_action.text'] && !fieldErrors['next_action.due_on']}
+		<TimePickerField
+			id="next-action-time"
+			label="Time (optional)"
+			bind:value={dueTime}
+			onchange={changeTime}
+		/>
+
+		{#if text.trim() || mode === 'set'}
+			<ReminderPicker id="next-action-reminders" {timed} {defaults} bind:value={reminders} />
+			{#if fieldErrors['next_action.reminders']}
+				<p class="next-action-form__error" role="alert">{fieldErrors['next_action.reminders']}</p>
+			{/if}
+		{/if}
+
+		{#if formError && !fieldErrors['next_action.text'] && !fieldErrors['next_action.due_on'] && !fieldErrors['next_action.reminders']}
 			<p class="next-action-form__error" role="alert">{formError}</p>
 		{/if}
 

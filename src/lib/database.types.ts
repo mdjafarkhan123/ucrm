@@ -13552,8 +13552,11 @@ export type Database = {
 					id: string;
 					lead_status: string;
 					next_action: string | null;
+					next_action_at: string | null;
 					next_action_due_on: string | null;
+					next_action_entry_id: string | null;
 					next_action_kind: string | null;
+					next_action_reminders: Json | null;
 					setup_owner_member_id: string | null;
 					source: string;
 					source_detail: string | null;
@@ -13575,8 +13578,11 @@ export type Database = {
 					id?: string;
 					lead_status?: string;
 					next_action?: string | null;
+					next_action_at?: string | null;
 					next_action_due_on?: string | null;
+					next_action_entry_id?: string | null;
 					next_action_kind?: string | null;
+					next_action_reminders?: Json | null;
 					setup_owner_member_id?: string | null;
 					source: string;
 					source_detail?: string | null;
@@ -13598,8 +13604,11 @@ export type Database = {
 					id?: string;
 					lead_status?: string;
 					next_action?: string | null;
+					next_action_at?: string | null;
 					next_action_due_on?: string | null;
+					next_action_entry_id?: string | null;
 					next_action_kind?: string | null;
+					next_action_reminders?: Json | null;
 					setup_owner_member_id?: string | null;
 					source?: string;
 					source_detail?: string | null;
@@ -13609,6 +13618,75 @@ export type Database = {
 					website_host?: string | null;
 				};
 				Relationships: [];
+			};
+			platform_calendar_entries: {
+				Row: {
+					created_at: string;
+					created_by_email: string;
+					ends_at: string;
+					id: string;
+					kind: string;
+					notes: string | null;
+					outcome_at: string | null;
+					outcome_by_email: string | null;
+					owner_member_id: string | null;
+					relationship_id: string | null;
+					reminders: Json | null;
+					starts_at: string;
+					status: string;
+					title: string | null;
+					updated_at: string;
+				};
+				Insert: {
+					created_at?: string;
+					created_by_email: string;
+					ends_at: string;
+					id?: string;
+					kind: string;
+					notes?: string | null;
+					outcome_at?: string | null;
+					outcome_by_email?: string | null;
+					owner_member_id?: string | null;
+					relationship_id?: string | null;
+					reminders?: Json | null;
+					starts_at: string;
+					status?: string;
+					title?: string | null;
+					updated_at?: string;
+				};
+				Update: {
+					created_at?: string;
+					created_by_email?: string;
+					ends_at?: string;
+					id?: string;
+					kind?: string;
+					notes?: string | null;
+					outcome_at?: string | null;
+					outcome_by_email?: string | null;
+					owner_member_id?: string | null;
+					relationship_id?: string | null;
+					reminders?: Json | null;
+					starts_at?: string;
+					status?: string;
+					title?: string | null;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'platform_calendar_entries_owner_member_id_fkey';
+						columns: ['owner_member_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_team_members';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'platform_calendar_entries_relationship_id_fkey';
+						columns: ['relationship_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_business_relationships';
+						referencedColumns: ['id'];
+					}
+				];
 			};
 			platform_deal_price_shares: {
 				Row: {
@@ -14535,8 +14613,10 @@ export type Database = {
 					payment_instructions: string;
 					privacy_policy_url: string;
 					privacy_policy_version: string;
+					reminder_defaults: Json | null;
 					reply_to_address: string;
 					sender_display_name: string;
+					time_zone: string | null;
 					updated_at: string;
 				};
 				Insert: {
@@ -14548,8 +14628,10 @@ export type Database = {
 					payment_instructions?: string;
 					privacy_policy_url?: string;
 					privacy_policy_version?: string;
+					reminder_defaults?: Json | null;
 					reply_to_address?: string;
 					sender_display_name?: string;
+					time_zone?: string | null;
 					updated_at?: string;
 				};
 				Update: {
@@ -14561,8 +14643,10 @@ export type Database = {
 					payment_instructions?: string;
 					privacy_policy_url?: string;
 					privacy_policy_version?: string;
+					reminder_defaults?: Json | null;
 					reply_to_address?: string;
 					sender_display_name?: string;
+					time_zone?: string | null;
 					updated_at?: string;
 				};
 				Relationships: [];
@@ -14584,6 +14668,67 @@ export type Database = {
 					window_start?: string;
 				};
 				Relationships: [];
+			};
+			platform_reminders: {
+				Row: {
+					channel: string;
+					claimed_at: string | null;
+					created_at: string;
+					entry_id: string | null;
+					fire_at: string;
+					id: string;
+					outcome: string | null;
+					recipient_member_id: string | null;
+					relationship_id: string | null;
+					sent_at: string | null;
+				};
+				Insert: {
+					channel: string;
+					claimed_at?: string | null;
+					created_at?: string;
+					entry_id?: string | null;
+					fire_at: string;
+					id?: string;
+					outcome?: string | null;
+					recipient_member_id?: string | null;
+					relationship_id?: string | null;
+					sent_at?: string | null;
+				};
+				Update: {
+					channel?: string;
+					claimed_at?: string | null;
+					created_at?: string;
+					entry_id?: string | null;
+					fire_at?: string;
+					id?: string;
+					outcome?: string | null;
+					recipient_member_id?: string | null;
+					relationship_id?: string | null;
+					sent_at?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'platform_reminders_entry_id_fkey';
+						columns: ['entry_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_calendar_entries';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'platform_reminders_recipient_member_id_fkey';
+						columns: ['recipient_member_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_team_members';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'platform_reminders_relationship_id_fkey';
+						columns: ['relationship_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_business_relationships';
+						referencedColumns: ['id'];
+					}
+				];
 			};
 			platform_support_realtime_grants: {
 				Row: {
@@ -18843,6 +18988,12 @@ export type Database = {
 					subaccount_sid: string;
 					twilio_account_id: string;
 				}[];
+			};
+			claim_due_platform_reminders: {
+				Args: {
+					batch_size?: number;
+				};
+				Returns: Json;
 			};
 			claim_file_processing_jobs: {
 				Args: { batch_size?: number };
@@ -24082,6 +24233,91 @@ export type Database = {
 				Args: { actor_email: string; target_member_id: string; target_relationship_id: string };
 				Returns: boolean;
 			};
+			owner_calendar_book_call: {
+				Args: {
+					actor_email: string;
+					target_ends_at: string;
+					target_notes?: string;
+					target_relationship_id: string;
+					target_reminders?: Json;
+					target_starts_at: string;
+					target_title?: string;
+				};
+				Returns: string;
+			};
+			owner_calendar_close_call: {
+				Args: {
+					actor_email: string;
+					outcome: string;
+					target_due_at?: string;
+					target_due_on?: string;
+					target_id: string;
+					target_next_action?: string;
+				};
+				Returns: boolean;
+			};
+			owner_calendar_delete_busy: {
+				Args: {
+					target_id: string;
+				};
+				Returns: boolean;
+			};
+			owner_calendar_edit: {
+				Args: {
+					target_id: string;
+					target_notes: string;
+					target_reminders: Json;
+					target_title: string;
+				};
+				Returns: boolean;
+			};
+			owner_calendar_entry: {
+				Args: {
+					target_id: string;
+				};
+				Returns: Json;
+			};
+			owner_calendar_move: {
+				Args: {
+					actor_email: string;
+					target_ends_at: string;
+					target_id: string;
+					target_starts_at: string;
+				};
+				Returns: boolean;
+			};
+			owner_calendar_preferences: { Args: never; Returns: Json };
+			owner_calendar_save_busy: {
+				Args: {
+					actor_email: string;
+					target_ends_at: string;
+					target_id: string;
+					target_starts_at: string;
+					target_title?: string;
+				};
+				Returns: string;
+			};
+			owner_calendar_save_preferences: {
+				Args: {
+					target_reminder_defaults?: Json;
+					target_time_zone?: string;
+				};
+				Returns: Json;
+			};
+			owner_calendar_unclosed_calls: {
+				Args: {
+					limit_count?: number;
+				};
+				Returns: Json;
+			};
+			owner_calendar_window: {
+				Args: {
+					from_date: string;
+					to_date: string;
+					zone: string;
+				};
+				Returns: Json;
+			};
 			owner_cancel_setup_training: {
 				Args: { actor_email: string; target_organization_id: string };
 				Returns: Json;
@@ -24223,9 +24459,11 @@ export type Database = {
 				Args: {
 					actor_email: string;
 					next_action_mode?: string;
+					target_due_at?: string;
 					target_due_on?: string;
 					target_id: string;
 					target_next_action?: string;
+					target_reminders?: Json;
 					target_status?: string;
 				};
 				Returns: boolean;
@@ -25675,6 +25913,12 @@ export type Database = {
 					target_organization_id: string;
 				};
 				Returns: undefined;
+			};
+			record_platform_reminder_sent: {
+				Args: {
+					target_id: string;
+				};
+				Returns: boolean;
 			};
 			record_quote_decision: {
 				Args: {

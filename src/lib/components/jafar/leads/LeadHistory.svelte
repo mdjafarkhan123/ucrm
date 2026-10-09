@@ -36,6 +36,8 @@
 	import discountIcon from '@tabler/icons/outline/discount.svg?raw';
 	import trophyIcon from '@tabler/icons/outline/trophy.svg?raw';
 	import userCheckIcon from '@tabler/icons/outline/user-check.svg?raw';
+	import calendarClockIcon from '@tabler/icons/outline/calendar-clock.svg?raw';
+	import userXIcon from '@tabler/icons/outline/user-x.svg?raw';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
@@ -185,6 +187,16 @@
 				return trophyIcon;
 			case 'setup_owner_changed':
 				return userCheckIcon;
+			case 'call_booked':
+				return calendarPlusIcon;
+			case 'call_moved':
+				return calendarClockIcon;
+			case 'call_held':
+				return calendarCheckIcon;
+			case 'call_no_show':
+				return userXIcon;
+			case 'call_cancelled':
+				return calendarXIcon;
 			default:
 				return historyIcon;
 		}
@@ -259,10 +271,29 @@
 				return 'Deal Won — payment confirmed';
 			case 'setup_owner_changed':
 				return `Setup now looked after by ${details.to || 'Jafar'}`;
+			case 'call_booked':
+				return 'Call booked';
+			case 'call_moved':
+				return 'Call moved';
+			case 'call_held':
+				return 'Call held';
+			case 'call_no_show':
+				return "They didn't show for the call";
+			case 'call_cancelled':
+				return 'Call cancelled';
 			default:
 				return 'Update';
 		}
 	}
+
+	/** "Tue 14 Oct, 3:00 pm" for a call's time, in this browser's clock. */
+	const callFormat = new Intl.DateTimeFormat(undefined, {
+		weekday: 'short',
+		day: 'numeric',
+		month: 'short',
+		hour: 'numeric',
+		minute: '2-digit'
+	});
 
 	function formatDay(day: string) {
 		const [year, month, date] = day.split('-').map(Number);
@@ -412,9 +443,28 @@
 										]}
 									>
 										<span class="lead-history__value">{entry.details.next_action}</span>
-										{#if entry.details.due_on}
+										{#if entry.details.due_at}
+											· due {callFormat.format(new Date(entry.details.due_at))}
+										{:else if entry.details.due_on}
 											· due {formatDay(entry.details.due_on)}
 										{/if}
+									</p>
+								{/if}
+
+								{#if entry.kind.startsWith('call_') && entry.details?.starts_at}
+									<p
+										class={[
+											'lead-history__detail',
+											entry.kind === 'call_cancelled' && 'lead-history__detail--past'
+										]}
+									>
+										{#if entry.details.title}
+											<span class="lead-history__value">{entry.details.title}</span> ·
+										{/if}
+										{#if entry.kind === 'call_moved' && entry.details.from_starts_at}
+											{callFormat.format(new Date(entry.details.from_starts_at))} →
+										{/if}
+										{callFormat.format(new Date(entry.details.starts_at))}
 									</p>
 								{/if}
 

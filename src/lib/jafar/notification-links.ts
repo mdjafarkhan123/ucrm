@@ -4,7 +4,12 @@
  * never lead one place in an email and somewhere else in the panel.
  */
 export type NotificationTarget = {
-	target_kind: 'onboarding_application' | 'organization' | 'operation_attempt' | 'platform';
+	target_kind:
+		| 'onboarding_application'
+		| 'organization'
+		| 'operation_attempt'
+		| 'platform'
+		| 'business_relationship';
 	target_id: string | null;
 };
 
@@ -17,6 +22,8 @@ export function notificationLinkPath(target: NotificationTarget) {
 			return `/jafar/organizations/${target.target_id}`;
 		case 'operation_attempt':
 			return `/jafar/operations?operation=${target.target_id}`;
+		case 'business_relationship':
+			return `/jafar/leads/${target.target_id}`;
 		default:
 			return '/jafar';
 	}

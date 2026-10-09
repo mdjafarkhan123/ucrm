@@ -21,6 +21,8 @@ import {
 	type ContactDirection
 } from '$lib/jafar/lead-history';
 import { calendarDate } from './owner.schema';
+import { dayReminderSchema, timedReminderSchema } from './calendar.schema';
+import { MAX_REMINDERS } from '$lib/jafar/calendar';
 
 // A list arrives as one comma-separated value: `?status=new,later`. Every item must be allowed and none repeated,
 // so a bad link is refused rather than half-applied.
@@ -48,8 +50,9 @@ export const leadListQuerySchema = z.object({
 	source: list(LEAD_SOURCES).optional(),
 	sort: z.enum(LEAD_SORTS).optional(),
 	/** B4: `with` lists only businesses that have a Deal; without it they are left out. B5: `clients` lists only
-	 * businesses with a Won Deal, which `with` leaves out. */
-	deal: z.enum(['with', 'clients']).optional(),
+	 * businesses with a Won Deal, which `with` leaves out. C2: `any` lists every business, for the calendar's
+	 * business picker. */
+	deal: z.enum(['with', 'clients', 'any']).optional(),
 	/** Opaque cursor from the previous page's `next_cursor`. */
 	cursor: z.string().max(300).optional(),
 	limit: z.coerce.number().int().min(1).max(100).optional()
@@ -155,6 +158,19 @@ export const leadDuplicateCheckSchema = z.object({
 
 const nextActionText = z.string().trim().min(1, 'Say what the next action is.').max(200);
 
+// C2: a next action may carry a time and its own reminders (null follows the defaults in My preferences).
+const nextActionTiming = {
+	due_at: z.iso
+		.datetime({ offset: true, error: 'Choose a valid time.' })
+		.nullish()
+		.transform((value) => value ?? null),
+	reminders: z
+		.array(z.union([timedReminderSchema, dayReminderSchema]))
+		.max(MAX_REMINDERS, `Choose up to ${MAX_REMINDERS} reminders.`)
+		.nullish()
+		.transform((value) => value ?? null)
+};
+
 /**
  * One change from the Lead page: the status, the next action, or both. `next_action.mode`:
  * `set` replaces it, `done` records the current one as done and optionally sets the next, `clear` removes it.
@@ -164,11 +180,17 @@ export const leadChangeSchema = z
 		lead_status: z.enum(LEAD_SETTABLE_STATUSES).optional(),
 		next_action: z
 			.discriminatedUnion('mode', [
-				z.object({ mode: z.literal('set'), text: nextActionText, due_on: calendarDate }),
+				z.object({
+					mode: z.literal('set'),
+					text: nextActionText,
+					due_on: calendarDate,
+					...nextActionTiming
+				}),
 				z.object({
 					mode: z.literal('done'),
 					text: nextActionText.nullish().transform((value) => value ?? null),
-					due_on: calendarDate.nullish().transform((value) => value ?? null)
+					due_on: calendarDate.nullish().transform((value) => value ?? null),
+					...nextActionTiming
 				}),
 				z.object({ mode: z.literal('clear') })
 			])
@@ -178,6 +200,29 @@ export const leadChangeSchema = z
 		if (!change.lead_status && !change.next_action)
 			context.addIssue({ code: 'custom', path: ['form'], message: 'Nothing to change.' });
 		const next = change.next_action;
+		// C2: a time needs its day, and reminders match it -- "minutes before" with a time, "days before at" without.
+		if (next && next.mode !== 'clear') {
+			if (next.due_at && !next.due_on)
+				context.addIssue({
+					code: 'custom',
+					path: ['next_action', 'due_on'],
+					message: 'Choose the day for this time.'
+				});
+			if (next.reminders && !next.text)
+				context.addIssue({
+					code: 'custom',
+					path: ['next_action', 'reminders'],
+					message: 'Reminders need a next action.'
+				});
+			if (next.reminders?.some((rule) => 'minutes_before' in rule !== Boolean(next.due_at)))
+				context.addIssue({
+					code: 'custom',
+					path: ['next_action', 'reminders'],
+					message: next.due_at
+						? 'With a time, reminders come so long before it.'
+						: 'Without a time, reminders come on a day at a time of day.'
+				});
+		}
 		if (next?.mode === 'done' && Boolean(next.text) !== Boolean(next.due_on))
 			context.addIssue({
 				code: 'custom',
