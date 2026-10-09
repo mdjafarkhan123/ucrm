@@ -121,6 +121,31 @@ describe('buildAlertEmail', () => {
 	});
 });
 
+describe('buildAlertEmail for quote answers', () => {
+	it.each(['quote.customer_approved', 'quote.changes_requested'])(
+		'tells the %s recipient why they got it and links the quote',
+		(kind) => {
+			const email = buildAlertEmail(
+				claimed('a', {
+					kind,
+					subject_type: 'quote',
+					title: 'Jamie approved quote #12',
+					body: 'Signed by Jamie.'
+				}),
+				'https://app.test/quotes/q1'
+			);
+			expect(email.subject).toBe('Jamie approved quote #12 · Raad & Sons');
+			expect(email.textContent).toContain('you look after this quote at Raad & Sons');
+			expect(email.textContent).toContain('Open it in your CRM: https://app.test/quotes/q1');
+			expect(email.textContent).not.toContain('website inquiries');
+		}
+	);
+
+	it('opens the quote itself', () => {
+		expect(teamNotificationHref(undefined, 'quote', 'q1')).toBe('/quotes/q1');
+	});
+});
+
 describe('teamNotificationHref for Tasks', () => {
 	it("opens one Task's card Brief, and a bulk Task's board", () => {
 		expect(teamNotificationHref(undefined, 'opportunity', 'o1')).toBe('/pipeline?brief=o1');

@@ -89,7 +89,9 @@ export function buildAlertEmail(alert: ClaimedAlertEmail, link: string | null): 
 			? `You get this because a teammate at ${alert.organization_name} gave you a Task.`
 			: alert.kind === 'pipeline.note_mention'
 				? `You get this because a teammate at ${alert.organization_name} mentioned you in a note.`
-				: `You get these alerts because ${alert.organization_name} chose you for new website inquiries.`;
+				: alert.kind === 'quote.customer_approved' || alert.kind === 'quote.changes_requested'
+					? `You get this because you look after this quote at ${alert.organization_name}.`
+					: `You get these alerts because ${alert.organization_name} chose you for new website inquiries.`;
 	const html = [
 		`<p><strong>${escapeHtml(alert.title)}</strong></p>`,
 		alert.body ? `<p>${escapeHtml(alert.body)}</p>` : '',

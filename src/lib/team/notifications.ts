@@ -19,7 +19,9 @@ export type TeamNotificationKind =
 	| 'quote.delivery_failed'
 	| 'quote.customer_declined'
 	| 'pipeline.task_assigned'
-	| 'pipeline.note_mention';
+	| 'pipeline.note_mention'
+	| 'quote.customer_approved'
+	| 'quote.changes_requested';
 
 export type TeamNotification = {
 	id: string;
