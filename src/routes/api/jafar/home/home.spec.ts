@@ -23,9 +23,10 @@ const CORE = {
 	items: [{ id: 'lead-1', due_on: '2026-10-06' }]
 };
 
-function call(today: string | null) {
+function call(today: string | null, everyone = false) {
 	const url = new URL('http://localhost/api/jafar/home');
 	if (today !== null) url.searchParams.set('today', today);
+	if (everyone) url.searchParams.set('everyone', '1');
 	return GET({ url } as unknown as Parameters<typeof GET>[0]);
 }
 
@@ -38,9 +39,12 @@ function client(rpcs: Record<string, { data?: unknown; error?: unknown }>) {
 beforeEach(() => {
 	vi.clearAllMocks();
 	vi.spyOn(console, 'error').mockImplementation(() => {});
-	mockedSession.mockResolvedValue({ email: 'owner@example.com' } as Awaited<
-		ReturnType<typeof getOwnerSession>
-	>);
+	mockedSession.mockResolvedValue({
+		email: 'owner@example.com',
+		role: null,
+		access: null,
+		memberId: null
+	} as Awaited<ReturnType<typeof getOwnerSession>>);
 	mockedCatalogue.mockResolvedValue({} as Awaited<ReturnType<typeof readSetupCatalogue>>);
 });
 
@@ -71,12 +75,46 @@ describe('GET /api/jafar/home', () => {
 		expect(await response.json()).toEqual({ ...CORE, setups_waiting: 3, renewals: 3 });
 		expect(rpc).toHaveBeenCalledWith('owner_business_home', {
 			today_date: '2026-10-07',
-			agenda_limit: 60
+			agenda_limit: 60,
+			viewer_member_id: undefined,
+			everyone: false
 		});
 		expect(rpc).toHaveBeenCalledWith(
 			'owner_client_onboarding_list',
 			expect.objectContaining({ waiting_filter: 'uplift', page_size: 1 })
 		);
+	});
+
+	it("shows Jafar the whole team's to-dos when he asks (D3b)", async () => {
+		const rpc = client({ owner_business_home: { data: CORE, error: null } });
+		await call('2026-10-07', true);
+		expect(rpc).toHaveBeenCalledWith(
+			'owner_business_home',
+			expect.objectContaining({ viewer_member_id: undefined, everyone: true })
+		);
+	});
+
+	it('gives a Sales teammate their own to-dos and only the counts they can open (D3b)', async () => {
+		mockedSession.mockResolvedValue({
+			email: 'sam@example.com',
+			role: 'sales',
+			access: null,
+			memberId: 'member-sam'
+		} as Awaited<ReturnType<typeof getOwnerSession>>);
+		const rpc = client({ owner_business_home: { data: CORE, error: null } });
+		// A teammate cannot ask for everyone's.
+		const body = await (await call('2026-10-07', true)).json();
+		expect(rpc).toHaveBeenCalledWith(
+			'owner_business_home',
+			expect.objectContaining({ viewer_member_id: 'member-sam', everyone: false })
+		);
+		// Sales opens Leads (their first contacts) but cannot approve, make accounts, or see onboarding and renewals.
+		expect(body.first_contact).toBe(1);
+		expect(body.review).toBeNull();
+		expect(body.accounts_to_create).toBeNull();
+		expect(body.setups_waiting).toBeNull();
+		expect(body.renewals).toBeNull();
+		expect(rpc).toHaveBeenCalledTimes(1);
 	});
 
 	it('still loads the day when a side count fails, showing that count as unknown', async () => {

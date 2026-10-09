@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { createQuery } from '@tanstack/svelte-query';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import arrowRightIcon from '@tabler/icons/outline/arrow-up-right.svg?raw';
@@ -16,6 +17,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import NextActionDialog from '$lib/components/jafar/leads/NextActionDialog.svelte';
 	import CallOutcomeDialog from '$lib/components/jafar/calendar/CallOutcomeDialog.svelte';
 	import {
@@ -31,8 +33,12 @@
 		fetchBusinessHome,
 		groupAgenda,
 		HOME_AGENDA_LIMIT,
-		type HomeAgendaItem
+		homeCountsOpen,
+		type HomeAgendaItem,
+		type HomeCount,
+		type HomeScope
 	} from '$lib/jafar/business-home';
+	import { canUseJafarPath } from '$lib/jafar/team-access';
 	import { isoDate } from '$lib/jafar/deals';
 	import { countryName } from '$lib/jafar/leads';
 	import {
@@ -60,9 +66,24 @@
 		return () => document.removeEventListener('visibilitychange', check);
 	});
 
+	// D3b: everyone signed in has their own home. A teammate's to-do list is the Leads they own; Jafar's is his own
+	// and everything nobody else owns, and he can switch to the whole team's. Tiles show only the lists this person
+	// may open, and Done only for someone who may change Leads.
+	const owner = $derived(page.data.owner);
+	const viewer = $derived({ role: owner.role, access: owner.access });
+	const isJafar = $derived(owner.role === null);
+	const firstName = $derived(isJafar ? 'Jafar' : (owner.name ?? '').split(' ')[0] || 'there');
+	const countsOpen = $derived(homeCountsOpen(viewer));
+	const canWorkLeads = $derived(canUseJafarPath(viewer, '/api/jafar/leads/x', 'PATCH'));
+
+	let scope = $state<HomeScope>('mine');
+	const everyone = $derived(isJafar && scope === 'everyone');
+
 	const home = createQuery(() => ({
-		queryKey: businessHomeKey(today),
-		queryFn: () => fetchBusinessHome(today)
+		queryKey: businessHomeKey(today, everyone ? 'everyone' : 'mine'),
+		queryFn: () => fetchBusinessHome(today, everyone ? 'everyone' : 'mine'),
+		// Switching keeps the list on screen until the other one arrives, so nothing jumps.
+		placeholderData: (previous) => previous
 	}));
 
 	/**
@@ -103,8 +124,11 @@
 		const data = home.data;
 		const tone = <Tone extends string>(value: number | null | undefined, active: Tone) =>
 			value ? active : ('default' as const);
-		return [
+		// First contacts count the same people as the to-do list, so the list it opens filters to them too.
+		const ownerFilter = everyone ? '' : `&owner=${owner.memberId ?? 'jafar'}`;
+		const all = [
 			{
+				key: 'review' as HomeCount,
 				label: 'Leads to review',
 				value: count(data?.review),
 				note: 'Ready for your yes',
@@ -113,14 +137,16 @@
 				href: resolve('/jafar/leads/review')
 			},
 			{
+				key: 'first_contact' as HomeCount,
 				label: 'First contacts',
 				value: count(data?.first_contact),
 				note: 'Approved, not contacted yet',
 				icon: sendIcon,
 				tone: tone(data?.first_contact, 'success' as const),
-				href: `${resolve('/jafar/leads')}?status=approved&sort=next_action`
+				href: `${resolve('/jafar/leads')}?status=approved&sort=next_action${ownerFilter}`
 			},
 			{
+				key: 'accounts_to_create' as HomeCount,
 				label: 'Accounts to create',
 				value: count(data?.accounts_to_create),
 				note: 'Paid, account not made',
@@ -129,6 +155,7 @@
 				href: `${resolve('/jafar/prospects')}?stage=payment_confirmed`
 			},
 			{
+				key: 'setups_waiting' as HomeCount,
 				label: 'Setups waiting',
 				value: count(data?.setups_waiting),
 				note: 'Clients waiting on Uplift',
@@ -137,6 +164,7 @@
 				href: `${resolve('/jafar/onboarding')}?waiting_on=uplift`
 			},
 			{
+				key: 'renewals' as HomeCount,
 				label: 'Renewals',
 				value: count(data?.renewals),
 				note: 'Due this week or late',
@@ -145,6 +173,7 @@
 				href: `${resolve('/jafar/organizations')}?attention_reason=payment_overdue,renewal_due`
 			}
 		];
+		return all.filter((tile) => countsOpen[tile.key]);
 	});
 
 	const groups = $derived(home.data ? groupAgenda(home.data.items, today) : []);
@@ -211,18 +240,20 @@
 <main class="business-home">
 	<header class="business-home__header">
 		<p class="business-home__eyebrow">{todayLabel}</p>
-		<h1>{greeting}, Jafar</h1>
+		<h1>{greeting}, {firstName}</h1>
 		<p class="business-home__lede">{summary}</p>
 	</header>
 
-	<section class="business-home__waiting" aria-labelledby="waiting-title">
-		<h2 id="waiting-title" class="business-home__section-title">Waiting on you</h2>
-		<div class="business-home__tiles">
-			{#each tiles as tile (tile.label)}
-				<KpiCard variant="compact" {...tile} />
-			{/each}
-		</div>
-	</section>
+	{#if tiles.length > 0}
+		<section class="business-home__waiting" aria-labelledby="waiting-title">
+			<h2 id="waiting-title" class="business-home__section-title">Waiting on you</h2>
+			<div class="business-home__tiles">
+				{#each tiles as { key, ...tile } (key)}
+					<KpiCard variant="compact" {...tile} />
+				{/each}
+			</div>
+		</section>
+	{/if}
 
 	{#if unclosedCalls.length > 0}
 		<section class="business-home__panel business-home__panel--calls" aria-labelledby="calls-title">
@@ -248,9 +279,11 @@
 							</span>
 						</a>
 						<span class="business-home__item-side">
-							<Button variant="secondary" size="small" onclick={() => (recording = call.id)}>
-								Record outcome<span class="visually-hidden">: {call.business_name}</span>
-							</Button>
+							{#if canWorkLeads}
+								<Button variant="secondary" size="small" onclick={() => (recording = call.id)}>
+									Record outcome<span class="visually-hidden">: {call.business_name}</span>
+								</Button>
+							{/if}
 						</span>
 					</li>
 				{/each}
@@ -261,10 +294,23 @@
 	<div class="business-home__grid">
 		<section class="business-home__panel" aria-labelledby="todo-title">
 			<header class="business-home__panel-header">
-				<h2 id="todo-title">Your to-do list</h2>
-				{#if home.data}
-					<span class="business-home__count">{dueCount} this week</span>
-				{/if}
+				<h2 id="todo-title">{everyone ? 'Team to-do list' : 'Your to-do list'}</h2>
+				<span class="business-home__panel-tools">
+					{#if home.data}
+						<span class="business-home__count">{dueCount} this week</span>
+					{/if}
+					{#if isJafar}
+						<SegmentedControl
+							size="small"
+							ariaLabel="Whose to-dos"
+							options={[
+								{ value: 'mine', label: 'Mine' },
+								{ value: 'everyone', label: 'Everyone' }
+							]}
+							bind:value={scope}
+						/>
+					{/if}
+				</span>
 			</header>
 
 			{#if home.isPending}
@@ -282,7 +328,9 @@
 					<span class="business-home__empty-icon" aria-hidden="true">{@html circleCheckIcon}</span>
 					<strong>Nothing due this week</strong>
 					<span
-						>Every business's next step is further out. New ones appear here when they fall due.</span
+						>{isJafar
+							? "Every business's next step is further out. New ones appear here when they fall due."
+							: 'Next steps on the Leads you look after appear here when they fall due.'}</span
 					>
 				</div>
 			{:else}
@@ -308,6 +356,9 @@
 											<span class="business-home__item-meta">
 												<strong>{item.business_name}</strong>
 												<span>{item.trade} · {countryName(item.country_code)}</span>
+												{#if everyone}
+													<span class="business-home__item-owner">{item.owner_name ?? 'You'}</span>
+												{/if}
 											</span>
 										</a>
 										<span class="business-home__item-side">
@@ -318,21 +369,23 @@
 												class={['business-home__due', `business-home__due--${group.key}`]}
 												title={item.due_on}>{dueLabel(item.due_on)}</span
 											>
-											<Button
-												variant="secondary"
-												size="small"
-												onclick={() => {
-													// A call's next action is finished by saying how the call went.
-													if (item.call_id) recording = item.call_id;
-													else completing = item;
-												}}
-											>
-												<span class="business-home__button-icon" aria-hidden="true"
-													>{@html checkIcon}</span
-												>Done<span class="visually-hidden"
-													>: {item.next_action}, {item.business_name}</span
+											{#if canWorkLeads}
+												<Button
+													variant="secondary"
+													size="small"
+													onclick={() => {
+														// A call's next action is finished by saying how the call went.
+														if (item.call_id) recording = item.call_id;
+														else completing = item;
+													}}
 												>
-											</Button>
+													<span class="business-home__button-icon" aria-hidden="true"
+														>{@html checkIcon}</span
+													>Done<span class="visually-hidden"
+														>: {item.next_action}, {item.business_name}</span
+													>
+												</Button>
+											{/if}
 										</span>
 									</li>
 								{/each}
@@ -488,6 +541,13 @@
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 	}
+	.business-home__panel-tools {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: flex-end;
+		gap: var(--space-base);
+	}
 	.business-home__loading {
 		padding: var(--space-base) var(--space-large);
 	}
@@ -566,6 +626,15 @@
 			overflow: hidden;
 			text-overflow: ellipsis;
 			white-space: nowrap;
+		}
+		// Whose step it is, on the whole team's list.
+		.business-home__item-owner {
+			flex: 0 0 auto;
+			padding: 0 var(--space-small);
+			border-radius: var(--radius-base);
+			background: var(--color-surface--background);
+			color: var(--color-text);
+			font-weight: 600;
 		}
 	}
 	.business-home__item-side {

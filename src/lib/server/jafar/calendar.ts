@@ -3,6 +3,8 @@ import type { RequestEvent } from '@sveltejs/kit';
 import type { z } from 'zod';
 import type { Database } from '$lib/database.types';
 import { validationError } from '$lib/server/api/errors';
+import type { OwnerSession } from '$lib/server/auth/owner';
+import { canUseJafarPath } from '$lib/jafar/team-access';
 
 // Jafar business management C2: what the calendar routes share.
 
@@ -28,15 +30,40 @@ export async function parseBody<Schema extends z.ZodType>(
 }
 
 /**
- * Saves the browser's time zone as Jafar's when he has none yet, so "9am on the day" reminders mean his 9am from
- * the first thing he books. Never overwrites a chosen one.
+ * D3b: whose calendar this is -- the teammate's member id, or undefined for Jafar (the database's default) -- and
+ * whether they may work on calls. Calls belong to Leads, so booking, moving, editing and closing one follows the
+ * Leads & Deals area; Busy blocks are everyone's own and the database keeps each to its owner.
  */
-export async function adoptTimeZone(client: Client, zone: string | undefined) {
+export function calendarViewer(session: OwnerSession) {
+	return {
+		memberId: session.memberId ?? undefined,
+		canSeeCalls: canUseJafarPath(session, '/api/jafar/leads'),
+		canWorkCalls: canUseJafarPath(session, '/api/jafar/leads/x', 'PATCH')
+	};
+}
+
+/** Refuses a teammate a call they may not work on. */
+export const CALLS_REFUSED = 'Your access does not include changing calls.';
+
+/**
+ * Saves the browser's time zone as the person's own when they have none yet, so "9am on the day" reminders mean
+ * their 9am from the first thing they book. Never overwrites a chosen one.
+ */
+export async function adoptTimeZone(
+	client: Client,
+	zone: string | undefined,
+	memberId: string | undefined
+) {
 	if (!zone) return;
-	const { data, error } = await client.rpc('owner_calendar_preferences');
+	const { data, error } = await client.rpc('owner_calendar_preferences', {
+		viewer_member_id: memberId
+	});
 	if (error) throw error;
 	if ((data as { time_zone: string | null }).time_zone) return;
-	const saved = await client.rpc('owner_calendar_save_preferences', { target_time_zone: zone });
+	const saved = await client.rpc('owner_calendar_save_preferences', {
+		target_time_zone: zone,
+		viewer_member_id: memberId
+	});
 	if (saved.error) throw saved.error;
 }
 

@@ -9,11 +9,14 @@ import { isPlainRefusal, parseBody } from '$lib/server/jafar/calendar';
 import { calendarPreferencesSchema } from '$lib/server/validation/calendar.schema';
 
 // Jafar business management C2: My preferences -- the time zone and default reminders. Saving rewrites every
-// reminder still to come that follows them.
+// reminder still to come that follows them. D3b: each person's own, whoever is signed in.
 
 export const GET: RequestHandler = async (event) => {
-	if (!(await getOwnerSession(event))) return ownerUnauthorized();
-	const { data, error } = await getOwnerSupabaseClient().rpc('owner_calendar_preferences');
+	const session = await getOwnerSession(event);
+	if (!session) return ownerUnauthorized();
+	const { data, error } = await getOwnerSupabaseClient().rpc('owner_calendar_preferences', {
+		viewer_member_id: session.memberId ?? undefined
+	});
 	if (error) {
 		console.error('Could not load the calendar preferences.', error);
 		return json({ error: 'Your calendar choices could not be loaded.' }, { status: 500 });
@@ -22,12 +25,14 @@ export const GET: RequestHandler = async (event) => {
 };
 
 export const PATCH: RequestHandler = async (event) => {
-	if (!(await getOwnerSession(event))) return ownerUnauthorized();
+	const session = await getOwnerSession(event);
+	if (!session) return ownerUnauthorized();
 	const parsed = await parseBody(event, calendarPreferencesSchema);
 	if (!parsed.ok) return parsed.response;
 	const { data, error } = await getOwnerSupabaseClient().rpc('owner_calendar_save_preferences', {
 		target_time_zone: parsed.data.time_zone,
-		target_reminder_defaults: parsed.data.reminder_defaults as Json | undefined
+		target_reminder_defaults: parsed.data.reminder_defaults as Json | undefined,
+		viewer_member_id: session.memberId ?? undefined
 	});
 	if (isPlainRefusal(error)) return validationError({ form: error.message }, 409);
 	if (error) {

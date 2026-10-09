@@ -5,11 +5,17 @@ import { databaseError, notFound, validationError } from '$lib/server/api/errors
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
-import { adoptTimeZone, isPlainRefusal, parseBody } from '$lib/server/jafar/calendar';
+import {
+	CALLS_REFUSED,
+	adoptTimeZone,
+	calendarViewer,
+	isPlainRefusal,
+	parseBody
+} from '$lib/server/jafar/calendar';
 import { calendarEntryCreateSchema } from '$lib/server/validation/calendar.schema';
 
 // Jafar business management C2: books a call with a business (it becomes the business's next action) or blocks out
-// Busy time.
+// Busy time. D3b: a teammate books calls only with Leads & Deals open to change; Busy blocks are their own.
 
 export const POST: RequestHandler = async (event) => {
 	const session = await getOwnerSession(event);
@@ -17,10 +23,13 @@ export const POST: RequestHandler = async (event) => {
 	const parsed = await parseBody(event, calendarEntryCreateSchema);
 	if (!parsed.ok) return parsed.response;
 	const input = parsed.data;
+	const viewer = calendarViewer(session);
+	if (input.kind === 'call' && !viewer.canWorkCalls)
+		return json({ error: CALLS_REFUSED }, { status: 403 });
 	const client = getOwnerSupabaseClient();
 
 	try {
-		await adoptTimeZone(client, input.time_zone);
+		await adoptTimeZone(client, input.time_zone, viewer.memberId);
 		const { data, error } =
 			input.kind === 'call'
 				? await client.rpc('owner_calendar_book_call', {
@@ -38,7 +47,8 @@ export const POST: RequestHandler = async (event) => {
 						target_id: null as unknown as string,
 						target_starts_at: input.starts_at,
 						target_ends_at: input.ends_at,
-						target_title: input.title ?? undefined
+						target_title: input.title ?? undefined,
+						viewer_member_id: viewer.memberId
 					});
 		if (isPlainRefusal(error)) return validationError({ form: error.message }, 409);
 		if (error) throw error;

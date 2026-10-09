@@ -11,7 +11,13 @@ import {
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
-import { isPlainRefusal, parseBody } from '$lib/server/jafar/calendar';
+import type { OwnerSession } from '$lib/server/auth/owner';
+import {
+	CALLS_REFUSED,
+	calendarViewer,
+	isPlainRefusal,
+	parseBody
+} from '$lib/server/jafar/calendar';
 import { calendarEntryChangeSchema } from '$lib/server/validation/calendar.schema';
 
 // Jafar business management C2: one call or Busy block -- read it, move it, edit its words and reminders, close a
@@ -19,18 +25,35 @@ import { calendarEntryChangeSchema } from '$lib/server/validation/calendar.schem
 
 const NOT_FOUND = 'This is no longer on the calendar.';
 
-export const GET: RequestHandler = async (event) => {
-	if (!(await getOwnerSession(event))) return ownerUnauthorized();
-	if (!z.uuid().safeParse(event.params.id).success) return notFound(NOT_FOUND);
+type Entry = { kind: 'call' | 'busy'; owner_member_id: string | null };
+
+/**
+ * D3b: the entry when this person may see it -- their own, or a call of a Lead they can open. Someone else's Busy
+ * block is private, so it reads as not there.
+ */
+async function visibleEntry(session: OwnerSession, id: string) {
 	const { data, error } = await getOwnerSupabaseClient().rpc('owner_calendar_entry', {
-		target_id: event.params.id
+		target_id: id
 	});
-	if (error) {
+	if (error) throw error;
+	const entry = data as Entry | null;
+	if (!entry) return null;
+	const own = entry.owner_member_id === session.memberId;
+	return own || (entry.kind === 'call' && calendarViewer(session).canSeeCalls) ? entry : null;
+}
+
+export const GET: RequestHandler = async (event) => {
+	const session = await getOwnerSession(event);
+	if (!session) return ownerUnauthorized();
+	if (!z.uuid().safeParse(event.params.id).success) return notFound(NOT_FOUND);
+	try {
+		const entry = await visibleEntry(session, event.params.id);
+		if (!entry) return notFound(NOT_FOUND);
+		return json(entry, { headers: PRIVATE_READ_HEADERS });
+	} catch (error) {
 		console.error('Could not load the calendar entry.', error);
 		return json({ error: 'This could not be loaded.' }, { status: 500 });
 	}
-	if (!data) return notFound(NOT_FOUND);
-	return json(data, { headers: PRIVATE_READ_HEADERS });
 };
 
 export const PATCH: RequestHandler = async (event) => {
@@ -42,8 +65,13 @@ export const PATCH: RequestHandler = async (event) => {
 	const change = parsed.data;
 	const client = getOwnerSupabaseClient();
 	const target_id = event.params.id;
+	const viewer = calendarViewer(session);
 
 	try {
+		const entry = await visibleEntry(session, target_id);
+		if (!entry) return notFound(NOT_FOUND);
+		if (entry.kind === 'call' && !viewer.canWorkCalls)
+			return json({ error: CALLS_REFUSED }, { status: 403 });
 		const { data, error } =
 			change.action === 'move'
 				? await client.rpc('owner_calendar_move', {
@@ -65,7 +93,8 @@ export const PATCH: RequestHandler = async (event) => {
 								target_id,
 								target_starts_at: change.starts_at,
 								target_ends_at: change.ends_at,
-								target_title: change.title ?? undefined
+								target_title: change.title ?? undefined,
+								viewer_member_id: viewer.memberId
 							})
 						: await client.rpc('owner_calendar_close_call', {
 								actor_email: session.email,
@@ -86,10 +115,12 @@ export const PATCH: RequestHandler = async (event) => {
 };
 
 export const DELETE: RequestHandler = async (event) => {
-	if (!(await getOwnerSession(event))) return ownerUnauthorized();
+	const session = await getOwnerSession(event);
+	if (!session) return ownerUnauthorized();
 	if (!z.uuid().safeParse(event.params.id).success) return notFound(NOT_FOUND);
 	const { data, error } = await getOwnerSupabaseClient().rpc('owner_calendar_delete_busy', {
-		target_id: event.params.id
+		target_id: event.params.id,
+		viewer_member_id: session.memberId ?? undefined
 	});
 	if (error) {
 		console.error('Could not remove the Busy block.', error);

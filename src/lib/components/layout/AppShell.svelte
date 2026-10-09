@@ -167,10 +167,20 @@
 			]
 		}
 	]);
-	// A teammate sees only the pages their access opens, and a section with none left disappears.
+	// A teammate sees only the pages their access opens, and a section with none left disappears. Settings stay
+	// Jafar's, so a teammate's last item is their own My preferences instead (D3b).
 	const ownerGroups = $derived(
 		allOwnerGroups
-			.map((group) => ({ ...group, items: group.items.filter((item) => ownerCanOpen(item.href)) }))
+			.map((group) => ({
+				...group,
+				items: group.items
+					.map((item) =>
+						item.href === '/jafar/settings' && !ownerCanOpen(item.href)
+							? { label: 'My preferences', href: '/jafar/settings/preferences', icon: item.icon }
+							: item
+					)
+					.filter((item) => ownerCanOpen(item.href))
+			}))
 			.filter((group) => group.items.length > 0)
 	);
 	const groups = $derived(variant === 'owner' ? ownerGroups : contractorGroups);

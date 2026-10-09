@@ -45,6 +45,7 @@
 		type CalendarEntry,
 		type CalendarItem
 	} from '$lib/jafar/calendar';
+	import { canUseJafarPath } from '$lib/jafar/team-access';
 
 	// Jafar business management C2: the Business Management calendar (plan § 6) -- sales calls, Busy blocks and
 	// dated next actions, never contractor jobs. Day and Week draw the shared time grid, Month the shared month,
@@ -60,7 +61,17 @@
 		{ value: 'month' as const, label: 'Month' }
 	];
 
-	// Jafar's own time zone once saved; until then the browser's, which is saved with his first booking.
+	// D3b: each person's own calendar -- the server sends only their calls, follow-ups and Busy blocks. Calls belong to
+	// Leads, so someone who cannot change Leads only adds Busy time.
+	const canBookCalls = $derived(
+		canUseJafarPath(
+			{ role: page.data.owner.role, access: page.data.owner.access },
+			'/api/jafar/leads/x',
+			'PATCH'
+		)
+	);
+
+	// The viewer's own time zone once saved; until then the browser's, which is saved with their first booking.
 	const preferencesQuery = createQuery(() => ({
 		queryKey: calendarPreferencesKey,
 		queryFn: fetchCalendarPreferences,
@@ -244,6 +255,10 @@
 	}
 
 	function openSlot(day: string, start: number, end: number, event: PointerEvent) {
+		if (!canBookCalls) {
+			open = { kind: 'busy', entry: null, seed: { day, start, end } };
+			return;
+		}
 		slot = { day, start, end, anchor: anchorAtPoint(event.clientX, event.clientY) };
 	}
 
@@ -287,9 +302,12 @@
 		open = { kind: 'outcome', entryId, cancelling: !ended };
 	}
 
-	// A month cell books a call that day at 10am.
+	// A month cell books a call that day at 10am (Busy time for someone who cannot book calls).
 	function bookOnDay(day: string) {
-		open = { kind: 'call', entryId: null, seed: { day, start: 10 * 60, end: 10 * 60 + 30 } };
+		const seed = { day, start: 10 * 60, end: 10 * 60 + 30 };
+		open = canBookCalls
+			? { kind: 'call', entryId: null, seed }
+			: { kind: 'busy', entry: null, seed };
 	}
 
 	const monthItems = $derived(new Map(days.map((day) => [day, orderCalendarDay(placed.get(day))])));
@@ -319,9 +337,11 @@
 			>
 				<span class="sales-calendar__icon" aria-hidden="true">{@html lockIcon}</span>Add busy time
 			</Button>
-			<Button onclick={() => (open = { kind: 'call', entryId: null, seed: null })}>
-				<span class="sales-calendar__icon" aria-hidden="true">{@html phoneIcon}</span>Book a call
-			</Button>
+			{#if canBookCalls}
+				<Button onclick={() => (open = { kind: 'call', entryId: null, seed: null })}>
+					<span class="sales-calendar__icon" aria-hidden="true">{@html phoneIcon}</span>Book a call
+				</Button>
+			{/if}
 		</div>
 	</header>
 

@@ -215,15 +215,22 @@ const ALSO_NEEDS: ReadonlyArray<readonly [JafarArea, PathRule]> = [
 
 /**
  * Paths open to everyone signed in, whatever their areas: changing their own profile photo, seeing the
- * photos of the people they work with, and their own alerts. Whose photo changes and whose alerts are read
- * come from the session, never the request.
+ * photos of the people they work with, their own alerts, and their own day -- home, calendar, and My
+ * preferences. Whose photo, alerts, to-dos, calendar and preferences are read or changed come from the
+ * session, never the request; calendar routes also refuse calls to someone without Leads & Deals.
  */
 const EVERY_SIGNED_IN_PERSON: readonly PathRule[] = [
 	{ pattern: '/api/jafar/account/photo' },
 	{ pattern: '/api/jafar/photos/*' },
 	// D3a: everyone has their own bell; the server reads only the viewer's own alerts.
 	{ pattern: '/jafar/notifications' },
-	{ pattern: '/api/jafar/notifications', subtree: true }
+	{ pattern: '/api/jafar/notifications', subtree: true },
+	// D3b: each person's own day.
+	{ pattern: '/jafar' },
+	{ pattern: '/api/jafar/home' },
+	{ pattern: '/jafar/calendar' },
+	{ pattern: '/api/jafar/calendar', subtree: true },
+	{ pattern: '/jafar/settings/preferences' }
 ];
 
 const READ_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
@@ -352,10 +359,7 @@ export function canUseJafarPath(viewer: JafarViewer, pathname: string, method = 
 	return level === 'work';
 }
 
-/** The page a teammate lands on when they open `/jafar` or a page outside their areas. */
-export function teammateHomePath(viewer: JafarViewer & { role: TeamRole }) {
-	const access = viewerAccess(viewer);
-	const firstArea = JAFAR_AREAS.find((area) => access.areas[area]);
-	const prefixes = AREA_PREFIXES.find(([area]) => area === firstArea)?.[1] ?? [];
-	return prefixes.find((prefix) => prefix.startsWith('/jafar/')) ?? '/jafar/login';
+/** The page a teammate lands on when they open a page outside their areas: their own home (D3b). */
+export function teammateHomePath() {
+	return '/jafar';
 }

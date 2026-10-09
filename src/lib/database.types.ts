@@ -14845,10 +14845,12 @@ export type Database = {
 					password_hash: string | null;
 					password_reset_expires_at: string | null;
 					password_reset_token_hash: string | null;
+					reminder_defaults: Json | null;
 					removed_at: string | null;
 					removed_by_email: string | null;
 					role: string;
 					status: string;
+					time_zone: string | null;
 					updated_at: string;
 				};
 				Insert: {
@@ -14870,10 +14872,12 @@ export type Database = {
 					password_hash?: string | null;
 					password_reset_expires_at?: string | null;
 					password_reset_token_hash?: string | null;
+					reminder_defaults?: Json | null;
 					removed_at?: string | null;
 					removed_by_email?: string | null;
 					role: string;
 					status?: string;
+					time_zone?: string | null;
 					updated_at?: string;
 				};
 				Update: {
@@ -14895,10 +14899,12 @@ export type Database = {
 					password_hash?: string | null;
 					password_reset_expires_at?: string | null;
 					password_reset_token_hash?: string | null;
+					reminder_defaults?: Json | null;
 					removed_at?: string | null;
 					removed_by_email?: string | null;
 					role?: string;
 					status?: string;
+					time_zone?: string | null;
 					updated_at?: string;
 				};
 				Relationships: [];
@@ -24270,7 +24276,12 @@ export type Database = {
 				Returns: Json;
 			};
 			owner_business_home: {
-				Args: { agenda_limit?: number; today_date: string };
+				Args: {
+					agenda_limit?: number;
+					everyone?: boolean;
+					today_date: string;
+					viewer_member_id?: string;
+				};
 				Returns: Json;
 			};
 			owner_business_set_setup_owner: {
@@ -24305,7 +24316,7 @@ export type Database = {
 				Returns: boolean;
 			};
 			owner_calendar_delete_busy: {
-				Args: { target_id: string };
+				Args: { target_id: string; viewer_member_id?: string };
 				Returns: boolean;
 			};
 			owner_calendar_edit: {
@@ -24327,7 +24338,10 @@ export type Database = {
 				};
 				Returns: boolean;
 			};
-			owner_calendar_preferences: { Args: never; Returns: Json };
+			owner_calendar_preferences: {
+				Args: { viewer_member_id?: string };
+				Returns: Json;
+			};
 			owner_calendar_save_busy: {
 				Args: {
 					actor_email: string;
@@ -24335,19 +24349,24 @@ export type Database = {
 					target_id: string;
 					target_starts_at: string;
 					target_title?: string;
+					viewer_member_id?: string;
 				};
 				Returns: string;
 			};
 			owner_calendar_save_preferences: {
-				Args: { target_reminder_defaults?: Json; target_time_zone?: string };
+				Args: {
+					target_reminder_defaults?: Json;
+					target_time_zone?: string;
+					viewer_member_id?: string;
+				};
 				Returns: Json;
 			};
 			owner_calendar_unclosed_calls: {
-				Args: { limit_count?: number };
+				Args: { limit_count?: number; viewer_member_id?: string };
 				Returns: Json;
 			};
 			owner_calendar_window: {
-				Args: { from_date: string; to_date: string; zone: string };
+				Args: { from_date: string; to_date: string; viewer_member_id?: string; zone: string };
 				Returns: Json;
 			};
 			owner_cancel_setup_training: {

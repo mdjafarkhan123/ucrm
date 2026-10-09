@@ -23,7 +23,12 @@ describe('Jafar Panel team access', () => {
 
 	it('keeps unclaimed paths for the owner alone', () => {
 		for (const role of TEAM_ROLES) {
-			for (const pathname of ['/jafar', '/jafar/settings', '/jafar/setup', '/api/jafar/team']) {
+			for (const pathname of [
+				'/jafar/settings',
+				'/jafar/settings/team',
+				'/jafar/setup',
+				'/api/jafar/team'
+			]) {
 				expect(canUseJafarPath({ role }, pathname, 'GET'), `${role} ${pathname}`).toBe(false);
 			}
 		}
@@ -45,6 +50,21 @@ describe('Jafar Panel team access', () => {
 			expect(canUseJafarPath({ role }, '/jafar/notifications', 'GET'), role).toBe(true);
 			expect(canUseJafarPath({ role }, '/api/jafar/notifications', 'GET'), role).toBe(true);
 			expect(canUseJafarPath({ role }, '/api/jafar/notifications/read', 'POST'), role).toBe(true);
+		}
+	});
+
+	it('gives every teammate their own home, calendar and My preferences (D3b)', () => {
+		for (const role of TEAM_ROLES) {
+			expect(canUseJafarPath({ role }, '/jafar', 'GET'), role).toBe(true);
+			expect(canUseJafarPath({ role }, '/api/jafar/home', 'GET'), role).toBe(true);
+			expect(canUseJafarPath({ role }, '/jafar/calendar', 'GET'), role).toBe(true);
+			expect(canUseJafarPath({ role }, '/api/jafar/calendar/entries/x', 'PATCH'), role).toBe(true);
+			expect(canUseJafarPath({ role }, '/jafar/settings/preferences', 'GET'), role).toBe(true);
+			expect(canUseJafarPath({ role }, '/api/jafar/calendar/preferences', 'PATCH'), role).toBe(
+				true
+			);
+			// The rest of Settings stays Jafar's.
+			expect(canUseJafarPath({ role }, '/jafar/settings/alerts', 'GET'), role).toBe(false);
 		}
 	});
 
@@ -77,14 +97,11 @@ describe('Jafar Panel team access', () => {
 		expect(canUseJafarPath(operations, '/api/jafar/operations/x/retry', 'POST')).toBe(false);
 	});
 
-	it('sends every role home to a page it can open', () => {
+	it('sends every role to their own home, which they can open (D3b)', () => {
+		expect(teammateHomePath()).toBe('/jafar');
 		for (const role of TEAM_ROLES) {
-			const home = teammateHomePath({ role });
-			expect(home.startsWith('/jafar/'), role).toBe(true);
-			expect(canUseJafarPath({ role }, home, 'GET'), role).toBe(true);
+			expect(canUseJafarPath({ role }, teammateHomePath(), 'GET'), role).toBe(true);
 		}
-		expect(teammateHomePath({ role: 'sales' })).toBe('/jafar/leads');
-		expect(teammateHomePath({ role: 'support' })).toBe('/jafar/support');
 	});
 });
 
@@ -275,11 +292,5 @@ describe('individual access (D2)', () => {
 			expect(canUseJafarPath(everything, pathname, 'POST'), pathname).toBe(false);
 			expect(canUseJafarPath(everything, pathname, 'GET'), pathname).toBe(true);
 		}
-	});
-
-	it('sends a teammate home to their first open area', () => {
-		expect(teammateHomePath(sales({ areas: { support: 'look' }, actions: [] }))).toBe(
-			'/jafar/support'
-		);
 	});
 });

@@ -3,6 +3,7 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { beforeNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import alarmIcon from '@tabler/icons/outline/alarm.svg?raw';
 	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
@@ -27,6 +28,8 @@
 	// Jafar business management C2: My preferences -- his time zone and the reminders a new call or next action
 	// starts with (Jafar, 2026-10-08). Each call or next action can still change its own. Saving rewrites every
 	// reminder still to come that follows these defaults, so a change applies to what is already booked.
+	// D3b: each teammate has their own; Settings stay Jafar's, so only he is led back to them.
+	const ownerView = $derived(page.data.owner?.role === null);
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -110,9 +113,11 @@
 
 <svelte:head><title>My preferences · Settings · Control Room</title></svelte:head>
 
-<Breadcrumbs
-	items={[{ label: 'Settings', href: resolve('/jafar/settings') }, { label: 'My preferences' }]}
-/>
+{#if ownerView}
+	<Breadcrumbs
+		items={[{ label: 'Settings', href: resolve('/jafar/settings') }, { label: 'My preferences' }]}
+	/>
+{/if}
 
 {#if query.isError && !query.data}
 	<ErrorState
