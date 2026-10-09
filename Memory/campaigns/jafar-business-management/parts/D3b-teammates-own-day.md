@@ -16,7 +16,11 @@
 
 ## Next
 
-Sign in as Jafar (CLAUDE.md test login) and check the home: Mine hides Sam's "Intro call (D3b check)" on A1 Test Roofing (booked for 10 Oct), Everyone shows it with "Sam Seller" — at desktop and phone width. The browser window will not shrink, so show phone width in 390px iframes. Sign-in was rate-limited at 15:30 on 2026-10-09 (15-minute window). An uncommitted phone fix in `src/routes/jafar/(protected)/+page.svelte` (the to-do header wraps under its title) belongs to this part: check it on the phone screenshot, then commit it. Speed is done (lab, live data); no 50k seed was run on the shared database.
+Browser proof is mostly done (2026-10-09): Sam's home and calendar show only his Lead and call; Jafar's Mine hides it and Everyone shows it with "Sam Seller". Left to do:
+1. Retake the screenshots with one sign-in per person (the sign-in limit blocks repeated logins). Check the phone header fix in `src/routes/jafar/(protected)/+page.svelte` (title stays on one line, Mine/Everyone moves underneath on a phone; not yet seen).
+2. The same call showed a "Follow-Up" tag on desktop and "Call" on the phone in the first round. `agendaTag` should give "Call". See whether it happens again.
+3. The 50k-Lead speed check (plan § Speed), then commit, push, mark Done.
+4. Clean up the test data: cancel test call `533491fe-143e-40a3-9a25-1c0aca0c78b7` on A1 Test Roofing (`9762d6ac-…`) and put back its old next step, "Try again after their busy season", due 2026-10-09.
 
 ## Outside actions
 
