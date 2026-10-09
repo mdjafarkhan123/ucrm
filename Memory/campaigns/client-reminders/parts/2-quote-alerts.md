@@ -1,21 +1,26 @@
 # 2 — Quote alerts
 
 **Campaign:** client-reminders · **Plan:** `docs/client-reminders-behavior-contract.md` § Quote approved or changes requested online
-**Code:** the old worktree was lost with the Ubuntu install (2026-10-09); work on `main` or a new worktree
+**Code:** on `main` (migration file recovered, alert kinds and email footer added 2026-10-09)
 **Done when:** Approving through a quote link puts one alert in the owner's bell and one email in their inbox; repeating it adds none; the customer gets one thank-you.
 
 ## Steps
 
 - [x] Migration `supabase/migrations/20261106090000_quote_answer_alerts.sql` written
 - [x] Applied to the remote database as version 20261106090000 (confirmed 2026-10-09)
-- [ ] Recover the lost file: save `statements[1]` from `supabase_migrations.schema_migrations` where version = '20261106090000' as `supabase/migrations/20261106090000_quote_answer_alerts.sql`
-- [ ] TypeScript: alert kinds in `src/lib/team/notifications.ts`; email footer in `src/lib/server/team/inquiry-alerts.ts`; tests
-- [ ] Prove: approve, ask for changes, decline (long message) through a real quote link; check bell, alert email, thank-you
-- [ ] Merge to `main`, remove worktree
+- [x] Lost migration file recovered from the database (same bytes)
+- [x] TypeScript: alert kinds, email footer, tests
+- [x] Prove in the app: approve (twice), changes, 990-character decline on Raad LTD quotes #44, #34, #31 — one bell alert each, browser-checked desktop and phone; approve-again added nothing; decline is bell-only
+- [ ] Prove the emails arrive (waits for the Cloudflare Tunnel; it was down, HTTP 530)
+- [x] On `main`; worktree removed
 
 ## Next
 
-Recover the migration file (step above), then the TypeScript step. Nothing else from the old worktree survived; the TypeScript work had not started.
+When the tunnel is up (Jafar restarts it), wait a minute, then check: the two `team_notifications` rows for
+quotes #44 and #34 (kinds `quote.customer_approved`, `quote.changes_requested`, created 2026-10-09 09:44 UTC)
+show `email_state = 'sent'`, and the delivery intent whose send key starts `quote-approval-thanks:9a50ce08`
+was delivered to `dev.jafarkhan+part8@gmail.com`. Ask Jafar to confirm the alert email in
+`info.socialmediauser1@gmail.com` and the thank-you in his Gmail. Then the part is done.
 
 ## Outside actions
 
