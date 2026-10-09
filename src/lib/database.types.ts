@@ -25736,7 +25736,7 @@ export type Database = {
 					target_slug: string;
 					target_starts_at: string;
 					target_time_zone: string;
-					target_token_hash: string;
+					target_token_hash?: string;
 					target_trade: string;
 				};
 				Returns: Json;

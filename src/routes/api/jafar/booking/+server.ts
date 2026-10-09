@@ -48,6 +48,8 @@ export const PATCH: RequestHandler = async (event) => {
 		target_horizon_days: type.horizon_days,
 		target_buffer_minutes: type.buffer_minutes,
 		target_slot_interval_minutes: type.slot_interval_minutes,
+		target_requires_approval: type.requires_approval,
+		target_change_deadline_minutes: type.change_deadline_minutes,
 		target_hours: hours
 	});
 	if (error?.code === '23505')

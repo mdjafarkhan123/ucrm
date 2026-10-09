@@ -31,6 +31,7 @@
 		HORIZON_CHOICES,
 		INTERVAL_CHOICES,
 		NOTICE_CHOICES,
+		CHANGE_DEADLINE_CHOICES,
 		bookingPath,
 		fetchBookingSettings,
 		lengthWords,
@@ -76,7 +77,9 @@
 				min_notice_minutes: type.min_notice_minutes,
 				horizon_days: type.horizon_days,
 				buffer_minutes: type.buffer_minutes,
-				slot_interval_minutes: type.slot_interval_minutes
+				slot_interval_minutes: type.slot_interval_minutes,
+				requires_approval: type.requires_approval,
+				change_deadline_minutes: type.change_deadline_minutes
 			},
 			hours: settings.hours.map((range) => ({ ...range }))
 		};
@@ -147,6 +150,9 @@
 	const bufferOptions = options(BUFFER_CHOICES, (minutes) =>
 		minutes === 0 ? 'No gap' : `${minutes} min`
 	);
+	const deadlineOptions = options(CHANGE_DEADLINE_CHOICES, (minutes) =>
+		minutes === 0 ? 'Until the call starts' : `Up to ${noticeWords(minutes)} before`
+	);
 	const intervalOptions = options(INTERVAL_CHOICES, (minutes) => `Every ${lengthWords(minutes)}`);
 
 	/** The server's "hours.3.start" messages, by range. */
@@ -174,6 +180,7 @@
 	const horizon = numberField('horizon_days');
 	const buffer = numberField('buffer_minutes');
 	const interval = numberField('slot_interval_minutes');
+	const deadline = numberField('change_deadline_minutes');
 
 	const daysOpen = (hours: BookingHours[]) => new Set(hours.map((range) => range.weekday)).size;
 </script>
@@ -340,6 +347,34 @@
 							/>
 						</div>
 					</SectionBlock>
+
+					<SectionBlock
+						title="Confirming and changes"
+						hint="Whether you approve each booking, and how late people can change theirs."
+						form
+					>
+						<Toggle
+							id="booking-approval"
+							label="Approve each booking first"
+							description={draft.meeting_type.requires_approval
+								? 'People send a request. It holds no time until you approve it on their Lead, and the time is checked again then.'
+								: 'A free time is booked straight away and confirmed by email.'}
+							labelSide="start"
+							bind:checked={draft.meeting_type.requires_approval}
+						/>
+						<div class="booking-form__grid">
+							<Select
+								id="booking-deadline"
+								label="People can change or cancel"
+								options={deadlineOptions}
+								bind:value={deadline.value}
+							/>
+						</div>
+						<p class="booking-form__note">
+							Every email has a link to change or cancel. After this point, the link asks them to
+							reply instead.
+						</p>
+					</SectionBlock>
 					<button type="submit" hidden aria-hidden="true" tabindex="-1"></button>
 				</form>
 			{/if}
@@ -358,8 +393,9 @@
 						business's Lead, with your usual call reminders.
 					</p>
 					<p>
-						The visitor gets a confirmation email at once. If their email matches a Lead you already
-						have, the call joins that Lead; otherwise a new Lead starts.
+						The visitor gets a confirmation email at once, with a link to change or cancel. If their
+						email matches a Lead you already have, the call joins that Lead; otherwise a new Lead
+						starts.
 					</p>
 					{#if query.data && query.data.bookings_count > 0}
 						<p>

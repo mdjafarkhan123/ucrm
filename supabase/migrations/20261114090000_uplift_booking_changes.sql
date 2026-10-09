@@ -275,7 +275,8 @@ revoke all on function private.booking_view(uuid) from public, anon, authenticat
 drop function public.public_booking_book(text, timestamptz, text, text, text, text, text, text, text, text);
 
 -- Outcome 'booked' or 'requested' with the booking's view, 'taken' when the time is no longer open, 'unavailable'
--- when the link is off. target_token_hash: the SHA-256 (hex) of the secret the server puts in the visitor's emails.
+-- when the link is off. target_token_hash: the SHA-256 (hex) of the visitor's link; the server, which signs links
+-- with the booking's id, writes it straight after when it is not known yet.
 create or replace function public.public_booking_book(
   target_slug text,
   target_starts_at timestamptz,
@@ -286,7 +287,7 @@ create or replace function public.public_booking_book(
   target_business_name text,
   target_country_code text,
   target_trade text,
-  target_token_hash text,
+  target_token_hash text default null,
   target_note text default null
 )
 returns jsonb

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
 	BUFFER_CHOICES,
+	CHANGE_DEADLINE_CHOICES,
 	DURATION_CHOICES,
 	HORIZON_CHOICES,
 	INTERVAL_CHOICES,
@@ -75,7 +76,9 @@ export const bookingSettingsSchema = z.strictObject({
 		min_notice_minutes: oneOf(NOTICE_CHOICES, 'Choose the notice.'),
 		horizon_days: oneOf(HORIZON_CHOICES, 'Choose how far ahead.'),
 		buffer_minutes: oneOf(BUFFER_CHOICES, 'Choose a gap.'),
-		slot_interval_minutes: oneOf(INTERVAL_CHOICES, 'Choose how often a time can start.')
+		slot_interval_minutes: oneOf(INTERVAL_CHOICES, 'Choose how often a time can start.'),
+		requires_approval: z.boolean(),
+		change_deadline_minutes: oneOf(CHANGE_DEADLINE_CHOICES, 'Choose when changes stop.')
 	}),
 	hours: bookingHoursSchema,
 	time_zone: timeZoneSchema.optional()
@@ -137,3 +140,29 @@ export const publicBookingSchema = z.strictObject({
 });
 
 export type PublicBookingInput = z.infer<typeof publicBookingSchema>;
+
+/** E2: what a visitor does with their link -- move to another open time, or cancel with an optional reason. */
+export const bookingChangeSchema = z.discriminatedUnion('action', [
+	z.strictObject({
+		action: z.literal('move'),
+		starts_at: z.iso.datetime({ offset: true, error: 'Choose a time.' })
+	}),
+	z.strictObject({
+		action: z.literal('cancel'),
+		reason: z
+			.string()
+			.trim()
+			.max(500, 'Keep this under 500 characters.')
+			.nullish()
+			.transform((value) => value || null)
+	})
+]);
+
+/** E2: Jafar's answer to a request -- approve (at the asked time, or another open one) or decline. */
+export const bookingDecisionSchema = z.discriminatedUnion('decision', [
+	z.strictObject({
+		decision: z.literal('approve'),
+		starts_at: z.iso.datetime({ offset: true, error: 'Choose a time.' }).nullish()
+	}),
+	z.strictObject({ decision: z.literal('decline') })
+]);

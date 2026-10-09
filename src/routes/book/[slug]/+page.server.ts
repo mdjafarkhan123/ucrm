@@ -14,15 +14,22 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 	const from = new Date();
 	const to = new Date(from.getTime() + FIRST_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
-	const [meetingResult, slotsResult] = await Promise.all([
+	const [meetingResult, slotsResult, approvalResult] = await Promise.all([
 		client.rpc('public_booking_page', { target_slug: params.slug }),
 		client.rpc('public_booking_slots', {
 			target_slug: params.slug,
 			range_from: from.toISOString(),
 			range_to: to.toISOString()
-		})
+		}),
+		// E2: in approval mode the page sends a request rather than a booking.
+		client
+			.from('platform_meeting_types')
+			.select('requires_approval')
+			.eq('slug', params.slug)
+			.maybeSingle()
 	]);
 	if (meetingResult.error) throw meetingResult.error;
+	if (approvalResult.error) throw approvalResult.error;
 	if (slotsResult.error) throw slotsResult.error;
 
 	// Open times change with every booking; never let a cache keep a taken one.
@@ -34,6 +41,7 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 			to: to.toISOString(),
 			starts: (slotsResult.data ?? []).map((slot) => slot.starts_at)
 		},
+		requiresApproval: approvalResult.data?.requires_approval ?? false,
 		turnstileSiteKey: publicEnv.PUBLIC_TURNSTILE_SITE_KEY ?? ''
 	};
 };

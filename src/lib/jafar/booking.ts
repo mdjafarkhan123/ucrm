@@ -15,6 +15,10 @@ export type MeetingType = {
 	horizon_days: number;
 	buffer_minutes: number;
 	slot_interval_minutes: number;
+	/** E2: each booking waits for Jafar's approval; a request holds no time. */
+	requires_approval: boolean;
+	/** E2: how long before the call the visitor's change and cancel links stop working. */
+	change_deadline_minutes: number;
 };
 
 /** One weekly range; weekday 0 is Sunday. Times are "HH:MM" in the host's time zone. */
@@ -51,6 +55,31 @@ export type BookedCall = {
 	host_name: string;
 };
 
+/**
+ * E2: a booking or request as its visitor's link and its emails see it. `status`: a request (no time held yet),
+ * a booking (its call's own `call_status` says scheduled, held, missed or cancelled), declined, or withdrawn.
+ */
+export type BookingView = BookedCall & {
+	booking_id: string;
+	status: 'requested' | 'booked' | 'declined' | 'withdrawn';
+	call_status: 'scheduled' | 'held' | 'no_show' | 'cancelled' | null;
+	entry_id: string | null;
+	relationship_id: string;
+	slug: string | null;
+	horizon_days: number;
+	visitor_name: string;
+	visitor_email: string;
+	visitor_phone: string;
+	visitor_time_zone: string;
+	business_name: string;
+	/** The visitor's links stop working at this time (Jafar's deadline before the call). */
+	change_until: string;
+	can_change: boolean;
+};
+
+/** What the visitor's link page shows: the booking and where to book again. */
+export type ManagedBooking = Omit<BookingView, 'visitor_email' | 'relationship_id' | 'entry_id'>;
+
 // --- Choices -------------------------------------------------------------------------------------------------
 
 export const DURATION_CHOICES = [15, 20, 30, 45, 60, 90] as const;
@@ -58,6 +87,8 @@ export const INTERVAL_CHOICES = [10, 15, 20, 30, 45, 60, 90, 120] as const;
 export const BUFFER_CHOICES = [0, 5, 10, 15, 30, 45, 60] as const;
 /** Minimum notice, in minutes. */
 export const NOTICE_CHOICES = [0, 60, 120, 240, 720, 1440, 2880, 4320, 10080] as const;
+/** E2: how long before the call a visitor can still change or cancel, in minutes. */
+export const CHANGE_DEADLINE_CHOICES = [0, 60, 120, 240, 720, 1440, 2880] as const;
 export const HORIZON_CHOICES = [7, 14, 30, 60, 90, 180] as const;
 export const MAX_RANGES_PER_DAY = 4;
 

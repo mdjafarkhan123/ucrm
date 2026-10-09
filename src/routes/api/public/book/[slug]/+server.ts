@@ -4,22 +4,21 @@ import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import { verifyTurnstileToken } from '$lib/server/security/turnstile';
 import { raiseOwnerAlert } from '$lib/server/jafar/owner-alerts';
-import { sendBookingConfirmation } from '$lib/server/jafar/booking-confirmation';
+import { sendBookingEmail } from '$lib/server/jafar/booking-emails';
+import { bookingToken, bookingTokenHash } from '$lib/server/jafar/booking-links';
 import { publicBookingSchema } from '$lib/server/validation/booking.schema';
-import { dateWords, timeWords, type BookedCall } from '$lib/jafar/booking';
+import { dateWords, timeWords, type BookedCall, type BookingView } from '$lib/jafar/booking';
 
 // Jafar business management E1: a visitor books a call. The database takes the host's lock and checks the time is
 // still open, so of two visitors racing for one time only the first gets it; the second is told to pick another.
-// The confirmation email and Jafar's alert follow the booking and never undo it.
+// E2: a meeting type in approval mode records a request instead, holding no time. The visitor's link to change or
+// cancel is stored (as its hash) before any email carries it. The email and Jafar's alert follow the booking and
+// never undo it.
 
 type BookResult =
-	| ({
-			outcome: 'booked';
-			booking_id: string;
-			entry_id: string;
-			relationship_id: string;
-	  } & BookedCall)
-	| { outcome: 'taken' | 'unavailable' };
+	| ({ outcome: 'booked' | 'requested' } & BookingView)
+	| { outcome: 'taken' }
+	| { outcome: 'unavailable' };
 
 const TAKEN =
 	'Someone has just booked that time. Please choose another — the list now shows what is still open.';
@@ -77,8 +76,9 @@ export const POST: RequestHandler = async (event) => {
 	const result = rpcData as BookResult;
 	if (result.outcome === 'unavailable')
 		return json({ error: 'This booking page is not taking bookings right now.' }, { status: 404 });
-	if (result.outcome !== 'booked') return json({ error: TAKEN, taken: true }, { status: 409 });
+	if (result.outcome === 'taken') return json({ error: TAKEN, taken: true }, { status: 409 });
 
+	const requested = result.outcome === 'requested';
 	const call: BookedCall = {
 		starts_at: result.starts_at,
 		ends_at: result.ends_at,
@@ -89,27 +89,35 @@ export const POST: RequestHandler = async (event) => {
 	};
 
 	try {
-		await sendBookingConfirmation(client, {
-			bookingId: result.booking_id,
-			call,
-			visitorName: data.name,
-			visitorEmail: data.email,
-			visitorPhone: data.phone,
-			timeZone: data.time_zone
-		});
+		const { error: linkError } = await client
+			.from('platform_bookings')
+			.update({ manage_token_hash: bookingTokenHash(bookingToken(result.booking_id)) })
+			.eq('id', result.booking_id);
+		if (linkError) throw linkError;
+		await sendBookingEmail(
+			client,
+			result,
+			{ kind: requested ? 'requested' : 'booked' },
+			event.url.origin
+		);
 	} catch (emailError) {
-		console.error('Could not queue the booking confirmation email.', emailError);
+		console.error('Could not queue the booking email.', emailError);
 	}
 
 	try {
 		// The time in the host's own zone, as their calendar shows it.
 		const prefs = await client.rpc('owner_calendar_preferences', {});
 		const hostZone = (prefs.data as { time_zone: string | null } | null)?.time_zone ?? 'UTC';
+		const when = `${dateWords(call.starts_at, hostZone, 'en-GB')} at ${timeWords(call.starts_at, hostZone, 'en-GB')}`;
 		await raiseOwnerAlert(client, {
-			kind: 'sales_call_booked',
-			severity: 'info',
-			title: `${data.business_name} booked a ${call.name}`,
-			body: `${data.name} booked ${dateWords(call.starts_at, hostZone, 'en-GB')} at ${timeWords(call.starts_at, hostZone, 'en-GB')}. Call them on ${data.phone}.`,
+			kind: requested ? 'sales_call_requested' : 'sales_call_booked',
+			severity: requested ? 'attention' : 'info',
+			title: requested
+				? `${data.business_name} asked for a ${call.name}`
+				: `${data.business_name} booked a ${call.name}`,
+			body: requested
+				? `${data.name} asked for ${when}. The time is not held until you approve it on their Lead.`
+				: `${data.name} booked ${when}. Call them on ${data.phone}.`,
 			target: { targetKind: 'business_relationship', targetId: result.relationship_id },
 			origin: event.url.origin
 		});
@@ -117,5 +125,5 @@ export const POST: RequestHandler = async (event) => {
 		console.error('Could not record the new-booking alert.', alertError);
 	}
 
-	return json({ ok: true, call });
+	return json({ ok: true, requested, call });
 };
