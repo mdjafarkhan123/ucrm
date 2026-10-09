@@ -55,6 +55,18 @@ Claude Code and Codex tidy each file they edit with Prettier automatically (`scr
 `npx prettier --check .` passes for the whole project. Check your own work with `npx prettier --check <paths>`; its CLI cannot match a glob
 containing `(app)`, so pass those file paths out in full.
 
+**Database changes.** Apply a migration file to the remote database with `psql` through `SUPABASE_DB_URL` in
+`.env` (session pooler; never print it), recording it in the same transaction so a failure leaves nothing behind:
+
+```bash
+psql "$(grep '^SUPABASE_DB_URL=' .env | cut -d= -f2-)" -X -v ON_ERROR_STOP=1 --single-transaction \
+  -f supabase/migrations/<version>_<name>.sql \
+  -c "insert into supabase_migrations.schema_migrations (version, name) values ('<version>', '<name>')"
+```
+
+Use the Supabase MCP for reads and outcome checks, not for applying migration files: it cannot read the file, and
+its `apply_migration` stamps today's version instead of the file's.
+
 ## Before saying done
 
 - `npm run check` passes, and so do the unit tests for what you changed. The full check runs once per hand-off,
