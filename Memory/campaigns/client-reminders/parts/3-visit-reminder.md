@@ -29,7 +29,7 @@
 - [x] Client switch status in Communication settings (`/api/clients/message-automations`; quote follow-ups and
   visit reminders only — Parts 5 and 6 add invoice reminders and job follow-ups to `MESSAGE_SWITCH_TRIGGERS`)
 - [x] Unit tests; `npm run check` clean (all on the branch)
-- [ ] Apply migration (needs the `migrations`/`remote-db` areas — held by Part 2's Codex session on 2026-10-09)
+- [ ] Apply migration (lane free since 2026-10-09)
 - [ ] Prove on the live app; merge to `main`; remove worktree
 
 ## Next
@@ -39,6 +39,6 @@ Apply the migration once the `migrations`/`remote-db` areas are free (`expand 74
 '20261107090000'`, then EXPLAIN `emit_due_appointment_reminders`, regenerate `database.types.ts`, and prove it in
 the browser (design screen check of the builder timing and the client dialog's "Not sending" line).
 
-Question for Jafar (2026-10-09): "The quote-alerts session (Codex) has held the database lane since 07:01 UTC with
-no changes in its copy. Is it still working, or may I take the lane to apply the visit-reminder database change?"
-
+Jafar confirmed 2026-10-09 that the Codex quote-alerts session has stopped; its claim was released, so the
+database lane is free. Claim with `--area automations --area visit-reminders --area migrations --area remote-db`
+from the worktree, then apply. Do not run `supabase db push` (see Part 2 note).
