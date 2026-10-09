@@ -7,4 +7,6 @@
 
 **Next part:** P5 plan review and build split after P4 approval.
 
+**Pause:** Jafar asked to review the P4 proposal next session and answer then. Resume with `read memory and continue multi-industry-platform-foundation`; read `parts/P4.md` before changing the plan.
+
 **Blockers:** P4 waits for Jafar's answer about the proposed migration and existing-form continuity. Medspa implementation waits for the approved foundation and Contractor proof.
