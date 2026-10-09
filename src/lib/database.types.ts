@@ -13617,7 +13617,22 @@ export type Database = {
 					website?: string | null;
 					website_host?: string | null;
 				};
-				Relationships: [];
+				Relationships: [
+					{
+						foreignKeyName: 'platform_business_relationships_next_action_entry_id_fkey';
+						columns: ['next_action_entry_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_calendar_entries';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'platform_business_relationships_setup_owner_member_id_fkey';
+						columns: ['setup_owner_member_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_team_members';
+						referencedColumns: ['id'];
+					}
+				];
 			};
 			platform_calendar_entries: {
 				Row: {
@@ -14605,11 +14620,11 @@ export type Database = {
 			};
 			platform_owner_settings: {
 				Row: {
-					owner_avatar_object_key: string | null;
-					owner_avatar_url: string | null;
 					alert_recipient_emails: string[];
 					created_at: string;
 					id: boolean;
+					owner_avatar_object_key: string | null;
+					owner_avatar_url: string | null;
 					payment_instructions: string;
 					privacy_policy_url: string;
 					privacy_policy_version: string;
@@ -14620,11 +14635,11 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
-					owner_avatar_object_key?: string | null;
-					owner_avatar_url?: string | null;
 					alert_recipient_emails?: string[];
 					created_at?: string;
 					id?: boolean;
+					owner_avatar_object_key?: string | null;
+					owner_avatar_url?: string | null;
 					payment_instructions?: string;
 					privacy_policy_url?: string;
 					privacy_policy_version?: string;
@@ -14635,11 +14650,11 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
-					owner_avatar_object_key?: string | null;
-					owner_avatar_url?: string | null;
 					alert_recipient_emails?: string[];
 					created_at?: string;
 					id?: boolean;
+					owner_avatar_object_key?: string | null;
+					owner_avatar_url?: string | null;
 					payment_instructions?: string;
 					privacy_policy_url?: string;
 					privacy_policy_version?: string;
@@ -14785,12 +14800,12 @@ export type Database = {
 			};
 			platform_team_members: {
 				Row: {
-					avatar_object_key: string | null;
-					avatar_url: string | null;
 					accepted_at: string | null;
 					access_revision: number;
 					action_grants: string[];
 					area_adjustments: Json;
+					avatar_object_key: string | null;
+					avatar_url: string | null;
 					created_at: string;
 					email: string;
 					full_name: string | null;
@@ -14810,12 +14825,12 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
-					avatar_object_key?: string | null;
-					avatar_url?: string | null;
 					accepted_at?: string | null;
 					access_revision?: number;
 					action_grants?: string[];
 					area_adjustments?: Json;
+					avatar_object_key?: string | null;
+					avatar_url?: string | null;
 					created_at?: string;
 					email: string;
 					full_name?: string | null;
@@ -14835,12 +14850,12 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
-					avatar_object_key?: string | null;
-					avatar_url?: string | null;
 					accepted_at?: string | null;
 					access_revision?: number;
 					action_grants?: string[];
 					area_adjustments?: Json;
+					avatar_object_key?: string | null;
+					avatar_url?: string | null;
 					created_at?: string;
 					email?: string;
 					full_name?: string | null;
@@ -18990,9 +19005,7 @@ export type Database = {
 				}[];
 			};
 			claim_due_platform_reminders: {
-				Args: {
-					batch_size?: number;
-				};
+				Args: { batch_size?: number };
 				Returns: Json;
 			};
 			claim_file_processing_jobs: {
@@ -24217,10 +24230,6 @@ export type Database = {
 				};
 				Returns: Json;
 			};
-			owner_business_home: {
-				Args: { agenda_limit?: number; today_date: string };
-				Returns: Json;
-			};
 			owner_business_client: {
 				Args: { target_relationship_id: string };
 				Returns: Json;
@@ -24229,8 +24238,16 @@ export type Database = {
 				Args: { target_relationship_id: string };
 				Returns: Json;
 			};
+			owner_business_home: {
+				Args: { agenda_limit?: number; today_date: string };
+				Returns: Json;
+			};
 			owner_business_set_setup_owner: {
-				Args: { actor_email: string; target_member_id: string; target_relationship_id: string };
+				Args: {
+					actor_email: string;
+					target_member_id: string;
+					target_relationship_id: string;
+				};
 				Returns: boolean;
 			};
 			owner_calendar_book_call: {
@@ -24257,9 +24274,7 @@ export type Database = {
 				Returns: boolean;
 			};
 			owner_calendar_delete_busy: {
-				Args: {
-					target_id: string;
-				};
+				Args: { target_id: string };
 				Returns: boolean;
 			};
 			owner_calendar_edit: {
@@ -24271,12 +24286,7 @@ export type Database = {
 				};
 				Returns: boolean;
 			};
-			owner_calendar_entry: {
-				Args: {
-					target_id: string;
-				};
-				Returns: Json;
-			};
+			owner_calendar_entry: { Args: { target_id: string }; Returns: Json };
 			owner_calendar_move: {
 				Args: {
 					actor_email: string;
@@ -24298,24 +24308,15 @@ export type Database = {
 				Returns: string;
 			};
 			owner_calendar_save_preferences: {
-				Args: {
-					target_reminder_defaults?: Json;
-					target_time_zone?: string;
-				};
+				Args: { target_reminder_defaults?: Json; target_time_zone?: string };
 				Returns: Json;
 			};
 			owner_calendar_unclosed_calls: {
-				Args: {
-					limit_count?: number;
-				};
+				Args: { limit_count?: number };
 				Returns: Json;
 			};
 			owner_calendar_window: {
-				Args: {
-					from_date: string;
-					to_date: string;
-					zone: string;
-				};
+				Args: { from_date: string; to_date: string; zone: string };
 				Returns: Json;
 			};
 			owner_cancel_setup_training: {
@@ -25915,9 +25916,7 @@ export type Database = {
 				Returns: undefined;
 			};
 			record_platform_reminder_sent: {
-				Args: {
-					target_id: string;
-				};
+				Args: { target_id: string };
 				Returns: boolean;
 			};
 			record_quote_decision: {
@@ -28353,11 +28352,15 @@ export type Database = {
 					alert_recipient_emails: string[];
 					created_at: string;
 					id: boolean;
+					owner_avatar_object_key: string | null;
+					owner_avatar_url: string | null;
 					payment_instructions: string;
 					privacy_policy_url: string;
 					privacy_policy_version: string;
+					reminder_defaults: Json | null;
 					reply_to_address: string;
 					sender_display_name: string;
+					time_zone: string | null;
 					updated_at: string;
 				};
 				SetofOptions: {
