@@ -7,7 +7,7 @@ promise (email now, texts after registration).
 
 **In progress:**
 
-- none
+- 4 Booking confirmation — design recorded, building in worktree `/home/jafar/Ucrm-cr4`
 
 **Next part:** 4 Booking confirmation (2 and 3 done 2026-10-09).
 
