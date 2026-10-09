@@ -275,7 +275,7 @@
 			case 'owner_changed':
 				return `Now owned by ${details.to || 'Jafar'}`;
 			case 'call_booked':
-				return 'Call booked';
+				return details.booked_online ? 'Call booked online' : 'Call booked';
 			case 'call_moved':
 				return 'Call moved';
 			case 'call_held':

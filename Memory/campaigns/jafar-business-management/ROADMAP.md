@@ -16,7 +16,7 @@ Build stages (approved 2026-10-07, built in this order):
 | B Leads to client | Leads, history, contact approval, Deals, Won and handover | Done 2026-10-07 | — |
 | C Your day | Home next actions, calendar and reminders, activity report | Done 2026-10-09 — speed (lab): C2 calendar week ~10 ms at 50k Leads; C3 report (Leads → Report) at 50k Leads / 500k history lines: month 29 ms, 90 days 153 ms, year 475 ms, all time 1.3 s. Playwright needs `executablePath: '/usr/bin/brave'` | — |
 | D Team | Teammate invitations and sign-in, permissions, assignments | Done 2026-10-09 — invitations, area and action switches, Lead owners, teammates' own home and calendar, Jafar's Mine/Everyone switch | — |
-| E Public booking | Booking page, reschedule and approval, hosts, Zoom, Google Meet | Not started | `stages/E-booking.md` |
+| E Public booking | Booking page, reschedule and approval, hosts, Zoom, Google Meet | In progress — E1 paused (built, browser proof next) | `stages/E-booking.md` |
 | F Final tour | Jafar's desktop and phone approval of release one | Not started | `stages/F-finish.md` |
 
 The campaign finishes only when every stage is built, tested, and approved in the browser.

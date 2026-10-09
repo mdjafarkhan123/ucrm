@@ -133,9 +133,26 @@ export const settingsGroups: SettingsGroup[] = [
 		title: 'Business & booking',
 		hint: 'How prospects book a sales call with Uplift.',
 		icon: calendarIcon,
-		upcoming:
-			'Booking availability, meeting types, and your public booking link arrive here with sales booking.',
-		destinations: []
+		destinations: [
+			{
+				id: 'booking',
+				title: 'Booking',
+				description: 'Your public booking link, the call prospects book, and your weekly hours.',
+				keywords: [
+					'booking',
+					'book a call',
+					'calendly',
+					'availability',
+					'hours',
+					'schedule',
+					'meeting',
+					'discovery call',
+					'link'
+				],
+				href: resolve('/jafar/settings/booking'),
+				icon: calendarIcon
+			}
+		]
 	},
 	{
 		id: 'team-access',

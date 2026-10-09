@@ -152,6 +152,8 @@ export type HistoryEntry = {
 		ends_at?: string;
 		from_starts_at?: string;
 		due_at?: string | null;
+		/** E1: a call the visitor booked themselves on the public booking page. */
+		booked_online?: boolean;
 	} | null;
 	/** Who did it, as a name: "Jafar", a teammate, or their email. Null when nobody did (an Application arriving). */
 	actor: string | null;

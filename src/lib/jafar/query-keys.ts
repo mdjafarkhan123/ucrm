@@ -205,3 +205,5 @@ export const jafarOnboardingKey = ['jafar', 'onboarding'] as const;
 export const jafarOnboardingListKey = (search: string, waitingOn: string, delivered: boolean) =>
 	[...jafarOnboardingKey, search, waitingOn, delivered] as const;
 export const jafarSetupEditorKey = ['jafar', 'setup-editor'] as const;
+/** E1: Booking settings -- the public link, the meeting, and the weekly hours. */
+export const jafarBookingKey = ['jafar', 'settings', 'booking'] as const;
