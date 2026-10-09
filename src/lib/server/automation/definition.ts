@@ -10,6 +10,8 @@ import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import {
 	AUTOMATION_SCHEMA_VERSION,
+	INVOICE_REMINDER_MAX_DAYS,
+	INVOICE_REMINDER_MAX_EMAILS,
 	alwaysOnStopKeys,
 	fitsSubject,
 	getCatalogEntry,
@@ -97,6 +99,34 @@ function checkSequence(
 		errors.push({
 			path: 'steps',
 			message: `All the waits together can add up to at most ${plural(limits.maxEnrollmentDays, 'day')}.`
+		});
+	}
+}
+
+// Client reminders Part 5: Jobber's own limits for invoice follow-ups — at most two reminders, the last no more
+// than 90 days after the due date (the first reminder's days plus every wait after it).
+function checkInvoiceReminders(
+	triggerConfig: Record<string, unknown>,
+	steps: CanonicalDefinition['steps'],
+	errors: DefinitionError[]
+): void {
+	const emails = steps.filter((step) => step.key === 'action.send_invoice_email').length;
+	if (emails > INVOICE_REMINDER_MAX_EMAILS) {
+		errors.push({
+			path: 'steps',
+			message: `An overdue invoice can get at most ${INVOICE_REMINDER_MAX_EMAILS} reminders.`
+		});
+	}
+	let minutes = Number(triggerConfig.days_after_due ?? 0) * 1440;
+	for (const step of steps) {
+		if (step.type !== 'wait') continue;
+		const { unit, amount } = step.config as { unit: keyof typeof MINUTES_PER_UNIT; amount: number };
+		minutes += amount * MINUTES_PER_UNIT[unit];
+	}
+	if (minutes > INVOICE_REMINDER_MAX_DAYS * 1440) {
+		errors.push({
+			path: 'steps',
+			message: `The last reminder can go out at most ${INVOICE_REMINDER_MAX_DAYS} days after the due date.`
 		});
 	}
 }
@@ -266,6 +296,8 @@ export function validateDefinition(
 
 	// Only a sequence whose every step is valid can be measured against the safety values.
 	if (errors.length === 0) checkSequence(steps, limits, errors);
+	if (errors.length === 0 && subject === 'invoice')
+		checkInvoiceReminders(triggerConfig, steps, errors);
 
 	// Stops: each an enabled catalog stop. Duplicates are collapsed so the same outcome is not listed twice.
 	const seenStops = new Set<string>();

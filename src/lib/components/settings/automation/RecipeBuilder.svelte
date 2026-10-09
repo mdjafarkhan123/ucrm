@@ -19,6 +19,9 @@
 		APPOINTMENT_REMINDER_DEFAULT,
 		APPOINTMENT_REMINDER_MAX_DAYS,
 		APPOINTMENT_REMINDER_MAX_HOURS,
+		INVOICE_REMINDER_DEFAULT,
+		INVOICE_REMINDER_MAX_DAYS,
+		INVOICE_REMINDER_MAX_EMAILS,
 		alwaysOnStopKeys,
 		catalogEntriesByKind,
 		fitsSubject,
@@ -37,6 +40,8 @@
 	} from '$lib/automation/authoring';
 	import {
 		AUTOMATION_APPOINTMENT_VARIABLES,
+		AUTOMATION_INVOICE_VARIABLES,
+		unknownInvoiceVariables,
 		unknownAppointmentVariables,
 		unknownEmailVariables,
 		unknownInquiryVariables,
@@ -178,7 +183,12 @@
 		definition.trigger = key
 			? {
 					key,
-					config: key === 'appointment.reminder_due' ? { ...APPOINTMENT_REMINDER_DEFAULT } : {}
+					config:
+						key === 'appointment.reminder_due'
+							? { ...APPOINTMENT_REMINDER_DEFAULT }
+							: key === 'invoice.past_due'
+								? { ...INVOICE_REMINDER_DEFAULT }
+								: {}
 				}
 			: null;
 		if (key) errors = { ...errors, trigger: '' };
@@ -257,6 +267,28 @@
 		setReminderTiming({ mode: 'before', amount: Math.min(max, Math.max(1, whole)), unit });
 	}
 
+	// Client reminders Part 5: how many days after the due date the first overdue reminder goes out.
+	const invoiceDaysAfterDue = $derived(
+		typeof definition.trigger?.config?.days_after_due === 'number'
+			? definition.trigger.config.days_after_due
+			: INVOICE_REMINDER_DEFAULT.days_after_due
+	);
+
+	function setInvoiceDaysAfterDue(value: number) {
+		if (!definition.trigger) return;
+		const whole = Number.isFinite(value) ? Math.floor(value) : 1;
+		definition.trigger = {
+			...definition.trigger,
+			config: { days_after_due: Math.min(INVOICE_REMINDER_MAX_DAYS, Math.max(1, whole)) }
+		};
+		errors = { ...errors, trigger: '' };
+	}
+
+	// Jobber sends at most two invoice follow-ups; the button goes once there are two.
+	const invoiceEmailCount = $derived(
+		definition.steps.filter((step) => step.key === 'action.send_invoice_email').length
+	);
+
 	const reminderDayOptions = Array.from({ length: APPOINTMENT_REMINDER_MAX_DAYS }, (_, index) => ({
 		value: String(index + 1),
 		label: index === 0 ? 'The day before' : `${index + 1} days before`
@@ -315,6 +347,11 @@
 
 	function addCustomerMessage() {
 		const step: AuthoredStep = { type: 'action', key: 'action.send_customer_message', config: {} };
+		definition.steps = [...definition.steps, step];
+	}
+
+	function addInvoiceEmail() {
+		const step: AuthoredStep = { type: 'action', key: 'action.send_invoice_email', config: {} };
 		definition.steps = [...definition.steps, step];
 	}
 
@@ -504,11 +541,19 @@
 		// here so a save that the server would reject never leaves the builder.
 		definition.steps.forEach((step, index) => {
 			if (next.steps[index]) return;
-			if (step.key === 'action.send_email' || step.key === 'action.send_appointment_email') {
+			if (
+				step.key === 'action.send_email' ||
+				step.key === 'action.send_appointment_email' ||
+				step.key === 'action.send_invoice_email'
+			) {
 				const subject = typeof step.config?.subject === 'string' ? step.config.subject : '';
 				const body = typeof step.config?.body === 'string' ? step.config.body : '';
 				const unknownIn =
-					step.key === 'action.send_email' ? unknownEmailVariables : unknownAppointmentVariables;
+					step.key === 'action.send_email'
+						? unknownEmailVariables
+						: step.key === 'action.send_invoice_email'
+							? unknownInvoiceVariables
+							: unknownAppointmentVariables;
 				const unknown = [...unknownIn(subject), ...unknownIn(body)];
 				if (unknown.length > 0) {
 					next.steps[index] = `"{{${unknown[0]}}}" is not a value you can use here.`;
@@ -798,6 +843,24 @@
 						am. A visit booked after its reminder time has passed gets none.
 					</p>
 				{/if}
+				{#if definition.trigger?.key === 'invoice.past_due'}
+					<div class="builder__recurring">
+						<Input
+							id="builder-trigger-invoice-days"
+							type="number"
+							label="Days after the due date"
+							min="1"
+							max={String(INVOICE_REMINDER_MAX_DAYS)}
+							value={String(invoiceDaysAfterDue)}
+							oninput={(event: Event) =>
+								setInvoiceDaysAfterDue(Number((event.currentTarget as HTMLInputElement).value))}
+						/>
+					</div>
+					<p class="builder__muted-note">
+						Only sent invoices are chased, shortly after 8 am. Up to two reminders, the last within
+						90 days of the due date. Paying, voiding or replacing the invoice stops them.
+					</p>
+				{/if}
 			</SectionBlock>
 
 			<!-- If -->
@@ -878,7 +941,8 @@
 									<span class="builder__step-icon" aria-hidden="true">
 										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 										{@html step.key === 'action.send_email' ||
-										step.key === 'action.send_appointment_email'
+										step.key === 'action.send_appointment_email' ||
+										step.key === 'action.send_invoice_email'
 											? mailIcon
 											: step.key === 'action.send_sms' ||
 												  step.key === 'action.send_customer_message'
@@ -982,6 +1046,17 @@
 											onSubjectChange={(value) => setEmailField(index, 'subject', value)}
 											onBodyChange={(value) => setEmailField(index, 'body', value)}
 										/>
+									{:else if step.key === 'action.send_invoice_email'}
+										<EmailActionEditor
+											idPrefix={`builder-step-${index}`}
+											subject={stepEmailField(index, 'subject')}
+											body={stepEmailField(index, 'body')}
+											errorMessage={errors.steps[index] ?? ''}
+											variables={AUTOMATION_INVOICE_VARIABLES}
+											subjectPlaceholder={'e.g. Invoice {{invoice_number}} is past due'}
+											onSubjectChange={(value) => setEmailField(index, 'subject', value)}
+											onBodyChange={(value) => setEmailField(index, 'body', value)}
+										/>
 									{:else if step.key === 'action.send_customer_message'}
 										<CustomerMessageEditor
 											idPrefix={`builder-step-${index}`}
@@ -1044,6 +1119,13 @@
 						<Button variant="tertiary" size="small" onclick={addAppointmentEmail}>
 							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 							<span class="builder__button-icon" aria-hidden="true">{@html plusIcon}</span> Add a visit
+							email
+						</Button>
+					{/if}
+					{#if canAdd('action.send_invoice_email') && invoiceEmailCount < INVOICE_REMINDER_MAX_EMAILS}
+						<Button variant="tertiary" size="small" onclick={addInvoiceEmail}>
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							<span class="builder__button-icon" aria-hidden="true">{@html plusIcon}</span> Add a reminder
 							email
 						</Button>
 					{/if}

@@ -11,7 +11,11 @@
 // nothing here references another tenant's data.
 
 import type { AuthoredDefinition } from '$lib/automation/authoring';
-import { APPOINTMENT_REMINDER_DEFAULT, AUTOMATION_SCHEMA_VERSION } from '$lib/automation/catalog';
+import {
+	APPOINTMENT_REMINDER_DEFAULT,
+	AUTOMATION_SCHEMA_VERSION,
+	INVOICE_REMINDER_DEFAULT
+} from '$lib/automation/catalog';
 
 export type AutomationPreset = {
 	key: string;
@@ -241,13 +245,63 @@ const visitMoved: AutomationPreset = {
 	}
 };
 
+// Client reminders Part 5: two reminders for an unpaid invoice, 1 day and 7 days after its due date — the first two
+// after-due steps in Jobber's payment-reminder advice. Each carries the balance and a link to pay.
+const overdueInvoiceReminders: AutomationPreset = {
+	key: 'overdue_invoice_reminders',
+	version: 1,
+	name: 'Overdue invoice reminders',
+	summary:
+		'Email the customer when an invoice is 1 day overdue, and again at 7 days, with a link to pay. Paying the invoice stops the reminders.',
+	triggerKey: 'invoice.past_due',
+	channels: ['email'],
+	blueprint: {
+		schema_version: AUTOMATION_SCHEMA_VERSION,
+		trigger: { key: 'invoice.past_due', config: { ...INVOICE_REMINDER_DEFAULT } },
+		conditions: [],
+		steps: [
+			{
+				type: 'action',
+				key: 'action.send_invoice_email',
+				config: {
+					subject: 'Invoice {{invoice_number}} from {{business_name}} is past due',
+					body:
+						'Hi {{customer_name}},\n\n' +
+						'This is a friendly reminder that invoice {{invoice_number}} was due on {{invoice_due_date}}. ' +
+						'The amount still owed is {{invoice_balance}}.\n\n' +
+						'You can view and pay it here: {{invoice_link}}\n\n' +
+						'If you have already paid, thank you, and please ignore this email.\n\n' +
+						'Thanks,\n{{business_name}}'
+				}
+			},
+			{ type: 'wait', key: 'wait.relative_delay', config: { unit: 'days', amount: 6 } },
+			{
+				type: 'action',
+				key: 'action.send_invoice_email',
+				config: {
+					subject: 'Second reminder: invoice {{invoice_number}} is past due',
+					body:
+						'Hi {{customer_name}},\n\n' +
+						'Invoice {{invoice_number}} from {{business_name}} is now a week past its due date of ' +
+						'{{invoice_due_date}}. The amount still owed is {{invoice_balance}}.\n\n' +
+						'You can view and pay it here: {{invoice_link}}\n\n' +
+						'If something is holding up payment, just reply to this email.\n\n' +
+						'Thanks,\n{{business_name}}'
+				}
+			}
+		],
+		stops: [{ key: 'stop.invoice_settled' }, { key: 'stop.client_invoice_reminder_opt_out' }]
+	}
+};
+
 export const AUTOMATION_PRESETS: readonly AutomationPreset[] = [
 	quoteFollowUp,
 	websiteSpeedToLead,
 	googleReviewRequest,
 	visitReminder,
 	bookingConfirmation,
-	visitMoved
+	visitMoved,
+	overdueInvoiceReminders
 ];
 
 const PRESETS_BY_KEY = new Map(AUTOMATION_PRESETS.map((preset) => [preset.key, preset]));

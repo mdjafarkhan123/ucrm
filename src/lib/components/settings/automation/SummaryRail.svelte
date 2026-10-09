@@ -4,6 +4,7 @@
 	import {
 		appointmentReminderTimingText,
 		getCatalogEntry,
+		invoiceReminderTimingText,
 		sendsCustomerMessage,
 		triggerLabel
 	} from '$lib/automation/catalog';
@@ -54,6 +55,9 @@
 		// Client reminders Part 3: when the reminder goes out.
 		if (definition.trigger?.key === 'appointment.reminder_due')
 			return `${base} (sent ${appointmentReminderTimingText(definition.trigger.config)})`;
+		// Client reminders Part 5: when the first overdue reminder goes out.
+		if (definition.trigger?.key === 'invoice.past_due')
+			return `${base} (first sent ${invoiceReminderTimingText(definition.trigger.config)})`;
 		if (definition.trigger?.key !== 'job.work_completed') return base;
 		const every = Number(definition.trigger.config?.recurring_every_visits);
 		if (!Number.isFinite(every) || every < 1) return `${base} (one-time jobs only)`;

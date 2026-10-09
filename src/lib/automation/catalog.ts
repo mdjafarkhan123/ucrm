@@ -18,6 +18,8 @@ import {
 	automationInquiryEmailBodySchema,
 	automationInquiryEmailSubjectSchema,
 	automationInquirySmsBodySchema,
+	automationInvoiceEmailBodySchema,
+	automationInvoiceEmailSubjectSchema,
 	automationSmsBodySchema
 } from './email-variables';
 
@@ -30,8 +32,9 @@ export type CatalogAvailability = { status: 'enabled' } | { status: 'blocked'; r
 // What a recipe acts on, fixed by its trigger. CRM launch readiness Part 4 Stage 6 added the website inquiry (a
 // form submission or chat session). Google review Part 4B added the job whose work was completed. Every
 // condition, step and stop must match the trigger's subject, except entries marked 'any' (a wait means the same
-// thing for every subject). Client reminders Part 3 added the appointment: a job visit or an assessment.
-export type CatalogSubject = 'quote' | 'website_inquiry' | 'job' | 'appointment';
+// thing for every subject). Client reminders Part 3 added the appointment: a job visit or an assessment. Part 5
+// added the invoice.
+export type CatalogSubject = 'quote' | 'website_inquiry' | 'job' | 'appointment' | 'invoice';
 
 export type CatalogEntry = {
 	key: string;
@@ -113,6 +116,29 @@ const appointmentReminderTimingConfig = z
 			});
 		}
 	});
+
+// Client reminders Part 5: overdue invoice reminders, following Jobber's Invoice Follow-ups — up to two, sent
+// shortly after 8 am, the last no more than 90 days after the due date. The first goes out the chosen number of
+// days after the due date; a later one follows a wait.
+export const INVOICE_REMINDER_MAX_DAYS = 90;
+export const INVOICE_REMINDER_MAX_EMAILS = 2;
+export const INVOICE_REMINDER_DEFAULT = { days_after_due: 1 } as const;
+
+// "1 day after the due date, after 8 AM", in words for the summary.
+export function invoiceReminderTimingText(config: Record<string, unknown> | undefined): string {
+	const days = typeof config?.days_after_due === 'number' ? config.days_after_due : 1;
+	return `${days} day${days === 1 ? '' : 's'} after the due date, after 8 AM`;
+}
+
+const invoiceReminderTimingConfig = z
+	.object({
+		days_after_due: z
+			.number()
+			.int()
+			.min(1, 'Choose at least 1 day.')
+			.max(INVOICE_REMINDER_MAX_DAYS, 'A reminder can go out at most 90 days after the due date.')
+	})
+	.strict();
 
 const blocked = (reason: string): CatalogAvailability => ({ status: 'blocked', reason });
 const enabled: CatalogAvailability = { status: 'enabled' };
@@ -213,6 +239,17 @@ const triggers: CatalogEntry[] = [
 		subject: 'appointment',
 		availability: enabled,
 		configSchema: NO_CONFIG
+	},
+	// Client reminders Part 5: found by the engine each morning, not by a teammate's action.
+	{
+		key: 'invoice.past_due',
+		kind: 'trigger',
+		label: 'An invoice is overdue',
+		summary:
+			'Runs once for each sent invoice that is still unpaid the chosen number of days after its due date, shortly after 8 AM.',
+		subject: 'invoice',
+		availability: enabled,
+		configSchema: invoiceReminderTimingConfig
 	}
 ];
 
@@ -382,6 +419,21 @@ const actions: CatalogEntry[] = [
 			.strict()
 	},
 	{
+		key: 'action.send_invoice_email',
+		kind: 'action',
+		label: 'Email the customer about the invoice',
+		summary: 'Emails the customer a reminder with the invoice balance and a link to pay it.',
+		subject: 'invoice',
+		availability: enabled,
+		// The balance and pay link are filled at sending time, so a part-payment is always shown right.
+		configSchema: z
+			.object({
+				subject: automationInvoiceEmailSubjectSchema,
+				body: automationInvoiceEmailBodySchema
+			})
+			.strict()
+	},
+	{
 		key: 'action.notify_staff',
 		kind: 'action',
 		label: 'Notify a team member',
@@ -496,6 +548,28 @@ const stops: CatalogEntry[] = [
 		alwaysOn: true,
 		availability: enabled,
 		configSchema: NO_CONFIG
+	},
+	// Client reminders Part 5 engine rules, applied to every invoice reminder.
+	{
+		key: 'stop.invoice_settled',
+		kind: 'stop',
+		label: 'The invoice was paid, voided or replaced',
+		summary:
+			'Nothing more is sent once the invoice is paid in full, voided, written off or replaced.',
+		subject: 'invoice',
+		alwaysOn: true,
+		availability: enabled,
+		configSchema: NO_CONFIG
+	},
+	{
+		key: 'stop.client_invoice_reminder_opt_out',
+		kind: 'stop',
+		label: 'The client turned off invoice reminders or is on Do not disturb',
+		summary: 'Nothing more is sent once the client no longer wants invoice reminders.',
+		subject: 'invoice',
+		alwaysOn: true,
+		availability: enabled,
+		configSchema: NO_CONFIG
 	}
 ];
 
@@ -530,7 +604,8 @@ const CUSTOMER_MESSAGE_ACTION_KEYS = new Set([
 	'action.send_sms',
 	'action.send_customer_message',
 	'action.send_review_request',
-	'action.send_appointment_email'
+	'action.send_appointment_email',
+	'action.send_invoice_email'
 ]);
 
 export function sendsCustomerMessage(key: string): boolean {

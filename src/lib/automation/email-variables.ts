@@ -168,3 +168,37 @@ export const automationAppointmentEmailBodySchema = withKnownVariablesOnly(
 	z.string().trim().min(1).max(5000),
 	unknownAppointmentVariables
 );
+
+// Client reminders Part 5: an overdue invoice reminder names the invoice and carries its pay link.
+// private.enqueue_automation_invoice_email fills these from the invoice as it stands at sending time.
+export const AUTOMATION_INVOICE_VARIABLES = [
+	{ token: 'customer_name', label: 'Customer name' },
+	{ token: 'business_name', label: 'Your business name' },
+	{ token: 'invoice_number', label: 'Invoice number' },
+	{ token: 'invoice_balance', label: 'Amount still owed' },
+	{ token: 'invoice_due_date', label: 'Due date' },
+	{ token: 'invoice_link', label: 'Invoice link' }
+] as const;
+
+const INVOICE_ALLOWED_TOKENS = new Set<string>(AUTOMATION_INVOICE_VARIABLES.map((v) => v.token));
+
+export function unknownInvoiceVariables(text: string): string[] {
+	return unknownVariablesAgainst(INVOICE_ALLOWED_TOKENS, text);
+}
+
+export const automationInvoiceEmailSubjectSchema = withKnownVariablesOnly(
+	z
+		.string()
+		.trim()
+		.min(1)
+		.max(300)
+		.refine((value) => !/[\r\n]/.test(value), {
+			message: 'The subject cannot span multiple lines.'
+		}),
+	unknownInvoiceVariables
+);
+
+export const automationInvoiceEmailBodySchema = withKnownVariablesOnly(
+	z.string().trim().min(1).max(5000),
+	unknownInvoiceVariables
+);

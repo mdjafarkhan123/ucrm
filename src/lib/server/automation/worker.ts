@@ -22,9 +22,14 @@
 // Client reminders Part 3: each wake first asks the database for visits and assessments whose reminder time has
 // arrived (emit_due_appointment_reminders), so intake enrolls them in the same wake; advance then returns
 // 'action_due_appointment_email' for the reminder itself.
+//
+// Client reminders Part 5: each wake also asks for invoices whose overdue reminder time has arrived
+// (emit_due_invoice_reminders); advance returns 'action_due_invoice_email', and this module mints a fresh pay link
+// for the client and for their billing contact, as "Send invoice" does.
 
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { createQuoteEmailAccessLink } from '$lib/server/communications/quote-email';
+import { createInvoiceEmailAccessLink } from '$lib/server/communications/invoice-email';
 import { drainReviewReminders, reviewLinkOrigin } from '$lib/server/reviews/reminders';
 import {
 	writeAutomaticReviewRequest,
@@ -68,6 +73,7 @@ type AdvanceOutcome =
 	| 'action_due_customer_message'
 	| 'action_due_review_request'
 	| 'action_due_appointment_email'
+	| 'action_due_invoice_email'
 	| 'action_not_available';
 
 // What running an action effect settled to. `claim_lost` mirrors advance: the lease moved on.
@@ -79,6 +85,8 @@ export type QuoteAccessLink = { url: string; tokenHash: string };
 export type AutomationDrainCounts = {
 	// Visit and assessment reminders found due this wake (Client reminders Part 3).
 	remindersDue: number;
+	// Overdue invoice reminders found due this wake (Client reminders Part 5).
+	invoiceRemindersDue: number;
 	eventsProcessed: number;
 	claimed: number;
 	waited: number;
@@ -111,6 +119,8 @@ export type AutomationDrainOptions = {
 	// Mints the customer access link for an email action. Injectable so the effect is testable without env or
 	// real crypto; defaults to the same link minter the quote send uses.
 	createQuoteLink?: () => QuoteAccessLink;
+	// Mints an invoice pay link for an overdue reminder. Injectable for tests.
+	createInvoiceLink?: () => QuoteAccessLink;
 	// The app origin a review request's customer link points at. Injectable for tests.
 	reviewLinkOrigin?: () => string;
 };
@@ -250,6 +260,27 @@ async function runAppointmentEmailAction(
 	return performed.data as ActionEffectOutcome;
 }
 
+// Runs one overdue invoice reminder: a fresh pay link for the client and one for a billing contact (spent only when
+// the client has one), then perform_automation_invoice_email_effect rechecks, queues and settles the row.
+async function runInvoiceEmailAction(
+	client: AutomationWorkerClient,
+	item: ClaimedWorkItem,
+	createInvoiceLink: () => QuoteAccessLink
+): Promise<ActionEffectOutcome> {
+	const link = createInvoiceLink();
+	const billingLink = createInvoiceLink();
+	const performed = await client.rpc('perform_automation_invoice_email_effect', {
+		p_work_item_id: item.work_item_id,
+		p_claim_token: item.claim_token,
+		p_invoice_url: link.url,
+		p_invoice_token_hash: link.tokenHash,
+		p_billing_invoice_url: billingLink.url,
+		p_billing_invoice_token_hash: billingLink.tokenHash
+	});
+	if (performed.error) throw new Error(performed.error.message);
+	return performed.data as ActionEffectOutcome;
+}
+
 // One claimed transition. Any failure is reported back through retry_automation_work_item so the row backs off
 // and stays visible instead of silently waiting out its lease.
 async function advanceOne(
@@ -257,7 +288,8 @@ async function advanceOne(
 	item: ClaimedWorkItem,
 	counts: AutomationDrainCounts,
 	createQuoteLink: () => QuoteAccessLink,
-	origin: () => string
+	origin: () => string,
+	createInvoiceLink: () => QuoteAccessLink
 ): Promise<void> {
 	try {
 		const advanced = await client.rpc('advance_automation_work_item', {
@@ -272,7 +304,8 @@ async function advanceOne(
 			outcome === 'action_due_sms' ||
 			outcome === 'action_due_customer_message' ||
 			outcome === 'action_due_review_request' ||
-			outcome === 'action_due_appointment_email'
+			outcome === 'action_due_appointment_email' ||
+			outcome === 'action_due_invoice_email'
 		) {
 			// The effect settles the row itself. An infrastructure failure here (not a step outcome) falls to the
 			// catch below, which backs the row off exactly as an advance failure would.
@@ -285,7 +318,9 @@ async function advanceOne(
 							? await runReviewRequestAction(client, item, origin)
 							: outcome === 'action_due_appointment_email'
 								? await runAppointmentEmailAction(client, item)
-								: await runCustomerMessageAction(client, item);
+								: outcome === 'action_due_invoice_email'
+									? await runInvoiceEmailAction(client, item, createInvoiceLink)
+									: await runCustomerMessageAction(client, item);
 			if (effect === 'action_sent') counts.sent += 1;
 			else if (effect === 'action_cancelled') counts.cancelled += 1;
 			else if (effect === 'action_deferred') counts.retried += 1;
@@ -334,9 +369,11 @@ export async function drainAutomationWork(
 	const maxClaims = Math.max(1, options.maxClaims ?? DEFAULT_MAX_CLAIMS);
 	const createQuoteLink = options.createQuoteLink ?? createQuoteEmailAccessLink;
 	const origin = options.reviewLinkOrigin ?? reviewLinkOrigin;
+	const createInvoiceLink = options.createInvoiceLink ?? createInvoiceEmailAccessLink;
 
 	const counts: AutomationDrainCounts = {
 		remindersDue: 0,
+		invoiceRemindersDue: 0,
 		eventsProcessed: 0,
 		claimed: 0,
 		waited: 0,
@@ -355,6 +392,14 @@ export async function drainAutomationWork(
 	});
 	if (reminders.error) throw rpcError('Could not find due visit reminders', reminders.error);
 	counts.remindersDue = typeof reminders.data === 'number' ? reminders.data : 0;
+
+	const invoiceReminders = await client.rpc('emit_due_invoice_reminders', {
+		p_limit: DEFAULT_REMINDER_BATCH_SIZE
+	});
+	if (invoiceReminders.error)
+		throw rpcError('Could not find due invoice reminders', invoiceReminders.error);
+	counts.invoiceRemindersDue =
+		typeof invoiceReminders.data === 'number' ? invoiceReminders.data : 0;
 
 	// Intake first: an event that arrives with this wake should get its enrollment and its first work item
 	// before the work drain looks for due rows, so one wake can carry a delivery all the way to its first step.
@@ -402,7 +447,7 @@ export async function drainAutomationWork(
 		// enough that ordering the batch costs nothing. 6D-3 introduces the network call that will make
 		// bounded concurrency worth measuring here.
 		for (const item of items) {
-			await advanceOne(client, item, counts, createQuoteLink, origin);
+			await advanceOne(client, item, counts, createQuoteLink, origin, createInvoiceLink);
 		}
 	}
 

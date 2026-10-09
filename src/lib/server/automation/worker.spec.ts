@@ -43,7 +43,9 @@ function workClient(
 		reviewDraft?: unknown;
 		performReview?: (id: string) => string;
 		performAppointment?: (id: string) => string;
+		performInvoice?: (id: string) => string;
 		remindersDue?: number;
+		invoiceRemindersDue?: number;
 		fallbacks?: number;
 		claimError?: string;
 		retryError?: string;
@@ -105,6 +107,16 @@ function workClient(
 		if (name === 'emit_due_appointment_reminders') {
 			return { data: options.remindersDue ?? 0, error: null };
 		}
+		if (name === 'perform_automation_invoice_email_effect') {
+			const id = String(args?.p_work_item_id);
+			return {
+				data: options.performInvoice ? options.performInvoice(id) : 'action_sent',
+				error: null
+			};
+		}
+		if (name === 'emit_due_invoice_reminders') {
+			return { data: options.invoiceRemindersDue ?? 0, error: null };
+		}
 		if (name === 'claim_review_reminders') return { data: [], error: null };
 		if (name === 'process_automation_sms_email_fallbacks') {
 			return { data: options.fallbacks ?? 0, error: null };
@@ -137,6 +149,7 @@ describe('drainAutomationWork', () => {
 
 		expect(result).toEqual({
 			remindersDue: 0,
+			invoiceRemindersDue: 0,
 			eventsProcessed: 0,
 			claimed: 0,
 			waited: 0,
@@ -188,6 +201,49 @@ describe('drainAutomationWork', () => {
 			order.indexOf('intake_automation_events')
 		);
 		expect(rpc).toHaveBeenCalledWith('emit_due_appointment_reminders', { p_limit: 200 });
+	});
+
+	it('finds due invoice reminders before intake, so their events are enrolled in the same wake', async () => {
+		const { client, rpc } = workClient({ invoiceRemindersDue: 2, intake: [2], claims: [] });
+
+		const result = await drainAutomationWork({ client, now: () => 0 });
+
+		expect(result).toMatchObject({ invoiceRemindersDue: 2, eventsProcessed: 2 });
+		const order = rpc.mock.calls.map(([name]) => name);
+		expect(order.indexOf('emit_due_invoice_reminders')).toBeLessThan(
+			order.indexOf('intake_automation_events')
+		);
+		expect(rpc).toHaveBeenCalledWith('emit_due_invoice_reminders', { p_limit: 200 });
+	});
+
+	it('runs an overdue invoice reminder with fresh pay links for the client and billing contact', async () => {
+		let minted = 0;
+		const { client, rpc } = workClient({
+			intake: [0],
+			claims: [[item('a'), item('b')]],
+			advance: () => 'action_due_invoice_email',
+			performInvoice: (id) => (id === 'a' ? 'action_sent' : 'action_cancelled')
+		});
+
+		const result = await drainAutomationWork({
+			client,
+			now: () => 0,
+			createInvoiceLink: () => {
+				minted += 1;
+				return { url: `https://app.test/i/token-${minted}`, tokenHash: `\\x${minted}` };
+			}
+		});
+
+		expect(result).toMatchObject({ claimed: 2, sent: 1, cancelled: 1 });
+		expect(rpc).toHaveBeenCalledWith('perform_automation_invoice_email_effect', {
+			p_work_item_id: 'a',
+			p_claim_token: 'claim-a',
+			p_invoice_url: 'https://app.test/i/token-1',
+			p_invoice_token_hash: '\\x1',
+			p_billing_invoice_url: 'https://app.test/i/token-2',
+			p_billing_invoice_token_hash: '\\x2'
+		});
+		expect(minted).toBe(4);
 	});
 
 	it('runs a due visit reminder through its own email effect', async () => {

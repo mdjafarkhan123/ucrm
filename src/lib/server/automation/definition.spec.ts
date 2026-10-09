@@ -325,6 +325,83 @@ describe('validateDefinition', () => {
 		});
 	});
 
+	describe('overdue invoice reminders', () => {
+		const email = (body = 'You owe {{invoice_balance}}: {{invoice_link}}') => ({
+			type: 'action' as const,
+			key: 'action.send_invoice_email',
+			config: { subject: 'Invoice {{invoice_number}} is past due', body }
+		});
+		const wait = (amount: number) => ({
+			type: 'wait' as const,
+			key: 'wait.relative_delay',
+			config: { unit: 'days', amount }
+		});
+		const reminders = (config: Record<string, unknown>, steps: unknown[]) => ({
+			schema_version: AUTOMATION_SCHEMA_VERSION,
+			trigger: { key: 'invoice.past_due', config },
+			conditions: [],
+			steps,
+			stops: []
+		});
+
+		it('accepts the ready-made Overdue invoice reminders as shipped, with the engine stops', async () => {
+			const { getAutomationPreset } = await import('$lib/automation/presets');
+			const preset = getAutomationPreset('overdue_invoice_reminders');
+			expect(preset).toBeDefined();
+			const result = validateDefinition(preset!.blueprint, noLimits, 'activation');
+			expect(result.ok).toBe(true);
+			if (!result.ok) return;
+			expect(result.definition.stops.map((stop) => stop.key)).toEqual([
+				'stop.invoice_settled',
+				'stop.client_invoice_reminder_opt_out'
+			]);
+		});
+
+		it('allows 1 to 90 days after the due date', () => {
+			const ok = (config: Record<string, unknown>) =>
+				validateDefinition(reminders(config, [email()]), noLimits, 'activation').ok;
+			expect(ok({ days_after_due: 1 })).toBe(true);
+			expect(ok({ days_after_due: 90 })).toBe(true);
+			expect(ok({ days_after_due: 0 })).toBe(false);
+			expect(ok({ days_after_due: 91 })).toBe(false);
+			expect(ok({})).toBe(false);
+		});
+
+		it('refuses a third reminder', () => {
+			const result = validateDefinition(
+				reminders({ days_after_due: 1 }, [email(), wait(3), email(), wait(3), email()]),
+				noLimits,
+				'activation'
+			);
+			expect(result.ok).toBe(false);
+			if (result.ok) return;
+			expect(result.errors[0].message).toContain('at most 2 reminders');
+		});
+
+		it('keeps the last reminder within 90 days of the due date', () => {
+			const ok = (days: number, waitDays: number) =>
+				validateDefinition(
+					reminders({ days_after_due: days }, [email(), wait(waitDays), email()]),
+					noLimits,
+					'activation'
+				).ok;
+			expect(ok(30, 60)).toBe(true);
+			expect(ok(31, 60)).toBe(false);
+		});
+
+		it('refuses quote values in an invoice reminder, and an invoice step on a quote', () => {
+			expect(
+				validateDefinition(
+					reminders({ days_after_due: 1 }, [email('Quote {{quote_link}}')]),
+					noLimits,
+					'activation'
+				).ok
+			).toBe(false);
+			const onQuote = validInput({ steps: [email()] });
+			expect(validateDefinition(onQuote, noLimits, 'activation').ok).toBe(false);
+		});
+	});
+
 	describe('visit reminders', () => {
 		const reminder = (config: Record<string, unknown>, body = 'See you {{appointment_when}}.') => ({
 			schema_version: AUTOMATION_SCHEMA_VERSION,

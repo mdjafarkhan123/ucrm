@@ -223,14 +223,16 @@ export async function fetchClient(clientId: string): Promise<ClientDetail> {
 
 // Client reminders Part 3: the client switches that only send while a business-wide automation runs, and the
 // triggers of those automations; a switch sends while any of them is on. Review requests are left out: a teammate
-// can still send one by hand. Part 4's booking confirmation and "visit moved" email follow the visit switch too.
+// can still send one by hand. Part 4's booking confirmation and "visit moved" email follow the visit switch too;
+// Part 5's overdue invoice reminders follow the invoice switch.
 export const MESSAGE_SWITCH_TRIGGERS = {
 	quote_follow_ups: ['quote.delivery_succeeded'],
 	appointment_reminders: [
 		'appointment.reminder_due',
 		'appointment.booked',
 		'appointment.rescheduled'
-	]
+	],
+	invoice_reminders: ['invoice.past_due']
 } as const;
 
 export type MessageSwitch = keyof typeof MESSAGE_SWITCH_TRIGGERS;
