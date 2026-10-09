@@ -420,6 +420,9 @@ export type JobRecurrenceInput = z.infer<typeof jobRecurrenceSchema>;
 // yet, and the answer is arithmetic on the dates in front of them.
 export const previewJobRecurrenceSchema = z.object({ recurrence: jobRecurrenceSchema });
 
+// Client reminders Part 4: the screen's "Notify customer" box. Left out, the customer is not emailed.
+const notifyCustomer = z.boolean().default(false);
+
 export const createJobSchema = z
 	.object({
 		client_id: z.string().uuid('Choose a client to continue.'),
@@ -463,7 +466,8 @@ export const createJobSchema = z
 			.string()
 			.trim()
 			.min(1, 'Reload the form and try again.')
-			.max(200, 'Reload the form and try again.')
+			.max(200, 'Reload the form and try again.'),
+		notify_customer: notifyCustomer
 	})
 	// The three shapes a new job can have, each refused on the control the person was actually using. The
 	// command checks the same three; this only means they hear about it as a form error first.
@@ -683,7 +687,8 @@ export const addJobVisitsSchema = z.object({
 		.min(1, 'Add at least one visit.')
 		.max(JOB_VISIT_MAX, `Up to ${JOB_VISIT_MAX} visits can be added at once.`),
 	idempotency_key: z.string().uuid('Start a new action and try again.'),
-	request_hash: z.string().trim().min(1, 'Reload and try again.').max(200, 'Reload and try again.')
+	request_hash: z.string().trim().min(1, 'Reload and try again.').max(200, 'Reload and try again.'),
+	notify_customer: notifyCustomer
 });
 
 export type AddJobVisitsInput = z.infer<typeof addJobVisitsSchema>;
@@ -694,7 +699,8 @@ export const updateJobVisitSchema = z
 	.object({
 		expected_revision: z.number().int().min(0),
 		...visitScheduleFields,
-		assignee_ids: z.array(z.string().uuid()).max(50).default([])
+		assignee_ids: z.array(z.string().uuid()).max(50).default([]),
+		notify_customer: notifyCustomer
 	})
 	.superRefine(refineVisitShape);
 
@@ -721,7 +727,8 @@ export const moveJobVisitsSchema = z.object({
 		.refine((value) => value !== 0, 'Choose how many days to move the visits.')
 		.refine((value) => Math.abs(value) <= 3650, 'Visits can only be moved within ten years.'),
 	idempotency_key: z.string().uuid('Start a new action and try again.'),
-	request_hash: z.string().trim().min(1, 'Reload and try again.').max(200, 'Reload and try again.')
+	request_hash: z.string().trim().min(1, 'Reload and try again.').max(200, 'Reload and try again.'),
+	notify_customer: notifyCustomer
 });
 
 export type MoveJobVisitsInput = z.infer<typeof moveJobVisitsSchema>;
@@ -734,7 +741,8 @@ export const rescheduleJobVisitsSchema = z.object({
 	expected_revision: z.number().int().min(0),
 	recurrence: jobRecurrenceSchema,
 	idempotency_key: z.string().uuid('Start a new action and try again.'),
-	request_hash: z.string().trim().min(1, 'Reload and try again.').max(200, 'Reload and try again.')
+	request_hash: z.string().trim().min(1, 'Reload and try again.').max(200, 'Reload and try again.'),
+	notify_customer: notifyCustomer
 });
 
 export type RescheduleJobVisitsInput = z.infer<typeof rescheduleJobVisitsSchema>;
@@ -751,7 +759,8 @@ export const applyVisitToFutureSchema = z
 			.string()
 			.trim()
 			.min(1, 'Reload and try again.')
-			.max(200, 'Reload and try again.')
+			.max(200, 'Reload and try again.'),
+		notify_customer: notifyCustomer
 	})
 	.superRefine((value, context) => {
 		if (!value.time_of_day && !value.assigned_team) {

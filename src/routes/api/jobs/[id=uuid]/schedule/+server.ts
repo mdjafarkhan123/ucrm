@@ -5,6 +5,7 @@ import { NO_STORE_HEADERS, validationError } from '$lib/server/api/errors';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { rescheduleJobVisitsSchema } from '$lib/server/validation/jobs.schema';
 import { scheduleVisitError } from '$lib/server/jobs/errors';
+import { settleCustomerNotice } from '$lib/server/jobs/customer-notices';
 
 // "Edit all visits": replace a recurring job's repeat rule and rebuild its incomplete visits from it.
 // `reschedule_job_visits` checks jobs.schedule, refuses a one-off, an as-needed or a closed job, refuses a
@@ -36,5 +37,12 @@ export const POST: RequestHandler = async (event) => {
 
 	if (error) return scheduleVisitError(error);
 
-	return json(data, { headers: NO_STORE_HEADERS });
+	const customer_notice = await settleCustomerNotice(
+		event.locals.supabase,
+		check.auth.organization.id,
+		{ type: 'job', id: event.params.id },
+		parsed.data.notify_customer
+	);
+
+	return json({ ...(data as Record<string, unknown>), customer_notice }, { headers: NO_STORE_HEADERS });
 };

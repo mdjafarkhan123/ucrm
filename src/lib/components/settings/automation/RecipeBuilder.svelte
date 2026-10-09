@@ -1043,7 +1043,7 @@
 					{#if canAdd('action.send_appointment_email')}
 						<Button variant="tertiary" size="small" onclick={addAppointmentEmail}>
 							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							<span class="builder__button-icon" aria-hidden="true">{@html plusIcon}</span> Add a reminder
+							<span class="builder__button-icon" aria-hidden="true">{@html plusIcon}</span> Add a visit
 							email
 						</Button>
 					{/if}

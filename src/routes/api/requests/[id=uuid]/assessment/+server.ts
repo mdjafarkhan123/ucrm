@@ -9,6 +9,7 @@ import {
 	validationError
 } from '$lib/server/api/errors';
 import { assessmentWriteSchema, zodFieldErrors } from '$lib/server/validation/foundation.schema';
+import { settleCustomerNotice } from '$lib/server/jobs/customer-notices';
 
 const NOT_FOUND = 'That request could not be found.';
 
@@ -32,7 +33,7 @@ export const PUT: RequestHandler = async (event) => {
 	const organizationId = auth.organization.id;
 	const supabase = event.locals.supabase;
 	const requestId = event.params.id;
-	const { assignee_ids: assigneeIds, ...fields } = parsed.data;
+	const { assignee_ids: assigneeIds, notify_customer: notifyCustomer, ...fields } = parsed.data;
 
 	const { data: existing, error: existingError } = await supabase
 		.from('requests')
@@ -100,10 +101,18 @@ export const PUT: RequestHandler = async (event) => {
 		status = 'unscheduled';
 	}
 
+	const customer_notice = await settleCustomerNotice(
+		supabase,
+		organizationId,
+		{ type: 'assessment', id: assessment.id },
+		notifyCustomer
+	);
+
 	return json(
 		{
 			assessment: { ...assessment, assignee_ids: assigneeIds },
-			request: { id: requestId, stored_status: status }
+			request: { id: requestId, stored_status: status },
+			customer_notice
 		},
 		{ headers: NO_STORE_HEADERS }
 	);
@@ -117,12 +126,18 @@ export const DELETE: RequestHandler = async (event) => {
 	const organizationId = auth.organization.id;
 	const supabase = event.locals.supabase;
 
-	const { error } = await supabase
+	const { data: removed, error } = await supabase
 		.from('assessments')
 		.delete()
 		.eq('organization_id', organizationId)
-		.eq('request_id', event.params.id);
+		.eq('request_id', event.params.id)
+		.select('id');
 	if (error) return databaseError();
+
+	// Removing an assessment never emails the customer; settling clears the logged change.
+	for (const row of removed ?? []) {
+		await settleCustomerNotice(supabase, organizationId, { type: 'assessment', id: row.id }, false);
+	}
 
 	return json({ assessment: null }, { headers: NO_STORE_HEADERS });
 };

@@ -5,6 +5,7 @@ import { NO_STORE_HEADERS, validationError } from '$lib/server/api/errors';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { applyVisitToFutureSchema } from '$lib/server/validation/jobs.schema';
 import { scheduleVisitError } from '$lib/server/jobs/errors';
+import { settleCustomerNotice } from '$lib/server/jobs/customer-notices';
 
 // "Save and update future visits": copy this visit's time of day and/or crew onto the job's later visits.
 // `apply_visit_to_future` checks jobs.schedule, skips completed and undated visits, and is idempotent by key.
@@ -35,5 +36,12 @@ export const POST: RequestHandler = async (event) => {
 
 	if (error) return scheduleVisitError(error);
 
-	return json(data, { headers: NO_STORE_HEADERS });
+	const customer_notice = await settleCustomerNotice(
+		event.locals.supabase,
+		check.auth.organization.id,
+		{ type: 'job', id: event.params.id },
+		parsed.data.notify_customer
+	);
+
+	return json({ ...(data as Record<string, unknown>), customer_notice }, { headers: NO_STORE_HEADERS });
 };

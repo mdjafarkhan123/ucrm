@@ -177,11 +177,77 @@ const visitReminder: AutomationPreset = {
 	}
 };
 
+// Client reminders Part 4: a one-time "You're booked" email per job or assessment (Jobber's booking confirmation;
+// Housecall Pro's send-on-schedule with a "Notify customer" box), and an update when the visit moves. Both are off
+// until the owner turns them on.
+const bookingConfirmation: AutomationPreset = {
+	key: 'booking_confirmation',
+	version: 1,
+	name: 'Booking confirmation',
+	summary:
+		'Email the customer once when their job or assessment is booked. A recurring job gets one confirmation, not one per visit.',
+	triggerKey: 'appointment.booked',
+	channels: ['email'],
+	blueprint: {
+		schema_version: AUTOMATION_SCHEMA_VERSION,
+		trigger: { key: 'appointment.booked', config: {} },
+		conditions: [],
+		steps: [
+			{
+				type: 'action',
+				key: 'action.send_appointment_email',
+				config: {
+					subject: "You're booked with {{business_name}}",
+					body:
+						'Hi {{customer_name}},\n\n' +
+						"You're booked! {{business_name}} will see you {{appointment_when}}.\n\n" +
+						'Address: {{appointment_address}}\n\n' +
+						'If you need to change the time, just reply to this email.\n\n' +
+						'Thanks,\n{{business_name}}'
+				}
+			}
+		],
+		stops: [{ key: 'stop.appointment_not_ahead' }, { key: 'stop.client_reminder_opt_out' }]
+	}
+};
+
+const visitMoved: AutomationPreset = {
+	key: 'visit_moved',
+	version: 1,
+	name: 'Visit moved',
+	summary: 'Email the customer the new date and time when a booked visit or assessment is moved.',
+	triggerKey: 'appointment.rescheduled',
+	channels: ['email'],
+	blueprint: {
+		schema_version: AUTOMATION_SCHEMA_VERSION,
+		trigger: { key: 'appointment.rescheduled', config: {} },
+		conditions: [],
+		steps: [
+			{
+				type: 'action',
+				key: 'action.send_appointment_email',
+				config: {
+					subject: 'Your visit with {{business_name}} has moved',
+					body:
+						'Hi {{customer_name}},\n\n' +
+						'Your visit with {{business_name}} has moved to {{appointment_when}}.\n\n' +
+						'Address: {{appointment_address}}\n\n' +
+						"If the new time doesn't work for you, just reply to this email.\n\n" +
+						'Thanks,\n{{business_name}}'
+				}
+			}
+		],
+		stops: [{ key: 'stop.appointment_not_ahead' }, { key: 'stop.client_reminder_opt_out' }]
+	}
+};
+
 export const AUTOMATION_PRESETS: readonly AutomationPreset[] = [
 	quoteFollowUp,
 	websiteSpeedToLead,
 	googleReviewRequest,
-	visitReminder
+	visitReminder,
+	bookingConfirmation,
+	visitMoved
 ];
 
 const PRESETS_BY_KEY = new Map(AUTOMATION_PRESETS.map((preset) => [preset.key, preset]));

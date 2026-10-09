@@ -5,6 +5,7 @@ import { NO_STORE_HEADERS, validationError } from '$lib/server/api/errors';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { moveJobVisitsSchema } from '$lib/server/validation/jobs.schema';
 import { scheduleVisitError } from '$lib/server/jobs/errors';
+import { settleCustomerNotice } from '$lib/server/jobs/customer-notices';
 
 // Move a batch of visits forward or back by whole days. `move_job_visits` checks jobs.schedule, is idempotent
 // by key so a retry cannot double-shift the dates, and silently skips unscheduled and completed visits —
@@ -34,5 +35,12 @@ export const POST: RequestHandler = async (event) => {
 
 	if (error) return scheduleVisitError(error);
 
-	return json(data, { headers: NO_STORE_HEADERS });
+	const customer_notice = await settleCustomerNotice(
+		event.locals.supabase,
+		check.auth.organization.id,
+		{ type: 'job', id: event.params.id },
+		parsed.data.notify_customer
+	);
+
+	return json({ ...(data as Record<string, unknown>), customer_notice }, { headers: NO_STORE_HEADERS });
 };

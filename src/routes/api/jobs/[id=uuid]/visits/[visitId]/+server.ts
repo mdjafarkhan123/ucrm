@@ -5,6 +5,7 @@ import { NO_STORE_HEADERS, validationError } from '$lib/server/api/errors';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { deleteJobVisitSchema, updateJobVisitSchema } from '$lib/server/validation/jobs.schema';
 import { scheduleVisitError } from '$lib/server/jobs/errors';
+import { settleCustomerNotice } from '$lib/server/jobs/customer-notices';
 
 // Edit one visit's whole schedule shape, title, instructions and crew. `update_job_visit` checks
 // jobs.schedule, refuses a completed visit or a stale revision, and hands back the visit's new revision for
@@ -39,7 +40,14 @@ export const PATCH: RequestHandler = async (event) => {
 
 	if (error) return scheduleVisitError(error);
 
-	return json(data, { headers: NO_STORE_HEADERS });
+	const customer_notice = await settleCustomerNotice(
+		event.locals.supabase,
+		check.auth.organization.id,
+		{ type: 'job', id: event.params.id },
+		parsed.data.notify_customer
+	);
+
+	return json({ ...(data as Record<string, unknown>), customer_notice }, { headers: NO_STORE_HEADERS });
 };
 
 // Remove one visit. `delete_job_visit` checks jobs.schedule, protects a completed visit, and refuses a stale
@@ -67,6 +75,14 @@ export const DELETE: RequestHandler = async (event) => {
 	});
 
 	if (error) return scheduleVisitError(error);
+
+	// Removing a visit never emails the customer; settling clears the change so a later save does not count it.
+	await settleCustomerNotice(
+		event.locals.supabase,
+		check.auth.organization.id,
+		{ type: 'job', id: event.params.id },
+		false
+	);
 
 	return json(data, { headers: NO_STORE_HEADERS });
 };
