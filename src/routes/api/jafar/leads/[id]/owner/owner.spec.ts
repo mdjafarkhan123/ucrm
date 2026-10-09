@@ -138,7 +138,10 @@ describe('who owns a Lead (D3a)', () => {
 
 	it('is Leads work at the gate: a looker cannot change the owner', () => {
 		const path = `/api/jafar/leads/${BUSINESS_ID}/owner`;
-		const looker = { role: 'sales' as const, access: { areas: { leads: 'look' as const }, actions: [] } };
+		const looker = {
+			role: 'sales' as const,
+			access: { areas: { leads: 'look' as const }, actions: [] }
+		};
 		expect(canUseJafarPath(looker, path, 'GET')).toBe(true);
 		expect(canUseJafarPath(looker, path, 'POST')).toBe(false);
 		expect(canUseJafarPath({ role: 'sales' }, path, 'POST')).toBe(true);
