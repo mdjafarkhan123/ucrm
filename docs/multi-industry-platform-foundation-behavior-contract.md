@@ -1,6 +1,6 @@
 # Multi-industry platform foundation
 
-**Status:** Planning. Product direction agreed by Jafar on 2026-10-08; detailed behavior, build parts and implementation remain unapproved.
+**Status:** Planning. Product direction agreed by Jafar on 2026-10-08; P2 and P3 behavior approved on 2026-10-09. Contractor migration, build parts and implementation remain unapproved.
 
 ## Summary
 
@@ -73,7 +73,9 @@ The intended connected journey is:
 
 Contractor uses the field-service foundation. Medspa & Clinical Wellness uses the appointment-business foundation plus the clinical extension. Beauty & Spa later uses the appointment-business foundation without receiving clinical capabilities merely because both industries schedule services.
 
-### P3 proposed capability boundary — awaiting Jafar's approval
+### Capability boundary
+
+**P3 decision:** Jafar approved the rules in this section on 2026-10-09 after asking that they follow leading industry products. Boulevard's published Medspa add-on and granular permissions are the specialist reference; HighLevel's documented multi-industry packages inform reuse of common capabilities; OWASP's authorization guidance informs direct-access enforcement. The rules below are Uplift product choices, not a claim that these vendors use this exact internal design.
 
 The experience definition lists **eligible** capability families, supported customer-facing journeys and safe defaults. A Package edition chooses which eligible commercial capabilities the business has bought. A person's permissions then narrow their access. Operational readiness and public release are further gates on real-world actions; neither a Package nor a role can bypass them. The resolved answer is shared by navigation, page loads, APIs, background actions and customer-facing entry points. An unknown experience, missing profile, unknown capability or unclassified permission fails closed and leaves existing history available through a reviewed recovery path.
 
@@ -86,7 +88,7 @@ The experience definition lists **eligible** capability families, supported cust
 
 One primary experience governs a business. Business type adjusts approved copy, Setup branches, initial settings and workflow defaults **within** that experience; it cannot add a capability or relax a safety rule. A mixed business may offer supplemental services only when the primary experience definition explicitly supports their workflow, record and permission model. Confirmed clinical services keep Medspa primary and keep clinical safeguards. An unsupported combination remains under Uplift review instead of being assembled from attractive menu items.
 
-### P3 proposed definition and presentation — awaiting approval
+### Experience definition and presentation
 
 Each supported experience has a reviewable, versioned definition: identifier and supported Business types; eligible families and commercial capability keys; required safety controls; terminology; primary navigation and dashboard modules; default settings; Setup program selection; supported public surfaces; and the readiness checks those surfaces require. Contractor's existing shell, labels and Setup questions are the first Contractor definition. Medspa receives its own appointment-led shell and clinical access rules. Beauty & Spa is not selectable until its definition and journeys have been planned and verified.
 
@@ -96,7 +98,7 @@ The definition supplies starting values, not an editable copy per Organization. 
 - **Medspa example:** a front desk member may see appointment times and a booking requirement warning when their Package includes scheduling and their role allows it. That does not grant chart, photo, medication or clearance access. A treating clinician needs separately granted clinical rights and a service's readiness checks still govern starting treatment. Contractor Quotes and Jobs stay absent from the Medspa menu and direct routes.
 - **Mixed Medspa example:** a clinic also offering ordinary facials may use supported nonclinical services in its appointment catalogue. Its clinical records remain protected and regulated treatments retain clinical checks; a facial service does not downgrade the whole Organization to Beauty & Spa.
 
-### P3 proposed Package and permission rules — awaiting approval
+### Package and permission rules
 
 - A published Package edition declares which supported experiences may buy it. It may serve more than one experience only if **every** included software capability, promised managed service, highlight, allowance and dependency has valid meaning and delivery for each one. Experience-neutral branding is insufficient. The builder previews compatibility and refuses publication of a broken combination; a published edition's eligibility and promises are fixed with that edition. A later edition can have a different audience without moving existing Agreements.
 - Public comparison and Application selection show only editions compatible with the proposed Industry experience and Business type, while making clear that Uplift will confirm classification. Uplift review checks the final profile and every purchased capability again before requesting payment and provisioning. An old link or corrected classification that changes eligibility requires an explained new edition and buyer agreement; it never silently drops an included item.
@@ -123,8 +125,6 @@ The definition supplies starting values, not an editable copy per Organization. 
 
 ## Still unclear
 
-- Jafar's approval of the P3 proposed capability boundary, experience definitions, Package compatibility and access rules above.
-- Whether a multi-experience Package edition should be allowed when all of its promises and dependencies are valid for each experience, or whether every edition must be exclusive to one experience.
 - The complete audit of current Control Room, provisioning, Package, Setup, access, shell, routes and data behavior against this plan.
 - The safe Contractor backfill, rollout, rollback and connected proof required before Medspa implementation resumes.
 
