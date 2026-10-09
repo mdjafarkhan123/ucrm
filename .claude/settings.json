@@ -11,7 +11,7 @@
 					},
 					{
 						"type": "command",
-						"command": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/format-edited-file.sh\"",
+						"command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/format-edited-files.py\"",
 						"timeout": 30
 					}
 				]

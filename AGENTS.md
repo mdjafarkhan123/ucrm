@@ -51,8 +51,8 @@ npm run lint            # Prettier + ESLint
 npm run format          # format repo
 ```
 
-Claude Code tidies each file it writes with Prettier automatically, and `npx prettier --check .` passes for the
-whole project. Check your own work with `npx prettier --check <paths>`; its CLI cannot match a glob
+Claude Code and Codex tidy each file they edit with Prettier automatically (`scripts/format-edited-files.py`), and
+`npx prettier --check .` passes for the whole project. Check your own work with `npx prettier --check <paths>`; its CLI cannot match a glob
 containing `(app)`, so pass those file paths out in full.
 
 ## Before saying done
@@ -66,8 +66,9 @@ containing `(app)`, so pass those file paths out in full.
 
 ## Skills
 
-Skills live under `.claude/skills/`. Load every skill relevant to the current task; do not load the full library
-by default.
+Skills live under `.claude/skills/`. Codex finds them through links in `.agents/skills/`; when you add a skill,
+add its link with `ln -s ../../.claude/skills/<name> .agents/skills/<name>`. Load every skill relevant to the
+current task; do not load the full library by default.
 
 | Work / Subject / Topic / Stage                                                                         | Skill                                                      |
 | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
