@@ -73,6 +73,7 @@ its `apply_migration` stamps today's version instead of the file's.
   after your last edit: a run of quick tweaks and their commits shares that one run, and a rerun follows only a
   fix for an error it reported.
 - Anything a user can see has been through the design skill's screen check.
+- A behaviour's main journey is proven once on the live app; edge cases are left to automated tests.
 - Your report shows the evidence: the commands you ran and their results, or the screenshots.
 - The work is committed and pushed to GitHub, so it lives off this computer. If the push fails, tell Jafar.
 
