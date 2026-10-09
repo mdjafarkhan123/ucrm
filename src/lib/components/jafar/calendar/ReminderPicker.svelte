@@ -175,61 +175,67 @@
 				<li class="reminder-picker__row">
 					<Select
 						id="{id}-channel-{index}"
+						class="reminder-picker__select"
 						ariaLabel="Reminder {index + 1}: alert or email"
 						options={CHANNELS}
 						value={rule.channel}
 						fitOptions
 						onchange={(channel) => setChannel(index, rule, channel)}
 					/>
-					{#if 'minutes_before' in rule}
-						{@const split = splitMinutes(rule.minutes_before)}
-						{#if rule.minutes_before === 0}
-							<span class="reminder-picker__words">at the time</span>
-							<button
-								type="button"
-								class="reminder-picker__link"
-								onclick={() => replace(index, { ...rule, minutes_before: 15 })}>set earlier</button
-							>
+					<div class="reminder-picker__when">
+						{#if 'minutes_before' in rule}
+							{@const split = splitMinutes(rule.minutes_before)}
+							{#if rule.minutes_before === 0}
+								<span class="reminder-picker__words">at the time</span>
+								<button
+									type="button"
+									class="reminder-picker__link"
+									onclick={() => replace(index, { ...rule, minutes_before: 15 })}
+									>set earlier</button
+								>
+							{:else}
+								<input
+									class="reminder-picker__amount"
+									type="number"
+									inputmode="numeric"
+									min="0"
+									aria-label="Reminder {index + 1}: how many"
+									value={split.amount}
+									oninput={(event) => setTimedAmount(index, rule, event.currentTarget.value)}
+								/>
+								<Select
+									id="{id}-unit-{index}"
+									class="reminder-picker__select"
+									ariaLabel="Reminder {index + 1}: unit"
+									options={UNITS.map(({ value, label }) => ({ value, label }))}
+									value={split.unit}
+									fitOptions
+									onchange={(unit) => setTimedUnit(index, rule, unit)}
+								/>
+								<span class="reminder-picker__words">before</span>
+							{/if}
 						{:else}
-							<input
-								class="reminder-picker__amount"
-								type="number"
-								inputmode="numeric"
-								min="0"
-								aria-label="Reminder {index + 1}: how many"
-								value={split.amount}
-								oninput={(event) => setTimedAmount(index, rule, event.currentTarget.value)}
-							/>
 							<Select
-								id="{id}-unit-{index}"
-								ariaLabel="Reminder {index + 1}: unit"
-								options={UNITS.map(({ value, label }) => ({ value, label }))}
-								value={split.unit}
+								id="{id}-days-{index}"
+								class="reminder-picker__select"
+								ariaLabel="Reminder {index + 1}: which day"
+								options={dayOptions(rule.days_before)}
+								value={String(rule.days_before)}
 								fitOptions
-								onchange={(unit) => setTimedUnit(index, rule, unit)}
+								onchange={(days) => setDays(index, rule, days)}
 							/>
-							<span class="reminder-picker__words">before</span>
+							<span class="reminder-picker__words">at</span>
+							<div class="reminder-picker__time">
+								<TimePickerField
+									id="{id}-at-{index}"
+									label="Reminder {index + 1}: time of day"
+									hideLabel
+									value={timeOf(rule.at)}
+									onchange={(time) => setAt(index, rule, time)}
+								/>
+							</div>
 						{/if}
-					{:else}
-						<Select
-							id="{id}-days-{index}"
-							ariaLabel="Reminder {index + 1}: which day"
-							options={dayOptions(rule.days_before)}
-							value={String(rule.days_before)}
-							fitOptions
-							onchange={(days) => setDays(index, rule, days)}
-						/>
-						<span class="reminder-picker__words">at</span>
-						<div class="reminder-picker__time">
-							<TimePickerField
-								id="{id}-at-{index}"
-								label="Reminder {index + 1}: time of day"
-								hideLabel
-								value={timeOf(rule.at)}
-								onchange={(time) => setAt(index, rule, time)}
-							/>
-						</div>
-					{/if}
+					</div>
 					<button
 						type="button"
 						class="reminder-picker__remove"
@@ -256,6 +262,8 @@
 
 <style lang="scss">
 	.reminder-picker {
+		// Rows lay out by the picker's own width, so a narrow dialog and a phone behave alike.
+		container-type: inline-size;
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-small);
@@ -334,6 +342,21 @@
 			gap: var(--space-small);
 		}
 
+		// Select fills its container by default; in a row each sizes to its words.
+		&__row :global(.reminder-picker__select) {
+			flex: none;
+			width: auto;
+			min-width: 112px;
+		}
+
+		&__when {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: var(--space-small);
+			min-width: 0;
+		}
+
 		&__amount {
 			width: 64px;
 			height: 40px;
@@ -358,7 +381,7 @@
 		}
 
 		&__time {
-			width: 132px;
+			width: 152px;
 		}
 
 		&__remove {
@@ -414,6 +437,27 @@
 				outline: none;
 				box-shadow: var(--shadow-focus);
 			}
+		}
+	}
+
+	// Narrow: the channel and its remove button on one line, when it comes on the next.
+	@container (max-width: 479px) {
+		.reminder-picker__row {
+			padding-bottom: var(--space-small);
+			border-bottom: var(--border-base) solid var(--color-border);
+		}
+
+		.reminder-picker__row > :global(.reminder-picker__select) {
+			flex: 1;
+		}
+
+		.reminder-picker__when {
+			order: 3;
+			flex-basis: 100%;
+		}
+
+		.reminder-picker__remove {
+			order: 2;
 		}
 	}
 </style>

@@ -44,9 +44,8 @@
 	});
 
 	async function search(term: string): Promise<LeadListItem[]> {
-		const params = new URLSearchParams({ deal: 'any', limit: '8' });
-		if (term) params.set('search', term);
-		const response = await fetch(`/api/jafar/leads?${params}`);
+		const search = term ? `&search=${encodeURIComponent(term)}` : '';
+		const response = await fetch(`/api/jafar/leads?deal=any&limit=8${search}`);
 		const result = await response.json().catch(() => ({}));
 		if (!response.ok) throw new Error(result.error ?? 'Businesses could not be loaded.');
 		return (result as LeadListPage).leads;

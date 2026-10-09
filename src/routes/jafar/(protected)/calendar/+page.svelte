@@ -120,12 +120,15 @@
 	);
 
 	function navigate(next: { view: ScheduleView; date: string }) {
-		const query = new URLSearchParams();
-		if (next.view !== 'week') query.set('view', next.view);
-		if (next.date !== today) query.set('date', next.date);
-		const route: string = resolve('/jafar/(protected)/calendar');
-		const search = query.toString();
-		void goto(search ? `${route}?${search}` : route, { keepFocus: true, noScroll: true });
+		const params: string[] = [];
+		if (next.view !== 'week') params.push(`view=${next.view}`);
+		if (next.date !== today) params.push(`date=${next.date}`);
+		const search = params.join('&');
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- the path comes from resolve(); only the query string is added.
+		void goto(`${resolve('/jafar/(protected)/calendar')}${search ? `?${search}` : ''}`, {
+			keepFocus: true,
+			noScroll: true
+		});
 	}
 
 	const rangeLabel = $derived.by(() => {
@@ -530,7 +533,8 @@
 			width: 100%;
 
 			:global(> *) {
-				flex: 1;
+				flex: 1 1 auto;
+				white-space: nowrap;
 			}
 		}
 	}
