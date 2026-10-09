@@ -142,7 +142,7 @@
 
 	@media (max-width: 1079px) {
 		.record-form__grid {
-			grid-template-columns: 1fr;
+			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 

@@ -721,16 +721,18 @@
 				{/if}
 				{#if definition.trigger?.key === 'appointment.reminder_due'}
 					<div class="builder__recurring">
-						<Select
-							id="builder-trigger-reminder-mode"
-							label="Send the reminder"
-							value={reminderTiming.mode}
-							options={[
-								{ value: 'before', label: 'A set time before the visit' },
-								{ value: 'fixed_time', label: 'At a set time of day' }
-							]}
-							onchange={setReminderMode}
-						/>
+						<div class="builder__recurring-wide">
+							<Select
+								id="builder-trigger-reminder-mode"
+								label="Send the reminder"
+								value={reminderTiming.mode}
+								options={[
+									{ value: 'before', label: 'A set time before the visit' },
+									{ value: 'fixed_time', label: 'At a set time of day' }
+								]}
+								onchange={setReminderMode}
+							/>
+						</div>
 						{#if reminderTiming.mode === 'before'}
 							<Input
 								id="builder-trigger-reminder-amount"
@@ -1144,6 +1146,10 @@
 			margin-top: var(--space-base);
 		}
 
+		&__recurring-wide {
+			grid-column: 1 / -1;
+		}
+
 		&__muted-note {
 			margin-top: var(--space-smaller);
 			color: var(--color-text--secondary);
@@ -1178,6 +1184,7 @@
 		&__row-head,
 		&__step-head {
 			display: flex;
+			flex-wrap: wrap;
 			align-items: center;
 			gap: var(--space-small);
 		}
@@ -1215,6 +1222,7 @@
 		&__step-controls {
 			display: flex;
 			align-items: center;
+			margin-left: auto;
 			gap: var(--space-smallest);
 		}
 
@@ -1356,6 +1364,15 @@
 			align-items: stretch;
 		}
 		.builder__bar-actions {
+			justify-content: flex-end;
+		}
+		// The step's title keeps its line; the step buttons move to their own line beneath it.
+		.builder__step-title {
+			flex-basis: 0;
+			min-width: 0;
+		}
+		.builder__step-controls {
+			width: 100%;
 			justify-content: flex-end;
 		}
 	}
