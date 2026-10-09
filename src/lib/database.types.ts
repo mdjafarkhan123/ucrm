@@ -14043,6 +14043,42 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			platform_meeting_type_hosts: {
+				Row: {
+					created_at: string;
+					id: string;
+					meeting_type_id: string;
+					member_id: string | null;
+				};
+				Insert: {
+					created_at?: string;
+					id?: string;
+					meeting_type_id: string;
+					member_id?: string | null;
+				};
+				Update: {
+					created_at?: string;
+					id?: string;
+					meeting_type_id?: string;
+					member_id?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'platform_meeting_type_hosts_meeting_type_id_fkey';
+						columns: ['meeting_type_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_meeting_types';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'platform_meeting_type_hosts_member_id_fkey';
+						columns: ['member_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_team_members';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			platform_meeting_types: {
 				Row: {
 					buffer_minutes: number;
@@ -24434,7 +24470,7 @@ export type Database = {
 				Returns: number;
 			};
 			owner_activity_report: {
-				Args: { from_date: string | null; to_date: string; viewer_member_id?: string };
+				Args: { from_date: string; to_date: string; viewer_member_id?: string };
 				Returns: Json;
 			};
 			owner_answer_setup_help: {
@@ -24457,6 +24493,14 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_booking_change_host: {
+				Args: {
+					actor_email: string;
+					target_entry_id: string;
+					target_member_id: string;
+				};
+				Returns: Json;
+			};
 			owner_booking_decide: {
 				Args: {
 					actor_email: string;
@@ -24466,9 +24510,23 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			owner_booking_delete_type: {
+				Args: { target_type_id: string };
+				Returns: string;
+			};
 			owner_booking_for_entry: {
 				Args: { target_entry_id: string };
 				Returns: Json;
+			};
+			owner_booking_host_choices: {
+				Args: { target_entry_id: string };
+				Returns: Json;
+			};
+			owner_booking_hosted_calls: {
+				Args: { target_member_id: string };
+				Returns: {
+					entry_id: string;
+				}[];
 			};
 			owner_booking_request_slots: {
 				Args: {
@@ -24485,15 +24543,20 @@ export type Database = {
 				Args: { target_relationship_id: string };
 				Returns: Json;
 			};
-			owner_booking_save: {
+			owner_booking_save_hours: {
+				Args: { target_hours: Json; target_member_id: string };
+				Returns: Json;
+			};
+			owner_booking_save_type: {
 				Args: {
 					target_buffer_minutes: number;
 					target_change_deadline_minutes: number;
 					target_description: string;
 					target_duration_minutes: number;
-					target_enabled: boolean;
 					target_horizon_days: number;
-					target_hours: Json;
+					target_host_member_id: string;
+					target_host_member_ids: Json;
+					target_is_active: boolean;
 					target_min_notice_minutes: number;
 					target_name: string;
 					target_requires_approval: boolean;
@@ -24501,6 +24564,10 @@ export type Database = {
 					target_slug: string;
 					target_type_id: string;
 				};
+				Returns: Json;
+			};
+			owner_booking_set_enabled: {
+				Args: { target_enabled: boolean };
 				Returns: Json;
 			};
 			owner_booking_settings: { Args: never; Returns: Json };
@@ -25115,6 +25182,17 @@ export type Database = {
 			};
 			perform_automation_inquiry_message_effect: {
 				Args: { p_claim_token: string; p_work_item_id: string };
+				Returns: string;
+			};
+			perform_automation_invoice_email_effect: {
+				Args: {
+					p_billing_invoice_token_hash?: string;
+					p_billing_invoice_url?: string;
+					p_claim_token: string;
+					p_invoice_token_hash: string;
+					p_invoice_url: string;
+					p_work_item_id: string;
+				};
 				Returns: string;
 			};
 			perform_automation_review_request_effect: {
