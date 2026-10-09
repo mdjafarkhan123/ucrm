@@ -401,4 +401,35 @@ describe('validateDefinition', () => {
 			expect(validateDefinition(onQuote, noLimits, 'activation').ok).toBe(false);
 		});
 	});
+
+	describe('booking confirmations', () => {
+		it.each(['booking_confirmation', 'visit_moved'])(
+			'accepts the ready-made %s as shipped, with the reminder stops',
+			async (key) => {
+				const { getAutomationPreset } = await import('$lib/automation/presets');
+				const preset = getAutomationPreset(key);
+				expect(preset).toBeDefined();
+				const result = validateDefinition(preset!.blueprint, noLimits, 'activation');
+				expect(result.ok).toBe(true);
+				if (!result.ok) return;
+				expect(result.definition.stops.map((stop) => stop.key)).toEqual([
+					'stop.appointment_not_ahead',
+					'stop.client_reminder_opt_out'
+				]);
+			}
+		);
+
+		it('refuses a quote step on a booking trigger', async () => {
+			const { getAutomationPreset } = await import('$lib/automation/presets');
+			const blueprint = structuredClone(getAutomationPreset('booking_confirmation')!.blueprint);
+			blueprint.steps = [
+				{
+					type: 'action',
+					key: 'action.send_appointment_email',
+					config: { subject: 'Hi', body: 'Quote {{quote_link}}' }
+				}
+			];
+			expect(validateDefinition(blueprint, noLimits, 'activation').ok).toBe(false);
+		});
+	});
 });
