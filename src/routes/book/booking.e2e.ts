@@ -47,7 +47,7 @@ async function removeTestBookings() {
 		.in('visitor_email', emails);
 	if (error) throw error;
 	const leads = bookings.flatMap((row) => {
-		const entry = row.entry as { relationship_id: string | null } | null;
+		const entry = row.entry as unknown as { relationship_id: string | null } | null;
 		return entry?.relationship_id ? [entry.relationship_id] : [];
 	});
 	// A Lead's calls, bookings and history go with it.
@@ -119,7 +119,11 @@ test.describe.serial('public booking', () => {
 			.in('visitor_email', emails.slice(0, 2));
 		if (error) throw error;
 		expect(data).toHaveLength(1);
-		const entry = data[0].entry as { kind: string; starts_at: string; relationship_id: string };
+		const entry = data[0].entry as unknown as {
+			kind: string;
+			starts_at: string;
+			relationship_id: string;
+		};
 		expect(entry.kind).toBe('call');
 		expect(new Date(entry.starts_at).toISOString()).toBe(new Date(last).toISOString());
 	});
@@ -157,7 +161,7 @@ test.describe.serial('public booking', () => {
 			.eq('visitor_email', emails[2])
 			.single();
 		if (error) throw error;
-		const lead = (data.entry as { relationship_id: string }).relationship_id;
+		const lead = (data.entry as unknown as { relationship_id: string }).relationship_id;
 		const history = await database()
 			.from('platform_business_history')
 			.select('kind, details')
