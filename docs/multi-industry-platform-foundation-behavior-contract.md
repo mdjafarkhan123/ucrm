@@ -1,6 +1,6 @@
 # Multi-industry platform foundation
 
-**Status:** Planning. Product direction agreed by Jafar on 2026-10-08; P2 and P3 behavior approved on 2026-10-09. Contractor migration, build parts and implementation remain unapproved.
+**Status:** Planning. Product direction agreed by Jafar on 2026-10-08; P2, P3 and the Contractor migration proposal approved on 2026-10-09. Build parts and implementation remain unapproved.
 
 ## Summary
 
@@ -123,20 +123,21 @@ The definition supplies starting values, not an editable copy per Organization. 
 - Medspa implementation waits until the platform foundation and Contractor migration are proven. Existing Boulevard research and approved behavior remain valid inputs; they are not discarded or treated as built.
 - Capacity, readiness and regulatory claims require their own evidence. A configurable architecture does not establish them.
 
-### P4 Contractor migration proposal — awaiting Jafar's approval
+### P4 Contractor migration and connected proof — approved 2026-10-09
+
+Jafar approved this plan on condition that it follow leading products in the related industry. Jobber's published [workflow](https://help.getjobber.com/en/articles/jobber-workflow-overview/) treats Requests, Quotes, Jobs, Invoices and Payments as linked Contractor work, while its [Client Hub guidance](https://help.getjobber.com/en/articles/what-do-your-clients-see-in-client-hub/) documents customer access to requests, quote approval and invoice payment through shared links. Those behaviors support preserving the existing work chain and customer obligations. The per-Organization inventory, staged cutover and recovery method below are Uplift's engineering choices, not claims about Jobber's internal migration method.
 
 The [P4 audit](research/multi-industry-contractor-migration-audit-2026-10-09.md) found existing Organizations and published forms but no stored Industry experience, Business type or universal launch record. Before any migration, Uplift repeats a per-Organization inventory of identity, commercial terms, staff grants, Contractor work and links, Setup/delivery records, provider configuration, public surfaces and background senders. The owner reviews which Organizations really remain Contractor. A missing Business type stays unknown; free-text trade does not fill it in.
 
 Migration adds a reviewed Contractor experience profile without changing Organization IDs, Agreements, Package editions, lifecycle status or existing work records. It compares the old and new access answers for actual Packages and roles before switching an Organization. Any unexplained loss or gain stops that Organization's cutover. A test Organization goes first, followed by reviewed existing Organizations in small cohorts. The previous Contractor access path remains available for a controlled recovery until the new path and customer links pass proof; rollback does not delete a profile or rewrite customer history.
 
-**Proposed continuity rule:** an active Contractor form already enabled and published may keep accepting requests while its Organization remains on the old Contractor path, unless Uplift finds a security or business-safety problem. Uplift reviews each existing form before that Organization's cutover and records whether it may continue under the new public-release gate. New or materially changed forms wait for their own release. Already issued quote, invoice, visit, report, review and File links, customer replies, and payment/reconciliation actions keep their existing expiry, revocation and security rules while Uplift checks the applicable journey; a general Setup hold does not automatically cancel those obligations. Business-originating automation that starts new customer work follows its own readiness check.
+**Continuity rule:** an active Contractor form already enabled and published may keep accepting requests while its Organization remains on the old Contractor path, unless Uplift finds a security or business-safety problem. Uplift reviews each existing form before that Organization's cutover and records whether it may continue under the new public-release gate. New or materially changed forms wait for their own release. Already issued quote, invoice, visit, report, review and File links, customer replies, and payment/reconciliation actions keep their existing expiry, revocation and security rules while Uplift checks the applicable journey; a general Setup hold does not automatically cancel those obligations. Business-originating automation that starts new customer work follows its own readiness check.
 
 Contractor proof follows one connected Application-to-payment-to-Setup-to-Request-to-Quote-to-Job/Visit-to-Invoice/payment journey, then support and commercial recovery. It also checks an existing Organization's historical records and issued customer links, role-limited menu and direct access, closed new public surfaces, and refusal of Medspa/clinical access. The migration stops before Medspa implementation if preserved facts, access comparison, customer actions or recovery cannot be demonstrated.
 
 ## Still unclear
 
 - The complete audit of current Control Room, provisioning, Package, Setup, access, shell, routes and data behavior against this plan.
-- Jafar's approval of the P4 Contractor migration, existing-form continuity and connected-proof proposal above.
 
 ## Not doing
 
