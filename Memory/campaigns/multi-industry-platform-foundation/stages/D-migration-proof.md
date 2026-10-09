@@ -1,0 +1,9 @@
+# Stage D — Migration and connected proof
+
+| Part | Delivers | Waits for | Done when | State |
+| --- | --- | --- | --- | --- |
+| B10 Test migration | Repeatable per-Organization inventory, reviewed backfill, test cutover and demonstrated recovery | B1–B9 | One test Contractor retains IDs, Agreements, work, staff access and customer actions before and after the switch; reverting access does not erase history | Not started |
+| B11 Existing Contractor migration | Owner-reviewed Contractor decisions and small cohorts with stop conditions | B10 | Each moved Organization passes access, record and customer-link comparison; an unexplained change stops the next cohort | Not started |
+| B12 Connected proof | Observed Application → payment → provisioning → Setup → Request → Quote → Job/Visit → Invoice/payment, plus support and recovery | B11 | Fresh and existing Contractor journeys, role limits, closed new surfaces and denied clinical access pass with recorded evidence | Not started |
+
+Behavior: `docs/multi-industry-platform-foundation-behavior-contract.md` § P4 Contractor migration and connected proof; `docs/research/multi-industry-contractor-migration-audit-2026-10-09.md`. Repeat live inventory before each outside action and checkpoint its outcome check. Medspa implementation waits for B12; this stage does not establish clinic readiness or traffic capacity.

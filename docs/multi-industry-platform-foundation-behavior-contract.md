@@ -1,6 +1,6 @@
 # Multi-industry platform foundation
 
-**Status:** Planning. Product direction agreed by Jafar on 2026-10-08; P2, P3 and the Contractor migration proposal approved on 2026-10-09. Build parts and implementation remain unapproved.
+**Status:** Approved for staged implementation on 2026-10-09. Jafar approved the product direction, P2–P4 decisions and the 12-part build order on condition that the work follow proven related products. The approved behavior uses Jobber for Contractor work, Boulevard for appointment and clinical boundaries, and HighLevel for reusable multi-industry offers; authorization follows OWASP guidance. The build order and migration safeguards are Uplift choices. No foundation implementation or live readiness is implied by this approval.
 
 ## Summary
 
@@ -139,9 +139,11 @@ Contractor proof follows one connected Application-to-payment-to-Setup-to-Reques
 
 The [P1 audit](research/multi-industry-current-state-audit-2026-10-09.md) identifies the current Control Room, provisioning, Package, Setup, access, shell, public-route and data seams. These are feasible reuse and change points, not completed Industry-experience features. The [P4 remote inventory](research/multi-industry-contractor-migration-audit-2026-10-09.md) is a point-in-time aggregate and must be repeated per Organization immediately before migration. Provider configuration, customer-link behavior, browser journeys, first-clinic readiness and traffic capacity need their own observed checks. Contractor launch and Medspa availability cannot be claimed from this plan alone.
 
+The approved build order establishes reviewed experience identity, Package fit, Application qualification, and safe provisioning first; compares Contractor access before enforcement; then adds stable Setup, workflow readiness and public continuity. A test Organization is migrated before small cohorts of existing Contractors. The connected Contractor journey must pass before Medspa implementation. See the [campaign roadmap](../Memory/campaigns/multi-industry-platform-foundation/ROADMAP.md) for the focused parts and dependencies.
+
 ## Still unclear
 
-No open product-behavior question remains in the foundation plan. Jafar still needs to approve the build-part order before implementation starts.
+None for the approved foundation behavior. Each build part must still verify its own implementation and outside-service assumptions.
 
 ## Not doing
 
