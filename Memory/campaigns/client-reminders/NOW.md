@@ -8,6 +8,7 @@ promise (email now, texts after registration).
 **In progress:**
 
 - 2 Quote alerts — started 2026-10-08
+- 3 Visit reminder — started 2026-10-09 (worktree, see part note)
 
 **Next part:** 3 Visit reminder — engine learns visits and "before the visit" timing.
 
