@@ -1,20 +1,18 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import { useQueryClient } from '@tanstack/svelte-query';
 	import userStarIcon from '@tabler/icons/outline/user-star.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import messagesIcon from '@tabler/icons/outline/messages.svg?raw';
-	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
-	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
+	import OwnerPicker from '$lib/components/jafar/OwnerPicker.svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import { formatUsd } from '$lib/jafar/packages';
 	import { applicationHref } from '$lib/jafar/lead-history';
 	import { sendLeadWrite, refreshLead } from '$lib/jafar/lead-page-api';
 	import { jafarSetupOwnerChoicesKey } from '$lib/jafar/query-keys';
-	import type { BusinessClient, SetupOwnerChoice } from '$lib/jafar/deals';
+	import type { BusinessClient } from '$lib/jafar/deals';
 	import { onboardingNextActionLabel, onboardingStage } from '$lib/setup/onboarding-list';
 
 	// Jafar business management B5: the Client box on a business's page (plan § 5). Once payment is confirmed the
@@ -71,30 +69,10 @@
 	);
 
 	// --- Who looks after setup ---------------------------------------------------------------------------
-	// The teammates load when the Change button is hovered or opened, not with the page.
 
-	let wantChoices = $state(false);
-	let menuOpen = $state(false);
 	let savingOwner = $state(false);
 
-	async function fetchChoices(): Promise<SetupOwnerChoice[]> {
-		const response = await fetch(
-			`/api/jafar/leads/${encodeURIComponent(relationshipId)}/setup-owner`
-		);
-		const result = await response.json();
-		if (!response.ok) throw new Error(result.error ?? 'Your team could not be loaded.');
-		return result.choices as SetupOwnerChoice[];
-	}
-
-	const choices = createQuery(() => ({
-		queryKey: jafarSetupOwnerChoicesKey,
-		queryFn: fetchChoices,
-		staleTime: 60_000,
-		enabled: canChangeSetupOwner && (wantChoices || menuOpen)
-	}));
-
 	async function setOwner(memberId: string | null, name: string) {
-		if (savingOwner || (client.setup_owner?.id ?? null) === memberId) return;
 		savingOwner = true;
 		const result = await sendLeadWrite(
 			`/api/jafar/leads/${encodeURIComponent(relationshipId)}/setup-owner`,
@@ -107,42 +85,6 @@
 		else toast.error('That could not be changed.', result.error);
 	}
 
-	const ownerItems = $derived.by(() => {
-		const current = client.setup_owner?.id ?? null;
-		const jafar = {
-			key: 'jafar',
-			label: current === null ? 'Jafar (now)' : 'Jafar',
-			disabled: current === null,
-			onSelect: () => void setOwner(null, 'Jafar')
-		};
-		if (choices.isPending)
-			return [
-				jafar,
-				{ key: 'loading', label: 'Loading teammates…', disabled: true, onSelect: () => {} }
-			];
-		if (choices.isError)
-			return [
-				jafar,
-				{ key: 'error', label: 'Teammates could not be loaded', disabled: true, onSelect: () => {} }
-			];
-		const teammates = (choices.data ?? []).map((choice) => ({
-			key: choice.id,
-			label: choice.id === current ? `${choice.name} (now)` : choice.name,
-			disabled: choice.id === current,
-			onSelect: () => void setOwner(choice.id, choice.name)
-		}));
-		return teammates.length
-			? [jafar, ...teammates]
-			: [
-					jafar,
-					{
-						key: 'none',
-						label: 'No teammate has Onboarding access',
-						disabled: true,
-						onSelect: () => {}
-					}
-				];
-	});
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -243,42 +185,16 @@
 
 	<section class="client-panel__section" aria-label="Who looks after setup">
 		<h3>Setup looked after by</h3>
-		<div class="client-panel__owner">
-			{#if client.setup_owner}
-				<Avatar
-					id={client.setup_owner.id}
-					name={client.setup_owner.name}
-					src={client.setup_owner.avatar_url}
-					size="small"
-				/>
-				<span>{client.setup_owner.name}</span>
-			{:else}
-				<Avatar id="jafar" name="Jafar" size="small" />
-				<span>Jafar</span>
-			{/if}
-			{#if canChangeSetupOwner}
-				<span
-					class="client-panel__change"
-					role="presentation"
-					onpointerenter={() => (wantChoices = true)}
-					onfocusin={() => (wantChoices = true)}
-				>
-					<DropdownMenu
-						items={ownerItems}
-						triggerLabel="Change who looks after their setup"
-						triggerClass="client-panel__change-trigger"
-						disabled={savingOwner}
-						bind:open={menuOpen}
-					>
-						{#snippet trigger()}
-							Change<span class="client-panel__chevron" aria-hidden="true"
-								>{@html chevronDownIcon}</span
-							>
-						{/snippet}
-					</DropdownMenu>
-				</span>
-			{/if}
-		</div>
+		<OwnerPicker
+			current={client.setup_owner}
+			choicesUrl={`/api/jafar/leads/${encodeURIComponent(relationshipId)}/setup-owner`}
+			choicesKey={jafarSetupOwnerChoicesKey}
+			canChange={canChangeSetupOwner}
+			saving={savingOwner}
+			changeLabel="Change who looks after their setup"
+			noTeammatesLabel="No teammate has Onboarding access"
+			onChoose={(memberId, name) => void setOwner(memberId, name)}
+		/>
 	</section>
 </RailCard>
 
@@ -288,7 +204,6 @@
 	.client-panel {
 		&__status,
 		&__stage,
-		&__owner,
 		&__line {
 			display: flex;
 			flex-wrap: wrap;
@@ -408,54 +323,6 @@
 			:global(svg) {
 				width: 16px;
 				height: 16px;
-			}
-		}
-
-		&__owner span:not([class]) {
-			color: var(--color-heading);
-			font-weight: 600;
-		}
-
-		&__change {
-			margin-left: auto;
-
-			:global(.client-panel__change-trigger) {
-				display: inline-flex;
-				align-items: center;
-				padding: var(--space-smaller) var(--space-small);
-				border: var(--border-base) solid var(--color-border);
-				border-radius: var(--radius-base);
-				background: var(--color-surface);
-				color: var(--color-heading);
-				font: inherit;
-				font-size: var(--typography--fontSize-small);
-				font-weight: 600;
-				cursor: pointer;
-				transition: background-color var(--timing-quick);
-
-				&:hover:not(:disabled) {
-					background: var(--color-surface--hover);
-				}
-
-				&:focus-visible {
-					outline: none;
-					box-shadow: var(--shadow-focus);
-				}
-
-				&:disabled {
-					cursor: progress;
-					opacity: 0.6;
-				}
-			}
-		}
-
-		&__chevron {
-			display: inline-flex;
-			margin-left: var(--space-smaller);
-
-			:global(svg) {
-				width: 14px;
-				height: 14px;
 			}
 		}
 	}

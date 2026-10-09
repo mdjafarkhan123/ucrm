@@ -173,6 +173,8 @@ export const jafarTeamMemberAccessKey = (memberId: string) =>
 	[...jafarTeamKey, memberId, 'access'] as const;
 /** B5: teammates who can look after a new client's setup; under the team key so a team or access change reaches it. */
 export const jafarSetupOwnerChoicesKey = [...jafarTeamKey, 'setup-owner-choices'] as const;
+/** D3a: teammates who can own a Lead (Leads & Deals to change); under the team key for the same reason. */
+export const jafarLeadOwnerChoicesKey = [...jafarTeamKey, 'lead-owner-choices'] as const;
 
 export const jafarPackagesKey = ['jafar', 'packages'] as const;
 // Package builder P11b: every introductory offer, with its claims.

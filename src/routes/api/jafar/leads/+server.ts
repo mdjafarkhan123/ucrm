@@ -40,6 +40,7 @@ export const GET: RequestHandler = async (event) => {
 		status: query.get('status') ?? undefined,
 		country: query.get('country') ?? undefined,
 		source: query.get('source') ?? undefined,
+		owner: query.get('owner') ?? undefined,
 		sort: query.get('sort') ?? undefined,
 		deal: query.get('deal') ?? undefined,
 		cursor: query.get('cursor') ?? undefined,
@@ -65,7 +66,8 @@ export const GET: RequestHandler = async (event) => {
 			cursor_due_on: cursor?.due_on,
 			cursor_id: cursor?.id,
 			page_size: filters.limit ?? 50,
-			deal_filter: filters.deal ?? 'without'
+			deal_filter: filters.deal ?? 'without',
+			owner_filter: filters.owner
 		});
 		if (error) throw error;
 

@@ -40,6 +40,14 @@ describe('Jafar Panel team access', () => {
 		}
 	});
 
+	it('gives every teammate their own bell (D3a)', () => {
+		for (const role of TEAM_ROLES) {
+			expect(canUseJafarPath({ role }, '/jafar/notifications', 'GET'), role).toBe(true);
+			expect(canUseJafarPath({ role }, '/api/jafar/notifications', 'GET'), role).toBe(true);
+			expect(canUseJafarPath({ role }, '/api/jafar/notifications/read', 'POST'), role).toBe(true);
+		}
+	});
+
 	it('matches whole path segments only', () => {
 		expect(areaForPath('/jafar/leads')).toBe('leads');
 		expect(areaForPath('/jafar/leads/new')).toBe('leads');

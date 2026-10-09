@@ -186,6 +186,7 @@
 			case 'deal_won':
 				return trophyIcon;
 			case 'setup_owner_changed':
+			case 'owner_changed':
 				return userCheckIcon;
 			case 'call_booked':
 				return calendarPlusIcon;
@@ -271,6 +272,8 @@
 				return 'Deal Won — payment confirmed';
 			case 'setup_owner_changed':
 				return `Setup now looked after by ${details.to || 'Jafar'}`;
+			case 'owner_changed':
+				return `Now owned by ${details.to || 'Jafar'}`;
 			case 'call_booked':
 				return 'Call booked';
 			case 'call_moved':
@@ -542,6 +545,14 @@
 
 								{#if entry.kind === 'setup_owner_changed'}
 									<p class="lead-history__detail">Was {entry.details?.from || 'Jafar'}</p>
+								{/if}
+
+								{#if entry.kind === 'owner_changed'}
+									<p class="lead-history__detail">
+										Was {entry.details?.from || 'Jafar'}{entry.details?.reason === 'removed'
+											? ' · they left the team'
+											: ''}
+									</p>
 								{/if}
 
 								{#if entry.kind === 'lead_added' && entry.details?.source}

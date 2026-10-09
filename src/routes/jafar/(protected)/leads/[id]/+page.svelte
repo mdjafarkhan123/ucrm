@@ -52,6 +52,7 @@
 	import DealPanel from '$lib/components/jafar/deals/DealPanel.svelte';
 	import ClientPanel from '$lib/components/jafar/deals/ClientPanel.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
+	import OwnerPicker from '$lib/components/jafar/OwnerPicker.svelte';
 	import {
 		CONTACT_METHOD_LABELS,
 		LEAD_SOURCE_LABELS,
@@ -67,8 +68,11 @@
 		type LinkedApplication
 	} from '$lib/jafar/lead-history';
 	import {
+		jafarCalendarKey,
 		jafarDealsKey,
 		jafarLeadKey,
+		jafarLeadOwnerChoicesKey,
+		jafarLeadsKey,
 		jafarProspectKey,
 		jafarProspectsKey
 	} from '$lib/jafar/query-keys';
@@ -159,8 +163,33 @@
 			'POST'
 		)
 	);
+	// D3a: anyone who can change Leads hands one to Jafar or a teammate.
+	const canChangeOwner = $derived(
+		canUseJafarPath(
+			{ role: page.data.owner.role, access: page.data.owner.access },
+			`/api/jafar/leads/${leadId}/owner`,
+			'POST'
+		)
+	);
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
+
+	let ownerSaving = $state(false);
+	async function setLeadOwner(memberId: string | null, name: string) {
+		ownerSaving = true;
+		const result = await sendLeadWrite(`/api/jafar/leads/${encodeURIComponent(leadId)}/owner`, 'POST', {
+			member_id: memberId
+		});
+		if (result.ok)
+			await Promise.all([
+				refreshLead(queryClient, leadId),
+				queryClient.invalidateQueries({ queryKey: jafarLeadsKey }),
+				queryClient.invalidateQueries({ queryKey: jafarCalendarKey })
+			]);
+		ownerSaving = false;
+		if (result.ok) toast.success(`${name} now owns this Lead`);
+		else toast.error('The owner could not be changed.', result.error);
+	}
 
 	const lead = createQuery(() => ({
 		queryKey: jafarLeadKey(leadId),
@@ -503,6 +532,21 @@
 			{/if}
 
 			<dl class="lead-page__stats">
+				<div class="lead-page__owner">
+					<dt>Owner</dt>
+					<dd>
+						<OwnerPicker
+							current={details.owner}
+							choicesUrl={`/api/jafar/leads/${encodeURIComponent(leadId)}/owner`}
+							choicesKey={jafarLeadOwnerChoicesKey}
+							canChange={canChangeOwner}
+							saving={ownerSaving}
+							changeLabel={`Owner: ${details.owner?.name ?? 'Jafar'}. Change who owns this Lead`}
+							noTeammatesLabel="No teammate can change Leads yet"
+							onChoose={(memberId, name) => void setLeadOwner(memberId, name)}
+						/>
+					</dd>
+				</div>
 				<div>
 					<dt>Last contacted</dt>
 					<dd
@@ -1087,7 +1131,7 @@
 
 		&__stats {
 			display: grid;
-			grid-template-columns: repeat(4, minmax(0, 1fr));
+			grid-template-columns: repeat(5, minmax(0, 1fr));
 			gap: var(--space-base);
 			padding-top: var(--space-base);
 			border-top: var(--border-base) solid var(--color-border);
@@ -1109,6 +1153,11 @@
 				font-weight: 700;
 				overflow-wrap: anywhere;
 			}
+		}
+
+		// D3a: the owner's Change button sits right after the name, not pushed to the cell's far edge.
+		&__owner dd :global(.owner-picker__change) {
+			margin-left: 0;
 		}
 
 		// --- Rail and history ---
@@ -1402,6 +1451,10 @@
 	@media (max-width: 1100px) {
 		.lead-page__stats {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.lead-page__owner {
+			grid-column: 1 / -1;
 		}
 	}
 

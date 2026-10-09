@@ -195,7 +195,6 @@
 	variant="owner"
 	supportUnread={supportUnread.data?.unread ?? 0}
 	ownerCanOpen={canOpen}
-	ownerNotificationsVisible={data.owner.role === null}
 	{account}
 	ownerPhoto={{ ...data.photo, name: data.owner.name ?? data.owner.email }}
 >

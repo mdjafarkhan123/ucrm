@@ -4,6 +4,7 @@ import { getOwnerSession } from '$lib/server/auth/owner';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { notificationListQuerySchema } from '$lib/server/validation/notification.schema';
+import { forViewer } from '$lib/server/jafar/notification-scope';
 
 const notificationSelect =
 	'id, correlation_id, kind, severity, title, body, target_kind, target_id, read_at, created_at';
@@ -21,7 +22,8 @@ function sanitizeSearch(term: string) {
 }
 
 export const GET: RequestHandler = async (event) => {
-	if (!(await getOwnerSession(event))) return ownerUnauthorized();
+	const session = await getOwnerSession(event);
+	if (!session) return ownerUnauthorized();
 
 	const parsed = notificationListQuerySchema.safeParse({
 		status: event.url.searchParams.get('status') ?? undefined,
@@ -35,9 +37,10 @@ export const GET: RequestHandler = async (event) => {
 	const search = parsed.data.search ? sanitizeSearch(parsed.data.search) : '';
 
 	try {
-		let query = client
-			.from('platform_owner_notifications')
-			.select(notificationSelect)
+		let query = forViewer(
+			client.from('platform_owner_notifications').select(notificationSelect),
+			session.memberId
+		)
 			.order('created_at', { ascending: false })
 			.limit(parsed.data.limit ?? DEFAULT_LIMIT);
 
@@ -48,10 +51,10 @@ export const GET: RequestHandler = async (event) => {
 		// bell keeps telling the truth when there are more unread items than one page holds.
 		const [listResult, countResult] = await Promise.all([
 			query,
-			client
-				.from('platform_owner_notifications')
-				.select('id', { count: 'exact', head: true })
-				.is('read_at', null)
+			forViewer(
+				client.from('platform_owner_notifications').select('id', { count: 'exact', head: true }),
+				session.memberId
+			).is('read_at', null)
 		]);
 
 		if (listResult.error) throw listResult.error;

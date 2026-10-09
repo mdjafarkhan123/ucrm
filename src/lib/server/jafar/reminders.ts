@@ -8,7 +8,8 @@ import { getServerEnv } from '$lib/server/env';
 // email -- for sales calls and dated next actions (Google Calendar's notification model, plan § 6). The database
 // writes each reminder from its call or next action and deletes the unsent ones when either moves, so whatever it
 // hands over here is still right. It claims due reminders for five minutes and drops any more than an hour late.
-// Runs on the email worker's once-a-minute wake. In-app alerts land in Jafar's bell; teammates' bells come with D3.
+// Runs on the email worker's once-a-minute wake. Each reminder goes to its call's or business's owner (D3a): an
+// alert in their bell, an email to their sign-in address; null is Jafar.
 
 const BATCH = 50;
 
@@ -149,7 +150,8 @@ async function deliver(
 				title: words.title.slice(0, 200),
 				body: words.body,
 				target: { targetKind: 'business_relationship', targetId: reminder.relationship_id },
-				correlationId: reminder.id
+				correlationId: reminder.id,
+				recipientMemberId: reminder.recipient_member_id
 			});
 		} catch (error) {
 			// One alert per reminder: a retry after a lost lease finds the first one already there.

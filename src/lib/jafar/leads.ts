@@ -105,6 +105,8 @@ export type LeadFilters = {
 	statuses: LeadStatus[];
 	countries: string[];
 	sources: LeadSource[];
+	/** D3a: owners, each `jafar` or a teammate's id. */
+	owners: string[];
 	sort: LeadSort;
 	/** B4: the businesses still worked as Leads, those in a Deal, or (B5) those that paid and became clients. */
 	show: LeadListShow;
@@ -123,6 +125,7 @@ export const EMPTY_LEAD_FILTERS: LeadFilters = {
 	statuses: [],
 	countries: [],
 	sources: [],
+	owners: [],
 	sort: 'newest',
 	show: 'leads'
 };
@@ -142,6 +145,18 @@ function readList<Value extends string>(raw: string | null, allowed: readonly Va
 	return allowed.filter((value) => seen.has(value));
 }
 
+const OWNER_KEY = /^(jafar|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
+
+// D3a: `jafar` or teammates' ids, each once.
+function readOwners(raw: string | null) {
+	const owners: string[] = [];
+	for (const part of (raw ?? '').split(',')) {
+		const value = part.trim().toLowerCase();
+		if (OWNER_KEY.test(value) && !owners.includes(value)) owners.push(value);
+	}
+	return owners.slice(0, 50);
+}
+
 export function readLeadFilters(params: URLSearchParams): LeadFilters {
 	const countries: string[] = [];
 	for (const part of (params.get('country') ?? '').split(',')) {
@@ -154,6 +169,7 @@ export function readLeadFilters(params: URLSearchParams): LeadFilters {
 		statuses: readList(params.get('status'), LEAD_STATUSES),
 		countries: countries.slice(0, LEAD_COUNTRY_FILTER_MAX),
 		sources: readList(params.get('source'), LEAD_SOURCES),
+		owners: readOwners(params.get('owner')),
 		sort: sort === 'next_action' ? 'next_action' : 'newest',
 		show:
 			LEAD_LIST_SHOWS.find((show) => SHOW_PARAM[show] && SHOW_PARAM[show] === params.get('deal')) ??
@@ -169,6 +185,7 @@ export function leadFilterParams(filters: LeadFilters): URLSearchParams {
 	if (filters.statuses.length) params.set('status', filters.statuses.join(','));
 	if (filters.countries.length) params.set('country', filters.countries.join(','));
 	if (filters.sources.length) params.set('source', filters.sources.join(','));
+	if (filters.owners.length) params.set('owner', filters.owners.join(','));
 	if (filters.sort !== 'newest') params.set('sort', filters.sort);
 	const show = SHOW_PARAM[filters.show];
 	if (show) params.set('deal', show);
@@ -177,7 +194,11 @@ export function leadFilterParams(filters: LeadFilters): URLSearchParams {
 
 export function hasLeadFilters(filters: LeadFilters) {
 	return Boolean(
-		filters.q || filters.statuses.length || filters.countries.length || filters.sources.length
+		filters.q ||
+			filters.statuses.length ||
+			filters.countries.length ||
+			filters.sources.length ||
+			filters.owners.length
 	);
 }
 
@@ -203,7 +224,12 @@ export type LeadListItem = {
 	created_at: string;
 	/** B4: the stage of the business's latest Deal, when it has one. */
 	deal_stage: DealStage | null;
+	/** D3a: null is Jafar. */
+	owner: LeadOwner | null;
 };
+
+/** D3a: the teammate who owns a business; null wherever it appears means Jafar. */
+export type LeadOwner = { id: string; name: string; avatar_url: string | null };
 
 export type LeadListTotals = {
 	all: number;
@@ -215,6 +241,8 @@ export type LeadListTotals = {
 	statuses: Partial<Record<LeadStatus, number>>;
 	countries: Array<{ code: string; count: number }>;
 	sources: Partial<Record<LeadSource, number>>;
+	/** D3a: Leads per owner, Jafar first; `key` is `jafar` (name null) or a teammate's id. */
+	owners: Array<{ key: string; name: string | null; count: number }>;
 };
 
 export type LeadListPage = {

@@ -128,6 +128,23 @@ describe('Leads list GET', () => {
 		);
 	});
 
+	it('filters by owner: Jafar or a teammate, each once (D3a)', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+		const rpc = rpcReturning(listResult);
+		const sam = '1b2c3d4e-5f6a-4b7c-8d9e-0f1a2b3c4d5e';
+		await GET(getEvent(`http://localhost/api/jafar/leads?owner=jafar,${sam},jafar`));
+		expect(rpc).toHaveBeenCalledWith(
+			'owner_lead_list',
+			expect.objectContaining({ owner_filter: ['jafar', sam] })
+		);
+	});
+
+	it('refuses an owner that is neither Jafar nor a teammate id (D3a)', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+		rpcReturning(listResult);
+		expect((await GET(getEvent('http://localhost/api/jafar/leads?owner=everyone'))).status).toBe(422);
+	});
+
 	it('turns the next page cursor into an opaque string and back', async () => {
 		mockedOwnerSession.mockResolvedValue(session());
 		const cursor = { created_at: '2026-10-07T03:00:00Z', due_on: '0001-01-01', id: 'lead-1' };

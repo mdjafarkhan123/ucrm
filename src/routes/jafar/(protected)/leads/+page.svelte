@@ -13,6 +13,7 @@
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import LeadFilters from '$lib/components/jafar/leads/LeadFilters.svelte';
@@ -42,7 +43,8 @@
 		matching: 0,
 		statuses: {},
 		countries: [],
-		sources: {}
+		sources: {},
+		owners: []
 	};
 
 	// The filters live in the address, so a refresh, the Back button and a shared link all keep them.
@@ -293,7 +295,17 @@
 										<span class="leads__muted">&mdash;</span>
 									{/if}
 								</td>
-								<td data-label="Owner">Jafar</td>
+								<td data-label="Owner">
+									<span class="leads__owner">
+										<Avatar
+											id={lead.owner?.id ?? 'jafar'}
+											name={lead.owner?.name ?? 'Jafar'}
+											src={lead.owner?.avatar_url}
+											size="small"
+										/>
+										{lead.owner?.name ?? 'Jafar'}
+									</span>
+								</td>
 							</tr>
 						{/each}
 					</tbody>
@@ -548,6 +560,13 @@
 	.leads__missing {
 		color: var(--color-warning--onSurface);
 		font-weight: 600;
+	}
+
+	.leads__owner {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-small);
+		white-space: nowrap;
 	}
 
 	.leads__muted {

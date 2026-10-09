@@ -3,8 +3,17 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('$lib/server/env', () => ({
 	getServerEnv: () => ({ SUPER_ADMIN_EMAIL: 'owner@example.com' })
 }));
+vi.mock('$lib/server/events/outbox', () => ({ createOwnerNotification: vi.fn() }));
+vi.mock('$lib/server/events/dispatcher', () => ({ enqueueEmailDelivery: vi.fn() }));
 
-import { buildReminderEmail, reminderWords, type DueReminder } from './reminders';
+import { createOwnerNotification } from '$lib/server/events/outbox';
+import { enqueueEmailDelivery } from '$lib/server/events/dispatcher';
+import {
+	buildReminderEmail,
+	reminderWords,
+	sendDuePlatformReminders,
+	type DueReminder
+} from './reminders';
 
 const base: DueReminder = {
 	id: '00000000-0000-0000-0000-000000000001',
@@ -87,5 +96,60 @@ describe('buildReminderEmail', () => {
 		expect(email.subject).toBe('Reminder: Call <A&B>');
 		expect(email.htmlContent).toContain('Call &lt;A&amp;B&gt;');
 		expect(email.textContent).toContain('Open the business: https://app.test/jafar/leads/x');
+	});
+});
+
+describe('sendDuePlatformReminders', () => {
+	function clientHanding(due: DueReminder[]) {
+		const rpc = vi.fn(async (name: string) =>
+			name === 'claim_due_platform_reminders' ? { data: due, error: null } : { data: true, error: null }
+		);
+		return { client: { rpc } as never, rpc };
+	}
+
+	it('puts a teammate’s reminder in their own bell and inbox, not Jafar’s (D3a)', async () => {
+		const sam = {
+			recipient_member_id: 'member-sam',
+			recipient_email: 'sam@example.com',
+			recipient_name: 'Sam Seller'
+		};
+		const { client, rpc } = clientHanding([
+			{ ...base, ...sam, follow_up: { next_action: 'Call back', due_on: '2026-10-08', due_at: null } },
+			{
+				...base,
+				...sam,
+				id: '00000000-0000-0000-0000-000000000003',
+				channel: 'email',
+				follow_up: { next_action: 'Call back', due_on: '2026-10-08', due_at: null }
+			}
+		]);
+
+		expect(await sendDuePlatformReminders(client, { origin: 'https://app.test' })).toBe(2);
+		expect(vi.mocked(createOwnerNotification)).toHaveBeenCalledWith(
+			client,
+			expect.objectContaining({ recipientMemberId: 'member-sam', correlationId: base.id })
+		);
+		expect(vi.mocked(enqueueEmailDelivery)).toHaveBeenCalledWith(
+			client,
+			expect.objectContaining({ recipientEmail: 'sam@example.com' })
+		);
+		expect(rpc).toHaveBeenCalledWith('record_platform_reminder_sent', { target_id: base.id });
+	});
+
+	it('sends Jafar’s own reminders to his bell and address', async () => {
+		const { client } = clientHanding([
+			{ ...base, follow_up: { next_action: 'Call back', due_on: '2026-10-08', due_at: null } },
+			{ ...base, id: '00000000-0000-0000-0000-000000000004', channel: 'email' }
+		]);
+
+		await sendDuePlatformReminders(client, { origin: 'https://app.test' });
+		expect(vi.mocked(createOwnerNotification)).toHaveBeenCalledWith(
+			client,
+			expect.objectContaining({ recipientMemberId: null })
+		);
+		expect(vi.mocked(enqueueEmailDelivery)).toHaveBeenCalledWith(
+			client,
+			expect.objectContaining({ recipientEmail: 'owner@example.com' })
+		);
 	});
 });

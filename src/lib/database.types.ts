@@ -162,6 +162,7 @@ export type Database = {
 					instructions: string | null;
 					organization_id: string;
 					request_id: string;
+					schedule_set_at: string | null;
 					starts_at: string | null;
 					updated_at: string;
 				};
@@ -174,6 +175,7 @@ export type Database = {
 					instructions?: string | null;
 					organization_id: string;
 					request_id: string;
+					schedule_set_at?: string | null;
 					starts_at?: string | null;
 					updated_at?: string;
 				};
@@ -186,6 +188,7 @@ export type Database = {
 					instructions?: string | null;
 					organization_id?: string;
 					request_id?: string;
+					schedule_set_at?: string | null;
 					starts_at?: string | null;
 					updated_at?: string;
 				};
@@ -7898,6 +7901,7 @@ export type Database = {
 					organization_id: string;
 					position: number;
 					revision: number;
+					schedule_set_at: string | null;
 					series_date: string | null;
 					source: string;
 					start_time: string | null;
@@ -7919,6 +7923,7 @@ export type Database = {
 					organization_id: string;
 					position: number;
 					revision?: number;
+					schedule_set_at?: string | null;
 					series_date?: string | null;
 					source?: string;
 					start_time?: string | null;
@@ -7940,6 +7945,7 @@ export type Database = {
 					organization_id?: string;
 					position?: number;
 					revision?: number;
+					schedule_set_at?: string | null;
 					series_date?: string | null;
 					source?: string;
 					start_time?: string | null;
@@ -13557,6 +13563,7 @@ export type Database = {
 					next_action_entry_id: string | null;
 					next_action_kind: string | null;
 					next_action_reminders: Json | null;
+					owner_member_id: string | null;
 					setup_owner_member_id: string | null;
 					source: string;
 					source_detail: string | null;
@@ -13583,6 +13590,7 @@ export type Database = {
 					next_action_entry_id?: string | null;
 					next_action_kind?: string | null;
 					next_action_reminders?: Json | null;
+					owner_member_id?: string | null;
 					setup_owner_member_id?: string | null;
 					source: string;
 					source_detail?: string | null;
@@ -13609,6 +13617,7 @@ export type Database = {
 					next_action_entry_id?: string | null;
 					next_action_kind?: string | null;
 					next_action_reminders?: Json | null;
+					owner_member_id?: string | null;
 					setup_owner_member_id?: string | null;
 					source?: string;
 					source_detail?: string | null;
@@ -13623,6 +13632,13 @@ export type Database = {
 						columns: ['next_action_entry_id'];
 						isOneToOne: false;
 						referencedRelation: 'platform_calendar_entries';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'platform_business_relationships_owner_member_id_fkey';
+						columns: ['owner_member_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_team_members';
 						referencedColumns: ['id'];
 					},
 					{
@@ -14546,6 +14562,7 @@ export type Database = {
 					id: string;
 					kind: string;
 					read_at: string | null;
+					recipient_member_id: string | null;
 					severity: string;
 					target_id: string | null;
 					target_kind: string;
@@ -14558,6 +14575,7 @@ export type Database = {
 					id?: string;
 					kind: string;
 					read_at?: string | null;
+					recipient_member_id?: string | null;
 					severity?: string;
 					target_id?: string | null;
 					target_kind: string;
@@ -14570,12 +14588,21 @@ export type Database = {
 					id?: string;
 					kind?: string;
 					read_at?: string | null;
+					recipient_member_id?: string | null;
 					severity?: string;
 					target_id?: string | null;
 					target_kind?: string;
 					title?: string;
 				};
-				Relationships: [];
+				Relationships: [
+					{
+						foreignKeyName: 'platform_owner_notifications_recipient_member_id_fkey';
+						columns: ['recipient_member_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_team_members';
+						referencedColumns: ['id'];
+					}
+				];
 			};
 			platform_owner_sessions: {
 				Row: {
@@ -21669,6 +21696,10 @@ export type Database = {
 					value: number;
 				}[];
 			};
+			emit_due_appointment_reminders: {
+				Args: { p_limit?: number };
+				Returns: number;
+			};
 			end_organization_free_access: {
 				Args: {
 					actor_owner_email: string;
@@ -24494,6 +24525,7 @@ export type Database = {
 					cursor_due_on?: string;
 					cursor_id?: string;
 					deal_filter?: string;
+					owner_filter?: string[];
 					page_size?: number;
 					search_term?: string;
 					sort_order?: string;
@@ -24534,6 +24566,14 @@ export type Database = {
 					turn_on: boolean;
 				};
 				Returns: string;
+			};
+			owner_lead_set_owner: {
+				Args: {
+					actor_email: string;
+					target_member_id: string;
+					target_relationship_id: string;
+				};
+				Returns: boolean;
 			};
 			owner_lead_update_details: {
 				Args: {
@@ -24798,6 +24838,10 @@ export type Database = {
 			payment_receipt_preview: {
 				Args: { target_payment_event_id: string };
 				Returns: Json;
+			};
+			perform_automation_appointment_email_effect: {
+				Args: { p_claim_token: string; p_work_item_id: string };
+				Returns: string;
 			};
 			perform_automation_email_effect: {
 				Args: {

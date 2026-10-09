@@ -105,11 +105,14 @@ export async function createOwnerNotification(
 		body?: string;
 		target: { targetKind: NotificationTargetKind; targetId: string | null };
 		correlationId?: string;
+		/** A teammate's bell; omitted is Jafar's. */
+		recipientMemberId?: string | null;
 	}
 ) {
 	const { data, error } = await client
 		.from('platform_owner_notifications')
 		.insert({
+			recipient_member_id: params.recipientMemberId ?? null,
 			kind: params.kind,
 			severity: params.severity,
 			title: params.title,

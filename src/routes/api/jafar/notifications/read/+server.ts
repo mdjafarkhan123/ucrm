@@ -4,6 +4,7 @@ import { getOwnerSession } from '$lib/server/auth/owner';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { notificationReadSchema } from '$lib/server/validation/notification.schema';
+import { forViewer } from '$lib/server/jafar/notification-scope';
 
 /**
  * Read state is the only thing a notification's row allows to change (the database trigger
@@ -11,7 +12,8 @@ import { notificationReadSchema } from '$lib/server/validation/notification.sche
  * page, and from simply opening a linked record.
  */
 export const POST: RequestHandler = async (event) => {
-	if (!(await getOwnerSession(event))) return ownerUnauthorized();
+	const session = await getOwnerSession(event);
+	if (!session) return ownerUnauthorized();
 
 	let body: unknown;
 	try {
@@ -23,22 +25,24 @@ export const POST: RequestHandler = async (event) => {
 	const parsed = notificationReadSchema.safeParse(body);
 	if (!parsed.success) return json({ error: 'The read request is invalid.' }, { status: 422 });
 
-	const client = getOwnerSupabaseClient();
+	// D3a: only the viewer's own notifications change.
+	const mine = () =>
+		forViewer(
+			getOwnerSupabaseClient()
+				.from('platform_owner_notifications')
+				.update({ read_at: new Date().toISOString() }),
+			session.memberId
+		);
 
 	try {
 		if ('all' in parsed.data) {
-			const { error } = await client
-				.from('platform_owner_notifications')
-				.update({ read_at: new Date().toISOString() })
-				.is('read_at', null);
+			const { error } = await mine().is('read_at', null);
 			if (error) throw error;
 			return json({ ok: true });
 		}
 
 		if ('target_kind' in parsed.data) {
-			const { error } = await client
-				.from('platform_owner_notifications')
-				.update({ read_at: new Date().toISOString() })
+			const { error } = await mine()
 				.eq('target_kind', parsed.data.target_kind)
 				.eq('target_id', parsed.data.target_id)
 				.is('read_at', null);
@@ -46,10 +50,12 @@ export const POST: RequestHandler = async (event) => {
 			return json({ ok: true });
 		}
 
-		const { error } = await client
-			.from('platform_owner_notifications')
-			.update({ read_at: parsed.data.read ? new Date().toISOString() : null })
-			.in('id', parsed.data.ids);
+		const { error } = await forViewer(
+			getOwnerSupabaseClient()
+				.from('platform_owner_notifications')
+				.update({ read_at: parsed.data.read ? new Date().toISOString() : null }),
+			session.memberId
+		).in('id', parsed.data.ids);
 		if (error) throw error;
 		return json({ ok: true });
 	} catch (error) {

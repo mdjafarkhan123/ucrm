@@ -214,12 +214,16 @@ const ALSO_NEEDS: ReadonlyArray<readonly [JafarArea, PathRule]> = [
 ];
 
 /**
- * Paths open to everyone signed in, whatever their areas: changing their own profile photo, and seeing the
- * photos of the people they work with. Whose photo changes comes from the session, never the request.
+ * Paths open to everyone signed in, whatever their areas: changing their own profile photo, seeing the
+ * photos of the people they work with, and their own alerts. Whose photo changes and whose alerts are read
+ * come from the session, never the request.
  */
 const EVERY_SIGNED_IN_PERSON: readonly PathRule[] = [
 	{ pattern: '/api/jafar/account/photo' },
-	{ pattern: '/api/jafar/photos/*' }
+	{ pattern: '/api/jafar/photos/*' },
+	// D3a: everyone has their own bell; the server reads only the viewer's own alerts.
+	{ pattern: '/jafar/notifications' },
+	{ pattern: '/api/jafar/notifications', subtree: true }
 ];
 
 const READ_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);

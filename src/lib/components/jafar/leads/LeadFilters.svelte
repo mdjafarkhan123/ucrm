@@ -84,6 +84,20 @@
 			count: totals.sources[source] ?? 0
 		}))
 	);
+	// D3a: who owns them, Jafar first. Shown once a teammate owns a Lead; an owner from a shared link stays listed.
+	const ownerOptions = $derived([
+		...totals.owners.map((entry) => ({
+			value: entry.key,
+			label: entry.name ?? 'Jafar',
+			count: entry.count
+		})),
+		...filters.owners
+			.filter((key) => !totals.owners.some((entry) => entry.key === key))
+			.map((key) => ({ value: key, label: key === 'jafar' ? 'Jafar' : 'Former owner', count: 0 }))
+	]);
+	const showOwners = $derived(
+		filters.owners.length > 0 || totals.owners.some((entry) => entry.key !== 'jafar')
+	);
 	const sortOptions = LEAD_SORTS.map((value) => ({ value, label: LEAD_SORT_LABELS[value] }));
 	// B4: a business with a Deal moves to the Deals board and leaves this list; it is one choice away here. B5: so
 	// does one that became a client.
@@ -135,6 +149,15 @@
 			values={filters.sources}
 			onchange={(values) => onChange({ ...filters, sources: values as LeadSource[] })}
 		/>
+		{#if showOwners}
+			<FilterChipMulti
+				id="lead-filter-owner"
+				label="Owner"
+				options={ownerOptions}
+				values={filters.owners}
+				onchange={(values) => onChange({ ...filters, owners: values })}
+			/>
+		{/if}
 		<FilterChip
 			id="lead-sort"
 			label="Sort"

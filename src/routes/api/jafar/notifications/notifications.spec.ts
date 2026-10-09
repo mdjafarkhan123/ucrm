@@ -13,7 +13,8 @@ const calls: { method: string; args: unknown[] }[] = [];
 
 /**
  * The route fires the list and the unread count together, so the fake distinguishes them by
- * whether the select asked for a head count -- the same way PostgREST itself does.
+ * whether the select asked for a head count -- the same way PostgREST itself does. Every step
+ * is recorded; the count's steps are prefixed `count`.
  */
 function clientWith(options: {
 	rows?: unknown[];
@@ -22,53 +23,34 @@ function clientWith(options: {
 	countError?: { message: string } | null;
 }) {
 	function builder(isCount: boolean) {
+		const record =
+			(method: string) =>
+			(...args: unknown[]) => {
+				calls.push({ method: isCount ? `count${method[0].toUpperCase()}${method.slice(1)}` : method, args });
+				return self;
+			};
 		const self = {
-			select: (...args: unknown[]) => {
-				calls.push({ method: 'select', args });
-				return isCount ? countResult() : self;
-			},
-			order: (...args: unknown[]) => {
-				calls.push({ method: 'order', args });
-				return self;
-			},
-			limit: (...args: unknown[]) => {
-				calls.push({ method: 'limit', args });
-				return self;
-			},
-			is: (...args: unknown[]) => {
-				calls.push({ method: 'is', args });
-				return self;
-			},
-			or: (...args: unknown[]) => {
-				calls.push({ method: 'or', args });
-				return self;
-			},
+			order: record('order'),
+			limit: record('limit'),
+			is: record('is'),
+			eq: record('eq'),
+			or: record('or'),
 			then: (resolve: (value: unknown) => unknown) =>
-				Promise.resolve({
-					data: options.rows ?? [],
-					error: options.listError ?? null
-				}).then(resolve)
+				Promise.resolve(
+					isCount
+						? { count: options.count ?? 0, error: options.countError ?? null }
+						: { data: options.rows ?? [], error: options.listError ?? null }
+				).then(resolve)
 		};
 		return self;
-	}
-
-	function countResult() {
-		return {
-			is: (...args: unknown[]) => {
-				calls.push({ method: 'countIs', args });
-				return Promise.resolve({
-					count: options.count ?? 0,
-					error: options.countError ?? null
-				});
-			}
-		};
 	}
 
 	return {
 		from: () => ({
 			select: (...args: unknown[]) => {
 				const isCount = args.length > 1;
-				return builder(isCount).select(...args);
+				if (!isCount) calls.push({ method: 'select', args });
+				return builder(isCount);
 			}
 		})
 	};
@@ -136,7 +118,33 @@ describe('platform owner notifications list API boundary', () => {
 
 		const response = await GET(event('http://localhost/api/jafar/notifications?status=all'));
 		expect(response.status).toBe(200);
-		expect(calls.some((call) => call.method === 'is')).toBe(false);
+		expect(calls).not.toContainEqual({ method: 'is', args: ['read_at', null] });
+	});
+
+	it('reads Jafar’s own bell: everything not addressed to a teammate (D3a)', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+		mockedClient.mockReturnValue(clientWith({ rows: [], count: 0 }) as never);
+
+		await GET(event());
+		expect(calls).toContainEqual({ method: 'is', args: ['recipient_member_id', null] });
+		expect(calls).toContainEqual({ method: 'countIs', args: ['recipient_member_id', null] });
+	});
+
+	it('reads a teammate’s own bell and nothing else (D3a)', async () => {
+		mockedOwnerSession.mockResolvedValue({
+			...session(),
+			email: 'sam@example.com',
+			role: 'sales',
+			memberId: 'member-sam'
+		} as never);
+		mockedClient.mockReturnValue(clientWith({ rows: [], count: 0 }) as never);
+
+		await GET(event());
+		expect(calls).toContainEqual({ method: 'eq', args: ['recipient_member_id', 'member-sam'] });
+		expect(calls).toContainEqual({ method: 'countEq', args: ['recipient_member_id', 'member-sam'] });
+		expect(calls.some((call) => call.args[0] === 'recipient_member_id' && call.args[1] === null)).toBe(
+			false
+		);
 	});
 
 	it('searches the title and body of a notification', async () => {

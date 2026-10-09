@@ -25,7 +25,6 @@
 		navigation = fallbackContractorNavigation,
 		supportUnread = 0,
 		ownerCanOpen = () => true,
-		ownerNotificationsVisible = true,
 		ownerPhoto = null
 	}: {
 		children: import('svelte').Snippet;
@@ -47,8 +46,6 @@
 		supportUnread?: number;
 		/** Owner variant: whether the signed-in person may open a page; a teammate sees only their areas. */
 		ownerCanOpen?: (href: string) => boolean;
-		/** Owner variant: the platform alerts bell, which is the owner's alone. */
-		ownerNotificationsVisible?: boolean;
 		/** Owner variant: the signed-in person's own photo — Jafar's, or a teammate's. */
 		ownerPhoto?: { id: string; url: string | null; name: string | null } | null;
 	} = $props();
@@ -242,7 +239,7 @@
 			onSearchOpen={variant === 'contractor' && userId ? () => (searchOpen = true) : undefined}
 		>
 			{#snippet notifications()}
-				{#if variant === 'owner' && ownerNotificationsVisible}
+				{#if variant === 'owner'}
 					<NotificationBell />
 				{:else if variant === 'contractor' && userId}
 					<TeamNotificationBell />

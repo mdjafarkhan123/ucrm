@@ -10,7 +10,7 @@ import {
 	type LeadSource,
 	type LeadStatus
 } from './leads';
-import type { BusinessClient, BusinessDeal, DealStage } from './deals';
+import type { BusinessClient, BusinessDeal, DealStage, SetupOwnerChoice } from './deals';
 import type { CallStatus, ReminderRule } from './calendar';
 import { CALL_OUTCOMES, CALL_OUTCOME_LABELS, type CallOutcome } from '$lib/pipeline/calls';
 
@@ -100,6 +100,7 @@ export type HistoryKind =
 	| 'deal_removed'
 	| 'deal_won'
 	| 'setup_owner_changed'
+	| 'owner_changed'
 	| 'call_booked'
 	| 'call_moved'
 	| 'call_held'
@@ -120,7 +121,7 @@ export type HistoryEntry = {
 	call_outcome: CallOutcome | null;
 	application_id: string | null;
 	details: {
-		/** For setup_owner_changed (B5), teammates' names; null is Jafar. */
+		/** For setup_owner_changed (B5) and owner_changed (D3a), teammates' names; null is Jafar. */
 		from?: LeadStatus | DealStage | string | null;
 		to?: LeadStatus | DealStage | string | null;
 		next_action?: string;
@@ -209,6 +210,8 @@ export type LeadDetail = {
 	next_action_entry_id: string | null;
 	/** C2: its own reminders, or null to follow My preferences. */
 	next_action_reminders: ReminderRule[] | null;
+	/** D3a: who owns the business; null is Jafar. */
+	owner: SetupOwnerChoice | null;
 	do_not_contact: LeadDoNotContact | null;
 	/** A linked Application is paid or has its account. */
 	is_client: boolean;

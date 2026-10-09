@@ -9,13 +9,16 @@ vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn(
 const mockedOwnerSession = vi.mocked(getOwnerSession);
 const mockedClient = vi.mocked(getOwnerSupabaseClient);
 
+// Each filter returns the same chain, which settles with `error` when awaited.
 function clientWith(error: { message: string } | null = null) {
-	const update = vi.fn();
-	const is = vi.fn().mockResolvedValue({ error });
-	const inFilter = vi.fn().mockResolvedValue({ error });
-	const eq = vi.fn();
-	eq.mockReturnValue({ eq, is });
-	update.mockReturnValue({ is, in: inFilter, eq });
+	const chain: Record<string, unknown> = {
+		then: (resolve: (value: unknown) => unknown) => Promise.resolve({ error }).then(resolve)
+	};
+	const is = vi.fn(() => chain);
+	const inFilter = vi.fn(() => chain);
+	const eq = vi.fn(() => chain);
+	Object.assign(chain, { is, in: inFilter, eq });
+	const update = vi.fn(() => chain);
 
 	return {
 		from: () => ({ update }),
@@ -139,6 +142,41 @@ describe('platform owner notification read-state API boundary', () => {
 
 		await POST(postEvent({ target_kind: 'operation_attempt', target_id: ID }));
 		expect(client.__in).not.toHaveBeenCalled();
+	});
+
+	it('changes only Jafar’s own alerts, never a teammate’s (D3a)', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+		const client = clientWith();
+		mockedClient.mockReturnValue(client as never);
+
+		await POST(postEvent({ all: true }));
+		await POST(postEvent({ ids: [ID], read: true }));
+		expect(client.__is).toHaveBeenCalledTimes(3);
+		expect(client.__is.mock.calls.filter(([column]) => column === 'recipient_member_id')).toEqual([
+			['recipient_member_id', null],
+			['recipient_member_id', null]
+		]);
+	});
+
+	it('changes only the teammate’s own alerts (D3a)', async () => {
+		mockedOwnerSession.mockResolvedValue({
+			...session(),
+			email: 'sam@example.com',
+			role: 'sales',
+			memberId: 'member-sam'
+		} as never);
+		const client = clientWith();
+		mockedClient.mockReturnValue(client as never);
+
+		await POST(postEvent({ all: true }));
+		await POST(postEvent({ target_kind: 'organization', target_id: ID }));
+		await POST(postEvent({ ids: [ID], read: false }));
+		expect(client.__eq.mock.calls.filter(([column]) => column === 'recipient_member_id')).toEqual([
+			['recipient_member_id', 'member-sam'],
+			['recipient_member_id', 'member-sam'],
+			['recipient_member_id', 'member-sam']
+		]);
+		expect(client.__is).not.toHaveBeenCalledWith('recipient_member_id', null);
 	});
 
 	it('returns a safe server error when the update fails', async () => {
