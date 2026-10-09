@@ -135,9 +135,13 @@ Migration adds a reviewed Contractor experience profile without changing Organiz
 
 Contractor proof follows one connected Application-to-payment-to-Setup-to-Request-to-Quote-to-Job/Visit-to-Invoice/payment journey, then support and commercial recovery. It also checks an existing Organization's historical records and issued customer links, role-limited menu and direct access, closed new public surfaces, and refusal of Medspa/clinical access. The migration stops before Medspa implementation if preserved facts, access comparison, customer actions or recovery cannot be demonstrated.
 
+## Feasibility and proof limits for the build
+
+The [P1 audit](research/multi-industry-current-state-audit-2026-10-09.md) identifies the current Control Room, provisioning, Package, Setup, access, shell, public-route and data seams. These are feasible reuse and change points, not completed Industry-experience features. The [P4 remote inventory](research/multi-industry-contractor-migration-audit-2026-10-09.md) is a point-in-time aggregate and must be repeated per Organization immediately before migration. Provider configuration, customer-link behavior, browser journeys, first-clinic readiness and traffic capacity need their own observed checks. Contractor launch and Medspa availability cannot be claimed from this plan alone.
+
 ## Still unclear
 
-- The complete audit of current Control Room, provisioning, Package, Setup, access, shell, routes and data behavior against this plan.
+No open product-behavior question remains in the foundation plan. Jafar still needs to approve the build-part order before implementation starts.
 
 ## Not doing
 
