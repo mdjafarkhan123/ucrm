@@ -70,8 +70,8 @@
 	};
 
 	const STEP_NOTES: Partial<Record<ReportCount, string>> = {
-		researched: 'Businesses researched and added',
-		approved: 'Businesses cleared for first contact',
+		researched: 'Researched and added',
+		approved: 'Cleared for first contact',
 		pricing_shared: 'Businesses shown prices',
 		lost: 'Deals lost'
 	};
@@ -177,7 +177,6 @@
 	<SectionBlock
 		title="By where they were found"
 		hint="Each business counts once per step. The smaller number shows the messages or calls behind them."
-		variant="filled"
 	>
 		{#if report.isPending}
 			<LoadingSkeleton variant="table" label="Loading the report" rows={4} />
@@ -251,6 +250,12 @@
 		min-width: 0;
 		display: grid;
 		gap: var(--space-large);
+		--section-block-notch: var(--color-surface--background);
+
+		// The wide table scrolls inside its block instead of stretching the page.
+		> :global(*) {
+			min-width: 0;
+		}
 	}
 
 	.report h1,
