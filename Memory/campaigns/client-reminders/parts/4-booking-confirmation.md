@@ -24,12 +24,12 @@
 ## Steps
 
 - [x] Migration written
-- [ ] Catalog, presets, worker, routes (Zod `notify_customer`), automation-status endpoint
-- [ ] Tick box on every scheduling screen
+- [x] Catalog, presets, routes (Zod `notify_customer`), status endpoint `/api/schedule/customer-notices`
+- [x] Tick box on every scheduling screen (`NotifyCustomerCheckbox`); type check clean; branch pushed
 - [ ] Unit tests
 - [x] Applied 2026-10-09 through `execute_sql` (the `apply_migration` tool kept failing with "Invalid or expired requestState"); live function bodies match the file (outcome check: `select version from supabase_migrations.schema_migrations where version = '20261113090000'`)
 - [ ] Prove in the app; merge to `main`; remove worktree
 
 ## Next
 
-Catalog, presets, worker, routes and status endpoint (TypeScript), in the worktree.
+Unit tests for the new triggers and presets (`src/lib/server/automation/definition.spec.ts`, `catalog.spec.ts`), then prove in the app on Raad LTD: turn on the two presets, book a job (one email), recurring job (one), move a visit (one), untick (none). Then merge to `main`.
