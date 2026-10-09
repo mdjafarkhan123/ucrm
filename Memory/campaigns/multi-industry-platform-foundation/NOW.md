@@ -5,6 +5,6 @@
 
 **In progress:** none
 
-**Next part:** P1 Current-state map and lifecycle audit — trace the real public, Control Room, provisioning, Setup, Business Workspace and customer-facing journey; classify existing behavior as keep, deepen, experience-specific, replace or retire; then bring every newly exposed product decision to Jafar.
+**Next part:** P2 Admission, identity and readiness — use the P1 audit in `docs/research/multi-industry-current-state-audit-2026-10-09.md` to settle supported-business qualification, Industry experience and Business type, Package choice, and the separate meanings of paid access, Setup, operational readiness and public launch with Jafar.
 
-**Blockers:** none. Planning only; do not implement or restructure code in P1. Medspa implementation waits for the approved foundation and Contractor proof, while its existing research remains authoritative input.
+**Blockers:** none for P2 planning. Medspa implementation waits for the approved foundation and Contractor proof, while its existing research remains authoritative input.

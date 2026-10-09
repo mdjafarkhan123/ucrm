@@ -63,6 +63,7 @@ Contractor uses the field-service foundation. Medspa & Clinical Wellness uses th
 
 ## Still unclear
 
+- The [P1 current-state audit](research/multi-industry-current-state-audit-2026-10-09.md) maps the existing journey and records the concrete handoff gaps. In particular, provisioning creates an active account while published public forms check active status rather than the separate launch record; the single live Setup catalogue also conflicts with the approved per-business version rule.
 - Which facts the public Application collects before Uplift can identify a supported Industry experience and Business type, and how correction or an unresolved classification works.
 - The exact Organization experience profile, its history, and the assisted rules for changing an existing organization's primary experience.
 - The compatibility rules among Industry experience, Business type, Package capabilities, additional capabilities and mixed-service businesses.
@@ -82,6 +83,7 @@ Contractor uses the field-service foundation. Medspa & Clinical Wellness uses th
 
 ## Sources and related plans
 
+- [P1 current-state journey audit](research/multi-industry-current-state-audit-2026-10-09.md)
 - [Platform overview](platform-overview.md)
 - [Contractor blueprint](PRODUCT.md)
 - [Jafar Business Management](jafar-business-management-behavior-contract.md)
