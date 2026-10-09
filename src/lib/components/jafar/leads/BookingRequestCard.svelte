@@ -23,7 +23,8 @@
 	import { refreshLead, sendLeadWrite } from '$lib/jafar/lead-page-api';
 
 	// Jafar business management E2: a visitor's booking request in approval mode, as Jobber's "needs approval"
-	// request -- Approve at the time they asked for, approve at another open time (Calendly's "propose a new time"),
+	// request -- Approve at the time they asked for, approve at another open time (Calendly's "propose a new time";
+	// offered even while the booking link is off, which only stops new visitors),
 	// or Decline. A request holds no time, so the time is checked again on approval; when it was taken since, the
 	// picker opens with the reason. The visitor is emailed whichever answer Jafar gives.
 	let {
@@ -183,17 +184,15 @@
 								<span class="booking-request__icon" aria-hidden="true">{@html checkIcon}</span
 								>Approve
 							</Button>
-							{#if request.slug}
-								<Button
-									variant="secondary"
-									size="small"
-									disabled={saving !== null}
-									onclick={() => openPicker(request)}
-								>
-									<span class="booking-request__icon" aria-hidden="true">{@html clockIcon}</span
-									>Another time
-								</Button>
-							{/if}
+							<Button
+								variant="secondary"
+								size="small"
+								disabled={saving !== null}
+								onclick={() => openPicker(request)}
+							>
+								<span class="booking-request__icon" aria-hidden="true">{@html clockIcon}</span
+								>Another time
+							</Button>
 							<Button
 								variant="tertiary"
 								variation="destructive"
@@ -211,7 +210,7 @@
 	</RailCard>
 {/if}
 
-{#if rescheduling?.slug}
+{#if rescheduling}
 	{@const request = rescheduling}
 	<Dialog
 		open={true}
@@ -229,12 +228,12 @@
 					They asked for {dateWords(request.starts_at, pickerZone || zone)} at {timeWords(
 						request.starts_at,
 						pickerZone || zone
-					)}. Only times open on your booking page are offered.
+					)}. Times are the ones your booking page offers, checked against your calendar.
 				</p>
 				<BookingTimePicker
 					bind:this={picker}
 					bind:zone={pickerZone}
-					slotsUrl={`/api/public/book/${encodeURIComponent(request.slug ?? '')}/slots`}
+					slotsUrl={`${decisionPath(request)}/slots`}
 					queryKey={['jafar', 'booking-request-slots', request.booking_id]}
 					firstWindow={{ to: '', starts: [] }}
 					horizonDays={request.horizon_days}
@@ -368,10 +367,19 @@
 			font-size: var(--typography--fontSize-small);
 		}
 
+		// Approve leads across the card; the other two answers share the row beneath it.
 		&__actions {
-			display: flex;
-			flex-wrap: wrap;
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
 			gap: var(--space-small);
+
+			> :global(:first-child) {
+				grid-column: 1 / -1;
+			}
+
+			> :global(*) {
+				justify-content: center;
+			}
 		}
 
 		&__icon {

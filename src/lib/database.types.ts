@@ -24470,6 +24470,17 @@ export type Database = {
 				Args: { target_entry_id: string };
 				Returns: Json;
 			};
+			owner_booking_request_slots: {
+				Args: {
+					range_from: string;
+					range_to: string;
+					target_booking_id: string;
+				};
+				Returns: {
+					ends_at: string;
+					starts_at: string;
+				}[];
+			};
 			owner_booking_requests: {
 				Args: { target_relationship_id: string };
 				Returns: Json;
