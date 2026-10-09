@@ -28,7 +28,7 @@ export const GET: RequestHandler = async (event) => {
 		.in('active_trigger_key', ['appointment.booked', 'appointment.rescheduled']);
 	if (error) return databaseError();
 
-	const active = new Set<string>((data ?? []).map((row) => row.active_trigger_key));
+	const active = new Set((data ?? []).map((row) => row.active_trigger_key ?? ''));
 	const running = automation.included && automation.authority_state === 'enabled';
 	const result: CustomerNoticeStatus = {
 		booked: running && active.has('appointment.booked'),

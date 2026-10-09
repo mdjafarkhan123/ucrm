@@ -32,7 +32,7 @@ export const GET: RequestHandler = async (event) => {
 		.in('active_trigger_key', Object.values(MESSAGE_SWITCH_TRIGGERS).flat());
 	if (error) return databaseError();
 
-	const activeTriggers = new Set<string>((data ?? []).map((row) => row.active_trigger_key));
+	const activeTriggers = new Set((data ?? []).map((row) => row.active_trigger_key ?? ''));
 	const running = automation.included && automation.authority_state === 'enabled';
 	const sending = Object.fromEntries(
 		Object.entries(MESSAGE_SWITCH_TRIGGERS).map(([flag, triggers]) => [
