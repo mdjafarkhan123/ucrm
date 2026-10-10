@@ -29,8 +29,10 @@
 
 ## Next
 
-Jafar signs in himself as the Raad LTD owner in the Claude-in-Chrome tab (the app is a public address, so Claude
-may not type the password). Then: Settings → Automations → choose "Job follow-up" → turn it on; complete the visit
-and close job #28 "Booking confirmation proof 1" (client Greenfield, email goes to Jafar's own +part8 inbox).
-Raad LTD opens 9:00 Asia/Dhaka (closed Friday): before opening the work item should wait until 9:00; after, one
-thank-you appears in the client's history. Check no second email if the job is reopened and closed again.
+Live proof, half done 2026-10-10 07:08 Dhaka: Jafar turned on "Job follow-up" (recipe 04201c7e-79a0-4e67-aa43-0003bc387160)
+and Claude finished job #28 (visit marked complete, then Finish job). Result: one enrollment, one work item
+waiting until 03:00 UTC (9:00 Dhaka) — the opening-hours wait works.
+
+Still to check after 03:00 UTC: the work item is sent, the client's history shows one thank-you, the +part8 inbox
+has it. Then reopen job #28, finish it again, and confirm no second email. Then tick the last step, release the
+claim (`sonnet-cr-6`, read mode), and mark Part 6 done in ROADMAP.md/NOW.md.
