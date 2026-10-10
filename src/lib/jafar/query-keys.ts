@@ -210,3 +210,4 @@ export const jafarBookingKey = ['jafar', 'settings', 'booking'] as const;
 /** E3: the teammates who can host a meeting type (Jafar is always one too). */
 export const jafarBookingHostsKey = [...jafarBookingKey, 'hosts'] as const;
 export const jafarBookingZoomKey = [...jafarBookingKey, 'zoom'] as const;
+export const jafarBookingGoogleKey = [...jafarBookingKey, 'google'] as const;

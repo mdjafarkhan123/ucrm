@@ -7,7 +7,7 @@ import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { isPlainRefusal, parseBody } from '$lib/server/jafar/calendar';
 import { sendBookingEmail } from '$lib/server/jafar/booking-emails';
-import { askHostForVideoLink, withZoomMeeting } from '$lib/server/jafar/booking-video';
+import { askHostForVideoLink, withVideoMeeting } from '$lib/server/jafar/booking-video';
 import { bookingDecisionSchema } from '$lib/server/validation/booking.schema';
 import type { BookingView } from '$lib/jafar/booking';
 
@@ -69,7 +69,7 @@ export const POST: RequestHandler = async (event) => {
 
 	// E4b: an approved Zoom call gets its meeting before the visitor is told.
 	if (result.outcome === 'approved')
-		result = { ...result, ...(await withZoomMeeting(client, result)) } as typeof result;
+		result = { ...result, ...(await withVideoMeeting(client, result)) } as typeof result;
 
 	try {
 		await sendBookingEmail(

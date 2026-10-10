@@ -2,7 +2,7 @@
 // Booking settings. The database decides which times are open (private.booking_open_slots); this module holds the
 // shapes, the choices the settings offer, and the words both pages share.
 
-export type LocationKind = 'phone' | 'zoom';
+export type LocationKind = 'phone' | 'zoom' | 'google_meet';
 
 /** E4a: a video type's link -- UCRM makes the meeting (once its provider is connected), or the host adds one. */
 export type VideoLinkMode = 'automatic' | 'custom';
@@ -166,12 +166,14 @@ export const WEEKDAYS = [
 
 export const LOCATION_WORDS: Record<LocationKind, string> = {
 	phone: 'Phone call',
-	zoom: 'Zoom video call'
+	zoom: 'Zoom video call',
+	google_meet: 'Google Meet video call'
 };
 
 /** E4a: the provider's own name, as "Add the Zoom link". */
 export const VIDEO_PROVIDER_WORDS: Record<Exclude<LocationKind, 'phone'>, string> = {
-	zoom: 'Zoom'
+	zoom: 'Zoom',
+	google_meet: 'Google Meet'
 };
 
 /** E4a: a video call still waiting for its joining link. */
@@ -335,5 +337,24 @@ export async function fetchZoomStatus(): Promise<ZoomStatus> {
 	const response = await fetch('/api/jafar/booking/zoom');
 	const result = await response.json();
 	if (!response.ok) throw new Error(result.error ?? 'The Zoom connection could not be loaded.');
+	return result;
+}
+
+// --- Google connection (E5) ---------------------------------------------------------------------------------------
+
+export type GoogleStatus = {
+	/** The server has Google's app details; when false, connecting cannot start. */
+	configured: boolean;
+	connected: boolean;
+	needs_reconnect: boolean;
+	email: string | null;
+	name: string | null;
+	connected_at: string | null;
+};
+
+export async function fetchGoogleStatus(): Promise<GoogleStatus> {
+	const response = await fetch('/api/jafar/booking/google');
+	const result = await response.json();
+	if (!response.ok) throw new Error(result.error ?? 'The Google connection could not be loaded.');
 	return result;
 }

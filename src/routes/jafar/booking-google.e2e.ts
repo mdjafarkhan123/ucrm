@@ -3,15 +3,15 @@ import { createClient } from '@supabase/supabase-js';
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
 /**
- * E4b: Jafar connects Zoom and a Zoom meeting type in automatic mode makes one meeting per booking. A stand-in Zoom
- * (started here) answers the sign-in and the meetings API, so the whole path runs without Jafar's Zoom app: connect,
- * book (the confirmation carries the meeting's link), move the call (the meeting moves), a Zoom outage (the booking
- * stands and the link follows), cancel (the meeting is deleted). The meeting type is put back, the connection and the
- * booking's Lead removed afterwards.
+ * E5: Jafar connects Google and a Google Meet meeting type in automatic mode makes one Calendar event with its own Meet
+ * link per booking. A stand-in Google (started here) answers the sign-in, the profile and the Calendar API, so the whole
+ * path runs without Jafar's Google Cloud client: connect, book (the confirmation carries the Meet link), move the call
+ * (the event moves), a Google outage (the booking stands and the link follows), cancel (the event is deleted). The
+ * meeting type is put back, the connection and the booking's Lead removed afterwards.
  *
  * Needs the owner login, the Supabase service key, the Turnstile test keys, and the app started with the stand-in:
- * ZOOM_OAUTH_BASE_URL=http://127.0.0.1:4599 ZOOM_API_BASE_URL=http://127.0.0.1:4599/v2 ZOOM_CLIENT_ID=e2e
- * ZOOM_CLIENT_SECRET=e2e ZOOM_CREDENTIAL_KEYRING='{"activeKeyId":"v1","keys":{"v1":"<openssl rand -base64 32>"}}'
+ * GOOGLE_OAUTH_BASE_URL=http://127.0.0.1:4598 GOOGLE_API_BASE_URL=http://127.0.0.1:4598/calendar/v3 GOOGLE_CLIENT_ID=e2e
+ * GOOGLE_CLIENT_SECRET=e2e GOOGLE_CREDENTIAL_KEYRING='{"activeKeyId":"v1","keys":{"v1":"<openssl rand -base64 32>"}}'
  * PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
  */
 
@@ -21,7 +21,7 @@ const supabaseUrl = process.env.PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
 const slug = process.env.JAFAR_TEST_BOOKING_SLUG ?? 'discovery-call';
-const visitorEmail = 'dev.jafarkhan+e2e-book-zoom@gmail.com';
+const visitorEmail = 'dev.jafarkhan+e2e-book-meet@gmail.com';
 const shots = process.env.E2E_SCREENSHOT_DIR;
 const DAY = 24 * 60 * 60_000;
 
@@ -89,15 +89,15 @@ async function emailsSince(template: string, since: string) {
 	return data.map((row) => JSON.stringify(row.payload));
 }
 
-const FAKE_PORT = 4599;
-type Meeting = { topic: string; start_time: string; duration: number };
-const meetings = new Map<string, Meeting>();
+const FAKE_PORT = 4598;
+type CalendarEvent = { summary: string; start: { dateTime: string }; end: { dateTime: string } };
+const events = new Map<string, CalendarEvent>();
 const calls: string[] = [];
 let failCreates = false;
-let nextId = 81000000001;
+let nextId = 1;
 
-/** A stand-in for Zoom: sign-in, the user, and the three meeting calls. */
-function startFakeZoom(): Promise<Server> {
+/** A stand-in for Google: sign-in, the profile, and the three Calendar event calls. */
+function startFakeGoogle(): Promise<Server> {
 	const server = createServer((req, res) => {
 		const url = new URL(req.url ?? '/', `http://127.0.0.1:${FAKE_PORT}`);
 		let raw = '';
@@ -107,45 +107,43 @@ function startFakeZoom(): Promise<Server> {
 				res.writeHead(status, { 'content-type': 'application/json' });
 				res.end(data === undefined ? undefined : JSON.stringify(data));
 			};
-			if (url.pathname === '/oauth/authorize') {
+			if (url.pathname === '/authorize') {
 				const back = new URL(url.searchParams.get('redirect_uri') ?? '');
 				back.searchParams.set('code', 'fake-code');
 				back.searchParams.set('state', url.searchParams.get('state') ?? '');
 				res.writeHead(302, { location: back.toString() });
 				return res.end();
 			}
-			if (url.pathname === '/oauth/token')
+			if (url.pathname === '/token')
 				return send(200, {
 					access_token: `fake-access-${Date.now()}`,
 					refresh_token: `fake-refresh-${Date.now()}`,
 					expires_in: 3600
 				});
-			if (url.pathname === '/v2/users/me')
+			if (url.pathname === '/userinfo')
 				return send(200, {
-					id: 'fake-zoom-user',
-					email: 'jafar.zoom@example.com',
-					display_name: 'Jafar Zoom'
+					sub: 'fake-google-user',
+					email: 'jafar.google@example.com',
+					name: 'Jafar Google'
 				});
-			const meeting = url.pathname.match(/^\/v2\/meetings\/(\d+)$/);
-			if (url.pathname === '/v2/users/me/meetings' && req.method === 'POST') {
+			const event = url.pathname.match(/^\/calendar\/v3\/calendars\/primary\/events\/([^/]+)$/);
+			if (url.pathname === '/calendar/v3/calendars/primary/events' && req.method === 'POST') {
 				calls.push('POST create');
-				if (failCreates) return send(500, { message: 'down' });
-				const id = String(nextId++);
-				meetings.set(id, JSON.parse(raw));
-				return send(201, {
-					id: Number(id),
-					join_url: `https://zoom.example/j/${id}?pwd=e2e`,
-					start_url: 'https://zoom.example/start/secret'
-				});
+				if (failCreates) return send(500, { error: 'down' });
+				expect(url.searchParams.get('sendUpdates')).toBe('none');
+				expect(url.searchParams.get('conferenceDataVersion')).toBe('1');
+				const id = `evt${nextId++}`;
+				events.set(id, JSON.parse(raw));
+				return send(200, { id, hangoutLink: `https://meet.google.com/e2e-${id}` });
 			}
-			if (meeting && req.method === 'PATCH') {
-				calls.push(`PATCH ${meeting[1]}`);
-				meetings.set(meeting[1], { ...meetings.get(meeting[1])!, ...JSON.parse(raw) });
-				return send(204);
+			if (event && req.method === 'PATCH') {
+				calls.push(`PATCH ${event[1]}`);
+				events.set(event[1], { ...events.get(event[1])!, ...JSON.parse(raw) });
+				return send(200, { id: event[1] });
 			}
-			if (meeting && req.method === 'DELETE') {
-				calls.push(`DELETE ${meeting[1]}`);
-				meetings.delete(meeting[1]);
+			if (event && req.method === 'DELETE') {
+				calls.push(`DELETE ${event[1]}`);
+				events.delete(event[1]);
 				return send(204);
 			}
 			send(404, {});
@@ -154,21 +152,21 @@ function startFakeZoom(): Promise<Server> {
 	return new Promise((done) => server.listen(FAKE_PORT, '127.0.0.1', () => done(server)));
 }
 
-test.describe.serial('a Zoom call whose meeting UCRM makes', () => {
+test.describe.serial('a Google Meet call whose event UCRM makes', () => {
 	test.skip(
 		!ownerEmail ||
 			!ownerPassword ||
 			!supabaseUrl ||
 			!serviceKey ||
 			(Boolean(turnstileSecret) && !turnstileSecret?.startsWith('1x')),
-		'Set the owner login, the Supabase service key and the Turnstile test keys to run the Zoom check.'
+		'Set the owner login, the Supabase service key and the Turnstile test keys to run the Google Meet check.'
 	);
 
 	let wasEnabled = true;
 	let fake: Server;
 
 	test.beforeAll(async () => {
-		fake = await startFakeZoom();
+		fake = await startFakeGoogle();
 		await removeTestBooking();
 		const local = ['::1', '127.0.0.1', '::ffff:127.0.0.1'].map((ip) => `public-booking:${ip}`);
 		const reset = await database()
@@ -191,7 +189,7 @@ test.describe.serial('a Zoom call whose meeting UCRM makes', () => {
 
 	test.afterAll(async () => {
 		await removeTestBooking();
-		await database().from('platform_zoom_connection').delete().eq('id', true);
+		await database().from('platform_google_connection').delete().eq('id', true);
 		if (!wasEnabled)
 			await database()
 				.from('platform_owner_settings')
@@ -207,7 +205,7 @@ test.describe.serial('a Zoom call whose meeting UCRM makes', () => {
 				name,
 				email: visitorEmail,
 				phone: '+880 1711 000011',
-				business_name: 'E2E Zoom Plumbing',
+				business_name: 'E2E Meet Plumbing',
 				country_code: 'BD',
 				trade: 'Plumbing',
 				note: null,
@@ -228,24 +226,26 @@ test.describe.serial('a Zoom call whose meeting UCRM makes', () => {
 		const type = settings.meeting_types.find((candidate) => candidate.slug === slug)!;
 		expect(type, `the ${slug} meeting type`).toBeTruthy();
 		const saved = await request.patch(`/api/jafar/booking/types/${type.id}`, {
-			data: typeBody(type, { location_kind: 'zoom', video_link_mode: 'automatic' })
+			data: typeBody(type, { location_kind: 'google_meet', video_link_mode: 'automatic' })
 		});
 		expect(saved.ok(), await saved.text()).toBe(true);
 
 		try {
 			// Connect through the stand-in's sign-in page and come back to Booking settings.
-			await page.goto('/api/jafar/booking/zoom/connect');
+			await page.goto('/api/jafar/booking/google/connect');
 			await page.waitForURL(/\/jafar\/settings\/booking/);
-			await expect(page.getByText('jafar.zoom@example.com')).toBeVisible();
+			await expect(page.getByText('jafar.google@example.com')).toBeVisible();
 			await expect(page.getByText('Connected', { exact: true })).toBeVisible();
-			const stored = await database().from('platform_zoom_connection').select('*').single();
+			const stored = await database().from('platform_google_connection').select('*').single();
 			expect(JSON.stringify(stored.data)).not.toContain('fake-access');
 			expect(JSON.stringify(stored.data)).not.toContain('fake-refresh');
 			if (shots)
 				for (const width of [1440, 390]) {
 					await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
-					await page.getByRole('heading', { name: 'Zoom', exact: true }).scrollIntoViewIfNeeded();
-					await page.screenshot({ path: `${shots}/zoom-connected-${width}.png` });
+					await page
+						.getByRole('heading', { name: 'Google Meet', exact: true })
+						.scrollIntoViewIfNeeded();
+					await page.screenshot({ path: `${shots}/google-connected-${width}.png` });
 				}
 			await page.setViewportSize({ width: 1440, height: 900 });
 
@@ -255,16 +255,18 @@ test.describe.serial('a Zoom call whose meeting UCRM makes', () => {
 			const slots = await request.get(`/api/public/book/${slug}/slots`, { params: { from, to } });
 			const starts = (await slots.json()) as string[];
 			expect(starts.length).toBeGreaterThan(2);
-			const first = await book(request, starts[starts.length - 1], 'E2E Zoom Visitor');
+			const first = await book(request, starts[starts.length - 1], 'E2E Meet Visitor');
 			expect(first.ok(), await first.text()).toBe(true);
 			const call = ((await first.json()) as { call: { video_join_url: string } }).call;
-			expect(call.video_join_url).toMatch(/^https:\/\/zoom\.example\/j\/\d+\?pwd=e2e$/);
-			const meetingId = /\/j\/(\d+)/.exec(call.video_join_url)![1];
-			expect(meetings.get(meetingId)).toMatchObject({ duration: type.duration_minutes });
+			expect(call.video_join_url).toMatch(/^https:\/\/meet\.google\.com\/e2e-evt\d+$/);
+			const meetingId = /e2e-(evt\d+)$/.exec(call.video_join_url)![1];
+			expect(
+				Date.parse(events.get(meetingId)!.end.dateTime) -
+					Date.parse(events.get(meetingId)!.start.dateTime)
+			).toBe(Number(type.duration_minutes) * 60_000);
 			const confirmation = await emailsSince('booking_booked', startedAt);
 			expect(confirmation).toHaveLength(1);
 			expect(confirmation[0]).toContain(call.video_join_url);
-			expect(JSON.stringify(confirmation)).not.toContain('start/secret');
 
 			// Moving the call moves the meeting.
 			const row = await database()
@@ -283,7 +285,7 @@ test.describe.serial('a Zoom call whose meeting UCRM makes', () => {
 			});
 			expect(moved.ok(), await moved.text()).toBe(true);
 			expect(calls).toContain(`PATCH ${meetingId}`);
-			expect(new Date(meetings.get(meetingId)!.start_time).getTime()).toBe(moveTo.getTime());
+			expect(new Date(events.get(meetingId)!.start.dateTime).getTime()).toBe(moveTo.getTime());
 
 			// Cancelling deletes the meeting and takes the link off the booking.
 			const cancelled = await request.patch(`/api/jafar/calendar/entries/${row.data.entry_id}`, {
@@ -291,7 +293,7 @@ test.describe.serial('a Zoom call whose meeting UCRM makes', () => {
 			});
 			expect(cancelled.ok(), await cancelled.text()).toBe(true);
 			expect(calls).toContain(`DELETE ${meetingId}`);
-			expect(meetings.has(meetingId)).toBe(false);
+			expect(events.has(meetingId)).toBe(false);
 			const after = await database()
 				.from('platform_bookings')
 				.select('video_join_url, video_provider_meeting_id')
@@ -299,12 +301,12 @@ test.describe.serial('a Zoom call whose meeting UCRM makes', () => {
 				.single();
 			expect(after.data).toEqual({ video_join_url: null, video_provider_meeting_id: null });
 
-			// A Zoom outage never loses the booking: the visitor is told the link will follow.
+			// A Google outage never loses the booking: the visitor is told the link will follow.
 			failCreates = true;
-			const second = await book(request, starts[starts.length - 3], 'E2E Zoom Outage');
+			const second = await book(request, starts[starts.length - 3], 'E2E Meet Outage');
 			expect(second.ok(), await second.text()).toBe(true);
 			expect(((await second.json()) as { call: Record<string, unknown> }).call).toMatchObject({
-				location_kind: 'zoom',
+				location_kind: 'google_meet',
 				video_join_url: null
 			});
 			const confirmations = await emailsSince('booking_booked', startedAt);
@@ -320,9 +322,9 @@ test.describe.serial('a Zoom call whose meeting UCRM makes', () => {
 			await page.getByRole('button', { name: 'Disconnect' }).click();
 			await page.getByRole('alertdialog').getByRole('button', { name: 'Disconnect' }).click();
 			await expect
-				.poll(async () => (await database().from('platform_zoom_connection').select('id')).data)
+				.poll(async () => (await database().from('platform_google_connection').select('id')).data)
 				.toHaveLength(0);
-			await expect(page.getByText('jafar.zoom@example.com')).toHaveCount(0);
+			await expect(page.getByText('jafar.google@example.com')).toHaveCount(0);
 		} finally {
 			const back = await request.patch(`/api/jafar/booking/types/${type.id}`, {
 				data: typeBody(type)

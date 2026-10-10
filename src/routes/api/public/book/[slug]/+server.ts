@@ -9,7 +9,7 @@ import { bookingToken, bookingTokenHash } from '$lib/server/jafar/booking-links'
 import {
 	askHostForVideoLink,
 	hostTimeWords,
-	withZoomMeeting
+	withVideoMeeting
 } from '$lib/server/jafar/booking-video';
 import { publicBookingSchema } from '$lib/server/validation/booking.schema';
 import { LOCATION_WORDS, type BookedCall, type BookingView } from '$lib/jafar/booking';
@@ -87,7 +87,7 @@ export const POST: RequestHandler = async (event) => {
 	// E4b: a Zoom meeting type in automatic mode makes its meeting now, so the confirmation carries the link; if Zoom
 	// cannot, the confirmation says the details will follow and the sweep retries.
 	if (!requested)
-		result = { ...result, ...(await withZoomMeeting(client, result)) } as typeof result;
+		result = { ...result, ...(await withVideoMeeting(client, result)) } as typeof result;
 	const call: BookedCall = {
 		starts_at: result.starts_at,
 		ends_at: result.ends_at,

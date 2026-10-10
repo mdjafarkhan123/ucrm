@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import { createOwnerNotification } from '$lib/server/events/outbox';
-import { syncZoomMeetings } from '$lib/server/jafar/zoom-sync';
+import { syncVideoMeetings } from '$lib/server/jafar/video-sync';
 import { VIDEO_PROVIDER_WORDS, dateWords, timeWords, type BookingView } from '$lib/jafar/booking';
 
 // Jafar business management E4a: a booked video call with no joining link yet. Its visitor has been told the
@@ -28,23 +28,23 @@ export async function askHostForVideoLink(client: SupabaseClient<Database>, book
 }
 
 /**
- * E4b: does the Zoom work this booking is owed (a meeting made, moved or deleted) and returns its view as it now
+ * E4b, E5: does the video work this booking is owed (a Zoom or Meet meeting made, moved or deleted) and returns its view as it now
  * stands, so the email and page that follow say the truth. Nothing here can fail the booking.
  */
-export async function withZoomMeeting<T extends BookingView>(
+export async function withVideoMeeting<T extends BookingView>(
 	client: SupabaseClient<Database>,
 	booking: T
 ): Promise<BookingView> {
 	if (booking.location_kind === 'phone' || !booking.entry_id) return booking;
 	try {
-		await syncZoomMeetings(client, booking.booking_id);
+		await syncVideoMeetings(client, booking.booking_id);
 		const { data, error } = await client.rpc('owner_booking_for_entry', {
 			target_entry_id: booking.entry_id
 		});
 		if (error) throw error;
 		return (data as BookingView | null) ?? booking;
 	} catch (error) {
-		console.error('Could not refresh a booking after its Zoom meeting.', error);
+		console.error('Could not refresh a booking after its video meeting.', error);
 		return booking;
 	}
 }

@@ -272,10 +272,16 @@
 		value: kind,
 		label: LOCATION_WORDS[kind]
 	}));
-	const linkModeOptions: { value: VideoLinkMode; label: string }[] = [
-		{ value: 'automatic', label: 'Make a Zoom meeting for each booking' },
+	const linkModeOptions = $derived<{ value: VideoLinkMode; label: string }[]>([
+		{
+			value: 'automatic',
+			label:
+				draft?.location_kind === 'google_meet'
+					? 'Make a Google Meet link for each booking'
+					: 'Make a Zoom meeting for each booking'
+		},
 		{ value: 'custom', label: 'I add a link to each booking' }
-	];
+	]);
 	const location = {
 		get value() {
 			return draft?.location_kind ?? 'phone';
@@ -403,7 +409,7 @@
 							options={locationOptions}
 							bind:value={location.value}
 						/>
-						{#if draft.location_kind === 'zoom'}
+						{#if draft.location_kind !== 'phone'}
 							<RadioGroup
 								label="Joining link"
 								options={linkModeOptions}
@@ -423,8 +429,12 @@
 										Each booking's emails say the joining link will follow, and the host is reminded
 										to add it on the call. The visitor is emailed the link as soon as it is added.
 									{:else}
-										Each booking gets its own Zoom meeting once Zoom is connected. Until then,
-										visitors are told the link will follow, and the host adds it on the call.
+										Each booking gets its own {draft.location_kind === 'google_meet'
+											? 'Google Meet link'
+											: 'Zoom meeting'} once {draft.location_kind === 'google_meet'
+											? 'Google'
+											: 'Zoom'} is connected. Until then, visitors are told the link will follow, and
+										the host adds it on the call.
 									{/if}
 									{#if existing && existing.bookings_count > 0 && draft.location_kind !== existing.location_kind}
 										Calls already booked keep their {LOCATION_WORDS[

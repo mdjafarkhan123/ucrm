@@ -14061,6 +14061,54 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			platform_google_connection: {
+				Row: {
+					access_expires_at: string;
+					connected_at: string;
+					connected_by_email: string | null;
+					credential_ciphertext: string;
+					credential_key_id: string;
+					credential_nonce: string;
+					credential_tag: string;
+					google_email: string;
+					google_name: string | null;
+					google_user_id: string;
+					id: boolean;
+					status: string;
+					updated_at: string;
+				};
+				Insert: {
+					access_expires_at: string;
+					connected_at?: string;
+					connected_by_email?: string | null;
+					credential_ciphertext: string;
+					credential_key_id: string;
+					credential_nonce: string;
+					credential_tag: string;
+					google_email: string;
+					google_name?: string | null;
+					google_user_id: string;
+					id?: boolean;
+					status?: string;
+					updated_at?: string;
+				};
+				Update: {
+					access_expires_at?: string;
+					connected_at?: string;
+					connected_by_email?: string | null;
+					credential_ciphertext?: string;
+					credential_key_id?: string;
+					credential_nonce?: string;
+					credential_tag?: string;
+					google_email?: string;
+					google_name?: string | null;
+					google_user_id?: string;
+					id?: boolean;
+					status?: string;
+					updated_at?: string;
+				};
+				Relationships: [];
+			};
 			platform_meeting_type_hosts: {
 				Row: {
 					created_at: string;
@@ -24650,8 +24698,12 @@ export type Database = {
 				Returns: Json;
 			};
 			owner_booking_settings: { Args: never; Returns: Json };
-			owner_booking_zoom_work: {
-				Args: { max_rows?: number; target_booking_id?: string };
+			owner_booking_video_work: {
+				Args: {
+					max_rows?: number;
+					target_booking_id?: string;
+					target_provider: string;
+				};
 				Returns: Json;
 			};
 			owner_business_client: {

@@ -82,7 +82,7 @@ export const meetingTypeSchema = z
 			.nullish()
 			.transform((value) => value || null),
 		duration_minutes: oneOf(DURATION_CHOICES, 'Choose a length.'),
-		location_kind: z.enum(['phone', 'zoom'], 'Choose how the call happens.'),
+		location_kind: z.enum(['phone', 'zoom', 'google_meet'], 'Choose how the call happens.'),
 		video_link_mode: z.enum(['automatic', 'custom'], 'Choose how the link is made.'),
 		min_notice_minutes: oneOf(NOTICE_CHOICES, 'Choose the notice.'),
 		horizon_days: oneOf(HORIZON_CHOICES, 'Choose how far ahead.'),

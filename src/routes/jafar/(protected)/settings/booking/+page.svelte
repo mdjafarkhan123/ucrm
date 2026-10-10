@@ -8,6 +8,7 @@
 	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
 	import externalIcon from '@tabler/icons/outline/external-link.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import GoogleConnection from '$lib/components/jafar/booking/GoogleConnection.svelte';
 	import ZoomConnection from '$lib/components/jafar/booking/ZoomConnection.svelte';
 	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
@@ -204,6 +205,13 @@
 
 			<SectionBlock title="Zoom" hint="Lets a Zoom meeting type make a meeting for each booking.">
 				<ZoomConnection />
+			</SectionBlock>
+
+			<SectionBlock
+				title="Google Meet"
+				hint="Lets a Google Meet meeting type make a Calendar event and Meet link for each booking."
+			>
+				<GoogleConnection />
 			</SectionBlock>
 
 			<SectionBlock

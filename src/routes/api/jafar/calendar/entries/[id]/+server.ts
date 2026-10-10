@@ -20,7 +20,7 @@ import {
 } from '$lib/server/jafar/calendar';
 import { calendarEntryChangeSchema } from '$lib/server/validation/calendar.schema';
 import { sendBookingEmail } from '$lib/server/jafar/booking-emails';
-import { withZoomMeeting } from '$lib/server/jafar/booking-video';
+import { withVideoMeeting } from '$lib/server/jafar/booking-video';
 import type { BookingView } from '$lib/jafar/booking';
 
 // Jafar business management C2: one call or Busy block -- read it, move it, edit its words and reminders, close a
@@ -137,7 +137,7 @@ async function tellVisitor(client: Client, entryId: string, before: BookingView,
 	try {
 		const current = await bookingFor(client, entryId);
 		if (!current) return;
-		const after = await withZoomMeeting(client, current);
+		const after = await withVideoMeeting(client, current);
 		if (after.call_status === 'cancelled')
 			await sendBookingEmail(client, after, { kind: 'cancelled', by: 'staff' }, origin);
 		else if (after.starts_at !== before.starts_at)
