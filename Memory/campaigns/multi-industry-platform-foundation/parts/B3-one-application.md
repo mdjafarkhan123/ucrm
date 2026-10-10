@@ -11,28 +11,23 @@
 - [x] Status page + receipt email for held / no-package applications
 - [x] Uplift Prospects: "Kind of business" panel, Confirm / Hold form, history; package list filtered by fit
 - [x] Unit tests pass (`npx vitest run src/routes/api/get-started src/routes/api/jafar/prospects src/routes/api/jafar/deals`, 127 passed)
-- [ ] `npm run check` (not finished before pause)
-- [ ] Finish `src/routes/get-started/application-qualification.e2e.ts` and prove the journey live
-- [ ] Design screen check (1440 + 390) of form steps 1–4, status page (held/no-package), Prospects panel and forms
+- [x] `npm run check` clean (package list now carries `experience_keys`, migration `20261126090000`)
+- [x] `application-qualification.e2e.ts` passes live at 1440 (needs a 2nd dev server with the spam check off; see Next)
+- [ ] Design screen check — form step 1–2 fixed at both widths; status page and Prospects panel at 390 left
 - [ ] Commit, push, mark B3 done; B4 next
 
 ## Next
 
-`npm run check` found one error: the Prospects page filters packages by `pkg.published.experience_keys`
-(`src/routes/jafar/(protected)/prospects/+page.svelte` ~597), but the package list summary from `fetchPackages`
-(`src/lib/jafar/packages.ts`, `/api/jafar/packages`) does not carry `experience_keys`. Add it there, then rerun. Then the live proof: start a second dev server with the spam check off —
-`PUBLIC_TURNSTILE_SITE_KEY= TURNSTILE_SECRET_KEY= npx vite dev --port 5174 --strictPort` — and a temporary
-Playwright config in the project root (a config outside the project cannot load modules) with
-`baseURL: 'http://localhost:5174'`, no webServer; delete it afterwards. The e2e stopped at its first step:
-`getByRole('combobox', { name: 'What kind of business do you run?' })` was not found — the `Select` names its
-trigger differently (check its markup/aria-labelledby). Journey to prove: apply as "Something else" → status page
-says a package will be recommended → in `/jafar/prospects?application=<id>` "Mark reviewed" is refused → Hold
-with a message → status page shows it → Confirm Contractor · Handyman → Change package → Mark reviewed →
-Awaiting payment → close as Not proceeding.
+Run the journey at phone width and review its screenshots (status page held/no-package, Prospects panel):
+start `PUBLIC_TURNSTILE_SITE_KEY= TURNSTILE_SECRET_KEY= npx vite dev --port 5174 --strictPort`, a temporary
+`playwright.b3.tmp.config.ts` in the project root with `baseURL: 'http://localhost:5174'` (delete after), then
+`PUBLIC_TURNSTILE_SITE_KEY= E2E_WIDTH=390 E2E_SCREENSHOT_DIR=<dir> npx playwright test -c <config>`. The form
+allows 5 submissions per 15 minutes from one address. A failed run leaves an open "B3 Test Groomers …"
+application: close it with `public.mark_onboarding_application_not_proceeding`.
 
 ## Outside actions
 
-- Migration applied to remote — check: `select version from supabase_migrations.schema_migrations where version='20261125090000'` — done
+- Migrations `20261125090000`, `20261126090000` applied — check: `select version from supabase_migrations.schema_migrations where version in ('20261125090000','20261126090000')` — done
 
 ## Notes
 
