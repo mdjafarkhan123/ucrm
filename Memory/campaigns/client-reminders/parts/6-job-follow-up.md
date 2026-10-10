@@ -20,12 +20,12 @@
 
 ## Steps
 
-- [ ] Migration written (not applied)
-- [ ] Catalog, validator, email variables, preset, worker, client switch status
-- [ ] Unit tests; `npm run check`
+- [x] Migration `20261118090000_job_follow_up.sql` written on the branch
+- [x] Catalog, validator, email variables, preset, worker, builder, client switch status
+- [x] Unit tests; `npm run check` clean (on the branch)
 - [ ] Apply migration (outcome check: `select version from supabase_migrations.schema_migrations where version = '<version>'`)
 - [ ] Prove on the live app; merge to `main`; remove worktree
 
 ## Next
 
-Write the migration in the worktree.
+Dry-run the migration in a rolled-back transaction, then apply it (version `20261118090000`); then prove live.
