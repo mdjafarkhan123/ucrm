@@ -7,7 +7,7 @@
 		<link rel="stylesheet" href="./style.css" />
 	</head>
 	<body>
-		<aside class="sidebar">
+		<aside class="sidebar" id="navigation">
 			<a href="#" class="sidebar__brand"
 				><svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -45,9 +45,9 @@
 					<path d="M6 9l6 6l6 -6" />
 				</svg>
 			</button>
-			<div class="sidebar__label">WORKSPACE</div>
-			<nav aria-label="Main navigation">
-				<a class="sidebar__link" href="#"
+			<div class="sidebar__label">OVERVIEW</div>
+			<nav aria-label="Overview">
+				<a href="#" class="sidebar__link" data-destination="Dashboard"
 					><svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -69,8 +69,8 @@
 						<path
 							d="M15 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"
 						/></svg
-					>Overview</a
-				><a class="sidebar__link" href="#"
+					>Dashboard</a
+				><a href="#" class="sidebar__link" data-destination="Schedule"
 					><svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -93,7 +93,30 @@
 						<path d="M11 15h1" />
 						<path d="M12 15v3" /></svg
 					>Schedule</a
-				><a class="sidebar__link" href="#"
+				>
+			</nav>
+			<div class="sidebar__label">CUSTOMERS</div>
+			<nav aria-label="Customers">
+				<a href="#" class="sidebar__link" data-destination="Inbox"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-inbox"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path
+							d="M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2l0 -12"
+						/>
+						<path d="M4 13h3l3 3h4l3 -3h3" /></svg
+					>Inbox</a
+				><a href="#" class="sidebar__link" data-destination="Clients"
 					><svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -112,7 +135,7 @@
 						<path d="M16 3.13a4 4 0 0 1 0 7.75" />
 						<path d="M21 21v-2a4 4 0 0 0 -3 -3.85" /></svg
 					>Clients</a
-				><a class="sidebar__link" href="#"
+				><a href="#" class="sidebar__link" data-destination="Requests"
 					><svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -123,34 +146,43 @@
 						stroke-width="2"
 						stroke-linecap="round"
 						stroke-linejoin="round"
-						class="icon icon-tabler icons-tabler-outline icon-tabler-inbox"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-route"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path d="M3 19a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+						<path d="M19 7a2 2 0 1 0 0 -4a2 2 0 0 0 0 4" />
+						<path d="M11 19h5.5a3.5 3.5 0 0 0 0 -7h-8a3.5 3.5 0 0 1 0 -7h4.5" /></svg
+					>Requests</a
+				><a href="#" class="sidebar__link" data-destination="Pipeline"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-chart-bar"
 					>
 						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
 						<path
-							d="M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2l0 -12"
+							d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -6"
 						/>
-						<path d="M4 13h3l3 3h4l3 -3h3" /></svg
-					>Requests</a
-				><a class="sidebar__link" href="#"
-					><svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="24"
-						height="24"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						class="icon icon-tabler icons-tabler-outline icon-tabler-file-description"
-					>
-						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-						<path d="M14 3v4a1 1 0 0 0 1 1h4" />
-						<path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2" />
-						<path d="M9 17h6" />
-						<path d="M9 13h6" /></svg
-					>Quotes</a
-				><a class="sidebar__link is-active" href="#" aria-current="page"
+						<path
+							d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -10"
+						/>
+						<path
+							d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -14"
+						/>
+						<path d="M4 20h14" /></svg
+					>Pipeline</a
+				>
+			</nav>
+			<div class="sidebar__label">WORK & MONEY</div>
+			<nav aria-label="Work & Money">
+				<a href="#" class="sidebar__link is-active" data-destination="Jobs" aria-current="page"
 					><svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -170,8 +202,28 @@
 						<path d="M8 7v-2a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v2" />
 						<path d="M12 12l0 .01" />
 						<path d="M3 13a20 20 0 0 0 18 0" /></svg
-					>Jobs<span>24</span></a
-				><a class="sidebar__link" href="#"
+					>Jobs</a
+				><a href="#" class="sidebar__link" data-destination="Quotes"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-file-invoice"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path d="M14 3v4a1 1 0 0 0 1 1h4" />
+						<path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2" />
+						<path d="M9 7l1 0" />
+						<path d="M9 13l6 0" />
+						<path d="M13 17l2 0" /></svg
+					>Quotes</a
+				><a href="#" class="sidebar__link" data-destination="Invoices"
 					><svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -189,7 +241,7 @@
 							d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16l-3 -2l-2 2l-2 -2l-2 2l-2 -2l-3 2m4 -14h6m-6 4h6m-2 4h2"
 						/></svg
 					>Invoices</a
-				><a class="sidebar__link" href="#"
+				><a href="#" class="sidebar__link" data-destination="Files"
 					><svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -200,64 +252,77 @@
 						stroke-width="2"
 						stroke-linecap="round"
 						stroke-linejoin="round"
-						class="icon icon-tabler icons-tabler-outline icon-tabler-credit-card"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-files"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path d="M15 3v4a1 1 0 0 0 1 1h4" />
+						<path d="M18 17h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h4l5 5v7a2 2 0 0 1 -2 2" />
+						<path d="M16 17v2a2 2 0 0 1 -2 2h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h2" /></svg
+					>Files</a
+				>
+			</nav>
+			<div class="sidebar__label">GROWTH</div>
+			<nav aria-label="Growth">
+				<a href="#" class="sidebar__link" data-destination="Marketing"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-speakerphone"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path d="M18 8a3 3 0 0 1 0 6" />
+						<path d="M10 8v11a1 1 0 0 1 -1 1h-1a1 1 0 0 1 -1 -1v-5" />
+						<path
+							d="M12 8l4.524 -3.77a.9 .9 0 0 1 1.476 .692v12.156a.9 .9 0 0 1 -1.476 .692l-4.524 -3.77h-8a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h8"
+						/></svg
+					>Marketing</a
+				><a href="#" class="sidebar__link" data-destination="Reviews"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-star"
 					>
 						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
 						<path
-							d="M3 8a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3l0 -8"
-						/>
-						<path d="M3 10l18 0" />
-						<path d="M7 15l.01 0" />
-						<path d="M11 15l2 0" /></svg
-					>Payments</a
+							d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873l-6.158 -3.245"
+						/></svg
+					>Reviews</a
+				><a href="#" class="sidebar__link" data-destination="Growth Feed"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-trending-up"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path d="M3 17l6 -6l4 4l8 -8" />
+						<path d="M14 7l7 0l0 7" /></svg
+					>Growth Feed<small>Soon</small></a
 				>
 			</nav>
-			<div class="sidebar__label">BUSINESS</div>
-			<a href="#" class="sidebar__link"
-				><svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="24"
-					height="24"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					class="icon icon-tabler icons-tabler-outline icon-tabler-chart-bar"
-				>
-					<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-					<path d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -6" />
-					<path
-						d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -10"
-					/>
-					<path
-						d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -14"
-					/>
-					<path d="M4 20h14" /></svg
-				>Reports</a
-			><a href="#" class="sidebar__link"
-				><svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="24"
-					height="24"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					class="icon icon-tabler icons-tabler-outline icon-tabler-bolt"
-				>
-					<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-					<path d="M13 3l0 7l6 0l-8 11l0 -7l-6 0l8 -11" /></svg
-				>Automations</a
-			>
-			<div class="sidebar__bottom">
-				<div class="sidebar__tip">
-					Good work. Less busywork.<small>Your business, a little more in sync.</small>
-				</div>
-				<a href="#" class="sidebar__link"
+			<div class="sidebar__label">SYSTEM</div>
+			<nav aria-label="System">
+				<a href="#" class="sidebar__link" data-destination="Settings"
 					><svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -276,7 +341,75 @@
 						/>
 						<path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /></svg
 					>Settings</a
-				><button class="sidebar__profile">
+				><a href="#" class="sidebar__link" data-destination="Team"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-users-group"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path d="M10 13a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+						<path d="M8 21v-1a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v1" />
+						<path d="M15 5a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+						<path d="M17 10h2a2 2 0 0 1 2 2v1" />
+						<path d="M5 5a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+						<path d="M3 13v-1a2 2 0 0 1 2 -2h2" /></svg
+					>Team<small>Soon</small></a
+				><a href="#" class="sidebar__link" data-destination="Notifications"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-mail"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path
+							d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10"
+						/>
+						<path d="M3 7l9 6l9 -6" /></svg
+					>Notifications<small>Soon</small></a
+				><a href="#" class="sidebar__link" data-destination="Usage"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-chart-bar"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path
+							d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -6"
+						/>
+						<path
+							d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -10"
+						/>
+						<path
+							d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -14"
+						/>
+						<path d="M4 20h14" /></svg
+					>Usage<small>Soon</small></a
+				>
+			</nav>
+			<div class="sidebar__bottom">
+				<button class="sidebar__profile">
 					<span class="avatar">JK</span><span>Jafar Khan<small>Business owner</small></span
 					><svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -299,8 +432,32 @@
 		</aside>
 		<div class="app">
 			<header class="topbar">
+				<button
+					class="icon-button mobile-menu"
+					data-action="navigation"
+					aria-label="Open navigation"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-menu-2"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path d="M4 6l16 0" />
+						<path d="M4 12l16 0" />
+						<path d="M4 18l16 0" />
+					</svg>
+				</button>
 				<div class="topbar__crumb">Workspace <span>/</span> <strong>Jobs</strong></div>
 				<div class="topbar__tools">
+					<button class="button button--quiet" data-action="add-new">Add New</button>
 					<button class="search">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -318,7 +475,7 @@
 							<path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
 							<path d="M21 21l-6 -6" /></svg
 						><span>Search anything...</span><kbd>⌘ K</kbd></button
-					><button class="icon-button" aria-label="Help">
+					><button class="icon-button" aria-label="Theme preview" data-action="theme">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							width="24"
@@ -329,12 +486,12 @@
 							stroke-width="2"
 							stroke-linecap="round"
 							stroke-linejoin="round"
-							class="icon icon-tabler icons-tabler-outline icon-tabler-help-circle"
+							class="icon icon-tabler icons-tabler-outline icon-tabler-moon"
 						>
 							<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-							<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
-							<path d="M12 16v.01" />
-							<path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
+							<path
+								d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454l0 .008"
+							/>
 						</svg></button
 					><button class="icon-button notification" aria-label="Notifications">
 						<svg
@@ -355,163 +512,48 @@
 							/>
 							<path d="M9 17v1a3 3 0 0 0 6 0v-1" />
 						</svg></button
-					><span class="avatar avatar--small">JK</span>
+					><button class="avatar avatar--small" aria-label="Account menu" data-action="account">
+						JK
+					</button>
 				</div>
 			</header>
 			<main>
-				<div class="eyebrow">JOBS <span>/</span> JOB #1042</div>
-				<div class="page-heading">
-					<div>
-						<div class="page-heading__meta">
-							<span class="badge"><i></i> In progress</span><span>One-off job</span>
-						</div>
-						<h1>Backyard transformation</h1>
-						<p>A better outdoor space, from the ground up.</p>
-					</div>
-					<div class="page-heading__actions">
-						<button class="button" type="button">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="24"
-								height="24"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="icon icon-tabler icons-tabler-outline icon-tabler-pencil"
-							>
-								<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-								<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
-								<path d="M13.5 6.5l4 4" /></svg
-							>Edit job</button
-						><button class="button" type="button">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="24"
-								height="24"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="icon icon-tabler icons-tabler-outline icon-tabler-dots"
-							>
-								<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-								<path d="M4 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
-								<path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
-								<path d="M18 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /></svg
-							>More</button
-						><button class="button button--primary" type="button">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="24"
-								height="24"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="icon icon-tabler icons-tabler-outline icon-tabler-plus"
-							>
-								<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-								<path d="M12 5l0 14" />
-								<path d="M5 12l14 0" /></svg
-							>Create invoice
-						</button>
-					</div>
+				<div class="demo-toolbar">
+					<strong>JOB DETAILS DEMO</strong><label for="scenario">Scenario</label
+					><select id="scenario">
+						<option value="populated">Populated · one-off</option>
+						<option value="empty">Empty job</option>
+						<option value="loading">Loading</option>
+						<option value="error">Error</option>
+						<option value="editing">Editing</option>
+						<option value="closed">Closed</option>
+						<option value="recurring">Recurring · per visit</option>
+						<option value="period">Recurring · monthly</option>
+						<option value="asneeded">As-needed scheduling</option>
+						<option value="restricted">Restricted staff</option>
+						<option value="final">Final visit</option>
+						<option value="changed">Changed after sign-off / sharing</option>
+						<option value="long">Long content</option></select
+					><span>Sample data only · nothing is sent</span>
 				</div>
-				<div class="summary">
-					<div class="summary__item">
-						<span>JOB VALUE</span><strong>$12,450<span>.00</span></strong
-						><small>Including $950.00 tax</small>
-					</div>
-					<div class="summary__item">
-						<span>NEXT VISIT</span><strong class="summary__date">Oct 12 <span>Monday</span></strong
-						><small
-							><svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="24"
-								height="24"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="icon icon-tabler icons-tabler-outline icon-tabler-clock"
-							>
-								<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-								<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
-								<path d="M12 7v5l3 3" />
-							</svg>
-							8:00 AM – 4:00 PM</small
-						>
-					</div>
-					<div class="summary__item">
-						<span>ASSIGNED TEAM</span>
-						<div class="team">
-							<span class="avatar avatar--sage">MR</span><span class="avatar avatar--sand">AL</span
-							><strong>2 members</strong>
+				<p id="scenario-note" role="status"></p>
+				<div id="load-state" hidden></div>
+				<div id="job-surface">
+					<div class="eyebrow">JOBS <span>/</span> JOB #1042</div>
+					<div class="page-heading">
+						<div>
+							<div class="page-heading__meta">
+								<span class="badge"><i></i> In progress</span><span>One-off job</span>
+							</div>
+							<h1 id="job-title">Backyard transformation</h1>
+							<div id="title-editor" hidden>
+								<label for="title-draft">Job title</label
+								><input id="title-draft" maxlength="200" value="Backyard transformation" />
+							</div>
+							<p>A better outdoor space, from the ground up.</p>
 						</div>
-						<small>Marcus Reed & Alex Lee</small>
-					</div>
-					<div class="summary__item">
-						<span>VISIT PROGRESS</span
-						><strong class="summary__date">1 of 3 <span>completed</span></strong>
-						<div class="progress"><i></i><i></i><i></i></div>
-					</div>
-				</div>
-				<nav class="tabs" aria-label="Job sections">
-					<a href="#overview" class="is-active">Overview</a
-					><a href="#visits">Visits <span>3</span></a
-					><a href="#scope">Line items <span>3</span></a
-					><a href="#activity">Activity</a><a href="#files">Files <span>4</span></a>
-				</nav>
-				<div class="content" id="overview">
-					<div class="content__main">
-						<section class="panel" id="visits">
-							<div class="panel__heading">
-								<div>
-									<h2>Scheduled visits</h2>
-									<p>The plan for getting it done.</p>
-								</div>
-								<button class="button button--quiet" type="button">
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="24"
-										height="24"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										class="icon icon-tabler icons-tabler-outline icon-tabler-plus"
-									>
-										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-										<path d="M12 5l0 14" />
-										<path d="M5 12l14 0" /></svg
-									>Add visit
-								</button>
-							</div>
-							<div class="visit visit--next">
-								<div class="date-tile"><span>OCT</span><strong>12</strong></div>
-								<div class="visit__body">
-									<div class="visit__title">
-										<h3>Patio installation</h3>
-										<span class="badge badge--neutral">Upcoming</span>
-									</div>
-									<p>Monday · 8:00 AM – 4:00 PM</p>
-									<small>Lay stone pavers and finish edging</small>
-								</div>
-								<div class="visit__team">
-									<span class="avatar avatar--sage">MR</span
-									><span class="avatar avatar--sand">AL</span>
-								</div>
+						<div class="page-heading__actions">
+							<button class="button" type="button">
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
 									width="24"
@@ -522,210 +564,13 @@
 									stroke-width="2"
 									stroke-linecap="round"
 									stroke-linejoin="round"
-									class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"
+									class="icon icon-tabler icons-tabler-outline icon-tabler-pencil"
 								>
 									<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-									<path d="M9 6l6 6l-6 6" />
-								</svg>
-							</div>
-							<div class="visit">
-								<div class="date-tile"><span>OCT</span><strong>14</strong></div>
-								<div class="visit__body">
-									<h3>Planting & final walkthrough</h3>
-									<p>Wednesday · 9:00 AM – 1:00 PM</p>
-								</div>
-								<span class="avatar avatar--sage">MR</span
-								><svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="24"
-									height="24"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"
-								>
-									<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-									<path d="M9 6l6 6l-6 6" />
-								</svg>
-							</div>
-							<div class="visit visit--complete">
-								<span class="complete-icon"
-									><svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="24"
-										height="24"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										class="icon icon-tabler icons-tabler-outline icon-tabler-circle-check"
-									>
-										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-										<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
-										<path d="M9 12l2 2l4 -4" /></svg
-								></span>
-								<div class="visit__body">
-									<h3>Site preparation</h3>
-									<p>Oct 9 · Completed by Marcus & Alex</p>
-								</div>
-								<span class="visit__done">Completed</span>
-							</div>
-						</section>
-						<section class="panel" id="scope">
-							<div class="panel__heading">
-								<div>
-									<h2>Scope of work</h2>
-									<p>Services and materials for this job.</p>
-								</div>
-								<button class="button button--quiet" type="button">
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="24"
-										height="24"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										class="icon icon-tabler icons-tabler-outline icon-tabler-pencil"
-									>
-										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-										<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
-										<path d="M13.5 6.5l4 4" /></svg
-									>Edit
-								</button>
-							</div>
-							<div class="table-wrap">
-								<table>
-									<thead>
-										<tr>
-											<th>PRODUCT / SERVICE</th>
-											<th>QTY</th>
-											<th>UNIT PRICE</th>
-											<th>TOTAL</th>
-										</tr>
-									</thead>
-									<tbody>
-										<tr>
-											<td>
-												<strong>Natural stone patio</strong
-												><small>Premium sandstone · supply & installation</small>
-											</td>
-											<td>1</td>
-											<td>$8,500.00</td>
-											<td>$8,500.00</td>
-										</tr>
-										<tr>
-											<td>
-												<strong>Landscape planting</strong
-												><small>Native plants, soil preparation & mulch</small>
-											</td>
-											<td>1</td>
-											<td>$2,200.00</td>
-											<td>$2,200.00</td>
-										</tr>
-										<tr>
-											<td>
-												<strong>Site preparation & removal</strong
-												><small>Excavation and responsible waste disposal</small>
-											</td>
-											<td>1</td>
-											<td>$800.00</td>
-											<td>$800.00</td>
-										</tr>
-									</tbody>
-								</table>
-							</div>
-							<div class="totals">
-								<div><span>Subtotal</span><span>$11,500.00</span></div>
-								<div><span>Tax</span><span>$950.00</span></div>
-								<div class="totals__final">
-									<strong>Job total</strong><strong>$12,450.00</strong>
-								</div>
-							</div>
-						</section>
-						<section class="panel instructions">
-							<div class="panel__heading">
-								<h2>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="24"
-										height="24"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										class="icon icon-tabler icons-tabler-outline icon-tabler-notes"
-									>
-										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-										<path
-											d="M5 5a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2l0 -14"
-										/>
-										<path d="M9 7l6 0" />
-										<path d="M9 11l6 0" />
-										<path d="M9 15l4 0" />
-									</svg>
-									Crew instructions
-								</h2>
-								<button class="button button--quiet" type="button">
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="24"
-										height="24"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										class="icon icon-tabler icons-tabler-outline icon-tabler-pencil"
-									>
-										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-										<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
-										<path d="M13.5 6.5l4 4" /></svg
-									>Edit
-								</button>
-							</div>
-							<p>
-								Use the side gate to access the backyard. Please keep the gate closed — there’s a
-								dog on the property. Stone delivery is scheduled for Monday before 8 AM.
-							</p>
-							<span class="tag"
-								><svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="24"
-									height="24"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									class="icon icon-tabler icons-tabler-outline icon-tabler-lock"
-								>
-									<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-									<path
-										d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6"
-									/>
-									<path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
-									<path d="M8 11v-4a4 4 0 1 1 8 0v4" />
-								</svg>
-								Visible to your team only</span
-							>
-						</section>
-					</div>
-					<aside class="content__rail">
-						<section class="panel client">
-							<div class="panel__heading">
-								<h2>Client & property</h2>
+									<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+									<path d="M13.5 6.5l4 4" /></svg
+								>Edit job</button
+							><button class="button" type="button">
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
 									width="24"
@@ -736,86 +581,14 @@
 									stroke-width="2"
 									stroke-linecap="round"
 									stroke-linejoin="round"
-									class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-up-right"
+									class="icon icon-tabler icons-tabler-outline icon-tabler-dots"
 								>
 									<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-									<path d="M17 7l-10 10" />
-									<path d="M8 7l9 0l0 9" />
-								</svg>
-							</div>
-							<div class="client__identity">
-								<span class="avatar avatar--large">EW</span>
-								<div>
-									<h3>Emma Wilson</h3>
-									<span>Residential client</span>
-								</div>
-							</div>
-							<a class="contact" href="tel:5125550148"
-								><svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="24"
-									height="24"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									class="icon icon-tabler icons-tabler-outline icon-tabler-phone"
-								>
-									<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-									<path
-										d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2"
-									/></svg
-								>(512) 555-0148</a
-							><a class="contact" href="mailto:emma@example.com"
-								><svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="24"
-									height="24"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									class="icon icon-tabler icons-tabler-outline icon-tabler-mail"
-								>
-									<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-									<path
-										d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10"
-									/>
-									<path d="M3 7l9 6l9 -6" /></svg
-								>emma@example.com</a
-							>
-							<div class="property-art" aria-label="Illustrated property location">
-								<div class="property-art__road"></div>
-								<div class="property-art__road property-art__road--cross"></div>
-								<div class="property-art__block"></div>
-								<span
-									><svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="24"
-										height="24"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										class="icon icon-tabler icons-tabler-outline icon-tabler-map-pin"
-									>
-										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-										<path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
-										<path
-											d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0"
-										/></svg></span
-								><small>TRAVIS HEIGHTS</small>
-							</div>
-							<div class="client__address">
-								<strong>1248 Willow Creek Drive</strong><span>Austin, TX 78704</span>
-							</div>
-							<button class="button button--wide" type="button">
+									<path d="M4 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+									<path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+									<path d="M18 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /></svg
+								>More</button
+							><button class="button button--primary" type="button">
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
 									width="24"
@@ -826,69 +599,110 @@
 									stroke-width="2"
 									stroke-linecap="round"
 									stroke-linejoin="round"
-									class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-up-right"
+									class="icon icon-tabler icons-tabler-outline icon-tabler-plus"
 								>
 									<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-									<path d="M17 7l-10 10" />
-									<path d="M8 7l9 0l0 9" /></svg
-								>Get directions
+									<path d="M12 5l0 14" />
+									<path d="M5 12l14 0" /></svg
+								>Create invoice
 							</button>
-						</section>
-						<section class="panel" id="activity">
-							<div class="panel__heading">
-								<h2>Recent activity</h2>
-								<a href="#activity" class="text-link">View all</a>
-							</div>
-							<div class="activity">
-								<div class="activity__item">
-									<span class="activity__dot activity__dot--green"></span>
-									<div>
-										<strong>Site preparation completed</strong>
-										<p>Marcus Reed finished the first visit.</p>
-										<small>Oct 9 · 3:42 PM</small>
-									</div>
-								</div>
-								<div class="activity__item">
-									<span class="activity__dot"></span>
-									<div>
-										<strong>Job scheduled</strong>
-										<p>3 visits added to the calendar.</p>
-										<small>Oct 7 · 10:15 AM</small>
-									</div>
-								</div>
-								<div class="activity__item">
-									<span class="activity__dot"></span>
-									<div>
-										<strong>Created from quote #208</strong>
-										<p>Quote approved by Emma Wilson.</p>
-										<small>Oct 6 · 2:30 PM</small>
-									</div>
-								</div>
-							</div>
-						</section>
-						<section class="note" id="files">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="24"
-								height="24"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="icon icon-tabler icons-tabler-outline icon-tabler-paperclip"
+						</div>
+					</div>
+					<div class="job-facts">
+						<span>Job #1042</span><span>Created Oct 6, 2026</span
+						><a href="#" data-destination="Quote #208">From quote #208 ↗</a
+						><button class="text-link" data-action="history">Job history</button
+						><button class="text-link" data-action="review">Request review</button>
+					</div>
+					<div class="summary">
+						<div class="summary__item">
+							<span>JOB VALUE</span><strong>$12,450<span>.00</span></strong
+							><small>Including $950.00 tax</small>
+						</div>
+						<div class="summary__item">
+							<span>NEXT VISIT</span
+							><strong class="summary__date">Oct 12 <span>Monday</span></strong
+							><small
+								><svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="24"
+									height="24"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									class="icon icon-tabler icons-tabler-outline icon-tabler-clock"
+								>
+									<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+									<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+									<path d="M12 7v5l3 3" />
+								</svg>
+								8:00 AM – 4:00 PM</small
 							>
-								<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-								<path
-									d="M15 7l-6.5 6.5a1.5 1.5 0 0 0 3 3l6.5 -6.5a3 3 0 0 0 -6 -6l-6.5 6.5a4.5 4.5 0 0 0 9 9l6.5 -6.5"
-								/>
-							</svg>
-							<div>
-								<strong>Everything in one place</strong>
-								<p>4 files attached to this job, including the approved landscape plan.</p>
-								<a href="#files"
-									>View attachments
+						</div>
+						<div class="summary__item">
+							<span>ASSIGNED TEAM</span>
+							<div class="team">
+								<span class="avatar avatar--sage">MR</span
+								><span class="avatar avatar--sand">AL</span><strong>2 members</strong>
+							</div>
+							<small>Marcus Reed & Alex Lee</small>
+						</div>
+						<div class="summary__item">
+							<span>VISIT PROGRESS</span
+							><strong class="summary__date">1 of 3 <span>completed</span></strong>
+							<div class="progress"><i></i><i></i><i></i></div>
+						</div>
+					</div>
+					<nav class="tabs" aria-label="Job sections">
+						<a href="#overview" class="is-active">Overview</a
+						><a href="#visits">Visits <span>3</span></a
+						><a href="#scope">Line items <span>3</span></a
+						><a href="#activity">Activity</a><a href="#files">Files <span>4</span></a>
+					</nav>
+					<div class="content" id="overview">
+						<div class="content__main">
+							<section class="panel" id="visits">
+								<div class="panel__heading">
+									<div>
+										<h2>Visits</h2>
+										<p>The plan for getting it done.</p>
+									</div>
+									<button class="button button--quiet" type="button">
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="24"
+											height="24"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											class="icon icon-tabler icons-tabler-outline icon-tabler-plus"
+										>
+											<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+											<path d="M12 5l0 14" />
+											<path d="M5 12l14 0" /></svg
+										>Add visit
+									</button>
+								</div>
+								<div class="visit visit--next">
+									<div class="date-tile"><span>OCT</span><strong>12</strong></div>
+									<div class="visit__body">
+										<div class="visit__title">
+											<h3>Patio installation</h3>
+											<span class="badge badge--neutral">Upcoming</span>
+										</div>
+										<p>Monday · 8:00 AM – 4:00 PM</p>
+										<small>Lay stone pavers and finish edging</small>
+									</div>
+									<div class="visit__team">
+										<span class="avatar avatar--sage">MR</span
+										><span class="avatar avatar--sand">AL</span>
+									</div>
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
 										width="24"
@@ -899,22 +713,717 @@
 										stroke-width="2"
 										stroke-linecap="round"
 										stroke-linejoin="round"
-										class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-right"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"
 									>
 										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-										<path d="M5 12l14 0" />
-										<path d="M13 18l6 -6" />
-										<path d="M13 6l6 6" /></svg
-								></a>
+										<path d="M9 6l6 6l-6 6" />
+									</svg>
+								</div>
+								<div class="visit">
+									<div class="date-tile"><span>OCT</span><strong>14</strong></div>
+									<div class="visit__body">
+										<h3>Planting & final walkthrough</h3>
+										<p>Wednesday · 9:00 AM – 1:00 PM</p>
+									</div>
+									<span class="avatar avatar--sage">MR</span
+									><svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M9 6l6 6l-6 6" />
+									</svg>
+								</div>
+								<div class="visit visit--complete">
+									<span class="complete-icon"
+										><svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="24"
+											height="24"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											class="icon icon-tabler icons-tabler-outline icon-tabler-circle-check"
+										>
+											<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+											<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+											<path d="M9 12l2 2l4 -4" /></svg
+									></span>
+									<div class="visit__body">
+										<h3>Site preparation</h3>
+										<p>Oct 9 · Completed by Marcus & Alex</p>
+									</div>
+									<span class="visit__done">Completed</span>
+								</div>
+							</section>
+							<section class="panel" id="scope">
+								<div class="panel__heading">
+									<div>
+										<h2>Scope of work</h2>
+										<p>Services and materials for this job.</p>
+									</div>
+									<button class="button button--quiet" type="button">
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="24"
+											height="24"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											class="icon icon-tabler icons-tabler-outline icon-tabler-pencil"
+										>
+											<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+											<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+											<path d="M13.5 6.5l4 4" /></svg
+										>Edit
+									</button>
+								</div>
+								<div class="table-wrap">
+									<table>
+										<thead>
+											<tr>
+												<th>PRODUCT / SERVICE</th>
+												<th>QTY</th>
+												<th>UNIT PRICE</th>
+												<th>TOTAL</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td>
+													<strong>Natural stone patio</strong
+													><small>Premium sandstone · supply & installation</small>
+												</td>
+												<td>1</td>
+												<td>$8,500.00</td>
+												<td>$8,500.00</td>
+											</tr>
+											<tr>
+												<td>
+													<strong>Landscape planting</strong
+													><small>Native plants, soil preparation & mulch</small>
+												</td>
+												<td>1</td>
+												<td>$2,200.00</td>
+												<td>$2,200.00</td>
+											</tr>
+											<tr>
+												<td>
+													<strong>Site preparation & removal</strong
+													><small>Excavation and responsible waste disposal</small>
+												</td>
+												<td>1</td>
+												<td>$800.00</td>
+												<td>$800.00</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+								<div class="totals">
+									<div><span>Subtotal</span><span>$11,500.00</span></div>
+									<div><span>Tax</span><span>$950.00</span></div>
+									<div class="totals__final">
+										<strong>Job total</strong><strong>$12,450.00</strong>
+									</div>
+								</div>
+							</section>
+							<section class="panel cost-section" id="labor">
+								<div class="panel__heading">
+									<h2>Labor</h2>
+									<div class="panel__actions">
+										<button class="button button--quiet" data-action="hours">Add time entry</button>
+									</div>
+								</div>
+								<div class="panel__body">
+									<div class="detail-row">
+										<div>
+											<strong>Marcus Reed</strong><small>Oct 9 · Site preparation · 8h</small>
+										</div>
+										<div>
+											$320.00<button class="button button--quiet" data-action="edit-hours">
+												Edit</button
+											><button class="button button--quiet" data-action="remove-hours">
+												Remove
+											</button>
+										</div>
+									</div>
+									<div class="detail-row">
+										<div><strong>Alex Lee</strong><small>Oct 9 · Site preparation · 8h</small></div>
+										<div>$280.00</div>
+									</div>
+									<p class="subtle">16 hours recorded · $600.00 labor cost</p>
+								</div>
+							</section>
+							<section class="panel cost-section" id="expenses">
+								<div class="panel__heading">
+									<h2>Expenses</h2>
+									<div class="panel__actions">
+										<button class="button button--quiet" data-action="expense">Add expense</button>
+									</div>
+								</div>
+								<div class="panel__body">
+									<div class="detail-row">
+										<div>
+											<strong>Disposal fee</strong
+											><small>Oct 9 · Marcus Reed · Not reimbursable</small>
+										</div>
+										<div>
+											$120.00<button class="button button--quiet" data-action="receipt">
+												Receipt</button
+											><button class="button button--quiet" data-action="expense">Edit</button
+											><button class="button button--quiet" data-action="remove-expense">
+												Remove
+											</button>
+										</div>
+									</div>
+									<p class="subtle">Keep receipts with the work they belong to.</p>
+								</div>
+							</section>
+							<section class="panel" id="checklists">
+								<div class="panel__heading">
+									<h2>Checklists</h2>
+									<div class="panel__actions">
+										<button class="button button--quiet" data-action="checklist">
+											Add checklist
+										</button>
+									</div>
+								</div>
+								<div class="panel__body">
+									<div class="detail-row">
+										<div>
+											<strong>Site safety & handover</strong
+											><small>4 questions · Answered separately on each visit</small>
+										</div>
+										<div>
+											<button class="button button--quiet" data-action="visit-records">
+												View answers</button
+											><button class="button button--quiet" data-action="remove-checklist">
+												Remove
+											</button>
+										</div>
+									</div>
+									<p class="subtle">
+										Required answers warn before completion. Past completed visits keep their
+										original checklist.
+									</p>
+								</div>
+							</section>
+							<section class="panel instructions" id="instructions">
+								<div class="panel__heading">
+									<h2>
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="24"
+											height="24"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											class="icon icon-tabler icons-tabler-outline icon-tabler-notes"
+										>
+											<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+											<path
+												d="M5 5a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2l0 -14"
+											/>
+											<path d="M9 7l6 0" />
+											<path d="M9 11l6 0" />
+											<path d="M9 15l4 0" />
+										</svg>
+										Crew instructions
+									</h2>
+									<button class="button button--quiet" type="button">
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="24"
+											height="24"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											class="icon icon-tabler icons-tabler-outline icon-tabler-pencil"
+										>
+											<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+											<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+											<path d="M13.5 6.5l4 4" /></svg
+										>Edit
+									</button>
+								</div>
+								<p>
+									Use the side gate to access the backyard. Please keep the gate closed — there’s a
+									dog on the property. Stone delivery is scheduled for Monday before 8 AM.
+								</p>
+								<span class="tag"
+									><svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-lock"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path
+											d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6"
+										/>
+										<path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
+										<path d="M8 11v-4a4 4 0 1 1 8 0v4" />
+									</svg>
+									Visible to your team only</span
+								>
+							</section>
+						</div>
+						<aside class="content__rail">
+							<section class="panel client">
+								<div class="panel__heading">
+									<h2>Client & property</h2>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-up-right"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M17 7l-10 10" />
+										<path d="M8 7l9 0l0 9" />
+									</svg>
+								</div>
+								<div class="client__identity">
+									<span class="avatar avatar--large">EW</span>
+									<div>
+										<h3>Emma Wilson</h3>
+										<span>Residential client</span>
+									</div>
+								</div>
+								<a class="contact" href="tel:5125550148"
+									><svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-phone"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path
+											d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2"
+										/></svg
+									>(512) 555-0148</a
+								><a class="contact" href="mailto:emma@example.com"
+									><svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-mail"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path
+											d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10"
+										/>
+										<path d="M3 7l9 6l9 -6" /></svg
+									>emma@example.com</a
+								>
+								<div class="property-art" aria-label="Illustrated property location">
+									<div class="property-art__road"></div>
+									<div class="property-art__road property-art__road--cross"></div>
+									<div class="property-art__block"></div>
+									<span
+										><svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="24"
+											height="24"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											class="icon icon-tabler icons-tabler-outline icon-tabler-map-pin"
+										>
+											<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+											<path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+											<path
+												d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0"
+											/></svg></span
+									><small>TRAVIS HEIGHTS</small>
+								</div>
+								<div class="client__address">
+									<strong>1248 Willow Creek Drive</strong><span>Austin, TX 78704</span>
+								</div>
+								<button class="button button--wide" type="button">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-up-right"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M17 7l-10 10" />
+										<path d="M8 7l9 0l0 9" /></svg
+									>Get directions
+								</button>
+							</section>
+							<section class="panel" id="activity">
+								<div class="panel__heading">
+									<h2>Recent activity</h2>
+									<a href="#activity" class="text-link">View all</a>
+								</div>
+								<div class="activity">
+									<div class="activity__item">
+										<span class="activity__dot activity__dot--green"></span>
+										<div>
+											<strong>Site preparation completed</strong>
+											<p>Marcus Reed finished the first visit.</p>
+											<small>Oct 9 · 3:42 PM</small>
+										</div>
+									</div>
+									<div class="activity__item">
+										<span class="activity__dot"></span>
+										<div>
+											<strong>Job scheduled</strong>
+											<p>3 visits added to the calendar.</p>
+											<small>Oct 7 · 10:15 AM</small>
+										</div>
+									</div>
+									<div class="activity__item">
+										<span class="activity__dot"></span>
+										<div>
+											<strong>Created from quote #208</strong>
+											<p>Quote approved by Emma Wilson.</p>
+											<small>Oct 6 · 2:30 PM</small>
+										</div>
+									</div>
+								</div>
+							</section>
+							<section class="panel" id="notes">
+								<div class="panel__heading">
+									<h2>Notes</h2>
+									<div class="panel__actions">
+										<button class="button button--quiet" data-action="note">Add note</button>
+									</div>
+								</div>
+								<div class="panel__body">
+									<div class="detail-row">
+										<div>
+											<strong>Pinned · Gate access</strong><small>Marcus Reed · Oct 9</small>
+										</div>
+										<div></div>
+									</div>
+									<p>Emma will leave the side gate unlocked. Keep it closed while working.</p>
+									<div class="inline-actions">
+										<button class="button button--quiet" data-action="note">Edit</button
+										><button class="button button--quiet" data-action="pin-note">Unpin</button
+										><button class="button button--quiet" data-action="delete-note">Delete</button>
+									</div>
+								</div>
+							</section>
+							<section class="panel" id="files">
+								<div class="panel__heading">
+									<h2>Photos and files</h2>
+									<div class="panel__actions">
+										<button class="button button--quiet" data-action="files">Add files</button>
+									</div>
+								</div>
+								<div class="panel__body">
+									<div class="photo-grid">
+										<button data-action="photo" aria-label="View site before photo">
+											<img src="./assets/site-before.svg" alt="Sample backyard before work" /><span
+												>Before · backyard</span
+											></button
+										><button data-action="photo" aria-label="View site progress photo">
+											<img
+												src="./assets/site-progress.svg"
+												alt="Sample patio work in progress"
+											/><span>Patio · progress</span>
+										</button>
+									</div>
+									<div class="detail-row">
+										<div>
+											<strong>Landscape plan.pdf</strong><small>240 KB · On this job</small>
+										</div>
+										<div>
+											<button class="button button--quiet" data-action="file">Preview</button
+											><button class="button button--quiet" data-action="download-file">
+												Download
+											</button>
+										</div>
+									</div>
+									<div class="detail-row">
+										<div><strong>Materials list.pdf</strong><small>86 KB · On this job</small></div>
+										<div>
+											<button class="button button--quiet" data-action="file-labels">Manage</button>
+										</div>
+									</div>
+									<p class="subtle">Illustrated sample photos for this demo.</p>
+								</div>
+							</section>
+							<section class="panel" id="signatures">
+								<div class="panel__heading">
+									<h2>Signatures</h2>
+									<div class="panel__actions">
+										<button class="button button--quiet" data-action="signature">
+											Collect signature
+										</button>
+									</div>
+								</div>
+								<div class="panel__body">
+									<div class="detail-row">
+										<div>
+											<strong>Emma Wilson</strong><small>Work authorization · Oct 7, 2026</small>
+										</div>
+										<div><span class="badge">Current</span></div>
+									</div>
+									<button class="button button--quiet" data-action="signature-snapshot">
+										View signed snapshot
+									</button>
+									<p class="subtle">Signed evidence stays unchanged when the job changes.</p>
+								</div>
+							</section>
+							<section class="panel owner-section" id="report">
+								<div class="panel__heading">
+									<h2>Work report</h2>
+									<div class="panel__actions">
+										<button class="button button--quiet" data-action="edit-report">
+											Edit report
+										</button>
+									</div>
+								</div>
+								<div class="panel__body">
+									<p>
+										A customer-ready summary of the work, selected photos, checklist answers, and
+										sign-off.
+									</p>
+									<div class="inline-actions">
+										<button class="button button--quiet" data-action="report">Preview</button
+										><button class="button button--quiet" data-action="print-report">Print</button
+										><button class="button button--quiet" data-action="copy-report">
+											Copy link
+										</button>
+									</div>
+								</div>
+							</section>
+						</aside>
+					</div>
+					<div class="financial-grid" aria-label="Job finances">
+						<section class="panel money-section" id="job-total">
+							<div class="panel__heading">
+								<h2>Job total</h2>
+								<div class="panel__actions"></div>
+							</div>
+							<div class="panel__body">
+								<dl class="money-list">
+									<div>
+										<dt>Subtotal</dt>
+										<dd>$11,500.00</dd>
+									</div>
+									<div>
+										<dt>Discount</dt>
+										<dd>$0.00</dd>
+									</div>
+									<div>
+										<dt>Tax</dt>
+										<dd>$950.00</dd>
+									</div>
+									<div class="money-list__total">
+										<dt>Total</dt>
+										<dd>$12,450.00</dd>
+									</div>
+								</dl>
 							</div>
 						</section>
-					</aside>
+						<section class="panel cost-section" id="costing">
+							<div class="panel__heading">
+								<h2>Job costing</h2>
+								<div class="panel__actions"></div>
+							</div>
+							<div class="panel__body">
+								<p class="subtle" id="cost-window">Only your team sees this · Costs so far</p>
+								<dl class="money-list">
+									<div>
+										<dt>Revenue before tax</dt>
+										<dd>$11,500.00</dd>
+									</div>
+									<div>
+										<dt>Item cost</dt>
+										<dd>$4,200.00</dd>
+									</div>
+									<div>
+										<dt>Labor</dt>
+										<dd>$600.00</dd>
+									</div>
+									<div>
+										<dt>Expenses</dt>
+										<dd>$120.00</dd>
+									</div>
+									<div>
+										<dt>Costs so far</dt>
+										<dd>$4,920.00</dd>
+									</div>
+									<div class="money-list__total">
+										<dt>Profit so far</dt>
+										<dd>$6,580.00</dd>
+									</div>
+								</dl>
+								<p class="subtle">
+									Costs to date, not cash received. Avoid counting the same material as both an item
+									cost and an expense.
+								</p>
+							</div>
+						</section>
+						<section class="panel money-section" id="billing">
+							<div class="panel__heading">
+								<h2>Billing</h2>
+								<div class="panel__actions">
+									<button class="button button--quiet" data-action="billing">Edit</button>
+								</div>
+							</div>
+							<div class="panel__body">
+								<p class="subtle">How it is priced</p>
+								<strong id="billing-basis">$12,450.00 for the whole job</strong>
+								<p class="subtle">Remind our team to invoice</p>
+								<strong id="billing-timing">When the job closes</strong>
+								<div id="payment-stages">
+									<div class="detail-row">
+										<div><strong>Deposit · 30%</strong><small>$3,735.00 · Invoiced</small></div>
+										<div>
+											<button class="button button--quiet" data-action="invoice-link">
+												Invoice #302
+											</button>
+										</div>
+									</div>
+									<div class="detail-row">
+										<div><strong>Completion · 70%</strong><small>$8,715.00 · Remaining</small></div>
+										<div>
+											<button class="button button--quiet" data-action="invoice">
+												Create invoice
+											</button>
+										</div>
+									</div>
+									<button class="button button--quiet" data-action="stages">
+										Edit payment schedule
+									</button>
+								</div>
+								<p class="subtle">
+									Internal reminders, not client messages. Collection stays manual.
+								</p>
+							</div>
+						</section>
+						<section class="panel money-section" id="reminders">
+							<div class="panel__heading">
+								<h2>Invoice reminders</h2>
+								<div class="panel__actions">
+									<button class="button button--quiet" data-action="reminder">Add</button>
+								</div>
+							</div>
+							<div class="panel__body">
+								<div class="detail-row">
+									<div><strong>Oct 14, 2026</strong><small>Remind our team to invoice</small></div>
+									<div>
+										<button class="button button--quiet" data-action="reminder-done">
+											Mark invoiced</button
+										><button class="button button--quiet" data-action="remove-reminder">
+											Delete
+										</button>
+									</div>
+								</div>
+							</div>
+						</section>
+						<section class="panel money-section conditional-section" id="billable">
+							<div class="panel__heading">
+								<h2>Visits ready to bill</h2>
+								<div class="panel__actions"></div>
+							</div>
+							<div class="panel__body"><div id="billable-content"></div></div>
+						</section>
+						<section class="panel money-section" id="discount">
+							<div class="panel__heading">
+								<h2>Discount</h2>
+								<div class="panel__actions">
+									<button class="button button--quiet" data-action="discount">Edit</button>
+								</div>
+							</div>
+							<div class="panel__body"><p>No discount applied.</p></div>
+						</section>
+						<section class="panel money-section" id="tax">
+							<div class="panel__heading">
+								<h2>Property tax</h2>
+								<div class="panel__actions">
+									<button class="button button--quiet" data-action="tax">Edit</button>
+								</div>
+							</div>
+							<div class="panel__body">
+								<strong>Austin sales tax</strong>
+								<p class="subtle">From this property · $950.00</p>
+							</div>
+						</section>
+					</div>
 				</div>
 				<footer class="preview-footer">
 					UPLIFT / DESIGN EXPLORATION 01
-					<span>Static concept · Sample data · Controls are illustrative</span>
+					<span>Interactive preview · Sample data · Reload to reset</span>
 				</footer>
+				<div class="edit-bar" hidden>
+					<span>Job draft <small id="draft-state">No changes yet</small></span
+					><button class="button" id="discard">Cancel</button
+					><button class="button button--primary" id="save-draft" disabled>Save changes</button>
+				</div>
 			</main>
 		</div>
+		<script src="./demo.js" defer></script>
+		<dialog id="preview" aria-labelledby="preview-title">
+			<form method="dialog">
+				<header class="demo-dialog__header">
+					<h2 id="preview-title"></h2>
+					<button class="icon-button" aria-label="Close preview">×</button>
+				</header>
+			</form>
+			<div id="preview-body"></div>
+			<p class="demo-dialog__notice">Preview only · temporary sample data</p>
+			<div id="preview-actions"></div>
+		</dialog>
+		<div id="feedback" role="status"></div>
 	</body>
 </html>
