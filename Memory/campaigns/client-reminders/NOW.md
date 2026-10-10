@@ -5,9 +5,7 @@ get the confirmation, visit reminders, overdue-invoice reminders and job thank-y
 promise (email now, texts after registration).
 **Plan:** `docs/client-reminders-behavior-contract.md`
 
-**In progress:** Part 6 — `parts/6-job-follow-up.md`.
-
-**Next part:** 6 Job follow-up (2–5 done 2026-10-09).
+**Next part:** 7 Final check (2–6 done 2026-10-10).
 
 **Note:** background wakes reach the app only through the Cloudflare Tunnel; while it is down (HTTP 530 in `net._http_response`), no automation or email runs.
 
