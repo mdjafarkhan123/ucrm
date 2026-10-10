@@ -25,6 +25,8 @@ export type PackageSummary = {
 		monthly_price_usd_cents: number | null;
 		yearly_price_usd_cents: number | null;
 		published_at: string;
+		/** Who this edition is sold to (multi-industry foundation B2). */
+		experience_keys: string[];
 	} | null;
 	organization_count: number;
 	/** Why a delete would be refused, in words for Jafar, or null when nobody ever used the package. */
