@@ -9,6 +9,9 @@ import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { headObject } from '$lib/server/storage/r2';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 
+// Operational readiness (multi-industry foundation B8) has its own specs; these routes are open here.
+vi.mock('$lib/server/experience/readiness', () => ({ refuseIfAreaClosed: async () => null }));
+
 vi.mock('$env/dynamic/private', () => ({ env: { APP_URL: 'https://app.example.com' } }));
 vi.mock('$lib/server/access/permission', async () => ({
 	hasPermission: vi.fn(),

@@ -3,6 +3,9 @@ import { POST } from './+server';
 import { hasPermission, requireOrganizationPermission } from '$lib/server/access/permission';
 import { sendDraftQuoteByEmail } from '$lib/server/quotes/send';
 
+// Operational readiness (multi-industry foundation B8) has its own specs; these routes are open here.
+vi.mock('$lib/server/experience/readiness', () => ({ refuseIfAreaClosed: async () => null }));
+
 vi.mock('$lib/server/security/rate-limit', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/server/security/rate-limit')>()),
 	enforceOrganizationWriteRateLimit: vi.fn(async () => null)

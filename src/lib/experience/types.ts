@@ -90,3 +90,33 @@ export type AccessComparisonResponse = {
 	verdict: 'same' | 'different' | 'unavailable';
 	error?: string;
 };
+
+/** What the Control Room's Readiness section reads for one business (multi-industry foundation B8). */
+export type ReadinessHistoryEntry = {
+	id: string;
+	status: 'ready' | 'not_ready' | 'held';
+	source: 'review' | 'carried_over';
+	checks: { key: string; state: 'open' | 'done' | 'not_applicable'; note?: string }[];
+	reason: string;
+	business_message: string | null;
+	actor_email: string;
+	decided_at: string;
+};
+
+export type ReadinessAreaSummary = {
+	key: string;
+	label: string;
+	opens: string;
+	requires: string[];
+	checks: { key: string; task: string; owner: 'business' | 'uplift' }[];
+	/** The current decision, or null while Uplift has not reviewed the area. */
+	current: ReadinessHistoryEntry | null;
+	/** What the business sees right now, including an area held back by one it requires. */
+	business_view: { state: string; open: boolean; sentence: string };
+	history: ReadinessHistoryEntry[];
+};
+
+export type ReadinessTabResponse = {
+	areas: ReadinessAreaSummary[];
+	error?: string;
+};

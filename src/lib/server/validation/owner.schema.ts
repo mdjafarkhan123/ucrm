@@ -870,3 +870,56 @@ export const experienceDecisionSchema = z.object({
 	expected_previous_decision_id: z.string().uuid().nullable(),
 	idempotency_key: z.string().uuid('Start the review again and try again.')
 });
+
+// Multi-industry foundation B8: Uplift signs off (or holds) one real-world area of a business. A ready area
+// has every check done or not applicable; a held area explains itself to the business.
+export const readinessDecisionSchema = z
+	.object({
+		area_key: z.enum([
+			'public_intake',
+			'customer_messaging',
+			'customer_billing',
+			'customer_automation'
+		]),
+		status: z.enum(['ready', 'not_ready', 'held']),
+		checks: z
+			.array(
+				z.object({
+					key: z
+						.string()
+						.trim()
+						.regex(/^[a-z][a-z_]{1,59}$/),
+					state: z.enum(['open', 'done', 'not_applicable']),
+					note: z.string().trim().max(300, 'Keep each note under 300 characters.').optional()
+				})
+			)
+			.max(30),
+		reason: z
+			.string()
+			.trim()
+			.min(1, 'Explain what you checked or why you are holding this.')
+			.max(1000, 'Keep the reason under 1,000 characters.'),
+		business_message: z
+			.string()
+			.trim()
+			.max(500, 'Keep the message under 500 characters.')
+			.nullable(),
+		expected_previous_decision_id: z.string().uuid().nullable(),
+		idempotency_key: z.string().uuid('Start the review again and try again.')
+	})
+	.superRefine((value, context) => {
+		if (value.status === 'held' && !value.business_message) {
+			context.addIssue({
+				code: 'custom',
+				path: ['business_message'],
+				message: 'Tell the business why this is on hold.'
+			});
+		}
+		if (value.status === 'ready' && value.checks.some((check) => check.state === 'open')) {
+			context.addIssue({
+				code: 'custom',
+				path: ['checks'],
+				message: 'Finish every check before marking this ready.'
+			});
+		}
+	});

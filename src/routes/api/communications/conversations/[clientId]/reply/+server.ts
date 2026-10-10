@@ -20,6 +20,7 @@ import {
 	conversationReplyEmailSchema,
 	conversationReplySmsSchema
 } from '$lib/server/validation/communications.schema';
+import { refuseIfAreaClosed } from '$lib/server/experience/readiness';
 
 // A database rejection surfaced as a 422 with its own message: permission, missing recipient, sender/number
 // not ready, or (SMS only) a P0001 safety refusal (consent, balance, quiet hours) or a same-key payload
@@ -32,6 +33,12 @@ const KNOWN_REJECTION_CODES = ['42501', '23503', '55000', '23514', 'P0001', '235
 export const POST: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'conversations.send');
 	if ('response' in check) return check.response;
+	const notReady = await refuseIfAreaClosed(
+		event.locals.supabase,
+		check.auth.organization.id,
+		'customer_messaging'
+	);
+	if (notReady) return notReady;
 	const unavailable = featureUnavailable(check.access, 'communications.inbox');
 	if (unavailable) return unavailable;
 	if (!hasPermission(check.access, 'customers.view')) {

@@ -5,6 +5,9 @@ import { createInvoiceEmailAccessLink } from '$lib/server/communications/invoice
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 
+// Operational readiness (multi-industry foundation B8) has its own specs; these routes are open here.
+vi.mock('$lib/server/experience/readiness', () => ({ refuseIfAreaClosed: async () => null }));
+
 // Batch deliver (Part 8b) — the batch control flow only. The four things this proves are exactly the four
 // Jafar asked to see, on isolated made-up invoices with nothing real touched:
 //   1. every accepted invoice is queued once,

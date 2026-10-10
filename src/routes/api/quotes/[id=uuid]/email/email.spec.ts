@@ -5,6 +5,9 @@ import { createQuoteEmailAccessLink } from '$lib/server/communications/quote-ema
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 
+// Operational readiness (multi-industry foundation B8) has its own specs; these routes are open here.
+vi.mock('$lib/server/experience/readiness', () => ({ refuseIfAreaClosed: async () => null }));
+
 vi.mock('$lib/server/access/permission', async () => {
 	const actual = await vi.importActual<typeof import('$lib/server/access/permission')>(
 		'$lib/server/access/permission'
@@ -29,6 +32,7 @@ const quoteId = '00000000-0000-4000-8000-000000000091';
 function event(body: unknown) {
 	return {
 		params: { id: quoteId },
+		locals: {},
 		request: new Request(`http://localhost/api/quotes/${quoteId}/email`, {
 			method: 'POST',
 			body: JSON.stringify(body)

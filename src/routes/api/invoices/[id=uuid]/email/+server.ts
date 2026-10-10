@@ -9,6 +9,7 @@ import { updateInvoiceError } from '$lib/server/invoices/errors';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { invoiceEmailSchema } from '$lib/server/validation/invoices.schema';
+import { refuseIfAreaClosed } from '$lib/server/experience/readiness';
 
 // Emailing an issued invoice to the client. The invoice is issued first by the caller (issue_invoice, method
 // 'sent'); this only delivers. The enqueue command checks the invoice, recipient, sender and allowance again,
@@ -17,6 +18,12 @@ import { invoiceEmailSchema } from '$lib/server/validation/invoices.schema';
 export const POST: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'invoices.send');
 	if ('response' in check) return check.response;
+	const notReady = await refuseIfAreaClosed(
+		event.locals.supabase,
+		check.auth.organization.id,
+		'customer_billing'
+	);
+	if (notReady) return notReady;
 
 	// Sending an invoice by email also opens a customer conversation. Keep the route aligned with the command
 	// so a direct request cannot reach a service-only RPC that will necessarily refuse it.

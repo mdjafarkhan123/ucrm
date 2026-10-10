@@ -12352,6 +12352,66 @@ export type Database = {
 					}
 				];
 			};
+			organization_readiness_decisions: {
+				Row: {
+					actor_email: string;
+					area_key: string;
+					business_message: string | null;
+					checks: Json;
+					decided_at: string;
+					id: string;
+					idempotency_key: string;
+					organization_id: string;
+					previous_decision_id: string | null;
+					reason: string;
+					source: string;
+					status: string;
+				};
+				Insert: {
+					actor_email: string;
+					area_key: string;
+					business_message?: string | null;
+					checks?: Json;
+					decided_at?: string;
+					id?: string;
+					idempotency_key: string;
+					organization_id: string;
+					previous_decision_id?: string | null;
+					reason: string;
+					source: string;
+					status: string;
+				};
+				Update: {
+					actor_email?: string;
+					area_key?: string;
+					business_message?: string | null;
+					checks?: Json;
+					decided_at?: string;
+					id?: string;
+					idempotency_key?: string;
+					organization_id?: string;
+					previous_decision_id?: string | null;
+					reason?: string;
+					source?: string;
+					status?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_readiness_decisions_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_readiness_decisions_previous_decision_id_fkey';
+						columns: ['previous_decision_id'];
+						isOneToOne: false;
+						referencedRelation: 'organization_readiness_decisions';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			organization_setup_versions: {
 				Row: {
 					organization_id: string;
@@ -24862,6 +24922,17 @@ export type Database = {
 				Args: { target_organization_id: string };
 				Returns: boolean;
 			};
+			organization_readiness_for_member: {
+				Args: { target_organization_id: string };
+				Returns: {
+					area_key: string;
+					business_message: string;
+					checks: Json;
+					decided_at: string;
+					source: string;
+					status: string;
+				}[];
+			};
 			organization_tax_default_property_count: {
 				Args: { target_organization_id: string };
 				Returns: number;
@@ -26790,6 +26861,21 @@ export type Database = {
 					target_definition_version: number;
 					target_experience_key: string;
 					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			record_organization_readiness_decision: {
+				Args: {
+					actor_email: string;
+					business_message: string;
+					decision_reason: string;
+					decision_source?: string;
+					expected_previous_decision_id: string;
+					idempotency_key: string;
+					target_area_key: string;
+					target_checks: Json;
+					target_organization_id: string;
+					target_status: string;
 				};
 				Returns: Json;
 			};

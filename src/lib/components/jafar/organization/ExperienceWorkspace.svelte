@@ -13,6 +13,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import AccessComparisonPanel from './AccessComparisonPanel.svelte';
 	import ExperienceDecisionDialog from './ExperienceDecisionDialog.svelte';
+	import ReadinessPanel from './ReadinessPanel.svelte';
 	import { canUseJafarPath } from '$lib/jafar/team-access';
 	import { organizationExperienceQuery } from '$lib/jafar/organization-experience-queries';
 	import { jafarOrganizationExperienceKey } from '$lib/jafar/query-keys';
@@ -204,6 +205,7 @@
 			</SectionBlock>
 
 			{#if organizationId}
+				<ReadinessPanel {organizationId} />
 				<AccessComparisonPanel {organizationId} />
 			{/if}
 

@@ -9,10 +9,17 @@ import { quoteWriteError } from '$lib/server/quotes/errors';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { quoteEmailSchema } from '$lib/server/validation/quotes.schema';
+import { refuseIfAreaClosed } from '$lib/server/experience/readiness';
 
 export const POST: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'quotes.send');
 	if ('response' in check) return check.response;
+	const notReady = await refuseIfAreaClosed(
+		event.locals.supabase,
+		check.auth.organization.id,
+		'customer_billing'
+	);
+	if (notReady) return notReady;
 	// A published quote is a commercial document, but email delivery also creates a customer
 	// conversation. Keep the route aligned with the command so a direct request cannot reach a
 	// service-only RPC that will necessarily refuse it.

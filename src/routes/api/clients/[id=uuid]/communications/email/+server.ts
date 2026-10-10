@@ -16,12 +16,19 @@ import {
 	communicationFieldErrors,
 	manualCommunicationEmailSchema
 } from '$lib/server/validation/communications.schema';
+import { refuseIfAreaClosed } from '$lib/server/experience/readiness';
 
 const noStore = { 'Cache-Control': 'no-store' };
 
 export const POST: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'conversations.send');
 	if ('response' in check) return check.response;
+	const notReady = await refuseIfAreaClosed(
+		event.locals.supabase,
+		check.auth.organization.id,
+		'customer_messaging'
+	);
+	if (notReady) return notReady;
 	const unavailable = featureUnavailable(check.access, 'communications.inbox');
 	if (unavailable) return unavailable;
 	if (!hasPermission(check.access, 'customers.view')) {

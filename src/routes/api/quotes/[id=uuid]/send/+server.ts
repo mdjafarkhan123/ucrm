@@ -7,6 +7,7 @@ import { sendDraftQuoteByEmail } from '$lib/server/quotes/send';
 import { enforceOrganizationWriteRateLimit } from '$lib/server/security/rate-limit';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { sendDraftQuoteSchema } from '$lib/server/validation/quotes.schema';
+import { refuseIfAreaClosed } from '$lib/server/experience/readiness';
 
 function sendNotAllowed(message: string) {
 	return json(
@@ -34,6 +35,12 @@ export const POST: RequestHandler = async (event) => {
 	const { send, idempotency_key: idempotencyKey } = parsed.data;
 
 	if (send.method === 'email') {
+		const notReady = await refuseIfAreaClosed(
+			event.locals.supabase,
+			check.auth.organization.id,
+			'customer_billing'
+		);
+		if (notReady) return notReady;
 		// The email also opens a customer conversation, so it needs that permission as well.
 		if (!hasPermission(check.access, 'conversations.send')) {
 			return sendNotAllowed('You do not have permission to email customers.');

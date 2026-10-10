@@ -7,6 +7,7 @@ import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { batchDeliverInvoicesSchema } from '$lib/server/validation/invoices.schema';
+import { refuseIfAreaClosed } from '$lib/server/experience/readiness';
 
 // Batch Deliver (Part 8b-2). Sends many invoices to their clients in one action, reusing the exact single-send
 // path per invoice: issue a draft, then queue one email through the durable outbox. Nothing new sends here --
@@ -53,6 +54,12 @@ type Outcome =
 export const POST: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'invoices.send');
 	if ('response' in check) return check.response;
+	const notReady = await refuseIfAreaClosed(
+		event.locals.supabase,
+		check.auth.organization.id,
+		'customer_billing'
+	);
+	if (notReady) return notReady;
 
 	// Sending an invoice by email also opens a customer conversation, exactly as the single email route does.
 	if (!hasPermission(check.access, 'conversations.send')) {

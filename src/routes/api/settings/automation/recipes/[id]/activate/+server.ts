@@ -17,6 +17,7 @@ import {
 	activateRecipeSchema,
 	automationFieldErrors
 } from '$lib/server/validation/automation-authoring.schema';
+import { refuseIfAreaClosed } from '$lib/server/experience/readiness';
 
 // Settings → Automation: activate one recipe. `activate` permission is required. Activation freezes an
 // IMMUTABLE version from the recipe's own saved draft (never a definition sent by the browser): the route
@@ -37,6 +38,12 @@ type EditorRow = {
 export const POST: RequestHandler = async (event) => {
 	const check = await requireAutomationAccess(event, 'activate');
 	if ('response' in check) return check.response;
+	const notReady = await refuseIfAreaClosed(
+		event.locals.supabase,
+		check.auth.organization.id,
+		'customer_automation'
+	);
+	if (notReady) return notReady;
 
 	const recipeId = recipeIdSchema.safeParse(event.params.id);
 	if (!recipeId.success) return json({ error: 'That automation does not exist.' }, { status: 404 });

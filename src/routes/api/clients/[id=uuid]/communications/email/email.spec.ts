@@ -8,6 +8,9 @@ import {
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit } from '$lib/server/security/rate-limit';
 
+// Operational readiness (multi-industry foundation B8) has its own specs; these routes are open here.
+vi.mock('$lib/server/experience/readiness', () => ({ refuseIfAreaClosed: async () => null }));
+
 vi.mock('$lib/server/access/permission', async () => ({
 	hasPermission: vi.fn(),
 	requireOrganizationPermission: vi.fn(),

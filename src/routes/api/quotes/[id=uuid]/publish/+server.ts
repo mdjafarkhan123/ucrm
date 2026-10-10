@@ -6,6 +6,7 @@ import { enforceOrganizationWriteRateLimit } from '$lib/server/security/rate-lim
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { publishQuoteSchema } from '$lib/server/validation/quotes.schema';
 import { quoteWriteError } from '$lib/server/quotes/errors';
+import { refuseIfAreaClosed } from '$lib/server/experience/readiness';
 
 // Putting the quote in front of the customer. The draft is frozen into the next version and the quote
 // starts waiting for an answer. Clicking twice is not two proposals: the command sees the revision it was
@@ -13,6 +14,12 @@ import { quoteWriteError } from '$lib/server/quotes/errors';
 export const POST: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'quotes.send');
 	if ('response' in check) return check.response;
+	const notReady = await refuseIfAreaClosed(
+		event.locals.supabase,
+		check.auth.organization.id,
+		'customer_billing'
+	);
+	if (notReady) return notReady;
 
 	const limited = await enforceOrganizationWriteRateLimit(
 		event.locals.supabase,

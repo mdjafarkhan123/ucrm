@@ -4,6 +4,9 @@ import { POST as revise } from './revise/+server';
 import { POST as decision } from './decision/+server';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
 
+// Operational readiness (multi-industry foundation B8) has its own specs; these routes are open here.
+vi.mock('$lib/server/experience/readiness', () => ({ refuseIfAreaClosed: async () => null }));
+
 // The shared quote write limit is proven by its own tests; here it always lets the request through.
 vi.mock('$lib/server/security/rate-limit', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/server/security/rate-limit')>()),

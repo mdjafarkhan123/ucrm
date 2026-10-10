@@ -10,6 +10,7 @@ import {
 	launchCampaign
 } from '$lib/server/marketing/campaigns';
 import { loadMarketingReadiness } from '$lib/server/marketing/readiness';
+import { refuseIfAreaClosed } from '$lib/server/experience/readiness';
 
 // Confirming a campaign -- "Send now" or "Schedule for later" in CampaignReviewStep.svelte. Needs
 // marketing.launch (stricter than the marketing.draft that saves a draft), and readiness is checked here,
@@ -25,6 +26,12 @@ const launchSchema = z.object({
 export const POST: RequestHandler = async (event) => {
 	const access = await requireOrganizationPermission(event, 'marketing.launch');
 	if ('response' in access) return access.response;
+	const notReady = await refuseIfAreaClosed(
+		event.locals.supabase,
+		access.auth.organization.id,
+		'customer_automation'
+	);
+	if (notReady) return notReady;
 
 	let body: unknown;
 	try {
