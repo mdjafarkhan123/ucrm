@@ -2,23 +2,25 @@
 
 ## Goal
 
-Complete the path to a controlled first launch, then widen access only from measured customer and production
-evidence.
+Controlled first launch, then wider access only from measured evidence.
 
 ## Current state
 
-Parts 1–4 complete; 5–8 wait on launch evidence or dependencies. Agreed 2026-10-08: hourly-billed practice server (e.g. Hetzner CX33) for P9C–P9F; real server and first
-customers last. No infrastructure is approved.
+Parts 1–4, 10, 11 complete. P9B packaging built 2026-10-10 (`docs/production-release-runbook.md`). Practice server
+(hourly Hetzner CX33) is for P9C–P9F; real server and first customers last. No infrastructure is approved.
 
 ## Exact next action
 
-Parts 10 and 11 done (2026-10-10: Quote-approval team alert; visit, overdue-invoice, job
-follow-up and booking reminders). P9B packaging built 2026-10-10: Node server build, Dockerfile, health routes, GitHub
-workflow, `docs/production-release-runbook.md`. Waiting on: Jafar adds 3 GitHub variables and checks the first
-"Release image" run goes green (Docker was not available locally). Then the practice server (P9C) after P9A approval.
+Jafar's priority order (2026-10-10):
 
-Open for Jafar: P9A — managed Supabase first (recommended) or self-hosted from day one (he wants CLAUDE.md's
-self-hosted destination honored); push alerts before first customers or before advertising.
+1. **Part 9, production** — the only launch blocker. Needs P9A answer and 3 GitHub variables (first "Release image" run unchecked); then P9C.
+2. **Part 12, Alerts** — can be built locally while Part 9 waits.
+3. **Part 13, Home screen and Reports.**
+4. **Part 14, Customer portal.**
+5. **Part 15, Extras**, in this order: Quote templates, auto-archive, automation recipes, bulk Visit move, day clock in/out.
+6. **Part 8, final audit**, last. Part 5 follows business registration.
+
+Next session: ask for the P9A answer (managed Supabase first, recommended, or self-hosted from day one); if not given, start Part 12 as its own campaign.
 
 ## Essential pointers
 
