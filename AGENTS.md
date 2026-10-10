@@ -8,11 +8,11 @@ rule in one file, make the same change in the other in the same commit.
 - **Owner:** Jafar owns the CRM/app and makes its product decisions.
 - **Product:** One platform with industry-specific business experiences. Business type, enabled subscription
   features, and staff permissions decide what each business sees and can do.
-  - The contractor edition follows Jobber.
-  - The next expansion follows Boulevard, starting with Medspa & Clinical Wellness and the shared
-    appointment-based capabilities it needs; Beauty & Spa follows.
-  - Medspa first-release behavior and build order are approved; application and first-clinic readiness and
-    capacity remain unverified.
+    - The contractor edition follows Jobber.
+    - The next expansion follows Boulevard, starting with Medspa & Clinical Wellness and the shared
+      appointment-based capabilities it needs; Beauty & Spa follows.
+    - Medspa first-release behavior and build order are approved; application and first-clinic readiness and
+      capacity remain unverified.
 - **Product context:** Read `docs/platform-overview.md` when planning an industry edition or changing shared
   product behavior. `docs/PRODUCT.md` is the contractor blueprint. For Medspa work, read
   `docs/boulevard-product-behavior-contract.md` and its approved build-order link; Beauty & Spa details need
@@ -27,16 +27,7 @@ rule in one file, make the same change in the other in the same commit.
 
 ### Test logins
 
-- `/jafar`: `dev.jafarkhan@gmail.com` / `.Asdedjk12.`. Contractor owner: `info.socialmediauser1@gmail.com` /
-  `11223344`. Field member: `dev.jafarkhan@gmail.com` / `11223344`. Admin: `jafarkhaninupwork@gmail.com` /
-  `11223344`.
-- **Raad LTD roles (test-only):** `office` — `dev.jafarkhan+office@gmail.com`, `sales` —
-  `dev.jafarkhan+sales@gmail.com`, `finance` — `dev.jafarkhan+finance@gmail.com`; all `PaidLaunch16!`. Created
-  by driving the real invite-and-accept flow (`$lib/server/team/invitations.ts`) directly, not raw SQL.
-- **`/jafar` teammate (test-only, D1):** Sales role "Sam Seller" — `dev.jafarkhan+uplift-sales@gmail.com` /
-  `PaidLaunch16!`. Created through the real invite and join pages.
-
----
+- Read the Login.md file to login with different account, if you create any new account then write that in Login.md file as well
 
 ## Commands
 
@@ -69,9 +60,6 @@ its `apply_migration` stamps today's version instead of the file's.
 
 ## Before saying done
 
-- `npm run check` passes, and so do the unit tests for what you changed. The full check runs once per hand-off,
-  after your last edit: a run of quick tweaks and their commits shares that one run, and a rerun follows only a
-  fix for an error it reported.
 - Anything a user can see has been through the design skill's screen check.
 - A behaviour's main journey is proven once on the live app; edge cases are left to automated tests.
 - Your report shows the evidence: the commands you ran and their results, or the screenshots.
@@ -109,12 +97,7 @@ current task; do not load the full library by default.
 
 ## Campaign
 
-A campaign is work that is expected to span sessions, has dependent or independently resumable stages, cannot
-safely finish in one session, or is likely to need a fresh session to preserve reliable implementation and verification.
-File count, step count, staged approval, browser verification, and guessed token count are supporting signals,
-not campaign triggers or split thresholds by themselves. Load `.claude/skills/campaign-memory/SKILL.md`
-completely before starting, resuming, checkpointing, handing off, deferring, completing, or cleaning up a
-campaign — including when Jafar says `read memory and continue`.
+-Load `.claude/skills/campaign-memory/SKILL.md` when user wants to build a product or planning or wanna let you work on any task
 
 ## Concurrent agent work
 
@@ -145,10 +128,7 @@ before changing files (`--mode read` for research). Release after safe integrati
   real choice, bring researched options with a recommendation and wait for his answer. The same holds for
   questions that come up mid-way or in later sessions. Choose technical details yourself using proven methods.
   Tell Jafar which product or method you followed.
-- **Simplest correct fit.** Build what the approved behavior and its edge cases need; add layers, options, or
-  dependencies only when a current requirement calls for them.
-- **Frontend design.** Screens look premium, professional, and modern; the design skill's screen check is how
-  you prove it.
+- **Frontend design.** Screens look premium, professional, and modern.
 - **Svelte 5 only.** No Svelte 4 syntax anywhere.
 - SCSS + BEM for all styling. Tabler icons for all icons.
 - Component styles live inside the component's own `<style lang="scss">` block. `app.scss` holds only the global
@@ -159,13 +139,13 @@ before changing files (`--mode read` for research). Release after safe integrati
 - **TanStack Query owns server state** and is the only cache. The `src/routes/(app)/+layout.svelte` shell is SSR;
   all page content under `src/routes/(app)/` is CSR only, so navigation never waits on data: pages show cached
   data or skeletons while they load.
-  - Move between pages with links — `href` on `Button`, or an `<a>` — so SvelteKit preloads the page on hover.
-    `resolve()` wants the full route id including the group, e.g. `'/(app)/clients/[id]'`.
-  - Keep the warm list in `src/routes/(app)/+layout.svelte` to the sidebar's daily pages and their record pages
-    (Jafar, 2026-09-28: it costs crews mobile data), dropping entries whose routes go away.
-  - Content the user has to reveal — a tab panel, an accordion, a dialog's contents — loads when its control is
-    hovered, not with the page.
-  - After a mutation or an external event, invalidate every affected query.
+    - Move between pages with links — `href` on `Button`, or an `<a>` — so SvelteKit preloads the page on hover.
+      `resolve()` wants the full route id including the group, e.g. `'/(app)/clients/[id]'`.
+    - Keep the warm list in `src/routes/(app)/+layout.svelte` to the sidebar's daily pages and their record pages
+      (Jafar, 2026-09-28: it costs crews mobile data), dropping entries whose routes go away.
+    - Content the user has to reveal — a tab panel, an accordion, a dialog's contents — loads when its control is
+      hovered, not with the page.
+    - After a mutation or an external event, invalidate every affected query.
 - Server secrets stay server-side.
 - All writes go through `/api/*` routes. Every `POST` and `PATCH` validates with Zod before database access.
 - **Performance — proportional evidence.** Follow `performance-review`'s invocation gate and two-stage

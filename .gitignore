@@ -37,3 +37,6 @@ test-results
 
 # Local runtime logs
 *.out.log
+
+# Local test logins (passwords stay off GitHub)
+/Login.md
