@@ -281,6 +281,7 @@ describe('individual access (D2)', () => {
 			'/api/jafar/organizations/x/closure/start',
 			'/api/jafar/organizations/x/closure/restore',
 			'/api/jafar/organizations/x/lifecycle',
+			'/api/jafar/organizations/x/experience',
 			'/api/jafar/organizations/x/team/u/administrator-recovery',
 			'/api/jafar/organizations/x/communications/sms/refunds',
 			'/api/jafar/organizations/x/communications/sms/adjustments',

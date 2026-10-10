@@ -5843,6 +5843,74 @@ export type Database = {
 					}
 				];
 			};
+			industry_experience_business_types: {
+				Row: {
+					business_type_key: string;
+					definition_version: number;
+					experience_key: string;
+					label: string;
+					position: number;
+				};
+				Insert: {
+					business_type_key: string;
+					definition_version: number;
+					experience_key: string;
+					label: string;
+					position: number;
+				};
+				Update: {
+					business_type_key?: string;
+					definition_version?: number;
+					experience_key?: string;
+					label?: string;
+					position?: number;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'industry_experience_business__experience_key_definition_ve_fkey';
+						columns: ['experience_key', 'definition_version'];
+						isOneToOne: false;
+						referencedRelation: 'industry_experience_definitions';
+						referencedColumns: ['experience_key', 'version'];
+					}
+				];
+			};
+			industry_experience_definitions: {
+				Row: {
+					capability_families: string[];
+					change_summary: string;
+					created_at: string;
+					experience_key: string;
+					name: string;
+					published_at: string | null;
+					required_safety_controls: string[];
+					status: string;
+					version: number;
+				};
+				Insert: {
+					capability_families: string[];
+					change_summary: string;
+					created_at?: string;
+					experience_key: string;
+					name: string;
+					published_at?: string | null;
+					required_safety_controls?: string[];
+					status: string;
+					version: number;
+				};
+				Update: {
+					capability_families?: string[];
+					change_summary?: string;
+					created_at?: string;
+					experience_key?: string;
+					name?: string;
+					published_at?: string | null;
+					required_safety_controls?: string[];
+					status?: string;
+					version?: number;
+				};
+				Relationships: [];
+			};
 			inquiry_alert_recipients: {
 				Row: {
 					created_at: string;
@@ -10263,6 +10331,90 @@ export type Database = {
 					trigger_kind?: string;
 				};
 				Relationships: [];
+			};
+			organization_experience_decisions: {
+				Row: {
+					actor_email: string;
+					business_type_key: string | null;
+					decided_at: string;
+					definition_version: number;
+					experience_key: string;
+					id: string;
+					idempotency_key: string;
+					organization_id: string;
+					package_agreement_id: string | null;
+					previous_decision_id: string | null;
+					reason: string;
+					service_shape: string;
+					source: string;
+				};
+				Insert: {
+					actor_email: string;
+					business_type_key?: string | null;
+					decided_at?: string;
+					definition_version: number;
+					experience_key: string;
+					id?: string;
+					idempotency_key: string;
+					organization_id: string;
+					package_agreement_id?: string | null;
+					previous_decision_id?: string | null;
+					reason: string;
+					service_shape: string;
+					source: string;
+				};
+				Update: {
+					actor_email?: string;
+					business_type_key?: string | null;
+					decided_at?: string;
+					definition_version?: number;
+					experience_key?: string;
+					id?: string;
+					idempotency_key?: string;
+					organization_id?: string;
+					package_agreement_id?: string | null;
+					previous_decision_id?: string | null;
+					reason?: string;
+					service_shape?: string;
+					source?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_experience_deci_experience_key_definition_ve_fkey1';
+						columns: ['experience_key', 'definition_version', 'business_type_key'];
+						isOneToOne: false;
+						referencedRelation: 'industry_experience_business_types';
+						referencedColumns: ['experience_key', 'definition_version', 'business_type_key'];
+					},
+					{
+						foreignKeyName: 'organization_experience_decis_experience_key_definition_ve_fkey';
+						columns: ['experience_key', 'definition_version'];
+						isOneToOne: false;
+						referencedRelation: 'industry_experience_definitions';
+						referencedColumns: ['experience_key', 'version'];
+					},
+					{
+						foreignKeyName: 'organization_experience_decisions_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_experience_decisions_package_agreement_id_fkey';
+						columns: ['package_agreement_id'];
+						isOneToOne: false;
+						referencedRelation: 'organization_package_agreements';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_experience_decisions_previous_decision_id_fkey';
+						columns: ['previous_decision_id'];
+						isOneToOne: false;
+						referencedRelation: 'organization_experience_decisions';
+						referencedColumns: ['id'];
+					}
+				];
 			};
 			organization_exports: {
 				Row: {
@@ -26471,6 +26623,21 @@ export type Database = {
 					reason: string;
 					receipt_id: string;
 					refunded_on: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			record_organization_experience_decision: {
+				Args: {
+					actor_email: string;
+					decision_reason: string;
+					decision_source?: string;
+					expected_previous_decision_id: string;
+					idempotency_key: string;
+					reviewed_service_shape: string;
+					target_business_type_key: string;
+					target_definition_version: number;
+					target_experience_key: string;
 					target_organization_id: string;
 				};
 				Returns: Json;

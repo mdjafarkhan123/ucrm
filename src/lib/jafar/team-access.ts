@@ -197,6 +197,8 @@ const OWNER_ONLY_CHANGES: readonly PathRule[] = [
 	{ pattern: '/api/jafar/organizations/*/billing', subtree: true },
 	{ pattern: '/api/jafar/organizations/*/closure', subtree: true },
 	{ pattern: '/api/jafar/organizations/*/lifecycle', subtree: true },
+	// Multi-industry foundation B1: confirming which Industry experience a business runs on.
+	{ pattern: '/api/jafar/organizations/*/experience', subtree: true },
 	{ pattern: '/api/jafar/organizations/*/team/*/administrator-recovery', subtree: true },
 	{ pattern: '/api/jafar/organizations/*/communications/sms/adjustments', subtree: true },
 	{ pattern: '/api/jafar/organizations/*/communications/sms/credit-topups', subtree: true },

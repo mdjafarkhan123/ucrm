@@ -843,3 +843,27 @@ export function zodOwnerFieldErrors(error: z.ZodError) {
 		error.issues.map((issue) => [String(issue.path[0] ?? 'form'), issue.message] as const)
 	);
 }
+
+// Multi-industry foundation B1: Uplift confirms an Organization's Industry experience profile. A blank
+// Business type stays unknown; it is never filled in from trade text.
+export const experienceDecisionSchema = z.object({
+	experience_key: z.string().trim().regex(/^[a-z][a-z_]{1,39}$/, 'Choose an Industry experience.'),
+	definition_version: z.number().int().min(1),
+	business_type_key: z
+		.string()
+		.trim()
+		.regex(/^[a-z][a-z_]{1,39}$/, 'Choose a Business type.')
+		.nullable(),
+	service_shape: z
+		.string()
+		.trim()
+		.min(1, 'Describe the services you reviewed.')
+		.max(1000, 'Keep the services under 1,000 characters.'),
+	reason: z
+		.string()
+		.trim()
+		.min(1, 'Explain why this experience fits.')
+		.max(1000, 'Keep the reason under 1,000 characters.'),
+	expected_previous_decision_id: z.string().uuid().nullable(),
+	idempotency_key: z.string().uuid('Start the review again and try again.')
+});

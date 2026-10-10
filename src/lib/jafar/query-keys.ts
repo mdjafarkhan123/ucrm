@@ -211,3 +211,5 @@ export const jafarBookingKey = ['jafar', 'settings', 'booking'] as const;
 export const jafarBookingHostsKey = [...jafarBookingKey, 'hosts'] as const;
 export const jafarBookingZoomKey = [...jafarBookingKey, 'zoom'] as const;
 export const jafarBookingGoogleKey = [...jafarBookingKey, 'google'] as const;
+export const jafarOrganizationExperienceKey = (organizationId: string | undefined) =>
+	[...jafarOrganizationKey(organizationId), 'experience'] as const;

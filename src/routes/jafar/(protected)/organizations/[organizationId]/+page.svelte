@@ -23,6 +23,7 @@
 	import { prefetchOrganizationBilling } from '$lib/jafar/organization-billing-queries';
 	import { prefetchOrganizationExceptions } from '$lib/jafar/organization-exceptions-queries';
 	import { prefetchOrganizationSetup } from '$lib/jafar/organization-setup-queries';
+	import { prefetchOrganizationExperience } from '$lib/jafar/organization-experience-queries';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import arrowLeftIcon from '@tabler/icons/outline/arrow-left.svg?raw';
 	import shieldIcon from '@tabler/icons/outline/shield-check.svg?raw';
@@ -39,6 +40,7 @@
 	import CommunicationsWorkspace from '$lib/components/jafar/organization/CommunicationsWorkspace.svelte';
 	import TeamWorkspace from '$lib/components/jafar/organization/TeamWorkspace.svelte';
 	import SetupWorkspace from '$lib/components/jafar/organization/SetupWorkspace.svelte';
+	import ExperienceWorkspace from '$lib/components/jafar/organization/ExperienceWorkspace.svelte';
 	import ActivityWorkspace from '$lib/components/jafar/organization/ActivityWorkspace.svelte';
 	import BillingWorkspace from '$lib/components/jafar/organization/BillingWorkspace.svelte';
 
@@ -47,7 +49,7 @@
 	const preview = $derived(dev && scenario ? getOrganizationDetailPreview(scenario) : null);
 
 	const queryClient = useQueryClient();
-	// Billing, Access, Communications and Setup have reads of their own, warmed on hover; the rest reuse the page's queries.
+	// Billing, Access, Communications, Setup and Experience have reads of their own, warmed on hover; the rest reuse the page's queries.
 	const organizationTabs: Tab[] = $derived([
 		{ value: 'overview', label: 'Overview' },
 		{
@@ -78,6 +80,13 @@
 			label: 'Setup',
 			onhover: () => {
 				if (!preview && organizationId) prefetchOrganizationSetup(queryClient, organizationId);
+			}
+		},
+		{
+			value: 'experience',
+			label: 'Experience',
+			onhover: () => {
+				if (!preview && organizationId) prefetchOrganizationExperience(queryClient, organizationId);
 			}
 		},
 		{ value: 'activity', label: 'Activity' }
@@ -380,6 +389,8 @@
 			<TeamWorkspace {access} {preview} {teamQuery} />
 
 			<SetupWorkspace {organizationId} {preview} />
+
+			<ExperienceWorkspace {organizationId} {preview} />
 
 			<ActivityWorkspace
 				{access}
