@@ -128,7 +128,7 @@
 			/>
 		{:else if data}
 			<SectionBlock title="Profile" icon={compassIcon}>
-				{#snippet actions()}
+				<div class="experience__actions">
 					{#if canDecide && data.profile.state !== 'unresolved' && data.profile.state !== 'unrecognized'}
 						<Button
 							variant={current ? 'secondary' : 'primary'}
@@ -139,7 +139,7 @@
 							>{current ? 'Review profile' : 'Confirm experience'}</Button
 						>
 					{/if}
-				{/snippet}
+				</div>
 
 				{#if data.profile.state === 'missing'}
 					<Banner type="warning">
@@ -257,6 +257,10 @@
 		display: grid;
 		gap: var(--space-large);
 		min-width: 0;
+
+		&__actions {
+			display: flex;
+		}
 
 		&__profile {
 			display: grid;

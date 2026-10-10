@@ -318,6 +318,11 @@
 		}
 	}
 
+	// The shared Badge capitalizes every word; these read as sentences.
+	.comparison :global(.badge) {
+		text-transform: none;
+	}
+
 	@media (max-width: 639px) {
 		.comparison__facts {
 			grid-template-columns: 1fr;
