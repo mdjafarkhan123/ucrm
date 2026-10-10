@@ -6,6 +6,8 @@ import { verifyTurnstileToken } from '$lib/server/security/turnstile';
 import { getOrCreateOwnerSettings } from '$lib/server/jafar/owner-settings';
 import { raiseOwnerAlert } from '$lib/server/jafar/owner-alerts';
 import { sendApplicationReceipt } from '$lib/server/jafar/application-receipt';
+import { isEditionSoldTo } from '$lib/server/packages/public-packages';
+import { APPLICATION_EXPERIENCE } from '$lib/experience/definitions';
 import {
 	onboardingApplicationSubmissionSchema,
 	zodOnboardingApplicationFieldErrors
@@ -14,6 +16,19 @@ import {
 // Postgres codes raised by submit_onboarding_application when the chosen package edition is no
 // longer published (check_violation) or no longer exists (foreign_key_violation).
 const UNAVAILABLE_PACKAGE_CODES = new Set(['23514', '23503']);
+
+function unavailablePackage() {
+	return json(
+		{
+			error: 'That package has changed or is no longer offered. Please review it again.',
+			field_errors: {
+				package_edition_id:
+					'That package has changed or is no longer offered. Please review it again.'
+			}
+		},
+		{ status: 422 }
+	);
+}
 
 export const POST: RequestHandler = async (event) => {
 	let body: unknown;
@@ -56,6 +71,11 @@ export const POST: RequestHandler = async (event) => {
 			? null
 			: (data.initial_administrator_email ?? null);
 
+		// Multi-industry foundation B2: only an edition sold to the buyer's experience can be chosen, even
+		// from a hand-made link.
+		if (!(await isEditionSoldTo(client, data.package_edition_id, APPLICATION_EXPERIENCE)))
+			return unavailablePackage();
+
 		const settings = await getOrCreateOwnerSettings(client);
 
 		const { data: applicationId, error: submitError } = await client.rpc(
@@ -95,17 +115,7 @@ export const POST: RequestHandler = async (event) => {
 		// submitting it. The database refuses that on purpose so nobody agrees to terms they were not
 		// shown; it is not a fault worth waking the owner for. The page reloads the packages and asks
 		// the visitor to review the current terms.
-		if (submitError && UNAVAILABLE_PACKAGE_CODES.has(submitError.code))
-			return json(
-				{
-					error: 'That package has changed or is no longer offered. Please review it again.',
-					field_errors: {
-						package_edition_id:
-							'That package has changed or is no longer offered. Please review it again.'
-					}
-				},
-				{ status: 422 }
-			);
+		if (submitError && UNAVAILABLE_PACKAGE_CODES.has(submitError.code)) return unavailablePackage();
 		if (submitError) throw submitError;
 
 		try {

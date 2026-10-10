@@ -21,6 +21,7 @@ const terms = {
 	exclusions: '',
 	monthly_price_usd_cents: 24900,
 	yearly_price_usd_cents: null,
+	experience_keys: ['contractor'],
 	capabilities: ['website_chat', 'communications.inbox'],
 	allowances: [
 		{ key: 'website_chat_widgets', state: 'numeric', value: 2 },

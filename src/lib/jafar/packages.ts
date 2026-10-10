@@ -63,6 +63,8 @@ export type PackageService = {
 	description: string;
 	archived_at: string | null;
 	package_count: number;
+	/** The Industry experiences Uplift delivers it for (multi-industry foundation B2). */
+	experience_keys: string[];
 };
 export type EditionAllowance = { key: string; state: AllowanceState; value: number | null };
 
@@ -80,6 +82,7 @@ export type EditionTerms = {
 	yearly_price_usd_cents: number | null;
 	updated_at: string;
 	updated_by_email: string | null;
+	experience_keys: string[];
 	capabilities: string[];
 	allowances: EditionAllowance[];
 };
@@ -91,7 +94,12 @@ export type CapabilityReference = {
 	kind: 'core' | 'extra' | 'planned';
 	sellable: boolean;
 	requires: string[];
+	/** The capability family an experience must allow before a package sold to it can include this. */
+	family: string;
 };
+
+/** An Industry experience Uplift sells packages to today: its newest published definition. */
+export type ExperienceReference = { key: string; name: string; capability_families: string[] };
 
 export type AllowanceReference = {
 	key: string;
@@ -118,6 +126,7 @@ export type PackageBuilder = {
 	capabilities: CapabilityReference[];
 	allowances: AllowanceReference[];
 	services: PackageService[];
+	experiences: ExperienceReference[];
 };
 
 /** The whole draft as the builder edits it and the save command receives it. */
@@ -130,6 +139,7 @@ export type DraftForm = {
 	exclusions: string;
 	monthly_price_usd_cents: number | null;
 	yearly_price_usd_cents: number | null;
+	experience_keys: string[];
 	capabilities: string[];
 	allowances: EditionAllowance[];
 };
@@ -325,6 +335,7 @@ export function formFromTerms(terms: EditionTerms, slug: string): DraftForm {
 		exclusions: terms.exclusions ?? '',
 		monthly_price_usd_cents: terms.monthly_price_usd_cents,
 		yearly_price_usd_cents: terms.yearly_price_usd_cents,
+		experience_keys: [...terms.experience_keys].sort(),
 		capabilities: [...terms.capabilities],
 		allowances: terms.allowances.map((allowance) => ({ ...allowance }))
 	};
@@ -353,6 +364,41 @@ export function allowanceApplies(allowance: AllowanceReference, selected: string
 	return allowance.capability_key === null || selected.includes(allowance.capability_key);
 }
 
+/**
+ * Multi-industry foundation B2: for each experience the draft is sold to, what in it does not fit there — a
+ * capability from a family the experience does not allow, or a service Uplift does not deliver for it.
+ * Publishing refuses these; the builder shows them as Jafar edits.
+ */
+export function experienceFitGaps(
+	form: Pick<DraftForm, 'experience_keys' | 'capabilities' | 'included_services'>,
+	reference: Pick<PackageBuilder, 'capabilities' | 'services' | 'experiences'>
+) {
+	return reference.experiences
+		.filter((experience) => form.experience_keys.includes(experience.key))
+		.map((experience) => ({
+			experience,
+			misfits: [
+				...reference.capabilities
+					.filter(
+						(capability) =>
+							form.capabilities.includes(capability.key) &&
+							!experience.capability_families.includes(capability.family)
+					)
+					.map((capability) => capability.label),
+				...form.included_services
+					.map((included) =>
+						reference.services.find((service) => service.key === included.service_key)
+					)
+					.filter(
+						(service): service is PackageService =>
+							service !== undefined && !service.experience_keys.includes(experience.key)
+					)
+					.map((service) => service.name)
+			]
+		}))
+		.filter((gap) => gap.misfits.length > 0);
+}
+
 export type DraftDifference = { field: string; label: string; mine: string; saved: string };
 
 function describeAllowances(form: DraftForm, allowances: AllowanceReference[]) {
@@ -377,7 +423,8 @@ export type DraftLine = { field: string; label: string; value: string };
 export function describeDraft(
 	form: DraftForm,
 	capabilities: CapabilityReference[],
-	allowances: AllowanceReference[]
+	allowances: AllowanceReference[],
+	experiences: ExperienceReference[] = []
 ): DraftLine[] {
 	const text = (value: string) => value.trim() || '—';
 	const extras =
@@ -387,8 +434,13 @@ export function describeDraft(
 			)
 			.map((capability) => capability.label)
 			.join(', ') || 'None';
+	const soldTo =
+		form.experience_keys
+			.map((key) => experiences.find((experience) => experience.key === key)?.name ?? key)
+			.join(', ') || 'Nobody yet';
 	return [
 		{ field: 'name', label: 'Name', value: text(form.name) },
+		{ field: 'experiences', label: 'Sold to', value: soldTo },
 		{ field: 'slug', label: 'Web address', value: text(form.slug) },
 		{ field: 'promise', label: 'Promise', value: text(form.promise) },
 		{ field: 'monthly', label: 'Monthly price', value: formatUsd(form.monthly_price_usd_cents) },
@@ -417,10 +469,11 @@ export function draftDifferences(
 	mine: DraftForm,
 	saved: DraftForm,
 	capabilities: CapabilityReference[],
-	allowances: AllowanceReference[]
+	allowances: AllowanceReference[],
+	experiences: ExperienceReference[] = []
 ): DraftDifference[] {
-	const savedLines = describeDraft(saved, capabilities, allowances);
-	return describeDraft(mine, capabilities, allowances)
+	const savedLines = describeDraft(saved, capabilities, allowances, experiences);
+	return describeDraft(mine, capabilities, allowances, experiences)
 		.map((line, index) => ({
 			field: line.field,
 			label: line.label,

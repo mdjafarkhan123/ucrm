@@ -5,6 +5,7 @@ import { checkRateLimit } from '$lib/server/security/rate-limit';
 import { verifyTurnstileToken } from '$lib/server/security/turnstile';
 import { sendApplicationReceipt } from '$lib/server/jafar/application-receipt';
 import { raiseOwnerAlert } from '$lib/server/jafar/owner-alerts';
+import { isEditionSoldTo } from '$lib/server/packages/public-packages';
 
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
 vi.mock('$lib/server/security/rate-limit', async (importOriginal) => ({
@@ -14,12 +15,14 @@ vi.mock('$lib/server/security/rate-limit', async (importOriginal) => ({
 vi.mock('$lib/server/security/turnstile', () => ({ verifyTurnstileToken: vi.fn() }));
 vi.mock('$lib/server/jafar/application-receipt', () => ({ sendApplicationReceipt: vi.fn() }));
 vi.mock('$lib/server/jafar/owner-alerts', () => ({ raiseOwnerAlert: vi.fn() }));
+vi.mock('$lib/server/packages/public-packages', () => ({ isEditionSoldTo: vi.fn() }));
 
 const mockedClient = vi.mocked(getOwnerSupabaseClient);
 const mockedCheckRateLimit = vi.mocked(checkRateLimit);
 const mockedVerifyTurnstile = vi.mocked(verifyTurnstileToken);
 const mockedSendReceipt = vi.mocked(sendApplicationReceipt);
 const mockedRaiseAlert = vi.mocked(raiseOwnerAlert);
+const mockedEditionSoldTo = vi.mocked(isEditionSoldTo);
 
 function postEvent(body: unknown) {
 	return {
@@ -92,6 +95,26 @@ describe('public onboarding application submission API boundary', () => {
 		mockedCheckRateLimit.mockResolvedValue({ allowed: true, retryAfterSeconds: 0 });
 		mockedVerifyTurnstile.mockResolvedValue(true);
 		mockedSendReceipt.mockResolvedValue(undefined);
+		mockedEditionSoldTo.mockResolvedValue(true);
+	});
+
+	it('refuses a package not sold to the kind of business applying, before saving anything', async () => {
+		const client = clientWith({ applicationId: 'app-42' });
+		mockedClient.mockReturnValue(client as never);
+		mockedEditionSoldTo.mockResolvedValue(false);
+
+		const response = await POST(postEvent(validBody));
+		expect(response.status).toBe(422);
+		expect((await response.json()).field_errors.package_edition_id).toMatch(/no longer offered/);
+		expect(mockedEditionSoldTo).toHaveBeenCalledWith(
+			client,
+			validBody.package_edition_id,
+			'contractor'
+		);
+		expect(client.__rpc).not.toHaveBeenCalledWith(
+			'submit_onboarding_application',
+			expect.anything()
+		);
 	});
 
 	it('validates the request body before touching the database', async () => {

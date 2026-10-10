@@ -12537,6 +12537,7 @@ export type Database = {
 			};
 			package_capabilities: {
 				Row: {
+					capability_family: string;
 					capability_key: string;
 					description: string;
 					kind: string;
@@ -12545,6 +12546,7 @@ export type Database = {
 					sort_order: number;
 				};
 				Insert: {
+					capability_family: string;
 					capability_key: string;
 					description: string;
 					kind: string;
@@ -12553,6 +12555,7 @@ export type Database = {
 					sort_order: number;
 				};
 				Update: {
+					capability_family?: string;
 					capability_key?: string;
 					description?: string;
 					kind?: string;
@@ -12701,6 +12704,7 @@ export type Database = {
 					created_at: string;
 					edition_number: number | null;
 					exclusions: string | null;
+					experience_keys: string[];
 					highlights: Json;
 					id: string;
 					included_services: Json;
@@ -12720,6 +12724,7 @@ export type Database = {
 					created_at?: string;
 					edition_number?: number | null;
 					exclusions?: string | null;
+					experience_keys?: string[];
 					highlights?: Json;
 					id?: string;
 					included_services?: Json;
@@ -12739,6 +12744,7 @@ export type Database = {
 					created_at?: string;
 					edition_number?: number | null;
 					exclusions?: string | null;
+					experience_keys?: string[];
 					highlights?: Json;
 					id?: string;
 					included_services?: Json;
@@ -12926,6 +12932,7 @@ export type Database = {
 					archived_at: string | null;
 					created_at: string;
 					description: string;
+					experience_keys: string[];
 					name: string;
 					service_key: string;
 					sort_order: number;
@@ -12936,6 +12943,7 @@ export type Database = {
 					archived_at?: string | null;
 					created_at?: string;
 					description?: string;
+					experience_keys?: string[];
 					name: string;
 					service_key: string;
 					sort_order: number;
@@ -12946,6 +12954,7 @@ export type Database = {
 					archived_at?: string | null;
 					created_at?: string;
 					description?: string;
+					experience_keys?: string[];
 					name?: string;
 					service_key?: string;
 					sort_order?: number;

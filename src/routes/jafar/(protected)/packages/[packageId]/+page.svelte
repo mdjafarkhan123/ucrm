@@ -24,6 +24,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import PackageAudienceBlock from '$lib/components/jafar/packages/PackageAudienceBlock.svelte';
 	import PackageAllowancesBlock from '$lib/components/jafar/packages/PackageAllowancesBlock.svelte';
 	import PackageServiceListDialog from '$lib/components/jafar/packages/PackageServiceListDialog.svelte';
 	import PackageServicesBlock from '$lib/components/jafar/packages/PackageServicesBlock.svelte';
@@ -217,6 +218,9 @@
 			: [
 					...(fieldErrors.name ? [{ anchor: 'package-name', label: 'Name' }] : []),
 					...(fieldErrors.slug ? [{ anchor: 'package-slug', label: 'Web address' }] : []),
+					...(fieldErrors.experience_keys
+						? [{ anchor: 'package-audience', label: 'Who can buy it' }]
+						: []),
 					...(Object.keys(allowanceErrors).length
 						? [{ anchor: 'package-allowances', label: 'Allowances' }]
 						: [])
@@ -282,8 +286,13 @@
 			if (isStaleDraft(error) && error.body.draft) {
 				const saved = error.body.draft;
 				if (
-					draftDifferences(normalized, savedForm(saved), builder!.capabilities, builder!.allowances)
-						.length === 0
+					draftDifferences(
+						normalized,
+						savedForm(saved),
+						builder!.capabilities,
+						builder!.allowances,
+						builder!.experiences
+					).length === 0
 				) {
 					// The other tab saved the same terms; adopt its revision and nothing is lost.
 					await save(saved.revision);
@@ -380,7 +389,12 @@
 	// The saved draft in words, and which lines differ from the published edition, for the publish review.
 	const savedLines = $derived(
 		builder?.draft
-			? describeDraft(savedForm(builder.draft), builder.capabilities, builder.allowances)
+			? describeDraft(
+					savedForm(builder.draft),
+					builder.capabilities,
+					builder.allowances,
+					builder.experiences
+				)
 			: []
 	);
 	const changedFields = $derived.by(() => {
@@ -388,7 +402,8 @@
 		const published = describeDraft(
 			savedForm(builder.published),
 			builder.capabilities,
-			builder.allowances
+			builder.allowances,
+			builder.experiences
 		);
 		return new Set(
 			savedLines
@@ -779,6 +794,15 @@
 						/>
 					</SectionBlock>
 
+					<PackageAudienceBlock
+						experiences={builder.experiences}
+						capabilities={builder.capabilities}
+						services={builder.services}
+						selectedCapabilities={normalized?.capabilities ?? form!.capabilities}
+						includedServices={form!.included_services}
+						bind:selected={form!.experience_keys}
+					/>
+
 					<SectionBlock
 						title="Prices"
 						form
@@ -950,7 +974,8 @@
 					normalized ?? form,
 					savedForm(conflict),
 					builder.capabilities,
-					builder.allowances
+					builder.allowances,
+					builder.experiences
 				)
 			: []}
 		savedBy={conflict?.updated_by_email ?? null}

@@ -4,6 +4,7 @@ import type { PublicPackage, ShownOffer } from '$lib/packages/public-package';
 
 // Package builder P9: the published edition of every public, unarchived package, with the capability and
 // allowance labels a visitor reads. Private, archived, and superseded editions never leave this module.
+// Multi-industry foundation B2: a visitor sees only the editions sold to the experience they are buying for.
 
 const EDITION_COLUMNS = `id, status, name, promise, highlights, included_services, exclusions,
 	monthly_price_usd_cents, yearly_price_usd_cents,
@@ -114,12 +115,14 @@ async function loadOffers(client: SupabaseClient<Database>) {
 
 export async function loadPublicPackages(
 	client: SupabaseClient<Database>,
+	experience: string,
 	slug?: string
 ): Promise<PublicPackage[]> {
 	let query = client
 		.from('package_editions')
 		.select(EDITION_COLUMNS)
 		.eq('status', 'published')
+		.contains('experience_keys', [experience])
 		.eq('packages.visibility', 'public')
 		.is('packages.archived_at', null);
 	if (slug) query = query.eq('packages.slug', slug);
@@ -138,6 +141,22 @@ export async function loadPublicPackages(
 					) ?? null
 			)
 		);
+}
+
+/** Whether an Application may choose this edition: it exists and is sold to the buyer's experience. */
+export async function isEditionSoldTo(
+	client: SupabaseClient<Database>,
+	editionId: string,
+	experience: string
+) {
+	const { data, error } = await client
+		.from('package_editions')
+		.select('id')
+		.eq('id', editionId)
+		.contains('experience_keys', [experience])
+		.maybeSingle();
+	if (error) throw error;
+	return data !== null;
 }
 
 /**

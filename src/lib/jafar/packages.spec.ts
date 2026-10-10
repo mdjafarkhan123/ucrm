@@ -2,13 +2,16 @@ import { describe, expect, it } from 'vitest';
 import {
 	describeCatalogEvent,
 	draftDifferences,
+	experienceFitGaps,
 	isListed,
 	formatUsd,
 	missingRequirements,
 	slugify,
 	type AllowanceReference,
 	type CapabilityReference,
-	type DraftForm
+	type DraftForm,
+	type ExperienceReference,
+	type PackageService
 } from './packages';
 
 const capabilities: CapabilityReference[] = [
@@ -18,7 +21,8 @@ const capabilities: CapabilityReference[] = [
 		description: 'Jobs',
 		kind: 'core',
 		sellable: true,
-		requires: []
+		requires: [],
+		family: 'field_service'
 	},
 	{
 		key: 'communications.inbox',
@@ -26,7 +30,8 @@ const capabilities: CapabilityReference[] = [
 		description: 'Inbox',
 		kind: 'extra',
 		sellable: false,
-		requires: []
+		requires: [],
+		family: 'shared_platform'
 	},
 	{
 		key: 'website_chat',
@@ -34,7 +39,8 @@ const capabilities: CapabilityReference[] = [
 		description: 'Chat',
 		kind: 'extra',
 		sellable: false,
-		requires: ['communications.inbox']
+		requires: ['communications.inbox'],
+		family: 'shared_platform'
 	}
 ];
 
@@ -65,6 +71,7 @@ function draft(overrides: Partial<DraftForm> = {}): DraftForm {
 		exclusions: '',
 		monthly_price_usd_cents: 24900,
 		yearly_price_usd_cents: null,
+		experience_keys: ['contractor'],
 		capabilities: ['core.jobs'],
 		allowances: [
 			{ key: 'employee_seats', state: 'numeric', value: 5 },
@@ -171,5 +178,59 @@ describe('isListed', () => {
 		expect(isListed({ ...pkg, published: null })).toBe(false);
 		expect(isListed({ ...pkg, archived_at: '2026-09-30' })).toBe(false);
 		expect(isListed({ ...pkg, visibility: 'private' })).toBe(false);
+	});
+});
+
+describe('experienceFitGaps', () => {
+	const experiences: ExperienceReference[] = [
+		{
+			key: 'contractor',
+			name: 'Contractor',
+			capability_families: ['shared_platform', 'field_service']
+		},
+		{ key: 'spa', name: 'Spa', capability_families: ['shared_platform', 'appointment_business'] }
+	];
+	const services: PackageService[] = [
+		{
+			key: 'website',
+			name: 'Premium website',
+			description: '',
+			archived_at: null,
+			package_count: 1,
+			experience_keys: ['contractor']
+		}
+	];
+	const reference = { capabilities, services, experiences };
+	const website = { service_key: 'website', name: 'Premium website', description: '' };
+
+	it('finds nothing when everything fits the experiences it is sold to', () => {
+		expect(experienceFitGaps(draft({ included_services: [website] }), reference)).toEqual([]);
+	});
+
+	it('names the field-service capability and the undelivered service for another experience', () => {
+		const gaps = experienceFitGaps(
+			draft({
+				experience_keys: ['contractor', 'spa'],
+				capabilities: ['core.jobs', 'communications.inbox'],
+				included_services: [website]
+			}),
+			reference
+		);
+		expect(gaps).toHaveLength(1);
+		expect(gaps[0].experience.name).toBe('Spa');
+		expect(gaps[0].misfits).toEqual(['Jobs', 'Premium website']);
+	});
+
+	it('shows who a draft is sold to among its differences', () => {
+		const differences = draftDifferences(
+			draft({ experience_keys: [] }),
+			draft(),
+			capabilities,
+			allowances,
+			experiences
+		);
+		expect(differences).toEqual([
+			{ field: 'experiences', label: 'Sold to', mine: 'Nobody yet', saved: 'Contractor' }
+		]);
 	});
 });

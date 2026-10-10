@@ -89,6 +89,10 @@ export const packageDraftTermsSchema = z.object({
 	exclusions: z.string().trim().max(2000, 'Keep this under 2,000 characters.'),
 	monthly_price_usd_cents: priceSchema,
 	yearly_price_usd_cents: priceSchema,
+	// Multi-industry foundation B2: the Industry experiences that may buy this package.
+	experience_keys: z
+		.array(z.string().regex(/^[a-z][a-z_]{1,39}$/, 'Choose a kind of business from the list.'))
+		.max(20),
 	capabilities: z.array(capabilityKeySchema).max(60),
 	allowances: z.array(allowanceSchema).max(40)
 });
