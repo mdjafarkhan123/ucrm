@@ -124,7 +124,7 @@
 	<!-- The card and its title draw at once; the days fill in when the settings arrive. -->
 	<RecordFormLayout {title} icon={clockIcon}>
 		{#snippet main()}
-			<LoadingSkeleton variant="text" rows={7} label="Loading weekly hours" />
+			<LoadingSkeleton variant="table" rows={7} label="Loading weekly hours" />
 		{/snippet}
 	</RecordFormLayout>
 {:else if !person}

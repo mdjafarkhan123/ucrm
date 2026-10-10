@@ -270,10 +270,10 @@
 	<!-- The card and its title draw at once; the fields fill in when the settings arrive. -->
 	<RecordFormLayout {title} icon={calendarIcon}>
 		{#snippet main()}
-			<LoadingSkeleton variant="text" rows={6} label="Loading the meeting type" />
+			<LoadingSkeleton variant="table" rows={4} label="Loading the meeting type" />
 		{/snippet}
 		{#snippet rail()}
-			<LoadingSkeleton variant="card" rows={2} label="Loading this meeting" />
+			<LoadingSkeleton variant="table" rows={2} label="Loading this meeting" />
 		{/snippet}
 	</RecordFormLayout>
 {:else if !isNew && !existing}

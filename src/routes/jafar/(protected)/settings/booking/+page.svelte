@@ -113,7 +113,7 @@
 		retry={() => query.refetch()}
 	/>
 {:else if !settings}
-	<LoadingSkeleton variant="card" rows={4} label="Loading booking settings" />
+	<LoadingSkeleton variant="table" rows={3} label="Loading booking settings" />
 {:else}
 	<div class="booking-settings">
 		<div class="booking-settings__main">
