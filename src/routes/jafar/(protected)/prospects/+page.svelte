@@ -1495,8 +1495,8 @@
 									size="small"
 									bind:value={qualificationForm.outcome}
 									options={[
-										{ value: 'supported', label: 'We serve this business' },
-										{ value: 'holding', label: 'Still checking' }
+										{ value: 'supported', label: 'Confirm' },
+										{ value: 'holding', label: 'Hold' }
 									]}
 								/>
 								<div class="prospects__form-grid">
