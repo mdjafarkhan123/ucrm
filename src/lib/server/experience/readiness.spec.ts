@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { refuseIfAreaClosed } from './readiness';
+import { isAreaOpenForOrganization, refuseIfAreaClosed } from './readiness';
 
 function clientReturning(result: { data: unknown; error: unknown }) {
 	return { rpc: vi.fn().mockResolvedValue(result) } as never;
@@ -74,5 +74,53 @@ describe('refuseIfAreaClosed', () => {
 		);
 		expect(response?.status).toBe(503);
 		spy.mockRestore();
+	});
+});
+
+function tableReturning(result: { data: unknown; error: unknown }) {
+	const query = { select: vi.fn(), eq: vi.fn() };
+	query.select.mockReturnValue(query);
+	query.eq.mockReturnValueOnce(query).mockResolvedValueOnce(result);
+	return { from: vi.fn().mockReturnValue(query) } as never;
+}
+
+describe('isAreaOpenForOrganization', () => {
+	it('is open when the latest decision is ready', async () => {
+		const client = tableReturning({
+			data: [
+				{ id: 'a', status: 'not_ready', previous_decision_id: null },
+				{ id: 'b', status: 'ready', previous_decision_id: 'a' }
+			],
+			error: null
+		});
+		expect(await isAreaOpenForOrganization(client, 'org-1', 'public_intake')).toBe(true);
+	});
+
+	it('is closed when a ready decision was replaced by a hold', async () => {
+		const client = tableReturning({
+			data: [
+				{ id: 'a', status: 'ready', previous_decision_id: null },
+				{ id: 'b', status: 'held', previous_decision_id: 'a' }
+			],
+			error: null
+		});
+		expect(await isAreaOpenForOrganization(client, 'org-1', 'public_intake')).toBe(false);
+	});
+
+	it('is closed with no decision, and when readiness cannot be read', async () => {
+		expect(
+			await isAreaOpenForOrganization(
+				tableReturning({ data: [], error: null }),
+				'org-1',
+				'public_intake'
+			)
+		).toBe(false);
+		expect(
+			await isAreaOpenForOrganization(
+				tableReturning({ data: null, error: { message: 'down' } }),
+				'org-1',
+				'public_intake'
+			)
+		).toBe(false);
 	});
 });

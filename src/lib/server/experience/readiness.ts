@@ -110,3 +110,24 @@ export async function refuseIfAreaClosed(
 		{ status: 403, headers: NO_STORE_HEADERS }
 	);
 }
+
+/**
+ * Whether an area is open for a business, asked on behalf of someone who is not signed in (a customer on a
+ * public form). Reads the latest decision with the server's own access. An area with no decision, or one that
+ * cannot be read, is closed.
+ */
+export async function isAreaOpenForOrganization(
+	ownerClient: Client,
+	organizationId: string,
+	area: ReadinessAreaKey
+): Promise<boolean> {
+	const { data, error } = await ownerClient
+		.from('organization_readiness_decisions')
+		.select('id, status, previous_decision_id')
+		.eq('organization_id', organizationId)
+		.eq('area_key', area);
+	if (error || !data) return false;
+	const superseded = new Set(data.map((row) => row.previous_decision_id));
+	const current = data.find((row) => !superseded.has(row.id));
+	return current?.status === 'ready';
+}

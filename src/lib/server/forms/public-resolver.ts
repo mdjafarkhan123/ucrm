@@ -6,6 +6,7 @@ import {
 	type FormContent,
 	type FormOutcome
 } from '$lib/forms/types';
+import { isAreaOpenForOrganization } from '$lib/server/experience/readiness';
 
 export type ResolvedPublicForm = {
 	organizationId: string;
@@ -32,7 +33,8 @@ type CatalogItemRow = {
 // The one place that decides whether an anonymous visitor may see this form at all. Mirrors the staff
 // booking route's query shape minus the permission check, plus exactly what the database's own
 // `get_public_form_available_slots`/`submit_form_response` require: org active, form not archived, enabled,
-// and published. Any failure here must read as "not available" everywhere -- the /page and both
+// and published, plus Uplift's sign-off for public intake. Any failure here must read as "not available"
+// everywhere -- the /page and both
 // /api/public/forms routes all call this so none of them can disagree with the database about it.
 export async function resolvePublicForm(
 	client: SupabaseClient<Database>,
@@ -46,6 +48,8 @@ export async function resolvePublicForm(
 		.eq('lifecycle_status', 'active')
 		.maybeSingle();
 	if (organizationError || !organization) return null;
+	// Uplift's sign-off for web requests and online booking (B9): until it is open, the form reads as not available.
+	if (!(await isAreaOpenForOrganization(client, organization.id, 'public_intake'))) return null;
 
 	const { data: settings, error: settingsError } = await client
 		.from('organization_settings')
