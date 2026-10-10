@@ -1,29 +1,35 @@
 ---
 name: design
 description: Design system and screen check for any screen, component, styling, or frontend change in this app.
-metadata:
-    author: Jafar khan
-    projectName: Uplift Contractor
-    primaryColor: "var(--color-brand)"
-    typographyScale: Inter, rem @ 1rem=10px (html 62.5%), Jobber Atlantis 12/14/16/20/24/36/48px — semibold headings, unitless tight line-heights
-    spacingScale: "4px base grid: 4, 8, 12, 16, 20, 24, 28, 32, 40, 48, 64, 80px"
-    radiusScale: "6px controls, 8px cards, 12px overlays, nested radii reduced by inner padding."
-    scss: src/lib/styles/_variables.scss ($ vars + var(--color-*) theme) + app.scss (base); this skill mirrors them
 ---
 
-# Design System - Agent Instructions
+# Design System — Agent Instructions
 
-This skill describes the visual design language for all UI output. Every component, layout, and page should follow the design specs in the module files below. These describe _what the design looks like_ — you choose how to implement the styles.
+## Authority and transition
 
-## Style
+For redesign work, read [Botanical v3 starter guidance](../../../docs/design/botanical-v3/README.md)
+and the [campaign contract](../../../docs/uplift-design-refresh-behavior-contract.md) first.
+The guidance owns demonstrated visual foundations; the contract owns demo review and rollout approval.
+Approved product contracts and verified implementation own capabilities and permissions.
 
-A professional dashboard interface with clean grid layouts, data-dense card panels, and a structured information hierarchy optimized for monitoring and management workflows
+Keep this skill and its modules. Update only the necessary parts as focused demos are built and approved.
+Use the [alignment register](alignment.md) to distinguish established foundations from patterns awaiting
+review. After approval, record the exact demo revision and coverage in permanent guidance, then update
+its relevant module before implementation. Keep each value or rule in one authoritative home.
 
----
+Untouched screens retain their existing appearance. The modules below remain their maintenance reference.
+For redesigned portions, approved Botanical guidance takes precedence over old visual values, border-line
+headings and `Design/*.jpg` layouts. A pattern missing from Botanical is awaiting approval, not permission
+to carry its old appearance into the redesign. Skill edits alone never change app tokens or components.
+Retain applicable accessibility, engineering and workflow constraints from existing modules.
 
 ## Before Writing Any Code
 
-1. **Read every module that applies.** For a landing page, read at minimum: `layout.md`, `typography.md`, `colors.md`, `buttons.md`, `cards.md`, `shadows.md`, `radius.md`, `borders.md`. Do NOT write JSX until you have loaded all relevant modules.
+1. Identify whether the portion is untouched maintenance or an approved redesign. Read its relevant modules
+   and, for redesign work, the guidance, approval record and alignment register above.
+2. Inspect `src/lib/components` for reuse. Keep Svelte 5, component-local SCSS/BEM and Tabler icons.
+3. Follow the campaign's focused demo review before implementing a new design. Resolve conflicting
+   behavior sources against the relevant product contract and implementation before changing behavior.
 
 ---
 
@@ -31,19 +37,21 @@ A professional dashboard interface with clean grid layouts, data-dense card pane
 
 **The screen check scales with the change.** A new screen or layout gets the full check below; a small change
 built from existing parts — an added field, option, card, or line — gets one desktop (1440px) and one phone
-(390px) screenshot of that spot, fixed until nothing looks off. Use Claude in Chrome; Playwright only when it is
-not connected.
+(390px) screenshot of that spot, fixed until nothing looks off. Use the available browser tools; use Playwright when connected browser control is unavailable.
 
 The full check: look at the real screen the way a picky designer would, not at the code.
 
-1. Open each changed screen in the running app, signed in with a role from the login details in `CLAUDE.md`
+1. Open each changed screen in the running app, signed in with a role from the login details in `Login.md`
    that sees the change.
 2. Screenshot it at desktop (1440px) and phone (390px) width, in every state the change touches: realistic
-   data, empty, loading, error, long names. Add dark mode when the change touches color.
-3. Critique each screenshot against the matching `Design/*.jpg` blueprint, any reference image Jafar gave,
-   and the modules below: alignment, spacing on the 4px grid, visual hierarchy, crowding, truncation,
+   data, empty, loading, error, long names. For untouched screens, add dark mode when the change touches color. Botanical dark mode awaits
+   its focused demo approval; report that gap rather than inventing an approved palette.
+3. Critique each screenshot against the approved demo and Botanical guidance for redesigned portions,
+   or the matching existing blueprint and modules for untouched screens: alignment, spacing, visual hierarchy, crowding, truncation,
    overflow, and anything that reads as a spreadsheet rather than a product.
-4. Fix what the critique found, then screenshot again.
+4. Check keyboard navigation, visible focus, semantic labels, text resizing, contrast, dismissal and
+   reachable phone navigation for the affected controls. Check permission differences touched by the change.
+5. Fix what the critique found, then screenshot again.
 
 Done when a fresh round at both widths turns up nothing you would fix. Cap it at three rounds, then report
 what still looks off. Tell Jafar which screens and states you checked, what you fixed, and the URL to open.
@@ -52,15 +60,17 @@ what still looks off. Tell Jafar which screens and states you checked, what you 
 
 ## Critical Rules
 
-> **This skill documents the LIVE app tokens** in `src/lib/styles/_tokens.scss` + `app.scss`. The `scss/` folder here mirrors them 1:1. When you change a token in the app, update this skill in the same turn (`feedback-sync-tokens-to-skill` rule).
+- **Live tokens and approved foundations have different scopes.** Existing token/module files describe
+  the current app. Botanical guidance describes the approved redesign foundations, not deployed tokens.
+  When an approved implementation changes a token, update its relevant documentation in the same change
+  and check effects on previously migrated surfaces. Material visible shared changes need Jafar's approval.
 
-- **Brand color precedence:** When `brand.md` is available, color tokens from `brand.md` overwrite same-name tokens in `colors.md`.
+- **Read related modules together.** Apply their behavior and accessibility constraints; use the authority
+  above to select visual rules. Existing `brand.md` precedence applies only to untouched-screen maintenance.
 
-- **Cross-reference modules.** A card containing buttons must satisfy both `cards.md` AND `buttons.md`.
-
-- **This skill owns looks, not layout or behavior.** Which block sits where on a screen comes from Jafar's
-  blueprint for it in `Design/*.jpg` — look for a matching one before building any screen. How the screen
-  behaves comes from `.claude/skills/jobber/jobber-08-screen-patterns.md`.
+- **Workflow continuity.** Keep the save/cancel rules below during this visual refresh. The older Jobber
+  screen-pattern reference contains differing save-bar wording; it does not override these rules. Resolve
+  any proposed behavior change with the relevant product contract and Jafar before implementation.
 
 - **Nothing writes without the user pressing a button that saves.** On a detail page that button is normally
   `layout/DetailEditBar.svelte` — tags, notes, attachments and every other widget in the page body stage
@@ -95,12 +105,13 @@ what still looks off. Tell Jafar which screens and states you checked, what you 
   expire in minutes. Images stream from `GET /api/attachments/[id]/view`, with `?size=thumb` for the small
   copy the browser made at upload.
 
-- **Every titled block, section, or part uses `SectionBlock`.** Read `section-block.md` before building one —
-  its title sits on the container's border line, and the component picks `fieldset` or `section` for you.
+- **Titled blocks:** retain `SectionBlock` on untouched surfaces. For redesigned portions, follow the
+  approved panel-contained headings in Botanical guidance and inspect existing components for reuse or
+  extension. Preserve appropriate `fieldset`/`legend` semantics for grouped inputs and heading hierarchy.
 
 - **Tokens are NOT Tailwind classes.** Colors are semantic CSS custom properties: `var(--color-bg-surface)`, `var(--color-border)`, `var(--color-text-primary)`, `var(--color-brand)`, `var(--success-solid)`, etc. See `colors.md` for the full contract.
 
-- Dark mode is **automatic** via `_theme.scss` (mirrors the app's `dark-theme-tokens` mixin). Never manually swap color values.
+- On untouched surfaces, dark mode is **automatic** via `_theme.scss` (mirrors the app's `dark-theme-tokens` mixin). Never manually swap color values.
 
 - Toggle: set `data-theme="dark"` on `<html>` (explicit in-app choice); OS `prefers-color-scheme` is respected when no explicit choice is set.
 
@@ -110,7 +121,7 @@ what still looks off. Tell Jafar which screens and states you checked, what you 
 
 ## Module Index
 
-### Foundation (read first for any UI work)
+### Existing foundation modules (scope governed by Authority and transition)
 
 - [brand.md](brand.md) — Brand
 - [colors.md](colors.md) — Color
@@ -147,4 +158,4 @@ what still looks off. Tell Jafar which screens and states you checked, what you 
 
 - [status-indicators.md](status-indicators.md) - Job/project status, pipeline stages, priority |
 - [stats-cards.md](stats-cards.md) - KPI metric cards, trend indicators, featured stats
-- [data-display.md](data-display.md) - Bar charts, gauge/donut, progress bars, timelines
+- Charts and timelines — Botanical guidance awaits focused review; no data-display module exists yet.

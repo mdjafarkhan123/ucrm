@@ -32,6 +32,14 @@ Extract the demonstrated colours and their roles, typography, spacing, radii, bo
 
 Use one authoritative home for each design value or rule. The design skill should be a clear entry point to that guidance, approved references, examples and verification, rather than a competing copy. Inspect the current skill for contradictory visual rules and update it before new design work uses it. Retain applicable screen checks, accessibility practices and engineering constraints. Keep existing save/cancel semantics and other workflow rules traceable to their behavior authority when reorganizing the skill.
 
+Jafar confirmed the maintenance approach on 2026-10-11: keep the existing design skill and modules,
+updating only values and instructions that need alignment with the approved new design. Keep useful
+accessibility, screen-check, component-reuse and workflow rules. List patterns that have not yet been
+built and approved in `.claude/skills/design/alignment.md`; their older guidance supports untouched
+screens only. After each focused demo is built and approved, record its exact revision and coverage,
+then update the relevant skill module before implementation. Do not delete and recreate the system or
+promote an unreviewed pattern merely because an old module describes it.
+
 During transition, read the current design skill for its checks and existing behavior constraints; its old colours, section-border treatment and layout blueprints do not override v3. Document how approved new guidance applies to migrated surfaces while untouched surfaces retain their current appearance. Skill changes alone must not restyle the live app.
 
 The approved visual reference governs appearance; approved product contracts and verified implementation govern existing behavior. Jafar decides any proposed change to either. When these sources disagree, investigate and present the concrete choice before dependent work.

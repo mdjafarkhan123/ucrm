@@ -139,7 +139,7 @@ rollout process. This guide owns the extracted v3 foundations; the source revisi
 make each extraction traceable. Product contracts and verified app behaviour continue to own workflows
 and permissions. No new product behaviour or researched interaction is proposed by this extraction.
 
-Part 2 should make the design skill point here, resolve competing old visual instructions, and retain its
-screen checks, accessibility and behaviour constraints. Untouched app surfaces retain their current
-appearance. New demo revisions need Jafar's review before implementation. Stop after Part 1; do not
-create components, a new demo, or live tokens during this assignment.
+The design skill now routes redesign work to this guidance and tracks uncovered patterns in
+`.claude/skills/design/alignment.md`. Keep the existing skill and update relevant modules incrementally
+after focused demo approval, as recorded in the campaign contract. Untouched app surfaces retain their
+current appearance. Next is Part 3's sidebar/header demo; implementation waits for its approval.
