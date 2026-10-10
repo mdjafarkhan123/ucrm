@@ -200,85 +200,98 @@ test.describe.serial('changing the host of a booked call', () => {
 		});
 		expect(saved.ok(), await saved.text()).toBe(true);
 
-		// A visitor books the latest open time; the call is the default host's.
-		const from = new Date(Date.now() + DAY).toISOString();
-		const to = new Date(Date.now() + 44 * DAY).toISOString();
-		const slots = await request.get(`/api/public/book/${slug}/slots`, { params: { from, to } });
-		expect(slots.ok()).toBe(true);
-		const starts = (await slots.json()) as string[];
-		expect(starts.length).toBeGreaterThan(0);
-		const startsAt = starts[starts.length - 1];
-		const booked = await request.post(`/api/public/book/${slug}`, {
-			data: {
-				starts_at: startsAt,
-				name: 'E2E Host Visitor',
-				email: visitorEmail,
-				phone: '+880 1711 000009',
-				business_name: 'E2E Host Change Plumbing',
-				country_code: 'BD',
-				trade: 'Plumbing',
-				note: null,
-				time_zone: 'Asia/Dhaka',
-				turnstile_token: 'XXXX.DUMMY.TOKEN.XXXX'
-			}
-		});
-		expect(booked.ok(), await booked.text()).toBe(true);
-		const { data: booking, error } = await database()
-			.from('platform_bookings')
-			.select('id, entry_id, relationship_id, entry:platform_calendar_entries(starts_at, ends_at)')
-			.eq('visitor_email', visitorEmail)
-			.single();
-		if (error) throw error;
-		const entryId = booking.entry_id as string;
-		const entry = booking.entry as unknown as { starts_at: string; ends_at: string };
+		// Put the hosts and hours back with this sign-in: a second one in afterAll can hit the login limit.
+		try {
+			// A visitor books the latest open time; the call is the default host's.
+			const from = new Date(Date.now() + DAY).toISOString();
+			const to = new Date(Date.now() + 44 * DAY).toISOString();
+			const slots = await request.get(`/api/public/book/${slug}/slots`, { params: { from, to } });
+			expect(slots.ok()).toBe(true);
+			const starts = (await slots.json()) as string[];
+			expect(starts.length).toBeGreaterThan(0);
+			const startsAt = starts[starts.length - 1];
+			const booked = await request.post(`/api/public/book/${slug}`, {
+				data: {
+					starts_at: startsAt,
+					name: 'E2E Host Visitor',
+					email: visitorEmail,
+					phone: '+880 1711 000009',
+					business_name: 'E2E Host Change Plumbing',
+					country_code: 'BD',
+					trade: 'Plumbing',
+					note: null,
+					time_zone: 'Asia/Dhaka',
+					turnstile_token: 'XXXX.DUMMY.TOKEN.XXXX'
+				}
+			});
+			expect(booked.ok(), await booked.text()).toBe(true);
+			const { data: booking, error } = await database()
+				.from('platform_bookings')
+				.select(
+					'id, entry_id, relationship_id, entry:platform_calendar_entries(starts_at, ends_at)'
+				)
+				.eq('visitor_email', visitorEmail)
+				.single();
+			if (error) throw error;
+			const entryId = booking.entry_id as string;
+			const entry = booking.entry as unknown as { starts_at: string; ends_at: string };
 
-		// Busy then: refused, and the call keeps its host.
-		// The teammate blocks the time on their own calendar, as they would in the app.
-		const teammatePage = await browser.newPage();
-		await signIn(teammatePage, teammateEmail, teammatePassword);
-		const busy = await teammatePage.request.post('/api/jafar/calendar/entries', {
-			data: { kind: 'busy', starts_at: entry.starts_at, ends_at: entry.ends_at, title: 'E2E busy' }
-		});
-		expect(busy.ok(), await busy.text()).toBe(true);
-		busyId = ((await busy.json()) as { id: string }).id;
-		await teammatePage.close();
-		expect(await hostState(request, entryId, teammateId)).toBe('busy');
-		const refused = await request.post(`/api/jafar/calendar/entries/${entryId}/host`, {
-			data: { member_id: teammateId }
-		});
-		expect(refused.status()).toBe(409);
+			// Busy then: refused, and the call keeps its host.
+			// The teammate blocks the time on their own calendar, as they would in the app.
+			const teammatePage = await browser.newPage();
+			await signIn(teammatePage, teammateEmail, teammatePassword);
+			const busy = await teammatePage.request.post('/api/jafar/calendar/entries', {
+				data: {
+					kind: 'busy',
+					starts_at: entry.starts_at,
+					ends_at: entry.ends_at,
+					title: 'E2E busy'
+				}
+			});
+			expect(busy.ok(), await busy.text()).toBe(true);
+			busyId = ((await busy.json()) as { id: string }).id;
+			await teammatePage.close();
+			expect(await hostState(request, entryId, teammateId)).toBe('busy');
+			const refused = await request.post(`/api/jafar/calendar/entries/${entryId}/host`, {
+				data: { member_id: teammateId }
+			});
+			expect(refused.status()).toBe(409);
 
-		// Free then: accepted, the call is theirs, and the visitor's email is queued.
-		await database().from('platform_calendar_entries').delete().eq('id', busyId);
-		busyId = null;
-		expect(await hostState(request, entryId, teammateId)).toBe('free');
-		if (shots) {
-			// The call's window on its Lead, with Change host open.
-			await page.goto(`/jafar/leads/${booking.relationship_id}`, { waitUntil: 'networkidle' });
-			await page.locator('.lead-page__call').first().click();
-			await page.getByRole('button', { name: 'Change host' }).click();
-			await expect(page.getByText('Free then')).toBeVisible();
-			for (const width of [1440, 390]) {
-				await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
-				await page.screenshot({ path: `${shots}/host-change-${width}.png` });
+			// Free then: accepted, the call is theirs, and the visitor's email is queued.
+			await database().from('platform_calendar_entries').delete().eq('id', busyId);
+			busyId = null;
+			expect(await hostState(request, entryId, teammateId)).toBe('free');
+			if (shots) {
+				// The call's window on its Lead, with Change host open.
+				await page.goto(`/jafar/leads/${booking.relationship_id}`, { waitUntil: 'networkidle' });
+				await page.locator('.lead-page__call').first().click();
+				await page.getByRole('button', { name: 'Change host' }).click();
+				await expect(page.getByText('Free then').first()).toBeVisible();
+				for (const width of [1440, 390]) {
+					await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+					await page.screenshot({ path: `${shots}/host-change-${width}.png` });
+				}
+				await page.keyboard.press('Escape');
 			}
-			await page.keyboard.press('Escape');
+			const changed = await request.post(`/api/jafar/calendar/entries/${entryId}/host`, {
+				data: { member_id: teammateId }
+			});
+			expect(changed.ok(), await changed.text()).toBe(true);
+			const call = await database()
+				.from('platform_calendar_entries')
+				.select('owner_member_id')
+				.eq('id', entryId)
+				.single();
+			expect(call.data?.owner_member_id).toBe(teammateId);
+			const email = await database()
+				.from('platform_outbox_deliveries')
+				.select('id')
+				.eq('template_key', 'booking_host_changed')
+				.eq('recipient_email', visitorEmail);
+			expect(email.data).toHaveLength(1);
+		} finally {
+			await restore?.(request);
+			restore = null;
 		}
-		const changed = await request.post(`/api/jafar/calendar/entries/${entryId}/host`, {
-			data: { member_id: teammateId }
-		});
-		expect(changed.ok(), await changed.text()).toBe(true);
-		const call = await database()
-			.from('platform_calendar_entries')
-			.select('owner_member_id')
-			.eq('id', entryId)
-			.single();
-		expect(call.data?.owner_member_id).toBe(teammateId);
-		const email = await database()
-			.from('platform_outbox_deliveries')
-			.select('id')
-			.eq('template_key', 'booking_host_changed')
-			.eq('recipient_email', visitorEmail);
-		expect(email.data).toHaveLength(1);
 	});
 });

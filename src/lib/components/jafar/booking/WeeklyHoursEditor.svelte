@@ -139,7 +139,7 @@
 
 	.weekly-hours__day {
 		display: grid;
-		grid-template-columns: 9rem 1fr auto;
+		grid-template-columns: 9rem auto 1fr;
 		gap: var(--space-base);
 		align-items: start;
 		padding: var(--space-base) 0;
@@ -151,6 +151,7 @@
 
 		@media (max-width: 640px) {
 			grid-template-columns: 1fr auto;
+			gap: var(--space-small) var(--space-base);
 
 			.weekly-hours__ranges,
 			.weekly-hours__off {
@@ -160,19 +161,37 @@
 		}
 	}
 
+	// The add button sits right after the ranges on wide screens, and beside the day's name on phones.
+	.weekly-hours__add {
+		justify-self: start;
+		margin-top: calc(var(--space-small) + (var(--space-largest) - 2.5rem) / 2);
+
+		@media (max-width: 640px) {
+			justify-self: end;
+		}
+	}
+
+	// The time field keeps a small space above its box for its label; the names, dash and buttons line up with
+	// the box itself.
 	.weekly-hours__name {
-		min-height: 2.5rem;
+		margin-top: var(--space-small);
+		min-height: var(--space-largest);
 		display: flex;
 		align-items: center;
 	}
 
 	.weekly-hours__off {
-		margin: 0;
-		min-height: 2.5rem;
+		margin: var(--space-small) 0 0;
+		min-height: var(--space-largest);
 		display: flex;
 		align-items: center;
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
+
+		@media (max-width: 640px) {
+			margin-top: 0;
+			min-height: 0;
+		}
 	}
 
 	.weekly-hours__ranges {
@@ -184,13 +203,43 @@
 	.weekly-hours__range {
 		display: flex;
 		flex-wrap: wrap;
+
+		@media (max-width: 640px) {
+			display: grid;
+			grid-template-columns: 1fr auto;
+
+			.weekly-hours__dash {
+				display: none;
+			}
+
+			.weekly-hours__icon {
+				grid-column: 2;
+				grid-row: 1 / span 2;
+			}
+
+			.weekly-hours__error {
+				grid-column: 1 / -1;
+			}
+		}
+
 		align-items: center;
 		gap: var(--space-small);
 	}
 
-	// The time field fills its parent, so this box sets its width.
+	// The time field fills its parent, so this box sets its width. On phones there is no room for two times
+	// side by side: start sits above end, with the remove button beside the pair.
 	.weekly-hours__time {
 		width: 10rem;
+
+		@media (max-width: 640px) {
+			grid-column: 1;
+			width: auto;
+		}
+	}
+
+	.weekly-hours__dash,
+	.weekly-hours__range > .weekly-hours__icon {
+		margin-top: var(--space-small);
 	}
 
 	.weekly-hours__dash {
