@@ -17,6 +17,7 @@
 		type DateTimePickerValue
 	} from '$lib/components/ui/date-time';
 	import BusinessPicker from './BusinessPicker.svelte';
+	import CallHostChange from './CallHostChange.svelte';
 	import ReminderPicker from './ReminderPicker.svelte';
 	import { sendLeadWrite, type WriteResult } from '$lib/jafar/lead-page-api';
 	import {
@@ -257,6 +258,8 @@
 					onSelect={(picked) => (businessName = picked?.business_name ?? '')}
 				/>
 			{/if}
+
+			{#if entryId}<CallHostChange {entryId} />{/if}
 
 			<Input
 				id="call-title"
