@@ -2380,3 +2380,39 @@ table td small {
 		grid-template-columns: 1fr;
 	}
 }
+.visit-row {
+	gap: 14px;
+}
+.visit-row__date {
+	width: 43px;
+	text-align: center;
+	border: 1px solid #e0e7d9;
+	background: #fafcf7;
+	border-radius: 6px;
+	padding: 5px 0;
+	flex-shrink: 0;
+}
+.visit-row__date > span {
+	display: block;
+	font-size: 8px;
+	color: #697b5f;
+	letter-spacing: 0.8px;
+}
+.visit-row__date > strong {
+	font-size: 20px;
+	line-height: 1.2;
+}
+.visit-row__info {
+	flex: 1;
+}
+.visit-row > .icon-button {
+	padding: 5px;
+	font-size: 18px;
+}
+
+.summary__progress i {
+	background: #e1e6dc;
+}
+.summary__progress i:nth-child(-n + 2) {
+	background: #729770;
+}
