@@ -1,0 +1,920 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<title>Uplift · Job details concept</title>
+		<link rel="stylesheet" href="./style.css" />
+	</head>
+	<body>
+		<aside class="sidebar">
+			<a href="#" class="sidebar__brand"
+				><svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					class="icon icon-tabler icons-tabler-outline icon-tabler-layers-intersect"
+				>
+					<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+					<path d="M8 6a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2l0 -8" />
+					<path d="M4 10a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2l0 -8" />
+				</svg>
+				uplift<span>®</span></a
+			><button class="sidebar__workspace">
+				<span class="workspace-mark">O</span
+				><span>Oak & Stone<small>Contractor workspace</small></span
+				><svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-down"
+				>
+					<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+					<path d="M6 9l6 6l6 -6" />
+				</svg>
+			</button>
+			<div class="sidebar__label">WORKSPACE</div>
+			<nav aria-label="Main navigation">
+				<a class="sidebar__link" href="#"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-layout-dashboard"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path d="M5 4h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1" />
+						<path d="M5 16h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1" />
+						<path
+							d="M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1"
+						/>
+						<path
+							d="M15 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"
+						/></svg
+					>Overview</a
+				><a class="sidebar__link" href="#"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-calendar"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path
+							d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12"
+						/>
+						<path d="M16 3v4" />
+						<path d="M8 3v4" />
+						<path d="M4 11h16" />
+						<path d="M11 15h1" />
+						<path d="M12 15v3" /></svg
+					>Schedule</a
+				><a class="sidebar__link" href="#"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-users"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path d="M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+						<path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+						<path d="M16 3.13a4 4 0 0 1 0 7.75" />
+						<path d="M21 21v-2a4 4 0 0 0 -3 -3.85" /></svg
+					>Clients</a
+				><a class="sidebar__link" href="#"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-inbox"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path
+							d="M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2l0 -12"
+						/>
+						<path d="M4 13h3l3 3h4l3 -3h3" /></svg
+					>Requests</a
+				><a class="sidebar__link" href="#"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-file-description"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path d="M14 3v4a1 1 0 0 0 1 1h4" />
+						<path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2" />
+						<path d="M9 17h6" />
+						<path d="M9 13h6" /></svg
+					>Quotes</a
+				><a class="sidebar__link is-active" href="#" aria-current="page"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-briefcase"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path
+							d="M3 9a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2l0 -9"
+						/>
+						<path d="M8 7v-2a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v2" />
+						<path d="M12 12l0 .01" />
+						<path d="M3 13a20 20 0 0 0 18 0" /></svg
+					>Jobs<span>24</span></a
+				><a class="sidebar__link" href="#"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-receipt"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path
+							d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16l-3 -2l-2 2l-2 -2l-2 2l-2 -2l-3 2m4 -14h6m-6 4h6m-2 4h2"
+						/></svg
+					>Invoices</a
+				><a class="sidebar__link" href="#"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-credit-card"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path
+							d="M3 8a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3l0 -8"
+						/>
+						<path d="M3 10l18 0" />
+						<path d="M7 15l.01 0" />
+						<path d="M11 15l2 0" /></svg
+					>Payments</a
+				>
+			</nav>
+			<div class="sidebar__label">BUSINESS</div>
+			<a href="#" class="sidebar__link"
+				><svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					class="icon icon-tabler icons-tabler-outline icon-tabler-chart-bar"
+				>
+					<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+					<path d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -6" />
+					<path
+						d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -10"
+					/>
+					<path
+						d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -14"
+					/>
+					<path d="M4 20h14" /></svg
+				>Reports</a
+			><a href="#" class="sidebar__link"
+				><svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					class="icon icon-tabler icons-tabler-outline icon-tabler-bolt"
+				>
+					<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+					<path d="M13 3l0 7l6 0l-8 11l0 -7l-6 0l8 -11" /></svg
+				>Automations</a
+			>
+			<div class="sidebar__bottom">
+				<div class="sidebar__tip">
+					Good work. Less busywork.<small>Your business, a little more in sync.</small>
+				</div>
+				<a href="#" class="sidebar__link"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-settings"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path
+							d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065"
+						/>
+						<path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /></svg
+					>Settings</a
+				><button class="sidebar__profile">
+					<span class="avatar">JK</span><span>Jafar Khan<small>Business owner</small></span
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-chevrons-up"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path d="M7 11l5 -5l5 5" />
+						<path d="M7 17l5 -5l5 5" />
+					</svg>
+				</button>
+			</div>
+		</aside>
+		<div class="app">
+			<header class="topbar">
+				<div class="topbar__crumb">Workspace <span>/</span> <strong>Jobs</strong></div>
+				<div class="topbar__tools">
+					<button class="search">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="24"
+							height="24"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							class="icon icon-tabler icons-tabler-outline icon-tabler-search"
+						>
+							<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+							<path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+							<path d="M21 21l-6 -6" /></svg
+						><span>Search anything...</span><kbd>⌘ K</kbd></button
+					><button class="icon-button" aria-label="Help">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="24"
+							height="24"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							class="icon icon-tabler icons-tabler-outline icon-tabler-help-circle"
+						>
+							<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+							<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+							<path d="M12 16v.01" />
+							<path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
+						</svg></button
+					><button class="icon-button notification" aria-label="Notifications">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="24"
+							height="24"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							class="icon icon-tabler icons-tabler-outline icon-tabler-bell"
+						>
+							<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+							<path
+								d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"
+							/>
+							<path d="M9 17v1a3 3 0 0 0 6 0v-1" />
+						</svg></button
+					><span class="avatar avatar--small">JK</span>
+				</div>
+			</header>
+			<main>
+				<div class="eyebrow">JOBS <span>/</span> JOB #1042</div>
+				<div class="page-heading">
+					<div>
+						<div class="page-heading__meta">
+							<span class="badge"><i></i> In progress</span><span>One-off job</span>
+						</div>
+						<h1>Backyard transformation</h1>
+						<p>A better outdoor space, from the ground up.</p>
+					</div>
+					<div class="page-heading__actions">
+						<button class="button" type="button">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="24"
+								height="24"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								class="icon icon-tabler icons-tabler-outline icon-tabler-pencil"
+							>
+								<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+								<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+								<path d="M13.5 6.5l4 4" /></svg
+							>Edit job</button
+						><button class="button" type="button">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="24"
+								height="24"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								class="icon icon-tabler icons-tabler-outline icon-tabler-dots"
+							>
+								<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+								<path d="M4 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+								<path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+								<path d="M18 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /></svg
+							>More</button
+						><button class="button button--primary" type="button">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="24"
+								height="24"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								class="icon icon-tabler icons-tabler-outline icon-tabler-plus"
+							>
+								<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+								<path d="M12 5l0 14" />
+								<path d="M5 12l14 0" /></svg
+							>Create invoice
+						</button>
+					</div>
+				</div>
+				<div class="summary">
+					<div class="summary__item">
+						<span>JOB VALUE</span><strong>$12,450<span>.00</span></strong
+						><small>Including $950.00 tax</small>
+					</div>
+					<div class="summary__item">
+						<span>NEXT VISIT</span><strong class="summary__date">Oct 12 <span>Monday</span></strong
+						><small
+							><svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="24"
+								height="24"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								class="icon icon-tabler icons-tabler-outline icon-tabler-clock"
+							>
+								<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+								<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+								<path d="M12 7v5l3 3" />
+							</svg>
+							8:00 AM – 4:00 PM</small
+						>
+					</div>
+					<div class="summary__item">
+						<span>ASSIGNED TEAM</span>
+						<div class="team">
+							<span class="avatar avatar--sage">MR</span><span class="avatar avatar--sand">AL</span
+							><strong>2 members</strong>
+						</div>
+						<small>Marcus Reed & Alex Lee</small>
+					</div>
+					<div class="summary__item">
+						<span>VISIT PROGRESS</span
+						><strong class="summary__date">1 of 3 <span>completed</span></strong>
+						<div class="progress"><i></i><i></i><i></i></div>
+					</div>
+				</div>
+				<nav class="tabs" aria-label="Job sections">
+					<a href="#overview" class="is-active">Overview</a
+					><a href="#visits">Visits <span>3</span></a
+					><a href="#scope">Line items <span>3</span></a
+					><a href="#activity">Activity</a><a href="#files">Files <span>4</span></a>
+				</nav>
+				<div class="content" id="overview">
+					<div class="content__main">
+						<section class="panel" id="visits">
+							<div class="panel__heading">
+								<div>
+									<h2>Scheduled visits</h2>
+									<p>The plan for getting it done.</p>
+								</div>
+								<button class="button button--quiet" type="button">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-plus"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M12 5l0 14" />
+										<path d="M5 12l14 0" /></svg
+									>Add visit
+								</button>
+							</div>
+							<div class="visit visit--next">
+								<div class="date-tile"><span>OCT</span><strong>12</strong></div>
+								<div class="visit__body">
+									<div class="visit__title">
+										<h3>Patio installation</h3>
+										<span class="badge badge--neutral">Upcoming</span>
+									</div>
+									<p>Monday · 8:00 AM – 4:00 PM</p>
+									<small>Lay stone pavers and finish edging</small>
+								</div>
+								<div class="visit__team">
+									<span class="avatar avatar--sage">MR</span
+									><span class="avatar avatar--sand">AL</span>
+								</div>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="24"
+									height="24"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"
+								>
+									<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+									<path d="M9 6l6 6l-6 6" />
+								</svg>
+							</div>
+							<div class="visit">
+								<div class="date-tile"><span>OCT</span><strong>14</strong></div>
+								<div class="visit__body">
+									<h3>Planting & final walkthrough</h3>
+									<p>Wednesday · 9:00 AM – 1:00 PM</p>
+								</div>
+								<span class="avatar avatar--sage">MR</span
+								><svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="24"
+									height="24"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"
+								>
+									<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+									<path d="M9 6l6 6l-6 6" />
+								</svg>
+							</div>
+							<div class="visit visit--complete">
+								<span class="complete-icon"
+									><svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-circle-check"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+										<path d="M9 12l2 2l4 -4" /></svg
+								></span>
+								<div class="visit__body">
+									<h3>Site preparation</h3>
+									<p>Oct 9 · Completed by Marcus & Alex</p>
+								</div>
+								<span class="visit__done">Completed</span>
+							</div>
+						</section>
+						<section class="panel" id="scope">
+							<div class="panel__heading">
+								<div>
+									<h2>Scope of work</h2>
+									<p>Services and materials for this job.</p>
+								</div>
+								<button class="button button--quiet" type="button">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-pencil"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+										<path d="M13.5 6.5l4 4" /></svg
+									>Edit
+								</button>
+							</div>
+							<div class="table-wrap">
+								<table>
+									<thead>
+										<tr>
+											<th>PRODUCT / SERVICE</th>
+											<th>QTY</th>
+											<th>UNIT PRICE</th>
+											<th>TOTAL</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>
+												<strong>Natural stone patio</strong
+												><small>Premium sandstone · supply & installation</small>
+											</td>
+											<td>1</td>
+											<td>$8,500.00</td>
+											<td>$8,500.00</td>
+										</tr>
+										<tr>
+											<td>
+												<strong>Landscape planting</strong
+												><small>Native plants, soil preparation & mulch</small>
+											</td>
+											<td>1</td>
+											<td>$2,200.00</td>
+											<td>$2,200.00</td>
+										</tr>
+										<tr>
+											<td>
+												<strong>Site preparation & removal</strong
+												><small>Excavation and responsible waste disposal</small>
+											</td>
+											<td>1</td>
+											<td>$800.00</td>
+											<td>$800.00</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="totals">
+								<div><span>Subtotal</span><span>$11,500.00</span></div>
+								<div><span>Tax</span><span>$950.00</span></div>
+								<div class="totals__final">
+									<strong>Job total</strong><strong>$12,450.00</strong>
+								</div>
+							</div>
+						</section>
+						<section class="panel instructions">
+							<div class="panel__heading">
+								<h2>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-notes"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path
+											d="M5 5a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2l0 -14"
+										/>
+										<path d="M9 7l6 0" />
+										<path d="M9 11l6 0" />
+										<path d="M9 15l4 0" />
+									</svg>
+									Crew instructions
+								</h2>
+								<button class="button button--quiet" type="button">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-pencil"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+										<path d="M13.5 6.5l4 4" /></svg
+									>Edit
+								</button>
+							</div>
+							<p>
+								Use the side gate to access the backyard. Please keep the gate closed — there’s a
+								dog on the property. Stone delivery is scheduled for Monday before 8 AM.
+							</p>
+							<span class="tag"
+								><svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="24"
+									height="24"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									class="icon icon-tabler icons-tabler-outline icon-tabler-lock"
+								>
+									<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+									<path
+										d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6"
+									/>
+									<path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
+									<path d="M8 11v-4a4 4 0 1 1 8 0v4" />
+								</svg>
+								Visible to your team only</span
+							>
+						</section>
+					</div>
+					<aside class="content__rail">
+						<section class="panel client">
+							<div class="panel__heading">
+								<h2>Client & property</h2>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="24"
+									height="24"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-up-right"
+								>
+									<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+									<path d="M17 7l-10 10" />
+									<path d="M8 7l9 0l0 9" />
+								</svg>
+							</div>
+							<div class="client__identity">
+								<span class="avatar avatar--large">EW</span>
+								<div>
+									<h3>Emma Wilson</h3>
+									<span>Residential client</span>
+								</div>
+							</div>
+							<a class="contact" href="tel:5125550148"
+								><svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="24"
+									height="24"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									class="icon icon-tabler icons-tabler-outline icon-tabler-phone"
+								>
+									<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+									<path
+										d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2"
+									/></svg
+								>(512) 555-0148</a
+							><a class="contact" href="mailto:emma@example.com"
+								><svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="24"
+									height="24"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									class="icon icon-tabler icons-tabler-outline icon-tabler-mail"
+								>
+									<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+									<path
+										d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10"
+									/>
+									<path d="M3 7l9 6l9 -6" /></svg
+								>emma@example.com</a
+							>
+							<div class="property-art" aria-label="Illustrated property location">
+								<div class="property-art__road"></div>
+								<div class="property-art__road property-art__road--cross"></div>
+								<div class="property-art__block"></div>
+								<span
+									><svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-map-pin"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+										<path
+											d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0"
+										/></svg></span
+								><small>TRAVIS HEIGHTS</small>
+							</div>
+							<div class="client__address">
+								<strong>1248 Willow Creek Drive</strong><span>Austin, TX 78704</span>
+							</div>
+							<button class="button button--wide" type="button">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="24"
+									height="24"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-up-right"
+								>
+									<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+									<path d="M17 7l-10 10" />
+									<path d="M8 7l9 0l0 9" /></svg
+								>Get directions
+							</button>
+						</section>
+						<section class="panel" id="activity">
+							<div class="panel__heading">
+								<h2>Recent activity</h2>
+								<a href="#activity" class="text-link">View all</a>
+							</div>
+							<div class="activity">
+								<div class="activity__item">
+									<span class="activity__dot activity__dot--green"></span>
+									<div>
+										<strong>Site preparation completed</strong>
+										<p>Marcus Reed finished the first visit.</p>
+										<small>Oct 9 · 3:42 PM</small>
+									</div>
+								</div>
+								<div class="activity__item">
+									<span class="activity__dot"></span>
+									<div>
+										<strong>Job scheduled</strong>
+										<p>3 visits added to the calendar.</p>
+										<small>Oct 7 · 10:15 AM</small>
+									</div>
+								</div>
+								<div class="activity__item">
+									<span class="activity__dot"></span>
+									<div>
+										<strong>Created from quote #208</strong>
+										<p>Quote approved by Emma Wilson.</p>
+										<small>Oct 6 · 2:30 PM</small>
+									</div>
+								</div>
+							</div>
+						</section>
+						<section class="note" id="files">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="24"
+								height="24"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								class="icon icon-tabler icons-tabler-outline icon-tabler-paperclip"
+							>
+								<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+								<path
+									d="M15 7l-6.5 6.5a1.5 1.5 0 0 0 3 3l6.5 -6.5a3 3 0 0 0 -6 -6l-6.5 6.5a4.5 4.5 0 0 0 9 9l6.5 -6.5"
+								/>
+							</svg>
+							<div>
+								<strong>Everything in one place</strong>
+								<p>4 files attached to this job, including the approved landscape plan.</p>
+								<a href="#files"
+									>View attachments
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-right"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M5 12l14 0" />
+										<path d="M13 18l6 -6" />
+										<path d="M13 6l6 6" /></svg
+								></a>
+							</div>
+						</section>
+					</aside>
+				</div>
+				<footer class="preview-footer">
+					UPLIFT / DESIGN EXPLORATION 01
+					<span>Static concept · Sample data · Controls are illustrative</span>
+				</footer>
+			</main>
+		</div>
+	</body>
+</html>
