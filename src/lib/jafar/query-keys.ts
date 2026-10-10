@@ -217,3 +217,5 @@ export const jafarOrganizationAccessComparisonKey = (organizationId: string | un
 	[...jafarOrganizationKey(organizationId), 'access-comparison'] as const;
 export const jafarOrganizationReadinessKey = (organizationId: string | undefined) =>
 	[...jafarOrganizationKey(organizationId), 'readiness'] as const;
+export const jafarOrganizationMigrationKey = (organizationId: string | undefined) =>
+	[...jafarOrganizationKey(organizationId), 'migration'] as const;

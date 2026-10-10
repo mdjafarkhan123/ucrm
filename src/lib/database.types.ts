@@ -10416,6 +10416,44 @@ export type Database = {
 					}
 				];
 			};
+			organization_experience_path_changes: {
+				Row: {
+					actor_email: string;
+					changed_at: string;
+					id: string;
+					idempotency_key: string;
+					organization_id: string;
+					path: string;
+					reason: string;
+				};
+				Insert: {
+					actor_email: string;
+					changed_at?: string;
+					id?: string;
+					idempotency_key: string;
+					organization_id: string;
+					path: string;
+					reason: string;
+				};
+				Update: {
+					actor_email?: string;
+					changed_at?: string;
+					id?: string;
+					idempotency_key?: string;
+					organization_id?: string;
+					path?: string;
+					reason?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_experience_path_changes_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			organization_exports: {
 				Row: {
 					completed_at: string | null;
@@ -10977,6 +11015,41 @@ export type Database = {
 					}
 				];
 			};
+			organization_migration_snapshots: {
+				Row: {
+					actor_email: string;
+					id: string;
+					inventory: Json;
+					label: string;
+					organization_id: string;
+					taken_at: string;
+				};
+				Insert: {
+					actor_email: string;
+					id?: string;
+					inventory: Json;
+					label: string;
+					organization_id: string;
+					taken_at?: string;
+				};
+				Update: {
+					actor_email?: string;
+					id?: string;
+					inventory?: Json;
+					label?: string;
+					organization_id?: string;
+					taken_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_migration_snapshots_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			organization_ownership_transfers: {
 				Row: {
 					from_user_id: string;
@@ -11229,6 +11302,66 @@ export type Database = {
 						columns: ['organization_id'];
 						isOneToOne: true;
 						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			organization_readiness_decisions: {
+				Row: {
+					actor_email: string;
+					area_key: string;
+					business_message: string | null;
+					checks: Json;
+					decided_at: string;
+					id: string;
+					idempotency_key: string;
+					organization_id: string;
+					previous_decision_id: string | null;
+					reason: string;
+					source: string;
+					status: string;
+				};
+				Insert: {
+					actor_email: string;
+					area_key: string;
+					business_message?: string | null;
+					checks?: Json;
+					decided_at?: string;
+					id?: string;
+					idempotency_key: string;
+					organization_id: string;
+					previous_decision_id?: string | null;
+					reason: string;
+					source: string;
+					status: string;
+				};
+				Update: {
+					actor_email?: string;
+					area_key?: string;
+					business_message?: string | null;
+					checks?: Json;
+					decided_at?: string;
+					id?: string;
+					idempotency_key?: string;
+					organization_id?: string;
+					previous_decision_id?: string | null;
+					reason?: string;
+					source?: string;
+					status?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_readiness_decisions_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_readiness_decisions_previous_decision_id_fkey';
+						columns: ['previous_decision_id'];
+						isOneToOne: false;
+						referencedRelation: 'organization_readiness_decisions';
 						referencedColumns: ['id'];
 					}
 				];
@@ -12352,102 +12485,6 @@ export type Database = {
 					}
 				];
 			};
-			organization_readiness_decisions: {
-				Row: {
-					actor_email: string;
-					area_key: string;
-					business_message: string | null;
-					checks: Json;
-					decided_at: string;
-					id: string;
-					idempotency_key: string;
-					organization_id: string;
-					previous_decision_id: string | null;
-					reason: string;
-					source: string;
-					status: string;
-				};
-				Insert: {
-					actor_email: string;
-					area_key: string;
-					business_message?: string | null;
-					checks?: Json;
-					decided_at?: string;
-					id?: string;
-					idempotency_key: string;
-					organization_id: string;
-					previous_decision_id?: string | null;
-					reason: string;
-					source: string;
-					status: string;
-				};
-				Update: {
-					actor_email?: string;
-					area_key?: string;
-					business_message?: string | null;
-					checks?: Json;
-					decided_at?: string;
-					id?: string;
-					idempotency_key?: string;
-					organization_id?: string;
-					previous_decision_id?: string | null;
-					reason?: string;
-					source?: string;
-					status?: string;
-				};
-				Relationships: [
-					{
-						foreignKeyName: 'organization_readiness_decisions_organization_id_fkey';
-						columns: ['organization_id'];
-						isOneToOne: false;
-						referencedRelation: 'organizations';
-						referencedColumns: ['id'];
-					},
-					{
-						foreignKeyName: 'organization_readiness_decisions_previous_decision_id_fkey';
-						columns: ['previous_decision_id'];
-						isOneToOne: false;
-						referencedRelation: 'organization_readiness_decisions';
-						referencedColumns: ['id'];
-					}
-				];
-			};
-			organization_setup_versions: {
-				Row: {
-					organization_id: string;
-					pinned_at: string;
-					setup_version_id: string;
-					source: string;
-				};
-				Insert: {
-					organization_id: string;
-					pinned_at?: string;
-					setup_version_id: string;
-					source: string;
-				};
-				Update: {
-					organization_id?: string;
-					pinned_at?: string;
-					setup_version_id?: string;
-					source?: string;
-				};
-				Relationships: [
-					{
-						foreignKeyName: 'organization_setup_versions_organization_id_fkey';
-						columns: ['organization_id'];
-						isOneToOne: true;
-						referencedRelation: 'organizations';
-						referencedColumns: ['id'];
-					},
-					{
-						foreignKeyName: 'organization_setup_versions_setup_version_id_fkey';
-						columns: ['setup_version_id'];
-						isOneToOne: false;
-						referencedRelation: 'setup_versions';
-						referencedColumns: ['id'];
-					}
-				];
-			};
 			organization_setup_training: {
 				Row: {
 					attendees: Json;
@@ -12518,6 +12555,42 @@ export type Database = {
 						columns: ['organization_id'];
 						isOneToOne: true;
 						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
+			organization_setup_versions: {
+				Row: {
+					organization_id: string;
+					pinned_at: string;
+					setup_version_id: string;
+					source: string;
+				};
+				Insert: {
+					organization_id: string;
+					pinned_at?: string;
+					setup_version_id: string;
+					source: string;
+				};
+				Update: {
+					organization_id?: string;
+					pinned_at?: string;
+					setup_version_id?: string;
+					source?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_versions_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: true;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_setup_versions_setup_version_id_fkey';
+						columns: ['setup_version_id'];
+						isOneToOne: false;
+						referencedRelation: 'setup_versions';
 						referencedColumns: ['id'];
 					}
 				];
@@ -17533,8 +17606,8 @@ export type Database = {
 				Row: {
 					created_at: string;
 					id: string;
-					published_at: string | null;
 					program_key: string;
+					published_at: string | null;
 					published_by_email: string | null;
 					revision: number;
 					status: string;
@@ -17546,8 +17619,8 @@ export type Database = {
 				Insert: {
 					created_at?: string;
 					id?: string;
-					published_at?: string | null;
 					program_key?: string;
+					published_at?: string | null;
 					published_by_email?: string | null;
 					revision?: number;
 					status: string;
@@ -17559,8 +17632,8 @@ export type Database = {
 				Update: {
 					created_at?: string;
 					id?: string;
-					published_at?: string | null;
 					program_key?: string;
+					published_at?: string | null;
 					published_by_email?: string | null;
 					revision?: number;
 					status?: string;
@@ -24922,6 +24995,10 @@ export type Database = {
 				Args: { target_organization_id: string };
 				Returns: boolean;
 			};
+			organization_experience_basis: {
+				Args: { target_organization_id: string };
+				Returns: Json;
+			};
 			organization_readiness_for_member: {
 				Args: { target_organization_id: string };
 				Returns: {
@@ -26864,6 +26941,16 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			record_organization_experience_path: {
+				Args: {
+					actor_email: string;
+					change_reason: string;
+					idempotency_key: string;
+					target_organization_id: string;
+					target_path: string;
+				};
+				Returns: Json;
+			};
 			record_organization_readiness_decision: {
 				Args: {
 					actor_email: string;
@@ -28801,6 +28888,11 @@ export type Database = {
 				};
 				Returns: string;
 			};
+			setup_catalogues_for_versions: {
+				Args: { version_ids: string[] };
+				Returns: Json;
+			};
+			setup_catalogues_in_use: { Args: never; Returns: Json };
 			setup_hidden_fact_keys: {
 				Args: {
 					client_fact_keys: string[];
@@ -28810,14 +28902,15 @@ export type Database = {
 				};
 				Returns: string[];
 			};
+			setup_organization_catalogue: {
+				Args: { target_organization_id: string };
+				Returns: Json;
+			};
 			setup_organization_service_keys: {
 				Args: { target_organization_id: string };
 				Returns: string[];
 			};
 			setup_published_catalogue: { Args: never; Returns: Json };
-			setup_organization_catalogue: { Args: { target_organization_id: string }; Returns: Json };
-			setup_catalogues_for_versions: { Args: { version_ids: string[] }; Returns: Json };
-			setup_catalogues_in_use: { Args: never; Returns: Json };
 			skip_automation_enrollment_step: {
 				Args: {
 					p_actor_user_id: string;
@@ -29057,6 +29150,14 @@ export type Database = {
 					isOneToOne: false;
 					isSetofReturn: true;
 				};
+			};
+			take_organization_migration_snapshot: {
+				Args: {
+					actor_email: string;
+					snapshot_label: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
 			};
 			team_notification_links: {
 				Args: { p_organization_id: string; p_subject_ids: string[] };

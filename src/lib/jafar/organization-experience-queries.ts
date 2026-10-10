@@ -4,9 +4,11 @@ import type {
 	ExperienceTabResponse,
 	ReadinessTabResponse
 } from '$lib/experience/types';
+import type { MigrationTabResponse } from '$lib/experience/migration';
 import {
 	jafarOrganizationAccessComparisonKey,
 	jafarOrganizationExperienceKey,
+	jafarOrganizationMigrationKey,
 	jafarOrganizationReadinessKey
 } from '$lib/jafar/query-keys';
 
@@ -51,4 +53,34 @@ export const organizationReadinessQuery = (organizationId: string) => ({
 		return result;
 	},
 	staleTime: 30_000
+});
+
+// B10: loaded only when the migration section is opened, never with the tab itself.
+export const organizationMigrationQuery = (organizationId: string) => ({
+	queryKey: jafarOrganizationMigrationKey(organizationId),
+	queryFn: async (): Promise<MigrationTabResponse> => {
+		const response = await fetch(`/api/jafar/organizations/${organizationId}/migration`);
+		const result = (await response.json()) as MigrationTabResponse;
+		if (!response.ok) throw new Error(result.error ?? 'The migration view could not be loaded.');
+		return result;
+	},
+	staleTime: 30_000
+});
+
+export const organizationMigrationComparisonQuery = (
+	organizationId: string,
+	from: string,
+	to: string
+) => ({
+	queryKey: [...jafarOrganizationMigrationKey(organizationId), 'compare', from, to] as const,
+	queryFn: async (): Promise<MigrationTabResponse> => {
+		const response = await fetch(
+			`/api/jafar/organizations/${organizationId}/migration?from=${from}&to=${to}`
+		);
+		const result = (await response.json()) as MigrationTabResponse;
+		if (!response.ok) throw new Error(result.error ?? 'The comparison could not be loaded.');
+		return result;
+	},
+	// Snapshots never change once taken, so a comparison never goes stale.
+	staleTime: Infinity
 });

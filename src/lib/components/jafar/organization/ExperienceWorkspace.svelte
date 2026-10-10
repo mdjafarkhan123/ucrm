@@ -13,6 +13,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import AccessComparisonPanel from './AccessComparisonPanel.svelte';
 	import ExperienceDecisionDialog from './ExperienceDecisionDialog.svelte';
+	import MigrationPanel from './MigrationPanel.svelte';
 	import ReadinessPanel from './ReadinessPanel.svelte';
 	import { canUseJafarPath } from '$lib/jafar/team-access';
 	import { organizationExperienceQuery } from '$lib/jafar/organization-experience-queries';
@@ -67,6 +68,7 @@
 			business_type_key: string | null;
 			service_shape: string;
 			reason: string;
+			source: 'review' | 'migration';
 		}) => {
 			const response = await fetch(`/api/jafar/organizations/${organizationId}/experience`, {
 				method: 'POST',
@@ -207,6 +209,7 @@
 			{#if organizationId}
 				<ReadinessPanel {organizationId} />
 				<AccessComparisonPanel {organizationId} />
+				<MigrationPanel {organizationId} hasProfile={data.profile.state === 'confirmed'} />
 			{/if}
 
 			<SectionBlock title="Decision history" icon={historyIcon}>

@@ -9,6 +9,7 @@ import {
 	hasDifferences,
 	type ExperienceBasis
 } from '$lib/server/access/experience-comparison';
+import { loadExperiencePath } from './migration';
 import { loadOrganizationExperienceProfile } from './profile';
 
 type Client = SupabaseClient<Database>;
@@ -54,7 +55,15 @@ async function resolveBasis(
 	organizationId: string,
 	editionId: string | null
 ): Promise<Basis> {
-	const profile = await loadOrganizationExperienceProfile(client, organizationId);
+	// A business switched back to its previous Contractor access ignores its profile, as the workspace does.
+	const [loaded, path] = await Promise.all([
+		loadOrganizationExperienceProfile(client, organizationId),
+		loadExperiencePath(client, organizationId)
+	]);
+	const profile: typeof loaded =
+		path === 'previous_contractor'
+			? { state: 'missing', experience: null, decision: null }
+			: loaded;
 	if (profile.state === 'unresolved')
 		return unavailable(
 			'The decision history could not be read as one chain, so there is nothing safe to compare against.'

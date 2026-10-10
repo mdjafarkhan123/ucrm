@@ -175,7 +175,8 @@ export const POST: RequestHandler = async (event) => {
 				decision_reason: command.reason,
 				expected_previous_decision_id: command.expected_previous_decision_id as string,
 				idempotency_key: command.idempotency_key,
-				actor_email: session.email
+				actor_email: session.email,
+				decision_source: command.source
 			}
 		);
 		if (error) {

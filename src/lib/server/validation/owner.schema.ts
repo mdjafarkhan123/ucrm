@@ -868,7 +868,37 @@ export const experienceDecisionSchema = z.object({
 		.min(1, 'Explain why this experience fits.')
 		.max(1000, 'Keep the reason under 1,000 characters.'),
 	expected_previous_decision_id: z.string().uuid().nullable(),
-	idempotency_key: z.string().uuid('Start the review again and try again.')
+	idempotency_key: z.string().uuid('Start the review again and try again.'),
+	// B10: confirming a business that already existed records itself as a migration, not a fresh review.
+	source: z.enum(['review', 'migration']).default('review')
+});
+
+// Multi-industry foundation B10: take a labelled inventory of a business, or switch which access path it
+// follows. Switching back never deletes the profile or any record; it is recorded and can be undone.
+export const migrationCommandSchema = z.discriminatedUnion('action', [
+	z.object({
+		action: z.literal('snapshot'),
+		label: z
+			.string()
+			.trim()
+			.min(1, 'Name this snapshot.')
+			.max(80, 'Keep the name under 80 characters.')
+	}),
+	z.object({
+		action: z.literal('path'),
+		path: z.enum(['experience', 'previous_contractor']),
+		reason: z
+			.string()
+			.trim()
+			.min(1, 'Explain why you are switching.')
+			.max(1000, 'Keep the reason under 1,000 characters.'),
+		idempotency_key: z.string().uuid('Start again and try again.')
+	})
+]);
+
+export const migrationCompareSchema = z.object({
+	from: z.string().uuid(),
+	to: z.string().uuid()
 });
 
 // Multi-industry foundation B8: Uplift signs off (or holds) one real-world area of a business. A ready area

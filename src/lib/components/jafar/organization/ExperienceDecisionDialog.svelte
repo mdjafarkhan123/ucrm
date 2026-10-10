@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
@@ -34,6 +35,7 @@
 			business_type_key: string | null;
 			service_shape: string;
 			reason: string;
+			source: 'review' | 'migration';
 		}) => void;
 		onClose: () => void;
 	} = $props();
@@ -64,6 +66,7 @@
 	// svelte-ignore state_referenced_locally
 	let serviceShape = $state(current?.service_shape ?? '');
 	let reason = $state('');
+	let existingBusiness = $state(false);
 	let errors = $state<Record<string, string>>({});
 
 	const definition = $derived(offered.find((item) => definitionValue(item) === selected) ?? null);
@@ -90,7 +93,8 @@
 			definition_version: definition.version,
 			business_type_key: businessType || null,
 			service_shape: serviceShape.trim(),
-			reason: reason.trim()
+			reason: reason.trim(),
+			source: !current && existingBusiness ? 'migration' : 'review'
 		});
 	}
 </script>
@@ -147,6 +151,13 @@
 			invalid={Boolean(errors.reason) && !reason.trim()}
 			errorMessage={reason.trim() ? '' : (errors.reason ?? '')}
 		/>
+		{#if !current}
+			<Checkbox
+				id={`${uid}-migration`}
+				bind:checked={existingBusiness}
+				label="This business was already working before experiences existed (a migration)"
+			/>
+		{/if}
 		<p class="experience-dialog__agreement">
 			Agreement recorded with this decision:
 			<strong>{agreement ? agreement.package_name : 'No agreement in force'}</strong>
