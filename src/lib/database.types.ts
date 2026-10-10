@@ -25195,6 +25195,10 @@ export type Database = {
 				};
 				Returns: string;
 			};
+			perform_automation_job_email_effect: {
+				Args: { p_claim_token: string; p_work_item_id: string };
+				Returns: string;
+			};
 			perform_automation_review_request_effect: {
 				Args: {
 					p_body_html: string;

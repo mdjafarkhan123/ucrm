@@ -224,7 +224,8 @@ export async function fetchClient(clientId: string): Promise<ClientDetail> {
 // Client reminders Part 3: the client switches that only send while a business-wide automation runs, and the
 // triggers of those automations; a switch sends while any of them is on. Review requests are left out: a teammate
 // can still send one by hand. Part 4's booking confirmation and "visit moved" email follow the visit switch too;
-// Part 5's overdue invoice reminders follow the invoice switch.
+// Part 5's overdue invoice reminders follow the invoice switch. Part 6's thank-you shares its trigger with the review
+// ask, so the job follow-up switch also needs the thank-you step (MESSAGE_SWITCH_ACTIONS).
 export const MESSAGE_SWITCH_TRIGGERS = {
 	quote_follow_ups: ['quote.delivery_succeeded'],
 	appointment_reminders: [
@@ -232,10 +233,15 @@ export const MESSAGE_SWITCH_TRIGGERS = {
 		'appointment.booked',
 		'appointment.rescheduled'
 	],
-	invoice_reminders: ['invoice.past_due']
+	invoice_reminders: ['invoice.past_due'],
+	job_follow_ups: ['job.work_completed']
 } as const;
 
 export type MessageSwitch = keyof typeof MESSAGE_SWITCH_TRIGGERS;
+
+export const MESSAGE_SWITCH_ACTIONS: Partial<Record<MessageSwitch, string>> = {
+	job_follow_ups: 'action.send_job_email'
+};
 
 export type MessageAutomationStatus = {
 	sending: Record<MessageSwitch, boolean>;

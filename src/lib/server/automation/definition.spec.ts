@@ -479,6 +479,60 @@ describe('validateDefinition', () => {
 		});
 	});
 
+	describe('job follow-up', () => {
+		it('accepts the ready-made Job follow-up as shipped, with the job stops', async () => {
+			const { getAutomationPreset } = await import('$lib/automation/presets');
+			const preset = getAutomationPreset('job_follow_up');
+			expect(preset).toBeDefined();
+			const result = validateDefinition(preset!.blueprint, noLimits, 'activation');
+			expect(result.ok).toBe(true);
+			if (!result.ok) return;
+			expect(result.definition.trigger.key).toBe('job.work_completed');
+			expect(result.definition.stops.map((stop) => stop.key)).toEqual([
+				'stop.job_reopened',
+				'stop.client_review_opt_out'
+			]);
+		});
+
+		it('refuses a variable the job email cannot fill', async () => {
+			const { getAutomationPreset } = await import('$lib/automation/presets');
+			const blueprint = structuredClone(getAutomationPreset('job_follow_up')!.blueprint);
+			blueprint.steps = [
+				{
+					type: 'action',
+					key: 'action.send_job_email',
+					config: { subject: 'Thanks', body: 'Pay here {{invoice_link}}' }
+				}
+			];
+			expect(validateDefinition(blueprint, noLimits, 'activation').ok).toBe(false);
+		});
+
+		it('keeps a thank-you and a review request in separate automations', async () => {
+			const { getAutomationPreset } = await import('$lib/automation/presets');
+			const blueprint = structuredClone(getAutomationPreset('job_follow_up')!.blueprint);
+			blueprint.steps.push({
+				type: 'action',
+				key: 'action.send_review_request',
+				config: { channel: 'email' }
+			});
+			const result = validateDefinition(blueprint, noLimits, 'activation');
+			expect(result.ok).toBe(false);
+			if (result.ok) return;
+			expect(result.errors[0].message).toContain('separate automations');
+		});
+
+		it('allows a wait before the thank-you', async () => {
+			const { getAutomationPreset } = await import('$lib/automation/presets');
+			const blueprint = structuredClone(getAutomationPreset('job_follow_up')!.blueprint);
+			blueprint.steps.unshift({
+				type: 'wait',
+				key: 'wait.relative_delay',
+				config: { unit: 'days', amount: 1 }
+			});
+			expect(validateDefinition(blueprint, noLimits, 'activation').ok).toBe(true);
+		});
+	});
+
 	describe('booking confirmations', () => {
 		it.each(['booking_confirmation', 'visit_moved'])(
 			'accepts the ready-made %s as shipped, with the reminder stops',

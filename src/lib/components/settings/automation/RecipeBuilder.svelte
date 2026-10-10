@@ -41,7 +41,9 @@
 	import {
 		AUTOMATION_APPOINTMENT_VARIABLES,
 		AUTOMATION_INVOICE_VARIABLES,
+		AUTOMATION_JOB_VARIABLES,
 		unknownInvoiceVariables,
+		unknownJobVariables,
 		unknownAppointmentVariables,
 		unknownEmailVariables,
 		unknownInquiryVariables,
@@ -289,6 +291,15 @@
 		definition.steps.filter((step) => step.key === 'action.send_invoice_email').length
 	);
 
+	// Client reminders Part 6: one thank-you per job, kept apart from a review request because each follows its own
+	// client setting.
+	const hasJobEmail = $derived(
+		definition.steps.some((step) => step.key === 'action.send_job_email')
+	);
+	const hasReviewRequest = $derived(
+		definition.steps.some((step) => step.key === 'action.send_review_request')
+	);
+
 	const reminderDayOptions = Array.from({ length: APPOINTMENT_REMINDER_MAX_DAYS }, (_, index) => ({
 		value: String(index + 1),
 		label: index === 0 ? 'The day before' : `${index + 1} days before`
@@ -352,6 +363,11 @@
 
 	function addInvoiceEmail() {
 		const step: AuthoredStep = { type: 'action', key: 'action.send_invoice_email', config: {} };
+		definition.steps = [...definition.steps, step];
+	}
+
+	function addJobEmail() {
+		const step: AuthoredStep = { type: 'action', key: 'action.send_job_email', config: {} };
 		definition.steps = [...definition.steps, step];
 	}
 
@@ -544,7 +560,8 @@
 			if (
 				step.key === 'action.send_email' ||
 				step.key === 'action.send_appointment_email' ||
-				step.key === 'action.send_invoice_email'
+				step.key === 'action.send_invoice_email' ||
+				step.key === 'action.send_job_email'
 			) {
 				const subject = typeof step.config?.subject === 'string' ? step.config.subject : '';
 				const body = typeof step.config?.body === 'string' ? step.config.body : '';
@@ -553,7 +570,9 @@
 						? unknownEmailVariables
 						: step.key === 'action.send_invoice_email'
 							? unknownInvoiceVariables
-							: unknownAppointmentVariables;
+							: step.key === 'action.send_job_email'
+								? unknownJobVariables
+								: unknownAppointmentVariables;
 				const unknown = [...unknownIn(subject), ...unknownIn(body)];
 				if (unknown.length > 0) {
 					next.steps[index] = `"{{${unknown[0]}}}" is not a value you can use here.`;
@@ -942,7 +961,8 @@
 										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 										{@html step.key === 'action.send_email' ||
 										step.key === 'action.send_appointment_email' ||
-										step.key === 'action.send_invoice_email'
+										step.key === 'action.send_invoice_email' ||
+										step.key === 'action.send_job_email'
 											? mailIcon
 											: step.key === 'action.send_sms' ||
 												  step.key === 'action.send_customer_message'
@@ -1057,6 +1077,17 @@
 											onSubjectChange={(value) => setEmailField(index, 'subject', value)}
 											onBodyChange={(value) => setEmailField(index, 'body', value)}
 										/>
+									{:else if step.key === 'action.send_job_email'}
+										<EmailActionEditor
+											idPrefix={`builder-step-${index}`}
+											subject={stepEmailField(index, 'subject')}
+											body={stepEmailField(index, 'body')}
+											errorMessage={errors.steps[index] ?? ''}
+											variables={AUTOMATION_JOB_VARIABLES}
+											subjectPlaceholder={'e.g. Thank you from {{business_name}}'}
+											onSubjectChange={(value) => setEmailField(index, 'subject', value)}
+											onBodyChange={(value) => setEmailField(index, 'body', value)}
+										/>
 									{:else if step.key === 'action.send_customer_message'}
 										<CustomerMessageEditor
 											idPrefix={`builder-step-${index}`}
@@ -1129,7 +1160,14 @@
 							email
 						</Button>
 					{/if}
-					{#if canAdd('action.send_review_request')}
+					{#if canAdd('action.send_job_email') && !hasJobEmail && !hasReviewRequest}
+						<Button variant="tertiary" size="small" onclick={addJobEmail}>
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							<span class="builder__button-icon" aria-hidden="true">{@html plusIcon}</span> Add a thank-you
+							email
+						</Button>
+					{/if}
+					{#if canAdd('action.send_review_request') && !hasJobEmail}
 						<Button variant="tertiary" size="small" onclick={addReviewRequest}>
 							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 							<span class="builder__button-icon" aria-hidden="true">{@html plusIcon}</span> Add a review

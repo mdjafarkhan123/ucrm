@@ -26,6 +26,9 @@
 // Client reminders Part 5: each wake also asks for invoices whose overdue reminder time has arrived
 // (emit_due_invoice_reminders); advance returns 'action_due_invoice_email', and this module mints a fresh pay link
 // for the client and for their billing contact, as "Send invoice" does.
+//
+// Client reminders Part 6: advance returns 'action_due_job_email' for a job thank-you; the effect holds it until
+// the business is next open.
 
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { createQuoteEmailAccessLink } from '$lib/server/communications/quote-email';
@@ -74,6 +77,7 @@ type AdvanceOutcome =
 	| 'action_due_review_request'
 	| 'action_due_appointment_email'
 	| 'action_due_invoice_email'
+	| 'action_due_job_email'
 	| 'action_not_available';
 
 // What running an action effect settled to. `claim_lost` mirrors advance: the lease moved on.
@@ -281,6 +285,20 @@ async function runInvoiceEmailAction(
 	return performed.data as ActionEffectOutcome;
 }
 
+// Runs one job thank-you: perform_automation_job_email_effect waits for business hours, rechecks, queues and
+// settles the row.
+async function runJobEmailAction(
+	client: AutomationWorkerClient,
+	item: ClaimedWorkItem
+): Promise<ActionEffectOutcome> {
+	const performed = await client.rpc('perform_automation_job_email_effect', {
+		p_work_item_id: item.work_item_id,
+		p_claim_token: item.claim_token
+	});
+	if (performed.error) throw new Error(performed.error.message);
+	return performed.data as ActionEffectOutcome;
+}
+
 // One claimed transition. Any failure is reported back through retry_automation_work_item so the row backs off
 // and stays visible instead of silently waiting out its lease.
 async function advanceOne(
@@ -305,7 +323,8 @@ async function advanceOne(
 			outcome === 'action_due_customer_message' ||
 			outcome === 'action_due_review_request' ||
 			outcome === 'action_due_appointment_email' ||
-			outcome === 'action_due_invoice_email'
+			outcome === 'action_due_invoice_email' ||
+			outcome === 'action_due_job_email'
 		) {
 			// The effect settles the row itself. An infrastructure failure here (not a step outcome) falls to the
 			// catch below, which backs the row off exactly as an advance failure would.
@@ -320,7 +339,9 @@ async function advanceOne(
 								? await runAppointmentEmailAction(client, item)
 								: outcome === 'action_due_invoice_email'
 									? await runInvoiceEmailAction(client, item, createInvoiceLink)
-									: await runCustomerMessageAction(client, item);
+									: outcome === 'action_due_job_email'
+										? await runJobEmailAction(client, item)
+										: await runCustomerMessageAction(client, item);
 			if (effect === 'action_sent') counts.sent += 1;
 			else if (effect === 'action_cancelled') counts.cancelled += 1;
 			else if (effect === 'action_deferred') counts.retried += 1;

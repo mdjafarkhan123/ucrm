@@ -294,6 +294,39 @@ const overdueInvoiceReminders: AutomationPreset = {
 	}
 };
 
+// Client reminders Part 6: a thank-you when a job's work is completed, as Jobber's Job Follow-ups. It goes out
+// during business hours; the owner can add a wait before it. Off until the owner turns it on.
+const jobFollowUp: AutomationPreset = {
+	key: 'job_follow_up',
+	version: 1,
+	name: 'Job follow-up',
+	summary:
+		"Email the customer a thank-you when a job's work is completed, during your business hours. Each job gets one.",
+	triggerKey: 'job.work_completed',
+	channels: ['email'],
+	blueprint: {
+		schema_version: AUTOMATION_SCHEMA_VERSION,
+		trigger: { key: 'job.work_completed', config: {} },
+		conditions: [],
+		steps: [
+			{
+				type: 'action',
+				key: 'action.send_job_email',
+				config: {
+					subject: 'Thank you from {{business_name}}',
+					body:
+						'Hi {{customer_name}},\n\n' +
+						'Thank you for choosing {{business_name}}. We have finished {{job_title}} and hope ' +
+						'everything is just how you wanted it.\n\n' +
+						'If anything needs another look, or you have a question, just reply to this email.\n\n' +
+						'Thanks again,\n{{business_name}}'
+				}
+			}
+		],
+		stops: [{ key: 'stop.job_reopened' }, { key: 'stop.client_review_opt_out' }]
+	}
+};
+
 export const AUTOMATION_PRESETS: readonly AutomationPreset[] = [
 	quoteFollowUp,
 	websiteSpeedToLead,
@@ -301,7 +334,8 @@ export const AUTOMATION_PRESETS: readonly AutomationPreset[] = [
 	visitReminder,
 	bookingConfirmation,
 	visitMoved,
-	overdueInvoiceReminders
+	overdueInvoiceReminders,
+	jobFollowUp
 ];
 
 const PRESETS_BY_KEY = new Map(AUTOMATION_PRESETS.map((preset) => [preset.key, preset]));

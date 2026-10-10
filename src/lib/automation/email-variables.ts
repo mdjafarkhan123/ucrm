@@ -202,3 +202,34 @@ export const automationInvoiceEmailBodySchema = withKnownVariablesOnly(
 	z.string().trim().min(1).max(5000),
 	unknownInvoiceVariables
 );
+
+// Client reminders Part 6: a job thank-you names the job. private.enqueue_automation_job_email fills these from
+// the job as it stands at sending time.
+export const AUTOMATION_JOB_VARIABLES = [
+	{ token: 'customer_name', label: 'Customer name' },
+	{ token: 'business_name', label: 'Your business name' },
+	{ token: 'job_title', label: 'Job title' }
+] as const;
+
+const JOB_ALLOWED_TOKENS = new Set<string>(AUTOMATION_JOB_VARIABLES.map((v) => v.token));
+
+export function unknownJobVariables(text: string): string[] {
+	return unknownVariablesAgainst(JOB_ALLOWED_TOKENS, text);
+}
+
+export const automationJobEmailSubjectSchema = withKnownVariablesOnly(
+	z
+		.string()
+		.trim()
+		.min(1)
+		.max(300)
+		.refine((value) => !/[\r\n]/.test(value), {
+			message: 'The subject cannot span multiple lines.'
+		}),
+	unknownJobVariables
+);
+
+export const automationJobEmailBodySchema = withKnownVariablesOnly(
+	z.string().trim().min(1).max(5000),
+	unknownJobVariables
+);

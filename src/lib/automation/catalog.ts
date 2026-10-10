@@ -20,6 +20,8 @@ import {
 	automationInquirySmsBodySchema,
 	automationInvoiceEmailBodySchema,
 	automationInvoiceEmailSubjectSchema,
+	automationJobEmailBodySchema,
+	automationJobEmailSubjectSchema,
 	automationSmsBodySchema
 } from './email-variables';
 
@@ -433,6 +435,22 @@ const actions: CatalogEntry[] = [
 			})
 			.strict()
 	},
+	// Client reminders Part 6: the thank-you after a job's work is completed.
+	{
+		key: 'action.send_job_email',
+		kind: 'action',
+		label: 'Email the customer a thank-you',
+		summary:
+			'Emails the customer once the work is done, during your business hours. Follows their job follow-up setting.',
+		subject: 'job',
+		availability: enabled,
+		configSchema: z
+			.object({
+				subject: automationJobEmailSubjectSchema,
+				body: automationJobEmailBodySchema
+			})
+			.strict()
+	},
 	{
 		key: 'action.notify_staff',
 		kind: 'action',
@@ -512,7 +530,7 @@ const stops: CatalogEntry[] = [
 		key: 'stop.job_reopened',
 		kind: 'stop',
 		label: 'The job was reopened or is no longer complete',
-		summary: 'Stops before asking once the job is reopened or no longer has completed work.',
+		summary: 'Stops before sending once the job is reopened or no longer has completed work.',
 		subject: 'job',
 		alwaysOn: true,
 		availability: enabled,
@@ -521,8 +539,9 @@ const stops: CatalogEntry[] = [
 	{
 		key: 'stop.client_review_opt_out',
 		kind: 'stop',
-		label: 'The client turned off review requests',
-		summary: 'Stops before asking once the client is removed or no longer wants review requests.',
+		label: 'The client turned off this message',
+		summary:
+			'Stops before sending once the client is removed or turns off review requests (for a review ask) or job follow-ups and Do not disturb (for a thank-you).',
 		subject: 'job',
 		alwaysOn: true,
 		availability: enabled,
@@ -605,7 +624,8 @@ const CUSTOMER_MESSAGE_ACTION_KEYS = new Set([
 	'action.send_customer_message',
 	'action.send_review_request',
 	'action.send_appointment_email',
-	'action.send_invoice_email'
+	'action.send_invoice_email',
+	'action.send_job_email'
 ]);
 
 export function sendsCustomerMessage(key: string): boolean {

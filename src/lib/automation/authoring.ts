@@ -44,11 +44,12 @@ export function emptyAuthoredDefinition(): AuthoredDefinition {
 export function sendEmailStepsMissingContent(definition: AuthoredDefinition): number[] {
 	const missing: number[] = [];
 	definition.steps.forEach((step, index) => {
-		// Client reminders Parts 3 and 5: a reminder email has the same subject and message.
+		// Client reminders Parts 3, 5 and 6: a reminder or thank-you email has the same subject and message.
 		if (
 			step.key === 'action.send_email' ||
 			step.key === 'action.send_appointment_email' ||
-			step.key === 'action.send_invoice_email'
+			step.key === 'action.send_invoice_email' ||
+			step.key === 'action.send_job_email'
 		) {
 			const subject = typeof step.config?.subject === 'string' ? step.config.subject.trim() : '';
 			const body = typeof step.config?.body === 'string' ? step.config.body.trim() : '';
