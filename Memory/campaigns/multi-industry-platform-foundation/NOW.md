@@ -5,6 +5,6 @@
 
 **In progress:** Stage A. Stage A done 2026-10-10 (B1 Experience identity, B2 Package fit, B3 One Application, B4 Safe provisioning). Each edition names who may buy it (`package_editions.experience_keys`); each capability has a family and each service the experiences it is delivered for. The Application asks the kind of business and Uplift confirms or holds it before payment.
 
-**Next:** B5 — see `stages/B-workspace.md`.
+**Next:** B6 Workspace access — see `stages/B-workspace.md`. B5 done 2026-10-10: the Control Room compares today's access with experience-aware access (`src/lib/server/access/experience-comparison.ts`); B6 should reuse `experienceAwareAccess` as the single answer.
 
 **Blockers:** Medspa implementation waits for the foundation build and connected Contractor proof in B12. Existing-Organization migration waits for safe access and public continuity in B1–B9.
