@@ -16,7 +16,8 @@ const shots = process.env.E2E_SCREENSHOT_DIR;
 const businessName = `B3 Test Groomers ${Date.now()}`;
 
 async function shot(page: Page, name: string) {
-	if (shots) await page.screenshot({ path: `${shots}/${name}.png`, fullPage: true });
+	if (shots)
+		await page.screenshot({ path: `${shots}/${name}.png`, fullPage: true, animations: 'disabled' });
 }
 
 async function choose(page: Page, label: string, option: string) {
@@ -36,7 +37,7 @@ test.skip(
 
 test('an Application is held, confirmed and only then asked to pay', async ({ page }) => {
 	test.setTimeout(240_000);
-	await page.setViewportSize({ width: 1440, height: 1000 });
+	await page.setViewportSize({ width: Number(process.env.E2E_WIDTH ?? 1440), height: 1000 });
 
 	// The buyer: a listed type shows Contractor packages; "Something else" skips the package.
 	await page.goto('/get-started', { waitUntil: 'networkidle' });
@@ -107,6 +108,7 @@ test('an Application is held, confirmed and only then asked to pay', async ({ pa
 	await choose(page, 'Business type', 'Handyman services');
 	await kind.getByLabel('The work you reviewed').fill('Home repairs and small fixes.');
 	await kind.getByLabel('Private reason').fill('They confirmed they mostly do handyman work.');
+	await expect(kind.getByRole('button', { name: 'Confirm', exact: true })).toBeEnabled();
 	await shot(page, '09-uplift-confirm-form');
 	await kind.getByRole('button', { name: 'Confirm', exact: true }).click();
 	await expect(kind.getByText(/Confirmed as Contractor · Handyman services/).first()).toBeVisible();
@@ -118,8 +120,10 @@ test('an Application is held, confirmed and only then asked to pay', async ({ pa
 	await page.getByLabel('Private reason for this change').fill('Recommended after review.');
 	await page.getByRole('button', { name: 'Change package' }).last().click();
 	await expect(page.getByLabel('Private reason for this change')).toBeHidden();
+	await expect(page.getByText('None yet — Uplift recommends one')).toBeHidden();
 	await page.getByRole('button', { name: 'Mark reviewed' }).click();
-	await expect(page.getByRole('button', { name: 'Confirm payment' })).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Mark reviewed' })).toBeHidden();
+	await expect(page.getByText('Awaiting payment').last()).toBeVisible();
 	await shot(page, '10-uplift-awaiting-payment');
 
 	// Clean up: close the test Application.

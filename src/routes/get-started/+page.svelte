@@ -231,6 +231,16 @@
 		]
 	};
 
+	// A business Uplift reviews first has no package to pick, so step 2 says what happens instead.
+	const heading = $derived(
+		currentStep === 2 && otherChoice
+			? ([
+					'Your package',
+					'Uplift chooses it with you once we know what your business does.'
+				] as const)
+			: headings[currentStep]
+	);
+
 	// Field errors are only shown on the step that owns the field, so a server-side error (a package
 	// retired mid-application, for instance) has to send the visitor back to that step to be seen.
 	const stepByField: Record<string, number> = {
@@ -432,8 +442,8 @@
 		<section class="get-started__panel">
 			<header class="get-started__header">
 				<div class="get-started__mobile-progress">Step {currentStep} of {steps.length}</div>
-				<h2>{headings[currentStep][0]}</h2>
-				<p>{headings[currentStep][1]}</p>
+				<h2>{heading[0]}</h2>
+				<p>{heading[1]}</p>
 			</header>
 			<form onsubmit={submit}>
 				{#if currentStep === 1}
@@ -443,14 +453,16 @@
 					>
 						<h3 id="details-heading">Your business</h3>
 						<div class="get-started__field-grid">
-							<Input
-								id="business_name"
-								label="Business name"
-								bind:value={form.business_name}
-								invalid={Boolean(fieldErrors.business_name)}
-								errorMessage={fieldErrors.business_name}
-								required
-							/>
+							<div class="get-started__wide">
+								<Input
+									id="business_name"
+									label="Business name"
+									bind:value={form.business_name}
+									invalid={Boolean(fieldErrors.business_name)}
+									errorMessage={fieldErrors.business_name}
+									required
+								/>
+							</div>
 							<div class="get-started__choice">
 								<Select
 									id="business_type"
@@ -503,7 +515,7 @@
 				{:else if currentStep === 2}
 					<section class="get-started__step-panel" aria-labelledby="package-heading">
 						<div class="get-started__package-bar">
-							<h3 id="package-heading">{otherChoice ? 'Your package' : 'Choose a package'}</h3>
+							<h3 id="package-heading">{otherChoice ? 'What happens next' : 'Choose a package'}</h3>
 							{#if showBillingSwitch && !otherChoice}
 								<SegmentedControl
 									bind:value={wanted}
@@ -936,8 +948,11 @@
 			gap: var(--space-smaller);
 		}
 
-		&__choice {
-			max-width: 480px;
+		// The kind-of-business picker matches the text fields around it: same height and inner spacing.
+		&__choice :global(.select__trigger) {
+			min-height: var(--space-largest);
+			padding: 0 var(--space-base);
+			font-size: var(--typography--fontSize-base);
 		}
 
 		&__recommend {
@@ -1148,35 +1163,6 @@
 		}
 
 		@media (max-width: 700px) {
-			&__choice,
-			&__wide {
-				display: grid;
-				grid-column: 1 / -1;
-				gap: var(--space-smaller);
-			}
-
-			&__choice {
-				max-width: 480px;
-			}
-
-			&__recommend {
-				display: grid;
-				gap: var(--space-smaller);
-				padding: var(--space-base) var(--space-large);
-				border: var(--border-base) solid var(--color-border);
-				border-radius: var(--radius-base);
-				background: var(--color-informative--surface);
-
-				strong {
-					color: var(--color-heading);
-				}
-
-				p {
-					margin: 0;
-					color: var(--color-text--secondary);
-				}
-			}
-
 			&__location-fields {
 				grid-template-columns: 1fr;
 			}
