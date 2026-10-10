@@ -141,16 +141,6 @@
 			</SectionBlock>
 
 			<SectionBlock title="Meeting types" hint="What prospects can book, and who takes it.">
-				{#snippet actions()}
-					<Button
-						variant="secondary"
-						size="small"
-						href={resolve('/jafar/settings/booking/types/new')}
-					>
-						<span class="booking-settings__icon" aria-hidden="true">{@html plusIcon}</span>
-						Add meeting type
-					</Button>
-				{/snippet}
 				{#if settings.meeting_types.length === 0}
 					<p class="booking-settings__note">
 						No meeting types yet. Add one to get a link prospects can book.
@@ -171,16 +161,16 @@
 									<span class="booking-settings__row-link">{bookingPath(type.slug)}</span>
 								</a>
 								<div class="booking-settings__row-actions">
-									<Button variant="tertiary" size="small" onclick={() => copyLink(type)}>
+									<Button variant="secondary" size="small" onclick={() => copyLink(type)}>
 										<span class="booking-settings__icon" aria-hidden="true"
 											>{@html copiedSlug === type.slug ? checkIcon : copyIcon}</span
 										>
-										{copiedSlug === type.slug ? 'Copied' : 'Copy link'}<span class="sr-only">
+										{copiedSlug === type.slug ? 'Copied' : 'Copy link'}<span class="booking-settings__sr">
 											for {type.name}</span
 										>
 									</Button>
 									<Button
-										variant="tertiary"
+										variant="secondary"
 										size="small"
 										href={bookingPath(type.slug)}
 										target="_blank"
@@ -188,13 +178,23 @@
 										<span class="booking-settings__icon" aria-hidden="true"
 											>{@html externalIcon}</span
 										>
-										Open<span class="sr-only"> {type.name}</span>
+										Open<span class="booking-settings__sr"> {type.name}</span>
 									</Button>
 								</div>
 							</li>
 						{/each}
 					</ul>
 				{/if}
+				<div class="booking-settings__add">
+					<Button
+						variant="secondary"
+						size="small"
+						href={resolve('/jafar/settings/booking/types/new')}
+					>
+						<span class="booking-settings__icon" aria-hidden="true">{@html plusIcon}</span>
+						Add meeting type
+					</Button>
+				</div>
 			</SectionBlock>
 
 			<SectionBlock
@@ -372,7 +372,24 @@
 
 	.booking-settings__row-actions {
 		display: flex;
+		flex-wrap: wrap;
 		gap: var(--space-small);
+	}
+
+	.booking-settings__add {
+		display: flex;
+	}
+
+	.booking-settings__sr {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		padding: 0;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+		border: 0;
 	}
 
 	.booking-settings__chevron {

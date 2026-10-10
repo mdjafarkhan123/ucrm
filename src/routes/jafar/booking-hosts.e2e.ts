@@ -23,6 +23,7 @@ const teammateEmail =
 // The test-only Sales teammate's password, as Login.md records it.
 const teammatePassword = process.env.JAFAR_TEST_TEAMMATE_PASSWORD ?? 'PaidLaunch16!';
 const visitorEmail = 'dev.jafarkhan+e2e-book-host@gmail.com';
+const shots = process.env.E2E_SCREENSHOT_DIR;
 const DAY = 24 * 60 * 60_000;
 
 type Hours = { weekday: number; start: string; end: string };
@@ -224,7 +225,7 @@ test.describe.serial('changing the host of a booked call', () => {
 		expect(booked.ok(), await booked.text()).toBe(true);
 		const { data: booking, error } = await database()
 			.from('platform_bookings')
-			.select('id, entry_id, entry:platform_calendar_entries(starts_at, ends_at)')
+			.select('id, entry_id, relationship_id, entry:platform_calendar_entries(starts_at, ends_at)')
 			.eq('visitor_email', visitorEmail)
 			.single();
 		if (error) throw error;
@@ -251,6 +252,18 @@ test.describe.serial('changing the host of a booked call', () => {
 		await database().from('platform_calendar_entries').delete().eq('id', busyId);
 		busyId = null;
 		expect(await hostState(request, entryId, teammateId)).toBe('free');
+		if (shots) {
+			// The call's window on its Lead, with Change host open.
+			await page.goto(`/jafar/leads/${booking.relationship_id}`, { waitUntil: 'networkidle' });
+			await page.locator('.lead-page__call').first().click();
+			await page.getByRole('button', { name: 'Change host' }).click();
+			await expect(page.getByText('Free then')).toBeVisible();
+			for (const width of [1440, 390]) {
+				await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+				await page.screenshot({ path: `${shots}/host-change-${width}.png` });
+			}
+			await page.keyboard.press('Escape');
+		}
 		const changed = await request.post(`/api/jafar/calendar/entries/${entryId}/host`, {
 			data: { member_id: teammateId }
 		});
