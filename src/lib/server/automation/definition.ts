@@ -298,6 +298,18 @@ export function validateDefinition(
 	if (errors.length === 0) checkSequence(steps, limits, errors);
 	if (errors.length === 0 && subject === 'invoice')
 		checkInvoiceReminders(triggerConfig, steps, errors);
+	// Client reminders Part 6: a thank-you follows the client's job follow-up switch and a review ask their review
+	// switch, so one automation does one or the other.
+	if (
+		steps.some((step) => step.key === 'action.send_job_email') &&
+		steps.some((step) => step.key === 'action.send_review_request')
+	) {
+		errors.push({
+			path: 'steps',
+			message:
+				'A thank-you email and a review request go in separate automations, so each follows its own client setting.'
+		});
+	}
 
 	// Stops: each an enabled catalog stop. Duplicates are collapsed so the same outcome is not listed twice.
 	const seenStops = new Set<string>();

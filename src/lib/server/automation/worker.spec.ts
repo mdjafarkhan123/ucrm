@@ -44,6 +44,7 @@ function workClient(
 		performReview?: (id: string) => string;
 		performAppointment?: (id: string) => string;
 		performInvoice?: (id: string) => string;
+		performJob?: (id: string) => string;
 		remindersDue?: number;
 		invoiceRemindersDue?: number;
 		fallbacks?: number;
@@ -106,6 +107,10 @@ function workClient(
 		}
 		if (name === 'emit_due_appointment_reminders') {
 			return { data: options.remindersDue ?? 0, error: null };
+		}
+		if (name === 'perform_automation_job_email_effect') {
+			const id = String(args?.p_work_item_id);
+			return { data: options.performJob ? options.performJob(id) : 'action_sent', error: null };
 		}
 		if (name === 'perform_automation_invoice_email_effect') {
 			const id = String(args?.p_work_item_id);
@@ -258,6 +263,24 @@ describe('drainAutomationWork', () => {
 
 		expect(result).toMatchObject({ claimed: 2, sent: 1, cancelled: 1 });
 		expect(rpc).toHaveBeenCalledWith('perform_automation_appointment_email_effect', {
+			p_work_item_id: 'a',
+			p_claim_token: 'claim-a'
+		});
+		expect(rpc).not.toHaveBeenCalledWith('perform_automation_email_effect', expect.anything());
+	});
+
+	it('runs a job thank-you through its own email effect, counting a business-hours wait as a retry', async () => {
+		const { client, rpc } = workClient({
+			intake: [0],
+			claims: [[item('a'), item('b')]],
+			advance: () => 'action_due_job_email',
+			performJob: (id) => (id === 'a' ? 'action_sent' : 'action_deferred')
+		});
+
+		const result = await drainAutomationWork({ client, now: () => 0 });
+
+		expect(result).toMatchObject({ claimed: 2, sent: 1, retried: 1 });
+		expect(rpc).toHaveBeenCalledWith('perform_automation_job_email_effect', {
 			p_work_item_id: 'a',
 			p_claim_token: 'claim-a'
 		});
