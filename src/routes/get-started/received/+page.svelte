@@ -68,7 +68,29 @@
 		text: "We'll review your details and follow up by email with next steps, including how to complete payment. There's nothing else to do right now."
 	};
 
-	const current = $derived(data.status ? copy[data.status] : fallback);
+	// Multi-industry foundation B3: before Uplift has confirmed the kind of business, the buyer sees what is
+	// still being checked, or that a package will be recommended, instead of how to pay.
+	const reviewing = $derived.by((): StatusCopy | null => {
+		if (data.checking)
+			return {
+				icon: clockIcon,
+				tone: 'info',
+				eyebrow: 'We need a little more',
+				title: "We're checking a few details",
+				text: `${data.checking} Reply to any of our emails with the answer and we'll carry on.`
+			};
+		if (data.awaitingRecommendation)
+			return {
+				icon: circleCheckIcon,
+				tone: 'success',
+				eyebrow: 'Application received',
+				title: "Thanks, we've got your application",
+				text: "We're looking at what your business does. Next, we'll email you the package we recommend. There's nothing to pay yet."
+			};
+		return null;
+	});
+
+	const current = $derived(reviewing ?? (data.status ? copy[data.status] : fallback));
 </script>
 
 <svelte:head>

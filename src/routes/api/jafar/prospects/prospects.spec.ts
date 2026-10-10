@@ -123,7 +123,10 @@ describe('platform owner prospect read API boundary', () => {
 					platform_onboarding_application_setup_links: query(null),
 					platform_onboarding_application_payment_confirmations: query([]),
 					platform_onboarding_application_payment_reversals: query([]),
-					platform_onboarding_application_provisions: query(null)
+					platform_onboarding_application_provisions: query(null),
+					platform_onboarding_application_qualifications: query([]),
+					industry_experience_definitions: query([]),
+					industry_experience_business_types: query([])
 				})[table] as never
 		} as never);
 

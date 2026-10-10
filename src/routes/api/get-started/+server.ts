@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import type { Database } from '$lib/database.types';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-limit';
 import { verifyTurnstileToken } from '$lib/server/security/turnstile';
@@ -7,11 +8,12 @@ import { getOrCreateOwnerSettings } from '$lib/server/jafar/owner-settings';
 import { raiseOwnerAlert } from '$lib/server/jafar/owner-alerts';
 import { sendApplicationReceipt } from '$lib/server/jafar/application-receipt';
 import { isEditionSoldTo } from '$lib/server/packages/public-packages';
-import { APPLICATION_EXPERIENCE } from '$lib/experience/definitions';
 import {
 	onboardingApplicationSubmissionSchema,
 	zodOnboardingApplicationFieldErrors
 } from '$lib/server/validation/get-started.schema';
+
+type SubmitArgs = Database['public']['Functions']['submit_onboarding_application']['Args'];
 
 // Postgres codes raised by submit_onboarding_application when the chosen package edition is no
 // longer published (check_violation) or no longer exists (foreign_key_violation).
@@ -71,13 +73,19 @@ export const POST: RequestHandler = async (event) => {
 			? null
 			: (data.initial_administrator_email ?? null);
 
-		// Multi-industry foundation B2: only an edition sold to the buyer's experience can be chosen, even
-		// from a hand-made link.
-		if (!(await isEditionSoldTo(client, data.package_edition_id, APPLICATION_EXPERIENCE)))
+		// Multi-industry foundation B2–B3: only an edition sold to the buyer's proposed experience can be
+		// chosen, even from a hand-made link. A business that fits no listed type chooses none.
+		if (
+			data.package_edition_id &&
+			data.proposed_experience_key &&
+			!(await isEditionSoldTo(client, data.package_edition_id, data.proposed_experience_key))
+		)
 			return unavailablePackage();
 
 		const settings = await getOrCreateOwnerSettings(client);
 
+		// The generated types mark every argument as text, but the proposal and package are null for a
+		// business that fits no listed type; PostgREST needs each one sent, so null is sent rather than left out.
 		const { data: applicationId, error: submitError } = await client.rpc(
 			'submit_onboarding_application',
 			{
@@ -87,12 +95,19 @@ export const POST: RequestHandler = async (event) => {
 				target_main_contact_phone: data.main_contact_phone,
 				target_initial_administrator_name: administratorName ?? '',
 				target_initial_administrator_email: administratorEmail ?? '',
-				target_trade: data.trade,
+				target_described_work: data.described_work,
+				target_proposed_experience_key: data.proposed_other
+					? null
+					: (data.proposed_experience_key ?? null),
+				target_proposed_business_type_key: data.proposed_other
+					? null
+					: (data.proposed_business_type_key ?? null),
+				target_proposed_other: data.proposed_other ?? null,
 				target_city_country: data.city_country,
 				target_time_zone: data.time_zone,
 				target_note: data.note ?? '',
-				target_package_edition_id: data.package_edition_id,
-				target_billing_interval: data.billing_interval,
+				target_package_edition_id: data.proposed_other ? null : (data.package_edition_id ?? null),
+				target_billing_interval: data.proposed_other ? null : (data.billing_interval ?? null),
 				target_privacy_policy_version: settings.privacy_policy_version,
 				target_submitted_data: {
 					business_name: data.business_name,
@@ -102,20 +117,32 @@ export const POST: RequestHandler = async (event) => {
 					is_administrator_same_as_contact: data.is_administrator_same_as_contact,
 					initial_administrator_name: administratorName,
 					initial_administrator_email: administratorEmail,
-					trade: data.trade,
+					described_work: data.described_work,
+					proposed_experience_key: data.proposed_other ? null : data.proposed_experience_key,
+					proposed_business_type_key: data.proposed_other ? null : data.proposed_business_type_key,
+					proposed_other: data.proposed_other ?? null,
 					city_country: data.city_country,
 					time_zone: data.time_zone,
 					note: data.note ?? null,
-					package_edition_id: data.package_edition_id,
-					billing_interval: data.billing_interval
+					package_edition_id: data.proposed_other ? null : data.package_edition_id,
+					billing_interval: data.proposed_other ? null : data.billing_interval
 				}
-			}
+			} as unknown as SubmitArgs
 		);
 		// The package can be revised, retired, or removed between the visitor loading the page and
 		// submitting it. The database refuses that on purpose so nobody agrees to terms they were not
 		// shown; it is not a fault worth waking the owner for. The page reloads the packages and asks
 		// the visitor to review the current terms.
 		if (submitError && UNAVAILABLE_PACKAGE_CODES.has(submitError.code)) return unavailablePackage();
+		// The kind of business was withdrawn from the list while the visitor filled in the form.
+		if (submitError?.code === '22023')
+			return json(
+				{
+					error: 'Choose what kind of business you run.',
+					field_errors: { business_type: 'Choose what kind of business you run.' }
+				},
+				{ status: 422 }
+			);
 		if (submitError) throw submitError;
 
 		try {
@@ -123,7 +150,9 @@ export const POST: RequestHandler = async (event) => {
 				kind: 'onboarding_application_submitted',
 				severity: 'attention',
 				title: `New application from ${data.business_name}`,
-				body: `${data.main_contact_name} applied for ${data.trade} in ${data.city_country}.`,
+				body: data.proposed_other
+					? `${data.main_contact_name} applied without a listed business type (${data.proposed_other === 'medspa' ? 'Medspa or clinic' : 'something else'}) in ${data.city_country}. Review what they do and recommend a package.`
+					: `${data.main_contact_name} applied from ${data.city_country}: ${data.described_work.slice(0, 200)}`,
 				target: { targetKind: 'onboarding_application', targetId: applicationId },
 				origin: event.url.origin
 			});

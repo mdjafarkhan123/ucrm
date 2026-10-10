@@ -23,7 +23,11 @@ export const POST: RequestHandler = async (event) => {
 		if (rpcError) {
 			if (rpcError.message.includes('does not exist'))
 				return json({ error: 'Prospect was not found.' }, { status: 404 });
-			if (rpcError.message.includes('can be marked reviewed'))
+			// B3: the kind of business is not confirmed yet, or the package is not sold to it.
+			if (
+				rpcError.message.includes('can be marked reviewed') ||
+				rpcError.hint === 'application_not_qualified'
+			)
 				return json({ error: rpcError.message }, { status: 409 });
 			throw rpcError;
 		}

@@ -91,3 +91,28 @@ export const prospectActivationSchema = z.object({
 	...activationOfferFields,
 	expected_first_charge_usd_cents: z.number().int().min(0).max(100_000_000).nullish()
 });
+
+// Multi-industry foundation B3: Uplift confirms the kind of business an Application is, or holds it while it
+// checks a missing fact. The buyer reads the held message on their status page; the reason stays private.
+export const prospectQualificationSchema = z.discriminatedUnion('outcome', [
+	z.object({
+		outcome: z.literal('supported'),
+		experience_key: z.string().trim().min(1, 'Choose the kind of business.').max(40),
+		business_type_key: z.string().trim().min(1, 'Choose the business type.').max(40),
+		reviewed_work: z
+			.string()
+			.trim()
+			.min(1, 'Describe the work you reviewed.')
+			.max(1000, 'Keep this under 1,000 characters.'),
+		reason: z.string().trim().min(1, 'Enter a private reason.').max(1000)
+	}),
+	z.object({
+		outcome: z.literal('holding'),
+		buyer_message: z
+			.string()
+			.trim()
+			.min(1, 'Tell the business what you are checking.')
+			.max(500, 'Keep this under 500 characters.'),
+		reason: z.string().trim().min(1, 'Enter a private reason.').max(1000)
+	})
+]);

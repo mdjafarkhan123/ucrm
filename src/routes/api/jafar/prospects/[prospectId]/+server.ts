@@ -4,9 +4,10 @@ import { getOwnerSession } from '$lib/server/auth/owner';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { prospectIdSchema } from '$lib/server/validation/prospect.schema';
+import { loadOfferedExperiences } from '$lib/server/experience/offered';
 
 const applicationSelect =
-	'id, stage, business_name, main_contact_name, main_contact_email, main_contact_phone, initial_administrator_name, initial_administrator_email, trade, city_country, time_zone, note, package_edition_id, billing_interval, package_snapshot, possible_duplicate, duplicate_acknowledged_at, duplicate_acknowledged_by_owner_email, submitted_at, updated_at, not_proceeding_at, personal_data_purge_after, payment_reversed_at, business_relationship_id, linked_lead:platform_business_relationships(id, business_name)';
+	'id, stage, business_name, main_contact_name, main_contact_email, main_contact_phone, initial_administrator_name, initial_administrator_email, trade, described_work, proposed_experience_key, proposed_definition_version, proposed_business_type_key, proposed_other, city_country, time_zone, note, package_edition_id, billing_interval, package_snapshot, possible_duplicate, duplicate_acknowledged_at, duplicate_acknowledged_by_owner_email, submitted_at, updated_at, not_proceeding_at, personal_data_purge_after, payment_reversed_at, business_relationship_id, linked_lead:platform_business_relationships(id, business_name)';
 
 const duplicateMatchSelect =
 	'id, business_name, main_contact_email, initial_administrator_email, stage, submitted_at';
@@ -58,7 +59,10 @@ export const GET: RequestHandler = async (event) => {
 			setupLinkResult,
 			paymentConfirmationResult,
 			paymentReversalResult,
-			provisionResult
+			provisionResult,
+			qualificationResult,
+			offeredExperiences,
+			businessTypeResult
 		] = await Promise.all([
 			client
 				.from('platform_onboarding_applications')
@@ -100,7 +104,20 @@ export const GET: RequestHandler = async (event) => {
 				.from('platform_onboarding_application_provisions')
 				.select('status, last_error, attempt_count, updated_at')
 				.eq('application_id', parsedId.data)
-				.maybeSingle()
+				.maybeSingle(),
+			// Multi-industry foundation B3: Uplift's decisions about the kind of business, newest first, and
+			// what can be chosen when confirming one.
+			client
+				.from('platform_onboarding_application_qualifications')
+				.select(
+					'id, outcome, experience_key, definition_version, business_type_key, reviewed_work, buyer_message, reason, actor_owner_email, created_at'
+				)
+				.eq('application_id', parsedId.data)
+				.order('created_at', { ascending: false }),
+			loadOfferedExperiences(client),
+			client
+				.from('industry_experience_business_types')
+				.select('experience_key, definition_version, business_type_key, label')
 		]);
 
 		if (applicationResult.error) throw applicationResult.error;
@@ -111,6 +128,16 @@ export const GET: RequestHandler = async (event) => {
 		if (paymentConfirmationResult.error) throw paymentConfirmationResult.error;
 		if (paymentReversalResult.error) throw paymentReversalResult.error;
 		if (provisionResult.error) throw provisionResult.error;
+		if (qualificationResult.error) throw qualificationResult.error;
+		if (businessTypeResult.error) throw businessTypeResult.error;
+
+		const typeLabel = (experience: string | null, version: number | null, type: string | null) =>
+			(businessTypeResult.data ?? []).find(
+				(row) =>
+					row.experience_key === experience &&
+					row.definition_version === version &&
+					row.business_type_key === type
+			)?.label ?? null;
 
 		const application = applicationResult.data;
 		let duplicateMatches: (DuplicateMatchRow & { matched_on: string[] })[] = [];
@@ -166,7 +193,24 @@ export const GET: RequestHandler = async (event) => {
 			duplicate_matches: duplicateMatches,
 			payment_confirmations: paymentConfirmationResult.data ?? [],
 			payment_reversals: paymentReversalResult.data ?? [],
-			provision: provisionResult.data
+			provision: provisionResult.data,
+			proposed_business_type_label: typeLabel(
+				application.proposed_experience_key,
+				application.proposed_definition_version,
+				application.proposed_business_type_key
+			),
+			qualifications: (qualificationResult.data ?? []).map((decision) => ({
+				...decision,
+				business_type_label: typeLabel(
+					decision.experience_key,
+					decision.definition_version,
+					decision.business_type_key
+				),
+				experience_name:
+					offeredExperiences.find((d) => d.experience_key === decision.experience_key)?.name ??
+					decision.experience_key
+			})),
+			offered_experiences: offeredExperiences
 		});
 	} catch (error) {
 		console.error('Could not load owner prospect.', error);

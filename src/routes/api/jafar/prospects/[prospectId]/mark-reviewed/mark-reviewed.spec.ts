@@ -33,7 +33,7 @@ function session() {
 	};
 }
 
-function clientWith(rpcError: { message: string } | null = null) {
+function clientWith(rpcError: { message: string; hint?: string } | null = null) {
 	const rpc = vi.fn().mockResolvedValue({ error: rpcError });
 	return { rpc, __rpc: rpc };
 }
@@ -95,5 +95,18 @@ describe('platform owner prospect mark-reviewed API boundary', () => {
 		const response = await POST(event(prospectId));
 		expect(response.status).toBe(500);
 		expect(await response.json()).toEqual({ error: 'The application could not be updated.' });
+	});
+
+	it('refuses with 409 until the kind of business is confirmed and the package fits it', async () => {
+		mockedOwnerSession.mockResolvedValue(session());
+		mockedClient.mockReturnValue(
+			clientWith({
+				message: 'Confirm what kind of business this is before asking for payment.',
+				hint: 'application_not_qualified'
+			}) as never
+		);
+		const response = await POST(event(prospectId));
+		expect(response.status).toBe(409);
+		expect((await response.json()).error).toMatch(/kind of business/);
 	});
 });

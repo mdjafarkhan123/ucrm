@@ -50,6 +50,7 @@ export const POST: RequestHandler = async (event) => {
 			if (rpcError.message.includes('application does not exist'))
 				return json({ error: 'Prospect was not found.' }, { status: 404 });
 			if (
+				rpcError.message.includes('Confirm what kind of business') ||
 				rpcError.message.includes('can no longer be corrected') ||
 				rpcError.message.includes('after payment is confirmed')
 			)
@@ -61,6 +62,7 @@ export const POST: RequestHandler = async (event) => {
 				);
 			if (
 				rpcError.message.includes('not available') ||
+				rpcError.message.includes('Choose a package made for them') ||
 				rpcError.message.includes('no longer exists') ||
 				rpcError.message.includes('Choose a different')
 			)

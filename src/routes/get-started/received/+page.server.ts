@@ -42,12 +42,12 @@ function statusFor(stage: string, paymentReversedAt: string | null): Application
 export const load: PageServerLoad = async ({ url }) => {
 	const applicationId = url.searchParams.get('app');
 	if (!applicationId || !UUID_PATTERN.test(applicationId)) {
-		return { status: null, renderedBody: null };
+		return { status: null, renderedBody: null, checking: null, awaitingRecommendation: false };
 	}
 
 	const client = getOwnerSupabaseClient();
 
-	const [applicationResult, settings, templateResult] = await Promise.all([
+	const [applicationResult, settings, templateResult, decisionResult] = await Promise.all([
 		client
 			.from('platform_onboarding_applications')
 			.select('package_snapshot, stage, payment_reversed_at')
@@ -58,15 +58,34 @@ export const load: PageServerLoad = async ({ url }) => {
 			.from('platform_message_templates')
 			.select('body_published')
 			.eq('template_key', 'received_page')
+			.maybeSingle(),
+		// Multi-industry foundation B3: Uplift's newest decision about the kind of business. While it is
+		// holding, the buyer reads what is being checked instead of how to pay.
+		client
+			.from('platform_onboarding_application_qualifications')
+			.select('outcome, buyer_message')
+			.eq('application_id', applicationId)
+			.order('created_at', { ascending: false })
+			.limit(1)
 			.maybeSingle()
 	]);
 	if (applicationResult.error) throw applicationResult.error;
 	if (templateResult.error) throw templateResult.error;
+	if (decisionResult.error) throw decisionResult.error;
 
 	const application = applicationResult.data;
-	if (!application) return { status: null, renderedBody: null };
+	if (!application)
+		return { status: null, renderedBody: null, checking: null, awaitingRecommendation: false };
 
 	const status = statusFor(application.stage, application.payment_reversed_at);
+	const checking =
+		status === 'reviewing' && decisionResult.data?.outcome === 'holding'
+			? decisionResult.data.buyer_message
+			: null;
+	// Without a package the business is waiting for Uplift's recommendation; there is no price to show.
+	const awaitingRecommendation = status === 'reviewing' && !application.package_snapshot;
+	if (checking || awaitingRecommendation)
+		return { status, renderedBody: null, checking, awaitingRecommendation };
 	// The price and payment instructions only help while payment is still to be made.
 	const snapshot = application.package_snapshot as
 		Parameters<typeof applicationPriceText>[0] | null;
@@ -75,7 +94,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		!snapshot ||
 		!templateResult.data?.body_published
 	) {
-		return { status, renderedBody: null };
+		return { status, renderedBody: null, checking: null, awaitingRecommendation: false };
 	}
 
 	const renderedBody = renderTemplate(templateResult.data.body_published, {
@@ -84,5 +103,5 @@ export const load: PageServerLoad = async ({ url }) => {
 		payment_instructions: settings.payment_instructions ?? ''
 	});
 
-	return { status, renderedBody };
+	return { status, renderedBody, checking: null, awaitingRecommendation: false };
 };

@@ -65,7 +65,23 @@ export async function sendApplicationReceipt(
 		throw new Error('The application receipt template has not been published yet.');
 	}
 
-	const snapshot = applicationResult.data.package_snapshot as ApplicationSnapshot;
+	// Multi-industry foundation B3: a business that fits no listed type has no package or price yet, so it
+	// is told Uplift is reviewing it rather than how to pay.
+	const snapshot = applicationResult.data.package_snapshot as ApplicationSnapshot | null;
+	if (!snapshot) {
+		const intro =
+			'Thanks for applying to Uplift. We are reviewing what your business does and will email you with the package we recommend. There is nothing to pay yet.';
+		await enqueueEmailDelivery(client, {
+			templateKey: 'application_receipt',
+			target: { targetKind: 'onboarding_application', targetId: params.applicationId },
+			idempotencyKey: `application:${params.applicationId}:receipt`,
+			recipientEmail: params.recipientEmail,
+			subject: 'We received your Uplift application',
+			htmlContent: `<p>${intro}</p><p><a href="${encodeURI(params.statusUrl)}">Check where your application stands</a></p>`,
+			textContent: `${intro}\n\nCheck where your application stands: ${params.statusUrl}`
+		});
+		return;
+	}
 	const values = {
 		package_name: snapshot.display_name ?? '',
 		price: applicationPriceText(snapshot),

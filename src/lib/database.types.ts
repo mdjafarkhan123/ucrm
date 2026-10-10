@@ -14641,6 +14641,63 @@ export type Database = {
 					}
 				];
 			};
+			platform_onboarding_application_qualifications: {
+				Row: {
+					actor_owner_email: string;
+					application_id: string;
+					business_type_key: string | null;
+					buyer_message: string | null;
+					created_at: string;
+					definition_version: number | null;
+					experience_key: string | null;
+					id: string;
+					outcome: string;
+					reason: string;
+					reviewed_work: string | null;
+				};
+				Insert: {
+					actor_owner_email: string;
+					application_id: string;
+					business_type_key?: string | null;
+					buyer_message?: string | null;
+					created_at?: string;
+					definition_version?: number | null;
+					experience_key?: string | null;
+					id?: string;
+					outcome: string;
+					reason: string;
+					reviewed_work?: string | null;
+				};
+				Update: {
+					actor_owner_email?: string;
+					application_id?: string;
+					business_type_key?: string | null;
+					buyer_message?: string | null;
+					created_at?: string;
+					definition_version?: number | null;
+					experience_key?: string | null;
+					id?: string;
+					outcome?: string;
+					reason?: string;
+					reviewed_work?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'onboarding_qualification_business_type_fkey';
+						columns: ['experience_key', 'definition_version', 'business_type_key'];
+						isOneToOne: false;
+						referencedRelation: 'industry_experience_business_types';
+						referencedColumns: ['experience_key', 'definition_version', 'business_type_key'];
+					},
+					{
+						foreignKeyName: 'platform_onboarding_application_qualificati_application_id_fkey';
+						columns: ['application_id'];
+						isOneToOne: false;
+						referencedRelation: 'platform_onboarding_applications';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			platform_onboarding_application_setup_links: {
 				Row: {
 					administrator_user_id: string;
@@ -14734,10 +14791,11 @@ export type Database = {
 			};
 			platform_onboarding_applications: {
 				Row: {
-					billing_interval: string;
+					billing_interval: string | null;
 					business_name: string;
 					business_relationship_id: string | null;
 					city_country: string;
+					described_work: string | null;
 					duplicate_acknowledged_at: string | null;
 					duplicate_acknowledged_by_owner_email: string | null;
 					id: string;
@@ -14748,11 +14806,15 @@ export type Database = {
 					main_contact_phone: string;
 					not_proceeding_at: string | null;
 					note: string | null;
-					package_edition_id: string;
-					package_snapshot: Json;
+					package_edition_id: string | null;
+					package_snapshot: Json | null;
 					payment_reversed_at: string | null;
 					personal_data_purge_after: string;
 					possible_duplicate: boolean;
+					proposed_business_type_key: string | null;
+					proposed_definition_version: number | null;
+					proposed_experience_key: string | null;
+					proposed_other: string | null;
 					stage: string;
 					submitted_at: string;
 					time_zone: string;
@@ -14760,10 +14822,11 @@ export type Database = {
 					updated_at: string;
 				};
 				Insert: {
-					billing_interval: string;
+					billing_interval?: string | null;
 					business_name: string;
 					business_relationship_id?: string | null;
 					city_country: string;
+					described_work?: string | null;
 					duplicate_acknowledged_at?: string | null;
 					duplicate_acknowledged_by_owner_email?: string | null;
 					id?: string;
@@ -14774,11 +14837,15 @@ export type Database = {
 					main_contact_phone: string;
 					not_proceeding_at?: string | null;
 					note?: string | null;
-					package_edition_id: string;
-					package_snapshot: Json;
+					package_edition_id?: string | null;
+					package_snapshot?: Json | null;
 					payment_reversed_at?: string | null;
 					personal_data_purge_after?: string;
 					possible_duplicate?: boolean;
+					proposed_business_type_key?: string | null;
+					proposed_definition_version?: number | null;
+					proposed_experience_key?: string | null;
+					proposed_other?: string | null;
 					stage?: string;
 					submitted_at?: string;
 					time_zone: string;
@@ -14786,10 +14853,11 @@ export type Database = {
 					updated_at?: string;
 				};
 				Update: {
-					billing_interval?: string;
+					billing_interval?: string | null;
 					business_name?: string;
 					business_relationship_id?: string | null;
 					city_country?: string;
+					described_work?: string | null;
 					duplicate_acknowledged_at?: string | null;
 					duplicate_acknowledged_by_owner_email?: string | null;
 					id?: string;
@@ -14800,11 +14868,15 @@ export type Database = {
 					main_contact_phone?: string;
 					not_proceeding_at?: string | null;
 					note?: string | null;
-					package_edition_id?: string;
-					package_snapshot?: Json;
+					package_edition_id?: string | null;
+					package_snapshot?: Json | null;
 					payment_reversed_at?: string | null;
 					personal_data_purge_after?: string;
 					possible_duplicate?: boolean;
+					proposed_business_type_key?: string | null;
+					proposed_definition_version?: number | null;
+					proposed_experience_key?: string | null;
+					proposed_other?: string | null;
 					stage?: string;
 					submitted_at?: string;
 					time_zone?: string;
@@ -14825,6 +14897,24 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'package_editions';
 						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'platform_onboarding_applications_proposed_business_type_fkey';
+						columns: [
+							'proposed_experience_key',
+							'proposed_definition_version',
+							'proposed_business_type_key'
+						];
+						isOneToOne: false;
+						referencedRelation: 'industry_experience_business_types';
+						referencedColumns: ['experience_key', 'definition_version', 'business_type_key'];
+					},
+					{
+						foreignKeyName: 'platform_onboarding_applications_proposed_definition_fkey';
+						columns: ['proposed_experience_key', 'proposed_definition_version'];
+						isOneToOne: false;
+						referencedRelation: 'industry_experience_definitions';
+						referencedColumns: ['experience_key', 'version'];
 					}
 				];
 			};
@@ -26608,6 +26698,19 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			record_onboarding_application_qualification: {
+				Args: {
+					actor_email: string;
+					target_application_id: string;
+					target_business_type_key: string;
+					target_buyer_message: string;
+					target_experience_key: string;
+					target_outcome: string;
+					target_reason: string;
+					target_reviewed_work: string;
+				};
+				Returns: string;
+			};
 			record_organization_billing_receipt: {
 				Args: {
 					actor_owner_email: string;
@@ -28665,6 +28768,7 @@ export type Database = {
 					target_billing_interval: string;
 					target_business_name: string;
 					target_city_country: string;
+					target_described_work: string;
 					target_initial_administrator_email: string;
 					target_initial_administrator_name: string;
 					target_main_contact_email: string;
@@ -28673,9 +28777,11 @@ export type Database = {
 					target_note: string;
 					target_package_edition_id: string;
 					target_privacy_policy_version: string;
+					target_proposed_business_type_key: string;
+					target_proposed_experience_key: string;
+					target_proposed_other: string;
 					target_submitted_data: Json;
 					target_time_zone: string;
-					target_trade: string;
 				};
 				Returns: string;
 			};

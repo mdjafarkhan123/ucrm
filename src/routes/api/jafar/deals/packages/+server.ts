@@ -5,7 +5,7 @@ import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { loadPublicPackages } from '$lib/server/packages/public-packages';
-import { APPLICATION_EXPERIENCE } from '$lib/experience/definitions';
+import { PRICING_PAGE_EXPERIENCE } from '$lib/experience/definitions';
 
 // Jafar business management B4: the packages on the public pricing page today, for "Pricing shared". Sales can
 // read them here without opening the Packages area.
@@ -13,7 +13,7 @@ import { APPLICATION_EXPERIENCE } from '$lib/experience/definitions';
 export const GET: RequestHandler = async (event) => {
 	if (!(await getOwnerSession(event))) return ownerUnauthorized();
 	try {
-		const packages = await loadPublicPackages(getOwnerSupabaseClient(), APPLICATION_EXPERIENCE);
+		const packages = await loadPublicPackages(getOwnerSupabaseClient(), PRICING_PAGE_EXPERIENCE);
 		return json(
 			{
 				packages: packages.map((pkg) => ({

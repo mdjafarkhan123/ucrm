@@ -41,7 +41,9 @@ const validBody = {
 	main_contact_email: 'jordan@ridgeway.example',
 	main_contact_phone: '555-0100',
 	is_administrator_same_as_contact: true,
-	trade: 'Roofing',
+	proposed_experience_key: 'contractor',
+	proposed_business_type_key: 'roofing',
+	described_work: 'Roof repairs and replacements for homes.',
 	city_country: 'Austin, USA',
 	time_zone: 'America/Chicago',
 	package_edition_id: '11111111-1111-4111-8111-111111111111',
@@ -117,6 +119,46 @@ describe('public onboarding application submission API boundary', () => {
 		);
 	});
 
+	it('saves a business that fits no listed type without a package, for Uplift to recommend one', async () => {
+		const client = clientWith({ applicationId: 'app-7' });
+		mockedClient.mockReturnValue(client as never);
+
+		const response = await POST(
+			postEvent({
+				...validBody,
+				proposed_experience_key: null,
+				proposed_business_type_key: null,
+				proposed_other: 'something_else',
+				described_work: 'Mobile dog grooming.',
+				package_edition_id: null,
+				billing_interval: null
+			})
+		);
+		expect(response.status).toBe(200);
+		expect(mockedEditionSoldTo).not.toHaveBeenCalled();
+		expect(client.__rpc).toHaveBeenCalledWith(
+			'submit_onboarding_application',
+			expect.objectContaining({
+				target_proposed_other: 'something_else',
+				target_proposed_experience_key: null,
+				target_package_edition_id: null,
+				target_billing_interval: null
+			})
+		);
+	});
+
+	it('refuses a package sent alongside an answer that fits no listed type', async () => {
+		const response = await POST(postEvent({ ...validBody, proposed_other: 'medspa' }));
+		expect(response.status).toBe(422);
+		expect(mockedClient).not.toHaveBeenCalled();
+	});
+
+	it('asks for the kind of business when a listed type is missing', async () => {
+		const response = await POST(postEvent({ ...validBody, proposed_business_type_key: null }));
+		expect(response.status).toBe(422);
+		expect((await response.json()).field_errors.business_type).toMatch(/kind of business/);
+	});
+
 	it('validates the request body before touching the database', async () => {
 		const response = await POST(postEvent({ ...validBody, main_contact_email: 'not-an-email' }));
 		expect(response.status).toBe(422);
@@ -159,6 +201,10 @@ describe('public onboarding application submission API boundary', () => {
 				target_main_contact_email: 'jordan@ridgeway.example',
 				target_initial_administrator_name: '',
 				target_initial_administrator_email: '',
+				target_described_work: 'Roof repairs and replacements for homes.',
+				target_proposed_experience_key: 'contractor',
+				target_proposed_business_type_key: 'roofing',
+				target_proposed_other: null,
 				target_package_edition_id: '11111111-1111-4111-8111-111111111111',
 				target_billing_interval: 'month',
 				target_privacy_policy_version: 'v1'

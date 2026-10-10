@@ -19,12 +19,21 @@ const onboardingApplicationFieldsSchema = z.object({
 		.email('Enter a valid administrator email address.')
 		.max(254)
 		.nullish(),
-	trade: z.string().trim().min(1, 'Enter your trade.').max(120),
+	// Multi-industry foundation B3: a listed Business type of an offered experience, or one of the "other"
+	// answers, which Uplift reviews before recommending a package.
+	proposed_experience_key: z.string().trim().min(1).max(40).nullish(),
+	proposed_business_type_key: z.string().trim().min(1).max(40).nullish(),
+	proposed_other: z.enum(['something_else', 'medspa']).nullish(),
+	described_work: z
+		.string()
+		.trim()
+		.min(1, 'Tell us what work your business does.')
+		.max(2000, 'Keep this under 2,000 characters.'),
 	city_country: z.string().trim().min(1, 'Enter your city and country.').max(160),
 	time_zone: z.string().trim().min(1, 'Enter your time zone.').max(64),
 	note: z.string().trim().max(2000).nullish(),
-	package_edition_id: z.string().uuid('Choose a package.'),
-	billing_interval: z.enum(['month', 'year']),
+	package_edition_id: z.string().uuid('Choose a package.').nullish(),
+	billing_interval: z.enum(['month', 'year']).nullish(),
 	privacy_policy_agreed: z
 		.boolean()
 		.refine((value) => value === true, 'You must agree to the privacy policy to continue.'),
@@ -36,6 +45,33 @@ const onboardingApplicationFieldsSchema = z.object({
 // be saved with nobody to send the account setup link to, and only fail much later at provisioning.
 export const onboardingApplicationSubmissionSchema = onboardingApplicationFieldsSchema.superRefine(
 	(value, ctx) => {
+		if (value.proposed_other) {
+			if (value.package_edition_id)
+				ctx.addIssue({
+					code: 'custom',
+					path: ['package_edition_id'],
+					message: 'Uplift recommends a package for this kind of business after review.'
+				});
+		} else {
+			if (!value.proposed_experience_key || !value.proposed_business_type_key)
+				ctx.addIssue({
+					code: 'custom',
+					path: ['business_type'],
+					message: 'Choose what kind of business you run.'
+				});
+			if (!value.package_edition_id)
+				ctx.addIssue({
+					code: 'custom',
+					path: ['package_edition_id'],
+					message: 'Choose a package.'
+				});
+			if (!value.billing_interval)
+				ctx.addIssue({
+					code: 'custom',
+					path: ['billing_interval'],
+					message: 'Choose monthly or yearly billing.'
+				});
+		}
 		if (value.is_administrator_same_as_contact) return;
 		if (!value.initial_administrator_name)
 			ctx.addIssue({

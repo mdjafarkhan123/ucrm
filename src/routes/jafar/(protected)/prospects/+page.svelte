@@ -46,6 +46,8 @@
 		type ShownOffer
 	} from '$lib/packages/public-package';
 	import type { AgreementOfferTerms } from '$lib/components/jafar/organization/types';
+	import type { ConfirmableExperienceDefinition } from '$lib/experience/types';
+	import { APPLICATION_OTHER_CHOICES } from '$lib/experience/definitions';
 	import {
 		formatCalendarDate,
 		formatUsd,
@@ -73,8 +75,9 @@
 		trade: string;
 		city_country: string;
 		time_zone: string;
-		package_edition_id: string;
-		billing_interval: BillingInterval;
+		/** Null while Uplift still has to recommend a package (B3: no listed Business type fitted). */
+		package_edition_id: string | null;
+		billing_interval: BillingInterval | null;
 		package_snapshot: unknown;
 		possible_duplicate: boolean;
 		submitted_at: string;
@@ -91,6 +94,32 @@
 		payment_reversed_at: string | null;
 		/** B2: the Lead this Application belongs to, when someone linked it. */
 		linked_lead: { id: string; business_name: string } | null;
+		/** Multi-industry foundation B3: what the buyer said about the kind of business. */
+		described_work: string | null;
+		proposed_experience_key: string | null;
+		proposed_business_type_key: string | null;
+		proposed_other: 'something_else' | 'medspa' | null;
+	};
+	type Qualification = {
+		id: string;
+		outcome: 'supported' | 'holding';
+		experience_key: string | null;
+		experience_name: string | null;
+		business_type_key: string | null;
+		business_type_label: string | null;
+		reviewed_work: string | null;
+		buyer_message: string | null;
+		reason: string;
+		actor_owner_email: string;
+		created_at: string;
+	};
+	type QualificationForm = {
+		outcome: 'supported' | 'holding';
+		experience_key: string;
+		business_type_key: string;
+		reviewed_work: string;
+		buyer_message: string;
+		reason: string;
 	};
 	type DuplicateMatch = {
 		id: string;
@@ -192,6 +221,9 @@
 		payment_confirmations: PaymentConfirmation[];
 		payment_reversals: PaymentReversal[];
 		provision: ProvisionStatus | null;
+		proposed_business_type_label: string | null;
+		qualifications: Qualification[];
+		offered_experiences: ConfirmableExperienceDefinition[];
 		error?: string;
 	};
 
@@ -272,6 +304,15 @@
 	let activationCode = $state('');
 	let confirmingReversal = $state(false);
 	let changingPackage = $state(false);
+	let qualifying = $state(false);
+	let qualificationForm = $state<QualificationForm>({
+		outcome: 'supported',
+		experience_key: '',
+		business_type_key: '',
+		reviewed_work: '',
+		buyer_message: '',
+		reason: ''
+	});
 	let packageForm = $state<PackageCorrectionForm>({
 		package_id: '',
 		billing_interval: 'month',
@@ -325,6 +366,7 @@
 
 	function openCorrectionForm(detail: ProspectDetail) {
 		clearFeedback();
+		qualifying = false;
 		confirmingNotProceeding = false;
 		confirmingPayment = false;
 		confirmingProvision = false;
@@ -348,6 +390,7 @@
 
 	function openNotProceedingConfirm() {
 		clearFeedback();
+		qualifying = false;
 		editingCorrection = false;
 		confirmingPayment = false;
 		confirmingProvision = false;
@@ -359,6 +402,7 @@
 
 	function openPaymentForm(detail: ProspectDetail) {
 		clearFeedback();
+		qualifying = false;
 		editingCorrection = false;
 		confirmingNotProceeding = false;
 		confirmingProvision = false;
@@ -370,6 +414,7 @@
 
 	function openProvisionConfirm() {
 		clearFeedback();
+		qualifying = false;
 		editingCorrection = false;
 		confirmingNotProceeding = false;
 		confirmingPayment = false;
@@ -388,7 +433,12 @@
 		confirmingPayment = false;
 		confirmingProvision = false;
 		confirmingReversal = false;
-		packageForm = { package_id: '', billing_interval: detail.billing_interval, reason: '' };
+		qualifying = false;
+		packageForm = {
+			package_id: '',
+			billing_interval: detail.billing_interval ?? 'month',
+			reason: ''
+		};
 		changingPackage = true;
 		// Start on the customer's current package, once the list is in (it may still be loading on a fast click).
 		const packages = await queryClient.ensureQueryData({
@@ -445,6 +495,38 @@
 		confirmingReversal = true;
 	}
 
+	// Multi-industry foundation B3: Uplift confirms the kind of business, or holds the Application while it
+	// checks something, any time before payment is confirmed. The form starts from what the buyer proposed.
+	function openQualificationForm(detail: ProspectDetail, outcome: QualificationForm['outcome']) {
+		clearFeedback();
+		editingCorrection = false;
+		confirmingNotProceeding = false;
+		confirmingPayment = false;
+		confirmingProvision = false;
+		confirmingReversal = false;
+		changingPackage = false;
+		const latest = prospectDetail.data?.qualifications[0];
+		const supported = latest?.outcome === 'supported' ? latest : null;
+		const offered = prospectDetail.data?.offered_experiences ?? [];
+		const experienceKey =
+			supported?.experience_key ??
+			detail.proposed_experience_key ??
+			(offered.length === 1 ? offered[0].experience_key : '');
+		qualificationForm = {
+			outcome,
+			experience_key: experienceKey,
+			business_type_key: supported?.business_type_key ?? detail.proposed_business_type_key ?? '',
+			reviewed_work: supported?.reviewed_work ?? detail.described_work ?? '',
+			buyer_message: '',
+			reason: ''
+		};
+		qualifying = true;
+	}
+
+	function canQualify(detail: ProspectDetail) {
+		return unpaidStages.includes(detail.stage) && !hasPayment;
+	}
+
 	// A package is corrected before payment, or after a reversal (package builder P10).
 	function canChangePackage(detail: ProspectDetail) {
 		return unpaidStages.includes(detail.stage) && !hasPayment;
@@ -499,8 +581,26 @@
 		staleTime: 30_000,
 		enabled: changingPackage
 	}));
+	// B3: the experience a package must be sold to: the one Uplift confirmed, or before that the buyer's own.
+	const latestDecision = $derived(prospectDetail.data?.qualifications[0] ?? null);
+	const fitExperience = $derived(
+		latestDecision?.outcome === 'supported'
+			? latestDecision.experience_key
+			: (prospectDetail.data?.prospect.proposed_experience_key ?? null)
+	);
 	const packageChoices = $derived(
-		(packagesQuery.data ?? []).filter((pkg) => pkg.published && !pkg.archived_at)
+		(packagesQuery.data ?? []).filter(
+			(pkg) =>
+				pkg.published &&
+				!pkg.archived_at &&
+				fitExperience !== null &&
+				pkg.published.experience_keys.includes(fitExperience)
+		)
+	);
+	const qualificationExperience = $derived(
+		prospectDetail.data?.offered_experiences.find(
+			(experience) => experience.experience_key === qualificationForm.experience_key
+		) ?? null
 	);
 	const chosenPackage = $derived(
 		packageChoices.find((pkg) => pkg.id === packageForm.package_id) ?? null
@@ -614,6 +714,42 @@
 		onError: (error) => (actionError = error.message),
 		onSuccess: () => {
 			actionMessage = 'Application marked reviewed.';
+			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
+			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
+		}
+	}));
+
+	const recordQualification = createMutation<ActionResponse, Error, void>(() => ({
+		mutationFn: async () => {
+			if (!selectedProspectId) throw new Error('Choose an Application first.');
+			const form = qualificationForm;
+			const response = await fetch(`/api/jafar/prospects/${selectedProspectId}/qualify`, {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify(
+					form.outcome === 'supported'
+						? {
+								outcome: 'supported',
+								experience_key: form.experience_key,
+								business_type_key: form.business_type_key,
+								reviewed_work: form.reviewed_work,
+								reason: form.reason
+							}
+						: { outcome: 'holding', buyer_message: form.buyer_message, reason: form.reason }
+				)
+			});
+			const result = (await response.json()) as ActionResponse;
+			if (!response.ok) throw new Error(result.error ?? 'The decision could not be saved.');
+			return result;
+		},
+		onMutate: () => clearFeedback(),
+		onError: (error) => (actionError = error.message),
+		onSuccess: () => {
+			actionMessage =
+				qualificationForm.outcome === 'supported'
+					? 'Kind of business confirmed.'
+					: 'Application held. The business sees what you are checking.';
+			qualifying = false;
 			void queryClient.invalidateQueries({ queryKey: jafarProspectsKey });
 			void queryClient.invalidateQueries({ queryKey: jafarProspectKey(selectedProspectId) });
 		}
@@ -1121,8 +1257,13 @@
 									<small>{prospect.trade} · {prospect.city_country}</small>
 								</th>
 								<td>
-									<strong>{packageName(prospect.package_snapshot)}</strong>
-									<small>{packageTerms(prospect.package_snapshot)}</small>
+									{#if prospect.package_snapshot}
+										<strong>{packageName(prospect.package_snapshot)}</strong>
+										<small>{packageTerms(prospect.package_snapshot)}</small>
+									{:else}
+										<strong>To recommend</strong>
+										<small>No package chosen</small>
+									{/if}
 								</td>
 								<td>
 									<Badge status={stageTone(prospect.stage)}>{stageLabel(prospect.stage)}</Badge>
@@ -1263,7 +1404,11 @@
 						<div>
 							<dt>Package</dt>
 							<dd>
-								{packageName(detail.package_snapshot)} · {packageTerms(detail.package_snapshot)}
+								{#if detail.package_snapshot}
+									{packageName(detail.package_snapshot)} · {packageTerms(detail.package_snapshot)}
+								{:else}
+									None yet — Uplift recommends one
+								{/if}
 							</dd>
 						</div>
 						<div>
@@ -1271,6 +1416,172 @@
 							<dd>{formatDate(detail.submitted_at)}</dd>
 						</div>
 					</dl>
+
+					<section class="prospects__kind" aria-labelledby="prospect-kind-heading">
+						<div class="prospects__kind-header">
+							<h3 id="prospect-kind-heading">Kind of business</h3>
+							{#if latestDecision?.outcome === 'supported'}
+								<Badge status="success">Confirmed</Badge>
+							{:else if latestDecision?.outcome === 'holding'}
+								<Badge status="warning">Checking</Badge>
+							{:else}
+								<Badge status="informative">To review</Badge>
+							{/if}
+						</div>
+						<dl class="prospects__kind-facts">
+							<div>
+								<dt>The applicant said</dt>
+								<dd>
+									{#if detail.proposed_other}
+										{APPLICATION_OTHER_CHOICES[detail.proposed_other].label}
+									{:else}
+										{prospectDetail.data.proposed_business_type_label ?? detail.trade}
+									{/if}
+								</dd>
+							</div>
+							<div class="prospects__kind-wide">
+								<dt>Work they described</dt>
+								<dd class="prospects__kind-text">
+									{detail.described_work ?? 'Not asked when they applied'}
+								</dd>
+							</div>
+							{#if latestDecision?.outcome === 'supported'}
+								<div>
+									<dt>Uplift confirmed</dt>
+									<dd>{latestDecision.experience_name} · {latestDecision.business_type_label}</dd>
+								</div>
+							{:else if latestDecision?.outcome === 'holding'}
+								<div class="prospects__kind-wide">
+									<dt>The business sees</dt>
+									<dd class="prospects__kind-text">{latestDecision.buyer_message}</dd>
+								</div>
+							{/if}
+						</dl>
+						{#if !latestDecision && detail.stage === 'new'}
+							<p class="prospects__kind-hint">
+								Confirm the kind of business before marking it reviewed or recording payment.
+							</p>
+						{/if}
+						{#if canQualify(detail) && !qualifying}
+							<div class="prospects__kind-actions">
+								<Button
+									type="button"
+									size="small"
+									variant={latestDecision?.outcome === 'supported' ? 'tertiary' : 'primary'}
+									onclick={() => openQualificationForm(detail, 'supported')}
+									>{latestDecision?.outcome === 'supported'
+										? 'Change kind of business'
+										: 'Confirm kind of business'}</Button
+								>
+								<Button
+									type="button"
+									size="small"
+									variant="tertiary"
+									onclick={() => openQualificationForm(detail, 'holding')}
+									>Hold for a missing fact</Button
+								>
+							</div>
+						{/if}
+						{#if qualifying}
+							<form
+								class="prospects__correction-form"
+								onsubmit={(event) => {
+									event.preventDefault();
+									recordQualification.mutate();
+								}}
+							>
+								<SegmentedControl
+									label="Decision"
+									size="small"
+									bind:value={qualificationForm.outcome}
+									options={[
+										{ value: 'supported', label: 'We serve this business' },
+										{ value: 'holding', label: 'Still checking' }
+									]}
+								/>
+								<div class="prospects__form-grid">
+									{#if qualificationForm.outcome === 'supported'}
+										<Select
+											id="qualification-experience"
+											label="Industry experience"
+											placeholder="Choose an experience"
+											bind:value={qualificationForm.experience_key}
+											onchange={() => (qualificationForm.business_type_key = '')}
+											options={prospectDetail.data.offered_experiences.map((experience) => ({
+												value: experience.experience_key,
+												label: experience.name
+											}))}
+										/>
+										<Select
+											id="qualification-business-type"
+											label="Business type"
+											placeholder="Choose a business type"
+											bind:value={qualificationForm.business_type_key}
+											disabled={!qualificationExperience}
+											options={(qualificationExperience?.business_types ?? []).map((type) => ({
+												value: type.key,
+												label: type.label
+											}))}
+										/>
+										<label class="prospects__form-wide"
+											><span>The work you reviewed</span><textarea
+												bind:value={qualificationForm.reviewed_work}
+												required
+												maxlength="1000"></textarea></label
+										>
+									{:else}
+										<label class="prospects__form-wide"
+											><span>What you are checking (the business sees this)</span><textarea
+												bind:value={qualificationForm.buyer_message}
+												placeholder="For example: We need to know which treatments you offer and who supervises them."
+												required
+												maxlength="500"></textarea></label
+										>
+									{/if}
+									<label class="prospects__form-wide"
+										><span>Private reason</span><textarea
+											bind:value={qualificationForm.reason}
+											required
+											maxlength="1000"></textarea></label
+									>
+								</div>
+								<div class="prospects__form-actions">
+									<Button
+										type="button"
+										variant="secondary"
+										variation="subtle"
+										disabled={recordQualification.isPending}
+										onclick={() => (qualifying = false)}>Cancel</Button
+									>
+									<Button
+										type="submit"
+										loading={recordQualification.isPending}
+										disabled={qualificationForm.outcome === 'supported' &&
+											(!qualificationForm.experience_key || !qualificationForm.business_type_key)}
+										>{qualificationForm.outcome === 'supported'
+											? 'Confirm'
+											: 'Hold application'}</Button
+									>
+								</div>
+							</form>
+						{/if}
+						{#if prospectDetail.data.qualifications.length > 0}
+							<ol class="prospects__kind-history">
+								{#each prospectDetail.data.qualifications as decision (decision.id)}
+									<li>
+										<strong
+											>{decision.outcome === 'supported'
+												? `Confirmed as ${decision.experience_name} · ${decision.business_type_label}`
+												: 'Held while checking'}</strong
+										>
+										<small>{decision.reason}</small>
+										<small>{decision.actor_owner_email} · {formatDate(decision.created_at)}</small>
+									</li>
+								{/each}
+							</ol>
+						{/if}
+					</section>
+
 					{#if actionMessage}<p
 							class="prospects__feedback prospects__feedback--success"
 							role="status"
@@ -2523,6 +2834,95 @@
 			background: var(--color-surface);
 			font: inherit;
 			resize: vertical;
+		}
+	}
+
+	// Multi-industry foundation B3: what the applicant said they are, and what Uplift decided.
+	.prospects__kind {
+		display: grid;
+		gap: var(--space-small);
+		margin-top: var(--space-base);
+		padding: var(--space-base);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+
+		h3 {
+			margin: 0;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+		}
+	}
+
+	.prospects__kind-header,
+	.prospects__kind-actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-small);
+	}
+
+	.prospects__kind-header {
+		justify-content: space-between;
+	}
+
+	.prospects__kind-facts {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--space-small) var(--space-base);
+		margin: 0;
+
+		dt {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		dd {
+			margin: var(--space-smallest) 0 0;
+			color: var(--color-heading);
+			overflow-wrap: anywhere;
+		}
+	}
+
+	.prospects__kind-wide {
+		grid-column: 1 / -1;
+	}
+
+	.prospects__kind-text {
+		white-space: pre-line;
+	}
+
+	.prospects__kind-hint {
+		margin: 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+	}
+
+	.prospects__kind-history {
+		display: grid;
+		gap: var(--space-small);
+		margin: 0;
+		padding: var(--space-small) 0 0;
+		border-top: var(--border-base) solid var(--color-border);
+		list-style: none;
+
+		li {
+			display: grid;
+			gap: var(--space-smallest);
+		}
+
+		strong {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		small {
+			color: var(--color-text--secondary);
+		}
+	}
+
+	@media (max-width: 560px) {
+		.prospects__kind-facts {
+			grid-template-columns: 1fr;
 		}
 	}
 

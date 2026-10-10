@@ -70,6 +70,7 @@ export const POST: RequestHandler = async (event) => {
 					{ status: 422 }
 				);
 			if (
+				rpcError.hint === 'application_not_qualified' ||
 				rpcError.message.includes('can no longer be confirmed') ||
 				rpcError.message.includes('already has a confirmed payment')
 			)

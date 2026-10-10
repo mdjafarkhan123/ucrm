@@ -7,7 +7,7 @@ import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { readBody } from '$lib/server/jafar/lead-approval';
 import { DEAL_NOT_FOUND, dealCommandResponse } from '$lib/server/jafar/deals';
 import { loadPublicPackages } from '$lib/server/packages/public-packages';
-import { APPLICATION_EXPERIENCE } from '$lib/experience/definitions';
+import { PRICING_PAGE_EXPERIENCE } from '$lib/experience/definitions';
 import { dealShareSchema } from '$lib/server/validation/deal.schema';
 
 // Jafar business management B4: record the packages shared with a Deal. The prices and offers are read here from
@@ -25,7 +25,7 @@ export const POST: RequestHandler = async (event) => {
 	const client = getOwnerSupabaseClient();
 	let published;
 	try {
-		published = await loadPublicPackages(client, APPLICATION_EXPERIENCE);
+		published = await loadPublicPackages(client, PRICING_PAGE_EXPERIENCE);
 	} catch (error) {
 		console.error('Could not read the pricing page for a Deal.', error);
 		return databaseError();

@@ -5,6 +5,6 @@
 
 **In progress:** Stage A. B1 Experience identity and B2 Package fit done 2026-10-10. Each edition names who may buy it (`package_editions.experience_keys`); each capability has a family and each service the experiences it is delivered for. The Application still sells only to Contractor (`APPLICATION_EXPERIENCE` in `src/lib/experience/definitions.ts`) until B3.
 
-**Next:** Read `stages/A-admission.md` and start B3 One Application: the Application records the buyer's described work and proposed experience, replaces `APPLICATION_EXPERIENCE`, and checks edition fit on Application package corrections.
+**Next:** B3 One Application is mostly built and paused — continue from `parts/B3-one-application.md`.
 
 **Blockers:** Medspa implementation waits for the foundation build and connected Contractor proof in B12. Existing-Organization migration waits for safe access and public continuity in B1–B9.

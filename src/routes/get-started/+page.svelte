@@ -3,6 +3,8 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import Input from '$lib/components/ui/Input.svelte';
+	import Select from '$lib/components/ui/Select.svelte';
+	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
@@ -20,6 +22,10 @@
 		type BillingInterval,
 		type PublicPackage
 	} from '$lib/packages/public-package';
+	import {
+		APPLICATION_OTHER_CHOICES,
+		type ApplicationOtherChoice
+	} from '$lib/experience/definitions';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -27,7 +33,32 @@
 	// A visitor actively chooses a package; only a marketing-site link may choose one in advance. Read on
 	// the server too, so the first paint already shows the linked package and billing.
 	const link = untrack(() => data.linkChoice);
-	const linked = untrack(() => data.packages.find((pkg) => pkg.edition_id === link.edition_id));
+	const linkType = untrack(() => data.linkBusinessType);
+	const allPackages = $derived(Object.values(data.packagesByExperience).flat());
+	const linked = untrack(() =>
+		Object.values(data.packagesByExperience)
+			.flat()
+			.find((pkg) => pkg.edition_id === link.edition_id)
+	);
+
+	// Multi-industry foundation B3: the kind of business is one select value, either a listed Business type
+	// ("contractor:roofing") or an answer that fits none ("other:medspa"). It decides which packages show.
+	const OTHER_PREFIX = 'other:';
+	const businessOptions = $derived([
+		...data.experiences.flatMap((experience) =>
+			experience.business_types.map((type) => ({
+				value: `${experience.key}:${type.key}`,
+				label: data.experiences.length > 1 ? `${type.label} · ${experience.name}` : type.label
+			}))
+		),
+		...(['medspa', 'something_else'] as const).map((key) => ({
+			value: `${OTHER_PREFIX}${key}`,
+			label:
+				key === 'medspa'
+					? `${APPLICATION_OTHER_CHOICES[key].label} (coming soon)`
+					: APPLICATION_OTHER_CHOICES[key].label
+		}))
+	]);
 
 	type FormState = {
 		business_name: string;
@@ -37,7 +68,8 @@
 		is_administrator_same_as_contact: boolean;
 		initial_administrator_name: string;
 		initial_administrator_email: string;
-		trade: string;
+		business_choice: string;
+		described_work: string;
 		city_country: string;
 		time_zone: string;
 		note: string;
@@ -52,7 +84,8 @@
 		is_administrator_same_as_contact: true,
 		initial_administrator_name: '',
 		initial_administrator_email: '',
-		trade: '',
+		business_choice: linkType ? `${linkType.experience_key}:${linkType.business_type_key}` : '',
+		described_work: '',
 		city_country: '',
 		time_zone: '',
 		note: '',
@@ -88,18 +121,37 @@
 		reset: (widgetId?: string) => void;
 	};
 
+	const otherChoice = $derived(
+		form.business_choice.startsWith(OTHER_PREFIX)
+			? (form.business_choice.slice(OTHER_PREFIX.length) as ApplicationOtherChoice)
+			: null
+	);
+	const proposedExperience = $derived(
+		form.business_choice && !otherChoice ? form.business_choice.split(':')[0] : null
+	);
+	const businessLabel = $derived(
+		businessOptions.find((option) => option.value === form.business_choice)?.label ?? ''
+	);
+	// The packages sold to the chosen kind of business; none for an answer Uplift has to review first.
+	const packages = $derived(
+		proposedExperience ? (data.packagesByExperience[proposedExperience] ?? []) : []
+	);
 	const selected = $derived(
-		data.packages.find((pkg) => pkg.edition_id === form.package_edition_id) ?? null
+		packages.find((pkg) => pkg.edition_id === form.package_edition_id) ?? null
 	);
 	const selectedInterval = $derived(selected ? offeredInterval(selected, wanted) : wanted);
-	const detailsPackage = $derived(
-		data.packages.find((pkg) => pkg.edition_id === detailsFor) ?? null
-	);
+	const detailsPackage = $derived(allPackages.find((pkg) => pkg.edition_id === detailsFor) ?? null);
 	// The switch only matters when both billing choices exist somewhere in the list.
 	const showBillingSwitch = $derived(
-		data.packages.some((pkg) => pkg.monthly_price_usd_cents !== null) &&
-			data.packages.some((pkg) => pkg.yearly_price_usd_cents !== null)
+		packages.some((pkg) => pkg.monthly_price_usd_cents !== null) &&
+			packages.some((pkg) => pkg.yearly_price_usd_cents !== null)
 	);
+
+	// Changing the kind of business drops a package that is not sold to it, so nobody applies for one.
+	function chooseBusiness(value: string) {
+		form.business_choice = value;
+		if (form.package_edition_id && !selected) form.package_edition_id = '';
+	}
 
 	// The time zone starts as the visitor's own, which is wrong when someone fills this in for a business
 	// elsewhere — and activation uses it to date the first paid period. Keep it when the chosen country
@@ -155,17 +207,20 @@
 	}
 
 	const steps = [
-		{ number: 1, label: 'Package', hint: 'Pick your plan' },
-		{ number: 2, label: 'Business', hint: 'Your company' },
+		{ number: 1, label: 'Business', hint: 'Your company' },
+		{ number: 2, label: 'Package', hint: 'Pick your plan' },
 		{ number: 3, label: 'Contact', hint: 'People and access' },
 		{ number: 4, label: 'Review', hint: 'Confirm details' }
 	];
 	const headings: Record<number, [string, string]> = {
 		1: [
+			'Tell us about your business',
+			'What you do decides which packages fit. Uplift confirms it with you before any payment.'
+		],
+		2: [
 			'Choose your package',
 			'Compare what each package includes, then pick the one that fits your business today.'
 		],
-		2: ['Tell us about your business', 'These details help us tailor your workspace.'],
 		3: [
 			'Who should we contact?',
 			'We’ll use this information to follow up and set up account access.'
@@ -179,11 +234,13 @@
 	// Field errors are only shown on the step that owns the field, so a server-side error (a package
 	// retired mid-application, for instance) has to send the visitor back to that step to be seen.
 	const stepByField: Record<string, number> = {
-		package_edition_id: 1,
-		business_name: 2,
-		trade: 2,
-		city_country: 2,
-		time_zone: 2,
+		package_edition_id: 2,
+		billing_interval: 2,
+		business_name: 1,
+		business_type: 1,
+		described_work: 1,
+		city_country: 1,
+		time_zone: 1,
 		main_contact_name: 3,
 		main_contact_email: 3,
 		main_contact_phone: 3,
@@ -200,10 +257,13 @@
 
 	function validateStep(step: number) {
 		const errors: Record<string, string> = {};
-		if (step === 1 && !selected) errors.package_edition_id = 'Choose a package to continue.';
-		if (step === 2) {
+		if (step === 2 && !otherChoice && !selected)
+			errors.package_edition_id = 'Choose a package to continue.';
+		if (step === 1) {
 			if (!form.business_name.trim()) errors.business_name = 'Enter your business name.';
-			if (!form.trade.trim()) errors.trade = 'Enter your trade.';
+			if (!form.business_choice) errors.business_type = 'Choose what kind of business you run.';
+			if (!form.described_work.trim())
+				errors.described_work = 'Tell us what work your business does.';
 			if (!form.city_country.trim()) errors.city_country = 'Enter your city and country.';
 			if (!form.time_zone.trim()) errors.time_zone = 'Enter your time zone.';
 		}
@@ -249,14 +309,14 @@
 	async function refreshPackages() {
 		const previousSlug = selected?.slug ?? null;
 		await invalidateAll();
-		const successor = data.packages.find((pkg) => pkg.slug === previousSlug);
+		const successor = packages.find((pkg) => pkg.slug === previousSlug);
 		form.package_edition_id = successor?.edition_id ?? '';
 		packageNotice = successor
 			? `${successor.name} was just updated. Please look over its details before you submit.`
 			: 'The package you chose is no longer offered. Please choose another one.';
 		fieldErrors = {};
 		errorMessage = '';
-		currentStep = 1;
+		currentStep = 2;
 	}
 
 	async function submit(event: SubmitEvent) {
@@ -287,8 +347,22 @@
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({
-					...form,
-					billing_interval: selectedInterval,
+					business_name: form.business_name,
+					main_contact_name: form.main_contact_name,
+					main_contact_email: form.main_contact_email,
+					main_contact_phone: form.main_contact_phone,
+					is_administrator_same_as_contact: form.is_administrator_same_as_contact,
+					described_work: form.described_work,
+					proposed_experience_key: proposedExperience,
+					proposed_business_type_key: proposedExperience
+						? form.business_choice.split(':')[1]
+						: null,
+					proposed_other: otherChoice,
+					city_country: form.city_country,
+					time_zone: form.time_zone,
+					privacy_policy_agreed: form.privacy_policy_agreed,
+					package_edition_id: otherChoice ? null : form.package_edition_id,
+					billing_interval: otherChoice ? null : selectedInterval,
 					initial_administrator_name: form.is_administrator_same_as_contact
 						? null
 						: form.initial_administrator_name,
@@ -363,52 +437,6 @@
 			</header>
 			<form onsubmit={submit}>
 				{#if currentStep === 1}
-					<section class="get-started__step-panel" aria-labelledby="package-heading">
-						<div class="get-started__package-bar">
-							<h3 id="package-heading">Choose a package</h3>
-							{#if showBillingSwitch}
-								<SegmentedControl
-									bind:value={wanted}
-									size="small"
-									label="Billing"
-									options={[
-										{ value: 'month', label: 'Monthly' },
-										{ value: 'year', label: 'Yearly' }
-									]}
-								/>
-							{/if}
-						</div>
-						{#if packageNotice}<Banner type="warning">{packageNotice}</Banner>{/if}
-						{#if data.packages.length === 0}
-							<p class="get-started__note" role="status">
-								No packages are open for sign-up right now. Please check back soon.
-							</p>
-						{/if}
-						<div
-							class="get-started__package-grid"
-							role="radiogroup"
-							aria-labelledby="package-heading"
-						>
-							{#each data.packages as pkg (pkg.edition_id)}
-								<PackageCard
-									{pkg}
-									{wanted}
-									interval={offeredInterval(pkg, wanted)}
-									selected={form.package_edition_id === pkg.edition_id}
-									bind:group={form.package_edition_id}
-									onviewdetails={() => (detailsFor = pkg.edition_id)}
-								/>
-							{/each}
-						</div>
-						{#if fieldErrors.package_edition_id}
-							<p class="get-started__error" role="alert">{fieldErrors.package_edition_id}</p>
-						{/if}
-						<p class="get-started__note">
-							Payment is handled outside this form; we’ll send instructions after you apply. Text
-							messages and extra email are paid separately from a prepaid balance.
-						</p>
-					</section>
-				{:else if currentStep === 2}
 					<section
 						class="get-started__step-panel get-started__fields"
 						aria-labelledby="details-heading"
@@ -423,14 +451,36 @@
 								errorMessage={fieldErrors.business_name}
 								required
 							/>
-							<Input
-								id="trade"
-								label="Trade"
-								bind:value={form.trade}
-								invalid={Boolean(fieldErrors.trade)}
-								errorMessage={fieldErrors.trade}
-								required
-							/>
+							<div class="get-started__choice">
+								<Select
+									id="business_type"
+									label="What kind of business do you run?"
+									placeholder="Choose the closest match"
+									value={form.business_choice}
+									options={businessOptions}
+									onchange={chooseBusiness}
+									required
+								/>
+								{#if fieldErrors.business_type}
+									<p class="get-started__error" role="alert">{fieldErrors.business_type}</p>
+								{:else if otherChoice}
+									<p class="get-started__note">{APPLICATION_OTHER_CHOICES[otherChoice].hint}</p>
+								{/if}
+							</div>
+							<div class="get-started__wide">
+								<Textarea
+									id="described_work"
+									label="What work does your business do?"
+									placeholder="For example: roof repairs and replacements for homes, plus gutter cleaning."
+									rows={3}
+									maxlength={2000}
+									showCount={false}
+									bind:value={form.described_work}
+									invalid={Boolean(fieldErrors.described_work)}
+									errorMessage={fieldErrors.described_work}
+									required
+								/>
+							</div>
 							<div class="get-started__location-fields">
 								<LocationPicker
 									id="city_country"
@@ -449,6 +499,62 @@
 								/>
 							</div>
 						</div>
+					</section>
+				{:else if currentStep === 2}
+					<section class="get-started__step-panel" aria-labelledby="package-heading">
+						<div class="get-started__package-bar">
+							<h3 id="package-heading">{otherChoice ? 'Your package' : 'Choose a package'}</h3>
+							{#if showBillingSwitch && !otherChoice}
+								<SegmentedControl
+									bind:value={wanted}
+									size="small"
+									label="Billing"
+									options={[
+										{ value: 'month', label: 'Monthly' },
+										{ value: 'year', label: 'Yearly' }
+									]}
+								/>
+							{/if}
+						</div>
+						{#if packageNotice}<Banner type="warning">{packageNotice}</Banner>{/if}
+						{#if otherChoice}
+							<div class="get-started__recommend" role="status">
+								<strong>Uplift will recommend your package</strong>
+								<p>
+									{otherChoice === 'medspa'
+										? 'Medspa and clinic packages are coming soon. Send your application and we will contact you about what we can offer.'
+										: 'We review what your business does first, then email you the package that fits. There is nothing to choose or pay now.'}
+								</p>
+							</div>
+						{:else if packages.length === 0}
+							<p class="get-started__note" role="status">
+								No packages are open for sign-up right now. Please check back soon.
+							</p>
+						{/if}
+						{#if !otherChoice}<div
+								class="get-started__package-grid"
+								role="radiogroup"
+								aria-labelledby="package-heading"
+							>
+								{#each packages as pkg (pkg.edition_id)}
+									<PackageCard
+										{pkg}
+										{wanted}
+										interval={offeredInterval(pkg, wanted)}
+										selected={form.package_edition_id === pkg.edition_id}
+										bind:group={form.package_edition_id}
+										onviewdetails={() => (detailsFor = pkg.edition_id)}
+									/>
+								{/each}
+							</div>
+							{#if fieldErrors.package_edition_id}
+								<p class="get-started__error" role="alert">{fieldErrors.package_edition_id}</p>
+							{/if}
+							<p class="get-started__note">
+								Uplift confirms your kind of business before asking for payment. Payment is handled
+								outside this form; we’ll send instructions once we have reviewed your application.
+								Text messages and extra email are paid separately from a prepaid balance.
+							</p>{/if}
 					</section>
 				{:else if currentStep === 3}
 					<section
@@ -520,7 +626,11 @@
 						<h3 id="review-heading">Your application</h3>
 						<div class="get-started__review-card">
 							<span>Package</span>
-							<strong>{selected?.name ?? 'Not selected'}</strong>
+							<strong
+								>{otherChoice
+									? 'Uplift will recommend one'
+									: (selected?.name ?? 'Not selected')}</strong
+							>
 							{#if selected}
 								{@const offer = selected.offers[selectedInterval]}
 								{#if offer}
@@ -546,15 +656,16 @@
 									See everything included
 								</button>
 							{/if}
-							<button type="button" class="get-started__review-edit" onclick={() => goToStep(1)}
+							<button type="button" class="get-started__review-edit" onclick={() => goToStep(2)}
 								>Edit</button
 							>
 						</div>
 						<div class="get-started__review-card">
 							<span>Business</span>
 							<strong>{form.business_name || 'Not provided'}</strong>
-							<p>{form.trade} · {form.city_country}</p>
-							<button type="button" class="get-started__review-edit" onclick={() => goToStep(2)}
+							<p>{businessLabel} · {form.city_country}</p>
+							<p class="get-started__review-work">{form.described_work}</p>
+							<button type="button" class="get-started__review-edit" onclick={() => goToStep(1)}
 								>Edit</button
 							>
 						</div>
@@ -818,6 +929,35 @@
 			gap: var(--space-base);
 		}
 
+		&__choice,
+		&__wide {
+			display: grid;
+			grid-column: 1 / -1;
+			gap: var(--space-smaller);
+		}
+
+		&__choice {
+			max-width: 480px;
+		}
+
+		&__recommend {
+			display: grid;
+			gap: var(--space-smaller);
+			padding: var(--space-base) var(--space-large);
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-base);
+			background: var(--color-informative--surface);
+
+			strong {
+				color: var(--color-heading);
+			}
+
+			p {
+				margin: 0;
+				color: var(--color-text--secondary);
+			}
+		}
+
 		&__location-fields {
 			display: grid;
 			grid-column: 1 / -1;
@@ -901,6 +1041,11 @@
 				color: var(--color-text--secondary);
 				font-size: var(--typography--fontSize-small);
 			}
+		}
+
+		&__review-work {
+			max-width: 60ch;
+			white-space: pre-line;
 		}
 
 		&__review-offer {
@@ -1003,6 +1148,35 @@
 		}
 
 		@media (max-width: 700px) {
+			&__choice,
+			&__wide {
+				display: grid;
+				grid-column: 1 / -1;
+				gap: var(--space-smaller);
+			}
+
+			&__choice {
+				max-width: 480px;
+			}
+
+			&__recommend {
+				display: grid;
+				gap: var(--space-smaller);
+				padding: var(--space-base) var(--space-large);
+				border: var(--border-base) solid var(--color-border);
+				border-radius: var(--radius-base);
+				background: var(--color-informative--surface);
+
+				strong {
+					color: var(--color-heading);
+				}
+
+				p {
+					margin: 0;
+					color: var(--color-text--secondary);
+				}
+			}
+
 			&__location-fields {
 				grid-template-columns: 1fr;
 			}
