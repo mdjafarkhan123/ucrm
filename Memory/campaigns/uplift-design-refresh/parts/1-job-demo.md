@@ -1,27 +1,25 @@
 # 1 — Complete job details demo
 
-**Campaign:** uplift-design-refresh · **Plan:** `docs/uplift-design-refresh-behavior-contract.md` § First milestone: complete job details demo
-**Code:** Worktree `/tmp/ucrm-job-design`, branch `codex/job-design-concept`. Memory is authoritative only in `/home/jafar/Ucrm` on `main`.
-**Done when:** Coverage matches the existing page; desktop/phone checks pass; demo is saved and Jafar approves it.
+**Campaign:** uplift-design-refresh · **Plan:** `docs/uplift-design-refresh-behavior-contract.md` § First milestone
+**Code:** `/tmp/ucrm-job-design`, branch `codex/job-design-concept`. Memory remains authoritative on main.
+**Done when:** Coverage matches the current page; desktop/phone checks pass; demo is saved and Jafar approves.
 
 ## Steps
 
-- [x] Preserve the approved visual direction and balanced font sizes on the preview branch.
-- [x] Initial source inspection identified the major missing sections; this is not a complete coverage audit.
-- [ ] Read the Jobs contract and inspect the live page plus nested components, sidebar, and header. Produce the section/action/state/permission checklist.
-- [ ] Complete the demo against that checklist, preserving the approved aesthetic.
-- [ ] Implement temporary preview interactions and mutually exclusive scenarios.
-- [ ] Check desktop, phone, keyboard, dialogs, editing, and coverage; commit and push the demo.
-- [ ] Present the complete demo for Jafar's appearance and completeness approval.
+- [x] Preserve the approved visual direction and balanced typography.
+- [x] Inspect current main page, nested sections/dialogs, navigation and read-only live Job #1.
+- [x] Complete missing sections, action previews and mutually exclusive scenarios.
+- [x] Check desktop/phone, keyboard, dialogs, staging and coverage; save the demo remotely.
+- [ ] Jafar approves appearance and completeness, reviewing small pieces first.
 
 ## Next
 
-Read the plan’s “Original request and visual authority” section and render the approved balanced-type concept first. Its new visual direction takes precedence over the old design skill’s looks.
+Jafar’s latest instruction: “Dont buiild all layout at once.” Stop adding layouts. Show the current demo for a small review starting with sidebar/header; wait for feedback before further design work. The complete job demo is prepared, but neither this milestone nor later extraction is approved.
 
-Run the live register and claim this part in the preview worktree. Inspect `git status` and `git diff` before editing. The stopped session added an uncommitted scenario toolbar, edit bar, dialog, and `demo.js` reference to `design-previews/job-details/index.html`; `demo.js` does not exist yet. Its unfinished changes are authorized for takeover. Finish the inventory before implementing the missing sections. Do not infer completeness from the partial markup.
+Preview URL: `http://localhost:4187`. Check that the server runs; serve `design-previews/job-details/` on port 4187 if needed. `README.md` explains the controls; `coverage.md` maps current capabilities, evidence, primary research sources and limitations. `verify.cjs` repeats the browser checks.
 
-Read `src/routes/(app)/jobs/[id=uuid]/+page.svelte` in the current main application and follow its imported job/shared components. Consult `docs/jobs-behavior-contract.md` and use `Login.md` for read-only live observation. Use the main application's current behavior rather than assuming the older preview checkout has all recent changes.
+Jafar also clarified that all UI/UX design must be research-based. The coverage file separates proven workflow/accessibility patterns from our visual adaptations. Section editors are simulated previews, not a second business engine. Local illustrated photo samples are labelled. No real app, design skill, API, schema or provider changes were made.
 
-## Notes
+## Approval boundary
 
-Jafar explicitly requested this session create only the campaign. No missing sections were completed during setup. Complete the demo and obtain his approval before extracting the design system or rewriting the design skill. Pencil is omitted. The local demo was served at port 4187; verify the server and URL before reporting it live. Preserve unrelated main-worktree edits from the platform campaign. Keep this preview branch isolated until its approved integration; do not leave a second product copy after integration.
+No design-system extraction, skill rewrite, other page layouts or real-app rollout before Jafar’s approval. Keep the existing preview worktree until approved integration, then remove it. Preserve the other session’s main-worktree changes.
