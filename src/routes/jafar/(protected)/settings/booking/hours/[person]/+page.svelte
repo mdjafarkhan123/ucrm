@@ -100,7 +100,7 @@
 	}
 
 	const title = $derived(
-		isJafar ? 'Your weekly hours' : `${person?.name ?? 'Teammate'}'s weekly hours`
+		isJafar ? 'Your weekly hours' : person ? `${person.name}'s weekly hours` : 'Weekly hours'
 	);
 </script>
 
@@ -121,19 +121,19 @@
 		retry={() => query.refetch()}
 	/>
 {:else if !query.data || hours === null}
-	<LoadingSkeleton variant="card" rows={4} label="Loading weekly hours" />
+	<!-- The card and its title draw at once; the days fill in when the settings arrive. -->
+	<RecordFormLayout {title} icon={clockIcon}>
+		{#snippet main()}
+			<LoadingSkeleton variant="text" rows={7} label="Loading weekly hours" />
+		{/snippet}
+	</RecordFormLayout>
 {:else if !person}
 	<ErrorState
 		title="This person is not a host"
 		description="They may have left the team. Choose hosts on a meeting type first."
 	/>
 {:else}
-	<RecordFormLayout
-		title={isJafar ? 'Your weekly hours' : title}
-		icon={clockIcon}
-		bind:this={layout}
-		error={formError}
-	>
+	<RecordFormLayout {title} icon={clockIcon} bind:this={layout} error={formError}>
 		{#snippet main()}
 			<form
 				novalidate

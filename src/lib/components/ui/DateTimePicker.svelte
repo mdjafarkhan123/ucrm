@@ -127,7 +127,7 @@
 		width: 100%;
 
 		&--range {
-			grid-template-columns: minmax(180px, 0.8fr) minmax(360px, 1.2fr);
+			grid-template-columns: minmax(170px, 0.8fr) minmax(360px, 1.2fr);
 		}
 
 		&--date-only {

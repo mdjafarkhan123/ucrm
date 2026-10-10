@@ -44,3 +44,4 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P3 | [Visit time hint looks like a set time](visit-time-hint-looks-like-a-set-time.md) |
 | P2 | [Review Generation package, like Review Harvest (after package-basics-unlock)](review-generation-package.md) |
 | P2 | [Uplift's emails ignore the saved sender name and reply-to](uplift-emails-ignore-sender-name-and-reply-to.md) |
+| P2 | [/jafar first visit waits for the app download](jafar-first-visit-waits-for-app-download.md) |

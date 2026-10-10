@@ -101,6 +101,11 @@
 	items={[{ label: 'Settings', href: resolve('/jafar/settings') }, { label: 'Booking' }]}
 />
 
+<PageHeader
+	title="Booking"
+	description="Your booking links, the meetings they offer, and when each host takes calls."
+/>
+
 {#if query.isError && !settings}
 	<ErrorState
 		title="Booking settings could not be loaded"
@@ -110,10 +115,6 @@
 {:else if !settings}
 	<LoadingSkeleton variant="card" rows={4} label="Loading booking settings" />
 {:else}
-	<PageHeader
-		title="Booking"
-		description="Your booking links, the meetings they offer, and when each host takes calls."
-	/>
 	<div class="booking-settings">
 		<div class="booking-settings__main">
 			<SectionBlock title="Booking page" hint="Prospects open a meeting's link to book a call.">

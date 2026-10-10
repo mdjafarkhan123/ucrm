@@ -164,6 +164,8 @@ test.describe.serial('changing the host of a booked call', () => {
 		page,
 		browser
 	}) => {
+		// Emails from earlier runs stay in the outbox after their Lead is removed: count only this run's.
+		const startedAt = new Date().toISOString();
 		await signIn(page);
 		const request = page.request;
 
@@ -287,7 +289,8 @@ test.describe.serial('changing the host of a booked call', () => {
 				.from('platform_outbox_deliveries')
 				.select('id')
 				.eq('template_key', 'booking_host_changed')
-				.eq('recipient_email', visitorEmail);
+				.eq('recipient_email', visitorEmail)
+				.gte('created_at', startedAt);
 			expect(email.data).toHaveLength(1);
 		} finally {
 			await restore?.(request);

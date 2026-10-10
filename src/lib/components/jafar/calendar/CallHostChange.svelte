@@ -100,7 +100,7 @@
 
 		{#if open}
 			<fieldset class="host-change__choices">
-				<legend class="sr-only">Hand this call to</legend>
+				<legend class="host-change__legend">Hand this call to</legend>
 				{#each others as choice (key(choice.member_id))}
 					{@const available = choice.state === 'free'}
 					<label
@@ -185,6 +185,16 @@
 		border-radius: var(--radius-base);
 	}
 
+	// Named for screen readers only: the panel's heading and hint already say what the list is for.
+	.host-change__legend {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
 	.host-change__choice {
 		display: flex;
 		align-items: center;
@@ -199,6 +209,11 @@
 		input {
 			margin: 0;
 			accent-color: var(--color-interactive);
+		}
+
+		// The states read as short phrases ("Free then"), not Title Case labels.
+		:global(.badge) {
+			text-transform: none;
 		}
 	}
 
