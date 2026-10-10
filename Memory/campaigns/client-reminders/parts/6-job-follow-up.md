@@ -1,7 +1,7 @@
 # 6 — Job follow-up
 
 **Campaign:** client-reminders · **Plan:** `docs/client-reminders-behavior-contract.md` § Job follow-up, § Customer messages: shared rules
-**Code:** worktree `/home/jafar/Ucrm-cr6`, branch `client-reminders-6`
+**Code:** on `main` (merged 2026-10-10; worktree removed)
 **Done when:** Closing a job sends one thank-you only when the client's switch is on.
 
 ## Design (technical, chosen 2026-10-10; mirrors Parts 3 and 5)
@@ -24,8 +24,13 @@
 - [x] Catalog, validator, email variables, preset, worker, builder, client switch status
 - [x] Unit tests; `npm run check` clean (on the branch)
 - [x] Migration `20261118090000` applied 2026-10-10
-- [ ] Prove on the live app; merge to `main`; remove worktree
+- [x] Merged to `main`; worktree removed
+- [ ] Prove on the live app
 
 ## Next
 
-Prove on the live app: turn on Job follow-up, close a one-off job for a client with an email, see one thank-you in the client history; then merge to `main`, remove worktree.
+Jafar signs in himself as the Raad LTD owner in the Claude-in-Chrome tab (the app is a public address, so Claude
+may not type the password). Then: Settings → Automations → choose "Job follow-up" → turn it on; complete the visit
+and close job #28 "Booking confirmation proof 1" (client Greenfield, email goes to Jafar's own +part8 inbox).
+Raad LTD opens 9:00 Asia/Dhaka (closed Friday): before opening the work item should wait until 9:00; after, one
+thank-you appears in the client's history. Check no second email if the job is reopened and closed again.
