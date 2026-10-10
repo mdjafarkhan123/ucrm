@@ -16,7 +16,9 @@ vi.mock('$lib/server/setup/catalogue', async () => {
 	const { SETUP_CATALOGUE_1 } = await import('$lib/setup/catalogue.fixture');
 	return {
 		...actual,
-		readSetupCatalogue: vi.fn(async () => SETUP_CATALOGUE_1),
+		readSetupCataloguesInUse: vi.fn(
+			async () => new Map([[SETUP_CATALOGUE_1.versionId, SETUP_CATALOGUE_1]])
+		),
 		readSetupSectionTitles: vi.fn(
 			async () => new Map(SETUP_CATALOGUE_1.sections.map((section) => [section.key, section.title]))
 		)
@@ -63,6 +65,7 @@ function client(overrides: Partial<OnboardingClient> = {}): OnboardingClient {
 		facts_answered: 3,
 		help_count: 0,
 		unread_support: 0,
+		setup_version_id: SETUP_CATALOGUE_1.versionId,
 		next_section_key: 'business',
 		next_section_title: 'Your business',
 		sent_number: null,
@@ -142,10 +145,12 @@ describe('client onboarding list GET', () => {
 		expect(name).toBe('owner_client_onboarding_list');
 		expect(args.waiting_filter).toBe('quiet');
 		expect(args.search_term).toBe('raad');
-		expect(args.setup_catalogue.map((section: { key: string }) => section.key)).toEqual(
+		// Each Setup version in use is sent, keyed by its id, so a client is measured against its own.
+		const sections = args.setup_catalogue[SETUP_CATALOGUE_1.versionId];
+		expect(sections.map((section: { key: string }) => section.key)).toEqual(
 			SETUP_CATALOGUE_1.sections.map((section) => section.key)
 		);
-		const business = args.setup_catalogue[0];
+		const business = sections[0];
 		expect(business.required).toContain('business.public_name');
 		expect(business.required).not.toContain('business.legal_name');
 		expect(business.facts).toContain('business.legal_name');

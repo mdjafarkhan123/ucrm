@@ -16,9 +16,9 @@ import type { LeadPage } from '$lib/jafar/lead-history';
 import { canUseJafarPath } from '$lib/jafar/team-access';
 import type { BusinessClient, BusinessDeal } from '$lib/jafar/deals';
 import type { Json } from '$lib/database.types';
-import { readSetupCatalogue } from '$lib/server/setup/catalogue';
+import { readSetupCataloguesInUse } from '$lib/server/setup/catalogue';
 import { presentOnboardingRows, type RawOnboardingClient } from '$lib/server/setup/onboarding-list';
-import { onboardingCatalogue } from '$lib/setup/onboarding-list';
+import { onboardingCatalogues } from '$lib/setup/onboarding-list';
 
 // Jafar business management B2: one Lead's page in one request, and changing its status or next action. Each
 // change is written to the Lead's history in the same database transaction.
@@ -38,10 +38,10 @@ async function presentClient(
 	const organizationId = won.account?.organization_id ?? null;
 	let onboarding: BusinessClient['onboarding'] = null;
 	if (organizationId && sees.onboarding) {
-		const catalogue = await readSetupCatalogue(client);
+		const catalogue = await readSetupCataloguesInUse(client);
 		if (catalogue) {
 			const { data, error } = await client.rpc('owner_client_onboarding_list', {
-				setup_catalogue: onboardingCatalogue(catalogue) as Json,
+				setup_catalogue: onboardingCatalogues(catalogue) as Json,
 				include_delivered: true,
 				only_organization_id: organizationId,
 				page_size: 1

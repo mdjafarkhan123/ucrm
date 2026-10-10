@@ -4,7 +4,7 @@ import { readClientSetupView } from '$lib/server/setup/client-page';
 import { readSetupState } from '$lib/server/setup/read';
 
 vi.mock('$lib/server/setup/catalogue', () => ({
-	readSetupCatalogue: vi.fn(async () => SETUP_CATALOGUE_1),
+	readOrganizationSetupVersion: vi.fn(async () => SETUP_CATALOGUE_1),
 	readSetupServiceKeys: vi.fn(async () => new Set<string>())
 }));
 vi.mock('$lib/server/setup/files', () => ({ readSetupFiles: vi.fn(async () => []) }));

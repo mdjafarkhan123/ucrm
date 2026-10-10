@@ -112,9 +112,9 @@ buy. Common identity facts are collected once and reused in every purchased bran
   publishing gives the new version to new clients. Jafar may move a client in progress after reviewing saved
   answers, completed tasks and newly required work. A completed task carries forward only when its meaning
   and completion rule still match. Previous answers and submissions remain available. Clients who already
-  sent setup to Uplift are not reopened; Jafar asks in Support chat or returns a section. The current
-  Contractor implementation still applies published changes to unfinished setups immediately until this
-  planned version rule is built and verified.
+  sent setup to Uplift are not reopened; Jafar asks in Support chat or returns a section. Built
+  2026-10-10 (platform foundation B7): each business is pinned to the version published when its
+  Industry experience was confirmed; moving a business to a newer version is not built yet.
 
 ## 3. Setup tasks and exact information
 

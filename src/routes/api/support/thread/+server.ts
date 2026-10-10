@@ -34,7 +34,7 @@ export const GET: RequestHandler = async (event) => {
 			.maybeSingle(),
 		supabase.from('platform_support_settings').select('availability_note').maybeSingle(),
 		readSupportMessages(supabase, parsed.data.thread_id, parsed.data.limit),
-		readSetupSectionTitles(supabase)
+		readSetupSectionTitles(supabase, check.auth.organization.id)
 	]);
 	if (threadResult.error || settingsResult.error || !page) return databaseError();
 

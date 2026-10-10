@@ -8,7 +8,7 @@ vi.mock('$lib/server/setup/catalogue', async () => {
 	const { SETUP_CATALOGUE_1 } = await import('$lib/setup/catalogue.fixture');
 	return {
 		...actual,
-		readSetupCatalogue: vi.fn(async () => SETUP_CATALOGUE_1),
+		readOrganizationSetupVersion: vi.fn(async () => SETUP_CATALOGUE_1),
 		readSetupServiceKeys: vi.fn(async () => new Set<string>()),
 		readSetupSectionTitles: vi.fn(
 			async () => new Map(SETUP_CATALOGUE_1.sections.map((section) => [section.key, section.title]))

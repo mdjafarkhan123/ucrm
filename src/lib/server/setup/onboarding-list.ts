@@ -6,7 +6,7 @@ import { projectState } from '$lib/setup/project-state';
 import { todayIn } from '$lib/setup/ready';
 
 // Jafar's onboarding rows as `owner_client_onboarding_list` returns them, finished on the server: the next
-// section's title in the published setup version and the client-facing project state. Shared by the onboarding
+// section's title in the setup version each client started with and the client-facing project state. Shared by the onboarding
 // list (client onboarding C1) and the Client box on a business's page (Jafar business B5).
 
 export type RawOnboardingClient = Omit<OnboardingClient, 'next_section_title' | 'project_state'>;
@@ -14,7 +14,7 @@ export type RawOnboardingClient = Omit<OnboardingClient, 'next_section_title' | 
 /** Null when the Ready for Uplift dates could not be read. */
 export async function presentOnboardingRows(
 	client: SupabaseClient<Database>,
-	catalogue: SetupCatalogue,
+	catalogues: Map<string, SetupCatalogue>,
 	rows: RawOnboardingClient[]
 ): Promise<OnboardingClient[] | null> {
 	// E1: Ready turns into Building on the client's first business day after it, so each Ready client's start date
@@ -41,7 +41,11 @@ export async function presentOnboardingRows(
 		return {
 			...row,
 			next_section_title:
-				catalogue.sections.find((section) => section.key === row.next_section_key)?.title ?? null,
+				(row.setup_version_id
+					? catalogues
+							.get(row.setup_version_id)
+							?.sections.find((section) => section.key === row.next_section_key)?.title
+					: null) ?? null,
 			project_state: projectState({
 				paid_at: row.account_created_at,
 				first_sent_at: null,

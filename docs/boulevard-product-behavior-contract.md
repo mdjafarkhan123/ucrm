@@ -60,8 +60,8 @@ Agreed by Jafar 2026-10-07. Evidence: [industry onboarding research](research/in
   Carry a completed task forward only when its meaning and completion rule still match; preserve earlier
   answers, submissions and times. New or changed required work is shown clearly. A safety-critical change
   receives an explicit affected-business review instead of silently rewriting a live checklist. This approved
-  direction replaces the Contractor plan's earlier live-update rule; the current application still needs a
-  later build change.
+  direction replaces the Contractor plan's earlier live-update rule. Built for the Contractor program on
+  2026-10-10 (platform foundation B7); moving an existing business to a newer version is not built yet.
 - A change to an existing organization's primary experience is assisted, not inferred from its service names.
   The Platform Owner reviews existing records, purchased capabilities, staff access, unfinished setup and
   clinical readiness, then explicitly approves an in-place transition of the same business account. Existing

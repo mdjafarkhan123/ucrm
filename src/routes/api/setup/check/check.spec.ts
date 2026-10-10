@@ -43,7 +43,7 @@ const CATALOGUE: SetupCatalogue = {
 };
 
 vi.mock('$lib/server/setup/catalogue', () => ({
-	readSetupCatalogue: vi.fn(async () => CATALOGUE),
+	readOrganizationSetupVersion: vi.fn(async () => CATALOGUE),
 	readSetupServiceKeys: vi.fn(async () => new Set<string>())
 }));
 

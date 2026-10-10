@@ -12352,6 +12352,42 @@ export type Database = {
 					}
 				];
 			};
+			organization_setup_versions: {
+				Row: {
+					organization_id: string;
+					pinned_at: string;
+					setup_version_id: string;
+					source: string;
+				};
+				Insert: {
+					organization_id: string;
+					pinned_at?: string;
+					setup_version_id: string;
+					source: string;
+				};
+				Update: {
+					organization_id?: string;
+					pinned_at?: string;
+					setup_version_id?: string;
+					source?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'organization_setup_versions_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: true;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'organization_setup_versions_setup_version_id_fkey';
+						columns: ['setup_version_id'];
+						isOneToOne: false;
+						referencedRelation: 'setup_versions';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			organization_setup_training: {
 				Row: {
 					attendees: Json;
@@ -17438,6 +17474,7 @@ export type Database = {
 					created_at: string;
 					id: string;
 					published_at: string | null;
+					program_key: string;
 					published_by_email: string | null;
 					revision: number;
 					status: string;
@@ -17450,6 +17487,7 @@ export type Database = {
 					created_at?: string;
 					id?: string;
 					published_at?: string | null;
+					program_key?: string;
 					published_by_email?: string | null;
 					revision?: number;
 					status: string;
@@ -17462,6 +17500,7 @@ export type Database = {
 					created_at?: string;
 					id?: string;
 					published_at?: string | null;
+					program_key?: string;
 					published_by_email?: string | null;
 					revision?: number;
 					status?: string;
@@ -28690,6 +28729,9 @@ export type Database = {
 				Returns: string[];
 			};
 			setup_published_catalogue: { Args: never; Returns: Json };
+			setup_organization_catalogue: { Args: { target_organization_id: string }; Returns: Json };
+			setup_catalogues_for_versions: { Args: { version_ids: string[] }; Returns: Json };
+			setup_catalogues_in_use: { Args: never; Returns: Json };
 			skip_automation_enrollment_step: {
 				Args: {
 					p_actor_user_id: string;

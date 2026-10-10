@@ -87,7 +87,7 @@ export async function sendSetupReturnEmails(
 			.maybeSingle(),
 		client.from('organizations').select('name').eq('id', input.organizationId).single(),
 		client.rpc('owner_setup_review_recipients', { target_organization_id: input.organizationId }),
-		readSetupSectionTitles(client)
+		readSetupSectionTitles(client, input.organizationId)
 	]);
 	if (reviewResult.error) throw reviewResult.error;
 	if (organizationResult.error) throw organizationResult.error;

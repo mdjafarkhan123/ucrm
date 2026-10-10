@@ -34,7 +34,7 @@
 
 	// Client onboarding A4 (plan §2.1, ADR 0006): Jafar writes the setup clients go through. He edits a draft
 	// and publishes it, the way package editions are published (ADR 0003): clients see only the published
-	// version, and a client still filling in setup sees a published change on their next page.
+	// version, and a client already filling in setup keeps the version they started (platform foundation B7).
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -178,7 +178,7 @@
 		try {
 			adopt(await publishSetupDraft(draftRevision()));
 			publishOpen = false;
-			toast.success('Published. Clients filling in setup see it on their next page.');
+			toast.success('Published. New clients get it; clients already filling in setup keep theirs.');
 		} catch (error) {
 			publishOpen = false;
 			if (isStaleSetupDraft(error) && error.body.editor) {
@@ -252,7 +252,7 @@
 			<RailCard title="Status">
 				<dl class="setup-editor__status">
 					<div>
-						<dt>Clients see</dt>
+						<dt>New clients get</dt>
 						<dd>
 							{#if editor.published}
 								<Badge status="success" size="small"
@@ -421,7 +421,9 @@
 	onConfirm={publish}
 	onClose={() => (publishOpen = false)}
 >
-	<p>Clients filling in setup see these changes on their next page:</p>
+	<p>
+		New clients get these changes. Clients who have already started keep the version they started:
+	</p>
 	<ul class="setup-editor__changes">
 		{#each changes as change (change)}
 			<li>{change}</li>

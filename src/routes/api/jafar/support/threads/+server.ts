@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { ownerUnauthorized } from '$lib/server/access/owner';
-import { readSetupCatalogue } from '$lib/server/setup/catalogue';
+import { readOrganizationSetupVersion } from '$lib/server/setup/catalogue';
 import { catalogueSection } from '$lib/setup/catalogue';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import {
@@ -63,9 +63,12 @@ export const POST: RequestHandler = async (event) => {
 		);
 	}
 
-	// C3: a section must be one the published setup has, as the client's own Ask Uplift checks it.
+	// C3: a section must be one the client's own setup version has, as the client's own Ask Uplift checks it.
 	if (parsed.data.context_section) {
-		const catalogue = await readSetupCatalogue(getOwnerSupabaseClient());
+		const catalogue = await readOrganizationSetupVersion(
+			getOwnerSupabaseClient(),
+			parsed.data.organization_id
+		);
 		if (!catalogue) {
 			console.error('Could not read the setup catalogue for a support chat.');
 			return json({ error: 'Your message could not be sent.' }, { status: 500 });

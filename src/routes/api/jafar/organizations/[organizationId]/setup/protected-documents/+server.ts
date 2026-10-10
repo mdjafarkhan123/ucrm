@@ -5,7 +5,7 @@ import { PRIVATE_READ_HEADERS, databaseError } from '$lib/server/api/errors';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
-import { readSetupCatalogue } from '$lib/server/setup/catalogue';
+import { readOrganizationSetupVersion } from '$lib/server/setup/catalogue';
 import { listProtectedDocuments } from '$lib/server/setup/protected-documents';
 import { catalogueFacts } from '$lib/setup/catalogue';
 
@@ -18,7 +18,10 @@ export const GET: RequestHandler = async (event) => {
 	if (!organizationId.success) return json({ error: 'Organization not found.' }, { status: 404 });
 
 	try {
-		const catalogue = await readSetupCatalogue(getOwnerSupabaseClient());
+		const catalogue = await readOrganizationSetupVersion(
+			getOwnerSupabaseClient(),
+			organizationId.data
+		);
 		const labels = new Map(
 			[...catalogueFacts(catalogue ?? { versionId: '', sections: [] })].map(([key, fact]) => [
 				key,

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import { enqueueEmailDelivery } from '$lib/server/events/dispatcher';
-import { readSetupCatalogue, readSetupServiceKeys } from '$lib/server/setup/catalogue';
+import { readOrganizationSetupVersion, readSetupServiceKeys } from '$lib/server/setup/catalogue';
 import { readClientSetupReviews } from '$lib/server/setup/client-review';
 import { readSetupState, setupSummary } from '$lib/server/setup/read';
 import { catalogueForServices } from '$lib/setup/catalogue';
@@ -213,17 +213,15 @@ export async function sendDueSetupReminderEmails(
 	const due = (data ?? []) as unknown as DueSetupReminder[];
 	if (due.length === 0) return 0;
 
-	// One read for the whole batch: every reminder counts against the setup version published now.
-	const catalogue = await readSetupCatalogue(client);
-	if (!catalogue) throw new Error('The published setup version could not be read.');
-
 	let sent = 0;
 	for (const reminder of due) {
-		const [state, serviceKeys] = await Promise.all([
+		// Each reminder counts against the setup version that business started with.
+		const [catalogue, state, serviceKeys] = await Promise.all([
+			readOrganizationSetupVersion(client, reminder.organization_id),
 			readSetupState(client, reminder.organization_id),
 			readSetupServiceKeys(client, reminder.organization_id)
 		]);
-		if (!state || !serviceKeys) continue;
+		if (!catalogue || !state || !serviceKeys) continue;
 		const clientCatalogue = catalogueForServices(catalogue, serviceKeys);
 		let reviews;
 		try {

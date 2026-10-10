@@ -47,7 +47,9 @@ export type OnboardingClient = {
 	help_count: number;
 	unread_support: number;
 	next_section_key: string | null;
-	/** The next section's title in the published setup version, added by the route. */
+	/** The Setup version this client started with. */
+	setup_version_id: string | null;
+	/** The next section's title in that setup version, added by the route. */
 	next_section_title: string | null;
 	/** C2: the newest Send to Uplift, if any. */
 	sent_number: number | null;
@@ -132,6 +134,13 @@ export function onboardingCatalogue(catalogue: SetupCatalogue) {
 			)
 		};
 	});
+}
+
+/** `onboardingCatalogue` for each Setup version in use, keyed by version id, as the list function reads it. */
+export function onboardingCatalogues(catalogues: Map<string, SetupCatalogue>) {
+	return Object.fromEntries(
+		[...catalogues].map(([versionId, catalogue]) => [versionId, onboardingCatalogue(catalogue)])
+	);
 }
 
 function plural(count: number, one: string, many: string) {

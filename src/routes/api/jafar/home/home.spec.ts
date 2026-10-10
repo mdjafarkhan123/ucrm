@@ -2,16 +2,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { GET } from './+server';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
-import { readSetupCatalogue } from '$lib/server/setup/catalogue';
+import { readSetupCataloguesInUse } from '$lib/server/setup/catalogue';
 
 vi.mock('$lib/server/auth/owner', () => ({ getOwnerSession: vi.fn() }));
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
-vi.mock('$lib/server/setup/catalogue', () => ({ readSetupCatalogue: vi.fn() }));
-vi.mock('$lib/setup/onboarding-list', () => ({ onboardingCatalogue: () => ({}) }));
+vi.mock('$lib/server/setup/catalogue', () => ({ readSetupCataloguesInUse: vi.fn() }));
+vi.mock('$lib/setup/onboarding-list', () => ({ onboardingCatalogues: () => ({}) }));
 
 const mockedSession = vi.mocked(getOwnerSession);
 const mockedClient = vi.mocked(getOwnerSupabaseClient);
-const mockedCatalogue = vi.mocked(readSetupCatalogue);
+const mockedCatalogue = vi.mocked(readSetupCataloguesInUse);
 
 const CORE = {
 	review: 2,
@@ -45,7 +45,9 @@ beforeEach(() => {
 		access: null,
 		memberId: null
 	} as Awaited<ReturnType<typeof getOwnerSession>>);
-	mockedCatalogue.mockResolvedValue({} as Awaited<ReturnType<typeof readSetupCatalogue>>);
+	mockedCatalogue.mockResolvedValue(
+		new Map() as Awaited<ReturnType<typeof readSetupCataloguesInUse>>
+	);
 });
 
 describe('GET /api/jafar/home', () => {

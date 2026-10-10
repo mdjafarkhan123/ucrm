@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { GET as listDocuments } from './+server';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
-import { readSetupCatalogue } from '$lib/server/setup/catalogue';
+import { readOrganizationSetupVersion } from '$lib/server/setup/catalogue';
 import { buildSetupCatalogue, type SetupCatalogueRow } from '$lib/setup/catalogue';
 import { SETUP_VERSION_1 } from '$lib/setup/catalogue.fixture';
 
@@ -10,7 +10,7 @@ import { SETUP_VERSION_1 } from '$lib/setup/catalogue.fixture';
 
 vi.mock('$lib/server/auth/owner', () => ({ getOwnerSession: vi.fn() }));
 vi.mock('$lib/server/db/owner-supabase', () => ({ getOwnerSupabaseClient: vi.fn() }));
-vi.mock('$lib/server/setup/catalogue', () => ({ readSetupCatalogue: vi.fn() }));
+vi.mock('$lib/server/setup/catalogue', () => ({ readOrganizationSetupVersion: vi.fn() }));
 
 const ORGANIZATION_ID = '11111111-1111-4111-8111-111111111111';
 const HELD_ID = '22222222-2222-4222-8222-222222222222';
@@ -75,7 +75,7 @@ describe('Jafar’s list of a client’s protected documents', () => {
 
 	beforeEach(() => {
 		vi.mocked(getOwnerSession).mockResolvedValue({ email: 'owner@example.com' } as never);
-		vi.mocked(readSetupCatalogue).mockResolvedValue(buildSetupCatalogue(CATALOGUE_ROW));
+		vi.mocked(readOrganizationSetupVersion).mockResolvedValue(buildSetupCatalogue(CATALOGUE_ROW));
 		documentCalls = [];
 		answerCalls = [];
 		vi.mocked(getOwnerSupabaseClient).mockReturnValue({

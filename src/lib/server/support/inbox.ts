@@ -1,6 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
-import { readSetupSectionTitles, setupSectionLabel } from '$lib/server/setup/catalogue';
+import {
+	readOrganizationSetupVersions,
+	sectionTitles,
+	setupSectionLabel
+} from '$lib/server/setup/catalogue';
+import type { SetupCatalogue } from '$lib/setup/catalogue';
 import type {
 	SupportInboxStatusFilter,
 	SupportInboxThread,
@@ -42,10 +47,15 @@ async function memberNames(client: SupabaseClient<Database>, rows: ThreadRow[]) 
 	);
 }
 
+function organizationIdOf(row: ThreadRow): string[] {
+	const organization = Array.isArray(row.organizations) ? row.organizations[0] : row.organizations;
+	return organization ? [organization.id] : [];
+}
+
 function toInboxThread(
 	row: ThreadRow,
 	names: Map<string, string>,
-	sectionTitles: Map<string, string>
+	versions: Map<string, SetupCatalogue>
 ): SupportInboxThread | null {
 	const organization = Array.isArray(row.organizations) ? row.organizations[0] : row.organizations;
 	if (!organization) return null;
@@ -64,7 +74,11 @@ function toInboxThread(
 				Date.parse(row.last_message_at) > Date.parse(row.uplift_last_read_at)),
 		status: row.status as SupportStatus,
 		opened_by_uplift: row.opened_by === 'uplift',
-		context_label: setupSectionLabel(sectionTitles, row.context_section)
+		// A section is named as in the setup version that business started with.
+		context_label: setupSectionLabel(
+			sectionTitles(versions.get(organization.id)),
+			row.context_section
+		)
 	};
 }
 
@@ -89,12 +103,12 @@ export async function readSupportInbox(
 	if (error) throw error;
 
 	const rows = (data as ThreadRow[]).slice(0, limit);
-	const [names, sectionTitles] = await Promise.all([
+	const [names, versions] = await Promise.all([
 		memberNames(client, rows),
-		readSetupSectionTitles(client)
+		readOrganizationSetupVersions(client, rows.flatMap(organizationIdOf))
 	]);
 	return {
-		threads: rows.flatMap((row) => toInboxThread(row, names, sectionTitles) ?? []),
+		threads: rows.flatMap((row) => toInboxThread(row, names, versions ?? new Map()) ?? []),
 		has_more: data.length > limit
 	};
 }
@@ -109,11 +123,11 @@ export async function readSupportInboxThread(client: SupabaseClient<Database>, t
 	if (!data) return null;
 
 	const row = data as ThreadRow;
-	const [names, sectionTitles] = await Promise.all([
+	const [names, versions] = await Promise.all([
 		memberNames(client, [row]),
-		readSetupSectionTitles(client)
+		readOrganizationSetupVersions(client, organizationIdOf(row))
 	]);
-	return toInboxThread(row, names, sectionTitles);
+	return toInboxThread(row, names, versions ?? new Map());
 }
 
 export async function readSupportSettings(

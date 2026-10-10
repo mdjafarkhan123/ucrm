@@ -4,11 +4,11 @@ import type { Json } from '$lib/database.types';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
-import { readSetupCatalogue } from '$lib/server/setup/catalogue';
+import { readSetupCataloguesInUse } from '$lib/server/setup/catalogue';
 import { clientOnboardingListQuerySchema } from '$lib/server/validation/client-onboarding-list.schema';
 import { presentOnboardingRows, type RawOnboardingClient } from '$lib/server/setup/onboarding-list';
 import {
-	onboardingCatalogue,
+	onboardingCatalogues,
 	type OnboardingListPage,
 	type OnboardingTotals
 } from '$lib/setup/onboarding-list';
@@ -53,11 +53,11 @@ export const GET: RequestHandler = async (event) => {
 	}
 
 	const client = getOwnerSupabaseClient();
-	const catalogue = await readSetupCatalogue(client);
+	const catalogue = await readSetupCataloguesInUse(client);
 	if (!catalogue) return json({ error: 'The client list could not be loaded.' }, { status: 500 });
 
 	const { data, error } = await client.rpc('owner_client_onboarding_list', {
-		setup_catalogue: onboardingCatalogue(catalogue) as Json,
+		setup_catalogue: onboardingCatalogues(catalogue) as Json,
 		search_term: parsed.data.search || undefined,
 		waiting_filter: parsed.data.waiting_on,
 		cursor_account_created_at: cursor?.account_created_at,

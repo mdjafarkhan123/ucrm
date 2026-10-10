@@ -12,7 +12,7 @@ import {
 	setupWriteError,
 	setupWriteLimited
 } from '$lib/server/setup/access';
-import { readSetupCatalogue, readSetupServiceKeys } from '$lib/server/setup/catalogue';
+import { readOrganizationSetupVersion, readSetupServiceKeys } from '$lib/server/setup/catalogue';
 import { readSetupHelpAnswers } from '$lib/server/setup/help';
 import { readSetupState, setupAnswerFromRow } from '$lib/server/setup/read';
 import { setupSendSchema } from '$lib/server/validation/setup.schema';
@@ -33,7 +33,7 @@ import {
 async function readCheck(event: RequestEvent, organizationId: string) {
 	const supabase = event.locals.supabase;
 	const [catalogue, serviceKeys, state] = await Promise.all([
-		readSetupCatalogue(supabase),
+		readOrganizationSetupVersion(supabase, organizationId),
 		readSetupServiceKeys(supabase, organizationId),
 		readSetupState(supabase, organizationId)
 	]);

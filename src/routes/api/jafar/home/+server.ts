@@ -6,8 +6,8 @@ import { PRIVATE_READ_HEADERS } from '$lib/server/api/errors';
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
-import { readSetupCatalogue } from '$lib/server/setup/catalogue';
-import { onboardingCatalogue } from '$lib/setup/onboarding-list';
+import { readSetupCataloguesInUse } from '$lib/server/setup/catalogue';
+import { onboardingCatalogues } from '$lib/setup/onboarding-list';
 import { HOME_AGENDA_LIMIT, homeCountsOpen, type BusinessHome } from '$lib/jafar/business-home';
 
 // Jafar business management C1: the Business Management home in one request. The Leads and Applications counts
@@ -22,10 +22,10 @@ const todaySchema = z.iso.date();
 type HomeCore = Omit<BusinessHome, 'setups_waiting' | 'renewals'>;
 
 async function setupsWaitingOnUplift(client: ReturnType<typeof getOwnerSupabaseClient>) {
-	const catalogue = await readSetupCatalogue(client);
-	if (!catalogue) throw new Error('The setup catalogue could not be read.');
+	const catalogue = await readSetupCataloguesInUse(client);
+	if (!catalogue) throw new Error('The setup versions could not be read.');
 	const { data, error } = await client.rpc('owner_client_onboarding_list', {
-		setup_catalogue: onboardingCatalogue(catalogue) as Json,
+		setup_catalogue: onboardingCatalogues(catalogue) as Json,
 		waiting_filter: 'uplift',
 		page_size: 1
 	});

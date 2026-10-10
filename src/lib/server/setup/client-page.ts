@@ -22,7 +22,7 @@ import {
 } from '$lib/setup/review';
 import { setupFileIds } from '$lib/setup/files';
 import { setupReuseSource } from '$lib/setup/reuse';
-import { readSetupCatalogue, readSetupServiceKeys } from '$lib/server/setup/catalogue';
+import { readOrganizationSetupVersion, readSetupServiceKeys } from '$lib/server/setup/catalogue';
 import { readSetupFiles } from '$lib/server/setup/files';
 import { readSetupHelpAnswers } from '$lib/server/setup/help';
 import { readSetupState, setupAnswerFromRow } from '$lib/server/setup/read';
@@ -192,7 +192,7 @@ export async function readSectionReviews(
 /** Answers changed since the newest send, as the client's own Check and send page counts them. */
 async function unsentChanges(supabase: Client, organizationId: string, newest: SubmissionRow) {
 	const [catalogue, serviceKeys, state] = await Promise.all([
-		readSetupCatalogue(supabase),
+		readOrganizationSetupVersion(supabase, organizationId),
 		readSetupServiceKeys(supabase, organizationId),
 		readSetupState(supabase, organizationId)
 	]);
