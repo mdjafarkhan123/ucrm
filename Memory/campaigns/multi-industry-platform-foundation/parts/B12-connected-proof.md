@@ -1,6 +1,6 @@
 # B12 Connected proof — part note
 
-**State:** In progress, claimed by claude-b12 (2026-10-10).
+**State:** Paused 2026-10-10 — core observed, rest below still to run.
 
 **Method:** The public form must be used through `https://app.upliftcontractor.com` (Cloudflare check only works there; passes by itself, never click or bypass it). Logins use `http://localhost:5173` with test accounts from `Login.md`. Jafar approved one test application through the tunnel.
 
@@ -10,11 +10,10 @@
 - [x] Account activated: organization `9b1c698f-93df-4151-8a0d-00ec406a46c8` (Contractor · Roofing, source provisioning, no old-path switch); setup link read from stored email, password set, owner logged in (login in `Login.md`). Setup page lands on `/login` after saving; a browser that is already signed in goes straight to its own dashboard (not a bug)
 - [x] Owner workspace (package-limited menu: Dashboard, Schedule, Clients, Requests, Jobs, Quotes, Invoices, Files, Settings). Client Casey Homeowner `cb46492e…`, Request `a846a5a8…` → converted to Quote #1 `98d8cd2d…` ($450 + 8% tax = $486). Emailing the quote is REFUSED: "Quotes, invoices and payments are not open yet. Uplift has not reviewed this yet" (closed new surface, proven)
 - [x] Jafar opened only `customer_billing` (Experience tab → Review; other 3 areas stay Not Reviewed). Quote emailing then says business has no sending email (Settings → Email not set up; not part of B12) → "I already sent it" → client link → Casey approved with typed signature → Job #1 `71a0e343…` → Invoice #1 `436bd981…` ($450 + 8% tax = $486; tax had to be set again on invoice, did not carry from quote; job showed $486 uninvoiced but invoice started at $450) → issued; email refused same reason → payment recorded → Paid, balance $0. No Visit was scheduled
-- [ ] Setup + Uplift review, role-limited menu, preview, approval, Mark as live
-- [ ] Request → Quote → Job/Visit → Invoice/payment, support, overdue pause and recovery
-- [ ] Existing Contractor (Raad LTD): history and issued links, role limits
-- [ ] Closed new public surface, and Medspa/clinical URLs/APIs refuse Contractor access
+- [x] Access comparison for B12 (Control Room → Experience → Compare access): Same access, 9 capabilities, owner 65→65 permissions, no clinical capability exists. Business dashboard explains closed areas ("Not switched on for your customers yet"). After the journey only customer_billing is Open; web requests, email/texts, automations stay Not Reviewed
+- [x] Existing Contractor Raad LTD as `finance`: history intact (21 customers, invoices #35 Paid, #34/#33 Past due…), direct `/pipeline` refused ("You do not have access to the pipeline")
+- [ ] STILL TO RUN: Setup tasks + Uplift review + preview/approval + Mark as live; support message; overdue pause and recovery; a Visit on the Job; an existing issued customer link (quote/invoice) opened for a pre-existing org; a closed public form for a business that has one (none exists, database/unit-tested only); `/jafar` Applications row flagged "Possible duplicates 1" is unrelated seed data
 
 **Outside action check:** the application row above (`platform_onboarding_applications`); do not submit a second one.
 
-**Next (replaces older line):** sign out, log in at `/jafar/login` (Jafar), open the organization, open customer billing readiness; then resume as B12 owner. Old line: as the B12 owner (`/setup`): record the package-limited menu, run Request → Quote → Job → Invoice; then Setup/Uplift review/Mark live, closed public form, Medspa refusal, existing Raad LTD.
+**Next:** run the STILL TO RUN items above (log in B12 owner from `Login.md`; Jafar stays signed in at `/jafar`). Findings to report to Jafar: submit took ~20s; tax set on the quote did not carry to the invoice (job showed $486 uninvoiced, invoice started $450, tax set again by hand); invoice recipient box said no phone/email yet; quote/invoice email refused until business email is set up in Settings → Email. Old line: sign out, log in at `/jafar/login` (Jafar), open the organization, open customer billing readiness; then resume as B12 owner. Old line: as the B12 owner (`/setup`): record the package-limited menu, run Request → Quote → Job → Invoice; then Setup/Uplift review/Mark live, closed public form, Medspa refusal, existing Raad LTD.
