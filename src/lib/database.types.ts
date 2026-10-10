@@ -13457,6 +13457,7 @@ export type Database = {
 					video_link_set_at: string | null;
 					video_link_source: string | null;
 					video_provider_meeting_id: string | null;
+					video_synced_starts_at: string | null;
 					visitor_email: string;
 					visitor_name: string;
 					visitor_phone: string;
@@ -13481,6 +13482,7 @@ export type Database = {
 					video_link_set_at?: string | null;
 					video_link_source?: string | null;
 					video_provider_meeting_id?: string | null;
+					video_synced_starts_at?: string | null;
 					visitor_email: string;
 					visitor_name: string;
 					visitor_phone: string;
@@ -13505,6 +13507,7 @@ export type Database = {
 					video_link_set_at?: string | null;
 					video_link_source?: string | null;
 					video_provider_meeting_id?: string | null;
+					video_synced_starts_at?: string | null;
 					visitor_email?: string;
 					visitor_name?: string;
 					visitor_phone?: string;
@@ -15145,6 +15148,54 @@ export type Database = {
 					status?: string;
 					time_zone?: string | null;
 					updated_at?: string;
+				};
+				Relationships: [];
+			};
+			platform_zoom_connection: {
+				Row: {
+					access_expires_at: string;
+					connected_at: string;
+					connected_by_email: string | null;
+					credential_ciphertext: string;
+					credential_key_id: string;
+					credential_nonce: string;
+					credential_tag: string;
+					id: boolean;
+					status: string;
+					updated_at: string;
+					zoom_email: string;
+					zoom_name: string | null;
+					zoom_user_id: string;
+				};
+				Insert: {
+					access_expires_at: string;
+					connected_at?: string;
+					connected_by_email?: string | null;
+					credential_ciphertext: string;
+					credential_key_id: string;
+					credential_nonce: string;
+					credential_tag: string;
+					id?: boolean;
+					status?: string;
+					updated_at?: string;
+					zoom_email: string;
+					zoom_name?: string | null;
+					zoom_user_id: string;
+				};
+				Update: {
+					access_expires_at?: string;
+					connected_at?: string;
+					connected_by_email?: string | null;
+					credential_ciphertext?: string;
+					credential_key_id?: string;
+					credential_nonce?: string;
+					credential_tag?: string;
+					id?: boolean;
+					status?: string;
+					updated_at?: string;
+					zoom_email?: string;
+					zoom_name?: string | null;
+					zoom_user_id?: string;
 				};
 				Relationships: [];
 			};
@@ -24599,6 +24650,10 @@ export type Database = {
 				Returns: Json;
 			};
 			owner_booking_settings: { Args: never; Returns: Json };
+			owner_booking_zoom_work: {
+				Args: { max_rows?: number; target_booking_id?: string };
+				Returns: Json;
+			};
 			owner_business_client: {
 				Args: { target_relationship_id: string };
 				Returns: Json;

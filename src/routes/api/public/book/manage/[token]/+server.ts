@@ -5,6 +5,7 @@ import { checkRateLimit, rateLimitedResponse } from '$lib/server/security/rate-l
 import { raiseOwnerAlert } from '$lib/server/jafar/owner-alerts';
 import { sendBookingEmail } from '$lib/server/jafar/booking-emails';
 import { verifiedTokenHash } from '$lib/server/jafar/booking-links';
+import { withZoomMeeting } from '$lib/server/jafar/booking-video';
 import { managedBooking } from '$lib/server/jafar/booking-manage';
 import { bookingChangeSchema } from '$lib/server/validation/booking.schema';
 import { dateWords, timeWords, type BookingView } from '$lib/jafar/booking';
@@ -73,10 +74,13 @@ export const POST: RequestHandler = async (event) => {
 			{ status: 500 }
 		);
 	}
-	const result = data as ChangeResult;
-	if (result.outcome === 'unknown') return json({ error: UNKNOWN }, { status: 404 });
-	if (result.outcome === 'closed') return json({ error: CLOSED, closed: true }, { status: 409 });
-	if (result.outcome === 'taken') return json({ error: TAKEN, taken: true }, { status: 409 });
+	const changed = data as ChangeResult;
+	if (changed.outcome === 'unknown') return json({ error: UNKNOWN }, { status: 404 });
+	if (changed.outcome === 'closed') return json({ error: CLOSED, closed: true }, { status: 409 });
+	if (changed.outcome === 'taken') return json({ error: TAKEN, taken: true }, { status: 409 });
+
+	// E4b: the Zoom meeting follows the booking (moved, or deleted with a cancelled call) before the visitor reads on.
+	const result = { ...changed, ...(await withZoomMeeting(client, changed)) } as typeof changed;
 
 	const moved = result.outcome === 'moved';
 	const unchanged = moved && result.from_starts_at === result.starts_at;

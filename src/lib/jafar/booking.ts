@@ -318,3 +318,22 @@ export function hoursSummary(hours: BookingHours[]) {
 function isRun(indexes: number[]) {
 	return indexes.every((value, index) => index === 0 || value === indexes[index - 1] + 1);
 }
+
+// --- Zoom connection (E4b) ---------------------------------------------------------------------------------------
+
+export type ZoomStatus = {
+	/** The server has Zoom's app details; when false, connecting cannot start. */
+	configured: boolean;
+	connected: boolean;
+	needs_reconnect: boolean;
+	email: string | null;
+	name: string | null;
+	connected_at: string | null;
+};
+
+export async function fetchZoomStatus(): Promise<ZoomStatus> {
+	const response = await fetch('/api/jafar/booking/zoom');
+	const result = await response.json();
+	if (!response.ok) throw new Error(result.error ?? 'The Zoom connection could not be loaded.');
+	return result;
+}

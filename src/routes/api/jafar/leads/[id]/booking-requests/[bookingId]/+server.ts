@@ -7,7 +7,7 @@ import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { isPlainRefusal, parseBody } from '$lib/server/jafar/calendar';
 import { sendBookingEmail } from '$lib/server/jafar/booking-emails';
-import { askHostForVideoLink } from '$lib/server/jafar/booking-video';
+import { askHostForVideoLink, withZoomMeeting } from '$lib/server/jafar/booking-video';
 import { bookingDecisionSchema } from '$lib/server/validation/booking.schema';
 import type { BookingView } from '$lib/jafar/booking';
 
@@ -59,13 +59,17 @@ export const POST: RequestHandler = async (event) => {
 		console.error('Could not answer the booking request.', error);
 		return databaseError();
 	}
-	const result = data as Decision;
+	let result = data as Decision;
 	if (result.outcome === 'unknown' || result.outcome === 'closed') return notFound(GONE);
 	if (result.outcome === 'taken')
 		return validationError(
 			{ starts_at: 'That time is no longer free. Choose another time to offer.' },
 			409
 		);
+
+	// E4b: an approved Zoom call gets its meeting before the visitor is told.
+	if (result.outcome === 'approved')
+		result = { ...result, ...(await withZoomMeeting(client, result)) } as typeof result;
 
 	try {
 		await sendBookingEmail(

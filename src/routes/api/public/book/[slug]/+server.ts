@@ -6,7 +6,11 @@ import { verifyTurnstileToken } from '$lib/server/security/turnstile';
 import { raiseOwnerAlert } from '$lib/server/jafar/owner-alerts';
 import { sendBookingEmail } from '$lib/server/jafar/booking-emails';
 import { bookingToken, bookingTokenHash } from '$lib/server/jafar/booking-links';
-import { askHostForVideoLink, hostTimeWords } from '$lib/server/jafar/booking-video';
+import {
+	askHostForVideoLink,
+	hostTimeWords,
+	withZoomMeeting
+} from '$lib/server/jafar/booking-video';
 import { publicBookingSchema } from '$lib/server/validation/booking.schema';
 import { LOCATION_WORDS, type BookedCall, type BookingView } from '$lib/jafar/booking';
 
@@ -74,12 +78,16 @@ export const POST: RequestHandler = async (event) => {
 			{ status: 500 }
 		);
 	}
-	const result = rpcData as BookResult;
+	let result = rpcData as BookResult;
 	if (result.outcome === 'unavailable')
 		return json({ error: 'This booking page is not taking bookings right now.' }, { status: 404 });
 	if (result.outcome === 'taken') return json({ error: TAKEN, taken: true }, { status: 409 });
 
 	const requested = result.outcome === 'requested';
+	// E4b: a Zoom meeting type in automatic mode makes its meeting now, so the confirmation carries the link; if Zoom
+	// cannot, the confirmation says the details will follow and the sweep retries.
+	if (!requested)
+		result = { ...result, ...(await withZoomMeeting(client, result)) } as typeof result;
 	const call: BookedCall = {
 		starts_at: result.starts_at,
 		ends_at: result.ends_at,

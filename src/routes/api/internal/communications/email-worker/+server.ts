@@ -7,6 +7,7 @@ import { runMonitoredEmailWake } from '$lib/server/communications/email-worker';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { emailDatabaseRaisedOwnerAlerts } from '$lib/server/jafar/owner-alerts';
 import { sendDuePlatformReminders } from '$lib/server/jafar/reminders';
+import { sweepZoomMeetings } from '$lib/server/jafar/zoom-sync';
 import { sendDueSetupReminderEmails } from '$lib/server/setup/reminder-emails';
 import { sendDueSupportUnseenReplyEmails } from '$lib/server/support/unseen-reply-emails';
 
@@ -67,6 +68,13 @@ export const POST: RequestHandler = async ({ request }) => {
 			await sendDuePlatformReminders(getOwnerSupabaseClient(), { origin });
 		} catch (error) {
 			console.error('Could not send calendar reminders.', error);
+		}
+
+		// Booked Zoom calls (E4b): make, move or delete the meetings a booking is owed, retrying earlier failures.
+		try {
+			await sweepZoomMeetings(getOwnerSupabaseClient(), origin);
+		} catch (error) {
+			console.error('Could not sync Zoom meetings.', error);
 		}
 	}
 

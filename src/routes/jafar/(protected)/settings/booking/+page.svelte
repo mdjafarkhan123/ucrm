@@ -8,6 +8,7 @@
 	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
 	import externalIcon from '@tabler/icons/outline/external-link.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import ZoomConnection from '$lib/components/jafar/booking/ZoomConnection.svelte';
 	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -22,6 +23,7 @@
 	import { browserTimeZone } from '$lib/jafar/calendar';
 	import { jafarBookingKey, jafarSettingsKey } from '$lib/jafar/query-keys';
 	import {
+		LOCATION_WORDS,
 		bookingPath,
 		fetchBookingSettings,
 		hoursOf,
@@ -85,7 +87,7 @@
 		const others = type.host_member_ids.length - 1;
 		return [
 			lengthWords(type.duration_minutes),
-			'Phone call',
+			LOCATION_WORDS[type.location_kind],
 			`with ${nameOf(type.host_member_id)}${others > 0 ? ` (+${others} more ${others === 1 ? 'host' : 'hosts'})` : ''}`,
 			type.requires_approval ? 'You approve each one' : null
 		].filter(Boolean);
@@ -198,6 +200,10 @@
 						Add meeting type
 					</Button>
 				</div>
+			</SectionBlock>
+
+			<SectionBlock title="Zoom" hint="Lets a Zoom meeting type make a meeting for each booking.">
+				<ZoomConnection />
 			</SectionBlock>
 
 			<SectionBlock

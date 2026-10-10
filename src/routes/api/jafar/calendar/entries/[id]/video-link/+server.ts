@@ -7,6 +7,7 @@ import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { CALLS_REFUSED, calendarViewer, parseBody, visibleCall } from '$lib/server/jafar/calendar';
 import { sendBookingEmail } from '$lib/server/jafar/booking-emails';
+import { deleteZoomMeeting } from '$lib/server/jafar/zoom';
 import { videoLinkSchema } from '$lib/server/validation/booking.schema';
 import type { BookingView, CallVideoLink } from '$lib/jafar/booking';
 
@@ -76,7 +77,11 @@ export const POST: RequestHandler = async (event) => {
 			target_url: parsed.data.url
 		});
 		if (error) throw error;
-		const result = data as { outcome: string; replaced_url?: string | null } & BookingView;
+		const result = data as {
+			outcome: string;
+			replaced_url?: string | null;
+			replaced_provider_meeting_id?: string | null;
+		} & BookingView;
 		if (result.outcome === 'unknown' || result.outcome === 'phone') return notFound(NOT_FOUND);
 		if (result.outcome === 'closed')
 			return json(
@@ -84,6 +89,11 @@ export const POST: RequestHandler = async (event) => {
 				{ status: 409 }
 			);
 		if (result.outcome === 'set') {
+			// E4b: a link the host supplies replaces the Zoom meeting UCRM made, which is then deleted.
+			if (result.replaced_provider_meeting_id)
+				await deleteZoomMeeting(client, result.replaced_provider_meeting_id).catch((zoomError) =>
+					console.error('Could not delete the Zoom meeting the new link replaced.', zoomError)
+				);
 			try {
 				await sendBookingEmail(
 					client,
