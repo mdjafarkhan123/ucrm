@@ -65,7 +65,8 @@ function typeBody(type: MeetingType, hosts: (string | null)[]) {
 		'slot_interval_minutes',
 		'requires_approval',
 		'change_deadline_minutes',
-		'is_active'
+		'is_active',
+		'visitor_reminder_minutes'
 	];
 	return {
 		...Object.fromEntries(keys.map((key) => [key, type[key]])),

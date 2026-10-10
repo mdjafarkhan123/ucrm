@@ -31,7 +31,9 @@
 		DURATION_CHOICES,
 		HORIZON_CHOICES,
 		INTERVAL_CHOICES,
+		MAX_VISITOR_REMINDERS,
 		NOTICE_CHOICES,
+		VISITOR_REMINDER_CHOICES,
 		bookingPath,
 		fetchBookingSettings,
 		lengthWords,
@@ -92,6 +94,7 @@
 					requires_approval: type.requires_approval,
 					change_deadline_minutes: type.change_deadline_minutes,
 					is_active: type.is_active,
+					visitor_reminder_minutes: [...type.visitor_reminder_minutes],
 					host_member_id: type.host_member_id,
 					host_member_ids: [...type.host_member_ids]
 				}
@@ -107,6 +110,7 @@
 					requires_approval: false,
 					change_deadline_minutes: 240,
 					is_active: true,
+					visitor_reminder_minutes: [1440],
 					host_member_id: null,
 					host_member_ids: [null]
 				};
@@ -165,6 +169,13 @@
 			if (draft) draft.host_member_id = next === 'jafar' ? null : next;
 		}
 	};
+
+	/** E2b: ticks a reminder time on or off, latest first, at most three. */
+	function toggleReminder(minutes: number, on: boolean) {
+		if (!draft) return;
+		const rest = draft.visitor_reminder_minutes.filter((entry) => entry !== minutes);
+		draft.visitor_reminder_minutes = (on ? [...rest, minutes] : rest).sort((a, b) => b - a);
+	}
 
 	function setName(value: string) {
 		if (!draft) return;
@@ -477,6 +488,35 @@
 						<p class="meeting-type__note">
 							Every email has a link to change or cancel. After this point, the link asks them to
 							reply instead.
+						</p>
+					</SectionBlock>
+					<SectionBlock
+						title="Reminders"
+						hint="Emails that remind the person who booked, before the call."
+						form
+					>
+						<ul class="meeting-type__hosts">
+							{#each VISITOR_REMINDER_CHOICES as minutes (minutes)}
+								{@const ticked = draft.visitor_reminder_minutes.includes(minutes)}
+								<li class="meeting-type__host">
+									<Checkbox
+										id={`type-reminder-${minutes}`}
+										label={`${noticeWords(minutes)} before`}
+										checked={ticked}
+										disabled={!ticked &&
+											draft.visitor_reminder_minutes.length >= MAX_VISITOR_REMINDERS}
+										onchange={(on) => toggleReminder(minutes, on)}
+									/>
+								</li>
+							{/each}
+						</ul>
+						{#if fieldErrors.visitor_reminder_minutes}
+							<p class="meeting-type__error" role="alert">{fieldErrors.visitor_reminder_minutes}</p>
+						{/if}
+						<p class="meeting-type__note">
+							{draft.visitor_reminder_minutes.length === 0
+								? 'No reminders: people get only their booking email.'
+								: `Choose up to ${MAX_VISITOR_REMINDERS}. A reminder is skipped when the call is booked after its time. Each one has the call's details, calendar links, and their change or cancel link.`}
 						</p>
 					</SectionBlock>
 					<button type="submit" hidden aria-hidden="true" tabindex="-1"></button>

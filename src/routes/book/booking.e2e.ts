@@ -239,6 +239,29 @@ test.describe.serial('public booking', () => {
 		const lead = (rows: { fire_at: string }[], start: string) =>
 			rows.map((row) => Date.parse(start) - Date.parse(row.fire_at)).sort((a, b) => a - b);
 		expect(lead(after.data, second)).toEqual(lead(before.data, first));
+
+		// E2b: the visitor's own reminder, a day before by default, moved with the call.
+		const visitorReminders = await db
+			.from('platform_reminders')
+			.select('fire_at')
+			.eq('entry_id', entryId)
+			.eq('channel', 'visitor_email')
+			.is('sent_at', null);
+		if (visitorReminders.error) throw visitorReminders.error;
+		expect(visitorReminders.data.map((row) => Date.parse(row.fire_at))).toEqual([
+			Date.parse(second) - DAY
+		]);
+
+		// The calendar file in the emails shows the new time.
+		const ics = await request.get(`/book/manage/${manageToken(booking.data.id)}/calendar.ics`);
+		expect(ics.status()).toBe(200);
+		expect(ics.headers()['content-type']).toContain('text/calendar');
+		const stamp = new Date(second)
+			.toISOString()
+			.replace(/[-:]/g, '')
+			.replace(/\.\d{3}/, '');
+		expect(await ics.text()).toContain(`DTSTART:${stamp}`);
+		expect((await request.get(`/book/manage/not-a-link/calendar.ics`)).status()).toBe(404);
 	});
 
 	test('in approval mode a request holds no time, and approving checks it again', async ({

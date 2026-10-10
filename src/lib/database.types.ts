@@ -14097,6 +14097,7 @@ export type Database = {
 					slot_interval_minutes: number;
 					slug: string;
 					updated_at: string;
+					visitor_reminder_minutes: number[];
 				};
 				Insert: {
 					buffer_minutes?: number;
@@ -14115,6 +14116,7 @@ export type Database = {
 					slot_interval_minutes?: number;
 					slug: string;
 					updated_at?: string;
+					visitor_reminder_minutes?: number[];
 				};
 				Update: {
 					buffer_minutes?: number;
@@ -14133,6 +14135,7 @@ export type Database = {
 					slot_interval_minutes?: number;
 					slug?: string;
 					updated_at?: string;
+					visitor_reminder_minutes?: number[];
 				};
 				Relationships: [
 					{
@@ -24563,6 +24566,7 @@ export type Database = {
 					target_slot_interval_minutes: number;
 					target_slug: string;
 					target_type_id: string;
+					target_visitor_reminder_minutes: number[];
 				};
 				Returns: Json;
 			};

@@ -3,19 +3,22 @@ import type { Database } from '$lib/database.types';
 import { enqueueEmailDelivery } from '$lib/server/events/dispatcher';
 import { createOwnerNotification } from '$lib/server/events/outbox';
 import { getServerEnv } from '$lib/server/env';
+import { sendBookingEmail } from '$lib/server/jafar/booking-emails';
+import type { BookingView } from '$lib/jafar/booking';
 
 // Jafar business management C2: sends the Business Management calendar's reminders -- an alert in the bell or an
 // email -- for sales calls and dated next actions (Google Calendar's notification model, plan § 6). The database
 // writes each reminder from its call or next action and deletes the unsent ones when either moves, so whatever it
 // hands over here is still right. It claims due reminders for five minutes and drops any more than an hour late.
 // Runs on the email worker's once-a-minute wake. Each reminder goes to its call's or business's owner (D3a): an
-// alert in their bell, an email to their sign-in address; null is Jafar.
+// alert in their bell, an email to their sign-in address; null is Jafar. E2b: a 'visitor_email' reminder goes to the
+// visitor who booked the call, at a time Jafar chose for its meeting type.
 
 const BATCH = 50;
 
 export type DueReminder = {
 	id: string;
-	channel: 'in_app' | 'email';
+	channel: 'in_app' | 'email' | 'visitor_email';
 	fire_at: string;
 	/** Null is Jafar. */
 	recipient_member_id: string | null;
@@ -141,6 +144,18 @@ async function deliver(
 	origin: string,
 	ownerEmail: string
 ) {
+	if (reminder.channel === 'visitor_email') {
+		if (!reminder.call) return;
+		const { data, error } = await client.rpc('owner_booking_for_entry', {
+			target_entry_id: reminder.call.id
+		});
+		if (error) throw error;
+		const booking = data as BookingView | null;
+		// The database deletes a cancelled call's reminders; this only guards a booking gone meanwhile.
+		if (!booking || booking.status !== 'booked' || booking.call_status !== 'scheduled') return;
+		await sendBookingEmail(client, booking, { kind: 'reminder', reminderId: reminder.id }, origin);
+		return;
+	}
 	const words = reminderWords(reminder);
 	if (reminder.channel === 'in_app') {
 		try {

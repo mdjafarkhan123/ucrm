@@ -6,7 +6,9 @@ import {
 	HORIZON_CHOICES,
 	INTERVAL_CHOICES,
 	MAX_RANGES_PER_DAY,
-	NOTICE_CHOICES
+	MAX_VISITOR_REMINDERS,
+	NOTICE_CHOICES,
+	VISITOR_REMINDER_CHOICES
 } from '$lib/jafar/booking';
 import { timeZoneSchema } from './calendar.schema';
 
@@ -87,6 +89,10 @@ export const meetingTypeSchema = z
 		requires_approval: z.boolean(),
 		change_deadline_minutes: oneOf(CHANGE_DEADLINE_CHOICES, 'Choose when changes stop.'),
 		is_active: z.boolean(),
+		visitor_reminder_minutes: z
+			.array(oneOf(VISITOR_REMINDER_CHOICES, 'Choose when the reminder goes.'))
+			.max(MAX_VISITOR_REMINDERS, `Keep to ${MAX_VISITOR_REMINDERS} reminders.`)
+			.transform((minutes) => [...new Set(minutes)].sort((a, b) => b - a)),
 		host_member_id: hostId,
 		host_member_ids: z
 			.array(hostId)

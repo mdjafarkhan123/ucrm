@@ -29,7 +29,8 @@ export async function saveMeetingType(client: Client, id: string | null, type: M
 			target_change_deadline_minutes: type.change_deadline_minutes,
 			target_is_active: type.is_active,
 			target_host_member_id: type.host_member_id as string,
-			target_host_member_ids: type.host_member_ids as Json
+			target_host_member_ids: type.host_member_ids as Json,
+			target_visitor_reminder_minutes: type.visitor_reminder_minutes
 		});
 		if (error?.code === '23505')
 			return validationError({ slug: 'Another meeting already uses this link.' }, 409);

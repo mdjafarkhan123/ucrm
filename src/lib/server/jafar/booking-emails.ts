@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import { enqueueEmailDelivery } from '$lib/server/events/dispatcher';
+import { bookingIcsUrl, googleCalendarUrl } from '$lib/server/jafar/booking-calendar';
 import { bookingManageUrl } from '$lib/server/jafar/booking-links';
 import {
 	bookingPath,
@@ -13,7 +14,8 @@ import {
 
 // Jafar business management E1/E2: every email a visitor gets about their booking, queued through the durable
 // outbox so a provider outage is retried rather than lost. Times are in the zone the visitor booked in. While the
-// booking can still change, each email carries the visitor's link to change or cancel it.
+// booking can still change, each email carries the visitor's link to change or cancel it. E2b: every email about a
+// booked call carries "Add to calendar" links, and reminders go before the call at the times Jafar chose.
 
 export type BookingEmailKind =
 	| { kind: 'booked' }
@@ -24,7 +26,9 @@ export type BookingEmailKind =
 	| { kind: 'moved'; fromStartsAt: string; by: 'visitor' | 'staff' }
 	| { kind: 'cancelled'; by: 'visitor' | 'staff' }
 	/** E3: the call is now with another host; `changeId` tells one change from the next. */
-	| { kind: 'host_changed'; fromHostName: string; changeId: string };
+	| { kind: 'host_changed'; fromHostName: string; changeId: string }
+	/** E2b: a reminder before the call; `reminderId` is the reminder it sends. */
+	| { kind: 'reminder'; reminderId: string };
 
 function escapeHtml(value: string) {
 	return value
@@ -60,6 +64,11 @@ export function bookingEmail(booking: BookingView, email: BookingEmailKind, orig
 				{ label: 'Change or cancel', href: manage }
 			]
 		: [];
+	const calendarLines: Line[] = [
+		'Add it to your calendar:',
+		{ label: 'Google Calendar', href: googleCalendarUrl(booking, manage) },
+		{ label: 'Apple, Outlook or other calendar (.ics)', href: bookingIcsUrl(manage) }
+	];
 	const bookAgainLines = (words: string): Line[] =>
 		bookAgain ? [words, { label: 'Choose a time', href: bookAgain }] : [];
 
@@ -68,7 +77,7 @@ export function bookingEmail(booking: BookingView, email: BookingEmailKind, orig
 	switch (email.kind) {
 		case 'booked':
 			subject = `Booked: ${booking.name} with Uplift, ${date} at ${start}`;
-			body = [[`Your ${call} is booked.`], details, changeLinks];
+			body = [[`Your ${call} is booked.`], details, calendarLines, changeLinks];
 			break;
 		case 'requested':
 			subject = `Request received: ${booking.name} with Uplift, ${date} at ${start}`;
@@ -88,6 +97,7 @@ export function bookingEmail(booking: BookingView, email: BookingEmailKind, orig
 						: `${booking.host_name} has confirmed your ${call}.`
 				],
 				details,
+				calendarLines,
 				changeLinks
 			];
 			break;
@@ -109,6 +119,10 @@ export function bookingEmail(booking: BookingView, email: BookingEmailKind, orig
 						: `We have had to move your ${call} from ${at(email.fromStartsAt)} to the time below. If it doesn't suit you, change it with the link below.`
 				],
 				details,
+				[
+					'If you added the old time to your calendar, please remove it and add the new one:',
+					...calendarLines.slice(1)
+				],
 				changeLinks
 			];
 			break;
@@ -134,6 +148,10 @@ export function bookingEmail(booking: BookingView, email: BookingEmailKind, orig
 				details,
 				changeLinks
 			];
+			break;
+		case 'reminder':
+			subject = `Reminder: ${booking.name} with Uplift, ${date} at ${start}`;
+			body = [[`A reminder of your ${call}.`], details, calendarLines, changeLinks];
 			break;
 	}
 
@@ -165,6 +183,7 @@ function idempotencyKey(booking: BookingView, email: BookingEmailKind) {
 	const base = `booking:${booking.booking_id}:${email.kind}`;
 	if (email.kind === 'moved') return `${base}:${booking.starts_at}`;
 	if (email.kind === 'host_changed') return `${base}:${email.changeId}`;
+	if (email.kind === 'reminder') return `${base}:${email.reminderId}`;
 	return base;
 }
 

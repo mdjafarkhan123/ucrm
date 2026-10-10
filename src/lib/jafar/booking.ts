@@ -21,6 +21,8 @@ export type MeetingType = {
 	change_deadline_minutes: number;
 	/** E3: an Off type's link says booking is closed; its past bookings keep working. */
 	is_active: boolean;
+	/** E2b: when each reminder email goes to the visitor, in minutes before the call; empty sends none. */
+	visitor_reminder_minutes: number[];
 	/** E3: who takes every new booking (null is Jafar); always one of `host_member_ids`. */
 	host_member_id: string | null;
 	/** E3: who may host it (null is Jafar). */
@@ -135,6 +137,9 @@ export const NOTICE_CHOICES = [0, 60, 120, 240, 720, 1440, 2880, 4320, 10080] as
 /** E2: how long before the call a visitor can still change or cancel, in minutes. */
 export const CHANGE_DEADLINE_CHOICES = [0, 60, 120, 240, 720, 1440, 2880] as const;
 export const HORIZON_CHOICES = [7, 14, 30, 60, 90, 180] as const;
+/** E2b: when a visitor's reminder email can go, in minutes before the call; the database allows these only. */
+export const VISITOR_REMINDER_CHOICES = [15, 30, 60, 120, 240, 1440, 2880] as const;
+export const MAX_VISITOR_REMINDERS = 3;
 export const MAX_RANGES_PER_DAY = 4;
 
 /** Monday first, as a work week reads; values are the database's weekday (0 is Sunday). */
