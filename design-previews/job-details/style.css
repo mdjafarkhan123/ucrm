@@ -16,7 +16,7 @@ body {
 		sans-serif;
 	background: #f7f8f5;
 	color: #263b34;
-	font-size: 16px;
+	font-size: 15px;
 	-webkit-font-smoothing: antialiased;
 }
 
@@ -73,7 +73,7 @@ button:disabled {
 	height: 29px;
 }
 .sidebar__brand span {
-	font-size: 16px;
+	font-size: 15px;
 	align-self: flex-start;
 	padding-top: 8px;
 }
@@ -96,11 +96,11 @@ button:disabled {
 .sidebar__workspace small {
 	display: block;
 	margin-top: 5px;
-	font-size: 14px;
+	font-size: 13px;
 	color: #a3bbb0;
 }
 .sidebar__label {
-	font-size: 14px;
+	font-size: 13px;
 	letter-spacing: 1.5px;
 	color: #91afa2;
 	margin: 29px 14px 11px;
@@ -112,7 +112,7 @@ button:disabled {
 	border-radius: 6px;
 	padding: 11px 14px;
 	margin: 2px 0;
-	font-size: 16px;
+	font-size: 15px;
 	transition: background 0.15s;
 }
 .sidebar__link:hover {
@@ -125,7 +125,7 @@ button:disabled {
 }
 .sidebar__link span {
 	margin-left: auto;
-	font-size: 14px;
+	font-size: 13px;
 	background: rgba(255, 255, 255, 0.0745098039);
 	padding: 2px 6px;
 	border-radius: 4px;
@@ -138,13 +138,13 @@ button:disabled {
 	border-radius: 8px;
 	padding: 15px 12px;
 	margin: 30px 0 16px;
-	font-size: 16px;
+	font-size: 15px;
 }
 .sidebar__tip small {
 	display: block;
 	margin-top: 7px;
 	color: #9eb8aa;
-	font-size: 14px;
+	font-size: 13px;
 }
 .sidebar__profile {
 	border: 0;
@@ -158,13 +158,13 @@ button:disabled {
 	gap: 10px;
 	align-items: center;
 	text-align: left;
-	font-size: 16px;
+	font-size: 15px;
 }
 .sidebar__profile small {
 	display: block;
 	color: #9eb8aa;
 	margin-top: 4px;
-	font-size: 14px;
+	font-size: 13px;
 }
 .sidebar__profile > svg {
 	margin-left: auto;
@@ -180,7 +180,7 @@ button:disabled {
 	background: #d6ddbd;
 	color: #183d35;
 	font-family: Georgia, serif;
-	font-size: 20px;
+	font-size: 18px;
 }
 
 .app {
@@ -197,7 +197,7 @@ button:disabled {
 	background: #fcfdfa;
 }
 .topbar__crumb {
-	font-size: 16px;
+	font-size: 15px;
 	color: #59685f;
 }
 .topbar__crumb span {
@@ -221,10 +221,10 @@ button:disabled {
 	background: none;
 	border: 0;
 	color: #59685f;
-	font-size: 16px;
+	font-size: 15px;
 }
 .search kbd {
-	font-size: 14px;
+	font-size: 13px;
 	border: 1px solid #e5e9e4;
 	border-radius: 4px;
 	padding: 3px 5px;
@@ -265,7 +265,7 @@ main {
 }
 
 .eyebrow {
-	font-size: 14px;
+	font-size: 13px;
 	font-weight: 600;
 	letter-spacing: 1.3px;
 	color: #59685f;
@@ -287,7 +287,7 @@ main {
 	align-items: center;
 	gap: 12px;
 	color: #59685f;
-	font-size: 16px;
+	font-size: 15px;
 }
 .page-heading h1 {
 	font-size: 31px;
@@ -298,7 +298,7 @@ main {
 .page-heading p {
 	margin: 0;
 	color: #59685f;
-	font-size: 16px;
+	font-size: 15px;
 }
 .page-heading__actions {
 	display: flex;
@@ -312,7 +312,7 @@ main {
 	justify-content: center;
 	gap: 7px;
 	padding: 10px 13px;
-	font-size: 16px;
+	font-size: 15px;
 	font-weight: 550;
 	background: white;
 	color: #263b34;
@@ -355,7 +355,7 @@ main {
 	background: #e8f0e5;
 	color: #426344;
 	padding: 5px 8px;
-	font-size: 14px;
+	font-size: 13px;
 	font-weight: 550;
 }
 .badge i {
@@ -367,7 +367,7 @@ main {
 .badge--neutral {
 	background: #f0f3ed;
 	color: #6a7a65;
-	font-size: 14px;
+	font-size: 13px;
 }
 
 .summary {
@@ -387,7 +387,7 @@ main {
 }
 .summary__item > span {
 	display: block;
-	font-size: 14px;
+	font-size: 13px;
 	letter-spacing: 1px;
 	color: #59685f;
 	margin-bottom: 12px;
@@ -400,7 +400,7 @@ main {
 	letter-spacing: -0.7px;
 }
 .summary__item > strong > span {
-	font-size: 20px;
+	font-size: 18px;
 	color: #7f8a80;
 }
 .summary__item small {
@@ -408,7 +408,7 @@ main {
 	align-items: center;
 	gap: 5px;
 	color: #59685f;
-	font-size: 14px;
+	font-size: 13px;
 	margin-top: 8px;
 }
 .summary__item small svg {
@@ -421,7 +421,7 @@ main {
 	padding: 3px 0;
 }
 .summary .summary__date span {
-	font-size: 16px;
+	font-size: 15px;
 	font-weight: 400;
 	margin-left: 4px;
 	letter-spacing: 0;
@@ -436,13 +436,13 @@ main {
 	border-radius: 50%;
 	background: #e1e7d6;
 	color: #43513d;
-	font-size: 14px;
+	font-size: 13px;
 	font-weight: 600;
 }
 .avatar--small {
 	width: 28px;
 	height: 28px;
-	font-size: 14px;
+	font-size: 13px;
 }
 .avatar--sage {
 	background: #dfe8df;
@@ -455,7 +455,7 @@ main {
 .avatar--large {
 	width: 42px;
 	height: 42px;
-	font-size: 16px;
+	font-size: 15px;
 	background: #f0e6d9;
 	color: #8e7150;
 }
@@ -470,7 +470,7 @@ main {
 	border: 2px solid white;
 }
 .team strong {
-	font-size: 16px;
+	font-size: 15px;
 	font-weight: 500;
 	margin-left: 8px;
 }
@@ -501,7 +501,7 @@ main {
 	align-items: center;
 	gap: 6px;
 	padding: 16px 0;
-	font-size: 16px;
+	font-size: 15px;
 	color: #59685f;
 	border-bottom: 2px solid transparent;
 }
@@ -514,7 +514,7 @@ main {
 	font-weight: 600;
 }
 .tabs span {
-	font-size: 14px;
+	font-size: 13px;
 	background: #e9ede6;
 	padding: 2px 5px;
 	border-radius: 4px;
@@ -548,7 +548,7 @@ main {
 	padding: 22px 23px 19px;
 }
 .panel__heading h2 {
-	font-size: 16px;
+	font-size: 15px;
 	font-weight: 600;
 	margin: 0;
 	display: flex;
@@ -556,7 +556,7 @@ main {
 	gap: 9px;
 }
 .panel__heading p {
-	font-size: 16px;
+	font-size: 15px;
 	color: #59685f;
 	margin: 6px 0 0;
 }
@@ -585,19 +585,19 @@ main {
 	min-width: 0;
 }
 .visit__body h3 {
-	font-size: 16px;
+	font-size: 15px;
 	font-weight: 550;
 	margin: 0;
 }
 .visit__body p {
 	color: #59685f;
-	font-size: 14px;
+	font-size: 13px;
 	margin: 7px 0 0;
 }
 .visit__body small {
 	color: #87917f;
 	display: block;
-	font-size: 14px;
+	font-size: 13px;
 	margin-top: 7px;
 }
 .visit__title {
@@ -613,7 +613,7 @@ main {
 	border: 2px solid white;
 }
 .visit__done {
-	font-size: 14px;
+	font-size: 13px;
 	color: #7c8978;
 }
 .visit--complete {
@@ -637,7 +637,7 @@ main {
 	background: #fff;
 }
 .date-tile span {
-	font-size: 14px;
+	font-size: 13px;
 	color: #59685f;
 	letter-spacing: 0.7px;
 }
@@ -662,13 +662,13 @@ table {
 	width: 100%;
 	border-collapse: collapse;
 	white-space: nowrap;
-	font-size: 14px;
+	font-size: 13px;
 }
 table th {
 	background: #fafbf8;
 	border-block: 1px solid #edf0e9;
 	color: #8a9487;
-	font-size: 14px;
+	font-size: 13px;
 	letter-spacing: 0.5px;
 	font-weight: 500;
 	text-align: right;
@@ -690,20 +690,20 @@ table td {
 }
 table td strong {
 	display: block;
-	font-size: 16px;
+	font-size: 15px;
 	font-weight: 550;
 }
 table td small {
 	display: block;
 	margin-top: 6px;
 	color: #59685f;
-	font-size: 14px;
+	font-size: 13px;
 }
 
 .totals {
 	width: 265px;
 	margin: 17px 23px 21px auto;
-	font-size: 16px;
+	font-size: 15px;
 }
 .totals > div {
 	display: flex;
@@ -716,7 +716,7 @@ table td small {
 	padding-top: 15px;
 	border-top: 1px solid #e5e9e4;
 	color: #263b34;
-	font-size: 14px;
+	font-size: 13px;
 }
 
 .instructions {
@@ -729,14 +729,14 @@ table td small {
 	margin: 0 23px 16px;
 	color: #677568;
 	line-height: 1.8;
-	font-size: 16px;
+	font-size: 15px;
 }
 
 .tag {
 	display: inline-flex;
 	align-items: center;
 	gap: 5px;
-	font-size: 14px;
+	font-size: 13px;
 	margin-left: 23px;
 	color: #869080;
 }
@@ -758,12 +758,12 @@ table td small {
 	margin-bottom: 21px;
 }
 .client__identity h3 {
-	font-size: 16px;
+	font-size: 15px;
 	font-weight: 550;
 	margin: 0 0 5px;
 }
 .client__identity span:not(.avatar) {
-	font-size: 14px;
+	font-size: 13px;
 	color: #59685f;
 }
 .client__address {
@@ -773,11 +773,11 @@ table td small {
 	margin-top: 15px;
 }
 .client__address strong {
-	font-size: 16px;
+	font-size: 15px;
 	font-weight: 550;
 }
 .client__address span {
-	font-size: 14px;
+	font-size: 13px;
 	color: #59685f;
 }
 
@@ -785,7 +785,7 @@ table td small {
 	display: flex;
 	align-items: center;
 	gap: 9px;
-	font-size: 14px;
+	font-size: 13px;
 	margin: 13px 0;
 	color: #6a786d;
 }
@@ -854,12 +854,12 @@ table td small {
 	bottom: 10px;
 	left: 10px;
 	color: #8c9b7c;
-	font-size: 14px;
+	font-size: 13px;
 	letter-spacing: 1px;
 }
 
 .text-link {
-	font-size: 14px;
+	font-size: 13px;
 	color: #6c8069;
 }
 .text-link:hover {
@@ -888,17 +888,17 @@ table td small {
 	padding-bottom: 0;
 }
 .activity__item strong {
-	font-size: 14px;
+	font-size: 13px;
 	font-weight: 550;
 }
 .activity__item p {
-	font-size: 14px;
+	font-size: 13px;
 	color: #59685f;
 	margin: 6px 0 7px;
 	line-height: 1.5;
 }
 .activity__item small {
-	font-size: 14px;
+	font-size: 13px;
 	color: #90998b;
 }
 .activity__dot {
@@ -925,17 +925,17 @@ table td small {
 	width: 16px;
 }
 .note strong {
-	font-size: 16px;
+	font-size: 15px;
 	font-weight: 550;
 }
 .note p {
-	font-size: 14px;
+	font-size: 13px;
 	line-height: 1.7;
 	color: #59685f;
 	margin: 7px 0;
 }
 .note a {
-	font-size: 14px;
+	font-size: 13px;
 	display: flex;
 	gap: 6px;
 	align-items: center;
@@ -951,7 +951,7 @@ table td small {
 	justify-content: space-between;
 	gap: 10px;
 	color: #8f998a;
-	font-size: 14px;
+	font-size: 13px;
 	letter-spacing: 1px;
 	margin-top: 30px;
 }
@@ -1096,10 +1096,10 @@ table td small {
 		font-size: 19px;
 	}
 	.summary .summary__date span {
-		font-size: 14px;
+		font-size: 13px;
 	}
 	.team strong {
-		font-size: 14px;
+		font-size: 13px;
 	}
 	.tabs {
 		gap: 23px;
@@ -1126,7 +1126,7 @@ table td small {
 		margin-top: 6px;
 	}
 	.visit__done {
-		font-size: 14px;
+		font-size: 13px;
 	}
 	.totals {
 		width: 235px;
@@ -1202,7 +1202,7 @@ body {
 }
 
 .page-heading h1 {
-	font-size: 32px;
+	font-size: 30px;
 	line-height: 1.2;
 }
 
@@ -1211,7 +1211,7 @@ body {
 }
 
 .panel__heading h2 {
-	font-size: 20px;
+	font-size: 18px;
 	line-height: 1.35;
 }
 
@@ -1222,7 +1222,7 @@ body {
 .visit__body h3,
 .client__identity h3,
 table td strong {
-	font-size: 16px;
+	font-size: 15px;
 }
 
 .visit__body p,
@@ -1253,7 +1253,7 @@ table td strong {
 }
 
 .instructions > p {
-	font-size: 16px;
+	font-size: 15px;
 	color: #526157;
 }
 
@@ -1289,12 +1289,12 @@ table td small {
 }
 
 .activity__item strong {
-	font-size: 16px;
+	font-size: 15px;
 }
 
 .activity__item p,
 .activity__item small {
-	font-size: 14px;
+	font-size: 13px;
 }
 
 .activity__item {
@@ -1306,12 +1306,12 @@ table td small {
 }
 
 .note p {
-	font-size: 14px;
+	font-size: 13px;
 }
 
 .note strong,
 .note a {
-	font-size: 16px;
+	font-size: 15px;
 }
 
 .property-art small {
@@ -1363,7 +1363,7 @@ table td small {
 		max-width: 185px;
 	}
 	.sidebar__workspace > span:not(.workspace-mark) {
-		font-size: 14px;
+		font-size: 13px;
 	}
 	.topbar {
 		padding-inline: 18px;
@@ -1372,7 +1372,7 @@ table td small {
 		gap: 2px;
 	}
 	.topbar__crumb {
-		font-size: 14px;
+		font-size: 13px;
 	}
 	.topbar__crumb span {
 		margin-inline: 7px;
@@ -1393,23 +1393,23 @@ table td small {
 		font-size: 24px;
 	}
 	.summary__item > strong > span {
-		font-size: 18px;
+		font-size: 17px;
 	}
 	.summary .summary__date span {
 		margin-left: 0;
-		font-size: 14px;
+		font-size: 13px;
 	}
 	.team strong {
 		width: 100%;
 		margin-left: 0;
-		font-size: 14px;
+		font-size: 13px;
 	}
 	.content__rail {
 		display: flex;
 		align-items: stretch;
 	}
 	.panel__heading h2 {
-		font-size: 18px;
+		font-size: 17px;
 	}
 	.panel__heading {
 		gap: 8px;
@@ -1430,7 +1430,7 @@ table td small {
 		font-size: 12px;
 	}
 	.client__address strong {
-		font-size: 16px;
+		font-size: 15px;
 	}
 	.totals {
 		width: auto;
