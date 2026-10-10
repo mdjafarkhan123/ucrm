@@ -201,16 +201,16 @@ trade- or size-specific. Jobber plan in brackets.
 
 **Urgent**
 
-- [ ] Team alert when a customer approves a Quote or asks for changes online (Core). Today only a decline
+- [x] Team alert when a customer approves a Quote or asks for changes online (Core). Today only a decline
       alerts. Example: a customer approves an $8,000 roof at 9 pm; nobody knows until someone opens the Quote.
-- [ ] Client "Upcoming visit reminders" and "Overdue invoice reminders" switches send nothing. Jafar chose
+- [x] Client "Upcoming visit reminders" and "Overdue invoice reminders" switches send nothing. Jafar chose
       2026-10-08 to make them work rather than hide them, so the first two High items below are built with this one.
 
 **High**
 
-- [ ] Customer visit and assessment reminders, and a "your visit is booked" confirmation, by email now and text
+- [x] Customer visit and assessment reminders, and a "your visit is booked" confirmation, by email now and text
       after registration (Connect). Example: a Tuesday 9 am booking with no reminder becomes a no-show.
-- [ ] Overdue invoice follow-ups to the customer (Connect). Today invoice reminders are internal to-dos only.
+- [x] Overdue invoice follow-ups to the customer (Connect). Today invoice reminders are internal to-dos only.
 - [ ] Tell a teammate when they are put on a Visit or Assessment (email now, push with the push-alert item).
       Example: a helper added to tomorrow's job learns about it only by opening the Schedule.
 - [ ] "On my way" text from the Visit (Connect, with client notifications) — after business registration.
