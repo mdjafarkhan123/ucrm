@@ -25,3 +25,14 @@ Compiled with Sass and checked with Prettier. Chromium rendered 1440px desktop a
 ## Expanded section coverage
 
 Compared with the current job page on 2026-10-10: added full visits, labor/time, expenses, checklists, crew instructions, photos/files, sign-off, work report, costing, billing reminders, discount/tax controls, and originating quote. The existing summary, scope, customer, billing overview, notes, and activity remain. Recurring-period and per-visit billing queues do not apply to this fixed-price one-off example. Sample cost totals are internally consistent: $8,450 revenue − $960 labor − $2,900 expenses = $4,590 profit before tax, with 54.3% margin. All controls remain static preview affordances.
+
+## Combined design — small review pieces
+
+Jafar requested combining this concept with the strongest parts of `codex/job-design-concept`, working piece by piece. This branch is the proposed combined preview; it does not supersede campaign approval records yet.
+
+1. Customer/property card: adapted the companion concept's illustrated map, kept this concept's customer contacts and message action, and made directions a full-width link. The illustration is labelled and does not claim a geocoded location. Ready for visual review.
+2. Next: sidebar/header comparison and readability. Review that piece before changing the work sections.
+3. Then: visits/scope; time/expenses/checklists; notes/files/sign-off/report; financial supporting column. Each is a separate reviewable change.
+4. Finally: bring across the companion demo's applicable modal previews and scenario coverage in small groups, preserving existing functionality and checking desktop/mobile after each group. Keep the companion branch as the interaction reference.
+
+Keep the wide work column and narrow supporting column throughout. Each piece has a focused change, browser evidence, and a commit. The full milestone remains unapproved until layout, coverage, interactions, and scenarios are reviewed together.
