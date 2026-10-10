@@ -33,6 +33,8 @@ Live proof 2026-10-10: automation turned on, job #28 finished, email waited for 
 time), then — with Saturday hours temporarily widened and put back to 09:00–17:00 — exactly one thank-you was
 accepted by the email provider. One run, one trigger event, no errors.
 
-Only left: reopen job #28 and finish it again (Jobs → job #28 → "Reopen job", then mark the visit complete / Finish
-job); confirm no second run and no second email. Jafar can click "Reopen job" himself (Claude's click was blocked).
-Then tick the last step, release claim `sonnet-cr-6`, mark Part 6 done in ROADMAP.md and NOW.md.
+Reopen test done (Jafar clicked "Reopen job" on #28): still 1 run, 1 trigger event, 1 email.
+
+Only left (optional, stricter): add a return visit to job #28, mark it complete → Finish job; confirm no second
+email (re-entry key `job:<id>` should block it). Jafar may skip it and call Part 6 done. Then release claim
+`sonnet-cr-6`, mark Part 6 done in ROADMAP.md and NOW.md; Part 7 is next.
