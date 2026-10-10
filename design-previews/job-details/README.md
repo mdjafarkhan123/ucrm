@@ -21,3 +21,7 @@ New design tokens: forest navigation #172e26; primary #23674b; canvas #f6f7f4; i
 ## Verification
 
 Compiled with Sass and checked with Prettier. Chromium rendered 1440px desktop and 390px mobile with no page overflow. Preview action notice checked. Screenshots visually reviewed. The line-item table scrolls horizontally on mobile. This is a visual concept, not a production accessibility or behavior audit.
+
+## Expanded section coverage
+
+Compared with the current job page on 2026-10-10: added full visits, labor/time, expenses, checklists, crew instructions, photos/files, sign-off, work report, costing, billing reminders, discount/tax controls, and originating quote. The existing summary, scope, customer, billing overview, notes, and activity remain. Recurring-period and per-visit billing queues do not apply to this fixed-price one-off example. Sample cost totals are internally consistent: $8,450 revenue − $960 labor − $2,900 expenses = $4,590 profit before tax, with 54.3% margin. All controls remain static preview affordances.

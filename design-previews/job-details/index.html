@@ -571,9 +571,10 @@
 				</section>
 				<nav class="tabs" aria-label="Job sections">
 					<a class="tabs__active" href="#overview">Overview</a
-					><a href="#visits">Visits <span>3</span></a
-					><a href="#scope">Line items</a><a href="#notes">Notes & files <span>4</span></a
-					><a href="#activity">Activity</a>
+					><a href="#all-visits">Visits <span>3</span></a
+					><a href="#scope">Line items</a><a href="#labor">Time & expenses</a
+					><a href="#checklists">Field work</a><a href="#notes">Notes & files <span>4</span></a
+					><a href="#work-report">Work report</a><a href="#activity">Activity</a>
 				</nav>
 				<div class="layout" id="overview">
 					<div class="layout__main">
@@ -750,6 +751,347 @@
 								</div>
 							</div>
 						</section>
+						<section class="panel detail-section" id="all-visits">
+							<div class="section-heading">
+								<div>
+									<h2>Visits <span class="count">3</span></h2>
+									<p>The complete schedule, from preparation to handover.</p>
+								</div>
+								<button class="text-button">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-plus"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M12 5l0 14" />
+										<path d="M5 12l14 0" />
+									</svg>
+									Add visit
+								</button>
+							</div>
+							<div class="detail-row">
+								<div>
+									<strong>Site preparation</strong>
+									<p>Oct 5 · 8:00 AM–12:00 PM · Mike & Jamie</p>
+								</div>
+								<span><span class="status-pill">Completed</span></span>
+							</div>
+							<div class="detail-row">
+								<div>
+									<strong>Patio installation</strong>
+									<p>Oct 9 · 8:00 AM–4:00 PM · Mike & Jamie</p>
+								</div>
+								<span><span class="status-pill">Completed</span></span>
+							</div>
+							<div class="detail-row">
+								<div>
+									<strong>Finishing & final walkthrough</strong>
+									<p>Oct 12 · 9:00 AM–12:00 PM · Mike & Jamie</p>
+								</div>
+								<span><span class="status-pill status-pill--neutral">Upcoming</span></span>
+							</div>
+						</section>
+						<section class="panel detail-section" id="labor">
+							<div class="section-heading">
+								<div>
+									<h2>Labor & time</h2>
+									<p>Time recorded by the crew on this job.</p>
+								</div>
+								<button class="text-button">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-clock"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+										<path d="M12 7v5l3 3" />
+									</svg>
+									Add time
+								</button>
+							</div>
+							<div class="section-metrics">
+								<div><small>RECORDED HOURS</small><strong>24h 00m</strong></div>
+								<div><small>LABOR COST</small><strong>$960.00</strong></div>
+							</div>
+							<div class="detail-row">
+								<div>
+									<strong>Mike Reynolds</strong>
+									<p>Site preparation · 4h / Patio installation · 8h</p>
+								</div>
+								<span>12h 00m</span>
+							</div>
+							<div class="detail-row">
+								<div>
+									<strong>Jamie Lee</strong>
+									<p>Site preparation · 4h / Patio installation · 8h</p>
+								</div>
+								<span>12h 00m</span>
+							</div>
+						</section>
+						<section class="panel detail-section" id="expenses">
+							<div class="section-heading">
+								<div>
+									<h2>Expenses</h2>
+									<p>Materials and purchases recorded against this job.</p>
+								</div>
+								<button class="text-button">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-plus"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M12 5l0 14" />
+										<path d="M5 12l14 0" />
+									</svg>
+									Add expense
+								</button>
+							</div>
+							<div class="detail-row">
+								<div>
+									<strong>Limestone pavers & base</strong>
+									<p>Oct 7 · Materials · Mike Reynolds</p>
+								</div>
+								<span>$2,100.00</span>
+							</div>
+							<div class="detail-row">
+								<div>
+									<strong>Native plants & irrigation kit</strong>
+									<p>Oct 9 · Materials · Mike Reynolds</p>
+								</div>
+								<span>$620.00</span>
+							</div>
+							<div class="detail-row">
+								<div>
+									<strong>Equipment rental</strong>
+									<p>Oct 5 · Equipment · Mike Reynolds</p>
+								</div>
+								<span>$180.00</span>
+							</div>
+							<div class="detail-total"><span>Total expenses</span><strong>$2,900.00</strong></div>
+						</section>
+						<section class="panel detail-section" id="checklists">
+							<div class="section-heading">
+								<div>
+									<h2>Checklists</h2>
+									<p>A shared finish line for your crew.</p>
+								</div>
+								<button class="text-button">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-list-check"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M3.5 5.5l1.5 1.5l2.5 -2.5" />
+										<path d="M3.5 11.5l1.5 1.5l2.5 -2.5" />
+										<path d="M3.5 17.5l1.5 1.5l2.5 -2.5" />
+										<path d="M11 6l9 0" />
+										<path d="M11 12l9 0" />
+										<path d="M11 18l9 0" />
+									</svg>
+									Manage
+								</button>
+							</div>
+							<div class="checklist-progress">
+								<strong>Site handover</strong><span>3 of 5 complete</span>
+								<div><i></i></div>
+							</div>
+							<div class="checklist-row">
+								<span class="checklist-box checklist-box--done"
+									><svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-check"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M5 12l5 5l10 -10" /></svg></span
+								><span>Confirm layout with customer</span>
+							</div>
+							<div class="checklist-row">
+								<span class="checklist-box checklist-box--done"
+									><svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-check"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M5 12l5 5l10 -10" /></svg></span
+								><span>Check patio grading and drainage</span>
+							</div>
+							<div class="checklist-row">
+								<span class="checklist-box checklist-box--done"
+									><svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-check"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M5 12l5 5l10 -10" /></svg></span
+								><span>Remove installation debris</span>
+							</div>
+							<div class="checklist-row">
+								<span class="checklist-box"></span
+								><span>Test irrigation and demonstrate timer</span>
+							</div>
+							<div class="checklist-row">
+								<span class="checklist-box"></span><span>Complete final customer walkthrough</span>
+							</div>
+						</section>
+						<section class="panel detail-section" id="instructions">
+							<div class="section-heading">
+								<div>
+									<h2>Crew instructions</h2>
+									<p>Read before arriving on site.</p>
+								</div>
+								<button class="text-button">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-pencil"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+										<path d="M13.5 6.5l4 4" />
+									</svg>
+									Edit
+								</button>
+							</div>
+							<div class="instructions">
+								<div>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-key"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path
+											d="M16.555 3.843l3.602 3.602a2.877 2.877 0 0 1 0 4.069l-2.643 2.643a2.877 2.877 0 0 1 -4.069 0l-.301 -.301l-6.558 6.558a2 2 0 0 1 -1.239 .578l-.175 .008h-1.172a1 1 0 0 1 -.993 -.883l-.007 -.117v-1.172a2 2 0 0 1 .467 -1.284l.119 -.13l.414 -.414h2v-2h2v-2l2.144 -2.144l-.301 -.301a2.877 2.877 0 0 1 0 -4.069l2.643 -2.643a2.877 2.877 0 0 1 4.069 0"
+										/>
+										<path d="M15 9h.01" /></svg
+									><strong>Access & arrival</strong>
+									<p>
+										Use the side gate. Gate code: 2840. Park on the street and keep the driveway
+										clear.
+									</p>
+								</div>
+								<div>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-plant"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M7 15h10v4a2 2 0 0 1 -2 2h-6a2 2 0 0 1 -2 -2v-4" />
+										<path d="M12 9a6 6 0 0 0 -6 -6h-3v2a6 6 0 0 0 6 6h3" />
+										<path d="M12 11a6 6 0 0 1 6 -6h3v1a6 6 0 0 1 -6 6h-3" />
+										<path d="M12 15l0 -6" /></svg
+									><strong>Protect the property</strong>
+									<p>
+										Keep the existing oak tree and garden lighting protected. Sarah’s dog will be
+										inside during visits.
+									</p>
+								</div>
+								<div>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-clipboard-check"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path
+											d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"
+										/>
+										<path
+											d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2"
+										/>
+										<path d="M9 14l2 2l4 -4" /></svg
+									><strong>Before you leave</strong>
+									<p>
+										Test the irrigation timer with Sarah and leave the care guide by the back door.
+									</p>
+								</div>
+							</div>
+						</section>
 						<section class="panel notes" id="notes">
 							<div class="section-heading">
 								<div>
@@ -849,6 +1191,229 @@
 										</svg>
 									</div>
 								</div>
+							</div>
+						</section>
+						<section class="panel detail-section" id="files">
+							<div class="section-heading">
+								<div>
+									<h2>Photos & files <span class="count">3</span></h2>
+									<p>Plans, receipts, and field documentation.</p>
+								</div>
+								<button class="text-button">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-upload"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+										<path d="M7 9l5 -5l5 5" />
+										<path d="M12 4l0 12" />
+									</svg>
+									Add files
+								</button>
+							</div>
+							<div class="document-grid">
+								<button class="document">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-file-type-pdf"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M14 3v4a1 1 0 0 0 1 1h4" />
+										<path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4" />
+										<path d="M5 18h1.5a1.5 1.5 0 0 0 0 -3h-1.5v6" />
+										<path d="M17 18h2" />
+										<path d="M20 15h-3v6" />
+										<path d="M11 15v6h1a2 2 0 0 0 2 -2v-2a2 2 0 0 0 -2 -2h-1" /></svg
+									><strong>Planting plan.pdf</strong><span>PDF · 2.4 MB</span></button
+								><button class="document">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-photo"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M15 8h.01" />
+										<path
+											d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12"
+										/>
+										<path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5" />
+										<path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3" /></svg
+									><strong>Patio progress.jpg</strong><span>Photo · 3.1 MB</span></button
+								><button class="document">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-receipt"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path
+											d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16l-3 -2l-2 2l-2 -2l-2 2l-2 -2l-3 2m4 -14h6m-6 4h6m-2 4h2"
+										/></svg
+									><strong>Materials receipt.pdf</strong><span>PDF · 180 KB</span>
+								</button>
+							</div>
+						</section>
+						<section class="panel detail-section" id="sign-off">
+							<div class="section-heading">
+								<div>
+									<h2>Customer sign-off</h2>
+									<p>Keep the customer’s acceptance with the job.</p>
+								</div>
+								<button class="text-button">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-history"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M12 8l0 4l2 2" />
+										<path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5" />
+									</svg>
+									View history
+								</button>
+							</div>
+							<div class="empty-signature">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="24"
+									height="24"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									class="icon icon-tabler icons-tabler-outline icon-tabler-signature"
+								>
+									<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+									<path
+										d="M3 17c3.333 -3.333 5 -6 5 -8c0 -3 -1 -3 -2 -3s-2.032 1.085 -2 3c.034 2.048 1.658 4.877 2.5 6c1.5 2 2.5 2.5 3.5 1l2 -3c.333 2.667 1.333 4 3 4c.53 0 2.639 -2 3 -2c.517 0 1.517 .667 3 2"
+									/>
+								</svg>
+								<div>
+									<strong>Awaiting customer sign-off</strong>
+									<p>Collect Sarah’s signature after the final walkthrough.</p>
+								</div>
+							</div>
+							<div class="section-bottom">
+								<span>No signature collected yet</span
+								><button class="button">Collect signature</button>
+							</div>
+						</section>
+						<section class="panel detail-section" id="work-report">
+							<div class="section-heading">
+								<div>
+									<h2>Customer work report</h2>
+									<p>A clear record of the work, ready for your customer.</p>
+								</div>
+								<button class="text-button">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-file-description"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M14 3v4a1 1 0 0 0 1 1h4" />
+										<path
+											d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2"
+										/>
+										<path d="M9 17h6" />
+										<path d="M9 13h6" />
+									</svg>
+									Manage
+								</button>
+							</div>
+							<div class="report-preview">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="24"
+									height="24"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									class="icon icon-tabler icons-tabler-outline icon-tabler-file-description"
+								>
+									<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+									<path d="M14 3v4a1 1 0 0 0 1 1h4" />
+									<path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2" />
+									<path d="M9 17h6" />
+									<path d="M9 13h6" />
+								</svg>
+								<div>
+									<strong>Backyard transformation</strong>
+									<p>Work summary · Selected photos · Visit details</p>
+									<span class="status-pill status-pill--neutral">Draft · Not shared</span>
+								</div>
+							</div>
+							<div class="section-bottom">
+								<button class="text-button">Edit report</button
+								><button class="button">
+									Preview report
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-up-right"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M17 7l-10 10" />
+										<path d="M8 7l9 0l0 9" />
+									</svg>
+								</button>
 							</div>
 						</section>
 					</div>
@@ -1053,6 +1618,199 @@
 								</svg>
 								Deposit will be applied to the final invoice.
 							</p>
+						</section>
+						<section class="panel detail-section" id="costing">
+							<div class="section-heading">
+								<div>
+									<h2>Job costing</h2>
+									<p>Current costs · job still in progress.</p>
+								</div>
+								<button class="text-button">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-chart-pie"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path
+											d="M10 3.2a9 9 0 1 0 10.8 10.8a1 1 0 0 0 -1 -1h-6.8a2 2 0 0 1 -2 -2v-7a.9 .9 0 0 0 -1 -.8"
+										/>
+										<path d="M15 3.5a9 9 0 0 1 5.5 5.5h-4.5a1 1 0 0 1 -1 -1v-4.5" />
+									</svg>
+									Details
+								</button>
+							</div>
+							<div class="costing-hero">
+								<span>Estimated profit to date</span><strong>$4,590.00</strong
+								><small>54.3% margin · before tax</small>
+							</div>
+							<div class="detail-row">
+								<div>
+									<strong>Job revenue</strong>
+									<p>Excluding sales tax</p>
+								</div>
+								<span>$8,450.00</span>
+							</div>
+							<div class="detail-row">
+								<div>
+									<strong>Labor</strong>
+									<p>24h at $40/h</p>
+								</div>
+								<span>$960.00</span>
+							</div>
+							<div class="detail-row">
+								<div>
+									<strong>Expenses</strong>
+									<p>Materials $2,720 + equipment $180</p>
+								</div>
+								<span>$2,900.00</span>
+							</div>
+							<p class="section-hint">
+								Costs may increase after the final visit. Materials are included in expenses.
+							</p>
+						</section>
+						<section class="panel detail-section" id="reminders">
+							<div class="section-heading">
+								<div>
+									<h2>Billing reminders</h2>
+									<p>Keep invoicing on your radar.</p>
+								</div>
+								<button class="text-button">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-bell"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path
+											d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"
+										/>
+										<path d="M9 17v1a3 3 0 0 0 6 0v-1" />
+									</svg>
+									Edit
+								</button>
+							</div>
+							<div class="detail-row">
+								<div>
+									<strong>Final invoice reminder</strong>
+									<p>Oct 12, 2026 · On completion</p>
+								</div>
+								<span><span class="status-pill status-pill--neutral">Upcoming</span></span>
+							</div>
+							<p class="section-hint">An internal reminder for your team to invoice this job.</p>
+						</section>
+						<section class="panel detail-section" id="pricing-settings">
+							<div class="section-heading">
+								<div>
+									<h2>Discount & tax</h2>
+									<p>Pricing rules for this job.</p>
+								</div>
+								<button class="text-button">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-adjustments-horizontal"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M12 6a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+										<path d="M4 6l8 0" />
+										<path d="M16 6l4 0" />
+										<path d="M6 12a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+										<path d="M4 12l2 0" />
+										<path d="M10 12l10 0" />
+										<path d="M15 18a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+										<path d="M4 18l11 0" />
+										<path d="M19 18l1 0" />
+									</svg>
+									Manage
+								</button>
+							</div>
+							<div class="detail-row">
+								<div>
+									<strong>Discount</strong>
+									<p>No discount applied</p>
+								</div>
+								<span><button class="text-button">Add</button></span>
+							</div>
+							<div class="detail-row">
+								<div>
+									<strong>Sales tax</strong>
+									<p>Property rate · 8.25%</p>
+								</div>
+								<span><button class="text-button">Edit</button></span>
+							</div>
+						</section>
+						<section class="panel detail-section" id="linked-records">
+							<div class="section-heading">
+								<div>
+									<h2>Linked records</h2>
+									<p>The agreement behind this work.</p>
+								</div>
+								<button class="text-button">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-external-link"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6" />
+										<path d="M11 13l9 -9" />
+										<path d="M15 4h5v5" />
+									</svg>
+									View
+								</button>
+							</div>
+							<div class="detail-row">
+								<div>
+									<strong>Quote #Q-0086</strong>
+									<p>Approved Oct 2, 2026</p>
+								</div>
+								<span
+									><svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-up-right"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+										<path d="M17 7l-10 10" />
+										<path d="M8 7l9 0l0 9" /></svg
+								></span>
+							</div>
 						</section>
 						<section class="activity" id="activity">
 							<div class="section-heading">
