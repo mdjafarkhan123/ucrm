@@ -174,7 +174,7 @@ export; Client merge and archive; public request and booking forms; issued-Invoi
 notice; Stripe card payments and refunds; contractor alert bell for inquiries and payments; Google review funnel;
 email campaigns; setup wizard and paid-client delivery; accountant CSV; Website Chat and email delivery.
 
-**Before the first launch:** server work (Part 9). The postponed-work list's P1 items are reviewed at that gate.
+**Before the first launch:** Jafar's plan (2026-10-10) is to finish every feature and gap below first, then do the server work (Part 9), then real-world tests. The postponed-work list's P1 items are reviewed at that gate.
 
 **Before advertising widely (Part 8):**
 

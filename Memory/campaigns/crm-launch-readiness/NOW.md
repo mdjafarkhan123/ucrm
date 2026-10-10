@@ -11,17 +11,18 @@ P9C–P9F; real server last. No infrastructure is approved.
 
 ## Exact next action
 
-Jafar's priority order:
+Jafar's plan (2026-10-10): finish the whole app first, then production. Real-world tests happen after
+production; every test possible before it is run before it. Order:
 
-1. **Part 9, production** — the only launch blocker. Needs P9A answer and 3 GitHub variables (first "Release image" run unchecked); then P9C.
-2. **Part 16, Time clock** — live timer, day clock in/out, Timesheets (daily crew use).
-3. **Part 12, Alerts** — can be built locally while Part 9 waits.
-4. **Part 13, Home screen and Reports.**
-5. **Part 14, Customer portal.**
-6. **Part 15, Extras**: Quote templates, auto-archive, automation recipes, bulk Visit move.
-7. **Part 8, final audit**, last. Part 5 follows business registration.
+1. **Part 16, Time clock** — live timer, day clock in/out, Timesheets (daily crew use).
+2. **Part 12, Alerts.**
+3. **Part 13, Home screen and Reports.**
+4. **Part 14, Customer portal.**
+5. **Part 15, Extras**: Quote templates, auto-archive, automation recipes, bulk Visit move, custom fields.
+6. **Part 8, final audit** — plus the postponed-work P1 items and every test possible without a server.
+7. **Part 9, production** (P9A answer needed first), then real-world tests, then launch.
 
-Next session: ask for the P9A answer (managed Supabase first, recommended, or self-hosted from day one); else start Part 16 (own campaign).
+Next session: start Part 16 as its own campaign.
 
 ## Essential pointers
 
