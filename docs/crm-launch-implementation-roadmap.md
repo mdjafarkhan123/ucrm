@@ -221,7 +221,7 @@ trade- or size-specific. Jobber plan in brackets.
 
 - [ ] Quote templates: save a common Quote and start new ones from it. Copying a Quote exists.
 - [ ] Custom fields on Clients, Properties, Jobs (Connect); shelved by contractor-settings as "later".
-- [ ] Clock in and out for the day, not only time on a Job (Connect time tracking). Job time entries exist.
+- [ ] Time clock: live timer on a Visit or Job, day clock in/out, Timesheets page (Connect). Only hand-typed Job time entries exist. Now roadmap Part 16, priority 2.
 - [ ] Auto-archive Requests and Quotes left untouched for a set time (Connect).
 
 **Later**
