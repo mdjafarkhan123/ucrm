@@ -2670,3 +2670,412 @@ body {
 		padding: 9px 10px;
 	}
 }
+// Balanced reading scale: meaningful content 15px; supporting details 13px.
+body {
+	font-size: 15px;
+	font-weight: 400;
+	line-height: 1.6;
+}
+h2 {
+	font-size: 18px;
+	font-weight: 600;
+}
+h3 {
+	font-size: 16px;
+	font-weight: 600;
+}
+.sidebar {
+	&__edition {
+		font-size: 11px;
+		letter-spacing: 0.5px;
+	}
+	&__brand {
+		flex-wrap: wrap;
+	}
+	&__link {
+		font-size: 15px;
+		font-weight: 500;
+		small {
+			font-size: 13px;
+		}
+	}
+	&__group > p {
+		font-size: 12px;
+		letter-spacing: 0.8px;
+	}
+	&__workspace,
+	&__profile {
+		font-size: 14px;
+		small {
+			font-size: 13px;
+		}
+	}
+}
+.topbar {
+	&__breadcrumb,
+	&__search {
+		font-size: 14px;
+	}
+	&__search kbd {
+		font-size: 12px;
+	}
+}
+.page__eyebrow {
+	font-size: 13px;
+	letter-spacing: 0.4px;
+	a {
+		font-size: 13px;
+	}
+}
+.page__heading p {
+	font-size: 15px;
+	color: #4d6052;
+}
+.button,
+.text-button {
+	font-size: 14px;
+	font-weight: 600;
+}
+.button {
+	min-height: 42px;
+}
+.badge,
+.count,
+.status-pill {
+	font-size: 13px;
+	font-weight: 500;
+}
+.job-hero .summary > div {
+	> span {
+		font-size: 13px;
+		font-weight: 500;
+		color: #4d6042;
+	}
+	> small {
+		font-size: 13px;
+		color: #536449;
+	}
+}
+.summary__team > span:last-child {
+	font-size: 14px;
+}
+.tabs a {
+	font-size: 14px;
+	font-weight: 500;
+}
+.section-nav__label {
+	font-size: 12px;
+	letter-spacing: 0.4px;
+}
+.next-visit {
+	.label {
+		font-size: 12px;
+		color: #52644d;
+		letter-spacing: 0.5px;
+	}
+	.visits-add {
+		font-size: 14px;
+	}
+	&__details h3 {
+		font-size: 16px;
+	}
+	&__details p {
+		font-size: 14px;
+	}
+	&__crew > span:last-child {
+		font-size: 13px;
+	}
+	&__footer {
+		font-size: 13px;
+	}
+}
+.date-tile {
+	width: 68px;
+	span,
+	small {
+		font-size: 12px;
+		letter-spacing: 0.5px;
+	}
+}
+.visit-row__date {
+	width: 49px;
+	> span {
+		font-size: 12px;
+		letter-spacing: 0.3px;
+	}
+}
+.visits-history-label {
+	font-size: 12px;
+	font-weight: 500;
+	letter-spacing: 0.5px;
+}
+.detail-row {
+	font-size: 15px;
+	strong {
+		font-weight: 600;
+	}
+	p {
+		font-size: 13px;
+		color: #52604f;
+	}
+	> span {
+		font-size: 14px;
+	}
+}
+table {
+	font-size: 14px;
+	th {
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.2px;
+		white-space: normal;
+	}
+	td {
+		strong {
+			font-size: 15px;
+			font-weight: 600;
+		}
+		small {
+			font-size: 13px;
+			color: #52604f;
+		}
+	}
+}
+.totals {
+	font-size: 14px;
+	> div small {
+		font-size: 13px;
+	}
+}
+.section-metrics > div > small {
+	font-size: 12px;
+	color: #52604f;
+	letter-spacing: 0.5px;
+}
+.detail-total {
+	font-size: 14px;
+}
+.checklist-progress {
+	font-size: 15px;
+	> span {
+		font-size: 13px;
+	}
+}
+.checklist-row {
+	font-size: 15px;
+}
+.instructions > div {
+	strong {
+		font-size: 15px;
+		font-weight: 600;
+	}
+	p {
+		font-size: 14px;
+		color: #52604f;
+	}
+}
+.instructions > p {
+	font-size: 14px;
+	line-height: 1.7;
+	color: #52604f;
+	padding-bottom: 20px;
+}
+.note {
+	p {
+		strong {
+			font-size: 14px;
+		}
+		span,
+		small {
+			font-size: 13px;
+			color: #52604f;
+		}
+	}
+	> div > div {
+		font-size: 15px;
+		color: #52604f;
+	}
+}
+.photo-card {
+	strong {
+		font-size: 15px;
+		font-weight: 600;
+	}
+	> span {
+		font-size: 13px;
+		color: #52604f;
+	}
+}
+.attachment-row {
+	strong {
+		font-size: 14px;
+		font-weight: 500;
+	}
+	small {
+		font-size: 13px;
+		color: #52604f;
+	}
+}
+.attachment-type {
+	font-size: 12px;
+}
+.empty-signature,
+.report-preview {
+	strong {
+		font-size: 15px;
+		font-weight: 600;
+	}
+	p {
+		font-size: 14px;
+	}
+}
+.section-bottom > span {
+	font-size: 13px;
+}
+.customer {
+	&__identity {
+		h3 {
+			font-size: 16px;
+		}
+		div > span {
+			font-size: 13px;
+			color: #52604f;
+		}
+	}
+	> a {
+		font-size: 14px;
+	}
+	&__contact {
+		font-size: 14px;
+	}
+	&__property {
+		h2 {
+			font-size: 15px;
+		}
+		p {
+			font-size: 15px;
+			span {
+				font-size: 14px;
+			}
+		}
+		> .text-button {
+			font-size: 14px;
+		}
+	}
+}
+.property-map {
+	height: 145px;
+	&__label {
+		font-size: 11px;
+	}
+	> small {
+		font-size: 11px;
+	}
+}
+.billing-v2__basis {
+	> span {
+		font-size: 14px;
+	}
+	> small {
+		font-size: 13px;
+		color: #52604f;
+	}
+}
+.payment-stage {
+	flex-wrap: wrap;
+	strong {
+		font-size: 15px;
+	}
+	small {
+		font-size: 13px;
+		color: #52604f;
+	}
+	> b {
+		font-size: 14px;
+	}
+	.text-button {
+		font-size: 13px;
+		text-align: left;
+	}
+}
+.layout__aside {
+	.detail-section > .section-heading h2 {
+		font-size: 18px;
+	}
+	.detail-row {
+		font-size: 14px;
+		> span {
+			font-size: 14px;
+		}
+		p {
+			font-size: 13px;
+			color: #52604f;
+		}
+	}
+}
+.costing-hero {
+	> span,
+	> small {
+		font-size: 13px;
+	}
+}
+.section-hint {
+	font-size: 13px;
+	color: #52604f;
+	line-height: 1.7;
+}
+.activity {
+	> .section-heading h2 {
+		font-size: 18px;
+	}
+	&__item {
+		strong {
+			font-size: 14px;
+			font-weight: 600;
+		}
+		p,
+		small {
+			font-size: 13px;
+			color: #52604f;
+		}
+	}
+}
+.avatar {
+	font-size: 12px;
+	&--tiny {
+		width: 28px;
+		height: 28px;
+		font-size: 10px;
+	}
+}
+.summary__team .avatar {
+	width: 31px;
+	height: 31px;
+}
+.page__footer {
+	font-size: 12px;
+	> span:last-child {
+		font-size: 12px;
+	}
+}
+.editor-dialog {
+	&__heading small {
+		font-size: 13px;
+	}
+	&__body {
+		label {
+			font-size: 15px;
+		}
+		textarea {
+			font-size: 15px;
+		}
+		p {
+			font-size: 13px;
+		}
+	}
+}
+@media (min-width: 951px) {
+	.layout {
+		grid-template-columns: minmax(0, 1fr) 340px;
+	}
+}
