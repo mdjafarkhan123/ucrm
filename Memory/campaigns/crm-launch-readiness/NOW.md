@@ -13,9 +13,9 @@ CX33) for P9C–P9F; real server and first customers last. No infrastructure is 
 
 ## Exact next action
 
-Part 10 done 2026-10-08: Jafar agreed the labels and chose to build the Urgent items next, before the server
-work, with the client reminder switches made to really send (not hidden). Part 11 runs as campaign
-`client-reminders`; resume that campaign for the work.
+Parts 10 and 11 done (Part 11 finished 2026-10-10: team alert on Quote approval, and visit, overdue-invoice, job
+follow-up and booking reminders all send and respect their switches). Next: P9B app packaging (no server, no cost),
+then the practice server once Jafar approves P9A.
 
 Open for Jafar: P9A — managed Supabase first (recommended) or self-hosted from day one (he wants CLAUDE.md's
 self-hosted destination honored); push alerts before first customers or before advertising.
