@@ -847,7 +847,10 @@ export function zodOwnerFieldErrors(error: z.ZodError) {
 // Multi-industry foundation B1: Uplift confirms an Organization's Industry experience profile. A blank
 // Business type stays unknown; it is never filled in from trade text.
 export const experienceDecisionSchema = z.object({
-	experience_key: z.string().trim().regex(/^[a-z][a-z_]{1,39}$/, 'Choose an Industry experience.'),
+	experience_key: z
+		.string()
+		.trim()
+		.regex(/^[a-z][a-z_]{1,39}$/, 'Choose an Industry experience.'),
 	definition_version: z.number().int().min(1),
 	business_type_key: z
 		.string()
