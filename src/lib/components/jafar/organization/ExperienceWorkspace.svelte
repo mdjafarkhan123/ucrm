@@ -126,12 +126,13 @@
 				retry={() => experienceQuery.refetch()}
 			/>
 		{:else if data}
-			<SectionBlock title="Industry experience" icon={compassIcon}>
+			<SectionBlock title="Profile" icon={compassIcon}>
 				{#snippet actions()}
 					{#if canDecide && data.profile.state !== 'unresolved' && data.profile.state !== 'unrecognized'}
 						<Button
 							variant={current ? 'secondary' : 'primary'}
 							variation={current ? 'subtle' : undefined}
+							size="small"
 							onclick={openDialog}
 							disabled={data.definitions.length === 0}
 							>{current ? 'Review profile' : 'Confirm experience'}</Button
