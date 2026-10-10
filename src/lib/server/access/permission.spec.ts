@@ -34,6 +34,16 @@ function eventFor(editionCapabilities: string[]) {
 		},
 		package: { id: 'package-1', slug: 'growth' },
 		capabilities: ['core.customers_properties', 'sales.pipeline'],
+		capability_families: {
+			'core.customers_properties': 'shared_platform',
+			'sales.pipeline': 'field_service'
+		},
+		experience: {
+			state: 'planned',
+			experience: 'contractor',
+			definition_version: 1,
+			families: ['shared_platform', 'field_service']
+		},
 		edition_capabilities: editionCapabilities,
 		capability_exceptions: [],
 		allowance_exceptions: [],

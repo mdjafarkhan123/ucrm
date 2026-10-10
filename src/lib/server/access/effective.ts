@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Tables } from '$lib/database.types';
+import { isKnownExperience } from '$lib/experience/definitions';
 
 export type AccessClient = SupabaseClient<Database>;
 export type LimitKey = 'employee_seats' | 'website_chat_widgets' | 'marketing_email_recipients';
@@ -303,6 +304,15 @@ type AccessSnapshot = {
 		override_state: string;
 		access_scope: string | null;
 	}>;
+	// Which Industry experience governs the Organization (`public.organization_experience_basis`) and the
+	// family of every capability. Both are optional here so a snapshot without them fails closed.
+	experience?: {
+		state: 'confirmed' | 'planned' | 'none';
+		experience?: string;
+		definition_version?: number;
+		families?: string[];
+	};
+	capability_families?: Record<string, string>;
 };
 
 function featureForPermission(permissionKey: string) {
@@ -359,6 +369,70 @@ export function permissionIsEnabled(permissionKey: string, features: Record<stri
 		: features[featureKey] === true;
 }
 
+/**
+ * The Industry experience that governs an Organization, as far as the access answer is concerned
+ * (multi-industry foundation B5/B6). `confirmed` is the reviewed profile; `planned` is the one experience the
+ * agreed edition is sold to, used until Uplift has reviewed the business.
+ */
+export type ExperienceBasis = {
+	kind: 'confirmed' | 'planned';
+	experience: string;
+	definition_version: number;
+	/** The capability families the definition makes eligible. */
+	families: string[];
+};
+
+export type CapabilityFamilies = ReadonlyMap<string, string>;
+
+/**
+ * The access an Organization has once its Industry experience takes part: a capability stays on only when the
+ * Package gives it AND the experience's capability families allow it. A capability whose family is unknown
+ * fails closed. Permissions are then narrowed by those capabilities exactly as they are for the Package.
+ */
+export function experienceAwareAccess(
+	packageAccess: EffectiveOrganizationAccess,
+	basis: ExperienceBasis | null,
+	capabilityFamilies: CapabilityFamilies
+): EffectiveOrganizationAccess {
+	// No experience to judge against -- unknown, missing or broken profile -- allows nothing.
+	const eligible = new Set(basis?.families ?? []);
+	const features = Object.fromEntries(
+		Object.entries(packageAccess.features).map(([key, on]) => {
+			const family = capabilityFamilies.get(key);
+			return [key, on && family !== undefined && eligible.has(family)];
+		})
+	);
+
+	const permissions: Record<string, boolean> = {};
+	const permission_scopes: Record<string, PermissionScope> = {};
+	for (const [key, granted] of Object.entries(packageAccess.permissions)) {
+		const kept = granted && permissionIsEnabled(key, features);
+		permissions[key] = kept;
+		if (kept && key in packageAccess.permission_scopes)
+			permission_scopes[key] = packageAccess.permission_scopes[key];
+	}
+	return { ...packageAccess, features, permissions, permission_scopes };
+}
+
+// The snapshot's experience answer, trusted only for an experience and version this build of the app knows.
+function experienceBasisFromSnapshot(snapshot: AccessSnapshot): ExperienceBasis | null {
+	const answer = snapshot.experience;
+	if (!answer || (answer.state !== 'confirmed' && answer.state !== 'planned')) return null;
+	if (
+		typeof answer.experience !== 'string' ||
+		typeof answer.definition_version !== 'number' ||
+		!Array.isArray(answer.families) ||
+		!isKnownExperience(answer.experience, answer.definition_version)
+	)
+		return null;
+	return {
+		kind: answer.state,
+		experience: answer.experience,
+		definition_version: answer.definition_version,
+		families: answer.families
+	};
+}
+
 function effectiveLimit(row: LimitRow | null, label: string) {
 	if (!row) throw new Error(`The ${label} could not be resolved.`);
 	return {
@@ -389,12 +463,12 @@ function resolvePackage(snapshot: AccessSnapshot): EffectiveOrganizationAccess['
 	};
 }
 
-export async function resolveOrganizationAccess(
+async function loadAccessSnapshot(
 	client: AccessClient,
 	organizationId: string,
-	userId?: string,
-	now = new Date()
-): Promise<EffectiveOrganizationAccess> {
+	userId: string | undefined,
+	now: Date
+) {
 	const { data, error } = await client.rpc('organization_access_snapshot', {
 		target_organization_id: organizationId,
 		target_user_id: userId,
@@ -403,7 +477,50 @@ export async function resolveOrganizationAccess(
 	if (error) throw error;
 	const snapshot = data as unknown as AccessSnapshot | null;
 	if (!snapshot) throw new OrganizationAccessNotFoundError();
+	return snapshot;
+}
 
+/**
+ * What the Organization's Package and the member's role give, before the Industry experience takes part.
+ * Only the access comparison reads this; everything that decides what someone may do uses
+ * `resolveOrganizationAccess`.
+ */
+export async function resolvePackageAccess(
+	client: AccessClient,
+	organizationId: string,
+	userId?: string,
+	now = new Date()
+): Promise<EffectiveOrganizationAccess> {
+	return packageAccessFromSnapshot(
+		await loadAccessSnapshot(client, organizationId, userId, now),
+		userId,
+		now
+	);
+}
+
+/**
+ * The one answer to "what may this person do here": the Package and role answer narrowed by the Industry
+ * experience (multi-industry foundation B6). Menu, pages, APIs and record scopes all read this.
+ */
+export async function resolveOrganizationAccess(
+	client: AccessClient,
+	organizationId: string,
+	userId?: string,
+	now = new Date()
+): Promise<EffectiveOrganizationAccess> {
+	const snapshot = await loadAccessSnapshot(client, organizationId, userId, now);
+	return experienceAwareAccess(
+		packageAccessFromSnapshot(snapshot, userId, now),
+		experienceBasisFromSnapshot(snapshot),
+		new Map(Object.entries(snapshot.capability_families ?? {}))
+	);
+}
+
+function packageAccessFromSnapshot(
+	snapshot: AccessSnapshot,
+	userId: string | undefined,
+	now: Date
+): EffectiveOrganizationAccess {
 	const limits = {
 		employee_seats: effectiveLimit(snapshot.employee_seat_limit, 'employee seat limit'),
 		website_chat_widgets: effectiveLimit(

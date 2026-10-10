@@ -53,7 +53,7 @@
 <SectionBlock
 	title="Access comparison"
 	icon={arrowsDiffIcon}
-	hint="Today’s access beside the access with the experience taking part. Nothing here changes who can do what."
+	hint="What the Package alone gives, beside what this business gets now that its experience takes part. This screen only reads."
 >
 	<div class="comparison">
 		<div class="comparison__actions">
@@ -76,8 +76,8 @@
 		</div>
 		{#if !requested}
 			<p class="comparison__muted">
-				Compares this business’s real Package and each team member before any switch, so a loss or
-				gain can be investigated first.
+				Compares this business’s Package and each team member with the access the workspace now
+				enforces, so every loss can be explained.
 			</p>
 		{:else if comparison.isPending}
 			<LoadingSkeleton variant="card" label="Comparing access" />
@@ -106,7 +106,7 @@
 							{totalDifferences === 1 ? 'difference' : 'differences'} to review</Badge
 						>
 						<span class="comparison__muted"
-							>Do not switch this business until each one is explained.</span
+							>Each one is access the business does not get because of its experience.</span
 						>
 					{/if}
 				</div>
@@ -117,7 +117,7 @@
 						<dd>{data.package_name ?? 'No package'}</dd>
 					</div>
 					<div>
-						<dt>Capabilities on today</dt>
+						<dt>Capabilities from the Package</dt>
 						<dd>{data.capabilities_today}</dd>
 					</div>
 					<div>

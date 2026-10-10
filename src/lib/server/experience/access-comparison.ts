@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/database.types';
 import { isKnownExperience } from '$lib/experience/definitions';
 import type { AccessComparisonResponse } from '$lib/experience/types';
-import { resolveOrganizationAccess } from '$lib/server/access/effective';
+import { resolvePackageAccess } from '$lib/server/access/effective';
 import {
 	compareAccess,
 	experienceAwareAccess,
@@ -133,7 +133,7 @@ export async function loadAccessComparison(
 	client: Client,
 	organizationId: string
 ): Promise<AccessComparisonResponse> {
-	const organizationAccess = await resolveOrganizationAccess(client, organizationId);
+	const organizationAccess = await resolvePackageAccess(client, organizationId);
 	const { basis, resolved } = await resolveBasis(
 		client,
 		organizationId,
@@ -184,7 +184,7 @@ export async function loadAccessComparison(
 
 	const members = await Promise.all(
 		membersResult.data.map(async (member) => {
-			const legacy = await resolveOrganizationAccess(client, organizationId, member.user_id);
+			const legacy = await resolvePackageAccess(client, organizationId, member.user_id);
 			const aware = experienceAwareAccess(legacy, resolved, capabilityFamilies);
 			let email: string | null = null;
 			try {

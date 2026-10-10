@@ -3,6 +3,7 @@ import {
 	OrganizationAccessNotFoundError,
 	permissionIsEnabled,
 	resolveOrganizationAccess,
+	resolvePackageAccess,
 	type AccessClient
 } from './effective';
 
@@ -52,6 +53,20 @@ const baseSnapshot: Snapshot = {
 		'sales.pipeline',
 		'growth.reputation'
 	],
+	capability_families: {
+		'core.dashboard': 'shared_platform',
+		'core.customers_properties': 'shared_platform',
+		'core.team': 'shared_platform',
+		'core.invoices_payments': 'field_service',
+		'sales.pipeline': 'field_service',
+		'growth.reputation': 'shared_platform'
+	},
+	experience: {
+		state: 'confirmed',
+		experience: 'contractor',
+		definition_version: 1,
+		families: ['shared_platform', 'field_service']
+	},
 	edition_capabilities: [
 		'core.dashboard',
 		'core.customers_properties',
@@ -380,6 +395,101 @@ describe('resolveOrganizationAccess', () => {
 		);
 
 		expect(access.free_access).toEqual({ active: null, future: null });
+	});
+
+	describe('Industry experience', () => {
+		const resolve = (changes: Snapshot) =>
+			resolveOrganizationAccess(clientFor(snapshotWith(changes)), 'org-a', 'user-a');
+
+		it('keeps every Contractor capability on for the Contractor experience', async () => {
+			const access = await resolve({});
+			expect(access.features['sales.pipeline']).toBe(true);
+			expect(access.features['core.invoices_payments']).toBe(true);
+			expect(access.permissions['pipeline.view']).toBe(true);
+		});
+
+		it('turns off a capability whose family the experience does not allow, and the permissions riding on it', async () => {
+			const access = await resolve({
+				experience: {
+					state: 'confirmed',
+					experience: 'contractor',
+					definition_version: 1,
+					families: ['shared_platform']
+				}
+			});
+			expect(access.features['core.customers_properties']).toBe(true);
+			expect(access.features['sales.pipeline']).toBe(false);
+			expect(access.permissions['pipeline.view']).toBe(false);
+			expect(access.permission_scopes['pipeline.view']).toBeUndefined();
+			expect(access.permissions['customer.view']).toBe(true);
+		});
+
+		it('does not let a temporary exception turn on a capability the experience does not allow', async () => {
+			const access = await resolve({
+				experience: {
+					state: 'confirmed',
+					experience: 'contractor',
+					definition_version: 1,
+					families: ['shared_platform']
+				},
+				capability_exceptions: [
+					{
+						capability_key: 'sales.pipeline',
+						state: 'on',
+						starts_at: '2026-08-01T00:00:00.000Z',
+						ends_at: '2026-12-01T00:00:00.000Z',
+						reason: 'Trial.'
+					}
+				]
+			});
+			expect(access.features['sales.pipeline']).toBe(false);
+		});
+
+		it('fails closed on a capability that has no family', async () => {
+			const access = await resolve({
+				capability_families: { 'core.customers_properties': 'shared_platform' }
+			});
+			expect(access.features['core.customers_properties']).toBe(true);
+			expect(access.features['sales.pipeline']).toBe(false);
+			expect(access.features['core.team']).toBe(false);
+		});
+
+		it.each([
+			['no experience could be decided', { state: 'none', reason: 'no_single_experience' }],
+			[
+				'the experience is one this build does not know',
+				{
+					state: 'confirmed',
+					experience: 'medspa',
+					definition_version: 1,
+					families: ['shared_platform', 'appointment_business', 'clinical_extension']
+				}
+			],
+			[
+				'the definition version is one this build does not know',
+				{
+					state: 'confirmed',
+					experience: 'contractor',
+					definition_version: 99,
+					families: ['shared_platform', 'field_service']
+				}
+			],
+			['the answer is missing', undefined]
+		])('allows nothing when %s', async (_name, experience) => {
+			const access = await resolve({ experience });
+			expect(Object.values(access.features).some(Boolean)).toBe(false);
+			expect(Object.values(access.permissions).some(Boolean)).toBe(false);
+			expect(access.member).toEqual({ user_id: 'user-a', role: 'sales' });
+		});
+
+		it('leaves the package-only answer available for the access comparison', async () => {
+			const access = await resolvePackageAccess(
+				clientFor(snapshotWith({ experience: { state: 'none' } })),
+				'org-a',
+				'user-a'
+			);
+			expect(access.features['sales.pipeline']).toBe(true);
+		});
 	});
 
 	it('throws a typed not-found error when the organization is absent', async () => {
