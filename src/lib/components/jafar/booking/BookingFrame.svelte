@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
 	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
+	import videoIcon from '@tabler/icons/outline/video.svg?raw';
 	import { LOCATION_WORDS, lengthWords, type LocationKind } from '$lib/jafar/booking';
 
 	// Jafar business management E1/E2: the frame every public booking page sits in -- Uplift's mark, then one card.
@@ -40,7 +41,9 @@
 						<span aria-hidden="true">{@html clockIcon}</span>{lengthWords(meeting.duration_minutes)}
 					</li>
 					<li>
-						<span aria-hidden="true">{@html phoneIcon}</span>{LOCATION_WORDS[meeting.location_kind]}
+						<span aria-hidden="true"
+							>{@html meeting.location_kind === 'phone' ? phoneIcon : videoIcon}</span
+						>{LOCATION_WORDS[meeting.location_kind]}
 					</li>
 					{@render meta?.()}
 				</ul>

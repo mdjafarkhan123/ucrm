@@ -82,6 +82,8 @@ export const meetingTypeSchema = z
 			.nullish()
 			.transform((value) => value || null),
 		duration_minutes: oneOf(DURATION_CHOICES, 'Choose a length.'),
+		location_kind: z.enum(['phone', 'zoom'], 'Choose how the call happens.'),
+		video_link_mode: z.enum(['automatic', 'custom'], 'Choose how the link is made.'),
 		min_notice_minutes: oneOf(NOTICE_CHOICES, 'Choose the notice.'),
 		horizon_days: oneOf(HORIZON_CHOICES, 'Choose how far ahead.'),
 		buffer_minutes: oneOf(BUFFER_CHOICES, 'Choose a gap.'),
@@ -111,6 +113,23 @@ export type MeetingTypeBody = z.infer<typeof meetingTypeSchema>;
 export const bookingHoursBodySchema = z.strictObject({
 	hours: bookingHoursSchema,
 	time_zone: timeZoneSchema.optional()
+});
+
+/** E4a: the joining link the host adds to a booked video call. */
+export const videoLinkSchema = z.strictObject({
+	url: z
+		.string()
+		.trim()
+		.min(1, 'Paste the joining link.')
+		.max(2048, 'This link is too long.')
+		.refine((value) => {
+			try {
+				const url = new URL(value);
+				return url.protocol === 'https:' && url.hostname.includes('.') && !/\s/.test(value);
+			} catch {
+				return false;
+			}
+		}, 'Paste the full link, starting with https://.')
 });
 
 /** E3: hand a booked call to another eligible host (null is Jafar). */

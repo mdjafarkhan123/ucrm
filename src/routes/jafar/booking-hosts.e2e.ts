@@ -66,7 +66,9 @@ function typeBody(type: MeetingType, hosts: (string | null)[]) {
 		'requires_approval',
 		'change_deadline_minutes',
 		'is_active',
-		'visitor_reminder_minutes'
+		'visitor_reminder_minutes',
+		'location_kind',
+		'video_link_mode'
 	];
 	return {
 		...Object.fromEntries(keys.map((key) => [key, type[key]])),

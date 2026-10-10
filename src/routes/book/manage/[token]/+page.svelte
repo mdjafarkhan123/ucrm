@@ -153,6 +153,8 @@
 				{locale}
 				hostName={booking.host_name}
 				phone={booking.visitor_phone}
+				locationKind={booking.location_kind}
+				videoJoinUrl={booking.video_join_url}
 			/>
 			<Button variant="tertiary" onclick={() => show('view')}>Back to your booking</Button>
 		</BookingStatus>
@@ -185,6 +187,8 @@
 					{locale}
 					hostName={booking.host_name}
 					phone={booking.visitor_phone}
+					locationKind={booking.location_kind}
+					videoJoinUrl={booking.video_join_url}
 					struck
 				/>
 				{#if bookAgain}
@@ -243,6 +247,8 @@
 				{locale}
 				hostName={booking.host_name}
 				phone={booking.visitor_phone}
+				locationKind={booking.location_kind}
+				videoJoinUrl={booking.video_join_url}
 			/>
 			{#if deadlineBeforeStart}
 				<p class="manage-page__hint">

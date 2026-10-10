@@ -2,7 +2,10 @@
 // Booking settings. The database decides which times are open (private.booking_open_slots); this module holds the
 // shapes, the choices the settings offer, and the words both pages share.
 
-export type LocationKind = 'phone';
+export type LocationKind = 'phone' | 'zoom';
+
+/** E4a: a video type's link -- UCRM makes the meeting (once its provider is connected), or the host adds one. */
+export type VideoLinkMode = 'automatic' | 'custom';
 
 export type MeetingType = {
 	id: string;
@@ -11,6 +14,7 @@ export type MeetingType = {
 	description: string | null;
 	duration_minutes: number;
 	location_kind: LocationKind;
+	video_link_mode: VideoLinkMode;
 	min_notice_minutes: number;
 	horizon_days: number;
 	buffer_minutes: number;
@@ -66,6 +70,8 @@ export type BookedCall = {
 	name: string;
 	duration_minutes: number;
 	location_kind: LocationKind;
+	/** E4a: a video call's joining link; null while it is still to follow. */
+	video_join_url: string | null;
 	host_name: string;
 };
 
@@ -86,6 +92,11 @@ export type BookingView = BookedCall & {
 	visitor_phone: string;
 	visitor_time_zone: string;
 	business_name: string;
+	/** E4a: a video call's joining link; null while its details are still to follow. */
+	video_join_url: string | null;
+	/** E4a: who made the link -- the provider's meeting, or one the host added. */
+	video_link_source: 'provider' | 'custom' | null;
+	video_link_mode: VideoLinkMode;
 	meeting_type_id: string | null;
 	/** E3: the call's host (null is Jafar); a request's is the type's default host. */
 	host_member_id: string | null;
@@ -153,7 +164,30 @@ export const WEEKDAYS = [
 	{ value: 0, name: 'Sunday', short: 'Sun' }
 ] as const;
 
-export const LOCATION_WORDS: Record<LocationKind, string> = { phone: 'Phone call' };
+export const LOCATION_WORDS: Record<LocationKind, string> = {
+	phone: 'Phone call',
+	zoom: 'Zoom video call'
+};
+
+/** E4a: the provider's own name, as "Add the Zoom link". */
+export const VIDEO_PROVIDER_WORDS: Record<Exclude<LocationKind, 'phone'>, string> = {
+	zoom: 'Zoom'
+};
+
+/** E4a: a video call still waiting for its joining link. */
+export const videoPending = (booking: Pick<BookingView, 'location_kind' | 'video_join_url'>) =>
+	booking.location_kind !== 'phone' && !booking.video_join_url;
+
+/**
+ * E4a: what the host's call panel shows about a booked call's video link. `can_change` is false once the call is
+ * over or closed, or for someone who cannot change calls.
+ */
+export type CallVideoLink = {
+	location_kind: Exclude<LocationKind, 'phone'>;
+	video_join_url: string | null;
+	video_link_source: 'provider' | 'custom' | null;
+	can_change: boolean;
+};
 
 /** The public link's path for a meeting type. */
 export function bookingPath(slug: string) {
@@ -254,10 +288,9 @@ export async function fetchBookingSettings(): Promise<BookingSettings> {
 }
 
 /** E3: what a meeting type's page sends; no id adds a type. */
-export type MeetingTypeInput = Omit<
-	MeetingType,
-	'id' | 'location_kind' | 'bookings_count' | 'description'
-> & { description: string | null };
+export type MeetingTypeInput = Omit<MeetingType, 'id' | 'bookings_count' | 'description'> & {
+	description: string | null;
+};
 
 /** E3: "jafar" or a teammate's id, as the hours routes name a person. */
 export const personKey = (id: string | null) => id ?? 'jafar';

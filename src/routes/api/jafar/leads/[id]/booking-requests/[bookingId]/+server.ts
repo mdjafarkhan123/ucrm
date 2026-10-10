@@ -7,6 +7,7 @@ import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
 import { isPlainRefusal, parseBody } from '$lib/server/jafar/calendar';
 import { sendBookingEmail } from '$lib/server/jafar/booking-emails';
+import { askHostForVideoLink } from '$lib/server/jafar/booking-video';
 import { bookingDecisionSchema } from '$lib/server/validation/booking.schema';
 import type { BookingView } from '$lib/jafar/booking';
 
@@ -26,7 +27,10 @@ const GONE = 'This request has already been answered or withdrawn.';
 export const POST: RequestHandler = async (event) => {
 	const session = await getOwnerSession(event);
 	if (!session) return ownerUnauthorized();
-	if (!z.uuid().safeParse(event.params.id).success || !z.uuid().safeParse(event.params.bookingId).success)
+	if (
+		!z.uuid().safeParse(event.params.id).success ||
+		!z.uuid().safeParse(event.params.bookingId).success
+	)
 		return notFound(GONE);
 	const parsed = await parseBody(event, bookingDecisionSchema);
 	if (!parsed.ok) return parsed.response;
@@ -75,5 +79,11 @@ export const POST: RequestHandler = async (event) => {
 	} catch (emailError) {
 		console.error('Could not queue the booking answer email.', emailError);
 	}
+	if (result.outcome === 'approved')
+		try {
+			await askHostForVideoLink(client, result);
+		} catch (alertError) {
+			console.error('Could not ask the host for the video link.', alertError);
+		}
 	return json({ ok: true, outcome: result.outcome });
 };

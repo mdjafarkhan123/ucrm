@@ -18,6 +18,7 @@
 	} from '$lib/components/ui/date-time';
 	import BusinessPicker from './BusinessPicker.svelte';
 	import CallHostChange from './CallHostChange.svelte';
+	import CallVideoLink from './CallVideoLink.svelte';
 	import ReminderPicker from './ReminderPicker.svelte';
 	import { sendLeadWrite, type WriteResult } from '$lib/jafar/lead-page-api';
 	import {
@@ -259,7 +260,7 @@
 				/>
 			{/if}
 
-			{#if entryId}<CallHostChange {entryId} />{/if}
+			{#if entryId}<CallHostChange {entryId} /><CallVideoLink {entryId} />{/if}
 
 			<Input
 				id="call-title"

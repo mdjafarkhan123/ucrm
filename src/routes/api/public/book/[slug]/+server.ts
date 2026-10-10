@@ -6,8 +6,9 @@ import { verifyTurnstileToken } from '$lib/server/security/turnstile';
 import { raiseOwnerAlert } from '$lib/server/jafar/owner-alerts';
 import { sendBookingEmail } from '$lib/server/jafar/booking-emails';
 import { bookingToken, bookingTokenHash } from '$lib/server/jafar/booking-links';
+import { askHostForVideoLink, hostTimeWords } from '$lib/server/jafar/booking-video';
 import { publicBookingSchema } from '$lib/server/validation/booking.schema';
-import { dateWords, timeWords, type BookedCall, type BookingView } from '$lib/jafar/booking';
+import { LOCATION_WORDS, type BookedCall, type BookingView } from '$lib/jafar/booking';
 
 // Jafar business management E1: a visitor books a call. The database takes the host's lock and checks the time is
 // still open, so of two visitors racing for one time only the first gets it; the second is told to pick another.
@@ -85,6 +86,7 @@ export const POST: RequestHandler = async (event) => {
 		name: result.name,
 		duration_minutes: result.duration_minutes,
 		location_kind: result.location_kind,
+		video_join_url: result.video_join_url,
 		host_name: result.host_name
 	};
 
@@ -105,10 +107,7 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	try {
-		// The time in the host's own zone, as their calendar shows it.
-		const prefs = await client.rpc('owner_calendar_preferences', {});
-		const hostZone = (prefs.data as { time_zone: string | null } | null)?.time_zone ?? 'UTC';
-		const when = `${dateWords(call.starts_at, hostZone, 'en-GB')} at ${timeWords(call.starts_at, hostZone, 'en-GB')}`;
+		const when = await hostTimeWords(client, call.starts_at);
 		await raiseOwnerAlert(client, {
 			kind: requested ? 'sales_call_requested' : 'sales_call_booked',
 			severity: requested ? 'attention' : 'info',
@@ -117,10 +116,13 @@ export const POST: RequestHandler = async (event) => {
 				: `${data.business_name} booked a ${call.name}`,
 			body: requested
 				? `${data.name} asked for ${when}. The time is not held until you approve it on their Lead.`
-				: `${data.name} booked ${when}. Call them on ${data.phone}.`,
+				: call.location_kind === 'phone'
+					? `${data.name} booked ${when}. Call them on ${data.phone}.`
+					: `${data.name} booked ${when} as a ${LOCATION_WORDS[call.location_kind]}.`,
 			target: { targetKind: 'business_relationship', targetId: result.relationship_id },
 			origin: event.url.origin
 		});
+		if (!requested) await askHostForVideoLink(client, result);
 	} catch (alertError) {
 		console.error('Could not record the new-booking alert.', alertError);
 	}

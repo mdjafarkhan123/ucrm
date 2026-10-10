@@ -166,6 +166,8 @@
 				{locale}
 				hostName={booked.host_name}
 				phone={form.phone}
+				locationKind={booked.location_kind}
+				videoJoinUrl={booked.video_join_url}
 			/>
 			<p class="booking-page__hint">
 				Need a different time? Use the link in that email to change or cancel.

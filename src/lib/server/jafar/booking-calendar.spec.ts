@@ -19,6 +19,9 @@ const booking: BookingView = {
 	slug: 'discovery-call',
 	duration_minutes: 30,
 	location_kind: 'phone',
+	video_join_url: null,
+	video_link_source: null,
+	video_link_mode: 'automatic',
 	horizon_days: 60,
 	host_member_id: null,
 	host_name: 'Jafar',
@@ -83,5 +86,50 @@ describe('reminder email', () => {
 		expect(email.text).toContain('Google Calendar: https://calendar.google.com/');
 		expect(email.text).toMatch(/\.ics\): https:\/\/app\.example\/book\/manage\/.+\/calendar\.ics/);
 		expect(email.text).toContain('Change or cancel: https://app.example/book/manage/');
+	});
+});
+
+describe('video call (E4a)', () => {
+	const zoom: BookingView = { ...booking, location_kind: 'zoom' };
+	const join = 'https://us02web.zoom.us/j/81234567890?pwd=abc';
+
+	it('promises the link will follow while there is none, and never shows a phone number', () => {
+		const email = bookingEmail(zoom, { kind: 'booked' }, 'https://app.example');
+		expect(email.text).toContain(
+			'How: Zoom video call with Jafar. We will email you the joining link before the call.'
+		);
+		expect(email.text).not.toContain('+880');
+		expect(bookingIcs(zoom, manage)).toContain('LOCATION:Zoom (link to follow by email)');
+	});
+
+	it('carries the joining link once there is one, in the email and the calendar files', () => {
+		const linked = { ...zoom, video_join_url: join, video_link_source: 'custom' as const };
+		const email = bookingEmail(
+			linked,
+			{ kind: 'reminder', reminderId: 'x' },
+			'https://app.example'
+		);
+		expect(email.text).toContain(`Join the Zoom call: ${join}`);
+		expect(email.html).toContain(`href="${join.replace('&', '&amp;')}"`);
+		expect(new URL(googleCalendarUrl(linked, manage)).searchParams.get('location')).toBe(join);
+	});
+
+	it('sends a new or replaced link as its own email, once per link', () => {
+		const linked = { ...zoom, video_join_url: join, video_link_source: 'custom' as const };
+		const first = bookingEmail(
+			linked,
+			{ kind: 'video_link', replaced: false },
+			'https://app.example'
+		);
+		const again = bookingEmail(
+			linked,
+			{ kind: 'video_link', replaced: true },
+			'https://app.example'
+		);
+		expect(first.subject).toBe(
+			'Joining link: Discovery call with Uplift, Wednesday, 14 October 2026 at 15:00'
+		);
+		expect(again.subject.startsWith('New joining link:')).toBe(true);
+		expect(again.text).toContain('the old link will not work');
 	});
 });

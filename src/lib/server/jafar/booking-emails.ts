@@ -3,7 +3,9 @@ import type { Database } from '$lib/database.types';
 import { enqueueEmailDelivery } from '$lib/server/events/dispatcher';
 import { bookingIcsUrl, googleCalendarUrl } from '$lib/server/jafar/booking-calendar';
 import { bookingManageUrl } from '$lib/server/jafar/booking-links';
+import { createHash } from 'node:crypto';
 import {
+	VIDEO_PROVIDER_WORDS,
 	bookingPath,
 	dateWords,
 	lengthWords,
@@ -28,7 +30,9 @@ export type BookingEmailKind =
 	/** E3: the call is now with another host; `changeId` tells one change from the next. */
 	| { kind: 'host_changed'; fromHostName: string; changeId: string }
 	/** E2b: a reminder before the call; `reminderId` is the reminder it sends. */
-	| { kind: 'reminder'; reminderId: string };
+	| { kind: 'reminder'; reminderId: string }
+	/** E4a: the call's joining link, added for the first time or `replaced`. */
+	| { kind: 'video_link'; replaced: boolean };
 
 function escapeHtml(value: string) {
 	return value
@@ -40,6 +44,24 @@ function escapeHtml(value: string) {
 
 type Line = string | { label: string; href: string };
 
+/**
+ * E4a: how the call happens. A video call's link when it has one; until then, a plain promise that the joining
+ * details will follow -- never a link that is not the call's own.
+ */
+function howLines(booking: BookingView): Line[] {
+	if (booking.location_kind === 'phone')
+		return [`How: ${booking.host_name} will phone you on ${booking.visitor_phone}.`];
+	const provider = VIDEO_PROVIDER_WORDS[booking.location_kind];
+	if (!booking.video_join_url)
+		return [
+			`How: ${provider} video call with ${booking.host_name}. We will email you the joining link before the call.`
+		];
+	return [
+		`How: ${provider} video call with ${booking.host_name}.`,
+		{ label: `Join the ${provider} call`, href: booking.video_join_url }
+	];
+}
+
 /** The email's words, apart so a test can read them. */
 export function bookingEmail(booking: BookingView, email: BookingEmailKind, origin: string) {
 	const zone = booking.visitor_time_zone;
@@ -50,8 +72,7 @@ export function bookingEmail(booking: BookingView, email: BookingEmailKind, orig
 	const at = (instant: string) =>
 		`${dateWords(instant, zone, 'en-GB')} at ${timeWords(instant, zone, 'en-GB')}`;
 	const call = `${booking.name} (${lengthWords(booking.duration_minutes)}) with ${booking.host_name}`;
-	const how = `${booking.host_name} will phone you on ${booking.visitor_phone}.`;
-	const details: Line[] = [`When: ${when}`, `How: ${how}`];
+	const details: Line[] = [`When: ${when}`, ...howLines(booking)];
 	const manage = bookingManageUrl(origin, booking.booking_id);
 	const bookAgain = booking.slug ? `${origin}${bookingPath(booking.slug)}` : null;
 	const deadline =
@@ -153,6 +174,22 @@ export function bookingEmail(booking: BookingView, email: BookingEmailKind, orig
 			subject = `Reminder: ${booking.name} with Uplift, ${date} at ${start}`;
 			body = [[`A reminder of your ${call}.`], details, calendarLines, changeLinks];
 			break;
+		case 'video_link':
+			subject = `${email.replaced ? 'New joining link' : 'Joining link'}: ${booking.name} with Uplift, ${date} at ${start}`;
+			body = [
+				[
+					email.replaced
+						? `The joining link for your ${call} has changed. Please use this one; the old link will not work for this call.`
+						: `Here is the joining link for your ${call}.`
+				],
+				details,
+				[
+					'If you added the call to your calendar, add it again to keep the link with it:',
+					...calendarLines.slice(1)
+				],
+				changeLinks
+			];
+			break;
 	}
 
 	const paragraphs = [[`Hi ${firstName},`], ...body.filter((lines) => lines.length), ['Uplift']];
@@ -184,6 +221,11 @@ function idempotencyKey(booking: BookingView, email: BookingEmailKind) {
 	if (email.kind === 'moved') return `${base}:${booking.starts_at}`;
 	if (email.kind === 'host_changed') return `${base}:${email.changeId}`;
 	if (email.kind === 'reminder') return `${base}:${email.reminderId}`;
+	if (email.kind === 'video_link')
+		return `${base}:${createHash('sha256')
+			.update(booking.video_join_url ?? '')
+			.digest('hex')
+			.slice(0, 32)}`;
 	return base;
 }
 

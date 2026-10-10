@@ -73,3 +73,17 @@ export function isPlainRefusal(
 ): error is { code: string; message: string } {
 	return error?.code === '22023';
 }
+
+/** E3/E4a: a call when this person may see it: their own, or any call when they can open Leads. */
+export async function visibleCall(
+	client: Client,
+	id: string,
+	memberId: string | undefined,
+	all: boolean
+) {
+	const { data, error } = await client.rpc('owner_calendar_entry', { target_id: id });
+	if (error) throw error;
+	const entry = data as { kind: string; owner_member_id: string | null } | null;
+	if (!entry || entry.kind !== 'call') return false;
+	return all || entry.owner_member_id === (memberId ?? null);
+}

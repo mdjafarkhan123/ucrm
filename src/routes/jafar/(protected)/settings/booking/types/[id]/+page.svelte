@@ -6,6 +6,7 @@
 	import { page } from '$app/state';
 	import calendarIcon from '@tabler/icons/outline/calendar-event.svg?raw';
 	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
+	import videoIcon from '@tabler/icons/outline/video.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
@@ -16,6 +17,7 @@
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
+	import RadioGroup from '$lib/components/ui/RadioGroup.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
@@ -31,6 +33,7 @@
 		DURATION_CHOICES,
 		HORIZON_CHOICES,
 		INTERVAL_CHOICES,
+		LOCATION_WORDS,
 		MAX_VISITOR_REMINDERS,
 		NOTICE_CHOICES,
 		VISITOR_REMINDER_CHOICES,
@@ -41,7 +44,9 @@
 		personKey,
 		slugify,
 		type BookingSettings,
+		type LocationKind,
 		type MeetingType,
+		type VideoLinkMode,
 		type MeetingTypeInput
 	} from '$lib/jafar/booking';
 
@@ -87,6 +92,8 @@
 					name: type.name,
 					description: type.description ?? '',
 					duration_minutes: type.duration_minutes,
+					location_kind: type.location_kind,
+					video_link_mode: type.video_link_mode,
 					min_notice_minutes: type.min_notice_minutes,
 					horizon_days: type.horizon_days,
 					buffer_minutes: type.buffer_minutes,
@@ -103,6 +110,8 @@
 					name: '',
 					description: '',
 					duration_minutes: 30,
+					location_kind: 'phone',
+					video_link_mode: 'automatic',
 					min_notice_minutes: 240,
 					horizon_days: 60,
 					buffer_minutes: 0,
@@ -258,6 +267,32 @@
 	const interval = numberField('slot_interval_minutes');
 	const deadline = numberField('change_deadline_minutes');
 
+	// E4a: where the call happens, and for a video call how each booking gets its link.
+	const locationOptions = (Object.keys(LOCATION_WORDS) as LocationKind[]).map((kind) => ({
+		value: kind,
+		label: LOCATION_WORDS[kind]
+	}));
+	const linkModeOptions: { value: VideoLinkMode; label: string }[] = [
+		{ value: 'automatic', label: 'Make a Zoom meeting for each booking' },
+		{ value: 'custom', label: 'I add a link to each booking' }
+	];
+	const location = {
+		get value() {
+			return draft?.location_kind ?? 'phone';
+		},
+		set value(next: string) {
+			if (draft) draft.location_kind = next as LocationKind;
+		}
+	};
+	const linkMode = {
+		get value() {
+			return draft?.video_link_mode ?? 'automatic';
+		},
+		set value(next: string) {
+			if (draft) draft.video_link_mode = next as VideoLinkMode;
+		}
+	};
+
 	const title = $derived(isNew ? 'New meeting type' : (existing?.name ?? 'Meeting type'));
 </script>
 
@@ -362,13 +397,40 @@
 							errorMessage={fieldErrors.description ?? ''}
 							bind:value={draft.description}
 						/>
+						<Select
+							id="type-location"
+							label="Where the call happens"
+							options={locationOptions}
+							bind:value={location.value}
+						/>
+						{#if draft.location_kind === 'zoom'}
+							<RadioGroup
+								label="Joining link"
+								options={linkModeOptions}
+								bind:value={linkMode.value}
+							/>
+						{/if}
 						<div class="meeting-type__how">
-							<span class="meeting-type__how-icon" aria-hidden="true">{@html phoneIcon}</span>
+							<span class="meeting-type__how-icon" aria-hidden="true"
+								>{@html draft.location_kind === 'phone' ? phoneIcon : videoIcon}</span
+							>
 							<div>
-								<p class="meeting-type__how-title">Phone call</p>
+								<p class="meeting-type__how-title">{LOCATION_WORDS[draft.location_kind]}</p>
 								<p class="meeting-type__note">
-									The host calls the number the visitor gives when they book. Zoom and Google Meet
-									come later.
+									{#if draft.location_kind === 'phone'}
+										The host calls the number the visitor gives when they book.
+									{:else if draft.video_link_mode === 'custom'}
+										Each booking's emails say the joining link will follow, and the host is reminded
+										to add it on the call. The visitor is emailed the link as soon as it is added.
+									{:else}
+										Each booking gets its own Zoom meeting once Zoom is connected. Until then,
+										visitors are told the link will follow, and the host adds it on the call.
+									{/if}
+									{#if existing && existing.bookings_count > 0 && draft.location_kind !== existing.location_kind}
+										Calls already booked keep their {LOCATION_WORDS[
+											existing.location_kind
+										].toLowerCase()}.
+									{/if}
 								</p>
 							</div>
 						</div>

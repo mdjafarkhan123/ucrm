@@ -5,12 +5,11 @@ import { PRIVATE_READ_HEADERS, databaseError, notFound } from '$lib/server/api/e
 import { ownerUnauthorized } from '$lib/server/access/owner';
 import { getOwnerSession } from '$lib/server/auth/owner';
 import { getOwnerSupabaseClient } from '$lib/server/db/owner-supabase';
-import { CALLS_REFUSED, calendarViewer, parseBody } from '$lib/server/jafar/calendar';
+import { CALLS_REFUSED, calendarViewer, parseBody, visibleCall } from '$lib/server/jafar/calendar';
 import { hostChoices } from '$lib/server/jafar/booking-hosts';
 import { sendBookingEmail } from '$lib/server/jafar/booking-emails';
 import { bookingHostChangeSchema } from '$lib/server/validation/booking.schema';
 import type { BookingView, HostChoice, HostChoices } from '$lib/jafar/booking';
-
 
 // Jafar business management E3: hand a call a visitor booked online to another of its meeting type's hosts, as
 // Calendly's reassign does -- only to someone free then (inside their weekly hours, nothing else on their
@@ -50,15 +49,6 @@ async function choicesFor(client: Client, entryId: string): Promise<HostChoices 
 	};
 }
 
-/** The call when this person may see it: their own, or any call when they can open Leads. */
-async function visibleCall(client: Client, id: string, memberId: string | undefined, all: boolean) {
-	const { data, error } = await client.rpc('owner_calendar_entry', { target_id: id });
-	if (error) throw error;
-	const entry = data as { kind: string; owner_member_id: string | null } | null;
-	if (!entry || entry.kind !== 'call') return false;
-	return all || entry.owner_member_id === (memberId ?? null);
-}
-
 export const GET: RequestHandler = async (event) => {
 	const session = await getOwnerSession(event);
 	if (!session) return ownerUnauthorized();
@@ -81,10 +71,14 @@ export const GET: RequestHandler = async (event) => {
 };
 
 const REFUSALS: Record<string, { status: number; error: string }> = {
-	busy: { status: 409, error: 'They have something else on their calendar then. Choose someone else.' },
+	busy: {
+		status: 409,
+		error: 'They have something else on their calendar then. Choose someone else.'
+	},
 	outside_hours: {
 		status: 409,
-		error: 'That time is outside their weekly hours. Choose someone else, or change their hours first.'
+		error:
+			'That time is outside their weekly hours. Choose someone else, or change their hours first.'
 	},
 	not_eligible: { status: 409, error: 'They are not a host of this meeting.' },
 	closed: { status: 409, error: 'This call is over or closed, so its host cannot change.' },
@@ -119,7 +113,8 @@ export const POST: RequestHandler = async (event) => {
 		const result = data as { outcome: string; from_host_name?: string } & BookingView;
 		if (result.outcome === 'unknown') return notFound(NOT_FOUND);
 		const refusal = REFUSALS[result.outcome];
-		if (refusal) return json({ error: refusal.error, outcome: result.outcome }, { status: refusal.status });
+		if (refusal)
+			return json({ error: refusal.error, outcome: result.outcome }, { status: refusal.status });
 		if (result.outcome === 'changed') {
 			try {
 				await sendBookingEmail(
@@ -134,7 +129,10 @@ export const POST: RequestHandler = async (event) => {
 				);
 			} catch (emailError) {
 				// The change stands; the visitor sees the new host on their link page.
-				console.error('Could not queue the email telling the visitor about the new host.', emailError);
+				console.error(
+					'Could not queue the email telling the visitor about the new host.',
+					emailError
+				);
 			}
 		}
 		return json({ ok: true, host_name: result.host_name ?? null });

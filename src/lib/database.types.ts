@@ -13445,6 +13445,7 @@ export type Database = {
 					decided_by_email: string | null;
 					entry_id: string | null;
 					id: string;
+					location_kind: string;
 					manage_token_hash: string | null;
 					meeting_type_id: string | null;
 					relationship_id: string;
@@ -13452,6 +13453,10 @@ export type Database = {
 					requested_starts_at: string | null;
 					status: string;
 					updated_at: string;
+					video_join_url: string | null;
+					video_link_set_at: string | null;
+					video_link_source: string | null;
+					video_provider_meeting_id: string | null;
 					visitor_email: string;
 					visitor_name: string;
 					visitor_phone: string;
@@ -13464,6 +13469,7 @@ export type Database = {
 					decided_by_email?: string | null;
 					entry_id?: string | null;
 					id?: string;
+					location_kind: string;
 					manage_token_hash?: string | null;
 					meeting_type_id?: string | null;
 					relationship_id: string;
@@ -13471,6 +13477,10 @@ export type Database = {
 					requested_starts_at?: string | null;
 					status?: string;
 					updated_at?: string;
+					video_join_url?: string | null;
+					video_link_set_at?: string | null;
+					video_link_source?: string | null;
+					video_provider_meeting_id?: string | null;
 					visitor_email: string;
 					visitor_name: string;
 					visitor_phone: string;
@@ -13483,6 +13493,7 @@ export type Database = {
 					decided_by_email?: string | null;
 					entry_id?: string | null;
 					id?: string;
+					location_kind?: string;
 					manage_token_hash?: string | null;
 					meeting_type_id?: string | null;
 					relationship_id?: string;
@@ -13490,6 +13501,10 @@ export type Database = {
 					requested_starts_at?: string | null;
 					status?: string;
 					updated_at?: string;
+					video_join_url?: string | null;
+					video_link_set_at?: string | null;
+					video_link_source?: string | null;
+					video_provider_meeting_id?: string | null;
 					visitor_email?: string;
 					visitor_name?: string;
 					visitor_phone?: string;
@@ -14097,6 +14112,7 @@ export type Database = {
 					slot_interval_minutes: number;
 					slug: string;
 					updated_at: string;
+					video_link_mode: string;
 					visitor_reminder_minutes: number[];
 				};
 				Insert: {
@@ -14116,6 +14132,7 @@ export type Database = {
 					slot_interval_minutes?: number;
 					slug: string;
 					updated_at?: string;
+					video_link_mode?: string;
 					visitor_reminder_minutes?: number[];
 				};
 				Update: {
@@ -14135,6 +14152,7 @@ export type Database = {
 					slot_interval_minutes?: number;
 					slug?: string;
 					updated_at?: string;
+					video_link_mode?: string;
 					visitor_reminder_minutes?: number[];
 				};
 				Relationships: [
@@ -24560,18 +24578,24 @@ export type Database = {
 					target_host_member_id: string;
 					target_host_member_ids: Json;
 					target_is_active: boolean;
+					target_location_kind: string;
 					target_min_notice_minutes: number;
 					target_name: string;
 					target_requires_approval: boolean;
 					target_slot_interval_minutes: number;
 					target_slug: string;
 					target_type_id: string;
+					target_video_link_mode: string;
 					target_visitor_reminder_minutes: number[];
 				};
 				Returns: Json;
 			};
 			owner_booking_set_enabled: {
 				Args: { target_enabled: boolean };
+				Returns: Json;
+			};
+			owner_booking_set_video_link: {
+				Args: { target_entry_id: string; target_url: string };
 				Returns: Json;
 			};
 			owner_booking_settings: { Args: never; Returns: Json };

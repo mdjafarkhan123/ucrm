@@ -6,7 +6,8 @@ import {
 	bookingHoursSchema,
 	bookingSlotsQuerySchema,
 	meetingTypeSchema,
-	publicBookingSchema
+	publicBookingSchema,
+	videoLinkSchema
 } from './booking.schema';
 
 const visitor = {
@@ -131,6 +132,8 @@ describe('meeting type (E3)', () => {
 		name: 'Pricing call',
 		description: '',
 		duration_minutes: 30,
+		location_kind: 'phone',
+		video_link_mode: 'automatic',
 		min_notice_minutes: 240,
 		horizon_days: 60,
 		buffer_minutes: 0,
@@ -138,6 +141,7 @@ describe('meeting type (E3)', () => {
 		requires_approval: false,
 		change_deadline_minutes: 240,
 		is_active: true,
+		visitor_reminder_minutes: [1440],
 		host_member_id: sam,
 		host_member_ids: [null, sam, sam]
 	};
@@ -157,7 +161,11 @@ describe('meeting type (E3)', () => {
 	});
 
 	it('needs at least one host', () => {
-		const result = meetingTypeSchema.safeParse({ ...type, host_member_id: null, host_member_ids: [] });
+		const result = meetingTypeSchema.safeParse({
+			...type,
+			host_member_id: null,
+			host_member_ids: []
+		});
 		expect(result.error?.issues[0].message).toBe('Choose at least one host.');
 	});
 
@@ -165,5 +173,24 @@ describe('meeting type (E3)', () => {
 		expect(bookingHostChangeSchema.safeParse({ member_id: null }).success).toBe(true);
 		expect(bookingHostChangeSchema.safeParse({ member_id: sam }).success).toBe(true);
 		expect(bookingHostChangeSchema.safeParse({ member_id: 'sam' }).success).toBe(false);
+	});
+});
+
+describe('video (E4a)', () => {
+	it('takes a full https joining link, trimmed', () => {
+		expect(videoLinkSchema.parse({ url: ' https://zoom.us/j/123?pwd=x ' }).url).toBe(
+			'https://zoom.us/j/123?pwd=x'
+		);
+	});
+
+	it('refuses anything that is not a full https link', () => {
+		for (const url of [
+			'',
+			'zoom.us/j/123',
+			'http://zoom.us/j/1',
+			'https://localhost/x',
+			'javascript:alert(1)'
+		])
+			expect(videoLinkSchema.safeParse({ url }).success).toBe(false);
 	});
 });

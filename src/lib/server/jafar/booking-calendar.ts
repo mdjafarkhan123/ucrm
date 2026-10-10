@@ -1,4 +1,4 @@
-import type { BookingView } from '$lib/jafar/booking';
+import { VIDEO_PROVIDER_WORDS, type BookingView } from '$lib/jafar/booking';
 
 // Jafar business management E2b: a visitor adds their booked call to their own calendar from the links in its emails
 // (Calendly's and Cal.com's "Add to calendar"): Google Calendar through its event template link, and Apple, Outlook
@@ -50,11 +50,26 @@ function summary(booking: BookingView) {
 	return `${booking.name} with Uplift`;
 }
 
+/** E4a: where the call happens -- the joining link, the details still to follow, or the visitor's phone. */
+function location(booking: BookingView) {
+	if (booking.location_kind === 'phone') return `Phone: ${booking.visitor_phone}`;
+	return (
+		booking.video_join_url ??
+		`${VIDEO_PROVIDER_WORDS[booking.location_kind]} (link to follow by email)`
+	);
+}
+
+function how(booking: BookingView) {
+	if (booking.location_kind === 'phone')
+		return `${booking.host_name} will phone you on ${booking.visitor_phone}.`;
+	const provider = VIDEO_PROVIDER_WORDS[booking.location_kind];
+	return booking.video_join_url
+		? `Join the ${provider} call: ${booking.video_join_url}`
+		: `${provider} video call. We will email you the joining link before the call.`;
+}
+
 function description(booking: BookingView, manageUrl: string) {
-	return [
-		`${booking.host_name} will phone you on ${booking.visitor_phone}.`,
-		booking.can_change ? `Change or cancel: ${manageUrl}` : null
-	]
+	return [how(booking), booking.can_change ? `Change or cancel: ${manageUrl}` : null]
 		.filter(Boolean)
 		.join('\n');
 }
@@ -77,7 +92,7 @@ export function bookingIcs(booking: BookingView, manageUrl: string, now = new Da
 		`DTEND:${utcStamp(booking.ends_at)}`,
 		`SUMMARY:${text(summary(booking))}`,
 		`DESCRIPTION:${text(description(booking, manageUrl))}`,
-		`LOCATION:${text(`Phone: ${booking.visitor_phone}`)}`,
+		`LOCATION:${text(location(booking))}`,
 		`STATUS:${cancelled ? 'CANCELLED' : 'CONFIRMED'}`,
 		'TRANSP:OPAQUE',
 		'END:VEVENT',
@@ -93,7 +108,7 @@ export function googleCalendarUrl(booking: BookingView, manageUrl: string) {
 		text: summary(booking),
 		dates: `${utcStamp(booking.starts_at)}/${utcStamp(booking.ends_at)}`,
 		details: description(booking, manageUrl),
-		location: `Phone: ${booking.visitor_phone}`
+		location: location(booking)
 	});
 	return `https://calendar.google.com/calendar/render?${params}`;
 }
