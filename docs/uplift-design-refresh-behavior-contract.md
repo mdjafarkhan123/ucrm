@@ -6,6 +6,10 @@
 
 Reimagine Uplift as a premium, modern, polished application while preserving its approved capabilities. Jafar approved the forest-green sidebar, warm neutral canvas, white panels, restrained accents, and final balanced typography of the job details concept. The immediate deliverable is a complete job details browser demo, including the sidebar and header, for his approval. The first concept established visual direction; its omitted sections were never approved for removal. Complete that demo before extracting the new design system or redesigning other pages. Browser demos are the review medium; Pencil is omitted. After approval, document the reusable system and repair the existing design skill so future sessions reproduce the same direction. Design the remaining pages in groups before applying their approved designs to the real app.
 
+## Selected reference — 2026-10-10
+
+Jafar selected Botanical v3 with balanced readable typography and requested moving only that existing demo into the app. The canonical preview is `/demo/job-details`, stored in `static/demo/job-details/`; its README explains maintenance. This supersedes the earlier branch reference below for visual authority. The earlier prototype remains a behavior-coverage reference, especially for modal/scenario work still to migrate. Selection approves the visual direction, not complete interaction coverage, system extraction, or real-app rollout. Work in small reviewed pieces. Jafar explicitly instructed sessions not to load the current design skill for this preview.
+
 ## Original request and visual authority
 
 Jafar’s original request:

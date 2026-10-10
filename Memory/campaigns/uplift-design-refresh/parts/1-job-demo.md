@@ -14,11 +14,11 @@
 
 ## Next
 
-Jafar’s latest instruction: “Dont buiild all layout at once.” Stop adding layouts. Show the current demo for a small review starting with sidebar/header; wait for feedback before further design work. The complete job demo is prepared, but neither this milestone nor later extraction is approved.
+Jafar selected Botanical v3 and requested moving only that existing demo into the app. The canonical visual reference is now `/demo/job-details`, in `static/demo/job-details/` on main. Its README explains maintenance and limitations. The existing `/demo` component index is preserved. No real job page, design skill, API, schema, or provider behavior was changed.
 
-Preview URL: `http://localhost:4187`. Check that the server runs; serve `design-previews/job-details/` on port 4187 if needed. `README.md` explains the controls; `coverage.md` maps current capabilities, evidence, primary research sources and limitations. `verify.cjs` repeats the browser checks.
+Use the selected v3 for appearance and readable typography. Jafar wants small pieces reviewed one at a time and explicitly said not to load the current design skill. The selected preview has simplified title/instructions and photo dialogs, while many commands remain preview notices. Full interaction/scenario coverage is still pending; appearance selection does not complete the milestone.
 
-Jafar also clarified that all UI/UX design must be research-based. The coverage file separates proven workflow/accessibility patterns from our visual adaptations. Section editors are simulated previews, not a second business engine. Local illustrated photo samples are labelled. No real app, design skill, API, schema or provider changes were made.
+The deeper earlier prototype remains in branch `codex/job-design-concept`, `/tmp/ucrm-job-design/design-previews/job-details/`. Its `coverage.md` and `verify.cjs` describe the behavior work available to migrate in focused pieces. Its three-column finance grid is not the selected layout.
 
 ## Approval boundary
 

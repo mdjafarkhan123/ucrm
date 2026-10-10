@@ -3,10 +3,10 @@
 **Goal:** Give Uplift a premium, modern, polished design that preserves its capabilities and can be reproduced by future sessions.
 **Plan:** `docs/uplift-design-refresh-behavior-contract.md`
 
-**In progress:** Part 1 — completed job demo prepared on the preview branch; awaiting Jafar’s review.
+**Selected reference:** Jafar chose Botanical v3 with balanced readable typography on 2026-10-10. It now lives in the main app at `/demo/job-details`, under `static/demo/job-details/`. Open that route on the running app; no separate preview server or test login is needed. Only v3 was brought into the app.
 
-**Next:** Review the existing demo with Jafar in small pieces, starting with sidebar/header. He said “Dont buiild all layout at once.” Add no further layouts before feedback. See `parts/1-job-demo.md`.
+**In progress:** Part 1 — visual reference selected and hosted; full interaction/scenario coverage remains unfinished.
 
-**Blocker:** Jafar’s appearance/completeness feedback. Preview: `http://localhost:4187`; verify the local server before sharing.
+**Next:** Open the selected v3 before any design work. Work in small reviewed pieces. Follow Jafar’s instruction to use this reference rather than load the current design skill. The present task only hosts the existing demo; real app styling and design-system extraction remain later work.
 
-The approved visual reference is in branch `codex/job-design-concept`, worktree `/tmp/ucrm-job-design`. The authorized takeover is complete; demo coverage and research live beside the HTML. Details and the exact next action are in the part note. Jafar reviews the complete demo before system extraction, skill changes, or other page demos.
+**Reference behavior:** The more complete modal/scenario prototype remains in `codex/job-design-concept`, `/tmp/ucrm-job-design`; it is not the selected layout. See `parts/1-job-demo.md` for remaining coverage.
