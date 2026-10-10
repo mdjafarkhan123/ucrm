@@ -38,6 +38,7 @@ function client(entry: unknown) {
 function event(body?: unknown) {
 	return {
 		params: { id: ID },
+		url: new URL('http://localhost'),
 		request: new Request('http://localhost', {
 			method: body ? 'PATCH' : 'GET',
 			body: body ? JSON.stringify(body) : undefined

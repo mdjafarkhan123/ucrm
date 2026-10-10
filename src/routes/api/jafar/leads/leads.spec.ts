@@ -142,7 +142,9 @@ describe('Leads list GET', () => {
 	it('refuses an owner that is neither Jafar nor a teammate id (D3a)', async () => {
 		mockedOwnerSession.mockResolvedValue(session());
 		rpcReturning(listResult);
-		expect((await GET(getEvent('http://localhost/api/jafar/leads?owner=everyone'))).status).toBe(422);
+		expect((await GET(getEvent('http://localhost/api/jafar/leads?owner=everyone'))).status).toBe(
+			422
+		);
 	});
 
 	it('turns the next page cursor into an opaque string and back', async () => {

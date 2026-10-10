@@ -390,11 +390,14 @@ describe('create job API', () => {
 			.fn()
 			.mockResolvedValue({ data: { applied: true, job_id: 'job-1' }, error: null });
 
+		// Creating a job also makes other calls (the customer reminder), so find the creation call by its name.
+		const createCalls = () => rpc.mock.calls.filter(([name]) => name === 'create_job_with_visits');
+
 		await POST(createEvent(validBody, rpc));
-		expect(rpc.mock.calls[0][1]).not.toHaveProperty('source_request_id');
+		expect(createCalls()[0][1]).not.toHaveProperty('source_request_id');
 
 		await POST(createEvent({ ...validBody, request_id: sourceRequestId }, rpc));
-		expect(rpc.mock.calls[1][1]).toMatchObject({ source_request_id: sourceRequestId });
+		expect(createCalls()[1][1]).toMatchObject({ source_request_id: sourceRequestId });
 	});
 
 	it('refuses a source request that is not an id before reaching the database', async () => {

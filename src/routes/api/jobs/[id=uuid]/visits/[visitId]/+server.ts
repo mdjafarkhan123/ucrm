@@ -47,7 +47,10 @@ export const PATCH: RequestHandler = async (event) => {
 		parsed.data.notify_customer
 	);
 
-	return json({ ...(data as Record<string, unknown>), customer_notice }, { headers: NO_STORE_HEADERS });
+	return json(
+		{ ...(data as Record<string, unknown>), customer_notice },
+		{ headers: NO_STORE_HEADERS }
+	);
 };
 
 // Remove one visit. `delete_job_visit` checks jobs.schedule, protects a completed visit, and refuses a stale

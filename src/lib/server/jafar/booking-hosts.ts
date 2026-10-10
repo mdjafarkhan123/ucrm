@@ -17,4 +17,5 @@ export async function unqualifiedHosts(client: Client, ids: (string | null)[]) {
 	return teammates.filter((id) => !qualified.has(id));
 }
 
-export const HOST_REFUSED = 'A host you chose cannot change Leads & Deals. Change their access first.';
+export const HOST_REFUSED =
+	'A host you chose cannot change Leads & Deals. Change their access first.';

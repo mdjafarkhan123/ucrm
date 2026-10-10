@@ -8,5 +8,7 @@ export function forViewer<
 		is(column: 'recipient_member_id', value: null): Q;
 	}
 >(query: Q, memberId: string | null): Q {
-	return memberId ? query.eq('recipient_member_id', memberId) : query.is('recipient_member_id', null);
+	return memberId
+		? query.eq('recipient_member_id', memberId)
+		: query.is('recipient_member_id', null);
 }

@@ -102,7 +102,9 @@ describe('buildReminderEmail', () => {
 describe('sendDuePlatformReminders', () => {
 	function clientHanding(due: DueReminder[]) {
 		const rpc = vi.fn(async (name: string) =>
-			name === 'claim_due_platform_reminders' ? { data: due, error: null } : { data: true, error: null }
+			name === 'claim_due_platform_reminders'
+				? { data: due, error: null }
+				: { data: true, error: null }
 		);
 		return { client: { rpc } as never, rpc };
 	}
@@ -114,7 +116,11 @@ describe('sendDuePlatformReminders', () => {
 			recipient_name: 'Sam Seller'
 		};
 		const { client, rpc } = clientHanding([
-			{ ...base, ...sam, follow_up: { next_action: 'Call back', due_on: '2026-10-08', due_at: null } },
+			{
+				...base,
+				...sam,
+				follow_up: { next_action: 'Call back', due_on: '2026-10-08', due_at: null }
+			},
 			{
 				...base,
 				...sam,

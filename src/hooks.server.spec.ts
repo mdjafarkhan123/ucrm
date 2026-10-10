@@ -296,7 +296,7 @@ describe('the Jafar Panel front door', () => {
 				expect(result.routeRan, pathname).toBe(allowed);
 				if (allowed) continue;
 				if (kind === 'api') expect(result.response?.status, pathname).toBe(403);
-				else expect(result.redirect?.location, pathname).toBe('/jafar/leads');
+				else expect(result.redirect?.location, pathname).toBe('/jafar');
 			}
 		});
 
@@ -323,9 +323,10 @@ describe('the Jafar Panel front door', () => {
 			}
 		});
 
-		it('lands on Leads from the Overview and from Settings', async () => {
-			for (const pathname of ['/jafar', '/jafar/settings', '/jafar/settings/team']) {
-				expect((await visit(pathname, cookie)).redirect?.location, pathname).toBe('/jafar/leads');
+		it('stays on its own home, and is sent there from Settings', async () => {
+			expect((await visit('/jafar', cookie)).routeRan).toBe(true);
+			for (const pathname of ['/jafar/settings', '/jafar/settings/team']) {
+				expect((await visit(pathname, cookie)).redirect?.location, pathname).toBe('/jafar');
 			}
 		});
 	});
@@ -362,11 +363,11 @@ describe('the Jafar Panel front door', () => {
 			}
 		});
 
-		it('no longer reaches the Leads Jafar closed, and lands on Applications', async () => {
+		it('no longer reaches the Leads Jafar closed, and lands on its own home', async () => {
 			const api = await visit('/api/jafar/leads', cookie);
 			expect(api.routeRan).toBe(false);
 			expect(api.response?.status).toBe(403);
-			expect((await visit('/jafar/leads', cookie)).redirect?.location).toBe('/jafar/prospects');
+			expect((await visit('/jafar/leads', cookie)).redirect?.location).toBe('/jafar');
 		});
 	});
 

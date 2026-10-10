@@ -195,10 +195,10 @@ export function leadFilterParams(filters: LeadFilters): URLSearchParams {
 export function hasLeadFilters(filters: LeadFilters) {
 	return Boolean(
 		filters.q ||
-			filters.statuses.length ||
-			filters.countries.length ||
-			filters.sources.length ||
-			filters.owners.length
+		filters.statuses.length ||
+		filters.countries.length ||
+		filters.sources.length ||
+		filters.owners.length
 	);
 }
 

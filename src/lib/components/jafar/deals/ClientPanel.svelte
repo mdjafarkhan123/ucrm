@@ -84,7 +84,6 @@
 		if (result.ok) toast.success(`${name} now looks after their setup`);
 		else toast.error('That could not be changed.', result.error);
 	}
-
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->

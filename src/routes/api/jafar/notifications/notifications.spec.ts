@@ -26,7 +26,10 @@ function clientWith(options: {
 		const record =
 			(method: string) =>
 			(...args: unknown[]) => {
-				calls.push({ method: isCount ? `count${method[0].toUpperCase()}${method.slice(1)}` : method, args });
+				calls.push({
+					method: isCount ? `count${method[0].toUpperCase()}${method.slice(1)}` : method,
+					args
+				});
 				return self;
 			};
 		const self = {
@@ -141,10 +144,13 @@ describe('platform owner notifications list API boundary', () => {
 
 		await GET(event());
 		expect(calls).toContainEqual({ method: 'eq', args: ['recipient_member_id', 'member-sam'] });
-		expect(calls).toContainEqual({ method: 'countEq', args: ['recipient_member_id', 'member-sam'] });
-		expect(calls.some((call) => call.args[0] === 'recipient_member_id' && call.args[1] === null)).toBe(
-			false
-		);
+		expect(calls).toContainEqual({
+			method: 'countEq',
+			args: ['recipient_member_id', 'member-sam']
+		});
+		expect(
+			calls.some((call) => call.args[0] === 'recipient_member_id' && call.args[1] === null)
+		).toBe(false);
 	});
 
 	it('searches the title and body of a notification', async () => {

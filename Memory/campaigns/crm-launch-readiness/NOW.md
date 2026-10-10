@@ -7,15 +7,15 @@ evidence.
 
 ## Current state
 
-Parts 1–4 complete; 5–8 wait on launch evidence or dependencies. Agreed 2026-10-08: build and test features
-locally; do P9B app packaging alongside (no server, no cost); then an hourly-billed practice server (e.g. Hetzner
-CX33) for P9C–P9F; real server and first customers last. No infrastructure is approved.
+Parts 1–4 complete; 5–8 wait on launch evidence or dependencies. Agreed 2026-10-08: hourly-billed practice server (e.g. Hetzner CX33) for P9C–P9F; real server and first
+customers last. No infrastructure is approved.
 
 ## Exact next action
 
-Parts 10 and 11 done (Part 11 finished 2026-10-10: team alert on Quote approval, and visit, overdue-invoice, job
-follow-up and booking reminders all send and respect their switches). Next: P9B app packaging (no server, no cost),
-then the practice server once Jafar approves P9A.
+Parts 10 and 11 done (2026-10-10: Quote-approval team alert; visit, overdue-invoice, job
+follow-up and booking reminders). P9B packaging built 2026-10-10: Node server build, Dockerfile, health routes, GitHub
+workflow, `docs/production-release-runbook.md`. Waiting on: Jafar adds 3 GitHub variables and checks the first
+"Release image" run goes green (Docker was not available locally). Then the practice server (P9C) after P9A approval.
 
 Open for Jafar: P9A — managed Supabase first (recommended) or self-hosted from day one (he wants CLAUDE.md's
 self-hosted destination honored); push alerts before first customers or before advertising.

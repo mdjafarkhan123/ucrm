@@ -178,9 +178,13 @@
 	let ownerSaving = $state(false);
 	async function setLeadOwner(memberId: string | null, name: string) {
 		ownerSaving = true;
-		const result = await sendLeadWrite(`/api/jafar/leads/${encodeURIComponent(leadId)}/owner`, 'POST', {
-			member_id: memberId
-		});
+		const result = await sendLeadWrite(
+			`/api/jafar/leads/${encodeURIComponent(leadId)}/owner`,
+			'POST',
+			{
+				member_id: memberId
+			}
+		);
 		if (result.ok)
 			await Promise.all([
 				refreshLead(queryClient, leadId),

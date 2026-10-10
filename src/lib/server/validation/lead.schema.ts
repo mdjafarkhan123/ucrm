@@ -53,7 +53,12 @@ export const leadListQuerySchema = z.object({
 		.string()
 		.max(1000)
 		.transform((raw) => [...new Set(raw.split(',').map((part) => part.trim()))])
-		.pipe(z.array(z.union([z.literal('jafar'), z.uuid()])).min(1).max(50))
+		.pipe(
+			z
+				.array(z.union([z.literal('jafar'), z.uuid()]))
+				.min(1)
+				.max(50)
+		)
 		.optional(),
 	sort: z.enum(LEAD_SORTS).optional(),
 	/** B4: `with` lists only businesses that have a Deal; without it they are left out. B5: `clients` lists only

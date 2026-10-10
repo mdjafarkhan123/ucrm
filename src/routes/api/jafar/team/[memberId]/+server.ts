@@ -20,7 +20,12 @@ async function hostedCalls(client: Client, memberId: string) {
 }
 
 /** E3: tells each of those visitors their call is now with Jafar (Jafar, 2026-10-09). The removal stands. */
-async function tellVisitors(client: Client, entryIds: string[], fromHostName: string, origin: string) {
+async function tellVisitors(
+	client: Client,
+	entryIds: string[],
+	fromHostName: string,
+	origin: string
+) {
 	for (const entryId of entryIds) {
 		try {
 			const { data, error } = await client.rpc('owner_booking_for_entry', {
@@ -36,7 +41,10 @@ async function tellVisitors(client: Client, entryIds: string[], fromHostName: st
 				origin
 			);
 		} catch (error) {
-			console.error('Could not queue the email telling a visitor their call is now with Jafar.', error);
+			console.error(
+				'Could not queue the email telling a visitor their call is now with Jafar.',
+				error
+			);
 		}
 	}
 }

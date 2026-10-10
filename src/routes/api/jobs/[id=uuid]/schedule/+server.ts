@@ -44,5 +44,8 @@ export const POST: RequestHandler = async (event) => {
 		parsed.data.notify_customer
 	);
 
-	return json({ ...(data as Record<string, unknown>), customer_notice }, { headers: NO_STORE_HEADERS });
+	return json(
+		{ ...(data as Record<string, unknown>), customer_notice },
+		{ headers: NO_STORE_HEADERS }
+	);
 };
