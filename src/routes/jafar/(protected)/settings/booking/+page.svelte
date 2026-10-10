@@ -165,7 +165,9 @@
 										<span class="booking-settings__icon" aria-hidden="true"
 											>{@html copiedSlug === type.slug ? checkIcon : copyIcon}</span
 										>
-										{copiedSlug === type.slug ? 'Copied' : 'Copy link'}<span class="booking-settings__sr">
+										{copiedSlug === type.slug ? 'Copied' : 'Copy link'}<span
+											class="booking-settings__sr"
+										>
 											for {type.name}</span
 										>
 									</Button>
