@@ -18,7 +18,9 @@
 
 ## Next
 
-Run `npm run check` and fix errors. Then the live proof: start a second dev server with the spam check off —
+`npm run check` found one error: the Prospects page filters packages by `pkg.published.experience_keys`
+(`src/routes/jafar/(protected)/prospects/+page.svelte` ~597), but the package list summary from `fetchPackages`
+(`src/lib/jafar/packages.ts`, `/api/jafar/packages`) does not carry `experience_keys`. Add it there, then rerun. Then the live proof: start a second dev server with the spam check off —
 `PUBLIC_TURNSTILE_SITE_KEY= TURNSTILE_SECRET_KEY= npx vite dev --port 5174 --strictPort` — and a temporary
 Playwright config in the project root (a config outside the project cannot load modules) with
 `baseURL: 'http://localhost:5174'`, no webServer; delete it afterwards. The e2e stopped at its first step:
