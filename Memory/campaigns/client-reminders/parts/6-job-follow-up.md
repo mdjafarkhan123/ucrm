@@ -29,10 +29,10 @@
 
 ## Next
 
-Live proof, half done 2026-10-10 07:08 Dhaka: Jafar turned on "Job follow-up" (recipe 04201c7e-79a0-4e67-aa43-0003bc387160)
-and Claude finished job #28 (visit marked complete, then Finish job). Result: one enrollment, one work item
-waiting until 03:00 UTC (9:00 Dhaka) — the opening-hours wait works.
+Live proof 2026-10-10: automation turned on, job #28 finished, email waited for opening hours (re-checked at send
+time), then — with Saturday hours temporarily widened and put back to 09:00–17:00 — exactly one thank-you was
+accepted by the email provider. One run, one trigger event, no errors.
 
-Still to check after 03:00 UTC: the work item is sent, the client's history shows one thank-you, the +part8 inbox
-has it. Then reopen job #28, finish it again, and confirm no second email. Then tick the last step, release the
-claim (`sonnet-cr-6`, read mode), and mark Part 6 done in ROADMAP.md/NOW.md.
+Only left: reopen job #28 and finish it again (Jobs → job #28 → "Reopen job", then mark the visit complete / Finish
+job); confirm no second run and no second email. Jafar can click "Reopen job" himself (Claude's click was blocked).
+Then tick the last step, release claim `sonnet-cr-6`, mark Part 6 done in ROADMAP.md and NOW.md.
