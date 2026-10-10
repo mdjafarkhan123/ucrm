@@ -16,6 +16,8 @@
 
 ## Next
 
+Read the plan’s “Original request and visual authority” section and render the approved balanced-type concept first. Its new visual direction takes precedence over the old design skill’s looks.
+
 Run the live register and claim this part in the preview worktree. Inspect `git status` and `git diff` before editing. The stopped session added an uncommitted scenario toolbar, edit bar, dialog, and `demo.js` reference to `design-previews/job-details/index.html`; `demo.js` does not exist yet. Its unfinished changes are authorized for takeover. Finish the inventory before implementing the missing sections. Do not infer completeness from the partial markup.
 
 Read `src/routes/(app)/jobs/[id=uuid]/+page.svelte` in the current main application and follow its imported job/shared components. Consult `docs/jobs-behavior-contract.md` and use `Login.md` for read-only live observation. Use the main application's current behavior rather than assuming the older preview checkout has all recent changes.

@@ -6,6 +6,16 @@
 
 Reimagine Uplift as a premium, modern, polished application while preserving its approved capabilities. Jafar approved the forest-green sidebar, warm neutral canvas, white panels, restrained accents, and final balanced typography of the job details concept. The immediate deliverable is a complete job details browser demo, including the sidebar and header, for his approval. The first concept established visual direction; its omitted sections were never approved for removal. Complete that demo before extracting the new design system or redesigning other pages. Browser demos are the review medium; Pencil is omitted. After approval, document the reusable system and repair the existing design skill so future sessions reproduce the same direction. Design the remaining pages in groups before applying their approved designs to the real app.
 
+## Original request and visual authority
+
+Jafar’s original request:
+
+> If you update the design or our current app which will look more premium, more modern, polished based on research, then how would the app looks like on your design? can you design the job details page with apps sidebar, header included with a brand new design system rather using current desing skill? Can you show me a staic html/scss demo version first?
+
+The approved job concept answers that request and is the visual authority for this campaign. Open and render its HTML/CSS before extending it. Follow its actual composition, colors, typography, spacing, and restrained styling; use the final balanced-type version in the preview branch history to distinguish the approved reference from later unfinished edits. Future sessions extend that design rather than independently reinventing it. The existing design skill’s old colors, heading weights, section-border treatment, and blueprints must not override the approved new direction. Retain applicable screen checks, accessibility checks, engineering constraints, and existing product behavior.
+
+Research any design pattern the reference does not cover using relevant primary product sources. Cite the finding that informs the adaptation, then express that pattern in the approved visual language. Completeness alone is insufficient: newly added sections must look like they belong to the same premium, modern, polished interface. Review new sections side by side with the approved reference at desktop and phone widths before seeking Jafar’s approval. The first deliverable remains a standalone HTML/SCSS browser demo, with small JavaScript interactions only for previewing states.
+
 ## First milestone: complete job details demo
 
 ### Approved visual reference
