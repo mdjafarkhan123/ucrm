@@ -1,70 +1,82 @@
 # Uplift design refresh
 
-**Status:** Direction and first milestone scope approved by Jafar on 2026-10-10. Complete job demo prepared for review; appearance/completeness approval is pending. Review sidebar/header first, then small pieces, as Jafar requested.
+**Status:** Visual direction and incremental review process approved by Jafar on 2026-10-10. Fresh campaign setup authorized in this conversation. Individual new demos and live-app rollout still require their own approvals.
 
 ## Summary
 
-Reimagine Uplift as a premium, modern, polished application while preserving its approved capabilities. Jafar approved the forest-green sidebar, warm neutral canvas, white panels, restrained accents, and final balanced typography of the job details concept. The immediate deliverable is a complete job details browser demo, including the sidebar and header, for his approval. The first concept established visual direction; its omitted sections were never approved for removal. Complete that demo before extracting the new design system or redesigning other pages. Browser demos are the review medium; Pencil is omitted. After approval, document the reusable system and repair the existing design skill so future sessions reproduce the same direction. Design the remaining pages in groups before applying their approved designs to the real app.
+Redesign Uplift into a premium, modern, polished, colourful and attractive product, using Botanical v3 as the approved visual direction. Improve layout, information hierarchy, typography, spacing and composition as well as colour. Preserve existing capabilities, permissions and approved workflows. Establish a starter design system from the selected reference, then grow it through small reviewed demos. Jafar reviews each focused portion in a standalone HTML/SCSS browser demo before it reaches the real app. Revisions are agreed together; shared design decisions update the guidance and design skill before dependent implementation. Each session handles one focused part, so later agents extend the same identity rather than reinventing it. This document supersedes the leftover earlier campaign instructions, including the requirement to finish the whole job demo before extracting foundations.
 
-## Selected reference — 2026-10-10
+## Jafar's intent and approved reference
 
-Jafar selected Botanical v3 with balanced readable typography and requested moving only that existing demo into the app. The canonical preview is `/demo/job-details`, stored in `static/demo/job-details/`; its README explains maintenance. This supersedes the earlier branch reference below for visual authority. The earlier prototype remains a behavior-coverage reference, especially for modal/scenario work still to migrate. Selection approves the visual direction, not complete interaction coverage, system extraction, or real-app rollout. Work in small reviewed pieces. Jafar explicitly instructed sessions not to load the current design skill for this preview.
-
-## Original request and visual authority
-
-Jafar’s original request:
+Original request:
 
 > If you update the design or our current app which will look more premium, more modern, polished based on research, then how would the app looks like on your design? can you design the job details page with apps sidebar, header included with a brand new design system rather using current desing skill? Can you show me a staic html/scss demo version first?
 
-The approved job concept answers that request and is the visual authority for this campaign. Open and render its HTML/CSS before extending it. Follow its actual composition, colors, typography, spacing, and restrained styling; use the final balanced-type version in the preview branch history to distinguish the approved reference from later unfinished edits. Future sessions extend that design rather than independently reinventing it. The existing design skill’s old colors, heading weights, section-border treatment, and blueprints must not override the approved new direction. Retain applicable screen checks, accessibility checks, engineering constraints, and existing product behavior.
+Jafar additionally requested a colourful and attractive design and approved the interpretation below in this conversation:
 
-Jafar clarified that all UI/UX design in this campaign must be research-based. Record the primary sources and distinguish verified behavior from our visual adaptations. Research any design pattern the reference does not cover using relevant primary product sources. Cite the finding that informs the adaptation, then express that pattern in the approved visual language. Completeness alone is insufficient: newly added sections must look like they belong to the same premium, modern, polished interface. Review new sections side by side with the approved reference at desktop and phone widths before seeking Jafar’s approval. The first deliverable remains a standalone HTML/SCSS browser demo, with small JavaScript interactions only for previewing states.
+- A substantial redesign of composition and hierarchy, with polished everyday use; changing colours alone does not satisfy the goal.
+- A distinctive Botanical identity: rich forest-green navigation, warm neutral canvas, clear panels, purposeful accent colours, tinted surfaces and clear emphasis. Preserve this character as new screens are added; colour should aid understanding as well as appeal.
+- Research-informed usability and interaction patterns, adapted to this visual language. Research supports decisions; it does not replace Jafar's visual approval or establish that our adaptation is user-tested.
+- A new system derived from the selected design, rather than the existing design skill's old appearance.
+- Complete capabilities and relevant states, reviewed in small browser demos before implementation.
 
-## First milestone: complete job details demo
+The canonical selected reference is `/demo/job-details`, redirecting to `/demo/job-details/index.html`, maintained in `static/demo/job-details/`. Read its README and render the actual HTML/CSS before extracting or extending it. The selected version is Botanical v3 with balanced typography and five sample visits. The earlier `codex/job-design-concept` branch is historical and may inform coverage after inspection; it is not the visual authority.
 
-### Approved visual reference
+Approval covers v3's visual direction, not every illustrative navigation item, missing section, interaction, mobile treatment or accessibility result. Its omissions never authorize feature removal. The current reference contains successive style overrides; derive foundations from final rendered values, not just its first declarations. Its README describes roughly 15px main text, 13px supporting text and 18px section headings; verify the actual font rendering before documenting exact values.
 
-The latest approved concept is in branch `codex/job-design-concept`, under `design-previews/job-details/`. Preserve its final appearance as the baseline, including 15px main text, 13px supporting details, approximately 17–18px section headings, stronger secondary contrast, and comfortable controls. These describe the approved concept, not a completed accessible design system. Check actual rendered styles before extracting tokens; the demo currently contains successive overrides and fallback font rendering.
+## Authority and starter design system
 
-### Completeness before approval
+Preserve a stable v3 baseline and desktop/phone screenshots before modifying preview styles. Keep the baseline available for side-by-side comparison with later demos; identify its source revision and viewport sizes with the reference assets. Avoid creating another application copy.
 
-Inspect the current job page, its child components, the approved Jobs contract, and the live app. Maintain a coverage checklist that maps each existing section, action, dialog, conditional feature, and permission difference to its demo representation. Inventory the real sidebar and header as well: the initial concept's navigation is illustrative and differs from the real application.
+Extract the demonstrated colours and their roles, typography, spacing, radii, borders, shadows, buttons, panels and composition into permanent design guidance. Show representative component states in a browser gallery as foundations mature. Patterns v3 does not establish, such as complex forms or calendars, remain explicitly unapproved until their focused demo review. The starter system can be established before the complete job demo is finished.
 
-The first inspection identified: job identity/status/facts and source; client/property; products and services; labor; expenses; checklists; visits and recurrence; crew instructions; notes/history; photos/files; signatures; work reports; job totals; costing; billing and payment stages; invoice reminders; visits or periods ready to bill; discount; and property tax. This list starts the audit and does not replace reading the nested components.
+Use one authoritative home for each design value or rule. The design skill should be a clear entry point to that guidance, approved references, examples and verification, rather than a competing copy. Inspect the current skill for contradictory visual rules and update it before new design work uses it. Retain applicable screen checks, accessibility practices and engineering constraints. Keep existing save/cancel semantics and other workflow rules traceable to their behavior authority when reorganizing the skill.
 
-Represent title/instructions editing and the page's staged save/cancel bar, along with section-owned editors, visit records and scheduling, report commands, review requests, and close/reopen controls where the implementation offers them. Preserve existing permissions and lifecycle behavior. Layout may adapt to the approved visual direction, but capabilities must remain accounted for. Do not add functionality merely because an older contract mentions it; flag any meaningful code/contract discrepancy for a separate decision.
+During transition, read the current design skill for its checks and existing behavior constraints; its old colours, section-border treatment and layout blueprints do not override v3. Document how approved new guidance applies to migrated surfaces while untouched surfaces retain their current appearance. Skill changes alone must not restyle the live app.
 
-### Browser scenarios and interactions
+The approved visual reference governs appearance; approved product contracts and verified implementation govern existing behavior. Jafar decides any proposed change to either. When these sources disagree, investigate and present the concrete choice before dependent work.
 
-Use realistic synthetic data. Cover populated and empty one-off jobs, recurring per-visit and per-period billing, as-needed scheduling, closed jobs, restricted staff, long content, loading, errors, and editing. Mutually exclusive billing modes appear in separate clearly labelled scenarios. Preview controls open their corresponding menus, editors, or confirmations. Changes stay in temporary memory and reset on reload; no real messages, invoices, payments, uploads, or customer actions occur. Clearly distinguish simulated saves from real persistence. Links to destination pages outside the demo are labelled previews.
+## One focused part at a time
 
-### Approval evidence
+For each portion:
 
-Review the real page read-only using an existing test login, and use its behavior to validate the inventory. Check the demo at desktop and phone widths, including reachable mobile navigation, overflow, long text, keyboard focus, dialog dismissal, and the pinned editing bar. Compare coverage against the current source again before presenting the completed demo. Report what is covered and any remaining gap explicitly. Jafar approves both appearance and completeness; approval of the original concept is not approval of this unfinished milestone.
+1. Inspect existing components, source and relevant live behavior. List the capabilities, permission differences and states this portion must preserve. Reuse or extend suitable shared components.
+2. Research unresolved interaction or layout patterns using official product sources and maintained standards. Record what was verified and what is our adaptation; follow settled decisions without repeating unnecessary research.
+3. Build a standalone HTML/SCSS demo with realistic fictional data and small JavaScript interactions where needed. Simulate changes in memory, resetting on reload. Clearly label simulated actions and destination previews; use no real sends, payments, uploads or API writes.
+4. Check desktop (1440px) and phone (390px), relevant populated/empty/loading/error/editing states, long content, keyboard focus, dismissal, navigation and overflow. Present the demo URL, what is included and any gaps to Jafar.
+5. Revise with Jafar until approved. Record the exact demo revision, portion, states, date and remaining exclusions in the permanent guidance or linked approval record. Existing v3 approval does not approve newly designed patterns.
+6. Promote shared decisions into the system and align the skill. Keep page-specific arrangements local. A shared change needs an impact check against previously migrated surfaces and approval for material visible consequences.
+7. Implement only the approved portion using shared Svelte components and project conventions. Compare the real result with the approved demo, verify the main journey live and relevant edge cases with appropriate checks, then commit and push.
 
-## After job demo approval
+Stop at the current part's done-check and checkpoint for the next session. Do not automatically combine several redesign parts. A section and its editor can form a coherent part; all detail pages together cannot. Separate demo review and implementation checkpoints so an agent cannot infer approval from having built its own demo.
 
-Extract the visual foundations into shared named tokens and reusable demo styles. Build a browser component gallery with controls and states. Repair contradictory or stale design-skill guidance, separating approved new design guidance from the existing app during transition. Keep authoritative values in one place and use the skill as a clear entry point with examples and checks.
+## Initial sequence and later rollout
 
-Inventory remaining application surfaces, agree page groups and build parts, and produce complete demos from the shared system for Jafar's review. Plan owner, industry-specific, and customer-facing surfaces explicitly rather than assuming the contractor job page establishes their layouts. Carry approved designs into shared Svelte components and real pages only after their visual reviews, preserving workflows and verifying the main journeys live. Detailed rollout parts are not approved yet.
+The first assignment is reference preservation and starter design guidance, leaving the live app and selected demo unchanged. Next align the design skill, then prepare a sidebar/header demo against the real navigation and permissions, including reachable phone navigation. Implement that shell only after its review; account for its effect across pages before rollout. Then inventory job details and agree small demo/implementation parts with Jafar.
+
+For that job inventory, inspect nested components and the live page as well as the [Jobs contract](jobs-behavior-contract.md). The prior inspection suggested job identity/status/source, client/property, products/services, labor/expenses, checklists, visits/recurrence, crew instructions, notes/history, photos/files, signatures, work reports, totals/costing, billing/payment stages, reminders, ready-to-bill visits/periods, discount and property tax. Treat this as a starting checklist, not verified completeness. Include relevant editors, save/cancel, scheduling, review requests and close/reopen actions. Show mutually exclusive job/billing modes in separate labelled scenarios when the relevant part needs them.
+
+The whole-app ambition includes the Business Workspace, Uplift Control Room and customer-facing surfaces. Follow the [platform overview](platform-overview.md): share the visual language while keeping layouts and workflows suited to each industry and audience. Existing feature campaigns continue to own their behavior. Inventory remaining surfaces and settle rollout order incrementally; this plan does not approve detailed designs or broad cross-app changes in advance.
+
+## Research pointers
+
+These are reference leads, not proof that every v3 decision is validated. Verify the relevant source when using it for a new decision:
+
+- [USWDS design tokens](https://designsystem.digital.gov/design-tokens/): reusable named visual foundations.
+- [Atlassian colour](https://atlassian.design/foundations/color/): colour roles and accents.
+- [Linear interface refresh](https://linear.app/now/behind-the-latest-design-refresh): hierarchy and composition.
+- [Jobber Job Basics](https://help.getjobber.com/en/articles/job-basics/): contractor job structure; use the project Jobber skill for workflow work.
+- [W3C text resizing](https://www.w3.org/WAI/WCAG21/Understanding/resize-text): readability beyond default sizing.
 
 ## Still unclear
 
-- No decision blocks the first demo milestone. Complete its inventory before implementation and resolve any new behavior choice with Jafar.
-- Remaining page groups, additional surface scope, dark-theme direction, and implementation rollout order will be settled after the complete job demo is approved.
+- Patterns absent from v3, dark-theme direction and any phone treatments requiring new design approval; resolve in the relevant focused parts.
+- Exact remaining surface inventory and rollout order beyond the initial sequence; agree after inspection, rather than redesigning all pages at once.
+- Completeness of the current job demo and real-app readiness remain unverified. Neither blocks extracting the demonstrated foundations.
 
 ## Not doing
 
-- Pencil designs — browser demos are the chosen review workflow.
-- Live app styling, design-skill rewrites, infrastructure, API, schema, or permission changes in the first milestone.
-- Feature removal or new product behavior hidden inside a visual redesign.
-- Completing missing demo sections in the campaign-creation session: Jafar explicitly requested campaign records only.
-
-## Research and existing authority
-
-- [Jobs behavior contract](jobs-behavior-contract.md) and the current implementation own the existing workflow.
-- [Platform overview](platform-overview.md) owns the platform and industry boundaries.
-- [Linear interface refresh](https://linear.app/now/behind-the-latest-design-refresh) informed the calmer visual hierarchy.
-- [Jobber Job Basics](https://help.getjobber.com/en/articles/job-basics/) informed the original job structure.
-- [USWDS design tokens](https://designsystem.digital.gov/design-tokens/) supports reusable named foundations for later system extraction.
-- [W3C text resizing](https://www.w3.org/WAI/WCAG21/Understanding/resize-text) informs readability checks beyond default font size.
+- App, demo, token or design-skill changes in the campaign-creation session; this session creates the handoff records only.
+- Feature removal, new workflows, schema, API, permission or infrastructure changes hidden inside a visual redesign.
+- A full-app redesign in one session, a second application copy, or implementation before the relevant demo approval.
+- Treating the historical branch or old design skill as the selected visual authority; browser demos are the review medium, not Pencil.
