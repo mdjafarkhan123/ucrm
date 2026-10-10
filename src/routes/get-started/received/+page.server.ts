@@ -60,7 +60,8 @@ export const load: PageServerLoad = async ({ url }) => {
 			.eq('template_key', 'received_page')
 			.maybeSingle(),
 		// Multi-industry foundation B3: Uplift's newest decision about the kind of business. While it is
-		// holding, the buyer reads what is being checked instead of how to pay.
+		// holding, the buyer reads what is being checked instead of how to pay — or, once paid (B4), instead
+		// of hearing that the account is being set up.
 		client
 			.from('platform_onboarding_application_qualifications')
 			.select('outcome, buyer_message')
@@ -79,7 +80,8 @@ export const load: PageServerLoad = async ({ url }) => {
 
 	const status = statusFor(application.stage, application.payment_reversed_at);
 	const checking =
-		status === 'reviewing' && decisionResult.data?.outcome === 'holding'
+		(status === 'reviewing' || status === 'setting_up') &&
+		decisionResult.data?.outcome === 'holding'
 			? decisionResult.data.buyer_message
 			: null;
 	// Without a package the business is waiting for Uplift's recommendation; there is no price to show.

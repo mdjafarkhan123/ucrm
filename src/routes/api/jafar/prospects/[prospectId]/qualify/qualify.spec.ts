@@ -102,10 +102,10 @@ describe('Uplift confirms the kind of business an Application is', () => {
 		expect(mockedClient).not.toHaveBeenCalled();
 	});
 
-	it('returns 409 once payment is confirmed', async () => {
+	it('returns 409 once the account is created', async () => {
 		mockedClient.mockReturnValue(
 			clientWith({
-				message: 'The kind of business can only be decided before payment is confirmed.'
+				message: 'The kind of business can only be decided before the account is created.'
 			}) as never
 		);
 		const response = await POST(event(prospectId, supported));

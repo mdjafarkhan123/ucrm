@@ -285,6 +285,7 @@
 	];
 	const unpaidStages: ProspectStage[] = ['new', 'awaiting_payment', 'needs_attention'];
 	const provisionableStages: ProspectStage[] = ['payment_confirmed', 'needs_attention'];
+	const qualifiableStages: ProspectStage[] = [...unpaidStages, 'payment_confirmed'];
 	const reversibleStages: ProspectStage[] = ['payment_confirmed', 'needs_attention'];
 
 	let search = $state('');
@@ -496,7 +497,8 @@
 	}
 
 	// Multi-industry foundation B3: Uplift confirms the kind of business, or holds the Application while it
-	// checks something, any time before payment is confirmed. The form starts from what the buyer proposed.
+	// checks something, any time before the account is created (B4: Applications paid before B3 asked have
+	// none yet, and activation needs one). The form starts from what the buyer proposed.
 	function openQualificationForm(detail: ProspectDetail, outcome: QualificationForm['outcome']) {
 		clearFeedback();
 		editingCorrection = false;
@@ -524,7 +526,7 @@
 	}
 
 	function canQualify(detail: ProspectDetail) {
-		return unpaidStages.includes(detail.stage) && !hasPayment;
+		return qualifiableStages.includes(detail.stage);
 	}
 
 	// A package is corrected before payment, or after a reversal (package builder P10).

@@ -14,7 +14,8 @@ type QualifyArgs =
 	Database['public']['Functions']['record_onboarding_application_qualification']['Args'];
 
 // Multi-industry foundation B3: Uplift confirms which Industry experience and Business type an Application
-// is, or holds it while it checks something. Payment cannot be asked for or recorded until it is confirmed.
+// is, or holds it while it checks something. Payment cannot be asked for or recorded, nor the account
+// activated (B4), until it is confirmed.
 export const POST: RequestHandler = async (event) => {
 	const session = await getOwnerSession(event);
 	if (!session) return ownerUnauthorized();
@@ -61,7 +62,7 @@ export const POST: RequestHandler = async (event) => {
 		if (rpcError) {
 			if (rpcError.message.includes('does not exist'))
 				return json({ error: 'Prospect was not found.' }, { status: 404 });
-			if (rpcError.message.includes('before payment is confirmed'))
+			if (rpcError.message.includes('before the account is created'))
 				return json({ error: rpcError.message }, { status: 409 });
 			if (rpcError.message.includes('does not offer'))
 				return json(

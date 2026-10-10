@@ -8,7 +8,8 @@
 -- 1. Applications paid before B3 asked the kind of business have no decision. Uplift may now record one
 --    after payment, up until the account is created.
 -- 2. One function names what stops activation, shared by the preview and the activation itself.
--- 3. The activation preview lists that problem; activation refuses it and records the profile.
+-- 3. The activation preview lists that problem; activation refuses it and records the profile. The
+--    preview also stops failing on a reversed payment (a text added to a text[] was read as an array).
 
 -- ---------------------------------------------------------------------------------------------------
 -- 1. Deciding the kind of business until the account is created
@@ -201,27 +202,27 @@ begin
 	first_charge := private.agreement_period_price(agreed_price, terms, covered_from);
 
 	if app.stage not in ('payment_confirmed', 'needs_attention') then
-		problems := problems || 'Confirm the initial payment first.';
+		problems := array_append(problems, 'Confirm the initial payment first.');
 	elsif payment.id is null then
-		problems := problems || 'The payment was reversed. Confirm the payment again first.';
+		problems := array_append(problems, 'The payment was reversed. Confirm the payment again first.');
 	end if;
 	experience_problem := private.onboarding_application_activation_problem(target_application_id);
 	if experience_problem is not null then
-		problems := problems || experience_problem;
+		problems := array_append(problems, experience_problem);
 	end if;
 	if agreed_price is null then
-		problems := problems || 'The application has no agreed price. Correct its package first.';
+		problems := array_append(problems, 'The application has no agreed price. Correct its package first.');
 	elsif payment.id is not null and payment.amount_usd_cents < first_charge then
-		problems := problems || 'The confirmed payment is less than the first charge.';
+		problems := array_append(problems, 'The confirmed payment is less than the first charge.');
 	end if;
 	if (offer ->> 'blocking')::boolean then
-		problems := problems || case when offer ->> 'source' = 'shown'
+		problems := array_append(problems, (case when offer ->> 'source' = 'shown'
 			then 'The offer they were shown is no longer available: ' || (offer -> 'problems' -> 0 ->> 'message')
 				|| ' Honor it or activate at the normal price.'
-			else offer -> 'problems' -> 0 ->> 'message' end;
+			else offer -> 'problems' -> 0 ->> 'message' end)::text);
 	end if;
 	if edition.status is null or edition.status = 'draft' then
-		problems := problems || 'The application''s package edition was never published. Correct its package first.';
+		problems := array_append(problems, 'The application''s package edition was never published. Correct its package first.');
 	end if;
 
 	return jsonb_build_object(
