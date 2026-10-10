@@ -125,6 +125,7 @@ declare
   is_entitled boolean;
   wants_follow_ups boolean;
   wants_job_follow_ups boolean;
+  recipe_wants_follow_ups boolean;
   subject_present boolean;
   appointment_client_id uuid;
   invoice_client_id uuid;
@@ -282,6 +283,11 @@ begin
       loop
         match_outcome := null;
         new_enrollment_id := null;
+        recipe_wants_follow_ups := case
+          when candidate.subject_type = 'job' and private.automation_sends_job_email(match_row.definition)
+          then wants_job_follow_ups
+          else wants_follow_ups
+        end;
 
         if not is_entitled then
           match_outcome := 'not_entitled';
@@ -298,11 +304,7 @@ begin
           match_outcome := 'before_activation';
         elsif not subject_present then
           match_outcome := 'subject_gone';
-        elsif not case
-            when candidate.subject_type = 'job' and private.automation_sends_job_email(match_row.definition)
-            then wants_job_follow_ups
-            else wants_follow_ups
-          end then
+        elsif not recipe_wants_follow_ups then
           match_outcome := 'follow_ups_declined';
         else
           if candidate.subject_type = 'quote' then
