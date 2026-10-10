@@ -11,6 +11,7 @@
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import AccessComparisonPanel from './AccessComparisonPanel.svelte';
 	import ExperienceDecisionDialog from './ExperienceDecisionDialog.svelte';
 	import { canUseJafarPath } from '$lib/jafar/team-access';
 	import { organizationExperienceQuery } from '$lib/jafar/organization-experience-queries';
@@ -201,6 +202,10 @@
 					</div>
 				{/if}
 			</SectionBlock>
+
+			{#if organizationId}
+				<AccessComparisonPanel {organizationId} />
+			{/if}
 
 			<SectionBlock title="Decision history" icon={historyIcon}>
 				{#if data.history.length === 0}

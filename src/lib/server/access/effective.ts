@@ -311,6 +311,13 @@ function featureForPermission(permissionKey: string) {
 	);
 }
 
+// The package features a permission rides on; none for a permission every plan has.
+export function featureKeysForPermission(permissionKey: string): string[] {
+	const featureKey = featureForPermission(permissionKey);
+	if (!featureKey) return [];
+	return Array.isArray(featureKey) ? featureKey : [featureKey];
+}
+
 // The TypeScript twin of private.member_permission_scope: an override wins over the role, a denied override
 // is no permission at all rather than a scope, and anything unstated is 'all'. Both package paths below
 // call this so the rule cannot drift between them -- or away from the SQL, which is the real boundary.

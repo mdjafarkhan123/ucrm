@@ -42,3 +42,51 @@ export type ExperienceTabResponse = {
 	current_agreement: ExperienceAgreementSummary | null;
 	error?: string;
 };
+
+/** One answer that differs between today's access and the experience-aware access (multi-industry foundation B5). */
+export type AccessChange = {
+	key: string;
+	direction: 'lost' | 'gained';
+	/** Why the answer differs, in words Uplift can act on. */
+	cause: string;
+};
+
+export type AccessDifferences = {
+	features: AccessChange[];
+	permissions: AccessChange[];
+	navigation: AccessChange[];
+};
+
+export type AccessComparisonMember = {
+	user_id: string;
+	name: string | null;
+	email: string | null;
+	role: string;
+	/** Permissions held today, and held once the experience takes part. */
+	permissions_today: number;
+	permissions_with_experience: number;
+	differences: AccessDifferences;
+};
+
+export type AccessComparisonResponse = {
+	/**
+	 * `confirmed` compares against the reviewed profile; `planned` against the one experience the agreed
+	 * edition is sold to (no profile yet); `unavailable` means there is nothing safe to compare against.
+	 */
+	basis: {
+		state: 'confirmed' | 'planned' | 'unavailable';
+		experience: string | null;
+		experience_name: string | null;
+		definition_version: number | null;
+		explanation: string;
+	};
+	package_name: string | null;
+	/** Capabilities the Package gives today, and how many stay on with the experience. */
+	capabilities_today: number;
+	capabilities_with_experience: number;
+	organization: { features: AccessChange[] };
+	members: AccessComparisonMember[];
+	/** `same` only when every checked answer matches. */
+	verdict: 'same' | 'different' | 'unavailable';
+	error?: string;
+};
