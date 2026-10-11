@@ -4,11 +4,11 @@
 **Plan:** `docs/crm-design-system-behavior-contract.md` — fresh planning requested by Jafar on 2026-10-11; first-version scope not yet agreed.
 **Stage:** Planning.
 
-**In progress:** Part 1 Fresh scope — eight choices and Botanical's visual goal recorded. Jafar confirmed two main stages: verify/finish theme foundation, then complete Botanical. Detailed parts and full scope remain unapproved.
+**In progress:** Part 1 Fresh scope — two-stage goal explicitly approved. Jafar reconfirmed the job-details visual reference and gradual delivery intent; starter-system/incremental-design workflow proposed in the plan.
 
 **Carried context:** Earlier selectable-design work reports a shared shell, separate Classic/Botanical frames, private Botanical preview, and selected-only loading proof. These are technical starting points, not inherited product approvals. Recheck relevant foundations before relying on them.
 
-**Next:** Incorporate any further additions, then synthesize the scope and check gaps. Reuse verified foundation work; plan the missing foundation capabilities and Botanical coverage as small tasks within the two stages. Keep the agreed Business Workspace boundary. No fresh runtime proof was run.
+**Next:** Settle the proposed workflow: reuse extracted Botanical foundations, then demo → approve → grow guidance/components → implement and verify each small portion. Incorporate further additions and remaining release rules, then synthesize scope and small delivery parts. Reuse foundation work; keep the Business Workspace boundary. No fresh runtime proof was run.
 
 **Blockers:** Full scope and detailed build order still need agreement.
 
