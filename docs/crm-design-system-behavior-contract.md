@@ -32,13 +32,11 @@ The foundation must support theme selection independently of any one visual desi
 
 Jafar explicitly approved this two-stage goal in the follow-up: "finish the theme foundation and then create a complete botanical theme on that foundation." Detailed delivery parts and remaining release rules still need agreement.
 
-## Botanical starting point and proposed design workflow
+## Botanical starting point and agreed design workflow
 
 Jafar asked to reuse his original redesign intent, recorded literally under [Jafar's intent and approved reference](uplift-design-refresh-behavior-contract.md#jafars-intent-and-approved-reference), and reconfirmed the Botanical job-details demo as the approved visual starting point. The preserved v3 reference and captures are in [Botanical foundations](design/botanical-v3/README.md). The existing [sidebar/header approval record](design/botanical-v3/sidebar-approval.md) identifies sidebar variant 2 revision 2 and header B revision 4, with exact source revisions and coverage. These records preserve approved appearance; they do not establish complete page capabilities, unshown states, dark-mode readiness or release verification.
 
-**Clarification requested:** Jafar is deciding whether to create the visual design system before further demos or derive the complete system after all screens are approved. He favors reviewing and implementing small portions gradually.
-
-**Recommendation awaiting agreement:** Begin with the demonstrated Botanical foundations, then grow the design system with each approved portion:
+**Workflow agreed in Jafar's follow-up on 2026-10-11:** Begin with the demonstrated Botanical foundations, then grow the design system with each approved portion:
 
 1. Check and reuse the existing extracted colors, typography, spacing, panels and other demonstrated visual rules. Keep one authoritative home for each shared rule; do not restart extraction or invent every missing component in advance.
 2. Design one coherent portion and its relevant states in a focused browser demo, using the established foundations. A new form or calendar can be explored before its pattern is added to the shared system.
@@ -49,6 +47,15 @@ Jafar asked to reuse his original redesign intent, recorded literally under [Jaf
 The theme foundation is the machinery for selecting and delivering a design. The Botanical design system is its visual rules and reusable patterns/components. They are related deliverables with different responsibilities. A complete visual system grows from the screens and states actually needed; neither a single approved screenshot nor waiting for every page establishes all component behavior.
 
 **Evidence:** GOV.UK separately reviews reusable patterns for usefulness and uniqueness, then reviews implementations for usability, consistency and versatility; it also describes components evolving through a lifecycle. [Contribution criteria](https://design-system.service.gov.uk/community/contribution-criteria/), [Component lifecycle](https://design-system.service.gov.uk/community/component-lifecycle-statuses/). Our incremental design/review method is an adaptation of that discipline, not a claim of GOV.UK-equivalent user research. The earlier Botanical plan already describes a starter system growing through focused approvals; the proposal here makes that method explicit within this campaign's narrower scope.
+
+## Planning status and next planning step
+
+The two-stage goal, core organization-theme decisions and incremental Botanical workflow are agreed. This does not yet establish a complete foundation delivery plan or implementation.
+
+- **Theme foundation planning:** Source and existing-proof check complete; agreed defaults, authority, supported modes and staff-update policy recorded below. Still consolidate the complete preview/save/switch/failure journey, its completion checks and the small delivery parts, then check the plan for gaps. Existing shell separation can be reused; saved organization selection and safe switching are not established by the inspected source.
+- **Botanical planning:** Visual starting point and review method agreed. Next plan the starter-system gaps and first focused demo/implementation portions after the foundation agreement is complete. Detailed visual decisions for later portions can be made incrementally; do not require every screen to be designed before the first approved portion can be implemented privately.
+
+Finish foundation planning before moving the active planning focus to Botanical. Building and proving the foundation remains its own subsequent delivery work; planning completion must not be reported as implementation completion.
 
 ## Existing foundation — focused source check complete
 
@@ -81,9 +88,8 @@ The [primary-source research](research/crm-design-system-theme-approaches-2026-1
 
 ## Still unclear
 
-- Jafar said "I also have more to say" after answering the eight scope questions. Keep planning open and hear his additions before final synthesis or approval.
-- Agree the proposed starter-system and incremental demo/review/implementation workflow above. Jafar has confirmed the two-stage goal and gradual intent; he asked for a recommendation on when the visual system should be created.
 - Expected behavior for incomplete coverage, accessibility, unsaved work, and switching failures.
+- The complete foundation agreement and its small delivery parts have not yet been synthesized and checked; see Planning status above. The incremental Botanical workflow is now agreed.
 
 No answer is inherited from the earlier plans. Coverage, initial themes, chooser authority, layout flexibility and appearance modes were answered fresh in this campaign; the remaining questions follow those decisions.
 
