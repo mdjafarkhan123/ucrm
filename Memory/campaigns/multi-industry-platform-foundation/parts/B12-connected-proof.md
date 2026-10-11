@@ -25,4 +25,4 @@
 
 **Question for Jafar:** should those three Jobs cards show real numbers, and does "Revenue this month" mean invoiced or paid?
 
-**Findings for Jafar:** public submit took about 20 seconds; tax not carrying to the invoice and Jobs ignoring visits are both FIXED (`e756da3e`, `d8091900`) and seen live; the Jobs cards "Visits today", "Completed this month" and "Revenue this month" are still dashes (question above); Setup label "How many van do you have?"; the client's Setup page has no "I approve" button when every card is "Looks right".
+**Findings for Jafar:** public submit took about 20 seconds; tax not carrying to the invoice and Jobs ignoring visits are both FIXED (`e756da3e`, `d8091900`) and seen live; the Jobs cards "Visits today", "Completed this month" and "Revenue this month" are still dashes (question above); the Setup label "How many van do you have?" is test text, not in the code; "Approve launch" appears only after Uplift sends the approval request (by design).
