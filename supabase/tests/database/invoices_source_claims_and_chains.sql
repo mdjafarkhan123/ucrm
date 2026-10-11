@@ -219,7 +219,7 @@ select public.create_invoice_draft(
   jsonb_build_array(jsonb_build_object('position', 0, 'name', 'Corrected work', 'category', 'service',
     'quantity', 1, 'unit_price_minor', 100000, 'is_taxable', false)),
   array['f4000000-0000-0000-0000-000000000001']::uuid[],
-  null, '2026-09-30'::date, '2026-09-01'::date, 'src-idem-bill-correct', 'src-hash-bill-correct');
+  null, (current_date + 30), '2026-09-01'::date, 'src-idem-bill-correct', 'src-hash-bill-correct');
 
 create temporary view bill as
   select subject, id, revision, invoice_number, voided_at, replaced_at,

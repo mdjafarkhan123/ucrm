@@ -9,11 +9,11 @@
 - Setup: 5 tasks sent, review, Ready, preview v1; all cards "Looks right".
 - All 4 launch checks closed as Doesn't apply with honest reasons (email not on for this test business; Files scanner needs Docker, not installed here; Payments needs Stripe; no real accounts; fresh start). Launch approved by Pat Proof (`dev.jafarkhan+b12proof@gmail.com`).
 
-**System email (fixed on `main`):** sender name is "Uplift"; no Reply-To until `SYSTEM_REPLY_TO_EMAIL` is set. Jafar has no Uplift mailbox; his plan is an in-app mailbox in `/jafar`, a later release (Jafar business management campaign). Business sender names now reject addresses, links and line breaks. Open for Jafar: the paused and grace screens show `hello@upliftcontractor.com`, which may not exist.
+**System email (fixed on `main`):** sender name is "Uplift"; no Reply-To until `SYSTEM_REPLY_TO_EMAIL` is set. Jafar has no Uplift mailbox; his plan is an in-app mailbox in `/jafar`, a later release (Jafar business management campaign). Open for Jafar: the paused and grace screens show `hello@upliftcontractor.com`, which may not exist.
 
 **Support proven live (2026-10-11):** from Raad LTD "Chat with Uplift" → saved as an open thread → shown in `/jafar/support` → Uplift reply shown in the same thread (thread `766d676b…`).
 
-**Visit proven live (2026-10-11):** B12 Proof Roofing Job #1 → Add one visit (Oct 13, Anytime) → "Visit added"; shows on Schedule that day.
+**Visit proven live (2026-10-11):** Job #1 → Add one visit (Oct 13) → shows on Schedule; Jobs now reads Upcoming/Today.
 
 **Still to run:** overdue pause and recovery; a closed public form (unit/database-tested only).
 
@@ -23,4 +23,6 @@
 
 **Next:** overdue pause and recovery (needs a time skip on B12 Proof Roofing's paid-through date, as package-builder P16 M8 did; wait for Jafar's go-ahead), then the closed public form; update `stages/D-migration-proof.md`. Claim write first; the register refuses while uncommitted design files sit in the main folder.
 
-**Findings for Jafar:** public submit took about 20 seconds; the quote's tax did not carry to the invoice — FIXED in `e756da3e` and now proven live; Setup label "How many van do you have?"; the client's Setup page has no "I approve" button when every card is "Looks right"; Schedule's week now reads Oct 11–17, so the earlier Oct 4–10 view is gone; a Job with a visit still reads "Unscheduled" on Jobs (`private.job_derived_status` never looks at visits); Stale test: `invoices_source_claims_and_chains.sql` assertion 47 (2026-09-30 due date now reads past due).
+**Question for Jafar:** should those three Jobs cards show real numbers, and does "Revenue this month" mean invoiced or paid?
+
+**Findings for Jafar:** public submit took about 20 seconds; tax not carrying to the invoice and Jobs ignoring visits are both FIXED (`e756da3e`, `d8091900`) and seen live; the Jobs cards "Visits today", "Completed this month" and "Revenue this month" are still dashes (question above); Setup label "How many van do you have?"; the client's Setup page has no "I approve" button when every card is "Looks right".
