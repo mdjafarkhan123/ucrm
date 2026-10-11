@@ -1,14 +1,17 @@
 # Memory skill upgrade — now
 
-**Goal:** every fresh session starts light, finds everything it needs, stays short, and can continue from the
-last checkpoint after checking what really happened since.
-**Plan:** agreed with Jafar in conversation on 2026-09-28, with Codex's review applied; the parts are in
-`ROADMAP.md`.
+**Goal:** Campaign Memory guides planning, design, building, verification, and handover so a fresh AI can
+continue the right work without old chats or unnecessary reading.
+**Plan:** `docs/memory-campaign-workflow-behavior-contract.md` — parent-role direction agreed; detailed
+workflow and build order proposed for Jafar's review on 2026-10-11.
+**Stage:** Planning.
 
 **In progress:**
 
-- 2 Pilot — `parts/part-2.md`
+- 6 Workflow plan — `parts/6-workflow-plan.md`
 
-**Next part:** 3 Checker
+**Next part:** 7 Parent guidance, after Jafar reviews the detailed plan and build order.
 
-**Blockers:** none
+**Blockers:** Part 6 waits for that review. The older Part 2 pilot still has an unreported owner-window check;
+its history is in `parts/part-2.md`. Parts 3–5 remain follow-on work after the new pilot, rather than being
+silently marked complete. The live skills are unchanged.
