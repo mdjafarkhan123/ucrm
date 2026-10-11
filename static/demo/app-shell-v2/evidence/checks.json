@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-11",
+  "variant": 2,
+  "revision": 1,
+  "browser": "Chromium",
+  "viewports": [
+    "1440x900",
+    "390x900"
+  ],
+  "desktopHorizontalOverflow": false,
+  "phoneHorizontalOverflow": false,
+  "desktopAxeViolations": 0,
+  "phoneDrawerAxeViolations": 0,
+  "escapeReturnsFocus": true,
+  "phoneNavigation": "Invoices selected successfully",
+  "javascriptErrors": [],
+  "exclusions": [
+    "Full text-resizing verification",
+    "Assistive-technology testing",
+    "Dark appearance"
+  ]
+}
