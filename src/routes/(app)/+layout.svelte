@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { navigating, page } from '$app/state';
 	import { resolve } from '$app/paths';
-	import AppShell from '$lib/components/layout/AppShell.svelte';
+	import AppShell from '$lib/components/layout/SharedAppShell.svelte';
 	import { warmPagesWhenIdle } from '$lib/components/layout/warm-pages';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import RouteSkeleton from '$lib/components/layout/RouteSkeleton.svelte';
@@ -85,6 +85,7 @@
 	{/if}
 {:else}
 	<AppShell
+		Frame={data.ShellFrame}
 		organizationName={data.organization?.name}
 		logoUrl={data.logoUrl}
 		account={data.account}

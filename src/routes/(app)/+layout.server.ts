@@ -1,3 +1,4 @@
+import { env } from '$env/dynamic/private';
 import type { LayoutServerLoad } from './$types';
 import { requireContractor } from '$lib/server/auth/guards';
 import { getOrganizationContext } from '$lib/server/auth/organization';
@@ -12,6 +13,12 @@ import { fallbackContractorNavigation, type ContractorNavigation } from '$lib/ac
 // reads — not a second query.
 export const load: LayoutServerLoad = async (event) => {
 	const user = await requireContractor(event);
+	// Private release-build experiment only: never an organization preference or public switch.
+	const presentation =
+		env.DESIGN_SHELL_PREVIEW === 'botanical' &&
+		['localhost', '127.0.0.1'].includes(event.url.hostname)
+			? ('botanical' as const)
+			: ('classic' as const);
 	// Standing is asked alongside the context, not after it: a paused organization is hidden from its members,
 	// so it gives no context, and the paused screen still has to know whose account it is.
 	const [context, standingResult] = await Promise.all([
@@ -29,7 +36,7 @@ export const load: LayoutServerLoad = async (event) => {
 			if (error) console.error('Could not check support for a paused account.', error);
 			supportOpen = Boolean(data);
 		}
-		return { user, organization: null, logoUrl: null, standing, supportOpen };
+		return { presentation, user, organization: null, logoUrl: null, standing, supportOpen };
 	}
 
 	// The menu is drawn from the package and the member's permissions, resolved once here, so it is
@@ -56,6 +63,7 @@ export const load: LayoutServerLoad = async (event) => {
 	const settings = settingsResult.data;
 
 	return {
+		presentation,
 		...context,
 		logoUrl: settings?.logo_object_key ? organizationLogoUrl(settings.branding_revision) : null,
 		account: {

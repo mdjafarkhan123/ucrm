@@ -1,0 +1,2663 @@
+{
+  "profile": "Cold authenticated dashboard, fresh context per width, Chromium, 4x CPU, 150ms RTT, 1.6Mbps down, 750Kbps up, 15s idle warming; local adapter-node HTTP",
+  "results": [
+    {
+      "width": 1440,
+      "errors": [],
+      "metrics": {
+        "lcp": 6828,
+        "cls": 0.03965176203221451,
+        "lcpElement": {
+          "tag": "P",
+          "className": "setup-card__status svelte-i9ltko"
+        },
+        "shifts": [
+          {
+            "time": 2060.9000000003725,
+            "value": 0.000025655864197530863,
+            "sources": [
+              {
+                "tag": "BUTTON",
+                "className": "support-messenger__launcher svelte-nwy8pq",
+                "previous": {
+                  "x": 1221,
+                  "y": 824,
+                  "width": 206.65625,
+                  "height": 76,
+                  "top": 824,
+                  "right": 1427.65625,
+                  "bottom": 900,
+                  "left": 1221
+                },
+                "current": {
+                  "x": 1218,
+                  "y": 824,
+                  "width": 210,
+                  "height": 76,
+                  "top": 824,
+                  "right": 1428,
+                  "bottom": 900,
+                  "left": 1218
+                }
+              }
+            ]
+          },
+          {
+            "time": 6810.200000001118,
+            "value": 0.03962610616801698,
+            "sources": [
+              {
+                "tag": "SECTION",
+                "className": "stats svelte-1tyszyy",
+                "previous": {
+                  "x": 284,
+                  "y": 222.3125,
+                  "width": 1144,
+                  "height": 133.046875,
+                  "top": 222.3125,
+                  "right": 1428,
+                  "bottom": 355.359375,
+                  "left": 284
+                },
+                "current": {
+                  "x": 284,
+                  "y": 462.8125,
+                  "width": 1144,
+                  "height": 134.65625,
+                  "top": 462.8125,
+                  "right": 1428,
+                  "bottom": 597.46875,
+                  "left": 284
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "assets": [
+        {
+          "path": "/_app/immutable/assets/0.Ccb-7Pf4.css",
+          "encoded": 4269,
+          "transfer": 4569
+        },
+        {
+          "path": "/_app/immutable/assets/Avatar.BDjsYTgG.css",
+          "encoded": 377,
+          "transfer": 677
+        },
+        {
+          "path": "/_app/immutable/assets/Badge._53uUkoy.css",
+          "encoded": 395,
+          "transfer": 695
+        },
+        {
+          "path": "/_app/immutable/assets/Dialog.UgTXYqm3.css",
+          "encoded": 472,
+          "transfer": 772
+        },
+        {
+          "path": "/_app/immutable/assets/SearchInput.gRqOyFpJ.css",
+          "encoded": 602,
+          "transfer": 902
+        },
+        {
+          "path": "/_app/immutable/assets/EmptyState.BekLHtu4.css",
+          "encoded": 377,
+          "transfer": 677
+        },
+        {
+          "path": "/_app/immutable/assets/ErrorState.B8CcGhWy.css",
+          "encoded": 344,
+          "transfer": 644
+        },
+        {
+          "path": "/_app/immutable/assets/LoadingSkeleton.DxaSf_o8.css",
+          "encoded": 173,
+          "transfer": 473
+        },
+        {
+          "path": "/_app/immutable/assets/Button.BEFN_9EY.css",
+          "encoded": 566,
+          "transfer": 866
+        },
+        {
+          "path": "/_app/immutable/assets/ProfilePhotoDialog.MM7vfLmD.css",
+          "encoded": 480,
+          "transfer": 780
+        },
+        {
+          "path": "/_app/immutable/assets/live.Ck3nZ08E.css",
+          "encoded": 2081,
+          "transfer": 2381
+        },
+        {
+          "path": "/_app/immutable/assets/PageContainer.nNYN7xGB.css",
+          "encoded": 212,
+          "transfer": 512
+        },
+        {
+          "path": "/_app/immutable/assets/DropdownMenu.jIgR7rGC.css",
+          "encoded": 655,
+          "transfer": 955
+        },
+        {
+          "path": "/_app/immutable/assets/select-viewport.CV-KWLNP.css",
+          "encoded": 101,
+          "transfer": 401
+        },
+        {
+          "path": "/_app/immutable/assets/Select.BUXFunr6.css",
+          "encoded": 771,
+          "transfer": 1071
+        },
+        {
+          "path": "/_app/immutable/assets/Lightbox.D-i9JNt2.css",
+          "encoded": 756,
+          "transfer": 1056
+        },
+        {
+          "path": "/_app/immutable/assets/ConversationAttachments.qVeBuwj7.css",
+          "encoded": 624,
+          "transfer": 924
+        },
+        {
+          "path": "/_app/immutable/assets/SupportTopicPicker.cUfpobkI.css",
+          "encoded": 1948,
+          "transfer": 2248
+        },
+        {
+          "path": "/_app/immutable/assets/2.iYqh8o5a.css",
+          "encoded": 1737,
+          "transfer": 2037
+        },
+        {
+          "path": "/_app/immutable/assets/PageHeader.DzcGxPZc.css",
+          "encoded": 345,
+          "transfer": 645
+        },
+        {
+          "path": "/_app/immutable/assets/CountryPicker.mtNcuDWb.css",
+          "encoded": 903,
+          "transfer": 1203
+        },
+        {
+          "path": "/_app/immutable/assets/14.Do9YZP0T.css",
+          "encoded": 1963,
+          "transfer": 2263
+        },
+        {
+          "path": "/_app/immutable/entry/start.BQqin6gw.js",
+          "encoded": 86,
+          "transfer": 386
+        },
+        {
+          "path": "/_app/immutable/chunks/CGx1shPH.js",
+          "encoded": 13027,
+          "transfer": 13327
+        },
+        {
+          "path": "/_app/immutable/chunks/CE7vQsk4.js",
+          "encoded": 21477,
+          "transfer": 21777
+        },
+        {
+          "path": "/_app/immutable/entry/app.lMHPtoP2.js",
+          "encoded": 15565,
+          "transfer": 15865
+        },
+        {
+          "path": "/_app/immutable/chunks/Dvw_3QAT.js",
+          "encoded": 631,
+          "transfer": 931
+        },
+        {
+          "path": "/_app/immutable/chunks/xihTtKlq.js",
+          "encoded": 69,
+          "transfer": 369
+        },
+        {
+          "path": "/_app/immutable/nodes/0.CzYpwkh5.js",
+          "encoded": 4176,
+          "transfer": 4476
+        },
+        {
+          "path": "/_app/immutable/chunks/DVR3Pi-K.js",
+          "encoded": 2731,
+          "transfer": 3031
+        },
+        {
+          "path": "/_app/immutable/chunks/CeO3wCtd.js",
+          "encoded": 2416,
+          "transfer": 2716
+        },
+        {
+          "path": "/_app/immutable/chunks/DMp_stsS.js",
+          "encoded": 993,
+          "transfer": 1293
+        },
+        {
+          "path": "/_app/immutable/chunks/C3f_CY7z.js",
+          "encoded": 225,
+          "transfer": 525
+        },
+        {
+          "path": "/_app/immutable/chunks/By7vEEz9.js",
+          "encoded": 240,
+          "transfer": 540
+        },
+        {
+          "path": "/_app/immutable/chunks/pLRaMGoU.js",
+          "encoded": 274,
+          "transfer": 574
+        },
+        {
+          "path": "/_app/immutable/chunks/DTi3Tg2n.js",
+          "encoded": 241,
+          "transfer": 541
+        },
+        {
+          "path": "/_app/immutable/chunks/LfqvyZxz.js",
+          "encoded": 216,
+          "transfer": 516
+        },
+        {
+          "path": "/_app/immutable/chunks/OtLJ-IHq.js",
+          "encoded": 404,
+          "transfer": 704
+        },
+        {
+          "path": "/_app/immutable/nodes/2.BKTg3gUy.js",
+          "encoded": 6582,
+          "transfer": 6882
+        },
+        {
+          "path": "/_app/immutable/chunks/C_QsqXeA.js",
+          "encoded": 238,
+          "transfer": 538
+        },
+        {
+          "path": "/_app/immutable/chunks/C1Ih1CuP.js",
+          "encoded": 87,
+          "transfer": 387
+        },
+        {
+          "path": "/_app/immutable/chunks/bsA4eT2n.js",
+          "encoded": 2815,
+          "transfer": 3115
+        },
+        {
+          "path": "/_app/immutable/chunks/rsg9t1v4.js",
+          "encoded": 1017,
+          "transfer": 1317
+        },
+        {
+          "path": "/_app/immutable/chunks/C4ja1XFJ.js",
+          "encoded": 235,
+          "transfer": 535
+        },
+        {
+          "path": "/_app/immutable/chunks/DV8B4j2W.js",
+          "encoded": 7717,
+          "transfer": 8017
+        },
+        {
+          "path": "/_app/immutable/chunks/Bu5gr2Ox.js",
+          "encoded": 888,
+          "transfer": 1188
+        },
+        {
+          "path": "/_app/immutable/chunks/D_rCoYVE.js",
+          "encoded": 12509,
+          "transfer": 12809
+        },
+        {
+          "path": "/_app/immutable/chunks/36IopL9t.js",
+          "encoded": 646,
+          "transfer": 946
+        },
+        {
+          "path": "/_app/immutable/chunks/D6mcL7tM2.js",
+          "encoded": 1523,
+          "transfer": 1823
+        },
+        {
+          "path": "/_app/immutable/chunks/QiSTDvbR.js",
+          "encoded": 4167,
+          "transfer": 4467
+        },
+        {
+          "path": "/_app/immutable/chunks/CJ_1-oZq2.js",
+          "encoded": 1453,
+          "transfer": 1753
+        },
+        {
+          "path": "/_app/immutable/chunks/G6aOk8HX2.js",
+          "encoded": 10869,
+          "transfer": 11169
+        },
+        {
+          "path": "/_app/immutable/chunks/B6BuHzvS.js",
+          "encoded": 3721,
+          "transfer": 4021
+        },
+        {
+          "path": "/_app/immutable/chunks/CNd0Ehgu.js",
+          "encoded": 341,
+          "transfer": 641
+        },
+        {
+          "path": "/_app/immutable/chunks/Cwa2pGL6.js",
+          "encoded": 218,
+          "transfer": 518
+        },
+        {
+          "path": "/_app/immutable/chunks/B-I2I5Ks.js",
+          "encoded": 228,
+          "transfer": 528
+        },
+        {
+          "path": "/_app/immutable/chunks/BFI9iTok.js",
+          "encoded": 361,
+          "transfer": 661
+        },
+        {
+          "path": "/_app/immutable/chunks/BjaTalPm.js",
+          "encoded": 280,
+          "transfer": 580
+        },
+        {
+          "path": "/_app/immutable/chunks/r2kF6W3g.js",
+          "encoded": 234,
+          "transfer": 534
+        },
+        {
+          "path": "/_app/immutable/chunks/LvFKl386.js",
+          "encoded": 616,
+          "transfer": 916
+        },
+        {
+          "path": "/_app/immutable/chunks/CC_p_eLf.js",
+          "encoded": 1926,
+          "transfer": 2226
+        },
+        {
+          "path": "/_app/immutable/chunks/D-KP6ZdO.js",
+          "encoded": 1153,
+          "transfer": 1453
+        },
+        {
+          "path": "/_app/immutable/chunks/BHvkh6d0.js",
+          "encoded": 672,
+          "transfer": 972
+        },
+        {
+          "path": "/_app/immutable/chunks/DKcXujQ9.js",
+          "encoded": 766,
+          "transfer": 1066
+        },
+        {
+          "path": "/_app/immutable/chunks/DLCO1x3r.js",
+          "encoded": 507,
+          "transfer": 807
+        },
+        {
+          "path": "/_app/immutable/chunks/U037mUah.js",
+          "encoded": 407,
+          "transfer": 707
+        },
+        {
+          "path": "/_app/immutable/chunks/B7TSLmJw.js",
+          "encoded": 207,
+          "transfer": 507
+        },
+        {
+          "path": "/_app/immutable/chunks/DD6Vexm_.js",
+          "encoded": 252,
+          "transfer": 552
+        },
+        {
+          "path": "/_app/immutable/chunks/-cwLa3aj.js",
+          "encoded": 272,
+          "transfer": 572
+        },
+        {
+          "path": "/_app/immutable/chunks/DvSv7N-q.js",
+          "encoded": 274,
+          "transfer": 574
+        },
+        {
+          "path": "/_app/immutable/chunks/DO_VGuQB.js",
+          "encoded": 247,
+          "transfer": 547
+        },
+        {
+          "path": "/_app/immutable/chunks/BBEOKB-Z.js",
+          "encoded": 253,
+          "transfer": 553
+        },
+        {
+          "path": "/_app/immutable/chunks/mLBUKZHf.js",
+          "encoded": 226,
+          "transfer": 526
+        },
+        {
+          "path": "/_app/immutable/chunks/m-POrPlT.js",
+          "encoded": 26,
+          "transfer": 326
+        },
+        {
+          "path": "/_app/immutable/chunks/D2sWGnnM.js",
+          "encoded": 2864,
+          "transfer": 3164
+        },
+        {
+          "path": "/_app/immutable/chunks/BtTET2MA.js",
+          "encoded": 648,
+          "transfer": 948
+        },
+        {
+          "path": "/_app/immutable/chunks/k_6Qzigu.js",
+          "encoded": 276,
+          "transfer": 576
+        },
+        {
+          "path": "/_app/immutable/chunks/CotcgTjH.js",
+          "encoded": 258,
+          "transfer": 558
+        },
+        {
+          "path": "/_app/immutable/chunks/nNUXdwqn.js",
+          "encoded": 800,
+          "transfer": 1100
+        },
+        {
+          "path": "/_app/immutable/chunks/Ch0WPcV8.js",
+          "encoded": 74,
+          "transfer": 374
+        },
+        {
+          "path": "/_app/immutable/chunks/Cl_c4A5F.js",
+          "encoded": 345,
+          "transfer": 645
+        },
+        {
+          "path": "/_app/immutable/chunks/nRNw25I22.js",
+          "encoded": 48754,
+          "transfer": 49054
+        },
+        {
+          "path": "/_app/immutable/chunks/bSsjE-A-2.js",
+          "encoded": 205,
+          "transfer": 505
+        },
+        {
+          "path": "/_app/immutable/chunks/CODzlTwl2.js",
+          "encoded": 15933,
+          "transfer": 16233
+        },
+        {
+          "path": "/_app/immutable/chunks/BKMilZRJ.js",
+          "encoded": 340,
+          "transfer": 640
+        },
+        {
+          "path": "/_app/immutable/chunks/CDx-VoRD.js",
+          "encoded": 235,
+          "transfer": 535
+        },
+        {
+          "path": "/_app/immutable/chunks/Cm34sEoZ.js",
+          "encoded": 235,
+          "transfer": 535
+        },
+        {
+          "path": "/_app/immutable/chunks/BDie1IEQ2.js",
+          "encoded": 230,
+          "transfer": 530
+        },
+        {
+          "path": "/_app/immutable/chunks/DsqcahQ12.js",
+          "encoded": 1460,
+          "transfer": 1760
+        },
+        {
+          "path": "/_app/immutable/chunks/CHEMNSy92.js",
+          "encoded": 5285,
+          "transfer": 5585
+        },
+        {
+          "path": "/_app/immutable/chunks/CxNqQN4C2.js",
+          "encoded": 1577,
+          "transfer": 1877
+        },
+        {
+          "path": "/_app/immutable/chunks/C8tE0Ra-.js",
+          "encoded": 1915,
+          "transfer": 2215
+        },
+        {
+          "path": "/_app/immutable/chunks/B9XfzIVS.js",
+          "encoded": 5379,
+          "transfer": 5679
+        },
+        {
+          "path": "/_app/immutable/chunks/DNMEhGAY.js",
+          "encoded": 459,
+          "transfer": 759
+        },
+        {
+          "path": "/_app/immutable/chunks/Xvj5KsKi2.js",
+          "encoded": 222,
+          "transfer": 522
+        },
+        {
+          "path": "/_app/immutable/chunks/CWzZI9Mh.js",
+          "encoded": 236,
+          "transfer": 536
+        },
+        {
+          "path": "/_app/immutable/chunks/Dy28biJW2.js",
+          "encoded": 1578,
+          "transfer": 1878
+        },
+        {
+          "path": "/_app/immutable/chunks/BONo0Nvf.js",
+          "encoded": 228,
+          "transfer": 528
+        },
+        {
+          "path": "/_app/immutable/chunks/x8nfx7Y_2.js",
+          "encoded": 609,
+          "transfer": 909
+        },
+        {
+          "path": "/_app/immutable/chunks/C6QW7ddD2.js",
+          "encoded": 332,
+          "transfer": 632
+        },
+        {
+          "path": "/_app/immutable/chunks/DPifdm_L2.js",
+          "encoded": 416,
+          "transfer": 716
+        },
+        {
+          "path": "/_app/immutable/chunks/CDB77OgR2.js",
+          "encoded": 268,
+          "transfer": 568
+        },
+        {
+          "path": "/_app/immutable/chunks/BrYpJAJj2.js",
+          "encoded": 2065,
+          "transfer": 2365
+        },
+        {
+          "path": "/_app/immutable/chunks/ysbu2FVY2.js",
+          "encoded": 1089,
+          "transfer": 1389
+        },
+        {
+          "path": "/_app/immutable/chunks/BixAswn72.js",
+          "encoded": 272,
+          "transfer": 572
+        },
+        {
+          "path": "/_app/immutable/chunks/B3c7rRd62.js",
+          "encoded": 2676,
+          "transfer": 2976
+        },
+        {
+          "path": "/_app/immutable/chunks/BiyZWSUf2.js",
+          "encoded": 243,
+          "transfer": 543
+        },
+        {
+          "path": "/_app/immutable/chunks/Bhx5UxMV2.js",
+          "encoded": 243,
+          "transfer": 543
+        },
+        {
+          "path": "/_app/immutable/chunks/Cpl-RcZL2.js",
+          "encoded": 239,
+          "transfer": 539
+        },
+        {
+          "path": "/_app/immutable/chunks/MtTV6IL62.js",
+          "encoded": 311,
+          "transfer": 611
+        },
+        {
+          "path": "/_app/immutable/chunks/Bdk55Io22.js",
+          "encoded": 237,
+          "transfer": 537
+        },
+        {
+          "path": "/_app/immutable/chunks/DqAMvBOo2.js",
+          "encoded": 255,
+          "transfer": 555
+        },
+        {
+          "path": "/_app/immutable/chunks/BCnba_3V2.js",
+          "encoded": 272,
+          "transfer": 572
+        },
+        {
+          "path": "/_app/immutable/chunks/DgbZq3X42.js",
+          "encoded": 64,
+          "transfer": 364
+        },
+        {
+          "path": "/_app/immutable/nodes/14.aZK3Z92d.js",
+          "encoded": 6461,
+          "transfer": 6761
+        },
+        {
+          "path": "/_app/immutable/chunks/B1vrPIRa.js",
+          "encoded": 416,
+          "transfer": 716
+        },
+        {
+          "path": "/_app/immutable/chunks/U6Zvw1Qe.js",
+          "encoded": 2481,
+          "transfer": 2781
+        },
+        {
+          "path": "/_app/immutable/chunks/DZwMNODZ2.js",
+          "encoded": 1004,
+          "transfer": 1304
+        },
+        {
+          "path": "/_app/immutable/chunks/CTYnVlOy2.js",
+          "encoded": 463,
+          "transfer": 763
+        },
+        {
+          "path": "/_app/immutable/chunks/CGCLrr9r.js",
+          "encoded": 10289,
+          "transfer": 10589
+        },
+        {
+          "path": "/_app/immutable/chunks/D8z-jA-n.js",
+          "encoded": 213,
+          "transfer": 513
+        },
+        {
+          "path": "/_app/immutable/chunks/BsFefsjo.js",
+          "encoded": 1145,
+          "transfer": 1445
+        },
+        {
+          "path": "/_app/immutable/chunks/B8l_yuVU.js",
+          "encoded": 261,
+          "transfer": 561
+        },
+        {
+          "path": "/_app/immutable/chunks/Cvg_pFm-.js",
+          "encoded": 5351,
+          "transfer": 5651
+        },
+        {
+          "path": "/_app/immutable/chunks/BAwXA1BH.js",
+          "encoded": 461,
+          "transfer": 761
+        },
+        {
+          "path": "/_app/immutable/chunks/BglmTnv7.js",
+          "encoded": 250,
+          "transfer": 550
+        },
+        {
+          "path": "/_app/immutable/chunks/BojST2uF.js",
+          "encoded": 123,
+          "transfer": 423
+        },
+        {
+          "path": "/_app/immutable/chunks/3o70SNFm.js",
+          "encoded": 787,
+          "transfer": 1087
+        },
+        {
+          "path": "/_app/immutable/chunks/CIF5ED0g.js",
+          "encoded": 208,
+          "transfer": 508
+        },
+        {
+          "path": "/_app/immutable/chunks/CMCdpW_h.js",
+          "encoded": 809,
+          "transfer": 1109
+        },
+        {
+          "path": "/_app/immutable/chunks/BkaAFHMK.js",
+          "encoded": 849,
+          "transfer": 1149
+        },
+        {
+          "path": "/_app/immutable/chunks/B-IOShyK2.js",
+          "encoded": 5039,
+          "transfer": 5339
+        },
+        {
+          "path": "/fonts/inter-v20-latin-regular.woff2",
+          "encoded": 23664,
+          "transfer": 23964
+        },
+        {
+          "path": "/fonts/inter-v20-latin-700.woff2",
+          "encoded": 24356,
+          "transfer": 24656
+        },
+        {
+          "path": "/fonts/inter-v20-latin-600.woff2",
+          "encoded": 24452,
+          "transfer": 24752
+        },
+        {
+          "path": "/fonts/inter-v20-latin-500.woff2",
+          "encoded": 24272,
+          "transfer": 24572
+        },
+        {
+          "path": "/fonts/inter-v20-latin-800.woff2",
+          "encoded": 24400,
+          "transfer": 24700
+        },
+        {
+          "path": "/_app/immutable/nodes/1.CZ7tXHUa.js",
+          "encoded": 230,
+          "transfer": 530
+        },
+        {
+          "path": "/_app/immutable/chunks/DNtXq7rp.js",
+          "encoded": 3779,
+          "transfer": 4079
+        },
+        {
+          "path": "/_app/immutable/chunks/C-wvNySF.js",
+          "encoded": 938,
+          "transfer": 1238
+        },
+        {
+          "path": "/_app/immutable/chunks/BlzsmyUK2.js",
+          "encoded": 247,
+          "transfer": 547
+        },
+        {
+          "path": "/_app/immutable/chunks/BA3Oe-kW.js",
+          "encoded": 257,
+          "transfer": 557
+        },
+        {
+          "path": "/_app/immutable/chunks/_NTg5GJF.js",
+          "encoded": 242,
+          "transfer": 542
+        },
+        {
+          "path": "/_app/immutable/chunks/DnpdKJju.js",
+          "encoded": 252,
+          "transfer": 552
+        },
+        {
+          "path": "/_app/immutable/chunks/BOANhKlc.js",
+          "encoded": 259,
+          "transfer": 559
+        },
+        {
+          "path": "/_app/immutable/chunks/ByfQSh5v.js",
+          "encoded": 385,
+          "transfer": 685
+        },
+        {
+          "path": "/_app/immutable/chunks/CBRyf1za.js",
+          "encoded": 240,
+          "transfer": 540
+        },
+        {
+          "path": "/_app/immutable/chunks/CTWqd5Q7.js",
+          "encoded": 262,
+          "transfer": 562
+        },
+        {
+          "path": "/_app/immutable/chunks/B3WsTW8t.js",
+          "encoded": 285,
+          "transfer": 585
+        },
+        {
+          "path": "/_app/immutable/chunks/DSUiPICa.js",
+          "encoded": 224,
+          "transfer": 524
+        },
+        {
+          "path": "/_app/immutable/chunks/B_eqke1T.js",
+          "encoded": 257,
+          "transfer": 557
+        },
+        {
+          "path": "/_app/immutable/chunks/C0Q0BR4G.js",
+          "encoded": 257,
+          "transfer": 557
+        },
+        {
+          "path": "/_app/immutable/chunks/C0r0Qn-n.js",
+          "encoded": 261,
+          "transfer": 561
+        },
+        {
+          "path": "/_app/immutable/chunks/Ck8qLTlZ.js",
+          "encoded": 292,
+          "transfer": 592
+        },
+        {
+          "path": "/_app/immutable/chunks/C6P_wbJ8.js",
+          "encoded": 242,
+          "transfer": 542
+        },
+        {
+          "path": "/_app/immutable/chunks/Djt7T8PA.js",
+          "encoded": 236,
+          "transfer": 536
+        },
+        {
+          "path": "/_app/immutable/nodes/47.7lmZyBiY.js",
+          "encoded": 28070,
+          "transfer": 28370
+        },
+        {
+          "path": "/_app/immutable/chunks/B9f8HR0A2.js",
+          "encoded": 10733,
+          "transfer": 11033
+        },
+        {
+          "path": "/_app/immutable/chunks/mjoT9ard.js",
+          "encoded": 420,
+          "transfer": 720
+        },
+        {
+          "path": "/_app/immutable/chunks/imbjphK92.js",
+          "encoded": 10456,
+          "transfer": 10756
+        },
+        {
+          "path": "/_app/immutable/chunks/sCjmIbV42.js",
+          "encoded": 7519,
+          "transfer": 7819
+        },
+        {
+          "path": "/_app/immutable/assets/CalendarPicker.ctCWVpRd.css",
+          "encoded": 935,
+          "transfer": 1235
+        },
+        {
+          "path": "/_app/immutable/chunks/D5-95-4u.js",
+          "encoded": 461,
+          "transfer": 761
+        },
+        {
+          "path": "/_app/immutable/assets/ListLoadMore.5AHsaWWJ.css",
+          "encoded": 128,
+          "transfer": 428
+        },
+        {
+          "path": "/_app/immutable/chunks/B1zc_n4Z.js",
+          "encoded": 859,
+          "transfer": 1159
+        },
+        {
+          "path": "/_app/immutable/chunks/qwOg0dpn.js",
+          "encoded": 1204,
+          "transfer": 1504
+        },
+        {
+          "path": "/_app/immutable/assets/ConfirmDialog.Cmv55eVt.css",
+          "encoded": 487,
+          "transfer": 787
+        },
+        {
+          "path": "/_app/immutable/chunks/Dbwq6qjV.js",
+          "encoded": 757,
+          "transfer": 1057
+        },
+        {
+          "path": "/_app/immutable/assets/SectionBlock.uCaLHKkX.css",
+          "encoded": 429,
+          "transfer": 729
+        },
+        {
+          "path": "/_app/immutable/chunks/CDiwXvWo2.js",
+          "encoded": 515,
+          "transfer": 815
+        },
+        {
+          "path": "/_app/immutable/chunks/jqyBs3nw2.js",
+          "encoded": 238,
+          "transfer": 538
+        },
+        {
+          "path": "/_app/immutable/assets/PencilButton.BeEw00dx.css",
+          "encoded": 424,
+          "transfer": 724
+        },
+        {
+          "path": "/_app/immutable/chunks/DsgfZG-V2.js",
+          "encoded": 875,
+          "transfer": 1175
+        },
+        {
+          "path": "/_app/immutable/assets/Input.CVBW8JrL.css",
+          "encoded": 617,
+          "transfer": 917
+        },
+        {
+          "path": "/_app/immutable/chunks/DMzDWcPN2.js",
+          "encoded": 847,
+          "transfer": 1147
+        },
+        {
+          "path": "/_app/immutable/assets/Textarea.B0rSorPK.css",
+          "encoded": 495,
+          "transfer": 795
+        },
+        {
+          "path": "/_app/immutable/chunks/hTOjhjJK2.js",
+          "encoded": 1060,
+          "transfer": 1360
+        },
+        {
+          "path": "/_app/immutable/assets/SegmentedControl.D9sFq4Lc.css",
+          "encoded": 618,
+          "transfer": 918
+        },
+        {
+          "path": "/_app/immutable/chunks/B4w01DnR.js",
+          "encoded": 1934,
+          "transfer": 2234
+        },
+        {
+          "path": "/_app/immutable/chunks/CANuPGLd.js",
+          "encoded": 1601,
+          "transfer": 1901
+        },
+        {
+          "path": "/_app/immutable/chunks/C2fgK3XC.js",
+          "encoded": 1167,
+          "transfer": 1467
+        },
+        {
+          "path": "/_app/immutable/assets/FileThumb.qI8IKZxb.css",
+          "encoded": 333,
+          "transfer": 633
+        },
+        {
+          "path": "/_app/immutable/assets/SidePanel.CnNe642D.css",
+          "encoded": 479,
+          "transfer": 779
+        },
+        {
+          "path": "/_app/immutable/assets/Checkbox.CGk9dtAF.css",
+          "encoded": 546,
+          "transfer": 846
+        },
+        {
+          "path": "/_app/immutable/assets/CatalogItemDialog.DBc0UgUc.css",
+          "encoded": 884,
+          "transfer": 1184
+        },
+        {
+          "path": "/_app/immutable/assets/ProductsAndServicesBlock.WgyLMGTa.css",
+          "encoded": 1933,
+          "transfer": 2233
+        },
+        {
+          "path": "/_app/immutable/assets/Popover.Cdl-BbPa.css",
+          "encoded": 382,
+          "transfer": 682
+        },
+        {
+          "path": "/_app/immutable/assets/ClientPicker.CPBPk98K.css",
+          "encoded": 775,
+          "transfer": 1075
+        },
+        {
+          "path": "/_app/immutable/assets/StatusBadge.BdXF8ROS.css",
+          "encoded": 298,
+          "transfer": 598
+        },
+        {
+          "path": "/_app/immutable/assets/CreateVisitsDialog.DigHu1rS.css",
+          "encoded": 600,
+          "transfer": 900
+        },
+        {
+          "path": "/_app/immutable/assets/TimePickerField.Dz8lVPYB.css",
+          "encoded": 932,
+          "transfer": 1232
+        },
+        {
+          "path": "/_app/immutable/assets/TimePicker.B1mfOVDD.css",
+          "encoded": 284,
+          "transfer": 584
+        },
+        {
+          "path": "/_app/immutable/assets/DateTimePicker.DfpTHB7L.css",
+          "encoded": 232,
+          "transfer": 532
+        },
+        {
+          "path": "/_app/immutable/assets/FinalVisitDialog.Coo50AZF.css",
+          "encoded": 1060,
+          "transfer": 1360
+        },
+        {
+          "path": "/_app/immutable/assets/NotifyCustomerCheckbox.L3bItvg2.css",
+          "encoded": 60,
+          "transfer": 360
+        },
+        {
+          "path": "/_app/immutable/assets/CalendarWeekGrid.BTuJP5cB.css",
+          "encoded": 1485,
+          "transfer": 1785
+        },
+        {
+          "path": "/_app/immutable/assets/47.BC3-2StU.css",
+          "encoded": 9573,
+          "transfer": 9873
+        },
+        {
+          "path": "/_app/immutable/assets/EmailSenderLabel.DZSnIHOA.css",
+          "encoded": 113,
+          "transfer": 413
+        },
+        {
+          "path": "/_app/immutable/assets/FileUploader.BA-otp6t.css",
+          "encoded": 593,
+          "transfer": 893
+        },
+        {
+          "path": "/_app/immutable/assets/FilePicker.BQJO5A_D.css",
+          "encoded": 698,
+          "transfer": 998
+        },
+        {
+          "path": "/_app/immutable/assets/RailCard.BrWWW1oV.css",
+          "encoded": 262,
+          "transfer": 562
+        },
+        {
+          "path": "/_app/immutable/assets/InquiryAutomationCard.BBEG9rVZ.css",
+          "encoded": 294,
+          "transfer": 594
+        },
+        {
+          "path": "/_app/immutable/assets/ComposerChannelMenu._9Wjk1_Z.css",
+          "encoded": 347,
+          "transfer": 647
+        },
+        {
+          "path": "/_app/immutable/assets/13.Bk-WeQdV.css",
+          "encoded": 5285,
+          "transfer": 5585
+        },
+        {
+          "path": "/_app/immutable/assets/DataTable.CwlodOcz.css",
+          "encoded": 598,
+          "transfer": 898
+        },
+        {
+          "path": "/_app/immutable/assets/FilterField.B1Iy2qPK.css",
+          "encoded": 245,
+          "transfer": 545
+        },
+        {
+          "path": "/_app/immutable/assets/ClientMergeDialog.D8iTsl8S.css",
+          "encoded": 473,
+          "transfer": 773
+        },
+        {
+          "path": "/_app/immutable/assets/8.BHXJ_pZd.css",
+          "encoded": 454,
+          "transfer": 754
+        },
+        {
+          "path": "/_app/immutable/assets/StickyActionBar.BzbBLtbb.css",
+          "encoded": 276,
+          "transfer": 576
+        },
+        {
+          "path": "/_app/immutable/assets/RecordDetailLayout.Ba_Cxxhf.css",
+          "encoded": 345,
+          "transfer": 645
+        },
+        {
+          "path": "/_app/immutable/assets/TabPanel.BHQzrrhA.css",
+          "encoded": 400,
+          "transfer": 700
+        },
+        {
+          "path": "/_app/immutable/assets/EmailActionEditor.D0doPZ9F.css",
+          "encoded": 442,
+          "transfer": 742
+        },
+        {
+          "path": "/_app/immutable/assets/coin.DNwdQeBM.css",
+          "encoded": 478,
+          "transfer": 778
+        },
+        {
+          "path": "/_app/immutable/assets/CommunicationSettingsDialog.Bp7uxUwt.css",
+          "encoded": 350,
+          "transfer": 650
+        },
+        {
+          "path": "/_app/immutable/assets/TagSelect.BkIOEUmd.css",
+          "encoded": 897,
+          "transfer": 1197
+        },
+        {
+          "path": "/_app/immutable/assets/PhotoDescribeForm.zZTPooza.css",
+          "encoded": 577,
+          "transfer": 877
+        },
+        {
+          "path": "/_app/immutable/assets/RecordFilesCard.Dn2m7pAq.css",
+          "encoded": 841,
+          "transfer": 1141
+        },
+        {
+          "path": "/_app/immutable/assets/NoteFiles.CqNU-w78.css",
+          "encoded": 652,
+          "transfer": 952
+        },
+        {
+          "path": "/_app/immutable/assets/NotesPanel.i_gAklMO.css",
+          "encoded": 541,
+          "transfer": 841
+        },
+        {
+          "path": "/_app/immutable/assets/ActivityFeed.C55aJu4g.css",
+          "encoded": 380,
+          "transfer": 680
+        },
+        {
+          "path": "/_app/immutable/assets/9.BykFuSlh.css",
+          "encoded": 2201,
+          "transfer": 2501
+        },
+        {
+          "path": "/_app/immutable/assets/StatusOverviewCard.D4lFgL4g.css",
+          "encoded": 289,
+          "transfer": 589
+        },
+        {
+          "path": "/_app/immutable/assets/KpiCard.RCBgEpUN.css",
+          "encoded": 679,
+          "transfer": 979
+        },
+        {
+          "path": "/_app/immutable/assets/42.B0Sdd869.css",
+          "encoded": 460,
+          "transfer": 760
+        },
+        {
+          "path": "/_app/immutable/assets/RecordFactsList.DEceG-TD.css",
+          "encoded": 706,
+          "transfer": 1006
+        },
+        {
+          "path": "/_app/immutable/assets/ClientSummaryCard.DgFYWxeG.css",
+          "encoded": 380,
+          "transfer": 680
+        },
+        {
+          "path": "/_app/immutable/assets/clipboard-text.Dk7Rfbs6.css",
+          "encoded": 367,
+          "transfer": 667
+        },
+        {
+          "path": "/_app/immutable/assets/43.DJqWNnIW.css",
+          "encoded": 81,
+          "transfer": 381
+        },
+        {
+          "path": "/_app/immutable/assets/38.DpK6wtjE.css",
+          "encoded": 537,
+          "transfer": 837
+        },
+        {
+          "path": "/_app/immutable/assets/QuoteSummaryCard.Ckkfkxkc.css",
+          "encoded": 294,
+          "transfer": 594
+        },
+        {
+          "path": "/_app/immutable/assets/RecordTaxCard.fSjzD0TT.css",
+          "encoded": 413,
+          "transfer": 713
+        },
+        {
+          "path": "/_app/immutable/assets/SignaturePad.B6u-5Zu7.css",
+          "encoded": 376,
+          "transfer": 676
+        },
+        {
+          "path": "/_app/immutable/assets/Banner.04HWMVaz.css",
+          "encoded": 381,
+          "transfer": 681
+        },
+        {
+          "path": "/_app/immutable/assets/SendQuoteDialog.MuZKgGpt.css",
+          "encoded": 540,
+          "transfer": 840
+        },
+        {
+          "path": "/_app/immutable/assets/file-dollar.BPN6Dp35.css",
+          "encoded": 478,
+          "transfer": 778
+        },
+        {
+          "path": "/_app/immutable/assets/39.ev_n7_FY.css",
+          "encoded": 956,
+          "transfer": 1256
+        },
+        {
+          "path": "/_app/immutable/assets/26.DSkgI29E.css",
+          "encoded": 436,
+          "transfer": 736
+        },
+        {
+          "path": "/_app/immutable/assets/PendingFilesCard.C8_NBZ3L.css",
+          "encoded": 954,
+          "transfer": 1254
+        },
+        {
+          "path": "/_app/immutable/assets/RecurrenceFields.Du5pEF1G.css",
+          "encoded": 619,
+          "transfer": 919
+        },
+        {
+          "path": "/_app/immutable/assets/27.Cj5ViVQA.css",
+          "encoded": 4187,
+          "transfer": 4487
+        },
+        {
+          "path": "/_app/immutable/assets/20.Dc7EYMYe.css",
+          "encoded": 464,
+          "transfer": 764
+        },
+        {
+          "path": "/_app/immutable/assets/Toggle.DQWToREu.css",
+          "encoded": 735,
+          "transfer": 1035
+        },
+        {
+          "path": "/_app/immutable/assets/CollectPaymentDialog.C5qmbSjR.css",
+          "encoded": 300,
+          "transfer": 600
+        },
+        {
+          "path": "/_app/immutable/assets/21.8G2PLzyP.css",
+          "encoded": 1133,
+          "transfer": 1433
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "errors": [],
+      "metrics": {
+        "lcp": 6472,
+        "cls": 0.20830408653846152,
+        "lcpElement": {
+          "tag": "P",
+          "className": "setup-card__status svelte-i9ltko"
+        },
+        "shifts": [
+          {
+            "time": 6455.0999999996275,
+            "value": 0.2080524626068376,
+            "sources": [
+              {
+                "tag": "SECTION",
+                "className": "stats svelte-1tyszyy",
+                "previous": {
+                  "x": 28,
+                  "y": 217.671875,
+                  "width": 318,
+                  "height": 427.140625,
+                  "top": 217.671875,
+                  "right": 346,
+                  "bottom": 644.8125,
+                  "left": 28
+                },
+                "current": {
+                  "x": 28,
+                  "y": 523.171875,
+                  "width": 318,
+                  "height": 360.828125,
+                  "top": 523.171875,
+                  "right": 346,
+                  "bottom": 884,
+                  "left": 28
+                }
+              },
+              {
+                "tag": "SMALL",
+                "className": "svelte-1tyszyy",
+                "previous": {
+                  "x": 49,
+                  "y": 607.15625,
+                  "width": 276,
+                  "height": 16.65625,
+                  "top": 607.15625,
+                  "right": 325,
+                  "bottom": 623.8125,
+                  "left": 49
+                },
+                "current": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 0,
+                  "height": 0,
+                  "top": 0,
+                  "right": 0,
+                  "bottom": 0,
+                  "left": 0
+                }
+              }
+            ]
+          },
+          {
+            "time": 8306.5,
+            "value": 0.00025162393162393167,
+            "sources": [
+              {
+                "previous": {
+                  "x": 49,
+                  "y": 576.171875,
+                  "width": 276,
+                  "height": 39,
+                  "top": 576.171875,
+                  "right": 325,
+                  "bottom": 615.171875,
+                  "left": 49
+                },
+                "current": {
+                  "x": 49,
+                  "y": 573.171875,
+                  "width": 276,
+                  "height": 39,
+                  "top": 573.171875,
+                  "right": 325,
+                  "bottom": 612.171875,
+                  "left": 49
+                }
+              },
+              {
+                "previous": {
+                  "x": 49,
+                  "y": 724.828125,
+                  "width": 276,
+                  "height": 39,
+                  "top": 724.828125,
+                  "right": 325,
+                  "bottom": 763.828125,
+                  "left": 49
+                },
+                "current": {
+                  "x": 49,
+                  "y": 721.828125,
+                  "width": 276,
+                  "height": 39,
+                  "top": 721.828125,
+                  "right": 325,
+                  "bottom": 760.828125,
+                  "left": 49
+                }
+              },
+              {
+                "previous": {
+                  "x": 49,
+                  "y": 875.484375,
+                  "width": 276,
+                  "height": 8.515625,
+                  "top": 875.484375,
+                  "right": 325,
+                  "bottom": 884,
+                  "left": 49
+                },
+                "current": {
+                  "x": 49,
+                  "y": 872.484375,
+                  "width": 276,
+                  "height": 11.515625,
+                  "top": 872.484375,
+                  "right": 325,
+                  "bottom": 884,
+                  "left": 49
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "assets": [
+        {
+          "path": "/_app/immutable/assets/0.Ccb-7Pf4.css",
+          "encoded": 4269,
+          "transfer": 4569
+        },
+        {
+          "path": "/_app/immutable/assets/Avatar.BDjsYTgG.css",
+          "encoded": 377,
+          "transfer": 677
+        },
+        {
+          "path": "/_app/immutable/assets/Badge._53uUkoy.css",
+          "encoded": 395,
+          "transfer": 695
+        },
+        {
+          "path": "/_app/immutable/assets/Dialog.UgTXYqm3.css",
+          "encoded": 472,
+          "transfer": 772
+        },
+        {
+          "path": "/_app/immutable/assets/SearchInput.gRqOyFpJ.css",
+          "encoded": 602,
+          "transfer": 902
+        },
+        {
+          "path": "/_app/immutable/assets/EmptyState.BekLHtu4.css",
+          "encoded": 377,
+          "transfer": 677
+        },
+        {
+          "path": "/_app/immutable/assets/ErrorState.B8CcGhWy.css",
+          "encoded": 344,
+          "transfer": 644
+        },
+        {
+          "path": "/_app/immutable/assets/LoadingSkeleton.DxaSf_o8.css",
+          "encoded": 173,
+          "transfer": 473
+        },
+        {
+          "path": "/_app/immutable/assets/Button.BEFN_9EY.css",
+          "encoded": 566,
+          "transfer": 866
+        },
+        {
+          "path": "/_app/immutable/assets/ProfilePhotoDialog.MM7vfLmD.css",
+          "encoded": 480,
+          "transfer": 780
+        },
+        {
+          "path": "/_app/immutable/assets/live.Ck3nZ08E.css",
+          "encoded": 2081,
+          "transfer": 2381
+        },
+        {
+          "path": "/_app/immutable/assets/PageContainer.nNYN7xGB.css",
+          "encoded": 212,
+          "transfer": 512
+        },
+        {
+          "path": "/_app/immutable/assets/DropdownMenu.jIgR7rGC.css",
+          "encoded": 655,
+          "transfer": 955
+        },
+        {
+          "path": "/_app/immutable/assets/select-viewport.CV-KWLNP.css",
+          "encoded": 101,
+          "transfer": 401
+        },
+        {
+          "path": "/_app/immutable/assets/Select.BUXFunr6.css",
+          "encoded": 771,
+          "transfer": 1071
+        },
+        {
+          "path": "/_app/immutable/assets/Lightbox.D-i9JNt2.css",
+          "encoded": 756,
+          "transfer": 1056
+        },
+        {
+          "path": "/_app/immutable/assets/ConversationAttachments.qVeBuwj7.css",
+          "encoded": 624,
+          "transfer": 924
+        },
+        {
+          "path": "/_app/immutable/assets/SupportTopicPicker.cUfpobkI.css",
+          "encoded": 1948,
+          "transfer": 2248
+        },
+        {
+          "path": "/_app/immutable/assets/2.iYqh8o5a.css",
+          "encoded": 1737,
+          "transfer": 2037
+        },
+        {
+          "path": "/_app/immutable/assets/PageHeader.DzcGxPZc.css",
+          "encoded": 345,
+          "transfer": 645
+        },
+        {
+          "path": "/_app/immutable/assets/CountryPicker.mtNcuDWb.css",
+          "encoded": 903,
+          "transfer": 1203
+        },
+        {
+          "path": "/_app/immutable/assets/14.Do9YZP0T.css",
+          "encoded": 1963,
+          "transfer": 2263
+        },
+        {
+          "path": "/_app/immutable/entry/start.BQqin6gw.js",
+          "encoded": 86,
+          "transfer": 386
+        },
+        {
+          "path": "/_app/immutable/chunks/CGx1shPH.js",
+          "encoded": 13027,
+          "transfer": 13327
+        },
+        {
+          "path": "/_app/immutable/chunks/CE7vQsk4.js",
+          "encoded": 21477,
+          "transfer": 21777
+        },
+        {
+          "path": "/_app/immutable/chunks/Dvw_3QAT.js",
+          "encoded": 631,
+          "transfer": 931
+        },
+        {
+          "path": "/_app/immutable/entry/app.lMHPtoP2.js",
+          "encoded": 15565,
+          "transfer": 15865
+        },
+        {
+          "path": "/_app/immutable/chunks/xihTtKlq.js",
+          "encoded": 69,
+          "transfer": 369
+        },
+        {
+          "path": "/_app/immutable/nodes/0.CzYpwkh5.js",
+          "encoded": 4176,
+          "transfer": 4476
+        },
+        {
+          "path": "/_app/immutable/chunks/DVR3Pi-K.js",
+          "encoded": 2731,
+          "transfer": 3031
+        },
+        {
+          "path": "/_app/immutable/chunks/CeO3wCtd.js",
+          "encoded": 2416,
+          "transfer": 2716
+        },
+        {
+          "path": "/_app/immutable/chunks/DMp_stsS.js",
+          "encoded": 993,
+          "transfer": 1293
+        },
+        {
+          "path": "/_app/immutable/chunks/C3f_CY7z.js",
+          "encoded": 225,
+          "transfer": 525
+        },
+        {
+          "path": "/_app/immutable/chunks/By7vEEz9.js",
+          "encoded": 240,
+          "transfer": 540
+        },
+        {
+          "path": "/_app/immutable/chunks/pLRaMGoU.js",
+          "encoded": 274,
+          "transfer": 574
+        },
+        {
+          "path": "/_app/immutable/chunks/DTi3Tg2n.js",
+          "encoded": 241,
+          "transfer": 541
+        },
+        {
+          "path": "/_app/immutable/chunks/LfqvyZxz.js",
+          "encoded": 216,
+          "transfer": 516
+        },
+        {
+          "path": "/_app/immutable/chunks/OtLJ-IHq.js",
+          "encoded": 404,
+          "transfer": 704
+        },
+        {
+          "path": "/_app/immutable/nodes/2.BKTg3gUy.js",
+          "encoded": 6582,
+          "transfer": 6882
+        },
+        {
+          "path": "/_app/immutable/chunks/C_QsqXeA.js",
+          "encoded": 238,
+          "transfer": 538
+        },
+        {
+          "path": "/_app/immutable/chunks/C1Ih1CuP.js",
+          "encoded": 87,
+          "transfer": 387
+        },
+        {
+          "path": "/_app/immutable/chunks/bsA4eT2n.js",
+          "encoded": 2815,
+          "transfer": 3115
+        },
+        {
+          "path": "/_app/immutable/chunks/rsg9t1v4.js",
+          "encoded": 1017,
+          "transfer": 1317
+        },
+        {
+          "path": "/_app/immutable/chunks/C4ja1XFJ.js",
+          "encoded": 235,
+          "transfer": 535
+        },
+        {
+          "path": "/_app/immutable/chunks/Bu5gr2Ox.js",
+          "encoded": 888,
+          "transfer": 1188
+        },
+        {
+          "path": "/_app/immutable/chunks/DV8B4j2W.js",
+          "encoded": 7717,
+          "transfer": 8017
+        },
+        {
+          "path": "/_app/immutable/chunks/D_rCoYVE.js",
+          "encoded": 12509,
+          "transfer": 12809
+        },
+        {
+          "path": "/_app/immutable/chunks/QiSTDvbR.js",
+          "encoded": 4167,
+          "transfer": 4467
+        },
+        {
+          "path": "/_app/immutable/chunks/D6mcL7tM2.js",
+          "encoded": 1523,
+          "transfer": 1823
+        },
+        {
+          "path": "/_app/immutable/chunks/36IopL9t.js",
+          "encoded": 646,
+          "transfer": 946
+        },
+        {
+          "path": "/_app/immutable/chunks/CJ_1-oZq2.js",
+          "encoded": 1453,
+          "transfer": 1753
+        },
+        {
+          "path": "/_app/immutable/chunks/G6aOk8HX2.js",
+          "encoded": 10869,
+          "transfer": 11169
+        },
+        {
+          "path": "/_app/immutable/chunks/B6BuHzvS.js",
+          "encoded": 3721,
+          "transfer": 4021
+        },
+        {
+          "path": "/_app/immutable/chunks/CNd0Ehgu.js",
+          "encoded": 341,
+          "transfer": 641
+        },
+        {
+          "path": "/_app/immutable/chunks/Cwa2pGL6.js",
+          "encoded": 218,
+          "transfer": 518
+        },
+        {
+          "path": "/_app/immutable/chunks/B-I2I5Ks.js",
+          "encoded": 228,
+          "transfer": 528
+        },
+        {
+          "path": "/_app/immutable/chunks/BFI9iTok.js",
+          "encoded": 361,
+          "transfer": 661
+        },
+        {
+          "path": "/_app/immutable/chunks/BjaTalPm.js",
+          "encoded": 280,
+          "transfer": 580
+        },
+        {
+          "path": "/_app/immutable/chunks/r2kF6W3g.js",
+          "encoded": 234,
+          "transfer": 534
+        },
+        {
+          "path": "/_app/immutable/chunks/LvFKl386.js",
+          "encoded": 616,
+          "transfer": 916
+        },
+        {
+          "path": "/_app/immutable/chunks/CC_p_eLf.js",
+          "encoded": 1926,
+          "transfer": 2226
+        },
+        {
+          "path": "/_app/immutable/chunks/D-KP6ZdO.js",
+          "encoded": 1153,
+          "transfer": 1453
+        },
+        {
+          "path": "/_app/immutable/chunks/BHvkh6d0.js",
+          "encoded": 672,
+          "transfer": 972
+        },
+        {
+          "path": "/_app/immutable/chunks/DKcXujQ9.js",
+          "encoded": 766,
+          "transfer": 1066
+        },
+        {
+          "path": "/_app/immutable/chunks/DLCO1x3r.js",
+          "encoded": 507,
+          "transfer": 807
+        },
+        {
+          "path": "/_app/immutable/chunks/U037mUah.js",
+          "encoded": 407,
+          "transfer": 707
+        },
+        {
+          "path": "/_app/immutable/chunks/B7TSLmJw.js",
+          "encoded": 207,
+          "transfer": 507
+        },
+        {
+          "path": "/_app/immutable/chunks/DD6Vexm_.js",
+          "encoded": 252,
+          "transfer": 552
+        },
+        {
+          "path": "/_app/immutable/chunks/-cwLa3aj.js",
+          "encoded": 272,
+          "transfer": 572
+        },
+        {
+          "path": "/_app/immutable/chunks/DvSv7N-q.js",
+          "encoded": 274,
+          "transfer": 574
+        },
+        {
+          "path": "/_app/immutable/chunks/DO_VGuQB.js",
+          "encoded": 247,
+          "transfer": 547
+        },
+        {
+          "path": "/_app/immutable/chunks/BBEOKB-Z.js",
+          "encoded": 253,
+          "transfer": 553
+        },
+        {
+          "path": "/_app/immutable/chunks/mLBUKZHf.js",
+          "encoded": 226,
+          "transfer": 526
+        },
+        {
+          "path": "/_app/immutable/chunks/m-POrPlT.js",
+          "encoded": 26,
+          "transfer": 326
+        },
+        {
+          "path": "/_app/immutable/chunks/D2sWGnnM.js",
+          "encoded": 2864,
+          "transfer": 3164
+        },
+        {
+          "path": "/_app/immutable/chunks/BtTET2MA.js",
+          "encoded": 648,
+          "transfer": 948
+        },
+        {
+          "path": "/_app/immutable/chunks/k_6Qzigu.js",
+          "encoded": 276,
+          "transfer": 576
+        },
+        {
+          "path": "/_app/immutable/chunks/CotcgTjH.js",
+          "encoded": 258,
+          "transfer": 558
+        },
+        {
+          "path": "/_app/immutable/chunks/nNUXdwqn.js",
+          "encoded": 800,
+          "transfer": 1100
+        },
+        {
+          "path": "/_app/immutable/chunks/Ch0WPcV8.js",
+          "encoded": 74,
+          "transfer": 374
+        },
+        {
+          "path": "/_app/immutable/chunks/Cl_c4A5F.js",
+          "encoded": 345,
+          "transfer": 645
+        },
+        {
+          "path": "/_app/immutable/chunks/nRNw25I22.js",
+          "encoded": 48754,
+          "transfer": 49054
+        },
+        {
+          "path": "/_app/immutable/chunks/bSsjE-A-2.js",
+          "encoded": 205,
+          "transfer": 505
+        },
+        {
+          "path": "/_app/immutable/chunks/CODzlTwl2.js",
+          "encoded": 15933,
+          "transfer": 16233
+        },
+        {
+          "path": "/_app/immutable/chunks/BKMilZRJ.js",
+          "encoded": 340,
+          "transfer": 640
+        },
+        {
+          "path": "/_app/immutable/chunks/CDx-VoRD.js",
+          "encoded": 235,
+          "transfer": 535
+        },
+        {
+          "path": "/_app/immutable/chunks/Cm34sEoZ.js",
+          "encoded": 235,
+          "transfer": 535
+        },
+        {
+          "path": "/_app/immutable/chunks/BDie1IEQ2.js",
+          "encoded": 230,
+          "transfer": 530
+        },
+        {
+          "path": "/_app/immutable/chunks/DsqcahQ12.js",
+          "encoded": 1460,
+          "transfer": 1760
+        },
+        {
+          "path": "/_app/immutable/chunks/CHEMNSy92.js",
+          "encoded": 5285,
+          "transfer": 5585
+        },
+        {
+          "path": "/_app/immutable/chunks/CxNqQN4C2.js",
+          "encoded": 1577,
+          "transfer": 1877
+        },
+        {
+          "path": "/_app/immutable/chunks/C8tE0Ra-.js",
+          "encoded": 1915,
+          "transfer": 2215
+        },
+        {
+          "path": "/_app/immutable/chunks/DNMEhGAY.js",
+          "encoded": 459,
+          "transfer": 759
+        },
+        {
+          "path": "/_app/immutable/chunks/B9XfzIVS.js",
+          "encoded": 5379,
+          "transfer": 5679
+        },
+        {
+          "path": "/_app/immutable/chunks/Xvj5KsKi2.js",
+          "encoded": 222,
+          "transfer": 522
+        },
+        {
+          "path": "/_app/immutable/chunks/CWzZI9Mh.js",
+          "encoded": 236,
+          "transfer": 536
+        },
+        {
+          "path": "/_app/immutable/chunks/Dy28biJW2.js",
+          "encoded": 1578,
+          "transfer": 1878
+        },
+        {
+          "path": "/_app/immutable/chunks/BONo0Nvf.js",
+          "encoded": 228,
+          "transfer": 528
+        },
+        {
+          "path": "/_app/immutable/chunks/x8nfx7Y_2.js",
+          "encoded": 609,
+          "transfer": 909
+        },
+        {
+          "path": "/_app/immutable/chunks/C6QW7ddD2.js",
+          "encoded": 332,
+          "transfer": 632
+        },
+        {
+          "path": "/_app/immutable/chunks/DPifdm_L2.js",
+          "encoded": 416,
+          "transfer": 716
+        },
+        {
+          "path": "/_app/immutable/chunks/CDB77OgR2.js",
+          "encoded": 268,
+          "transfer": 568
+        },
+        {
+          "path": "/_app/immutable/chunks/BrYpJAJj2.js",
+          "encoded": 2065,
+          "transfer": 2365
+        },
+        {
+          "path": "/_app/immutable/chunks/ysbu2FVY2.js",
+          "encoded": 1089,
+          "transfer": 1389
+        },
+        {
+          "path": "/_app/immutable/chunks/BixAswn72.js",
+          "encoded": 272,
+          "transfer": 572
+        },
+        {
+          "path": "/_app/immutable/chunks/B3c7rRd62.js",
+          "encoded": 2676,
+          "transfer": 2976
+        },
+        {
+          "path": "/_app/immutable/chunks/BiyZWSUf2.js",
+          "encoded": 243,
+          "transfer": 543
+        },
+        {
+          "path": "/_app/immutable/chunks/Bhx5UxMV2.js",
+          "encoded": 243,
+          "transfer": 543
+        },
+        {
+          "path": "/_app/immutable/chunks/Cpl-RcZL2.js",
+          "encoded": 239,
+          "transfer": 539
+        },
+        {
+          "path": "/_app/immutable/chunks/MtTV6IL62.js",
+          "encoded": 311,
+          "transfer": 611
+        },
+        {
+          "path": "/_app/immutable/chunks/Bdk55Io22.js",
+          "encoded": 237,
+          "transfer": 537
+        },
+        {
+          "path": "/_app/immutable/chunks/DqAMvBOo2.js",
+          "encoded": 255,
+          "transfer": 555
+        },
+        {
+          "path": "/_app/immutable/chunks/BCnba_3V2.js",
+          "encoded": 272,
+          "transfer": 572
+        },
+        {
+          "path": "/_app/immutable/chunks/DgbZq3X42.js",
+          "encoded": 64,
+          "transfer": 364
+        },
+        {
+          "path": "/_app/immutable/chunks/B1vrPIRa.js",
+          "encoded": 416,
+          "transfer": 716
+        },
+        {
+          "path": "/_app/immutable/nodes/14.aZK3Z92d.js",
+          "encoded": 6461,
+          "transfer": 6761
+        },
+        {
+          "path": "/_app/immutable/chunks/U6Zvw1Qe.js",
+          "encoded": 2481,
+          "transfer": 2781
+        },
+        {
+          "path": "/_app/immutable/chunks/DZwMNODZ2.js",
+          "encoded": 1004,
+          "transfer": 1304
+        },
+        {
+          "path": "/_app/immutable/chunks/CTYnVlOy2.js",
+          "encoded": 463,
+          "transfer": 763
+        },
+        {
+          "path": "/_app/immutable/chunks/CGCLrr9r.js",
+          "encoded": 10289,
+          "transfer": 10589
+        },
+        {
+          "path": "/_app/immutable/chunks/D8z-jA-n.js",
+          "encoded": 213,
+          "transfer": 513
+        },
+        {
+          "path": "/_app/immutable/chunks/BsFefsjo.js",
+          "encoded": 1145,
+          "transfer": 1445
+        },
+        {
+          "path": "/_app/immutable/chunks/B8l_yuVU.js",
+          "encoded": 261,
+          "transfer": 561
+        },
+        {
+          "path": "/_app/immutable/chunks/Cvg_pFm-.js",
+          "encoded": 5351,
+          "transfer": 5651
+        },
+        {
+          "path": "/_app/immutable/chunks/BAwXA1BH.js",
+          "encoded": 461,
+          "transfer": 761
+        },
+        {
+          "path": "/_app/immutable/chunks/BglmTnv7.js",
+          "encoded": 250,
+          "transfer": 550
+        },
+        {
+          "path": "/_app/immutable/chunks/BojST2uF.js",
+          "encoded": 123,
+          "transfer": 423
+        },
+        {
+          "path": "/_app/immutable/chunks/3o70SNFm.js",
+          "encoded": 787,
+          "transfer": 1087
+        },
+        {
+          "path": "/_app/immutable/chunks/CIF5ED0g.js",
+          "encoded": 208,
+          "transfer": 508
+        },
+        {
+          "path": "/_app/immutable/chunks/CMCdpW_h.js",
+          "encoded": 809,
+          "transfer": 1109
+        },
+        {
+          "path": "/_app/immutable/chunks/BkaAFHMK.js",
+          "encoded": 849,
+          "transfer": 1149
+        },
+        {
+          "path": "/_app/immutable/chunks/B-IOShyK2.js",
+          "encoded": 5039,
+          "transfer": 5339
+        },
+        {
+          "path": "/fonts/inter-v20-latin-regular.woff2",
+          "encoded": 23664,
+          "transfer": 23964
+        },
+        {
+          "path": "/fonts/inter-v20-latin-600.woff2",
+          "encoded": 24452,
+          "transfer": 24752
+        },
+        {
+          "path": "/fonts/inter-v20-latin-800.woff2",
+          "encoded": 24400,
+          "transfer": 24700
+        },
+        {
+          "path": "/_app/immutable/nodes/1.CZ7tXHUa.js",
+          "encoded": 230,
+          "transfer": 530
+        },
+        {
+          "path": "/_app/immutable/chunks/DNtXq7rp.js",
+          "encoded": 3779,
+          "transfer": 4079
+        },
+        {
+          "path": "/_app/immutable/chunks/C-wvNySF.js",
+          "encoded": 938,
+          "transfer": 1238
+        },
+        {
+          "path": "/_app/immutable/chunks/BlzsmyUK2.js",
+          "encoded": 247,
+          "transfer": 547
+        },
+        {
+          "path": "/_app/immutable/chunks/BA3Oe-kW.js",
+          "encoded": 257,
+          "transfer": 557
+        },
+        {
+          "path": "/_app/immutable/chunks/_NTg5GJF.js",
+          "encoded": 242,
+          "transfer": 542
+        },
+        {
+          "path": "/_app/immutable/chunks/DnpdKJju.js",
+          "encoded": 252,
+          "transfer": 552
+        },
+        {
+          "path": "/_app/immutable/chunks/BOANhKlc.js",
+          "encoded": 259,
+          "transfer": 559
+        },
+        {
+          "path": "/_app/immutable/chunks/ByfQSh5v.js",
+          "encoded": 385,
+          "transfer": 685
+        },
+        {
+          "path": "/_app/immutable/chunks/CBRyf1za.js",
+          "encoded": 240,
+          "transfer": 540
+        },
+        {
+          "path": "/_app/immutable/chunks/CTWqd5Q7.js",
+          "encoded": 262,
+          "transfer": 562
+        },
+        {
+          "path": "/_app/immutable/chunks/B3WsTW8t.js",
+          "encoded": 285,
+          "transfer": 585
+        },
+        {
+          "path": "/_app/immutable/chunks/DSUiPICa.js",
+          "encoded": 224,
+          "transfer": 524
+        },
+        {
+          "path": "/_app/immutable/chunks/B_eqke1T.js",
+          "encoded": 257,
+          "transfer": 557
+        },
+        {
+          "path": "/_app/immutable/chunks/C0Q0BR4G.js",
+          "encoded": 257,
+          "transfer": 557
+        },
+        {
+          "path": "/_app/immutable/chunks/C0r0Qn-n.js",
+          "encoded": 261,
+          "transfer": 561
+        },
+        {
+          "path": "/_app/immutable/chunks/Ck8qLTlZ.js",
+          "encoded": 292,
+          "transfer": 592
+        },
+        {
+          "path": "/_app/immutable/chunks/C6P_wbJ8.js",
+          "encoded": 242,
+          "transfer": 542
+        },
+        {
+          "path": "/_app/immutable/chunks/Djt7T8PA.js",
+          "encoded": 236,
+          "transfer": 536
+        },
+        {
+          "path": "/_app/immutable/nodes/47.7lmZyBiY.js",
+          "encoded": 28070,
+          "transfer": 28370
+        },
+        {
+          "path": "/_app/immutable/chunks/B9f8HR0A2.js",
+          "encoded": 10733,
+          "transfer": 11033
+        },
+        {
+          "path": "/_app/immutable/chunks/mjoT9ard.js",
+          "encoded": 420,
+          "transfer": 720
+        },
+        {
+          "path": "/_app/immutable/chunks/imbjphK92.js",
+          "encoded": 10456,
+          "transfer": 10756
+        },
+        {
+          "path": "/_app/immutable/chunks/sCjmIbV42.js",
+          "encoded": 7519,
+          "transfer": 7819
+        },
+        {
+          "path": "/_app/immutable/assets/CalendarPicker.ctCWVpRd.css",
+          "encoded": 935,
+          "transfer": 1235
+        },
+        {
+          "path": "/_app/immutable/chunks/D5-95-4u.js",
+          "encoded": 461,
+          "transfer": 761
+        },
+        {
+          "path": "/_app/immutable/assets/ListLoadMore.5AHsaWWJ.css",
+          "encoded": 128,
+          "transfer": 428
+        },
+        {
+          "path": "/_app/immutable/chunks/B1zc_n4Z.js",
+          "encoded": 859,
+          "transfer": 1159
+        },
+        {
+          "path": "/_app/immutable/chunks/qwOg0dpn.js",
+          "encoded": 1204,
+          "transfer": 1504
+        },
+        {
+          "path": "/_app/immutable/assets/ConfirmDialog.Cmv55eVt.css",
+          "encoded": 487,
+          "transfer": 787
+        },
+        {
+          "path": "/_app/immutable/chunks/Dbwq6qjV.js",
+          "encoded": 757,
+          "transfer": 1057
+        },
+        {
+          "path": "/_app/immutable/assets/SectionBlock.uCaLHKkX.css",
+          "encoded": 429,
+          "transfer": 729
+        },
+        {
+          "path": "/_app/immutable/chunks/CDiwXvWo2.js",
+          "encoded": 515,
+          "transfer": 815
+        },
+        {
+          "path": "/_app/immutable/chunks/jqyBs3nw2.js",
+          "encoded": 238,
+          "transfer": 538
+        },
+        {
+          "path": "/_app/immutable/assets/PencilButton.BeEw00dx.css",
+          "encoded": 424,
+          "transfer": 724
+        },
+        {
+          "path": "/_app/immutable/chunks/DsgfZG-V2.js",
+          "encoded": 875,
+          "transfer": 1175
+        },
+        {
+          "path": "/_app/immutable/assets/Input.CVBW8JrL.css",
+          "encoded": 617,
+          "transfer": 917
+        },
+        {
+          "path": "/_app/immutable/chunks/DMzDWcPN2.js",
+          "encoded": 847,
+          "transfer": 1147
+        },
+        {
+          "path": "/_app/immutable/assets/Textarea.B0rSorPK.css",
+          "encoded": 495,
+          "transfer": 795
+        },
+        {
+          "path": "/_app/immutable/chunks/hTOjhjJK2.js",
+          "encoded": 1060,
+          "transfer": 1360
+        },
+        {
+          "path": "/_app/immutable/assets/SegmentedControl.D9sFq4Lc.css",
+          "encoded": 618,
+          "transfer": 918
+        },
+        {
+          "path": "/_app/immutable/chunks/B4w01DnR.js",
+          "encoded": 1934,
+          "transfer": 2234
+        },
+        {
+          "path": "/_app/immutable/chunks/CANuPGLd.js",
+          "encoded": 1601,
+          "transfer": 1901
+        },
+        {
+          "path": "/_app/immutable/chunks/C2fgK3XC.js",
+          "encoded": 1167,
+          "transfer": 1467
+        },
+        {
+          "path": "/_app/immutable/chunks/E04LatRU.js",
+          "encoded": 274,
+          "transfer": 574
+        },
+        {
+          "path": "/_app/immutable/assets/FileThumb.qI8IKZxb.css",
+          "encoded": 333,
+          "transfer": 633
+        },
+        {
+          "path": "/_app/immutable/assets/SidePanel.CnNe642D.css",
+          "encoded": 479,
+          "transfer": 779
+        },
+        {
+          "path": "/_app/immutable/assets/Checkbox.CGk9dtAF.css",
+          "encoded": 546,
+          "transfer": 846
+        },
+        {
+          "path": "/_app/immutable/assets/CatalogItemDialog.DBc0UgUc.css",
+          "encoded": 884,
+          "transfer": 1184
+        },
+        {
+          "path": "/_app/immutable/assets/ProductsAndServicesBlock.WgyLMGTa.css",
+          "encoded": 1933,
+          "transfer": 2233
+        },
+        {
+          "path": "/_app/immutable/assets/Popover.Cdl-BbPa.css",
+          "encoded": 382,
+          "transfer": 682
+        },
+        {
+          "path": "/_app/immutable/assets/ClientPicker.CPBPk98K.css",
+          "encoded": 775,
+          "transfer": 1075
+        },
+        {
+          "path": "/_app/immutable/assets/StatusBadge.BdXF8ROS.css",
+          "encoded": 298,
+          "transfer": 598
+        },
+        {
+          "path": "/_app/immutable/assets/CreateVisitsDialog.DigHu1rS.css",
+          "encoded": 600,
+          "transfer": 900
+        },
+        {
+          "path": "/_app/immutable/assets/TimePickerField.Dz8lVPYB.css",
+          "encoded": 932,
+          "transfer": 1232
+        },
+        {
+          "path": "/_app/immutable/assets/TimePicker.B1mfOVDD.css",
+          "encoded": 284,
+          "transfer": 584
+        },
+        {
+          "path": "/_app/immutable/assets/DateTimePicker.DfpTHB7L.css",
+          "encoded": 232,
+          "transfer": 532
+        },
+        {
+          "path": "/_app/immutable/assets/FinalVisitDialog.Coo50AZF.css",
+          "encoded": 1060,
+          "transfer": 1360
+        },
+        {
+          "path": "/_app/immutable/assets/NotifyCustomerCheckbox.L3bItvg2.css",
+          "encoded": 60,
+          "transfer": 360
+        },
+        {
+          "path": "/_app/immutable/assets/CalendarWeekGrid.BTuJP5cB.css",
+          "encoded": 1485,
+          "transfer": 1785
+        },
+        {
+          "path": "/_app/immutable/assets/47.BC3-2StU.css",
+          "encoded": 9573,
+          "transfer": 9873
+        },
+        {
+          "path": "/_app/immutable/assets/EmailSenderLabel.DZSnIHOA.css",
+          "encoded": 113,
+          "transfer": 413
+        },
+        {
+          "path": "/_app/immutable/assets/FileUploader.BA-otp6t.css",
+          "encoded": 593,
+          "transfer": 893
+        },
+        {
+          "path": "/_app/immutable/assets/FilePicker.BQJO5A_D.css",
+          "encoded": 698,
+          "transfer": 998
+        },
+        {
+          "path": "/_app/immutable/assets/RailCard.BrWWW1oV.css",
+          "encoded": 262,
+          "transfer": 562
+        },
+        {
+          "path": "/_app/immutable/assets/InquiryAutomationCard.BBEG9rVZ.css",
+          "encoded": 294,
+          "transfer": 594
+        },
+        {
+          "path": "/_app/immutable/assets/ComposerChannelMenu._9Wjk1_Z.css",
+          "encoded": 347,
+          "transfer": 647
+        },
+        {
+          "path": "/_app/immutable/assets/13.Bk-WeQdV.css",
+          "encoded": 5285,
+          "transfer": 5585
+        },
+        {
+          "path": "/_app/immutable/assets/DataTable.CwlodOcz.css",
+          "encoded": 598,
+          "transfer": 898
+        },
+        {
+          "path": "/_app/immutable/assets/FilterField.B1Iy2qPK.css",
+          "encoded": 245,
+          "transfer": 545
+        },
+        {
+          "path": "/_app/immutable/assets/ClientMergeDialog.D8iTsl8S.css",
+          "encoded": 473,
+          "transfer": 773
+        },
+        {
+          "path": "/_app/immutable/assets/8.BHXJ_pZd.css",
+          "encoded": 454,
+          "transfer": 754
+        },
+        {
+          "path": "/_app/immutable/assets/StickyActionBar.BzbBLtbb.css",
+          "encoded": 276,
+          "transfer": 576
+        },
+        {
+          "path": "/_app/immutable/assets/RecordDetailLayout.Ba_Cxxhf.css",
+          "encoded": 345,
+          "transfer": 645
+        },
+        {
+          "path": "/_app/immutable/assets/TabPanel.BHQzrrhA.css",
+          "encoded": 400,
+          "transfer": 700
+        },
+        {
+          "path": "/_app/immutable/assets/EmailActionEditor.D0doPZ9F.css",
+          "encoded": 442,
+          "transfer": 742
+        },
+        {
+          "path": "/_app/immutable/assets/coin.DNwdQeBM.css",
+          "encoded": 478,
+          "transfer": 778
+        },
+        {
+          "path": "/_app/immutable/assets/CommunicationSettingsDialog.Bp7uxUwt.css",
+          "encoded": 350,
+          "transfer": 650
+        },
+        {
+          "path": "/_app/immutable/assets/TagSelect.BkIOEUmd.css",
+          "encoded": 897,
+          "transfer": 1197
+        },
+        {
+          "path": "/_app/immutable/assets/PhotoDescribeForm.zZTPooza.css",
+          "encoded": 577,
+          "transfer": 877
+        },
+        {
+          "path": "/_app/immutable/assets/RecordFilesCard.Dn2m7pAq.css",
+          "encoded": 841,
+          "transfer": 1141
+        },
+        {
+          "path": "/_app/immutable/assets/NoteFiles.CqNU-w78.css",
+          "encoded": 652,
+          "transfer": 952
+        },
+        {
+          "path": "/_app/immutable/assets/NotesPanel.i_gAklMO.css",
+          "encoded": 541,
+          "transfer": 841
+        },
+        {
+          "path": "/_app/immutable/assets/ActivityFeed.C55aJu4g.css",
+          "encoded": 380,
+          "transfer": 680
+        },
+        {
+          "path": "/_app/immutable/assets/9.BykFuSlh.css",
+          "encoded": 2201,
+          "transfer": 2501
+        },
+        {
+          "path": "/_app/immutable/assets/StatusOverviewCard.D4lFgL4g.css",
+          "encoded": 289,
+          "transfer": 589
+        },
+        {
+          "path": "/_app/immutable/assets/KpiCard.RCBgEpUN.css",
+          "encoded": 679,
+          "transfer": 979
+        },
+        {
+          "path": "/_app/immutable/assets/42.B0Sdd869.css",
+          "encoded": 460,
+          "transfer": 760
+        },
+        {
+          "path": "/_app/immutable/assets/RecordFactsList.DEceG-TD.css",
+          "encoded": 706,
+          "transfer": 1006
+        },
+        {
+          "path": "/_app/immutable/assets/ClientSummaryCard.DgFYWxeG.css",
+          "encoded": 380,
+          "transfer": 680
+        },
+        {
+          "path": "/_app/immutable/assets/clipboard-text.Dk7Rfbs6.css",
+          "encoded": 367,
+          "transfer": 667
+        },
+        {
+          "path": "/_app/immutable/assets/43.DJqWNnIW.css",
+          "encoded": 81,
+          "transfer": 381
+        },
+        {
+          "path": "/_app/immutable/assets/38.DpK6wtjE.css",
+          "encoded": 537,
+          "transfer": 837
+        },
+        {
+          "path": "/_app/immutable/assets/QuoteSummaryCard.Ckkfkxkc.css",
+          "encoded": 294,
+          "transfer": 594
+        },
+        {
+          "path": "/_app/immutable/assets/RecordTaxCard.fSjzD0TT.css",
+          "encoded": 413,
+          "transfer": 713
+        },
+        {
+          "path": "/_app/immutable/assets/SignaturePad.B6u-5Zu7.css",
+          "encoded": 376,
+          "transfer": 676
+        },
+        {
+          "path": "/_app/immutable/assets/Banner.04HWMVaz.css",
+          "encoded": 381,
+          "transfer": 681
+        },
+        {
+          "path": "/_app/immutable/assets/SendQuoteDialog.MuZKgGpt.css",
+          "encoded": 540,
+          "transfer": 840
+        },
+        {
+          "path": "/_app/immutable/assets/file-dollar.BPN6Dp35.css",
+          "encoded": 478,
+          "transfer": 778
+        },
+        {
+          "path": "/_app/immutable/assets/39.ev_n7_FY.css",
+          "encoded": 956,
+          "transfer": 1256
+        },
+        {
+          "path": "/_app/immutable/assets/26.DSkgI29E.css",
+          "encoded": 436,
+          "transfer": 736
+        },
+        {
+          "path": "/_app/immutable/assets/PendingFilesCard.C8_NBZ3L.css",
+          "encoded": 954,
+          "transfer": 1254
+        },
+        {
+          "path": "/_app/immutable/assets/RecurrenceFields.Du5pEF1G.css",
+          "encoded": 619,
+          "transfer": 919
+        },
+        {
+          "path": "/_app/immutable/assets/27.Cj5ViVQA.css",
+          "encoded": 4187,
+          "transfer": 4487
+        },
+        {
+          "path": "/_app/immutable/assets/20.Dc7EYMYe.css",
+          "encoded": 464,
+          "transfer": 764
+        },
+        {
+          "path": "/_app/immutable/assets/Toggle.DQWToREu.css",
+          "encoded": 735,
+          "transfer": 1035
+        },
+        {
+          "path": "/_app/immutable/assets/CollectPaymentDialog.C5qmbSjR.css",
+          "encoded": 300,
+          "transfer": 600
+        },
+        {
+          "path": "/_app/immutable/assets/21.8G2PLzyP.css",
+          "encoded": 1133,
+          "transfer": 1433
+        },
+        {
+          "path": "/fonts/inter-v20-latin-700.woff2",
+          "encoded": 24356,
+          "transfer": 24656
+        }
+      ]
+    }
+  ]
+}

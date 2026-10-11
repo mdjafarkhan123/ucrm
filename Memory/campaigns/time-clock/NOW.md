@@ -12,6 +12,5 @@ and on a weekly Timesheets page that a manager can check, correct and approve. L
 `src/lib/components/time-clock/` (`RunningClock`, `TimerRunningElsewhere`, `VisitTimerControl`) and the
 shared `myTimerKey` query in `src/lib/time-clock/api.ts`.
 
-**Blockers:** Parts 3–4 change the header and sidebar. `selectable-design-experiences` Part 4 left
-uncommitted shell changes in the main folder; Jafar confirmed 2026-10-11 that session was stopped. That
-campaign must finish or settle them first.
+**Blockers:** none. The shared shell was settled 2026-10-11 (`selectable-design-experiences` Part 4); add the
+running timer to the header through a `Topbar.svelte` snippet so Classic and Botanical both show it.

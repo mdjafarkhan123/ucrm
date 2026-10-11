@@ -1,5 +1,8 @@
+<svelte:options css="injected" />
+
 <script lang="ts">
-	import Sidebar, { type NavGroup } from './Sidebar.svelte';
+	import Sidebar from './Sidebar.svelte';
+	import type { NavGroup } from './navigation';
 
 	let {
 		open = $bindable(false),

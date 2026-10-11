@@ -36,13 +36,30 @@ try {
 		});
 		await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
 		await page.addInitScript(() => {
-			window.__baseline = { lcp: 0, cls: 0 };
+			window.__baseline = { lcp: 0, cls: 0, lcpElement: null, shifts: [] };
 			new PerformanceObserver((list) => {
-				for (const entry of list.getEntries()) window.__baseline.lcp = entry.startTime;
+				for (const entry of list.getEntries()) {
+					window.__baseline.lcp = entry.startTime;
+					window.__baseline.lcpElement = entry.element
+						? { tag: entry.element.tagName, className: entry.element.className }
+						: null;
+				}
 			}).observe({ type: 'largest-contentful-paint', buffered: true });
 			new PerformanceObserver((list) => {
 				for (const entry of list.getEntries())
-					if (!entry.hadRecentInput) window.__baseline.cls += entry.value;
+					if (!entry.hadRecentInput) {
+						window.__baseline.cls += entry.value;
+						window.__baseline.shifts.push({
+							time: entry.startTime,
+							value: entry.value,
+							sources: (entry.sources ?? []).map((source) => ({
+								tag: source.node?.tagName,
+								className: source.node?.className,
+								previous: source.previousRect,
+								current: source.currentRect
+							}))
+						});
+					}
 			}).observe({ type: 'layout-shift', buffered: true });
 		});
 		await page.goto(`${origin}/dashboard`, { waitUntil: 'domcontentloaded' });
