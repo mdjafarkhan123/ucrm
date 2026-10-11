@@ -3,7 +3,12 @@ import { z } from 'zod';
 
 const emailEnvSchema = z.object({
 	BREVO_API_KEY: z.string().trim().min(1),
-	SYSTEM_FROM_EMAIL: z.string().trim().toLowerCase().email()
+	SYSTEM_FROM_EMAIL: z.string().trim().toLowerCase().email(),
+	// Left out until Uplift has a mailbox someone reads; a Reply-To that reaches nobody is worse than none.
+	SYSTEM_REPLY_TO_EMAIL: z.preprocess(
+		(value) => (value === '' ? undefined : value),
+		z.string().trim().toLowerCase().email().optional()
+	)
 });
 
 export type EmailEnv = z.infer<typeof emailEnvSchema>;
@@ -16,7 +21,8 @@ export type EmailEnv = z.infer<typeof emailEnvSchema>;
 export function getEmailEnv(): EmailEnv {
 	const result = emailEnvSchema.safeParse({
 		BREVO_API_KEY: env.BREVO_API_KEY,
-		SYSTEM_FROM_EMAIL: env.SYSTEM_FROM_EMAIL
+		SYSTEM_FROM_EMAIL: env.SYSTEM_FROM_EMAIL,
+		SYSTEM_REPLY_TO_EMAIL: env.SYSTEM_REPLY_TO_EMAIL
 	});
 
 	if (!result.success) {
