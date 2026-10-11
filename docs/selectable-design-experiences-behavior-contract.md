@@ -1,6 +1,6 @@
 # Selectable design experiences
 
-**Status:** Planning 2026-10-11. Jafar authorized architecture investigation and wants Classic preserved alongside Botanical. Implementation and remaining rollout choices are not yet approved.
+**Status:** Planning 2026-10-11. Jafar authorized architecture investigation and wants Classic preserved alongside Botanical. Release scope and rollout direction are settled; proposed build order awaits final review.
 
 ## Summary
 
@@ -38,11 +38,22 @@ The appearance preference must not be silently overwritten to compensate for mis
 coverage. A supported Botanical dark palette is a readiness requirement before it is offered to customers.
 Its design still needs focused approval; this decision does not approve an invented palette.
 
+The first selectable-design release applies only to the staff Business Workspace, confirmed by Jafar
+on 2026-10-11. Uplift Control Room, login and customer-facing surfaces retain their current presentation
+until separately designed. Their adoption is outside this first release.
+
+## Verification environment
+
+“Local release-build verification” means building the deployable app and running those files locally or
+in a private test environment, before production deployment. It does not mean experimenting on the live
+production system. Verify asset isolation, behaviour, accessibility and performance before release; the
+final production check confirms the deployed result after separately authorized deployment.
+
 ## Proposed execution order
 
 1. Recover and reconcile Classic guidance; establish the shared router and Botanical skill with links and
    paired AGENTS/CLAUDE updates. Keep all application appearance unchanged.
-2. Capture the current production-build baseline and prove selected-only shell/surface imports with two
+2. Capture the current local release-build baseline and prove selected-only shell/surface imports with two
    presentations in a development-only preview. Prove SSR, hydration, idle/hover warming and asset isolation
    before broad refactoring. Keep unapproved visual controls explicitly out of production rollout.
 3. Implement the approved shell through the proven presentation seam, retaining Classic and shared behaviour.
@@ -57,8 +68,6 @@ This order is proposed, not authorization for a full rewrite or a database migra
 
 ## Still unclear
 
-- First release scope: recommend Business Workspace only; keep Control Room and customer-facing surfaces
-  separate until their designs and selection policy are approved.
 - Botanical dark appearance and full surface readiness are unverified. Settle supported modes and coverage
   before customer selection. Default Classic until the selected alternative meets its release gate.
 
@@ -66,7 +75,7 @@ This order is proposed, not authorization for a full rewrite or a database migra
 
 - New feature behaviour, permissions, packages, industry differences or infrastructure changes inside theming.
 - A cloned application, duplicated business logic, a theme marketplace or user-supplied CSS.
-- Claiming inactive asset isolation, faster loading or capacity before production-build evidence.
+- Claiming inactive asset isolation, faster loading or capacity before local release-build evidence.
 - Automatically changing an organization's design or dropping unfinished routes to make Botanical look ready.
 
 ## Research

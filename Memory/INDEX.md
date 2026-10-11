@@ -27,4 +27,4 @@ Read this registry only to select a campaign. After selection, open its NOW.md; 
 
 Deferred work is indexed separately at Memory/deferred/INDEX.md; read it only when explicitly required.
 
-| selectable-design-experiences | Planning 2026-10-11 — audit saved; owner-wide choice and private Botanical confirmed; release scope and plan approval next | Classic and Botanical layouts over shared behaviour, with selected-only asset delivery | Memory/campaigns/selectable-design-experiences/NOW.md | Selectable designs, Classic preservation, theme architecture, or design skill separation |
+| selectable-design-experiences | Planning 2026-10-11 — audit and release scope settled; owner-wide choice and private Botanical confirmed; build-order approval next | Classic and Botanical layouts over shared behaviour, with selected-only asset delivery | Memory/campaigns/selectable-design-experiences/NOW.md | Selectable designs, Classic preservation, theme architecture, or design skill separation |

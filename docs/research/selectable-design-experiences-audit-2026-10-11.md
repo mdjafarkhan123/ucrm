@@ -103,5 +103,10 @@ SSR, duplicating routes or globally disabling useful preloading. Record the prov
 
 Jafar confirmed organization-wide owner selection, personal light/dark preferences and a private Botanical
 preview until complete. Classic stays live; no production Classic fallback pages within Botanical.
-Business Workspace-only first release was proposed and awaits his answer. Control Room/customer-facing adoption and Botanical dark
+Jafar also confirmed Business Workspace-only first release; Control Room, login and customer-facing
+pages keep their current appearance. Control Room/customer-facing adoption and Botanical dark
 palette are separate design work. No database migration, traffic capacity or production timing is verified.
+
+Terminology clarification: production-build checks in this audit run locally or in a private test
+environment before deployment. They are local release-build verification, not tests first performed on
+live production. A final production smoke check only follows separately authorized deployment.
