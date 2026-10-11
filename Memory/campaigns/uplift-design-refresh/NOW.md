@@ -3,9 +3,9 @@
 **Goal:** A premium, modern, polished, colourful CRM, delivered through small demos Jafar reviews before implementation.
 **Plan:** `docs/uplift-design-refresh-behavior-contract.md`
 
-**State:** In progress 2026-10-11. Sidebar v2 revision 2 approved. Jafar prefers Carbon-inspired header B with a circular avatar; revision 2 applies it. Desktop web is the primary target. Background discussion and final header review remain open. Live components unchanged.
+**State:** In progress 2026-10-11. Sidebar v2 revision 2 approved. Jafar prefers Carbon-inspired header B with a circular avatar; revision 3 adds his requested inset header polish. Desktop web is the primary target. Background discussion and final header review remain open. Live components unchanged.
 
-**Next:** Review `/demo/header-option-b/index.html` revision 2 with Jafar, clarify which current background he means, and settle desktop background/header approval. Botanical reference and header B desktop images were inspected; a fresh signed-in app comparison has not been done. Then align approved header guidance and close Part 3.
+**Next:** Review `/demo/header-option-b/index.html` revision 3 with Jafar, review the requested inset spacing/corners and settle desktop background/header approval. Botanical reference and header B desktop images were inspected; a fresh signed-in app comparison has not been done. Then align approved header guidance and close Part 3.
 
 **Maintenance rule:** Keep the existing design skill and update necessary parts incrementally. Use `.claude/skills/design/alignment.md` as the reading gate: load only modules explicitly updated for the relevant redesign coverage; uncovered patterns need a focused demo, not old visual guidance. Update each relevant module after its focused demo is built and approved, before implementation.
 

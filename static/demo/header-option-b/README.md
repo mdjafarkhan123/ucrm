@@ -34,3 +34,8 @@ production shell behavior remain for implementation preparation; this is a focus
 Revision 2: Jafar prefers the Carbon-inspired direction and requested the original circular avatar.
 Desktop web is the primary design target; phone checks are secondary. Background comparison remains
 under discussion, so this preference does not establish final header or background approval.
+
+Revision 3: at Jafar’s request, desktop header top inset matches the sidebar’s 12px inset,
+with a 16px gap beside navigation, 12px corners and a quiet border. Its right edge aligns with
+content panels. Warm canvas, circular avatar and header controls remain. Phone layout is retained.
+This visual revision awaits review; it does not authorize live rollout.
