@@ -28,6 +28,7 @@
 		invalid = false,
 		errorMessage = '',
 		class: className = '',
+		size = 'base',
 		onchange
 	}: {
 		value?: CalendarDate | undefined;
@@ -51,6 +52,8 @@
 		invalid?: boolean;
 		errorMessage?: string;
 		class?: string;
+		/** `small` matches the 34px controls of a toolbar such as the calendar bar. */
+		size?: 'base' | 'small';
 		onchange?: (value: CalendarDate | undefined) => void;
 	} = $props();
 
@@ -85,6 +88,7 @@
 	class={['calendar-picker', className]}
 	class:calendar-picker--invalid={invalid}
 	class:calendar-picker--disabled={disabled}
+	class:calendar-picker--small={size === 'small'}
 >
 	<!-- Bits UI reads the language once, so the field is drawn again when the browser's arrives. -->
 	{#key fieldLocale}
@@ -330,6 +334,30 @@
 			&__nav :global(svg) {
 				width: 20px;
 				height: 20px;
+			}
+
+			&--small &__control {
+				min-height: 34px;
+			}
+
+			&--small &__input {
+				padding: 0 var(--space-small);
+				font-size: var(--typography--fontSize-small);
+			}
+
+			&--small &__segment {
+				padding-block: var(--space-minuscule);
+			}
+
+			&--small &__trigger {
+				width: 32px;
+				height: 32px;
+				margin-right: 0;
+			}
+
+			&--small &__trigger :global(svg) {
+				width: 16px;
+				height: 16px;
 			}
 
 			&__content {

@@ -22,6 +22,7 @@
 		label,
 		options,
 		values,
+		size = 'base',
 		onchange
 	}: {
 		id: string;
@@ -29,6 +30,8 @@
 		options: ChipOption[];
 		/** The chosen option values, in any order. */
 		values: string[];
+		/** `small` matches the 34px controls of a toolbar such as the calendar bar. */
+		size?: 'base' | 'small';
 		onchange: (values: string[]) => void;
 	} = $props();
 
@@ -48,7 +51,13 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<span class={['filter-chip-multi', filtering && 'filter-chip-multi--on']}>
+<span
+	class={[
+		'filter-chip-multi',
+		filtering && 'filter-chip-multi--on',
+		size === 'small' && 'filter-chip-multi--small'
+	]}
+>
 	<PopoverPrimitive.Root bind:open>
 		<PopoverPrimitive.Trigger
 			{id}
@@ -160,6 +169,20 @@
 	}
 	.filter-chip-multi--on :global(.filter-chip-multi__trigger) {
 		padding-right: var(--space-smaller);
+	}
+
+	.filter-chip-multi--small {
+		min-height: 34px;
+
+		:global(.filter-chip-multi__trigger) {
+			min-height: 32px;
+			padding-inline: var(--space-small);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		.filter-chip-multi__clear {
+			height: 32px;
+		}
 	}
 
 	// Filtering: the name steps back and the choice leads, as it does in `FilterChip`.

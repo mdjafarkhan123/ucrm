@@ -222,3 +222,39 @@ export function visiblePeople(people: TimesheetPerson[], chosen: string[]) {
 export function dayTotals(people: TimesheetPerson[], days: string[]) {
 	return days.map((day) => people.reduce((sum, person) => sum + (person.days[day] ?? 0), 0));
 }
+
+export function personName(person: Pick<TimesheetPerson, 'name'>) {
+	return person.name ?? 'Unnamed team member';
+}
+
+/**
+ * What needs checking among the people shown (plan § Timesheets page, Warnings), one sentence each:
+ * entries that overlap, and timers running more than 12 hours. One person is named; more are counted.
+ */
+export function timesheetWarnings(people: TimesheetPerson[]) {
+	const warnings: string[] = [];
+	const overlapping = people.filter((person) => person.overlap_count > 0);
+	if (overlapping.length === 1) {
+		const [person] = overlapping;
+		warnings.push(
+			person.is_me
+				? 'You have entries that overlap.'
+				: `${personName(person)} has entries that overlap.`
+		);
+	} else if (overlapping.length > 1) {
+		warnings.push(`${overlapping.length} people have entries that overlap.`);
+	}
+
+	const longRunning = people.filter((person) => person.running?.long_running);
+	if (longRunning.length === 1) {
+		const [person] = longRunning;
+		warnings.push(
+			person.is_me
+				? 'Your timer has run over 12 hours.'
+				: `${personName(person)}'s timer has run over 12 hours.`
+		);
+	} else if (longRunning.length > 1) {
+		warnings.push(`${longRunning.length} timers have run over 12 hours.`);
+	}
+	return warnings;
+}
