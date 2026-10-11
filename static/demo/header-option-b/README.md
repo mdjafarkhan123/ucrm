@@ -39,3 +39,8 @@ Revision 3: at Jafarâ€™s request, desktop header top inset matches the sidebarâ€
 with a 16px gap beside navigation, 12px corners and a quiet border. Its right edge aligns with
 content panels. Warm canvas, circular avatar and header controls remain. Phone layout is retained.
 This visual revision awaits review; it does not authorize live rollout.
+
+Revision 4: Jafar requested one shared outer gutter. Desktop `.shell__body` now owns the
+12px vertical / 16px horizontal inset. Header and content fill its width automatically; header
+margin and content horizontal padding are removed. Inner control/panel padding remains local.
+The header and content scroll container remain separate, keeping the header visible while scrolling.

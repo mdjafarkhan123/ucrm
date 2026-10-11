@@ -28,16 +28,15 @@
  }
 }
 
-// Revision 3: coordinate the desktop header with the inset navigation panel.
+// Shared desktop gutter: header and scrollable page content use the same edges.
 @media (min-width: 768px) {
+ .shell__body { padding: 12px 16px; }
  .header {
-  margin: 12px 36px 0 16px;
+  margin: 0;
   padding-inline: 20px;
   border: 1px solid #e2e6da;
   border-radius: 12px;
   box-shadow: 0 3px 12px #34483304;
  }
-}
-@media (min-width: 768px) and (max-width: 1100px) {
- .header { margin-right: 24px; padding-inline: 16px; }
+ .content { padding: 30px 0 12px; }
 }
