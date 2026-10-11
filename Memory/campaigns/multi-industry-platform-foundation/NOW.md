@@ -5,7 +5,7 @@
 
 **In progress:** Stages A–D done, including B12 connected proof (2026-10-11). Raad LTD now has a confirmed Contractor profile (source migration, Business type left unknown). Snapshots can't see a record replaced while others were added.
 
-**Next:** B12 is done (2026-10-11). Jafar to approve closing the foundation build; then Medspa planning can start. Scope: `stages/D-migration-proof.md`. Every existing business, including Offer Check Roofing (2026-10-11), is now confirmed Contractor. Not gated yet: queued sends, Setup preview emails, review requests, web chat. Not built: moving a started business to a newer Setup version. Closed-business public intake: database and unit tests only.
+**Next:** B12 is done (2026-10-11). Jafar to approve closing the foundation build. Jafar chose (2026-10-11) to finish the Contractor app (`crm-launch-readiness`, Time clock first) before Medspa building starts. Scope: `stages/D-migration-proof.md`. Every existing business, including Offer Check Roofing (2026-10-11), is now confirmed Contractor. Not gated yet: queued sends, Setup preview emails, review requests, web chat. Not built: moving a started business to a newer Setup version. Closed-business public intake: database and unit tests only.
 
 **Blockers:** Medspa implementation waits for Jafar's approval to close the foundation.
 
