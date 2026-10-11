@@ -1,4 +1,4 @@
-# Botanical shell demo — revision 1
+# Botanical shell demo — revision 2
 
 Review at `/demo/app-shell/index.html`. Standalone HTML/SCSS; fictional data, in-memory actions,
 no API calls or real writes. The selected job-details reference and live components are unchanged.
@@ -54,3 +54,10 @@ implementation. No record or account changes were made. Automated accessibility 
 visual review; assistive-technology and outdoor usability testing remain unproven.
 
 Compile with `npx sass static/demo/app-shell/styles.scss static/demo/app-shell/styles.css --no-source-map`.
+
+## Revision round 1
+
+Jafar requested removing the Uplift logo above the contractor identity. Revision 2 shows only the
+contractor business identity there, including its own mark when collapsed. This applies on desktop and
+phone; Control Room branding is retained. This visual revision does not establish a platform-wide
+white-label policy.

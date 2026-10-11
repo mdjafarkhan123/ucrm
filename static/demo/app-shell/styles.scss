@@ -75,3 +75,16 @@ body:has(dialog[open]) .content { overflow: hidden; }
 #desktop-nav > .sidebar__brand, #desktop-nav > .sidebar__identity, #desktop-nav > .sidebar__footer { flex-shrink: 0; }
 [hidden] { display: none !important; }
 @media(max-width:767px) { .hero { align-items: flex-start; .pill { flex-basis: auto; margin-left: 52px; } > div:nth-child(2) { flex-basis: calc(100% - 52px); } } }
+
+// Revision round 1: the business identity leads contractor navigation.
+.shell--business #desktop-nav > .sidebar__identity,
+.drawer--business .sidebar__identity { margin-top: 0; }
+.shell--business.shell--collapsed #desktop-nav > .sidebar__identity {
+ display: flex;
+ justify-content: center;
+ margin-bottom: 28px;
+ padding: 0;
+ border: 0;
+ background: transparent;
+ .sidebar__business { display: none; }
+}

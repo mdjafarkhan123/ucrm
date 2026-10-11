@@ -827,3 +827,19 @@ body:has(dialog[open]) .content {
     flex-basis: calc(100% - 52px);
   }
 }
+.shell--business #desktop-nav > .sidebar__identity,
+.drawer--business .sidebar__identity {
+  margin-top: 0;
+}
+
+.shell--business.shell--collapsed #desktop-nav > .sidebar__identity {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.shell--business.shell--collapsed #desktop-nav > .sidebar__identity .sidebar__business {
+  display: none;
+}
