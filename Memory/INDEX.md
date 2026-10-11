@@ -30,3 +30,5 @@ Deferred work is indexed separately at Memory/deferred/INDEX.md; read it only wh
 | time-clock | Paused 2026-10-11 — Parts 2–3 done; Part 4 Timesheets half built (database + API done, page next) | Crews time visits and the day on a phone; hours land on the Job and a weekly Timesheets page | Memory/campaigns/time-clock/NOW.md | Time clock, timers, clock in/out, Timesheets, crew hours, launch roadmap Part 16 |
 
 | selectable-design-experiences | In progress 2026-10-11 — Parts 1–4 done; real shared shell committed (Classic default, private Botanical preview); Part 5 Botanical coverage next | Classic and Botanical layouts over shared behaviour, with selected-only asset delivery | Memory/campaigns/selectable-design-experiences/NOW.md | Selectable designs, Classic preservation, theme architecture, or design skill separation |
+
+| crm-design-system | Planning 2026-10-11 — fresh campaign registered; foundation check and research next | Organization themes change appearance and supported layouts; fresh scope | Memory/campaigns/crm-design-system/NOW.md | CRM design system or fresh organization-theme planning; old campaigns stay separate |
