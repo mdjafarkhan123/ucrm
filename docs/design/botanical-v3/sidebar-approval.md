@@ -14,12 +14,23 @@ desktop expanded/collapsed treatment and the matching phone navigation drawer. V
 identified demo source; use the Botanical foundations for shared roles. Existing labels, destinations,
 permissions and capabilities remain owned by implementation and product contracts.
 
-## Boundaries and next work
+## Header approval — 2026-10-11
 
-Jafar clarified on 2026-10-11 that he has not approved the header. The previous checkpoint
-incorrectly inferred approval. Only the sidebar appearance above is approved.
+After correcting the earlier inferred approval, Jafar explicitly approved header B in this conversation:
+“however now I approve the heder”. Approved source: `c5c6ad89`,
+`static/demo/header-option-b/`, revision 4. Preview: `/demo/header-option-b/index.html`.
+Review images: `evidence/1440.png` and `evidence/390.png` in that directory.
 
-The header remains a proposal. Jafar requested another visible header design so he can compare and
-choose before approval. Header controls, phone arrangement and supporting patterns await that review.
+Approved coverage: Carbon-inspired page identity, framed search, existing action controls, circular
+account avatar, cream header on warm canvas, quiet border and rounded desktop header. Desktop is the
+primary target. Shared shell-body padding owns the desktop outer gutter; header and content fill the
+same width without separate horizontal content padding or header margins. Local inner padding remains.
+The demo retains the phone arrangement; this is not approval of a universal phone design system.
+
+## Implementation boundaries
+
+Existing destinations, permissions and capabilities remain owned by implementation and product contracts.
+Approval covers demonstrated shell appearance, not placeholder page content, universal dialogs,
+production record-search internals, dark palette or platform-wide white-label policy.
 Live corroboration, full text resizing, assistive-technology and outdoor usability remain outstanding
 before claiming implementation readiness. Complete the shared-shell impact check before rollout.
