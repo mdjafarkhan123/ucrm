@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-11",
+  "browser": "Chromium",
+  "viewports": [
+    "1440x900",
+    "390x900"
+  ],
+  "checks": {
+    "desktop_horizontal_overflow": false,
+    "phone_horizontal_overflow": false,
+    "desktop_axe_violations": 0,
+    "phone_drawer_axe_violations": 0,
+    "phone_escape_focus_return": true,
+    "phone_invoices_navigation": true,
+    "javascript_errors": []
+  },
+  "limitations": [
+    "Broader dialog accessibility and text-resize verification incomplete.",
+    "Existing signed-in app shell not corroborated live."
+  ],
+  "live_preview_http_status": 200
+}

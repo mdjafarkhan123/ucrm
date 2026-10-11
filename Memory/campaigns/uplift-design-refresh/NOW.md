@@ -3,9 +3,9 @@
 **Goal:** A premium, modern, polished, colourful CRM, delivered through small demos Jafar reviews before implementation.
 **Plan:** `docs/uplift-design-refresh-behavior-contract.md`
 
-**In progress:** none; Parts 1–2 are complete. The app and selected demo are unchanged.
+**In progress:** Part 3 sidebar/header demo, revision 1 at `/demo/app-shell/index.html`. Parts 1–2 are complete; live app components and the selected reference are unchanged.
 
-**Next part:** 3 Sidebar/header demo — inspect real navigation, permissions and components, then build a focused desktop/phone demo with reachable phone navigation. Present it for Jafar's approval; leave the app unchanged.
+**Next:** Review Part 3 revision 1 with Jafar; see `parts/3.md`. Revise his feedback before recording approval or starting Part 4.
 
 **Maintenance rule:** Keep the existing design skill and update necessary parts incrementally. Use `.claude/skills/design/alignment.md` as the reading gate: load only modules explicitly updated for the relevant redesign coverage; uncovered patterns need a focused demo, not old visual guidance. Update each relevant module after its focused demo is built and approved, before implementation.
 
