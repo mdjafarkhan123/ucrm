@@ -1,10 +1,20 @@
 ---
 name: wayfinder
-description: Plan a huge chunk of work — more than one agent session can hold — as a shared map of decision tickets on your issue tracker, and resolve them one at a time until the way to the destination is clear.
-disable-model-invocation: true
+description: Map unresolved decisions when planning itself exceeds one session. Use when requested or when Campaign Memory routes a large unclear effort here; save linked decisions and dependencies until a buildable plan is possible.
 ---
 
 A loose idea has arrived — too big for one agent session, and wrapped in fog: the way from here to the **destination** isn't visible yet. Wayfinding is about finding that way, not charging at the destination. This skill charts the way as a **shared map** on the repo's issue tracker, then works its **decision tickets** — questions whose resolution is a decision, not slices of a build to execute — one at a time until the route is clear.
+
+## Inside a campaign
+
+Use [large planning](../campaign-memory/planning.md#large-planning) and the campaign specialist contract.
+The campaign's planning roadmap supplies the map; part notes hold unfinished questions and the product plan
+holds resolved behavior. Apply the decision types, dependencies, and fog-versus-exclusion distinction below.
+The standalone issue-tracker operations, research branches, and fixed session limits do not apply in this
+mode. Keep one focused decision part active and checkpoint through Campaign Memory. Once decisions are
+settled, route to To Spec before build-part planning. Existing approvals count.
+
+## Standalone reference
 
 The destination varies per effort, and naming it is the first act of charting — it shapes every ticket. It might be a spec to hand off and iterate on, a decision to lock before planning starts, or a change made in place like a data-structure migration. The map is domain-agnostic — engineering work, course content, whatever fits the shape.
 

@@ -1,4 +1,4 @@
 interface:
   display_name: 'Campaign Memory'
-  short_description: 'Plan, split, and resume multi-session campaigns'
-  default_prompt: 'Use $campaign-memory to start, plan, resume, checkpoint, pause, defer, or finish a named multi-session campaign.'
+  short_description: 'Guide campaigns from planning through handover'
+  default_prompt: 'Use $campaign-memory to guide a named campaign, choose the relevant skills, and save enough context for a fresh session to continue.'

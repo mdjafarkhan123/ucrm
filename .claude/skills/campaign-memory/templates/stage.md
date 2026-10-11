@@ -1,5 +1,7 @@
 # <Campaign> — stage <n>: <name>
 
-| Part         | Delivers                               | Waits for | Done when                      | State       |
-| ------------ | -------------------------------------- | --------- | ------------------------------ | ----------- |
-| <n.1> <name> | <a thin, complete piece Jafar can try> | <parts>   | <something anyone can observe> | Not started |
+**Plan:** `<plan file>`
+
+| Part | Plan section | Delivers | Waits for | Done when | State |
+| --- | --- | --- | --- | --- | --- |
+| <n.1> <name> | § <topic> | <a thin, complete result> | <parts> | <observable acceptance checks> | Not started |

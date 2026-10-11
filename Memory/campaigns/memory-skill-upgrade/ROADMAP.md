@@ -7,10 +7,12 @@
 | 3 Checker | missing-pointer, registry, and note-size checks | 2, 10 | passes on clean Memory and catches planted faults | Not started — review after new pilot |
 | 4 Move the other campaigns | existing campaigns moved to the proven shape, only when unclaimed | 3, 10 | checker clean; fresh sessions find correct work | Not started — after pilot |
 | 5 Tidy and measure | wider instruction cleanup; removal of unused skills requires separate approval | 4 | reading measured and six resume answers remain correct | Not started — after migration |
-| 6 Agree parent workflow | `docs/memory-campaign-workflow-behavior-contract.md`; current direction and build order written independently of old chats | — | fresh-reader review addressed; Jafar reviews and approves plan and order | In progress — draft prepared |
-| 7 Parent guidance | stage selection, specialist routing, usable invocation, and existing resume safeguards | 6 | a session can select and follow the appropriate guidance without extra skill commands | Proposed |
-| 8 Templates | clear purpose, first version, success checks, stage, and proof pointers in existing homes | 7 | sample campaign saves all necessary context without duplicate truth | Proposed |
-| 9 Fresh-start proof | safe examples for planning, design, building, conflicts, and a small task | 8 | fresh sessions choose correct next actions from saved sources | Proposed |
-| 10 Pilot and measure | one campaign trial, reading measurements, fixes from observed failures | 9 | evidence reported; workflow works across a fresh session; follow-on work reviewed | Proposed |
+| 6 Agree parent workflow | `docs/memory-campaign-workflow-behavior-contract.md`; current direction and build order written independently of old chats | — | fresh-reader review addressed; Jafar reviews and approves plan and order | Done 2026-10-11 |
+| 7 Parent guidance | stage selection, specialist routing, usable invocation, and existing resume safeguards | 6 | a session can select and follow the appropriate guidance without extra skill commands | Done 2026-10-11 |
+| 8 Templates | clear purpose, first version, success checks, stage, and proof pointers in existing homes | 7 | sample campaign saves all necessary context without duplicate truth | Done 2026-10-11 |
+| 9 Fresh-start proof | safe examples for planning, design, building, conflicts, and a small task | 8 | fresh sessions choose correct next actions from saved sources | Done 2026-10-11 |
+| 10 Pilot and measure | one campaign trial, reading measurements, fixes from observed failures | 9 | evidence reported; workflow works across a fresh session; follow-on work reviewed | Done 2026-10-11 |
 
 Later, as a separate campaign: tidy old plan documents one feature at a time, invoices first.
+
+Parent-upgrade proof: `docs/research/campaign-memory-parent-proof-2026-10-11.md`.

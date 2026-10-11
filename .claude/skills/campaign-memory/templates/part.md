@@ -1,8 +1,10 @@
 # <Part> — <name>
 
-**Campaign:** <campaign> · **Plan:** `<plan file>` § <section> <!-- no plan document yet: the approved behavior in one line, moved into the plan when the part finishes -->
+**Campaign:** <campaign> · **Plan:** `<plan file>` § <section>
+**Stage:** <Planning, Design, Build planning, Building, or Verifying>
 **Code:** `main` <!-- or: worktree `.claude/worktrees/<name>`, branch `<branch>` -->
 **Done when:** <the done-check from the roadmap>
+**Read next:** <only the source sections or specialist guidance needed for the next action; omit if already above>
 
 ## Steps
 
@@ -21,7 +23,13 @@ alone.>
 
 - <action> — check: <how to confirm it happened, with its exact identifier> — <pending or done>
 
+## Proof
+
+<!-- Omit until there is meaningful verification. Link its durable home before deleting a finished note. -->
+
+- <what was checked> — <evidence path and section; remaining limitation, if any>
+
 ## Notes
 
-<Only what the remaining steps need and cannot find elsewhere: a decision made during the part, a trap, a
-question waiting for Jafar, word for word. Leave this section out when there is nothing to note.>
+<Only what remaining work needs: unfinished technical reasoning or its plan pointer, a trap, an unrecorded
+decision, or the exact question waiting for Jafar. Move approved product answers to the plan. Omit when empty.>

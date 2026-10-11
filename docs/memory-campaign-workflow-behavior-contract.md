@@ -1,6 +1,6 @@
 # Campaign Memory as the parent workflow
 
-**Status:** Planning, 2026-10-11. Jafar agreed that Campaign Memory should guide the whole journey and authorized preparing this upgrade plan. The detailed plan and build order below are ready for review; the live skills have not been changed.
+**Status:** First-version workflow and build order approved by Jafar on 2026-10-11. First-version guidance and templates built and verified on 2026-10-11; follow-on migration remains outside this delivery. Design skills are outside this upgrade; visual planning remains supported without them.
 
 ## Summary
 
@@ -22,7 +22,7 @@ The AI finds the relevant campaign and approved decisions, then chooses the stag
 | Product choices remain unclear | Grilling; Grill with Docs when terminology or lasting decisions need recording | Jafar's answers saved in the product plan; remaining questions visible |
 | Planning exceeds one session | Wayfinder's decision-mapping approach | A small map of unresolved decisions and their dependencies, linked from the campaign |
 | The behavior is understood | To Spec's writing approach | One readable product plan, with approval distinguished from proposals |
-| Screens or interactions need agreement | The project's Design workflow; Prototype when trying something helps | Reviewable designs, recorded feedback, and the applicable approval |
+| Screens or interactions need agreement | Available project guidance or tools; Prototype when trying something helps | Reviewable designs, recorded feedback, and the applicable approval |
 | The plan is ready to divide | To Tickets' approach | Small complete deliveries, dependencies, and observable completion checks |
 | A part is ready to build | Relevant development skills from the project's rules | The approved behavior implemented and checked, or its unfinished position saved |
 | A session starts or ends | Campaign Memory's resume and checkpoint guidance | A verified starting position or a useful handover |
@@ -59,7 +59,7 @@ At a checkpoint, notes and roadmap agree. Preserve important reasoning, question
 
 A part finishes when its check passes in the integrated project; built-but-unverified work remains unfinished. Before deleting finished notes, keep necessary evidence and decisions reachable elsewhere. Campaign completion checks the whole agreed promise.
 
-## Proposed build order
+## Approved build order
 
 1. **Part 6 — Agree this workflow:** review this plan and its build order; preserve the older pilot's outstanding owner check.
 2. **Part 7 — Write the parent guidance:** update the entry point and relevant specialist connections. A fresh session can choose the right stage and usable guidance.
@@ -71,7 +71,7 @@ The [existing roadmap](../Memory/campaigns/memory-skill-upgrade/ROADMAP.md) reta
 
 ## Still unclear
 
-- No additional product choice is required to prepare the proposal. Jafar's review of the detailed plan and build order is next.
+- No unresolved first-version product choices. Verification may uncover implementation gaps.
 
 ## Not doing
 
@@ -86,3 +86,5 @@ The [existing roadmap](../Memory/campaigns/memory-skill-upgrade/ROADMAP.md) reta
 - [Matt Pocock's published To Spec](https://github.com/mattpocock/skills/blob/main/skills/engineering/to-spec/SKILL.md) separates the user's problem, solution, stories, testing decisions, and exclusions; [To Tickets](https://github.com/mattpocock/skills/blob/main/skills/engineering/to-tickets/SKILL.md) supplies complete slices and acceptance checks.
 - [Superpowers' builder check](https://github.com/obra/superpowers/blob/main/skills/brainstorming/builder-check-prompt.md) tests whether a new builder still needs important answers. We adapt it to a fresh campaign session.
 - [GitHub Spec Kit's specification template](https://github.com/github/spec-kit/blob/main/templates/spec-template.md) provides prioritized journeys, concrete acceptance scenarios, and success outcomes. Its [analysis guidance](https://github.com/github/spec-kit/blob/main/templates/commands/analyze.md) checks missing coverage and contradictions; applying that principle at campaign checkpoints is our adaptation.
+
+- [Verification and reading measurements](research/campaign-memory-parent-proof-2026-10-11.md) — six isolated scenarios, one actual campaign resume, and mechanical checks.

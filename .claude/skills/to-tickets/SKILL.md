@@ -1,12 +1,20 @@
 ---
 name: to-tickets
-description: Break a plan, spec, or the current conversation into a set of tracer-bullet tickets, each declaring its blocking edges, published to the configured tracker — edges as text in one file per ticket locally, or native blocking links on a real tracker.
-disable-model-invocation: true
+description: Divide a plan into small complete deliveries with dependencies and acceptance checks. Use when requested or when Campaign Memory routes an approved plan to build-part planning.
 ---
 
 # To Tickets
 
 Break a plan, spec, or conversation into a set of **tickets** — tracer-bullet vertical slices, each declaring the tickets that **block** it.
+
+## Inside a campaign
+
+Use the [campaign specialist contract](../campaign-memory/planning.md#specialist-contract). Apply the
+slicing and dependency rules below, but save parts in the existing campaign roadmap or stage files with
+plan-section pointers and done-checks. Reuse approved scope and order. The standalone publication step and
+tracker templates do not apply in this mode. Return to Campaign Memory for the handover.
+
+## Standalone process
 
 The issue tracker and triage label vocabulary should have been provided to you — run `/setup-matt-pocock-skills` if not.
 

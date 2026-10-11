@@ -1,11 +1,14 @@
 # <Campaign> — roadmap
 
-| Part            | Delivers                               | Waits for | Done when                                                 | State            |
-| --------------- | -------------------------------------- | --------- | --------------------------------------------------------- | ---------------- |
-| 1 Plan: <topic> | <the questions it settles>             | —         | <topic> has nothing left in Still unclear; Jafar approved | Done <date>      |
-| 2 <name>        | <a thin, complete piece Jafar can try> | 1         | <something anyone can observe>                            | In progress      |
-| 3 <name>        | <…>                                    | 1         | <…>                                                       | Waiting to merge |
-| 4 <name>        | <…>                                    | 2, 3      | <…>                                                       | Not started      |
+**Plan:** `<plan file>` — <scope and build-order approval, or proposed>
+
+| Part | Plan section | Delivers | Waits for | Done when | State |
+| --- | --- | --- | --- | --- | --- |
+| 1 Plan: <topic> | § <topic> | <the questions it settles> | — | first-version questions settled; Jafar approved | In progress |
+| 2 <name> | § <topic> | <a thin, complete result> | 1 | <observable acceptance checks> | Not started |
+| 3 <name> | § <topic> | <…> | 2 | <…> | Not started |
+
+<!-- Planning, design, and proof can be parts. Built-but-unverified parts stay unfinished. -->
 
 <!-- A big campaign lists its stages here instead, one line each, and keeps each stage's parts in its file:
 | Stage    | Delivers | State       | Parts                 |

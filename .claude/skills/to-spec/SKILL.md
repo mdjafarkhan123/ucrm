@@ -1,10 +1,18 @@
 ---
 name: to-spec
-description: Turn the current conversation into a spec and publish it to the project issue tracker — no interview, just synthesis of what you've already discussed.
-disable-model-invocation: true
+description: Turn understood requirements into a readable specification. Use when requested or when Campaign Memory routes agreed behavior to plan writing; standalone use publishes to the configured tracker.
 ---
 
 This skill takes the current conversation context and codebase understanding and produces a spec. Do NOT interview the user — just synthesize what you already know.
+
+## Inside a campaign
+
+Use the saved plan and sources named by the active part, even in a fresh conversation. Follow the
+[campaign specialist contract](../campaign-memory/planning.md#specialist-contract) and its plan template
+instead of the standalone publication and template below. Preserve recorded decisions, surface missing
+answers, and use the parent's fresh-reader and approval checks. Return to Campaign Memory after writing.
+
+## Standalone
 
 The issue tracker and triage label vocabulary should have been provided to you — run `/setup-matt-pocock-skills` if not.
 
