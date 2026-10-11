@@ -16,7 +16,8 @@ all its patterns approved. The module index in `SKILL.md` is a catalog, not a re
 | --- | --- |
 | `SKILL.md` | Review process, screen checks, accessibility, engineering and existing workflow constraints |
 | Botanical starter guidance | Demonstrated v3 visual foundations within its stated boundaries |
-| Individual design modules | None yet; use only for untouched-screen maintenance |
+| `sidebars.md` — Approved Botanical sidebar section only | Variant 2 revision 2 sidebar appearance; see linked approval record for boundaries |
+| Other individual design modules | Use only for untouched-screen maintenance |
 
 When a needed pattern has no updated guidance, extend the approved Botanical foundations, research
 its unresolved interaction and build it in the focused demo for Jafar’s review. Keep existing capabilities
@@ -42,7 +43,7 @@ Botanical foundations. Update component-specific rules when that component's foc
 
 | Coverage | Relevant existing modules | Approval boundary |
 | --- | --- | --- |
-| Sidebar/header and reachable phone navigation | `sidebars.md`, `layout.md`, `avatars.md`, `dropdown.md` | Part 3 demo; Part 4 implementation only after approval |
+| Header and supporting controls | `layout.md`, `avatars.md`, `dropdown.md` | Header draft awaits explicit review; sidebar approved separately in `docs/design/botanical-v3/sidebar-approval.md` |
 | Forms, validation, save/cancel appearance and selection controls | `inputs.md`, `radios-checkboxes-toggle.md`, `button-group.md`, `buttons.md` | Preserve current save/cancel behavior; review new appearance and states |
 | Dialogs, menus, tooltips, popovers and lightbox | `modals.md`, `dropdown.md`, `tooltips-popovers.md` | Illustrative v3 editors/previews do not establish the complete system |
 | Tabs, accordions, lists, financial tables and pagination | `tabs.md`, `accordion.md`, `lists.md`, `tables.md`, `pagination.md`, `content.md` | A captured section strip or table does not approve all states or narrow layouts |

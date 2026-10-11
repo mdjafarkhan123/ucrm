@@ -1,5 +1,19 @@
 # Sidebars
 
+## Approved Botanical sidebar
+
+For redesign work, use the [sidebar approval record](../../../docs/design/botanical-v3/sidebar-approval.md)
+and its identified variant 2 revision 2 source. It owns approved coverage, exclusions and values.
+Preserve semantic grouped links, visible labels by default, `aria-current`, optional desktop collapse,
+independent navigation scrolling with a reachable collapse control, and reachable phone navigation with
+contained focus, Escape dismissal and focus return. Preserve server-resolved access and existing routes.
+The header is awaiting review. Implementation must use shared components and app token/rem conventions.
+
+Load only this Botanical section for redesign work; the legacy maintenance reference below applies to
+untouched screens. Its dependencies are not a redesign reading list.
+
+## Legacy maintenance reference
+
 > Dependencies: `colors.md`, `radius.md`, `typography.md`, `badges.md`, `alerts.md`
 
 ## Core Specs
