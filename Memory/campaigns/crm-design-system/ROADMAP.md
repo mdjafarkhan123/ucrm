@@ -4,6 +4,6 @@
 
 | Part | Plan section | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- | --- |
-| 1 Fresh scope | Summary; Still unclear | Verified existing theme foundation, proven approaches, and a fresh first-version agreement | — | Required choices settled and Jafar approves first-version scope | In progress — registration complete; foundation check next |
+| 1 Fresh scope | Summary; Still unclear | Verified existing theme foundation, proven approaches, and a fresh first-version agreement | — | Required choices settled and Jafar approves first-version scope | In progress — source check/research saved; eight choices agreed; hear Jafar's additions before synthesis |
 
 Define design and build parts after the fresh scope is agreed. Old campaign task numbers, design approvals, and completion states are not carried forward.
