@@ -143,6 +143,29 @@
 		}))
 	);
 
+	function overviewNumber(value: number | undefined) {
+		return value === undefined ? '—' : String(value);
+	}
+
+	// Money received this calendar month, the same figure the Invoices page shows. A role that cannot see
+	// invoice money gets a dash and a reason rather than a made-up zero.
+	const collectedMinor = $derived(countsQuery.data?.collected_this_month_minor ?? null);
+	const collectedValue = $derived(
+		collectedMinor === null
+			? '—'
+			: new Intl.NumberFormat(countsQuery.data?.locale ?? 'en-US', {
+					style: 'currency',
+					currency: countsQuery.data?.currency_code ?? 'USD'
+				}).format(collectedMinor / 100)
+	);
+	const collectedNote = $derived(
+		countsQuery.isPending
+			? 'Loading…'
+			: collectedMinor === null
+				? 'Needs invoice price access'
+				: 'Payments received'
+	);
+
 	const statusOptions = [
 		{ value: '', label: 'All statuses' },
 		...JOB_FILTERABLE_STATUSES.map((value) => ({ value, label: JOB_STATUS_LABELS[value] }))
@@ -227,22 +250,22 @@
 			<StatusOverviewCard rows={overviewRows} loading={countsQuery.isPending} />
 			<KpiCard
 				label="Visits today"
-				value="—"
-				note="Once visits are being scheduled"
+				value={overviewNumber(countsQuery.data?.visits_today)}
+				note={countsQuery.isPending ? 'Loading…' : 'Scheduled for today'}
 				icon={calendarIcon}
 				variant="compact"
 			/>
 			<KpiCard
-				label="Completed this month"
-				value="—"
-				note="Once visits are being completed"
+				label="Completed visits"
+				value={overviewNumber(countsQuery.data?.completed_past_30_days)}
+				note={countsQuery.isPending ? 'Loading…' : 'Past 30 days'}
 				icon={checksIcon}
 				variant="compact"
 			/>
 			<KpiCard
-				label="Revenue this month"
-				value="—"
-				note="Once jobs are being invoiced and paid"
+				label="Collected this month"
+				value={collectedValue}
+				note={collectedNote}
 				icon={chartIcon}
 				variant="compact"
 			/>

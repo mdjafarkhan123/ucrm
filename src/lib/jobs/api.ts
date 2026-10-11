@@ -103,6 +103,10 @@ export async function fetchJobs(filters: JobListFilters, cursor?: string): Promi
 
 export type JobOverview = {
 	counts: JobStatusCounts;
+	visits_today: number;
+	completed_past_30_days: number;
+	/** Null when the reader may not see invoice money. */
+	collected_this_month_minor: number | null;
 	currency_code: string;
 	locale: string;
 };
