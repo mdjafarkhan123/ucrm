@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { resolve } from '$app/paths';
 	import Button from '$lib/components/ui/Button.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
@@ -28,7 +29,8 @@
 		onreschedule,
 		onunschedule,
 		oncomplete,
-		onuncomplete
+		onuncomplete,
+		timer
 	}: {
 		visit: ScheduleVisit;
 		today: string;
@@ -48,6 +50,8 @@
 		oncomplete?: () => void;
 		/** Clear the visit's completion through the Jobs-owned command. */
 		onuncomplete?: () => void;
+		/** The reader's own Start/Stop timer for this visit, supplied by the page that owns the timer query. */
+		timer?: Snippet;
 	} = $props();
 
 	const status = $derived(visitDerivedStatus(visit, today));
@@ -73,6 +77,11 @@
 		<dt>Where</dt>
 		<dd>{address ?? 'No property on this visit'}</dd>
 	</dl>
+
+	{#if timer}
+		<!-- Time clock: a crew member's first action on arrival, so it sits above the dispatch actions. -->
+		<div class="visit-preview__timer">{@render timer()}</div>
+	{/if}
 
 	<div class="visit-preview__actions">
 		<!-- Completion is the Jobs-owned command, presented here and written through /api/jobs. Marking done is
@@ -139,6 +148,12 @@
 			line-height: var(--typography--lineHeight-tighter);
 			overflow-wrap: anywhere;
 		}
+	}
+
+	.visit-preview__timer {
+		width: 100%;
+		padding-top: var(--space-small);
+		border-top: 1px solid var(--color-border);
 	}
 
 	.visit-preview__actions {

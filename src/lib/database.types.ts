@@ -7732,6 +7732,7 @@ export type Database = {
 					minutes: number;
 					notes: string | null;
 					organization_id: string;
+					source: string;
 					started_at: string;
 					updated_at: string;
 					user_id: string;
@@ -7747,6 +7748,7 @@ export type Database = {
 					minutes: number;
 					notes?: string | null;
 					organization_id: string;
+					source?: string;
 					started_at: string;
 					updated_at?: string;
 					user_id: string;
@@ -7762,6 +7764,7 @@ export type Database = {
 					minutes?: number;
 					notes?: string | null;
 					organization_id?: string;
+					source?: string;
 					started_at?: string;
 					updated_at?: string;
 					user_id?: string;
@@ -17274,6 +17277,65 @@ export type Database = {
 					}
 				];
 			};
+			running_timers: {
+				Row: {
+					job_id: string;
+					kind: string;
+					organization_id: string;
+					started_at: string;
+					started_by: string | null;
+					user_id: string;
+					visit_id: string | null;
+				};
+				Insert: {
+					job_id: string;
+					kind?: string;
+					organization_id: string;
+					started_at?: string;
+					started_by?: string | null;
+					user_id: string;
+					visit_id?: string | null;
+				};
+				Update: {
+					job_id?: string;
+					kind?: string;
+					organization_id?: string;
+					started_at?: string;
+					started_by?: string | null;
+					user_id?: string;
+					visit_id?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'running_timers_job_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_list_rows';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'running_timers_job_fk';
+						columns: ['organization_id', 'job_id'];
+						isOneToOne: false;
+						referencedRelation: 'jobs';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'running_timers_member_fk';
+						columns: ['organization_id', 'user_id'];
+						isOneToOne: true;
+						referencedRelation: 'organization_members';
+						referencedColumns: ['organization_id', 'user_id'];
+					},
+					{
+						foreignKeyName: 'running_timers_visit_fk';
+						columns: ['organization_id', 'visit_id'];
+						isOneToOne: false;
+						referencedRelation: 'job_visits';
+						referencedColumns: ['organization_id', 'id'];
+					}
+				];
+			};
 			schedule_events: {
 				Row: {
 					all_day: boolean;
@@ -24940,6 +25002,10 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			my_running_timer: {
+				Args: { target_organization_id: string };
+				Returns: Json;
+			};
 			open_invoice_stripe_checkout: {
 				Args: {
 					new_amount_minor: number;
@@ -28944,6 +29010,14 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			start_visit_timer: {
+				Args: {
+					target_job_id: string;
+					target_organization_id: string;
+					target_visit_id: string;
+				};
+				Returns: Json;
+			};
 			stop_automation_enrollment: {
 				Args: {
 					p_actor_user_id: string;
@@ -28954,6 +29028,7 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			stop_my_timer: { Args: { target_organization_id: string }; Returns: Json };
 			submit_form_response:
 				| {
 						Args: {
