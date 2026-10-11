@@ -1,15 +1,15 @@
 # CRM design system — now
 
 **Goal:** A premium, modern, polished, colourful CRM with organization-selectable designs and supported layout differences.
-**Plan:** `docs/crm-design-system-behavior-contract.md` — fresh planning requested by Jafar on 2026-10-11; first-version scope not yet agreed.
+**Plan:** `docs/crm-design-system-behavior-contract.md`; Stage A: `docs/crm-theme-foundation-behavior-contract.md` (review draft 2026-10-12).
 **Stage:** Planning.
 
-**In progress:** Part 1 Fresh scope — two-stage goal, core theme choices and incremental Botanical workflow agreed. Foundation planning remains incomplete; distinguish planning from built/proven status.
+**In progress:** Part 1 Foundation planning (began as Fresh scope). Complete foundation draft, feasible delivery design and proposed small parts saved; scoped approval remains. See `parts/foundation-planning.md`.
 
 **Carried context:** Earlier selectable-design work reports a shared shell, separate Classic/Botanical frames, private Botanical preview, and selected-only loading proof. These are technical starting points, not inherited product approvals. Recheck relevant foundations before relying on them.
 
-**Next:** Finish the foundation agreement: consolidate preview/save/switch/failure behavior, completion checks and small delivery parts, then check gaps. After foundation planning is agreed, plan Botanical's starter-system gaps and first focused portions; later visual planning grows incrementally. Reuse existing foundation work. No fresh runtime proof was run.
+**Next:** Fresh-reader recheck passed; the foundation agreement/sequence is presented for scoped approval. After approval, move to Part 2 Botanical starter/coverage planning. Keep foundation implementation distinct; no code, database changes or fresh runtime proof occurred in this planning step.
 
-**Blockers:** Full scope and detailed build order still need agreement.
+**Blockers:** Foundation agreement and proposed delivery sequence await Jafar's review.
 
 **Cleanup:** Botanical consolidation is agreed in direction. Check the useful-work/reference transfer before closing its old tracker; earlier records remain intact during planning. No blanket import of old scope or approvals.
