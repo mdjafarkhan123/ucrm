@@ -38,10 +38,14 @@ export const GET: RequestHandler = async (event) => {
 
 	// Money a reader may not see comes back as a dash, never a wrong number; a role without invoice access
 	// simply has no figure to show here.
-	const collected = money.error
+	const moneyRow = money.error
 		? null
-		: ((money.data as { collected_this_month_minor: number | null } | null)
-				?.collected_this_month_minor ?? null);
+		: (money.data as {
+				collected_this_month_minor: number | null;
+				outstanding_minor: number | null;
+			} | null);
+	const collected = moneyRow?.collected_this_month_minor ?? null;
+	const outstanding = moneyRow?.outstanding_minor ?? null;
 
 	const counts = Object.fromEntries(JOB_DERIVED_STATUSES.map((status) => [status, 0])) as Record<
 		string,
@@ -57,6 +61,7 @@ export const GET: RequestHandler = async (event) => {
 			visits_today: visitsToday.count ?? 0,
 			completed_past_30_days: completedRecently.count ?? 0,
 			collected_this_month_minor: collected,
+			outstanding_minor: outstanding,
 			currency_code: formatting.ok ? formatting.formatting.currency_code : 'USD',
 			locale: formatting.ok ? formatting.formatting.locale : 'en-US'
 		},

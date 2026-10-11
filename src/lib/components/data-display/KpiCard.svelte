@@ -9,7 +9,9 @@
 		icon,
 		tone = 'default',
 		variant = 'standard',
-		href
+		href,
+		secondaryValue,
+		secondaryNote
 	}: {
 		label: string;
 		value: string;
@@ -19,6 +21,9 @@
 		variant?: KpiVariant;
 		/** Makes the whole card a link to the list behind the number. Pass a resolved path. */
 		href?: string;
+		/** A second figure under the first, for a card that answers two questions (for example collected and left to collect). */
+		secondaryValue?: string;
+		secondaryNote?: string;
 	} = $props();
 </script>
 
@@ -30,6 +35,12 @@
 	</div>
 	<strong>{value}</strong>
 	<small>{note}</small>
+	{#if secondaryValue !== undefined}
+		<div class="kpi-card__secondary">
+			<strong>{secondaryValue}</strong>
+			<small>{secondaryNote}</small>
+		</div>
+	{/if}
 {/snippet}
 
 {#if href}
@@ -199,6 +210,26 @@
 
 	.kpi-card--brand > strong {
 		color: var(--color-text--reverse);
+	}
+
+	// The second figure sits under the first, set off by a rule so the two read as two answers.
+	.kpi-card__secondary {
+		margin-top: var(--space-small);
+		padding-top: var(--space-small);
+		border-top: var(--border-base) solid var(--color-border);
+
+		> strong {
+			display: block;
+			color: var(--color-heading);
+			font-size: 20px;
+			line-height: 1.1;
+		}
+
+		> small {
+			display: block;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
 	}
 
 	.kpi-card > small {

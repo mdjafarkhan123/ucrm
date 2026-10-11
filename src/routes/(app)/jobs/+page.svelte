@@ -147,23 +147,29 @@
 		return value === undefined ? '—' : String(value);
 	}
 
-	// Money received this calendar month, the same figure the Invoices page shows. A role that cannot see
-	// invoice money gets a dash and a reason rather than a made-up zero.
+	// Two answers on one card, both from the Invoices figures: money already collected this calendar month, and
+	// money still left to collect on open invoices. A role that cannot see invoice money gets dashes and a
+	// reason rather than made-up zeros.
 	const collectedMinor = $derived(countsQuery.data?.collected_this_month_minor ?? null);
-	const collectedValue = $derived(
-		collectedMinor === null
-			? '—'
-			: new Intl.NumberFormat(countsQuery.data?.locale ?? 'en-US', {
-					style: 'currency',
-					currency: countsQuery.data?.currency_code ?? 'USD'
-				}).format(collectedMinor / 100)
-	);
+	const outstandingMinor = $derived(countsQuery.data?.outstanding_minor ?? null);
+	function formatOverviewMoney(amountMinor: number | null) {
+		if (amountMinor === null) return '—';
+		return new Intl.NumberFormat(countsQuery.data?.locale ?? 'en-US', {
+			style: 'currency',
+			currency: countsQuery.data?.currency_code ?? 'USD'
+		}).format(amountMinor / 100);
+	}
+	const collectedValue = $derived(formatOverviewMoney(collectedMinor));
+	const outstandingValue = $derived(formatOverviewMoney(outstandingMinor));
 	const collectedNote = $derived(
 		countsQuery.isPending
 			? 'Loading…'
 			: collectedMinor === null
 				? 'Needs invoice price access'
-				: 'Payments received'
+				: 'Collected this month'
+	);
+	const outstandingNote = $derived(
+		countsQuery.isPending || collectedMinor === null ? '' : 'Left to collect'
 	);
 
 	const statusOptions = [
@@ -263,9 +269,11 @@
 				variant="compact"
 			/>
 			<KpiCard
-				label="Collected this month"
+				label="Revenue"
 				value={collectedValue}
 				note={collectedNote}
+				secondaryValue={outstandingValue}
+				secondaryNote={outstandingNote}
 				icon={chartIcon}
 				variant="compact"
 			/>

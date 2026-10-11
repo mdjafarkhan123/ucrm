@@ -107,6 +107,8 @@ export type JobOverview = {
 	completed_past_30_days: number;
 	/** Null when the reader may not see invoice money. */
 	collected_this_month_minor: number | null;
+	/** Money still owed on open invoices, null when the reader may not see invoice money. */
+	outstanding_minor: number | null;
 	currency_code: string;
 	locale: string;
 };
