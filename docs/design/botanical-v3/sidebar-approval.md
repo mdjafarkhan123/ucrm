@@ -1,4 +1,4 @@
-# Sidebar approval — 2026-10-11
+# Sidebar and header approval — 2026-10-11
 
 Jafar explicitly approved the sidebar in variant 2 revision 2, including the brighter, bolder icons.
 Approved source revision: `983dcecb` (Git resolves the exact source).
@@ -16,9 +16,12 @@ permissions and capabilities remain owned by implementation and product contract
 
 ## Boundaries and next work
 
-This approval covers sidebar appearance, not the header, supporting dialogs, placeholder page content,
-dark palette or platform-wide white-label behavior. Header controls already exist in the same demo as
-a draft, but were not separately presented for review and are not approved. Present them explicitly next.
+Jafar subsequently reviewed the header in the same variant 2 revision 2 demo, said “Yes I like the
+header,” and confirmed the checkpoint with sidebar and header approved. Header appearance is therefore
+approved at the same source revision: cream surface, workspace/page trail, Business Workspace search,
+Add New, appearance, notifications and account controls, including the demonstrated phone arrangement.
+This approval does not cover a universal dialog system, placeholder page content, dark palette,
+production record-search internals or platform-wide white-label behavior.
 The sample access filters demonstrate visibility; they do not approve production role definitions.
-Implementation waits for the shell review and impact check. Live corroboration, full text resizing,
+Before implementation, align the relevant header guidance and complete the shared-shell impact check. Live corroboration, full text resizing,
 assistive-technology and outdoor usability remain outstanding before claiming implementation readiness.
