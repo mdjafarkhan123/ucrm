@@ -1,19 +1,5 @@
 # Layout & Spacing
 
-## Approved Botanical shell layout
-
-For redesign work, use the [shell approval record](../../../docs/design/botanical-v3/sidebar-approval.md)
-and its exact header B revision 4 source. Desktop web is the primary target. The shell body owns the
-shared outer inset, so header and page content align automatically. Keep inner control/panel padding
-local. Header stays outside the scrollable page content; retain sidebar collapse and reachable phone
-navigation. Translate approved measurements through app tokens/rem conventions during implementation.
-Preserve existing fixed save-bar geometry when changing shell insets.
-
-This section covers the approved shell only. The legacy layout specifications below serve untouched
-surfaces and do not prescribe spacing for redesigned pages.
-
-## Legacy maintenance reference
-
 Its a desktop web app. Mobile priority is not first
 
 ## Spacing Tokens

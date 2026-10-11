@@ -35,13 +35,13 @@ Use one authoritative home for each design value or rule. The design skill shoul
 Jafar confirmed the maintenance approach on 2026-10-11: keep the existing design skill and modules,
 updating only values and instructions that need alignment with the approved new design. Keep useful
 accessibility, screen-check, component-reuse and workflow rules. List patterns that have not yet been
-built and approved in `.claude/skills/design/alignment.md`; their older guidance supports untouched
+built and approved in `.claude/skills/design-botanical/alignment.md`; their older guidance supports untouched
 screens only. After each focused demo is built and approved, record its exact revision and coverage,
 then update the relevant skill module before implementation. Do not delete and recreate the system or
 promote an unreviewed pattern merely because an old module describes it.
 
 Jafar clarified the reading rule on 2026-10-11: for redesign demos and implementation, load additional
-design modules only through the updated-coverage list in `.claude/skills/design/alignment.md`.
+design modules only through the updated-coverage list in `.claude/skills/design-botanical/alignment.md`.
 Uncovered patterns are designed from Botanical foundations and researched interactions for focused
 review; older visual modules stay available for untouched maintenance.
 

@@ -17,10 +17,10 @@ git show faeccae3b021ab763c0406d989b2aca0d25ba15a:static/demo/job-details/styles
 
 Reference captures, Chromium, device scale 1, populated default state:
 
-| Viewport | First screen | Whole page |
-| --- | --- | --- |
+| Viewport           | First screen            | Whole page                         |
+| ------------------ | ----------------------- | ---------------------------------- |
 | 1440 × 900 desktop | [Desktop](1440-top.png) | [Desktop full page](1440-full.png) |
-| 390 × 900 phone | [Phone](390-top.png) | [Phone full page](390-full.png) |
+| 390 × 900 phone    | [Phone](390-top.png)    | [Phone full page](390-full.png)    |
 
 [Render evidence](render-evidence.json) records the source hashes, final computed styles, viewport sizes
 and actual title font. Captures used a local static server serving the same files, without login or app
@@ -49,30 +49,30 @@ and financial tables need later focused review. Part 3 must provide reachable ph
 Values below are the final v3 appearance, after all SCSS overrides. Preserve their roles when extending
 the system. Accent colour identifies a subject; a status still needs explicit words or an icon.
 
-| Role | Observed value | Use |
-| --- | --- | --- |
-| Canvas | `#f5f4ef` | Warm page background |
-| Main text | `#243d34` | Dark green ink |
-| Supporting content | `#52604f` | Notes, row descriptions and metadata; some local text is darker/lighter |
-| Sidebar | `#183e33` → `#132e27`, 165° | Forest navigation gradient |
-| Selected sidebar item | `#41644c`, inset `#c7de9c` | Active navigation plus visible marker |
-| Brand mark | `#d6e6a4` on `#254732` ink | Light botanical brand accent |
-| Header | `#fffef9`, bottom border `#e4e7da` | Quiet app header |
-| Standard panel | `#fffefb`, border `#e2e6da` | Main content containers |
-| Hero | `#edf3e5` → `#f5f7ed` at 60% → `#faf6e9`, 115° | Identity and key summary; border `#dfe6d3` |
-| Primary action | `#286b49`, white text; hover `#205b3e` | Main action emphasis |
-| Selected section | `#e7efda`, text `#365e34` | Active section navigation |
-| Visit surface | `#eaf2f6`, footer `#e3edf1` | Scheduling context; dark blue text |
-| Upcoming status | `#e6eff8`, text `#466986` | Explicit “Upcoming” pill |
-| Completed status | `#e9f1df`, text `#4e6f32` | Explicit “Completed” pill |
-| In-progress badge | `#deedcb`, text `#3f602b`, border `#cedeae` | Job status words and dot |
-| Instructions | `#fffcf4`, border `#eadfc7` | Warm field guidance |
-| Instruction icon | `#f4e9cd`, ink `#8b713e` | Amber section identity |
-| Labor icon | `#e6edf7`, ink `#566f9b` | Blue section identity |
-| Notes/expenses icon | `#f3e8dd`, ink `#956b49` | Clay section identity |
-| Files icon | `#e2eeea`, ink `#4e7b6b` | Teal section identity |
-| Report icon | `#eee8f4`, ink `#7b6496` | Lavender section identity |
-| Pending signature | `#faf4e6` footer, `#eadbb8` panel border | Explicit pending state with amber accent |
+| Role                  | Observed value                                 | Use                                                                     |
+| --------------------- | ---------------------------------------------- | ----------------------------------------------------------------------- |
+| Canvas                | `#f5f4ef`                                      | Warm page background                                                    |
+| Main text             | `#243d34`                                      | Dark green ink                                                          |
+| Supporting content    | `#52604f`                                      | Notes, row descriptions and metadata; some local text is darker/lighter |
+| Sidebar               | `#183e33` → `#132e27`, 165°                    | Forest navigation gradient                                              |
+| Selected sidebar item | `#41644c`, inset `#c7de9c`                     | Active navigation plus visible marker                                   |
+| Brand mark            | `#d6e6a4` on `#254732` ink                     | Light botanical brand accent                                            |
+| Header                | `#fffef9`, bottom border `#e4e7da`             | Quiet app header                                                        |
+| Standard panel        | `#fffefb`, border `#e2e6da`                    | Main content containers                                                 |
+| Hero                  | `#edf3e5` → `#f5f7ed` at 60% → `#faf6e9`, 115° | Identity and key summary; border `#dfe6d3`                              |
+| Primary action        | `#286b49`, white text; hover `#205b3e`         | Main action emphasis                                                    |
+| Selected section      | `#e7efda`, text `#365e34`                      | Active section navigation                                               |
+| Visit surface         | `#eaf2f6`, footer `#e3edf1`                    | Scheduling context; dark blue text                                      |
+| Upcoming status       | `#e6eff8`, text `#466986`                      | Explicit “Upcoming” pill                                                |
+| Completed status      | `#e9f1df`, text `#4e6f32`                      | Explicit “Completed” pill                                               |
+| In-progress badge     | `#deedcb`, text `#3f602b`, border `#cedeae`    | Job status words and dot                                                |
+| Instructions          | `#fffcf4`, border `#eadfc7`                    | Warm field guidance                                                     |
+| Instruction icon      | `#f4e9cd`, ink `#8b713e`                       | Amber section identity                                                  |
+| Labor icon            | `#e6edf7`, ink `#566f9b`                       | Blue section identity                                                   |
+| Notes/expenses icon   | `#f3e8dd`, ink `#956b49`                       | Clay section identity                                                   |
+| Files icon            | `#e2eeea`, ink `#4e7b6b`                       | Teal section identity                                                   |
+| Report icon           | `#eee8f4`, ink `#7b6496`                       | Lavender section identity                                               |
+| Pending signature     | `#faf4e6` footer, `#eadbb8` panel border       | Explicit pending state with amber accent                                |
 
 Use tinted surfaces and small coloured icons purposefully, with dark readable text. Avoid assigning a
 different bright fill to every panel. Brand green, financial emphasis and completion green share a
@@ -85,17 +85,17 @@ Inter font file. Chromium reported **Liberation Sans Bold** for the title in bot
 were registered. Do not describe these screenshots as verified Inter rendering. Selecting or bundling a
 font for implementation needs a comparison with this baseline in the relevant demo.
 
-| Role | Final observed size / weight |
-| --- | --- |
-| Body | 15px / 400, line-height 1.6 (24px) |
-| Hero title | 31px / 600, line-height 1.2 (37.2px), letter-spacing −0.9px |
-| Section heading | 18px / 600, line-height 1.6; letter-spacing −0.3px |
-| Visit/customer subheading | 16px / 600 |
-| Main row content | Usually 15px / 600 for emphasized names |
-| Supporting details | Usually 13px / 400 |
-| Button and section link | 14px; buttons 600, links 500 |
-| Sidebar links | 15px / 500 |
-| Hero metrics | 27px / 550; scheduled date is a local 18px exception |
+| Role                      | Final observed size / weight                                |
+| ------------------------- | ----------------------------------------------------------- |
+| Body                      | 15px / 400, line-height 1.6 (24px)                          |
+| Hero title                | 31px / 600, line-height 1.2 (37.2px), letter-spacing −0.9px |
+| Section heading           | 18px / 600, line-height 1.6; letter-spacing −0.3px          |
+| Visit/customer subheading | 16px / 600                                                  |
+| Main row content          | Usually 15px / 600 for emphasized names                     |
+| Supporting details        | Usually 13px / 400                                          |
+| Button and section link   | 14px; buttons 600, links 500                                |
+| Sidebar links             | 15px / 500                                                  |
+| Hero metrics              | 27px / 550; scheduled date is a local 18px exception        |
 
 The cascade contains deliberate local exceptions: the first upcoming visit pill computes to 14px,
 although the general status-pill rule is 13px. Do not flatten these into one claimed universal token.
@@ -139,7 +139,8 @@ rollout process. This guide owns the extracted v3 foundations; the source revisi
 make each extraction traceable. Product contracts and verified app behaviour continue to own workflows
 and permissions. No new product behaviour or researched interaction is proposed by this extraction.
 
-The design skill now routes redesign work to this guidance and tracks uncovered patterns in
-`.claude/skills/design/alignment.md`. Keep the existing skill and update relevant modules incrementally
-after focused demo approval, as recorded in the campaign contract. Untouched app surfaces retain their
-current appearance. Next is Part 3's sidebar/header demo; implementation waits for its approval.
+The shared design skill routes Botanical work to `.claude/skills/design-botanical/SKILL.md` and its
+alignment register. Classic modules live separately in `design-classic`. Update Botanical modules after
+focused approval; current app surfaces retain their appearance. Sidebar variant 2 revision 2 and header B
+revision 4 are approved in the linked [shell approval](sidebar-approval.md); implementation waits for the
+selectable-design loading proof and shared-shell checks.

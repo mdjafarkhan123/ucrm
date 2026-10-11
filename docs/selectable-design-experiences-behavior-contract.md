@@ -1,6 +1,6 @@
 # Selectable design experiences
 
-**Status:** Planning 2026-10-11. Jafar authorized architecture investigation and wants Classic preserved alongside Botanical. Release scope and rollout direction are settled; proposed build order awaits final review.
+**Status:** Build order approved by Jafar on 2026-10-11. Guidance separation complete; selected-loading proof next. Classic remains live.
 
 ## Summary
 
@@ -49,7 +49,7 @@ in a private test environment, before production deployment. It does not mean ex
 production system. Verify asset isolation, behaviour, accessibility and performance before release; the
 final production check confirms the deployed result after separately authorized deployment.
 
-## Proposed execution order
+## Approved execution order
 
 1. Recover and reconcile Classic guidance; establish the shared router and Botanical skill with links and
    paired AGENTS/CLAUDE updates. Keep all application appearance unchanged.
@@ -64,7 +64,8 @@ final production check confirms the deployed result after separately authorized 
    including guarded reload, failed-save handling and tenant isolation. Then verify full offered journeys
    and measured delivery before enabling Botanical for organizations.
 
-This order is proposed, not authorization for a full rewrite or a database migration.
+Jafar approved this saved order on 2026-10-11 and explicitly started guidance separation without app changes.
+Production deployment and infrastructure changes still require separate approval.
 
 ## Still unclear
 

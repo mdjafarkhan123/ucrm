@@ -1,40 +1,26 @@
 ---
 name: design
-description: Design system and screen check for any screen, component, styling, or frontend change in this app.
+description: Route every screen, component, styling or frontend task to its design guidance and run the shared screen check.
 ---
 
-# Design System — Agent Instructions
+# Shared design workflow
 
-## Authority and transition
+## Choose the presentation first
 
-For redesign work, read [Botanical v3 starter guidance](../../../docs/design/botanical-v3/README.md)
-and the [campaign contract](../../../docs/uplift-design-refresh-behavior-contract.md) first.
-The guidance owns demonstrated visual foundations; the contract owns demo review and rollout approval.
-Approved product contracts and verified implementation own capabilities and permissions.
+1. For existing-app maintenance, load [Classic](../design-classic/SKILL.md). Preserve the actual screen.
+2. For Botanical work, including private demos, load [Botanical](../design-botanical/SKILL.md).
+   A redesign request alone does not switch the live app. Classic remains live until approved rollout.
+3. When work spans both designs, load each separately and verify each affected presentation. For an
+   unspecified new presentation, resolve the intended design with Jafar before choosing visual rules.
+   Control Room, login and customer-facing surfaces retain their current appearance in the first release.
 
-Keep this skill and its modules. Update only the necessary parts as focused demos are built and approved.
-Use the [alignment register](alignment.md) to distinguish established foundations from patterns awaiting
-review. After approval, record the exact demo revision and coverage in permanent guidance, then update
-its relevant module before implementation. Keep each value or rule in one authoritative home.
+The [selectable-design contract](../../../docs/selectable-design-experiences-behavior-contract.md)
+owns release scope. Presentation skills own appearance; product contracts and verified implementation
+own records, capabilities and permissions. Share behaviour rather than copying it into design pages.
 
-Untouched screens retain their existing appearance. The modules below remain their maintenance reference.
-For redesigned portions, approved Botanical guidance takes precedence over old visual values, border-line
-headings and `Design/*.jpg` layouts. A pattern missing from Botanical is awaiting approval, not permission
-to carry its old appearance into the redesign. Skill edits alone never change app tokens or components.
-Retain the accessibility, engineering and workflow constraints in this entry point and approved product
-contracts. The alignment register governs which additional modules redesign work may load.
-
-## Before Writing Any Code
-
-1. Identify whether the portion is untouched maintenance or redesign work (including new demos). For
-   redesign work, read the Botanical guidance, campaign contract and alignment register first; load only
-   modules explicitly listed as updated for the relevant coverage in the register. For untouched
-   maintenance, read the relevant existing modules.
-2. Inspect `src/lib/components` for reuse. Keep Svelte 5, component-local SCSS/BEM and Tabler icons.
-3. Follow the campaign's focused demo review before implementing a new design. Resolve conflicting
-   behavior sources against the relevant product contract and implementation before changing behavior.
-
----
+Before code, inspect `src/lib/components` for reuse. Use Svelte 5, component-local SCSS/BEM, Tabler icons,
+semantic HTML and semantic design tokens. Preserve existing loading/cache/preload rules. Every interactive
+control needs hover, focus and disabled states. A skill edit alone never changes application assets.
 
 ## Before Calling a Screen Done
 
@@ -61,15 +47,7 @@ what still looks off. Tell Jafar which screens and states you checked, what you 
 
 ---
 
-## Critical Rules
-
-- **Live tokens and approved foundations have different scopes.** Existing token/module files describe
-  the current app. Botanical guidance describes the approved redesign foundations, not deployed tokens.
-  When an approved implementation changes a token, update its relevant documentation in the same change
-  and check effects on previously migrated surfaces. Material visible shared changes need Jafar's approval.
-
-- **Read related approved modules together.** For redesign work, select them through the alignment
-  register’s reading rule. Existing `brand.md` precedence applies only to untouched-screen maintenance.
+## Shared workflow constraints
 
 - **Workflow continuity.** Keep the save/cancel rules below during this visual refresh. The older Jobber
   screen-pattern reference contains differing save-bar wording; it does not override these rules. Resolve
@@ -107,58 +85,3 @@ what still looks off. Tell Jafar which screens and states you checked, what you 
   Never draw a photo as a grey file-type icon, and never point an `<img>` at a presigned storage link — those
   expire in minutes. Images stream from `GET /api/attachments/[id]/view`, with `?size=thumb` for the small
   copy the browser made at upload.
-
-- **Titled blocks:** retain `SectionBlock` on untouched surfaces. For redesigned portions, follow the
-  approved panel-contained headings in Botanical guidance and inspect existing components for reuse or
-  extension. Preserve appropriate `fieldset`/`legend` semantics for grouped inputs and heading hierarchy.
-
-- **Tokens are NOT Tailwind classes.** Colors are semantic CSS custom properties: `var(--color-bg-surface)`, `var(--color-border)`, `var(--color-text-primary)`, `var(--color-brand)`, `var(--success-solid)`, etc. See `colors.md` for the full contract.
-
-- On untouched surfaces, dark mode is **automatic** via `_theme.scss` (mirrors the app's `dark-theme-tokens` mixin). Never manually swap color values.
-
-- Toggle: set `data-theme="dark"` on `<html>` (explicit in-app choice); OS `prefers-color-scheme` is respected when no explicit choice is set.
-
-- **Every interactive element needs hover, focus, and disabled states** — defined in the relevant module.
-
-- **Use semantic HTML:** proper heading hierarchy (`h1`→`h6`), `<button>` for actions, `<a>` for navigation, ARIA attributes where needed.
-
-## Module Index
-
-### Existing foundation modules (scope governed by Authority and transition)
-
-- [brand.md](brand.md) — Brand
-- [colors.md](colors.md) — Color
-- [typography.md](typography.md) — Typography
-- [layout.md](layout.md) — Layout
-- [radius.md](radius.md) — Radius
-- [shadows.md](shadows.md) — Shadow
-- [borders.md](borders.md) — Borders
-
-### Core Components
-
-- [buttons.md](buttons.md) — Button
-- [button-group.md](button-group.md) — Button Group
-- [cards.md](cards.md) — Card
-- [section-block.md](section-block.md) — Section Block
-- [inputs.md](inputs.md) — Input
-- [alerts.md](alerts.md) — Alert
-- [badges.md](badges.md) — Badge
-- [lists.md](lists.md) — List
-- [avatars.md](avatars.md) — Avatar
-- [icon-shapes.md](icon-shapes.md) — Icon Shape
-- [accordion.md](accordion.md) — Accordion
-- [dropdown.md](dropdown.md) — Dropdown
-- [modals.md](modals.md) — Modal
-- [tabs.md](tabs.md) — Tabs
-- [tables.md](tables.md) — Table
-- [pagination.md](pagination.md) — Pagination
-- [sidebars.md](sidebars.md) — Sidebar
-- [radios-checkboxes-toggle.md](radios-checkboxes-toggle.md) — Radio, Checkbox,
-- [tooltips-popovers.md](tooltips-popovers.md) - Tooltips and popovers
-- [content.md](content.md) - Content grid and layout system
-
-### CRM-Specific Components
-
-- [status-indicators.md](status-indicators.md) - Job/project status, pipeline stages, priority |
-- [stats-cards.md](stats-cards.md) - KPI metric cards, trend indicators, featured stats
-- Charts and timelines — Botanical guidance awaits focused review; no data-display module exists yet.

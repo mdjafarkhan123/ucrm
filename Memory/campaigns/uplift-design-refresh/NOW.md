@@ -7,7 +7,7 @@
 
 **Next:** Resolve the selectable-design prerequisite before live shell implementation. Read `Memory/campaigns/selectable-design-experiences/NOW.md`. Classic preservation, separate design guidance and selected-only loading must be planned and proven first. Then resume Part 4 using the unchanged approval record `docs/design/botanical-v3/sidebar-approval.md`.
 
-**Maintenance rule:** Keep the existing design skill and update necessary parts incrementally. Use `.claude/skills/design/alignment.md` as the reading gate: load only modules explicitly updated for the relevant redesign coverage; uncovered patterns need a focused demo, not old visual guidance. Update each relevant module after its focused demo is built and approved, before implementation.
+**Maintenance rule:** Enter through the shared design skill; keep Classic guidance separate and update Botanical parts incrementally. Use `.claude/skills/design-botanical/alignment.md` as the reading gate: load only modules explicitly updated for the relevant redesign coverage; uncovered patterns need a focused demo, not old visual guidance. Update each relevant module after its focused demo is built and approved, before implementation.
 
 **Reference:** `docs/design/botanical-v3/` preserves desktop/phone captures and rendered evidence. The preview requests Inter but rendered a fallback font. Phone navigation is absent in the reference; resolve it in Part 3, not by silently approving the existing phone layout.
 

@@ -8,11 +8,11 @@ rule in one file, make the same change in the other in the same commit.
 - **Owner:** Jafar owns the CRM/app and makes its product decisions.
 - **Product:** One platform with industry-specific business experiences. Business type, enabled subscription
   features, and staff permissions decide what each business sees and can do.
-    - The contractor edition follows Jobber.
-    - The next expansion follows Boulevard, starting with Medspa & Clinical Wellness and the shared
-      appointment-based capabilities it needs; Beauty & Spa follows.
-    - Medspa first-release behavior and build order are approved; application and first-clinic readiness and
-      capacity remain unverified.
+  - The contractor edition follows Jobber.
+  - The next expansion follows Boulevard, starting with Medspa & Clinical Wellness and the shared
+    appointment-based capabilities it needs; Beauty & Spa follows.
+  - Medspa first-release behavior and build order are approved; application and first-clinic readiness and
+    capacity remain unverified.
 - **Product context:** Read `docs/platform-overview.md` when planning an industry edition or changing shared
   product behavior. `docs/PRODUCT.md` is the contractor blueprint. For Medspa work, read
   `docs/boulevard-product-behavior-contract.md` and its approved build-order link; Beauty & Spa details need
@@ -95,6 +95,10 @@ current task; do not load the full library by default.
 
 ---
 
+Design guidance: always enter through `.claude/skills/design/SKILL.md`. It routes existing-app work to
+`design-classic` and Botanical demos/redesign to `design-botanical`; shared workflow and screen checks
+stay in the router. Classic remains live until approved rollout. Load both for work affecting both.
+
 ## Campaign
 
 -Load `.claude/skills/campaign-memory/SKILL.md` when user wants to build a product or planning or wanna let you work on any task
@@ -139,13 +143,13 @@ before changing files (`--mode read` for research). Release after safe integrati
 - **TanStack Query owns server state** and is the only cache. The `src/routes/(app)/+layout.svelte` shell is SSR;
   all page content under `src/routes/(app)/` is CSR only, so navigation never waits on data: pages show cached
   data or skeletons while they load.
-    - Move between pages with links — `href` on `Button`, or an `<a>` — so SvelteKit preloads the page on hover.
-      `resolve()` wants the full route id including the group, e.g. `'/(app)/clients/[id]'`.
-    - Keep the warm list in `src/routes/(app)/+layout.svelte` to the sidebar's daily pages and their record pages
-      (Jafar, 2026-09-28: it costs crews mobile data), dropping entries whose routes go away.
-    - Content the user has to reveal — a tab panel, an accordion, a dialog's contents — loads when its control is
-      hovered, not with the page.
-    - After a mutation or an external event, invalidate every affected query.
+  - Move between pages with links — `href` on `Button`, or an `<a>` — so SvelteKit preloads the page on hover.
+    `resolve()` wants the full route id including the group, e.g. `'/(app)/clients/[id]'`.
+  - Keep the warm list in `src/routes/(app)/+layout.svelte` to the sidebar's daily pages and their record pages
+    (Jafar, 2026-09-28: it costs crews mobile data), dropping entries whose routes go away.
+  - Content the user has to reveal — a tab panel, an accordion, a dialog's contents — loads when its control is
+    hovered, not with the page.
+  - After a mutation or an external event, invalidate every affected query.
 - Server secrets stay server-side.
 - All writes go through `/api/*` routes. Every `POST` and `PATCH` validates with Zod before database access.
 - **Performance — proportional evidence.** Follow `performance-review`'s invocation gate and two-stage

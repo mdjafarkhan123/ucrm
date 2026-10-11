@@ -95,6 +95,10 @@ current task; do not load the full library by default.
 
 ---
 
+Design guidance: always enter through `.claude/skills/design/SKILL.md`. It routes existing-app work to
+`design-classic` and Botanical demos/redesign to `design-botanical`; shared workflow and screen checks
+stay in the router. Classic remains live until approved rollout. Load both for work affecting both.
+
 ## Campaign
 
 -Load `.claude/skills/campaign-memory/SKILL.md` when user wants to build a product or planning or wanna let you work on any task
