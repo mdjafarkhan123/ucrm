@@ -7,6 +7,8 @@
 
 Each organization can choose a theme that changes the CRM’s appearance and, where supported, its layout, similar to choosing different desktop experiences on Linux.
 
+Jafar clarified on 2026-10-11 that this campaign should also achieve the Botanical campaign's visual goal: a premium, modern, polished, colourful CRM with improved composition, hierarchy, typography and spacing. Botanical is the redesigned experience offered through this design system. This is a fresh statement of intent; the previously chosen first-version Business Workspace boundary still stands unless Jafar expands it.
+
 ## Problem and audience
 
 Organizations should be able to choose how their CRM looks and is arranged. The goal includes layout differences where a theme offers them, rather than limiting choice to colors.
@@ -15,7 +17,9 @@ Organizations should be able to choose how their CRM looks and is arranged. The 
 
 Jafar requested a fresh campaign. The existing `selectable-design-experiences` and `uplift-design-refresh` campaign records remain untouched; cleanup is postponed until he asks. Their plans, tasks, design approvals, and build order do not define this campaign. Existing application code remains in place.
 
-Only the implemented theme foundation from the selectable-design campaign may inform this campaign’s starting position. Do not use the old redesign campaign as a source of new requirements.
+The implemented theme foundation supplies the technical starting position. Earlier redesign requirements enter this campaign only when Jafar explicitly brings them across, as with the visual goal below.
+
+On 2026-10-11 Jafar explicitly asked to bring the Botanical campaign's goal into this campaign. Its saved goal and reference may now inform that visual objective. Old task order, individual approvals and broader rollout scope are not automatically imported. The earlier campaign records remain unchanged; Jafar still has more to add before the full agreement is synthesized.
 
 ## Existing foundation — focused source check complete
 
