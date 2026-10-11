@@ -1,0 +1,1022 @@
+{
+  "profile": "Chromium, 4x CPU, 150ms RTT, 1.6Mbps down, 750Kbps up; local adapter-node HTTP; one session",
+  "exclusive": {
+    "classic": [
+      "_app/immutable/chunks/BlDVjVH9.js",
+      "_app/immutable/chunks/0S30J8Wb.js"
+    ],
+    "botanical": [
+      "_app/immutable/chunks/CT9FCqEM.js",
+      "_app/immutable/chunks/B5yUiAvg.js"
+    ]
+  },
+  "styleIds": {
+    "classic": [
+      "svelte-si9u9e",
+      "svelte-1hla42d"
+    ],
+    "botanical": [
+      "svelte-i7z0tx",
+      "svelte-bv9ogq"
+    ]
+  },
+  "violations": [],
+  "results": [
+    {
+      "design": "classic",
+      "width": 1440,
+      "navigationMs": 63,
+      "beforeHover": [
+        "/demo/design-loading/classic/overview",
+        "/_app/immutable/assets/0.Ccb-7Pf4.css",
+        "/_app/immutable/assets/98.kbP2O8Cx.css",
+        "/_app/immutable/entry/start.729hQ4EY.js",
+        "/_app/immutable/chunks/BrNofD1B.js",
+        "/_app/immutable/chunks/CE7vQsk4.js",
+        "/_app/immutable/entry/app.clfGOYA9.js",
+        "/_app/immutable/chunks/Dvw_3QAT.js",
+        "/_app/immutable/chunks/xihTtKlq.js",
+        "/_app/immutable/nodes/0.CzYpwkh5.js",
+        "/_app/immutable/chunks/DVR3Pi-K.js",
+        "/_app/immutable/chunks/CeO3wCtd.js",
+        "/_app/immutable/chunks/DMp_stsS.js",
+        "/_app/immutable/chunks/C3f_CY7z.js",
+        "/_app/immutable/chunks/By7vEEz9.js",
+        "/_app/immutable/chunks/pLRaMGoU.js",
+        "/_app/immutable/chunks/DTi3Tg2n.js",
+        "/_app/immutable/chunks/LfqvyZxz.js",
+        "/_app/immutable/chunks/OtLJ-IHq.js",
+        "/_app/immutable/nodes/98.hr2Sq-MO.js",
+        "/_app/immutable/chunks/CsJuc26W2.js",
+        "/_app/immutable/chunks/BeiTx51G2.js",
+        "/fonts/inter-v20-latin-700.woff2",
+        "/fonts/inter-v20-latin-regular.woff2",
+        "/_app/immutable/nodes/1.BRPG300N.js",
+        "/_app/immutable/chunks/BUGTxFhf.js",
+        "/_app/immutable/chunks/BlDVjVH9.js",
+        "/_app/immutable/chunks/0S30J8Wb.js"
+      ],
+      "beforeNavigation": [
+        "/demo/design-loading/classic/overview",
+        "/_app/immutable/assets/0.Ccb-7Pf4.css",
+        "/_app/immutable/assets/98.kbP2O8Cx.css",
+        "/_app/immutable/entry/start.729hQ4EY.js",
+        "/_app/immutable/chunks/BrNofD1B.js",
+        "/_app/immutable/chunks/CE7vQsk4.js",
+        "/_app/immutable/entry/app.clfGOYA9.js",
+        "/_app/immutable/chunks/Dvw_3QAT.js",
+        "/_app/immutable/chunks/xihTtKlq.js",
+        "/_app/immutable/nodes/0.CzYpwkh5.js",
+        "/_app/immutable/chunks/DVR3Pi-K.js",
+        "/_app/immutable/chunks/CeO3wCtd.js",
+        "/_app/immutable/chunks/DMp_stsS.js",
+        "/_app/immutable/chunks/C3f_CY7z.js",
+        "/_app/immutable/chunks/By7vEEz9.js",
+        "/_app/immutable/chunks/pLRaMGoU.js",
+        "/_app/immutable/chunks/DTi3Tg2n.js",
+        "/_app/immutable/chunks/LfqvyZxz.js",
+        "/_app/immutable/chunks/OtLJ-IHq.js",
+        "/_app/immutable/nodes/98.hr2Sq-MO.js",
+        "/_app/immutable/chunks/CsJuc26W2.js",
+        "/_app/immutable/chunks/BeiTx51G2.js",
+        "/fonts/inter-v20-latin-700.woff2",
+        "/fonts/inter-v20-latin-regular.woff2",
+        "/_app/immutable/nodes/1.BRPG300N.js",
+        "/_app/immutable/chunks/BUGTxFhf.js",
+        "/_app/immutable/chunks/BlDVjVH9.js",
+        "/_app/immutable/chunks/0S30J8Wb.js",
+        "/demo/design-loading/classic/details/__data.json"
+      ],
+      "requests": [
+        "/demo/design-loading/classic/overview",
+        "/_app/immutable/assets/0.Ccb-7Pf4.css",
+        "/_app/immutable/assets/98.kbP2O8Cx.css",
+        "/_app/immutable/entry/start.729hQ4EY.js",
+        "/_app/immutable/chunks/BrNofD1B.js",
+        "/_app/immutable/chunks/CE7vQsk4.js",
+        "/_app/immutable/entry/app.clfGOYA9.js",
+        "/_app/immutable/chunks/Dvw_3QAT.js",
+        "/_app/immutable/chunks/xihTtKlq.js",
+        "/_app/immutable/nodes/0.CzYpwkh5.js",
+        "/_app/immutable/chunks/DVR3Pi-K.js",
+        "/_app/immutable/chunks/CeO3wCtd.js",
+        "/_app/immutable/chunks/DMp_stsS.js",
+        "/_app/immutable/chunks/C3f_CY7z.js",
+        "/_app/immutable/chunks/By7vEEz9.js",
+        "/_app/immutable/chunks/pLRaMGoU.js",
+        "/_app/immutable/chunks/DTi3Tg2n.js",
+        "/_app/immutable/chunks/LfqvyZxz.js",
+        "/_app/immutable/chunks/OtLJ-IHq.js",
+        "/_app/immutable/nodes/98.hr2Sq-MO.js",
+        "/_app/immutable/chunks/CsJuc26W2.js",
+        "/_app/immutable/chunks/BeiTx51G2.js",
+        "/fonts/inter-v20-latin-700.woff2",
+        "/fonts/inter-v20-latin-regular.woff2",
+        "/_app/immutable/nodes/1.BRPG300N.js",
+        "/_app/immutable/chunks/BUGTxFhf.js",
+        "/_app/immutable/chunks/BlDVjVH9.js",
+        "/_app/immutable/chunks/0S30J8Wb.js",
+        "/demo/design-loading/classic/details/__data.json"
+      ],
+      "metrics": {
+        "lcp": 492,
+        "cls": 0.003650308641975309,
+        "designs": [
+          "classic",
+          "classic",
+          "classic",
+          "classic",
+          "classic",
+          "classic",
+          "classic",
+          "classic"
+        ]
+      },
+      "overflow": false,
+      "assets": [
+        {
+          "path": "/_app/immutable/assets/0.Ccb-7Pf4.css",
+          "encoded": 4269,
+          "transfer": 4569
+        },
+        {
+          "path": "/_app/immutable/assets/98.kbP2O8Cx.css",
+          "encoded": 51,
+          "transfer": 351
+        },
+        {
+          "path": "/_app/immutable/entry/start.729hQ4EY.js",
+          "encoded": 86,
+          "transfer": 386
+        },
+        {
+          "path": "/_app/immutable/chunks/BrNofD1B.js",
+          "encoded": 13025,
+          "transfer": 13325
+        },
+        {
+          "path": "/_app/immutable/chunks/CE7vQsk4.js",
+          "encoded": 21477,
+          "transfer": 21777
+        },
+        {
+          "path": "/_app/immutable/entry/app.clfGOYA9.js",
+          "encoded": 15581,
+          "transfer": 15881
+        },
+        {
+          "path": "/_app/immutable/chunks/Dvw_3QAT.js",
+          "encoded": 631,
+          "transfer": 931
+        },
+        {
+          "path": "/_app/immutable/chunks/xihTtKlq.js",
+          "encoded": 69,
+          "transfer": 369
+        },
+        {
+          "path": "/_app/immutable/nodes/0.CzYpwkh5.js",
+          "encoded": 4176,
+          "transfer": 4476
+        },
+        {
+          "path": "/_app/immutable/chunks/DVR3Pi-K.js",
+          "encoded": 2731,
+          "transfer": 3031
+        },
+        {
+          "path": "/_app/immutable/chunks/CeO3wCtd.js",
+          "encoded": 2416,
+          "transfer": 2716
+        },
+        {
+          "path": "/_app/immutable/chunks/DMp_stsS.js",
+          "encoded": 993,
+          "transfer": 1293
+        },
+        {
+          "path": "/_app/immutable/chunks/C3f_CY7z.js",
+          "encoded": 225,
+          "transfer": 525
+        },
+        {
+          "path": "/_app/immutable/chunks/By7vEEz9.js",
+          "encoded": 240,
+          "transfer": 540
+        },
+        {
+          "path": "/_app/immutable/chunks/pLRaMGoU.js",
+          "encoded": 274,
+          "transfer": 574
+        },
+        {
+          "path": "/_app/immutable/chunks/DTi3Tg2n.js",
+          "encoded": 241,
+          "transfer": 541
+        },
+        {
+          "path": "/_app/immutable/chunks/LfqvyZxz.js",
+          "encoded": 216,
+          "transfer": 516
+        },
+        {
+          "path": "/_app/immutable/chunks/OtLJ-IHq.js",
+          "encoded": 404,
+          "transfer": 704
+        },
+        {
+          "path": "/_app/immutable/nodes/98.hr2Sq-MO.js",
+          "encoded": 962,
+          "transfer": 1262
+        },
+        {
+          "path": "/_app/immutable/chunks/CsJuc26W2.js",
+          "encoded": 366,
+          "transfer": 666
+        },
+        {
+          "path": "/_app/immutable/chunks/BeiTx51G2.js",
+          "encoded": 26,
+          "transfer": 326
+        },
+        {
+          "path": "/fonts/inter-v20-latin-700.woff2",
+          "encoded": 24356,
+          "transfer": 24656
+        },
+        {
+          "path": "/fonts/inter-v20-latin-regular.woff2",
+          "encoded": 23664,
+          "transfer": 23964
+        },
+        {
+          "path": "/_app/immutable/nodes/1.BRPG300N.js",
+          "encoded": 229,
+          "transfer": 529
+        },
+        {
+          "path": "/_app/immutable/chunks/BUGTxFhf.js",
+          "encoded": 238,
+          "transfer": 538
+        },
+        {
+          "path": "/_app/immutable/chunks/BlDVjVH9.js",
+          "encoded": 505,
+          "transfer": 805
+        },
+        {
+          "path": "/_app/immutable/chunks/0S30J8Wb.js",
+          "encoded": 345,
+          "transfer": 645
+        }
+      ]
+    },
+    {
+      "design": "classic",
+      "width": 390,
+      "navigationMs": 64,
+      "beforeHover": [
+        "/demo/design-loading/classic/overview",
+        "/_app/immutable/assets/0.Ccb-7Pf4.css",
+        "/_app/immutable/assets/98.kbP2O8Cx.css",
+        "/_app/immutable/entry/start.729hQ4EY.js",
+        "/_app/immutable/chunks/BrNofD1B.js",
+        "/_app/immutable/chunks/CE7vQsk4.js",
+        "/_app/immutable/entry/app.clfGOYA9.js",
+        "/_app/immutable/chunks/Dvw_3QAT.js",
+        "/_app/immutable/chunks/xihTtKlq.js",
+        "/_app/immutable/nodes/0.CzYpwkh5.js",
+        "/_app/immutable/chunks/DVR3Pi-K.js",
+        "/_app/immutable/chunks/CeO3wCtd.js",
+        "/_app/immutable/chunks/DMp_stsS.js",
+        "/_app/immutable/chunks/C3f_CY7z.js",
+        "/_app/immutable/chunks/By7vEEz9.js",
+        "/_app/immutable/chunks/pLRaMGoU.js",
+        "/_app/immutable/chunks/DTi3Tg2n.js",
+        "/_app/immutable/chunks/LfqvyZxz.js",
+        "/_app/immutable/chunks/OtLJ-IHq.js",
+        "/_app/immutable/nodes/98.hr2Sq-MO.js",
+        "/_app/immutable/chunks/CsJuc26W2.js",
+        "/_app/immutable/chunks/BeiTx51G2.js",
+        "/fonts/inter-v20-latin-700.woff2",
+        "/fonts/inter-v20-latin-regular.woff2",
+        "/_app/immutable/nodes/1.BRPG300N.js",
+        "/_app/immutable/chunks/BUGTxFhf.js",
+        "/_app/immutable/chunks/BlDVjVH9.js",
+        "/_app/immutable/chunks/0S30J8Wb.js"
+      ],
+      "beforeNavigation": [
+        "/demo/design-loading/classic/overview",
+        "/_app/immutable/assets/0.Ccb-7Pf4.css",
+        "/_app/immutable/assets/98.kbP2O8Cx.css",
+        "/_app/immutable/entry/start.729hQ4EY.js",
+        "/_app/immutable/chunks/BrNofD1B.js",
+        "/_app/immutable/chunks/CE7vQsk4.js",
+        "/_app/immutable/entry/app.clfGOYA9.js",
+        "/_app/immutable/chunks/Dvw_3QAT.js",
+        "/_app/immutable/chunks/xihTtKlq.js",
+        "/_app/immutable/nodes/0.CzYpwkh5.js",
+        "/_app/immutable/chunks/DVR3Pi-K.js",
+        "/_app/immutable/chunks/CeO3wCtd.js",
+        "/_app/immutable/chunks/DMp_stsS.js",
+        "/_app/immutable/chunks/C3f_CY7z.js",
+        "/_app/immutable/chunks/By7vEEz9.js",
+        "/_app/immutable/chunks/pLRaMGoU.js",
+        "/_app/immutable/chunks/DTi3Tg2n.js",
+        "/_app/immutable/chunks/LfqvyZxz.js",
+        "/_app/immutable/chunks/OtLJ-IHq.js",
+        "/_app/immutable/nodes/98.hr2Sq-MO.js",
+        "/_app/immutable/chunks/CsJuc26W2.js",
+        "/_app/immutable/chunks/BeiTx51G2.js",
+        "/fonts/inter-v20-latin-700.woff2",
+        "/fonts/inter-v20-latin-regular.woff2",
+        "/_app/immutable/nodes/1.BRPG300N.js",
+        "/_app/immutable/chunks/BUGTxFhf.js",
+        "/_app/immutable/chunks/BlDVjVH9.js",
+        "/_app/immutable/chunks/0S30J8Wb.js",
+        "/demo/design-loading/classic/details/__data.json"
+      ],
+      "requests": [
+        "/demo/design-loading/classic/overview",
+        "/_app/immutable/assets/0.Ccb-7Pf4.css",
+        "/_app/immutable/assets/98.kbP2O8Cx.css",
+        "/_app/immutable/entry/start.729hQ4EY.js",
+        "/_app/immutable/chunks/BrNofD1B.js",
+        "/_app/immutable/chunks/CE7vQsk4.js",
+        "/_app/immutable/entry/app.clfGOYA9.js",
+        "/_app/immutable/chunks/Dvw_3QAT.js",
+        "/_app/immutable/chunks/xihTtKlq.js",
+        "/_app/immutable/nodes/0.CzYpwkh5.js",
+        "/_app/immutable/chunks/DVR3Pi-K.js",
+        "/_app/immutable/chunks/CeO3wCtd.js",
+        "/_app/immutable/chunks/DMp_stsS.js",
+        "/_app/immutable/chunks/C3f_CY7z.js",
+        "/_app/immutable/chunks/By7vEEz9.js",
+        "/_app/immutable/chunks/pLRaMGoU.js",
+        "/_app/immutable/chunks/DTi3Tg2n.js",
+        "/_app/immutable/chunks/LfqvyZxz.js",
+        "/_app/immutable/chunks/OtLJ-IHq.js",
+        "/_app/immutable/nodes/98.hr2Sq-MO.js",
+        "/_app/immutable/chunks/CsJuc26W2.js",
+        "/_app/immutable/chunks/BeiTx51G2.js",
+        "/fonts/inter-v20-latin-700.woff2",
+        "/fonts/inter-v20-latin-regular.woff2",
+        "/_app/immutable/nodes/1.BRPG300N.js",
+        "/_app/immutable/chunks/BUGTxFhf.js",
+        "/_app/immutable/chunks/BlDVjVH9.js",
+        "/_app/immutable/chunks/0S30J8Wb.js",
+        "/demo/design-loading/classic/details/__data.json"
+      ],
+      "metrics": {
+        "lcp": 492,
+        "cls": 0.07324894883665717,
+        "designs": [
+          "classic",
+          "classic",
+          "classic",
+          "classic",
+          "classic",
+          "classic",
+          "classic",
+          "classic"
+        ]
+      },
+      "overflow": false,
+      "assets": [
+        {
+          "path": "/_app/immutable/assets/0.Ccb-7Pf4.css",
+          "encoded": 4269,
+          "transfer": 4569
+        },
+        {
+          "path": "/_app/immutable/assets/98.kbP2O8Cx.css",
+          "encoded": 51,
+          "transfer": 351
+        },
+        {
+          "path": "/_app/immutable/entry/start.729hQ4EY.js",
+          "encoded": 86,
+          "transfer": 386
+        },
+        {
+          "path": "/_app/immutable/chunks/BrNofD1B.js",
+          "encoded": 13025,
+          "transfer": 13325
+        },
+        {
+          "path": "/_app/immutable/chunks/CE7vQsk4.js",
+          "encoded": 21477,
+          "transfer": 21777
+        },
+        {
+          "path": "/_app/immutable/entry/app.clfGOYA9.js",
+          "encoded": 15581,
+          "transfer": 15881
+        },
+        {
+          "path": "/_app/immutable/chunks/Dvw_3QAT.js",
+          "encoded": 631,
+          "transfer": 931
+        },
+        {
+          "path": "/_app/immutable/chunks/xihTtKlq.js",
+          "encoded": 69,
+          "transfer": 369
+        },
+        {
+          "path": "/_app/immutable/nodes/0.CzYpwkh5.js",
+          "encoded": 4176,
+          "transfer": 4476
+        },
+        {
+          "path": "/_app/immutable/chunks/DVR3Pi-K.js",
+          "encoded": 2731,
+          "transfer": 3031
+        },
+        {
+          "path": "/_app/immutable/chunks/CeO3wCtd.js",
+          "encoded": 2416,
+          "transfer": 2716
+        },
+        {
+          "path": "/_app/immutable/chunks/DMp_stsS.js",
+          "encoded": 993,
+          "transfer": 1293
+        },
+        {
+          "path": "/_app/immutable/chunks/C3f_CY7z.js",
+          "encoded": 225,
+          "transfer": 525
+        },
+        {
+          "path": "/_app/immutable/chunks/By7vEEz9.js",
+          "encoded": 240,
+          "transfer": 540
+        },
+        {
+          "path": "/_app/immutable/chunks/pLRaMGoU.js",
+          "encoded": 274,
+          "transfer": 574
+        },
+        {
+          "path": "/_app/immutable/chunks/DTi3Tg2n.js",
+          "encoded": 241,
+          "transfer": 541
+        },
+        {
+          "path": "/_app/immutable/chunks/LfqvyZxz.js",
+          "encoded": 216,
+          "transfer": 516
+        },
+        {
+          "path": "/_app/immutable/chunks/OtLJ-IHq.js",
+          "encoded": 404,
+          "transfer": 704
+        },
+        {
+          "path": "/_app/immutable/nodes/98.hr2Sq-MO.js",
+          "encoded": 962,
+          "transfer": 1262
+        },
+        {
+          "path": "/_app/immutable/chunks/CsJuc26W2.js",
+          "encoded": 366,
+          "transfer": 666
+        },
+        {
+          "path": "/_app/immutable/chunks/BeiTx51G2.js",
+          "encoded": 26,
+          "transfer": 326
+        },
+        {
+          "path": "/fonts/inter-v20-latin-700.woff2",
+          "encoded": 24356,
+          "transfer": 24656
+        },
+        {
+          "path": "/fonts/inter-v20-latin-regular.woff2",
+          "encoded": 23664,
+          "transfer": 23964
+        },
+        {
+          "path": "/_app/immutable/nodes/1.BRPG300N.js",
+          "encoded": 229,
+          "transfer": 529
+        },
+        {
+          "path": "/_app/immutable/chunks/BUGTxFhf.js",
+          "encoded": 238,
+          "transfer": 538
+        },
+        {
+          "path": "/_app/immutable/chunks/BlDVjVH9.js",
+          "encoded": 505,
+          "transfer": 805
+        },
+        {
+          "path": "/_app/immutable/chunks/0S30J8Wb.js",
+          "encoded": 345,
+          "transfer": 645
+        }
+      ]
+    },
+    {
+      "design": "botanical",
+      "width": 1440,
+      "navigationMs": 64,
+      "beforeHover": [
+        "/demo/design-loading/botanical/overview",
+        "/_app/immutable/assets/0.Ccb-7Pf4.css",
+        "/_app/immutable/assets/98.kbP2O8Cx.css",
+        "/_app/immutable/entry/start.729hQ4EY.js",
+        "/_app/immutable/chunks/BrNofD1B.js",
+        "/_app/immutable/chunks/CE7vQsk4.js",
+        "/_app/immutable/entry/app.clfGOYA9.js",
+        "/_app/immutable/chunks/Dvw_3QAT.js",
+        "/_app/immutable/chunks/xihTtKlq.js",
+        "/_app/immutable/nodes/0.CzYpwkh5.js",
+        "/_app/immutable/chunks/DVR3Pi-K.js",
+        "/_app/immutable/chunks/CeO3wCtd.js",
+        "/_app/immutable/chunks/DMp_stsS.js",
+        "/_app/immutable/chunks/C3f_CY7z.js",
+        "/_app/immutable/chunks/By7vEEz9.js",
+        "/_app/immutable/chunks/pLRaMGoU.js",
+        "/_app/immutable/chunks/DTi3Tg2n.js",
+        "/_app/immutable/chunks/LfqvyZxz.js",
+        "/_app/immutable/chunks/OtLJ-IHq.js",
+        "/_app/immutable/nodes/98.hr2Sq-MO.js",
+        "/_app/immutable/chunks/CsJuc26W2.js",
+        "/_app/immutable/chunks/BeiTx51G2.js",
+        "/fonts/inter-v20-latin-700.woff2",
+        "/fonts/inter-v20-latin-regular.woff2",
+        "/_app/immutable/nodes/1.BRPG300N.js",
+        "/_app/immutable/chunks/BUGTxFhf.js",
+        "/_app/immutable/chunks/CT9FCqEM.js",
+        "/_app/immutable/chunks/B5yUiAvg.js"
+      ],
+      "beforeNavigation": [
+        "/demo/design-loading/botanical/overview",
+        "/_app/immutable/assets/0.Ccb-7Pf4.css",
+        "/_app/immutable/assets/98.kbP2O8Cx.css",
+        "/_app/immutable/entry/start.729hQ4EY.js",
+        "/_app/immutable/chunks/BrNofD1B.js",
+        "/_app/immutable/chunks/CE7vQsk4.js",
+        "/_app/immutable/entry/app.clfGOYA9.js",
+        "/_app/immutable/chunks/Dvw_3QAT.js",
+        "/_app/immutable/chunks/xihTtKlq.js",
+        "/_app/immutable/nodes/0.CzYpwkh5.js",
+        "/_app/immutable/chunks/DVR3Pi-K.js",
+        "/_app/immutable/chunks/CeO3wCtd.js",
+        "/_app/immutable/chunks/DMp_stsS.js",
+        "/_app/immutable/chunks/C3f_CY7z.js",
+        "/_app/immutable/chunks/By7vEEz9.js",
+        "/_app/immutable/chunks/pLRaMGoU.js",
+        "/_app/immutable/chunks/DTi3Tg2n.js",
+        "/_app/immutable/chunks/LfqvyZxz.js",
+        "/_app/immutable/chunks/OtLJ-IHq.js",
+        "/_app/immutable/nodes/98.hr2Sq-MO.js",
+        "/_app/immutable/chunks/CsJuc26W2.js",
+        "/_app/immutable/chunks/BeiTx51G2.js",
+        "/fonts/inter-v20-latin-700.woff2",
+        "/fonts/inter-v20-latin-regular.woff2",
+        "/_app/immutable/nodes/1.BRPG300N.js",
+        "/_app/immutable/chunks/BUGTxFhf.js",
+        "/_app/immutable/chunks/CT9FCqEM.js",
+        "/_app/immutable/chunks/B5yUiAvg.js",
+        "/demo/design-loading/botanical/details/__data.json"
+      ],
+      "requests": [
+        "/demo/design-loading/botanical/overview",
+        "/_app/immutable/assets/0.Ccb-7Pf4.css",
+        "/_app/immutable/assets/98.kbP2O8Cx.css",
+        "/_app/immutable/entry/start.729hQ4EY.js",
+        "/_app/immutable/chunks/BrNofD1B.js",
+        "/_app/immutable/chunks/CE7vQsk4.js",
+        "/_app/immutable/entry/app.clfGOYA9.js",
+        "/_app/immutable/chunks/Dvw_3QAT.js",
+        "/_app/immutable/chunks/xihTtKlq.js",
+        "/_app/immutable/nodes/0.CzYpwkh5.js",
+        "/_app/immutable/chunks/DVR3Pi-K.js",
+        "/_app/immutable/chunks/CeO3wCtd.js",
+        "/_app/immutable/chunks/DMp_stsS.js",
+        "/_app/immutable/chunks/C3f_CY7z.js",
+        "/_app/immutable/chunks/By7vEEz9.js",
+        "/_app/immutable/chunks/pLRaMGoU.js",
+        "/_app/immutable/chunks/DTi3Tg2n.js",
+        "/_app/immutable/chunks/LfqvyZxz.js",
+        "/_app/immutable/chunks/OtLJ-IHq.js",
+        "/_app/immutable/nodes/98.hr2Sq-MO.js",
+        "/_app/immutable/chunks/CsJuc26W2.js",
+        "/_app/immutable/chunks/BeiTx51G2.js",
+        "/fonts/inter-v20-latin-700.woff2",
+        "/fonts/inter-v20-latin-regular.woff2",
+        "/_app/immutable/nodes/1.BRPG300N.js",
+        "/_app/immutable/chunks/BUGTxFhf.js",
+        "/_app/immutable/chunks/CT9FCqEM.js",
+        "/_app/immutable/chunks/B5yUiAvg.js",
+        "/demo/design-loading/botanical/details/__data.json"
+      ],
+      "metrics": {
+        "lcp": 504,
+        "cls": 0.003650308641975309,
+        "designs": [
+          "botanical",
+          "botanical",
+          "botanical",
+          "botanical",
+          "botanical",
+          "botanical",
+          "botanical",
+          "botanical"
+        ]
+      },
+      "overflow": false,
+      "assets": [
+        {
+          "path": "/_app/immutable/assets/0.Ccb-7Pf4.css",
+          "encoded": 4269,
+          "transfer": 4569
+        },
+        {
+          "path": "/_app/immutable/assets/98.kbP2O8Cx.css",
+          "encoded": 51,
+          "transfer": 351
+        },
+        {
+          "path": "/_app/immutable/entry/start.729hQ4EY.js",
+          "encoded": 86,
+          "transfer": 386
+        },
+        {
+          "path": "/_app/immutable/chunks/BrNofD1B.js",
+          "encoded": 13025,
+          "transfer": 13325
+        },
+        {
+          "path": "/_app/immutable/entry/app.clfGOYA9.js",
+          "encoded": 15581,
+          "transfer": 15881
+        },
+        {
+          "path": "/_app/immutable/chunks/CE7vQsk4.js",
+          "encoded": 21477,
+          "transfer": 21777
+        },
+        {
+          "path": "/_app/immutable/chunks/Dvw_3QAT.js",
+          "encoded": 631,
+          "transfer": 931
+        },
+        {
+          "path": "/_app/immutable/chunks/xihTtKlq.js",
+          "encoded": 69,
+          "transfer": 369
+        },
+        {
+          "path": "/_app/immutable/nodes/0.CzYpwkh5.js",
+          "encoded": 4176,
+          "transfer": 4476
+        },
+        {
+          "path": "/_app/immutable/chunks/DVR3Pi-K.js",
+          "encoded": 2731,
+          "transfer": 3031
+        },
+        {
+          "path": "/_app/immutable/chunks/CeO3wCtd.js",
+          "encoded": 2416,
+          "transfer": 2716
+        },
+        {
+          "path": "/_app/immutable/chunks/DMp_stsS.js",
+          "encoded": 993,
+          "transfer": 1293
+        },
+        {
+          "path": "/_app/immutable/chunks/C3f_CY7z.js",
+          "encoded": 225,
+          "transfer": 525
+        },
+        {
+          "path": "/_app/immutable/chunks/By7vEEz9.js",
+          "encoded": 240,
+          "transfer": 540
+        },
+        {
+          "path": "/_app/immutable/chunks/pLRaMGoU.js",
+          "encoded": 274,
+          "transfer": 574
+        },
+        {
+          "path": "/_app/immutable/chunks/DTi3Tg2n.js",
+          "encoded": 241,
+          "transfer": 541
+        },
+        {
+          "path": "/_app/immutable/chunks/LfqvyZxz.js",
+          "encoded": 216,
+          "transfer": 516
+        },
+        {
+          "path": "/_app/immutable/chunks/OtLJ-IHq.js",
+          "encoded": 404,
+          "transfer": 704
+        },
+        {
+          "path": "/_app/immutable/nodes/98.hr2Sq-MO.js",
+          "encoded": 962,
+          "transfer": 1262
+        },
+        {
+          "path": "/_app/immutable/chunks/CsJuc26W2.js",
+          "encoded": 366,
+          "transfer": 666
+        },
+        {
+          "path": "/_app/immutable/chunks/BeiTx51G2.js",
+          "encoded": 26,
+          "transfer": 326
+        },
+        {
+          "path": "/fonts/inter-v20-latin-700.woff2",
+          "encoded": 24356,
+          "transfer": 24656
+        },
+        {
+          "path": "/fonts/inter-v20-latin-regular.woff2",
+          "encoded": 23664,
+          "transfer": 23964
+        },
+        {
+          "path": "/_app/immutable/nodes/1.BRPG300N.js",
+          "encoded": 229,
+          "transfer": 529
+        },
+        {
+          "path": "/_app/immutable/chunks/BUGTxFhf.js",
+          "encoded": 238,
+          "transfer": 538
+        },
+        {
+          "path": "/_app/immutable/chunks/CT9FCqEM.js",
+          "encoded": 510,
+          "transfer": 810
+        },
+        {
+          "path": "/_app/immutable/chunks/B5yUiAvg.js",
+          "encoded": 347,
+          "transfer": 647
+        }
+      ]
+    },
+    {
+      "design": "botanical",
+      "width": 390,
+      "navigationMs": 67,
+      "beforeHover": [
+        "/demo/design-loading/botanical/overview",
+        "/_app/immutable/assets/0.Ccb-7Pf4.css",
+        "/_app/immutable/assets/98.kbP2O8Cx.css",
+        "/_app/immutable/entry/start.729hQ4EY.js",
+        "/_app/immutable/chunks/BrNofD1B.js",
+        "/_app/immutable/chunks/CE7vQsk4.js",
+        "/_app/immutable/entry/app.clfGOYA9.js",
+        "/_app/immutable/chunks/Dvw_3QAT.js",
+        "/_app/immutable/chunks/xihTtKlq.js",
+        "/_app/immutable/nodes/0.CzYpwkh5.js",
+        "/_app/immutable/chunks/DVR3Pi-K.js",
+        "/_app/immutable/chunks/CeO3wCtd.js",
+        "/_app/immutable/chunks/DMp_stsS.js",
+        "/_app/immutable/chunks/C3f_CY7z.js",
+        "/_app/immutable/chunks/By7vEEz9.js",
+        "/_app/immutable/chunks/pLRaMGoU.js",
+        "/_app/immutable/chunks/DTi3Tg2n.js",
+        "/_app/immutable/chunks/LfqvyZxz.js",
+        "/_app/immutable/chunks/OtLJ-IHq.js",
+        "/_app/immutable/nodes/98.hr2Sq-MO.js",
+        "/_app/immutable/chunks/CsJuc26W2.js",
+        "/_app/immutable/chunks/BeiTx51G2.js",
+        "/fonts/inter-v20-latin-700.woff2",
+        "/fonts/inter-v20-latin-regular.woff2",
+        "/_app/immutable/nodes/1.BRPG300N.js",
+        "/_app/immutable/chunks/BUGTxFhf.js",
+        "/_app/immutable/chunks/CT9FCqEM.js",
+        "/_app/immutable/chunks/B5yUiAvg.js"
+      ],
+      "beforeNavigation": [
+        "/demo/design-loading/botanical/overview",
+        "/_app/immutable/assets/0.Ccb-7Pf4.css",
+        "/_app/immutable/assets/98.kbP2O8Cx.css",
+        "/_app/immutable/entry/start.729hQ4EY.js",
+        "/_app/immutable/chunks/BrNofD1B.js",
+        "/_app/immutable/chunks/CE7vQsk4.js",
+        "/_app/immutable/entry/app.clfGOYA9.js",
+        "/_app/immutable/chunks/Dvw_3QAT.js",
+        "/_app/immutable/chunks/xihTtKlq.js",
+        "/_app/immutable/nodes/0.CzYpwkh5.js",
+        "/_app/immutable/chunks/DVR3Pi-K.js",
+        "/_app/immutable/chunks/CeO3wCtd.js",
+        "/_app/immutable/chunks/DMp_stsS.js",
+        "/_app/immutable/chunks/C3f_CY7z.js",
+        "/_app/immutable/chunks/By7vEEz9.js",
+        "/_app/immutable/chunks/pLRaMGoU.js",
+        "/_app/immutable/chunks/DTi3Tg2n.js",
+        "/_app/immutable/chunks/LfqvyZxz.js",
+        "/_app/immutable/chunks/OtLJ-IHq.js",
+        "/_app/immutable/nodes/98.hr2Sq-MO.js",
+        "/_app/immutable/chunks/CsJuc26W2.js",
+        "/_app/immutable/chunks/BeiTx51G2.js",
+        "/fonts/inter-v20-latin-700.woff2",
+        "/fonts/inter-v20-latin-regular.woff2",
+        "/_app/immutable/nodes/1.BRPG300N.js",
+        "/_app/immutable/chunks/BUGTxFhf.js",
+        "/_app/immutable/chunks/CT9FCqEM.js",
+        "/_app/immutable/chunks/B5yUiAvg.js",
+        "/demo/design-loading/botanical/details/__data.json"
+      ],
+      "requests": [
+        "/demo/design-loading/botanical/overview",
+        "/_app/immutable/assets/0.Ccb-7Pf4.css",
+        "/_app/immutable/assets/98.kbP2O8Cx.css",
+        "/_app/immutable/entry/start.729hQ4EY.js",
+        "/_app/immutable/chunks/BrNofD1B.js",
+        "/_app/immutable/chunks/CE7vQsk4.js",
+        "/_app/immutable/entry/app.clfGOYA9.js",
+        "/_app/immutable/chunks/Dvw_3QAT.js",
+        "/_app/immutable/chunks/xihTtKlq.js",
+        "/_app/immutable/nodes/0.CzYpwkh5.js",
+        "/_app/immutable/chunks/DVR3Pi-K.js",
+        "/_app/immutable/chunks/CeO3wCtd.js",
+        "/_app/immutable/chunks/DMp_stsS.js",
+        "/_app/immutable/chunks/C3f_CY7z.js",
+        "/_app/immutable/chunks/By7vEEz9.js",
+        "/_app/immutable/chunks/pLRaMGoU.js",
+        "/_app/immutable/chunks/DTi3Tg2n.js",
+        "/_app/immutable/chunks/LfqvyZxz.js",
+        "/_app/immutable/chunks/OtLJ-IHq.js",
+        "/_app/immutable/nodes/98.hr2Sq-MO.js",
+        "/_app/immutable/chunks/CsJuc26W2.js",
+        "/_app/immutable/chunks/BeiTx51G2.js",
+        "/fonts/inter-v20-latin-700.woff2",
+        "/fonts/inter-v20-latin-regular.woff2",
+        "/_app/immutable/nodes/1.BRPG300N.js",
+        "/_app/immutable/chunks/BUGTxFhf.js",
+        "/_app/immutable/chunks/CT9FCqEM.js",
+        "/_app/immutable/chunks/B5yUiAvg.js",
+        "/demo/design-loading/botanical/details/__data.json"
+      ],
+      "metrics": {
+        "lcp": 448,
+        "cls": 0.024741601772712885,
+        "designs": [
+          "botanical",
+          "botanical",
+          "botanical",
+          "botanical",
+          "botanical",
+          "botanical",
+          "botanical",
+          "botanical"
+        ]
+      },
+      "overflow": false,
+      "assets": [
+        {
+          "path": "/_app/immutable/assets/0.Ccb-7Pf4.css",
+          "encoded": 4269,
+          "transfer": 4569
+        },
+        {
+          "path": "/_app/immutable/assets/98.kbP2O8Cx.css",
+          "encoded": 51,
+          "transfer": 351
+        },
+        {
+          "path": "/_app/immutable/entry/start.729hQ4EY.js",
+          "encoded": 86,
+          "transfer": 386
+        },
+        {
+          "path": "/_app/immutable/chunks/BrNofD1B.js",
+          "encoded": 13025,
+          "transfer": 13325
+        },
+        {
+          "path": "/_app/immutable/chunks/CE7vQsk4.js",
+          "encoded": 21477,
+          "transfer": 21777
+        },
+        {
+          "path": "/_app/immutable/entry/app.clfGOYA9.js",
+          "encoded": 15581,
+          "transfer": 15881
+        },
+        {
+          "path": "/_app/immutable/chunks/Dvw_3QAT.js",
+          "encoded": 631,
+          "transfer": 931
+        },
+        {
+          "path": "/_app/immutable/chunks/xihTtKlq.js",
+          "encoded": 69,
+          "transfer": 369
+        },
+        {
+          "path": "/_app/immutable/nodes/0.CzYpwkh5.js",
+          "encoded": 4176,
+          "transfer": 4476
+        },
+        {
+          "path": "/_app/immutable/chunks/DVR3Pi-K.js",
+          "encoded": 2731,
+          "transfer": 3031
+        },
+        {
+          "path": "/_app/immutable/chunks/CeO3wCtd.js",
+          "encoded": 2416,
+          "transfer": 2716
+        },
+        {
+          "path": "/_app/immutable/chunks/DMp_stsS.js",
+          "encoded": 993,
+          "transfer": 1293
+        },
+        {
+          "path": "/_app/immutable/chunks/C3f_CY7z.js",
+          "encoded": 225,
+          "transfer": 525
+        },
+        {
+          "path": "/_app/immutable/chunks/By7vEEz9.js",
+          "encoded": 240,
+          "transfer": 540
+        },
+        {
+          "path": "/_app/immutable/chunks/pLRaMGoU.js",
+          "encoded": 274,
+          "transfer": 574
+        },
+        {
+          "path": "/_app/immutable/chunks/DTi3Tg2n.js",
+          "encoded": 241,
+          "transfer": 541
+        },
+        {
+          "path": "/_app/immutable/chunks/LfqvyZxz.js",
+          "encoded": 216,
+          "transfer": 516
+        },
+        {
+          "path": "/_app/immutable/chunks/OtLJ-IHq.js",
+          "encoded": 404,
+          "transfer": 704
+        },
+        {
+          "path": "/_app/immutable/nodes/98.hr2Sq-MO.js",
+          "encoded": 962,
+          "transfer": 1262
+        },
+        {
+          "path": "/_app/immutable/chunks/CsJuc26W2.js",
+          "encoded": 366,
+          "transfer": 666
+        },
+        {
+          "path": "/_app/immutable/chunks/BeiTx51G2.js",
+          "encoded": 26,
+          "transfer": 326
+        },
+        {
+          "path": "/fonts/inter-v20-latin-700.woff2",
+          "encoded": 24356,
+          "transfer": 24656
+        },
+        {
+          "path": "/fonts/inter-v20-latin-regular.woff2",
+          "encoded": 23664,
+          "transfer": 23964
+        },
+        {
+          "path": "/_app/immutable/nodes/1.BRPG300N.js",
+          "encoded": 229,
+          "transfer": 529
+        },
+        {
+          "path": "/_app/immutable/chunks/BUGTxFhf.js",
+          "encoded": 238,
+          "transfer": 538
+        },
+        {
+          "path": "/_app/immutable/chunks/CT9FCqEM.js",
+          "encoded": 510,
+          "transfer": 810
+        },
+        {
+          "path": "/_app/immutable/chunks/B5yUiAvg.js",
+          "encoded": 347,
+          "transfer": 647
+        }
+      ]
+    }
+  ]
+}

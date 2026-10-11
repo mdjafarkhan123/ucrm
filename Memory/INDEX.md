@@ -27,4 +27,4 @@ Read this registry only to select a campaign. After selection, open its NOW.md; 
 
 Deferred work is indexed separately at Memory/deferred/INDEX.md; read it only when explicitly required.
 
-| selectable-design-experiences | Paused 2026-10-11 — Parts 1–2 done; Part 3 baseline saved, first mechanism fails CSS isolation; revised loading proof next | Classic and Botanical layouts over shared behaviour, with selected-only asset delivery | Memory/campaigns/selectable-design-experiences/NOW.md | Selectable designs, Classic preservation, theme architecture, or design skill separation |
+| selectable-design-experiences | In progress 2026-10-11 — Parts 1–3 done; selected-loading fixture passes; Part 4 real shared shell next | Classic and Botanical layouts over shared behaviour, with selected-only asset delivery | Memory/campaigns/selectable-design-experiences/NOW.md | Selectable designs, Classic preservation, theme architecture, or design skill separation |

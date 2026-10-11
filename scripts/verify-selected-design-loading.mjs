@@ -36,8 +36,27 @@ const exclusive = Object.fromEntries(
 		files.filter((file) => !graphs[design === 'classic' ? 'botanical' : 'classic'].includes(file))
 	])
 );
-assert(exclusive.classic.some((f) => f.endsWith('.css')));
-assert(exclusive.botanical.some((f) => f.endsWith('.css')));
+// Injected component styles travel inside their exclusive JS and selected SSR head.
+// Keep checking external CSS too: a future dependency may reintroduce it.
+assert(exclusive.classic.some((f) => f.endsWith('.js')));
+assert(exclusive.botanical.some((f) => f.endsWith('.js')));
+const styleIds = Object.fromEntries(
+	await Promise.all(
+		['classic', 'botanical'].map(async (design) => [
+			design,
+			await Promise.all(
+				['Shell', 'Surface'].map(async (surface) => {
+					const name = design === 'classic' ? 'Classic' : 'Botanical';
+					const entry = manifest[`src/lib/design-loading-proof/${name}${surface}.svelte`];
+					const code = await readFile(`.svelte-kit/output/client/${entry.file}`, 'utf8');
+					const hash = code.match(/hash:["'`](svelte-[\w-]+)["'`]/)?.[1];
+					assert(hash, `Missing injected CSS identity: ${name}${surface}`);
+					return hash;
+				})
+			)
+		])
+	)
+);
 const browser = await chromium.launch({ headless: true });
 const results = [];
 const violations = [];
@@ -50,6 +69,13 @@ try {
 		assert(html.includes(`data-proof-design="${design}"`), 'Selected shell must be SSR');
 		assert(!html.includes('data-proof-surface='), 'Surface must remain CSR');
 		const other = design === 'classic' ? 'botanical' : 'classic';
+		assert(html.includes(`<style id="${styleIds[design][0]}"`), 'Selected shell CSS must be SSR');
+		assert(
+			!html.includes(`<style id="${styleIds[design][1]}"`),
+			'CSR surface CSS must stay deferred'
+		);
+		for (const id of styleIds[other])
+			if (html.includes(id)) violations.push(`${design}: inactive inline CSS ${id}`);
 		for (const file of exclusive[other])
 			if (html.includes(file)) violations.push(`${design}: inactive SSR stylesheet ${file}`);
 		for (const width of [1440, 390]) {
@@ -93,6 +119,9 @@ try {
 			await page.goto(url, { waitUntil: 'domcontentloaded' });
 			await page.screenshot({ path: `${output}/${design}-${width}-first.png` });
 			await page.locator(`[data-proof-surface="${design}"]`).waitFor();
+			assert.equal(await page.locator(`style#${styleIds[design][0]}`).count(), 1);
+			assert.equal(await page.locator(`style#${styleIds[design][1]}`).count(), 1);
+			for (const id of styleIds[other]) assert.equal(await page.locator(`style#${id}`).count(), 0);
 			await page.waitForTimeout(4000); // exercise the actual idle code warmer
 			const beforeHover = [...requests];
 			await page.getByRole('link', { name: 'Open details' }).hover();
@@ -110,6 +139,8 @@ try {
 			await page.getByRole('link', { name: 'Open details' }).click();
 			await page.getByRole('heading', { name: 'Job details' }).waitFor();
 			const navigationMs = Date.now() - start;
+			for (const id of styleIds[design]) assert.equal(await page.locator(`style#${id}`).count(), 1);
+			for (const id of styleIds[other]) assert.equal(await page.locator(`style#${id}`).count(), 0);
 			assert.deepEqual(errors, []);
 			for (const file of exclusive[other])
 				if (requests.some((path) => path.endsWith(file)))
@@ -151,6 +182,7 @@ try {
 				profile:
 					'Chromium, 4x CPU, 150ms RTT, 1.6Mbps down, 750Kbps up; local adapter-node HTTP; one session',
 				exclusive,
+				styleIds,
 				violations,
 				results
 			},

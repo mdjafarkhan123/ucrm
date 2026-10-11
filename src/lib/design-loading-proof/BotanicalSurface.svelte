@@ -1,3 +1,5 @@
+<svelte:options css="injected" />
+
 <script lang="ts">
 	let { surface }: { surface: string } = $props();
 </script>

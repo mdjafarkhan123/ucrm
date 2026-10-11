@@ -1,6 +1,6 @@
 # Selectable design experiences
 
-**Status:** Build order approved by Jafar on 2026-10-11. Guidance separation complete; selected-loading proof next. Classic remains live.
+**Status:** Build order approved by Jafar on 2026-10-11. Guidance separation and private selected-loading mechanism proof complete; real-shell integration next. Classic remains live.
 
 ## Summary
 
