@@ -1050,14 +1050,28 @@ export type JobTimeEntry = {
 	started_at: string;
 	minutes: number;
 	notes: string | null;
+	/** manual: typed in by a person. timer: recorded when a running timer stopped. */
+	source: 'manual' | 'timer';
 	can_edit: boolean;
 	is_unrated: boolean;
 	cost_per_hour_minor?: number;
 	cost_total_minor?: number;
 };
 
+// A timer still running on this job. It has no hours or cost yet: labour counts once the timer stops.
+export type JobRunningTimer = {
+	user_id: string;
+	user_name: string | null;
+	/** Null when the visit was deleted while the timer ran. */
+	visit_id: string | null;
+	visit_date: string | null;
+	started_at: string;
+};
+
 export type JobLabor = {
 	entries: JobTimeEntry[];
+	/** Timers running on this job now, under the same own/team rule as the entries. Outside the totals. */
+	running: JobRunningTimer[];
 	totals: {
 		entry_count: number;
 		minutes: number;
@@ -1072,6 +1086,8 @@ export type JobLabor = {
 	// person picker appears at all.
 	can_track_team: boolean;
 	can_see_cost: boolean;
+	/** The server's clock when this was read. Running timers count from it, never from the device's. */
+	server_now: string;
 };
 
 export const jobLaborKey = (id: string) => ['jobs', 'labor', id] as const;

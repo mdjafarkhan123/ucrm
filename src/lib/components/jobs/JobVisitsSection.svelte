@@ -15,6 +15,9 @@
 	import FinalVisitDialog from '$lib/components/jobs/FinalVisitDialog.svelte';
 	import VisitInvoicePromptDialog from '$lib/components/jobs/VisitInvoicePromptDialog.svelte';
 	import VisitRecordsDialog from '$lib/components/jobs/VisitRecordsDialog.svelte';
+	import VisitTimerControl from '$lib/components/time-clock/VisitTimerControl.svelte';
+	import TimerRunningElsewhere from '$lib/components/time-clock/TimerRunningElsewhere.svelte';
+	import { fetchMyTimer, myTimerKey, refreshAfterTimer } from '$lib/time-clock/api';
 	import {
 		fetchVisitChecklists,
 		visitChecklistsKey,
@@ -127,6 +130,27 @@
 	// discover that the hard way.
 	const scheduleAllowed = $derived(canSchedule && jobStatus === 'active');
 	const completeAllowed = $derived(canComplete && jobStatus === 'active');
+
+	// Time clock: the reader's own timer, the same shared query every Start/Stop control reads. A visit row
+	// offers Start to someone who may time their work, on an open visit of an active job, while no timer of
+	// theirs is running; a row always shows a timer already running on it, so it can be stopped there.
+	const myTimerQuery = createQuery(() => ({
+		queryKey: myTimerKey,
+		queryFn: fetchMyTimer,
+		staleTime: 30_000
+	}));
+	function showsVisitTimer(visit: JobVisit) {
+		const mine = myTimerQuery.data;
+		if (!mine) return false;
+		if (mine.timer) return mine.timer.visit_id === visit.id;
+		return mine.can_time && !visit.completed_at && jobStatus === 'active';
+	}
+	// A timer running on another job hides every Start here. One note says where it is, rather than one under
+	// each visit.
+	const timerElsewhere = $derived.by(() => {
+		const mine = myTimerQuery.data;
+		return mine?.can_time && mine.timer && mine.timer.job_id !== jobId ? mine.timer : null;
+	});
 
 	// Only a recurring job that is not as-needed has a repeating schedule to edit or to carry forward. A
 	// one-off's visits are each their own, and an as-needed job is dispatched when work comes up.
@@ -739,7 +763,8 @@
 	async function completeVisit(visit: JobVisit) {
 		try {
 			const result = await completeJobVisit(jobId, visit.id);
-			await refreshAll();
+			// Completing a visit stops every timer on it, so the timer and the Job's hours move too.
+			await Promise.all([refreshAll(), refreshAfterTimer(queryClient, jobId)]);
 			toast.success('Visit marked complete');
 			if (result.final_visit) {
 				finalVisitOpen = true;
@@ -882,21 +907,35 @@
 			{/if}
 		</div>
 
-		<div class="job-visits-section__meta">
-			{#if visit.completed_at}
-				<Badge size="small" status="success">Completed</Badge>
-			{:else if isOverdue(visit)}
-				<Badge size="small" status="warning">Overdue</Badge>
-			{/if}
-			{#if visit.assignee_ids.length > 0}
-				<span class="job-visits-section__assignees">
-					<span aria-hidden="true">{@html usersIcon}</span>
-					{visit.assignee_ids.length}
-				</span>
-			{/if}
+		{#if visit.completed_at || isOverdue(visit) || visit.assignee_ids.length > 0}
+			<div class="job-visits-section__meta">
+				{#if visit.completed_at}
+					<Badge size="small" status="success">Completed</Badge>
+				{:else if isOverdue(visit)}
+					<Badge size="small" status="warning">Overdue</Badge>
+				{/if}
+				{#if visit.assignee_ids.length > 0}
+					<span class="job-visits-section__assignees">
+						<span aria-hidden="true">{@html usersIcon}</span>
+						{visit.assignee_ids.length}
+					</span>
+				{/if}
+			</div>
+		{/if}
+
+		<div class="job-visits-section__menu">
+			<DropdownMenu items={rowMenuItems(visit)} triggerLabel="Actions for this visit" />
 		</div>
 
-		<DropdownMenu items={rowMenuItems(visit)} triggerLabel="Actions for this visit" />
+		{#if showsVisitTimer(visit)}
+			<div class="job-visits-section__timer">
+				<VisitTimerControl
+					{jobId}
+					visitId={visit.id}
+					completed={Boolean(visit.completed_at) || jobStatus !== 'active'}
+				/>
+			</div>
+		{/if}
 	</li>
 {/snippet}
 
@@ -936,6 +975,12 @@
 					{visits.length === 1 ? 'visit' : 'visits'}{seriesRange ? ` · ${seriesRange}` : ''}
 				</span>
 			</span>
+		</div>
+	{/if}
+
+	{#if timerElsewhere && jobStatus === 'active' && visits.some((visit) => !visit.completed_at)}
+		<div class="job-visits-section__timer-elsewhere">
+			<TimerRunningElsewhere timer={timerElsewhere} />
 		</div>
 	{/if}
 
@@ -1333,20 +1378,37 @@
 			margin: 0;
 			padding: 0;
 			list-style: none;
+			/* A row lays itself out by the card's width, not the screen's. */
+			container-type: inline-size;
 		}
 
+		/* The visit, its badges and its menu on one line; the timer under the visit's text. In a narrow card
+		   (a phone) the badges drop under the text too, so the date is never squeezed into a sliver. */
 		&__item {
-			display: flex;
-			align-items: flex-start;
-			gap: var(--space-base);
+			display: grid;
+			grid-template-columns: auto minmax(0, 1fr) auto auto;
+			grid-template-areas:
+				'icon body meta menu'
+				'. timer . .';
+			align-items: start;
+			column-gap: var(--space-base);
 			padding: var(--space-base);
 			border: var(--border-base) solid var(--color-border);
 			border-radius: var(--radius-base);
+
+			@container (max-width: 420px) {
+				grid-template-columns: auto minmax(0, 1fr) auto;
+				grid-template-areas:
+					'icon body menu'
+					'. meta .'
+					'. timer .';
+				column-gap: var(--space-small);
+			}
 		}
 
 		&__icon {
+			grid-area: icon;
 			display: inline-flex;
-			flex: 0 0 auto;
 			color: var(--color-icon);
 
 			:global(svg) {
@@ -1357,8 +1419,12 @@
 		}
 
 		&__body {
-			flex: 1 1 auto;
+			grid-area: body;
 			min-width: 0;
+		}
+
+		&__menu {
+			grid-area: menu;
 		}
 
 		&__when {
@@ -1400,11 +1466,27 @@
 			white-space: pre-wrap;
 		}
 
+		&__timer {
+			grid-area: timer;
+			margin-top: var(--space-small);
+		}
+
+		&__timer-elsewhere {
+			margin-bottom: var(--space-base);
+			padding: var(--space-small) var(--space-base);
+			border-radius: var(--radius-base);
+			background: var(--color-surface--background--subtle);
+		}
+
 		&__meta {
+			grid-area: meta;
 			display: flex;
-			flex: 0 0 auto;
 			align-items: center;
 			gap: var(--space-small);
+
+			@container (max-width: 420px) {
+				margin-top: var(--space-small);
+			}
 		}
 
 		&__assignees {

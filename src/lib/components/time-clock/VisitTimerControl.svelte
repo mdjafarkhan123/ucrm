@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Button from '$lib/components/ui/Button.svelte';
-	import TimerElapsed from '$lib/components/time-clock/TimerElapsed.svelte';
+	import RunningClock from '$lib/components/time-clock/RunningClock.svelte';
+	import TimerRunningElsewhere from '$lib/components/time-clock/TimerRunningElsewhere.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		durationLabel,
@@ -24,7 +24,7 @@
 	}: {
 		jobId: string;
 		visitId: string;
-		/** A completed visit cannot be timed; completing it already stopped any timer on it. */
+		/** A completed visit, or one on a closed Job, cannot be timed. Completing it stopped its timers. */
 		completed?: boolean;
 	} = $props();
 
@@ -84,22 +84,12 @@
 
 {#if onThisVisit && running}
 	<div class="visit-timer visit-timer--running" role="group" aria-label="Your timer on this visit">
-		<span class="visit-timer__status">
-			<span class="visit-timer__pulse" aria-hidden="true"></span>
-			<TimerElapsed startedAt={running.started_at} {offsetMs} />
-		</span>
+		<RunningClock startedAt={running.started_at} {offsetMs} />
 		<Button size="small" variant="secondary" onclick={stop} loading={busy}>Stop timer</Button>
 	</div>
 {:else if mine?.can_time && !completed}
 	{#if running}
-		<!-- Only one timer runs at a time. Rather than offer a Start that can only be refused, say where the
-		     running one is so the person can go and stop it. -->
-		<p class="visit-timer__elsewhere">
-			Your timer is running on
-			<a href={resolve('/(app)/jobs/[id=uuid]', { id: running.job_id })}>
-				{running.job_number ? `Job #${running.job_number}` : 'another job'}
-			</a>
-		</p>
+		<TimerRunningElsewhere timer={running} />
 	{:else}
 		<Button size="small" onclick={start} loading={busy}>Start timer</Button>
 	{/if}
@@ -111,63 +101,5 @@
 		flex-wrap: wrap;
 		align-items: center;
 		gap: var(--space-small);
-	}
-
-	.visit-timer__status {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-small);
-		padding: var(--space-smaller) var(--space-small);
-		border-radius: var(--radius-base);
-		background: var(--color-success--surface);
-		color: var(--color-success--onSurface);
-		font-size: var(--typography--fontSize-small);
-		line-height: var(--typography--lineHeight-tighter);
-	}
-
-	.visit-timer__pulse {
-		width: 8px;
-		height: 8px;
-		border-radius: var(--radius-circle);
-		background: var(--color-success);
-		animation: visit-timer-pulse 1.6s ease-in-out infinite;
-	}
-
-	.visit-timer__elsewhere {
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		line-height: var(--typography--lineHeight-tighter);
-
-		a {
-			color: var(--color-interactive--subtle);
-			font-weight: 700;
-
-			&:hover {
-				color: var(--color-interactive--subtle--hover);
-			}
-
-			&:focus-visible {
-				outline: 2px solid var(--color-interactive--subtle);
-				outline-offset: 2px;
-				border-radius: var(--radius-small);
-			}
-		}
-	}
-
-	@keyframes visit-timer-pulse {
-		0%,
-		100% {
-			opacity: 1;
-		}
-
-		50% {
-			opacity: 0.35;
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.visit-timer__pulse {
-			animation: none;
-		}
 	}
 </style>

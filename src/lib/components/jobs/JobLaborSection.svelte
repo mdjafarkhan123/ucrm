@@ -8,6 +8,7 @@
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import JobTimeEntryDialog from '$lib/components/jobs/JobTimeEntryDialog.svelte';
+	import RunningClock from '$lib/components/time-clock/RunningClock.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		addJobTimeEntry,
@@ -15,6 +16,7 @@
 		fetchJobLabor,
 		jobLaborKey,
 		updateJobTimeEntry,
+		type JobRunningTimer,
 		type JobTimeEntry,
 		type JobTimeEntryInput,
 		type JobVisit,
@@ -57,6 +59,11 @@
 	}));
 	const labor = $derived(laborQuery.data);
 	const entries = $derived<JobTimeEntry[]>(labor?.entries ?? []);
+	// Timers running on this job now. They have no hours or cost until they stop, so they sit above the list
+	// and outside the totals.
+	const running = $derived<JobRunningTimer[]>(labor?.running ?? []);
+	// How far the server's clock is ahead of this device's when the hours were read.
+	const offsetMs = $derived(labor ? Date.parse(labor.server_now) - laborQuery.dataUpdatedAt : 0);
 
 	const money = $derived(
 		new Intl.NumberFormat(locale, { style: 'currency', currency: currencyCode })
@@ -178,7 +185,7 @@
 		<LoadingSkeleton variant="text" label="Loading recorded hours" rows={3} />
 	{:else if laborQuery.isError}
 		<p class="job-labor__note">The hours on this job could not be loaded.</p>
-	{:else if entries.length === 0}
+	{:else if entries.length === 0 && running.length === 0}
 		<EmptyState
 			icon={clockIcon}
 			title="No hours recorded"
@@ -187,72 +194,100 @@
 				: 'Time you record on this job shows up here.'}
 		/>
 	{:else}
-		<ul class="job-labor">
-			{#each entries as entry (entry.id)}
-				<li class="job-labor__item" class:job-labor__item--busy={busyId === entry.id}>
-					<div class="job-labor__body">
-						<p class="job-labor__who">
-							{entry.user_name ?? 'A team member'}
-							<span class="job-labor__duration">{duration(entry.minutes)}</span>
-						</p>
-						<p class="job-labor__when">
-							{dateTimeFormat.format(new Date(entry.started_at))}
-							{#if entry.visit_date}
-								· Visit on {dateFormat.format(new Date(`${entry.visit_date}T12:00:00`))}
-							{/if}
-						</p>
-						{#if entry.notes}<p class="job-labor__notes">{entry.notes}</p>{/if}
-					</div>
-
-					<div class="job-labor__side">
-						{#if labor?.can_see_cost}
-							{#if entry.is_unrated}
-								<span class="job-labor__unrated">No hourly cost set</span>
-							{:else}
-								<span class="job-labor__cost"
-									>{money.format((entry.cost_total_minor ?? 0) / 100)}</span
-								>
-							{/if}
-						{/if}
-						{#if entry.can_edit}
-							<DropdownMenu
-								items={menuItems(entry)}
-								triggerLabel="Time entry actions"
-								disabled={busyId === entry.id}
-							/>
-						{/if}
-					</div>
-				</li>
-			{/each}
-		</ul>
-
-		<div class="job-labor__totals">
-			<p class="job-labor__total">
-				<span>{labor?.can_track_team ? 'Total hours' : 'Your hours'}</span>
-				<strong>{duration(labor?.totals.minutes ?? 0)}</strong>
-			</p>
-			{#if labor?.can_see_cost}
-				<p class="job-labor__total">
-					<span>Labor cost</span>
-					<strong>{money.format((labor.totals.cost_total_minor ?? 0) / 100)}</strong>
-				</p>
-			{/if}
-		</div>
-
-		{#if labor?.can_see_cost && (labor?.totals.unrated_count ?? 0) > 0}
-			<p class="job-labor__note">
-				{labor.totals.unrated_count === 1
-					? 'One entry has'
-					: `${labor.totals.unrated_count} entries have`}
-				no hourly cost, so those hours are not in the total. Set an hourly cost on the person's team profile
-				— it applies to hours recorded from then on.
-			</p>
+		{#if running.length > 0}
+			<ul class="job-labor job-labor--running" aria-label="Timers running now">
+				{#each running as timer (timer.user_id)}
+					<li class="job-labor__item">
+						<div class="job-labor__body">
+							<p class="job-labor__who">{timer.user_name ?? 'A team member'}</p>
+							<p class="job-labor__when">
+								Timer started {dateTimeFormat.format(new Date(timer.started_at))}
+								{#if timer.visit_date}
+									· Visit on {dateFormat.format(new Date(`${timer.visit_date}T12:00:00`))}
+								{/if}
+							</p>
+						</div>
+						<div class="job-labor__side">
+							<RunningClock startedAt={timer.started_at} {offsetMs} />
+						</div>
+					</li>
+				{/each}
+			</ul>
 		{/if}
 
-		{#if labor?.has_more}
+		{#if entries.length === 0}
 			<p class="job-labor__note">
-				Showing the 200 most recent entries. The totals above count every one.
+				No hours recorded yet. A timer’s hours are added here when it stops.
 			</p>
+		{:else}
+			<ul class="job-labor">
+				{#each entries as entry (entry.id)}
+					<li class="job-labor__item" class:job-labor__item--busy={busyId === entry.id}>
+						<div class="job-labor__body">
+							<p class="job-labor__who">
+								{entry.user_name ?? 'A team member'}
+								<span class="job-labor__duration">{duration(entry.minutes)}</span>
+							</p>
+							<p class="job-labor__when">
+								{dateTimeFormat.format(new Date(entry.started_at))}
+								{#if entry.visit_date}
+									· Visit on {dateFormat.format(new Date(`${entry.visit_date}T12:00:00`))}
+								{/if}
+								{#if entry.source === 'timer'}· From a timer{/if}
+							</p>
+							{#if entry.notes}<p class="job-labor__notes">{entry.notes}</p>{/if}
+						</div>
+
+						<div class="job-labor__side">
+							{#if labor?.can_see_cost}
+								{#if entry.is_unrated}
+									<span class="job-labor__unrated">No hourly cost set</span>
+								{:else}
+									<span class="job-labor__cost"
+										>{money.format((entry.cost_total_minor ?? 0) / 100)}</span
+									>
+								{/if}
+							{/if}
+							{#if entry.can_edit}
+								<DropdownMenu
+									items={menuItems(entry)}
+									triggerLabel="Time entry actions"
+									disabled={busyId === entry.id}
+								/>
+							{/if}
+						</div>
+					</li>
+				{/each}
+			</ul>
+
+			<div class="job-labor__totals">
+				<p class="job-labor__total">
+					<span>{labor?.can_track_team ? 'Total hours' : 'Your hours'}</span>
+					<strong>{duration(labor?.totals.minutes ?? 0)}</strong>
+				</p>
+				{#if labor?.can_see_cost}
+					<p class="job-labor__total">
+						<span>Labor cost</span>
+						<strong>{money.format((labor.totals.cost_total_minor ?? 0) / 100)}</strong>
+					</p>
+				{/if}
+			</div>
+
+			{#if labor?.can_see_cost && (labor?.totals.unrated_count ?? 0) > 0}
+				<p class="job-labor__note">
+					{labor.totals.unrated_count === 1
+						? 'One entry has'
+						: `${labor.totals.unrated_count} entries have`}
+					no hourly cost, so those hours are not in the total. Set an hourly cost on the person's team
+					profile — it applies to hours recorded from then on.
+				</p>
+			{/if}
+
+			{#if labor?.has_more}
+				<p class="job-labor__note">
+					Showing the 200 most recent entries. The totals above count every one.
+				</p>
+			{/if}
 		{/if}
 	{/if}
 </SectionBlock>
@@ -308,6 +343,13 @@
 			&--busy {
 				opacity: 0.5;
 			}
+		}
+
+		/* Running timers sit above the recorded hours, ruled off from them. */
+		&--running {
+			margin-bottom: var(--space-base);
+			padding-bottom: var(--space-base);
+			border-bottom: var(--border-base) solid var(--color-border);
 		}
 
 		&__body {
