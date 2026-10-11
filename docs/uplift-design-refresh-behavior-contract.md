@@ -93,3 +93,11 @@ These are reference leads, not proof that every v3 decision is validated. Verify
 - Feature removal, new workflows, schema, API, permission or infrastructure changes hidden inside a visual redesign.
 - A full-app redesign in one session, a second application copy, or implementation before the relevant demo approval.
 - Treating the historical branch or old design skill as the selected visual authority; browser demos are the review medium, not Pencil.
+
+## Selectable-design prerequisite — 2026-10-11
+
+Jafar wants the current experience preserved as Classic alongside Botanical. Before live shell rollout,
+settle the [selectable-design plan](selectable-design-experiences-behavior-contract.md), separate the agent
+guidance and prove selected-only delivery. Existing sidebar/header approvals remain valid. Classic stays
+live while Botanical is private until complete. Resume the focused design/build sequence through that
+architecture; this does not authorize mixed Classic fallback pages or a broad visual rewrite.

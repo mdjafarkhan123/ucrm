@@ -5,7 +5,7 @@
 
 **State:** Part 3 done 2026-10-11. Sidebar v2 revision 2 and header B revision 4 explicitly approved; guidance aligned. Desktop web is primary. Live components unchanged.
 
-**Next:** Part 4: inspect real signed-in shell, affected pages and save-bar geometry; complete shared-shell impact and implementation checks, then implement the approved portion. Approval record: `docs/design/botanical-v3/sidebar-approval.md`. A fresh signed-in app comparison, full text resizing and dark-palette design remain unverified; preserve their stated boundaries.
+**Next:** Resolve the selectable-design prerequisite before live shell implementation. Read `Memory/campaigns/selectable-design-experiences/NOW.md`. Classic preservation, separate design guidance and selected-only loading must be planned and proven first. Then resume Part 4 using the unchanged approval record `docs/design/botanical-v3/sidebar-approval.md`.
 
 **Maintenance rule:** Keep the existing design skill and update necessary parts incrementally. Use `.claude/skills/design/alignment.md` as the reading gate: load only modules explicitly updated for the relevant redesign coverage; uncovered patterns need a focused demo, not old visual guidance. Update each relevant module after its focused demo is built and approved, before implementation.
 
