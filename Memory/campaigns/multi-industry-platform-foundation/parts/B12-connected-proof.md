@@ -1,31 +1,21 @@
 # B12 Connected proof — part note
 
-**State:** Paused 2026-10-11. Core Contractor journey and the whole Setup → Uplift review → Ready → preview path observed; launch is next.
+**State:** Paused 2026-10-11. Fresh Contractor journey, Setup → review → Ready → preview, and all launch checks are done; launch approval is waiting.
 
-**Method:** The public form only works through `https://app.upliftcontractor.com` (Cloudflare check passes by itself; never click or bypass it). Everything after that uses `http://localhost:5173`. Logins are in `Login.md` (new: B12 Proof Roofing owner). `/jafar` and the app keep separate sessions.
+**Method:** The public form only works through `https://app.upliftcontractor.com` (never click or bypass the Cloudflare check). Everything after uses `http://localhost:5173`. Logins are in `Login.md`. `/jafar` and the app keep separate sessions. `dev.jafarkhan@gmail.com` is Chrome Gmail slot `/u/2`.
 
 **Done (observed)**
-- Application "B12 Proof Roofing" `73e70294-3ed6-4365-ab38-f7685eea3674` → kind of business confirmed (Contractor · Roofing) → reviewed → test payment recorded → account activated → organization `9b1c698f-93df-4151-8a0d-00ec406a46c8` → setup link → password → owner login.
-- Package-limited menu. Client → Request → Quote #1 ($486 with tax; emailing refused while billing closed, then for no business email, so "I already sent it") → client link → approved → Job #1 → Invoice #1 → payment → Paid, $0 balance.
-- Access comparison: Same access (9 capabilities, owner 65→65), no clinical capability.
-- Existing Raad LTD as `finance`: history intact, `/pipeline` refused.
+- Application "B12 Proof Roofing" `73e70294-3ed6-4365-ab38-f7685eea3674` → Contractor · Roofing → payment → organization `9b1c698f-93df-4151-8a0d-00ec406a46c8` → owner login → Client, Request, Quote, Job, Invoice, payment, Paid. Package-limited menu; access comparison same, no clinical capability. Raad LTD as `finance`: history intact, `/pipeline` refused.
+- Setup: 5 tasks sent, Uplift review, Ready, preview v1; all 3 cards "Looks right".
+- Request Form "Request a roof quote" published (not submitted as a customer). Payments page needs a real Stripe key, untried.
+- All 4 launch checks closed as Doesn't apply with honest reasons (email not on for this test business; Files scanner needs Docker, not installed here; Payments needs Stripe; no real accounts; fresh start). Approval link emailed to Pat Proof (`dev.jafarkhan+b12proof@gmail.com`), resent 9:27 AM; the 9:02 link no longer works. Link valid to Nov 10.
 
-**Still to run:** launch checks and Mark as live; support message; overdue pause and recovery; a Visit on the Job; an issued quote/invoice link on an existing org; a closed public form (none exists; unit/database-tested only).
+**Raad facts:** Raad LTD `18f0d717-904e-48d8-bd99-9df7e3844cda` has a verified sender `office@mail.test.upliftcontractor.com` and a Stripe sandbox (test mode). A "Raad LTD email test" reached Gmail on Sep 26.
 
-**Findings for Jafar:** the submit took about 20 seconds; the quote's tax did not carry to the invoice (job showed $486, invoice started at $450, tax re-entered by hand).
+**System email (fixed on `main`):** sender name is "Uplift"; no Reply-To until `SYSTEM_REPLY_TO_EMAIL` is set. Jafar has no Uplift mailbox; his plan is an in-app mailbox in `/jafar`, a later release (Jafar business management campaign). Business sender names now reject addresses, links and line breaks. Open for Jafar: the paused and grace screens show `hello@upliftcontractor.com`, which may not exist.
 
-**Setup → preview (2026-10-11, observed):** all 5 Setup tasks finished and sent to Uplift. In `/jafar` the owner login accepted all five, recorded Ready, wrote and released preview version 1 (3 cards, client emailed). As the B12 owner, all 3 cards marked "Looks right"; nothing to send back. Launch check "Imported records add up" marked Doesn't apply (client started fresh).
+**Still to run:** support message; overdue pause and recovery; a Visit on the Job; an issued quote/invoice link on an existing org; Raad sandbox payment; a closed public form (unit/database-tested only).
 
-**Launch checks (2026-10-11):** Jafar chose "split it". Three lines still unticked, on purpose. Package tried: Schedule, Files (upload works, but the file stays "Still being checked", so the scanner worker probably isn't running locally), Settings, Request Forms (none built yet). Dashboard says Email and texts are "not switched on" until Uplift verifies the sender address, so no real test email can go out yet.
+**Next:** (1) Jafar clicks "Review and approve" in the 9:27 email, or says "approve as B12 owner" (the click was blocked for me). (2) Mark live in `/jafar` Setup tab. (3) Raad sandbox payment, then "Still to run"; update `stages/D-migration-proof.md`.
 
-**Launch checks, later (2026-10-11):** Request Form "Request a roof quote" built and published (form `23cb2288-78c4-4c51-97a2-2a25c250369a`; not submitted as a customer). Payments page opens but needs a real Stripe key, so untried. "Owns its accounts" marked Doesn't apply (test business). Two lines left: "Emails from the system arrive" and "Everything else in the package works".
-
-**Launch approval asked (2026-10-11 9:02 AM):** Jafar said "you choose". Email line and "Everything else" both marked Doesn't apply with honest reasons (email not on for this test business; Files scanner needs Docker, not installed on this computer; Payments needs a Stripe key). All 4 lines closed; approval link emailed to Pat Proof (`dev.jafarkhan+b12proof@gmail.com`, lands in the `dev.jafarkhan@gmail.com` inbox, not the `profile.mdjafarkhan` one). Link works until Nov 10.
-
-**Raad facts (read-only check):** Raad LTD (`18f0d717-904e-48d8-bd99-9df7e3844cda`) has a verified, enabled sender `office@mail.test.upliftcontractor.com` and a Stripe sandbox connection (test mode, key ending I8DO). Owed on Raad: one real test email to Jafar's inbox and one sandbox payment on an invoice (promised in the line reasons above).
-
-**Next:** (1) Jafar opens the approval email in the dev.jafarkhan inbox and approves as the B12 owner (or uses "Record an approval given another way"). (2) Mark live in `/jafar` Setup tab. (3) Raad email and sandbox payment proof. (4) Rest of "Still to run"; update `stages/D-migration-proof.md`.
-
-**Also seen:** Schedule's "Today" week showed Oct 4–10 on Oct 11 (check timezone); browser screenshots timed out twice in a row, so the Chrome session may need a restart.
-
-**More findings:** Setup label reads "How many van do you have?"; the client's Setup page offers no "I approve" button when every card is "Looks right".
+**Findings for Jafar:** the public submit took about 20 seconds; the quote's tax did not carry to the invoice ($486 job, $450 invoice); Setup label reads "How many van do you have?"; the client's Setup page has no "I approve" button when every card is "Looks right"; Schedule's "Today" week showed Oct 4–10 on Oct 11 (check timezone); Chrome screenshots timed out twice.
