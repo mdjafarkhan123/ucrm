@@ -5,6 +5,26 @@ Keep existing modules; align the necessary parts after the relevant focused demo
 The [starter guidance](../../../docs/design/botanical-v3/README.md) owns extracted values and boundaries;
 this register tracks coverage, not a second token specification.
 
+## Redesign reading rule — approved 2026-10-11
+
+For every redesign session, including standalone demos, load `SKILL.md`, this register, the Botanical
+starter guidance and the campaign contract. Load an additional design module only when the table below
+explicitly marks its relevant coverage updated. A changed file or a Botanical link alone does not make
+all its patterns approved. The module index in `SKILL.md` is a catalog, not a redesign reading list.
+
+| Updated source | Coverage available for redesign |
+| --- | --- |
+| `SKILL.md` | Review process, screen checks, accessibility, engineering and existing workflow constraints |
+| Botanical starter guidance | Demonstrated v3 visual foundations within its stated boundaries |
+| Individual design modules | None yet; use only for untouched-screen maintenance |
+
+When a needed pattern has no updated guidance, extend the approved Botanical foundations, research
+its unresolved interaction and build it in the focused demo for Jafar’s review. Keep existing capabilities
+and permissions through product contracts and implementation inspection. Leave older visual modules
+unloaded for redesign work; preserve their useful nonvisual constraints in the updated guidance when
+that pattern is reviewed. After approval, record the exact coverage here and update its module before
+implementation. Approval of one pattern in a module does not approve the module’s remaining patterns.
+
 ## Established foundations
 
 Botanical v3 establishes the visual direction for composition, colour roles, typography measurements,

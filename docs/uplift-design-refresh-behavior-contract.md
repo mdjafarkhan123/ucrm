@@ -40,7 +40,12 @@ screens only. After each focused demo is built and approved, record its exact re
 then update the relevant skill module before implementation. Do not delete and recreate the system or
 promote an unreviewed pattern merely because an old module describes it.
 
-During transition, read the current design skill for its checks and existing behavior constraints; its old colours, section-border treatment and layout blueprints do not override v3. Document how approved new guidance applies to migrated surfaces while untouched surfaces retain their current appearance. Skill changes alone must not restyle the live app.
+Jafar clarified the reading rule on 2026-10-11: for redesign demos and implementation, load additional
+design modules only through the updated-coverage list in `.claude/skills/design/alignment.md`.
+Uncovered patterns are designed from Botanical foundations and researched interactions for focused
+review; older visual modules stay available for untouched maintenance.
+
+During transition, read the current design skill entry point for its checks and existing behavior constraints; its old colours, section-border treatment and layout blueprints do not override v3. Document how approved new guidance applies to migrated surfaces while untouched surfaces retain their current appearance. Skill changes alone must not restyle the live app.
 
 The approved visual reference governs appearance; approved product contracts and verified implementation govern existing behavior. Jafar decides any proposed change to either. When these sources disagree, investigate and present the concrete choice before dependent work.
 

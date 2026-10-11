@@ -21,12 +21,15 @@ Untouched screens retain their existing appearance. The modules below remain the
 For redesigned portions, approved Botanical guidance takes precedence over old visual values, border-line
 headings and `Design/*.jpg` layouts. A pattern missing from Botanical is awaiting approval, not permission
 to carry its old appearance into the redesign. Skill edits alone never change app tokens or components.
-Retain applicable accessibility, engineering and workflow constraints from existing modules.
+Retain the accessibility, engineering and workflow constraints in this entry point and approved product
+contracts. The alignment register governs which additional modules redesign work may load.
 
 ## Before Writing Any Code
 
-1. Identify whether the portion is untouched maintenance or an approved redesign. Read its relevant modules
-   and, for redesign work, the guidance, approval record and alignment register above.
+1. Identify whether the portion is untouched maintenance or redesign work (including new demos). For
+   redesign work, read the Botanical guidance, campaign contract and alignment register first; load only
+   modules explicitly listed as updated for the relevant coverage in the register. For untouched
+   maintenance, read the relevant existing modules.
 2. Inspect `src/lib/components` for reuse. Keep Svelte 5, component-local SCSS/BEM and Tabler icons.
 3. Follow the campaign's focused demo review before implementing a new design. Resolve conflicting
    behavior sources against the relevant product contract and implementation before changing behavior.
@@ -65,8 +68,8 @@ what still looks off. Tell Jafar which screens and states you checked, what you 
   When an approved implementation changes a token, update its relevant documentation in the same change
   and check effects on previously migrated surfaces. Material visible shared changes need Jafar's approval.
 
-- **Read related modules together.** Apply their behavior and accessibility constraints; use the authority
-  above to select visual rules. Existing `brand.md` precedence applies only to untouched-screen maintenance.
+- **Read related approved modules together.** For redesign work, select them through the alignment
+  register’s reading rule. Existing `brand.md` precedence applies only to untouched-screen maintenance.
 
 - **Workflow continuity.** Keep the save/cancel rules below during this visual refresh. The older Jobber
   screen-pattern reference contains differing save-bar wording; it does not override these rules. Resolve
