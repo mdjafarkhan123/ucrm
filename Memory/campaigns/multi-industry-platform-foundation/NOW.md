@@ -5,7 +5,7 @@
 
 **In progress:** Stages A, B and C, B10 and B11 done (2026-10-10). Raad LTD now has a confirmed Contractor profile (source migration, Business type left unknown). Snapshots can't see a record replaced while others were added.
 
-**Next:** finish B12 (note: `parts/B12-connected-proof.md`, lists what is still to run). Original scope: B12 Connected proof (`stages/D-migration-proof.md`): one full Application → payment → setup → request → quote → job → invoice journey on a fresh and an existing Contractor, role limits, closed new surfaces. Offer Check Roofing was deliberately left unmoved by Jafar's choice (A1 Test Roofing was confirmed at activation). Not gated yet: queued background sends, Setup preview emails, review requests, web chat. Not built: moving a started business to a newer Setup version. Public intake gate for a *closed* business: database and unit tests only.
+**Next:** finish B12 (note: `parts/B12-connected-proof.md`: launch checks, Mark as live, then the rest of "Still to run"). Scope: `stages/D-migration-proof.md`. Offer Check Roofing was left unmoved by Jafar's choice. Not gated yet: queued sends, Setup preview emails, review requests, web chat. Not built: moving a started business to a newer Setup version. Closed-business public intake: database and unit tests only.
 
 **Blockers:** Medspa implementation waits for the foundation build and connected Contractor proof in B12. Existing-Organization migration waits for safe access and public continuity in B1–B9.
 
