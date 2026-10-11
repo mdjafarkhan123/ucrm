@@ -1,7 +1,7 @@
 # Time clock
 
-**Status:** Planning. Jafar answered choices 1–3 and 5 on 2026-10-11. First-version scope and build order
-await his approval.
+**Status:** First version, including choices 1–5 and the build order in
+`Memory/campaigns/time-clock/ROADMAP.md`, approved by Jafar on 2026-10-11.
 
 ## Summary
 
@@ -47,7 +47,7 @@ and Assessment timers as the last part.
 - **The running timer is visible.** The person sees which visit or "General" is running and for how long,
   wherever they are in the app. The visit's Job shows a running-clock mark in its Labor section.
 - **Needs a connection.** Starting or stopping needs a signal. When a tap does not go through, the app says
-  the timer did not start or stop, and the person can try again. (Choice 4.)
+  the timer did not start or stop, and the person can try again (Jafar, 2026-10-11).
 
 ## Forgotten timers
 
@@ -149,13 +149,12 @@ Jafar chose to include them as the last build part on 2026-10-11, following Jobb
 
 ## Still unclear
 
-- **Choice 4, no phone signal.** Recommendation: the first version needs a connection; offline comes later,
-  because taps saved on the phone would let anyone change the time they claim to have started. Jafar did
-  not object on 2026-10-11; confirm with the scope approval.
+Nothing for the first version.
 
 ## Not doing
 
-- Working without a signal — later, if Jafar confirms choice 4.
+- Working without a signal — later (Jafar, 2026-10-11): taps saved on the phone would let anyone change the
+  time they claim to have started.
 - GPS location trails and location-triggered (geofenced) timers — they need a native phone app running in
   the background and raise privacy questions. Jobber puts them on higher plans.
 - Breaks, drive and office time labels, and clocking in a whole crew at once — Jobber Plus features for

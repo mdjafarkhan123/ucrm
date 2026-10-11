@@ -7,4 +7,6 @@
 
 **Next part:** Part 4, approved shared shell. Read the roadmap line, `docs/adr/0009-selected-presentation-component-css.md` and `docs/research/selectable-design-injected-css-2026-10-11.md`, then the approved shell record. Extend the proven seam to real dependencies, preserve Classic and shared behaviour, and rerun the saved authenticated baseline. Its existing cold dashboard loading and phone movement need investigation. Full type checking remains unverified because the command stalls. No production deployment is authorized.
 
+**Uncommitted work:** the main folder holds unfinished Part 4 shell changes (shell, navigation, presentations, `(app)/+layout.ts`, a research note and a verify script) from a session Jafar confirmed stopped on 2026-10-11. Review them before continuing Part 4; `time-clock` Parts 3–4 wait on the header and sidebar.
+
 **Blockers:** Botanical dark appearance and full coverage require focused approval before public selection; they do not block the private loading proof.

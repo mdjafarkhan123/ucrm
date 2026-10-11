@@ -1,11 +1,11 @@
 # Time clock — roadmap
 
-**Plan:** `docs/time-clock-behavior-contract.md` — parts 2–9 proposed 2026-10-11, awaiting Jafar's approval.
+**Plan:** `docs/time-clock-behavior-contract.md` — scope and parts 2–9 approved by Jafar 2026-10-11.
 
 | Part | Plan section | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- | --- |
-| 1 Plan | whole plan | Answers to choices 1–5; approved first-version scope and build order | — | Still unclear has no first-version question; Jafar approved scope and parts | In progress |
-| 2 Visit timer | § Timers, § Hours on the Job | Start and Stop on a visit from Schedule and Job; one timer at a time; completing a visit stops it; under-a-minute taps discarded; hours land once on Job Labor with a running mark | 1 | On the live app at phone width: start, stop and complete each land one entry at the right rate; double Stop stays one entry; nobody else can stop it without "anyone's hours" | Not started |
+| 1 Plan | whole plan | Answers to choices 1–5; approved first-version scope and build order | — | Still unclear has no first-version question; Jafar approved scope and parts | Done 2026-10-11 |
+| 2 Visit timer | § Timers, § Hours on the Job | Start and Stop on a visit from Schedule and Job; one timer at a time; completing a visit stops it; under-a-minute taps discarded; hours land once on Job Labor with a running mark | 1 | On the live app at phone width: start, stop and complete each land one entry at the right rate; double Stop stays one entry; nobody else can stop it without "anyone's hours" | In progress |
 | 3 Day clock | § Timers, § Forgotten timers | Clock in and out from Home; the visit timer pauses and resumes general time; clock out stops everything; the running timer and its 12-hour flag are shown on every page | 2; header settled by `selectable-design-experiences` Part 4 | The 8:00–12:00 success check passes on the live app | Not started |
 | 4 Timesheets views | § Timesheets page | Day and Week views, totals, own vs everyone, people filter, existing typed hours shown, overlap and long-timer warnings | 3; sidebar settled by `selectable-design-experiences` Part 4 | Own-only and manager logins see exactly the right rows and totals; performance review measured on a 15-person week | Not started |
 | 5 Corrections | § Timesheets page, § Forgotten timers | Add, edit and delete entries; running-timer limits; edit history; manager clock in/out and stop at a chosen time; 24-hour rule | 4 | Edits show who, when, old and new; running timers refuse deletion; the overnight success check passes | Not started |
