@@ -29303,6 +29303,23 @@ export type Database = {
 					subject_type: string;
 				}[];
 			};
+			timesheet_entries: {
+				Args: {
+					range_from: string;
+					range_to: string;
+					target_organization_id: string;
+					target_user_id: string;
+				};
+				Returns: Json;
+			};
+			timesheet_summary: {
+				Args: {
+					anchor_date?: string;
+					span?: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			trash_file: {
 				Args: {
 					acknowledge_customer_copies?: boolean;

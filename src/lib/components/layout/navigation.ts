@@ -5,6 +5,7 @@ import fileInvoiceIcon from '@tabler/icons/outline/file-invoice.svg?raw';
 import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
 import toolsIcon from '@tabler/icons/outline/tools.svg?raw';
 import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
+import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 import messagesIcon from '@tabler/icons/outline/messages.svg?raw';
 import hammerIcon from '@tabler/icons/outline/hammer.svg?raw';
@@ -45,6 +46,7 @@ export const iconMap: Record<string, string> = {
 	fileText: fileTextIcon,
 	tools: toolsIcon,
 	calendar: calendarIcon,
+	clock: clockIcon,
 	receipt: receiptIcon,
 	messages: messagesIcon,
 	hammer: hammerIcon,

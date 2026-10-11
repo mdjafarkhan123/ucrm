@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { createQuery } from '@tanstack/svelte-query';
+	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
@@ -22,6 +22,7 @@
 		type JobVisit,
 		type JobWriteError
 	} from '$lib/jobs/api';
+	import { timesheetsKey } from '$lib/time-clock/timesheets';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
@@ -49,6 +50,7 @@
 	} = $props();
 
 	const toast = getToastManager();
+	const queryClient = useQueryClient();
 	const currentUserId = $derived((page.data.user?.id as string | undefined) ?? '');
 
 	const laborQuery = createQuery(() => ({
@@ -130,6 +132,8 @@
 			dialogOpen = false;
 			editing = null;
 			await laborQuery.refetch();
+			// The same hours show on Timesheets (plan § Timesheets page: one set of hours in two places).
+			void queryClient.invalidateQueries({ queryKey: timesheetsKey });
 			onChange?.();
 			toast.success(correcting ? 'Hours updated' : 'Hours recorded');
 		} catch (cause) {
@@ -152,6 +156,7 @@
 			await deleteJobTimeEntry(jobId, entry.id);
 			confirmRemove = null;
 			await laborQuery.refetch();
+			void queryClient.invalidateQueries({ queryKey: timesheetsKey });
 			onChange?.();
 			toast.success('Hours removed');
 		} catch (cause) {

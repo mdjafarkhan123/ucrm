@@ -70,6 +70,22 @@ describe('contractorNavigation', () => {
 		expect(contractorNavigation(accessWith(features, ['customers.view'])).inbox).toBe(false);
 	});
 
+	// Time clock Part 4: Timesheets opens to anyone who records hours, their own or the team's, and the
+	// package gates it with Jobs.
+	it('shows Timesheets to anyone who records hours, and not to someone who records none', () => {
+		const withOwn = accessWith(everyCoreFeature, ['jobs.view', 'time.track_own']);
+		const withTeam = accessWith(everyCoreFeature, ['jobs.view', 'time.track_team']);
+		const salesOnly = accessWith(everyCoreFeature, ['jobs.view', 'quotes.view']);
+		const noJobs = accessWith(
+			everyCoreFeature.filter((key) => key !== 'core.jobs'),
+			['jobs.view', 'time.track_own', 'time.track_team']
+		);
+		expect(contractorNavigation(withOwn).timesheets).toBe(true);
+		expect(contractorNavigation(withTeam).timesheets).toBe(true);
+		expect(contractorNavigation(salesOnly).timesheets).toBe(false);
+		expect(contractorNavigation(noJobs).timesheets).toBe(false);
+	});
+
 	it('follows the role inside the package: a field member without quotes.view sees no Quotes', () => {
 		const navigation = contractorNavigation(
 			accessWith(everyCoreFeature, ['jobs.view', 'requests.view'])

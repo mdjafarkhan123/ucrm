@@ -9,6 +9,8 @@ export function contractorNavigation(access: EffectiveOrganizationAccess): Contr
 	return {
 		// The calendar is read through jobs.view (`/api/schedule`) and only exists with Scheduling.
 		schedule: access.features['core.schedule'] === true && can('jobs.view'),
+		// Mirrors `/api/time-clock/timesheets`: anyone who records hours, their own or the team's.
+		timesheets: can('time.track_own') || can('time.track_team'),
 		// Mirrors `/api/communications/email-history?access=1`: the shared inbox is sold separately.
 		inbox:
 			access.features['communications.inbox'] === true &&

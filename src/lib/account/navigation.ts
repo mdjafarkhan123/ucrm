@@ -2,6 +2,7 @@
 // `$lib/server/access/navigation` and handed to the shell with the layout.
 export type ContractorNavigation = {
 	schedule: boolean;
+	timesheets: boolean;
 	inbox: boolean;
 	clients: boolean;
 	requests: boolean;
@@ -18,6 +19,7 @@ export type ContractorNavigation = {
 // separately stay hidden, and every page still makes its own check.
 export const fallbackContractorNavigation: ContractorNavigation = {
 	schedule: true,
+	timesheets: true,
 	inbox: false,
 	clients: true,
 	requests: true,

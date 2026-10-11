@@ -1,5 +1,6 @@
 import type { QueryClient } from '@tanstack/svelte-query';
 import { jobDetailKey, jobLaborKey } from '$lib/jobs/api';
+import { timesheetsKey } from '$lib/time-clock/timesheets';
 
 // Time clock (docs/time-clock-behavior-contract.md). The signed-in person's own running timer is one shared
 // query: every Start/Stop control and the Job's Labor list read it, so they can never disagree about whether
@@ -150,11 +151,13 @@ export async function clockOut(): Promise<StopTimerResult> {
 	return readOrThrow(response, 'You were not clocked out. Check your connection and try again.');
 }
 
-// Everything a timer moving can change: the person's own timer, and the Job's Labor list and costing card
-// (labour cost counts once the timer stops). Completing a visit stops timers too, so it calls this as well.
+// Everything a timer moving can change: the person's own timer, the Job's Labor list and costing card
+// (labour cost counts once the timer stops), and Timesheets. Completing a visit stops timers too, so it calls
+// this as well.
 export async function refreshAfterTimer(queryClient: QueryClient, jobId: string | null) {
 	await Promise.all([
 		queryClient.invalidateQueries({ queryKey: myTimerKey }),
+		queryClient.invalidateQueries({ queryKey: timesheetsKey }),
 		...(jobId
 			? [
 					queryClient.invalidateQueries({ queryKey: jobLaborKey(jobId) }),
