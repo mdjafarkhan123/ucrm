@@ -14,4 +14,6 @@
 
 **Findings for Jafar:** the submit took about 20 seconds; the quote's tax did not carry to the invoice (job showed $486, invoice started at $450, tax re-entered by hand); the invoice's recipient box said no phone or email yet.
 
-**Next:** run "Still to run", then update `stages/D-migration-proof.md`.
+**Setup progress (2026-10-11, B12 owner login, `/setup`):** "Your business" and "Services and service area" finished (2 of 5). "Brand, photos and proof" is on step 2 of 3 (step 1 done; everything in it is optional). Not started: "How your CRM should work", "Move your existing data", then "Check and send to Uplift". Answers save as you go. Tip: the form's dropdowns accept typing then Enter; "Finish this task" names any missing answer.
+
+**Next:** sign in as the B12 owner, finish the three remaining setup tasks, send to Uplift, then review and Mark as live in `/jafar/onboarding`. Then run the rest of "Still to run" and update `stages/D-migration-proof.md`.
