@@ -54,7 +54,7 @@
   background: #205b3e;
 }
 .header__avatar {
-  border-radius: 12px;
+  border-radius: 50%;
   background: #eee8dc;
   border-color: #ded6c5;
   color: #67573e;

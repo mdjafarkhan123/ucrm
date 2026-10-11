@@ -30,3 +30,7 @@ and confirmed document width equals viewport width. Search for Jobs returns its 
 closes search. Phone navigation opens and dismisses. Both screenshots were visually inspected for
 alignment, spacing and clipping. Full text resizing, assistive technology, all restricted scenarios and
 production shell behavior remain for implementation preparation; this is a focused visual proposal.
+
+Revision 2: Jafar prefers the Carbon-inspired direction and requested the original circular avatar.
+Desktop web is the primary design target; phone checks are secondary. Background comparison remains
+under discussion, so this preference does not establish final header or background approval.

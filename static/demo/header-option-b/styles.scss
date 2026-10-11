@@ -13,7 +13,7 @@
   &__create { background: #286b49; color: white; border-color: #286b49; margin-inline: 10px; border-radius: 10px;
     &:hover:not(:disabled) { background: #205b3e; }
   }
-  &__avatar { border-radius: 12px; background: #eee8dc; border-color: #ded6c5; color: #67573e; }
+  &__avatar { border-radius: 50%; background: #eee8dc; border-color: #ded6c5; color: #67573e; }
 }
 @media (min-width: 768px) and (max-width: 1100px) {
  .header { gap: 14px; padding-inline: 24px; &__search { max-width: 280px; span:not(:first-child) { display: inline; } kbd { display: none; } } }
