@@ -9,7 +9,7 @@
 - [x] Inspect current campaign instructions, installed planning skills, and earlier pilot state.
 - [x] Record Jafar's agreed parent-role direction and prepare a standalone workflow proposal.
 - [x] Keep the older pilot's outstanding owner-window check visible and correct its misleading roadmap state.
-- [x] Address the independent fresh-reader check: link the earlier roadmap and pilot from the plan.
+- [x] Address the independent fresh-reader check: link earlier records and align the older pilot's next action with the current roadmap.
 - [ ] Get Jafar's review of the detailed plan and build order.
 
 ## Next

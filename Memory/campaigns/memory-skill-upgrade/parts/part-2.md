@@ -1,7 +1,7 @@
 # Part 2 — Pilot
 
 **Campaign:** memory-skill-upgrade · **Plan:** `ROADMAP.md` part 2
-**Code:** worktree `.claude/worktrees/memory-skill-upgrade`, branch `memory-skill-upgrade` (the new skill)
+**Code:** `main` — the skill was integrated after the historical worktree pilot below.
 **Done when:** every test below passes, with the six answers (goal, agreed behavior, done so far, what it
 waits for, next step, done-check) matching the real project; fixes applied; skill merged into `main`.
 
@@ -32,7 +32,7 @@ Helpers run with no write claim of mine held in the worktree; release mine befor
 
 ## Next
 
-The new skill is on `main`. Wait for Jafar's report from his own window test: a fresh session in the normal folder, told `read memory and continue operations-prospects-ux`, should show him the saved page plan with its two questions. If it goes as expected, mark Part 2 done and start Part 3 (checker); if not, fix the skill first.
+Wait for Jafar's test report: a fresh session told `read memory and continue operations-prospects-ux` should show the saved page plan and its two questions. Record the result before closing Part 2. Follow `Memory/campaigns/memory-skill-upgrade/ROADMAP.md`; Part 3 also waits for Part 10 of the parent-workflow upgrade. If the old check fails, record the failure for this upgrade rather than starting the checker early.
 
 ## Notes
 
