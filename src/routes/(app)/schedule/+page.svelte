@@ -29,6 +29,8 @@
 	import FinalVisitDialog from '$lib/components/jobs/FinalVisitDialog.svelte';
 	import CreateVisitsDialog from '$lib/components/jobs/CreateVisitsDialog.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import VisitTimerControl from '$lib/components/time-clock/VisitTimerControl.svelte';
+	import { fetchMyTimer, myTimerKey, refreshAfterTimer } from '$lib/time-clock/api';
 	import { workingWeek } from '$lib/schedule/hours';
 	import { teamAvailability } from '$lib/schedule/member-availability';
 	import { formatCalendarDay, visitClientLabel, visitWorkLabel } from '$lib/schedule/labels';
@@ -515,6 +517,19 @@
 	const canComplete = $derived(contextQuery.data?.can_complete ?? false);
 	const canClose = $derived(contextQuery.data?.can_close ?? false);
 
+	// Time clock: the reader's own timer, shared with every Start/Stop control. The popover offers the timer
+	// to someone who may time their work on an open visit, and always shows a timer already running on it.
+	const myTimerQuery = createQuery(() => ({
+		queryKey: myTimerKey,
+		queryFn: fetchMyTimer,
+		staleTime: 30_000
+	}));
+	function showsVisitTimer(visit: ScheduleVisit) {
+		const mine = myTimerQuery.data;
+		if (!mine) return false;
+		return (mine.can_time && !visit.completed_at) || mine.timer?.visit_id === visit.id;
+	}
+
 	/** A drag that has landed and is waiting for the person to press Save. */
 	let pending = $state<{
 		visit: ScheduleVisit;
@@ -882,7 +897,11 @@
 		completingVisitId = visit.id;
 		try {
 			const result = await completeJobVisit(visit.job_id, visit.id);
-			await refreshAfterWrite(visit.job_id);
+			// Completing a visit stops every timer on it, so the timer and the Job's hours move too.
+			await Promise.all([
+				refreshAfterWrite(visit.job_id),
+				refreshAfterTimer(queryClient, visit.job_id)
+			]);
 			toast.success('Visit marked complete');
 			// Completing the last incomplete visit of a one-off job asks the finishing question. The popover for
 			// the now-completed visit steps aside so the dialog stands on its own.
@@ -1498,9 +1517,20 @@
 			onunschedule={() => askUnschedule(selectedVisit)}
 			oncomplete={() => void handleComplete(selectedVisit)}
 			onuncomplete={() => void handleUncomplete(selectedVisit)}
+			timer={showsVisitTimer(selectedVisit) ? visitTimer : undefined}
 		/>
 	</Popover>
 {/if}
+
+{#snippet visitTimer()}
+	{#if selectedVisit}
+		<VisitTimerControl
+			jobId={selectedVisit.job_id}
+			visitId={selectedVisit.id}
+			completed={Boolean(selectedVisit.completed_at)}
+		/>
+	{/if}
+{/snippet}
 
 <!-- An assessment's own preview. It is Request-owned, so this only reads it and opens the Request; there is no
      reschedule, complete or unschedule here. -->

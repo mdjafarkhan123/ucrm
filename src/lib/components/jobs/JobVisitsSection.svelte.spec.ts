@@ -5,6 +5,9 @@ import { QueryClientProvider } from '@tanstack/svelte-query';
 import { createQueryClient } from '$lib/query-client';
 import JobVisitsSection from './JobVisitsSection.svelte';
 import type { JobRecurrenceInput, JobVisit } from '$lib/jobs/api';
+import { myTimerKey, type MyTimer } from '$lib/time-clock/api';
+import { visitChecklistsKey } from '$lib/checklists/api';
+import { assignableTeamKey } from '$lib/team/api';
 
 // The Job detail Visits card mirrors Jobber's grouped card (behaviour contract, "Job detail Visits card"):
 // To be scheduled / Upcoming / Past, only the next three Upcoming until "Show all", Past collapsed by
@@ -51,8 +54,22 @@ const weeklyOnMonday: JobRecurrenceInput = {
 
 type Props = Parameters<typeof JobVisitsSection>[1];
 
-function renderSection(props: Partial<Props> = {}) {
+// The card's reads are seeded so it never asks a server these browser tests do not have: `timer` is the
+// reader's own timer, as /api/time-clock/timer would answer (by default they may not time, so no timer control
+// shows), and each row's hover warm-up finds its team list and checklists already loaded.
+const cannotTime: MyTimer = { timer: null, can_time: false, server_now: new Date().toISOString() };
+
+function renderSection(props: Partial<Props> = {}, timer: MyTimer = cannotTime) {
 	const queryClient = createQueryClient();
+	queryClient.setQueryData(myTimerKey, timer);
+	queryClient.setQueryData(assignableTeamKey, []);
+	for (const visit of props.visits ?? []) {
+		queryClient.setQueryData(visitChecklistsKey(visit.id), {
+			checklists: [],
+			outstanding_required: 0,
+			can_answer: false
+		});
+	}
 	render(
 		JobVisitsSection,
 		{
@@ -206,5 +223,89 @@ describe('JobVisitsSection grouped card', () => {
 		expect(
 			page.getByTitle("This visit no longer follows the job's repeat schedule.").elements()
 		).toHaveLength(2);
+	});
+});
+
+// Time clock Part 2 (docs/time-clock-behavior-contract.md § Timers): each open visit row offers the reader's
+// own Start, the visit a timer runs on shows it ticking with Stop, and a timer on another job is named once.
+describe('JobVisitsSection visit timers', () => {
+	const serverNow = new Date().toISOString();
+	const noTimer: MyTimer = { timer: null, can_time: true, server_now: serverNow };
+
+	function runningOn(jobId: string, visitId: string, jobNumber = 20): MyTimer {
+		return {
+			timer: {
+				kind: 'visit',
+				job_id: jobId,
+				job_number: jobNumber,
+				job_title: 'Deck repair',
+				visit_id: visitId,
+				visit_date: '2026-09-10',
+				started_at: new Date(Date.now() - 42 * 60_000).toISOString()
+			},
+			can_time: true,
+			server_now: serverNow
+		};
+	}
+
+	it('offers Start on each open visit and not on a completed one', async () => {
+		renderSection(
+			{
+				visits: [
+					makeVisit({ title: 'Open', visit_date: '2026-09-10' }),
+					makeVisit({
+						title: 'Done',
+						visit_date: '2026-08-01',
+						completed_at: '2026-08-01T12:00:00Z'
+					})
+				]
+			},
+			noTimer
+		);
+
+		await expect.element(page.getByRole('button', { name: 'Start timer' })).toBeVisible();
+		await page.getByRole('button', { name: /Past/ }).click();
+		await expect.element(page.getByText('Done', { exact: false })).toBeVisible();
+		expect(page.getByRole('button', { name: 'Start timer' }).elements()).toHaveLength(1);
+	});
+
+	it('offers no Start to someone who may not time their work', async () => {
+		renderSection({ visits: [makeVisit({ title: 'Open' })] }, { ...noTimer, can_time: false });
+		await expect.element(page.getByText('Open', { exact: false })).toBeVisible();
+		expect(page.getByRole('button', { name: 'Start timer' }).query()).toBeNull();
+	});
+
+	it('offers no Start on a closed job', async () => {
+		renderSection({ visits: [makeVisit({ title: 'Open' })], jobStatus: 'closed' }, noTimer);
+		await expect.element(page.getByText('Open', { exact: false })).toBeVisible();
+		expect(page.getByRole('button', { name: 'Start timer' }).query()).toBeNull();
+	});
+
+	it('shows the running timer with Stop on its visit, and no Start on the others', async () => {
+		const running = makeVisit({ title: 'Running here', visit_date: '2026-09-10' });
+		renderSection(
+			{ visits: [running, makeVisit({ title: 'Other', visit_date: '2026-09-11' })] },
+			runningOn('job-1', running.id)
+		);
+
+		await expect.element(page.getByRole('button', { name: 'Stop timer' })).toBeVisible();
+		await expect.element(page.getByText(/^0:42:\d\d$/)).toBeVisible();
+		expect(page.getByRole('button', { name: 'Start timer' }).query()).toBeNull();
+	});
+
+	it('names a timer running on another job once, instead of offering Start', async () => {
+		renderSection(
+			{
+				visits: [
+					makeVisit({ title: 'One', visit_date: '2026-09-10' }),
+					makeVisit({ title: 'Two', visit_date: '2026-09-11' })
+				]
+			},
+			runningOn('job-2', 'visit-elsewhere', 21)
+		);
+
+		await expect.element(page.getByRole('link', { name: 'Job #21' })).toBeVisible();
+		expect(page.getByText(/Your timer is running on/).elements()).toHaveLength(1);
+		expect(page.getByRole('button', { name: 'Start timer' }).query()).toBeNull();
 	});
 });
