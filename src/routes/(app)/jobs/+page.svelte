@@ -143,8 +143,6 @@
 		}))
 	);
 
-	// Only the statuses the read model can currently produce. Visits and invoice reminders arrive later,
-	// and a filter that can never match anything is worse than one that is honestly short.
 	const statusOptions = [
 		{ value: '', label: 'All statuses' },
 		...JOB_FILTERABLE_STATUSES.map((value) => ({ value, label: JOB_STATUS_LABELS[value] }))

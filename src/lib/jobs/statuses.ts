@@ -1,7 +1,7 @@
 import type { StatusTone } from '$lib/components/work/types';
 
-// A job's status is never stored. `private.job_derived_status` in the database works it out from the
-// stored state, the schedule and the clock, and this file only says what each answer is called and which
+// A job's status is never stored. `private.job_derived_status` and `private.job_status_with_visits` in the
+// database work it out from the stored state, the job's visits and the clock, and this file only says what each answer is called and which
 // tone it wears. The database is the source; nothing here re-derives anything.
 export const JOB_DERIVED_STATUSES = [
 	'upcoming',
@@ -47,11 +47,14 @@ export const JOB_OVERVIEW_STATUSES = [
 	'unscheduled'
 ] as const;
 
-// The visit-driven statuses (Upcoming, Today, Late, Action required) still need Part 12's schedule to
-// exist before the database can ever answer with them, so the Status filter stays honestly short and does
-// not offer a filter that can never match. Requires invoicing is real now that reminders drive it (11b).
+// Every status the database can answer with, in the order the office reads them: what is coming up first,
+// then what needs a hand.
 export const JOB_FILTERABLE_STATUSES = [
+	'today',
+	'upcoming',
+	'late',
 	'unscheduled',
+	'action_required',
 	'requires_invoicing',
 	'ending_soon',
 	'archived'
