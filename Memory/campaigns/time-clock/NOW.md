@@ -4,14 +4,13 @@
 and on a weekly Timesheets page that a manager can check, correct and approve. Launch roadmap Part 16.
 **Plan:** `docs/time-clock-behavior-contract.md` — first version and build order approved by Jafar
 2026-10-11.
-**Stage:** Building
+**Stage:** Building (Part 2 of 9 done)
 
-**In progress:**
+**In progress:** nothing. Part 2 Visit timer done and merged into `main` 2026-10-11 (`89928483`).
 
-- Part 2 Visit timer — paused 2026-10-11 halfway; database live, Schedule control built. Read
-  `parts/2-visit-timer.md` and continue at its **Next** step 1 (branch `time-clock`, waiting to merge).
-
-**Next part:** Part 3 Day clock — clock in and out from Home, running timer on every page.
+**Next part:** Part 3 Day clock — clock in and out from Home, running timer with Stop on every page. Reuse
+`src/lib/components/time-clock/` (`RunningClock`, `TimerRunningElsewhere`, `VisitTimerControl`) and the
+shared `myTimerKey` query in `src/lib/time-clock/api.ts`.
 
 **Blockers:** Parts 3–4 change the header and sidebar. `selectable-design-experiences` Part 4 left
 uncommitted shell changes in the main folder; Jafar confirmed 2026-10-11 that session was stopped. That
