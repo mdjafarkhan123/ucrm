@@ -13,16 +13,18 @@
 
 **Support proven live (2026-10-11):** from Raad LTD "Chat with Uplift" → saved as an open thread → shown in `/jafar/support` → Uplift reply shown in the same thread (thread `766d676b…`).
 
-**Visit proven live (2026-10-11):** Job #1 → Add one visit (Oct 13) → shows on Schedule; Jobs now reads Upcoming/Today.
+**Visit proven live (2026-10-11):** Job #1 visit (Oct 13) shows on Schedule.
 
-**Still to run:** overdue pause and recovery; a closed public form (unit/database-tested only).
+**Still to run:** a closed public form (unit/database-tested only).
 
-**Raad sandbox payment + customer link proven live (2026-10-11):** Raad LTD (`18f0d717-904e-48d8-bd99-9df7e3844cda`, Stripe sandbox) invoice #34 → customer link → Pay now → Stripe test checkout → `payment=success`; invoice Paid, "Card (online)" in history.
+**Sandbox payment proven live (2026-10-11):** Raad LTD invoice #34 → customer link → Stripe test checkout → Paid, "Card (online)".
 
 **Tax fix proven live (2026-10-11):** Job #2 with 8% custom tax → invoice began with that tax ($432). Test job and unsent draft remain in B12 Proof Roofing.
 
-**Next:** overdue pause and recovery (needs a time skip on B12 Proof Roofing's paid-through date, as package-builder P16 M8 did; wait for Jafar's go-ahead), then the closed public form; update `stages/D-migration-proof.md`. Claim write first; the register refuses while uncommitted design files sit in the main folder.
+**Overdue proven live (2026-10-11):** B12 Proof Roofing 3 days overdue → grace banner; 9 days → paused screen, Control Room Suspended; test payment recorded and dates confirmed in `/jafar` Billing → active, paid-through now 2026-12-09, records intact.
 
-**Question for Jafar:** should those three Jobs cards show real numbers, and does "Revenue this month" mean invoiced or paid?
+**Next:** the closed public form (needs `https://app.upliftcontractor.com` for the public path), then update `stages/D-migration-proof.md` and close B12. The claim register refuses while another campaign's design files are uncommitted; none are mine.
 
-**Findings for Jafar:** public submit took about 20 seconds; tax not carrying to the invoice and Jobs ignoring visits are both FIXED (`e756da3e`, `d8091900`) and seen live; the Jobs cards "Visits today", "Completed this month" and "Revenue this month" are still dashes (question above); the Setup label "How many van do you have?" is test text, not in the code; "Approve launch" appears only after Uplift sends the approval request (by design).
+**Jobs cards fixed (`910e5791`):** Visits today, Completed visits (past 30 days), Collected this month now show real numbers. "Revenue" was read as money paid; Jafar can switch it to invoiced.
+
+**Findings for Jafar:** public submit took about 20 seconds; tax not carrying to the invoice and Jobs ignoring visits are both FIXED (`e756da3e`, `d8091900`) and seen live; the Jobs cards are now real (above); the Setup label "How many van do you have?" is test text, not in the code; "Approve launch" appears only after Uplift sends the approval request (by design).
