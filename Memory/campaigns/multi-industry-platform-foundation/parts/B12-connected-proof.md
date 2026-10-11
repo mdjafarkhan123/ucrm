@@ -1,6 +1,6 @@
 # B12 Connected proof — part note
 
-**State:** Paused 2026-10-11. Fresh Contractor journey, Setup → review → Ready → preview, and all launch checks are done; launch approval is waiting.
+**State:** Paused 2026-10-11. Fresh Contractor journey through Setup, review, Ready, preview, launch approval (Pat Proof, 10:10 AM) and Mark as live (version 1, 10:14 AM, pressed by Jafar) all observed; the "now live" email was sent.
 
 **Method:** The public form only works through `https://app.upliftcontractor.com` (never click or bypass the Cloudflare check). Everything after uses `http://localhost:5173`. Logins are in `Login.md`. `/jafar` and the app keep separate sessions. `dev.jafarkhan@gmail.com` is Chrome Gmail slot `/u/2`.
 
@@ -14,8 +14,8 @@
 
 **System email (fixed on `main`):** sender name is "Uplift"; no Reply-To until `SYSTEM_REPLY_TO_EMAIL` is set. Jafar has no Uplift mailbox; his plan is an in-app mailbox in `/jafar`, a later release (Jafar business management campaign). Business sender names now reject addresses, links and line breaks. Open for Jafar: the paused and grace screens show `hello@upliftcontractor.com`, which may not exist.
 
-**Still to run:** support message; overdue pause and recovery; a Visit on the Job; an issued quote/invoice link on an existing org; Raad sandbox payment; a closed public form (unit/database-tested only).
+**Still to run:** support message; overdue pause and recovery; a Visit on the Job; an issued quote/invoice link on an existing org; Raad sandbox payment; a closed public form (unit/database-tested only). Note: Claude's click on the approval tick-box and on Mark as live was blocked or did nothing; Jafar pressed both.
 
-**Next:** (1) Jafar clicks "Review and approve" in the 9:27 email, or says "approve as B12 owner" (the click was blocked for me). (2) Mark live in `/jafar` Setup tab. (3) Raad sandbox payment, then "Still to run"; update `stages/D-migration-proof.md`.
+**Next:** Raad sandbox payment, then the rest of "Still to run" (the support message and the live-state checks now that B12 is live); update `stages/D-migration-proof.md`. Training and handover pack on B12 are untouched.
 
 **Findings for Jafar:** the public submit took about 20 seconds; the quote's tax did not carry to the invoice ($486 job, $450 invoice); Setup label reads "How many van do you have?"; the client's Setup page has no "I approve" button when every card is "Looks right"; Schedule's "Today" week showed Oct 4–10 on Oct 11 (check timezone); Chrome screenshots timed out twice.
