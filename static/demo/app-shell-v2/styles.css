@@ -939,10 +939,10 @@ body:has(dialog[open]) .content {
 .sidebar__link svg {
   width: 18px;
   height: 18px;
-  stroke-width: 1.6;
+  stroke-width: 2;
 }
 .sidebar__link > span:first-child {
-  color: #a9c5b4;
+  color: #d7e7dc;
 }
 .sidebar__link:hover {
   background: rgba(255, 255, 255, 0.0431372549);
@@ -957,7 +957,7 @@ body:has(dialog[open]) .content {
   font-weight: 600;
 }
 .sidebar__link[aria-current=page] > span:first-child {
-  color: #326343;
+  color: #245735;
 }
 .sidebar__link[aria-current=page]::after {
   content: "";

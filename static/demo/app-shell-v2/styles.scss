@@ -153,8 +153,8 @@ body:has(dialog[open]) .content { overflow: hidden; }
   font-size: 14px;
   font-weight: 400;
   color: #d4e1d7;
-  svg { width: 18px; height: 18px; stroke-width: 1.6; }
-  > span:first-child { color: #a9c5b4; }
+  svg { width: 18px; height: 18px; stroke-width: 2; }
+  > span:first-child { color: #d7e7dc; }
   &:hover { background: #ffffff0b; border-color: #ffffff0a; color: #fff; }
   &[aria-current=page] {
    color: #214c32;
@@ -162,7 +162,7 @@ body:has(dialog[open]) .content { overflow: hidden; }
    border-color: #eef4da;
    box-shadow: 0 2px 5px #0927191a;
    font-weight: 600;
-   > span:first-child { color: #326343; }
+   > span:first-child { color: #245735; }
    &::after { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #507949; margin-left: auto; flex: 0 0 auto; }
   }
   &[aria-disabled=true] { color: #adbfaf; > span:first-child { color: #9ab49f; } }

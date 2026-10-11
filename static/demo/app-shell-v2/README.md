@@ -1,4 +1,4 @@
-# Sidebar variant 2 — revision 1
+# Sidebar variant 2 — revision 2
 
 Open `/demo/app-shell-v2/index.html`. Jafar explicitly requested a duplicate of the first demo for a
 second, more premium and clear sidebar direction. Variant 1 remains at `/demo/app-shell/index.html`.
@@ -42,3 +42,7 @@ No application rollout is approved by building this variant. Assistive-technolog
 remain unverified; full text-resizing support still needs review before implementation.
 
 Compile: `npx sass static/demo/app-shell-v2/styles.scss static/demo/app-shell-v2/styles.css --no-source-map`.
+
+Revision 2: Jafar requested clearer icons. Navigation strokes increase from 1.6 to 2;
+normal icons use brighter sage and selected icons use darker green for stronger contrast.
+Unavailable items retain their quieter appearance.

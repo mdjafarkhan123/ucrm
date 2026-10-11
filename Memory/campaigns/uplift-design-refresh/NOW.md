@@ -5,7 +5,7 @@
 
 **In progress:** Part 3 sidebar/header demo, revision 2 at `/demo/app-shell/index.html`. Parts 1–2 are complete; live app components and the selected reference are unchanged.
 
-**Next:** Compare Part 3 variant 1 revision 2 with the requested variant 2 revision 1 at `/demo/app-shell-v2/index.html`; see `parts/3.md`. Revise his feedback before recording approval or starting Part 4.
+**Next:** Compare Part 3 variant 1 revision 2 with the requested variant 2 revision 2 at `/demo/app-shell-v2/index.html`; see `parts/3.md`. Revise his feedback before recording approval or starting Part 4.
 
 **Maintenance rule:** Keep the existing design skill and update necessary parts incrementally. Use `.claude/skills/design/alignment.md` as the reading gate: load only modules explicitly updated for the relevant redesign coverage; uncovered patterns need a focused demo, not old visual guidance. Update each relevant module after its focused demo is built and approved, before implementation.
 
