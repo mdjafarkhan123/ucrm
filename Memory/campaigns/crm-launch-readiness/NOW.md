@@ -22,7 +22,8 @@ production; every test possible before it is run before it. Order:
 6. **Part 8, final audit** — plus the postponed-work P1 items and every test possible without a server.
 7. **Part 9, production** (P9A answer needed first), then real-world tests, then launch.
 
-Next session: start Part 16 as its own campaign.
+Part 16 started 2026-10-11 as campaign `time-clock` (planning; waits for Jafar's five choices). Resume it
+there; return here when it closes.
 
 ## Essential pointers
 

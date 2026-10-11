@@ -20,7 +20,7 @@ own implementation. Production infrastructure remains behind Jafar's separate to
 | 13 | Home screen and Reports: today's work, what needs action, money owed; a Reports screen beyond the accountant CSV | Priority 3 | Part 3 reconciliation | Figures match the books and respect each person's permissions |
 | 14 | Customer portal: appointments, quotes, invoices, balances, asking for more work | Priority 4 | Part 11 | A customer sees only their own records and can act on them |
 | 15 | Everyday extras: Quote templates, more automation recipes, move many Visits across Jobs, auto-archive stale Requests and Quotes, custom fields | Priority 5 — order set in NOW.md | Part 11 | Each item proven on the live app |
-| 16 | Time clock: start and stop a live timer on a Visit or Job, clock in and out for the day, a Timesheets page for the week, and a manager's check of hours | Priority 1 — not started (crews use it daily; only hand-typed hours exist) | Part 11 | Crew times in and out on a phone, hours land on the Job cost and timesheet once, and a manager can correct them |
+| 16 | Time clock: start and stop a live timer on a Visit or Job, clock in and out for the day, a Timesheets page for the week, and a manager's check of hours | Priority 1 — planning 2026-10-11 in campaign `time-clock` | Part 11 | Crew times in and out on a phone, hours land on the Job cost and timesheet once, and a manager can correct them |
 
 The controlled first launch waits for Parts 1–4 and 9. Start with a few closely supported paying contractors.
 Wider rollout waits for the necessary Part 8 work and evidence from that first group. No capacity claim is made
