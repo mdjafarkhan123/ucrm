@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { RunningTimer } from '$lib/time-clock/api';
+	import type { VisitRunningTimer } from '$lib/time-clock/api';
 
-	// Only one timer runs at a time. Rather than offer a Start that can only be refused, say where the running
-	// one is so the person can go and stop it.
-	let { timer }: { timer: RunningTimer } = $props();
+	// Only one visit timer runs at a time. Rather than offer a Start that can only be refused, say where the
+	// running one is so the person can go and stop it.
+	let { timer }: { timer: VisitRunningTimer } = $props();
 </script>
 
 <p class="timer-elsewhere">

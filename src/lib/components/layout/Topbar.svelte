@@ -23,6 +23,7 @@
 		searchPlaceholder = 'Search',
 		accountLabel,
 		notifications,
+		timer,
 		account = null,
 		avatar = null,
 		onEditPhoto,
@@ -38,6 +39,8 @@
 		searchPlaceholder?: string;
 		accountLabel: string;
 		notifications?: Snippet;
+		/** The signed-in person's running timer, shown by every presentation's header. */
+		timer?: Snippet;
 		account?: { name: string | null; email: string | null; role: string } | null;
 		/** The signed-in person's own avatar, drawn in place of the generic account icon. */
 		avatar?: { id: string; url: string | null; name: string | null } | null;
@@ -76,7 +79,7 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<Header {identity} {notifications}>
+<Header {identity} {notifications} {timer}>
 	{#snippet menu()}
 		<button class="topbar__menu" type="button" aria-label="Open navigation" onclick={onmenutoggle}>
 			<span aria-hidden="true">{@html menuIcon}</span>

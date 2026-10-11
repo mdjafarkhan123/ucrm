@@ -3,6 +3,7 @@
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import SetupCard from '$lib/components/dashboard/SetupCard.svelte';
 	import ReadinessCard from '$lib/components/dashboard/ReadinessCard.svelte';
+	import DayClockCard from '$lib/components/time-clock/DayClockCard.svelte';
 	import CountryPicker from '$lib/components/ui/CountryPicker.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -235,6 +236,7 @@
 		<main class="content">
 			<PageHeader title="Dashboard" description="Your workspace at a glance." />
 			{#if hasOrganization}
+				<DayClockCard />
 				{#if runsSetup}
 					<SetupCard userId={shell.user?.id ?? null} />
 					<ReadinessCard userId={shell.user?.id ?? null} />

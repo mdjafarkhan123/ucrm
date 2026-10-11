@@ -10,6 +10,6 @@ export const startVisitTimerSchema = z.object({
 
 export type StartVisitTimerInput = z.infer<typeof startVisitTimerSchema>;
 
-// Stop carries nothing — it always means "my running timer" — but an unexpected body is refused rather
-// than ignored, so a caller that thinks it can name a timer finds out.
-export const stopTimerSchema = z.object({}).strict();
+// Stop, Clock in and Clock out carry nothing — they always mean "my own timer" — but an unexpected body is
+// refused rather than ignored, so a caller that thinks it can name a timer or a person finds out.
+export const emptyTimerCommandSchema = z.object({}).strict();

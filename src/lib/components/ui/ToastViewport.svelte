@@ -61,9 +61,12 @@
 </div>
 
 <style lang="scss">
+	// `--toast-top` is the app header's bottom edge, published by the app shell, so a toast never covers the
+	// header's controls — pressing Stop there must not hide the Clock out that takes its place. Pages
+	// without the shell, such as sign-in, keep the corner.
 	.toast-viewport {
 		position: fixed;
-		top: var(--space-base);
+		top: var(--toast-top, var(--space-base));
 		right: var(--space-base);
 		z-index: var(--elevation-toast);
 		display: grid;
@@ -78,7 +81,7 @@
 
 	@media (max-width: 600px) {
 		.toast-viewport {
-			top: var(--space-small);
+			top: var(--toast-top, var(--space-small));
 			right: var(--space-small);
 			left: var(--space-small);
 			width: auto;

@@ -2,16 +2,25 @@
 
 <script lang="ts">
 	import type { HeaderFrameProps } from './header-types';
-	let { identity, menu, search, add, appearance, notifications, accountControl }: HeaderFrameProps =
-		$props();
+	let {
+		identity,
+		menu,
+		search,
+		add,
+		timer,
+		appearance,
+		notifications,
+		accountControl
+	}: HeaderFrameProps = $props();
 </script>
 
-<header class="topbar">
+<header class="topbar" data-shell-header>
 	{@render menu()}
 	{@render identity?.()}
 	{@render search()}
 	{@render add()}
 	<div class="topbar__spacer"></div>
+	{@render timer?.()}
 	{@render appearance()}
 	{@render notifications?.()}
 	{@render accountControl()}
@@ -32,6 +41,29 @@
 		flex: 1 1 320px;
 		min-width: 0;
 		max-width: 420px;
+		container-type: inline-size;
+	}
+	// Squeezed by the header's other controls (a running timer beside the sidebar on a small laptop), the
+	// search box shows only its magnifier rather than a clipped word. The label stays for screen readers.
+	@container (max-width: 140px) {
+		:global(.topbar__search-trigger),
+		:global(.topbar__search-placeholder) {
+			justify-content: center;
+			padding: 0;
+		}
+		:global(.topbar__search-trigger kbd) {
+			display: none;
+		}
+		:global(.topbar__search-label),
+		:global(.topbar__search-placeholder span:not(.topbar__search-icon)) {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			margin: -1px;
+			overflow: hidden;
+			clip: rect(0 0 0 0);
+			white-space: nowrap;
+		}
 	}
 	:global(.topbar__search-trigger),
 	:global(.topbar__search-placeholder) {

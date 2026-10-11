@@ -4,13 +4,17 @@
 and on a weekly Timesheets page that a manager can check, correct and approve. Launch roadmap Part 16.
 **Plan:** `docs/time-clock-behavior-contract.md` — first version and build order approved by Jafar
 2026-10-11.
-**Stage:** Building (Part 2 of 9 done)
+**Stage:** Building (Parts 2–3 of 9 done)
 
-**In progress:** nothing. Part 2 Visit timer done and merged into `main` 2026-10-11 (`89928483`).
+**In progress:** nothing. Part 3 Day clock done 2026-10-11 (proof in the roadmap line).
 
-**Next part:** Part 3 Day clock — clock in and out from Home, running timer with Stop on every page. Reuse
-`src/lib/components/time-clock/` (`RunningClock`, `TimerRunningElsewhere`, `VisitTimerControl`) and the
-shared `myTimerKey` query in `src/lib/time-clock/api.ts`.
+**Next part:** Part 4 Timesheets views. Hours live in two tables: `job_time_entries` (Job hours, feeds Job
+costing) and `general_time_entries` (day clock, never on a Job); Timesheets reads both. The running timer
+is `running_timers` (`kind` visit/general, `resume_general`). Reuse `src/lib/time-clock/` (`api.ts`,
+`messages.ts`, `timer-actions.svelte.ts`) and `src/lib/components/time-clock/`. Part 4 needs the
+performance review on a 15-person week.
 
-**Blockers:** none. The shared shell was settled 2026-10-11 (`selectable-design-experiences` Part 4); add the
-running timer to the header through a `Topbar.svelte` snippet so Classic and Botanical both show it.
+**Open check:** the header timer has not been seen in the private Botanical preview (release build with
+`DESIGN_SHELL_PREVIEW=botanical`); Classic is verified. Belongs with `selectable-design-experiences` Part 5.
+
+**Blockers:** none.

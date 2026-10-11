@@ -6,6 +6,8 @@ export type HeaderFrameProps = {
 	add: Snippet;
 	appearance: Snippet;
 	notifications?: Snippet;
+	/** The signed-in person's running timer, when one runs (Time clock). */
+	timer?: Snippet;
 	accountControl: Snippet;
 };
 export type HeaderFrame = Component<HeaderFrameProps>;

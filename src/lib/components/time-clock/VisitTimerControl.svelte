@@ -5,18 +5,21 @@
 	import TimerRunningElsewhere from '$lib/components/time-clock/TimerRunningElsewhere.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
-		durationLabel,
 		fetchMyTimer,
 		myTimerKey,
 		refreshAfterTimer,
+		runningVisitTimer,
+		serverOffsetMs,
 		startVisitTimer,
 		stopMyTimer,
 		type TimerWriteError
 	} from '$lib/time-clock/api';
+	import { stopMessage } from '$lib/time-clock/messages';
 
 	// Start and Stop for the signed-in person's own timer on one visit (plan § Timers). Every copy of this
 	// control reads the same shared timer query, so the Schedule popover and the Job page agree about what is
-	// running. Absent for someone who may not time their work, and on a completed visit.
+	// running. Absent for someone who may not time their work, and on a completed visit. A running day clock
+	// does not block Start: starting the visit's timer pauses it.
 	let {
 		jobId,
 		visitId,
@@ -37,10 +40,9 @@
 		staleTime: 30_000
 	}));
 	const mine = $derived(timerQuery.data);
-	const running = $derived(mine?.timer ?? null);
+	const running = $derived(runningVisitTimer(mine));
 	const onThisVisit = $derived(running !== null && running.visit_id === visitId);
-	// How far the server's clock is ahead of this device's when the timer was read.
-	const offsetMs = $derived(mine ? Date.parse(mine.server_now) - timerQuery.dataUpdatedAt : 0);
+	const offsetMs = $derived(serverOffsetMs(mine, timerQuery.dataUpdatedAt));
 
 	let busy = $state(false);
 
@@ -48,8 +50,11 @@
 		if (busy) return;
 		busy = true;
 		try {
-			await startVisitTimer(jobId, visitId);
-			toast.success('Timer started');
+			const result = await startVisitTimer(jobId, visitId);
+			toast.success(
+				'Timer started',
+				result.day_clock_paused ? 'Your day clock is paused until you stop it.' : undefined
+			);
 		} catch (caught) {
 			toast.error((caught as TimerWriteError).message ?? 'The timer did not start.');
 		} finally {
@@ -62,17 +67,9 @@
 		if (busy) return;
 		busy = true;
 		try {
-			const result = await stopMyTimer();
-			if (result.recorded) {
-				toast.success(
-					'Timer stopped',
-					`${durationLabel(result.minutes)} added to this job’s hours.`
-				);
-			} else if (result.stopped) {
-				toast.info('Timer stopped', 'It ran for less than a minute, so no hours were recorded.');
-			} else {
-				toast.info('This timer was already stopped', 'Its hours were recorded once.');
-			}
+			const message = stopMessage(await stopMyTimer());
+			if (message.tone === 'success') toast.success(message.title, message.detail);
+			else toast.info(message.title, message.detail);
 		} catch (caught) {
 			toast.error((caught as TimerWriteError).message ?? 'The timer did not stop.');
 		} finally {

@@ -134,6 +134,7 @@
 	:global(.notification-bell__trigger) {
 		position: relative;
 		display: inline-grid;
+		flex: 0 0 auto;
 		width: 40px;
 		height: 40px;
 		place-items: center;

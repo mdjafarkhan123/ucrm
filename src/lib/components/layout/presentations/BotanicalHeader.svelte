@@ -2,14 +2,23 @@
 
 <script lang="ts">
 	import type { HeaderFrameProps } from './header-types';
-	let { identity, menu, search, add, appearance, notifications, accountControl }: HeaderFrameProps =
-		$props();
+	let {
+		identity,
+		menu,
+		search,
+		add,
+		timer,
+		appearance,
+		notifications,
+		accountControl
+	}: HeaderFrameProps = $props();
 </script>
 
-<header class="botanical-header">
+<header class="botanical-header" data-shell-header>
 	{@render menu()}
 	{@render identity?.()}
 	{@render search()}
+	{@render timer?.()}
 	<div class="botanical-header__actions">
 		{@render appearance()}
 		{@render notifications?.()}

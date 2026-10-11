@@ -57,7 +57,12 @@ type Props = Parameters<typeof JobVisitsSection>[1];
 // The card's reads are seeded so it never asks a server these browser tests do not have: `timer` is the
 // reader's own timer, as /api/time-clock/timer would answer (by default they may not time, so no timer control
 // shows), and each row's hover warm-up finds its team list and checklists already loaded.
-const cannotTime: MyTimer = { timer: null, can_time: false, server_now: new Date().toISOString() };
+const cannotTime: MyTimer = {
+	timer: null,
+	clocked_in: false,
+	can_time: false,
+	server_now: new Date().toISOString()
+};
 
 function renderSection(props: Partial<Props> = {}, timer: MyTimer = cannotTime) {
 	const queryClient = createQueryClient();
@@ -230,7 +235,12 @@ describe('JobVisitsSection grouped card', () => {
 // own Start, the visit a timer runs on shows it ticking with Stop, and a timer on another job is named once.
 describe('JobVisitsSection visit timers', () => {
 	const serverNow = new Date().toISOString();
-	const noTimer: MyTimer = { timer: null, can_time: true, server_now: serverNow };
+	const noTimer: MyTimer = {
+		timer: null,
+		clocked_in: false,
+		can_time: true,
+		server_now: serverNow
+	};
 
 	function runningOn(jobId: string, visitId: string, jobNumber = 20): MyTimer {
 		return {
@@ -241,8 +251,10 @@ describe('JobVisitsSection visit timers', () => {
 				job_title: 'Deck repair',
 				visit_id: visitId,
 				visit_date: '2026-09-10',
-				started_at: new Date(Date.now() - 42 * 60_000).toISOString()
+				started_at: new Date(Date.now() - 42 * 60_000).toISOString(),
+				day_clock_paused: false
 			},
+			clocked_in: false,
 			can_time: true,
 			server_now: serverNow
 		};
@@ -307,5 +319,31 @@ describe('JobVisitsSection visit timers', () => {
 		await expect.element(page.getByRole('link', { name: 'Job #21' })).toBeVisible();
 		expect(page.getByText(/Your timer is running on/).elements()).toHaveLength(1);
 		expect(page.getByRole('button', { name: 'Start timer' }).query()).toBeNull();
+	});
+
+	// Time clock Part 3: the day clock is not a visit timer. While clocked in, every open visit still offers
+	// Start, and starting one pauses the day clock.
+	it('still offers Start while the day clock runs', async () => {
+		renderSection(
+			{ visits: [makeVisit({ title: 'Open', visit_date: '2026-09-10' })] },
+			{
+				timer: {
+					kind: 'general',
+					job_id: null,
+					job_number: null,
+					job_title: null,
+					visit_id: null,
+					visit_date: null,
+					started_at: new Date(Date.now() - 90 * 60_000).toISOString(),
+					day_clock_paused: false
+				},
+				clocked_in: true,
+				can_time: true,
+				server_now: serverNow
+			}
+		);
+
+		await expect.element(page.getByRole('button', { name: 'Start timer' })).toBeVisible();
+		expect(page.getByText(/Your timer is running on/).query()).toBeNull();
 	});
 });

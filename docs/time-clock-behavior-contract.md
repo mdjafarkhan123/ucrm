@@ -37,7 +37,8 @@ and Assessment timers as the last part.
   hours go to the visit instead. Stopping the visit timer resumes the day clock. A second visit timer
   cannot start until the first stops.
 - **Clocking in is optional.** A visit timer can run without clocking in; stopping it then leaves nothing
-  running. **Clock out** stops a running visit timer too, because the working day is over.
+  running. Clocking in while a visit timer runs starts the day clock when that timer stops (our
+  adaptation). **Clock out** stops a running visit timer too, because the working day is over.
 - **Completing a visit stops every timer running on it**, and the Stop button is not needed first. To
   restart a timer on a completed visit, the visit has to be reopened.
 - **Hours belong to the day the timer started**, in the business's time zone. A timer that runs past

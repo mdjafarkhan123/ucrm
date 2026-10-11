@@ -5700,6 +5700,60 @@ export type Database = {
 					}
 				];
 			};
+			general_time_entries: {
+				Row: {
+					created_at: string;
+					created_by: string | null;
+					id: string;
+					minutes: number;
+					notes: string | null;
+					organization_id: string;
+					source: string;
+					started_at: string;
+					updated_at: string;
+					user_id: string;
+				};
+				Insert: {
+					created_at?: string;
+					created_by?: string | null;
+					id?: string;
+					minutes: number;
+					notes?: string | null;
+					organization_id: string;
+					source?: string;
+					started_at: string;
+					updated_at?: string;
+					user_id: string;
+				};
+				Update: {
+					created_at?: string;
+					created_by?: string | null;
+					id?: string;
+					minutes?: number;
+					notes?: string | null;
+					organization_id?: string;
+					source?: string;
+					started_at?: string;
+					updated_at?: string;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'general_time_entries_member_fk';
+						columns: ['organization_id', 'user_id'];
+						isOneToOne: false;
+						referencedRelation: 'organization_members';
+						referencedColumns: ['organization_id', 'user_id'];
+					},
+					{
+						foreignKeyName: 'general_time_entries_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			import_batches: {
 				Row: {
 					column_mapping: Json;
@@ -17279,27 +17333,30 @@ export type Database = {
 			};
 			running_timers: {
 				Row: {
-					job_id: string;
+					job_id: string | null;
 					kind: string;
 					organization_id: string;
+					resume_general: boolean;
 					started_at: string;
 					started_by: string | null;
 					user_id: string;
 					visit_id: string | null;
 				};
 				Insert: {
-					job_id: string;
+					job_id?: string | null;
 					kind?: string;
 					organization_id: string;
+					resume_general?: boolean;
 					started_at?: string;
 					started_by?: string | null;
 					user_id: string;
 					visit_id?: string | null;
 				};
 				Update: {
-					job_id?: string;
+					job_id?: string | null;
 					kind?: string;
 					organization_id?: string;
+					resume_general?: boolean;
 					started_at?: string;
 					started_by?: string | null;
 					user_id?: string;
@@ -20244,6 +20301,8 @@ export type Database = {
 				Args: { target_client_ids: string[] };
 				Returns: Json;
 			};
+			clock_in: { Args: { target_organization_id: string }; Returns: Json };
+			clock_out: { Args: { target_organization_id: string }; Returns: Json };
 			clone_quote_version_to_draft: {
 				Args: { target_quote_id: string };
 				Returns: Json;

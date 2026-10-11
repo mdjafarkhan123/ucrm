@@ -17,7 +17,12 @@
 	import VisitRecordsDialog from '$lib/components/jobs/VisitRecordsDialog.svelte';
 	import VisitTimerControl from '$lib/components/time-clock/VisitTimerControl.svelte';
 	import TimerRunningElsewhere from '$lib/components/time-clock/TimerRunningElsewhere.svelte';
-	import { fetchMyTimer, myTimerKey, refreshAfterTimer } from '$lib/time-clock/api';
+	import {
+		fetchMyTimer,
+		myTimerKey,
+		refreshAfterTimer,
+		runningVisitTimer
+	} from '$lib/time-clock/api';
 	import {
 		fetchVisitChecklists,
 		visitChecklistsKey,
@@ -133,7 +138,8 @@
 
 	// Time clock: the reader's own timer, the same shared query every Start/Stop control reads. A visit row
 	// offers Start to someone who may time their work, on an open visit of an active job, while no timer of
-	// theirs is running; a row always shows a timer already running on it, so it can be stopped there.
+	// theirs is running; a row always shows a timer already running on it, so it can be stopped there. The day
+	// clock is not a visit timer: starting one pauses it.
 	const myTimerQuery = createQuery(() => ({
 		queryKey: myTimerKey,
 		queryFn: fetchMyTimer,
@@ -142,14 +148,16 @@
 	function showsVisitTimer(visit: JobVisit) {
 		const mine = myTimerQuery.data;
 		if (!mine) return false;
-		if (mine.timer) return mine.timer.visit_id === visit.id;
+		const visitTimer = runningVisitTimer(mine);
+		if (visitTimer) return visitTimer.visit_id === visit.id;
 		return mine.can_time && !visit.completed_at && jobStatus === 'active';
 	}
 	// A timer running on another job hides every Start here. One note says where it is, rather than one under
 	// each visit.
 	const timerElsewhere = $derived.by(() => {
 		const mine = myTimerQuery.data;
-		return mine?.can_time && mine.timer && mine.timer.job_id !== jobId ? mine.timer : null;
+		const visitTimer = runningVisitTimer(mine);
+		return mine?.can_time && visitTimer && visitTimer.job_id !== jobId ? visitTimer : null;
 	});
 
 	// Only a recurring job that is not as-needed has a repeating schedule to edit or to carry forward. A

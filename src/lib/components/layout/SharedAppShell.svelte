@@ -6,6 +6,7 @@
 	import ProfilePhotoDialog from '$lib/components/profile/ProfilePhotoDialog.svelte';
 	import NotificationBell from '$lib/components/jafar/NotificationBell.svelte';
 	import TeamNotificationBell from '$lib/components/team/TeamNotificationBell.svelte';
+	import HeaderTimer from '$lib/components/time-clock/HeaderTimer.svelte';
 	import { goto } from '$app/navigation';
 	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -66,6 +67,26 @@
 			url: account.avatarUrl ?? null,
 			name: account.name ?? account.email,
 			endpoint: '/api/profile/photo'
+		};
+	});
+
+	// Toasts open just below the header, never over its controls (see ToastViewport). The header's height
+	// changes with the presentation, the screen width and a running timer's phone row, so it is measured.
+	$effect(() => {
+		const header = document.querySelector<HTMLElement>('[data-shell-header]');
+		if (!header) return;
+		const root = document.documentElement;
+		const publish = () =>
+			root.style.setProperty(
+				'--toast-top',
+				`${Math.round(header.getBoundingClientRect().bottom) + 8}px`
+			);
+		publish();
+		const observer = new ResizeObserver(publish);
+		observer.observe(header);
+		return () => {
+			observer.disconnect();
+			root.style.removeProperty('--toast-top');
 		};
 	});
 
@@ -265,6 +286,9 @@
 				{:else if variant === 'contractor' && userId}
 					<TeamNotificationBell />
 				{/if}
+			{/snippet}
+			{#snippet timer()}
+				{#if variant === 'contractor' && userId}<HeaderTimer />{/if}
 			{/snippet}
 		</Topbar>
 	{/snippet}
