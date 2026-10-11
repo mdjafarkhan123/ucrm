@@ -69,8 +69,24 @@ const outboundAttachmentsField = z
 	.max(MAX_OUTBOUND_ATTACHMENTS_PER_MESSAGE, 'Attach at most 10 files to one email.')
 	.default([]);
 
+// The name customers see in their inbox. No address, link or line break: those let one business pose as another or
+// inject extra mail headers.
+const senderDisplayName = z
+	.string()
+	.trim()
+	.min(1, 'Enter a sender name.')
+	.max(160)
+	.refine(
+		(name) => !/[\r\n\u0000-\u001f<>"]/.test(name),
+		'The sender name cannot contain line breaks or the characters < > ".'
+	)
+	.refine(
+		(name) => !/@|https?:|www\./i.test(name),
+		'The sender name cannot contain an email address or link.'
+	);
+
 const senderConfiguration = {
-	display_name: z.string().trim().min(1, 'Enter a sender name.').max(160),
+	display_name: senderDisplayName,
 	assigned_user_id: z.string().uuid('Choose an active team member.').nullable(),
 	is_organization_default: z.boolean(),
 	allows_manual: z.boolean(),
