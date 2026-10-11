@@ -1,15 +1,15 @@
 # CRM design system — now
 
-**Goal:** Each organization can choose a theme that changes the app’s appearance and, where supported, its layout.
-**Plan:** `docs/crm-design-system-behavior-contract.md` — fresh planning requested by Jafar on 2026-10-11; first-version scope not yet agreed.
+**Goal:** A premium, modern, polished, colourful CRM with organization-selectable designs and supported layout differences.
+**Plan:** `docs/crm-design-system-behavior-contract.md`; Stage A: `docs/crm-theme-foundation-behavior-contract.md` (review draft 2026-10-12).
 **Stage:** Planning.
 
-**In progress:** Part 1 Fresh scope — registration complete; foundation check and research next.
+**In progress:** Part 1 Foundation planning (began as Fresh scope). Complete foundation draft, feasible delivery design and proposed small parts saved; scoped approval remains. See `parts/foundation-planning.md`.
 
 **Carried context:** Earlier selectable-design work reports a shared shell, separate Classic/Botanical frames, private Botanical preview, and selected-only loading proof. These are technical starting points, not inherited product approvals. Recheck relevant foundations before relying on them.
 
-**Next:** Continue Part 1: check only the implemented theme foundation, research established theme/layout approaches, then bring focused choices to Jafar. Do not resume old campaign tasks or infer answers from their plans.
+**Next:** Fresh-reader recheck passed; the foundation agreement/sequence is presented for scoped approval. After approval, move to Part 2 Botanical starter/coverage planning. Keep foundation implementation distinct; no code, database changes or fresh runtime proof occurred in this planning step.
 
-**Blockers:** None for planning. No implementation or release scope approved.
+**Blockers:** Foundation agreement and proposed delivery sequence await Jafar's review.
 
-**Cleanup:** Both old campaigns remain unchanged at Jafar’s request. Cleanup is deferred until he asks; it is not a prerequisite for this campaign.
+**Cleanup:** Botanical consolidation is agreed in direction. Check the useful-work/reference transfer before closing its old tracker; earlier records remain intact during planning. No blanket import of old scope or approvals.

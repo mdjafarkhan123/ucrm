@@ -1,50 +1,49 @@
 # Part 4 — Timesheets views
 
 **Campaign:** time-clock · **Plan:** `docs/time-clock-behavior-contract.md` § Timesheets page
-**Stage:** Building (paused 2026-10-11 at Jafar's request to keep sessions small)
-**Code:** `main`
+**Stage:** Building — **Waiting to merge** (paused 2026-10-12 at Jafar's request to keep sessions small)
+**Code:** branch `time-clock-part-4` (pushed; commit `84fe5e16`), worktree `/tmp/ucrm-time-clock` (may be
+gone after a reboot — recreate with `git worktree add /tmp/ucrm-time-clock time-clock-part-4`, then link
+`node_modules` and `.env` from the main folder). Not yet in `main`.
 **Done when:** own-only and manager logins see exactly the right rows and totals; performance review
 measured on a 15-person week.
-**Read next:** design skill → Classic (`tables.md`, `accordion.md`); svelte skill; performance-review
-`references/verify.md` when the page exists.
+**Read next:** performance-review `references/verify.md`; svelte skill if touching components.
 
 ## Steps
 
-- [x] Migration `20261207090000_timesheets_views` applied and recorded: `private.timesheet_rows` (both hour
-  tables + running timers, overlap = shared minute or more), `timesheet_summary(org, anchor_date, span)`,
-  `timesheet_entries(org, user, from, to)`, `private.organization_timezone`. Types regenerated.
-- [x] API: `GET /api/time-clock/timesheets?span=&date=`, `GET /api/time-clock/timesheets/entries?user_id=&from=&to=`;
-  gate `src/lib/server/time-clock/timesheets.ts`; Zod in `time-clock.schema.ts`.
-- [x] Client `src/lib/time-clock/timesheets.ts` (types, keys, URL filters, labels). Timer moves and Job Labor
-  writes invalidate `timesheetsKey`. Navigation flag `timesheets` + spec; `clock` icon registered.
-- [x] `src/lib/components/time-clock/TimesheetEntryList.svelte` written, not yet autofixer-checked.
-- [ ] `TimesheetPersonRow.svelte` and `src/routes/(app)/timesheets/+page.svelte`, then the sidebar item.
-- [ ] Route specs for both endpoints; unit spec for `timesheets.ts` helpers.
-- [ ] Performance verification, live proof with each role, design screen check.
+- [x] Migration `20261207090000_timesheets_views` applied and recorded (on `main`); API routes, gate, Zod,
+  client module `src/lib/time-clock/timesheets.ts`, `TimesheetEntryList.svelte` (on `main`).
+- [x] Branch: `src/routes/(app)/timesheets/+page.svelte`, `TimesheetPersonRow.svelte`, sidebar item in
+  `SharedAppShell.svelte`, compact `size="small"` on `CalendarPicker` and `FilterChipMulti`,
+  `timesheetWarnings`/`personName` helpers, route spec `src/routes/api/time-clock/timesheets/timesheets.spec.ts`
+  (passes). `svelte-check` 0 errors.
+- [x] Design screen check (Classic), 3 rounds: owner and field logins, Week/Day, row open, 15-person mock with
+  long names, running and 12-hour timers, overlaps, left/deactivated, filtered-empty, loading, error, dark,
+  keyboard focus, 1440 and 390. Fixed: heavy today column, uneven toolbar heights, phone total alignment,
+  phone day values colliding, "You" badge for own-only, duplicated error text.
+- [ ] Unit spec `src/lib/time-clock/timesheets.spec.ts` for the helpers (filters ↔ URL, shift, range label,
+  `entryPurpose`, `visiblePeople`, `dayTotals`, `timesheetWarnings`).
+- [ ] Performance verification (below), then merge `time-clock-part-4` into `main`, push, remove the worktree
+  and branch, mark Part 4 done.
 
 ## Next
 
-Build `TimesheetPersonRow.svelte`: a disclosure row (button, `aria-expanded`) showing avatar, name, badges
-(You / Left the team / Deactivated / overlap count / running `RunningClock` with `flagLong`), week day cells or
-day status, and total; its entries query (`timesheetEntriesKey`) is enabled when open or hovered. Phone
-(≤639px): days drop under the name. Then the page: `CalendarBar` (Day/Week, arrows, Today, range label from
-the summary's `from`/`to`), `CalendarPicker` to jump to a date, `FilterChipMulti` people filter for team
-readers (client-side via `visiblePeople`), a warnings `Banner`, and a week footer of `dayTotals`. URL state
-uses `readTimesheetFilters` (`?view=day&date=&people=`). Own-only readers start with their row open. Then
-add `{ label: 'Timesheets', href: '/timesheets', icon: 'clock', area: 'timesheets' }` after Schedule in
-`SharedAppShell.svelte` (removed for this commit so no link points at a missing page). Not on the warm list.
+Write the helper unit spec, run it. Then performance: in a rolled-back transaction, add 15 members' week
+(~1,300 entries) and `EXPLAIN ANALYZE` `timesheet_summary` and `timesheet_entries` as the owner; record
+API time and payload bytes; render the 15-person mock on a throttled phone profile
+(`docs/research/time-clock-timesheets-2026-10-11/screenshot.mjs` + `make-mocks.mjs` mock the API with
+`--mock=`/`--entries=`; run the dev server from the worktree on port 5181). Save results beside the
+screenshots, then merge.
 
 ## Proof
 
-- Rolled-back database proof (2026-10-11): 8:00–12:00 day totals 240 min with no false overlap from
-  minute rounding; real overlaps flagged; forgotten timer flagged long; field login refused a teammate;
-  sales refused; anon cannot reach `private`. Script: `docs/research/time-clock-timesheets-2026-10-11/database-proof.sql` (rolls back).
+- Rolled-back database proof (2026-10-11): `docs/research/time-clock-timesheets-2026-10-11/database-proof.sql`.
+- Screenshots and screen-check scripts: same folder (branch).
 
 ## Notes
 
-- Decisions: running timers stay out of totals (as Job costing); a Job the reader cannot open shows
-  "Job #N" with no title, client or link; the roster is active members passing `can_run_own_timer` plus
-  anyone with hours or a running timer (Part 6 changes the gate there, in one place).
-- Performance design: summary is people × days, entries load per opened row; existing
-  `(organization_id, started_at, id)` indexes, no new index or cache. Verify with ~1,300 entries for 15
-  people (EXPLAIN ANALYZE both functions, API time, payload bytes, throttled phone render).
+- Decisions: running timers stay out of totals; a Job the reader cannot open shows "Job #N" only; the roster is
+  active members passing `can_run_own_timer` plus anyone with hours or a running timer (Part 6 changes the gate
+  in one place). The week table follows Carbon's expandable data-table row: the name is the disclosure button,
+  entries sit in a full-width row beneath. People chosen in the filter who are absent this week stay in the URL.
+- Chrome extension was not connected; Playwright screenshots were used instead.
