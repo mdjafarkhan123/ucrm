@@ -7,7 +7,7 @@ and its identified variant 2 revision 2 source. It owns approved coverage, exclu
 Preserve semantic grouped links, visible labels by default, `aria-current`, optional desktop collapse,
 independent navigation scrolling with a reachable collapse control, and reachable phone navigation with
 contained focus, Escape dismissal and focus return. Preserve server-resolved access and existing routes.
-Header appearance is approved in the same record; its module alignment remains pending. Implementation must use shared components and app token/rem conventions.
+Header appearance awaits Jafar’s choice and approval; see the same record. Implementation must use shared components and app token/rem conventions.
 
 Load only this Botanical section for redesign work; the legacy maintenance reference below applies to
 untouched screens. Its dependencies are not a redesign reading list.

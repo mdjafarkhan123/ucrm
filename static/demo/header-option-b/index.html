@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Botanical · Header option B</title><link rel="stylesheet" href="../app-shell-v2/styles.css?v=sidebar-v2-2"><link rel="stylesheet" href="styles.css?v=header-b-1"><script type="module" src="../app-shell-v2/demo.js?v=sidebar-v2-2"></script></head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell" id="shell">
+<aside class="sidebar" id="desktop-nav" aria-label="Workspace navigation"></aside>
+<div class="shell__body">
+<header class="header">
+<button class="icon-button header__mobile" id="open-nav" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="mobile-nav" aria-expanded="false" data-icon="menu-2"></button>
+<div class="header__trail"><span id="workspace-label">Workspace</span><strong id="current-label">Jobs</strong></div>
+<button class="header__search" id="search" aria-label="Search workspace" data-open="search-dialog"><span data-icon="search"></span><span>Search anything in your workspace</span><kbd>Ctrl K</kbd></button>
+<div class="header__actions">
+<button class="icon-button" aria-label="Appearance options" data-open="theme-dialog" data-icon="moon"></button>
+<button class="icon-button header__bell" aria-label="Notifications" data-open="notifications-dialog"><span data-icon="bell"></span><span class="header__dot"></span></button>
+<button class="button header__create" data-open="create-dialog"><span data-icon="plus"></span><span class="header__create-label">Add New</span></button>
+<button class="header__avatar" aria-label="Your account" data-open="account-dialog">AM</button>
+</div>
+</header>
+<main class="content" id="main" tabindex="-1">
+<div class="content__eyebrow"><span>BOTANICAL · HEADER COMPARISON</span><span>Header B · proposed</span></div>
+<p class="variant-compare"><a href="../app-shell-v2/index.html?compare=header-b">← Compare with header A</a><span>Same approved sidebar · alternative header</span></p>
+<section class="hero" aria-labelledby="page-title">
+<div class="hero__icon" data-icon="tools"></div>
+<div><p class="eyebrow" id="page-context">WORK & MONEY</p><h1 id="page-title">Jobs</h1><p id="page-description">A calmer space to keep your work moving.</p></div>
+<span class="pill">Destination preview</span>
+</section>
+<section class="review-panel" aria-labelledby="review-title">
+<div class="review-panel__intro"><span class="review-panel__icon" data-icon="layout-sidebar-left-expand"></span><div><h2 id="review-title">A little more room to focus</h2><p>Header B: a framed search field, stronger page identity and a distinct action group. This is a proposal for you to compare.</p></div></div>
+<div class="review-panel__grid"><div><h3>A familiar place for everything</h3><p>The real CRM’s navigation labels and groups, with a forest sidebar and clear selected state.</p></div><div><h3>Room to focus</h3><p>Collapse the desktop sidebar. On a phone, open the menu to reach every available page.</p></div><div><h3>Access follows your account</h3><p>Try the sample access scenarios below. Hidden areas leave no empty groups behind.</p></div></div>
+</section>
+<section class="scenarios" aria-labelledby="scenario-title">
+<div><p class="eyebrow">DEMO CONTROLS</p><h2 id="scenario-title">Try another perspective</h2><p>Fictional scenarios for review; these controls are not part of the app.</p></div>
+<div class="scenarios__controls"><label>Workspace scenario<select id="scenario"><option value="full">Business · full access</option><option value="restricted">Business · restricted sample</option><option value="small">Business · smaller package sample</option><option value="owner">Control Room · owner</option><option value="teammate">Control Room · restricted teammate sample</option></select></label><label class="check"><input id="long-name" type="checkbox">Long business and account names</label></div>
+<p class="scenarios__note" id="scenario-note">Full-access sample. Actual access is decided by the business package and staff permissions.</p>
+</section>
+<p class="disclaimer">Standalone preview · fictional data · actions reset on reload · no real records are changed.</p>
+<p class="disclaimer"><a href="../job-details/index.html">Compare with the approved Botanical v3 reference</a></p>
+</main></div></div>
+<dialog class="drawer" id="mobile-nav" aria-label="Workspace navigation"><div class="drawer__top"><strong>Navigation</strong><button class="icon-button" data-close aria-label="Close navigation" data-icon="x"></button></div><div id="mobile-nav-content"></div></dialog>
+<dialog class="dialog" id="search-dialog" aria-labelledby="search-title"><div class="dialog__top"><h2 id="search-title">Search workspace</h2><button class="icon-button" data-close aria-label="Close search" data-icon="x"></button></div><p>Demo: search the pages available in this scenario. Record-search results will be reviewed separately.</p><label>Find a page<input id="search-input" type="search" placeholder="Try Jobs or Clients" autocomplete="off"></label><div class="search-results" id="search-results"></div></dialog>
+<dialog class="dialog" id="notifications-dialog" aria-labelledby="notifications-title"><div class="dialog__top"><h2 id="notifications-title">Notifications</h2><button class="icon-button" data-close aria-label="Close notifications" data-icon="x"></button></div><label>Preview state<select id="notification-state"><option value="populated">With notifications</option><option value="empty">Empty</option><option value="loading">Loading</option><option value="error">Error</option></select></label><div id="notification-content" aria-live="polite"></div><p class="disclaimer">Simulated notifications only. No read state is saved.</p></dialog>
+<dialog class="dialog" id="account-dialog" aria-labelledby="account-title"><div class="dialog__top"><h2 id="account-title">Your account</h2><button class="icon-button" data-close aria-label="Close account" data-icon="x"></button></div><div class="account"><span class="header__avatar" aria-hidden="true">AM</span><div><strong id="account-name">Alex Morgan</strong><p id="account-role">Business owner · fictional account</p></div></div><button class="dialog__action" data-preview="Profile photo editor">Profile photo<span data-icon="chevron-right"></span></button><button class="dialog__action" id="security" data-preview="Password and security page">Password and security<span data-icon="chevron-right"></span></button><button class="dialog__action" id="sign-out" data-preview="Sign out is simulated; you remain in this demo.">Sign out<span data-icon="logout"></span></button><button class="dialog__action" id="sign-out-error">Preview sign-out failure</button><p id="account-error" role="alert"></p></dialog>
+<dialog class="dialog" id="create-dialog" aria-labelledby="create-title"><div class="dialog__top"><h2 id="create-title">Add New</h2><button class="icon-button" data-close aria-label="Close Add New" data-icon="x"></button></div><p>Nothing to create yet.</p><p class="disclaimer">This matches the current header. Page-specific create buttons remain on their pages.</p></dialog>
+<dialog class="dialog" id="theme-dialog" aria-labelledby="theme-title"><div class="dialog__top"><h2 id="theme-title">Appearance</h2><button class="icon-button" data-close aria-label="Close appearance" data-icon="x"></button></div><p>Botanical light appearance is shown in this demo. The real app’s dark-mode capability will be retained; its new palette needs a separate review.</p><button class="button" disabled>Dark preview awaiting design review</button></dialog>
+<div class="toast" id="toast" role="status" hidden></div>
+</body></html>

@@ -3,9 +3,9 @@
 **Goal:** A premium, modern, polished, colourful CRM, delivered through small demos Jafar reviews before implementation.
 **Plan:** `docs/uplift-design-refresh-behavior-contract.md`
 
-**State:** Paused 2026-10-11. Sidebar and header variant 2 revision 2 approved; demo saved and pushed. Live components remain unchanged.
+**State:** In progress 2026-10-11. Only sidebar variant 2 revision 2 is approved. Jafar corrected the inferred header approval and requested another visible design before choosing. Live components remain unchanged.
 
-**Next:** Finish Part 3’s header guidance alignment, then prepare Part 4’s shared-shell impact and implementation checks. No further variant is requested. Read `parts/3.md` and `docs/design/botanical-v3/sidebar-approval.md` for approval scope and remaining verification.
+**Next:** Present `/demo/header-option-b/index.html` alongside the original header at `/demo/app-shell-v2/index.html`. Wait for Jafar’s choice and explicit approval, then align header guidance and close Part 3. Read `parts/3.md` and `docs/design/botanical-v3/sidebar-approval.md` for scope.
 
 **Maintenance rule:** Keep the existing design skill and update necessary parts incrementally. Use `.claude/skills/design/alignment.md` as the reading gate: load only modules explicitly updated for the relevant redesign coverage; uncovered patterns need a focused demo, not old visual guidance. Update each relevant module after its focused demo is built and approved, before implementation.
 

@@ -1,0 +1,123 @@
+.header {
+  min-height: 88px;
+  padding: 18px 30px;
+  gap: 28px;
+  background: #fffefb;
+}
+.header__trail {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  min-width: 120px;
+}
+.header__trail > span:first-child {
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  color: #667260;
+}
+.header__trail strong {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  line-height: 1.35;
+}
+.header__search {
+  flex: 1;
+  max-width: 440px;
+  min-width: 100px;
+  margin-inline: auto;
+  border: 1px solid #e0e5d8;
+  background: #f5f6ef;
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+.header__search kbd {
+  margin-left: auto;
+  background: #fffefb;
+  white-space: nowrap;
+}
+.header__search:hover {
+  background: #edf2e5;
+  border-color: #b9cbb0;
+}
+.header__actions {
+  gap: 6px;
+}
+.header__create {
+  background: #286b49;
+  color: white;
+  border-color: #286b49;
+  margin-inline: 10px;
+  border-radius: 10px;
+}
+.header__create:hover:not(:disabled) {
+  background: #205b3e;
+}
+.header__avatar {
+  border-radius: 12px;
+  background: #eee8dc;
+  border-color: #ded6c5;
+  color: #67573e;
+}
+
+@media (min-width: 768px) and (max-width: 1100px) {
+  .header {
+    gap: 14px;
+    padding-inline: 24px;
+  }
+  .header__search {
+    max-width: 280px;
+  }
+  .header__search span:not(:first-child) {
+    display: inline;
+  }
+  .header__search kbd {
+    display: none;
+  }
+}
+@media (max-width: 767px) {
+  .header {
+    padding: 12px 16px;
+    gap: 6px;
+    min-height: 126px;
+  }
+  .header__trail {
+    flex: 1;
+    min-width: 0;
+  }
+  .header__trail > span:first-child {
+    display: block;
+  }
+  .header__trail strong {
+    font-size: 18px;
+  }
+  .header__search {
+    order: 4;
+    flex-basis: 100%;
+    max-width: none;
+    width: 100%;
+    min-height: 42px;
+    justify-content: flex-start;
+    margin: 4px 0 0;
+    padding: 8px 12px;
+  }
+  .header__search span:not(:first-child) {
+    display: inline;
+    font-size: 13px;
+  }
+  .header__search kbd {
+    display: none;
+  }
+  .header__actions {
+    gap: 0;
+  }
+  .header__create {
+    margin-inline: 3px;
+    width: 40px;
+    min-height: 40px;
+  }
+  .header__avatar {
+    width: 36px;
+    height: 36px;
+  }
+}

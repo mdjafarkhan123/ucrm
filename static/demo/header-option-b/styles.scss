@@ -1,0 +1,29 @@
+// Header B only. The approved sidebar and simulated actions are shared with variant 2.
+.header {
+  min-height: 88px; padding: 18px 30px; gap: 28px; background: #fffefb;
+  &__trail { flex-direction: column; align-items: flex-start; gap: 0; min-width: 120px;
+    > span:first-child { font-size: 11px; letter-spacing: .6px; color: #667260; }
+    strong { font-size: 20px; font-weight: 600; letter-spacing: -.5px; line-height: 1.35; }
+  }
+  &__search { flex: 1; max-width: 440px; min-width: 100px; margin-inline: auto; border: 1px solid #e0e5d8; background: #f5f6ef; border-radius: 12px; padding: 10px 14px;
+    kbd { margin-left: auto; background: #fffefb; white-space: nowrap; }
+    &:hover { background: #edf2e5; border-color: #b9cbb0; }
+  }
+  &__actions { gap: 6px; }
+  &__create { background: #286b49; color: white; border-color: #286b49; margin-inline: 10px; border-radius: 10px;
+    &:hover:not(:disabled) { background: #205b3e; }
+  }
+  &__avatar { border-radius: 12px; background: #eee8dc; border-color: #ded6c5; color: #67573e; }
+}
+@media (min-width: 768px) and (max-width: 1100px) {
+ .header { gap: 14px; padding-inline: 24px; &__search { max-width: 280px; span:not(:first-child) { display: inline; } kbd { display: none; } } }
+}
+@media (max-width: 767px) {
+ .header { padding: 12px 16px; gap: 6px; min-height: 126px;
+   &__trail { flex: 1; min-width: 0; > span:first-child { display: block; } strong { font-size: 18px; } }
+   &__search { order: 4; flex-basis: 100%; max-width: none; width: 100%; min-height: 42px; justify-content: flex-start; margin: 4px 0 0; padding: 8px 12px;
+     span:not(:first-child) { display: inline; font-size: 13px; } kbd { display: none; }
+   }
+   &__actions { gap: 0; } &__create { margin-inline: 3px; width: 40px; min-height: 40px; } &__avatar { width: 36px; height: 36px; }
+ }
+}
