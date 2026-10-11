@@ -15,11 +15,20 @@ Organizations should be able to choose how their CRM looks and is arranged. The 
 
 ## Fresh-start boundary
 
-Jafar requested a fresh campaign. The existing `selectable-design-experiences` and `uplift-design-refresh` campaign records remain untouched; cleanup is postponed until he asks. Their plans, tasks, design approvals, and build order do not define this campaign. Existing application code remains in place.
+Jafar requested a fresh campaign and subsequently agreed with consolidating the Botanical redesign goal here. Preserve the old campaign records while the useful work and references are transferred and checked; close its active tracker after that handover. The selectable-design foundation is inspected for reuse. Earlier task order, broader rollout scope and individual approvals do not automatically define this campaign. Existing application code remains in place.
 
 The implemented theme foundation supplies the technical starting position. Earlier redesign requirements enter this campaign only when Jafar explicitly brings them across, as with the visual goal below.
 
-On 2026-10-11 Jafar explicitly asked to bring the Botanical campaign's goal into this campaign. Its saved goal and reference may now inform that visual objective. Old task order, individual approvals and broader rollout scope are not automatically imported. The earlier campaign records remain unchanged; Jafar still has more to add before the full agreement is synthesized.
+On 2026-10-11 Jafar explicitly asked to bring the Botanical campaign's goal into this campaign. Its saved goal and reference may now inform that visual objective. Old task order, individual approvals and broader rollout scope are not automatically imported. The earlier campaign records remain unchanged during planning; Jafar's additions are recorded before the full agreement is synthesized.
+
+## Two main stages — direction confirmed 2026-10-11
+
+Jafar described this campaign as building the theme foundation, then creating a real theme on top of it. These are two delivery stages, each containing smaller reviewable tasks; they are not two single-session implementation tasks or an approved detailed build order.
+
+1. **Verify and finish the theme foundation.** Reuse the shared shell, presentation frames and relevant existing proof. Establish what is already complete and fill the remaining gaps so an organization can save its design choice, authorized owners/admins can change it, and staff can apply changes safely. Keep shared records, capabilities and permissions authoritative across designs. The source check already confirms shell separation, but does not establish a saved organization choice, a picker or complete theme coverage.
+2. **Complete Botanical as a real theme.** Use that foundation to deliver the premium, polished redesign throughout the agreed Business Workspace: page layouts, controls, forms, dialogs and relevant states, with light/dark/follow-device appearance and phone support. Use Botanical v3 as a visual example. Develop missing designs through focused reviews and verify the implemented journeys while preserving Classic.
+
+The foundation must support theme selection independently of any one visual design; Botanical supplies the first complete redesigned experience alongside Classic. Existing work is assessed and reused before new work is planned. This campaign's success requires both stages, including their appropriate verification.
 
 ## Existing foundation — focused source check complete
 
