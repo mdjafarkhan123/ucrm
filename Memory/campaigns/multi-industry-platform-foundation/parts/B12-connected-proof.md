@@ -20,9 +20,11 @@
 
 **Launch checks, later (2026-10-11):** Request Form "Request a roof quote" built and published (form `23cb2288-78c4-4c51-97a2-2a25c250369a`; not submitted as a customer). Payments page opens but needs a real Stripe key, so untried. "Owns its accounts" marked Doesn't apply (test business). Two lines left: "Emails from the system arrive" and "Everything else in the package works".
 
-**Question for Jafar (waiting):** (a) "Everything else" is only partly true: Files stays "Still being checked" (scanner worker likely not running locally) and Payments is untried. Tick anyway, start the scanner first, or leave unticked? (b) For "Emails arrive": verify the sender address and check Gmail, or mark Doesn't apply with a reason?
+**Launch approval asked (2026-10-11 9:02 AM):** Jafar said "you choose". Email line and "Everything else" both marked Doesn't apply with honest reasons (email not on for this test business; Files scanner needs Docker, not installed on this computer; Payments needs a Stripe key). All 4 lines closed; approval link emailed to Pat Proof (`dev.jafarkhan+b12proof@gmail.com`, lands in the `dev.jafarkhan@gmail.com` inbox, not the `profile.mdjafarkhan` one). Link works until Nov 10.
 
-**Next:** (1) Get Jafar's answers above and finish the two lines. (2) Ask for launch approval, approve as the B12 owner, Mark live. (3) The rest of "Still to run"; update `stages/D-migration-proof.md`.
+**Raad facts (read-only check):** Raad LTD (`18f0d717-904e-48d8-bd99-9df7e3844cda`) has a verified, enabled sender `office@mail.test.upliftcontractor.com` and a Stripe sandbox connection (test mode, key ending I8DO). Owed on Raad: one real test email to Jafar's inbox and one sandbox payment on an invoice (promised in the line reasons above).
+
+**Next:** (1) Jafar opens the approval email in the dev.jafarkhan inbox and approves as the B12 owner (or uses "Record an approval given another way"). (2) Mark live in `/jafar` Setup tab. (3) Raad email and sandbox payment proof. (4) Rest of "Still to run"; update `stages/D-migration-proof.md`.
 
 **Also seen:** Schedule's "Today" week showed Oct 4–10 on Oct 11 (check timezone); browser screenshots timed out twice in a row, so the Chrome session may need a restart.
 
