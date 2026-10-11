@@ -18,7 +18,11 @@
 
 **Launch checks (2026-10-11):** Jafar chose "split it". Three lines still unticked, on purpose. Package tried: Schedule, Files (upload works, but the file stays "Still being checked", so the scanner worker probably isn't running locally), Settings, Request Forms (none built yet). Dashboard says Email and texts are "not switched on" until Uplift verifies the sender address, so no real test email can go out yet.
 
-**Next:** (1) Ask Jafar to check Gmail for a test email to `dev.jafarkhan+b12proof@gmail.com` once the sender address is verified, or decide to skip it. (2) Build and publish one Request Form, try Payments, then tick "Everything else in the package works". (3) Mark "owns its accounts" Doesn't apply (fake business). (4) Ask for launch approval, approve as the B12 owner, Mark live. (5) The rest of "Still to run"; update `stages/D-migration-proof.md`.
+**Launch checks, later (2026-10-11):** Request Form "Request a roof quote" built and published (form `23cb2288-78c4-4c51-97a2-2a25c250369a`; not submitted as a customer). Payments page opens but needs a real Stripe key, so untried. "Owns its accounts" marked Doesn't apply (test business). Two lines left: "Emails from the system arrive" and "Everything else in the package works".
+
+**Question for Jafar (waiting):** (a) "Everything else" is only partly true: Files stays "Still being checked" (scanner worker likely not running locally) and Payments is untried. Tick anyway, start the scanner first, or leave unticked? (b) For "Emails arrive": verify the sender address and check Gmail, or mark Doesn't apply with a reason?
+
+**Next:** (1) Get Jafar's answers above and finish the two lines. (2) Ask for launch approval, approve as the B12 owner, Mark live. (3) The rest of "Still to run"; update `stages/D-migration-proof.md`.
 
 **Also seen:** Schedule's "Today" week showed Oct 4–10 on Oct 11 (check timezone); browser screenshots timed out twice in a row, so the Chrome session may need a restart.
 
