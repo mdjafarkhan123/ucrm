@@ -79,6 +79,11 @@ and Assessment timers as the last part.
   entries.
 - **Who sees whom:** people limited to their own time see only themselves. People who manage the team's time
   see everyone and can filter to chosen people. Someone who has left still appears for weeks they worked.
+  The list is everyone active who may time their own work, plus anyone with hours that week or a timer
+  running.
+- **Running timers:** a running timer shows beside its person but counts in the totals only once it stops.
+- **Jobs the reader cannot open:** an entry on such a Job shows "Job #N" only, without its title or client,
+  and is not a link; its hours still count, so totals add up.
 - **Existing hours:** hours already typed into Jobs' Labor sections appear on Timesheets as Job entries.
   Hours typed there later appear too; it is one set of hours shown in two places.
 - **Add entry:** pick a Job (and, optionally, its visit) or General, a date, start and end times, and
