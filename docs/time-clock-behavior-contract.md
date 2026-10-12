@@ -57,7 +57,7 @@ and Assessment timers as the last part.
 - A timer running for more than 12 hours is flagged on Timesheets and on the person's running-timer display.
 - A timer running for more than 24 hours cannot be stopped as it is. Someone who can correct that person's
   hours chooses the real end time. A crew member with "timers only" is told to ask a manager.
-- A phone reminder to stop a timer waits for Alerts (roadmap Part 12).
+- A bell, email and browser reminder at 12 hours is built (Alerts, roadmap Part 12). A true phone reminder waits for the native Android and iPhone apps.
 
 ## Hours on the Job
 

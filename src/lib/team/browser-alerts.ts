@@ -114,7 +114,7 @@ export async function enableBrowserAlerts(publicKey: string): Promise<EnableResu
 				applicationServerKey: keyBytes(publicKey)
 			}));
 	} catch (error) {
-		throw new Error(pushServiceProblem(error));
+		throw new Error(pushServiceProblem(error), { cause: error });
 	}
 	const json = subscription.toJSON();
 	const response = await fetch('/api/notifications/push', {

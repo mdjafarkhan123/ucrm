@@ -1,6 +1,6 @@
 # Alerts: behavior contract (CRM launch readiness Part 12)
 
-**Status:** Approved by Jafar 2026-10-12 (corrected after a database-code review; all three decisions below were
+**Status:** Built 2026-10-12 on branch `codex/alerts-part-12`, awaiting merge and a real-Chrome proof. Approved by Jafar 2026-10-12 (corrected after a database-code review; all three decisions below were
 approved as recommended). Web app only; phone push belongs to the native Android and
 iPhone apps, built later (Jafar, 2026-10-12).
 
