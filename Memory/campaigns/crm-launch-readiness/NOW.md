@@ -13,8 +13,9 @@ infrastructure is approved. Classic design system in `classic.pen` approved 2026
 
 Jafar's plan (2026-10-10): finish the whole app, then production, then real-world tests. Order:
 
-1. **Part 13, Home and Reports** — plan approved 2026-10-12 (`docs/home-and-reports-behavior-contract.md`). Next:
-   design in Pencil — see `parts/part-13-home-reports.md`.
+1. **Part 13, Home and Reports** — plan approved 2026-10-12 (`docs/home-and-reports-behavior-contract.md`). Six
+   desktop screens and a states board drawn in `classic.pen` 2026-10-12; waiting for Jafar's yes — see
+   `parts/part-13-home-reports.md`.
 2. **Part 14, Customer portal.**
 3. **Part 15, Extras** — Quote templates, auto-archive, automation recipes, bulk Visit move, custom fields,
    week-start setting.

@@ -10,20 +10,22 @@
 
 - [x] Research Jobber Home, Insights and Reports, and our data — `docs/research/home-and-reports-2026-10-12.md`
 - [x] Plan written, fresh-reviewed, approved by Jafar 2026-10-12; reconciliation contract amended the same day
-- [ ] Design in `classic.pen` below the Classic design system: Home (owner, field worker), Reports › Insights,
-      All reports list, one report screen (Invoices) and Money owed — each at 1440px and 390px
+- [x] Design in `classic.pen` below the Classic design system: Home (owner, field worker), Reports › Insights,
+      All reports list, one report screen (Invoices) and Money owed — desktop 1440px only (Jafar 2026-10-12: no
+      phone designs needed). New parts in design-system section "06 App shell & data".
 - [ ] Jafar's yes on the designs, recorded here with screen names and date
 - [ ] Split the build into parts (To Tickets) and record them in the roadmap
 - [ ] Build, verify, screen check, live proof
 
 ## Next
 
-Design session (Jafar said 2026-10-12: no design in the research session). In Pencil, check `get_app_state` shows
-`classic.pen`. The file has no app shell (sidebar and top bar) yet: screenshot the real app shell first
-(`src/lib/components/layout/SharedAppShell.svelte`, logins in `Login.md`) and add it to the design-system page as a
-reusable part, then build screens from existing parts (KPI card `h0NPZr`, Data table `Jz0kh`, Card `GF3sS`, Page
-header `s8m85y`, Tabs `CwczH`, Segmented control `qMkSl`, Status badge `qWJES`). Charts use the `color-dataviz-*`
-variables. A date-range picker and a chart are new kinds of part: add them to the design-system page first.
+Show Jafar the six screens in `classic.pen` (row below the design-system page): "Home · Owner · 1440",
+"Home · Field worker · 1440", "Reports · Insights · 1440", "Reports · All reports · 1440", "Reports · Invoices
+report · 1440", "Reports · Money owed · 1440", "Home & Reports · States · 1440"; and section "06 App shell & data" (new parts: Sidebar, Top bar, Nav
+item, Trend, Metric, Date range + menu, Bar chart, Ranked bars, Donut meter, Chart empty, Aging bar, Report tile,
+Report link, Workflow column, Visit row). On his yes: record it above, commit `classic.pen` from the main folder,
+then To Tickets. Building these parts in code needs a chart approach (no chart library in `package.json`; the
+designs use plain bars, a donut and stacked bars, so SVG/CSS without a library may be enough — decide at build).
 
 ## Notes
 
@@ -31,4 +33,7 @@ variables. A date-range picker and a chart are new kinds of part: add them to th
   `reporting.advanced` (`src/lib/server/access/effective.ts`); tips recorded on payment events with backfill;
   cash-basis tax reader and export file; Money owed rule applied to `invoice_money_overview` and the aging reader;
   derived invoice paid date; Visit value rule. No chart library exists yet (`package.json`).
+- Design choices to confirm with Jafar: Home shows both the top bar "Add New" and the plan's header "New" menu
+  (duplicate); headline figures of $1,000+ on Home and Insights drop cents, report tiles and tables keep them. Use
+  tabular figures for every number column in code.
 - `/api/requests/counts` checks only membership, not `requests.view` — fix when Home uses it.
