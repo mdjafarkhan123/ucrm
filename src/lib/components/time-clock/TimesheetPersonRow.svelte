@@ -4,6 +4,8 @@
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import RunningClock from '$lib/components/time-clock/RunningClock.svelte';
 	import TimesheetEntryList from '$lib/components/time-clock/TimesheetEntryList.svelte';
+	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
+	import type { TimesheetEntryActions } from '$lib/time-clock/corrections';
 	import { formatCalendarDay } from '$lib/schedule/labels';
 	import { durationLabel } from '$lib/time-clock/api';
 	import {
@@ -30,6 +32,8 @@
 		offsetMs,
 		open,
 		teamView,
+		menu = [],
+		entryActions,
 		ontoggle
 	}: {
 		person: TimesheetPerson;
@@ -44,6 +48,10 @@
 		open: boolean;
 		/** The reader sees the whole team, so their own row is marked "You". */
 		teamView: boolean;
+		/** What the reader may do for this person: add hours, clock them in, clock them out. */
+		menu?: { label: string; icon?: string; onSelect: () => void }[];
+		/** Edit, stop, history and delete on each entry. Without them the entries are read-only. */
+		entryActions?: TimesheetEntryActions;
 		ontoggle: () => void;
 	} = $props();
 
@@ -98,18 +106,23 @@
 	onpointerenter={() => (warm = true)}
 >
 	<th scope="row" class="timesheet-person__who">
-		<button
-			type="button"
-			class="timesheet-person__toggle"
-			aria-expanded={open}
-			aria-controls={panelId}
-			onclick={ontoggle}
-			onfocus={() => (warm = true)}
-		>
-			<span class="timesheet-person__chevron" aria-hidden="true">{@html chevronIcon}</span>
-			<Avatar id={person.user_id} name={person.name} src={person.avatar_url} size="small" />
-			<span class="timesheet-person__name">{name}</span>
-		</button>
+		<div class="timesheet-person__line">
+			<button
+				type="button"
+				class="timesheet-person__toggle"
+				aria-expanded={open}
+				aria-controls={panelId}
+				onclick={ontoggle}
+				onfocus={() => (warm = true)}
+			>
+				<span class="timesheet-person__chevron" aria-hidden="true">{@html chevronIcon}</span>
+				<Avatar id={person.user_id} name={person.name} src={person.avatar_url} size="small" />
+				<span class="timesheet-person__name">{name}</span>
+			</button>
+			{#if menu.length > 0}
+				<DropdownMenu items={menu} triggerLabel={`Actions for ${name}`} />
+			{/if}
+		</div>
 		{#if (teamView && person.is_me) || statusBadge || person.overlap_count > 0 || person.running}
 			<span class="timesheet-person__marks">
 				{#if teamView && person.is_me}<Badge size="small">You</Badge>{/if}
@@ -178,6 +191,8 @@
 			{:else}
 				<TimesheetEntryList
 					entries={entriesQuery.data.entries}
+					userId={person.user_id}
+					actions={entryActions}
 					{days}
 					{timezone}
 					grouped={span === 'week'}
@@ -224,6 +239,15 @@
 		min-width: 15rem;
 		text-align: left;
 		font-weight: 400;
+	}
+
+	.timesheet-person__line {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-small);
+		/* The menu's 32px button must not make the row taller than the name. */
+		margin: calc(var(--space-smaller) * -1) 0;
 	}
 
 	.timesheet-person__toggle {

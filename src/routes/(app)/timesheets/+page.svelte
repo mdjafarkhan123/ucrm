@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createQuery } from '@tanstack/svelte-query';
+	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
@@ -10,17 +10,35 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import StopTimerDialog from '$lib/components/time-clock/StopTimerDialog.svelte';
+	import TimeEntryHistoryDialog from '$lib/components/time-clock/TimeEntryHistoryDialog.svelte';
+	import TimesheetEntryDialog from '$lib/components/time-clock/TimesheetEntryDialog.svelte';
 	import TimesheetPersonRow from '$lib/components/time-clock/TimesheetPersonRow.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
+	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import FilterChipMulti from '$lib/components/ui/FilterChipMulti.svelte';
+	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import { calendarDateFromString, calendarDateToString } from '$lib/components/ui/date-time';
 	import { scheduleWindow } from '$lib/schedule/filters';
 	import { formatCalendarDay } from '$lib/schedule/labels';
 	import { durationLabel } from '$lib/time-clock/api';
 	import {
+		clockInMember,
+		deleteTimesheetEntry,
+		entryHistoryKey,
+		fetchEntryHistory,
+		refreshAfterCorrection,
+		type CorrectionError,
+		type EntryDialogMode,
+		type StopTarget,
+		type TimesheetEntryActions
+	} from '$lib/time-clock/corrections';
+	import {
+		clockTime,
 		dayTotals,
+		entryPurpose,
 		fetchTimesheetSummary,
 		personName,
 		readTimesheetFilters,
@@ -31,10 +49,16 @@
 		timesheetSummaryKey,
 		timesheetWarnings,
 		visiblePeople,
+		type TimesheetEntry,
 		type TimesheetFilters,
+		type TimesheetPerson,
 		type TimesheetSpan
 	} from '$lib/time-clock/timesheets';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
+	import clockPlayIcon from '@tabler/icons/outline/clock-play.svg?raw';
+	import clockStopIcon from '@tabler/icons/outline/clock-stop.svg?raw';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 
 	// Timesheets (docs/time-clock-behavior-contract.md § Timesheets page): who worked how long, for a day or a
@@ -112,6 +136,134 @@
 		applyFilters({ ...filters, date: shiftTimesheetDate(anchor, filters.span, direction) });
 	}
 
+	// --- Corrections (plan § Timesheets page: Add entry, Edit or delete, Edit history, Manager actions) --------
+	// One of each dialog for the whole page; a person's row or entry menu says which entry or person it is for.
+	// What each menu offers follows what the database said the reader may do.
+
+	const queryClient = useQueryClient();
+	const toast = getToastManager();
+
+	const me = $derived(summary?.people.find((person) => person.is_me) ?? null);
+	// Whose hours a manager may add: anyone still on the team.
+	const teamOptions = $derived(
+		(summary?.people ?? [])
+			.filter((person) => person.status === 'active' || person.status === 'deactivated')
+			.map((person) => ({ value: person.user_id, label: personName(person) }))
+	);
+
+	let entryDialog = $state<EntryDialogMode | null>(null);
+	let historyEntry = $state<TimesheetEntry | null>(null);
+	let stopTarget = $state<StopTarget | null>(null);
+	let deleting = $state<TimesheetEntry | null>(null);
+	let deletePending = $state(false);
+
+	// A new entry starts on the day being looked at: the Day view's day, or today when this week holds it.
+	function defaultDay() {
+		if (!summary) return '';
+		if (summary.span === 'day') return summary.from;
+		return summary.today >= summary.from && summary.today <= summary.to
+			? summary.today
+			: summary.from;
+	}
+
+	function addEntry(userId: string) {
+		entryDialog = { kind: 'add', userId, day: defaultDay() };
+	}
+
+	function stopFor(person: TimesheetPerson) {
+		if (!person.running) return;
+		stopTarget = {
+			userId: person.user_id,
+			name: person.is_me ? 'You' : personName(person),
+			startedAt: person.running.started_at,
+			clockedIn: person.running.clocked_in,
+			overADay: person.running.over_a_day,
+			what:
+				person.running.kind === 'general' ? 'General' : `Job #${person.running.job_number ?? ''}`
+		};
+	}
+
+	async function clockIn(person: TimesheetPerson) {
+		try {
+			const result = await clockInMember(person.user_id);
+			await refreshAfterCorrection(queryClient);
+			toast.success(
+				result.paused_by_visit
+					? `${personName(person)} is clocked in. Their visit timer keeps running first.`
+					: `${personName(person)} is clocked in`
+			);
+		} catch (cause) {
+			toast.error((cause as CorrectionError).message);
+		}
+	}
+
+	function personMenu(person: TimesheetPerson) {
+		if (!summary) return [];
+		const items = [];
+		// Adding for someone else needs the team's time; for oneself, one's own.
+		if (summary.can_add && (teamView || person.is_me) && person.status !== 'removed') {
+			items.push({ label: 'Add entry', icon: plusIcon, onSelect: () => addEntry(person.user_id) });
+		}
+		if (teamView && person.status === 'active' && !person.running?.clocked_in) {
+			items.push({ label: 'Clock in', icon: clockPlayIcon, onSelect: () => void clockIn(person) });
+		}
+		if (person.running && (teamView || (person.is_me && summary.can_add))) {
+			items.push({
+				label: person.running.over_a_day
+					? 'Set end time'
+					: person.running.clocked_in
+						? 'Clock out…'
+						: 'Stop timer…',
+				icon: clockStopIcon,
+				onSelect: () => stopFor(person)
+			});
+		}
+		return items;
+	}
+
+	const entryActions: TimesheetEntryActions = {
+		edit: (entry, userId) => {
+			entryDialog = entry.is_running
+				? { kind: 'running', entry, userId }
+				: { kind: 'edit', entry, userId };
+		},
+		stop: (_entry, userId) => {
+			const person = summary?.people.find((candidate) => candidate.user_id === userId);
+			if (person) stopFor(person);
+		},
+		history: (entry) => (historyEntry = entry),
+		remove: (entry) => (deleting = entry),
+		warm: (entry) =>
+			void queryClient.prefetchQuery({
+				queryKey: entryHistoryKey(entry.id),
+				queryFn: () => fetchEntryHistory(entry.id),
+				staleTime: 15_000
+			})
+	};
+
+	function entryHeading(entry: TimesheetEntry) {
+		return `${entryPurpose(entry)} · ${formatCalendarDay(entry.started_on, {
+			weekday: 'short',
+			month: 'short',
+			day: 'numeric'
+		})}`;
+	}
+
+	async function confirmDelete() {
+		if (!deleting || deletePending) return;
+		deletePending = true;
+		try {
+			await deleteTimesheetEntry(deleting.id);
+			await refreshAfterCorrection(queryClient);
+			toast.success('Entry deleted');
+			deleting = null;
+		} catch (cause) {
+			toast.error((cause as CorrectionError).message);
+		} finally {
+			deletePending = false;
+		}
+	}
+
 	const viewOptions: { value: TimesheetSpan; label: string }[] = [
 		{ value: 'day', label: 'Day' },
 		{ value: 'week', label: 'Week' }
@@ -129,7 +281,13 @@
 		description={summary && !teamView
 			? 'Your hours, from your timers and hours added on Jobs.'
 			: 'Who worked how long, from timers and hours added on Jobs.'}
-	/>
+	>
+		{#snippet actions()}
+			{#if summary?.can_add && (teamView || me)}
+				<Button variant="primary" onclick={() => addEntry(me?.user_id ?? '')}>Add entry</Button>
+			{/if}
+		{/snippet}
+	</PageHeader>
 
 	<div class="timesheets">
 		<CalendarBar
@@ -256,6 +414,8 @@
 								{offsetMs}
 								open={isOpen(person.user_id)}
 								{teamView}
+								menu={personMenu(person)}
+								{entryActions}
 								ontoggle={() => (toggled[person.user_id] = !isOpen(person.user_id))}
 							/>
 						{/each}
@@ -289,6 +449,53 @@
 		{/if}
 	</div>
 </PageContainer>
+
+{#if summary}
+	<TimesheetEntryDialog
+		open={entryDialog !== null}
+		mode={entryDialog}
+		timezone={summary.timezone}
+		people={teamOptions}
+		canPickPerson={teamView}
+		onClose={() => (entryDialog = null)}
+	/>
+	<TimeEntryHistoryDialog
+		open={historyEntry !== null}
+		entryId={historyEntry?.id ?? null}
+		heading={historyEntry ? entryHeading(historyEntry) : ''}
+		onClose={() => (historyEntry = null)}
+	/>
+	<StopTimerDialog
+		open={stopTarget !== null}
+		target={stopTarget}
+		timezone={summary.timezone}
+		onClose={() => (stopTarget = null)}
+	/>
+	<ConfirmDialog
+		open={deleting !== null}
+		title="Delete this entry?"
+		icon={trashIcon}
+		tone="critical"
+		destructive
+		confirmLabel="Delete entry"
+		loading={deletePending}
+		onConfirm={() => void confirmDelete()}
+		onClose={() => !deletePending && (deleting = null)}
+	>
+		{#if deleting}
+			<p>
+				<strong>{entryHeading(deleting)}</strong>,
+				{clockTime(deleting.started_at, summary.timezone)}
+				{#if deleting.ended_at}– {clockTime(deleting.ended_at, summary.timezone)}{/if}
+				{#if deleting.minutes !== null}({durationLabel(deleting.minutes)}){/if}
+			</p>
+			<p>
+				The hours come off Timesheets{deleting.kind === 'job' ? ' and the job’s labour cost' : ''}.
+				The edit history keeps a record of what was deleted and by whom.
+			</p>
+		{/if}
+	</ConfirmDialog>
+{/if}
 
 <style lang="scss">
 	.timesheets {

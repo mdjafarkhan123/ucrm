@@ -34,12 +34,15 @@ function person(overrides: Partial<TimesheetPerson> = {}): TimesheetPerson {
 }
 
 const longRunning = {
+	id: '44444444-4444-4444-8444-444444444444',
 	kind: 'general',
 	job_id: null,
 	job_number: null,
 	started_at: '2026-10-05T06:00:00Z',
 	started_on: '2026-10-05',
-	long_running: true
+	long_running: true,
+	over_a_day: false,
+	clocked_in: true
 } as const;
 
 describe('the Timesheets page remembers its filters in the URL', () => {
@@ -109,6 +112,7 @@ describe('what an entry was for', () => {
 		id: 'job-1',
 		number: 12,
 		visible: true,
+		closed: false,
 		title: 'Spring cleanup',
 		client_name: 'Lee'
 	};
