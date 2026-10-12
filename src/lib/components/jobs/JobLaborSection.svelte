@@ -239,6 +239,7 @@
 									· Visit on {dateFormat.format(new Date(`${entry.visit_date}T12:00:00`))}
 								{/if}
 								{#if entry.source === 'timer'}· From a timer{/if}
+								{#if entry.approved}· Approved{/if}
 							</p>
 							{#if entry.notes}<p class="job-labor__notes">{entry.notes}</p>{/if}
 						</div>

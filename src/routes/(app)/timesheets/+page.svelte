@@ -10,6 +10,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import ApproveTimesheetsDialog from '$lib/components/time-clock/ApproveTimesheetsDialog.svelte';
 	import StopTimerDialog from '$lib/components/time-clock/StopTimerDialog.svelte';
 	import TimeEntryHistoryDialog from '$lib/components/time-clock/TimeEntryHistoryDialog.svelte';
 	import TimesheetEntryDialog from '$lib/components/time-clock/TimesheetEntryDialog.svelte';
@@ -24,6 +25,11 @@
 	import { scheduleWindow } from '$lib/schedule/filters';
 	import { formatCalendarDay } from '$lib/schedule/labels';
 	import { durationLabel } from '$lib/time-clock/api';
+	import {
+		approvalPreviewKey,
+		defaultCutoff,
+		fetchApprovalPreview
+	} from '$lib/time-clock/approval';
 	import {
 		clockInMember,
 		deleteTimesheetEntry,
@@ -156,6 +162,20 @@
 	let stopTarget = $state<StopTarget | null>(null);
 	let deleting = $state<TimesheetEntry | null>(null);
 	let deletePending = $state(false);
+	let approving = $state(false);
+
+	// Approve starts on the last day being looked at, never after today. What is waiting up to then is read
+	// when the button is pointed at, so the dialog usually opens with it.
+	const approvalCutoff = $derived(summary ? defaultCutoff(summary.to, summary.today) : '');
+
+	function warmApproval() {
+		if (!approvalCutoff) return;
+		void queryClient.prefetchQuery({
+			queryKey: approvalPreviewKey(approvalCutoff),
+			queryFn: () => fetchApprovalPreview(approvalCutoff),
+			staleTime: 15_000
+		});
+	}
 
 	// A new entry starts on the day being looked at: the Day view's day, or today when this week holds it.
 	function defaultDay() {
@@ -283,6 +303,16 @@
 			: 'Who worked how long, from timers and hours added on Jobs.'}
 	>
 		{#snippet actions()}
+			{#if summary?.can_approve}
+				<span
+					class="timesheets__approve"
+					role="presentation"
+					onpointerenter={warmApproval}
+					onfocusin={warmApproval}
+				>
+					<Button variant="secondary" onclick={() => (approving = true)}>Approve</Button>
+				</span>
+			{/if}
 			{#if summary?.can_add && (teamView || me)}
 				<Button variant="primary" onclick={() => addEntry(me?.user_id ?? '')}>Add entry</Button>
 			{/if}
@@ -465,6 +495,13 @@
 		heading={historyEntry ? entryHeading(historyEntry) : ''}
 		onClose={() => (historyEntry = null)}
 	/>
+	<ApproveTimesheetsDialog
+		open={approving}
+		initialCutoff={approvalCutoff}
+		today={summary.today}
+		timezone={summary.timezone}
+		onClose={() => (approving = false)}
+	/>
 	<StopTimerDialog
 		open={stopTarget !== null}
 		target={stopTarget}
@@ -502,6 +539,10 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-large);
+	}
+
+	.timesheets__approve {
+		display: contents;
 	}
 
 	:global(.timesheets__date) {

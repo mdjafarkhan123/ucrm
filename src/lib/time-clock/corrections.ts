@@ -150,7 +150,7 @@ export type HistoryValues = {
 
 export type HistoryEvent = {
 	id: string;
-	action: 'added' | 'stopped' | 'changed' | 'deleted';
+	action: 'added' | 'stopped' | 'changed' | 'deleted' | 'approved';
 	at: string;
 	actor_name: string | null;
 	is_me: boolean;
@@ -193,7 +193,8 @@ export function historyHeadline(event: HistoryEvent) {
 		added: 'Added',
 		stopped: 'Timer stopped',
 		changed: 'Changed',
-		deleted: 'Deleted'
+		deleted: 'Deleted',
+		approved: 'Approved'
 	}[event.action];
 	return `${verb} by ${who}`;
 }
@@ -203,6 +204,7 @@ export function historyHeadline(event: HistoryEvent) {
  * 12:00 PM". An addition or a stop lists what the entry was; a deletion what it had been.
  */
 export function historyLines(event: HistoryEvent, timezone: string): string[] {
+	if (event.action === 'approved') return ['Locked for people who change only their own hours.'];
 	const before = event.prior;
 	const after = event.new;
 	if (!before || !after) {

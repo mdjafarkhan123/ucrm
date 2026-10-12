@@ -103,3 +103,22 @@ export const stopTimerAtSchema = z
 	});
 
 export type StopTimerAtInput = z.infer<typeof stopTimerAtSchema>;
+
+// Weekly approval (plan § Weekly approval): every stopped entry up to and including a day, for the chosen
+// people. The database refuses a day after the business's today.
+export const timesheetApprovalQuerySchema = z.object({
+	date: z.iso.date({ error: 'Pick the day to approve up to.' })
+});
+
+export const approveTimesheetsSchema = z
+	.object({
+		cutoff: z.iso.date({ error: 'Pick the day to approve up to.' }),
+		user_ids: z
+			.array(z.string().uuid('That person could not be found.'))
+			.min(1, 'Choose at least one person.')
+			.max(500, 'Choose fewer people.')
+			.transform((ids) => [...new Set(ids)])
+	})
+	.strict();
+
+export type ApproveTimesheetsInput = z.infer<typeof approveTimesheetsSchema>;

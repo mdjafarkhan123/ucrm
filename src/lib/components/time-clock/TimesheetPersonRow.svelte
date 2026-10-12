@@ -75,6 +75,8 @@
 					? 'Invited'
 					: null
 	);
+	// Every stopped entry in this window is approved (plan § Weekly approval).
+	const approved = $derived(person.entry_count > 0 && person.unapproved_count === 0);
 	const runningFor = $derived(
 		person.running
 			? person.running.kind === 'general'
@@ -123,11 +125,12 @@
 				<DropdownMenu items={menu} triggerLabel={`Actions for ${name}`} />
 			{/if}
 		</div>
-		{#if (teamView && person.is_me) || statusBadge || person.overlap_count > 0 || person.running}
+		{#if (teamView && person.is_me) || statusBadge || approved || person.overlap_count > 0 || person.running}
 			<span class="timesheet-person__marks">
 				{#if teamView && person.is_me}<Badge size="small">You</Badge>{/if}
 				{#if statusBadge}<Badge size="small" status="inactive" dot={false}>{statusBadge}</Badge
 					>{/if}
+				{#if approved}<Badge size="small" status="success" dot={false}>Approved</Badge>{/if}
 				{#if person.overlap_count > 0}
 					<Badge size="small" status="warning" dot={false}>
 						{person.overlap_count === 1 ? '1 overlap' : `${person.overlap_count} overlaps`}

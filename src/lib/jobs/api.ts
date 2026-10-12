@@ -1052,6 +1052,8 @@ export type JobTimeEntry = {
 	notes: string | null;
 	/** manual: typed in by a person. timer: recorded when a running timer stopped. */
 	source: 'manual' | 'timer';
+	/** A manager approved it (time clock § Weekly approval): only they can change it now. */
+	approved: boolean;
 	can_edit: boolean;
 	is_unrated: boolean;
 	cost_per_hour_minor?: number;

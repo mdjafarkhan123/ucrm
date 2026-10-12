@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { Time, type CalendarDate } from '@internationalized/date';
+	import Banner from '$lib/components/ui/Banner.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
@@ -211,6 +212,14 @@
 		}}
 	>
 		{#if error}<p class="entry-form__alert" role="alert">{error}</p>{/if}
+
+		{#if mode?.kind === 'edit' && mode.entry.approved}
+			<!-- Only someone who manages the team's time reaches this (plan § Weekly approval). -->
+			<Banner type="notice">
+				These hours are approved. They stay approved after your change, and the change is kept in
+				the entry’s history.
+			</Banner>
+		{/if}
 
 		{#if running}
 			<p class="entry-form__note">

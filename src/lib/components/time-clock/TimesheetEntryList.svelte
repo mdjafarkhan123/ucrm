@@ -7,6 +7,7 @@
 	import { durationLabel } from '$lib/time-clock/api';
 	import { clockTime, entryPurpose, type TimesheetEntry } from '$lib/time-clock/timesheets';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import approvedIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import playerStopIcon from '@tabler/icons/outline/player-stop.svg?raw';
@@ -144,7 +145,15 @@
 								</span>
 							{/if}
 						</div>
-						<span class="timesheet-entry__source">{sourceLabel(entry)}</span>
+						<span class="timesheet-entry__source">
+							{sourceLabel(entry)}
+							{#if entry.approved}
+								<span class="timesheet-entry__approved">
+									<span aria-hidden="true">{@html approvedIcon}</span>
+									Approved
+								</span>
+							{/if}
+						</span>
 						<span class="timesheet-entry__duration">
 							{#if entry.is_running}
 								<RunningClock startedAt={entry.started_at} {offsetMs} flagLong />
@@ -283,7 +292,23 @@
 	}
 
 	.timesheet-entry__source {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-minuscule);
 		color: var(--color-text--secondary);
+	}
+
+	.timesheet-entry__approved {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-smallest);
+		color: var(--color-success--onSurface);
+		font-weight: 600;
+
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+		}
 	}
 
 	.timesheet-entry__menu {
