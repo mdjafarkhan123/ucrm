@@ -1,6 +1,6 @@
 # A1 — delivery and apply-safety inventory
 
-**Scope:** Source checked against main `d2b1de1b`, then the A1 private fixture changes. No business editor is wired to an apply guard yet. This inventory assigns the work; it does not declare any route safe. The approved foundation and Botanical sequence and exact v3/sidebar/header approvals are unchanged.
+**Scope:** Source checked against main `d2b1de1b`, then the A1 private fixture changes. Rechecked after combining time-clock main `f945f8c7`: the 73-route/state-owner set is unchanged; source hashes were refreshed. No business editor is wired to an apply guard yet. This inventory assigns the work; it does not declare any route safe. The approved foundation and Botanical sequence and exact v3/sidebar/header approvals are unchanged.
 
 The [source snapshot](crm-theme-foundation-a1-2026-10-12/source-inventory.json) enumerates all 73 `(app)` page routes, common layout dependencies, reachable stateful/editable components, layout-owned controls, local state names/line pointers and source hashes. It follows explicit local imports, including literal dynamic imports. This is a static aid, not a Svelte parser: nonliteral imports, prop-owned/bound state, derived dirty signals, store/library state and pending promises need inspection when a batch starts. New routes/components remain unclassified until verified. Even a page with no local state can own a child editor.
 

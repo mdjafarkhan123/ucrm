@@ -29,7 +29,7 @@ Representative captures: [private Classic desktop](crm-theme-foundation-a1-2026-
 - `npx svelte-kit sync` then `npm run build`: pass. The first fresh-worktree build needed sync before the widget build could find generated types; no application fix was needed. Existing unrelated compiler/build warnings remain.
 - Focused `svelte-check`: **0 errors, 0 warnings** for all proof Svelte components/loaders and the fixture route, using a temporary config extending the repo config and including generated ambient declarations. Full `npm run check` exhausted the default Node heap after roughly 157 seconds; whole-project type checking remains unverified. The previous shell checkpoint also recorded unresolved whole-project checks. This task does not fix that separate checker problem.
 - Svelte MCP autofixer: all six changed/added Svelte components pass. SCSS was Sass-preprocessed for analysis to avoid raw-SCSS false positives.
-- Targeted ESLint and Prettier, plus `git diff --check`: pass. The widget build's generated unrelated changes were restored.
+- Targeted ESLint and Prettier, plus `git diff --check`: pass. After combining time-clock main `f945f8c7`, the release build, focused check and access-navigation tests pass; current real-shell proof was rerun because its server navigation changed. Synthetic presentation sources were unchanged by that merge, so their final private fixture proof is reused. The widget build's generated unrelated changes were restored.
 
 ```sh
 npx svelte-kit sync
