@@ -1,7 +1,7 @@
 # Time clock
 
-**Status:** First version, including choices 1–5 and the build order in
-`Memory/campaigns/time-clock/ROADMAP.md`, approved by Jafar on 2026-10-11.
+**Status:** First version built and verified 2026-10-12 (proof: `docs/research/time-clock-final-proof-2026-10-12/final-proof.md`).
+Including choices 1–5 and the build order, it was approved by Jafar on 2026-10-11.
 
 ## Summary
 

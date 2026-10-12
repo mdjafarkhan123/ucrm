@@ -14,16 +14,15 @@ P9C–P9F; real server last. No infrastructure is approved.
 Jafar's plan (2026-10-10): finish the whole app first, then production. Real-world tests happen after
 production; every test possible before it is run before it. Order:
 
-1. **Part 16, Time clock** — live timer, day clock in/out, Timesheets (daily crew use).
-2. **Part 12, Alerts.**
+1. ~~Part 16, Time clock~~ — done 2026-10-12.
+2. **Part 12, Alerts** — next (a phone reminder to stop a forgotten timer waits here).
 3. **Part 13, Home screen and Reports.**
 4. **Part 14, Customer portal.**
 5. **Part 15, Extras**: Quote templates, auto-archive, automation recipes, bulk Visit move, custom fields.
 6. **Part 8, final audit** — plus the postponed-work P1 items and every test possible without a server.
 7. **Part 9, production** (P9A answer needed first), then real-world tests, then launch.
 
-Part 16 started 2026-10-11 as campaign `time-clock` (planning; waits for scope approval). Resume it
-there; return here when it closes.
+Part 16 ran as campaign `time-clock` and closed 2026-10-12 (`docs/research/time-clock-final-proof-2026-10-12/final-proof.md`).
 
 ## Essential pointers
 

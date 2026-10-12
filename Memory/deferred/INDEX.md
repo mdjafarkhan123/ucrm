@@ -11,6 +11,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 | P1 | [Pre-launch speed pass on the staging servers (HTTP/2, service worker, real-region timings)](pre-launch-speed-pass.md) |
 | P1 | [Industry editions need design-time and post-build performance gates](industry-editions-performance-verification.md) |
 | P2 | [Contractor account, offers, and notification history](contractor-account-offers-and-notification-history.md) |
+| P2 | [Header timer not yet seen in the private Botanical preview](time-clock-header-timer-in-botanical-preview.md) |
 | P2 | [Signing in does not return to the page you came from](sign-in-does-not-return-to-the-page.md) |
 | P2 | [Delete client, exactly like Jobber (Jafar decided; waits for "go")](delete-client-like-jobber.md) |
 | P2 | [SES production-domain cutover: capacity cap and rehearsal notes](ses-production-domain-cutover-notes.md) |

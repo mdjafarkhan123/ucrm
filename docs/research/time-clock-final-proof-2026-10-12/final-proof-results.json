@@ -1,0 +1,180 @@
+{
+  "proofStart": "2026-10-12 09:58:48.942876+00",
+  "results": [
+    {
+      "name": "1 Start on today's visit",
+      "passed": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "1 Stop",
+      "passed": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "1 Job Labor has one 40-minute entry at their rate",
+      "passed": true,
+      "detail": "[[\"40\",\"3000\",\"2000\",\"timer\"]]"
+    },
+    {
+      "name": "1 Their Timesheets day shows the same 40 minutes",
+      "passed": true,
+      "detail": "[40]"
+    },
+    {
+      "name": "1 Job Labor on screen shows 40m",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "2 Clock in",
+      "passed": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "2 Visit starts while clocked in",
+      "passed": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "2 Visit stops, day clock resumes",
+      "passed": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "2 Clock out",
+      "passed": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "2 Day shows 2 General + 2 Visit = 4 (scaled 1 min per hour), no overlap",
+      "passed": true,
+      "detail": "[[\"general\",\"2026-10-12 09:58:59.939386+00\",\"1\"],[\"visit\",\"2026-10-12 10:00:01.894049+00\",\"2\"],[\"general\",\"2026-10-12 10:02:03.56609+00\",\"1\"]]"
+    },
+    {
+      "name": "2 Timesheets flags no overlap on those three entries",
+      "passed": true,
+      "detail": "3 entries"
+    },
+    {
+      "name": "3 Start visit B",
+      "passed": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "3 Two devices at once plus a third Stop record the hours once",
+      "passed": true,
+      "detail": "entries 1; statuses 200/200/200"
+    },
+    {
+      "name": "4 Start visit C",
+      "passed": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "4 Visit completed with the timer running",
+      "passed": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "4 Timer stopped and the hours landed once",
+      "passed": true,
+      "detail": "running 0; entries [[\"7\"]]"
+    },
+    {
+      "name": "5 Field member clocks in",
+      "passed": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "5 Over 24 hours: their own plain Stop is refused",
+      "passed": true,
+      "detail": "status 409"
+    },
+    {
+      "name": "5 Manager sees the long-running warning",
+      "passed": true,
+      "detail": "{\"id\":\"7e7fac79-89d1-46a6-9ef1-00359a1a4109\",\"kind\":\"general\",\"job_id\":null,\"clocked_in\":true,\"job_number\":null,\"over_a_day\":true,\"started_at\":\"2026-10-11T02:00:00+00:00\",\"started_on\":\"2026-10-11\",\"long_running\":true}"
+    },
+    {
+      "name": "5 Manager stops it at 17:30 the day before",
+      "passed": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "5 Entry is 08:00-17:30 on the starting day (570 min)",
+      "passed": true,
+      "detail": "[\"7e7fac79-89d1-46a6-9ef1-00359a1a4109\",\"2026-10-11 02:00:00+00\",\"570\"]"
+    },
+    {
+      "name": "5 History shows who stopped it",
+      "passed": true,
+      "detail": "{\"events\":[{\"at\":\"2026-10-12T10:03:14.962115+00:00\",\"id\":\"8748dbd2-92be-4a41-987b-52e9b6472a47\",\"new\":{\"kind\":\"general\",\"notes\":null,\"job_id\":null,\"minutes\":570,\"user_id\":\"7d450c50-b3e5-4f97-8ee9-50e08c1f70bb\",\"visit_id\":null,\"user_name\":\"Field Tester\",\"job_number\":null,\"started_at\":\"2026-10-11T02:0"
+    },
+    {
+      "name": "6 Timers-only: add, change and delete are refused by /api",
+      "passed": true,
+      "detail": "add 403, change 403, delete 403"
+    },
+    {
+      "name": "6 On screen: no Add button and the entry menu offers History only",
+      "passed": true,
+      "detail": "add buttons 0; menu [\"History\"]"
+    },
+    {
+      "name": "7 Manager approves up to the day before",
+      "passed": true,
+      "detail": "{\"cutoff\":\"2026-10-11\",\"running\":[],\"people_count\":1,\"approved_count\":1,\"approved_minutes\":570}"
+    },
+    {
+      "name": "7 The overnight entry is approved",
+      "passed": true,
+      "detail": "t"
+    },
+    {
+      "name": "7 Crew member (own-hours rung) is refused on approved hours (409)",
+      "passed": true,
+      "detail": "change 409, delete 409"
+    },
+    {
+      "name": "7 Manager can still change approved hours",
+      "passed": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "7 History records approval and the manager change",
+      "passed": true,
+      "detail": "{\"events\":[{\"at\":\"2026-10-12T10:03:14.962115+00:00\",\"id\":\"8748dbd2-92be-4a41-987b-52e9b6472a47\",\"new\":{\"kind\":\"general\",\"notes\":null,\"job_id\":null,\"minutes\":570,\"user_id\":\"7d450c50-b3e5-4f97-8ee9-50e08c1f70bb\",\"visit_id\":null,\"user_name\":\"Field Tester\",\"job_number\":null,\"started_at\":\"2026-10-11T02:00:00+00:00\",\"visit_date\":null,\"request_title\":null},\"is_me\":true,\"prior\":null,\"action\":\"stopped\",\"ac"
+    },
+    {
+      "name": "7 The entry stays approved after the manager change",
+      "passed": true,
+      "detail": "t"
+    },
+    {
+      "name": "8 Their Timesheets lists only themselves",
+      "passed": true,
+      "detail": "people 1; can_view_team false"
+    },
+    {
+      "name": "8 Setup: the owner adds their own entry",
+      "passed": true,
+      "detail": "status 201"
+    },
+    {
+      "name": "8 Reading the owner's entries through /api is refused",
+      "passed": true,
+      "detail": "status 403"
+    },
+    {
+      "name": "8 Changing, deleting or reading history of a teammate's entry is refused",
+      "passed": true,
+      "detail": "change 403, delete 403, history 404"
+    },
+    {
+      "name": "8 Approving a teammate is refused",
+      "passed": true,
+      "detail": "status 403"
+    }
+  ]
+}
