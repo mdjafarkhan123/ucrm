@@ -29,7 +29,7 @@
 	import FinalVisitDialog from '$lib/components/jobs/FinalVisitDialog.svelte';
 	import CreateVisitsDialog from '$lib/components/jobs/CreateVisitsDialog.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
-	import VisitTimerControl from '$lib/components/time-clock/VisitTimerControl.svelte';
+	import WorkTimerControl from '$lib/components/time-clock/WorkTimerControl.svelte';
 	import { fetchMyTimer, myTimerKey, refreshAfterTimer } from '$lib/time-clock/api';
 	import { workingWeek } from '$lib/schedule/hours';
 	import { teamAvailability } from '$lib/schedule/member-availability';
@@ -528,6 +528,15 @@
 		const mine = myTimerQuery.data;
 		if (!mine) return false;
 		return (mine.can_time && !visit.completed_at) || mine.timer?.visit_id === visit.id;
+	}
+
+	// Only today's assessment can be timed (plan § Assessment timers); one already running always shows, so
+	// it can be stopped.
+	function showsAssessmentTimer(assessment: AssessmentItem) {
+		const mine = myTimerQuery.data;
+		if (!mine) return false;
+		if (mine.timer?.kind === 'assessment' && mine.timer.assessment_id === assessment.id) return true;
+		return mine.can_time && !assessment.completed_at && assessment.visit_date === today;
 	}
 
 	/** A drag that has landed and is waiting for the person to press Save. */
@@ -1524,10 +1533,19 @@
 
 {#snippet visitTimer()}
 	{#if selectedVisit}
-		<VisitTimerControl
-			jobId={selectedVisit.job_id}
-			visitId={selectedVisit.id}
+		<WorkTimerControl
+			target={{ kind: 'visit', jobId: selectedVisit.job_id, visitId: selectedVisit.id }}
 			completed={Boolean(selectedVisit.completed_at)}
+		/>
+	{/if}
+{/snippet}
+
+{#snippet assessmentTimer()}
+	{#if selectedAssessment}
+		<WorkTimerControl
+			target={{ kind: 'assessment', assessmentId: selectedAssessment.id }}
+			completed={Boolean(selectedAssessment.completed_at) ||
+				selectedAssessment.visit_date !== today}
 		/>
 	{/if}
 {/snippet}
@@ -1550,6 +1568,7 @@
 				? formatCalendarDay(selectedAssessment.visit_date, dayHeadingFormat)
 				: 'Not scheduled'}
 			{employeesById}
+			timer={showsAssessmentTimer(selectedAssessment) ? assessmentTimer : undefined}
 		/>
 	</Popover>
 {/if}

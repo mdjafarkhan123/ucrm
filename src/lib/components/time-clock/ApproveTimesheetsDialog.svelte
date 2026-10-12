@@ -17,7 +17,7 @@
 		type ApprovalRunningTimer
 	} from '$lib/time-clock/approval';
 	import { refreshAfterCorrection } from '$lib/time-clock/corrections';
-	import { clockTime } from '$lib/time-clock/timesheets';
+	import { clockTime, runningPurpose } from '$lib/time-clock/timesheets';
 
 	// Approve timesheets (plan § Weekly approval), as Jobber's Approve Timesheets works: choose a day and the
 	// people, and every stopped entry of theirs up to and including that day is approved. Approved hours are
@@ -90,7 +90,7 @@
 	}
 
 	function runningLine(timer: ApprovalRunningTimer) {
-		const what = timer.kind === 'general' ? 'General' : `Job #${timer.job_number ?? ''}`.trim();
+		const what = runningPurpose(timer);
 		return `${timer.name ?? 'A team member'}: ${what}, since ${shortDay(timer.started_on)} at ${clockTime(
 			timer.started_at,
 			timezone

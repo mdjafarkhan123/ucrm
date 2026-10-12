@@ -4,10 +4,11 @@
 and on a weekly Timesheets page that a manager can check, correct and approve. Launch roadmap Part 16.
 **Plan:** `docs/time-clock-behavior-contract.md` — first version and build order approved by Jafar
 2026-10-11.
-**Stage:** Building (Parts 2–7 of 9 done, all on `main`)
+**Stage:** Building (Parts 2–7 of 9 done on `main`; Part 8 verifying on its branch)
 
-**Active part:** none. **Next:** Part 8 Assessment timers (`ROADMAP.md`), dependency-ready; then Part 9
-Final proof.
+**Active part:** Part 8 Assessment timers — built on branch `codex/time-clock-part-8`, **Waiting to merge**;
+database change applied. **Next:** finish Part 8's checks and live proof (`parts/part-8-assessment-timers.md`),
+merge, then Part 9 Final proof.
 
 **Open check:** the header timer has not been seen in the private Botanical preview (release build with
 `DESIGN_SHELL_PREVIEW=botanical`); Classic is verified. Belongs with `selectable-design-experiences` Part 5.

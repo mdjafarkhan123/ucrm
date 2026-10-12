@@ -30,6 +30,13 @@ export function stopMessage(result: StopTimerResult): TimerMessage {
 			detail: `${durationLabel(result.minutes)} of general time recorded.`
 		};
 	}
+	if (result.kind === 'assessment') {
+		return {
+			tone: 'success',
+			title: 'Timer stopped',
+			detail: `${durationLabel(result.minutes)} recorded for this assessment.${resumed}`
+		};
+	}
 	return {
 		tone: 'success',
 		title: 'Timer stopped',
@@ -59,6 +66,13 @@ export function clockOutMessage(result: StopTimerResult): TimerMessage {
 			detail: `Your visit timer stopped too: ${durationLabel(result.minutes)} added to the job’s hours.`
 		};
 	}
+	if (result.kind === 'assessment') {
+		return {
+			tone: 'success',
+			title: 'Clocked out',
+			detail: `Your assessment timer stopped too: ${durationLabel(result.minutes)} recorded.`
+		};
+	}
 	return {
 		tone: 'success',
 		title: 'Clocked out',
@@ -74,7 +88,7 @@ export function clockInMessage(result: {
 		return {
 			tone: 'success',
 			title: 'Clocked in',
-			detail: 'Your day clock starts when you stop the visit timer.'
+			detail: 'Your day clock starts when you stop your running timer.'
 		};
 	}
 	if (result.already_clocked_in) return { tone: 'info', title: 'You were already clocked in' };

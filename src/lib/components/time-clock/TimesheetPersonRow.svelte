@@ -11,6 +11,7 @@
 	import {
 		fetchTimesheetEntries,
 		personName,
+		runningPurpose,
 		timesheetEntriesKey,
 		type TimesheetPerson,
 		type TimesheetSpan
@@ -77,13 +78,7 @@
 	);
 	// Every stopped entry in this window is approved (plan § Weekly approval).
 	const approved = $derived(person.entry_count > 0 && person.unapproved_count === 0);
-	const runningFor = $derived(
-		person.running
-			? person.running.kind === 'general'
-				? 'General'
-				: `Job #${person.running.job_number ?? ''}`.trim()
-			: null
-	);
+	const runningFor = $derived(person.running ? runningPurpose(person.running) : null);
 
 	// A click on the row's empty space opens it too. Its own controls, and a drag to select text, keep
 	// their meaning.
