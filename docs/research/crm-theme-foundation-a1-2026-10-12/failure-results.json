@@ -1,0 +1,30 @@
+[
+  {
+    "design": "classic",
+    "width": 1440,
+    "surfaceFailure": "kept shell; reload recovered",
+    "overlayFailure": "kept page; explicit reload recovered",
+    "focusReturn": true
+  },
+  {
+    "design": "classic",
+    "width": 390,
+    "surfaceFailure": "kept shell; reload recovered",
+    "overlayFailure": "kept page; explicit reload recovered",
+    "focusReturn": true
+  },
+  {
+    "design": "botanical",
+    "width": 1440,
+    "surfaceFailure": "kept shell; reload recovered",
+    "overlayFailure": "kept page; explicit reload recovered",
+    "focusReturn": true
+  },
+  {
+    "design": "botanical",
+    "width": 390,
+    "surfaceFailure": "kept shell; reload recovered",
+    "overlayFailure": "kept page; explicit reload recovered",
+    "focusReturn": true
+  }
+]

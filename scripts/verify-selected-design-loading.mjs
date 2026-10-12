@@ -1,5 +1,6 @@
 /** Run after npm run build and a localhost Node server with DESIGN_LOADING_PROOF=1. */
 import assert from 'node:assert/strict';
+import http from 'node:http';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
 
@@ -25,7 +26,7 @@ function graph(key, visited = new Set()) {
 const graphs = Object.fromEntries(
 	['Classic', 'Botanical'].map((design) => [
 		design.toLowerCase(),
-		['Shell', 'Surface'].flatMap((surface) =>
+		['Shell', 'Surface', 'Overlay'].flatMap((surface) =>
 			graph(`src/lib/design-loading-proof/${design}${surface}.svelte`)
 		)
 	])
@@ -45,7 +46,7 @@ const styleIds = Object.fromEntries(
 		['classic', 'botanical'].map(async (design) => [
 			design,
 			await Promise.all(
-				['Shell', 'Surface'].map(async (surface) => {
+				['Shell', 'Surface', 'Overlay'].map(async (surface) => {
 					const name = design === 'classic' ? 'Classic' : 'Botanical';
 					const entry = manifest[`src/lib/design-loading-proof/${name}${surface}.svelte`];
 					const code = await readFile(`.svelte-kit/output/client/${entry.file}`, 'utf8');
@@ -57,6 +58,32 @@ const styleIds = Object.fromEntries(
 		])
 	)
 );
+// Parallel request selection must remain request-local, including opposite selections in flight.
+const isolated = await Promise.all(
+	['classic', 'botanical', 'classic', 'botanical'].map(async (design) => {
+		const response = await fetch(`${origin}/demo/design-loading/${design}/overview`);
+		assert.equal(response.status, 200);
+		assert.equal(response.headers.get('set-cookie'), null);
+		const html = await response.text();
+		assert(html.includes(`data-proof-design="${design}"`));
+		assert(!html.includes(`data-proof-design="${design === 'classic' ? 'botanical' : 'classic'}"`));
+		return design;
+	})
+);
+const publicHostStatus = await new Promise((resolve, reject) => {
+	const request = http.get(
+		`${origin}/demo/design-loading/classic/overview`,
+		{
+			headers: { host: 'public.example' }
+		},
+		(response) => {
+			resolve(response.statusCode);
+			response.resume();
+		}
+	);
+	request.on('error', reject);
+});
+assert.equal(publicHostStatus, 404, 'Public host cannot enable the private fixture');
 const browser = await chromium.launch({ headless: true });
 const results = [];
 const violations = [];
@@ -124,6 +151,15 @@ try {
 			for (const id of styleIds[other]) assert.equal(await page.locator(`style#${id}`).count(), 0);
 			await page.waitForTimeout(4000); // exercise the actual idle code warmer
 			const beforeHover = [...requests];
+			const overlayFile =
+				manifest[
+					`src/lib/design-loading-proof/${design === 'classic' ? 'Classic' : 'Botanical'}Overlay.svelte`
+				].file;
+			assert(
+				!requests.some((path) => path.endsWith(overlayFile)),
+				'Unrevealed overlay stays deferred'
+			);
+			assert.equal(await page.locator(`style#${styleIds[design][2]}`).count(), 0);
 			await page.getByRole('link', { name: 'Open details' }).hover();
 			await page.waitForTimeout(1500);
 			const beforeNavigation = [...requests];
@@ -139,7 +175,8 @@ try {
 			await page.getByRole('link', { name: 'Open details' }).click();
 			await page.getByRole('heading', { name: 'Job details' }).waitFor();
 			const navigationMs = Date.now() - start;
-			for (const id of styleIds[design]) assert.equal(await page.locator(`style#${id}`).count(), 1);
+			for (const id of styleIds[design].slice(0, 2))
+				assert.equal(await page.locator(`style#${id}`).count(), 1);
 			for (const id of styleIds[other]) assert.equal(await page.locator(`style#${id}`).count(), 0);
 			assert.deepEqual(errors, []);
 			for (const file of exclusive[other])
@@ -162,7 +199,70 @@ try {
 				measurements.metrics.designs.every((seen) => seen === design),
 				'Wrong-design DOM frame'
 			);
+			const ordinaryRequests = [...requests];
+			const expected = {
+				classic: { canvas: 'rgb(244, 246, 248)', accent: 'rgb(37, 99, 235)' },
+				botanical: { canvas: 'rgb(245, 244, 239)', accent: 'rgb(40, 107, 73)' }
+			};
+			async function checkEffectiveStyles(applied) {
+				await page.locator(`[data-proof-surface="${applied}"]`).waitFor();
+				const actual = await page.locator('[data-proof-design]').evaluate((el) => ({
+					canvas: getComputedStyle(el).backgroundColor,
+					accent: getComputedStyle(el.querySelector('header')).borderBottomColor
+				}));
+				assert.deepEqual(actual, expected[applied]);
+				const open = page.getByRole('button', { name: 'Open read-only example' });
+				await open.focus(); // keyboard intent warms only this design's overlay
+				await open.click();
+				const overlay = page.locator(`[data-proof-overlay="${applied}"]`);
+				await overlay.waitFor();
+				assert.equal(
+					await overlay.evaluate((el) => Boolean(el.closest('[data-proof-design]'))),
+					false,
+					'Portal is outside shell scope'
+				);
+				assert.equal(
+					await overlay.evaluate((el) => getComputedStyle(el).borderTopColor),
+					expected[applied].accent
+				);
+				assert(
+					await page.getByRole('dialog').evaluate((el) => el.contains(document.activeElement))
+				);
+				await page.keyboard.press('Tab');
+				assert(
+					await page.getByRole('dialog').evaluate((el) => el.contains(document.activeElement))
+				);
+				await page.screenshot({ path: `${output}/${design}-${width}-${applied}-overlay.png` });
+				await page.keyboard.press('Escape');
+				await page.getByRole('dialog').waitFor({ state: 'hidden' });
+				return actual;
+			}
+			const switches = [{ design, styles: await checkEffectiveStyles(design) }];
+			for (const applied of [other, design, other, design]) {
+				await page.getByRole('link', { name: 'Load other test presentation' }).click();
+				switches.push({ design: applied, styles: await checkEffectiveStyles(applied) });
+			}
+			assert.equal(await context.cookies().then((cookies) => cookies.length), 0);
+			assert.deepEqual(
+				await page.evaluate(() => ({
+					local: Object.keys(localStorage),
+					session: Object.keys(sessionStorage)
+				})),
+				{ local: [], session: [] }
+			);
+			assert(
+				!requests.some((path) => path.startsWith('/api/')),
+				'Fixture cannot write public preferences or records'
+			);
+			assert.deepEqual(errors, []);
+			await page.screenshot({ path: `${output}/${design}-${width}-switched.png` });
+			await page.evaluate(() => (document.documentElement.style.fontSize = '200%'));
+			assert(!(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)));
+			await page.screenshot({ path: `${output}/${design}-${width}-enlarged.png` });
 			results.push({
+				ordinaryRequests,
+				switches,
+				explicitRequests: requests.slice(ordinaryRequests.length),
 				design,
 				width,
 				navigationMs,
@@ -182,6 +282,7 @@ try {
 				profile:
 					'Chromium, 4x CPU, 150ms RTT, 1.6Mbps down, 750Kbps up; local adapter-node HTTP; one session',
 				exclusive,
+				isolated,
 				styleIds,
 				violations,
 				results
@@ -192,7 +293,7 @@ try {
 	);
 	assert.deepEqual(violations, [], 'Selected-only delivery failed; see results.json');
 	console.log(
-		`PASS: selected SSR shell, CSR surface, idle/hover/navigation isolation, hydration, focus and overflow at both widths. Evidence: ${output}`
+		`PASS: selected SSR/CSR, ordinary/intent asset isolation, repeated-switch effective styles, portalled content, request-local selection, hydration, focus, overflow and text resizing at both widths. Evidence: ${output}`
 	);
 } finally {
 	await browser.close();

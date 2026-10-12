@@ -10,3 +10,9 @@ export async function loadSurface(design: ProofDesign) {
 		? (await import('./ClassicSurface.svelte')).default
 		: (await import('./BotanicalSurface.svelte')).default;
 }
+
+export async function loadOverlay(design: ProofDesign) {
+	return design === 'classic'
+		? (await import('./ClassicOverlay.svelte')).default
+		: (await import('./BotanicalOverlay.svelte')).default;
+}
