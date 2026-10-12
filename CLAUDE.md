@@ -133,8 +133,8 @@ before changing files (`--mode read` for research). Release after safe integrati
   questions that come up mid-way or in later sessions. Choose technical details yourself using proven methods.
   Tell Jafar which product or method you followed.
 - **Frontend design.** Screens look premium, professional, and modern.
-- **Design in Pencil first (Jafar, 2026-10-12).** Before code, design in Pencil and get Jafar's yes for a new
-  screen, a redesign of an existing screen (such as moving it to Botanical), a new layout, a new kind of part,
+- **Design in Pencil first.** Before code, design in Pencil and get Jafar's yes for a new
+  screen, a redesign of an existing screen, a new layout, a new kind of part,
   or a change to how an existing part looks. Bug fixes that restore the approved look, and small additions made
   only from existing parts used the way they already are (one more form field, table column or menu item), go
   straight to code. The steps are in the design skill under "Design in Pencil first".

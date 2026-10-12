@@ -179,9 +179,7 @@ email campaigns; setup wizard and paid-client delivery; accountant CSV; Website 
 **Before advertising widely (Part 8):**
 
 - [ ] Customer portal: one place for appointments, quotes, invoices, balances and asking for more work
-- [x] Browser alerts and each person's alert settings (built 2026-10-12, branch `codex/alerts-part-12`; phone push waits for the native apps)
-      (`Memory/deferred/push-alerts-and-per-person-notification-settings.md` holds the agreed constraints;
-      Jafar asked on 2026-10-01 for it to be planned before launch)
+- [x] Browser alerts and each person's alert settings (built 2026-10-12, `docs/alerts-behavior-contract.md`; phone push waits for the native apps)
 - [ ] Reports screen (today only the accountant CSV exists)
 - [ ] More automation recipes beyond Quote follow-up
 - [ ] Reassign or reschedule many Visits across Jobs at once (moving Visits within one Job exists)

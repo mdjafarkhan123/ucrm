@@ -12,8 +12,8 @@ Brief actions; audit items B3, B4, B5, B6 and section D.
 | E4 Email, Text, and Call buttons | Quick buttons on the Brief; a person logs a call with one of five outcomes | — | Email opens the client's composer; no phone shows no Text or Call; only Connected and Left voicemail clear the inactivity warning | Done 2026-10-02 |
 
 Push alerts and per-person notification settings are not in this campaign (Jafar, 2026-10-01): E2 and E3 send
-the in-app alert and the email only. The rest waits in
-`Memory/deferred/push-alerts-and-per-person-notification-settings.md`.
+the in-app alert and the email only. Alerts (crm-launch-readiness Part 12, 2026-10-12) later made them follow
+each person's My alerts settings.
 
 From E1: `/pipeline?brief=<opportunity id>` opens that card's Brief (a card that left the board shows a
 message). E2 and E3 alerts and emails should link there. Any Pipeline write already refreshes the Schedule

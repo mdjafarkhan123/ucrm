@@ -209,9 +209,9 @@ communication, conversion, protected-stage movement, and closing work are never 
   board's scroll, filters, or selected position.
 - A Task is an internal follow-up item, not a Job, Visit, or Event. The Brief form has a required title and
   optional instructions, one owner, and one due date. Dated Tasks appear on the assignee's Schedule, and a new
-  assignment or reassignment to someone else creates one in-app alert and one email. Phone and browser push,
-  and per-teammate notification preferences, are a separate CRM-wide feature outside revision 3 (Jafar,
-  2026-10-01). Self-assignment creates no alert, and the customer is never notified.
+  assignment or reassignment to someone else alerts the assignee through the channels they chose on My alerts
+  (in-app, email, browser pop-up), as defined in `docs/alerts-behavior-contract.md`. Phone push waits for the
+  native apps. Self-assignment creates no alert, and the customer is never notified.
 - Each Opportunity may have at most five open and five completed Tasks. The card shows one open Task: the
   earliest due one, breaking equal due dates by creation order; when none are due, it shows the oldest open
   Task. An overdue Task is visibly overdue. Completion and reopening happen from the Brief, not the card.
@@ -226,7 +226,7 @@ communication, conversion, protected-stage movement, and closing work are never 
   transitions when those domain actions exist.
 - Notes save immediately from the Brief and belong to either its backing Request/Quote or the Client, never to
   a second Pipeline-only copy. Staff may create, view, edit, delete, attach Files/photos, and mention a teammate;
-  a mention notifies the tagged teammate.
+  a mention notifies the tagged teammate through the channels they chose on My alerts.
 - Quick actions expose Email, Text, and Call only when the Client has the required contact detail and the team
   member may use that channel. Messaging still obeys Communications consent, opt-out, allowance, and delivery
   rules; a quick action is not a second sending system. Email and Text open the existing Communications
@@ -269,8 +269,7 @@ loading is adopted only after a live usability prototype and measured-load check
 - AI summaries and weighted-probability forecasting remain optional post-launch work. Pipeline value and
   Expected close date remain available without pretending a win probability is known.
 - Multiple independent pipelines, custom-stage automations, administrator-built approval gates, note pinning,
-  repeating Tasks, the embedded Opportunity timeline, and phone/browser push with per-teammate notification
-  preferences are outside revision 3. Immutable stage/outcome
+  repeating Tasks, and the embedded Opportunity timeline are outside revision 3. Immutable stage/outcome
   history remains required for reporting even though that history is not yet rendered in the Brief.
 - The board never creates work. Any global create control on the page belongs to Requests or Quotes, not to
   the Pipeline.
@@ -287,7 +286,6 @@ pipelines, custom-stage automations, administrator-built approval gates, AI summ
 forecasting, note pinning, repeating Tasks, and an embedded Opportunity timeline. These may be reconsidered by
 a later approved plan; the revision 3 build does not silently include them.
 
-Two more wait on work outside the Pipeline and are recorded in `Memory/deferred/` so they are built before
-launch: phone/browser push with per-teammate notification preferences (UCRM has no push system yet; Task and
-mention alerts use the in-app alert and email until it exists), and sending a Quote by text from the send
-window (Quotes can only be emailed until the Quotes area can text one).
+One more waits on work outside the Pipeline and is recorded in `Memory/deferred/` so it is built before
+launch: sending a Quote by text from the send window (Quotes can only be emailed until the Quotes area can text
+one). Per-teammate alert settings and browser pop-ups arrived with Alerts (2026-10-12).
