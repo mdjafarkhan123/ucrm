@@ -27,7 +27,7 @@ Read this registry only to select a campaign. After selection, open its NOW.md; 
 
 Deferred work is indexed separately at Memory/deferred/INDEX.md; read it only when explicitly required.
 
-| time-clock | Paused 2026-10-12 — Parts 2–4 done and on `main` (Timesheets page live); Part 5 Corrections next | Crews time visits and the day on a phone; hours land on the Job and a weekly Timesheets page | Memory/campaigns/time-clock/NOW.md | Time clock, timers, clock in/out, Timesheets, crew hours, launch roadmap Part 16 |
+| time-clock | Paused 2026-10-12 — Parts 2–4 done; Part 5 Corrections half-built (database + API done, screens next) | Crews time visits and the day on a phone; hours land on the Job and a weekly Timesheets page | Memory/campaigns/time-clock/NOW.md | Time clock, timers, clock in/out, Timesheets, crew hours, launch roadmap Part 16 |
 
 | selectable-design-experiences | In progress 2026-10-11 — Parts 1–4 done; real shared shell committed (Classic default, private Botanical preview); Part 5 Botanical coverage next | Classic and Botanical layouts over shared behaviour, with selected-only asset delivery | Memory/campaigns/selectable-design-experiences/NOW.md | Selectable designs, Classic preservation, theme architecture, or design skill separation |
 

@@ -1,16 +1,24 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import RunningClock from '$lib/components/time-clock/RunningClock.svelte';
+	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
+	import type { TimesheetEntryActions } from '$lib/time-clock/corrections';
 	import { formatCalendarDay } from '$lib/schedule/labels';
 	import { durationLabel } from '$lib/time-clock/api';
 	import { clockTime, entryPurpose, type TimesheetEntry } from '$lib/time-clock/timesheets';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import historyIcon from '@tabler/icons/outline/history.svg?raw';
+	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
+	import playerStopIcon from '@tabler/icons/outline/player-stop.svg?raw';
+	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 
 	// One person's entries, opened from their Timesheets row (plan § Timesheets page): what each was for,
 	// notes, start, end and duration. The week groups them under their days; a day lists them as they are.
 	// Times are the business's own clock, where the work happened.
 	let {
 		entries,
+		userId,
+		actions,
 		days,
 		timezone,
 		grouped,
@@ -18,6 +26,10 @@
 		truncated = false
 	}: {
 		entries: TimesheetEntry[];
+		/** Whose entries these are. */
+		userId: string;
+		/** Edit, stop, history and delete, opened by the page. */
+		actions: TimesheetEntryActions;
 		/** The window's days, so a week reads Sunday to Saturday with empty days left out. */
 		days: string[];
 		timezone: string;
@@ -41,6 +53,40 @@
 			})
 			.filter((section) => section.entries.length > 0);
 	});
+
+	// Edit, Stop, History and Delete, each only when the reader may (the database said so per entry).
+	function menuItems(entry: TimesheetEntry) {
+		const items = [];
+		if (entry.can_edit) {
+			items.push({
+				label: entry.is_running ? 'Edit start or notes' : 'Edit',
+				icon: pencilIcon,
+				onSelect: () => actions.edit(entry, userId)
+			});
+		}
+		if (entry.is_running && entry.can_edit) {
+			items.push({
+				label: entry.over_a_day ? 'Set end time' : 'Stop…',
+				icon: playerStopIcon,
+				onSelect: () => actions.stop(entry, userId)
+			});
+		}
+		items.push({ label: 'History', icon: historyIcon, onSelect: () => actions.history(entry) });
+		if (entry.can_delete) {
+			items.push({
+				label: 'Delete',
+				icon: trashIcon,
+				destructive: true,
+				onSelect: () => actions.remove(entry, userId)
+			});
+		}
+		return items;
+	}
+
+	function sourceLabel(entry: TimesheetEntry) {
+		const made = entry.is_running ? 'Running' : entry.source === 'timer' ? 'Timer' : 'Typed';
+		return entry.edited ? `${made} · Edited` : made;
+	}
 
 	function timeRange(entry: TimesheetEntry) {
 		const start = clockTime(entry.started_at, timezone);
@@ -69,7 +115,7 @@
 				</h4>
 			{/if}
 			<ul class="timesheet-entries__list">
-				{#each section.entries as entry (entry.id ?? `running-${entry.started_at}`)}
+				{#each section.entries as entry (entry.id)}
 					<li
 						class="timesheet-entry"
 						class:timesheet-entry--running={entry.is_running}
@@ -98,15 +144,21 @@
 								</span>
 							{/if}
 						</div>
-						<span class="timesheet-entry__source">
-							{entry.is_running ? 'Running' : entry.source === 'timer' ? 'Timer' : 'Typed'}
-						</span>
+						<span class="timesheet-entry__source">{sourceLabel(entry)}</span>
 						<span class="timesheet-entry__duration">
 							{#if entry.is_running}
 								<RunningClock startedAt={entry.started_at} {offsetMs} flagLong />
 							{:else if entry.minutes !== null}
 								{durationLabel(entry.minutes)}
 							{/if}
+						</span>
+						<span
+							class="timesheet-entry__menu"
+							role="presentation"
+							onpointerenter={() => actions.warm(entry)}
+							onfocusin={() => actions.warm(entry)}
+						>
+							<DropdownMenu items={menuItems(entry)} triggerLabel="Entry actions" />
 						</span>
 					</li>
 				{/each}
@@ -153,7 +205,7 @@
 
 	.timesheet-entry {
 		display: grid;
-		grid-template-columns: 11rem minmax(0, 1fr) 4.5rem 7rem;
+		grid-template-columns: 11rem minmax(0, 1fr) 7rem 6rem 2rem;
 		align-items: start;
 		gap: var(--space-base);
 		padding: var(--space-small) var(--space-base);
@@ -231,6 +283,12 @@
 		color: var(--color-text--secondary);
 	}
 
+	.timesheet-entry__menu {
+		display: flex;
+		justify-content: flex-end;
+		margin: calc(var(--space-smaller) * -1) 0;
+	}
+
 	.timesheet-entry__duration {
 		justify-self: end;
 		color: var(--color-text);
@@ -241,7 +299,7 @@
 
 	@media (max-width: 639px) {
 		.timesheet-entry {
-			grid-template-columns: minmax(0, 1fr) auto;
+			grid-template-columns: minmax(0, 1fr) auto auto;
 			gap: var(--space-smaller) var(--space-base);
 		}
 
@@ -252,6 +310,11 @@
 
 		.timesheet-entry__duration {
 			grid-column: 2;
+			grid-row: 1;
+		}
+
+		.timesheet-entry__menu {
+			grid-column: 3;
 			grid-row: 1;
 		}
 

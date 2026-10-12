@@ -8,6 +8,8 @@ import { eachDayInWindow, shiftScheduleDate } from '$lib/schedule/filters';
 export type TimesheetSpan = 'day' | 'week';
 
 export type TimesheetRunning = {
+	/** The timer's id, which becomes its entry's id when it stops. */
+	id: string;
 	kind: 'visit' | 'general';
 	job_id: string | null;
 	job_number: number | null;
@@ -16,6 +18,10 @@ export type TimesheetRunning = {
 	started_on: string;
 	/** Running more than 12 hours: flagged so someone checks it (plan § Forgotten timers). */
 	long_running: boolean;
+	/** Over 24 hours: it can only be stopped at a chosen end time. */
+	over_a_day: boolean;
+	/** Clocked in for the day: the day clock runs, or a visit timer will start it again. */
+	clocked_in: boolean;
 };
 
 export type TimesheetPerson = {
@@ -42,12 +48,14 @@ export type TimesheetSummary = {
 	server_now: string;
 	/** Everyone's hours (time.track_team), or only the reader's own. */
 	can_view_team: boolean;
+	/** May add entries: for anyone with time.track_team, for themselves with time.track_own. */
+	can_add: boolean;
 	people: TimesheetPerson[];
 };
 
 export type TimesheetEntry = {
-	/** Null for a running timer, which is not an entry until it stops. */
-	id: string | null;
+	/** The entry's id, or a running timer's, which the entry keeps when it stops. */
+	id: string;
 	kind: 'job' | 'general';
 	is_running: boolean;
 	source: 'manual' | 'timer';
@@ -61,15 +69,26 @@ export type TimesheetEntry = {
 	/** Shares a minute or more with another of this person's entries. */
 	overlaps: boolean;
 	long_running: boolean;
+	/** A running timer over 24 hours: it can only be stopped at a chosen end time. */
+	over_a_day: boolean;
 	/** The Job the hours are on. Title and client are null when the reader may not open it. */
 	job: {
 		id: string;
 		number: number;
 		visible: boolean;
+		closed: boolean;
 		title: string | null;
 		client_name: string | null;
 	} | null;
+	/** Null when there is none, or the reader may not open the Job. */
+	visit_id: string | null;
 	visit_date: string | null;
+	/** The reader may correct it: for a running timer, only its start and notes. */
+	can_edit: boolean;
+	/** The reader may delete it. Never for a running timer. */
+	can_delete: boolean;
+	/** Changed since it was recorded; the history says how. */
+	edited: boolean;
 };
 
 export type TimesheetEntries = {

@@ -6,8 +6,8 @@ and on a weekly Timesheets page that a manager can check, correct and approve. L
 2026-10-11.
 **Stage:** Building (Parts 2–4 of 9 done, all on `main`)
 
-**Next part:** Part 5 Corrections (`ROADMAP.md` line 5; plan § Timesheets page, § Forgotten timers). Not
-started; no part note yet.
+**Active part:** Part 5 Corrections (`ROADMAP.md` line 5) — database and API done and committed; screens
+half-wired. Exact next steps in `parts/part-5-corrections.md`.
 
 **Open check:** the header timer has not been seen in the private Botanical preview (release build with
 `DESIGN_SHELL_PREVIEW=botanical`); Classic is verified. Belongs with `selectable-design-experiences` Part 5.
