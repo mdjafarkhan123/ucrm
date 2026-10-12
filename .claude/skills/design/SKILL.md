@@ -24,6 +24,31 @@ Before code, inspect `src/lib/components` for reuse. Use Svelte 5, component-loc
 semantic HTML and semantic design tokens. Preserve existing loading/cache/preload rules. Every interactive
 control needs hover, focus and disabled states. A skill edit alone never changes application assets.
 
+## Design in Pencil first
+
+The project rule decides which work starts here. Each design has its own Pencil file in the main project
+folder: `classic.pen` for Classic, `botanical.pen` for Botanical. Each file opens with its design-system page —
+the colors, text sizes, spacing and parts copied from the app's real styles — and new screens sit below it.
+
+1. **Open the right file.** Call `get_app_state`: it names the file open in Pencil, and the Pencil tools change
+   only that file. If it is the wrong one, ask Jafar to open the right one and wait.
+2. **Design from the file's own parts.** Place copies of its parts and use its color and size names, never raw
+   values. If a part has to look different, change it on the design-system page first, so every screen using
+   it follows. Pencil has no Tabler icons; use the Lucide icon with the same meaning, and Tabler in code.
+   Finished when each screen exists at 1440px and 390px wide, and a screenshot of each shows nothing cut off or
+   misaligned.
+3. **Show Jafar and wait.** Tell him the names of the screens to look at, what each shows, and which parts
+   changed. Finished when he says yes; write his yes, the date and the screen names in the campaign's part
+   note.
+4. **Keep the three copies the same.** When a color, size or part changed in Pencil, change it in the app's
+   code (`src/lib/styles/_variables.scss` or the component) and in the design skill page that describes it, in
+   the same commit. Finished when Pencil, the code and the skill page all give the same value.
+
+**Saving the file.** Pencil saves into the main project folder, not your worktree, so commit `.pen` files from
+the main folder under a claim covering them, in their own commit. Someone else may be editing the same file
+— Jafar in the app, or another agent — so read the parts you are about to change again just before changing
+them, and leave changes you did not make as they are.
+
 ## Before Calling a Screen Done
 
 **The screen check scales with the change.** A new screen or layout gets the full check below; a small change
@@ -37,7 +62,7 @@ The full check: look at the real screen the way a picky designer would, not at t
 2. Screenshot it at desktop (1440px) and phone (390px) width, in every state the change touches: realistic
    data, empty, loading, error, long names. For untouched screens, add dark mode when the change touches color. Botanical dark mode awaits
    its focused demo approval; report that gap rather than inventing an approved palette.
-3. Critique each screenshot against the approved demo and Botanical guidance for redesigned portions,
+3. Critique each screenshot against its approved Pencil screen when one exists, the approved demo and Botanical guidance for redesigned portions,
    or the matching existing blueprint and modules for untouched screens: alignment, spacing, visual hierarchy, crowding, truncation,
    overflow, and anything that reads as a spreadsheet rather than a product.
 4. Check keyboard navigation, visible focus, semantic labels, text resizing, contrast, dismissal and
