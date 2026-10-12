@@ -15,7 +15,7 @@ Jafar's plan (2026-10-10): finish the whole app first, then production. Real-wor
 production; every test possible before it is run before it. Order:
 
 1. ~~Part 16, Time clock~~ — done 2026-10-12.
-2. **Part 12, Alerts** — web build done 2026-10-12 on branch `codex/alerts-part-12` (worktree `.worktrees/alerts-part-12`), NOT yet merged to main. See "Part 12 handover" below.
+2. **Part 12, Alerts** — web build done and merged to main 2026-10-12 (`f196fbb9`). Still open: real-browser pop-up proof and Pipeline contract wording. See "Part 12 handover" below.
 3. **Part 13, Home screen and Reports.**
 4. **Part 14, Customer portal.**
 5. **Part 15, Extras**: Quote templates, auto-archive, automation recipes, bulk Visit move, custom fields.
@@ -48,8 +48,7 @@ move/remove/cancel, Email switch, per-computer delivery, shared computer takeove
 payload, VAPID header, opens the Job, nothing sent twice); My alerts screen checked at 1568px and 390px.
 
 Left for the next session:
-1. **Merge to main** (follow `docs/agent-concurrency.md`), then run `npm install` in main (the branch added
-   `web-push`; main's node_modules lacks it), push to GitHub, release the claim `b096b7d7a185`, remove the worktree.
+1. ~~Merge to main~~ — done 2026-10-12, pushed, `npm install` run, worktree removed.
 2. **Real-Chrome proof of the pop-up.** Jafar's Brave blocks push by default (needs Settings, Privacy and security,
    "Use Google services for push messaging" on, then restart). Prove in Chrome/Edge/Firefox or Brave with that on:
    turn on, put a teammate on a Visit, see the pop-up, click opens the Job.
