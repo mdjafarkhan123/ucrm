@@ -31,8 +31,7 @@ folder: `classic.pen` for Classic, `botanical.pen` for Botanical. Each file open
 the colors, text sizes, spacing and parts copied from the app's real styles — and new screens sit below it.
 
 1. **Open the right file.** Call `get_app_state`: it names the file open in Pencil, and the Pencil tools change
-   only that file. If it is the wrong one, ask Jafar to open the right one and wait. Before your first change
-   in a session, read Pencil's guide with `read_skill` (its main page, `pen-schema.md` and `execute.md`).
+   only that file. If it is the wrong one, ask Jafar to open the right one and wait.
 2. **Design from the file's own parts.** Place copies of its parts and use its color and size names, never raw
    values. If a part has to look different, change it on the design-system page first, so every screen using
    it follows. Pencil has no Tabler icons; use the Lucide icon with the same meaning, and Tabler in code.
@@ -41,11 +40,9 @@ the colors, text sizes, spacing and parts copied from the app's real styles — 
 3. **Show Jafar and wait.** Tell him the names of the screens to look at, what each shows, and which parts
    changed. Finished when he says yes; write his yes, the date and the screen names in the campaign's part
    note.
-4. **Build what he approved.** Match the approved screens using the existing components.
-5. **Keep the three copies the same.** When a color, size or part changed in Pencil, change it in the app's
+4. **Keep the three copies the same.** When a color, size or part changed in Pencil, change it in the app's
    code (`src/lib/styles/_variables.scss` or the component) and in the design skill page that describes it, in
    the same commit. Finished when Pencil, the code and the skill page all give the same value.
-6. **Check the real screen against the approved Pencil screen** during the screen check below.
 
 **Saving the file.** Pencil saves into the main project folder, not your worktree, so commit `.pen` files from
 the main folder under a claim covering them, in their own commit. Someone else may be editing the same file
