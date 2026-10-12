@@ -1,7 +1,7 @@
 # CRM design system
 
 **Status:** Foundation planning and initial Botanical sequence/coverage planning approved 2026-10-12. Implementation and verification remain outstanding.
-**Current part:** Foundation A1 reuse and delivery proof, tracked in `Memory/campaigns/crm-design-system/ROADMAP.md`.
+**Current part:** Foundation A2a chooser/notice demo; A1 delivery proof complete 2026-10-12, tracked in `Memory/campaigns/crm-design-system/ROADMAP.md`.
 
 ## Summary
 
@@ -55,7 +55,7 @@ The two-stage goal, core organization-theme decisions and incremental Botanical 
 - **Theme foundation planning:** The [Stage A foundation agreement](crm-theme-foundation-behavior-contract.md) consolidates preview/save/switch/failure behavior, completion checks and release boundaries. Its linked delivery design establishes the feasible approach; the [foundation delivery parts](../Memory/campaigns/crm-design-system/stages/theme-foundation.md) are approved. Fresh-reader review passed and Jafar approved this planning step on 2026-10-12. Existing shell separation can be reused; saved organization selection and safe switching are not established by the inspected source.
 - **Botanical planning:** Jafar approved the initial portions and coverage order on 2026-10-12: “Approve the Botanical sequence”. The [Stage B agreement](crm-botanical-theme-behavior-contract.md) records starter gaps, initial portions, coverage order, skill maintenance and selected-only page/component delivery. Later portions are split after focused inventories; each new visual design needs its own approval.
 
-Initial foundation and Botanical planning are complete. Next is foundation A1 reuse and delivery proof. Botanical inventories and demos may proceed earlier, while real-theme implementation waits for Stage A and exact visual approvals. Planning completion does not establish implementation completion.
+Initial foundation and Botanical planning are complete. A1 delivery proof and its bounded safety inventory are [verified](research/crm-theme-foundation-a1-2026-10-12.md). Next is foundation A2a's chooser/notice demo. Botanical inventories and demos may proceed earlier, while real-theme implementation waits for Stage A and exact visual approvals. Planning completion does not establish implementation completion.
 
 ## Existing foundation — focused source check complete
 

@@ -2,7 +2,7 @@
 
 **Campaign:** crm-design-system · **Stage:** Focused design/demo, not started.
 **Plan:** `docs/crm-theme-foundation-behavior-contract.md` §§ Choose and preview, Notice and apply safely; `../stages/theme-foundation.md`.
-**Waits for:** A1 integration (verified on `codex/crm-theme-a1`). Foundation agreement/sequence and initial Botanical sequence already approved; do not repeat them.
+**Waits for:** Nothing; A1 integrated 2026-10-12. Foundation agreement/sequence and initial Botanical sequence already approved; do not repeat them.
 
 ## Next
 
