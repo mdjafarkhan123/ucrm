@@ -131,6 +131,10 @@ Jafar chose to include them as the last build part on 2026-10-11, following Jobb
 - The Field preset moves to "Start and stop their own timers", like Jobber's Field crew (Jafar,
   2026-10-11). Existing field members can no longer type or change their own hours; the office corrects
   them. Businesses' custom roles keep what they were given.
+- Built 2026-10-12: every role that records its own hours also holds the timers rung, so Team access reads
+  as a ladder. A member individually denied "their own hours" is denied the timers rung too, so nobody gains
+  timers they did not have. The accountant's time report still needs "Record and change their own hours"
+  (our adaptation): a timers-only crew member reads their hours on Timesheets.
 
 ## Success checks
 

@@ -137,6 +137,12 @@ describe('Timesheets reads', () => {
 			});
 		});
 
+		it('gives someone who only starts and stops timers their own entries too', async () => {
+			reader({ 'time.timers_own': true });
+			const request = event(`timesheets/entries?user_id=${me}&${week}`, { data: { entries: [] } });
+			expect((await ENTRIES(request)).status).toBe(200);
+		});
+
 		it('refuses them a teammate’s before asking the database', async () => {
 			const request = event(`timesheets/entries?user_id=${teammate}&${week}`);
 			const response = await ENTRIES(request);

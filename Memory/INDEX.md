@@ -26,7 +26,7 @@ Read this registry only to select a campaign. After selection, open its NOW.md; 
 
 Deferred work is indexed separately at Memory/deferred/INDEX.md; read it only when explicitly required.
 
-| time-clock | Paused 2026-10-12 — Parts 2–5 done; Part 6 Timers-only permission next | Crews time visits and the day on a phone; hours land on the Job and a weekly Timesheets page | Memory/campaigns/time-clock/NOW.md | Time clock, timers, clock in/out, Timesheets, crew hours, launch roadmap Part 16 |
+| time-clock | Paused 2026-10-12 — Parts 2–6 done; Part 7 Weekly approval next | Crews time visits and the day on a phone; hours land on the Job and a weekly Timesheets page | Memory/campaigns/time-clock/NOW.md | Time clock, timers, clock in/out, Timesheets, crew hours, launch roadmap Part 16 |
 
 
 | crm-design-system | In progress 2026-10-12 — A1 delivery proof verified, awaiting integration; A2a chooser/notice demo next; approvals preserved | Selectable Classic/Botanical designs; foundation then complete Botanical | Memory/campaigns/crm-design-system/NOW.md | CRM themes, Botanical redesign, design skills or selected-only loading |
