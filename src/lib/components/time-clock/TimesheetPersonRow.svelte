@@ -481,8 +481,9 @@
 			font-size: var(--typography--fontSize-smaller);
 		}
 
+		/* Under the avatar, in line with the entry count below. */
 		.timesheet-person__marks {
-			padding-left: 0;
+			padding-left: calc(16px + var(--space-small));
 		}
 
 		.timesheet-person__panel {
