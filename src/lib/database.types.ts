@@ -5702,6 +5702,8 @@ export type Database = {
 			};
 			general_time_entries: {
 				Row: {
+					approved_at: string | null;
+					approved_by: string | null;
 					created_at: string;
 					created_by: string | null;
 					id: string;
@@ -5714,6 +5716,8 @@ export type Database = {
 					user_id: string;
 				};
 				Insert: {
+					approved_at?: string | null;
+					approved_by?: string | null;
 					created_at?: string;
 					created_by?: string | null;
 					id?: string;
@@ -5726,6 +5730,8 @@ export type Database = {
 					user_id: string;
 				};
 				Update: {
+					approved_at?: string | null;
+					approved_by?: string | null;
 					created_at?: string;
 					created_by?: string | null;
 					id?: string;
@@ -7777,6 +7783,8 @@ export type Database = {
 			};
 			job_time_entries: {
 				Row: {
+					approved_at: string | null;
+					approved_by: string | null;
 					cost_per_hour_minor: number | null;
 					cost_total_minor: number | null;
 					created_at: string;
@@ -7793,6 +7801,8 @@ export type Database = {
 					visit_id: string | null;
 				};
 				Insert: {
+					approved_at?: string | null;
+					approved_by?: string | null;
 					cost_per_hour_minor?: number | null;
 					cost_total_minor?: number | null;
 					created_at?: string;
@@ -7809,6 +7819,8 @@ export type Database = {
 					visit_id?: string | null;
 				};
 				Update: {
+					approved_at?: string | null;
+					approved_by?: string | null;
 					cost_per_hour_minor?: number | null;
 					cost_total_minor?: number | null;
 					created_at?: string;
@@ -19378,6 +19390,14 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			approve_time_entries: {
+				Args: {
+					cutoff: string;
+					target_organization_id: string;
+					target_user_ids: string[];
+				};
+				Returns: Json;
+			};
 			archive_client: { Args: { target_client_id: string }; Returns: Json };
 			archive_form: {
 				Args: {
@@ -29385,6 +29405,10 @@ export type Database = {
 			};
 			time_entry_history: {
 				Args: { target_entry_id: string; target_organization_id: string };
+				Returns: Json;
+			};
+			timesheet_approval: {
+				Args: { cutoff: string; target_organization_id: string };
 				Returns: Json;
 			};
 			timesheet_entries: {

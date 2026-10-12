@@ -27,6 +27,7 @@ function person(overrides: Partial<TimesheetPerson> = {}): TimesheetPerson {
 		days: {},
 		total_minutes: 0,
 		entry_count: 0,
+		unapproved_count: 0,
 		overlap_count: 0,
 		running: null,
 		...overrides

@@ -84,6 +84,14 @@ describe('historyHeadline', () => {
 });
 
 describe('historyLines', () => {
+	it('says what an approval means', () => {
+		const approval = event({ action: 'approved', prior: null, new: null });
+		expect(historyHeadline(approval)).toBe('Approved by Sam Lee');
+		expect(historyLines(approval, TZ)).toEqual([
+			'Locked for people who change only their own hours.'
+		]);
+	});
+
 	it('lists what an added entry was', () => {
 		const lines = historyLines(
 			event({ action: 'added', prior: null, new: values({ notes: 'Fence posts' }) }),

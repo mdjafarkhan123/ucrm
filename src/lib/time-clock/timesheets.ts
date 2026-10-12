@@ -34,6 +34,8 @@ export type TimesheetPerson = {
 	days: Record<string, number>;
 	total_minutes: number;
 	entry_count: number;
+	/** Stopped entries in this window not yet approved. None of several means the window is approved. */
+	unapproved_count: number;
 	overlap_count: number;
 	/** What they are on the clock for now, whatever day it started. Not in the totals until it stops. */
 	running: TimesheetRunning | null;
@@ -50,6 +52,8 @@ export type TimesheetSummary = {
 	can_view_team: boolean;
 	/** May add entries: for anyone with time.track_team, for themselves with time.track_own. */
 	can_add: boolean;
+	/** May approve hours (time.track_team; plan § Weekly approval). */
+	can_approve: boolean;
 	people: TimesheetPerson[];
 };
 
@@ -58,6 +62,8 @@ export type TimesheetEntry = {
 	id: string;
 	kind: 'job' | 'general';
 	is_running: boolean;
+	/** A manager approved it: only someone who manages the team's time can change it now. */
+	approved: boolean;
 	source: 'manual' | 'timer';
 	started_at: string;
 	/** Null while the timer runs. */

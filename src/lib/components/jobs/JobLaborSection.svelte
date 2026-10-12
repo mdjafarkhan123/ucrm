@@ -239,6 +239,7 @@
 									· Visit on {dateFormat.format(new Date(`${entry.visit_date}T12:00:00`))}
 								{/if}
 								{#if entry.source === 'timer'}· From a timer{/if}
+								{#if entry.approved}· Approved{/if}
 							</p>
 							{#if entry.notes}<p class="job-labor__notes">{entry.notes}</p>{/if}
 						</div>
@@ -334,11 +335,13 @@
 		padding: 0;
 		list-style: none;
 
+		/* On a phone the cost and menu drop below the entry rather than squeezing it into a narrow column. */
 		&__item {
 			display: flex;
+			flex-wrap: wrap;
 			align-items: flex-start;
 			justify-content: space-between;
-			gap: var(--space-base);
+			gap: var(--space-small) var(--space-base);
 
 			& + & {
 				border-top: var(--border-base) solid var(--color-border);
@@ -359,6 +362,7 @@
 
 		&__body {
 			display: flex;
+			flex: 1 1 16rem;
 			flex-direction: column;
 			gap: var(--space-smallest);
 			min-width: 0;
@@ -396,6 +400,7 @@
 			align-items: center;
 			gap: var(--space-small);
 			flex-shrink: 0;
+			margin-left: auto;
 		}
 
 		&__cost {
