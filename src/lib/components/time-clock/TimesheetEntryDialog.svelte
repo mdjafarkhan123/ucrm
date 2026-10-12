@@ -363,4 +363,11 @@
 			margin-top: var(--space-small);
 		}
 	}
+
+	/* Two time fields side by side leave too little room for "12:00 PM" on a phone. */
+	@media (max-width: 479px) {
+		.entry-form__times {
+			grid-template-columns: 1fr;
+		}
+	}
 </style>

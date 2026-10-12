@@ -92,6 +92,10 @@ and Assessment timers as the last part.
   timer is still running, only its start time and notes can be changed, and it cannot be deleted.
 - **Edit history:** each entry shows who changed what, when, and the old and new values.
 - **Manager actions:** clock a team member in or out, and stop a forgotten timer at the real end time.
+  Stopping at a chosen time ends the working day: nothing starts again afterwards (our adaptation, built
+  2026-10-12).
+- **Moving hours to another person** prices them at that person's current cost rate, the way hours typed for
+  them would be (our adaptation, built 2026-10-12).
 - **Warnings:** an entry that overlaps another of the same person's entries, and a timer running more than
   12 hours, are flagged so they can be checked.
 

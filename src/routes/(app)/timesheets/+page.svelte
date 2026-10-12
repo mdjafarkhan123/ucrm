@@ -489,7 +489,7 @@
 				{#if deleting.ended_at}– {clockTime(deleting.ended_at, summary.timezone)}{/if}
 				{#if deleting.minutes !== null}({durationLabel(deleting.minutes)}){/if}
 			</p>
-			<p>
+			<p class="timesheets__delete-note">
 				The hours come off Timesheets{deleting.kind === 'job' ? ' and the job’s labour cost' : ''}.
 				The edit history keeps a record of what was deleted and by whom.
 			</p>
@@ -627,6 +627,10 @@
 
 	.timesheets__grand-total {
 		font-weight: 800 !important;
+	}
+
+	.timesheets__delete-note {
+		margin-top: var(--space-small);
 	}
 
 	.timesheets__note {
