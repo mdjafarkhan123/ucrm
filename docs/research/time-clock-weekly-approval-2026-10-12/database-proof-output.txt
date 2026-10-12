@@ -1,0 +1,159 @@
+BEGIN
+ALTER TABLE
+ALTER TABLE
+COMMENT
+COMMENT
+COMMENT
+COMMENT
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+ALTER TABLE
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+CREATE FUNCTION
+DROP FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+COMMENT
+COMMENT
+COMMENT
+COMMENT
+COMMENT
+COMMENT
+INSERT 0 1
+CREATE TABLE
+GRANT
+INSERT 0 1
+                                 set_config                                 
+----------------------------------------------------------------------------
+ {"sub" : "1d50477c-8c55-4d33-a550-91ecf637b624", "role" : "authenticated"}
+(1 row)
+
+SET
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+     check     | ok 
+---------------+----
+ clock crew in | t
+(1 row)
+
+        check        |                                                                                                         running                                                                                                         
+---------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ preview up to today | [{"kind": "general", "name": "Field Tester", "user_id": "7d450c50-b3e5-4f97-8ee9-50e08c1f70bb", "job_number": null, "over_a_day": false, "started_at": "2026-10-12T07:24:54.874687+00:00", "started_on": "2026-10-12"}]
+(1 row)
+
+    check     | entries | minutes | first_day  
+--------------+---------+---------+------------
+ preview crew | 2       | 180     | 2026-10-10
+(1 row)
+
+psql:docs/research/time-clock-weekly-approval-2026-10-12/database-proof.sql:43: NOTICE:  future cut-off refused: Choose today or an earlier day.
+DO
+  check  | approved | minutes | people | running 
+---------+----------+---------+--------+---------
+ approve | 2        | 180     | 1      | []
+(1 row)
+
+     check     | approved 
+---------------+----------
+ approve again | 0
+(1 row)
+
+RESET
+     check     |  name   | approved 
+---------------+---------+----------
+ approved rows | after   | f
+ approved rows | general | t
+ approved rows | job     | t
+(3 rows)
+
+                                 set_config                                 
+----------------------------------------------------------------------------
+ {"sub" : "7d450c50-b3e5-4f97-8ee9-50e08c1f70bb", "role" : "authenticated"}
+(1 row)
+
+SET
+psql:docs/research/time-clock-weekly-approval-2026-10-12/database-proof.sql:63: NOTICE:  crew preview refused: Only someone who manages the team's time can approve hours.
+DO
+psql:docs/research/time-clock-weekly-approval-2026-10-12/database-proof.sql:68: NOTICE:  crew approve refused: Only someone who manages the team's time can approve hours.
+DO
+    check     |   notes   | approved | can_edit | can_delete 
+--------------+-----------+----------+----------+------------
+ crew entries | shop      | true     | false    | false
+ crew entries | on site   | true     | false    | false
+ crew entries | yesterday | false    | true     | true
+(3 rows)
+
+   check    |  notes  | approved | can_edit 
+------------+---------+----------+----------
+ crew labor | on site | true     | false
+(1 row)
+
+psql:docs/research/time-clock-weekly-approval-2026-10-12/database-proof.sql:82: NOTICE:  crew edit of approved General refused: These hours are approved. Ask a manager to change them.
+DO
+psql:docs/research/time-clock-weekly-approval-2026-10-12/database-proof.sql:88: NOTICE:  crew delete of approved General refused: These hours are approved. Ask a manager to change them.
+DO
+psql:docs/research/time-clock-weekly-approval-2026-10-12/database-proof.sql:94: NOTICE:  crew edit of approved Job hours in Labor refused: These hours are approved. Ask a manager to change them.
+DO
+psql:docs/research/time-clock-weekly-approval-2026-10-12/database-proof.sql:100: NOTICE:  crew delete of approved Job hours in Labor refused: These hours are approved. Ask a manager to change them.
+DO
+         check         | changed 
+-----------------------+---------
+ crew edits unapproved | true
+(1 row)
+
+RESET
+                                 set_config                                 
+----------------------------------------------------------------------------
+ {"sub" : "1d50477c-8c55-4d33-a550-91ecf637b624", "role" : "authenticated"}
+(1 row)
+
+SET
+         check          | changed 
+------------------------+---------
+ manager edits approved | true
+(1 row)
+
+RESET
+           check           | approved | by_owner 
+---------------------------+----------+----------
+ still approved after move | t        | t
+(1 row)
+
+SET
+  check  |  action  |     by     
+---------+----------+------------
+ history | added    | Jafar Khan
+ history | approved | Jafar Khan
+ history | changed  | Jafar Khan
+(3 rows)
+
+  check  | entries | unapproved | can_approve 
+---------+---------+------------+-------------
+ summary | 8       | 8          | true
+(1 row)
+
+ROLLBACK
