@@ -50,6 +50,8 @@ export type TimesheetEntryInput = {
 	user_id: string;
 	job_id: string | null;
 	visit_id: string | null;
+	/** Assessment hours keep their own Request; null makes them General. Never set when adding. */
+	request_id?: string | null;
 	/** YYYY-MM-DD, the business's day the work started. */
 	day: string;
 	/** HH:MM on the business's clock. An end at or before the start is the next morning. */
@@ -127,20 +129,23 @@ export type StopTarget = {
 	startedAt: string;
 	clockedIn: boolean;
 	overADay: boolean;
-	/** "Job #20" or "General". */
+	/** "Job #20", "Assessment" or "General". */
 	what: string;
 };
 
 // --- Edit history ----------------------------------------------------------------------------------------
 
 export type HistoryValues = {
-	kind: 'job' | 'general';
+	kind: 'job' | 'general' | 'assessment';
 	user_id: string;
 	user_name: string | null;
 	job_id: string | null;
 	job_number: number | null;
 	visit_id: string | null;
 	visit_date: string | null;
+	/** Assessment hours: their Request, named only for a reader who may open it. */
+	request_id?: string | null;
+	request_title?: string | null;
 	started_at: string;
 	/** Null while the timer was still running. */
 	minutes: number | null;
@@ -169,6 +174,9 @@ export async function fetchEntryHistory(entryId: string): Promise<EntryHistory> 
 
 function purpose(values: HistoryValues) {
 	if (values.kind === 'general') return 'General';
+	if (values.kind === 'assessment') {
+		return values.request_title ? `Assessment · ${values.request_title}` : 'Assessment';
+	}
 	return values.job_number === null ? 'a Job' : `Job #${values.job_number}`;
 }
 
@@ -226,7 +234,11 @@ export function historyLines(event: HistoryEvent, timezone: string): string[] {
 			`Person: ${before.user_name ?? 'a former team member'} → ${after.user_name ?? 'a former team member'}`
 		);
 	}
-	if (before.kind !== after.kind || before.job_id !== after.job_id) {
+	if (
+		before.kind !== after.kind ||
+		before.job_id !== after.job_id ||
+		(before.request_id ?? null) !== (after.request_id ?? null)
+	) {
 		lines.push(`For: ${purpose(before)} → ${purpose(after)}`);
 	} else if (before.visit_id !== after.visit_id) {
 		lines.push(after.visit_id ? 'Visit changed' : 'Visit removed');

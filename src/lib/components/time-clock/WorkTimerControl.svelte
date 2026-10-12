@@ -8,26 +8,31 @@
 		fetchMyTimer,
 		myTimerKey,
 		refreshAfterTimer,
-		runningVisitTimer,
+		runningWorkTimer,
 		serverOffsetMs,
+		startAssessmentTimer,
 		startVisitTimer,
 		stopMyTimer,
 		type TimerWriteError
 	} from '$lib/time-clock/api';
 	import { stopMessage } from '$lib/time-clock/messages';
 
-	// Start and Stop for the signed-in person's own timer on one visit (plan § Timers). Every copy of this
-	// control reads the same shared timer query, so the Schedule popover and the Job page agree about what is
-	// running. Absent for someone who may not time their work, and on a completed visit. A running day clock
-	// does not block Start: starting the visit's timer pauses it.
+	// Start and Stop for the signed-in person's own timer on one visit or one Assessment (plan § Timers,
+	// § Assessment timers). Every copy of this control reads the same shared timer query, so the Schedule
+	// popover, the Job page and the Request page agree about what is running. Absent for someone who may not
+	// time their work, and on a completed visit or Assessment. A running day clock does not block Start:
+	// starting this timer pauses it.
+	type Target =
+		| { kind: 'visit'; jobId: string; visitId: string }
+		| { kind: 'assessment'; assessmentId: string };
+
 	let {
-		jobId,
-		visitId,
+		target,
 		completed = false
 	}: {
-		jobId: string;
-		visitId: string;
-		/** A completed visit, or one on a closed Job, cannot be timed. Completing it stopped its timers. */
+		target: Target;
+		/** A completed visit or Assessment, or a visit on a closed Job, cannot be timed. Completing it stopped
+		 *  its timers. An Assessment not booked for today counts as completed here: only today's are timed. */
 		completed?: boolean;
 	} = $props();
 
@@ -40,9 +45,15 @@
 		staleTime: 30_000
 	}));
 	const mine = $derived(timerQuery.data);
-	const running = $derived(runningVisitTimer(mine));
-	const onThisVisit = $derived(running !== null && running.visit_id === visitId);
+	const running = $derived(runningWorkTimer(mine));
+	const onThis = $derived.by(() => {
+		if (!running) return false;
+		if (target.kind === 'visit')
+			return running.kind === 'visit' && running.visit_id === target.visitId;
+		return running.kind === 'assessment' && running.assessment_id === target.assessmentId;
+	});
 	const offsetMs = $derived(serverOffsetMs(mine, timerQuery.dataUpdatedAt));
+	const jobId = $derived(target.kind === 'visit' ? target.jobId : null);
 
 	let busy = $state(false);
 
@@ -50,7 +61,10 @@
 		if (busy) return;
 		busy = true;
 		try {
-			const result = await startVisitTimer(jobId, visitId);
+			const result =
+				target.kind === 'visit'
+					? await startVisitTimer(target.jobId, target.visitId)
+					: await startAssessmentTimer(target.assessmentId);
 			toast.success(
 				'Timer started',
 				result.day_clock_paused ? 'Your day clock is paused until you stop it.' : undefined
@@ -79,8 +93,14 @@
 	}
 </script>
 
-{#if onThisVisit && running}
-	<div class="visit-timer visit-timer--running" role="group" aria-label="Your timer on this visit">
+{#if onThis && running}
+	<div
+		class="work-timer work-timer--running"
+		role="group"
+		aria-label={target.kind === 'visit'
+			? 'Your timer on this visit'
+			: 'Your timer on this assessment'}
+	>
 		<RunningClock startedAt={running.started_at} {offsetMs} />
 		<Button size="small" variant="secondary" onclick={stop} loading={busy}>Stop timer</Button>
 	</div>
@@ -93,7 +113,7 @@
 {/if}
 
 <style lang="scss">
-	.visit-timer {
+	.work-timer {
 		display: inline-flex;
 		flex-wrap: wrap;
 		align-items: center;

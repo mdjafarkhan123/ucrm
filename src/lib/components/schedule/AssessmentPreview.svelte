@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { resolve } from '$app/paths';
 	import Button from '$lib/components/ui/Button.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
@@ -11,19 +12,24 @@
 	// What an assessment card says when you select it. Unlike a visit, the calendar never edits an assessment:
 	// it is owned by its Request, and every change to it -- rescheduling, marking it done, reassigning -- lives
 	// on the Request surface. So this preview reads the assessment and offers exactly one way forward: open the
-	// Request it belongs to.
+	// Request it belongs to. The one exception is the reader's own timer, which is theirs rather than the
+	// assessment's.
 
 	let {
 		assessment,
 		today,
 		dayLabel,
-		employeesById
+		employeesById,
+		timer
 	}: {
 		assessment: AssessmentItem;
 		today: string;
 		/** The assessment's date already in words, so every surface says the date the same way. */
 		dayLabel: string;
 		employeesById: Map<string, TeamMember>;
+		/** The reader's own Start/Stop timer for this assessment, supplied by the page that owns the timer
+		 *  query. */
+		timer?: Snippet;
 	} = $props();
 
 	const status = $derived(visitDerivedStatus(assessment, today));
@@ -72,6 +78,11 @@
 		<dt>Where</dt>
 		<dd>{address ?? 'No property on this assessment'}</dd>
 	</dl>
+
+	{#if timer}
+		<!-- Time clock: a crew member's first action on arrival, so it sits above the way to the Request. -->
+		<div class="assessment-preview__timer">{@render timer()}</div>
+	{/if}
 
 	<!-- The assessment is Request-owned, so the calendar shows it but never edits it. The one way forward is
 	     its Request, where it is scheduled, reassigned or marked done. -->
@@ -130,6 +141,12 @@
 			line-height: var(--typography--lineHeight-tighter);
 			overflow-wrap: anywhere;
 		}
+	}
+
+	.assessment-preview__timer {
+		width: 100%;
+		padding-top: var(--space-small);
+		border-top: 1px solid var(--color-border);
 	}
 
 	.assessment-preview__actions {

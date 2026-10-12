@@ -48,6 +48,7 @@
 		fetchTimesheetSummary,
 		personName,
 		readTimesheetFilters,
+		runningPurpose,
 		shiftTimesheetDate,
 		timesheetDays,
 		timesheetFilterParams,
@@ -198,8 +199,7 @@
 			startedAt: person.running.started_at,
 			clockedIn: person.running.clocked_in,
 			overADay: person.running.over_a_day,
-			what:
-				person.running.kind === 'general' ? 'General' : `Job #${person.running.job_number ?? ''}`
+			what: runningPurpose(person.running)
 		};
 	}
 

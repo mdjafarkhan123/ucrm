@@ -10,7 +10,7 @@ export type TimesheetSpan = 'day' | 'week';
 export type TimesheetRunning = {
 	/** The timer's id, which becomes its entry's id when it stops. */
 	id: string;
-	kind: 'visit' | 'general';
+	kind: 'visit' | 'general' | 'assessment';
 	job_id: string | null;
 	job_number: number | null;
 	started_at: string;
@@ -60,7 +60,8 @@ export type TimesheetSummary = {
 export type TimesheetEntry = {
 	/** The entry's id, or a running timer's, which the entry keeps when it stops. */
 	id: string;
-	kind: 'job' | 'general';
+	/** Assessment time is on no Job, like General time, and kept with its Request. */
+	kind: 'job' | 'general' | 'assessment';
 	is_running: boolean;
 	/** A manager approved it: only someone who manages the team's time can change it now. */
 	approved: boolean;
@@ -85,6 +86,12 @@ export type TimesheetEntry = {
 		closed: boolean;
 		title: string | null;
 		client_name: string | null;
+	} | null;
+	/** The Request whose Assessment the hours were for. Title is null when the reader may not open it. */
+	request: {
+		id: string;
+		visible: boolean;
+		title: string | null;
 	} | null;
 	/** Null when there is none, or the reader may not open the Job. */
 	visit_id: string | null;
@@ -229,11 +236,26 @@ export function clockTime(instant: string, timezone: string) {
 	}).format(new Date(instant));
 }
 
-/** What an entry was for, in a few words: "Job #12 · Spring cleanup", "Job #12", or "General". */
-export function entryPurpose(entry: Pick<TimesheetEntry, 'kind' | 'job'>) {
+/** What an entry was for, in a few words: "Job #12 · Spring cleanup", "Job #12", "Assessment · Roof check",
+ * "Assessment", or "General". */
+export function entryPurpose(entry: Pick<TimesheetEntry, 'kind' | 'job' | 'request'>) {
+	if (entry.kind === 'assessment') {
+		return entry.request?.title ? `Assessment · ${entry.request.title}` : 'Assessment';
+	}
 	if (entry.kind === 'general' || !entry.job) return 'General';
 	const number = `Job #${entry.job.number}`;
 	return entry.job.title ? `${number} · ${entry.job.title}` : number;
+}
+
+/** What a running timer is for, as a person's row or the Approve list names it: "Job #12", "Assessment" or
+ * "General". Titles are left out: these lists name everyone's timers, including work the reader cannot open. */
+export function runningPurpose(running: {
+	kind: TimesheetRunning['kind'];
+	job_number: number | null;
+}) {
+	if (running.kind === 'general') return 'General';
+	if (running.kind === 'assessment') return 'Assessment';
+	return running.job_number ? `Job #${running.job_number}` : 'A job';
 }
 
 /** The people a manager has narrowed the page to, or everyone when none are chosen. */

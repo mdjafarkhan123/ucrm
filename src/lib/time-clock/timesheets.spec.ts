@@ -5,6 +5,7 @@ import {
 	entryPurpose,
 	personName,
 	readTimesheetFilters,
+	runningPurpose,
 	shiftTimesheetDate,
 	timesheetDays,
 	timesheetFilterParams,
@@ -119,15 +120,40 @@ describe('what an entry was for', () => {
 	};
 
 	it('names the Job with its title, or only its number when the reader may not open it', () => {
-		expect(entryPurpose({ kind: 'job', job })).toBe('Job #12 · Spring cleanup');
+		expect(entryPurpose({ kind: 'job', job, request: null })).toBe('Job #12 · Spring cleanup');
 		expect(
-			entryPurpose({ kind: 'job', job: { ...job, visible: false, title: null, client_name: null } })
+			entryPurpose({
+				kind: 'job',
+				job: { ...job, visible: false, title: null, client_name: null },
+				request: null
+			})
 		).toBe('Job #12');
 	});
 
 	it('calls day-clock time and anything without a Job "General"', () => {
-		expect(entryPurpose({ kind: 'general', job: null })).toBe('General');
-		expect(entryPurpose({ kind: 'job', job: null })).toBe('General');
+		expect(entryPurpose({ kind: 'general', job: null, request: null })).toBe('General');
+		expect(entryPurpose({ kind: 'job', job: null, request: null })).toBe('General');
+	});
+
+	it('names Assessment time by its Request, only when the reader may open it', () => {
+		const request = { id: 'request-1', visible: true, title: 'Roof check' };
+		expect(entryPurpose({ kind: 'assessment', job: null, request })).toBe(
+			'Assessment · Roof check'
+		);
+		expect(
+			entryPurpose({
+				kind: 'assessment',
+				job: null,
+				request: { ...request, visible: false, title: null }
+			})
+		).toBe('Assessment');
+		expect(entryPurpose({ kind: 'assessment', job: null, request: null })).toBe('Assessment');
+	});
+
+	it('names a running timer without titles, as everyone’s lists show it', () => {
+		expect(runningPurpose({ kind: 'visit', job_number: 20 })).toBe('Job #20');
+		expect(runningPurpose({ kind: 'assessment', job_number: null })).toBe('Assessment');
+		expect(runningPurpose({ kind: 'general', job_number: null })).toBe('General');
 	});
 });
 

@@ -21,6 +21,8 @@
 	import { assignableTeamKey, fetchAssignableTeam, type TeamMember } from '$lib/team/api';
 	import type { AssessmentDraft, RequestAssessment } from '$lib/requests/api';
 	import type { AssessmentCreateSeed } from '$lib/requests/assessmentSeed';
+	import WorkTimerControl from '$lib/components/time-clock/WorkTimerControl.svelte';
+	import { fetchMyTimer, myTimerKey } from '$lib/time-clock/api';
 	import truckIcon from '@tabler/icons/outline/truck.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 
@@ -289,6 +291,30 @@
 
 	const isComplete = $derived(Boolean(assessment?.completed_at));
 
+	// The person's own Start and Stop (plan § Assessment timers): offered only on the day the visit is booked,
+	// as Jobber does, and on an Assessment not yet complete. A timer already running here always shows, so it
+	// can be stopped. The timer query is the one shared by every Start control and the header.
+	const timerQuery = createQuery(() => ({
+		queryKey: myTimerKey,
+		queryFn: fetchMyTimer,
+		enabled: Boolean(assessment?.starts_at) && !draft,
+		staleTime: 30_000
+	}));
+	const isToday = $derived.by(() => {
+		const startsAt = assessment?.starts_at;
+		if (!startsAt) return false;
+		return calendarDay(new Date(startsAt), timezone) === calendarDay(new Date(), timezone);
+	});
+	const timerHere = $derived(
+		timerQuery.data?.timer?.kind === 'assessment' &&
+			timerQuery.data.timer.assessment_id === assessment?.id
+	);
+	const showsTimer = $derived(
+		!draft &&
+			Boolean(assessment) &&
+			(timerHere || (isToday && !isComplete && Boolean(timerQuery.data?.can_time)))
+	);
+
 	// The header's main button books the visit too, so it opens this panel rather than growing a second
 	// copy of it.
 	export function open() {
@@ -434,6 +460,15 @@
 				{/if}
 			</p>
 
+			{#if showsTimer && assessment}
+				<div class="assessment__timer">
+					<WorkTimerControl
+						target={{ kind: 'assessment', assessmentId: assessment.id }}
+						completed={isComplete || !isToday}
+					/>
+				</div>
+			{/if}
+
 			<Checkbox
 				id="assessment-complete"
 				label="Assessment complete"
@@ -515,6 +550,13 @@
 			margin: 0;
 			color: var(--color-text--secondary);
 			white-space: pre-wrap;
+		}
+
+		&__timer {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: var(--space-small);
 		}
 
 		&__assigned {

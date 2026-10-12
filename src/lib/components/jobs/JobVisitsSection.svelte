@@ -15,13 +15,13 @@
 	import FinalVisitDialog from '$lib/components/jobs/FinalVisitDialog.svelte';
 	import VisitInvoicePromptDialog from '$lib/components/jobs/VisitInvoicePromptDialog.svelte';
 	import VisitRecordsDialog from '$lib/components/jobs/VisitRecordsDialog.svelte';
-	import VisitTimerControl from '$lib/components/time-clock/VisitTimerControl.svelte';
+	import WorkTimerControl from '$lib/components/time-clock/WorkTimerControl.svelte';
 	import TimerRunningElsewhere from '$lib/components/time-clock/TimerRunningElsewhere.svelte';
 	import {
 		fetchMyTimer,
 		myTimerKey,
 		refreshAfterTimer,
-		runningVisitTimer
+		runningWorkTimer
 	} from '$lib/time-clock/api';
 	import {
 		fetchVisitChecklists,
@@ -148,16 +148,17 @@
 	function showsVisitTimer(visit: JobVisit) {
 		const mine = myTimerQuery.data;
 		if (!mine) return false;
-		const visitTimer = runningVisitTimer(mine);
-		if (visitTimer) return visitTimer.visit_id === visit.id;
+		const workTimer = runningWorkTimer(mine);
+		if (workTimer) return workTimer.kind === 'visit' && workTimer.visit_id === visit.id;
 		return mine.can_time && !visit.completed_at && jobStatus === 'active';
 	}
-	// A timer running on another job hides every Start here. One note says where it is, rather than one under
-	// each visit.
+	// A timer running on another job, or on an Assessment, hides every Start here. One note says where it is,
+	// rather than one under each visit.
 	const timerElsewhere = $derived.by(() => {
 		const mine = myTimerQuery.data;
-		const visitTimer = runningVisitTimer(mine);
-		return mine?.can_time && visitTimer && visitTimer.job_id !== jobId ? visitTimer : null;
+		const workTimer = runningWorkTimer(mine);
+		if (!mine?.can_time || !workTimer) return null;
+		return workTimer.kind === 'assessment' || workTimer.job_id !== jobId ? workTimer : null;
 	});
 
 	// Only a recurring job that is not as-needed has a repeating schedule to edit or to carry forward. A
@@ -937,9 +938,8 @@
 
 		{#if showsVisitTimer(visit)}
 			<div class="job-visits-section__timer">
-				<VisitTimerControl
-					{jobId}
-					visitId={visit.id}
+				<WorkTimerControl
+					target={{ kind: 'visit', jobId, visitId: visit.id }}
 					completed={Boolean(visit.completed_at) || jobStatus !== 'active'}
 				/>
 			</div>

@@ -8,7 +8,7 @@
 	import { createTimerActions } from '$lib/time-clock/timer-actions.svelte';
 
 	// Home's day clock (plan § Timers): Clock in starts general time, Clock out ends the working day, and a
-	// visit timer pauses the day clock while it runs. It reads the same shared timer query as the header and
+	// visit or Assessment timer pauses the day clock while it runs. It reads the same shared timer query as the header and
 	// every visit's Start, so they always agree. Absent for someone who may not time their work.
 	const timerQuery = createQuery(() => ({
 		queryKey: myTimerKey,
@@ -25,9 +25,13 @@
 			? 'You’re clocked out'
 			: timer.kind === 'general'
 				? 'Clocked in'
-				: mine?.clocked_in
-					? 'On a visit'
-					: 'Visit timer running'
+				: timer.kind === 'assessment'
+					? mine?.clocked_in
+						? 'On an assessment'
+						: 'Assessment timer running'
+					: mine?.clocked_in
+						? 'On a visit'
+						: 'Visit timer running'
 	);
 </script>
 
@@ -64,9 +68,18 @@
 			{:else}
 				<p>
 					Timing
-					<a href={resolve('/(app)/jobs/[id=uuid]', { id: timer.job_id })}
-						>{timer.job_number ? `Job #${timer.job_number}` : 'a job'}</a
-					>{timer.job_title ? ` · ${timer.job_title}` : ''}.
+					{#if timer.kind === 'visit'}
+						<a href={resolve('/(app)/jobs/[id=uuid]', { id: timer.job_id })}
+							>{timer.job_number ? `Job #${timer.job_number}` : 'a job'}</a
+						>{timer.job_title ? ` · ${timer.job_title}` : ''}.
+					{:else if timer.request_id}
+						the assessment for
+						<a href={resolve('/(app)/requests/[id=uuid]', { id: timer.request_id })}
+							>{timer.request_title ?? 'a request'}</a
+						>.
+					{:else}
+						an assessment.
+					{/if}
 					{mine.clocked_in
 						? 'Your day clock is paused and starts again when you stop this timer.'
 						: 'You’re not clocked in for the day.'}
@@ -88,7 +101,8 @@
 					variant="secondary"
 					onclick={() => actions.stop(timer)}
 					loading={actions.busy === 'stop'}
-					disabled={actions.busy !== null}>Stop visit timer</Button
+					disabled={actions.busy !== null}
+					>{timer.kind === 'assessment' ? 'Stop assessment timer' : 'Stop visit timer'}</Button
 				>
 				{#if mine.clocked_in}
 					<Button

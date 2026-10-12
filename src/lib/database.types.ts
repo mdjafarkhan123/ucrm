@@ -5710,6 +5710,7 @@ export type Database = {
 					minutes: number;
 					notes: string | null;
 					organization_id: string;
+					request_id: string | null;
 					source: string;
 					started_at: string;
 					updated_at: string;
@@ -5724,6 +5725,7 @@ export type Database = {
 					minutes: number;
 					notes?: string | null;
 					organization_id: string;
+					request_id?: string | null;
 					source?: string;
 					started_at: string;
 					updated_at?: string;
@@ -5738,6 +5740,7 @@ export type Database = {
 					minutes?: number;
 					notes?: string | null;
 					organization_id?: string;
+					request_id?: string | null;
 					source?: string;
 					started_at?: string;
 					updated_at?: string;
@@ -5757,6 +5760,20 @@ export type Database = {
 						isOneToOne: false;
 						referencedRelation: 'organizations';
 						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'general_time_entries_request_fk';
+						columns: ['organization_id', 'request_id'];
+						isOneToOne: false;
+						referencedRelation: 'request_list_rows';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'general_time_entries_request_fk';
+						columns: ['organization_id', 'request_id'];
+						isOneToOne: false;
+						referencedRelation: 'requests';
+						referencedColumns: ['organization_id', 'id'];
 					}
 				];
 			};
@@ -17345,11 +17362,13 @@ export type Database = {
 			};
 			running_timers: {
 				Row: {
+					assessment_id: string | null;
 					id: string;
 					job_id: string | null;
 					kind: string;
 					notes: string | null;
 					organization_id: string;
+					request_id: string | null;
 					resume_general: boolean;
 					started_at: string;
 					started_by: string | null;
@@ -17357,11 +17376,13 @@ export type Database = {
 					visit_id: string | null;
 				};
 				Insert: {
+					assessment_id?: string | null;
 					id?: string;
 					job_id?: string | null;
 					kind?: string;
 					notes?: string | null;
 					organization_id: string;
+					request_id?: string | null;
 					resume_general?: boolean;
 					started_at?: string;
 					started_by?: string | null;
@@ -17369,11 +17390,13 @@ export type Database = {
 					visit_id?: string | null;
 				};
 				Update: {
+					assessment_id?: string | null;
 					id?: string;
 					job_id?: string | null;
 					kind?: string;
 					notes?: string | null;
 					organization_id?: string;
+					request_id?: string | null;
 					resume_general?: boolean;
 					started_at?: string;
 					started_by?: string | null;
@@ -17381,6 +17404,20 @@ export type Database = {
 					visit_id?: string | null;
 				};
 				Relationships: [
+					{
+						foreignKeyName: 'running_timers_assessment_id_fkey';
+						columns: ['assessment_id'];
+						isOneToOne: false;
+						referencedRelation: 'assessments';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'running_timers_assessment_id_fkey';
+						columns: ['assessment_id'];
+						isOneToOne: false;
+						referencedRelation: 'request_list_rows';
+						referencedColumns: ['assessment_id'];
+					},
 					{
 						foreignKeyName: 'running_timers_job_fk';
 						columns: ['organization_id', 'job_id'];
@@ -17401,6 +17438,20 @@ export type Database = {
 						isOneToOne: true;
 						referencedRelation: 'organization_members';
 						referencedColumns: ['organization_id', 'user_id'];
+					},
+					{
+						foreignKeyName: 'running_timers_request_fk';
+						columns: ['organization_id', 'request_id'];
+						isOneToOne: false;
+						referencedRelation: 'request_list_rows';
+						referencedColumns: ['organization_id', 'id'];
+					},
+					{
+						foreignKeyName: 'running_timers_request_fk';
+						columns: ['organization_id', 'request_id'];
+						isOneToOne: false;
+						referencedRelation: 'requests';
+						referencedColumns: ['organization_id', 'id'];
 					},
 					{
 						foreignKeyName: 'running_timers_visit_fk';
@@ -29136,6 +29187,10 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			start_assessment_timer: {
+				Args: { target_assessment_id: string; target_organization_id: string };
+				Returns: Json;
+			};
 			start_support_thread: {
 				Args: {
 					message_attachments?: Json;
@@ -29786,6 +29841,7 @@ export type Database = {
 					target_entry_id: string;
 					target_job_id: string;
 					target_organization_id: string;
+					target_request_id?: string;
 					target_user_id: string;
 					target_visit_id: string;
 					work_day: string;

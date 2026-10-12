@@ -131,6 +131,13 @@
 								>
 									{entryPurpose(entry)}
 								</a>
+							{:else if entry.request?.visible}
+								<a
+									class="timesheet-entry__job"
+									href={resolve('/(app)/requests/[id=uuid]', { id: entry.request.id })}
+								>
+									{entryPurpose(entry)}
+								</a>
 							{:else}
 								<span class="timesheet-entry__purpose">{entryPurpose(entry)}</span>
 							{/if}

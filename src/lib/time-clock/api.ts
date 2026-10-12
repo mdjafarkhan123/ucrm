@@ -30,6 +30,26 @@ export type VisitRunningTimer = {
 	started_at: string;
 	/** Started while clocked in: stopping it starts the day clock again. */
 	day_clock_paused: boolean;
+	assessment_id: null;
+	request_id: null;
+	request_title: null;
+};
+
+/** An Assessment's timer: time on no Job, recorded against the Assessment's Request. */
+export type AssessmentRunningTimer = {
+	kind: 'assessment';
+	job_id: null;
+	job_number: null;
+	job_title: null;
+	visit_id: null;
+	visit_date: null;
+	/** Null when the Assessment, or its Request, was deleted while the timer ran. */
+	assessment_id: string | null;
+	request_id: string | null;
+	request_title: string | null;
+	started_at: string;
+	/** Started while clocked in: stopping it starts the day clock again. */
+	day_clock_paused: boolean;
 };
 
 /** The day clock: General time, on no Job. */
@@ -40,11 +60,17 @@ export type GeneralRunningTimer = {
 	job_title: null;
 	visit_id: null;
 	visit_date: null;
+	assessment_id: null;
+	request_id: null;
+	request_title: null;
 	started_at: string;
 	day_clock_paused: false;
 };
 
-export type RunningTimer = VisitRunningTimer | GeneralRunningTimer;
+/** A visit or Assessment timer: the kinds a Start button starts, and only one of them runs at a time. */
+export type WorkRunningTimer = VisitRunningTimer | AssessmentRunningTimer;
+
+export type RunningTimer = WorkRunningTimer | GeneralRunningTimer;
 
 export type MyTimer = {
 	timer: RunningTimer | null;
@@ -56,10 +82,18 @@ export type MyTimer = {
 	server_now: string;
 };
 
-/** The running visit timer, if that is what runs. The day clock never blocks a visit's Start: starting one
- * pauses it. */
-export function runningVisitTimer(mine: MyTimer | undefined): VisitRunningTimer | null {
-	return mine?.timer?.kind === 'visit' ? mine.timer : null;
+/** The running visit or Assessment timer, if that is what runs. The day clock never blocks a Start: starting
+ * one pauses it. */
+export function runningWorkTimer(mine: MyTimer | undefined): WorkRunningTimer | null {
+	const timer = mine?.timer;
+	return timer && timer.kind !== 'general' ? timer : null;
+}
+
+/** How a running timer is named in a few words: "Job #20", "Assessment", "General time". */
+export function runningTimerLabel(timer: RunningTimer) {
+	if (timer.kind === 'visit') return timer.job_number ? `Job #${timer.job_number}` : 'Visit timer';
+	if (timer.kind === 'assessment') return 'Assessment';
+	return 'General time';
 }
 
 // How far the server's clock is ahead of this device's, from when the timer was read.
@@ -89,6 +123,17 @@ export async function startVisitTimer(
 	return readOrThrow(response, 'The timer did not start. Check your connection and try again.');
 }
 
+export async function startAssessmentTimer(
+	assessmentId: string
+): Promise<{ started_at: string; already_running: boolean; day_clock_paused: boolean }> {
+	const response = await fetch('/api/time-clock/timer', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ assessment_id: assessmentId })
+	});
+	return readOrThrow(response, 'The timer did not start. Check your connection and try again.');
+}
+
 export type StopTimerResult =
 	| { stopped: false; already_stopped: true; recorded: false }
 	| {
@@ -104,6 +149,16 @@ export type StopTimerResult =
 			kind: 'visit';
 			entry_id: string;
 			job_id: string;
+			minutes: number;
+			day_clock_resumed: boolean;
+	  }
+	| {
+			stopped: true;
+			recorded: true;
+			kind: 'assessment';
+			entry_id: string;
+			job_id: null;
+			request_id: string | null;
 			minutes: number;
 			day_clock_resumed: boolean;
 	  }

@@ -2,12 +2,12 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
 	import RunningClock from '$lib/components/time-clock/RunningClock.svelte';
-	import { fetchMyTimer, myTimerKey, serverOffsetMs } from '$lib/time-clock/api';
+	import { fetchMyTimer, myTimerKey, runningTimerLabel, serverOffsetMs } from '$lib/time-clock/api';
 	import { createTimerActions } from '$lib/time-clock/timer-actions.svelte';
 	import stopIcon from '@tabler/icons/outline/player-stop.svg?raw';
 
 	// The signed-in person's running timer on every page (plan § Timers): what runs, for how long, the
-	// 12-hour flag, and a Stop. It is the only Stop left for a timer whose visit was deleted. The day clock's
+	// 12-hour flag, and a Stop. It is the only Stop left for a timer whose visit or Assessment was deleted. The day clock's
 	// Stop is Clock out. Nothing shows while nothing runs; Home offers Clock in.
 	const timerQuery = createQuery(() => ({
 		queryKey: myTimerKey,
@@ -19,13 +19,7 @@
 	const offsetMs = $derived(serverOffsetMs(mine, timerQuery.dataUpdatedAt));
 	const actions = createTimerActions();
 
-	const label = $derived(
-		timer?.kind === 'visit'
-			? timer.job_number
-				? `Job #${timer.job_number}`
-				: 'Visit timer'
-			: 'General time'
-	);
+	const label = $derived(timer ? runningTimerLabel(timer) : '');
 </script>
 
 {#snippet running(startedAt: string)}
@@ -41,6 +35,14 @@
 				class="header-timer__link"
 				href={resolve('/(app)/jobs/[id=uuid]', { id: timer.job_id })}
 				title={timer.job_title ? `${label} · ${timer.job_title}` : label}
+			>
+				{@render running(timer.started_at)}
+			</a>
+		{:else if timer.kind === 'assessment' && timer.request_id}
+			<a
+				class="header-timer__link"
+				href={resolve('/(app)/requests/[id=uuid]', { id: timer.request_id })}
+				title={timer.request_title ? `${label} · ${timer.request_title}` : label}
 			>
 				{@render running(timer.started_at)}
 			</a>

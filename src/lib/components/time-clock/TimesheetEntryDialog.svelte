@@ -28,7 +28,8 @@
 	} from '$lib/time-clock/corrections';
 
 	// Add or correct an entry from Timesheets (plan § Timesheets page): what it was for (a Job and, optionally,
-	// its visit, or General), the day, start and end times, and notes; a manager also picks the person. The
+	// its visit, or General; Assessment hours may also stay on their own Assessment), the day, start and end
+	// times, and notes; a manager also picks the person. The
 	// duration is worked out from the times, as Jobber's timesheet does. While a timer runs only its start and
 	// notes can change. Times are the business's own clock, the same one the page shows.
 	let {
@@ -52,7 +53,7 @@
 	const queryClient = useQueryClient();
 
 	let userId = $state('');
-	let forWhat = $state<'job' | 'general'>('job');
+	let forWhat = $state<'job' | 'general' | 'assessment'>('job');
 	let jobId = $state('');
 	let pickedJob = $state<PickedJob | null>(null);
 	let visitId = $state('');
@@ -67,6 +68,15 @@
 
 	const running = $derived(mode?.kind === 'running');
 	const editing = $derived(mode?.kind === 'edit');
+	// Hours are only put on an Assessment by its timer, so the choice is offered only to keep them there.
+	const assessmentRequest = $derived(
+		mode?.kind === 'edit' && mode.entry.kind === 'assessment' ? mode.entry.request : null
+	);
+	const forOptions = $derived([
+		{ value: 'job', label: 'A job' },
+		...(assessmentRequest ? [{ value: 'assessment', label: 'This assessment' }] : []),
+		{ value: 'general', label: 'General' }
+	]);
 
 	function toTime(clock: string) {
 		const [hours, minutes] = clock.split(':').map(Number);
@@ -184,6 +194,7 @@
 					user_id: userId,
 					job_id: forWhat === 'job' ? jobId : null,
 					visit_id: forWhat === 'job' && visitId ? visitId : null,
+					request_id: forWhat === 'assessment' ? (assessmentRequest?.id ?? null) : null,
 					day: dayText,
 					start_time: toClock(start),
 					end_time: toClock(end),
@@ -241,12 +252,9 @@
 				label="For"
 				name="entry-for"
 				fullWidth
-				options={[
-					{ value: 'job', label: 'A job' },
-					{ value: 'general', label: 'General' }
-				]}
+				options={forOptions}
 				value={forWhat}
-				onchange={(next) => (forWhat = next as 'job' | 'general')}
+				onchange={(next) => (forWhat = next as 'job' | 'general' | 'assessment')}
 			/>
 
 			{#if forWhat === 'job'}
@@ -267,6 +275,12 @@
 						bind:value={visitId}
 					/>
 				{/if}
+			{:else if forWhat === 'assessment'}
+				<p class="entry-form__note">
+					Time at the on-site assessment{assessmentRequest?.title
+						? ` for ${assessmentRequest.title}`
+						: ''}. It has no job cost.
+				</p>
 			{:else}
 				<p class="entry-form__note">Paid time on no job, such as travel or time at the shop.</p>
 			{/if}

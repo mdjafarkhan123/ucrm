@@ -18,6 +18,8 @@
 	import WorkRecordHeader from '$lib/components/work/WorkRecordHeader.svelte';
 	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
 	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
+	import { myTimerKey } from '$lib/time-clock/api';
+	import { timesheetsKey } from '$lib/time-clock/timesheets';
 	import AssessmentBlock from '$lib/components/requests/AssessmentBlock.svelte';
 	import RequestPricingBlock from '$lib/components/quotes/RequestPricingBlock.svelte';
 	import NotesPanel from '$lib/components/collaboration/NotesPanel.svelte';
@@ -208,7 +210,12 @@
 		assessmentError = '';
 		try {
 			const result = (await work()) as { customer_notice?: CustomerNoticeSent } | undefined;
-			await refresh();
+			// Completing the assessment stops any timer running on it (plan § Assessment timers).
+			await Promise.all([
+				refresh(),
+				queryClient.invalidateQueries({ queryKey: myTimerKey }),
+				queryClient.invalidateQueries({ queryKey: timesheetsKey })
+			]);
 			toast.success(successMessage, customerNoticeToast(result?.customer_notice) ?? undefined);
 		} catch (error) {
 			assessmentError =

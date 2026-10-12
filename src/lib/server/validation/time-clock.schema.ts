@@ -10,6 +10,15 @@ export const startVisitTimerSchema = z.object({
 
 export type StartVisitTimerInput = z.infer<typeof startVisitTimerSchema>;
 
+// An Assessment's timer (plan § Assessment timers). The database decides whether it is today's and visible.
+export const startAssessmentTimerSchema = z
+	.object({
+		assessment_id: z.string().uuid('Choose the assessment to time.')
+	})
+	.strict();
+
+export type StartAssessmentTimerInput = z.infer<typeof startAssessmentTimerSchema>;
+
 // Stop, Clock in and Clock out carry nothing — they always mean "my own timer" — but an unexpected body is
 // refused rather than ignored, so a caller that thinks it can name a timer or a person finds out.
 export const emptyTimerCommandSchema = z.object({}).strict();
@@ -56,12 +65,14 @@ const entryNotes = z
 	.nullish()
 	.transform((notes) => notes || null);
 
-// What an entry is for, and when. No job means General time, which has no visit.
+// What an entry is for, and when. No job means General time, which has no visit. Assessment hours carry their
+// Request when they are corrected; they are only ever put on an Assessment by its timer.
 export const timesheetEntrySchema = z
 	.object({
 		user_id: z.string().uuid('Choose whose hours these are.'),
 		job_id: z.string().uuid('Choose a job.').nullable(),
 		visit_id: z.string().uuid('That visit could not be found.').nullable().default(null),
+		request_id: z.string().uuid('That assessment could not be found.').nullable().default(null),
 		day: z.iso.date({ error: 'Pick the day.' }),
 		start_time: clockTime,
 		end_time: clockTime,
@@ -71,6 +82,10 @@ export const timesheetEntrySchema = z
 	.refine((entry) => entry.job_id !== null || entry.visit_id === null, {
 		message: 'General time has no visit.',
 		path: ['visit_id']
+	})
+	.refine((entry) => entry.job_id === null || entry.request_id === null, {
+		message: 'Hours cannot be on a job and an assessment at once.',
+		path: ['request_id']
 	})
 	.refine((entry) => entry.start_time !== entry.end_time, {
 		message: 'The end time must be different from the start time.',

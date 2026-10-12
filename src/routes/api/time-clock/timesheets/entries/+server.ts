@@ -60,6 +60,10 @@ export const POST: RequestHandler = async (event) => {
 	const body = await readTimesheetBody(event.request, timesheetEntrySchema);
 	if ('response' in body) return body.response;
 	if (!check.teamVisible && body.data.user_id !== check.auth.user.id) return refused();
+	// Hours land on an Assessment only through its timer (plan § Timesheets page: a Job or General).
+	if (body.data.request_id !== null) {
+		return validationError({ request_id: 'Add hours to a job or General.' });
+	}
 
 	const { data, error } = await event.locals.supabase.rpc('add_time_entry', {
 		target_organization_id: check.auth.organization.id,

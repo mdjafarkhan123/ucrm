@@ -139,6 +139,34 @@ describe('historyLines', () => {
 		expect(lines).toEqual(['Person: Ana Silva → Ben Ortiz', 'For: Job #20 → General']);
 	});
 
+	it('names Assessment hours by their Request, and their move to General', () => {
+		const assessment = values({
+			kind: 'assessment',
+			job_id: null,
+			job_number: null,
+			request_id: 'request-1',
+			request_title: 'Roof check'
+		});
+		expect(historyLines(event({ action: 'stopped', prior: null, new: assessment }), TZ)).toContain(
+			'For: Assessment · Roof check'
+		);
+		expect(
+			historyLines(
+				event({
+					prior: assessment,
+					new: values({ kind: 'general', job_id: null, job_number: null })
+				}),
+				TZ
+			)
+		).toEqual(['For: Assessment · Roof check → General']);
+		expect(
+			historyLines(
+				event({ action: 'stopped', prior: null, new: { ...assessment, request_title: null } }),
+				TZ
+			)
+		).toContain('For: Assessment');
+	});
+
 	it('describes notes added, changed and removed', () => {
 		expect(historyLines(event({ new: values({ notes: 'Gate' }) }), TZ)).toEqual([
 			'Notes added: “Gate”'

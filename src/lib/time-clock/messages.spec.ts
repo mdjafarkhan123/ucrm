@@ -21,6 +21,25 @@ describe('what a person is told when a timer moves', () => {
 		);
 	});
 
+	it('says a stopped assessment timer’s time was recorded for the assessment, not a job', () => {
+		const result = {
+			stopped: true,
+			recorded: true,
+			kind: 'assessment',
+			entry_id: 'entry-2',
+			job_id: null,
+			request_id: 'request-1',
+			minutes: 40,
+			day_clock_resumed: true
+		} as const;
+		expect(stopMessage(result)).toEqual({
+			tone: 'success',
+			title: 'Timer stopped',
+			detail: '40m recorded for this assessment. Your day clock is running again.'
+		});
+		expect(clockOutMessage(result).detail).toBe('Your assessment timer stopped too: 40m recorded.');
+	});
+
 	it('says a mistaken tap recorded nothing', () => {
 		expect(
 			stopMessage({
@@ -84,7 +103,7 @@ describe('what a person is told when a timer moves', () => {
 		expect(clockInMessage({ already_clocked_in: false, paused_by_visit: true })).toEqual({
 			tone: 'success',
 			title: 'Clocked in',
-			detail: 'Your day clock starts when you stop the visit timer.'
+			detail: 'Your day clock starts when you stop your running timer.'
 		});
 	});
 });

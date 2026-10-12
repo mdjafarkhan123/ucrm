@@ -19,7 +19,7 @@ export type ApprovalPerson = {
 export type ApprovalRunningTimer = {
 	user_id: string;
 	name: string | null;
-	kind: 'visit' | 'general';
+	kind: 'visit' | 'general' | 'assessment';
 	job_number: number | null;
 	started_at: string;
 	started_on: string;
