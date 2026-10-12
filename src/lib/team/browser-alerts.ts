@@ -59,6 +59,17 @@ export function describeThisBrowser(userAgent: string): string {
 	return `${browser} on ${system}`;
 }
 
+/** Why a browser could not get an alert address, in words a person can act on. */
+export function pushServiceProblem(error: unknown): string {
+	const brave = typeof navigator !== 'undefined' && 'brave' in navigator;
+	if (error instanceof DOMException && error.name === 'AbortError') {
+		return brave
+			? 'Brave blocks browser alerts by default. Open Settings, then Privacy and security, turn on "Use Google services for push messaging", restart Brave and try again.'
+			: "Your browser's alert service could not be reached. Check that your browser is signed in to its alert service and try again.";
+	}
+	return 'Browser alerts could not be turned on in this browser.';
+}
+
 async function registration(): Promise<ServiceWorkerRegistration> {
 	await navigator.serviceWorker.register('/service-worker.js', {
 		type: dev ? 'module' : 'classic'
@@ -94,12 +105,17 @@ export async function enableBrowserAlerts(publicKey: string): Promise<EnableResu
 	if (permission !== 'granted') return 'dismissed';
 
 	const worker = await registration();
-	const subscription =
-		(await worker.pushManager.getSubscription()) ??
-		(await worker.pushManager.subscribe({
-			userVisibleOnly: true,
-			applicationServerKey: keyBytes(publicKey)
-		}));
+	let subscription: PushSubscription;
+	try {
+		subscription =
+			(await worker.pushManager.getSubscription()) ??
+			(await worker.pushManager.subscribe({
+				userVisibleOnly: true,
+				applicationServerKey: keyBytes(publicKey)
+			}));
+	} catch (error) {
+		throw new Error(pushServiceProblem(error));
+	}
 	const json = subscription.toJSON();
 	const response = await fetch('/api/notifications/push', {
 		method: 'POST',

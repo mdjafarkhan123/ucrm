@@ -62,10 +62,17 @@ const DEFAULT_TIME_BUDGET_MS = 20_000;
 // A browser alert nobody could see for a day is no longer news.
 const ALERT_TTL_SECONDS = 24 * 60 * 60;
 
+// The push services want a contact as "mailto:you@example.com" or a web address; a bare email is accepted here.
+export function vapidContact(raw: string | undefined): string | null {
+	const value = raw?.trim();
+	if (!value) return null;
+	return /^(mailto:|https:\/\/)/i.test(value) ? value : `mailto:${value}`;
+}
+
 export function vapidKeys() {
 	const publicKey = env.VAPID_PUBLIC_KEY?.trim();
 	const privateKey = env.VAPID_PRIVATE_KEY?.trim();
-	const contact = env.VAPID_CONTACT_EMAIL?.trim();
+	const contact = vapidContact(env.VAPID_CONTACT_EMAIL);
 	return publicKey && privateKey && contact ? { publicKey, privateKey, contact } : null;
 }
 

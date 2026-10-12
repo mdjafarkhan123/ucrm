@@ -7,6 +7,7 @@ import {
 	buildBrowserAlertPayload,
 	drainBrowserAlerts,
 	pushOutcomeFor,
+	vapidContact,
 	vapidKeys
 } from './browser-alerts';
 import type { InquiryAlertClient } from './inquiry-alerts';
@@ -83,6 +84,16 @@ describe('buildBrowserAlertPayload', () => {
 describe('vapidKeys', () => {
 	it('is null while the keys are not configured', () => {
 		expect(vapidKeys()).toBeNull();
+	});
+});
+
+describe('vapidContact', () => {
+	it('adds mailto: to a bare email and leaves a proper contact alone', () => {
+		expect(vapidContact('owner@example.com')).toBe('mailto:owner@example.com');
+		expect(vapidContact(' mailto:owner@example.com ')).toBe('mailto:owner@example.com');
+		expect(vapidContact('https://example.com/contact')).toBe('https://example.com/contact');
+		expect(vapidContact('')).toBeNull();
+		expect(vapidContact(undefined)).toBeNull();
 	});
 });
 

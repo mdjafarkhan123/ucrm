@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('$app/environment', () => ({ dev: false }));
 
-import { describeThisBrowser } from './browser-alerts';
+import { describeThisBrowser, pushServiceProblem } from './browser-alerts';
 
 describe('describeThisBrowser', () => {
 	it('names a computer the way a person would', () => {
@@ -29,5 +29,15 @@ describe('describeThisBrowser', () => {
 		expect(
 			describeThisBrowser('Mozilla/5.0 (X11; Linux x86_64; rv:130.0) Gecko/20100101 Firefox/130.0')
 		).toBe('Firefox on Linux');
+	});
+});
+
+describe('pushServiceProblem', () => {
+	it('explains an unreachable alert service and a generic failure', () => {
+		const abort = new DOMException('Registration failed - push service error', 'AbortError');
+		expect(pushServiceProblem(abort)).toMatch(/alert service could not be reached/);
+		expect(pushServiceProblem(new Error('boom'))).toBe(
+			'Browser alerts could not be turned on in this browser.'
+		);
 	});
 });
