@@ -15,12 +15,14 @@ Jafar's plan (2026-10-10): finish the whole app first, then production. Real-wor
 production; every test possible before it is run before it. Order:
 
 1. ~~Part 16, Time clock~~ — done 2026-10-12.
-2. **Part 12, Alerts** — web build done and merged to main 2026-10-12 (`f196fbb9`). Still open: real-browser pop-up proof and Pipeline contract wording. See "Part 12 handover" below.
-3. **Part 13, Home screen and Reports** — design in Pencil first. The rule was rewritten with Jafar 2026-10-12
-   (`43fac428`; steps in `.claude/skills/design/SKILL.md` § "Design in Pencil first"); `ucrm.pen` is now
-   `botanical.pen`. **Next:** build the Classic design system in `classic.pen` (open in Pencil, still empty,
-   untracked in main) from `src/lib/styles/_variables.scss` (light + dark) and `src/lib/components/ui`; then
-   design Home and Reports there for Jafar's approval.
+2. **Part 12, Alerts** — web build done and merged to main 2026-10-12 (`f196fbb9`); Pipeline wording done. Still open: real-browser pop-up proof (needs Jafar's browser). See "Part 12 handover" below.
+3. **Part 13, Home screen and Reports** — design in Pencil first (steps in `.claude/skills/design/SKILL.md`
+   § "Design in Pencil first"). Classic design system built in `classic.pen` 2026-10-12: frame "Classic design
+   system" (principles, color, type, spacing/shape, 7 component groups as reusable parts) and "Classic design
+   system · dark"; 89 variables with a `mode` light/dark theme, named after `_variables.scss`. **Waiting on
+   Jafar's review of it.** Known gaps: tertiary button drawn solid (Pencil has no dashes); `ui/Tooltip.svelte`
+   is empty, InfoTip drawn instead; Banner icon `2.4rem` (38px) looks like a stale 10px-rem value.
+   **Next session:** design Home and Reports below the design system at 1440 and 390, from its parts.
 4. **Part 14, Customer portal.**
 5. **Part 15, Extras**: Quote templates, auto-archive, automation recipes, bulk Visit move, custom fields.
 6. **Part 8, final audit** — plus the postponed-work P1 items and every test possible without a server.
@@ -57,7 +59,5 @@ Left for the next session:
    "Use Google services for push messaging" on, then restart). Prove in Chrome/Edge/Firefox or Brave with that on:
    turn on, put a teammate on a Visit, see the pop-up, click opens the Job.
 3. `src/lib/server/team/invitations.spec.ts` has 4 old lint errors (unused `_` args), not from this work.
-4. Update the Pipeline contract (`docs/sales-pipeline-behavior-contract.md` Opportunity Brief actions): Task and mention
-   alerts now follow My alerts, as the deferred note required, then delete
-   `Memory/deferred/push-alerts-and-per-person-notification-settings.md`.
+4. ~~Pipeline contract wording and deferred note~~ — done 2026-10-12.
 5. Not built (deliberately): phone push, quiet hours, owner-forced alerts.
