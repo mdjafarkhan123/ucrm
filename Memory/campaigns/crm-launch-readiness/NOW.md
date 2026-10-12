@@ -19,8 +19,8 @@ production; every test possible before it is run before it. Order:
 3. **Part 13, Home screen and Reports** — design in Pencil first (steps in `.claude/skills/design/SKILL.md`
    § "Design in Pencil first"). Classic design system built in `classic.pen` 2026-10-12: frame "Classic design
    system" (principles, color, type, spacing/shape, 7 component groups as reusable parts) and "Classic design
-   system · dark"; 89 variables with a `mode` light/dark theme, named after `_variables.scss`. **Waiting on
-   Jafar's review of it.** Known gaps: tertiary button drawn solid (Pencil has no dashes); `ui/Tooltip.svelte`
+   system · dark"; 89 variables with a `mode` light/dark theme, named after `_variables.scss`. **Jafar approved it
+   2026-10-12** (frames "Classic design system" and "Classic design system · dark"). Known gaps: tertiary button drawn solid (Pencil has no dashes); `ui/Tooltip.svelte`
    is empty, InfoTip drawn instead; Banner icon `2.4rem` (38px) looks like a stale 10px-rem value.
    **Next session:** design Home and Reports below the design system at 1440 and 390, from its parts.
 4. **Part 14, Customer portal.**
