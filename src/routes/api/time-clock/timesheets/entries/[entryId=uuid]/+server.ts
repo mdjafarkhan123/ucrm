@@ -4,7 +4,7 @@ import { NO_STORE_HEADERS } from '$lib/server/api/errors';
 import { timesheetEntrySchema } from '$lib/server/validation/time-clock.schema';
 import { readTimesheetBody } from '$lib/server/time-clock/body';
 import { timesheetWriteError } from '$lib/server/time-clock/errors';
-import { requireTimesheetReader } from '$lib/server/time-clock/timesheets';
+import { requireTimesheetWriter } from '$lib/server/time-clock/timesheets';
 
 function refused() {
 	return json(
@@ -17,7 +17,7 @@ function refused() {
 // command checks the reader may change the hours as they are and as they become, refuses a running timer, and
 // writes the before and after to the edit history (and to Job costing for Job hours).
 export const PATCH: RequestHandler = async (event) => {
-	const check = await requireTimesheetReader(event);
+	const check = await requireTimesheetWriter(event);
 	if ('response' in check) return check.response;
 
 	const body = await readTimesheetBody(event.request, timesheetEntrySchema);
@@ -43,7 +43,7 @@ export const PATCH: RequestHandler = async (event) => {
 
 // Removing an entry. A running timer cannot be deleted; it has to be stopped first.
 export const DELETE: RequestHandler = async (event) => {
-	const check = await requireTimesheetReader(event);
+	const check = await requireTimesheetWriter(event);
 	if ('response' in check) return check.response;
 
 	const { data, error } = await event.locals.supabase.rpc('delete_time_entry', {

@@ -173,15 +173,21 @@ const capabilityDefinitions: CapabilityDefinition[] = [
 		description: 'Record the hours worked and the costs run up on a job.',
 		controls: [
 			{
+				id: 'run-own-timers',
+				permissionKey: 'time.timers_own',
+				label: 'Start and stop their own timers',
+				example: 'Clock in and out and time their visits; the office corrects their hours.'
+			},
+			{
 				id: 'track-own-time',
 				permissionKey: 'time.track_own',
-				label: 'Record their own hours',
-				example: 'Log the time they spent on a job.'
+				label: 'Record and change their own hours',
+				example: 'Also type in or correct the time they spent on a job.'
 			},
 			{
 				id: 'track-team-time',
 				permissionKey: 'time.track_team',
-				label: 'Record anyone’s hours',
+				label: 'Record and change anyone’s hours',
 				example: 'Log or correct time for the whole crew, including on a closed job.'
 			},
 			{

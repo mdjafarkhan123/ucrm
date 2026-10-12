@@ -4,9 +4,9 @@
 and on a weekly Timesheets page that a manager can check, correct and approve. Launch roadmap Part 16.
 **Plan:** `docs/time-clock-behavior-contract.md` — first version and build order approved by Jafar
 2026-10-11.
-**Stage:** Building (Parts 2–5 of 9 done, all on `main`)
+**Stage:** Building (Parts 2–6 of 9 done, all on `main`)
 
-**Active part:** none. **Next:** Part 6 Timers-only permission (`ROADMAP.md`), dependency-ready. Part 8
+**Active part:** none. **Next:** Part 7 Weekly approval (`ROADMAP.md`), dependency-ready. Part 8
 Assessment timers is also ready (needs only 3 and 4).
 
 **Open check:** the header timer has not been seen in the private Botanical preview (release build with

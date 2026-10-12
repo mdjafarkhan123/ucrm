@@ -13,7 +13,7 @@ import {
 } from '$lib/server/validation/time-clock.schema';
 import { readTimesheetBody } from '$lib/server/time-clock/body';
 import { timesheetWriteError } from '$lib/server/time-clock/errors';
-import { requireTimesheetReader } from '$lib/server/time-clock/timesheets';
+import { requireTimesheetReader, requireTimesheetWriter } from '$lib/server/time-clock/timesheets';
 
 function refused() {
 	return json(
@@ -54,7 +54,7 @@ export const GET: RequestHandler = async (event) => {
 // and notes. Whose hours they are is checked by `add_time_entry`: anyone's with time.track_team, otherwise
 // only the reader's own. Job hours go through the same command as the Job's Labor section.
 export const POST: RequestHandler = async (event) => {
-	const check = await requireTimesheetReader(event);
+	const check = await requireTimesheetWriter(event);
 	if ('response' in check) return check.response;
 
 	const body = await readTimesheetBody(event.request, timesheetEntrySchema);
