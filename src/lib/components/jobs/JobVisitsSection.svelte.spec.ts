@@ -251,6 +251,9 @@ describe('JobVisitsSection visit timers', () => {
 				job_title: 'Deck repair',
 				visit_id: visitId,
 				visit_date: '2026-09-10',
+				assessment_id: null,
+				request_id: null,
+				request_title: null,
 				started_at: new Date(Date.now() - 42 * 60_000).toISOString(),
 				day_clock_paused: false
 			},
@@ -334,6 +337,9 @@ describe('JobVisitsSection visit timers', () => {
 					job_title: null,
 					visit_id: null,
 					visit_date: null,
+					assessment_id: null,
+					request_id: null,
+					request_title: null,
 					started_at: new Date(Date.now() - 90 * 60_000).toISOString(),
 					day_clock_paused: false
 				},

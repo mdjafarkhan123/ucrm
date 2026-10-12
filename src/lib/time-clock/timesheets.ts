@@ -249,7 +249,10 @@ export function entryPurpose(entry: Pick<TimesheetEntry, 'kind' | 'job' | 'reque
 
 /** What a running timer is for, as a person's row or the Approve list names it: "Job #12", "Assessment" or
  * "General". Titles are left out: these lists name everyone's timers, including work the reader cannot open. */
-export function runningPurpose(running: { kind: TimesheetRunning['kind']; job_number: number | null }) {
+export function runningPurpose(running: {
+	kind: TimesheetRunning['kind'];
+	job_number: number | null;
+}) {
 	if (running.kind === 'general') return 'General';
 	if (running.kind === 'assessment') return 'Assessment';
 	return running.job_number ? `Job #${running.job_number}` : 'A job';

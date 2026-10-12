@@ -535,7 +535,8 @@
 	function showsAssessmentTimer(assessment: AssessmentItem) {
 		const mine = myTimerQuery.data;
 		if (!mine) return false;
-		if (mine.timer?.kind === 'assessment' && mine.timer.assessment_id === assessment.id) return true;
+		if (mine.timer?.kind === 'assessment' && mine.timer.assessment_id === assessment.id)
+			return true;
 		return mine.can_time && !assessment.completed_at && assessment.visit_date === today;
 	}
 

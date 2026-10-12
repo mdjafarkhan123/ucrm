@@ -2,12 +2,7 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
 	import RunningClock from '$lib/components/time-clock/RunningClock.svelte';
-	import {
-		fetchMyTimer,
-		myTimerKey,
-		runningTimerLabel,
-		serverOffsetMs
-	} from '$lib/time-clock/api';
+	import { fetchMyTimer, myTimerKey, runningTimerLabel, serverOffsetMs } from '$lib/time-clock/api';
 	import { createTimerActions } from '$lib/time-clock/timer-actions.svelte';
 	import stopIcon from '@tabler/icons/outline/player-stop.svg?raw';
 
