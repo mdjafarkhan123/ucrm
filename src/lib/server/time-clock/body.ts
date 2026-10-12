@@ -1,3 +1,4 @@
+import type { z } from 'zod';
 import { validationError } from '$lib/server/api/errors';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { emptyTimerCommandSchema } from '$lib/server/validation/time-clock.schema';
@@ -18,4 +19,24 @@ export async function refuseTimerCommandBody(request: Request): Promise<Response
 
 	const parsed = emptyTimerCommandSchema.safeParse(body);
 	return parsed.success ? null : validationError(zodFieldErrors(parsed.error));
+}
+
+// A Timesheets correction's body, checked against its schema before anything reaches the database. An empty
+// body reads as `{}`, so a Stop that means "now" can send nothing.
+export async function readTimesheetBody<Schema extends z.ZodType>(
+	request: Request,
+	schema: Schema
+): Promise<{ data: z.infer<Schema> } | { response: Response }> {
+	const text = await request.text();
+	let body: unknown = {};
+	if (text.trim()) {
+		try {
+			body = JSON.parse(text);
+		} catch {
+			return { response: validationError({ form: 'Request body must be valid JSON.' }) };
+		}
+	}
+	const parsed = schema.safeParse(body);
+	if (!parsed.success) return { response: validationError(zodFieldErrors(parsed.error)) };
+	return { data: parsed.data };
 }

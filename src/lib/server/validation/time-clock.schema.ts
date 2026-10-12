@@ -41,3 +41,65 @@ export const timesheetEntriesQuerySchema = z
 		message: 'Choose a day or a week.',
 		path: ['to']
 	});
+
+// Corrections (plan § Timesheets page). Times are the business's own clock, as the page shows them: a day,
+// and hours and minutes. The database turns them into instants in the business's time zone, so a phone set to
+// another zone records the same hours. An end at or before the start is the next morning.
+const clockTime = z
+	.string({ error: 'Pick a time.' })
+	.regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Pick a time.');
+
+const entryNotes = z
+	.string()
+	.trim()
+	.max(2000, 'Keep the note under 2000 characters.')
+	.nullish()
+	.transform((notes) => notes || null);
+
+// What an entry is for, and when. No job means General time, which has no visit.
+export const timesheetEntrySchema = z
+	.object({
+		user_id: z.string().uuid('Choose whose hours these are.'),
+		job_id: z.string().uuid('Choose a job.').nullable(),
+		visit_id: z.string().uuid('That visit could not be found.').nullable().default(null),
+		day: z.iso.date({ error: 'Pick the day.' }),
+		start_time: clockTime,
+		end_time: clockTime,
+		notes: entryNotes
+	})
+	.strict()
+	.refine((entry) => entry.job_id !== null || entry.visit_id === null, {
+		message: 'General time has no visit.',
+		path: ['visit_id']
+	})
+	.refine((entry) => entry.start_time !== entry.end_time, {
+		message: 'The end time must be different from the start time.',
+		path: ['end_time']
+	});
+
+export type TimesheetEntryInput = z.infer<typeof timesheetEntrySchema>;
+
+// While a timer runs only its start and notes can change.
+export const runningTimerChangeSchema = z
+	.object({
+		day: z.iso.date({ error: 'Pick the day the timer started.' }),
+		start_time: clockTime,
+		notes: entryNotes
+	})
+	.strict();
+
+export type RunningTimerChangeInput = z.infer<typeof runningTimerChangeSchema>;
+
+// Clock out or stop: now when nothing is sent, otherwise the day and time work really ended.
+export const stopTimerAtSchema = z
+	.object({
+		day: z.iso.date({ error: 'Pick the day work ended.' }).optional(),
+		time: clockTime.optional()
+	})
+	.strict()
+	.refine((stop) => (stop.day === undefined) === (stop.time === undefined), {
+		message: 'Choose both the day and the time work ended.',
+		path: ['time']
+	});
+
+export type StopTimerAtInput = z.infer<typeof stopTimerAtSchema>;

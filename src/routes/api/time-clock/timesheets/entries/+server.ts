@@ -1,8 +1,18 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { PRIVATE_READ_HEADERS, databaseError, validationError } from '$lib/server/api/errors';
+import {
+	NO_STORE_HEADERS,
+	PRIVATE_READ_HEADERS,
+	databaseError,
+	validationError
+} from '$lib/server/api/errors';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
-import { timesheetEntriesQuerySchema } from '$lib/server/validation/time-clock.schema';
+import {
+	timesheetEntriesQuerySchema,
+	timesheetEntrySchema
+} from '$lib/server/validation/time-clock.schema';
+import { readTimesheetBody } from '$lib/server/time-clock/body';
+import { timesheetWriteError } from '$lib/server/time-clock/errors';
 import { requireTimesheetReader } from '$lib/server/time-clock/timesheets';
 
 function refused() {
@@ -38,4 +48,31 @@ export const GET: RequestHandler = async (event) => {
 	}
 
 	return json(data, { headers: PRIVATE_READ_HEADERS });
+};
+
+// Add entry (plan § Timesheets page): a Job (and optionally its visit) or General, a day, start and end times
+// and notes. Whose hours they are is checked by `add_time_entry`: anyone's with time.track_team, otherwise
+// only the reader's own. Job hours go through the same command as the Job's Labor section.
+export const POST: RequestHandler = async (event) => {
+	const check = await requireTimesheetReader(event);
+	if ('response' in check) return check.response;
+
+	const body = await readTimesheetBody(event.request, timesheetEntrySchema);
+	if ('response' in body) return body.response;
+	if (!check.teamVisible && body.data.user_id !== check.auth.user.id) return refused();
+
+	const { data, error } = await event.locals.supabase.rpc('add_time_entry', {
+		target_organization_id: check.auth.organization.id,
+		target_user_id: body.data.user_id,
+		// The generated types cannot say these may be null: no Job means General time, with no visit.
+		target_job_id: body.data.job_id as string,
+		target_visit_id: body.data.visit_id as string,
+		work_day: body.data.day,
+		start_time: body.data.start_time,
+		end_time: body.data.end_time,
+		notes: body.data.notes ?? undefined
+	});
+	if (error) return timesheetWriteError(error);
+
+	return json(data, { status: 201, headers: NO_STORE_HEADERS });
 };
