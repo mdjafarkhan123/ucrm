@@ -93,6 +93,53 @@ describe('Timesheets corrections', () => {
 		expect(rpc).not.toHaveBeenCalled();
 	});
 
+	// Time clock Part 6 (§ Permissions): someone who only starts and stops their own timers reads their own
+	// hours but is refused every change, on screen and here, before the database refuses the same.
+	describe('timers only', () => {
+		beforeEach(() => reader({ 'time.timers_own': true }));
+
+		const writes: Array<[string, () => ReturnType<typeof call>]> = [
+			['adding an entry', () => call(ADD, { body: entry })],
+			[
+				'correcting an entry',
+				() => call(CHANGE, { method: 'PATCH', body: entry, params: { entryId } })
+			],
+			['deleting an entry', () => call(REMOVE, { method: 'DELETE', params: { entryId } })],
+			[
+				'changing their running timer',
+				() =>
+					call(CHANGE_RUNNING, {
+						method: 'PATCH',
+						body: { day: '2026-10-05', start_time: '08:00' },
+						params: { userId: me }
+					})
+			],
+			[
+				'stopping their timer at a chosen time',
+				() => call(STOP, { body: { day: '2026-10-05', time: '17:30' }, params: { userId: me } })
+			]
+		];
+
+		for (const [name, send] of writes) {
+			it(`refuses ${name} and tells them to ask a manager`, async () => {
+				const { rpc, response } = send();
+				const answer = await response;
+				expect(answer.status).toBe(403);
+				expect(await answer.json()).toMatchObject({
+					error: 'Ask a manager to change your hours.',
+					reason: 'permission_denied'
+				});
+				expect(rpc).not.toHaveBeenCalled();
+			});
+		}
+
+		it('still reads their own edit history', async () => {
+			const { rpc, response } = call(HISTORY, { method: 'GET', params: { entryId } });
+			expect((await response).status).toBe(200);
+			expect(rpc).toHaveBeenCalledWith('time_entry_history', expect.anything());
+		});
+	});
+
 	describe('adding an entry', () => {
 		it('sends General time on the business clock, notes trimmed', async () => {
 			const { rpc, response } = call(ADD, { body: entry });

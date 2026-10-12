@@ -8,11 +8,18 @@ import {
 import { hasPermission } from '$lib/server/access/permission';
 
 export type TimesheetReader =
-	| { auth: OrganizationContext; access: EffectiveOrganizationAccess; teamVisible: boolean }
+	| {
+			auth: OrganizationContext;
+			access: EffectiveOrganizationAccess;
+			teamVisible: boolean;
+			/** May add and correct their own hours (time.track_own), not only start and stop timers. */
+			recordsOwn: boolean;
+	  }
 	| { response: Response };
 
-// Timesheets open to anyone who records hours: their own (they see only themselves) or the team's (they see
-// everyone). The same two answers `requireOrganizationPermission` gives, told apart the same way: the plan
+// Timesheets open to anyone who times or records hours: their own (they see only themselves) or the team's
+// (they see everyone). Someone who only starts and stops their own timers (time.timers_own) reads their own
+// hours here and is refused every change by `requireTimesheetWriter`. The same two answers `requireOrganizationPermission` gives, told apart the same way: the plan
 // does not include time tracking, or this member records no hours. The database repeats the who-sees-whom
 // rule, so this is the clear refusal rather than the only one.
 export async function requireTimesheetReader(event: RequestEvent): Promise<TimesheetReader> {
@@ -43,7 +50,8 @@ export async function requireTimesheetReader(event: RequestEvent): Promise<Times
 		}
 
 		const teamVisible = hasPermission(access, 'time.track_team');
-		if (!teamVisible && !hasPermission(access, 'time.track_own')) {
+		const recordsOwn = teamVisible || hasPermission(access, 'time.track_own');
+		if (!recordsOwn && !hasPermission(access, 'time.timers_own')) {
 			return {
 				response: json(
 					{ error: 'You do not have access to do that.', reason: 'permission_denied' },
@@ -52,9 +60,23 @@ export async function requireTimesheetReader(event: RequestEvent): Promise<Times
 			};
 		}
 
-		return { auth, access, teamVisible };
+		return { auth, access, teamVisible, recordsOwn };
 	} catch (error) {
 		console.error('Could not resolve organization access.', error);
 		return { response: json({ error: 'Access could not be verified.' }, { status: 500 }) };
 	}
+}
+
+// Adding, correcting or deleting hours, and changing or stopping a timer at a chosen time: a reader who only
+// starts and stops their own timers is refused here, before the database refuses the same (plan §
+// Permissions). Whose hours they are is still checked by each route and by the command.
+export async function requireTimesheetWriter(event: RequestEvent): Promise<TimesheetReader> {
+	const check = await requireTimesheetReader(event);
+	if ('response' in check || check.recordsOwn) return check;
+	return {
+		response: json(
+			{ error: 'Ask a manager to change your hours.', reason: 'permission_denied' },
+			{ status: 403 }
+		)
+	};
 }

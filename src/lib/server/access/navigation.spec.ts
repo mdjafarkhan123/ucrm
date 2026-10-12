@@ -72,7 +72,8 @@ describe('contractorNavigation', () => {
 
 	// Time clock Part 4: Timesheets opens to anyone who records hours, their own or the team's, and the
 	// package gates it with Jobs.
-	it('shows Timesheets to anyone who records hours, and not to someone who records none', () => {
+	it('shows Timesheets to anyone who times or records hours, and not to someone who does neither', () => {
+		const timersOnly = accessWith(everyCoreFeature, ['jobs.view', 'time.timers_own']);
 		const withOwn = accessWith(everyCoreFeature, ['jobs.view', 'time.track_own']);
 		const withTeam = accessWith(everyCoreFeature, ['jobs.view', 'time.track_team']);
 		const salesOnly = accessWith(everyCoreFeature, ['jobs.view', 'quotes.view']);
@@ -80,6 +81,7 @@ describe('contractorNavigation', () => {
 			everyCoreFeature.filter((key) => key !== 'core.jobs'),
 			['jobs.view', 'time.track_own', 'time.track_team']
 		);
+		expect(contractorNavigation(timersOnly).timesheets).toBe(true);
 		expect(contractorNavigation(withOwn).timesheets).toBe(true);
 		expect(contractorNavigation(withTeam).timesheets).toBe(true);
 		expect(contractorNavigation(salesOnly).timesheets).toBe(false);

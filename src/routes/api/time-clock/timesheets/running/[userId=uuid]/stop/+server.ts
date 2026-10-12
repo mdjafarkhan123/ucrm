@@ -4,12 +4,12 @@ import { NO_STORE_HEADERS } from '$lib/server/api/errors';
 import { stopTimerAtSchema } from '$lib/server/validation/time-clock.schema';
 import { readTimesheetBody } from '$lib/server/time-clock/body';
 import { timesheetWriteError } from '$lib/server/time-clock/errors';
-import { requireTimesheetReader } from '$lib/server/time-clock/timesheets';
+import { requireTimesheetWriter } from '$lib/server/time-clock/timesheets';
 
 // Clock out, or stop a forgotten timer at the time work really ended (plan § Forgotten timers). Nothing sent
 // means now. Allowed to someone who can correct that person's hours; nothing resumes afterwards.
 export const POST: RequestHandler = async (event) => {
-	const check = await requireTimesheetReader(event);
+	const check = await requireTimesheetWriter(event);
 	if ('response' in check) return check.response;
 
 	const body = await readTimesheetBody(event.request, stopTimerAtSchema);
