@@ -1,6 +1,6 @@
 # Theme foundation — delivery design
 
-**Status:** Planning design; no implementation, schema or infrastructure changed. Product behavior awaits scoped approval in the [foundation agreement](../crm-theme-foundation-behavior-contract.md). This supports the existing `crm-design-system` campaign.
+**Status:** Planning design; no implementation, schema or infrastructure changed. Product behavior and sequence were approved by Jafar on 2026-10-12 in the [foundation agreement](../crm-theme-foundation-behavior-contract.md). This supports the existing `crm-design-system` campaign.
 
 ## Feasibility and reuse
 
@@ -39,6 +39,6 @@ Check the running application's Classic chooser states, real role boundaries and
 
 **Required verification:** release-build SSR and request graphs for both selected presentations; zero inactive exclusive design assets on ordinary cold loads, warming and navigation; explicit preview/apply loading separately identified; effective styles after repeated switching; one coalesced metadata request path with hidden/offline cleanup and sign-out cleanup; observed four-tab request counts and notice delay; editor registrations returning to baseline after closing/navigating; representative Classic payload/LCP/CLS comparison using the saved throttled workload. Record existing poor dashboard values separately; do not claim faster loading or fix unrelated dashboard work silently. Verification follows the performance skill's implementation branch once the coherent slice exists.
 
-**Open decisions:** Jafar approves the concrete product draft and proposed sequence. Runtime isolation, shared-style separation, complete edit-safety coverage and request budgets are unverified until their parts run. Whole-theme/release evidence belongs to Stage B's release gate. Production traffic sizing remains unestablished.
+**Remaining proof:** Product behavior and sequence are approved; implementation has not been verified. Runtime isolation, shared-style separation, complete edit-safety coverage and request budgets are unverified until their parts run. Whole-theme/release evidence belongs to Stage B's release gate. Production traffic sizing remains unestablished.
 
-**Overall:** Feasible for the bounded foundation proof; ready for product review. This verdict is not implementation approval or a production performance claim.
+**Overall:** Feasible for the bounded foundation proof; product behavior and sequence approved 2026-10-12. This feasibility verdict is not implementation completion or a production performance claim.

@@ -1,7 +1,7 @@
 # CRM design system
 
-**Status:** Planning — two-stage goal, core theme choices and incremental Botanical workflow agreed 2026-10-11. Foundation agreement drafted for scoped review 2026-10-12; detailed build order and Botanical coverage planning are not yet approved.
-**Current part:** Part 1 Foundation planning (began as Fresh scope), tracked in `Memory/campaigns/crm-design-system/ROADMAP.md`.
+**Status:** Planning — two-stage goal, core theme choices and incremental Botanical workflow agreed 2026-10-11. Foundation agreement and delivery sequence approved 2026-10-12; Botanical starter/coverage planning is active. Implementation remains outstanding.
+**Current part:** Part 2 Botanical starter/coverage planning, tracked in `Memory/campaigns/crm-design-system/ROADMAP.md`.
 
 ## Summary
 
@@ -30,7 +30,7 @@ Jafar described this campaign as building the theme foundation, then creating a 
 
 The foundation must support theme selection independently of any one visual design; Botanical supplies the first complete redesigned experience alongside Classic. Existing work is assessed and reused before new work is planned. This campaign's success requires both stages, including their appropriate verification.
 
-Jafar explicitly approved this two-stage goal in the follow-up: "finish the theme foundation and then create a complete botanical theme on that foundation." Detailed delivery parts and remaining release rules still need agreement.
+Jafar explicitly approved this two-stage goal in the follow-up: "finish the theme foundation and then create a complete botanical theme on that foundation." The foundation agreement and delivery sequence were subsequently approved on 2026-10-12. Botanical portions and remaining release details are resolved through Part 2 and focused design reviews.
 
 ## Botanical starting point and agreed design workflow
 
@@ -50,12 +50,12 @@ The theme foundation is the machinery for selecting and delivering a design. The
 
 ## Planning status and next planning step
 
-The two-stage goal, core organization-theme decisions and incremental Botanical workflow are agreed. This does not yet establish a complete foundation delivery plan or implementation.
+The two-stage goal, core organization-theme decisions and incremental Botanical workflow are agreed. Jafar approved the complete foundation agreement and delivery sequence on 2026-10-12. This completes foundation planning, with implementation and verification still outstanding.
 
-- **Theme foundation planning:** The [Stage A foundation agreement](crm-theme-foundation-behavior-contract.md) consolidates preview/save/switch/failure behavior, completion checks and release boundaries. Its linked delivery design establishes the feasible approach; the [foundation delivery parts](../Memory/campaigns/crm-design-system/stages/theme-foundation.md) are proposed. Fresh-reader review and Jafar's scoped agreement complete this planning step. Existing shell separation can be reused; saved organization selection and safe switching are not established by the inspected source.
-- **Botanical planning:** Visual starting point and review method agreed. Next plan the starter-system gaps and first focused demo/implementation portions after the foundation agreement is complete. Detailed visual decisions for later portions can be made incrementally; do not require every screen to be designed before the first approved portion can be implemented privately.
+- **Theme foundation planning:** The [Stage A foundation agreement](crm-theme-foundation-behavior-contract.md) consolidates preview/save/switch/failure behavior, completion checks and release boundaries. Its linked delivery design establishes the feasible approach; the [foundation delivery parts](../Memory/campaigns/crm-design-system/stages/theme-foundation.md) are approved. Fresh-reader review passed and Jafar approved this planning step on 2026-10-12. Existing shell separation can be reused; saved organization selection and safe switching are not established by the inspected source.
+- **Botanical planning:** Visual starting point and review method agreed. Now plan the starter-system gaps and first focused demo/implementation portions. Detailed visual decisions for later portions can be made incrementally; do not require every screen to be designed before the first approved portion can be implemented privately.
 
-Finish foundation planning before moving the active planning focus to Botanical. Building and proving the foundation remains its own subsequent delivery work; planning completion must not be reported as implementation completion.
+Foundation planning is complete; the active planning focus is Botanical. Building and proving the foundation remains its own subsequent delivery work; planning completion must not be reported as implementation completion.
 
 ## Existing foundation — focused source check complete
 
@@ -84,12 +84,11 @@ There is no organization theme picker or saved organization selection in the ins
 - Existing and new businesses start with Classic until an owner or administrator deliberately chooses another design.
 - Staff already working see a notice when the organization's design changes. They can apply it after saving or discarding unfinished work; their next fresh visit uses the latest organization choice automatically.
 
-The [primary-source research](research/crm-design-system-theme-approaches-2026-10-11.md) supports permission-controlled organization activation, preview before activation and shared behavior behind appearance/layout choices. Concrete foundation details are proposed in the linked Stage A agreement and require one scoped review. Its approval does not approve unshown Botanical designs or public release of incomplete coverage.
+The [primary-source research](research/crm-design-system-theme-approaches-2026-10-11.md) supports permission-controlled organization activation, preview before activation and shared behavior behind appearance/layout choices. Concrete foundation details and delivery order are approved in the linked Stage A agreement. That approval does not approve unshown Botanical designs or public release of incomplete coverage.
 
 ## Still unclear
 
-- Jafar's scoped review of the foundation agreement and delivery sequence, including the proposed fictional read-only preview, conflict/failure handling, foreground check interval and private technical proof before public activation.
-- Botanical's starter-system gaps, first focused design portions and detailed coverage/release plan; plan these after the foundation planning step is approved.
+- Botanical's starter-system gaps, first focused design portions and detailed coverage/release plan; plan these now that foundation planning is approved.
 
 Coverage, initial themes, chooser authority, layout flexibility and appearance modes were answered fresh in this campaign. Jafar subsequently brought across Botanical's visual goal and references explicitly. Preserve those decisions while reviewing only the remaining proposed details.
 

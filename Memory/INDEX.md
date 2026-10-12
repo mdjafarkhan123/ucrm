@@ -31,4 +31,4 @@ Deferred work is indexed separately at Memory/deferred/INDEX.md; read it only wh
 
 | selectable-design-experiences | In progress 2026-10-11 — Parts 1–4 done; real shared shell committed (Classic default, private Botanical preview); Part 5 Botanical coverage next | Classic and Botanical layouts over shared behaviour, with selected-only asset delivery | Memory/campaigns/selectable-design-experiences/NOW.md | Selectable designs, Classic preservation, theme architecture, or design skill separation |
 
-| crm-design-system | Planning 2026-10-12 — foundation agreement/parts drafted; fresh-reader check passed; scoped approval pending; Botanical planning next | Selectable Classic/Botanical designs; foundation then complete Botanical | Memory/campaigns/crm-design-system/NOW.md | CRM design system continuation; prior Botanical evidence retained |
+| crm-design-system | Planning 2026-10-12 — foundation plan/sequence approved; Botanical starter and coverage planning active | Selectable Classic/Botanical designs; foundation then complete Botanical | Memory/campaigns/crm-design-system/NOW.md | CRM design system continuation; prior Botanical evidence retained |

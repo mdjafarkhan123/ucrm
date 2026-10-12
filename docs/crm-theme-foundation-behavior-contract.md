@@ -1,6 +1,6 @@
 # CRM theme foundation
 
-**Status:** Draft for scoped review, 2026-10-12. The core choices listed below are already agreed; the proposed journey, safeguards and delivery sequence need final review. No implementation is authorized by this draft.
+**Status:** Foundation behavior and delivery sequence approved by Jafar on 2026-10-12: “Approve the foundation plan and sequence.” Foundation planning is complete. Implementation and its verification remain outstanding; this approval does not approve unfinished Botanical designs or public release.
 **Parent agreement:** [CRM design system](crm-design-system-behavior-contract.md). This is its Stage A agreement, not a separate campaign.
 
 ## Result and boundary
@@ -18,7 +18,7 @@ The two stages have separate completion checks. Foundation proof uses a private 
 - Each person chooses Light, Dark or Follow device on their device, separately from the organization design.
 - Existing staff sessions receive a notice and apply a new design when ready, after saving or discarding unfinished work. A fresh visit uses the latest organization choice.
 
-The parent records the approved visual goal, references and incremental Botanical demo/review/implementation workflow. The details below are proposed adaptations of the [primary-source research](research/crm-design-system-theme-approaches-2026-10-11.md), for approval as one complete foundation agreement.
+The parent records the approved visual goal, references and incremental Botanical demo/review/implementation workflow. The details below are approved adaptations of the [primary-source research](research/crm-design-system-theme-approaches-2026-10-11.md).
 
 ## Choose and preview
 
@@ -44,7 +44,7 @@ If a save definitely fails, retain the previous saved choice and the staged sele
 
 A working session keeps the presentation it has already applied. Discovering a newer organization choice shows a non-blocking **New design ready** notice; it does not replace page contents, navigate, close an editor or discard data. Show the latest choice if administrators make several changes. Remove the notice if the latest choice matches the applied design.
 
-Proposed freshness: check on returning to the app, after navigation, and at most once per 60 seconds while a tab is visible and online. A continuously active session normally discovers a reachable saved change within that interval plus request time. Hidden/offline tabs do not poll; they check when usable again. A failed check keeps the applied design and retries at the next check, without an error popup every minute.
+Agreed freshness: check on returning to the app, after navigation, and at most once per 60 seconds while a tab is visible and online. A continuously active session normally discovers a reachable saved change within that interval plus request time. Hidden/offline tabs do not poll; they check when usable again. A failed check keeps the applied design and retries at the next check, without an error popup every minute.
 
 **Apply now** first checks all open drafts, staged attachments, open editors and pending writes/uploads in the current tab. If any prevent a safe switch, explain what must be finished and leave the workspace intact. The notice never saves or discards business work itself. Existing page Save/Cancel buttons continue to own that decision. An unclassified surface blocks application conservatively until its safety is established.
 
@@ -75,9 +75,9 @@ Failure to read the organization's preference on a fresh visit shows a clear ret
 
 Foundation completion means the machinery and these checks pass for the isolated tested scope. Final customer release additionally requires complete Botanical Business Workspace coverage in both appearance modes, approved responsive layouts, affected performance checks and the real organization save/apply journey on the completed designs. No customer/traffic capacity is established by these checks.
 
-## Proposed delivery sequence
+## Approved delivery sequence
 
-The [campaign roadmap](../Memory/campaigns/crm-design-system/ROADMAP.md) owns proposed parts and dependencies. The focused [implementation design](research/crm-theme-foundation-delivery-design-2026-10-12.md) records feasibility, safe-switch integration and performance evidence required before implementation can be called complete.
+The [campaign roadmap](../Memory/campaigns/crm-design-system/ROADMAP.md) owns approved foundation parts and dependencies. The focused [implementation design](research/crm-theme-foundation-delivery-design-2026-10-12.md) records feasibility, safe-switch integration and performance evidence required before implementation can be called complete.
 
 ## Not doing
 
@@ -85,6 +85,10 @@ The [campaign roadmap](../Memory/campaigns/crm-design-system/ROADMAP.md) owns pr
 - New infrastructure, a second application copy, production rollout before the completed theme checks, or an assurance that an approved screenshot proves every behavior/state.
 - Automatic saving/discarding of records during a theme switch, personal layout overrides, cross-device mode synchronization or unrestricted custom design values.
 
-## Approval still needed
+## Approval record
 
-Approve this complete foundation agreement, including the proposed preview, failure/conflict handling, active-session checking, personal-mode storage and private-proof/public-release boundary. Existing choices are retained; only these newly concrete details and delivery parts are being reviewed. Botanical screen designs will continue through their own focused approvals.
+Jafar approved the complete foundation agreement and proposed sequence on 2026-10-12. The review explicitly included fictional read-only previews, conflict/uncertain-save handling, foreground checking within about a minute, draft-safe application, per-person/device modes, and private plus real database-save proof before complete Botanical activation. Earlier core choices remain in force.
+
+Fresh-reader review identified three gaps before approval: real database-backed persistence/access/conflict proof, safety rechecking after asynchronous preparation, and inventoried retained view state. All three were incorporated; the recheck found no remaining important blockers.
+
+Jafar reaffirmed selected-theme-only delivery on 2026-10-12. Shared functionality and the selected presentation load during ordinary use; inactive exclusive design assets stay out of cold loads, navigation and warming. Explicit preview/apply may load the requested design. Existing shell proof must be extended to Botanical page components and verified performance; it is not proof that all future theme work has zero overhead.

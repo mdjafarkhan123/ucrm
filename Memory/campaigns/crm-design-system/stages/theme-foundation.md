@@ -1,8 +1,8 @@
-# Stage A — proposed theme-foundation deliveries
+# Stage A — theme-foundation deliveries
 
 **Agreement:** `docs/crm-theme-foundation-behavior-contract.md`.
 **Technical approach:** `docs/research/crm-theme-foundation-delivery-design-2026-10-12.md`.
-**Status:** Proposed 2026-10-12; sequence requires Jafar's scoped approval. These are implementation parts, not the agreed two-stage goal. Stage B planning follows foundation planning approval, not completion of these builds.
+**Status:** Foundation agreement and sequence approved by Jafar on 2026-10-12. These are implementation parts, not the agreed two-stage goal. Stage B planning follows this approval; these builds remain outstanding.
 
 | Part | Agreement section | Complete result | Waits for | Done-check |
 | --- | --- | --- | --- | --- |

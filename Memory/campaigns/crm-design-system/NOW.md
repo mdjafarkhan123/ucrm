@@ -1,15 +1,15 @@
 # CRM design system — now
 
 **Goal:** A premium, modern, polished, colourful CRM with organization-selectable designs and supported layout differences.
-**Plan:** `docs/crm-design-system-behavior-contract.md`; Stage A: `docs/crm-theme-foundation-behavior-contract.md` (review draft 2026-10-12).
+**Plan:** `docs/crm-design-system-behavior-contract.md`; Stage A: `docs/crm-theme-foundation-behavior-contract.md` (approved 2026-10-12).
 **Stage:** Planning.
 
-**In progress:** Part 1 Foundation planning (began as Fresh scope). Complete foundation draft, feasible delivery design and proposed small parts saved; scoped approval remains. See `parts/foundation-planning.md`.
+**Done:** Part 1 Foundation planning: fresh-reader review passed; Jafar approved behavior and sequence. Foundation implementation remains outstanding.
 
-**Carried context:** Earlier selectable-design work reports a shared shell, separate Classic/Botanical frames, private Botanical preview, and selected-only loading proof. These are technical starting points, not inherited product approvals. Recheck relevant foundations before relying on them.
+**In progress:** Part 2 Botanical starter/coverage planning. Preserve v3 job-detail direction, exact sidebar/header approvals, separate design skills and selected-theme-only loading. Existing shell proof is a starting point, not full-page readiness.
 
-**Next:** Fresh-reader recheck passed; the foundation agreement/sequence is presented for scoped approval. After approval, move to Part 2 Botanical starter/coverage planning. Keep foundation implementation distinct; no code, database changes or fresh runtime proof occurred in this planning step.
+**Next:** Save the starter-system gap inventory, initial focused demo/build proposal and full Business Workspace coverage/release map. Review only newly proposed order/details; individual unfinished designs still need focused approvals.
 
-**Blockers:** Foundation agreement and proposed delivery sequence await Jafar's review.
+**Blockers:** No access blocker. Botanical's proposed initial portions/coverage approach need review after drafting.
 
-**Cleanup:** Botanical consolidation is agreed in direction. Check the useful-work/reference transfer before closing its old tracker; earlier records remain intact during planning. No blanket import of old scope or approvals.
+**Cleanup:** Consolidation is agreed in direction. Verify useful-work/reference transfer before closing the old Botanical tracker; preserve historical evidence and the narrower first-version boundary.
