@@ -1,7 +1,7 @@
 # Botanical Business Workspace coverage inventory
 
 **Snapshot:** 2026-10-12, source at `cc65e4a2`. Source inventory only; no fresh live audit or new design approval. Refresh before each family and release.
-**Authority:** [Botanical proposal](../crm-botanical-theme-behavior-contract.md), [parent agreement](../crm-design-system-behavior-contract.md), [approved foundation](../crm-theme-foundation-behavior-contract.md).
+**Authority:** [Botanical agreement](../crm-botanical-theme-behavior-contract.md), [parent agreement](../crm-design-system-behavior-contract.md), [approved foundation](../crm-theme-foundation-behavior-contract.md).
 **Counts:** 77 page files under the app route group: 69 staff pages, four detached document views and four development previews. Shell, child components and overlays are additional coverage, not extra page-file counts.
 
 ## Ledger rules
@@ -14,24 +14,24 @@ A family cannot close until its nested imports, conditional panels, menus, dialo
 
 ## Staff route families
 
-| Family | Page files | Coverage beyond the list |
-| --- | --- | --- |
-| Jobs | 3 | Job sections, all job/visit modes and commands, child records, pricing restrictions, create form and list controls |
-| Schedule | 1 | Calendar views, unscheduled/anytime work, event/visit/task dialogs, drag and narrow layouts |
-| Timesheets | 1 | Day/visit timing, running timers in shared header, corrections, role-dependent entries and approvals as currently implemented |
-| Clients | 5 | Properties, contacts, linked work/history, communications, merge/consent dialogs and import steps |
-| Requests | 3 | Assessments, intake fields, scope, conversion and editors |
-| Pipeline | 2 | Board/card/detail panels, filters, outcomes and existing commands |
-| Quotes | 3 | Scope/options, approval/deposit status, editors, sends and customer-preview opening |
-| Invoices | 5 | Work selection, ready-to-bill/send queues, deposits, collection/refund/replacement dialogs and staff payment states |
-| Payments | 1 | Allocation/receipt/refund staff interactions and provider-result states |
-| Dashboard | 1 | Conditional setup/readiness/permission panels, metrics and loading stability |
-| Communications | 1 | Conversation list/context/composer, attachments, channel and delivery states, templates/snippets and library dialogs |
-| Files | 1 | Search/filter, details/shares, picker/upload, staged files, lightbox and permissions |
-| Marketing | 4 | Campaign creation/edit/steps, audience selection, delivery/review/results and exceptional states |
-| Reviews | 2 | Staff requests, feedback/results and review settings; customer rating pages stay outside this scope |
-| Settings | 32 | Editors, imports, forms/automation builders, billing/provider setup and access states; future Appearance page added by Stage A joins here |
-| Setup | 4 | Dynamic section/question branches, submission/handover, blocked/waiting/help/support states |
+| Family         | Page files | Coverage beyond the list                                                                                                                  |
+| -------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Jobs           | 3          | Job sections, all job/visit modes and commands, child records, pricing restrictions, create form and list controls                        |
+| Schedule       | 1          | Calendar views, unscheduled/anytime work, event/visit/task dialogs, drag and narrow layouts                                               |
+| Timesheets     | 1          | Day/visit timing, running timers in shared header, corrections, role-dependent entries and approvals as currently implemented             |
+| Clients        | 5          | Properties, contacts, linked work/history, communications, merge/consent dialogs and import steps                                         |
+| Requests       | 3          | Assessments, intake fields, scope, conversion and editors                                                                                 |
+| Pipeline       | 2          | Board/card/detail panels, filters, outcomes and existing commands                                                                         |
+| Quotes         | 3          | Scope/options, approval/deposit status, editors, sends and customer-preview opening                                                       |
+| Invoices       | 5          | Work selection, ready-to-bill/send queues, deposits, collection/refund/replacement dialogs and staff payment states                       |
+| Payments       | 1          | Allocation/receipt/refund staff interactions and provider-result states                                                                   |
+| Dashboard      | 1          | Conditional setup/readiness/permission panels, metrics and loading stability                                                              |
+| Communications | 1          | Conversation list/context/composer, attachments, channel and delivery states, templates/snippets and library dialogs                      |
+| Files          | 1          | Search/filter, details/shares, picker/upload, staged files, lightbox and permissions                                                      |
+| Marketing      | 4          | Campaign creation/edit/steps, audience selection, delivery/review/results and exceptional states                                          |
+| Reviews        | 2          | Staff requests, feedback/results and review settings; customer rating pages stay outside this scope                                       |
+| Settings       | 32         | Editors, imports, forms/automation builders, billing/provider setup and access states; future Appearance page added by Stage A joins here |
+| Setup          | 4          | Dynamic section/question branches, submission/handover, blocked/waiting/help/support states                                               |
 
 ## Exact staff page paths
 
@@ -158,21 +158,22 @@ Paths below are relative to `src/routes/(app)`; route parameters retain the sour
 
 These source families are inspection starting points, not proof of completeness:
 
-| Surface | Existing reuse starting points | Evidence still required |
-| --- | --- | --- |
-| Shell, account/security/profile, search, notifications, creation shortcuts and running timer | `layout/`, `profile/`, `search/`, `time-clock/`, `owner/` | Current controls/roles, phone/header additions, dark appearance, overlays, errors and excluded-consumer impact |
-| Record pages and drafts | `layout/RecordDetailLayout.svelte`, `RecordFormLayout.svelte`, `work/`, `collaboration/` | Open versus dirty, single save ownership, failed/stale saves, staged attachments and state retention |
-| Primitive controls and status | `ui/`, `forms/`, `data-display/` | Demonstrated states, accessibility, both modes, separate exclusive assets and reuse consumers |
-| Domain panels and dialogs | `jobs/`, `schedule/`, `calendar/`, `clients/`, `requests/`, `quotes/`, `invoices/`, `payments/`, `pipeline/` | Conditional branches, pricing/role restrictions, child saves, deep actions, lazy loading |
-| Campaigns, conversation and files | `marketing/`, `communications/`, `files/`, `reviews/` | Composer drafts, pending operations, failure/empty states, preview boundaries |
-| Settings, setup, billing and support | `settings/`, `setup/`, `support/`, `packages/`, `team/`, `automation/` | All dynamic branches, restrictions, Business Workspace consumers versus Control Room/customer consumers |
-| Global exception states | Root/app layout, route skeleton/error surfaces and account gates | Loading/not-found/read denial, offline/save errors, grace/paused/setup restrictions, theme-read/load recovery |
+| Surface                                                                                      | Existing reuse starting points                                                                               | Evidence still required                                                                                        |
+| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Shell, account/security/profile, search, notifications, creation shortcuts and running timer | `layout/`, `profile/`, `search/`, `time-clock/`, `owner/`                                                    | Current controls/roles, phone/header additions, dark appearance, overlays, errors and excluded-consumer impact |
+| Record pages and drafts                                                                      | `layout/RecordDetailLayout.svelte`, `RecordFormLayout.svelte`, `work/`, `collaboration/`                     | Open versus dirty, single save ownership, failed/stale saves, staged attachments and state retention           |
+| Primitive controls and status                                                                | `ui/`, `forms/`, `data-display/`                                                                             | Demonstrated states, accessibility, both modes, separate exclusive assets and reuse consumers                  |
+| Domain panels and dialogs                                                                    | `jobs/`, `schedule/`, `calendar/`, `clients/`, `requests/`, `quotes/`, `invoices/`, `payments/`, `pipeline/` | Conditional branches, pricing/role restrictions, child saves, deep actions, lazy loading                       |
+| Campaigns, conversation and files                                                            | `marketing/`, `communications/`, `files/`, `reviews/`                                                        | Composer drafts, pending operations, failure/empty states, preview boundaries                                  |
+| Settings, setup, billing and support                                                         | `settings/`, `setup/`, `support/`, `packages/`, `team/`, `automation/`                                       | All dynamic branches, restrictions, Business Workspace consumers versus Control Room/customer consumers        |
+| Global exception states                                                                      | Root/app layout, route skeleton/error surfaces and account gates                                             | Loading/not-found/read denial, offline/save errors, grace/paused/setup restrictions, theme-read/load recovery  |
 
 Directory names alone do not decide scope: follow each actual consumer. Shared controls used in Control Room or customer pages must preserve those presentations.
 
 ## Detached documents and exclusions
 
 Four app-group files reset the layout using `+page@.svelte`:
+
 - `/invoices/[id=uuid]/preview`
 - `/jobs/[id=uuid]/report/preview`
 - `/payments/[id=uuid]/receipt`
@@ -181,6 +182,7 @@ Four app-group files reset the layout using `+page@.svelte`:
 These are candidate unchanged customer-document boundaries. Corroborate content/consumers in the live inventory: the customer document keeps its existing presentation; any staff-only surrounding controls remain in scope. Embedded customer documents and third-party payment content get the same boundary check. Route location by itself does not establish audience.
 
 Development-only previews:
+
 - `/dev-preview/collaboration`
 - `/dev-preview/pencil-button`
 - `/dev-preview/section-block`

@@ -1,6 +1,6 @@
 # Complete Botanical theme
 
-**Status:** Part 2 planning proposal, 2026-10-12. The visual goal, starting references and incremental workflow are approved; the initial portions and coverage sequence below await scoped review. No new appearance is approved by this document.
+**Status:** Initial portions and coverage sequence approved by Jafar on 2026-10-12: “Approve the Botanical sequence”. This completes Part 2 planning. Each new visual design still needs its own approval; implementation and verification remain outstanding.
 **Parent:** [CRM design system](crm-design-system-behavior-contract.md). Stage A is the [approved theme foundation](crm-theme-foundation-behavior-contract.md).
 
 ## Result and audience
@@ -11,13 +11,13 @@ Owners, office staff and field crews can use a complete Botanical Business Works
 
 Reuse the [v3 foundations](design/botanical-v3/README.md), selected job-detail direction and exact [sidebar/header approvals](design/botanical-v3/sidebar-approval.md). The job reference is source `faeccae3b021ab763c0406d989b2aca0d25ba15a`; sidebar variant 2 revision 2 is `983dcecb`; header B revision 4 is `c5c6ad89`. Preserve their demonstrated appearance without re-requesting those approvals. Existing private shell implementation and [loading proof](research/selectable-real-shell-2026-10-11.md) are reusable evidence, with their stated limits.
 
-| Established starting point | Work still needing focused review/proof |
-| --- | --- |
-| Forest navigation, warm canvas, softly tinted hero/panels, purposeful subject accents | Dark palette, contrast across control states, readability with realistic content |
-| Measured typography and spacing examples | Actual bundled-font comparison; a coherent reusable scale where needed |
-| Approved expanded/collapsed sidebar, phone drawer and desktop-first header | New header additions, universal account/search/notification/support surfaces and relevant failure states |
+| Established starting point                                                               | Work still needing focused review/proof                                                                       |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Forest navigation, warm canvas, softly tinted hero/panels, purposeful subject accents    | Dark palette, contrast across control states, readability with realistic content                              |
+| Measured typography and spacing examples                                                 | Actual bundled-font comparison; a coherent reusable scale where needed                                        |
+| Approved expanded/collapsed sidebar, phone drawer and desktop-first header               | New header additions, universal account/search/notification/support surfaces and relevant failure states      |
 | Populated job composition, selected section strip, illustrated status and primary action | Complete real job capabilities, editing, validation, loading/empty/error, narrow financial rows, long content |
-| Extracted starter guidance and separate Classic/Botanical skills | Pattern guidance and reusable components grown only as focused portions are approved |
+| Extracted starter guidance and separate Classic/Botanical skills                         | Pattern guidance and reusable components grown only as focused portions are approved                          |
 
 The reference's illustrative Create invoice/Edit job controls are not authority to add actions or change workflows. For example, current job title editing stages a draft in the page's existing Save/Cancel contract; a new header preserves that behavior. Status wording, pricing visibility and lifecycle commands come from current product contracts and verified implementation.
 
@@ -29,7 +29,7 @@ Customer documents remain in their existing customer-facing presentation, includ
 
 Industry, package and permission choices still decide what appears. This campaign redesigns available capabilities; it does not implement planned Medspa features or hide an existing feature to finish coverage. Any new Business Workspace surface released before Botanical activation joins the inventory. Later feature campaigns must cover both offered themes before releasing their new surface.
 
-## Initial proposed portions
+## Approved initial portions
 
 1. **Inspect the real job journey and reused shell.** Corroborate existing shell evidence against current additions; inventory job capabilities, roles, modes, child dialogs, save owners and view state. Produce a bounded list of job portions. Source inspection has begun; a fresh live walkthrough remains outstanding.
 2. **Review typography and Botanical dark direction.** Use the approved light job identity and shell as context. Compare actual font rendering with the baseline, then review dark shell/hero/panel/text/status/action/focus roles. Include a small set of control-state samples; this establishes only the demonstrated foundations, not all forms or dialogs. Light layout approvals remain valid.
@@ -38,7 +38,7 @@ Industry, package and permission choices still decide what appears. This campaig
 
 The [delivery map](../Memory/campaigns/crm-design-system/stages/botanical.md) separates demo approval, system promotion and implementation. Remaining job portions are agreed from the first inventory, rather than treating the entire job page as one task.
 
-## Proposed coverage sequence
+## Approved coverage sequence
 
 Start with the remaining job detail sections and editors, then job creation/list and scheduling/time tracking. Continue through clients/requests/pipeline, quotes/invoices/payments, dashboard, communications/files, marketing/reviews, then remaining settings/setup and shared exception states. Complete each family through small demos and verified private implementations; settings and shared controls needed by an earlier journey move into that earlier portion. This is a coverage order, not permission to build an entire family in one session. The exact next bounded parts are agreed when their inventory makes them precise.
 
@@ -71,7 +71,7 @@ A fresh read-only reviewer checked the proposal, coverage ledger, initial depend
 
 ## Assumptions and remaining review
 
-Existing behavior and assets are inspected for reuse; current pages are not assumed functionally complete merely because they exist. The coverage snapshot is source-derived, not a fresh live audit. The remaining scoped decision is the proposed initial portions and coverage order. Future visual decisions stay with their focused demos.
+Existing behavior and assets are inspected for reuse; current pages are not assumed functionally complete merely because they exist. The coverage snapshot is source-derived, not a fresh live audit. Jafar approved the initial portions and coverage order on 2026-10-12. This approves the order and coverage approach only. Future visual decisions stay with their focused demos; no unshown screen or appearance state is approved.
 
 ## Not doing
 
