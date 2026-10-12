@@ -15996,6 +15996,39 @@ export type Database = {
 					}
 				];
 			};
+			push_subscriptions: {
+				Row: {
+					auth_secret: string;
+					created_at: string;
+					endpoint: string;
+					id: string;
+					label: string;
+					last_success_at: string | null;
+					p256dh: string;
+					user_id: string;
+				};
+				Insert: {
+					auth_secret: string;
+					created_at?: string;
+					endpoint: string;
+					id?: string;
+					label: string;
+					last_success_at?: string | null;
+					p256dh: string;
+					user_id: string;
+				};
+				Update: {
+					auth_secret?: string;
+					created_at?: string;
+					endpoint?: string;
+					id?: string;
+					label?: string;
+					last_success_at?: string | null;
+					p256dh?: string;
+					user_id?: string;
+				};
+				Relationships: [];
+			};
 			quote_access_links: {
 				Row: {
 					expires_at: string | null;
@@ -18281,6 +18314,117 @@ export type Database = {
 					}
 				];
 			};
+			team_alert_kinds: {
+				Row: {
+					default_browser: boolean;
+					default_email: boolean;
+					kind: string;
+				};
+				Insert: {
+					default_browser: boolean;
+					default_email: boolean;
+					kind: string;
+				};
+				Update: {
+					default_browser?: boolean;
+					default_email?: boolean;
+					kind?: string;
+				};
+				Relationships: [];
+			};
+			team_notification_preferences: {
+				Row: {
+					channel: string;
+					enabled: boolean;
+					kind: string;
+					organization_id: string;
+					updated_at: string;
+					user_id: string;
+				};
+				Insert: {
+					channel: string;
+					enabled: boolean;
+					kind: string;
+					organization_id: string;
+					updated_at?: string;
+					user_id: string;
+				};
+				Update: {
+					channel?: string;
+					enabled?: boolean;
+					kind?: string;
+					organization_id?: string;
+					updated_at?: string;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'team_notification_preferences_kind_fkey';
+						columns: ['kind'];
+						isOneToOne: false;
+						referencedRelation: 'team_alert_kinds';
+						referencedColumns: ['kind'];
+					},
+					{
+						foreignKeyName: 'team_notification_preferences_member_fk';
+						columns: ['organization_id', 'user_id'];
+						isOneToOne: false;
+						referencedRelation: 'organization_members';
+						referencedColumns: ['organization_id', 'user_id'];
+					}
+				];
+			};
+			team_notification_push_deliveries: {
+				Row: {
+					attempts: number;
+					available_at: string;
+					claim_token: string | null;
+					claimed_until: string | null;
+					last_error: string | null;
+					notification_id: string;
+					sent_at: string | null;
+					state: string;
+					subscription_id: string;
+				};
+				Insert: {
+					attempts?: number;
+					available_at?: string;
+					claim_token?: string | null;
+					claimed_until?: string | null;
+					last_error?: string | null;
+					notification_id: string;
+					sent_at?: string | null;
+					state?: string;
+					subscription_id: string;
+				};
+				Update: {
+					attempts?: number;
+					available_at?: string;
+					claim_token?: string | null;
+					claimed_until?: string | null;
+					last_error?: string | null;
+					notification_id?: string;
+					sent_at?: string | null;
+					state?: string;
+					subscription_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'team_notification_push_deliveries_notification_id_fkey';
+						columns: ['notification_id'];
+						isOneToOne: false;
+						referencedRelation: 'team_notifications';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'team_notification_push_deliveries_subscription_id_fkey';
+						columns: ['subscription_id'];
+						isOneToOne: false;
+						referencedRelation: 'push_subscriptions';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			team_notifications: {
 				Row: {
 					body: string | null;
@@ -18294,6 +18438,8 @@ export type Database = {
 					email_state: string;
 					id: string;
 					kind: string;
+					occurrence_count: number;
+					occurrence_label: string | null;
 					organization_id: string;
 					read_at: string | null;
 					source_key: string;
@@ -18314,6 +18460,8 @@ export type Database = {
 					email_state?: string;
 					id?: string;
 					kind: string;
+					occurrence_count?: number;
+					occurrence_label?: string | null;
 					organization_id: string;
 					read_at?: string | null;
 					source_key: string;
@@ -18334,6 +18482,8 @@ export type Database = {
 					email_state?: string;
 					id?: string;
 					kind?: string;
+					occurrence_count?: number;
+					occurrence_label?: string | null;
 					organization_id?: string;
 					read_at?: string | null;
 					source_key?: string;
@@ -18343,6 +18493,13 @@ export type Database = {
 					user_id?: string;
 				};
 				Relationships: [
+					{
+						foreignKeyName: 'team_notifications_kind_fkey';
+						columns: ['kind'];
+						isOneToOne: false;
+						referencedRelation: 'team_alert_kinds';
+						referencedColumns: ['kind'];
+					},
 					{
 						foreignKeyName: 'team_notifications_member_fk';
 						columns: ['organization_id', 'user_id'];
@@ -20211,6 +20368,25 @@ export type Database = {
 					id: string;
 					postal_code: string;
 					state_region: string;
+				}[];
+			};
+			claim_push_deliveries: {
+				Args: { p_batch_size?: number; p_lease_seconds?: number };
+				Returns: {
+					attempts: number;
+					auth_secret: string;
+					body: string;
+					claim_token: string;
+					endpoint: string;
+					kind: string;
+					notification_id: string;
+					organization_id: string;
+					organization_name: string;
+					p256dh: string;
+					subject_id: string;
+					subject_type: string;
+					subscription_id: string;
+					title: string;
 				}[];
 			};
 			claim_review_reminders: {
@@ -22247,6 +22423,7 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			create_long_timer_alerts: { Args: never; Returns: number };
 			create_note: {
 				Args: {
 					new_body: string;
@@ -27402,6 +27579,16 @@ export type Database = {
 					isSetofReturn: false;
 				};
 			};
+			register_push_subscription: {
+				Args: {
+					p_auth_secret: string;
+					p_endpoint: string;
+					p_label: string;
+					p_p256dh: string;
+					p_user_id: string;
+				};
+				Returns: string;
+			};
 			register_setup_protected_document: {
 				Args: {
 					target_display_name: string;
@@ -29101,6 +29288,16 @@ export type Database = {
 				Args: { new_topic: string; target_thread_id: string };
 				Returns: boolean;
 			};
+			set_team_alert_preference: {
+				Args: {
+					p_channel: string;
+					p_enabled: boolean;
+					p_kind: string;
+					p_organization_id: string;
+					p_user_id: string;
+				};
+				Returns: undefined;
+			};
 			settle_appointment_notices: {
 				Args: {
 					notify_customer: boolean;
@@ -29109,6 +29306,16 @@ export type Database = {
 					target_organization_id: string;
 				};
 				Returns: Json;
+			};
+			settle_push_delivery: {
+				Args: {
+					p_claim_token: string;
+					p_error?: string;
+					p_notification_id: string;
+					p_outcome: string;
+					p_subscription_id: string;
+				};
+				Returns: string;
 			};
 			settle_team_invitation_identity_cleanup: {
 				Args: { target_invitation_id: string; target_lease_nonce: string };
@@ -29446,6 +29653,10 @@ export type Database = {
 					snapshot_label: string;
 					target_organization_id: string;
 				};
+				Returns: Json;
+			};
+			team_alert_settings: {
+				Args: { p_organization_id: string; p_user_id: string };
 				Returns: Json;
 			};
 			team_notification_links: {

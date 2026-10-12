@@ -179,7 +179,7 @@ email campaigns; setup wizard and paid-client delivery; accountant CSV; Website 
 **Before advertising widely (Part 8):**
 
 - [ ] Customer portal: one place for appointments, quotes, invoices, balances and asking for more work
-- [ ] Phone and browser push alerts, and each person's alert settings
+- [x] Browser alerts and each person's alert settings (built 2026-10-12, branch `codex/alerts-part-12`; phone push waits for the native apps)
       (`Memory/deferred/push-alerts-and-per-person-notification-settings.md` holds the agreed constraints;
       Jafar asked on 2026-10-01 for it to be planned before launch)
 - [ ] Reports screen (today only the accountant CSV exists)
@@ -211,7 +211,7 @@ trade- or size-specific. Jobber plan in brackets.
 - [x] Customer visit and assessment reminders, and a "your visit is booked" confirmation, by email now and text
       after registration (Connect). Example: a Tuesday 9 am booking with no reminder becomes a no-show.
 - [x] Overdue invoice follow-ups to the customer (Connect). Today invoice reminders are internal to-dos only.
-- [ ] Tell a teammate when they are put on a Visit or Assessment (email now, push with the push-alert item).
+- [x] Tell a teammate when they are put on a Visit or Assessment (bell, email, browser; built 2026-10-12).
       Example: a helper added to tomorrow's job learns about it only by opening the Schedule.
 - [ ] "On my way" text from the Visit (Connect, with client notifications) — after business registration.
 - [ ] Home screen that shows today's work, what needs action, and money owed (Core "Insights"); today the

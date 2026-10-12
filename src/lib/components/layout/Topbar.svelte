@@ -157,6 +157,7 @@
 						</DropdownMenu.Item>
 					{/if}
 					{#if showSecurityLink}
+						<a class="topbar__menu-item" href={resolve('/settings/alerts')}>My alerts</a>
 						<a class="topbar__menu-item" href={resolve('/settings/security')}
 							>Password and security</a
 						>

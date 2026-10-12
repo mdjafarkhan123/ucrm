@@ -26,7 +26,11 @@ export default defineConfig({
 			},
 
 			// Standalone Node server, packaged into the production Docker image (docs/production-readiness-plan.md P9B).
-			adapter: adapter({ out: 'build' })
+			adapter: adapter({ out: 'build' }),
+
+			// The alert worker (src/service-worker.ts) is registered only when a person turns on browser alerts
+			// (src/lib/team/browser-alerts.ts), never on page load. It caches nothing.
+			serviceWorker: { register: false }
 		})
 	],
 	test: {
