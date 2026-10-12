@@ -1,7 +1,7 @@
 # Alerts: behavior contract (CRM launch readiness Part 12)
 
-**Status:** Proposed 2026-10-12, corrected the same day after a review checked it against the database code.
-Three product decisions wait for Jafar (see the end). Web app only; phone push belongs to the native Android and
+**Status:** Approved by Jafar 2026-10-12 (corrected after a database-code review; all three decisions below were
+approved as recommended). Web app only; phone push belongs to the native Android and
 iPhone apps, built later (Jafar, 2026-10-12).
 
 ## Problem
@@ -114,12 +114,9 @@ New alert types in this release (they do not exist today):
 - A 52-Visit assignment sends one alert. Editing a Visit's notes sends none.
 - No alert is sent twice in any channel, including after a failure and retry.
 
-## Decisions for Jafar (recommendation first)
+## Decisions (Jafar, 2026-10-12: all three approved as recommended)
 
-1. **Payment and review alerts:** keep bell only by default like today and let each person switch Email on
-   (recommended), or start sending those emails to everyone? Example: 30 card payments in a day would be 30 emails.
-2. **Browser alerts on Android phones:** allow now (recommended; same code, no extra cost), with the iPhone
-   Home Screen step explained on the screen?
-3. **Customer texts and emails:** should a new message in the inbox be an alert type in this release? Jobber's sales
-   alerts include a new text. Recommended: yes, to people who can see Communications, bell and browser on, email
-   off.
+1. **Payment and review alerts:** bell only by default like today; each person can switch Email on.
+2. **Browser alerts on Android phones:** allowed now, with the iPhone Home Screen step explained on the screen.
+3. **Customer texts and emails:** a new message in the inbox is an alert type in this release (Jobber's sales
+   alerts include a new text), for people who can see Communications; bell and browser on, email off.
