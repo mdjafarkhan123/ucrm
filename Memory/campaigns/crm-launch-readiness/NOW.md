@@ -15,7 +15,7 @@ Jafar's plan (2026-10-10): finish the whole app first, then production. Real-wor
 production; every test possible before it is run before it. Order:
 
 1. ~~Part 16, Time clock~~ — done 2026-10-12.
-2. **Part 12, Alerts** — web build done and merged to main 2026-10-12 (`f196fbb9`); Pipeline wording done. Still open: real-browser pop-up proof (needs Jafar's browser). See "Part 12 handover" below.
+2. **Part 12, Alerts** — web build done and merged to main 2026-10-12 (`f196fbb9`); Pipeline wording done. Real-browser pop-up proven 2026-10-12. Part 12 web scope complete. See "Part 12 handover" below.
 3. **Part 13, Home screen and Reports** — design in Pencil first (steps in `.claude/skills/design/SKILL.md`
    § "Design in Pencil first"). Classic design system built in `classic.pen` 2026-10-12: frame "Classic design
    system" (principles, color, type, spacing/shape, 7 component groups as reusable parts) and "Classic design
@@ -55,9 +55,10 @@ payload, VAPID header, opens the Job, nothing sent twice); My alerts screen chec
 
 Left for the next session:
 1. ~~Merge to main~~ — done 2026-10-12, pushed, `npm install` run, worktree removed.
-2. **Real-Chrome proof of the pop-up.** Jafar's Brave blocks push by default (needs Settings, Privacy and security,
-   "Use Google services for push messaging" on, then restart). Prove in Chrome/Edge/Firefox or Brave with that on:
-   turn on, put a teammate on a Visit, see the pop-up, click opens the Job.
+2. ~~Real-browser proof~~ — done 2026-10-12 in Jafar's Brave on localhost: Raad field worker turned on, owner put
+   them on a Visit through `PATCH /api/jobs/[id]/visits/[visitId]`, delivery `sent` 1 attempt, Jafar saw the pop-up,
+   click opened the Job. No sound: browsers ignore site sounds; it is the OS notification setting. Offered an
+   in-page "ding" while the CRM tab is open (Slack/Gmail pattern); Jafar has not decided.
 3. `src/lib/server/team/invitations.spec.ts` has 4 old lint errors (unused `_` args), not from this work.
 4. ~~Pipeline contract wording and deferred note~~ — done 2026-10-12.
 5. Not built (deliberately): phone push, quiet hours, owner-forced alerts.
