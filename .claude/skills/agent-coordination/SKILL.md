@@ -35,8 +35,8 @@ reservations must be inspected separately.
    selecting work, claim the exact task before starting, and release it after safe integration. Include a
    compact command example and a pointer to any project-specific conflict guide. Tell agents to load this
    full skill only for setup or repair. Ignore `/.agent-work/` in Git.
-4. Before enabling simultaneous code writers, confirm the project's branch and workspace policy with
-   its owner. Separate temporary Git worktrees are the default isolation method where permitted. Keep one
+4. Before enabling simultaneous writers, including planning and documentation, establish the project's branch
+   and workspace policy with its owner; an existing authorization is sufficient. Separate temporary Git worktrees are the default isolation method where permitted. Keep one
    controlled integration path into the primary branch. Existing dirty changes remain unclaimed until
    their owner is identified.
 

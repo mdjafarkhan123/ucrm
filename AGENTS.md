@@ -156,7 +156,8 @@ before changing files (`--mode read` for research). Release after safe integrati
   completion contract: design qualifying paths before code, verify them after the coherent slice exists, and run
   its whole-application branch before an industry release. A filename or technical layer alone does not trigger
   the review. Never claim user or traffic capacity beyond the workload its evidence actually supports.
-- **One final application.** The main folder on `main` is the integration point. Temporary Git worktrees and
-  branches are allowed only for simultaneous code writers under `docs/agent-concurrency.md`; remove them after
-  their work is integrated. Do not create another clone or product copy.
+- **One final application.** The main folder on `main` is the integration point. Independent writers use
+  temporary Git worktrees and branches under `docs/agent-concurrency.md`, including planning and documentation.
+  Merge checked, complete deliveries and remove temporary workspaces after safe integration. Do not create
+  another clone or product copy.
 - Commit as soon as work reaches a good point, so nothing lives only in the working folder.

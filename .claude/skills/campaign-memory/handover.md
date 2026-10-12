@@ -34,11 +34,13 @@ current position without a forced migration of every file.
 
 ## Shared work and Git
 
-Follow the live coordination rule. Commit only this session's changes; stage a committed copy containing
-only your lines when a file also holds another session's edits. Memory lives in the main folder on `main`;
-ignore stale worktree Memory. From a permitted temporary worktree, commit code there and Memory in the main
-folder, naming the branch and worktree in the part. Keep it **Waiting to merge** until integrated. Edit shared
-index, current-note, roadmap, and stage records in place so other sessions' lines survive.
+Follow the live coordination rule and the project's integration guide. Commit only this session's changes.
+From a permitted temporary worktree, save plans and Memory alongside its code; name the branch, worktree,
+and verified progress in the current note. Push before handoff. Keep the checkpoint **Waiting to merge** until
+integrated. Main's Memory describes integrated progress; the branch's checkpoint describes pending progress.
+On resume, inspect the live reservation's workspace and compare its checkpoint and Git state with main before
+choosing the next action. Reconcile shared index, current-note, roadmap, and stage records during integration
+so other campaigns' lines survive. Follow the project's recovery guide when a reservation is missing.
 
 Commit at coherent points and push under the project's rules. Release claims after safe integration and an
 updated checkpoint. Report a failed push. Git preserves history; the current note need not retell it.
