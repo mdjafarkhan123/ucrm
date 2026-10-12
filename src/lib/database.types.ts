@@ -17333,8 +17333,10 @@ export type Database = {
 			};
 			running_timers: {
 				Row: {
+					id: string;
 					job_id: string | null;
 					kind: string;
+					notes: string | null;
 					organization_id: string;
 					resume_general: boolean;
 					started_at: string;
@@ -17343,8 +17345,10 @@ export type Database = {
 					visit_id: string | null;
 				};
 				Insert: {
+					id?: string;
 					job_id?: string | null;
 					kind?: string;
+					notes?: string | null;
 					organization_id: string;
 					resume_general?: boolean;
 					started_at?: string;
@@ -17353,8 +17357,10 @@ export type Database = {
 					visit_id?: string | null;
 				};
 				Update: {
+					id?: string;
 					job_id?: string | null;
 					kind?: string;
+					notes?: string | null;
 					organization_id?: string;
 					resume_general?: boolean;
 					started_at?: string;
@@ -18290,6 +18296,50 @@ export type Database = {
 					}
 				];
 			};
+			time_entry_history: {
+				Row: {
+					action: string;
+					actor_id: string | null;
+					created_at: string;
+					entry_id: string;
+					id: string;
+					new_values: Json | null;
+					organization_id: string;
+					prior_values: Json | null;
+					user_id: string;
+				};
+				Insert: {
+					action: string;
+					actor_id?: string | null;
+					created_at?: string;
+					entry_id: string;
+					id?: string;
+					new_values?: Json | null;
+					organization_id: string;
+					prior_values?: Json | null;
+					user_id: string;
+				};
+				Update: {
+					action?: string;
+					actor_id?: string | null;
+					created_at?: string;
+					entry_id?: string;
+					id?: string;
+					new_values?: Json | null;
+					organization_id?: string;
+					prior_values?: Json | null;
+					user_id?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'time_entry_history_organization_id_fkey';
+						columns: ['organization_id'];
+						isOneToOne: false;
+						referencedRelation: 'organizations';
+						referencedColumns: ['id'];
+					}
+				];
+			};
 			visit_checklist_answers: {
 				Row: {
 					answered_at: string;
@@ -19111,6 +19161,19 @@ export type Database = {
 					reason: string;
 					starts_at: string;
 					target_organization_id: string;
+				};
+				Returns: Json;
+			};
+			add_time_entry: {
+				Args: {
+					end_time: string;
+					notes?: string;
+					start_time: string;
+					target_job_id: string;
+					target_organization_id: string;
+					target_user_id: string;
+					target_visit_id: string;
+					work_day: string;
 				};
 				Returns: Json;
 			};
@@ -20302,6 +20365,10 @@ export type Database = {
 				Returns: Json;
 			};
 			clock_in: { Args: { target_organization_id: string }; Returns: Json };
+			clock_in_member: {
+				Args: { target_organization_id: string; target_user_id: string };
+				Returns: Json;
+			};
 			clock_out: { Args: { target_organization_id: string }; Returns: Json };
 			clone_quote_version_to_draft: {
 				Args: { target_quote_id: string };
@@ -22434,6 +22501,10 @@ export type Database = {
 				Returns: {
 					object_key: string;
 				}[];
+			};
+			delete_time_entry: {
+				Args: { target_entry_id: string; target_organization_id: string };
+				Returns: Json;
 			};
 			describe_file: {
 				Args: {
@@ -29088,6 +29159,15 @@ export type Database = {
 				Returns: Json;
 			};
 			stop_my_timer: { Args: { target_organization_id: string }; Returns: Json };
+			stop_timer_at: {
+				Args: {
+					end_day?: string;
+					end_time?: string;
+					target_organization_id: string;
+					target_user_id: string;
+				};
+				Returns: Json;
+			};
 			submit_form_response:
 				| {
 						Args: {
@@ -29302,6 +29382,10 @@ export type Database = {
 					subject_id: string;
 					subject_type: string;
 				}[];
+			};
+			time_entry_history: {
+				Args: { target_entry_id: string; target_organization_id: string };
+				Returns: Json;
 			};
 			timesheet_entries: {
 				Args: {
@@ -29620,6 +29704,16 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			update_running_timer: {
+				Args: {
+					notes?: string;
+					start_time: string;
+					target_organization_id: string;
+					target_user_id: string;
+					work_day: string;
+				};
+				Returns: Json;
+			};
 			update_team_member_profile: {
 				Args: {
 					actor_user_id: string;
@@ -29659,6 +29753,20 @@ export type Database = {
 					isOneToOne: true;
 					isSetofReturn: false;
 				};
+			};
+			update_time_entry: {
+				Args: {
+					end_time: string;
+					notes?: string;
+					start_time: string;
+					target_entry_id: string;
+					target_job_id: string;
+					target_organization_id: string;
+					target_user_id: string;
+					target_visit_id: string;
+					work_day: string;
+				};
+				Returns: Json;
 			};
 			update_website_chat_widget: {
 				Args: {

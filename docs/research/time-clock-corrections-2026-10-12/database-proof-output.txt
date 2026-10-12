@@ -1,0 +1,388 @@
+BEGIN
+ALTER TABLE
+COMMENT
+COMMENT
+CREATE TABLE
+COMMENT
+CREATE INDEX
+ALTER TABLE
+REVOKE
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+INSERT 0 3
+INSERT 0 3
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+DROP FUNCTION
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+DELETE 0
+SET
+                                 set_config                                 
+----------------------------------------------------------------------------
+ {"sub" : "7d450c50-b3e5-4f97-8ee9-50e08c1f70bb", "role" : "authenticated"}
+(1 row)
+
+== Field member adds General 22:00-02:00 on Mon 5 Oct (overnight: 240 minutes)
+RESET
+       started_at       | minutes | notes | source 
+------------------------+---------+-------+--------
+ 2026-10-05 16:00:00+00 |     240 | Yard  | manual
+(1 row)
+
+SET
+== ...moves it to their Job, 8:00-12:00 (same id, now Job hours with a costing row)
+                                   update_time_entry                                   
+---------------------------------------------------------------------------------------
+ {"id": "b2b349ea-0723-486d-b8db-c6caa09c5a32", "changed": true, "after_close": false}
+(1 row)
+
+RESET
+ same_id |       started_at       | minutes | notes | cost_per_hour_minor 
+---------+------------------------+---------+-------+---------------------
+ t       | 2026-10-05 02:00:00+00 |     240 | Yard  |                    
+(1 row)
+
+ general_left 
+--------------
+            0
+(1 row)
+
+SET
+== ...cannot move it to the admin (refused)
+SAVEPOINT
+psql:docs/research/time-clock-corrections-2026-10-12/database-proof.sql:34: ERROR:  You do not have access to change these hours.
+CONTEXT:  PL/pgSQL function private.assert_can_write_time(uuid,uuid,uuid,uuid) line 26 at RAISE
+SQL statement "SELECT private.assert_can_write_time(target_organization_id, actor_id, new_user_id, new_job_id)"
+PL/pgSQL function private.change_time_entry(uuid,uuid,uuid,uuid,uuid,uuid,timestamp with time zone,integer,text,text) line 65 at PERFORM
+PL/pgSQL function public.update_time_entry(uuid,uuid,uuid,uuid,uuid,date,time without time zone,time without time zone,text) line 12 at RETURN
+ROLLBACK
+== ...cannot write a 25-hour or zero-length entry (refused)
+psql:docs/research/time-clock-corrections-2026-10-12/database-proof.sql:37: ERROR:  The end time must be different from the start time.
+CONTEXT:  PL/pgSQL function private.local_time_span(uuid,date,time without time zone,time without time zone) line 9 at RAISE
+SQL statement "select *           from private.local_time_span(target_organization_id, work_day, start_time, end_time)"
+PL/pgSQL function public.add_time_entry(uuid,uuid,uuid,uuid,date,time without time zone,time without time zone,text) line 12 at SQL statement
+ROLLBACK
+== Owner moves the entry to the admin: re-priced at the admin rate, costing trail updated
+                                 set_config                                 
+----------------------------------------------------------------------------
+ {"sub" : "1d50477c-8c55-4d33-a550-91ecf637b624", "role" : "authenticated"}
+(1 row)
+
+                                   update_time_entry                                   
+---------------------------------------------------------------------------------------
+ {"id": "b2b349ea-0723-486d-b8db-c6caa09c5a32", "changed": true, "after_close": false}
+(1 row)
+
+RESET
+ now_admin | minutes | cost_per_hour_minor | admin_rate 
+-----------+---------+---------------------+------------
+ t         |     270 |                     |           
+(1 row)
+
+     event_type     | was_field | now_admin 
+--------------------+-----------+-----------
+ time_entry_added   |           | f
+ time_entry_updated | t         | t
+(2 rows)
+
+SET
+== History of that entry, as the owner reads it
+ action  |    actor     | prior_kind | prior_person | new_kind |  new_person  | new_minutes | job 
+---------+--------------+------------+--------------+----------+--------------+-------------+-----
+ added   | Field Tester |            |              | general  | Field Tester | 240         | 
+ changed | Field Tester | general    | Field Tester | job      | Field Tester | 240         | 20
+ changed | Jafar Khan   | job        | Field Tester | job      | Jafar Admin  | 270         | 20
+(3 rows)
+
+== The field member cannot read it now it is the admin's (refused)
+                                 set_config                                 
+----------------------------------------------------------------------------
+ {"sub" : "7d450c50-b3e5-4f97-8ee9-50e08c1f70bb", "role" : "authenticated"}
+(1 row)
+
+SAVEPOINT
+psql:docs/research/time-clock-corrections-2026-10-12/database-proof.sql:61: ERROR:  Those hours could not be found.
+CONTEXT:  PL/pgSQL function public.time_entry_history(uuid,uuid) line 32 at RAISE
+ROLLBACK
+== ...nor delete it (refused)
+psql:docs/research/time-clock-corrections-2026-10-12/database-proof.sql:64: ERROR:  You do not have access to change these hours.
+CONTEXT:  PL/pgSQL function private.assert_can_write_time(uuid,uuid,uuid,uuid) line 26 at RAISE
+SQL statement "SELECT private.assert_can_write_time(target_organization_id, actor_id, job_entry.user_id, job_entry.job_id)"
+PL/pgSQL function private.remove_time_entry(uuid,uuid,uuid,text) line 12 at PERFORM
+PL/pgSQL function public.delete_time_entry(uuid,uuid) line 8 at RETURN
+ROLLBACK
+== ...nor clock the admin in (refused)
+psql:docs/research/time-clock-corrections-2026-10-12/database-proof.sql:67: ERROR:  You do not have access to clock team members in.
+CONTEXT:  PL/pgSQL function public.clock_in_member(uuid,uuid) line 9 at RAISE
+ROLLBACK
+== Running timer: field member clocks in, moves the start and adds a note
+                                                           clock_in                                                            
+-------------------------------------------------------------------------------------------------------------------------------
+ {"clocked_in": true, "started_at": "2026-10-12T00:02:53.254074+00:00", "paused_by_visit": false, "already_clocked_in": false}
+(1 row)
+
+                                               update_running_timer                                                
+-------------------------------------------------------------------------------------------------------------------
+ {"id": "5f6d2a9c-e481-4871-9cbd-9db2cb00a4ea", "changed": true, "started_at": "2026-10-11T22:02:53.254074+00:00"}
+(1 row)
+
+RESET
+ has_id | minutes_running 
+--------+-----------------
+ t      | 120
+(1 row)
+
+SET
+== ...it cannot be deleted or changed like an entry while it runs (refused)
+SAVEPOINT
+psql:docs/research/time-clock-corrections-2026-10-12/database-proof.sql:81: ERROR:  A running timer cannot be deleted. Stop it first.
+CONTEXT:  PL/pgSQL function private.remove_time_entry(uuid,uuid,uuid,text) line 54 at RAISE
+SQL expression "private.remove_time_entry(target_organization_id, target_entry_id, caller, null)"
+PL/pgSQL function public.delete_time_entry(uuid,uuid) line 8 at RETURN
+ROLLBACK
+psql:docs/research/time-clock-corrections-2026-10-12/database-proof.sql:83: ERROR:  This timer is still running. Only its start time and notes can be changed.
+CONTEXT:  PL/pgSQL function private.change_time_entry(uuid,uuid,uuid,uuid,uuid,uuid,timestamp with time zone,integer,text,text) line 50 at RAISE
+SQL expression "private.change_time_entry(
+		target_organization_id, target_entry_id, caller, target_user_id, target_job_id, target_visit_id,
+		span.span_started_at, span.span_minutes, notes, null
+	)"
+PL/pgSQL function public.update_time_entry(uuid,uuid,uuid,uuid,uuid,date,time without time zone,time without time zone,text) line 12 at RETURN
+ROLLBACK
+== ...and cannot start in the future (refused)
+psql:docs/research/time-clock-corrections-2026-10-12/database-proof.sql:86: ERROR:  A running timer cannot start in the future.
+CONTEXT:  PL/pgSQL function public.update_running_timer(uuid,uuid,date,time without time zone,text) line 38 at RAISE
+ROLLBACK
+== ...clock out: the entry keeps the timer id, its notes and its history
+                                                                               clock_out                                                                                
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"kind": "general", "job_id": null, "minutes": 120, "stopped": true, "entry_id": "5f6d2a9c-e481-4871-9cbd-9db2cb00a4ea", "recorded": true, "day_clock_resumed": false}
+(1 row)
+
+RESET
+ same_id | minutes | notes | source 
+---------+---------+-------+--------
+ t       |     120 | Shop  | timer
+(1 row)
+
+SET
+ action  |           prior_start            |            new_start             | minutes 
+---------+----------------------------------+----------------------------------+---------
+ changed | 2026-10-12T00:02:53.254074+00:00 | 2026-10-11T22:02:53.254074+00:00 | 
+ stopped |                                  | 2026-10-11T22:02:53.254074+00:00 | 120
+(2 rows)
+
+== ...and deletes their own General entry
+                          delete_time_entry                           
+----------------------------------------------------------------------
+ {"id": "5f6d2a9c-e481-4871-9cbd-9db2cb00a4ea", "after_close": false}
+(1 row)
+
+RESET
+ remaining 
+-----------
+         0
+(1 row)
+
+ action  
+---------
+ changed
+ stopped
+ deleted
+(3 rows)
+
+== Overnight success check: a visit timer left running since 7:30 two days ago (over 24 hours)
+INSERT 0 1
+SET
+                                 set_config                                 
+----------------------------------------------------------------------------
+ {"sub" : "7d450c50-b3e5-4f97-8ee9-50e08c1f70bb", "role" : "authenticated"}
+(1 row)
+
+== ...the crew member's own Stop is refused
+SAVEPOINT
+psql:docs/research/time-clock-corrections-2026-10-12/database-proof.sql:111: ERROR:  This timer has run for more than 24 hours, so it cannot be stopped as it is. Ask a manager to set the time work really ended.
+CONTEXT:  PL/pgSQL function private.stop_running_timer_at(uuid,uuid,uuid,boolean,timestamp with time zone) line 40 at RAISE
+SQL function "stop_running_timer" statement 1
+PL/pgSQL function public.stop_my_timer(uuid) line 20 at RETURN
+ROLLBACK
+RESET
+ over_a_day 
+------------
+ t
+(1 row)
+
+SET
+                                 set_config                                 
+----------------------------------------------------------------------------
+ {"sub" : "1d50477c-8c55-4d33-a550-91ecf637b624", "role" : "authenticated"}
+(1 row)
+
+     name     | long_running | clocked_in 
+--------------+--------------+------------
+ Field Tester | true         | true
+(1 row)
+
+== ...an end more than a day after the start is refused
+SAVEPOINT
+psql:docs/research/time-clock-corrections-2026-10-12/database-proof.sql:123: ERROR:  A single entry cannot be longer than 24 hours. Choose an end time within a day of the start.
+CONTEXT:  PL/pgSQL function private.stop_running_timer_at(uuid,uuid,uuid,boolean,timestamp with time zone) line 33 at RAISE
+PL/pgSQL function public.stop_timer_at(uuid,uuid,date,time without time zone) line 26 at RETURN
+ROLLBACK
+== ...the manager stops it at 5:30 pm the day it started: 10 hours, nothing resumes
+                                                                                             stop_timer_at                                                                                              
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"kind": "visit", "job_id": "698bbe09-ce9f-4b92-87b2-57dfcd4f9b1e", "minutes": 600, "stopped": true, "entry_id": "e6512419-8b72-43ae-8256-0f943fcde7e3", "recorded": true, "day_clock_resumed": false}
+(1 row)
+
+RESET
+ same_id | minutes | source 
+---------+---------+--------
+ t       |     600 | timer
+(1 row)
+
+ still_running 
+---------------
+             0
+(1 row)
+
+SET
+ action  |    who     | minutes 
+---------+------------+---------
+ stopped | Jafar Khan | 600
+(1 row)
+
+== Manager clocks the field member in
+                                                        clock_in_member                                                        
+-------------------------------------------------------------------------------------------------------------------------------
+ {"clocked_in": true, "started_at": "2026-10-12T00:02:53.254074+00:00", "paused_by_visit": false, "already_clocked_in": false}
+(1 row)
+
+RESET
+  kind   | by_owner 
+---------+----------
+ general | t
+(1 row)
+
+SET
+== Labor section correction still works and lands in the history
+                                 update_job_time_entry                                 
+---------------------------------------------------------------------------------------
+ {"id": "e6512419-8b72-43ae-8256-0f943fcde7e3", "changed": true, "after_close": false}
+(1 row)
+
+ action  | prior_notes |  new_notes  
+---------+-------------+-------------
+ stopped |             | 
+ changed |             | Gutter work
+(2 rows)
+
+== Entries list says what the field member may change
+                                 set_config                                 
+----------------------------------------------------------------------------
+ {"sub" : "7d450c50-b3e5-4f97-8ee9-50e08c1f70bb", "role" : "authenticated"}
+(1 row)
+
+  kind   | running | can_edit | can_delete | edited 
+---------+---------+----------+------------+--------
+ job     | false   | true     | true       | true
+ job     | false   | true     | true       | false
+ general | false   | true     | true       | false
+ job     | false   | true     | true       | false
+ general | false   | true     | true       | false
+ job     | false   | true     | true       | false
+ general | false   | true     | true       | false
+ general | true    | true     | false      | false
+(8 rows)
+
+== Anonymous cannot call the commands
+RESET
+SET
+SAVEPOINT
+psql:docs/research/time-clock-corrections-2026-10-12/database-proof.sql:156: ERROR:  permission denied for function add_time_entry
+ROLLBACK
+ROLLBACK
