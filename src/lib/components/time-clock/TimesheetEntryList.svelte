@@ -17,7 +17,7 @@
 	// Times are the business's own clock, where the work happened.
 	let {
 		entries,
-		userId,
+		userId = '',
 		actions,
 		days,
 		timezone,
@@ -27,9 +27,9 @@
 	}: {
 		entries: TimesheetEntry[];
 		/** Whose entries these are. */
-		userId: string;
-		/** Edit, stop, history and delete, opened by the page. */
-		actions: TimesheetEntryActions;
+		userId?: string;
+		/** Edit, stop, history and delete, opened by the page. Without them the list is read-only. */
+		actions?: TimesheetEntryActions;
 		/** The window's days, so a week reads Sunday to Saturday with empty days left out. */
 		days: string[];
 		timezone: string;
@@ -55,7 +55,7 @@
 	});
 
 	// Edit, Stop, History and Delete, each only when the reader may (the database said so per entry).
-	function menuItems(entry: TimesheetEntry) {
+	function menuItems(entry: TimesheetEntry, actions: TimesheetEntryActions) {
 		const items = [];
 		if (entry.can_edit) {
 			items.push({
@@ -152,14 +152,17 @@
 								{durationLabel(entry.minutes)}
 							{/if}
 						</span>
-						<span
-							class="timesheet-entry__menu"
-							role="presentation"
-							onpointerenter={() => actions.warm(entry)}
-							onfocusin={() => actions.warm(entry)}
-						>
-							<DropdownMenu items={menuItems(entry)} triggerLabel="Entry actions" />
-						</span>
+						{#if actions}
+							{@const entryActions = actions}
+							<span
+								class="timesheet-entry__menu"
+								role="presentation"
+								onpointerenter={() => entryActions.warm(entry)}
+								onfocusin={() => entryActions.warm(entry)}
+							>
+								<DropdownMenu items={menuItems(entry, entryActions)} triggerLabel="Entry actions" />
+							</span>
+						{/if}
 					</li>
 				{/each}
 			</ul>
