@@ -1,0 +1,210 @@
+BEGIN
+ALTER TABLE
+COMMENT
+CREATE INDEX
+ALTER TABLE
+ALTER TABLE
+COMMENT
+COMMENT
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+REVOKE
+CREATE TRIGGER
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+DROP FUNCTION
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+COMMENT
+DROP FUNCTION
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+CREATE FUNCTION
+DROP FUNCTION
+CREATE FUNCTION
+COMMENT
+REVOKE
+GRANT
+CREATE FUNCTION
+COMMENT
+CREATE TABLE
+GRANT
+INSERT 0 4
+INSERT 0 4
+UPDATE 3
+INSERT 0 3
+                                 set_config                                 
+----------------------------------------------------------------------------
+ {"sub" : "7d450c50-b3e5-4f97-8ee9-50e08c1f70bb", "role" : "authenticated"}
+(1 row)
+
+SET
+  check   | clocked_in 
+----------+------------
+ clock in | true
+(1 row)
+
+RESET
+UPDATE 1
+                                 set_config                                 
+----------------------------------------------------------------------------
+ {"sub" : "7d450c50-b3e5-4f97-8ee9-50e08c1f70bb", "role" : "authenticated"}
+(1 row)
+
+SET
+      check       | already_running | day_clock_paused 
+------------------+-----------------+------------------
+ start assessment | false           | true
+(1 row)
+
+    check    | already_running 
+-------------+-----------------
+ start again | true
+(1 row)
+
+  check   |    kind    |     request      | clocked_in 
+----------+------------+------------------+------------
+ my timer | assessment | Proof roof check | true
+(1 row)
+
+psql:docs/research/time-clock-assessment-timers-2026-10-12/database-proof.sql:66: NOTICE:  second timer refused: You already have a timer running. Stop it before starting another.
+DO
+RESET
+UPDATE 1
+                                 set_config                                 
+----------------------------------------------------------------------------
+ {"sub" : "7d450c50-b3e5-4f97-8ee9-50e08c1f70bb", "role" : "authenticated"}
+(1 row)
+
+SET
+INSERT 0 1
+RESET
+  check  |    kind    | minutes | on_request 
+---------+------------+---------+------------
+ stopped | assessment |      40 | t
+(1 row)
+
+                                 set_config                                 
+----------------------------------------------------------------------------
+ {"sub" : "7d450c50-b3e5-4f97-8ee9-50e08c1f70bb", "role" : "authenticated"}
+(1 row)
+
+SET
+       check       |  kind   
+-------------------+---------
+ day clock resumed | general
+(1 row)
+
+     check      |    kind    | minutes |     request      | no_job | can_edit 
+----------------+------------+---------+------------------+--------+----------
+ crew timesheet | assessment | 40      | Proof roof check | t      | false
+(1 row)
+
+   check   | stopped_kind 
+-----------+--------------
+ clock out | general
+(1 row)
+
+psql:docs/research/time-clock-assessment-timers-2026-10-12/database-proof.sql:93: NOTICE:  tomorrow refused: Only an assessment booked for today can be timed.
+DO
+psql:docs/research/time-clock-assessment-timers-2026-10-12/database-proof.sql:98: NOTICE:  unassigned refused: You do not have access to time this assessment.
+DO
+RESET
+          check          | job_entries_today 
+-------------------------+-------------------
+ crew job cost untouched |                 0
+(1 row)
+
+                                 set_config                                 
+----------------------------------------------------------------------------
+ {"sub" : "7d450c50-b3e5-4f97-8ee9-50e08c1f70bb", "role" : "authenticated"}
+(1 row)
+
+SET
+        check         | already_running 
+----------------------+-----------------
+ start for completion | false
+(1 row)
+
+RESET
+UPDATE 1
+                                 set_config                                 
+----------------------------------------------------------------------------
+ {"sub" : "1d50477c-8c55-4d33-a550-91ecf637b624", "role" : "authenticated"}
+(1 row)
+
+SET
+UPDATE 1
+RESET
+         check         | still_running | assessment_entries | minutes 
+-----------------------+---------------+--------------------+---------
+ completed stops timer |             0 |                  2 |      65
+(1 row)
+
+                                 set_config                                 
+----------------------------------------------------------------------------
+ {"sub" : "7d450c50-b3e5-4f97-8ee9-50e08c1f70bb", "role" : "authenticated"}
+(1 row)
+
+SET
+psql:docs/research/time-clock-assessment-timers-2026-10-12/database-proof.sql:124: NOTICE:  completed refused: This assessment is already complete. Mark it incomplete to time it again.
+DO
+RESET
+                                 set_config                                 
+----------------------------------------------------------------------------
+ {"sub" : "1d50477c-8c55-4d33-a550-91ecf637b624", "role" : "authenticated"}
+(1 row)
+
+SET
+         check          | changed 
+------------------------+---------
+ owner keeps assessment | true
+(1 row)
+
+psql:docs/research/time-clock-assessment-timers-2026-10-12/database-proof.sql:140: NOTICE:  other assessment refused: Only an assessment's own hours can stay on it.
+DO
+        check        | changed 
+---------------------+---------
+ owner makes general | true
+(1 row)
+
+  check  | action  |   before   |  before_request  |   after    
+---------+---------+------------+------------------+------------
+ history | stopped |            |                  | assessment
+ history | changed | assessment | Proof roof check | assessment
+ history | changed | assessment | Proof roof check | general
+(3 rows)
+
+RESET
+    check    | general 
+-------------+---------
+ now general | t
+(1 row)
+
+ROLLBACK

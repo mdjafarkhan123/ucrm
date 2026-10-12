@@ -148,6 +148,59 @@ describe('the signed-in person’s timer', () => {
 		});
 	});
 
+	describe('starting on an assessment', () => {
+		const assessmentId = '00000000-0000-4000-8000-000000000006';
+
+		it('starts the caller’s timer on the assessment, never naming anyone else', async () => {
+			const request = event(base, JSON.stringify({ assessment_id: assessmentId }), {
+				data: { started_at: '2026-10-11T09:00:00Z', already_running: false, day_clock_paused: true }
+			});
+			const response = await POST(request);
+			expect(response.status).toBe(200);
+			expect(mockedRequire).toHaveBeenCalledWith(request, 'jobs.view');
+			expect(request.locals.supabase.rpc).toHaveBeenCalledWith('start_assessment_timer', {
+				target_organization_id: organizationId,
+				target_assessment_id: assessmentId
+			});
+			expect(response.headers.get('cache-control')).toBe('no-store');
+		});
+
+		it('refuses a malformed assessment, or one mixed with a visit, before the database', async () => {
+			const broken = event(base, JSON.stringify({ assessment_id: 'nope' }));
+			const mixed = event(
+				base,
+				JSON.stringify({ assessment_id: assessmentId, job_id: jobId, visit_id: visitId })
+			);
+			expect((await POST(broken)).status).toBe(422);
+			expect((await POST(mixed)).status).toBe(422);
+			expect(broken.locals.supabase.rpc).not.toHaveBeenCalled();
+			expect(mixed.locals.supabase.rpc).not.toHaveBeenCalled();
+		});
+
+		it('reads an assessment the caller may not time as not found', async () => {
+			const response = await POST(
+				event(base, JSON.stringify({ assessment_id: assessmentId }), {
+					error: { code: '42501', message: 'permission denied' }
+				})
+			);
+			expect(response.status).toBe(404);
+			expect((await response.json()).error).toBe('That assessment could not be found.');
+		});
+
+		it('carries the database’s sentence for an assessment not booked for today', async () => {
+			const response = await POST(
+				event(base, JSON.stringify({ assessment_id: assessmentId }), {
+					error: { code: 'P0410', message: 'Only an assessment booked for today can be timed.' }
+				})
+			);
+			expect(response.status).toBe(409);
+			expect(await response.json()).toEqual({
+				error: 'Only an assessment booked for today can be timed.',
+				reason: 'locked'
+			});
+		});
+	});
+
 	describe('stopping', () => {
 		it('needs a signed-in member, not a timer permission', async () => {
 			mockedContext.mockResolvedValue(null);

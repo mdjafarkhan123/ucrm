@@ -176,6 +176,7 @@ describe('Timesheets corrections', () => {
 			['a time that is not a clock time', { ...entry, start_time: '8am' }, 'start_time'],
 			['the same start and end', { ...entry, end_time: '22:00' }, 'end_time'],
 			['a visit on General time', { ...entry, visit_id: entryId }, 'visit_id'],
+			['hours put on an assessment by hand', { ...entry, request_id: entryId }, 'request_id'],
 			['a field the form does not have', { ...entry, minutes: 30 }, 'form']
 		] as const) {
 			it(`refuses ${name}`, async () => {
@@ -215,6 +216,32 @@ describe('Timesheets corrections', () => {
 				'update_time_entry',
 				expect.objectContaining({ target_entry_id: entryId, target_job_id: jobId })
 			);
+		});
+
+		it('keeps assessment hours on their own request', async () => {
+			const requestId = '00000000-0000-4000-8000-000000000009';
+			const { rpc, response } = call(CHANGE, {
+				method: 'PATCH',
+				body: { ...entry, request_id: requestId },
+				params: { entryId }
+			});
+			expect((await response).status).toBe(200);
+			expect(rpc).toHaveBeenCalledWith(
+				'update_time_entry',
+				expect.objectContaining({ target_job_id: null, target_request_id: requestId })
+			);
+		});
+
+		it('refuses hours on a job and an assessment at once', async () => {
+			const { rpc, response } = call(CHANGE, {
+				method: 'PATCH',
+				body: { ...entry, job_id: jobId, request_id: entryId },
+				params: { entryId }
+			});
+			const result = await response;
+			expect(result.status).toBe(422);
+			expect(Object.keys((await result.json()).field_errors)).toContain('request_id');
+			expect(rpc).not.toHaveBeenCalled();
 		});
 
 		it('says a running timer cannot be changed like an entry', async () => {

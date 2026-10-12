@@ -9,7 +9,10 @@ import {
 	validationError
 } from '$lib/server/api/errors';
 import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
-import { startVisitTimerSchema } from '$lib/server/validation/time-clock.schema';
+import {
+	startAssessmentTimerSchema,
+	startVisitTimerSchema
+} from '$lib/server/validation/time-clock.schema';
 import { timerError } from '$lib/server/time-clock/errors';
 
 // The signed-in person's own running timer, whether they may run one, and the server's clock to count it
@@ -28,8 +31,9 @@ export const GET: RequestHandler = async (event) => {
 	return json(data, { headers: NO_STORE_HEADERS });
 };
 
-// Starting the caller's own timer on a visit. jobs.view is the route gate; whether they may time it, and
-// whether the job and visit are still open, is decided by `start_visit_timer`.
+// Starting the caller's own timer on a visit, or on an Assessment when the body names one. jobs.view is the
+// route gate; whether they may time it, and whether the job and visit are still open or the Assessment is
+// today's, is decided by `start_visit_timer` and `start_assessment_timer`.
 export const POST: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'jobs.view');
 	if ('response' in check) return check.response;
@@ -39,6 +43,19 @@ export const POST: RequestHandler = async (event) => {
 		body = await event.request.json();
 	} catch {
 		return validationError({ form: 'Request body must be valid JSON.' });
+	}
+
+	if (body !== null && typeof body === 'object' && 'assessment_id' in body) {
+		const assessment = startAssessmentTimerSchema.safeParse(body);
+		if (!assessment.success) return validationError(zodFieldErrors(assessment.error));
+
+		const { data, error } = await event.locals.supabase.rpc('start_assessment_timer', {
+			target_organization_id: check.auth.organization.id,
+			target_assessment_id: assessment.data.assessment_id
+		});
+		if (error) return timerError(error, 'That assessment could not be found.');
+
+		return json(data, { headers: NO_STORE_HEADERS });
 	}
 
 	const parsed = startVisitTimerSchema.safeParse(body);

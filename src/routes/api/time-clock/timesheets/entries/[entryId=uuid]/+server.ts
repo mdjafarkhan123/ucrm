@@ -13,7 +13,8 @@ function refused() {
 	);
 }
 
-// Correcting an entry (plan § Timesheets page): the person, what it was for, the day, times and notes. The
+// Correcting an entry (plan § Timesheets page): the person, what it was for, the day, times and notes.
+// Assessment hours send their own Request to stay on it, or none to become General. The
 // command checks the reader may change the hours as they are and as they become, refuses a running timer, and
 // writes the before and after to the edit history (and to Job costing for Job hours).
 export const PATCH: RequestHandler = async (event) => {
@@ -34,7 +35,8 @@ export const PATCH: RequestHandler = async (event) => {
 		work_day: body.data.day,
 		start_time: body.data.start_time,
 		end_time: body.data.end_time,
-		notes: body.data.notes ?? undefined
+		notes: body.data.notes ?? undefined,
+		target_request_id: body.data.request_id ?? undefined
 	});
 	if (error) return timesheetWriteError(error);
 
