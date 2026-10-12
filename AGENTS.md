@@ -133,6 +133,13 @@ before changing files (`--mode read` for research). Release after safe integrati
   questions that come up mid-way or in later sessions. Choose technical details yourself using proven methods.
   Tell Jafar which product or method you followed.
 - **Frontend design.** Screens look premium, professional, and modern.
+- **Design in Pencil first (Jafar, 2026-10-12).** Pencil is where new UI/UX is designed, before any code:
+  `classic.pen` holds the Classic design system (colors, type, spacing and parts taken from the real app's SCSS and
+  components, not invented). Design new screens there from its parts; make adjustments there first, and update the
+  design system there when a part must change. Build only after Jafar approves the Pencil design, and tell him which
+  screens and parts changed. When Pencil's design system changes, update the app's design system and design skills in
+  the same slice so they match. Keep Classic and Botanical in separate files; the `.pen` files are read and written
+  only through the Pencil tools, and the tools edit only the file open in the app.
 - **Svelte 5 only.** No Svelte 4 syntax anywhere.
 - SCSS + BEM for all styling. Tabler icons for all icons.
 - Component styles live inside the component's own `<style lang="scss">` block. `app.scss` holds only the global

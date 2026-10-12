@@ -16,7 +16,7 @@ production; every test possible before it is run before it. Order:
 
 1. ~~Part 16, Time clock~~ — done 2026-10-12.
 2. **Part 12, Alerts** — web build done and merged to main 2026-10-12 (`f196fbb9`). Still open: real-browser pop-up proof and Pipeline contract wording. See "Part 12 handover" below.
-3. **Part 13, Home screen and Reports.**
+3. **Part 13, Home screen and Reports** — design in Pencil first (`classic.pen`, rule in CLAUDE.md); next session starts by building the Classic design system there.
 4. **Part 14, Customer portal.**
 5. **Part 15, Extras**: Quote templates, auto-archive, automation recipes, bulk Visit move, custom fields.
 6. **Part 8, final audit** — plus the postponed-work P1 items and every test possible without a server.
