@@ -133,7 +133,9 @@ before changing files (`--mode read` for research). Release after safe integrati
   questions that come up mid-way or in later sessions. Choose technical details yourself using proven methods.
   Tell Jafar which product or method you followed.
 - **Frontend design.** Screens look premium, professional, and modern.
-- **Design in Pencil first (Jafar, 2026-10-12).** Pencil is where new UI/UX is designed, before any code:
+- **Design in Pencil first (Jafar, 2026-10-12) — DRAFT wording.** The workflow is approved; this text was written
+  without the writing-for-agents skill and is to be reviewed and rewritten next session, including any tools, skills
+  and guidance it needs to be followable. Pencil is where new UI/UX is designed, before any code:
   `classic.pen` holds the Classic design system (colors, type, spacing and parts taken from the real app's SCSS and
   components, not invented). Design new screens there from its parts; make adjustments there first, and update the
   design system there when a part must change. Build only after Jafar approves the Pencil design, and tell him which
