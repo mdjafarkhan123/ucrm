@@ -2,14 +2,15 @@
 
 **Goal:** Finish the theme foundation, then deliver complete Botanical across the Business Workspace.
 **Plan:** `docs/crm-design-system-behavior-contract.md`; Stage A and initial Stage B sequence/coverage approved 2026-10-12.
-**Stage:** Paused for a fresh session; next is foundation A1 build planning and proof.
+**Stage:** Foundation implementation; A1 verified, awaiting integration from `codex/crm-theme-a1`.
 
-**Done:** Planning Parts 1 and 2. Jafar approved the foundation agreement/sequence and answered “Approve the Botanical sequence”. Coordination rules approved, verified, merged and pushed as `b64c1def`.
+**Done:** Planning Parts 1/2 approved. A1 checks pass: current real shells, private SSR/CSR/overlay isolation, repeated-switch styles and failure recovery. All 73 page routes inventoried; A4 safety batches bounded. Proof: `docs/research/crm-theme-foundation-a1-2026-10-12.md`.
 
-**Next:** Read `parts/theme-foundation-a1.md`, reserve A1 in an isolated worktree, and recheck reusable source/evidence against current main. Finish A1's delivery/edit-safety inventory and appropriate private proof. No planning approval needs repeating.
+**Next:** Merge/push A1, then A2a's chooser, fictional preview, notice and recovery demo. Read `parts/theme-foundation-a2a.md`. Planning approvals need no repetition; new visuals need scoped review.
 
-**Blockers:** None for A1. Real Botanical implementation waits for Stage A completion and each portion's visual approval. No new appearance approved.
+**Blockers:** None for A2a. Full-project type checking exhausted Node's heap; focused check/build pass. Existing Dashboard performance and narrow/enlarged-text form gaps remain named in proof. No saved organization choice or safe-apply registry yet.
 
-**Preserved:** Exact v3/sidebar/header approvals; incremental demo → approval → guidance → implementation; selected-theme-only page/component/style loading; Classic preservation. Existing shell proof is limited, not complete-theme or zero-overhead evidence.
+**Preserved:** Exact v3/sidebar/header approvals; incremental demo → approval → guidance → implementation; selected-only delivery; Classic preservation. Botanical remains private/incomplete, with dark design unapproved. A1 proves only its tested seam.
 
+**Workspace:** `/home/jafar/.codex/worktrees/crm-theme-a1/Ucrm`; reservation `c63633f56a27` until integration.
 **Resume:** `Read Memory and continue crm-design-system.`

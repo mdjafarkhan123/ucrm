@@ -4,7 +4,13 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
 const output = process.env.PROOF_OUTPUT ?? '/tmp/real-design-shell';
 await mkdir(output, { recursive: true });
-const origins = { classic: 'http://127.0.0.1:4175', botanical: 'http://127.0.0.1:4176' };
+const origins = {
+	classic: process.env.CLASSIC_PROOF_ORIGIN ?? 'http://127.0.0.1:4175',
+	botanical: process.env.BOTANICAL_PROOF_ORIGIN ?? 'http://127.0.0.1:4176'
+};
+for (const origin of Object.values(origins)) {
+	assert(['localhost', '127.0.0.1'].includes(new URL(origin).hostname));
+}
 const login = await readFile('Login.md', 'utf8');
 const credentials = login.match(/Contractor owner: `([^`]+)` \/\s*`([^`]+)`/);
 assert(credentials, 'Existing owner test login missing');
@@ -21,10 +27,46 @@ const frameEntries = Object.fromEntries(
 		return [design, found];
 	})
 );
+function graph(key, seen = new Set()) {
+	if (seen.has(key)) return [];
+	seen.add(key);
+	const entry = manifest[key];
+	assert(entry, `Missing manifest entry ${key}`);
+	return [
+		entry.file,
+		...(entry.css ?? []),
+		...(entry.assets ?? []),
+		...(entry.imports ?? []).flatMap((dependency) => graph(dependency, seen))
+	];
+}
+const frameGraphs = Object.fromEntries(
+	Object.entries(frameEntries).map(([design, [key]]) => [design, graph(key)])
+);
+// Dialog/Svelte/icon primitives are also used by the shared app layout. Subtract that
+// authoritative shared graph, rather than mislabelling them as Botanical-exclusive.
+const sharedFiles = new Set();
+for (const [key, entry] of Object.entries(manifest)) {
+	if (!entry.isEntry || !key.includes('/nodes/')) continue;
+	const source = await readFile(key.replace('client-optimized', 'client'), 'utf8');
+	if (
+		!source.includes('src/routes/(app)/+layout.svelte') &&
+		!source.includes('src/routes/+layout.svelte')
+	)
+		continue;
+	for (const file of graph(key)) sharedFiles.add(file);
+}
+assert(sharedFiles.size, 'Shared layout graph was found');
+for (const [, entry] of Object.values(frameEntries)) {
+	assert(!sharedFiles.has(entry.file), 'A frame must never be eager in the shared layout');
+}
 const exclusiveFiles = Object.fromEntries(
-	Object.entries(frameEntries).map(([design, [, entry]]) => [
+	Object.entries(frameGraphs).map(([design, files]) => [
 		design,
-		[entry.file, ...(entry.css ?? []), ...(entry.assets ?? [])]
+		files.filter(
+			(file) =>
+				!sharedFiles.has(file) &&
+				!frameGraphs[design === 'classic' ? 'botanical' : 'classic'].includes(file)
+		)
 	])
 );
 const styleIds = Object.fromEntries(
@@ -279,6 +321,8 @@ try {
 				scope:
 					'Real shell, existing owner account, SSR, idle/hover warming, client navigation, account menu, drawer, pinned create-form bar; no records saved',
 				frameEntries,
+				exclusiveFiles,
+				sharedFiles: [...sharedFiles],
 				styleIds,
 				fieldMenus,
 				results

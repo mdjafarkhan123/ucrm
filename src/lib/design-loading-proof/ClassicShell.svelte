@@ -18,7 +18,9 @@
 
 <style lang="scss">
 	.proof-shell {
+		--proof-accent: #2563eb;
 		min-height: 100vh;
+		overflow-wrap: anywhere;
 		background: #f4f6f8;
 		color: #172b4d;
 		.proof-shell__header {
@@ -33,17 +35,30 @@
 			padding: 24px;
 			margin: auto;
 		}
-		:global(a) {
+		:global(a),
+		:global(button) {
 			display: inline-block;
+			max-width: 100%;
 			margin-top: 24px;
 			color: #2563eb;
 			padding: 8px;
 			border-radius: 6px;
 		}
-		:global(a:hover) {
+		:global(button) {
+			border: 1px solid var(--proof-accent);
+			background: white;
+			cursor: pointer;
+		}
+		:global(button:disabled) {
+			opacity: 0.5;
+			cursor: default;
+		}
+		:global(a:hover),
+		:global(button:hover) {
 			text-decoration: underline;
 		}
-		:global(a:focus-visible) {
+		:global(a:focus-visible),
+		:global(button:focus-visible) {
 			outline: 3px solid #2563eb;
 			outline-offset: 3px;
 		}
