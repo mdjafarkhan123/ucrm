@@ -27,7 +27,13 @@ number, explicit corrections, and stable IDs that let an accountant trace summar
   be recorded as a Payment, and valid debt that will not be collected must use Bad Debt. Historical Mark Received
   records remain immutable and appear as unsettled reconciliation exceptions.
 - **Tax:** each effective Invoice's frozen `tax_minor` is the sole tax source. Draft, voided, and superseded bills are
-  excluded. Tax is reported separately from net sales and cash.
+  excluded. Tax is reported separately from net sales and cash. Cash-basis tax (added 2026-10-12, Home and Reports
+  plan) is the tax share of each payment applied to an Invoice — applied amount × Invoice tax ÷ Invoice total — on
+  the payment date; money received but not applied is reported as unapplied, never assigned a tax rate.
+- **Money owed:** Client outstanding plus opening receivables, before credit — one figure on Home, list overviews,
+  reports and exports. Historical Mark Received invoices are excluded from it and listed as exceptions.
+- **Tips:** a recorded part of the payment event, reported in their own column; never billed sales and never
+  part of cash collected for an Invoice.
 - **Job profitability:** operational revenue is Job total less Job tax. Cost is snapshotted item cost plus rated
   labor plus recorded expenses. Unrated labor is disclosed and excluded rather than valued at zero. Job profit is
   operational analysis; it is neither billed sales nor cash received.
@@ -59,9 +65,10 @@ cash, tax, Job profitability, or Pipeline results.
   Time-entry identity and duration follow the existing own/team scope; exports must not widen that scope.
 - Pipeline outcomes require Pipeline access. Every read is explicitly tenant-scoped in addition to RLS.
 - A report or CSV omits unauthorized columns or records; it never substitutes zero for hidden money.
-- In the stock role matrix only Owner and Admin hold `invoices.view`, so today only they can start the accountant
-  package at all; Office, Sales and Finance are refused. The per-ledger omissions above therefore arise from
-  per-member permission overrides rather than from any stock role.
+- In the stock role matrix Owner, Admin, Finance and Office hold `invoices.view` and `invoices.view_price` (Finance and
+  Office since 2026-09-28), so they can start the accountant package; Sales and Field are refused. The per-ledger
+  omissions above arise from the remaining permissions each role holds (for example `jobs.view_cost`) and from
+  per-member overrides.
 
 The accountant-ready package contains stable, documented CSVs for invoices/sales, payment events, allocations,
 deposits/credits, refunds/reversals, tax, Job profitability, expenses, time entries, uninvoiced work, sales outcomes,

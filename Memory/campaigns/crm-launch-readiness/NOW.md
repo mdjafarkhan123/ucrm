@@ -6,59 +6,27 @@ Controlled first launch, then wider access only from measured evidence.
 
 ## Current state
 
-Parts 1–4, 10, 11 complete. P9B built 2026-10-10 (`docs/production-release-runbook.md`). Practice server for
-P9C–P9F; real server last. No infrastructure is approved.
+Parts 1–4, 10, 11, 12 (web) and 16 complete. P9B built 2026-10-10 (`docs/production-release-runbook.md`). No
+infrastructure is approved. Classic design system in `classic.pen` approved 2026-10-12.
 
 ## Exact next action
 
-Jafar's plan (2026-10-10): finish the whole app first, then production. Real-world tests happen after
-production; every test possible before it is run before it. Order:
+Jafar's plan (2026-10-10): finish the whole app, then production, then real-world tests. Order:
 
-1. ~~Part 16, Time clock~~ — done 2026-10-12.
-2. **Part 12, Alerts** — web build done and merged to main 2026-10-12 (`f196fbb9`); Pipeline wording done. Real-browser pop-up proven 2026-10-12. Part 12 web scope complete. See "Part 12 handover" below.
-3. **Part 13, Home screen and Reports** — design in Pencil first (steps in `.claude/skills/design/SKILL.md`
-   § "Design in Pencil first"). Classic design system built in `classic.pen` 2026-10-12: frame "Classic design
-   system" (principles, color, type, spacing/shape, 7 component groups as reusable parts) and "Classic design
-   system · dark"; 89 variables with a `mode` light/dark theme, named after `_variables.scss`. **Jafar approved it
-   2026-10-12** (frames "Classic design system" and "Classic design system · dark"). Known gaps: tertiary button drawn solid (Pencil has no dashes); `ui/Tooltip.svelte`
-   is empty, InfoTip drawn instead; Banner icon `2.4rem` (38px) looks like a stale 10px-rem value.
-   **Next session:** design Home and Reports below the design system at 1440 and 390, from its parts.
-4. **Part 14, Customer portal.**
-5. **Part 15, Extras**: Quote templates, auto-archive, automation recipes, bulk Visit move, custom fields.
-6. **Part 8, final audit** — plus the postponed-work P1 items and every test possible without a server.
-7. **Part 9, production** (P9A answer needed first), then real-world tests, then launch.
+1. **Part 13, Home and Reports** — plan approved 2026-10-12 (`docs/home-and-reports-behavior-contract.md`). Next:
+   design in Pencil — see `parts/part-13-home-reports.md`.
+2. **Part 14, Customer portal.**
+3. **Part 15, Extras** — Quote templates, auto-archive, automation recipes, bulk Visit move, custom fields,
+   week-start setting.
+4. **Part 8, final audit**, plus postponed-work P1 items and every test possible without a server.
+5. **Part 9, production** (P9A answer first), then real-world tests, then launch.
 
-Part 16 ran as campaign `time-clock` and closed 2026-10-12 (`docs/research/time-clock-final-proof-2026-10-12/final-proof.md`).
+Open from Part 12: Jafar has not decided on an in-page "ding" while the CRM tab is open; `invitations.spec.ts` has 4
+old lint errors.
 
 ## Essential pointers
 
 - `docs/crm-launch-implementation-roadmap.md` § Feature checklist — the one list of missing features.
-- `docs/research/jobber-feature-catalog-2026-10-08.md` — Jobber features by plan, with sources.
 - `docs/production-readiness-plan.md` — Part 9 plan awaiting P9A approval.
 
 Resume command: `read memory and continue crm-launch-readiness`.
-
-
-## Part 12 handover (2026-10-12)
-
-Plan: `docs/alerts-behavior-contract.md` (approved; web only, phone push waits for native apps). Built and committed on
-`codex/alerts-part-12`: migrations `20261212090000_alert_channels_and_schedule_alerts.sql` and
-`20261212100000_alert_followups.sql` (**already applied to the remote database**), the My alerts page
-(`/settings/alerts`, linked from the account menu), browser alerts (`src/service-worker.ts`,
-`src/lib/team/browser-alerts.ts`, `src/lib/server/team/browser-alerts.ts`), `/api/notifications/preferences` and
-`/api/notifications/push`, and the worker hook in `/api/internal/automation/worker`.
-
-Proven: type check 0 errors; 102 unit tests pass; database rules tested on real data (series of 26 Visits = one alert,
-move/remove/cancel, Email switch, per-computer delivery, shared computer takeover, gone computer removed, leaver,
-12-hour timer, customer message); server delivery proven end to end with a stand-in browser (real keys, decrypted
-payload, VAPID header, opens the Job, nothing sent twice); My alerts screen checked at 1568px and 390px.
-
-Left for the next session:
-1. ~~Merge to main~~ — done 2026-10-12, pushed, `npm install` run, worktree removed.
-2. ~~Real-browser proof~~ — done 2026-10-12 in Jafar's Brave on localhost: Raad field worker turned on, owner put
-   them on a Visit through `PATCH /api/jobs/[id]/visits/[visitId]`, delivery `sent` 1 attempt, Jafar saw the pop-up,
-   click opened the Job. No sound: browsers ignore site sounds; it is the OS notification setting. Offered an
-   in-page "ding" while the CRM tab is open (Slack/Gmail pattern); Jafar has not decided.
-3. `src/lib/server/team/invitations.spec.ts` has 4 old lint errors (unused `_` args), not from this work.
-4. ~~Pipeline contract wording and deferred note~~ — done 2026-10-12.
-5. Not built (deliberately): phone push, quiet hours, owner-forced alerts.

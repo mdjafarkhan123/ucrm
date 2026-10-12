@@ -1,8 +1,10 @@
 # Home screen and Reports
 
-**Status:** Planning — Jafar chose on 2026-10-12: one Home that fits each person; eight first reports; Reports
-in every plan, owner chooses who sees them; charts decided by what contractors need, not by build size. A fresh
-review on 2026-10-12 tightened the definitions. The whole plan awaits his approval. Roadmap Part 13 of
+**Status:** First version approved by Jafar on 2026-10-12, including the six decisions settled after the fresh
+review (Office sees money cards; Late follows the Schedule rule; tips separate from Collected; Money owed shows
+today; "Mark received" invoices listed as Needs checking; two Tax views). Earlier the same day he chose one Home
+that fits each person, eight first reports, and Reports in every plan with the owner choosing who sees them, and
+asked that charts follow what contractors need, not build size. Next: design in `classic.pen`. Roadmap Part 13 of
 `crm-launch-readiness`.
 
 ## Summary
@@ -162,7 +164,7 @@ table view for screen readers and for exact numbers.
 
 ## Money rules
 
-All figures follow `docs/financial-reconciliation-contract.md`. This plan amends it (on approval) in four places:
+All figures follow `docs/financial-reconciliation-contract.md`. This plan amended it on 2026-10-12 in four places:
 its permission section is updated to the 2026-09-28 Finance and Office invoice access; it gains the cash-basis
 tax rule and the tips rule below; and "Money owed" is defined below.
 
@@ -206,7 +208,7 @@ tax rule and the tips rule below; and "Money owed" is defined below.
 
 ## Still unclear
 
-- None blocking; awaiting Jafar's approval of the whole plan.
+- None for the first version.
 
 ## Not doing
 
