@@ -21,7 +21,12 @@ export type TeamNotificationKind =
 	| 'pipeline.task_assigned'
 	| 'pipeline.note_mention'
 	| 'quote.customer_approved'
-	| 'quote.changes_requested';
+	| 'quote.changes_requested'
+	| 'schedule.assigned'
+	| 'schedule.removed'
+	| 'schedule.changed'
+	| 'time.timer_running_long'
+	| 'communications.message_received';
 
 export type TeamNotification = {
 	id: string;
@@ -60,6 +65,15 @@ export function teamNotificationHref(
 	if (subjectType === 'opportunity')
 		return `/pipeline?${new URLSearchParams({ brief: subjectId }).toString()}`;
 	if (subjectType === 'task_batch') return '/pipeline';
+	// Part 12: a Visit alert opens its Job; an Assessment alert opens its Request (through the generic link
+	// below); a running timer is stopped or corrected on Timesheets.
+	if (subjectType === 'job') return `/jobs/${subjectId}`;
+	if (subjectType === 'running_timer') return '/timesheets';
+	if (subjectType === 'inbound_message') {
+		return link?.client_id
+			? `/communications?${new URLSearchParams({ client: link.client_id }).toString()}`
+			: '/communications';
+	}
 	if (subjectType === 'website_chat_session') {
 		const key = link?.client_id ?? `webchat:${subjectId}`;
 		return `/communications?${new URLSearchParams({ client: key }).toString()}`;

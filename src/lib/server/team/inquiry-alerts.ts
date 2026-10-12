@@ -82,16 +82,39 @@ function escapeHtml(value: string) {
 		.replace(/"/g, '&quot;');
 }
 
+// Why this person is getting the email, in the words of the alert.
+function alertEmailFooter(alert: ClaimedAlertEmail) {
+	const org = alert.organization_name;
+	switch (alert.kind) {
+		case 'pipeline.task_assigned':
+			return `You get this because a teammate at ${org} gave you a Task.`;
+		case 'pipeline.note_mention':
+			return `You get this because a teammate at ${org} mentioned you in a note.`;
+		case 'quote.customer_approved':
+		case 'quote.changes_requested':
+		case 'quote.customer_declined':
+		case 'quote.delivery_failed':
+			return `You get this because you look after this quote at ${org}.`;
+		case 'schedule.assigned':
+		case 'schedule.removed':
+		case 'schedule.changed':
+			return `You get this because your schedule at ${org} changed.`;
+		case 'time.timer_running_long':
+			return `You get this because a timer you started at ${org} is still running.`;
+		case 'communications.message_received':
+			return `You get this because a customer wrote to ${org}.`;
+		case 'review.private_feedback':
+			return `You get this because you can see private review feedback at ${org}.`;
+		default:
+			return alert.kind.startsWith('invoice.') || alert.kind.startsWith('quote.deposit_')
+				? `You get this because you record payments at ${org}.`
+				: `You get these alerts because ${org} chose you for new website inquiries.`;
+	}
+}
+
 export function buildAlertEmail(alert: ClaimedAlertEmail, link: string | null): AlertEmail {
 	const lines = [alert.title, alert.body ?? ''].filter(Boolean);
-	const footer =
-		alert.kind === 'pipeline.task_assigned'
-			? `You get this because a teammate at ${alert.organization_name} gave you a Task.`
-			: alert.kind === 'pipeline.note_mention'
-				? `You get this because a teammate at ${alert.organization_name} mentioned you in a note.`
-				: alert.kind === 'quote.customer_approved' || alert.kind === 'quote.changes_requested'
-					? `You get this because you look after this quote at ${alert.organization_name}.`
-					: `You get these alerts because ${alert.organization_name} chose you for new website inquiries.`;
+	const footer = alertEmailFooter(alert);
 	const html = [
 		`<p><strong>${escapeHtml(alert.title)}</strong></p>`,
 		alert.body ? `<p>${escapeHtml(alert.body)}</p>` : '',

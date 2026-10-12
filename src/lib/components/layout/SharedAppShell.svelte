@@ -4,6 +4,7 @@
 	import Topbar from './Topbar.svelte';
 	import GlobalSearchDialog from '$lib/components/search/GlobalSearchDialog.svelte';
 	import ProfilePhotoDialog from '$lib/components/profile/ProfilePhotoDialog.svelte';
+	import { leaveThisComputer } from '$lib/team/browser-alerts';
 	import NotificationBell from '$lib/components/jafar/NotificationBell.svelte';
 	import TeamNotificationBell from '$lib/components/team/TeamNotificationBell.svelte';
 	import HeaderTimer from '$lib/components/time-clock/HeaderTimer.svelte';
@@ -227,6 +228,9 @@
 		isSigningOut = true;
 		signOutError = '';
 		try {
+			// The next person on a shared computer must never see this person's browser alerts. This needs the
+			// session, so it goes first. It never blocks signing out.
+			if (variant === 'contractor') await leaveThisComputer();
 			const response = await fetch(
 				variant === 'owner' ? '/api/jafar/session' : '/api/auth/session',
 				{ method: 'DELETE' }
