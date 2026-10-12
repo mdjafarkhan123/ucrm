@@ -1,5 +1,8 @@
 # Selectable design experiences — roadmap
 
+**Historical roadmap:** Active remaining work moved to `Memory/campaigns/crm-design-system/NOW.md` on 2026-10-12. The sequence/status below is preserved history, not current execution authority. See `docs/research/crm-design-system-consolidation-2026-10-12.md`.
+
+
 Jafar approved the saved build order on 2026-10-11. Parts 1–4 are complete; the real shared shell runs Classic by default with a private localhost Botanical preview. Botanical coverage is next.
 Production deployment remains separately authorized.
 

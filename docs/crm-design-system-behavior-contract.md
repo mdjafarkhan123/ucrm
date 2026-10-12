@@ -15,11 +15,11 @@ Organizations should be able to choose how their CRM looks and is arranged. The 
 
 ## Fresh-start boundary
 
-Jafar requested a fresh campaign and subsequently agreed with consolidating the Botanical redesign goal here. Preserve the old campaign records while the useful work and references are transferred and checked; close its active tracker after that handover. The selectable-design foundation is inspected for reuse. Earlier task order, broader rollout scope and individual approvals do not automatically define this campaign. Existing application code remains in place.
+Jafar requested a fresh campaign and subsequently agreed with consolidating the Botanical redesign goal here. The [transfer check](research/crm-design-system-consolidation-2026-10-12.md) preserves useful work, exact approvals, references and outstanding limits. Earlier Botanical and selectable-design trackers redirect here; their historical roadmaps and evidence remain available. Earlier task order, broader rollout scope and individual approvals do not automatically define this campaign. Existing application code remains in place.
 
-The implemented theme foundation supplies the technical starting position. Earlier redesign requirements enter this campaign only when Jafar explicitly brings them across, as with the visual goal below.
+The existing private shell and loading mechanism supply the technical starting position; saved selection and safe application remain outstanding. Earlier redesign requirements enter this campaign only when Jafar explicitly brings them across, as with the visual goal below.
 
-On 2026-10-11 Jafar explicitly asked to bring the Botanical campaign's goal into this campaign. Its saved goal and reference may now inform that visual objective. Old task order, individual approvals and broader rollout scope are not automatically imported. The earlier campaign records remain unchanged during planning; Jafar's additions are recorded before the full agreement is synthesized.
+On 2026-10-11 Jafar explicitly asked to bring the Botanical campaign's goal into this campaign. Its saved goal and reference inform that visual objective. Old task order, individual approvals and broader rollout scope are not automatically imported; only explicitly reconfirmed references and scoped approvals enter the current agreement.
 
 ## Two main stages — direction confirmed 2026-10-11
 
@@ -53,7 +53,7 @@ The theme foundation is the machinery for selecting and delivering a design. The
 The two-stage goal, core organization-theme decisions and incremental Botanical workflow are agreed. Jafar approved the complete foundation agreement and delivery sequence on 2026-10-12. This completes foundation planning, with implementation and verification still outstanding.
 
 - **Theme foundation planning:** The [Stage A foundation agreement](crm-theme-foundation-behavior-contract.md) consolidates preview/save/switch/failure behavior, completion checks and release boundaries. Its linked delivery design establishes the feasible approach; the [foundation delivery parts](../Memory/campaigns/crm-design-system/stages/theme-foundation.md) are approved. Fresh-reader review passed and Jafar approved this planning step on 2026-10-12. Existing shell separation can be reused; saved organization selection and safe switching are not established by the inspected source.
-- **Botanical planning:** Visual starting point and review method agreed. Now plan the starter-system gaps and first focused demo/implementation portions. Detailed visual decisions for later portions can be made incrementally; do not require every screen to be designed before the first approved portion can be implemented privately.
+- **Botanical planning:** Visual starting point and review method agreed. The [Stage B proposal](crm-botanical-theme-behavior-contract.md) now records starter gaps, initial portions, coverage order, skill maintenance and selected-only page/component delivery. Its linked route/overlay inventory and delivery map remain proposals for scoped review. Detailed visual decisions for later portions are made incrementally.
 
 Foundation planning is complete; the active planning focus is Botanical. Building and proving the foundation remains its own subsequent delivery work; planning completion must not be reported as implementation completion.
 

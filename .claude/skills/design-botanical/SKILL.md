@@ -7,10 +7,18 @@ description: Botanical presentation guidance for Botanical demos, redesign and i
 
 Read [shared design](../design/SKILL.md), the [alignment register](alignment.md),
 [approved foundations](../../../docs/design/botanical-v3/README.md) and
-[design-refresh contract](../../../docs/uplift-design-refresh-behavior-contract.md) before every Botanical
+[current campaign agreement](../../../docs/crm-design-system-behavior-contract.md) before every Botanical
 session, including demos. The foundations own extracted visual values; approval records own exact
 revisions and exclusions. Load additional Botanical modules only for coverage marked updated in the register.
 The [shell module](shell.md) covers the approved sidebar/header; its approval does not extend to other controls.
+
+For the active assignment and remaining coverage, read the campaign's
+[current position](../../../Memory/campaigns/crm-design-system/NOW.md) and the named part, then the
+[Botanical plan](../../../docs/crm-botanical-theme-behavior-contract.md) section it references.
+The [coverage inventory](../../../docs/design/botanical-workspace-coverage.md) tracks surfaces;
+its source-only entries are not design approvals. Original intent remains preserved in the linked
+historical contract. Ordinary loads and warming include shared functionality and only the selected
+presentation's exclusive assets; verify migrated pages and overlays under the foundation's delivery checks.
 
 Botanical is a private, incomplete presentation. Classic remains live. Extend approved foundations through
 focused demos for Jafar's approval where patterns are missing. Classic modules are maintenance references,

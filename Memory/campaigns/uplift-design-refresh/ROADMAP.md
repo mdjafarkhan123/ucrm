@@ -1,5 +1,8 @@
 # Uplift design refresh — roadmap
 
+**Historical roadmap:** Active remaining work moved to `Memory/campaigns/crm-design-system/NOW.md` on 2026-10-12. The sequence/status below is preserved history, not current execution authority. See `docs/research/crm-design-system-consolidation-2026-10-12.md`.
+
+
 Jafar approved this initial sequence on 2026-10-10. Work one focused part per session. Later page groups are planned with him after inspection; the ambition is whole-app, not permission for a broad rewrite.
 
 | Part | Delivers | Waits for | Done when | State |

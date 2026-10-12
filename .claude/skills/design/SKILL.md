@@ -14,8 +14,10 @@ description: Route every screen, component, styling or frontend task to its desi
    unspecified new presentation, resolve the intended design with Jafar before choosing visual rules.
    Control Room, login and customer-facing surfaces retain their current appearance in the first release.
 
-The [selectable-design contract](../../../docs/selectable-design-experiences-behavior-contract.md)
-owns release scope. Presentation skills own appearance; product contracts and verified implementation
+The [CRM design-system agreement](../../../docs/crm-design-system-behavior-contract.md) and its
+[approved foundation](../../../docs/crm-theme-foundation-behavior-contract.md) own current theme scope,
+safe switching and selected-only delivery. Earlier selectable-design work supplies reusable evidence.
+Presentation skills own appearance; product contracts and verified implementation
 own records, capabilities and permissions. Share behaviour rather than copying it into design pages.
 
 Before code, inspect `src/lib/components` for reuse. Use Svelte 5, component-local SCSS/BEM, Tabler icons,

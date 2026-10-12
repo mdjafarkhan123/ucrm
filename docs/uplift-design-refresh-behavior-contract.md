@@ -1,6 +1,6 @@
 # Uplift design refresh
 
-**Status:** Visual direction and incremental review process approved by Jafar on 2026-10-10. Fresh campaign setup authorized in this conversation. Individual new demos and live-app rollout still require their own approvals.
+**Status:** Historical agreement; active work consolidated into [CRM design system](crm-design-system-behavior-contract.md) on 2026-10-12. Preserve this original intent and approval history. The current campaign owns scope/order; this document's broader ambition and old next assignments are not current authorization.
 
 ## Summary
 

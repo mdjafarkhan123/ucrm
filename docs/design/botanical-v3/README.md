@@ -42,7 +42,7 @@ At 390px the page has 18px side padding and one 354px content column. The hero s
 columns, photos stack and supporting panels follow the main content. The section strip scrolls within
 its container. Both captures have document width equal to viewport width. This does not establish full
 phone usability: the reference hides sidebar navigation without a replacement menu, and narrow rows
-and financial tables need later focused review. Part 3 must provide reachable phone navigation.
+and financial tables need later focused review. The later sidebar approval provides a phone drawer; remaining phone content/control treatments need their own checks.
 
 ## Colour roles
 
@@ -134,13 +134,15 @@ completeness or production readiness.
 
 ## Authority and next step
 
-The [approved campaign contract](../../uplift-design-refresh-behavior-contract.md) owns the review and
-rollout process. This guide owns the extracted v3 foundations; the source revision and render evidence
+The [current campaign agreement](../../crm-design-system-behavior-contract.md) owns scope and the review
+process; the [original contract](../../uplift-design-refresh-behavior-contract.md) preserves Jafar's literal
+prompt and historical decisions. This guide owns the extracted v3 foundations; the source revision and render evidence
 make each extraction traceable. Product contracts and verified app behaviour continue to own workflows
 and permissions. No new product behaviour or researched interaction is proposed by this extraction.
 
 The shared design skill routes Botanical work to `.claude/skills/design-botanical/SKILL.md` and its
 alignment register. Classic modules live separately in `design-classic`. Update Botanical modules after
 focused approval; current app surfaces retain their appearance. Sidebar variant 2 revision 2 and header B
-revision 4 are approved in the linked [shell approval](sidebar-approval.md); implementation waits for the
-selectable-design loading proof and shared-shell checks.
+revision 4 are approved in the linked [shell approval](sidebar-approval.md). Existing private shell
+[implementation evidence](../../research/selectable-real-shell-2026-10-11.md) is a reusable starting point;
+the current campaign owns remaining foundation and full-theme proof.

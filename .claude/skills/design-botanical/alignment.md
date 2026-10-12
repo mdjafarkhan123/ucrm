@@ -5,6 +5,11 @@ Keep Classic modules separate; align Botanical modules after the relevant focuse
 The [starter guidance](../../../docs/design/botanical-v3/README.md) owns extracted values and boundaries;
 this register tracks coverage, not a second token specification.
 
+The [CRM design-system agreement](../../../docs/crm-design-system-behavior-contract.md) owns current scope.
+The [Botanical plan](../../../docs/crm-botanical-theme-behavior-contract.md) and
+[coverage inventory](../../../docs/design/botanical-workspace-coverage.md) identify planned work;
+planned entries become established guidance only after their exact focused approval is recorded below.
+
 ## Redesign reading rule — approved 2026-10-11
 
 For every redesign session, including standalone demos, load Botanical `SKILL.md`, shared `design/SKILL.md`, this register, the Botanical

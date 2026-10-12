@@ -1,6 +1,6 @@
 # Selectable design experiences
 
-**Status:** Build order approved by Jafar on 2026-10-11. Guidance separation and private selected-loading mechanism proof complete; real-shell integration next. Classic remains live.
+**Status:** Historical prerequisite agreement; active remaining selection/coverage work consolidated into [CRM design system](crm-design-system-behavior-contract.md) on 2026-10-12. Guidance separation, private loading mechanism and real shared-shell evidence are preserved. The current approved foundation sequence owns remaining work; Classic remains live.
 
 ## Summary
 
