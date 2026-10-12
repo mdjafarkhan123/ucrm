@@ -1,89 +1,75 @@
 # Concurrent agent work
 
-This repository may have several independent terminal sessions. Campaign Memory records durable progress;
-the local reservation register records who is working **now**. Run `python3 .claude/skills/agent-coordination/scripts/agent-work.py list` before
-choosing any task, including work outside a campaign. The register lives in the main worktree's ignored
-`.agent-work/` directory and is shared by linked worktrees on this machine. Its claim operation is atomic.
+Agents can work together when each owns a clear task and uses a separate working folder.
+A Git **branch** keeps its changes separate. A **worktree** provides that branch's working folder.
+**Merge** means combining completed changes into `main`, the final application.
 
-## Choose and reserve
+## Choose and reserve work
 
-1. Name the campaign and task. For "start an available task," read that campaign's `ROADMAP.md`, check
-   dependencies and its `NOW.md`, and choose a part that can progress independently. Inspect current Git
-   changes and active reservations. Separate campaigns may still touch the same code or external service.
-2. Decide whether this session only reads (`read`) or will change anything (`write`). Name every broad area
-   it may change or operate on, including shared services such as `remote-db`, `migrations`, `package`
-   or the affected feature domain. Reserve a campaign's Memory under that campaign's area; a change to
-   Memory's shared structure belongs to `agent-workflow`. Independent branches may edit their own index
-   rows, with reconciliation at integration. Use `--area '*'` when the scope is uncertain. Areas are
-   planning boundaries, not a guarantee that files cannot overlap.
-3. Reserve before work starts. Example:
+1. Read the campaign's current note and check dependencies. Run:
+   `python3 .claude/skills/agent-coordination/scripts/agent-work.py list`
+   Inspect unfinished files and existing reservations before choosing a task.
+2. Reserve the exact campaign/task before starting; use `standalone` for work outside a campaign.
+   Choose `read` for inspection or `write` for changes. Name every affected feature and shared resource:
+   database, migrations, dependencies or external services. Use `--area '*'` if scope is uncertain.
+3. Claim from the workspace where you will work:
 
    ```bash
-   python3 .claude/skills/agent-coordination/scripts/agent-work.py claim deferred-launch-sweep part-4d --owner codex-tab-2 --mode write --area invoices --area migrations
+   python3 .claude/skills/agent-coordination/scripts/agent-work.py claim campaign task --owner session-name --mode write --area invoices
    ```
 
-   Keep the returned ID. The command refuses a second claim on the same task, a second writer in one
-   worktree, or a writer with an overlapping area. If it refuses, pick a genuinely independent task or wait.
-   If the scope grows, add areas atomically with `expand <reservation-id> --area <area>` before touching them.
+   Keep the returned ID. The command prevents duplicate tasks, two writers in one workspace,
+   and writers with overlapping areas. If refused, choose independent work or wait.
 
-4. A dirty worktree with no matching claim may belong to another terminal. Stop and identify its owner.
-   `--adopt-existing` is only for changes positively identified as this session's own work; it does not
-   override another active claim. Never remove or overwrite unknown changes.
+4. Check actual dependencies too: different campaign names do not prove independence.
+   Before adding scope, run `expand <id> --area <area>`.
+   Use `--adopt-existing` only for unfinished files positively identified as your own.
 
-## Workspaces and shared effects
+Reserve each campaign's notes under its feature area. Reserve changes to the shared Memory format
+under `agent-workflow`. Separate branches may change their own index rows; preserve both when merging.
 
-Main is the integration workspace, with one writer at a time. New campaign and feature writers use separate
-temporary Git worktrees and branches, each with its own reservation, including planning and documentation
-writers. Existing claimed work in main may finish there before integration resumes.
-Jafar approved this policy on 2026-10-12. Create branches with the `codex/` prefix from the latest committed
-`main`, or an explicitly required dependency branch. A worktree starts with committed files; another
-writer's unfinished changes remain in their workspace. Keep the main folder as the final application.
-Git worktrees isolate files, but they do not isolate remote Supabase, R2, external providers, ports, or
-local databases. A worktree's `node_modules` is a link to the main folder's; Vite keeps its library cache
-in each checkout's own ignored `.vite/` (`cacheDir` in `vite.config.ts`) so a worktree's dev server or
-test run cannot break the main dev server. Keep it that way. Reserve those resources explicitly and coordinate destructive or irreversible actions.
+## Work separately
 
-## Checkpoints and merge cadence
+New campaign and feature writers use temporary branches and worktrees, including planning writers.
+Main accepts one writer at a time for combining completed work. Existing claimed work may finish there.
+Use branch names beginning with `codex/`, starting from current committed main or a required dependency branch.
+Other agents' unfinished files stay in their workspaces; preserve them.
 
-Commit coherent checkpoints and push the branch before handoff or ending a session. Save plans and campaign
-Memory in that same worktree, including approved decisions. A pending checkpoint names the branch/worktree,
-checks completed, remaining work and **Waiting to merge** status. Main's Memory remains the integrated record.
-This lets planning continue while another writer occupies main.
+Worktrees share Git history and remain one application. They do not separate remote Supabase, R2,
+providers, local databases or server ports; reserve shared resources before using them.
+Link worktree `node_modules` to main's, retaining the separate Vite cache configured for each worktree.
 
-Merge a small complete delivery once its required checks and approvals pass and the main integration slot
-is available. Aim for task/session-sized deliveries; split multi-day work into independently checkable
-deliveries where possible. Use readiness rather than a fixed hourly or daily timer. Push unfinished work
-for recovery without calling it integrated. A campaign need not finish before its ready portions merge;
-incomplete features stay behind their approved private/disabled boundary.
+## Save and merge
 
-Only one integrator brings completed changes into `main` at a time. Before integrating, check the register
-and acquire a write claim in the main workspace for the integration task. Wait while another writer holds
-main or has unfinished changes there. Keep the source branch's reservation; use a separate nonoverlapping
-`main-integration` area for the integrator's workspace claim. This extra claim serializes the merge; the
-source claim continues to protect its actual feature areas.
+Commit clear steps and push before ending a session or handing work over.
+Save plans, approvals and Memory in the same branch. Record its branch, folder, completed checks,
+remaining work and next action. Mark pending integration **Waiting to merge**.
+Main's notes describe combined progress; branch notes describe pending progress.
 
-Update the branch against current main, reconcile shared records, resolve conflicts, and rerun checks
-appropriate to the combined change. Review the final diff, merge, update checkpoint status to reflect the
-integrated state, and push main. An agent commits only its own paths. Release the source and integration
-claims after successful integration/checkpoint; remove temporary worktrees/branches only after their
-needed work is integrated and recoverable remotely. If integration or push fails, preserve the workspace
-and report the exact remaining step.
+Merge a small, complete portion after required checks and approvals pass and main is available.
+Aim for portions that fit one task or session; split longer work where possible.
+Use readiness rather than a fixed timer. Unfinished work can be pushed for recovery.
+Keep incomplete features within their approved private or disabled boundary.
 
-## Finish and recover
+Keep the source task reserved. From a clean main workspace, claim a separate integration task
+with `--area main-integration`; wait while another writer owns main.
+Update the branch against current main, resolve conflicts, preserve other campaigns' notes,
+and run checks appropriate to the combined changes. Review, merge, update the checkpoint and push main.
+Commit only your changes. Release both reservations after successful integration.
+Remove temporary workspaces only after needed work is merged and successfully pushed.
+If a check, merge or push fails, keep the workspace and report what remains.
 
-Release a reservation after the work is safely integrated and its checkpoint is updated. For a temporary
-branch, the integrator releases its claim after bringing the change into `main`:
+## Stop and recover
 
-```bash
-python3 .claude/skills/agent-coordination/scripts/agent-work.py release <reservation-id>
-```
+Before stopping with unmerged work, save and push a checkpoint. Keep its reservation until
+integration, an explicit handover, or recovery establishes who owns the remaining work.
+For handover, record the branch, folder, reservation ID and next action.
+Release a reservation with:
+`python3 .claude/skills/agent-coordination/scripts/agent-work.py release <id>`
 
-Reservations never expire automatically. If an agent stops unexpectedly, inspect its terminal, Git
-changes, worktree, commits, and any external operation before releasing its ID. A missing process or an old
-timestamp alone does not prove that work is safe to reassign. The register is local to this machine; agents
-on other machines need a shared coordination service before they can write concurrently.
-
-For a missing reservation or a stale main checkpoint, inspect the campaign's pushed branches, attached
-worktrees and Git history before starting duplicate work. Verify branch progress against current main;
-recover its checkpoint and claim its remaining task before continuing. Never discard pending branch Memory
-solely because main has an older copy.
+Reservations never expire automatically. Before taking over, inspect changes, commits,
+checkpoints and external actions; an old timestamp alone proves nothing.
+When main's notes are stale or a reservation is missing, inspect pending branches and worktrees
+before duplicating work. Claim the remaining task before continuing.
+The register is shared by linked worktrees through main's ignored `.agent-work/` folder.
+It protects agents on this machine only; multiple machines need a shared reservation service.

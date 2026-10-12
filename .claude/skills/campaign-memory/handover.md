@@ -34,13 +34,9 @@ current position without a forced migration of every file.
 
 ## Shared work and Git
 
-Follow the live coordination rule and the project's integration guide. Commit only this session's changes.
-From a permitted temporary worktree, save plans and Memory alongside its code; name the branch, worktree,
-and verified progress in the current note. Push before handoff. Keep the checkpoint **Waiting to merge** until
-integrated. Main's Memory describes integrated progress; the branch's checkpoint describes pending progress.
-On resume, inspect the live reservation's workspace and compare its checkpoint and Git state with main before
-choosing the next action. Reconcile shared index, current-note, roadmap, and stage records during integration
-so other campaigns' lines survive. Follow the project's recovery guide when a reservation is missing.
+Save plans and Memory in the same branch as the work. Record the branch, folder, completed checks and next
+action. Mark unmerged progress **Waiting to merge**. On resume, compare the branch checkpoint with main and
+the reservation register. Follow `docs/agent-concurrency.md` when merging, stopping or handing work over.
 
 Commit at coherent points and push under the project's rules. Release claims after safe integration and an
 updated checkpoint. Report a failed push. Git preserves history; the current note need not retell it.
@@ -48,8 +44,9 @@ updated checkpoint. Report a failed push. Git preserves history; the current not
 ## Pause
 
 When Jafar pauses or the session must stop, checkpoint, commit working steps, and name any half-done files
-in **Next**. Worktree progress can be committed as work in progress. Release the claim after the checkpoint
-and give the resume instruction: `read memory and continue <campaign>`.
+in **Next**. Worktree progress can be committed as work in progress. Handle the reservation under the
+project's stopping and handover rules; saving a checkpoint alone does not release ownership of unmerged work.
+Give the resume instruction: `read memory and continue <campaign>`.
 
 ## Finish
 
