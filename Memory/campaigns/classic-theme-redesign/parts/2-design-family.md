@@ -13,10 +13,13 @@ sections.
 
 ## Steps
 
-- [ ] Switch every text node in `Job details · Claude concept · Job cockpit · 1440` (frame `oNoOG`, including
-      its sidebar and top-bar copies) from Plus Jakarta Sans to Inter; re-check nothing clips
-- [ ] Add the recipe's raw values (colours, 20px card corner, shadows) to the Classic design-system page as
-      named tokens with light and dark values; point the job concept and the recipe at the token names
+- [x] Switch every text node in `Job details · Claude concept · Job cockpit · 1440` (frame `oNoOG`, including
+      its sidebar and top-bar copies) from Plus Jakarta Sans to Inter; re-check nothing clips — done
+      2026-10-13, all 216 texts use `$font-family`
+- [x] Add the recipe's raw values (colours, 20px card corner, shadows) to the Classic design-system page as
+      named tokens with light and dark values; point the job concept and the recipe at the token names —
+      done 2026-10-13: 23 tokens; Card part, Button part (`$radius-control`, primary glow) updated to match
+      (Jafar: "if new design require to change any design system we will do it to match")
 - [ ] Design the quote and invoice pages from the same parts; show Jafar them beside the job page
 - [ ] Design a Settings page with the new cards
 - [ ] Design the request, payment and client pages

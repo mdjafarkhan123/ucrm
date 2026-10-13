@@ -54,7 +54,14 @@ grouping are planned after the first version, one stage at a time.
 - **New colours become named tokens.** The concept's warm page background, hairline card border, today-row
   tint, profit-card colours, 20px corner and soft shadow are added to the Classic design-system page in
   `classic.pen` with light and dark values before the family is designed, then kept equal in code and the
-  Classic design skill.
+  Classic design skill. Added 2026-10-13: 23 tokens on the design-system page (§ Color › Record pages and
+  cards, Featured card; § Spacing & shape › Corners, Elevation).
+- **The design system follows the redesign** (Jafar, 2026-10-13: "if new design require to change any design
+  system we will do it to match"). When a redesigned page needs a part to look different, that part changes
+  on the design-system page and every screen using it follows. So far: the Button part takes 12px corners and
+  the green main button a soft glow; the Card part takes the new card look.
+- **Pencil only for now** (Jafar, 2026-10-13): no app code changes until the family is approved and build
+  planning (Part 3) is done.
 
 ## Design principles
 
