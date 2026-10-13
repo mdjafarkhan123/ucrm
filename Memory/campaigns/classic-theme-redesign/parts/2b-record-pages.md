@@ -35,9 +35,17 @@ item: override the instance's Nav item fill to `sidebar-active`, icon and label 
       "Request #88" / "Quote #318" / "Job #1042" titles, a 12 open arrow on linked records. v2 deleted.
       Lesson: improve within the approved placement; don't move sections without asking.
 - [x] 2026-10-13: Jafar approved `Job details · 1440` ("yes"); recorded in plan § Direction.
-- [ ] Quote details (from `Ae1NJ`) and Invoice details (from `fPq9c`), same method, beside the Job.
+- [x] 2026-10-13: `Quote details · 1440` (`e5HXY`, x 4620 y 2300) drawn by copying the approved Job
+      (`bbWOb`) and swapping sections, keeping the concept's placement. Main: hero (blue Awaiting
+      response, Send email, record track with Quote as the current rose tile), Introduction, Products and
+      services (add-on chip, discount row, locked footer + client view), Client message and disclaimer. Rail:
+      profit (cost / estimated profit), Deposit, Discount and tax (the app's two rail cards shown as one),
+      Automation, Photos and files, Notes. Sent quote = read-only, so no edit pencils (app `editable` needs a
+      draft). Light and dark checked. Awaiting Jafar's yes.
+- [ ] Invoice details (from `fPq9c`), same method — copy the Job, beside the Quote.
 - [ ] Request, Payment, Client details — new; read each `+page.svelte` first (recipe § Working method 1).
 
 ## Next
 
-Draw Quote and Invoice from `Ae1NJ` / `fPq9c` with the same method and the same record-icon track.
+Get Jafar's yes on `Quote details · 1440` (open question: one Discount and tax card vs. two cards).
+Then draw Invoice from `fPq9c` by copying the approved Job, same record-icon track.
