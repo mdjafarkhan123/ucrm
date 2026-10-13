@@ -8,6 +8,6 @@ Control Room — built from shared blocks, with every existing feature, permissi
 **In progress:** Part 2B — job, quote and invoice redrawn in the new look; request, payment and client pages
 designed (desktop, `classic.pen`), built from the design-system parts. Part 2 Done 2026-10-13 (`41d154c6`).
 
-**Next:** Jafar reviews `Job details · 1440` (`bbWOb`); then Quote and Invoice — see `parts/2b-record-pages.md`.
+**Next:** Jafar picks Job v1 (`bbWOb`) or v2 (`G2x339`); then Quote and Invoice — see `parts/2b-record-pages.md`.
 
 **Blockers:** None.
