@@ -32,8 +32,11 @@ sections.
       despite of existing design … would be the main"; "not too much colorful … like rainbow, rather follow
       the best ui/ux designer") — drawn 2026-10-13 below the originals: `Settings · Home · Claude concept ·
       1440` (frame `XwqtP`) and `Settings · Business profile · Claude concept · 1440` (frame `ofzTY`). Dark ink
-      sidebar, dark-green business banner with lime glow, green-tinted icon tiles, ink primary buttons, status
-      colours only for status; raw hex values, no tokens yet; light mode only. Ideas not in the app yet, each
+      sidebar, dark-green business banner with lime glow, ink primary buttons; raw hex values, no tokens yet;
+      light mode only. Colour rule (Jafar 2026-10-13: "use rainbow like different color where it make
+      sense"): section colour — Business green, Communications blue, Automations amber, Team & access violet
+      on tab dot, group icon and soft tiles; record colour — quotes rose, invoices blue, requests amber, jobs
+      green; status colour — red to do, amber in review, green ready. Ideas not in the app yet, each
       needing Jafar's yes: settings search, Setup status card, "What customers see" preview, "Where this is
       used" card, unsaved-changes text in the Save bar
 - [ ] Jafar picks a direction: the concept becomes the main look (then restyle job, quote, invoice to match
