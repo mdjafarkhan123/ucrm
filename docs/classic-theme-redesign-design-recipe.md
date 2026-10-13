@@ -116,7 +116,7 @@ surfaces; the sidebar, featured card and Save bar stay dark in both modes.
 | `savebar` | Save bar | `#08150F` | `#1F3328` |
 | `feature-mid` / `feature-end` / `feature-glow` | Featured gradient and glow (starts at `sidebar`) | `#01361D` / `#02532D` / `#049A5459` | same |
 | `feature-chip` / `feature-line` / `feature-ring` | Fact chip fill / stroke / hairline rings, Cancel fill | `#FFFFFF0F` / `#FFFFFF1A` / `#FFFFFF14` | same |
-| `feature-eyebrow` / `-meta` / `-label` / `-muted` / `-icon` / `-button-text` | Text on dark surfaces | `#A3B3C2` / `#B8C4D0` / `#93A3B4` / `#8A96A8` / `#FFFFFFB3` / `#E5E9F0` | same |
+| `feature-eyebrow` / `-meta` / `-label` / `-muted` / `-icon` / `-button-text` | Text on dark surfaces | `#C2D6C9` / `#D5E3DA` / `#D5E3DA` / `#B4C9BC` / `#FFFFFFB3` / `#E5E9F0` | same |
 | `logo-start` | Logo and avatar gradient start (ends `solid-green`) | `#049A54` | same |
 | `white` / `on-white` | Text on dark surfaces / text on a white button there | `#FFFFFF` / `#0B1220` | same |
 | `shadow-near` / `-far` / `-lift` | Card and input shadow / card far / preview document | `#1018280A` / `#1018280D` / `#1018281A` | `#0000004D` / `#00000040` / `#00000059` |

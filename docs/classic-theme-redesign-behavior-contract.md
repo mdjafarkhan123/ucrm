@@ -113,6 +113,15 @@ grouping are planned after the first version, one stage at a time.
   from the approved Job and keeps the quote concept's placement. A sent quote shows no edit pencils (editing
   needs a draft; the products footer says to start a new version). The app's separate Discount and Tax rail
   cards appear as one "Discount and tax" card (approved with the screen as shown).
+- **Invoice details approved** (Jafar, 2026-10-13: "yes"). `Invoice details · 1440` in `classic.pen` keeps the
+  invoice concept's placement: Terms & dates as the hero's facts row with a pencil, Financial and Invoice
+  history as History tabs, no Notes card (the app's invoice page has none).
+- **Top-of-rail green card stays one design, Jobber-style** (Jafar, 2026-10-13). The deep green summary card
+  keeps its single figure + breakdown (Jobber's job profitability box); no Settings choice of layouts. Its
+  small text is brighter for readability: `feature-eyebrow #C2D6C9`, `-meta` and `-label #D5E3DA`,
+  `-muted #B4C9BC` (≥5.3:1 on the whole gradient), text under 13px one size up. Later idea, only if
+  contractors ask: a "Next step" card or an "At a glance" four-number card, or letting the owner choose which
+  numbers show (HubSpot-style).
 - **Pencil only for now** (Jafar, 2026-10-13): no app code changes until the family is approved and build
   planning (Part 3) is done.
 
