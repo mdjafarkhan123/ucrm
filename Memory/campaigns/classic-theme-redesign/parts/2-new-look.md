@@ -28,7 +28,7 @@ Pencil first; Pencil's skill and `execute.md`.
       parts (list in recipe § Tokens). Both reference screens are now instances of those parts, and their
       light export is pixel-identical to the approved screens. Dark mode checked on all four frames.
 - [x] Raw hex in the recipe replaced with token names (recipe § Tokens holds the values).
-- [ ] Jafar presses Ctrl+S in Pencil; commit `classic.pen` from main.
+- [x] 2026-10-13: Jafar saved in Pencil; `classic.pen` committed from main (`41d154c6`).
 - [x] 2026-10-13: Jafar approved the design-system page, light and dark, with its new dark values, collapsed
       sidebar, field states and resting Save bar ("ok including earlier … i approve your recommendation").
 
@@ -41,7 +41,5 @@ disabled, nothing changed) — full-page forms show the bar all the time.
 
 ## Next
 
-Only the save is left: if `git status` shows `classic.pen` unchanged, ask Jafar to press Ctrl+S in Pencil
-(the design-system rebuild lives in Pencil until then), then commit `classic.pen` from main in its own commit
-and mark this part Done. The old page `lkPLl` still feeds the Home and Reports screens (crm-launch-readiness
-Part 13) through the old `color-*` tokens — leave it until those screens are restyled. Then start Part 2B.
+Part 2 is Done (2026-10-13). The old page `lkPLl` still feeds the Home and Reports screens (crm-launch-readiness
+Part 13) through the old `color-*` tokens — leave it until those screens are restyled. Continue with Part 2B.

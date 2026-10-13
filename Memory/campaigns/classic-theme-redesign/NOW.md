@@ -5,10 +5,9 @@ Control Room — built from shared blocks, with every existing feature, permissi
 **Plan:** `docs/classic-theme-redesign-behavior-contract.md` — first version approved by Jafar 2026-10-13.
 **Stage:** Design
 
-**In progress:** Part 2 — Jafar approved the design-system page (light `GIgyC`, dark `yRKPF`) and hiding the
-"Soon" menu items, 2026-10-13. Only left: Jafar's Ctrl+S in Pencil, then commit `classic.pen` from main.
+**In progress:** Part 2B — job, quote and invoice redrawn in the new look; request, payment and client pages
+designed (desktop, `classic.pen`), built from the design-system parts. Part 2 Done 2026-10-13 (`41d154c6`).
 
-**Next:** Finish Part 2's save (see `parts/2-new-look.md` § Next), then start Part 2B — job, quote and
-invoice in the new look, built from the design-system parts.
+**Next:** Part 2B, starting with the Job page (recipe § Record page structure).
 
 **Blockers:** None.
