@@ -137,6 +137,8 @@ Jafar approved all four on 2026-10-13, provided existing data supports each. Dat
 
 ## Sources and design decisions
 
+- [Design recipe](classic-theme-redesign-design-recipe.md) — read before designing or building any screen for
+  this campaign: the working method and exact sizes, spacing and styles of the reference screen.
 - `classic.pen` screen `Job details · Claude concept · Job cockpit · 1440` — the direction Jafar liked.
 - [Jobber screen patterns](../.claude/skills/jobber/jobber-08-screen-patterns.md) — detail-page skeleton,
   one primary action named for the next step, history and More placement.
