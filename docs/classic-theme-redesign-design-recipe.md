@@ -6,6 +6,9 @@ so every page matches the **reference screen**: `Job details · Claude concept �
 it looks and how the work is done. When the reference screen and this recipe disagree, the reference screen
 wins and this recipe is corrected.
 
+Family screens so far: the job reference, `Quote details · Classic redesign · 1440` and `Invoice details ·
+Classic redesign · 1440`, side by side in `classic.pen`.
+
 Status: proposed with the job concept (2026-10-13). Colours, corners and shadows are named tokens on the
 Classic design-system page in `classic.pen` (§ Color › Record pages and cards, Featured card; § Spacing &
 shape › Corners, Elevation), each with its light and dark value; the dark copy of that page shows the dark
@@ -64,7 +67,14 @@ into the `design-classic` skill.
 - Footer strip: `$color-surface-background-subtle`, 12/24 padding, a 12/500 secondary summary left and a
   13/600 green "Show all →" link right.
 - Tabs inside a card: labels 14/600 (inactive secondary), each followed by a value chip; the active tab has a
-  2px green underline and a `$color-job-surface` chip.
+  2px green underline and a `$color-job-surface` chip. Used for the job's Work log and the invoice's History
+  (Payments, Edits).
+- Products and services: the app's wording — card title "Products and services", columns Line item,
+  Quantity, Unit price, Total. Add-ons carry a neutral pill ("Recommended add-on") beside the name. The
+  totals block holds every money row — subtotal, discount, tax, record total — so discount and tax need no
+  rail cards of their own. A locked block says why in a footer strip (lock icon + the app's message).
+- Text sections (introduction, client message, disclaimer) are compact cards of 14/500 text at line height
+  1.55; related ones share one card as labelled rows.
 
 ## Buttons
 
@@ -82,13 +92,17 @@ into the `design-classic` skill.
 - Title 32/700, letter-spacing −0.8, line height 1.15, 18 below row 1.
 - Meta row: 28px client avatar + name 14/600; then icon-15 + 14/500 secondary facts 16 apart; quick contact
   buttons right — 34px circles on `$color-surface-background-subtle` with a `$color-border-card` border.
-- Lifecycle track: five equal steps, 6 apart, 24 above and below. Bar 6px pill — done
+- Lifecycle track: the same five steps on every work record — Request, Quote, Job, Invoice, Paid — each page
+  lighting its own; a done step's sub-line says when ("Approved Sep 28"), the current one what it waits on
+  ("Waiting on David", "Due in 7 days"). Five equal steps, 6 apart, 24 above and below. Bar 6px pill — done
   `$color-interactive`, current `$color-surface-active` with a `$color-brand` portion, upcoming
   `$color-surface-active`. Label 13/600 (upcoming secondary) with a check-13 icon when done or a 7px brand dot
   when current; sub-line 12/500 secondary, green for the current step.
 - Key facts strip: top divider, padding 18/0/22; four equal facts with 1px dividers and 20 side padding;
   each a 36px `$radius-control` icon tile on `$color-surface-background-subtle`, label 12/500 secondary,
-  value 14/600 heading. Pick facts that live nowhere else on the page.
+  value 14/600 heading. Pick facts that live nowhere else on the page, plus the record total. When the facts
+  can be edited (an invoice's terms and dates), the strip ends with a 32px bordered pencil button instead of
+  a separate section.
 
 ## Lists of dated work
 
@@ -107,7 +121,10 @@ into the `design-classic` skill.
 ## Right rail
 
 Order: money first, then wrap-up, then reference — profit, close-out, billing, instructions, photos and
-files, notes. Rail cards follow § Cards and rows, except:
+files, notes. Photos and files always sit in the rail. Each work record has one featured card: job and
+quote show profit (team only; the quote's split is Cost and Estimated profit), the invoice shows Balance due
+(Paid and Balance split, `$color-brand` and `$color-feature-muted`, plus the client account balance). Rail
+cards follow § Cards and rows, except:
 
 - **Profit (featured card):** `$color-feature-surface` — dark in both modes — padding 24, gap 20,
   **shadow-feature** (y16 blur 40 `$color-shadow-feature`). Eyebrow 11/700 letter-spacing 1
