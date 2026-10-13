@@ -28,11 +28,16 @@ item: override the instance's Nav item fill to `sidebar-active`, icon and label 
       card (record tiles in record colours, numbers, open arrows); jump pills; dark featured card used for
       "Right now" (today's visit, Open visit, four fact chips); Close-out + Billing merged into "Ready to
       invoice?"; light team-only profit card; slimmer product rows; crew time split in the Work log.
-      Light and dark checked. Waiting on Jafar to pick v1 or v2.
+      Light and dark checked.
+- [x] 2026-10-13: Jafar kept v1's design and section placement ("I like the old design and its placement
+      of section") but liked v2's record icons and numbers on the track. Applied to `bbWOb`: each step has a
+      28 record tile in its record colour (request amber, quote rose, job solid green, future steps neutral),
+      "Request #88" / "Quote #318" / "Job #1042" titles, a 12 open arrow on linked records. v2 deleted.
+      Lesson: improve within the approved placement; don't move sections without asking.
 - [ ] Quote details (from `Ae1NJ`) and Invoice details (from `fPq9c`), same method, beside the Job.
 - [ ] Request, Payment, Client details — new; read each `+page.svelte` first (recipe § Working method 1).
 
 ## Next
 
-Wait for Jafar's pick between v1 (`bbWOb`) and v2 (`G2x339`); delete the loser, record the yes in the plan,
-then Quote and Invoice in the chosen pattern. With no visit today, the "Right now" card shows the next visit.
+Wait for Jafar's yes on `Job details · 1440` (`bbWOb`) and his Ctrl+S; record the yes in the plan, then
+draw Quote and Invoice from `Ae1NJ` / `fPq9c` with the same method and the same record-icon track.
