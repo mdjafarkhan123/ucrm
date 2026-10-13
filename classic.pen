@@ -83102,7 +83102,7 @@
                                   "fill": "$classic2-feature-label",
                                   "content": "Team only",
                                   "fontFamily": "Inter",
-                                  "fontSize": 11,
+                                  "fontSize": 12,
                                   "fontWeight": "600"
                                 }
                               ]
@@ -83165,7 +83165,7 @@
                                       "fill": "$classic2-green-on",
                                       "content": "49% margin",
                                       "fontFamily": "Inter",
-                                      "fontSize": 12,
+                                      "fontSize": 13,
                                       "fontWeight": "700"
                                     }
                                   ]
@@ -83279,7 +83279,7 @@
                                       "fill": "$classic2-feature-muted",
                                       "content": "14%",
                                       "fontFamily": "Inter",
-                                      "fontSize": 12,
+                                      "fontSize": 13,
                                       "fontWeight": "500"
                                     },
                                     {
@@ -83346,7 +83346,7 @@
                                       "fill": "$classic2-feature-muted",
                                       "content": "37%",
                                       "fontFamily": "Inter",
-                                      "fontSize": 12,
+                                      "fontSize": 13,
                                       "fontWeight": "500"
                                     },
                                     {
@@ -83413,7 +83413,7 @@
                                       "fill": "$classic2-feature-muted",
                                       "content": "49%",
                                       "fontFamily": "Inter",
-                                      "fontSize": 12,
+                                      "fontSize": 13,
                                       "fontWeight": "500"
                                     },
                                     {
@@ -88195,7 +88195,7 @@
                                   "fill": "$classic2-feature-label",
                                   "content": "Team only",
                                   "fontFamily": "Inter",
-                                  "fontSize": 11,
+                                  "fontSize": 12,
                                   "fontWeight": "600"
                                 }
                               ]
@@ -88258,7 +88258,7 @@
                                       "fill": "$classic2-green-on",
                                       "content": "44% margin",
                                       "fontFamily": "Inter",
-                                      "fontSize": 12,
+                                      "fontSize": 13,
                                       "fontWeight": "700"
                                     }
                                   ]
@@ -88363,7 +88363,7 @@
                                       "fill": "$classic2-feature-muted",
                                       "content": "56%",
                                       "fontFamily": "Inter",
-                                      "fontSize": 12,
+                                      "fontSize": 13,
                                       "fontWeight": "500"
                                     },
                                     {
@@ -88430,7 +88430,7 @@
                                       "fill": "$classic2-feature-muted",
                                       "content": "44%",
                                       "fontFamily": "Inter",
-                                      "fontSize": 12,
+                                      "fontSize": 13,
                                       "fontWeight": "500"
                                     },
                                     {
@@ -92769,7 +92769,7 @@
                                   "fill": "$classic2-feature-label",
                                   "content": "Due in 7 days",
                                   "fontFamily": "Inter",
-                                  "fontSize": 11,
+                                  "fontSize": 12,
                                   "fontWeight": "600"
                                 }
                               ]
@@ -92832,7 +92832,7 @@
                                       "fill": "$classic2-green-on",
                                       "content": "54% paid",
                                       "fontFamily": "Inter",
-                                      "fontSize": 12,
+                                      "fontSize": 13,
                                       "fontWeight": "700"
                                     }
                                   ]
@@ -92937,7 +92937,7 @@
                                       "fill": "$classic2-feature-muted",
                                       "content": "54%",
                                       "fontFamily": "Inter",
-                                      "fontSize": 12,
+                                      "fontSize": 13,
                                       "fontWeight": "500"
                                     },
                                     {
@@ -93004,7 +93004,7 @@
                                       "fill": "$classic2-feature-muted",
                                       "content": "46%",
                                       "fontFamily": "Inter",
-                                      "fontSize": 12,
+                                      "fontSize": 13,
                                       "fontWeight": "500"
                                     },
                                     {
@@ -93150,7 +93150,7 @@
                                   "width": "fill_container",
                                   "content": "$500.00 of Priya's money is not on any invoice yet.",
                                   "fontFamily": "Inter",
-                                  "fontSize": 12,
+                                  "fontSize": 13,
                                   "fontWeight": "500"
                                 },
                                 {
@@ -96211,19 +96211,19 @@
     },
     "classic2-feature-eyebrow": {
       "type": "color",
-      "value": "#A3B3C2"
+      "value": "#C2D6C9"
     },
     "classic2-feature-meta": {
       "type": "color",
-      "value": "#B8C4D0"
+      "value": "#D5E3DA"
     },
     "classic2-feature-label": {
       "type": "color",
-      "value": "#93A3B4"
+      "value": "#D5E3DA"
     },
     "classic2-feature-muted": {
       "type": "color",
-      "value": "#8A96A8"
+      "value": "#B4C9BC"
     },
     "classic2-feature-button-text": {
       "type": "color",
