@@ -38,9 +38,15 @@ item: override the instance's Nav item fill to `sidebar-active`, icon and label 
       Rail: dark Balance due card (paid/balance, client account balance, team-only profit, unapplied-credit
       Add deposit), Online payment (partial-payments toggle), Discount and tax (Add / Edit), Photos and
       files. No Notes card — the app's invoice page has none. Light and dark checked. Awaiting Jafar's yes.
+- [x] 2026-10-13: Jafar asked for 2 more ideas for the top-of-rail summary card. Board
+      `Rail summary · variants · 1440` (`Yl17K`, x 3080 y 4400): Current (dark figure + breakdown) vs
+      A "Next step" (plain-words next action + done/now/next list + one button; after Salesforce Path /
+      HubSpot next activity) vs B "At a glance" (four labelled numbers, team-only profit lock, one footer
+      line or bar; after HubSpot/Salesforce highlights), each for Job, Quote, Invoice. Recommended B.
+      Awaiting his pick, and his yes on Invoice.
 - [ ] Request, Payment, Client details — new; read each `+page.svelte` first (recipe § Working method 1).
 
 ## Next
 
-Get Jafar's yes on `Invoice details · 1440`. Then, in a fresh session, Request / Payment / Client:
+Get Jafar's yes on `Invoice details · 1440` and his rail-summary pick; apply the pick to Job, Quote, Invoice. Then, in a fresh session, Request / Payment / Client:
 read each real page first, copy the approved Job or Quote shell, keep the record-icon track.
