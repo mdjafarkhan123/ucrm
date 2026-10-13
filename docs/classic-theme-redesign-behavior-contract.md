@@ -151,6 +151,15 @@ Jafar approved all four on 2026-10-13, provided existing data supports each. Dat
 - **Old screens in `classic.pen`** — whether the superseded frames are deleted or moved to an archive area.
 - **Home and Reports screens** — drawn in `classic.pen` for the CRM launch readiness campaign (Part 13) with
   the old parts, waiting for Jafar's yes; they take the new look once the design-system page is rebuilt.
+- **"Control room" above Settings** (design review, 2026-10-13) — the Settings page's small heading says
+  "Control room", the same name as the Uplift Control Room. Recommended: "Workspace".
+- **Business group split** (design review) — the Business group holds 13 settings but its description fits
+  only identity, look and hours. Recommended: Business (Business profile, Branding, Business hours, Taxes,
+  Payments) and "Sales & work" in customer-journey order (Request Forms, Contact matching, Pipeline, Price
+  Book, Quote Settings, Checklists, Invoice Settings, Google reviews).
+- **Category pills** (design review) — the concept draws an "All settings" pill lit like a filter; the app's
+  pills jump to a group. Recommended: keep jumping, drop "All settings", light the group being viewed, and
+  keep counts only on the group headers.
 - **Whole-app boundary** — whether later stages also cover login and the pages customers see (request forms,
   client portal, quote approval, payment pages). Does not block the first version.
 

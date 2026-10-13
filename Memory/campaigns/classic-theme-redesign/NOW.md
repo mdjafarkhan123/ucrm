@@ -8,6 +8,6 @@ Control Room — built from shared blocks, with every existing feature, permissi
 **In progress:** none
 
 **Next part:** 2 New look and design system — Jafar chose Claude's concept as Classic 2026-10-13; design
-review next. Read `parts/2-new-look.md`, then the recipe.
+review done the same day — waiting on Jafar's answers to the plan's § Still unclear design questions. Read `parts/2-new-look.md`, then the recipe.
 
-**Blockers:** None.
+**Blockers:** Jafar's answers to the design review (see the part note).
