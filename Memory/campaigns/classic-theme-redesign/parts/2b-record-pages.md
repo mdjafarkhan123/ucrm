@@ -38,11 +38,12 @@ item: override the instance's Nav item fill to `sidebar-active`, icon and label 
       Rail: dark Balance due card (paid/balance, client account balance, team-only profit, unapplied-credit
       Add deposit), Online payment (partial-payments toggle), Discount and tax (Add / Edit), Photos and
       files. No Notes card — the app's invoice page has none. Light and dark checked. Awaiting Jafar's yes.
-- [x] 2026-10-13: Jafar asked for 2 more ideas for the top-of-rail summary card. Board
-      `Rail summary · variants · 1440` (`Yl17K`, x 3080 y 4400): Current (dark figure + breakdown) vs
-      A "Next step" (plain-words next action + done/now/next list + one button; after Salesforce Path /
-      HubSpot next activity) vs B "At a glance" (four labelled numbers, team-only profit lock, one footer
-      line or bar; after HubSpot/Salesforce highlights), each for Job, Quote, Invoice. Recommended B.
+- [x] 2026-10-13: Jafar wanted variants OF the deep green rail card (not white cards) and found its small
+      text hard to read (measured: label 3.6:1, muted 3.1:1 on the gradient's light end). Board
+      `Rail summary · green variants` (`Yl17K`, x 3080 y 4400): Today vs 1 same card with clearer text vs
+      2 green "Next step" vs 3 green "At a glance", for Job / Quote / Invoice. Proposal tokens
+      `classic2-feature-{label,eyebrow,muted,accent,warn}-next` (≥5.3:1); on approval fold them into the
+      real feature tokens (Pencil + `_variables.scss` + skill page) and delete the `-next` ones.
       Awaiting his pick, and his yes on Invoice.
 - [ ] Request, Payment, Client details — new; read each `+page.svelte` first (recipe § Working method 1).
 
