@@ -46,7 +46,7 @@ Part 13) through the old `color-*` tokens — leave it until those screens are r
 
 ## Coloured icons (2026-10-13, awaiting Jafar's yes)
 
-Jafar asked to carry the Settings coloured icon tiles onto the new screens "if reasonable". Drawn on the six
-record pages: key facts tiles in the record colour, meaningful rail rows tinted, waiting items amber, plain
-rows neutral (recipe § Colour rule). Home and Reports still use the old look, so left alone. Next: Jafar's yes,
-then Ctrl+S and commit `classic.pen`.
+Jafar asked to carry the Settings coloured icon tiles onto the new screens, then set the rule: colour must be
+meaningful and representative. Drawn on the six record pages per recipe § Colour rule — key facts neutral
+unless their value needs attention, invoice row blue, automation amber, waiting items amber, the rest neutral.
+Home and Reports still use the old look, so left alone. Next: Jafar's yes, then Ctrl+S and commit `classic.pen`.

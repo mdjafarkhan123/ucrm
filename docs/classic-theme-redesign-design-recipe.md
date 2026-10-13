@@ -73,16 +73,19 @@ appears only when it means one of three things:
 Sidebar icons, cards, secondary buttons and form controls stay neutral; the one main button per page is
 brand green. One dark featured card per page at most.
 
-**Coloured icon tiles** (drawn 2026-10-13, awaiting Jafar's yes) follow the Settings row tile: `<colour>-tint`
-fill, `<colour>-soft` stroke, icon in the deep `<colour>`. On record pages:
+**Coloured icon tiles** (drawn 2026-10-13, awaiting Jafar's yes). Jafar's rule: colour must be meaningful and
+representative — a coloured icon always tells the user something; otherwise it stays neutral. A coloured tile
+follows the Settings row tile: `<colour>-tint` fill, `<colour>-soft` stroke, icon in the deep `<colour>`.
 
-- Key facts strip tiles take the page's record colour — job green, quote rose, invoice blue, request amber,
-  client violet; a payment uses green.
-- Side-rail rows about another record or a settings section take that colour (Billing's invoice row blue,
-  reminders and automation rows amber, lead source teal, marketing email blue); 32 tile, radius 9, 16 icon.
-- Status icons take their status colour: close-out and deposit items still waiting are amber.
-- Rows that are plain notes or money settings (instructions, discount, tax) keep the neutral `chip` tile with
-  a `body` icon. Header meta icons, button icons and table rows stay neutral.
+- **Status:** a key fact's tile turns its status colour only when its value needs attention — green for
+  happening today (a job's Schedule while the crew is on site, a request's assessment today), amber for waiting
+  on someone (a quote's "Approved: No answer yet"), red once overdue (an invoice's Due). Close-out and deposit
+  items still waiting are amber. Every other key fact keeps the neutral tile.
+- **Record type:** a rail row about another record takes that record's colour (Billing's invoice row blue).
+- **Automation:** reminder and automation rows are amber.
+- **Neutral:** everything else — instructions, discount, tax, lead source, marketing email, contact facts,
+  header meta icons, button icons and table rows — uses the `chip` or `surface-soft` tile with a neutral icon.
+  Side-rail row tiles are 32, radius 9, 16 icon.
 
 ## Tokens
 
