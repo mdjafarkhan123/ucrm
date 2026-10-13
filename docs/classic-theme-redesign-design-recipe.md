@@ -73,7 +73,7 @@ appears only when it means one of three things:
 Sidebar icons, cards, secondary buttons and form controls stay neutral; the one main button per page is
 brand green. One dark featured card per page at most.
 
-**Coloured icon tiles** (drawn 2026-10-13, awaiting Jafar's yes). Jafar's rule: colour must be meaningful and
+**Coloured icon tiles** (approved by Jafar 2026-10-13 on the six record pages). Jafar's rule: colour must be meaningful and
 representative — a coloured icon always tells the user something; otherwise it stays neutral. A coloured tile
 follows the Settings row tile: `<colour>-tint` fill, `<colour>-soft` stroke, icon in the deep `<colour>`.
 

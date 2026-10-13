@@ -109,6 +109,9 @@ grouping are planned after the first version, one stage at a time.
   record colour and its number ("Request #88", "Quote #318", "Job #1042"), linked records with an open arrow.
   A rearranged version (page header on the background, "Right now" card, merged rail cards) was drawn and
   rejected — keep the approved placement.
+- **Icon colour must be meaningful** (Jafar, 2026-10-13, approved on the six record pages). A coloured icon tile
+  tells the user something — a status needing attention, another record's type, or automation; everything else
+  stays neutral. Details in the recipe § Colour rule.
 - **Quote details approved** (Jafar, 2026-10-13: "yes"). `Quote details · 1440` in `classic.pen` is built
   from the approved Job and keeps the quote concept's placement. A sent quote shows no edit pencils (editing
   needs a draft; the products footer says to start a new version). The app's separate Discount and Tax rail
