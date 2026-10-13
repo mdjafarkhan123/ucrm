@@ -66,6 +66,9 @@ grouping are planned after the first version, one stage at a time.
   change any design system we will do it to match").
 - **The app shell takes the new look with the first version.** The dark sidebar and the top bar appear on
   every page, so like the card shells they change everywhere at once.
+- **Keep the approved Settings sidebar** (Jafar, 2026-10-13). Later split-rail, navigation-tile and editorial
+  sidebar alternatives were rejected and deleted; the sidebar shown on the two approved Settings reference
+  screens remains the Classic direction.
 - **Colour where it means something** (Jafar, 2026-10-13: "not too much colorful … like rainbow, rather
   follow the best ui/ux designer"; then "you can use rainbow like different color where it make sense").
   Colour marks a settings section, a record type or a status; everything else stays neutral. The recipe's

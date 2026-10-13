@@ -16,10 +16,9 @@ Pencil first; Pencil's skill and `execute.md`.
       answers; § Green buttons, black-green sidebar; § Settings additions). Sales & work uses the app's teal
       (tile `#F3FBFC`/`#DEF3F7`, icon `#0E6171`, solid `#118197`, dot `#15A4C1`). Jafar approved both
       reference screens ("approved"), deep green version, `38bce4e2`.
-- [ ] Sidebar concepts — Jafar asked for different sidebar concepts. First try (2026-10-13), board of four
-      (A grouped list, B Jobber-style Create button, C Stripe/Linear Shortcuts and More, D Slack-style compact
-      rail): Jafar said "I dont like that" and deleted it. Next session: ask him what he disliked and what he
-      wants to see before drawing again.
+- [x] Sidebar direction closed 2026-10-13 — three structurally different comparisons (split rail,
+      navigation tiles and editorial column) were drawn, then rejected and deleted at Jafar's request.
+      Keep the sidebar already present on the approved Settings reference screens.
 - [ ] Jafar answers the "Soon" menu items question (plan § Still unclear).
 - [ ] Move superseded frames to an Archive area of `classic.pen`.
 - [ ] Rebuild the Classic design-system page from recipe § Palette (with the contrast fixes) and the reference
@@ -39,5 +38,5 @@ disabled, nothing changed) — full-page forms show the bar all the time.
 
 ## Next
 
-Ask Jafar about the sidebar concepts (above), then draw new ones; afterwards archive old frames and rebuild
-the design-system page. Part 2B follows this part.
+Archive old frames and rebuild the design-system page using the sidebar already present on the approved
+Settings reference screens. Part 2B follows this part.
