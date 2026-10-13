@@ -19,22 +19,8 @@ item: override the instance's Nav item fill to `sidebar-active`, icon and label 
 
 ## Steps
 
-- [x] 2026-10-13: `Job details · 1440` (`bbWOb`, x 3080 y 2300 — record pages row below Settings) drawn,
-      critiqued in light and dark; app wording used (Instructions, Photos and files); client avatar violet;
-      instruction icons neutral.
-- [x] 2026-10-13: Jafar: v1 "did not improve the design, just converted". Agreed six upgrades ("ok"), drawn
-      as `Job details · v2 · 1440` (`G2x339`, x 4620 y 2300) beside v1: Settings-style page header (job icon
-      tile, crumbs, title on the page background, meta row with quick contact); clickable lifecycle track
-      card (record tiles in record colours, numbers, open arrows); jump pills; dark featured card used for
-      "Right now" (today's visit, Open visit, four fact chips); Close-out + Billing merged into "Ready to
-      invoice?"; light team-only profit card; slimmer product rows; crew time split in the Work log.
-      Light and dark checked.
-- [x] 2026-10-13: Jafar kept v1's design and section placement ("I like the old design and its placement
-      of section") but liked v2's record icons and numbers on the track. Applied to `bbWOb`: each step has a
-      28 record tile in its record colour (request amber, quote rose, job solid green, future steps neutral),
-      "Request #88" / "Quote #318" / "Job #1042" titles, a 12 open arrow on linked records. v2 deleted.
-      Lesson: improve within the approved placement; don't move sections without asking.
-- [x] 2026-10-13: Jafar approved `Job details · 1440` ("yes"); recorded in plan § Direction.
+- [x] 2026-10-13: `Job details · 1440` (`bbWOb`, x 3080 y 2300) approved after one rejected rearranged v2.
+      Lesson: improve within the approved placement; don't move sections without asking. Details: plan § Direction.
 - [x] 2026-10-13: `Quote details · 1440` (`e5HXY`, x 4620 y 2300) drawn by copying the approved Job
       (`bbWOb`) and swapping sections, keeping the concept's placement. Main: hero (blue Awaiting
       response, Send email, record track with Quote as the current rose tile), Introduction, Products and
