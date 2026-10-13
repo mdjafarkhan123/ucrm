@@ -73,6 +73,17 @@ appears only when it means one of three things:
 Sidebar icons, cards, secondary buttons and form controls stay neutral; the one main button per page is
 brand green. One dark featured card per page at most.
 
+**Coloured icon tiles** (drawn 2026-10-13, awaiting Jafar's yes) follow the Settings row tile: `<colour>-tint`
+fill, `<colour>-soft` stroke, icon in the deep `<colour>`. On record pages:
+
+- Key facts strip tiles take the page's record colour — job green, quote rose, invoice blue, request amber,
+  client violet; a payment uses green.
+- Side-rail rows about another record or a settings section take that colour (Billing's invoice row blue,
+  reminders and automation rows amber, lead source teal, marketing email blue); 32 tile, radius 9, 16 icon.
+- Status icons take their status colour: close-out and deposit items still waiting are amber.
+- Rows that are plain notes or money settings (instructions, discount, tax) keep the neutral `chip` tile with
+  a `body` icon. Header meta icons, button icons and table rows stay neutral.
+
 ## Tokens
 
 Light and dark values of every colour token (`classic2-…` in `classic.pen`). Dark mode uses near-black green

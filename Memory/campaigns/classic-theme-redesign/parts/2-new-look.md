@@ -43,3 +43,10 @@ disabled, nothing changed) — full-page forms show the bar all the time.
 
 Part 2 is Done (2026-10-13). The old page `lkPLl` still feeds the Home and Reports screens (crm-launch-readiness
 Part 13) through the old `color-*` tokens — leave it until those screens are restyled. Continue with Part 2B.
+
+## Coloured icons (2026-10-13, awaiting Jafar's yes)
+
+Jafar asked to carry the Settings coloured icon tiles onto the new screens "if reasonable". Drawn on the six
+record pages: key facts tiles in the record colour, meaningful rail rows tinted, waiting items amber, plain
+rows neutral (recipe § Colour rule). Home and Reports still use the old look, so left alone. Next: Jafar's yes,
+then Ctrl+S and commit `classic.pen`.
