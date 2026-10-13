@@ -76,6 +76,14 @@
 	function accountRoleLabel(role: string) {
 		return role === 'admin' ? 'Administrator' : `${role[0].toUpperCase()}${role.slice(1)}`;
 	}
+	const accountInitials = $derived(
+		(account?.name ?? account?.email ?? accountLabel)
+			.trim()
+			.split(/\s+/)
+			.slice(0, 2)
+			.map((part) => part[0]?.toUpperCase() ?? '')
+			.join('')
+	);
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -103,7 +111,7 @@
 	{/snippet}
 	{#snippet add()}
 		<DropdownMenu.Root>
-			<DropdownMenu.Trigger class="topbar__add">
+			<DropdownMenu.Trigger class="topbar__add" aria-label="Add new">
 				<span aria-hidden="true">{@html plusIcon}</span><span class="topbar__add-label"
 					>Add New</span
 				>
@@ -135,7 +143,10 @@
 						<Avatar id={avatar.id} name={avatar.name} src={avatar.url} size="medium" />
 					</span>
 				{:else}
-					<span class="topbar__avatar" aria-hidden="true">{@html userIcon}</span>
+					<span class="topbar__avatar" aria-hidden="true">
+						<span class="topbar__avatar-icon">{@html userIcon}</span>
+						<span class="topbar__avatar-initials">{accountInitials}</span>
+					</span>
 				{/if}
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Portal disabled>
@@ -183,6 +194,9 @@
 
 <!-- eslint-enable svelte/no-at-html-tags -->
 <style lang="scss">
+	:global(.topbar__avatar-initials) {
+		display: none;
+	}
 	:global(.topbar__menu-panel) {
 		z-index: var(--elevation-menu);
 		min-width: 176px;
