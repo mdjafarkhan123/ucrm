@@ -12,19 +12,14 @@ Pencil first; Pencil's skill and `execute.md`.
 
 ## Steps
 
-- [x] Claude concept drawn 2026-10-13 — Settings Home (`XwqtP`) and Business profile (`ofzTY`). Jafar: "This
-      will be our classic design … No more old version."
-- [x] 0. Both frames committed (`daf368cc`).
-- [x] Design review 2026-10-13 (full size, app code, WCAG contrast). Fixes
-      below; product questions added to plan § Still unclear.
-- [x] Jafar 2026-10-13: "go with your recommendation" — answers in plan § Direction agreed so far › Design
-      review answers and § Approved additions › Settings additions. Brand green is the app's button green
-      `#037741`; no light green in light mode.
-- [x] Fixes, Business split (Sales & work uses the app's teal: tile `#F3FBFC`/`#DEF3F7`, icon `#0E6171`,
-      solid `#118197`, dot `#15A4C1`), pills and "Workspace" applied to both screens; re-exported and checked.
-- [x] Jafar 2026-10-13: green main buttons, black-green sidebar (plan § Green buttons, black-green sidebar).
-      Applied to both screens with green highlights and the collapse button; board and copies deleted;
-      recipe updated to match.
+- [x] 2026-10-13: concept drawn (`XwqtP`, `ofzTY`), reviewed, Jafar's answers applied (plan § Design review
+      answers; § Green buttons, black-green sidebar; § Settings additions). Sales & work uses the app's teal
+      (tile `#F3FBFC`/`#DEF3F7`, icon `#0E6171`, solid `#118197`, dot `#15A4C1`). Jafar approved both
+      reference screens ("approved"), deep green version, `38bce4e2`.
+- [ ] Sidebar concepts — Jafar asked for different sidebar concepts. First try (2026-10-13), board of four
+      (A grouped list, B Jobber-style Create button, C Stripe/Linear Shortcuts and More, D Slack-style compact
+      rail): Jafar said "I dont like that" and deleted it. Next session: ask him what he disliked and what he
+      wants to see before drawing again.
 - [ ] Jafar answers the "Soon" menu items question (plan § Still unclear).
 - [ ] Move superseded frames to an Archive area of `classic.pen`.
 - [ ] Rebuild the Classic design-system page from recipe § Palette (with the contrast fixes) and the reference
@@ -44,4 +39,5 @@ disabled, nothing changed) — full-page forms show the bar all the time.
 
 ## Next
 
-Wait for Jafar's lime-or-green answer, archive old frames, then rebuild the design-system page. Part 2B follows this part.
+Ask Jafar about the sidebar concepts (above), then draw new ones; afterwards archive old frames and rebuild
+the design-system page. Part 2B follows this part.
