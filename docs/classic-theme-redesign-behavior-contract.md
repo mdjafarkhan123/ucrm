@@ -1,7 +1,7 @@
 # Classic theme redesign
 
 **Status:** First version (six record pages, card shells everywhere, four additions) approved by Jafar on
-2026-10-13. New Classic look chosen the same day (§ Direction agreed so far › New Classic look); designing
+2026-10-13; all six record pages designed and approved, and the build order approved the same day. Building
 next.
 
 ## Summary
@@ -136,6 +136,16 @@ grouping are planned after the first version, one stage at a time.
   the design-system page. The superseded first-concept frames are deleted.
 - **Pencil only for now** (Jafar, 2026-10-13): no app code changes until the family is approved and build
   planning (Part 3) is done.
+- **Build order approved** (Jafar, 2026-10-13: "all agreed"). Twelve build parts, B1 (Classic's own colours,
+  so Botanical stays untouched) to B12 (final check and Jafar's walk-through); see the campaign's
+  first-version build stage.
+- **Message, not Text** (Jafar, 2026-10-13). The header's quick contact buttons are Call, Message and
+  Directions. Message does exactly what the client page's Message button does today (opens the message
+  dialog to the client) and gains texting when the business's texting is active — as Jobber texts from inside
+  the product and keeps it on the client record, never the phone's own messaging app.
+- **Settings pages wait for the next stage** (Jafar, 2026-10-13). Settings home and Business profile take the
+  new cards in the first version; their approved layout and Settings additions are built in the first later
+  stage.
 
 ## Design principles
 
@@ -183,9 +193,9 @@ Jafar approved all four on 2026-10-13, provided existing data supports each. Dat
   payments belong to invoices.
 - **Close-out list** on jobs: what is left before invoicing. Supported: visits, checklists, photos, customer
   signatures and the work report all exist on the job page today.
-- **Quick contact buttons** in the header: call, text and directions. Call already exists as a phone link on
-  the client card; directions can open a map link for the property address. What **Text** opens is still
-  unclear.
+- **Quick contact buttons** in the header: Call, Message and Directions. Call already exists as a phone link
+  on the client card; Directions opens a map link for the property address; Message works as on the client
+  page (§ Direction › Message, not Text).
 - **Live on-site time** on today's visit. Supported: running timers record their job and visit.
 
 ### Settings additions
@@ -218,8 +228,6 @@ Jafar approved these on 2026-10-13 ("go with your recommendation"):
 
 ## Still unclear
 
-- **Text button** — whether it opens the client's conversation in the app's inbox or the device's messaging
-  app, given business texting is not yet active. Does not block design; settle before building the header.
 - **Whole-app boundary** — whether later stages also cover login and the pages customers see (request forms,
   client portal, quote approval, payment pages). Does not block the first version.
 

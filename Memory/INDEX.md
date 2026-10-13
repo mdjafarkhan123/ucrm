@@ -28,4 +28,4 @@ Deferred work is indexed separately at Memory/deferred/INDEX.md; read it only wh
 
 
 | crm-design-system | In progress 2026-10-12 — A1 complete/integrated; A2a chooser/notice demo next; approvals preserved | Selectable Classic/Botanical designs; foundation then complete Botanical | Memory/campaigns/crm-design-system/NOW.md | CRM themes, Botanical redesign, design skills or selected-only loading |
-| classic-theme-redesign | In progress 2026-10-13 — all six record pages approved; Part 3 build planning next | Premium, modern Classic record pages built from shared blocks, every feature kept | Memory/campaigns/classic-theme-redesign/NOW.md | Classic redesign, job details redesign, record page look, Job cockpit concept, classic.pen record screens |
+| classic-theme-redesign | In progress 2026-10-13 — build order B1–B12 approved; B1 Classic's own colours next | Premium, modern Classic record pages built from shared blocks, every feature kept | Memory/campaigns/classic-theme-redesign/NOW.md | Classic redesign, job details redesign, record page look, Job cockpit concept, classic.pen record screens |
