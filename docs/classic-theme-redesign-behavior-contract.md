@@ -72,13 +72,15 @@ grouping are planned after the first version, one stage at a time.
   § Colour rule lists the colours.
 - **Brand colour is green** (Jafar, 2026-10-13: "preserve my brand color which is Green. You can use its
   shade if you want where need like Very deep green, deep green etc."). Every green in the new look comes from
-  the app's brand green `#05BE68` and its shades (`--color-base-green--100` to `--1000`), replacing the
-  concept's other greens; deeper shades carry small text so it stays readable.
+  the app's green scale (`--color-base-green--100` to `--1000`), replacing the concept's other greens.
 - **Green buttons, black-green sidebar** (Jafar, 2026-10-13: "Main button is green, my brand color, sidebar
-  we can use black green type"). The main button is brand green `#05BE68` with dark text (white text is too
-  faint on it); the logo, Save button, highlighted menu item and badges are brand green too, replacing the
-  concept's lime. The sidebar and the other dark surfaces (Save bar, selected pill, page icon tile) are a
-  near-black green instead of navy ink. One green button per page; other card actions are secondary.
+  we can use black green type"; then "dont use light green in white mode … see our app which green we are
+  using as brand"). The brand green is the one the app's buttons already use, `#037741`
+  (`--color-interactive`, hover `#02532D`), with white text. It colours the main button, Save, the logo tile,
+  the highlighted menu item and badges, replacing the concept's lime. Light mode uses no light green;
+  `#05BE68` and lighter stay for dark mode, as in the app today. The sidebar and the other dark surfaces
+  (Save bar, selected pill) are a near-black green instead of navy ink. One green button per page; other card
+  actions are secondary.
 - **Design review answers** (Jafar, 2026-10-13: "go with your recommendation"):
   - The review's fixes are applied: readable text contrast, "1 to do" on Setup status, a one-tile group spans
     the full width, side-by-side cards share a height, the app's own wording, and the always-visible Save

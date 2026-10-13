@@ -18,8 +18,8 @@ Pencil first; Pencil's skill and `execute.md`.
 - [x] Design review 2026-10-13 (full size, app code, WCAG contrast). Fixes
       below; product questions added to plan § Still unclear.
 - [x] Jafar 2026-10-13: "go with your recommendation" — answers in plan § Direction agreed so far › Design
-      review answers and § Approved additions › Settings additions. Brand colour is green: the app's
-      `#05BE68` scale replaced the concept's greens.
+      review answers and § Approved additions › Settings additions. Brand green is the app's button green
+      `#037741`; no light green in light mode.
 - [x] Fixes, Business split (Sales & work uses the app's teal: tile `#F3FBFC`/`#DEF3F7`, icon `#0E6171`,
       solid `#118197`, dot `#15A4C1`), pills and "Workspace" applied to both screens; re-exported and checked.
 - [x] Jafar 2026-10-13: green main buttons, black-green sidebar (plan § Green buttons, black-green sidebar).
