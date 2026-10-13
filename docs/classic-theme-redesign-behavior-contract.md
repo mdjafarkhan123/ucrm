@@ -70,6 +70,23 @@ grouping are planned after the first version, one stage at a time.
   follow the best ui/ux designer"; then "you can use rainbow like different color where it make sense").
   Colour marks a settings section, a record type or a status; everything else stays neutral. The recipe's
   § Colour rule lists the colours.
+- **Brand colour is green** (Jafar, 2026-10-13: "preserve my brand color which is Green. You can use its
+  shade if you want where need like Very deep green, deep green etc."). Every green in the new look comes from
+  the app's brand green `#05BE68` and its shades (`--color-base-green--100` to `--1000`), replacing the
+  concept's other greens; deeper shades carry small text so it stays readable.
+- **Design review answers** (Jafar, 2026-10-13: "go with your recommendation"):
+  - The review's fixes are applied: readable text contrast, "1 to do" on Setup status, a one-tile group spans
+    the full width, side-by-side cards share a height, the app's own wording, and the always-visible Save
+    bar's resting state on full-page forms.
+  - Settings' small heading says "Workspace" instead of "Control room".
+  - The Business group splits in two: Business (Business profile, Branding, Business hours, Taxes, Payments)
+    and Sales & work in customer-journey order (Request Forms, Contact matching, Pipeline, Price Book, Quote
+    Settings, Checklists, Invoice Settings, Google reviews).
+  - Category pills keep jumping to a group: no "All settings" pill, the group in view is lit, and counts
+    show only on group headers.
+  - Superseded screens move to an Archive area of `classic.pen` and are deleted once Part 2B redraws the job,
+    quote and invoice pages.
+  - The Home and Reports screens for the launch campaign take the new look before Jafar approves them.
 - **Pencil only for now** (Jafar, 2026-10-13): no app code changes until the family is approved and build
   planning (Part 3) is done.
 
@@ -124,6 +141,18 @@ Jafar approved all four on 2026-10-13, provided existing data supports each. Dat
   unclear.
 - **Live on-site time** on today's visit. Supported: running timers record their job and visit.
 
+### Settings additions
+
+Jafar approved these on 2026-10-13 ("go with your recommendation"):
+
+- **Settings in the main search** — the top search finds settings pages too, instead of a second "Search
+  settings" box on the page (as Stripe and Linear do).
+- **Setup status card** on Settings home: Stripe, texting and email readiness, each with its next action.
+- **Communication Balance figure** on Settings home.
+- **"What customers see" preview** on Business profile.
+- **"Where this is used" card** on settings pages.
+- **Save bar wording**: "You have unsaved changes" once something changes; a resting state while nothing has.
+
 ## Success checks
 
 - An owner opens an in-progress job → without scrolling sees its stage, today's visit, the job total and what
@@ -144,22 +173,8 @@ Jafar approved all four on 2026-10-13, provided existing data supports each. Dat
 
 - **Text button** — whether it opens the client's conversation in the app's inbox or the device's messaging
   app, given business texting is not yet active. Does not block design; settle before building the header.
-- **Six ideas in the new look** — not in the app yet; each needs Jafar's yes before it is built: a "Search
-  settings" box; a Setup status card (Stripe, texting, email readiness); the Communication Balance figure on
-  Settings home; a "What customers see" preview on Business profile; a "Where this is used" card; the Save
-  bar's "You have unsaved changes" text. Until then they are drawn but not approved.
-- **Old screens in `classic.pen`** — whether the superseded frames are deleted or moved to an archive area.
-- **Home and Reports screens** — drawn in `classic.pen` for the CRM launch readiness campaign (Part 13) with
-  the old parts, waiting for Jafar's yes; they take the new look once the design-system page is rebuilt.
-- **"Control room" above Settings** (design review, 2026-10-13) — the Settings page's small heading says
-  "Control room", the same name as the Uplift Control Room. Recommended: "Workspace".
-- **Business group split** (design review) — the Business group holds 13 settings but its description fits
-  only identity, look and hours. Recommended: Business (Business profile, Branding, Business hours, Taxes,
-  Payments) and "Sales & work" in customer-journey order (Request Forms, Contact matching, Pipeline, Price
-  Book, Quote Settings, Checklists, Invoice Settings, Google reviews).
-- **Category pills** (design review) — the concept draws an "All settings" pill lit like a filter; the app's
-  pills jump to a group. Recommended: keep jumping, drop "All settings", light the group being viewed, and
-  keep counts only on the group headers.
+- **Lime highlights** — the concept draws the logo tile, Save button, highlighted menu item and badges in lime;
+  whether they stay lime or take the brand green. A side-by-side screen in `classic.pen` shows both.
 - **Whole-app boundary** — whether later stages also cover login and the pages customers see (request forms,
   client portal, quote approval, payment pages). Does not block the first version.
 
