@@ -1,15 +1,13 @@
 # Classic theme redesign — now
 
-**Goal:** Classic's record pages look premium and modern, built from shared blocks, with every existing
-feature, permission and save rule kept.
-**Plan:** `docs/classic-theme-redesign-behavior-contract.md` — planning; first-version scope not approved.
-**Stage:** Planning
+**Goal:** Classic looks premium and modern — first the six record pages, then the whole app including the
+Control Room — built from shared blocks, with every existing feature, permission and save rule kept.
+**Plan:** `docs/classic-theme-redesign-behavior-contract.md` — first version approved by Jafar 2026-10-13.
+**Stage:** Design
 
-**In progress:**
+**In progress:** none
 
-- 1 Plan: scope and direction — `parts/1-plan-scope.md`
+**Next part:** 2 Design the record page family — read `parts/2-design-family.md` and start at its first
+unchecked step.
 
-**Next part:** 2 Design the record page family — quote and invoice pages, plus phone versions, in
-`classic.pen` with the job concept's parts.
-
-**Blockers:** Jafar's answers to the four questions in the plan's **Still unclear**.
+**Blockers:** None.
