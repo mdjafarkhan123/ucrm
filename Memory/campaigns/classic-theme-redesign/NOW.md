@@ -5,9 +5,9 @@ Control Room — built from shared blocks, with every existing feature, permissi
 **Plan:** `docs/classic-theme-redesign-behavior-contract.md` — first version approved by Jafar 2026-10-13.
 **Stage:** Design
 
-**In progress:** Part 2 — sidebar direction closed; keep the sidebar on the approved Settings screens.
+**In progress:** Part 2 — the design-system page is rebuilt in light and dark (`GIgyC`, `yRKPF`) and both
+reference screens use its parts; waiting for Jafar's Ctrl+S and his approval.
 
-**Next:** Rebuild the design-system page from the approved Settings look. Read `parts/2-new-look.md`, then
-the recipe.
+**Next:** Record Jafar's answer on the design-system page in `parts/2-new-look.md`, then start Part 2B.
 
 **Blockers:** The "Soon" menu items answer is still open.

@@ -20,14 +20,18 @@ Pencil first; Pencil's skill and `execute.md`.
       navigation tiles and editorial column) were drawn, then rejected and deleted at Jafar's request.
       Keep the sidebar already present on the approved Settings reference screens.
 - [ ] Jafar answers the "Soon" menu items question (plan § Still unclear).
-- [ ] Move superseded frames to an Archive area of `classic.pen`.
-- [ ] Rebuild the Classic design-system page from recipe § Palette (with the contrast fixes) and the reference
-      screens: named tokens with light and designed dark values; parts — Sidebar, Top bar, Card, Group header,
-      Setting row (with optional status pill — the app shows "Incomplete" / "Not set"), Form card header,
-      Field (input, select, locked, textarea), Toggle row, Buttons, Tab pill, Status pill, Count chip,
-      Featured card, Save bar (resting and unsaved), rail cards. Point both screens at them; check dark mode.
-      The old page (`lkPLl`, dark `lVZIm`) also feeds Home and Reports — retire it per Jafar's answer.
-- [ ] Replace raw hex values in the recipe with the token names.
+- [x] 2026-10-13: superseded frames archived — record concepts renamed `Archive · … · first concept` and moved
+      to the archive row (top right) beside the old design-system pages `lkPLl`/`lVZIm`.
+- [x] 2026-10-13: Classic design-system page rebuilt — `Classic design system · light` (`GIgyC`) and its dark
+      copy (`yRKPF`), top left of `classic.pen`, reference screens beside them (renamed `Settings · Home ·
+      1440`, `Settings · Business profile · 1440`). 70 `classic2-*` tokens with light and dark values; 40
+      parts (list in recipe § Tokens). Both reference screens are now instances of those parts, and their
+      light export is pixel-identical to the approved screens. Dark mode checked on all four frames.
+- [x] Raw hex in the recipe replaced with token names (recipe § Tokens holds the values).
+- [ ] Jafar presses Ctrl+S in Pencil; commit `classic.pen` from main.
+- [ ] Jafar approves the design-system page, light and dark (new since his last look: dark values, the
+      collapsed sidebar, field focus and error states, toggle off, resting Save bar wording "No unsaved
+      changes / Change any field, then press Save.").
 
 ## Review fixes (agreed and applied 2026-10-13)
 
@@ -38,5 +42,6 @@ disabled, nothing changed) — full-page forms show the bar all the time.
 
 ## Next
 
-Archive old frames and rebuild the design-system page using the sidebar already present on the approved
-Settings reference screens. Part 2B follows this part.
+Show Jafar the two design-system frames and the dark versions; record his yes here and in the plan. The old
+page `lkPLl` still feeds the Home and Reports screens (crm-launch-readiness Part 13) through the old
+`color-*` tokens — leave it until those screens are restyled. Part 2B follows this part.
