@@ -44,9 +44,17 @@ item: override the instance's Nav item fill to `sidebar-active`, icon and label 
       draft). Light and dark checked.
 - [x] 2026-10-13: Jafar approved `Quote details · 1440` ("yes", combined Discount and tax card as shown);
       recorded in plan § Direction.
-- [ ] Invoice details (from `fPq9c`), same method — copy the Job, beside the Quote.
+- [x] 2026-10-13: `Invoice details · 1440` (`dQ7vH`, x 6160 y 2300) drawn by copying the approved Quote,
+      concept placement kept. Main: hero (Collect payment; track with Invoice as the current solid-blue
+      tile; facts Invoice date / Due · Net 14 / Sent / Viewed + edit pencil for the app's Terms & dates),
+      Products and services (editable — invoices stay editable after sending), History (Payments / Edits
+      tabs = the app's Financial history + Invoice history), Contract disclaimer (draft-only, no pencil).
+      Rail: dark Balance due card (paid/balance, client account balance, team-only profit, unapplied-credit
+      Add deposit), Online payment (partial-payments toggle), Discount and tax (Add / Edit), Photos and
+      files. No Notes card — the app's invoice page has none. Light and dark checked. Awaiting Jafar's yes.
 - [ ] Request, Payment, Client details — new; read each `+page.svelte` first (recipe § Working method 1).
 
 ## Next
 
-Draw Invoice from `fPq9c` by copying the approved Quote (`e5HXY`), same record-icon track.
+Get Jafar's yes on `Invoice details · 1440`. Then, in a fresh session, Request / Payment / Client:
+read each real page first, copy the approved Job or Quote shell, keep the record-icon track.
