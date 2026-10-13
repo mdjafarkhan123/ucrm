@@ -62617,6 +62617,4423 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "aRN8m",
+      "x": 6880,
+      "y": 17795,
+      "name": "Settings · Business profile · Classic redesign · 1440",
+      "theme": {
+        "mode": "light"
+      },
+      "clip": true,
+      "width": 1440,
+      "height": 1024,
+      "fill": "$color-surface-page",
+      "gap": 16,
+      "padding": 12,
+      "children": [
+        {
+          "id": "QOzCb",
+          "type": "ref",
+          "ref": "DQqPW",
+          "name": "Sidebar · Settings active",
+          "height": "fill_container",
+          "descendants": {
+            "d4YDVJ": {
+              "fontFamily": "$font-family"
+            },
+            "kgVo6": {
+              "fontFamily": "$font-family"
+            },
+            "o7k6Qe": {
+              "fontFamily": "$font-family"
+            },
+            "lySbZ": {
+              "fill": "$color-surface"
+            },
+            "lySbZ/Is933": {
+              "enabled": false
+            },
+            "lySbZ/j0FPQ0": {
+              "fill": "$color-icon"
+            },
+            "lySbZ/YOxt6": {
+              "fill": "$color-heading",
+              "fontFamily": "$font-family"
+            },
+            "G15rHz/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "y6bX1u/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "e17sz/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "BgImC": {
+              "fontFamily": "$font-family"
+            },
+            "z1Wbc/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "kr98q/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "NAtdH/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "RD5jQ/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "Deeyi": {
+              "fontFamily": "$font-family"
+            },
+            "EvjLL": {
+              "fill": []
+            },
+            "EvjLL/Is933": {
+              "enabled": false
+            },
+            "EvjLL/j0FPQ0": {
+              "fill": "$color-icon"
+            },
+            "EvjLL/YOxt6": {
+              "fill": "$color-heading",
+              "fontFamily": "$font-family"
+            },
+            "HcWIh": {
+              "fill": []
+            },
+            "HcWIh/Is933": {
+              "enabled": false
+            },
+            "HcWIh/j0FPQ0": {
+              "fill": "$color-icon"
+            },
+            "HcWIh/YOxt6": {
+              "fontFamily": "$font-family",
+              "fill": "$color-heading"
+            },
+            "mxY8b": {
+              "fill": []
+            },
+            "mxY8b/Is933": {
+              "enabled": false
+            },
+            "mxY8b/j0FPQ0": {
+              "fill": "$color-icon"
+            },
+            "mxY8b/YOxt6": {
+              "fontFamily": "$font-family",
+              "fill": "$color-heading"
+            },
+            "qJr6W/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "zdY1H": {
+              "fontFamily": "$font-family"
+            },
+            "r8ZgA/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "Pm9ce/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "d5jG5j": {
+              "fill": "$color-surface-active"
+            },
+            "d5jG5j/Is933": {
+              "enabled": true
+            },
+            "d5jG5j/j0FPQ0": {
+              "fill": "$color-interactive"
+            },
+            "d5jG5j/YOxt6": {
+              "fontFamily": "$font-family",
+              "fill": "$color-interactive"
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "h0iYI2",
+          "name": "Content column",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "children": [
+            {
+              "id": "Xa7ZJ",
+              "type": "ref",
+              "ref": "a4PSU",
+              "name": "Top bar",
+              "width": "fill_container",
+              "descendants": {
+                "Lwdcj": {
+                  "content": "Search jobs, clients, invoices…",
+                  "fontFamily": "$font-family"
+                },
+                "MI7l1": {
+                  "content": "⌘ K",
+                  "fontFamily": "$font-family"
+                },
+                "Y0VnHS/IOxqM": {
+                  "content": "Add new",
+                  "fontFamily": "$font-family"
+                },
+                "t1pt42": {
+                  "content": "3",
+                  "fontFamily": "$font-family"
+                },
+                "BA2X1": {
+                  "fontFamily": "$font-family"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "KLHrO",
+              "name": "Breadcrumb row",
+              "width": "fill_container",
+              "padding": [
+                0,
+                4
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "DGvel",
+                  "name": "Crumbs",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "EJ9Wy",
+                      "name": "Crumb jobs",
+                      "fill": "$color-interactive",
+                      "content": "Settings",
+                      "fontFamily": "$font-family",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "C7by06",
+                      "name": "Crumb sep",
+                      "width": 14,
+                      "height": 14,
+                      "icon": "chevron-right",
+                      "library": "lucide",
+                      "fill": "$color-icon-secondary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "YJsfJ",
+                      "name": "Crumb current",
+                      "fill": "$color-text-secondary",
+                      "content": "Business profile",
+                      "fontFamily": "$font-family",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "yfsJk",
+              "name": "Page title",
+              "width": "fill_container",
+              "gap": 14,
+              "padding": [
+                0,
+                4
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "eV3fX",
+                  "name": "Title icon",
+                  "width": 44,
+                  "height": 44,
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-control",
+                  "stroke": "$color-border-card",
+                  "strokeWidth": 1,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "AyS22",
+                      "name": "icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "building-2",
+                      "library": "lucide",
+                      "fill": "$color-icon"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "tQ7ES",
+                  "name": "Title text",
+                  "layout": "vertical",
+                  "gap": 2,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "N8zCkx",
+                      "name": "Page heading",
+                      "fill": "$color-heading",
+                      "content": "Business profile",
+                      "fontFamily": "$font-family",
+                      "fontSize": 28,
+                      "fontWeight": "700",
+                      "letterSpacing": -0.6
+                    },
+                    {
+                      "type": "text",
+                      "id": "w8tnV",
+                      "name": "Page sub",
+                      "fill": "$color-text-secondary",
+                      "content": "Your name, contact details, address, timezone, and currency.",
+                      "fontFamily": "$font-family",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "W4uIF",
+              "name": "Columns",
+              "width": "fill_container",
+              "gap": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ig3dq",
+                  "name": "Left column",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 20,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "X2LiF",
+                      "name": "Identity card",
+                      "clip": true,
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-card",
+                      "stroke": "$color-border-card",
+                      "strokeWidth": 1,
+                      "strokeAlignment": "inner",
+                      "effect": [
+                        {
+                          "type": "shadow",
+                          "shadowType": "outer",
+                          "color": "$color-shadow-card-near",
+                          "offset": {
+                            "x": 0,
+                            "y": 1
+                          },
+                          "blur": 2
+                        },
+                        {
+                          "type": "shadow",
+                          "shadowType": "outer",
+                          "color": "$color-shadow-card-far",
+                          "offset": {
+                            "x": 0,
+                            "y": 12
+                          },
+                          "blur": 32
+                        }
+                      ],
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "a5iVaG",
+                          "name": "Card header",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 3,
+                          "padding": [
+                            20,
+                            24,
+                            16,
+                            24
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "p9eHIr",
+                              "name": "Card title",
+                              "fill": "$color-heading",
+                              "content": "Identity",
+                              "fontFamily": "$font-family",
+                              "fontSize": 17,
+                              "fontWeight": "700",
+                              "letterSpacing": -0.2
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "I38sWp",
+                          "name": "Card body",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 12,
+                          "padding": [
+                            0,
+                            24,
+                            24,
+                            24
+                          ],
+                          "children": [
+                            {
+                              "id": "aTYci",
+                              "type": "ref",
+                              "ref": "P8hGy",
+                              "name": "Business name * field",
+                              "width": "fill_container",
+                              "descendants": {
+                                "xt3vj": {
+                                  "content": "Business name *",
+                                  "fontSize": 12
+                                },
+                                "xHrjE": {
+                                  "content": "Raad LTD",
+                                  "enabled": true
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "xoF58",
+                              "name": "Trade row",
+                              "width": "fill_container",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "id": "XUGfS",
+                                  "type": "ref",
+                                  "ref": "eiyiJ",
+                                  "name": "Select",
+                                  "width": "fill_container",
+                                  "height": 48,
+                                  "padding": [
+                                    0,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "descendants": {
+                                    "L8eoG": {
+                                      "content": "General contractor"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "d5n9eH",
+                              "name": "Phone row",
+                              "width": "fill_container",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "id": "q5UBK",
+                                  "type": "ref",
+                                  "ref": "P8hGy",
+                                  "name": "Main phone field",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "xt3vj": {
+                                      "content": "Main phone",
+                                      "fontSize": 12
+                                    },
+                                    "xHrjE": {
+                                      "content": "(604) 555-0100",
+                                      "enabled": true
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "q2tN5",
+                                  "type": "ref",
+                                  "ref": "P8hGy",
+                                  "name": "Website field",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "xt3vj": {
+                                      "content": "Website",
+                                      "fontSize": 12
+                                    },
+                                    "xHrjE": {
+                                      "content": "raadltd.ca",
+                                      "enabled": true
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "id": "f45iBL",
+                              "type": "ref",
+                              "ref": "bAAf5",
+                              "name": "Tagline field",
+                              "width": "fill_container",
+                              "descendants": {
+                                "B8mKRT": {
+                                  "content": "Short description or tagline"
+                                },
+                                "IsLW0": {
+                                  "content": "Decks, fences and outdoor living across Greater Vancouver — built right, cleaned up the same day."
+                                }
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "id": "MxB5m",
+                              "name": "Tagline counter",
+                              "fill": "$color-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "404",
+                              "textAlign": "right",
+                              "fontFamily": "$font-family",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "mc8Sh",
+                      "name": "Regional card",
+                      "clip": true,
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-card",
+                      "stroke": "$color-border-card",
+                      "strokeWidth": 1,
+                      "strokeAlignment": "inner",
+                      "effect": [
+                        {
+                          "type": "shadow",
+                          "shadowType": "outer",
+                          "color": "$color-shadow-card-near",
+                          "offset": {
+                            "x": 0,
+                            "y": 1
+                          },
+                          "blur": 2
+                        },
+                        {
+                          "type": "shadow",
+                          "shadowType": "outer",
+                          "color": "$color-shadow-card-far",
+                          "offset": {
+                            "x": 0,
+                            "y": 12
+                          },
+                          "blur": 32
+                        }
+                      ],
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "QqmTu",
+                          "name": "Card header",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 3,
+                          "padding": [
+                            20,
+                            24,
+                            16,
+                            24
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "WVXs9",
+                              "name": "Card title",
+                              "fill": "$color-heading",
+                              "content": "Regional",
+                              "fontFamily": "$font-family",
+                              "fontSize": 17,
+                              "fontWeight": "700",
+                              "letterSpacing": -0.2
+                            },
+                            {
+                              "type": "text",
+                              "id": "Llm1W",
+                              "name": "Card sub",
+                              "fill": "$color-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Used for scheduling, quotes, and every amount your business writes.",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$font-family",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "tZHGP",
+                          "name": "Card body",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 12,
+                          "padding": [
+                            0,
+                            24,
+                            24,
+                            24
+                          ],
+                          "children": [
+                            {
+                              "id": "QF2iI",
+                              "type": "ref",
+                              "ref": "P8hGy",
+                              "name": "Time zone * field",
+                              "width": "fill_container",
+                              "descendants": {
+                                "xt3vj": {
+                                  "content": "Time zone *",
+                                  "fontSize": 12
+                                },
+                                "xHrjE": {
+                                  "content": "Vancouver (UTC−07:00)",
+                                  "enabled": true
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "R1Dqey",
+                              "name": "Currency group",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "id": "M12LsO",
+                                  "type": "ref",
+                                  "ref": "eiyiJ",
+                                  "name": "Currency select",
+                                  "width": "fill_container",
+                                  "height": 48,
+                                  "padding": [
+                                    0,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "fill": "$color-surface-background-subtle",
+                                  "descendants": {
+                                    "L8eoG": {
+                                      "content": "CAD — Canadian Dollar",
+                                      "fill": "$color-text-secondary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "W0Cq7",
+                                  "name": "Locked note",
+                                  "gap": 6,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "N8evQ",
+                                      "name": "lock",
+                                      "width": 13,
+                                      "height": 13,
+                                      "icon": "lock",
+                                      "library": "lucide",
+                                      "fill": "$color-icon-secondary"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "e3SjC3",
+                                      "name": "Locked text",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Currency is locked because a quote has already been sent to a customer.",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ripoy",
+                  "name": "Right column",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 20,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "fX73q",
+                      "name": "Address card",
+                      "clip": true,
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-card",
+                      "stroke": "$color-border-card",
+                      "strokeWidth": 1,
+                      "strokeAlignment": "inner",
+                      "effect": [
+                        {
+                          "type": "shadow",
+                          "shadowType": "outer",
+                          "color": "$color-shadow-card-near",
+                          "offset": {
+                            "x": 0,
+                            "y": 1
+                          },
+                          "blur": 2
+                        },
+                        {
+                          "type": "shadow",
+                          "shadowType": "outer",
+                          "color": "$color-shadow-card-far",
+                          "offset": {
+                            "x": 0,
+                            "y": 12
+                          },
+                          "blur": 32
+                        }
+                      ],
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "DJEAZ",
+                          "name": "Card header",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 3,
+                          "padding": [
+                            20,
+                            24,
+                            16,
+                            24
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "q3tfl",
+                              "name": "Card title",
+                              "fill": "$color-heading",
+                              "content": "Address",
+                              "fontFamily": "$font-family",
+                              "fontSize": 17,
+                              "fontWeight": "700",
+                              "letterSpacing": -0.2
+                            },
+                            {
+                              "type": "text",
+                              "id": "h3uwZ",
+                              "name": "Card sub",
+                              "fill": "$color-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Where your business is based. Optional.",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$font-family",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "l8NXK",
+                          "name": "Card body",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 12,
+                          "padding": [
+                            0,
+                            24,
+                            24,
+                            24
+                          ],
+                          "children": [
+                            {
+                              "id": "tsljL",
+                              "type": "ref",
+                              "ref": "P8hGy",
+                              "name": "Address line 1 field",
+                              "width": "fill_container",
+                              "descendants": {
+                                "xt3vj": {
+                                  "content": "Address line 1",
+                                  "fontSize": 12
+                                },
+                                "xHrjE": {
+                                  "content": "4720 Kingsway, Unit 210",
+                                  "enabled": true
+                                }
+                              }
+                            },
+                            {
+                              "id": "lkOb9",
+                              "type": "ref",
+                              "ref": "P8hGy",
+                              "name": "Address line 2 field",
+                              "width": "fill_container",
+                              "descendants": {
+                                "xt3vj": {
+                                  "content": "Address line 2"
+                                },
+                                "xHrjE": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "b92jO",
+                              "name": "City row",
+                              "width": "fill_container",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "id": "ccc6t",
+                                  "type": "ref",
+                                  "ref": "P8hGy",
+                                  "name": "City field",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "xt3vj": {
+                                      "content": "City",
+                                      "fontSize": 12
+                                    },
+                                    "xHrjE": {
+                                      "content": "Burnaby",
+                                      "enabled": true
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "siV8h",
+                                  "type": "ref",
+                                  "ref": "P8hGy",
+                                  "name": "State / region field",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "xt3vj": {
+                                      "content": "State / region",
+                                      "fontSize": 12
+                                    },
+                                    "xHrjE": {
+                                      "content": "BC",
+                                      "enabled": true
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "yJxqh",
+                                  "type": "ref",
+                                  "ref": "P8hGy",
+                                  "name": "Postal code field",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "xt3vj": {
+                                      "content": "Postal code",
+                                      "fontSize": 12
+                                    },
+                                    "xHrjE": {
+                                      "content": "V5H 4N2",
+                                      "enabled": true
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "id": "kA4rZ",
+                              "type": "ref",
+                              "ref": "eiyiJ",
+                              "name": "Select",
+                              "width": "fill_container",
+                              "height": 48,
+                              "padding": [
+                                0,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "descendants": {
+                                "L8eoG": {
+                                  "content": "Canada"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "iw2i6",
+                              "name": "Full address toggle",
+                              "width": "fill_container",
+                              "gap": 16,
+                              "padding": [
+                                4,
+                                0,
+                                0,
+                                0
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Fu7gN",
+                                  "name": "Toggle text",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 3,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "tVmpz",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "content": "Show the full address to customers",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "BoRYf",
+                                      "name": "Description",
+                                      "fill": "$color-text-secondary",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Off shows only the city and state on quotes, invoices, and the client portal.",
+                                      "lineHeight": 1.45,
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "K7AWre",
+                                  "type": "ref",
+                                  "ref": "zL3lK",
+                                  "name": "Toggle",
+                                  "descendants": {
+                                    "ECPAY": {
+                                      "enabled": false
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "aPF9b",
+                      "name": "Service area card",
+                      "clip": true,
+                      "width": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-card",
+                      "stroke": "$color-border-card",
+                      "strokeWidth": 1,
+                      "strokeAlignment": "inner",
+                      "effect": [
+                        {
+                          "type": "shadow",
+                          "shadowType": "outer",
+                          "color": "$color-shadow-card-near",
+                          "offset": {
+                            "x": 0,
+                            "y": 1
+                          },
+                          "blur": 2
+                        },
+                        {
+                          "type": "shadow",
+                          "shadowType": "outer",
+                          "color": "$color-shadow-card-far",
+                          "offset": {
+                            "x": 0,
+                            "y": 12
+                          },
+                          "blur": 32
+                        }
+                      ],
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "s16R66",
+                          "name": "Card header",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 3,
+                          "padding": [
+                            20,
+                            24,
+                            16,
+                            24
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Wodna",
+                              "name": "Card title",
+                              "fill": "$color-heading",
+                              "content": "Service area",
+                              "fontFamily": "$font-family",
+                              "fontSize": 17,
+                              "fontWeight": "700",
+                              "letterSpacing": -0.2
+                            },
+                            {
+                              "type": "text",
+                              "id": "uI8cV",
+                              "name": "Card sub",
+                              "fill": "$color-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "How far you're willing to travel for a booking. Used by assessment and job booking forms that choose to enforce it.",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$font-family",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "q9ZRhT",
+                          "name": "Card body",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 12,
+                          "padding": [
+                            0,
+                            24,
+                            24,
+                            24
+                          ],
+                          "children": [
+                            {
+                              "id": "G7Qc6J",
+                              "type": "ref",
+                              "ref": "P8hGy",
+                              "name": "Radius (miles) field",
+                              "width": "fill_container",
+                              "descendants": {
+                                "xt3vj": {
+                                  "content": "Radius (miles)",
+                                  "fontSize": 12
+                                },
+                                "xHrjE": {
+                                  "content": "25",
+                                  "enabled": true
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "z9gc5",
+              "layoutPosition": "absolute",
+              "x": 0,
+              "y": 928,
+              "name": "Save bar",
+              "width": 1144,
+              "height": 72,
+              "fill": "$color-surface",
+              "cornerRadius": "$radius-card",
+              "stroke": "$color-border-card",
+              "strokeWidth": 1,
+              "strokeAlignment": "inner",
+              "effect": [
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "$color-shadow-card-near",
+                  "offset": {
+                    "x": 0,
+                    "y": 1
+                  },
+                  "blur": 2
+                },
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "$color-shadow-card-far",
+                  "offset": {
+                    "x": 0,
+                    "y": -4
+                  },
+                  "blur": 24
+                }
+              ],
+              "gap": 10,
+              "padding": [
+                0,
+                20
+              ],
+              "justifyContent": "end",
+              "alignItems": "center",
+              "children": [
+                {
+                  "id": "k4Hob",
+                  "type": "ref",
+                  "ref": "o2EkEP",
+                  "name": "Cancel button",
+                  "fill": "$color-surface",
+                  "stroke": "$color-border-interactive",
+                  "effect": [],
+                  "descendants": {
+                    "p5VYxb": {
+                      "enabled": false
+                    },
+                    "IOxqM": {
+                      "content": "Cancel",
+                      "fill": "$color-heading"
+                    }
+                  }
+                },
+                {
+                  "id": "iYwiX",
+                  "type": "ref",
+                  "ref": "o2EkEP",
+                  "name": "Save button",
+                  "descendants": {
+                    "p5VYxb": {
+                      "enabled": false
+                    },
+                    "IOxqM": {
+                      "content": "Save"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "f07YA",
+      "x": 8420,
+      "y": 17795,
+      "name": "Settings · Home · Classic redesign · 1440",
+      "theme": {
+        "mode": "light"
+      },
+      "clip": true,
+      "width": 1440,
+      "height": 1955,
+      "fill": "$color-surface-page",
+      "gap": 16,
+      "padding": 12,
+      "children": [
+        {
+          "id": "S6wmQ",
+          "type": "ref",
+          "ref": "DQqPW",
+          "name": "Sidebar · Settings active",
+          "height": "fill_container",
+          "descendants": {
+            "d4YDVJ": {
+              "fontFamily": "$font-family"
+            },
+            "kgVo6": {
+              "fontFamily": "$font-family"
+            },
+            "o7k6Qe": {
+              "fontFamily": "$font-family"
+            },
+            "lySbZ": {
+              "fill": "$color-surface"
+            },
+            "lySbZ/Is933": {
+              "enabled": false
+            },
+            "lySbZ/j0FPQ0": {
+              "fill": "$color-icon"
+            },
+            "lySbZ/YOxt6": {
+              "fill": "$color-heading",
+              "fontFamily": "$font-family"
+            },
+            "G15rHz/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "y6bX1u/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "e17sz/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "BgImC": {
+              "fontFamily": "$font-family"
+            },
+            "z1Wbc/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "kr98q/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "NAtdH/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "RD5jQ/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "Deeyi": {
+              "fontFamily": "$font-family"
+            },
+            "EvjLL": {
+              "fill": []
+            },
+            "EvjLL/Is933": {
+              "enabled": false
+            },
+            "EvjLL/j0FPQ0": {
+              "fill": "$color-icon"
+            },
+            "EvjLL/YOxt6": {
+              "fill": "$color-heading",
+              "fontFamily": "$font-family"
+            },
+            "HcWIh": {
+              "fill": []
+            },
+            "HcWIh/Is933": {
+              "enabled": false
+            },
+            "HcWIh/j0FPQ0": {
+              "fill": "$color-icon"
+            },
+            "HcWIh/YOxt6": {
+              "fontFamily": "$font-family",
+              "fill": "$color-heading"
+            },
+            "mxY8b": {
+              "fill": []
+            },
+            "mxY8b/Is933": {
+              "enabled": false
+            },
+            "mxY8b/j0FPQ0": {
+              "fill": "$color-icon"
+            },
+            "mxY8b/YOxt6": {
+              "fontFamily": "$font-family",
+              "fill": "$color-heading"
+            },
+            "qJr6W/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "zdY1H": {
+              "fontFamily": "$font-family"
+            },
+            "r8ZgA/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "Pm9ce/YOxt6": {
+              "fontFamily": "$font-family"
+            },
+            "d5jG5j": {
+              "fill": "$color-surface-active"
+            },
+            "d5jG5j/Is933": {
+              "enabled": true
+            },
+            "d5jG5j/j0FPQ0": {
+              "fill": "$color-interactive"
+            },
+            "d5jG5j/YOxt6": {
+              "fontFamily": "$font-family",
+              "fill": "$color-interactive"
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "HwLZ7",
+          "name": "Content column",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "children": [
+            {
+              "id": "vxQ9M",
+              "type": "ref",
+              "ref": "a4PSU",
+              "name": "Top bar",
+              "width": "fill_container",
+              "descendants": {
+                "Lwdcj": {
+                  "content": "Search jobs, clients, invoices…",
+                  "fontFamily": "$font-family"
+                },
+                "MI7l1": {
+                  "content": "⌘ K",
+                  "fontFamily": "$font-family"
+                },
+                "Y0VnHS/IOxqM": {
+                  "content": "Add new",
+                  "fontFamily": "$font-family"
+                },
+                "t1pt42": {
+                  "content": "3",
+                  "fontFamily": "$font-family"
+                },
+                "BA2X1": {
+                  "fontFamily": "$font-family"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "oqjei",
+              "name": "Page header",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 6,
+              "padding": [
+                8,
+                4,
+                0,
+                4
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "YDgCx",
+                  "name": "Eyebrow",
+                  "fill": "$color-interactive",
+                  "content": "CONTROL ROOM",
+                  "fontFamily": "$font-family",
+                  "fontSize": 11,
+                  "fontWeight": "700",
+                  "letterSpacing": 1
+                },
+                {
+                  "type": "text",
+                  "id": "FgsAI",
+                  "name": "Page heading",
+                  "fill": "$color-heading",
+                  "content": "Settings",
+                  "fontFamily": "$font-family",
+                  "fontSize": 32,
+                  "fontWeight": "700",
+                  "letterSpacing": -0.8
+                },
+                {
+                  "type": "text",
+                  "id": "cAuP1",
+                  "name": "Page sub",
+                  "fill": "$color-text-secondary",
+                  "content": "Everything that shapes how your business looks and runs, in one place.",
+                  "fontFamily": "$font-family",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "VnifK",
+              "name": "Member row",
+              "width": "fill_container",
+              "stroke": "$color-border-card",
+              "strokeWidth": {
+                "top": 1,
+                "bottom": 1
+              },
+              "gap": 14,
+              "padding": [
+                16,
+                4
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "cRnGJ",
+                  "name": "Avatar",
+                  "width": 44,
+                  "height": 44,
+                  "fill": "$color-informative-surface",
+                  "cornerRadius": "$radius-pill",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "WWjVH",
+                      "name": "initials",
+                      "fill": "$color-informative-on-surface",
+                      "content": "JK",
+                      "fontFamily": "$font-family",
+                      "fontSize": 15,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "O3CzRP",
+                  "name": "Member copy",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 2,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "a2wQ7",
+                      "name": "Member name",
+                      "fill": "$color-heading",
+                      "content": "Jafar Khan",
+                      "fontFamily": "$font-family",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "lWdz7",
+                      "name": "Member role",
+                      "fill": "$color-text-secondary",
+                      "content": "Owner",
+                      "fontFamily": "$font-family",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "id": "mwLSb",
+                  "type": "ref",
+                  "ref": "o2EkEP",
+                  "name": "Change photo button",
+                  "height": 32,
+                  "fill": "$color-surface",
+                  "stroke": "$color-border-interactive",
+                  "effect": [],
+                  "descendants": {
+                    "p5VYxb": {
+                      "icon": "camera",
+                      "fill": "$color-icon"
+                    },
+                    "IOxqM": {
+                      "content": "Change photo",
+                      "fill": "$color-heading",
+                      "fontSize": 13
+                    }
+                  }
+                },
+                {
+                  "type": "frame",
+                  "id": "jl0Ou",
+                  "name": "Security link",
+                  "gap": 4,
+                  "padding": [
+                    0,
+                    0,
+                    0,
+                    8
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "k2G0D5",
+                      "name": "label",
+                      "fill": "$color-interactive",
+                      "content": "Password and security",
+                      "fontFamily": "$font-family",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "BvhlS",
+                      "name": "arrow",
+                      "width": 14,
+                      "height": 14,
+                      "icon": "arrow-right",
+                      "library": "lucide",
+                      "fill": "$color-interactive"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "mhMIG",
+              "name": "Jump links",
+              "gap": 8,
+              "padding": [
+                0,
+                4
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Moblx",
+                  "name": "Jump Business",
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-pill",
+                  "stroke": "$color-border-card",
+                  "strokeWidth": 1,
+                  "padding": [
+                    7,
+                    14
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "iDEcT",
+                      "name": "label",
+                      "fill": "$color-heading",
+                      "content": "Business",
+                      "fontFamily": "$font-family",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "YAbzd",
+                  "name": "Jump Communications",
+                  "fill": "$color-surface-background-subtle",
+                  "cornerRadius": "$radius-pill",
+                  "stroke": "$color-border-card",
+                  "strokeWidth": 1,
+                  "padding": [
+                    7,
+                    14
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "M2JRP",
+                      "name": "label",
+                      "fill": "$color-text-secondary",
+                      "content": "Communications",
+                      "fontFamily": "$font-family",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "nPlBM",
+                  "name": "Jump Automations",
+                  "fill": "$color-surface-background-subtle",
+                  "cornerRadius": "$radius-pill",
+                  "stroke": "$color-border-card",
+                  "strokeWidth": 1,
+                  "padding": [
+                    7,
+                    14
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "tyVH6",
+                      "name": "label",
+                      "fill": "$color-text-secondary",
+                      "content": "Automations",
+                      "fontFamily": "$font-family",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "DpyQz",
+                  "name": "Jump Team & access",
+                  "fill": "$color-surface-background-subtle",
+                  "cornerRadius": "$radius-pill",
+                  "stroke": "$color-border-card",
+                  "strokeWidth": 1,
+                  "padding": [
+                    7,
+                    14
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "H51tr",
+                      "name": "label",
+                      "fill": "$color-text-secondary",
+                      "content": "Team & access",
+                      "fontFamily": "$font-family",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "yFRtc",
+              "name": "Business group",
+              "clip": true,
+              "width": "fill_container",
+              "fill": "$color-surface",
+              "cornerRadius": "$radius-card",
+              "stroke": "$color-border-card",
+              "strokeWidth": 1,
+              "strokeAlignment": "inner",
+              "effect": [
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "$color-shadow-card-near",
+                  "offset": {
+                    "x": 0,
+                    "y": 1
+                  },
+                  "blur": 2
+                },
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "$color-shadow-card-far",
+                  "offset": {
+                    "x": 0,
+                    "y": 12
+                  },
+                  "blur": 32
+                }
+              ],
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Y7UzQM",
+                  "name": "Card header",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "padding": [
+                    20,
+                    24,
+                    16,
+                    24
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "mQMp9",
+                      "name": "Group icon",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "$color-surface-background-subtle",
+                      "cornerRadius": "$radius-control",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "kd627",
+                          "name": "icon",
+                          "width": 17,
+                          "height": 17,
+                          "icon": "building-2",
+                          "library": "lucide",
+                          "fill": "$color-icon"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "kShy5",
+                      "name": "Heading",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "OUDct",
+                          "name": "Card title",
+                          "fill": "$color-heading",
+                          "content": "Business",
+                          "fontFamily": "$font-family",
+                          "fontSize": 17,
+                          "fontWeight": "700",
+                          "letterSpacing": -0.2
+                        },
+                        {
+                          "type": "text",
+                          "id": "P75DtV",
+                          "name": "Card sub",
+                          "fill": "$color-text-secondary",
+                          "content": "The identity, look, and hours customers and staff both rely on.",
+                          "fontFamily": "$font-family",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "F2b3qw",
+                  "name": "Tile grid",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    24,
+                    24,
+                    24
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "tFEcq",
+                      "name": "Tile row",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "irpgR",
+                          "name": "Tile Business profile",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "HnFgX",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "FKJix",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "building-2",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "oK9kV",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "obfb4",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "kDMei",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Business profile",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "wk4m4",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Your name, contact details, address, timezone, and currency.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "FiRhs",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "VKoq4",
+                          "name": "Tile Branding",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "w9RmDY",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "VJ0Bm",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "palette",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "tTOIo",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "awkQ2",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "BSdvW",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Branding",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "B717kq",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "The logo and brand color customers see on quotes and invoices.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "Btago",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "NdlA2",
+                          "name": "Tile Business hours",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "tL3Qc",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "fECYr",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "clock-3",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "h1QOq",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "q1Qp1C",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "sRFDd",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Business hours",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "EUuvo",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "When your business is normally open, for scheduling and booking.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "xoboJ",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "DHqFp",
+                      "name": "Tile row",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "RzW8a",
+                          "name": "Tile Pipeline",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "c58U5t",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "kUWRc",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "square-kanban",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "crnsi",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "vGG5F",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "tNJSf",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Pipeline",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Z7WeYe",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "How the Pipeline board groups the Assessment stages.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "IvDoB",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "bOuhs",
+                          "name": "Tile Contact matching",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "rqSO9",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "CxA6I",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "git-merge",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "TC92H",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "tGF0k",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "H9a9w",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Contact matching",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "GFkje",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Which client a website chat or form joins when its phone and email belong to two clients.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "uSYaF",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "pREMs",
+                          "name": "Tile Taxes",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "DDxG7",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "m4Ol3y",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "percent",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "H3Hh8",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "M6ehp0",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "y2D6l4",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Taxes",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "MYu8z",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "The tax rates you charge and which one applies by default.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "z82TPn",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "wMsCM",
+                      "name": "Tile row",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "I44X7",
+                          "name": "Tile Price Book",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "KdrdO",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "eG8ka",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "book-open",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "SpeTd",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "AvowC",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "kYJEF",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Price Book",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "R6sIJI",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "The products and services you sell, ready to add to any quote.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "cqFyz",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "CDozu",
+                          "name": "Tile Checklists",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "fo44b",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "hIYez",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "list-checks",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "xrJbO",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "J0y7GZ",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "p4Hb6V",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Checklists",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "ZcriG",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "The lists your crew ticks off on site, ready to attach to any job.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "frXoR",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "s4W8i6",
+                          "name": "Tile Quote Settings",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "jQVyU",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "GmI3Y",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "file-text",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ZLoPg",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "frfgp",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "A6eEdO",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Quote Settings",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "TgtQc",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Default terms, your representative block, target margin, and signature policy.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "zHGJ8",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "f2tas",
+                      "name": "Tile row",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "rGqfV",
+                          "name": "Tile Invoice Settings",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "BTfyc",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "dTX0W",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "receipt",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "pTQdv",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "g3JL3m",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "YQwLw",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Invoice Settings",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "dk7Nf",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Payment terms and which one applies by default.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "S8Y2i",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "JPaDM",
+                          "name": "Tile Payments",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "YsgUl",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "OXxEx",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "credit-card",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "NMjnr",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "mKjPj",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "bttHG",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Payments",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "yYNvI",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Connect Stripe so customers can pay invoices and deposits online.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "z8UUJE",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "j2xVc",
+                          "name": "Tile Request Forms",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "rYGTB",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "m3Ai7",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "clipboard-list",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "z2Amu",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "tuPAH",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "W4kgvA",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Request Forms",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "JTuRV",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "The online forms customers fill in to request work from you.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "Zey4Y",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "w2UOo",
+                      "name": "Tile row",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "V4Uj1",
+                          "name": "Tile Google reviews",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "M2ayqc",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "mUP9u",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "star",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "TjVMW",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "BxbdH",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "PsslD",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Google reviews",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "pWT33",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Your Google review link, review page, private feedback form, and request messages.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "yFATJ",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "I4BrX",
+                          "name": "Spacer",
+                          "width": "fill_container",
+                          "height": 1
+                        },
+                        {
+                          "type": "frame",
+                          "id": "U9rQe",
+                          "name": "Spacer",
+                          "width": "fill_container",
+                          "height": 1
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "L7OMLD",
+              "name": "Communications group",
+              "clip": true,
+              "width": "fill_container",
+              "fill": "$color-surface",
+              "cornerRadius": "$radius-card",
+              "stroke": "$color-border-card",
+              "strokeWidth": 1,
+              "strokeAlignment": "inner",
+              "effect": [
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "$color-shadow-card-near",
+                  "offset": {
+                    "x": 0,
+                    "y": 1
+                  },
+                  "blur": 2
+                },
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "$color-shadow-card-far",
+                  "offset": {
+                    "x": 0,
+                    "y": 12
+                  },
+                  "blur": 32
+                }
+              ],
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "nW4oM",
+                  "name": "Card header",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "padding": [
+                    20,
+                    24,
+                    16,
+                    24
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "h91uwX",
+                      "name": "Group icon",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "$color-surface-background-subtle",
+                      "cornerRadius": "$radius-control",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "JAsPY",
+                          "name": "icon",
+                          "width": 17,
+                          "height": 17,
+                          "icon": "mail",
+                          "library": "lucide",
+                          "fill": "$color-icon"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "PRQkA",
+                      "name": "Heading",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "kEG8d",
+                          "name": "Card title",
+                          "fill": "$color-heading",
+                          "content": "Communications",
+                          "fontFamily": "$font-family",
+                          "fontSize": 17,
+                          "fontWeight": "700",
+                          "letterSpacing": -0.2
+                        },
+                        {
+                          "type": "text",
+                          "id": "F72FdF",
+                          "name": "Card sub",
+                          "fill": "$color-text-secondary",
+                          "content": "The verified email identities your team can use with customers.",
+                          "fontFamily": "$font-family",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "jiiLP",
+                  "name": "Tile grid",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    24,
+                    24,
+                    24
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "QZnh4",
+                      "name": "Tile row",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "S6KGOM",
+                          "name": "Tile Email identity",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "DzoTh",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "xIPfh",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "at-sign",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "eQC8s",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "s0skZ",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "YkxpU",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Email identity",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "EoXdj",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Choose the email addresses staff and automations can use.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "exaos",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "iRP7m",
+                          "name": "Tile Phone & SMS",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "H0vLq",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "VSYK8",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "smartphone",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "F1m33a",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "urcpf",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "G5mhgL",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Phone & SMS",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "PwRjv",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Registration, sending numbers and texting readiness.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "CVn38",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Yx0FS",
+                          "name": "Tile Communication Balance",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "V0OLt1",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "iuHpK",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "wallet",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "wilR4",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "ys6Zv",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "sgDuq",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Communication Balance",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "U2UTo",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Balance and top-ups for texts and extra email sending, plus this month's charges.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "YTejP",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "rXbRg",
+                      "name": "Tile row",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "n7nLzE",
+                          "name": "Tile Blocked addresses",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "ehoCX",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "Z5zyi",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "mail-x",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "uJIIU",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "OYXOR",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "UGzhL",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Blocked addresses",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "gJEX1",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Customer email addresses that bounced or reported spam, and how to unblock them.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "qBzeL",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "p06I3",
+                          "name": "Tile Website Chat",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "dHNjn",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "OAFtw",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "message-circle",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "BJKRH",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "xyzAq",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "EsoNY",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Website Chat",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Y4Gbn",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "The chat widgets your website can show customers.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "UvYvQ",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "oAHiY",
+                          "name": "Tile Inquiry alerts",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "WR2SX",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "zAq3l",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "bell-ring",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "asIQq",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "YMZGM",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "XttCk",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Inquiry alerts",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "TFvPU",
+                                      "name": "Status pill",
+                                      "fill": "$color-warning-surface",
+                                      "cornerRadius": "$radius-pill",
+                                      "padding": [
+                                        2,
+                                        8
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "oUJU4",
+                                          "name": "label",
+                                          "fill": "$color-warning-on-surface",
+                                          "content": "Owner only",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 11,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "XrkwS",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Who gets alerted when a website form or chat brings in a new customer.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "y1qK4r",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Wl0cT",
+                      "name": "Tile row",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "gw8TM",
+                          "name": "Tile Snippets",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "N6zh7",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "dIJoP",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "quote",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "x5sIzX",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "WQoiv",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "m04HDG",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Snippets",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "hm2Tr",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Reusable text your team can drop into any conversation reply.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "lW3tQ",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "CoX6V",
+                          "name": "Tile Templates",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "a3hmzo",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "J3UpC",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "layout-template",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "NFp3j",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "vTe88",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "drJim",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Templates",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "UBaIu",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Reusable emails your team can send from any conversation.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "taMb0",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "tmSOW",
+                          "name": "Spacer",
+                          "width": "fill_container",
+                          "height": 1
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "SxJLM",
+              "name": "Automations group",
+              "clip": true,
+              "width": "fill_container",
+              "fill": "$color-surface",
+              "cornerRadius": "$radius-card",
+              "stroke": "$color-border-card",
+              "strokeWidth": 1,
+              "strokeAlignment": "inner",
+              "effect": [
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "$color-shadow-card-near",
+                  "offset": {
+                    "x": 0,
+                    "y": 1
+                  },
+                  "blur": 2
+                },
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "$color-shadow-card-far",
+                  "offset": {
+                    "x": 0,
+                    "y": 12
+                  },
+                  "blur": 32
+                }
+              ],
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Hoe4K",
+                  "name": "Card header",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "padding": [
+                    20,
+                    24,
+                    16,
+                    24
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "c1IIF",
+                      "name": "Group icon",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "$color-surface-background-subtle",
+                      "cornerRadius": "$radius-control",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "HGi3g",
+                          "name": "icon",
+                          "width": 17,
+                          "height": 17,
+                          "icon": "workflow",
+                          "library": "lucide",
+                          "fill": "$color-icon"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "FBuKN",
+                      "name": "Heading",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "UNc0K",
+                          "name": "Card title",
+                          "fill": "$color-heading",
+                          "content": "Automations, notifications & connections",
+                          "fontFamily": "$font-family",
+                          "fontSize": 17,
+                          "fontWeight": "700",
+                          "letterSpacing": -0.2
+                        },
+                        {
+                          "type": "text",
+                          "id": "D8ne5",
+                          "name": "Card sub",
+                          "fill": "$color-text-secondary",
+                          "content": "Work that happens on its own, so your team doesn't have to remember it.",
+                          "fontFamily": "$font-family",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "lcwBc",
+                  "name": "Tile grid",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    24,
+                    24,
+                    24
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "d2FyUd",
+                      "name": "Tile row",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "p4ye5v",
+                          "name": "Tile Automation",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "HBTRE",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "a3DcZ",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "bot",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "e63M7",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "f2lZk8",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "gLs9s",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Automation",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "n1OpLM",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Automatic follow-ups that reach out to customers for you, on your rules.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "kWLEA",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "byzud",
+                          "name": "Spacer",
+                          "width": "fill_container",
+                          "height": 1
+                        },
+                        {
+                          "type": "frame",
+                          "id": "qsJM2",
+                          "name": "Spacer",
+                          "width": "fill_container",
+                          "height": 1
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "KKNpe",
+              "name": "Team group",
+              "clip": true,
+              "width": "fill_container",
+              "fill": "$color-surface",
+              "cornerRadius": "$radius-card",
+              "stroke": "$color-border-card",
+              "strokeWidth": 1,
+              "strokeAlignment": "inner",
+              "effect": [
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "$color-shadow-card-near",
+                  "offset": {
+                    "x": 0,
+                    "y": 1
+                  },
+                  "blur": 2
+                },
+                {
+                  "type": "shadow",
+                  "shadowType": "outer",
+                  "color": "$color-shadow-card-far",
+                  "offset": {
+                    "x": 0,
+                    "y": 12
+                  },
+                  "blur": 32
+                }
+              ],
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "r8CNp",
+                  "name": "Card header",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "padding": [
+                    20,
+                    24,
+                    16,
+                    24
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "H8LPQ",
+                      "name": "Group icon",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "$color-surface-background-subtle",
+                      "cornerRadius": "$radius-control",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "d5ifpe",
+                          "name": "icon",
+                          "width": 17,
+                          "height": 17,
+                          "icon": "users",
+                          "library": "lucide",
+                          "fill": "$color-icon"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "hl297",
+                      "name": "Heading",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "sFzBc",
+                          "name": "Card title",
+                          "fill": "$color-heading",
+                          "content": "Team & access",
+                          "fontFamily": "$font-family",
+                          "fontSize": 17,
+                          "fontWeight": "700",
+                          "letterSpacing": -0.2
+                        },
+                        {
+                          "type": "text",
+                          "id": "w8EwIz",
+                          "name": "Card sub",
+                          "fill": "$color-text-secondary",
+                          "content": "The people who work in your business and what they can do.",
+                          "fontFamily": "$font-family",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "JGABF",
+                  "name": "Tile grid",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    24,
+                    24,
+                    24
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "V8c1HD",
+                      "name": "Tile row",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "QcHVi",
+                          "name": "Tile Team",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "r5Zlf",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "m2j4g",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "users",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "k5o1J",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "FQHS7",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "X0o9d",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Team",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "CVRfg",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Invite people and manage their business contact details.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "Pguot",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "PVMEd",
+                          "name": "Tile Roles & permissions",
+                          "width": "fill_container",
+                          "height": 106,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-control",
+                          "stroke": "$color-border-card",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "hdezE",
+                              "name": "Tile icon",
+                              "width": 36,
+                              "height": 36,
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-control",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "R9QTlc",
+                                  "name": "icon",
+                                  "width": 17,
+                                  "height": 17,
+                                  "icon": "shield-check",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "N9tas",
+                              "name": "Tile text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Q9YYS",
+                                  "name": "Tile title row",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "d10cnY",
+                                      "name": "Tile title",
+                                      "fill": "$color-heading",
+                                      "content": "Roles & permissions",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "XNwYe",
+                                  "name": "Tile desc",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Choose a team member to control what they can see and do.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "BG8S8",
+                              "name": "Chevron",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "JfgkI",
+                          "name": "Spacer",
+                          "width": "fill_container",
+                          "height": 1
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "themes": {
