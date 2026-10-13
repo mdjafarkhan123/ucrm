@@ -7,7 +7,8 @@ Control Room — built from shared blocks, with every existing feature, permissi
 
 **Done:** Parts 1, 2, 2B (all six record pages approved), 3 and B1 — build order B1–B12 approved 2026-10-13
 ("all agreed"); [B1 tokens verified](../../../docs/research/classic-theme-b1-2026-10-13.md). Message (not Text)
-and Settings pages in the next stage recorded in the plan.
+and Settings pages in the next stage recorded in the plan. Lighter record header approved 2026-10-14 (track
+without icon tiles, key-fact tiles kept, phone layout) — recipe § Record page structure.
 
 **Next:** B2 Sidebar and top bar — build the approved black-green Classic shell from `classic.pen`, including
 collapsed sidebar, phone drawer, search, Add new and avatar. Hide the "Soon" menu items. Preserve Botanical;

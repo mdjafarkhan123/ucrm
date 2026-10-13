@@ -105,10 +105,17 @@ grouping are planned after the first version, one stage at a time.
 - **"Soon" menu items are hidden** (Jafar, 2026-10-13). Growth Feed, Team, Notifications and Usage leave the
   sidebar until they are built, instead of showing greyed with "Soon".
 - **Job details approved** (Jafar, 2026-10-13: "yes"). `Job details · 1440` in `classic.pen` keeps the first
-  concept's section placement in the new look; its lifecycle track shows each record's icon tile in its
-  record colour and its number ("Request #88", "Quote #318", "Job #1042"), linked records with an open arrow.
+  concept's section placement in the new look; its lifecycle track links the other records by number
+  ("Request #88", "Quote #318") with an open arrow — the icon tiles were later removed, see "Lighter record
+  header" below.
   A rearranged version (page header on the background, "Right now" card, merged rail cards) was drawn and
   rejected — keep the approved placement.
+- **Lighter record header** (Jafar, 2026-10-14: "its better but we can keep icon as it is now for the bottom
+  row"). On every work-record header (request, quote, job, invoice, payment) the lifecycle track loses its icon
+  tiles — a tick marks done steps, a dot the current one, future steps grey — and the current step shows only
+  its name, since the record number sits in row 1. The phone number leaves the meta row; the Call button
+  carries it. The key facts keep their icon tiles. Phone layout drawn and approved with it. Board
+  `Concept · Lighter record header` in `classic.pen`; recipe § Record page structure has the sizes.
 - **Icon colour must be meaningful** (Jafar, 2026-10-13, approved on the six record pages). A coloured icon tile
   tells the user something — a status needing attention, another record's type, or automation; everything else
   stays neutral. Details in the recipe § Colour rule.
