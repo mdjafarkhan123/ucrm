@@ -41,11 +41,12 @@ item: override the instance's Nav item fill to `sidebar-active`, icon and label 
       services (add-on chip, discount row, locked footer + client view), Client message and disclaimer. Rail:
       profit (cost / estimated profit), Deposit, Discount and tax (the app's two rail cards shown as one),
       Automation, Photos and files, Notes. Sent quote = read-only, so no edit pencils (app `editable` needs a
-      draft). Light and dark checked. Awaiting Jafar's yes.
+      draft). Light and dark checked.
+- [x] 2026-10-13: Jafar approved `Quote details · 1440` ("yes", combined Discount and tax card as shown);
+      recorded in plan § Direction.
 - [ ] Invoice details (from `fPq9c`), same method — copy the Job, beside the Quote.
 - [ ] Request, Payment, Client details — new; read each `+page.svelte` first (recipe § Working method 1).
 
 ## Next
 
-Get Jafar's yes on `Quote details · 1440` (open question: one Discount and tax card vs. two cards).
-Then draw Invoice from `fPq9c` by copying the approved Job, same record-icon track.
+Draw Invoice from `fPq9c` by copying the approved Quote (`e5HXY`), same record-icon track.
