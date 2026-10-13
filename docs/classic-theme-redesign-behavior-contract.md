@@ -210,6 +210,12 @@ Jafar approved these on 2026-10-13 ("go with your recommendation"):
   app, given business texting is not yet active. Does not block design; settle before building the header.
 - **Whole-app boundary** — whether later stages also cover login and the pages customers see (request forms,
   client portal, quote approval, payment pages). Does not block the first version.
+- **Request, Payment, Client layout proposals** (drawn 2026-10-13, awaiting Jafar): the request's Automatic
+  follow-up card takes the green top-of-rail style; the payment page gains a right rail with a Receipt preview
+  (View receipt, Print or save PDF), "Applied to" above "Details", and no green card because its one figure is
+  already the title; the client's Lifetime, Open quotes and Active jobs move from the header into the green
+  card, its Lead source and Marketing email share one "Source and marketing" card, and the Details /
+  Communication tabs sit at the foot of the header card. New part: a small Upcoming / Past segmented control.
 
 ## Not doing
 

@@ -27,10 +27,15 @@ item: override the instance's Nav item fill to `sidebar-active`, icon and label 
       cards show as one "Discount and tax" card.
 - [x] 2026-10-13: Jafar approved Invoice and chose the Jobber-style green card for all pages, with brighter
       text; tokens updated in Pencil and the recipe, variant board deleted (plan § Direction).
-- [ ] Request, Payment, Client details — new; read each `+page.svelte` first (recipe § Working method 1).
+- [x] 2026-10-13: `Request details · 1440` (`h2qMec`, x 7700), `Payment details · 1440` (`hqbwd`, x 9240),
+      `Client details · 1440` (`dDKbZ`, x 10780), all y 2300, drawn from the real pages and checked in light
+      and dark. Layout proposals listed in plan § Still unclear. Not in the file until Jafar presses Ctrl+S.
+- [ ] Jafar's yes to Request, Payment, Client (and the proposals).
 
 ## Next
 
-Request, Payment, Client details (fresh session): read each real `+page.svelte` first, copy the approved
-Job/Quote/Invoice shell, keep the record-icon track and the green summary card at the top of the rail.
-Then delete the `Archive · … · first concept` frames and mark 2B Done.
+Ask Jafar to press Ctrl+S in Pencil, then commit `classic.pen` from main. On his yes: record it in plan
+§ Direction, move the proposals out of § Still unclear, add the Upcoming / Past segmented control to the
+design-system page (light and dark), delete the `Archive · … · first concept` frames, and mark 2B Done.
+A grey stroke override on the dark design-system Featured card specimen (`w6Mbth`) was already unsaved in
+`classic.pen` at session start — not ours; ask Jafar whether to keep it.
