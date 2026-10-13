@@ -7,7 +7,7 @@ Control Room — built from shared blocks, with every existing feature, permissi
 
 **In progress:** none
 
-**Next part:** 2 Design the record page family — read `parts/2-design-family.md` and start at its first
-unchecked step.
+**Next part:** 2 Design the record page family — job, quote, invoice and two Settings screens drawn; read
+`parts/2-design-family.md` § Next (show Jafar Settings, then request, payment and client pages).
 
 **Blockers:** None.
