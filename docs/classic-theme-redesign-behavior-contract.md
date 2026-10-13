@@ -104,6 +104,11 @@ grouping are planned after the first version, one stage at a time.
   changes" / "Change any field, then press Save.") are part of the approval.
 - **"Soon" menu items are hidden** (Jafar, 2026-10-13). Growth Feed, Team, Notifications and Usage leave the
   sidebar until they are built, instead of showing greyed with "Soon".
+- **Job details approved** (Jafar, 2026-10-13: "yes"). `Job details · 1440` in `classic.pen` keeps the first
+  concept's section placement in the new look; its lifecycle track shows each record's icon tile in its
+  record colour and its number ("Request #88", "Quote #318", "Job #1042"), linked records with an open arrow.
+  A rearranged version (page header on the background, "Right now" card, merged rail cards) was drawn and
+  rejected — keep the approved placement.
 - **Pencil only for now** (Jafar, 2026-10-13): no app code changes until the family is approved and build
   planning (Part 3) is done.
 

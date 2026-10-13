@@ -34,10 +34,10 @@ item: override the instance's Nav item fill to `sidebar-active`, icon and label 
       28 record tile in its record colour (request amber, quote rose, job solid green, future steps neutral),
       "Request #88" / "Quote #318" / "Job #1042" titles, a 12 open arrow on linked records. v2 deleted.
       Lesson: improve within the approved placement; don't move sections without asking.
+- [x] 2026-10-13: Jafar approved `Job details · 1440` ("yes"); recorded in plan § Direction.
 - [ ] Quote details (from `Ae1NJ`) and Invoice details (from `fPq9c`), same method, beside the Job.
 - [ ] Request, Payment, Client details — new; read each `+page.svelte` first (recipe § Working method 1).
 
 ## Next
 
-Wait for Jafar's yes on `Job details · 1440` (`bbWOb`) and his Ctrl+S; record the yes in the plan, then
-draw Quote and Invoice from `Ae1NJ` / `fPq9c` with the same method and the same record-icon track.
+Draw Quote and Invoice from `Ae1NJ` / `fPq9c` with the same method and the same record-icon track.
