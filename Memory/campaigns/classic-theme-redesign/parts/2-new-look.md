@@ -22,9 +22,9 @@ Pencil first; Pencil's skill and `execute.md`.
       `#05BE68` scale replaced the concept's greens.
 - [x] Fixes, Business split (Sales & work uses the app's teal: tile `#F3FBFC`/`#DEF3F7`, icon `#0E6171`,
       solid `#118197`, dot `#15A4C1`), pills and "Workspace" applied to both screens; re-exported and checked.
-- [ ] Lime or brand green for the logo, Save, highlighted menu item and badges — Jafar compares
-      `Settings · Home · brand green option · 1440` (`F8rqTO`) and `… Business profile · brand green option`
-      (`hEGfW`) with the originals. Keep the chosen pair, delete the other; record the answer in the plan.
+- [ ] Jafar picks from board `Options · button colour and sidebar` (`VRgQ4`) and the brand green option
+      frames (`F8rqTO`, `hEGfW`): lime or green highlights, main button colour, sidebar background, "Soon"
+      items (plan § Still unclear). Keep the chosen frames, delete the rest and the board.
 - [ ] Move superseded frames to an Archive area of `classic.pen`.
 - [ ] Rebuild the Classic design-system page from recipe § Palette (with the contrast fixes) and the reference
       screens: named tokens with light and designed dark values; parts — Sidebar, Top bar, Card, Group header,

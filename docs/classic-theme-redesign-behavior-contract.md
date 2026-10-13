@@ -173,8 +173,14 @@ Jafar approved these on 2026-10-13 ("go with your recommendation"):
 
 - **Text button** — whether it opens the client's conversation in the app's inbox or the device's messaging
   app, given business texting is not yet active. Does not block design; settle before building the header.
-- **Lime highlights** — the concept draws the logo tile, Save button, highlighted menu item and badges in lime;
-  whether they stay lime or take the brand green. A side-by-side screen in `classic.pen` shows both.
+- **Highlights, buttons and sidebar** (board `Options · button colour and sidebar` in `classic.pen`) —
+  lime or brand green for the logo, Save, highlighted menu item and badges (recommended: green); main button
+  ink, deep green or bright green (recommended: ink, as Shopify does with its green brand); sidebar dark ink,
+  very deep green or light (recommended: dark ink).
+- **"Soon" menu items** — the app shows Growth Feed, Team, Notifications and Usage greyed with "Soon".
+  Recommended: hide them until they are built.
+- **Sidebar parts to draw** (no choice needed): the business's own logo from Branding, and the app's collapse
+  button with the icons-only sidebar instead of the concept's switcher arrows (no workspace switching exists).
 - **Whole-app boundary** — whether later stages also cover login and the pages customers see (request forms,
   client portal, quote approval, payment pages). Does not block the first version.
 

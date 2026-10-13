@@ -8,7 +8,7 @@ Control Room — built from shared blocks, with every existing feature, permissi
 **In progress:** none
 
 **Next part:** 2 New look and design system — review fixes and Jafar's answers applied 2026-10-13; he now
-picks lime or brand green for the highlights, then the design-system page is rebuilt. Read
+picks highlights, button colour, sidebar and "Soon" items from the options board, then the design-system page is rebuilt. Read
 `parts/2-new-look.md`, then the recipe.
 
-**Blockers:** Jafar's lime-or-green choice (see the part note).
+**Blockers:** Jafar's choices on the options board (see the part note).
