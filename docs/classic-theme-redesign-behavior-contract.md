@@ -97,6 +97,13 @@ grouping are planned after the first version, one stage at a time.
   - Superseded screens move to an Archive area of `classic.pen` and are deleted once Part 2B redraws the job,
     quote and invoice pages.
   - The Home and Reports screens for the launch campaign take the new look before Jafar approves them.
+- **Design-system page approved** (Jafar, 2026-10-13: "ok including earlier … i approve your
+  recommendation"). `Classic design system · light` and `· dark` in `classic.pen` hold the named light and
+  dark tokens and the shared parts; both Settings reference screens are built from those parts. Its dark
+  values, collapsed icons-only sidebar, field focus and error states, and the resting Save bar ("No unsaved
+  changes" / "Change any field, then press Save.") are part of the approval.
+- **"Soon" menu items are hidden** (Jafar, 2026-10-13). Growth Feed, Team, Notifications and Usage leave the
+  sidebar until they are built, instead of showing greyed with "Soon".
 - **Pencil only for now** (Jafar, 2026-10-13): no app code changes until the family is approved and build
   planning (Part 3) is done.
 
@@ -183,10 +190,6 @@ Jafar approved these on 2026-10-13 ("go with your recommendation"):
 
 - **Text button** — whether it opens the client's conversation in the app's inbox or the device's messaging
   app, given business texting is not yet active. Does not block design; settle before building the header.
-- **"Soon" menu items** — the app shows Growth Feed, Team, Notifications and Usage greyed with "Soon".
-  Recommended: hide them until they are built.
-- **Sidebar parts to draw** (no choice needed): the business's own logo from Branding, and the app's collapse
-  button with the icons-only sidebar instead of the concept's switcher arrows (no workspace switching exists).
 - **Whole-app boundary** — whether later stages also cover login and the pages customers see (request forms,
   client portal, quote approval, payment pages). Does not block the first version.
 

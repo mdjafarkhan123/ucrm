@@ -19,7 +19,7 @@ Pencil first; Pencil's skill and `execute.md`.
 - [x] Sidebar direction closed 2026-10-13 — three structurally different comparisons (split rail,
       navigation tiles and editorial column) were drawn, then rejected and deleted at Jafar's request.
       Keep the sidebar already present on the approved Settings reference screens.
-- [ ] Jafar answers the "Soon" menu items question (plan § Still unclear).
+- [x] 2026-10-13: Jafar chose to hide the "Soon" menu items (plan § Direction).
 - [x] 2026-10-13: superseded frames archived — record concepts renamed `Archive · … · first concept` and moved
       to the archive row (top right) beside the old design-system pages `lkPLl`/`lVZIm`.
 - [x] 2026-10-13: Classic design-system page rebuilt — `Classic design system · light` (`GIgyC`) and its dark
@@ -29,9 +29,8 @@ Pencil first; Pencil's skill and `execute.md`.
       light export is pixel-identical to the approved screens. Dark mode checked on all four frames.
 - [x] Raw hex in the recipe replaced with token names (recipe § Tokens holds the values).
 - [ ] Jafar presses Ctrl+S in Pencil; commit `classic.pen` from main.
-- [ ] Jafar approves the design-system page, light and dark (new since his last look: dark values, the
-      collapsed sidebar, field focus and error states, toggle off, resting Save bar wording "No unsaved
-      changes / Change any field, then press Save.").
+- [x] 2026-10-13: Jafar approved the design-system page, light and dark, with its new dark values, collapsed
+      sidebar, field states and resting Save bar ("ok including earlier … i approve your recommendation").
 
 ## Review fixes (agreed and applied 2026-10-13)
 
@@ -42,6 +41,7 @@ disabled, nothing changed) — full-page forms show the bar all the time.
 
 ## Next
 
-Show Jafar the two design-system frames and the dark versions; record his yes here and in the plan. The old
-page `lkPLl` still feeds the Home and Reports screens (crm-launch-readiness Part 13) through the old
-`color-*` tokens — leave it until those screens are restyled. Part 2B follows this part.
+Only the save is left: if `git status` shows `classic.pen` unchanged, ask Jafar to press Ctrl+S in Pencil
+(the design-system rebuild lives in Pencil until then), then commit `classic.pen` from main in its own commit
+and mark this part Done. The old page `lkPLl` still feeds the Home and Reports screens (crm-launch-readiness
+Part 13) through the old `color-*` tokens — leave it until those screens are restyled. Then start Part 2B.
