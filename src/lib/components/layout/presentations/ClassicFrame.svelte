@@ -34,6 +34,18 @@
 </div>
 
 <style lang="scss">
+	@use '../../../styles/classic-theme-tokens' as classic;
+
+	/* The root also owns Bits UI portals (menus and dialogs). The Classic shell must be present so a
+	 * later switch to Botanical cannot leave these tokens active after this stylesheet has loaded. */
+	:global(:root:has(.app-shell[data-presentation='classic'])) {
+		@include classic.light;
+	}
+
+	:global(:root[data-theme='dark']:has(.app-shell[data-presentation='classic'])) {
+		@include classic.dark;
+	}
+
 	/* Where the content column starts and ends, so anything pinned over the page — the action bar at the
 	 * bottom of a form or detail page — can line up with the page underneath it. `--shell-nav-width` is set
 	 * on the element itself, because only this component knows whether the sidebar is collapsed. */

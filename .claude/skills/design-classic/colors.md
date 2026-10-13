@@ -1,5 +1,11 @@
 # Color Tokens
 
+For the approved new Classic look, use the `--classic2-*` tokens in
+`src/lib/styles/_classic-theme-tokens.scss`. Their light and dark values and semantic roles are listed in
+`docs/classic-theme-redesign-design-recipe.md` § Tokens and § Colour rule. A new Classic component reads the
+named role, such as `--classic2-page`, `--classic2-ink`, `--classic2-green` or `--classic2-amber-tint`.
+The tables below document older live components until each is rebuilt under the Classic redesign campaign.
+
 Every color used by a component must come from a semantic CSS custom property:
 
 ```css

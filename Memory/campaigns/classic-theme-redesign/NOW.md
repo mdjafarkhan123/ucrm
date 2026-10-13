@@ -5,12 +5,12 @@ Control Room — built from shared blocks, with every existing feature, permissi
 **Plan:** `docs/classic-theme-redesign-behavior-contract.md` — first version approved by Jafar 2026-10-13.
 **Stage:** Build — `stages/first-version-build.md`
 
-**Done:** Parts 1, 2, 2B (all six record pages approved) and 3 — build order B1–B12 approved 2026-10-13 ("all
-agreed"); Message (not Text) and Settings pages in the next stage recorded in the plan.
+**Done:** Parts 1, 2, 2B (all six record pages approved), 3 and B1 — build order B1–B12 approved 2026-10-13
+("all agreed"); [B1 tokens verified](../../../docs/research/classic-theme-b1-2026-10-13.md). Message (not Text)
+and Settings pages in the next stage recorded in the plan.
 
-**Next:** B1 Classic's own colours — the `classic2` tokens in code, reaching only Classic pages and pop-ups via
-the CRM design system's theme foundation (`docs/research/crm-theme-foundation-a1-2026-10-12.md`); prove the
-Botanical preview unchanged. Coordinate with the held `crm-design-system` claim (areas crm-design,
-settings-appearance) before touching shared frame or token files.
+**Next:** B2 Sidebar and top bar — build the approved black-green Classic shell from `classic.pen`, including
+collapsed sidebar, phone drawer, search, Add new and avatar. Hide the "Soon" menu items. Preserve Botanical;
+coordinate with the held `crm-design-system` claim before touching shared shell files.
 
 **Blockers:** None.
