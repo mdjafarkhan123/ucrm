@@ -26,16 +26,25 @@ sections.
       including the four layout moves listed below
 - [x] Design a Settings page with the new cards — drawn 2026-10-13: `Settings · Business profile · Classic
       redesign · 1440` (form cards, floating Save bar) and `Settings · Home · Classic redesign · 1440` (group
-      cards with setting tiles), right of the invoice; not yet shown to Jafar
+      cards with setting tiles), right of the invoice. Jafar 2026-10-13: "Looks right but… too plain, not
+      like Dribbble"
+- [x] Claude's own concept, free of the current design system (Jafar 2026-10-13: "what you will design
+      despite of existing design … would be the main"; "not too much colorful … like rainbow, rather follow
+      the best ui/ux designer") — drawn 2026-10-13 below the originals: `Settings · Home · Claude concept ·
+      1440` (frame `XwqtP`) and `Settings · Business profile · Claude concept · 1440` (frame `ofzTY`). Dark ink
+      sidebar, dark-green business banner with lime glow, green-tinted icon tiles, ink primary buttons, status
+      colours only for status; raw hex values, no tokens yet; light mode only. Ideas not in the app yet, each
+      needing Jafar's yes: settings search, Setup status card, "What customers see" preview, "Where this is
+      used" card, unsaved-changes text in the Save bar
+- [ ] Jafar picks a direction: the concept becomes the main look (then restyle job, quote, invoice to match
+      and turn its values into tokens), or keep the current family
 - [ ] Design the request, payment and client pages
 - [ ] Record Jafar's yes, the date and the screen names in the plan
 
 ## Next
 
-1. Show Jafar the two Settings screens and ask, word for word: "Do the two Settings screens look right? On
-   the Business profile page the big white panel around the form is gone, so each card sits on the page, and
-   the Save bar floats as a card at the bottom. The Settings home keeps its three-column tiles, now inside
-   the new cards." Apply his changes.
+1. Get Jafar's verdict on the two Claude-concept screens and on each listed idea; record it here and in the
+   plan. If he picks the concept, update the recipe and design-system page before more screens.
 2. Then design the request, payment and client pages: read each `+page.svelte`, copy the shell and parts from
    the quote/invoice screens, follow the recipe.
 
