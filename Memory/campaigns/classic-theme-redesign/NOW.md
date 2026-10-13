@@ -7,8 +7,8 @@ Control Room — built from shared blocks, with every existing feature, permissi
 
 **In progress:** none
 
-**Next part:** 2 New look and design system — review fixes and Jafar's answers applied 2026-10-13; he now
-picks highlights, button colour, sidebar and "Soon" items from the options board, then the design-system page is rebuilt. Read
+**Next part:** 2 New look and design system — review fixes, brand green, green buttons and the black-green
+sidebar applied 2026-10-13; next: archive old frames and rebuild the design-system page. Read
 `parts/2-new-look.md`, then the recipe.
 
-**Blockers:** Jafar's choices on the options board (see the part note).
+**Blockers:** None; the "Soon" menu items answer is still open (does not block the rebuild).

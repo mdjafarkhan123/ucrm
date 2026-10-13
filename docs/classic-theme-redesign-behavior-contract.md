@@ -74,6 +74,11 @@ grouping are planned after the first version, one stage at a time.
   shade if you want where need like Very deep green, deep green etc."). Every green in the new look comes from
   the app's brand green `#05BE68` and its shades (`--color-base-green--100` to `--1000`), replacing the
   concept's other greens; deeper shades carry small text so it stays readable.
+- **Green buttons, black-green sidebar** (Jafar, 2026-10-13: "Main button is green, my brand color, sidebar
+  we can use black green type"). The main button is brand green `#05BE68` with dark text (white text is too
+  faint on it); the logo, Save button, highlighted menu item and badges are brand green too, replacing the
+  concept's lime. The sidebar and the other dark surfaces (Save bar, selected pill, page icon tile) are a
+  near-black green instead of navy ink. One green button per page; other card actions are secondary.
 - **Design review answers** (Jafar, 2026-10-13: "go with your recommendation"):
   - The review's fixes are applied: readable text contrast, "1 to do" on Setup status, a one-tile group spans
     the full width, side-by-side cards share a height, the app's own wording, and the always-visible Save
@@ -173,10 +178,6 @@ Jafar approved these on 2026-10-13 ("go with your recommendation"):
 
 - **Text button** — whether it opens the client's conversation in the app's inbox or the device's messaging
   app, given business texting is not yet active. Does not block design; settle before building the header.
-- **Highlights, buttons and sidebar** (board `Options · button colour and sidebar` in `classic.pen`) —
-  lime or brand green for the logo, Save, highlighted menu item and badges (recommended: green); main button
-  ink, deep green or bright green (recommended: ink, as Shopify does with its green brand); sidebar dark ink,
-  very deep green or light (recommended: dark ink).
 - **"Soon" menu items** — the app shows Growth Feed, Team, Notifications and Usage greyed with "Soon".
   Recommended: hide them until they are built.
 - **Sidebar parts to draw** (no choice needed): the business's own logo from Branding, and the app's collapse

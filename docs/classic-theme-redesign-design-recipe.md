@@ -12,6 +12,11 @@ be our classic design, we will build design system based on your version. No mor
 Both sit in `classic.pen` below the older screens. When the reference screens and this recipe disagree, the
 screens win and this recipe is corrected.
 
+**Design review update (2026-10-13):** Jafar's answers changed the concept — brand green `#05BE68` and its
+shades replace every lime and other green; a near-black green replaces navy ink on dark surfaces; the main
+button is brand green with ink text; Settings gains a Sales & work group; no text is lighter than `#667085`.
+The values below include these changes.
+
 **Superseded look:** the earlier family — `Job details · Claude concept · Job cockpit · 1440` (`oNoOG`), quote
 (`Ae1NJ`), invoice (`fPq9c`), the first Settings screens (`aRN8m`, `f07YA`) — and the old Classic
 design-system page (`lkPLl`, dark `lVZIm`) with its 23 record-page tokens. Their **page structure** stays
@@ -49,16 +54,18 @@ When the first version is built, this recipe moves into the `design-classic` ski
 ## Colour rule
 
 Jafar, 2026-10-13: colour "where it make sense", never a decorative rainbow — "follow the best UI/UX
-designer". The base is calm: white cards, cool grey page, ink text and buttons, one brand green/lime. Colour
+designer". The base is calm: white cards, cool grey page, ink text, a black-green sidebar and dark surfaces, and one brand green for the main
+button and highlights. Colour
 appears only when it means one of three things:
 
 | Meaning | Colours | Where |
 | --- | --- | --- |
-| **Section** — which group a setting belongs to | Business green, Communications blue, Automations amber, Team & access violet | Tab dot, solid group icon, soft tile icons |
+| **Section** — which group a setting belongs to | Business green, Sales & work teal, Communications blue, Automations amber, Team & access violet | Tab dot, solid group icon, soft tile icons |
 | **Record type** — what kind of record | Quote rose, invoice blue, request amber, job green, client/people violet | Record chips, "where used" tiles, record pills and tracks |
 | **Status** — what state it is in | Red to do, amber waiting / in review, green ready / done | Status pills, count chips, attention rows |
 
-Sidebar icons, buttons, cards and form controls stay neutral. One dark featured card per page at most.
+Sidebar icons, cards, secondary buttons and form controls stay neutral; the one main button per page is
+brand green. One dark featured card per page at most.
 
 ## Palette (light)
 
@@ -69,40 +76,45 @@ Sidebar icons, buttons, cards and form controls stay neutral. One dark featured 
 | Subtle fill (chips, toggle panel, locked input, secondary button) | `#F6F7F9`, chips `#F3F4F7` |
 | Card border (inner) / row divider | `#E9EBF0` / `#EEF0F3` |
 | Control border / input border | `#E6E8EE` / `#DDE1E8` |
-| Ink — page titles, primary buttons, featured base | `#0B1220` |
+| Ink — page titles, text on green buttons | `#0B1220` |
+| Black green — sidebar, Save bar, selected pill, page icon tile, featured base | `#08150F`; sidebar top `#10291F` |
 | Heading / body strong / label | `#101828` / `#344054` |
-| Secondary / muted / placeholder | `#5B6475` and `#667085` / `#8A93A3` / `#98A2B3` |
-| Brand lime — logo, Save, badges, active nav | `#84CC16`, light `#A3E635`, `#BEF264`, `#D9F99D` |
-| Brand green — links, switch on, Business icons | `#16A34A`, deep `#15803D`, darkest `#14532D` |
+| Secondary / muted, placeholder and small text | `#5B6475` / `#667085` — no text lighter; `#98A2B3` icons only |
+| Brand green — main button, Save, logo, badges, active nav, dots | `#05BE68`; light `#42D893`, `#A7EBD0` |
+| Deep green — green text and links, Business icons; switch and solid fills | `#037741`; `#049A54`; very deep `#02532D`, `#01361D` |
 | Required asterisk / notification dot | `#E11D48` / `#F43F5E` |
 
-Tints (fill · stroke · icon/text · dot): green `#F0FDF4 · #DCFCE7 · #15803D · #22C55E`; blue
+Tints (fill · stroke · icon/text · dot): green `#F2FBF6 · #D7F5E5 · #037741 · #05BE68`; teal
+`#F3FBFC · #DEF3F7 · #0E6171 · #15A4C1` (solid `#118197`); blue
 `#EFF6FF · #DBEAFE · #1D4ED8 · #3B82F6`; amber `#FFFBEB · #FEF3C7 · #B45309 · #F59E0B`; violet
 `#F5F3FF · #EDE9FE · #6D28D9 · #8B5CF6`; rose `#FFF1F2 · — · #BE123C`. Status pills: red `#FFE4E6` /
-`#BE123C`, amber `#FEF3C7` / `#D97706`, green `#DCFCE7` / `#16A34A`.
+`#BE123C`, amber `#FEF3C7` / `#B45309`, green `#D7F5E5` / `#037741`.
 
 Shadows: card y1 b2 `#1018280A` + y10 b28 `#1018280D`; input y1 b2 `#1018280A`; primary button y6 b16
-`#0B122033`; featured card y18 b40 `#0B12202E`; Save bar y18 b40 `#0B12204D`; solid icon tile y4 b10 in its
+`#05BE6833`; featured card y18 b40 `#08150F2E`; Save bar y18 b40 `#08150F4D`; solid icon tile y4 b10 in its
 colour at 25%. Font: Inter (Jafar, 2026-10-13). Icons: Lucide in Pencil, the matching Tabler icon in code.
 
 ## Page and shell
 
 - **Frame:** 1440 wide, page fill, padding 12, sidebar and content 20 apart.
-- **Sidebar:** 248 wide, full height, radius 24, vertical gradient `#122033` → `#0B1220`, padding 18/14/16/14,
-  gap 18. Workspace switcher: radius 16, fill `#FFFFFF0D`, stroke `#FFFFFF14`, padding 10; 40 logo tile
-  (radius 12, gradient `#BEF264` → `#84CC16`, ink leaf), name 15/700 white, "Workspace · Owner" 12/500
-  `#8A96A8`, chevrons-up-down. Group label 11/700 uppercase, letter-spacing 0.8, `#5E6B7E`. Item 38 high,
-  radius 12, padding 0/12, gap 12, icon 18 `#8A96A8`, label 14/500 `#C5CDD8`. Active item fill `#A3E6351F`,
-  icon `#BEF264`, label 14/600 white. Count badge: 20 high lime `#A3E635` pill, 11/700 ink. Settings pinned at
+- **Sidebar:** 248 wide, full height, radius 24, vertical black-green gradient `#10291F` → `#08150F`, padding
+  18/14/16/14, gap 18. Brand block: radius 16, fill `#FFFFFF0D`, stroke `#FFFFFF14`, padding 10; 40 logo tile
+  showing the business's own logo from Branding (radius 12; with no logo, gradient `#42D893` → `#05BE68`,
+  ink leaf), name 15/700 white, "Workspace · Owner" 12/500 `#93A89C`, and the app's collapse button
+  (`panel-left-close` 18, `#93A89C`) — there is no workspace switching. The collapsed sidebar shows icons
+  only. Group label 11/700 uppercase, letter-spacing 0.8, `#86A093`. Item 38 high, radius 12, padding 0/12,
+  gap 12, icon 18 `#93A89C`, label 14/500 `#D3DED8`. Active item fill `#42D8931F`, icon `#42D893`, label
+  14/600 white. Count badge: 20 high `#42D893` pill, 11/700 ink. Settings pinned at
   the bottom under a `#FFFFFF14` hairline.
 - **Content column:** padding 8/12/24/4, gap 24.
 - **Top bar** (no card): search 440×44, radius 14, white, `#E6E8EE` border, 18 icon, 14/500 placeholder
-  `#8A93A3`, ⌘K chip (radius 8, `#F3F4F7`). Right: 44 square icon buttons (radius 14, white, bordered; the
-  bell carries a 9px rose dot), the ink "Add new" button with a lime plus, a 44 avatar circle (gradient
-  `#22C55E` → `#15803D`, white initials 14/700).
-- **Page header:** index pages — eyebrow 11/700, letter-spacing 1, `#5B6475` after a 6px lime dot; title
-  36/800, letter-spacing −1.2, ink; subtitle 15/500 `#5B6475`; page-level search right. Sub pages — 60 ink
-  icon tile (radius 18, lime 28 icon); breadcrumb 13/600 green link, chevron, 13/500 secondary; title 30/800,
+  `#667085` "Search anything in your workspace" (it finds settings too), "Ctrl K" chip (radius 8,
+  `#F3F4F7`). Right: 44 square icon buttons (radius 14, white, bordered; the
+  bell carries a 9px rose dot), the brand green "Add new" main button, a 44 avatar circle (gradient
+  `#05BE68` → `#037741`, white initials 14/700).
+- **Page header:** index pages — eyebrow 11/700, letter-spacing 1, `#5B6475` after a 6px `#05BE68` dot; title
+  36/800, letter-spacing −1.2, ink; subtitle 15/500 `#5B6475`. Sub pages — 60 black-green
+  icon tile (radius 18, `#42D893` 28 icon); breadcrumb 13/600 `#037741` link, chevron, 13/500 secondary; title 30/800,
   −0.9; subtitle 14/500; a white bordered "Last changed by … · date" chip right.
 - **Body:** main column fills, rail 336 wide, 20 apart. Main stacks 24 apart on index pages, 20 on form pages;
   rail cards 16 apart.
@@ -114,50 +126,54 @@ colour at 25%. Font: Inter (Jafar, 2026-10-13). Icons: Lucide in Pencil, the mat
   (radius 11, white 18 icon), title 18/700, −0.3, ink + count chip (11/700 `#5B6475` on `#E9EBF0`, pill),
   subtitle 13/500 `#667085`.
 - **Setting rows:** two columns in one card, 1px `#EEF0F3` dividers between rows and columns, an empty cell
-  when the count is odd. Row padding 16/18, gap 14: 40 icon tile (radius 12, section tint fill and stroke, 19
+  when the count is odd; a group with one setting spans the full width. Row padding 16/18, gap 14: 40 icon tile (radius 12, section tint fill and stroke, 19
   icon in the section's deep colour), title 14/600 `#101828`, description 12/500 `#667085` at 1.45, chevron
-  16 `#98A2B3`. A role badge sits beside the title (neutral `#F3F4F7`, lock 10, 11/600 `#5B6475`).
+  16 `#98A2B3`. A role badge sits beside the title (neutral `#F3F4F7`, lock 10, 11/600 `#5B6475`); a status pill
+  ("Incomplete", "Not set") sits before the chevron when the app shows one.
 - **Form card:** header padding 20/24/18/24 — 36 tint icon tile (radius 11) in the page's section colour,
   title 16/700, −0.2, subtitle 13/500 `#667085`; body padding 0/24/24, gap 16; fields in a row 14 apart. Two
-  short cards may share a row.
-- **Tabs / jump pills:** 38 high pills, 8 apart. Active: ink fill, 13/600 white label, `#FFFFFF1F` count.
-  Others: white, `#E6E8EE` border, 8px section dot, 13/600 `#344054` label, `#F3F4F7` count chip.
+  short cards may share a row and share its height.
+- **Jump pills:** 38 high pills, 8 apart, padding 0/16/0/14, one per group the viewer can see; each jumps to
+  its group and the group in view is lit. No "All settings" pill and no counts — counts live on group
+  headers. Lit: black-green `#08150F` fill, 8px section dot, 13/600 white label. Others: white, `#E6E8EE`
+  border, 8px section dot, 13/600 `#344054` label.
 
 ## Fields and buttons
 
-- **Field:** label above, 13/600 `#344054`, required `*` 13/700 `#E11D48`, "Optional" 12/500 `#98A2B3`.
+- **Field:** label above, 13/600 `#344054`, required `*` 13/700 `#E11D48`, "Optional" 12/500 `#667085`.
   Input 44 high, radius 12, white, `#DDE1E8` border, input shadow; value 14/500 `#101828`, placeholder
-  `#98A2B3`; optional 16 leading icon `#98A2B3`; select chevron-down 16; unit suffix chip (12/600 on `#F3F4F7`,
+  `#667085`; optional 16 leading icon `#98A2B3`; select chevron-down 16; unit suffix chip (12/600 on `#F3F4F7`,
   radius 8). Help line 12/500 `#667085`.
 - **Locked field:** fill `#F6F7F9`, no shadow, value `#667085`, a lock icon instead of the chevron, help line
   led by a 13 lock icon `#98A2B3` with the app's reason.
-- **Textarea:** 88 high, padding 12/14, line height 1.5; "N characters left" right, 12/500 `#98A2B3`.
+- **Textarea:** 88 high, padding 12/14, line height 1.5; "N characters left" right, 12/500 `#667085`.
 - **Toggle row:** `#F6F7F9` panel, radius 14, padding 14/16; title 14/600, help 12/500; switch 44×26, on
-  `#16A34A` with a white 20 knob.
-- **Buttons:** primary ink `#0B1220`, radius 14 (12 inside cards), 44 high in headers and 40 in cards, 14/600
-  white label, lime `#BEF264` icon, primary shadow — one per page, named for the next step. Secondary:
-  `#F6F7F9`, `#E6E8EE` border, 13/600 `#344054`. On dark surfaces: white button with ink label. Small row
-  action: 30 high, radius 9, ink, 12/600 white.
+  `#049A54` with a white 20 knob.
+- **Buttons:** main button brand green `#05BE68`, radius 14 (12 inside cards), 44 high in headers and 40 in
+  cards, 14/600 ink `#0B1220` label and icon (white is too faint on this green), primary shadow — one per
+  page, named for the next step; the top bar's "Add new" is the shell's own. Other card actions are
+  secondary: `#F6F7F9`, `#E6E8EE` border, 13/600 `#344054` label and icon. On dark surfaces: white button
+  with ink label. Small row action: 30 high, radius 9, brand green, 12/600 ink.
 
 ## Featured card
 
-One per page. The Settings banner: radius 24, padding 28, gap 22, linear gradient 120° `#0B1220` →
-`#0F2F2A` (60%) → `#14532D`, featured shadow; a 420 radial lime glow `#A3E63559` → transparent at the top
-right with two hairline rings (`#FFFFFF14`, `#FFFFFF0D`). 64 logo tile (radius 18, gradient `#D9F99D` →
-`#84CC16`, ink 30 leaf, lime glow); eyebrow 11/700, letter-spacing 1, `#A3B3C2`; name 28/800, −0.8, white;
+One per page. The Settings banner: radius 24, padding 28, gap 22, linear gradient 120° `#08150F` →
+`#01361D` (60%) → `#02532D`, featured shadow; a 420 radial green glow `#42D89359` → transparent at the top
+right with two hairline rings (`#FFFFFF14`, `#FFFFFF0D`). 64 logo tile (radius 18, gradient `#A7EBD0` →
+`#05BE68`, ink 30 leaf, green glow); eyebrow 11/700, letter-spacing 1, `#A3B3C2`; name 28/800, −0.8, white;
 meta 14/500 `#B8C4D0`; white button right. Fact chips: four equal, radius 14, fill `#FFFFFF0F`, stroke
-`#FFFFFF1A`, padding 12/14; label row 14 lime icon + 11/600 `#93A3B4`; value 13/600 white. On record pages
+`#FFFFFF1A`, padding 12/14; label row 14 `#42D893` icon + 11/600 `#93A3B4`; value 13/600 white. On record pages
 the profit card (job, quote) and the balance-due card (invoice) take this featured style — to design in Part 2.
 
 ## Rail cards
 
-- **Account:** 56 avatar (green gradient, 3px white ring), "SIGNED IN AS" 10/700 `#98A2B3`, name 17/700, lime
-  role pill (`#ECFCCB`, crown 11, 11/700 `#3F6212`); two full-width secondary buttons stacked 8 apart.
-- **Figure card** (Communication Balance): 28 tint icon box in the section colour, eyebrow 10/700, letter-
-  spacing 0.8, `#667085`; figure 34/800, −1, ink; two lines 12/500 (`#5B6475`, then `#98A2B3`); full-width ink
-  button.
-- **Status list** (Setup status): header 16/700 + status count chip; rows padding 12/20 with a top divider —
-  34 neutral icon tile (`#F3F4F7`, `#344054` icon), title 13/600, text 12/500 `#667085`; right side an ink
+- **Account:** 56 avatar (green gradient, 3px white ring), "SIGNED IN AS" 11/700 `#667085`, name 17/700, green
+  role pill (`#D7F5E5`, crown 11, 11/700 `#02532D`); two full-width secondary buttons stacked 8 apart.
+- **Figure card** (Communication Balance): 28 tint icon box in the section colour, eyebrow 11/700, letter-
+  spacing 0.8, `#667085`; figure 34/800, −1, ink; two lines 12/500 (`#5B6475`, then `#667085`); full-width
+  secondary button.
+- **Status list** (Setup status): header 16/700 + a red chip counting only the items the owner must act on ("1 to do"); rows padding 12/20 with a top divider —
+  34 neutral icon tile (`#F3F4F7`, `#344054` icon), title 13/600, text 12/500 `#667085`; right side a green
   30-high action or a status pill (tint fill, 6 dot, 11/700 status colour).
 - **Preview** (What customers see): card fill fades `#F4F5F7` → white; green "Live preview" pill; inside, a
   white document (radius 14, `#E6E8EE` border, shadow y12 b24 `#1018281A`, padding 18) showing the logo,
@@ -168,18 +184,19 @@ the profit card (job, quote) and the balance-due card (invoice) take this featur
 
 ## Save bar
 
-Floating ink bar centred over the content column: 720 wide, 64 high, radius 20, padding 0/10/0/20, Save bar
+Floating black-green `#08150F` bar centred over the content column: 720 wide, 64 high, radius 20, padding 0/10/0/20, Save bar
 shadow. Left: 28 circle `#F59E0B26` with an 8 `#FBBF24` dot; "You have unsaved changes" 14/600 white over
 "Nothing is saved until you press Save." 12/500 `#8A96A8`. Right: Cancel (44 high, radius 14, `#FFFFFF14`,
-`#FFFFFF1F` stroke, 14/600 `#E5E9F0`) and Save (lime gradient `#D9F99D` → `#A3E635`, ink check 16 and 14/700
-label, glow `#A3E63566`). It appears exactly when the shared save rules say the bar shows; the two text lines
-are a proposed addition awaiting Jafar.
+`#FFFFFF1F` stroke, 14/600 `#E5E9F0`) and Save (main button: `#05BE68`, ink check 16 and 14/700 label, primary
+shadow). It appears exactly when the shared save rules say the bar shows; Jafar approved the two text lines
+2026-10-13. Full-page forms show the bar all the time: while nothing has changed it takes a resting state
+with Save disabled (to draw on the design-system page).
 
 ## Record page structure
 
 From the earlier family, approved by Jafar 2026-10-13 ("Looks good, continue"). Layout, order and sizes
 stand; old token names (`$color-…`) map to § Palette and § Colour rule when the job, quote and invoice
-screens are restyled — the primary button becomes ink, the record's own pill and track take its record
+screens are restyled — the primary button becomes brand green with ink text, the record's own pill and track take its record
 colour, "now" is brand green.
 
 - **Header card:** padding 24/28/0/28. Row 1: status pill (record colour, pill, 7px dot, 12/600) + record
@@ -196,7 +213,7 @@ colour, "now" is brand green.
   the record total. Editable facts (an invoice's terms and dates) end the strip with a 32 bordered pencil
   button instead of a separate section.
 - **Lists of dated work:** date tile 52×56, radius 12, bordered — weekday 10/700, letter-spacing 0.6, day
-  20/700; today's tile filled brand green with white day. Title 15/600, time 13/500 secondary, note 12/500
+  20/700; today's tile filled brand green `#05BE68` with an ink day (white is too faint on it). Title 15/600, time 13/500 secondary, note 12/500
   with a 13 icon. Today's row tinted with a green live note ("Clocked in 8:04 AM · on site 2h 16m"). Crew
   avatars 30, overlapping by 5, 2px ring in the row's background. Status pills in a 124-wide column: done,
   now (filled), scheduled. Row action: borderless 36 button, chevron (pencil for editable future rows).
@@ -212,7 +229,7 @@ colour, "now" is brand green.
   the quote's split is Cost and Estimated profit); the invoice shows Balance due (Paid and Balance, plus the
   client account balance).
 - **Close-out:** a 52 ring (inner radius 0.78, count in the middle) beside the title; items with a 24 state
-  circle (done filled green with a white check, waiting with an hourglass, to-do a 1.5 outline), label
+  circle (done filled `#049A54` with a white check, waiting with an hourglass, to-do a 1.5 outline), label
   14/600, state 12/500, and a 30-high bordered action when the user can act.
 - **Photos:** three-column grid of 92-high radius-12 tiles, 8 apart; the last carries a dark overlay with
   "+N" 18/700 white. Files follow as rows with a 34 file-type tile.
