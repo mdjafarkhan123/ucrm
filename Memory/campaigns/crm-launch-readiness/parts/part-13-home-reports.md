@@ -18,6 +18,10 @@
 
 ## Next
 
+**Look changed 2026-10-13:** Jafar chose a new Classic look (classic-theme-redesign, recipe
+`docs/classic-theme-redesign-design-recipe.md`). These screens use the old parts; ask him whether they switch
+to the new look before his yes (that campaign's part 2 note, question 3).
+
 Design session (Jafar said 2026-10-12: no design in the research session). In Pencil, check `get_app_state` shows
 `classic.pen`. The file has no app shell (sidebar and top bar) yet: screenshot the real app shell first
 (`src/lib/components/layout/SharedAppShell.svelte`, logins in `Login.md`) and add it to the design-system page as a

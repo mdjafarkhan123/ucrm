@@ -1,7 +1,8 @@
 # Classic theme redesign
 
 **Status:** First version (six record pages, card shells everywhere, four additions) approved by Jafar on
-2026-10-13; designing next.
+2026-10-13. New Classic look chosen the same day (§ Direction agreed so far › New Classic look); designing
+next.
 
 ## Summary
 
@@ -35,10 +36,16 @@ grouping are planned after the first version, one stage at a time.
 - **Name:** `classic-theme-redesign` (Jafar, 2026-10-13).
 - **Classic itself changes.** This redesigns the live default. Botanical stays a separate theme owned by the
   [CRM design system](crm-design-system-behavior-contract.md) campaign.
-- **Job details direction.** The Pencil screen `Job details · Claude concept · Job cockpit · 1440` in
-  `classic.pen` (commit `52a16c7f`). Jafar, 2026-10-13: "I really like the design." Formal approval waits until
-  the quote and invoice pages are designed with the same parts. The two Codex concepts in the same file
-  (`Refined Classic`, `Premium Split Sidebar`) are earlier alternatives, not chosen.
+- **New Classic look** (Jafar, 2026-10-13: "I like your design very much. This will be our classic design, we
+  will build design system based on your version. No more old version."). The reference screens are
+  `Settings · Home · Claude concept · 1440` and `Settings · Business profile · Claude concept · 1440` in
+  `classic.pen`; the [design recipe](classic-theme-redesign-design-recipe.md) records their values. Jafar
+  asked for a design review of them before the family is redrawn.
+- **Earlier family superseded.** The job concept (`Job details · Claude concept · Job cockpit · 1440`, Jafar:
+  "I really like the design"), the quote, invoice and first Settings screens drawn from it, and the old
+  Classic design-system page keep their approved **page structure** — header card, lifecycle track, key
+  facts, rail order, the four layout moves — but their look is replaced. The two Codex concepts
+  (`Refined Classic`, `Premium Split Sidebar`) were never chosen.
 - **Font stays Inter** (Jafar, 2026-10-13). The job concept used Plus Jakarta Sans; it is switched back to
   Inter before the family is designed.
 - **Desktop designs only in Pencil** (Jafar, 2026-10-13). Phone layouts are adapted while building and must
@@ -51,15 +58,18 @@ grouping are planned after the first version, one stage at a time.
   card look on every Classic page in the first version, so two card styles never live side by side; each
   page's layout still waits for its own stage. A Settings page with the new cards is shown in Pencil before
   building.
-- **New colours become named tokens.** The concept's warm page background, hairline card border, today-row
-  tint, profit-card colours, 20px corner and soft shadow are added to the Classic design-system page in
-  `classic.pen` with light and dark values before the family is designed, then kept equal in code and the
-  Classic design skill. Added 2026-10-13: 23 tokens on the design-system page (§ Color › Record pages and
-  cards, Featured card; § Spacing & shape › Corners, Elevation).
-- **The design system follows the redesign** (Jafar, 2026-10-13: "if new design require to change any design
-  system we will do it to match"). When a redesigned page needs a part to look different, that part changes
-  on the design-system page and every screen using it follows. So far: the Button part takes 12px corners and
-  the green main button a soft glow; the Card part takes the new card look.
+- **The design system is rebuilt from the new look** (Jafar, 2026-10-13). The Classic design-system page in
+  `classic.pen` is redrawn from the reference screens: every colour, corner, shadow and part becomes a named
+  token or reusable part with light and dark values, before the record pages are redrawn. Code and the
+  Classic design skill take the same values when built. Earlier rule kept: when a page needs a part to look
+  different, the part changes on the design-system page and every screen follows ("if new design require to
+  change any design system we will do it to match").
+- **The app shell takes the new look with the first version.** The dark sidebar and the top bar appear on
+  every page, so like the card shells they change everywhere at once.
+- **Colour where it means something** (Jafar, 2026-10-13: "not too much colorful … like rainbow, rather
+  follow the best ui/ux designer"; then "you can use rainbow like different color where it make sense").
+  Colour marks a settings section, a record type or a status; everything else stays neutral. The recipe's
+  § Colour rule lists the colours.
 - **Pencil only for now** (Jafar, 2026-10-13): no app code changes until the family is approved and build
   planning (Part 3) is done.
 
@@ -70,14 +80,15 @@ Drawn from the job concept; later screens follow them unless Jafar changes them.
 1. **Answer the record's questions first.** The header card shows where the record stands (the lifecycle
    track), who and where it is for, and its key facts. Attention items show where the work is — today's visit
    in the visit list, not in a separate warning box.
-2. **Colour carries meaning only.** Green means done or happening now, grey means waiting, and late, warning
-   and record types use their existing status colours. Sections get no decorative coloured headers.
+2. **Colour carries meaning only.** Section, record type or status — the recipe's § Colour rule. Green
+   means done or happening now, amber waiting, red needs action.
 3. **Small things stay small.** An empty section shows its prompt and action compactly. Related small sections
    can share one card with tabs, as the job's Work log does for time, expenses and checklists.
 4. **Work on the left, money and wrap-up on the right.** The main column holds the work (visits, line items,
    work log). The right column holds profit, close-out, billing, instructions, photos and notes.
-5. **One calm surface style.** White cards with 20px corners, a hairline border and a soft shadow on a warm
-   light-grey page; one green primary button per page, named for the next step.
+5. **One calm surface style.** White cards with 20px corners, a hairline border and a soft shadow on a cool
+   light-grey page, a dark sidebar, at most one dark featured card per page, and one ink primary button per
+   page, named for the next step.
 
 ## Shared building blocks
 
@@ -133,6 +144,13 @@ Jafar approved all four on 2026-10-13, provided existing data supports each. Dat
 
 - **Text button** — whether it opens the client's conversation in the app's inbox or the device's messaging
   app, given business texting is not yet active. Does not block design; settle before building the header.
+- **Six ideas in the new look** — not in the app yet; each needs Jafar's yes before it is built: a "Search
+  settings" box; a Setup status card (Stripe, texting, email readiness); the Communication Balance figure on
+  Settings home; a "What customers see" preview on Business profile; a "Where this is used" card; the Save
+  bar's "You have unsaved changes" text. Until then they are drawn but not approved.
+- **Old screens in `classic.pen`** — whether the superseded frames are deleted or moved to an archive area.
+- **Home and Reports screens** — drawn in `classic.pen` for the CRM launch readiness campaign (Part 13) with
+  the old parts, waiting for Jafar's yes; they take the new look once the design-system page is rebuilt.
 - **Whole-app boundary** — whether later stages also cover login and the pages customers see (request forms,
   client portal, quote approval, payment pages). Does not block the first version.
 
@@ -145,8 +163,9 @@ Jafar approved all four on 2026-10-13, provided existing data supports each. Dat
 ## Sources and design decisions
 
 - [Design recipe](classic-theme-redesign-design-recipe.md) — read before designing or building any screen for
-  this campaign: the working method and exact sizes, spacing and styles of the reference screen.
-- `classic.pen` screen `Job details · Claude concept · Job cockpit · 1440` — the direction Jafar liked.
+  this campaign: the working method and exact sizes, spacing and styles of the reference screens.
+- `classic.pen` screens `Settings · Home · Claude concept · 1440` and `Settings · Business profile · Claude
+  concept · 1440` — the new Classic look.
 - [Jobber screen patterns](../.claude/skills/jobber/jobber-08-screen-patterns.md) — detail-page skeleton,
   one primary action named for the next step, history and More placement.
 - [CRM design system plan](crm-design-system-behavior-contract.md) — theme separation and Classic's role.

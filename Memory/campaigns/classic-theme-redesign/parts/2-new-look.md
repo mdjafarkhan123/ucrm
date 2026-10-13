@@ -1,57 +1,45 @@
-# 2 — Design: record page family
+# 2 — Design: new Classic look and its design system
 
-**Campaign:** classic-theme-redesign · **Plan:** `docs/classic-theme-redesign-behavior-contract.md` § Design
-principles, § Direction agreed so far
+**Campaign:** classic-theme-redesign · **Plan:** `docs/classic-theme-redesign-behavior-contract.md` § Direction
+agreed so far (New Classic look, design system rebuilt, colour), § Still unclear
 **Stage:** Design
 **Code:** `classic.pen` in the main folder (Pencil saves there); commit it from main in its own commit, under a
 claim covering `classic-pen`.
-**Done when:** Jafar says yes to the named screens; date and names recorded in the plan.
-**Read next:** `docs/classic-theme-redesign-design-recipe.md` — its working method governs every step below;
-`.claude/skills/design/SKILL.md` § Design in Pencil first, then `design-classic`; the Pencil
-MCP's own skill and `execute.md`; each page's `src/routes/(app)/<record>/[id=uuid]/+page.svelte` for its real
-sections.
+**Done when:** Jafar approves the reviewed reference screens and the rebuilt Classic design-system page (light
+and dark); his answers to the three questions below are recorded in the plan.
+**Read next:** the design recipe (`docs/classic-theme-redesign-design-recipe.md`); design skill § Design in
+Pencil first; Pencil's skill and `execute.md`.
 
 ## Steps
 
-- [x] Switch every text node in `Job details · Claude concept · Job cockpit · 1440` (frame `oNoOG`, including
-      its sidebar and top-bar copies) from Plus Jakarta Sans to Inter; re-check nothing clips — done
-      2026-10-13, all 216 texts use `$font-family`
-- [x] Add the recipe's raw values (colours, 20px card corner, shadows) to the Classic design-system page as
-      named tokens with light and dark values; point the job concept and the recipe at the token names —
-      done 2026-10-13: 23 tokens; Card part, Button part (`$radius-control`, primary glow) updated to match
-      (Jafar: "if new design require to change any design system we will do it to match")
-- [x] Design the quote and invoice pages from the same parts; show Jafar them beside the job page — drawn
-      2026-10-13 (`Quote details · Classic redesign · 1440`, `Invoice details · Classic redesign · 1440`,
-      right of the job screen); job track and wording aligned to them. Jafar 2026-10-13: "Looks good, continue",
-      including the four layout moves listed below
-- [x] Design a Settings page with the new cards — drawn 2026-10-13: `Settings · Business profile · Classic
-      redesign · 1440` (form cards, floating Save bar) and `Settings · Home · Classic redesign · 1440` (group
-      cards with setting tiles), right of the invoice. Jafar 2026-10-13: "Looks right but… too plain, not
-      like Dribbble"
-- [x] Claude's own concept, free of the current design system (Jafar 2026-10-13: "what you will design
-      despite of existing design … would be the main"; "not too much colorful … like rainbow, rather follow
-      the best ui/ux designer") — drawn 2026-10-13 below the originals: `Settings · Home · Claude concept ·
-      1440` (frame `XwqtP`) and `Settings · Business profile · Claude concept · 1440` (frame `ofzTY`). Dark ink
-      sidebar, dark-green business banner with lime glow, ink primary buttons; raw hex values, no tokens yet;
-      light mode only. Colour rule (Jafar 2026-10-13: "use rainbow like different color where it make
-      sense"): section colour — Business green, Communications blue, Automations amber, Team & access violet
-      on tab dot, group icon and soft tiles; record colour — quotes rose, invoices blue, requests amber, jobs
-      green; status colour — red to do, amber in review, green ready. Ideas not in the app yet, each
-      needing Jafar's yes: settings search, Setup status card, "What customers see" preview, "Where this is
-      used" card, unsaved-changes text in the Save bar
-- [ ] Jafar picks a direction: the concept becomes the main look (then restyle job, quote, invoice to match
-      and turn its values into tokens), or keep the current family
-- [ ] Design the request, payment and client pages
-- [ ] Record Jafar's yes, the date and the screen names in the plan
+- [x] Claude concept drawn 2026-10-13 — `Settings · Home · Claude concept · 1440` (`XwqtP`) and `Settings ·
+      Business profile · Claude concept · 1440` (`ofzTY`), below the older screens. Jafar 2026-10-13: "This
+      will be our classic design … No more old version."
+- [ ] 0. Confirm `classic.pen` holds both frames and is committed; if it is uncommitted, claim with
+      `--adopt-existing` and commit it.
+- [ ] Design review of both reference screens — Jafar asked for one ("need review on what you designed").
+      Run recipe step 5 at full size; also check usefulness for an owner (find a setting in seconds?),
+      hierarchy, WCAG AA contrast (small `#98A2B3` text is likely too light), click targets, consistency
+      between the screens, and how Stripe, Linear and Attio settings solve the same things. Give Jafar each
+      finding with a recommendation; fix what he agrees.
+- [ ] Ask Jafar the three questions below; record the answers in the plan.
+- [ ] Rebuild the Classic design-system page from recipe § Palette and the reference screens: named tokens
+      with light values and designed dark values; reusable parts — Sidebar, Top bar, Card, Group header,
+      Setting row, Form card header, Field (input, select, locked, textarea), Toggle row, Buttons, Tab pill,
+      Status pill, Count chip, Featured card, Save bar, rail cards. Point both screens at them; check dark mode. The old page (`lkPLl`, dark `lVZIm`) also feeds the Home and Reports screens — see
+      question 3 before retiring it.
+- [ ] Replace raw hex values in the recipe with the token names.
+
+## Questions for Jafar, word for word
+
+1. "Which of these six ideas should the app really get? A 'Search settings' box · the Setup status card · the
+   text balance on Settings home · the 'What customers see' preview · the 'Where this is used' card · the
+   'You have unsaved changes' words on the Save bar."
+2. "The old screens in the Pencil file — the first job, quote, invoice and Settings designs — shall I delete
+   them, or move them to an 'Archive' corner of the file?"
+3. "The Home and Reports screens you are reviewing for the launch were drawn in the old look. Shall they
+   switch to the new look before you approve them?"
 
 ## Next
 
-1. Get Jafar's verdict on the two Claude-concept screens and on each listed idea; record it here and in the
-   plan. If he picks the concept, update the recipe and design-system page before more screens.
-2. Then design the request, payment and client pages: read each `+page.svelte`, copy the shell and parts from
-   the quote/invoice screens, follow the recipe.
-
-Layout moves Jafar accepted 2026-10-13: invoice Terms & dates folded into the key facts strip (pencil);
-discount and tax as rows in the totals block; quote photos moved to the rail; History card tabs on the
-invoice. Before any `classic.pen` change, claim `classic-pen` (`agent-work.py`); ask Jafar to press Ctrl+S
-in Pencil before committing it.
+Steps in order from step 0. Part 2B (record pages in the new look) follows this part.
