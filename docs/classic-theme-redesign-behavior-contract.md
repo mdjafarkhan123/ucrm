@@ -122,6 +122,15 @@ grouping are planned after the first version, one stage at a time.
   `-muted #B4C9BC` (≥5.3:1 on the whole gradient), text under 13px one size up. Later idea, only if
   contractors ask: a "Next step" card or an "At a glance" four-number card, or letting the owner choose which
   numbers show (HubSpot-style).
+- **Request, Payment and Client details approved** (Jafar, 2026-10-13: "I approved your design").
+  `Request details · 1440`, `Payment details · 1440` and `Client details · 1440` in `classic.pen` complete the
+  six record pages. The request's Automatic follow-up card takes the green top-of-rail style. The payment page
+  gains a right rail with a Receipt preview (View receipt, Print or save PDF), shows "Applied to" above
+  "Details", and has no green card because its one figure is already the title. The client's Lifetime, Open
+  quotes and Active jobs move from the header into the green card; Lead source and Marketing email share one
+  "Source and marketing" card; Call, Message and Request review sit beside the name; the Details /
+  Communication tabs sit at the foot of the header card. A new Segmented control part (Upcoming / Past) joins
+  the design-system page. The superseded first-concept frames are deleted.
 - **Pencil only for now** (Jafar, 2026-10-13): no app code changes until the family is approved and build
   planning (Part 3) is done.
 
@@ -210,12 +219,6 @@ Jafar approved these on 2026-10-13 ("go with your recommendation"):
   app, given business texting is not yet active. Does not block design; settle before building the header.
 - **Whole-app boundary** — whether later stages also cover login and the pages customers see (request forms,
   client portal, quote approval, payment pages). Does not block the first version.
-- **Request, Payment, Client layout proposals** (drawn 2026-10-13, awaiting Jafar): the request's Automatic
-  follow-up card takes the green top-of-rail style; the payment page gains a right rail with a Receipt preview
-  (View receipt, Print or save PDF), "Applied to" above "Details", and no green card because its one figure is
-  already the title; the client's Lifetime, Open quotes and Active jobs move from the header into the green
-  card, its Lead source and Marketing email share one "Source and marketing" card, and the Details /
-  Communication tabs sit at the foot of the header card. New part: a small Upcoming / Past segmented control.
 
 ## Not doing
 

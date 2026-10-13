@@ -3,11 +3,12 @@
 **Goal:** Classic takes the new premium look (Claude concept, chosen 2026-10-13) — first the six record pages, then the whole app including the
 Control Room — built from shared blocks, with every existing feature, permission and save rule kept.
 **Plan:** `docs/classic-theme-redesign-behavior-contract.md` — first version approved by Jafar 2026-10-13.
-**Stage:** Design
+**Stage:** Build planning
 
-**In progress:** Part 2B — job, quote and invoice redrawn in the new look; request, payment and client pages
-designed (desktop, `classic.pen`), built from the design-system parts. Part 2 Done 2026-10-13 (`41d154c6`).
+**Done:** Part 2 (design system, `41d154c6`) and Part 2B — all six record pages approved 2026-10-13 (plan
+§ Direction); first-concept frames deleted.
 
-**Next:** Request, Payment, Client drawn 2026-10-13; waiting for Jafar's review and Ctrl+S — see `parts/2b-record-pages.md`.
+**Next:** Part 3 — split the first version into build parts per shared block and page, on the CRM design
+system's theme foundation, and settle the Text button (plan § Still unclear). See `ROADMAP.md`.
 
 **Blockers:** None.

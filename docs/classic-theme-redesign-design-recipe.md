@@ -21,9 +21,8 @@ green — no light green in light mode (Jafar: "dont use light green in white mo
 dark mode); a near-black green replaces navy ink on dark surfaces; the main button is brand green with white
 text; Settings gains a Sales & work group; no text is lighter than `muted`.
 
-**Superseded look:** the earlier family — `Archive · Job details · first concept · 1440` (`oNoOG`), quote
-(`Ae1NJ`) and invoice (`fPq9c`), now in the archive row at the top right of `classic.pen` — and the old Classic
-design-system page (`lkPLl`, dark `lVZIm`) with its 23 record-page tokens. Their **page structure** stays
+**Superseded look:** the earlier family — the first-concept job, quote and invoice screens, deleted
+2026-10-13 once the six record pages were approved — and the old Classic design-system page (`lkPLl`, dark `lVZIm`) with its 23 record-page tokens. Their **page structure** stays
 approved (§ Record page structure); their look is replaced by this recipe.
 
 **Token names:** this recipe writes Pencil tokens without their `classic2-` prefix — `muted` is
@@ -132,7 +131,8 @@ Page header · index, Page header · sub page, Button · main / secondary / icon
 Jump pill · in view, Status pill · ready / waiting / to do, Count chip, Attention count, Role badge, Group
 header, Setting row (optional role badge and status pill, hidden until switched on), Form card header,
 Field · text / with icon / select / locked / with unit / textarea / error, Toggle row, Featured card,
-Save bar · unsaved / resting, Rail card · account / figure / status list / preview / where used.
+Save bar · unsaved / resting, Rail card · account / figure / status list / preview / where used, Segmented
+control (two or three options; the lit one on `surface` with the card shadow, others `secondary` text).
 
 ## Page and shell
 
