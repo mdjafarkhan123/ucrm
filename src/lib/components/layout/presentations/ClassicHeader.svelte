@@ -87,6 +87,13 @@
 		font: inherit;
 		font-size: 11px;
 	}
+	:global(
+		:root[data-theme='dark']:has(.app-shell[data-presentation='classic'])
+			.topbar__search-trigger
+			kbd
+	) {
+		color: var(--classic2-body);
+	}
 	:global(.topbar__spacer) {
 		flex: 1;
 	}
