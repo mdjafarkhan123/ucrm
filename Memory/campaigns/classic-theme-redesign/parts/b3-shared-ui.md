@@ -1,6 +1,6 @@
 # B3 — shared Classic cards and controls
 
-**Stage:** In progress, checkpoint 2026-10-14. **Plan:** `docs/classic-theme-redesign-behavior-contract.md` and `docs/classic-theme-redesign-design-recipe.md`. **Branch/worktree:** `codex/classic-b3`, `/home/jafar/Ucrm/.worktrees/classic-b3`, based on `ed18f953`. **Reservation:** `787beb2d9d99` (`classic-theme-redesign/b3-shared-ui`).
+**Stage:** In progress, checkpoint 2026-10-14. **Plan:** `docs/classic-theme-redesign-behavior-contract.md` and `docs/classic-theme-redesign-design-recipe.md`. **Branch/worktree:** `codex/classic-b3`, `/home/jafar/Ucrm/.worktrees/classic-b3`, based on `ed18f953`. **Previous reservation:** `787beb2d9d99`, released after this checkpoint was pushed.
 
 ## Current state
 
@@ -22,4 +22,4 @@ Keep visible labels associated with controls, connect hints and errors to their 
 
 ## Next
 
-Resume in this worktree. Confirm the exact B3 component list and the Classic-only token connection, then begin component edits. The branch is still unmerged; follow `docs/agent-concurrency.md` when handing over or integrating, and release reservation `787beb2d9d99` only after a safe handoff or integration with this checkpoint updated.
+Resume in this worktree. Inspect the coordination register and claim B3 before editing. Confirm the exact component list and Classic-only token connection, then begin component edits. The branch is still unmerged; follow `docs/agent-concurrency.md` when handing over or integrating.
