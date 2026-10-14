@@ -16,7 +16,17 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
 - [x] `Schedule · 1440` (`RrFyy`, x 10780, y 4080) drawn, light and dark checked. Parent review fixed a
       clipped "Unassigned", per-person avatar colours (now one neutral style), the 7am label and long titles on
       narrow cards.
-- [ ] Approved by Jafar. Questions put to him: Week or Day as the default view; the proposals below.
+- [x] Jafar, 2026-10-14: asked for more variants and said the visit cards did not look premium; colour should
+      mean something. Three variants drawn beside the original (row y 4080), light and dark checked:
+  - `Schedule · 1440 · A · Colour shows status` (`QOFVk`, x 12340) — recommended. Scheduled = white card,
+    In progress = the one dark-green featured card, Late = rose tint, Unassigned = amber tint with Assign,
+    Completed = soft grey with green tick; Assessment and Event shown by icon. New legend.
+  - `Schedule · 1440 · B · Colour shows who` (`PmCvg`, x 13900) — Jobber/Housecall Pro way: each crew member
+    a tint (Daniel blue, Sofia violet, Amir teal, Maya amber); shared/unassigned stay white; legend lists people.
+  - `Schedule · 1440 · C · Day by team` (`JMYsG`, x 15460) — Day view, one column per crew member with booked
+    hours bar, A's status colours, live progress on the in-progress visit.
+- [ ] Approved by Jafar. Questions put to him: which card colour (A status / B person / original type bar);
+      Week or Day (C) as the default view; the proposals below.
 
 ## Proposals (not in the app today; data exists)
 
