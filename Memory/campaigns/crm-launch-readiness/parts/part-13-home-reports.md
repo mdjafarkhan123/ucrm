@@ -16,7 +16,8 @@
         empty, Avatar, Bar chart, Ranked bars, Aging bar, Report tile, Report link, Workflow column, Visit row,
         Tabs, Banner; Segmented control `LQ6rJ` gained two hidden options
   - [x] `Home · Owner · 1440` (`m4ICXz`, y 17700) — fresh concept 2026-10-14 after Jafar deleted the first
-        draft; light and dark checked; awaiting his review. New parts drawn inline (Today card, To do columns
+        draft; light and dark checked. **Approved by Jafar 2026-10-14** ("Approved your"); he deleted the
+        other agents' Home variants. New parts drawn inline (Today card, To do columns
         with values, Business performance compare bars) — promote to § 09 after his yes
   - [x] Two reviews of it, 2026-10-14, each drew alternatives beside it at y 17700 (light and dark checked):
         `Concept · Home · Owner · 1440 (review proposal)` (`vVhpQ`, x 1560) and `Variant B · … (all fixes)`
