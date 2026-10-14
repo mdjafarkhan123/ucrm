@@ -34,6 +34,8 @@ Quotes, Invoices, Requests and, mostly, Clients. All of them share `PageHeader`,
 
 ## White button look (for B3)
 
+Temporary: delete this section once the app's code matches `classic.pen` (Jafar, 2026-10-14).
+
 Jafar, 2026-10-14, chose **B** on `Compare · White button border · B chosen 2026-10-14` ("ok I prefer B for
 now"; the soft-green ideas F, G and H stay on that board for later). Applied in `classic.pen`:
 
