@@ -1,12 +1,12 @@
 # Requests, Quotes and Invoices lists — design
 
 **Campaign:** classic-theme-redesign · **Plan:** `docs/classic-theme-redesign-behavior-contract.md` § Later stages
-**Stage:** Design · **Follows:** [Clients list](clients-list.md) and `parts/list-pages.md` on branch
+**Stage:** Design (done) · **Follows:** [Clients list](clients-list.md) and `parts/list-pages.md` on branch
 `claude/jobs-list-design` (Jobs list approved 2026-10-14).
 **Code:** `classic.pen` in the main folder; commit it from main in its own commit after Jafar presses Ctrl+S in
 Pencil. These notes live on branch `claude/list-pages-rqi` (worktree `.worktrees/list-pages-rqi`).
 **Done when:** Jafar approves `Requests · 1440`, `Quotes · 1440` and `Invoices · 1440` and the answers are
-written here.
+written here. **Done 2026-10-14.**
 
 ## Steps
 
@@ -16,9 +16,11 @@ written here.
       `Quotes · 1440` (`uEjrw`, x 7700), `Invoices · 1440` (`t3A3mj`, x 9240).
 - [x] Parent review: Quotes tiles changed to the Invoices tile anatomy (label, count, bold amount + words);
       Requests' conversion bar moved under the divider, as on Invoices.
-- [ ] Show Jafar; record his answer and each proposal's outcome here.
+- [x] **Approved by Jafar 2026-10-14** ("approved"), as drawn, with every proposal below.
+- [ ] Next: plan the shared list build part from the five approved lists (Jobs, Clients, Requests, Quotes,
+      Invoices), or the next screen Jafar names.
 
-## Proposals waiting for Jafar (not in the app today; data checked by the drawing sessions)
+## Approved additions (not in the app today; data checked by the drawing sessions)
 
 All three: overview tiles filter the table when pressed (as approved on Jobs).
 
@@ -35,11 +37,12 @@ All three: overview tiles filter the table when pressed (as approved on Jobs).
   on"; due-date notes ("7 days late", "In 14 days"); row notes "Viewed 3 times", "Not opened yet", "Part paid";
   dark "Owed to you" card split into Overdue and Not due yet.
 
-## Questions for Jafar
+## Answers
 
-1. Invoices "Awaiting payment" pill: amber (drawn; colour rule says amber = waiting) or blue as the app today.
-2. Quotes follow-up strip when the automation is off: show a "Turn on follow-up emails" link (suggested).
-3. Quotes: keep the Created column (drawn; the list sorts by it today) or show Sent.
+- Approved as drawn: Invoices "Awaiting payment" is amber (colour rule: amber = waiting), and Quotes keeps the
+  Created column.
+- Still open, ask at build planning: what the Quotes follow-up strip shows when follow-up emails are off
+  (suggested: a "Turn on follow-up emails" link; not drawn).
 
 ## Notes
 
