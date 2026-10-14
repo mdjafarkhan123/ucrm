@@ -30,6 +30,10 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
 - [x] A improved 2026-10-15 (Jafar: improve A first; keep B for now, delete later): amber "Unassigned" badge
       replaces the Assign button (assigning happens from the preview); day headers add a coloured attention
       count ("1 late", "1 unassigned"); the open card gets a rose selection ring; long Anytime names end "…".
+- [x] Jafar, 2026-10-15, asked why In progress is deep green. Review board `Schedule · Status colours review`
+      (`Dp8ki`, x 12340, y 5252) compares A's solid dark-green card with the suggestion: white card, green
+      outline, green "In progress" badge (ServiceTitan: Working = green, Done = light grey; Housecall Pro: in
+      progress = white tile with outline; Jobber: completed greyed with a tick). Waiting for his choice.
 - [ ] Approved by Jafar. Questions put to him: which card colour (A status / B person / original type bar);
       Week or Day (C) as the default view; the proposals below.
 
