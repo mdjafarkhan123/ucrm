@@ -1,21 +1,23 @@
 # Clients list — design
 
 **Campaign:** classic-theme-redesign · **Plan:** `docs/classic-theme-redesign-behavior-contract.md` § Later stages
-**Stage:** Design · **Follows:** the list-pages note on branch `claude/jobs-list-design`
+**Stage:** Design (done) · **Follows:** the list-pages note on branch `claude/jobs-list-design`
 (`parts/list-pages.md`; Jobs list approved 2026-10-14, "list pages come first").
 **Code:** `classic.pen` in the main folder; commit it from main under a claim covering `classic-pen-clients-list`.
-**Done when:** Jafar approves `Clients · 1440` and the answer is written here.
+**Done when:** Jafar approves `Clients · 1440` and the answer is written here. **Done 2026-10-14.**
 
 ## Steps
 
 - [x] Research: Jobber's client list (new-lead and new-client counts on top, Tags and Status filters, sort by
       name or last activity, More actions holds Import, Export and Merge); Housecall Pro's customer list (filters
       by tag, status, lead source and customer type); the real page `src/routes/(app)/clients/+page.svelte`.
-- [x] `Clients · 1440` (`iJgiT`, x 6160, y 4338) drawn from `Jobs · 1440`, light and dark checked. Waiting for
-      Jafar.
-- [ ] Jafar's answer on the proposals below.
+- [x] `Clients · 1440` (`iJgiT`, x 6160, y 4338) drawn from `Jobs · 1440`, light and dark checked. **Approved by Jafar
+      2026-10-14** ("approved"), with every proposal below.
+- [x] Jafar's answer on the proposals below: approved as drawn.
+- [ ] Next list screen in a new session (Jafar, 2026-10-14), or plan the shared list build part from
+      `Jobs · 1440` and `Clients · 1440`.
 
-## Proposals on the screen (new; not in the app today)
+## Approved additions (not in the app today)
 
 - **Client book tiles** Leads, Customers and Archived show counts and filter the table when pressed. Today the
   status filter has no counts.
