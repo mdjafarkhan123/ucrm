@@ -42,6 +42,17 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
 **Waiting to merge** — branch `claude/schedule-design`; main had another writer's uncommitted changes on
 2026-10-15, so integration waits for a clean main. Reservation `143ba86fc186` stays until then.
 
+- [x] 2026-10-15 (Jafar: subagents allowed for concepts): `Schedule · Day · 1440` (`eNrFP`, x 15460, y 4080)
+      drawn by the parent session, light and dark checked. Same shell and status colours as the approved
+      Week. Wednesday Oct 14 with the Week's seven items: Unassigned row first (Rachel Kim's assessment, amber),
+      then Daniel, Sofia, Amir, Maya rows on a 7am–5pm axis; Anytime first column with route-order numbers;
+      the shared Sarah Mitchell visit appears in both Daniel's and Sofia's rows with "Shared with …"; each
+      person shows visit count, booked hours and a neutral booked bar; the now line sits behind the cards.
+      Legend adds Shared visit. Waiting for Jafar.
+- [ ] `Schedule · Month · 1440` (x 17020, y 4080) drawn by a subagent the same session; parent review pending.
+- Open question for Jafar: in the approved Week, Rachel Kim's 1:30pm assessment has no crew but shows as a
+  white card; Day shows it amber Unassigned. Ask whether the Week card should turn amber too.
+
 ## Next (new sessions, one screen each)
 
 Day view (contract: employee rows on a horizontal time axis, Unassigned row first, Anytime first column —
