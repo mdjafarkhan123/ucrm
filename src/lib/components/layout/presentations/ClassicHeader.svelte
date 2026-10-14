@@ -98,9 +98,9 @@
 		gap: 8px;
 		min-height: 44px;
 		padding: 0 16px;
-		border: 1px solid var(--classic2-green);
+		border: 1px solid var(--classic2-solid-green);
 		border-radius: 14px;
-		background: var(--classic2-green);
+		background: var(--classic2-solid-green);
 		color: var(--classic2-green-on);
 		font: inherit;
 		font-size: 14px;

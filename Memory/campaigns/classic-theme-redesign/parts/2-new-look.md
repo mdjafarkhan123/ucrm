@@ -58,3 +58,11 @@ Jafar felt the header cards were crowded. Claude drew `Concept · Lighter record
 "its better but we can keep icon as it is now for the bottom row" — track tiles removed, key-fact tiles kept.
 Applied the same day to the Job, Quote, Invoice, Request and Payment `· 1440` screens, so they match the board
 and the recipe; B5 builds from them.
+
+## Calm slate dark mode (approved 2026-10-14)
+
+Jafar found the Pencil dark mode "Neon/alien/tech dashboard like" and preferred the app's current Jobber dark
+look. Options A–C (border tweaks on green-black) were drawn and dropped; D (Jobber slate surfaces, solid brand
+green main buttons, softer `#4CB782` green text) approved: "I approved D". Applied to every `classic2-*` dark
+value in `classic.pen` (42 green buttons repointed to `solid-green`), `_classic-theme-tokens.scss` and the
+recipe. The live app's content area still shows the old Jobber colours until B3+ restyles it.

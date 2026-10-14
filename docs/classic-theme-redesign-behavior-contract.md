@@ -116,6 +116,11 @@ grouping are planned after the first version, one stage at a time.
   its name, since the record number sits in row 1. The phone number leaves the meta row; the Call button
   carries it. The key facts keep their icon tiles. Phone layout drawn and approved with it. Board
   `Concept · Lighter record header` in `classic.pen`; recipe § Record page structure has the sizes.
+- **Calm slate dark mode** (Jafar, 2026-10-14: "I approved D"). The near-black green dark mode read as "neon /
+  alien"; Classic dark mode takes Jobber's slate surfaces (page `#171B1C`, cards `#232B2F`, border `#34454B`)
+  and a neutral near-black sidebar. Main buttons are solid brand green `#037741` with white text in both modes;
+  green text and marks use a softer `#4CB782` in dark mode. Light mode is unchanged. Board
+  `Concept · Dark mode card edges` in `classic.pen`; recipe § Tokens has every value.
 - **Icon colour must be meaningful** (Jafar, 2026-10-13, approved on the six record pages). A coloured icon tile
   tells the user something — a status needing attention, another record's type, or automation; everything else
   stays neutral. Details in the recipe § Colour rule.

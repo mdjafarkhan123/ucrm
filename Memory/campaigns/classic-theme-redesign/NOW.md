@@ -9,7 +9,8 @@ Control Room — built from shared blocks, with every existing feature, permissi
 ("all agreed"); [B1 tokens verified](../../../docs/research/classic-theme-b1-2026-10-13.md); B2 shell built,
 live-checked and integrated 2026-10-14. Message (not Text) and Settings pages in the next stage recorded in
 the plan. Lighter record header approved 2026-10-14 (track without icon tiles, key-fact tiles kept, phone
-layout) — recipe § Record page structure.
+layout) — recipe § Record page structure. Calm slate dark mode approved
+2026-10-14 (option D) — recipe § Tokens; B2 shell already takes it.
 
 **Next:** B3 (shared cards, buttons, fields and pills). The approved Settings-in-main-search addition belongs
 to the first later Settings stage, after the first version. The `crm-design-system` worktree still owns only

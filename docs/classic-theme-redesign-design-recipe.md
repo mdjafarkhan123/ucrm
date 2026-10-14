@@ -19,7 +19,7 @@ screens win and this recipe is corrected.
 (`green`, the app's `--color-interactive` `#037741`) and its deeper shades replace every lime and other
 green — no light green in light mode (Jafar: "dont use light green in white mode"; light greens belong to
 dark mode); a near-black green replaces navy ink on dark surfaces; the main button is brand green with white
-text; Settings gains a Sales & work group; no text is lighter than `muted`.
+text; dark mode later moved to calm slate (see § Tokens, 2026-10-14); Settings gains a Sales & work group; no text is lighter than `muted`.
 
 **Superseded look:** the earlier family — the first-concept job, quote and invoice screens, deleted
 2026-10-13 once the six record pages were approved — and the old Classic design-system page (`lkPLl`, dark `lVZIm`) with its 23 record-page tokens. Their **page structure** stays
@@ -89,51 +89,53 @@ follows the Settings row tile: `<colour>-tint` fill, `<colour>-soft` stroke, ico
 
 ## Tokens
 
-Light and dark values of every colour token (`classic2-…` in `classic.pen`). Dark mode uses near-black green
-surfaces; the sidebar, featured card and Save bar stay dark in both modes.
+Light and dark values of every colour token (`classic2-…` in `classic.pen`). Dark mode uses calm slate
+surfaces from Jobber's dark theme (Jafar, 2026-10-14: option D — the near-black green read as "neon"): green
+appears only as the solid brand-green main button and as softer `green` text and marks. The sidebar, featured
+card and Save bar stay dark in both modes; in dark mode the sidebar turns neutral near-black.
 
 | Token | Role | Light | Dark |
 | --- | --- | --- | --- |
-| `page` | Page background | `#F3F4F7` | `#0B1410` |
-| `surface` | Cards, inputs | `#FFFFFF` | `#131F19` |
-| `surface-soft` | Toggle panel, locked input, secondary button, preview fade | `#F6F7F9` | `#1A2921` |
-| `chip` | Chips, Ctrl K, role badge, neutral icon tile, unit suffix | `#F3F4F7` | `#1F3027` |
-| `border` | Card border; count chip fill | `#E9EBF0` | `#24372C` |
-| `divider` | Row and column dividers | `#EEF0F3` | `#1F3027` |
-| `border-control` | Buttons, search, pills | `#E6E8EE` | `#2E4538` |
-| `border-input` | Inputs; switch off | `#DDE1E8` | `#355043` |
-| `ink` | Titles, headings, values | `#101828` | `#F2F6F3` |
-| `body` | Labels, strong body, secondary button text | `#344054` | `#C9D6CD` |
-| `secondary` | Subtitles, count chip text | `#5B6475` | `#A9BAAF` |
-| `muted` | Small text, help, placeholders — no text lighter | `#667085` | `#93A69A` |
-| `icon-muted` | Chevrons and field icons only, never text | `#98A2B3` | `#6F8577` |
+| `page` | Page background | `#F3F4F7` | `#171B1C` |
+| `surface` | Cards, inputs | `#FFFFFF` | `#232B2F` |
+| `surface-soft` | Toggle panel, locked input, secondary button, preview fade | `#F6F7F9` | `#2A3438` |
+| `chip` | Chips, Ctrl K, role badge, neutral icon tile, unit suffix | `#F3F4F7` | `#2E393D` |
+| `border` | Card border; count chip fill | `#E9EBF0` | `#34454B` |
+| `divider` | Row and column dividers | `#EEF0F3` | `#2E3A3F` |
+| `border-control` | Buttons, search, pills | `#E6E8EE` | `#4C5F67` |
+| `border-input` | Inputs; switch off | `#DDE1E8` | `#4C5F67` |
+| `ink` | Titles, headings, values | `#101828` | `#F1F4F5` |
+| `body` | Labels, strong body, secondary button text | `#344054` | `#CDD5D8` |
+| `secondary` | Subtitles, count chip text | `#5B6475` | `#A7B4BA` |
+| `muted` | Small text, help, placeholders — no text lighter | `#667085` | `#8D9AA0` |
+| `icon-muted` | Chevrons and field icons only, never text | `#98A2B3` | `#6E7D84` |
 | `required` | Required asterisk | `#E11D48` | `#FB7185` |
-| `green` | Main button, Save, links, green text | `#037741` | `#05BE68` |
-| `green-hover` | Main button hover | `#02532D` | `#39D986` |
-| `green-on` | Text and icons on a green button | `#FFFFFF` | `#08150F` |
-| `green-mid` | Switch on | `#049A54` | `#05BE68` |
-| `green-deep` | Green pill text (role pill) | `#02532D` | `#7FE0A8` |
-| `green-tint` / `green-soft` | Business tile fill / stroke; green status pill fill | `#F2FBF6` / `#D7F5E5` | `#12301F` / `#1D4630` |
+| `green` | Links, green text, ticks, progress, focus ring | `#037741` | `#4CB782` |
+| `green-hover` | Main button hover | `#02532D` | `#038548` |
+| `green-on` | Text and icons on a main button | `#FFFFFF` | same |
+| `green-mid` | Switch on | `#049A54` | `#4CB782` |
+| `green-deep` | Green pill text (role pill) | `#02532D` | `#8FD9B0` |
+| `green-tint` / `green-soft` | Business tile fill / stroke; green status pill fill | `#F2FBF6` / `#D7F5E5` | `#1F3A2E` / `#2A4D3D` |
 | `teal`, `-tint`, `-soft`, `-dot` | Sales & work | `#0E6171`, `#F3FBFC`, `#DEF3F7`, `#15A4C1` | `#68C8D7`, `#11303A`, `#1B4450`, `#15A4C1` |
 | `blue`, `-tint`, `-soft`, `-dot` | Communications; invoice | `#1D4ED8`, `#EFF6FF`, `#DBEAFE`, `#3B82F6` | `#82A9FF`, `#15253F`, `#223A63`, `#3B82F6` |
 | `amber`, `-tint`, `-soft`, `-dot` | Automations; request; waiting | `#B45309`, `#FFFBEB`, `#FEF3C7`, `#F59E0B` | `#F4B15D`, `#33260F`, `#4A3815`, `#F59E0B` |
 | `violet`, `-tint`, `-soft`, `-dot` | Team & access; client / people | `#6D28D9`, `#F5F3FF`, `#EDE9FE`, `#8B5CF6` | `#BA9CF5`, `#261E3D`, `#352A57`, `#8B5CF6` |
 | `rose`, `-tint`, `-soft` | Quote; to do | `#BE123C`, `#FFF1F2`, `#FFE4E6` | `#F58CA8`, `#3A1A24`, `#4F2130` |
-| `solid-green` / `-teal` / `-blue` / `-amber` / `-violet` | Solid group icon tiles, page icon tile (white icon) | `#037741` / `#118197` / `#1D4ED8` / `#B45309` / `#6D28D9` | same, blue `#2F5FE0`, amber `#C2610C`, violet `#7C3AED` |
+| `solid-green` / `-teal` / `-blue` / `-amber` / `-violet` | Main button and solid green fills (`solid-green`); solid group icon tiles, page icon tile (white icon) | `#037741` / `#118197` / `#1D4ED8` / `#B45309` / `#6D28D9` | same, blue `#2F5FE0`, amber `#C2610C`, violet `#7C3AED` |
 | `alert-dot` | Notification dot | `#F43F5E` | same |
-| `sidebar` / `sidebar-top` | Sidebar gradient bottom / top | `#08150F` / `#10291F` | same |
+| `sidebar` / `sidebar-top` | Sidebar gradient bottom / top | `#08150F` / `#10291F` | `#111516` / `#1C2326` |
 | `sidebar-active` | Active nav item, sidebar count badge | `#037741` | same |
-| `sidebar-text` / `-muted` / `-group` | Nav label / nav icon, sub text / group label | `#D3DED8` / `#93A89C` / `#86A093` | same |
+| `sidebar-text` / `-muted` / `-group` | Nav label / nav icon, sub text / group label | `#D3DED8` / `#93A89C` / `#86A093` | `#D5DCDE` / `#8D9AA0` / `#85939A` |
 | `sidebar-overlay` / `sidebar-line` / `sidebar-edge` | Brand block fill / hairlines / outline | `#FFFFFF0D` / `#FFFFFF14` / none | same / same / `#FFFFFF14` |
 | `selected` | Lit jump pill | `#08150F` | `#037741` |
-| `savebar` | Save bar | `#08150F` | `#1F3328` |
+| `savebar` | Save bar | `#08150F` | `#2A3438` |
 | `feature-mid` / `feature-end` / `feature-glow` | Featured gradient and glow (starts at `sidebar`) | `#01361D` / `#02532D` / `#049A5459` | same |
 | `feature-chip` / `feature-line` / `feature-ring` | Fact chip fill / stroke / hairline rings, Cancel fill | `#FFFFFF0F` / `#FFFFFF1A` / `#FFFFFF14` | same |
 | `feature-eyebrow` / `-meta` / `-label` / `-muted` / `-icon` / `-button-text` | Text on dark surfaces | `#C2D6C9` / `#D5E3DA` / `#D5E3DA` / `#B4C9BC` / `#FFFFFFB3` / `#E5E9F0` | same |
 | `logo-start` | Logo and avatar gradient start (ends `solid-green`) | `#049A54` | same |
 | `white` / `on-white` | Text on dark surfaces / text on a white button there | `#FFFFFF` / `#0B1220` | same |
 | `shadow-near` / `-far` / `-lift` | Card and input shadow / card far / preview document | `#1018280A` / `#1018280D` / `#1018281A` | `#0000004D` / `#00000040` / `#00000059` |
-| `shadow-green` / `-feature` / `-savebar` | Main button / featured card / Save bar | `#03774333` / `#08150F2E` / `#08150F4D` | `#05BE6826` / `#00000066` / `#00000080` |
+| `shadow-green` / `-feature` / `-savebar` | Main button / featured card / Save bar | `#03774333` / `#08150F2E` / `#08150F4D` | `#00000040` / `#00000066` / `#00000080` |
 
 Shadows: card y1 b2 `shadow-near` + y10 b28 `shadow-far`; input y1 b2 `shadow-near`; main button y6 b16
 `shadow-green`; featured card y18 b40 `shadow-feature`; Save bar y18 b40 `shadow-savebar`; solid icon tile y4
@@ -204,12 +206,12 @@ control (two or three options; the lit one on `surface` with the card shadow, ot
 - **Textarea:** 88 high, padding 12/14, line height 1.5; "N characters left" right, 12/500 `muted`.
 - **Toggle row:** `surface-soft` panel, radius 14, padding 14/16; title 14/600, help 12/500; switch 44×26, on
   `green-mid` with a `white` 20 knob; off `border-input`.
-- **Buttons:** main button brand green `green` (hover `green-hover`), radius 14 (12 inside cards), 44 high in headers and 40 in
+- **Buttons:** main button brand green `solid-green` (hover `green-hover`), radius 14 (12 inside cards), 44 high in headers and 40 in
   cards, 14/600 `green-on` label and icon, `shadow-green`; disabled at 45% opacity with no shadow; keyboard
   focus adds a 3px `green-soft` ring — one per
   page, named for the next step; the top bar's "Add new" is the shell's own. Other card actions are
   secondary: `surface-soft`, `border-control` border, 13/600 `body` label and icon. On dark surfaces: `white` button
-  with `on-white` label. Small row action: 30 high, radius 9, `green`, 12/600 `green-on`.
+  with `on-white` label. Small row action: 30 high, radius 9, `solid-green`, 12/600 `green-on`.
 
 ## Featured card
 
@@ -240,7 +242,7 @@ the profit card (job, quote) and the balance-due card (invoice) take this featur
 
 ## Save bar
 
-Floating `savebar` bar (black-green; lifted to `#1F3328` in dark mode) centred over the content column: 720 wide, 64 high, radius 20, padding 0/10/0/20, Save bar
+Floating `savebar` bar (black-green; slate `#2A3438` in dark mode) centred over the content column: 720 wide, 64 high, radius 20, padding 0/10/0/20, Save bar
 shadow. Left: 28 circle `#F59E0B26` with an 8 `#FBBF24` dot; "You have unsaved changes" 14/600 `white` over
 "Nothing is saved until you press Save." 12/500 `feature-muted`. Right: Cancel (44 high, radius 14, `feature-ring`,
 `feature-line` stroke, 14/600 `feature-button-text`) and Save (main button: `green`, `green-on` check 16 and 14/700 label, primary
