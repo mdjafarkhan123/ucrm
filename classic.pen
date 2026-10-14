@@ -117887,7 +117887,7 @@
                                       "id": "ouT3z",
                                       "name": "Label",
                                       "fill": "$classic2-feature-eyebrow",
-                                      "content": "TODAY · WED, OCT 14",
+                                      "content": "TODAY",
                                       "fontFamily": "Inter",
                                       "fontSize": 11,
                                       "fontWeight": "700",
@@ -118386,9 +118386,9 @@
                           "cornerRadius": 11
                         },
                         "u3coRV": {
-                          "content": "Oct 12",
+                          "content": "12",
                           "fill": "$classic2-rose",
-                          "fontSize": 14
+                          "fontSize": 18
                         },
                         "P23SxY": {
                           "content": "MON",
@@ -118401,7 +118401,7 @@
                           "icon": "map-pin"
                         },
                         "HGns0": {
-                          "content": "5120 Imperial St, Burnaby · not completed"
+                          "content": "5120 Imperial St, Burnaby · 2 hr"
                         },
                         "xv1eG": {
                           "fill": "$classic2-amber-tint"
@@ -118840,7 +118840,7 @@
                           "icon": "map-pin"
                         },
                         "HGns0": {
-                          "content": "3361 Canada Way · 3 hr · no one assigned"
+                          "content": "3361 Canada Way, Burnaby · 3 hr"
                         },
                         "xv1eG": {
                           "type": "frame",
@@ -119761,7 +119761,7 @@
                               "id": "J5Mi5",
                               "name": "Subtitle",
                               "fill": "$classic2-muted",
-                              "content": "Compared with the same point last period",
+                              "content": "Compared with the same days last week or month",
                               "fontFamily": "Inter",
                               "fontSize": 12,
                               "fontWeight": "500"
