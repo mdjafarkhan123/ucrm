@@ -35,8 +35,20 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
       outline, green "In progress" badge (ServiceTitan: Working = green, Done = light grey; Housecall Pro: in
       progress = white tile with outline; Jobber: completed greyed with a tick). Jafar chose the suggestion
       ("update"); A's In progress card and legend now use it, light and dark checked.
-- [ ] Approved by Jafar. Questions put to him: which card colour (A status / B person / original type bar);
-      Week or Day (C) as the default view; the proposals below.
+- [x] **Approved by Jafar 2026-10-15: `Schedule · 1440 · A · Colour shows status` (`QOFVk`)** — Week view,
+      card colour by status. B and the review board stay in `classic.pen` until he asks to delete them.
+      Week stays the default view (contract).
+
+**Waiting to merge** — branch `claude/schedule-design`; main had another writer's uncommitted changes on
+2026-10-15, so integration waits for a clean main. Reservation `143ba86fc186` stays until then.
+
+## Next (new sessions, one screen each)
+
+Day view (contract: employee rows on a horizontal time axis, Unassigned row first, Anytime first column —
+deleted variant C used columns instead), then Month view with its "+ N more" date panel. Still undesigned
+after those: Unscheduled drawer; empty-slot New Job popover and type chooser; Event popover and create/edit
+modal; Filters menus; drag ghost, reschedule and conflict states; Map split view (Version 1.2). Phone layouts
+are adapted while building.
 
 ## Proposals (not in the app today; data exists)
 
