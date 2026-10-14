@@ -32,6 +32,18 @@ Quotes, Invoices, Requests and, mostly, Clients. All of them share `PageHeader`,
 - [ ] Next list screen in a new session, one per session, if Jafar wants the others drawn; otherwise plan the
       shared list build part from `Jobs · 1440`.
 
+## White button look (for B3)
+
+Jafar, 2026-10-14, chose **B** on `Compare · White button border · B chosen 2026-10-14` ("ok I prefer B for
+now"; the soft-green ideas F, G and H stay on that board for later). Applied in `classic.pen`:
+
+- `classic2-border-control` light `#E6E8EE` → `#D5DAE2`; dark and slate unchanged (`#4C5F67`).
+- New token `classic2-button-surface`: light `#FFFFFF`, dark and slate `#2A3438` (the old soft fill).
+- `Button · secondary` and `Button · icon`, and every inline white button on the record, Home and Jobs screens:
+  fill `classic2-button-surface` and a lift shadow `0 1px 2px` in `classic2-shadow-far`.
+- Code still has the old values (`src/lib/styles/_classic-theme-tokens.scss` lines 6–9); the B3 session owns
+  shared buttons and that file, so B3 takes these values and the Classic design skill's button section with them.
+
 ## Notes
 
 - No total count on the list: paging is keyset (`next_cursor`), so the foot shows only "Load more jobs".
