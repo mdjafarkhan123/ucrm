@@ -14,4 +14,6 @@ layout) — recipe § Record page structure. Calm slate dark mode approved
 
 **Next:** B3 shared cards and controls are implemented and screen-checked on `codex/classic-b3` in `/home/jafar/Ucrm/.worktrees/classic-b3`; the final build passes. The Dashboard small-button contrast findings were fixed through the shared Button, and the dark search shortcut label now passes. Botanical’s Dashboard actions and Settings shared styles match main. B3 is ready for integration from a clean main worktree; then begin the approved B4 Save bar. See [B3 checkpoint](parts/b3-shared-ui.md). The separate `crm-design-system` A2a work is an Appearance chooser/notice demo, not the token foundation and not a B3 dependency. The approved Settings-in-main-search addition belongs to the first later Settings stage, after the first version.
 
+**Alongside:** Home/Reports redesign — `../crm-launch-readiness/parts/part-13-home-reports.md`.
+
 **Limits:** Settings remains on its older layout and clips at phone width and enlarged text; its layout is planned for the later Settings stage. See the B2 proof note. The optional service-area field was not present on the test account, so that individual field state was not checked.

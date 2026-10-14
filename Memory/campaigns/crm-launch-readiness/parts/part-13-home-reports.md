@@ -4,30 +4,54 @@
 **Stage:** Design
 **Code:** `main` (plan merged 2026-10-12; build work starts a new `codex/` worktree)
 **Done when:** Figures match the books and respect each person's permissions
-**Read next:** `.claude/skills/design/SKILL.md` § "Design in Pencil first"; the plan's Home and Reports sections
+**Read next:** `.claude/skills/design/SKILL.md` § "Design in Pencil first"; recipe `docs/classic-theme-redesign-design-recipe.md`
 
 ## Steps
 
 - [x] Research Jobber Home, Insights and Reports, and our data — `docs/research/home-and-reports-2026-10-12.md`
 - [x] Plan written, fresh-reviewed, approved by Jafar 2026-10-12; reconciliation contract amended the same day
-- [ ] Design in `classic.pen` below the Classic design system: Home (owner, field worker), Reports › Insights,
-      All reports list, one report screen (Invoices) and Money owed — each at 1440px and 390px
+- [ ] Redesign in `classic.pen` in the new Classic look, desktop 1440 only (classic-theme-redesign rule):
+      Home (owner, field worker), Reports › Insights, All reports, Invoices report, Money owed, states
+  - [x] Design-system page (light) § "09 Numbers & charts": Trend, Metric, Date range, Donut meter, Chart
+        empty, Avatar, Bar chart, Ranked bars, Aging bar, Report tile, Report link, Workflow column, Visit row,
+        Tabs, Banner; Segmented control `LQ6rJ` gained two hidden options
+  - [x] `Home · Owner · 1440` (`m4ICXz`, y 17700) — fresh concept 2026-10-14 after Jafar deleted the first
+        draft; light and dark checked. **Approved by Jafar 2026-10-14** ("Approved your"); he deleted the
+        other agents' Home variants. New parts drawn inline (Today card, To do columns
+        with values, Business performance compare bars) — promote to § 09 after his yes
+  - [x] Two reviews of it, 2026-10-14, each drew alternatives beside it at y 17700 (light and dark checked):
+        `Concept · Home · Owner · 1440 (review proposal)` (`vVhpQ`, x 1560) and `Variant B · … (all fixes)`
+        (`sBwnT`, x 3120; adds crew map, "needs a look" strip, recurring-jobs banner, double-booking flag);
+        `Opus concept · Home · Owner · 1440` (`G8yMte`, x 4680) — Variant B with every fact shown once:
+        compact dark Today header (green = on site now, pale = done), 68px rows, no strip/banner/map,
+        "Ending soon" as a third To do › Jobs line, Money owed age table (grey not due → amber → red).
+        Row size and the age table are instance overrides; promote to `edouS`/§ 09 only after his choice
+  - [ ] Jafar picks one of the four Home versions (or a mix); delete the rest
+  - [ ] The other five screens and states, **one screen per session** (Jafar 2026-10-14); § 09 dark page
 - [ ] Jafar's yes on the designs, recorded here with screen names and date
 - [ ] Split the build into parts (To Tickets) and record them in the roadmap
 - [ ] Build, verify, screen check, live proof
 
 ## Next
 
-**Look changed 2026-10-13:** Jafar chose a new Classic look (classic-theme-redesign, recipe
-`docs/classic-theme-redesign-design-recipe.md`). These screens use the old parts; ask him whether they switch
-to the new look before his yes (that campaign's part 2 note, question 3).
+Jafar, 2026-10-14: this is a **redesign, not a conversion** — new layouts in the record pages' language
+(header card with key-fact tiles, lifecycle-style track, main column + 336 rail, one dark featured card),
+Dribbble quality. Keep the plan's content and permissions; change layout freely.
 
-Design session (Jafar said 2026-10-12: no design in the research session). In Pencil, check `get_app_state` shows
-`classic.pen`. The file has no app shell (sidebar and top bar) yet: screenshot the real app shell first
-(`src/lib/components/layout/SharedAppShell.svelte`, logins in `Login.md`) and add it to the design-system page as a
-reusable part, then build screens from existing parts (KPI card `h0NPZr`, Data table `Jz0kh`, Card `GF3sS`, Page
-header `s8m85y`, Tabs `CwczH`, Segmented control `qMkSl`, Status badge `qWJES`). Charts use the `color-dataviz-*`
-variables. A date-range picker and a chart are new kinds of part: add them to the design-system page first.
+1. Ask Jafar which Home version he wants (`m4ICXz`, `vVhpQ`, `sBwnT` or `G8yMte`) and the question below;
+   apply it. Open choices from the reviews: crew map (no live crew location exists — the Schedule's Mapbox
+   map shows one person's route only); double-booking warnings on Home (the Schedule's own rule warns only
+   while moving a visit, `src/lib/schedule/conflicts.ts`); recurring-jobs reminder as a banner or a To do line.
+2. Next session draws ONE more screen (Jafar 2026-10-14), researched first. Jafar deleted the
+   `Working copy · …` frames; the `Old look · …` frames (y 15740) hold the content. Ideas: Insights — Revenue chart in the dark
+   featured card, overview figures as key-fact tiles; All reports — Settings-home groups (Group header
+   `ILY7B` + Setting row `lWM0h`); report screens — sub-page header with back link, date range, Download CSV,
+   tile filters, table card with totals row; Money owed — aging bar as hero.
+3. After his yes: delete the `Old look · …` frames, add § 09 to the dark design-system page, record the yes.
+
+Pending question for Jafar: "The approved plan put a 'New' button in the Home header. The new top bar
+already has 'Add new' on every page, which does the same thing. I left the extra button out so there aren't
+two identical buttons on one screen. Is that OK?"
 
 ## Notes
 
