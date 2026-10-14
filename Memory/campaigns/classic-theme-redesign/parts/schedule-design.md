@@ -27,6 +27,9 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
     hours bar, A's status colours, live progress on the in-progress visit.
 - [x] Jafar, 2026-10-15: deleted C. Card colour shows status (his idea, confirmed against dispatch-board
       practice); he likes A's soft red Late card and that each status badge has its own colour.
+- [x] A improved 2026-10-15 (Jafar: improve A first; keep B for now, delete later): amber "Unassigned" badge
+      replaces the Assign button (assigning happens from the preview); day headers add a coloured attention
+      count ("1 late", "1 unassigned"); the open card gets a rose selection ring; long Anytime names end "…".
 - [ ] Approved by Jafar. Questions put to him: which card colour (A status / B person / original type bar);
       Week or Day (C) as the default view; the proposals below.
 
