@@ -40,27 +40,33 @@ me money?" must open invoices one by one.
 
 The sidebar item and page title become **Home** (Jobber's name); the address stays `/dashboard` so saved links keep
 working. The page header greets the person ("Good morning, Jafar"), shows today's date in the business's time
-zone, and has a **New** menu (Client, Request, Quote, Job, Invoice — each only if the person may create it). The
-inline add-customer, add-property and add-request forms on today's Dashboard are replaced by that menu.
+zone. New records are created from the top bar's **Add
+new** menu, which every page already has, so Home has no second New button (Jafar approved the Home design that way
+on 2026-10-14). The inline add-customer, add-property and add-request forms on today's Dashboard are removed.
 
 Each card loads on its own with a placeholder shape while loading; if one card fails it shows its own "Couldn't
 load — Try again" message and the rest of Home still works. Cards, top to bottom; a card the person may not see is
 left out entirely, never shown as zero:
 
-1. **Day clock** — the existing clock in/out card, for people who track time.
+1. **Day clock** — the existing clock in/out card, beside the greeting, for people who track time.
 2. **Setup guide** — the existing setup and readiness cards for owners and admins, until setup is complete.
 3. **To do** — four columns, Requests, Quotes, Jobs and Invoices, following Jobber's workflow summary. Counts are
    for the whole business. Each line has a count and, where the person may see that area's prices, a value;
    clicking a line opens that list filtered to those records.
    - Requests: Needs approval (website bookings); New; Assessment complete.
    - Quotes: Approved (ready to become a Job); Changes requested; Draft. Value is the Quote total.
-   - Jobs: Requires invoicing; Action required. Value is the amount not yet invoiced.
+   - Jobs: Requires invoicing; Action required; Ending soon (recurring Jobs that end within 30 days — Jobber's
+     Home reminder, added with the approved design on 2026-10-14). Value is the amount not yet invoiced; Ending
+     soon shows a count only.
    - Invoices: Draft; Awaiting payment; Past due. Value is the balance still owed (Draft: its total).
    - A column appears only to people who can see every record in that area; someone who sees only work assigned
      to them (stock Field role) gets no To do card. A line with nothing in it shows a quiet "None".
 4. **Today's schedule** — Visits, Assessments and Tasks for today in time order, using the same status rules as
    the Schedule screen so the two never disagree: **Completed**, **In progress** (someone's timer is running on
    it), **Still to do**, and a separate line **Late from earlier days** (not completed and its day has passed).
+   A visit with no one assigned shows an **Assign** button that opens it to choose who goes, as Jobber flags
+   unassigned visits. The header shows the day's count and value, how many items are done, in progress and still
+   to do with their values, and small counts of late and unassigned items.
    Anytime items (a date but no time) are listed after timed ones. A toggle switches between **By visit** and **By
    person** (each teammate's items and logged time). The day's work value appears only to people who can see Job
    prices, using the Visit value rule below. A field worker sees only their own items and their hours today and
