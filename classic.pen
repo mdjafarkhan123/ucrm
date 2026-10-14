@@ -116054,7 +116054,7 @@
       },
       "clip": true,
       "width": 1440,
-      "height": 2136,
+      "height": 1604,
       "fill": "$classic2-page",
       "gap": 20,
       "padding": 12,
@@ -116277,7 +116277,7 @@
             {
               "type": "frame",
               "id": "FGq3o",
-              "name": "Needs your action card",
+              "name": "To do card",
               "clip": true,
               "width": "fill_container",
               "fill": "$classic2-surface",
@@ -116315,9 +116315,9 @@
                   "name": "Card header",
                   "width": "fill_container",
                   "padding": [
-                    20,
-                    24,
                     18,
+                    24,
+                    16,
                     24
                   ],
                   "justifyContent": "space_between",
@@ -117102,7 +117102,7 @@
                                   "id": "T8PEKU",
                                   "name": "Count",
                                   "fill": "$classic2-secondary",
-                                  "content": "3",
+                                  "content": "5",
                                   "fontFamily": "Inter",
                                   "fontSize": 11,
                                   "fontWeight": "700"
@@ -117263,6 +117263,90 @@
                                   "type": "text",
                                   "id": "D0SmW",
                                   "name": "Value",
+                                  "fill": "$classic2-secondary",
+                                  "content": "$3,100",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "RwCpy",
+                          "name": "Line Ending soon",
+                          "width": "fill_container",
+                          "cornerRadius": 12,
+                          "gap": 10,
+                          "padding": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "VfpOg",
+                              "name": "Text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "O8VD40",
+                                  "name": "Status row",
+                                  "gap": 6,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Cnch3",
+                                      "name": "Status",
+                                      "fill": "$classic2-ink",
+                                      "content": "Ending soon",
+                                      "fontFamily": "Inter",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "H4tkky",
+                                  "name": "Hint",
+                                  "fill": "$classic2-muted",
+                                  "content": "Recurring, ends within 30 days",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ps8sz",
+                              "name": "Numbers",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "alignItems": "end",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "xQHF7",
+                                  "name": "Count",
+                                  "fill": "$classic2-ink",
+                                  "content": "2",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 16,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "X8KhKi",
+                                  "x": 0,
+                                  "y": 21,
+                                  "name": "Value",
+                                  "enabled": false,
                                   "fill": "$classic2-secondary",
                                   "content": "$3,100",
                                   "fontFamily": "Inter",
@@ -117705,8 +117789,13 @@
                         ]
                       },
                       "layout": "vertical",
-                      "gap": 22,
-                      "padding": 28,
+                      "gap": 18,
+                      "padding": [
+                        24,
+                        28,
+                        22,
+                        28
+                      ],
                       "children": [
                         {
                           "type": "ellipse",
@@ -117811,18 +117900,18 @@
                                   "id": "s0QbfZ",
                                   "name": "Title",
                                   "fill": "$classic2-white",
-                                  "content": "8 on the schedule today",
+                                  "content": "8 on the schedule",
                                   "fontFamily": "Inter",
-                                  "fontSize": 34,
+                                  "fontSize": 30,
                                   "fontWeight": "800",
-                                  "letterSpacing": -1
+                                  "letterSpacing": -0.9
                                 },
                                 {
                                   "type": "text",
                                   "id": "VrEe7",
                                   "name": "Meta",
                                   "fill": "$classic2-feature-meta",
-                                  "content": "4 people out · $5,260 of work · last visit ends 4:30 PM",
+                                  "content": "$5,260 of work · 4 people out · last one ends 4:30 PM",
                                   "fontFamily": "Inter",
                                   "fontSize": 14,
                                   "fontWeight": "500"
@@ -117855,67 +117944,38 @@
                           "children": [
                             {
                               "type": "frame",
-                              "id": "w4Uew3",
-                              "name": "Progress label",
-                              "width": "fill_container",
-                              "justifyContent": "space_between",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "DdCpf",
-                                  "name": "Left",
-                                  "fill": "$classic2-white",
-                                  "content": "3 of 8 done",
-                                  "fontFamily": "Inter",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "tmR0M",
-                                  "name": "Right",
-                                  "fill": "$classic2-feature-label",
-                                  "content": "38%",
-                                  "fontFamily": "Inter",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
                               "id": "Sp0h6",
                               "name": "Bar",
                               "width": "fill_container",
-                              "height": 10,
+                              "height": 8,
                               "gap": 4,
                               "children": [
                                 {
                                   "type": "rectangle",
-                                  "cornerRadius": 5,
+                                  "cornerRadius": 4,
                                   "id": "CsYhA",
                                   "name": "Done",
-                                  "fill": "$classic2-green-mid",
+                                  "fill": "$classic2-feature-label",
                                   "width": 267,
-                                  "height": 10
+                                  "height": 8
                                 },
                                 {
                                   "type": "rectangle",
-                                  "cornerRadius": 5,
+                                  "cornerRadius": 4,
                                   "id": "O3Boax",
                                   "name": "Now",
-                                  "fill": "$classic2-white",
+                                  "fill": "$classic2-green-mid",
                                   "width": 178,
-                                  "height": 10
+                                  "height": 8
                                 },
                                 {
                                   "type": "rectangle",
-                                  "cornerRadius": 5,
+                                  "cornerRadius": 4,
                                   "id": "jPXRB",
                                   "name": "To do",
                                   "fill": "$classic2-feature-chip",
                                   "width": "fill_container",
-                                  "height": 10,
+                                  "height": 8,
                                   "stroke": "$classic2-feature-line",
                                   "strokeWidth": 1
                                 }
@@ -117925,215 +117985,244 @@
                         },
                         {
                           "type": "frame",
-                          "id": "VK7yE",
-                          "name": "Status chips",
+                          "id": "ioWYm",
+                          "name": "Legend",
                           "width": "fill_container",
-                          "gap": 10,
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
                           "children": [
                             {
                               "type": "frame",
-                              "id": "nAbBc",
-                              "name": "Chip Completed",
-                              "width": "fill_container",
-                              "fill": "$classic2-feature-chip",
-                              "cornerRadius": 14,
-                              "stroke": "$classic2-feature-line",
-                              "strokeWidth": 1,
-                              "strokeAlignment": "inner",
-                              "layout": "vertical",
-                              "gap": 6,
-                              "padding": [
-                                12,
-                                14
-                              ],
+                              "id": "mC9cm",
+                              "name": "Statuses",
+                              "gap": 18,
+                              "alignItems": "center",
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "rCPE0",
-                                  "name": "Head",
+                                  "id": "UJH5k",
+                                  "name": "Status Completed",
                                   "gap": 7,
                                   "alignItems": "center",
                                   "children": [
                                     {
                                       "type": "ellipse",
-                                      "id": "dTehU",
+                                      "id": "tFmBd",
                                       "name": "Dot",
-                                      "fill": "$classic2-green-mid",
-                                      "width": 7,
-                                      "height": 7
+                                      "fill": "$classic2-feature-label",
+                                      "width": 8,
+                                      "height": 8
                                     },
                                     {
                                       "type": "text",
-                                      "id": "lM5xP",
+                                      "id": "XHCik",
                                       "name": "Label",
                                       "fill": "$classic2-feature-label",
                                       "content": "Completed",
                                       "fontFamily": "Inter",
-                                      "fontSize": 11,
+                                      "fontSize": 12,
                                       "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "RQzRI",
+                                      "name": "Count",
+                                      "fill": "$classic2-white",
+                                      "content": "3",
+                                      "fontFamily": "Inter",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "ltwhh",
+                                      "name": "Value",
+                                      "fill": "$classic2-feature-muted",
+                                      "content": "· $640",
+                                      "fontFamily": "Inter",
+                                      "fontSize": 12,
+                                      "fontWeight": "500"
                                     }
                                   ]
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "y4rJN",
-                                  "name": "Value",
-                                  "fill": "$classic2-white",
-                                  "content": "3",
-                                  "fontFamily": "Inter",
-                                  "fontSize": 22,
-                                  "fontWeight": "800",
-                                  "letterSpacing": -0.5
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "ZtuKv",
-                                  "name": "Sub",
-                                  "fill": "$classic2-feature-muted",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "$640 of work · last at 11:20 AM",
-                                  "fontFamily": "Inter",
-                                  "fontSize": 12,
-                                  "fontWeight": "500"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "XD3sM",
-                              "name": "Chip In progress",
-                              "width": "fill_container",
-                              "fill": "$classic2-feature-chip",
-                              "cornerRadius": 14,
-                              "stroke": "$classic2-feature-line",
-                              "strokeWidth": 1,
-                              "strokeAlignment": "inner",
-                              "layout": "vertical",
-                              "gap": 6,
-                              "padding": [
-                                12,
-                                14
-                              ],
-                              "children": [
-                                {
                                   "type": "frame",
-                                  "id": "oJ2gd",
-                                  "name": "Head",
+                                  "id": "LYNT5",
+                                  "name": "Status On site now",
                                   "gap": 7,
                                   "alignItems": "center",
                                   "children": [
                                     {
                                       "type": "ellipse",
-                                      "id": "ikVUk",
+                                      "id": "fwBbl",
                                       "name": "Dot",
-                                      "fill": "$classic2-white",
-                                      "width": 7,
-                                      "height": 7
+                                      "fill": "$classic2-green-mid",
+                                      "width": 8,
+                                      "height": 8
                                     },
                                     {
                                       "type": "text",
-                                      "id": "AesV1",
+                                      "id": "efhTz",
                                       "name": "Label",
                                       "fill": "$classic2-feature-label",
-                                      "content": "In progress",
+                                      "content": "On site now",
                                       "fontFamily": "Inter",
-                                      "fontSize": 11,
+                                      "fontSize": 12,
                                       "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "y7uFIN",
+                                      "name": "Count",
+                                      "fill": "$classic2-white",
+                                      "content": "2",
+                                      "fontFamily": "Inter",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "g6MxhW",
+                                      "name": "Value",
+                                      "fill": "$classic2-feature-muted",
+                                      "content": "· $3,640",
+                                      "fontFamily": "Inter",
+                                      "fontSize": 12,
+                                      "fontWeight": "500"
                                     }
                                   ]
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "ekVwW",
-                                  "name": "Value",
-                                  "fill": "$classic2-white",
-                                  "content": "2",
-                                  "fontFamily": "Inter",
-                                  "fontSize": 22,
-                                  "fontWeight": "800",
-                                  "letterSpacing": -0.5
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "jYUT3",
-                                  "name": "Sub",
-                                  "fill": "$classic2-feature-muted",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "$3,640 · 3 people on site",
-                                  "fontFamily": "Inter",
-                                  "fontSize": 12,
-                                  "fontWeight": "500"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "Aj26G",
-                              "name": "Chip Still to do",
-                              "width": "fill_container",
-                              "fill": "$classic2-feature-chip",
-                              "cornerRadius": 14,
-                              "stroke": "$classic2-feature-line",
-                              "strokeWidth": 1,
-                              "strokeAlignment": "inner",
-                              "layout": "vertical",
-                              "gap": 6,
-                              "padding": [
-                                12,
-                                14
-                              ],
-                              "children": [
-                                {
                                   "type": "frame",
-                                  "id": "L94Ced",
-                                  "name": "Head",
+                                  "id": "ZglEU",
+                                  "name": "Status Still to do",
                                   "gap": 7,
                                   "alignItems": "center",
                                   "children": [
                                     {
                                       "type": "ellipse",
-                                      "id": "o8Mqej",
+                                      "id": "YCWpY",
                                       "name": "Dot",
-                                      "fill": "$classic2-feature-icon",
-                                      "width": 7,
-                                      "height": 7
+                                      "fill": "#FFFFFF00",
+                                      "width": 8,
+                                      "height": 8,
+                                      "stroke": "$classic2-feature-icon",
+                                      "strokeWidth": 1.5
                                     },
                                     {
                                       "type": "text",
-                                      "id": "m8IES",
+                                      "id": "h4llmb",
                                       "name": "Label",
                                       "fill": "$classic2-feature-label",
                                       "content": "Still to do",
                                       "fontFamily": "Inter",
-                                      "fontSize": 11,
+                                      "fontSize": 12,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "cN83a",
+                                      "name": "Count",
+                                      "fill": "$classic2-white",
+                                      "content": "3",
+                                      "fontFamily": "Inter",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "zQoKF",
+                                      "name": "Value",
+                                      "fill": "$classic2-feature-muted",
+                                      "content": "· $980",
+                                      "fontFamily": "Inter",
+                                      "fontSize": 12,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "uiOm4",
+                              "name": "Needs a look",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "zeJXD",
+                                  "name": "Flag late",
+                                  "height": 28,
+                                  "fill": "$classic2-feature-chip",
+                                  "cornerRadius": 999,
+                                  "stroke": "$classic2-feature-line",
+                                  "strokeWidth": 1,
+                                  "strokeAlignment": "inner",
+                                  "gap": 7,
+                                  "padding": [
+                                    0,
+                                    11
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "ellipse",
+                                      "id": "MDj71",
+                                      "name": "Dot",
+                                      "fill": "$classic2-alert-dot",
+                                      "width": 7,
+                                      "height": 7
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "MG7Sq",
+                                      "name": "Label",
+                                      "fill": "$classic2-white",
+                                      "content": "1 late",
+                                      "fontFamily": "Inter",
+                                      "fontSize": 12,
                                       "fontWeight": "600"
                                     }
                                   ]
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "njq2S",
-                                  "name": "Value",
-                                  "fill": "$classic2-white",
-                                  "content": "3",
-                                  "fontFamily": "Inter",
-                                  "fontSize": 22,
-                                  "fontWeight": "800",
-                                  "letterSpacing": -0.5
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "N14s5",
-                                  "name": "Sub",
-                                  "fill": "$classic2-feature-muted",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "$980 · next at 1:00 PM",
-                                  "fontFamily": "Inter",
-                                  "fontSize": 12,
-                                  "fontWeight": "500"
+                                  "type": "frame",
+                                  "id": "C4w5LY",
+                                  "name": "Flag unassigned",
+                                  "height": 28,
+                                  "fill": "$classic2-feature-chip",
+                                  "cornerRadius": 999,
+                                  "stroke": "$classic2-feature-line",
+                                  "strokeWidth": 1,
+                                  "strokeAlignment": "inner",
+                                  "gap": 7,
+                                  "padding": [
+                                    0,
+                                    11
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "ellipse",
+                                      "id": "nxG6i",
+                                      "name": "Dot",
+                                      "fill": "$classic2-amber-dot",
+                                      "width": 7,
+                                      "height": 7
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "MkbGC",
+                                      "name": "Label",
+                                      "fill": "$classic2-white",
+                                      "content": "1 unassigned",
+                                      "fontFamily": "Inter",
+                                      "fontSize": 12,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -118147,7 +118236,7 @@
                       "name": "Card header",
                       "width": "fill_container",
                       "padding": [
-                        14,
+                        12,
                         24
                       ],
                       "justifyContent": "space_between",
@@ -118214,7 +118303,7 @@
                               "id": "mkLnS",
                               "name": "Subtitle",
                               "fill": "$classic2-muted",
-                              "content": "Visits, assessments and tasks in time order · same status as the Schedule",
+                              "content": "Visits, assessments and tasks · late ones first, anytime ones last",
                               "fontFamily": "Inter",
                               "fontSize": 13,
                               "fontWeight": "500"
@@ -118284,15 +118373,22 @@
                       "ref": "edouS",
                       "name": "Row Henderson Homes · Gutter guard install",
                       "width": "fill_container",
+                      "padding": [
+                        10,
+                        24
+                      ],
                       "descendants": {
                         "W8SE9": {
                           "fill": "$classic2-rose-tint",
-                          "stroke": "$classic2-rose-soft"
+                          "stroke": "$classic2-rose-soft",
+                          "width": 48,
+                          "height": 48,
+                          "cornerRadius": 11
                         },
                         "u3coRV": {
                           "content": "Oct 12",
                           "fill": "$classic2-rose",
-                          "fontSize": 13
+                          "fontSize": 14
                         },
                         "P23SxY": {
                           "content": "MON",
@@ -118380,10 +118476,20 @@
                       "ref": "edouS",
                       "name": "Row Raj Patel · Kitchen remodel assessment",
                       "width": "fill_container",
+                      "padding": [
+                        10,
+                        24
+                      ],
                       "descendants": {
+                        "W8SE9": {
+                          "width": 48,
+                          "height": 48,
+                          "cornerRadius": 11
+                        },
                         "u3coRV": {
                           "content": "7:30",
-                          "fill": "$classic2-muted"
+                          "fill": "$classic2-muted",
+                          "fontSize": 14
                         },
                         "P23SxY": {
                           "content": "AM"
@@ -118438,14 +118544,22 @@
                       "name": "Row Sarah Mitchell · Decking install",
                       "width": "fill_container",
                       "fill": "#FFFFFF00",
+                      "padding": [
+                        10,
+                        24
+                      ],
                       "descendants": {
                         "W8SE9": {
                           "fill": "$classic2-solid-green",
-                          "stroke": "$classic2-solid-green"
+                          "stroke": "$classic2-solid-green",
+                          "width": 48,
+                          "height": 48,
+                          "cornerRadius": 11
                         },
                         "u3coRV": {
                           "content": "8:00",
-                          "fill": "$classic2-white"
+                          "fill": "$classic2-white",
+                          "fontSize": 14
                         },
                         "P23SxY": {
                           "content": "AM",
@@ -118499,10 +118613,20 @@
                       "ref": "edouS",
                       "name": "Row Daniel Okafor · Faucet replacement",
                       "width": "fill_container",
+                      "padding": [
+                        10,
+                        24
+                      ],
                       "descendants": {
+                        "W8SE9": {
+                          "width": 48,
+                          "height": 48,
+                          "cornerRadius": 11
+                        },
                         "u3coRV": {
                           "content": "8:30",
-                          "fill": "$classic2-muted"
+                          "fill": "$classic2-muted",
+                          "fontSize": 14
                         },
                         "P23SxY": {
                           "content": "AM"
@@ -118557,14 +118681,22 @@
                       "name": "Row Emily Chen · Bathroom tile",
                       "width": "fill_container",
                       "fill": "#FFFFFF00",
+                      "padding": [
+                        10,
+                        24
+                      ],
                       "descendants": {
                         "W8SE9": {
                           "fill": "$classic2-solid-green",
-                          "stroke": "$classic2-solid-green"
+                          "stroke": "$classic2-solid-green",
+                          "width": 48,
+                          "height": 48,
+                          "cornerRadius": 11
                         },
                         "u3coRV": {
                           "content": "9:15",
-                          "fill": "$classic2-white"
+                          "fill": "$classic2-white",
+                          "fontSize": 14
                         },
                         "P23SxY": {
                           "content": "AM",
@@ -118614,10 +118746,20 @@
                       "ref": "edouS",
                       "name": "Row Laura Bennett · Gutter cleaning",
                       "width": "fill_container",
+                      "padding": [
+                        10,
+                        24
+                      ],
                       "descendants": {
+                        "W8SE9": {
+                          "width": 48,
+                          "height": 48,
+                          "cornerRadius": 11
+                        },
                         "u3coRV": {
                           "content": "10:00",
-                          "fill": "$classic2-muted"
+                          "fill": "$classic2-muted",
+                          "fontSize": 14
                         },
                         "P23SxY": {
                           "content": "AM"
@@ -118671,14 +118813,22 @@
                       "ref": "edouS",
                       "name": "Row Mark Robinson · Fence repair",
                       "width": "fill_container",
+                      "padding": [
+                        10,
+                        24
+                      ],
                       "descendants": {
                         "W8SE9": {
                           "fill": "$classic2-amber-tint",
-                          "stroke": "$classic2-amber-soft"
+                          "stroke": "$classic2-amber-soft",
+                          "width": 48,
+                          "height": 48,
+                          "cornerRadius": 11
                         },
                         "u3coRV": {
                           "content": "1:00",
-                          "fill": "$classic2-amber"
+                          "fill": "$classic2-amber",
+                          "fontSize": 14
                         },
                         "P23SxY": {
                           "content": "PM"
@@ -118756,14 +118906,22 @@
                       "ref": "edouS",
                       "name": "Row Pick up lumber order",
                       "width": "fill_container",
+                      "padding": [
+                        10,
+                        24
+                      ],
                       "descendants": {
                         "W8SE9": {
-                          "fill": "$classic2-amber-tint",
-                          "stroke": "$classic2-amber-soft"
+                          "fill": "$classic2-surface",
+                          "stroke": "$classic2-border-control",
+                          "width": 48,
+                          "height": 48,
+                          "cornerRadius": 11
                         },
                         "u3coRV": {
                           "content": "3:30",
-                          "fill": "$classic2-amber"
+                          "fill": "$classic2-ink",
+                          "fontSize": 14
                         },
                         "P23SxY": {
                           "content": "PM"
@@ -118775,7 +118933,7 @@
                           "icon": "square-check"
                         },
                         "HGns0": {
-                          "content": "Home Depot · 1 hr · Alex busy till 4 PM"
+                          "content": "Home Depot Burnaby · task · 1 hr"
                         },
                         "xv1eG": {
                           "fill": "$classic2-blue-tint"
@@ -118809,9 +118967,19 @@
                       "ref": "edouS",
                       "name": "Row Grace Liu · Window cleaning",
                       "width": "fill_container",
+                      "padding": [
+                        10,
+                        24
+                      ],
                       "descendants": {
+                        "W8SE9": {
+                          "width": 48,
+                          "height": 48,
+                          "cornerRadius": 11
+                        },
                         "u3coRV": {
-                          "content": "ANY"
+                          "content": "ANY",
+                          "fontSize": 14
                         },
                         "P23SxY": {
                           "content": "TIME"
@@ -119057,7 +119225,7 @@
                                   "cornerRadius": 4,
                                   "id": "QzINs",
                                   "name": "Not yet due",
-                                  "fill": "$classic2-green-mid",
+                                  "fill": "$classic2-icon-muted",
                                   "width": "fill_container",
                                   "height": 8
                                 },
@@ -119092,258 +119260,197 @@
                             },
                             {
                               "type": "frame",
-                              "id": "Sa0Zp",
-                              "name": "Legend",
+                              "id": "I0AoJ6",
+                              "name": "Age key",
                               "width": "fill_container",
-                              "justifyContent": "space_between",
+                              "layout": "vertical",
+                              "gap": 8,
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "m4svg",
-                                  "name": "Not yet due",
-                                  "gap": 6,
+                                  "id": "BxGA3",
+                                  "name": "Bucket Not due yet",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
                                   "alignItems": "center",
                                   "children": [
                                     {
-                                      "type": "ellipse",
-                                      "id": "CzNhW",
-                                      "name": "Dot",
-                                      "fill": "$classic2-green-mid",
-                                      "width": 7,
-                                      "height": 7
+                                      "type": "frame",
+                                      "id": "e01QY",
+                                      "name": "Head",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "ellipse",
+                                          "id": "SUcA3",
+                                          "name": "Dot",
+                                          "fill": "$classic2-icon-muted",
+                                          "width": 8,
+                                          "height": 8
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "eRrJj",
+                                          "name": "Label",
+                                          "fill": "$classic2-secondary",
+                                          "content": "Not due yet",
+                                          "fontFamily": "Inter",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
                                     },
                                     {
                                       "type": "text",
-                                      "id": "yilzK",
-                                      "name": "Label",
-                                      "fill": "$classic2-muted",
-                                      "content": "Not yet due",
-                                      "fontFamily": "Inter",
-                                      "fontSize": 12,
-                                      "fontWeight": "500"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "TRSzq",
+                                      "id": "fXe1u",
                                       "name": "Value",
                                       "fill": "$classic2-ink",
                                       "content": "$17,260",
                                       "fontFamily": "Inter",
-                                      "fontSize": 12,
-                                      "fontWeight": "700"
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
                                     }
                                   ]
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "KqrUZ",
-                                  "name": "Overdue",
-                                  "gap": 6,
+                                  "id": "fy24F",
+                                  "name": "Bucket 1–30 days late",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
                                   "alignItems": "center",
                                   "children": [
                                     {
-                                      "type": "ellipse",
-                                      "id": "FTQcG",
-                                      "name": "Dot",
-                                      "fill": "$classic2-rose",
-                                      "width": 7,
-                                      "height": 7
+                                      "type": "frame",
+                                      "id": "ULY5O",
+                                      "name": "Head",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "ellipse",
+                                          "id": "APHVq",
+                                          "name": "Dot",
+                                          "fill": "$classic2-amber-dot",
+                                          "width": 8,
+                                          "height": 8
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "AhUZX",
+                                          "name": "Label",
+                                          "fill": "$classic2-secondary",
+                                          "content": "1–30 days late",
+                                          "fontFamily": "Inter",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
                                     },
                                     {
                                       "type": "text",
-                                      "id": "f5j11",
-                                      "name": "Label",
-                                      "fill": "$classic2-muted",
-                                      "content": "Overdue",
-                                      "fontFamily": "Inter",
-                                      "fontSize": 12,
-                                      "fontWeight": "500"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "vSkDk",
+                                      "id": "asXbz",
                                       "name": "Value",
                                       "fill": "$classic2-ink",
-                                      "content": "$6,920",
+                                      "content": "$2,120",
                                       "fontFamily": "Inter",
-                                      "fontSize": 12,
-                                      "fontWeight": "700"
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
                                     }
                                   ]
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "I1B6l",
-                              "name": "Age key",
-                              "width": "fill_container",
-                              "fill": "$classic2-surface-soft",
-                              "cornerRadius": 10,
-                              "layout": "vertical",
-                              "gap": 6,
-                              "padding": [
-                                10,
-                                12
-                              ],
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "In9Qf",
-                                  "name": "Heading",
-                                  "fill": "$classic2-muted",
-                                  "content": "Overdue by",
-                                  "fontFamily": "Inter",
-                                  "fontSize": 11,
-                                  "fontWeight": "600"
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "Umx7w",
-                                  "name": "Buckets",
+                                  "id": "kVdIf",
+                                  "name": "Bucket 31–60 days late",
                                   "width": "fill_container",
-                                  "gap": 8,
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
                                   "children": [
                                     {
                                       "type": "frame",
-                                      "id": "AmkVW",
-                                      "name": "Bucket 1–30 days",
-                                      "width": "fill_container",
-                                      "layout": "vertical",
-                                      "gap": 3,
+                                      "id": "dHWUW",
+                                      "name": "Head",
+                                      "gap": 8,
+                                      "alignItems": "center",
                                       "children": [
                                         {
-                                          "type": "frame",
-                                          "id": "NU9xz",
-                                          "name": "Head",
-                                          "gap": 5,
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "ellipse",
-                                              "id": "r5G3QS",
-                                              "name": "Dot",
-                                              "fill": "$classic2-amber-dot",
-                                              "width": 7,
-                                              "height": 7
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "OkYEZ",
-                                              "name": "Label",
-                                              "fill": "$classic2-muted",
-                                              "content": "1–30 days",
-                                              "fontFamily": "Inter",
-                                              "fontSize": 12,
-                                              "fontWeight": "500"
-                                            }
-                                          ]
+                                          "type": "ellipse",
+                                          "id": "jVcjd",
+                                          "name": "Dot",
+                                          "fill": "$classic2-solid-amber",
+                                          "width": 8,
+                                          "height": 8
                                         },
                                         {
                                           "type": "text",
-                                          "id": "MaFT0",
-                                          "name": "Value",
-                                          "fill": "$classic2-ink",
-                                          "content": "$2,120",
+                                          "id": "eOMPu",
+                                          "name": "Label",
+                                          "fill": "$classic2-secondary",
+                                          "content": "31–60 days late",
                                           "fontFamily": "Inter",
-                                          "fontSize": 12,
-                                          "fontWeight": "700"
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
                                         }
                                       ]
                                     },
                                     {
+                                      "type": "text",
+                                      "id": "yrqbP",
+                                      "name": "Value",
+                                      "fill": "$classic2-ink",
+                                      "content": "$1,960",
+                                      "fontFamily": "Inter",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "tGbJS",
+                                  "name": "Bucket 61–90 days late",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
                                       "type": "frame",
-                                      "id": "tovJ9",
-                                      "name": "Bucket 31–60",
-                                      "width": "fill_container",
-                                      "layout": "vertical",
-                                      "gap": 3,
+                                      "id": "qa2lw",
+                                      "name": "Head",
+                                      "gap": 8,
+                                      "alignItems": "center",
                                       "children": [
                                         {
-                                          "type": "frame",
-                                          "id": "fXVYn",
-                                          "name": "Head",
-                                          "gap": 5,
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "ellipse",
-                                              "id": "dE30C",
-                                              "name": "Dot",
-                                              "fill": "$classic2-solid-amber",
-                                              "width": 7,
-                                              "height": 7
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "TSQHi",
-                                              "name": "Label",
-                                              "fill": "$classic2-muted",
-                                              "content": "31–60 days",
-                                              "fontFamily": "Inter",
-                                              "fontSize": 12,
-                                              "fontWeight": "500"
-                                            }
-                                          ]
+                                          "type": "ellipse",
+                                          "id": "uLqr4",
+                                          "name": "Dot",
+                                          "fill": "$classic2-rose",
+                                          "width": 8,
+                                          "height": 8
                                         },
                                         {
                                           "type": "text",
-                                          "id": "a6zHbo",
-                                          "name": "Value",
-                                          "fill": "$classic2-ink",
-                                          "content": "$1,960",
+                                          "id": "MMha6",
+                                          "name": "Label",
+                                          "fill": "$classic2-secondary",
+                                          "content": "61–90 days late",
                                           "fontFamily": "Inter",
-                                          "fontSize": 12,
-                                          "fontWeight": "700"
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
                                         }
                                       ]
                                     },
                                     {
-                                      "type": "frame",
-                                      "id": "kaaC4",
-                                      "name": "Bucket 61–90",
-                                      "width": "fill_container",
-                                      "layout": "vertical",
-                                      "gap": 3,
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "zlERk",
-                                          "name": "Head",
-                                          "gap": 5,
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "ellipse",
-                                              "id": "G9vS4i",
-                                              "name": "Dot",
-                                              "fill": "$classic2-rose",
-                                              "width": 7,
-                                              "height": 7
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "Ku1aP",
-                                              "name": "Label",
-                                              "fill": "$classic2-muted",
-                                              "content": "61–90 days",
-                                              "fontFamily": "Inter",
-                                              "fontSize": 12,
-                                              "fontWeight": "500"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "QMxo0",
-                                          "name": "Value",
-                                          "fill": "$classic2-ink",
-                                          "content": "$2,840",
-                                          "fontFamily": "Inter",
-                                          "fontSize": 12,
-                                          "fontWeight": "700"
-                                        }
-                                      ]
+                                      "type": "text",
+                                      "id": "LrwKO",
+                                      "name": "Value",
+                                      "fill": "$classic2-ink",
+                                      "content": "$2,840",
+                                      "fontFamily": "Inter",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
                                     }
                                   ]
                                 }
