@@ -1,6 +1,6 @@
 # B3 — shared Classic cards and controls
 
-**Stage:** Verified on the feature branch; integration pending. **Plan:** `docs/classic-theme-redesign-behavior-contract.md` and `docs/classic-theme-redesign-design-recipe.md`. **Branch/worktree:** `codex/classic-b3`, `/home/jafar/Ucrm/.worktrees/classic-b3`, based on main merge `96d4cb8d`. **Reservation:** `797a11aa2606` (`codex-classic-b3-continue`).
+**Stage:** Integrated into `main` 2026-10-14. **Plan:** `docs/classic-theme-redesign-behavior-contract.md` and `docs/classic-theme-redesign-design-recipe.md`. **Source branch/worktree:** `codex/classic-b3`, `/home/jafar/Ucrm/.worktrees/classic-b3`; final branch commit `7e4e098d`.
 
 ## Current state
 
@@ -29,4 +29,4 @@ Keep visible labels associated with controls, connect hints and errors to their 
 
 ## Next
 
-Commit and push the contrast fixes and this proof note, then integrate the branch from a clean main worktree following `docs/agent-concurrency.md`. B4 Save bar is next after B3 integration.
+B3 is integrated. Begin the approved B4 Save bar from a new claimed worktree following `docs/agent-concurrency.md`.
