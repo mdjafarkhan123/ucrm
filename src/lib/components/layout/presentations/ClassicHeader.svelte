@@ -168,6 +168,10 @@
 		height: 100%;
 		place-items: center;
 	}
+	:global(.app-shell[data-presentation='classic'] .topbar__avatar .avatar) {
+		--avatar-bg: linear-gradient(145deg, var(--classic2-solid-green), var(--classic2-feature-end));
+		--avatar-fg: var(--classic2-white);
+	}
 	:global(.topbar__avatar-icon) {
 		display: none;
 	}
