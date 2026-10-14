@@ -4,7 +4,7 @@
 **Stage:** Design · **Follows:** the five approved lists ([Requests, Quotes and Invoices](requests-quotes-invoices-lists.md)).
 **Code:** `classic.pen` in the main folder; commit it from main in its own commit after Jafar presses Ctrl+S in
 Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktrees/schedule-design`).
-**Done when:** Jafar approves `Schedule · 1440` and his answers are written here.
+**Done when:** Week, Day and Month are approved (done 2026-10-15) and `classic.pen` is committed from main.
 
 ## Steps
 
@@ -58,11 +58,16 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
 - Open question for Jafar: in the approved Week, Rachel Kim's 1:30pm assessment has no crew but shows as a
   white card; Day shows it amber Unassigned. Ask whether the Week card should turn amber too.
 
+- [x] **Approved by Jafar 2026-10-15: `Schedule · Day · 1440` (`eNrFP`) and `Schedule · Month · 1440` (`MCHpH`).**
+      He then removed the page header (title + New job) from every Schedule screen and deleted variant B
+      (Jobber, Housecall Pro and Google Calendar also start the calendar under the top bar). Follow-up the same
+      day: Week, Day and Month became 1440×1024 with the calendar card filling the page — Week hours 65px
+      (7am–5pm), Day rows taller with a locality line on each card and a fifth person (Liam Ortiz, free all day),
+      Month rows share the extra height (still 3 rows per date; 4 do not fit). "New job" stays reachable through the top bar's Add new.
+
 ## Next (new sessions, one screen each)
 
-Day view (contract: employee rows on a horizontal time axis, Unassigned row first, Anytime first column —
-deleted variant C used columns instead), then Month view with its "+ N more" date panel. Still undesigned
-after those: Unscheduled drawer; empty-slot New Job popover and type chooser; Event popover and create/edit
+Still undesigned: Unscheduled drawer; empty-slot New Job popover and type chooser; Event popover and create/edit
 modal; Filters menus; drag ghost, reschedule and conflict states; Map split view (Version 1.2). Phone layouts
 are adapted while building.
 
