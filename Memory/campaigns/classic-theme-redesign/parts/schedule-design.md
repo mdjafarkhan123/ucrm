@@ -25,6 +25,8 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
     a tint (Daniel blue, Sofia violet, Amir teal, Maya amber); shared/unassigned stay white; legend lists people.
   - `Schedule · 1440 · C · Day by team` (`JMYsG`, x 15460) — Day view, one column per crew member with booked
     hours bar, A's status colours, live progress on the in-progress visit.
+- [x] Jafar, 2026-10-15: deleted C. Card colour shows status (his idea, confirmed against dispatch-board
+      practice); he likes A's soft red Late card and that each status badge has its own colour.
 - [ ] Approved by Jafar. Questions put to him: which card colour (A status / B person / original type bar);
       Week or Day (C) as the default view; the proposals below.
 
