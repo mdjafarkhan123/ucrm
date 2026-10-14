@@ -23,6 +23,12 @@
         warning on Home, no "needs a look" strip or reminder banner, no header "New" button (the top bar's
         "Add new" covers it). Jafar deleted every other Home owner version, including the 2:30 PM entry's
         `m4ICXz` (he answered "I delete all except your one" when asked which approval stands)
+  - [x] § 09 brought in line with the approved Home, 2026-10-14: `Visit row` (`edouS`) is the compact 68px
+        row; `Workflow column` is now `HaGrL` (count chip, count + value per line, hidden status dot; the old
+        `hByIA` had no instances and was removed) and Home's To do uses it; new `Compare figure` (`gH2Wk`,
+        new "Home rail" card) drives Business performance; `Aging bar` (`ktEHE`) shows not-yet-due in grey.
+        Still drawn inline on Home only: the dark Today header (status legend, late/unassigned chips) and the
+        Money owed age table — promote them if another screen needs them
   - [ ] The other five screens and states, **one screen per session** (Jafar 2026-10-14); § 09 dark page
 - [ ] Jafar's yes on the designs, recorded here with screen names and date
 - [ ] Split the build into parts (To Tickets) and record them in the roadmap
