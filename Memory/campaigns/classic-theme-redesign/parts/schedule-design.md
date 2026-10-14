@@ -33,7 +33,8 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
 - [x] Jafar, 2026-10-15, asked why In progress is deep green. Review board `Schedule · Status colours review`
       (`Dp8ki`, x 12340, y 5252) compares A's solid dark-green card with the suggestion: white card, green
       outline, green "In progress" badge (ServiceTitan: Working = green, Done = light grey; Housecall Pro: in
-      progress = white tile with outline; Jobber: completed greyed with a tick). Waiting for his choice.
+      progress = white tile with outline; Jobber: completed greyed with a tick). Jafar chose the suggestion
+      ("update"); A's In progress card and legend now use it, light and dark checked.
 - [ ] Approved by Jafar. Questions put to him: which card colour (A status / B person / original type bar);
       Week or Day (C) as the default view; the proposals below.
 
