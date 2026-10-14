@@ -87,7 +87,7 @@
 		cursor: pointer;
 		transition: all var(--timing-base) ease-out;
 
-		// Square, per the icon-only rule in the design skill: width equals the size height.
+		/* Square, per the icon-only rule in the design skill: width equals the size height. */
 		&--small {
 			width: var(--space-larger);
 			height: var(--space-larger);
@@ -107,8 +107,8 @@
 			background: var(--color-surface);
 		}
 
-		// Icon size follows the button size, the way the design skill pairs them: small with the small
-		// icon, base with the base icon.
+		/* Icon size follows the button size, the way the design skill pairs them: small with the small
+		 * icon, base with the base icon. */
 		&__icon :global(svg) {
 			display: block;
 			width: 20px;
@@ -146,5 +146,46 @@
 			pointer-events: none;
 			user-select: none;
 		}
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .pencil-button {
+		border-radius: 10px;
+		color: var(--classic2-body);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .pencil-button--small {
+		width: 32px;
+		height: 32px;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .pencil-button--base {
+		width: 40px;
+		height: 40px;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .pencil-button--work {
+		color: var(--classic2-green);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .pencil-button--secondary {
+		border-color: var(--classic2-border-control);
+		background: var(--classic2-surface);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .pencil-button:hover:not(:disabled),
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.pencil-button:focus-visible:not(:disabled) {
+		color: var(--classic2-green);
+		background: var(--classic2-surface-soft);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .pencil-button:focus-visible {
+		outline: 3px solid var(--classic2-green-soft);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .pencil-button:disabled {
+		opacity: 0.45;
 	}
 </style>

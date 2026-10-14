@@ -111,7 +111,7 @@
 			transition: all var(--timing-base) ease-in-out;
 		}
 
-		// Each icon sits on the side the pip is not covering.
+		/* Each icon sits on the side the pip is not covering. */
 		&__icon {
 			position: absolute;
 			top: 2px;
@@ -164,7 +164,7 @@
 			}
 		}
 
-		// --- States -------------------------------------------------------------------------------
+		/* --- States ------------------------------------------------------------------------------- */
 
 		&:hover:not(.toggle--disabled) .toggle__track,
 		&:has(input:focus-visible) .toggle__track {
@@ -233,5 +233,92 @@
 				background: var(--color-surface);
 			}
 		}
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .toggle {
+		--toggle--width: 44px;
+		--toggle--height: 26px;
+		--toggle--pip: 20px;
+		--toggle--pip-off: 2px;
+		--toggle--pip-on: 22px;
+		gap: 14px;
+		color: var(--classic2-body);
+		font-family: var(--classic2-font);
+		font-size: var(--classic2-font-body);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .toggle__track {
+		border: 1px solid var(--classic2-border-input);
+		border-radius: 13px;
+		background: var(--classic2-surface);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .toggle__pip {
+		top: 2px;
+		background: var(--classic2-secondary);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .toggle__label {
+		color: var(--classic2-body);
+		font-weight: 600;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .toggle__description {
+		color: var(--classic2-muted);
+		font-size: var(--classic2-font-small);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .toggle__icon--on {
+		color: var(--classic2-green-on);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .toggle__icon--off {
+		color: var(--classic2-secondary);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.toggle:has(input:checked)
+		.toggle__track,
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.toggle:hover:not(.toggle--disabled):has(input:checked)
+		.toggle__track {
+		border-color: var(--classic2-green-mid);
+		background: var(--classic2-green-mid);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.toggle:has(input:focus-visible)
+		.toggle__track {
+		outline: 3px solid var(--classic2-green-soft);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .toggle--disabled {
+		color: var(--classic2-muted);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .toggle--disabled .toggle__track {
+		border-color: var(--classic2-border-input);
+		background: var(--classic2-surface-soft);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .toggle--disabled .toggle__pip {
+		border-color: var(--classic2-border-input);
+		background: var(--classic2-muted);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .toggle--disabled .toggle__label,
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.toggle--disabled
+		.toggle__description {
+		color: var(--classic2-muted);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.toggle--disabled:has(input:checked)
+		.toggle__track {
+		border-color: var(--classic2-border-input);
+		background: var(--classic2-surface-soft);
 	}
 </style>

@@ -132,7 +132,7 @@
 
 		.select__label {
 			position: absolute;
-			// One above the focused trigger, which lifts itself to show its focus ring and would otherwise cover this.
+			/* One above the focused trigger, which lifts itself to show its focus ring and would otherwise cover this. */
 			z-index: calc(var(--elevation-base) + 1);
 			top: 0;
 			left: var(--space-slim);
@@ -226,7 +226,7 @@
 		box-shadow: var(--shadow-base);
 	}
 
-	// A trigger that hugs its value is narrower than its longest option, so the list sizes itself instead.
+	/* A trigger that hugs its value is narrower than its longest option, so the list sizes itself instead. */
 	:global(.select__content.select__content--fit) {
 		width: max-content;
 		min-width: max(var(--bits-floating-anchor-width), calc(var(--space-extravagant) * 2.5));
@@ -287,5 +287,112 @@
 		flex: 0 0 auto;
 		place-items: center;
 		color: var(--color-interactive);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .select {
+		display: flex;
+		flex-direction: column;
+		gap: 7px;
+		color: var(--classic2-ink);
+		font-family: var(--classic2-font);
+		font-size: var(--classic2-font-body);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .select.select--labelled {
+		padding-top: 0;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .select__label {
+		position: static;
+		z-index: auto;
+		max-width: 100%;
+		padding: 0;
+		overflow: visible;
+		color: var(--classic2-body);
+		background: transparent;
+		font-size: var(--classic2-font-label);
+		font-weight: 600;
+		line-height: 1.25;
+		text-overflow: clip;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) :global(.select__trigger) {
+		min-height: 44px;
+		gap: 10px;
+		padding: 0 14px;
+		border-color: var(--classic2-border-input);
+		border-radius: 12px;
+		background: var(--classic2-surface);
+		box-shadow: 0 1px 2px var(--classic2-shadow-near);
+		font-size: var(--classic2-font-body);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		:global(.select__trigger:focus-visible) {
+		border-color: var(--classic2-green);
+		outline: 3px solid var(--classic2-green-soft);
+		outline-offset: 2px;
+		box-shadow: 0 1px 2px var(--classic2-shadow-near);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) :global(.select__trigger:disabled) {
+		border-color: var(--classic2-border-input);
+		color: var(--classic2-muted);
+		background: var(--classic2-surface-soft);
+		box-shadow: none;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) :global(.select__prefix) {
+		color: var(--classic2-body);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) :global(.select__chevron) {
+		color: var(--classic2-icon-muted);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) :global(.select__content) {
+		border-color: var(--classic2-border);
+		border-radius: 12px;
+		background: var(--classic2-surface);
+		box-shadow:
+			0 1px 2px var(--classic2-shadow-near),
+			0 10px 28px var(--classic2-shadow-far);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) :global(.select__viewport) {
+		padding: 8px;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) :global(.select__option) {
+		padding: 8px 10px;
+		border-radius: 8px;
+		color: var(--classic2-body);
+		font-family: var(--classic2-font);
+		font-size: var(--classic2-font-body);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		:global(.select__option[data-highlighted]) {
+		color: var(--classic2-ink);
+		background: var(--classic2-surface-soft);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		:global(.select__option[data-selected]) {
+		color: var(--classic2-green);
+		background: var(--classic2-green-tint);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		:global(.select__option[data-disabled]) {
+		color: var(--classic2-muted);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .select__check {
+		color: var(--classic2-green);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) :global(.field-required) {
+		color: var(--classic2-required);
 	}
 </style>

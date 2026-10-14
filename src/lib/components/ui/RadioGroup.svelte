@@ -85,7 +85,7 @@
 			font-size: var(--typography--fontSize-base);
 			cursor: pointer;
 
-			// The native input is hidden; the circle beside it is what people see.
+			/* The native input is hidden; the circle beside it is what people see. */
 			input {
 				position: absolute;
 				width: 1px;
@@ -171,9 +171,79 @@
 			flex-direction: column;
 		}
 
-		// Stacked, a card's 180px starting width would become its height.
+		/* Stacked, a card's 180px starting width would become its height. */
 		.radio-group--cards .radio-group__option {
 			flex: none;
 		}
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .radio-group {
+		gap: 7px;
+		font-family: var(--classic2-font);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .radio-group__label {
+		color: var(--classic2-body);
+		font-size: var(--classic2-font-label);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .radio-group__option {
+		color: var(--classic2-body);
+		font-family: var(--classic2-font);
+		font-size: var(--classic2-font-body);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .radio-group__circle {
+		border-color: var(--classic2-border-input);
+		background: var(--classic2-surface);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.radio-group__option:hover
+		.radio-group__circle {
+		border-color: var(--classic2-green);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.radio-group
+		input:checked
+		+ .radio-group__circle {
+		border-color: var(--classic2-green);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.radio-group
+		input:focus-visible
+		+ .radio-group__circle {
+		outline: 3px solid var(--classic2-green-soft);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.radio-group--cards
+		.radio-group__option {
+		border-color: var(--classic2-border);
+		border-radius: 12px;
+		background: var(--classic2-surface);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.radio-group--cards
+		.radio-group__option:hover {
+		border-color: var(--classic2-green);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.radio-group--cards
+		.radio-group__option:has(input:checked) {
+		border-color: var(--classic2-green);
+		background: var(--classic2-green-tint);
+		box-shadow: inset 0 0 0 1px var(--classic2-green);
+		color: var(--classic2-ink);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .radio-group__option--disabled {
+		color: var(--classic2-muted);
 	}
 </style>

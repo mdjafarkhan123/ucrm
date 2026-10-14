@@ -1,42 +1,21 @@
 # Cards
 
-> Dependencies: `colors.md`, `radius.md`,  `typography.md`
+Classic card surfaces use the approved classic2 palette and the shared B3 components.
 
-## Core Specs
+## Appearance
 
-- **Background:** `var(--color-surface)`
-- **Border:** 1px solid `var(--color-border)`
-- **Radius:** `var(--radius-base)` = 8px
+- Surface: classic2-surface
+- Border: classic2-border, 1px
+- Corners: 20px
+- Shadow: classic2-shadow-near at 0 1px 2px and classic2-shadow-far at 0 10px 28px
+- Heading: classic2-ink; keep the page heading hierarchy intact
 
-Dashboard metric cards rendered as semantic `<article>` elements may omit the shadow when a flatter summary treatment is explicitly approved for that surface.
+The exact light and dark values are in docs/classic-theme-redesign-design-recipe.md.
 
-## Card Heading
+## Components
 
-- Desktop: 20px, medium weight, heading color
-- Mobile: 16px, medium weight, heading color
-- **Max font size: 20px** — card headings must never exceed 20px regardless of heading level or breakpoint.
-- Never skip heading levels — the page hierarchy must logically arrive at the card heading level.
+- Use ui/Card for a plain card with optional heading.
+- Use layout/SectionBlock for titled sections and groups of form controls.
+- Use layout/RailCard for titled cards in a right rail.
 
-## States
-
-### Static Card (no interactivity)
-
-- Background: var(--color-surface)
-- Border: 1px, border-default
-- Radius: 8px
-- No hover styles. Non-interactive cards must NOT have hover background changes.
-
-### Interactive Card (clickable)
-
-- Same base styles as static card
-- Hover: neutral-secondary-medium background
-- Transition: colors
-- Cursor: pointer
-
-## Rules
-
-- Background: neutral-primary-soft
-- Border: 1px, var(--color-border)
-- Radius: 8px
-- Interactive hover: neutral-secondary-medium background
-- Non-interactive: no hover styles
+SectionBlock and RailCard keep their own padding and heading rules in their modules. A static card has no hover effect. Interactive actions keep their hover and focus states on the action itself.

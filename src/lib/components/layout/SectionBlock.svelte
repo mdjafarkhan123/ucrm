@@ -72,7 +72,7 @@
 		position: relative;
 		display: flex;
 		flex-direction: column;
-		// Room for the title and any actions that sit on the top border line.
+		/* Room for the title and any actions that sit on the top border line. */
 		margin-top: var(--space-slim);
 		gap: var(--space-base);
 		padding: var(--space-large) var(--space-slim);
@@ -83,8 +83,8 @@
 			background: var(--color-surface--background);
 		}
 
-		// The heading has to break the border the way a legend does. It paints over the line with the
-		// colour of whatever the block is sitting on, which callers set when that is not the card surface.
+		/* The heading has to break the border the way a legend does. It paints over the line with the
+		 * colour of whatever the block is sitting on, which callers set when that is not the card surface. */
 		&--standalone {
 			.section-block__title {
 				position: absolute;
@@ -140,6 +140,81 @@
 	@media (max-width: 767px) {
 		.section-block {
 			padding: var(--space-base);
+		}
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .section-block {
+		margin-top: 0;
+		gap: 16px;
+		padding: 24px;
+		border: 0;
+		border-radius: 20px;
+		background: var(--classic2-surface);
+		box-shadow:
+			inset 0 0 0 1px var(--classic2-border),
+			0 1px 2px var(--classic2-shadow-near),
+			0 10px 28px var(--classic2-shadow-far);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .section-block--filled {
+		background: var(--classic2-surface);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.section-block--standalone
+		.section-block__title {
+		position: static;
+		max-width: 100%;
+		padding: 0;
+		background: transparent;
+		transform: none;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .section-block__title {
+		color: var(--classic2-ink);
+		font-size: var(--classic2-font-card);
+		font-weight: 700;
+		line-height: 1.25;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .section-block__icon :global(svg) {
+		color: var(--classic2-icon-muted);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.section-block:has(.section-block__actions)
+		.section-block__title {
+		max-width: calc(100% - 104px);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .section-block__actions {
+		top: 24px;
+		right: 24px;
+		padding: 0;
+		background: transparent;
+		transform: none;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .section-block__hint {
+		margin-top: -8px;
+		color: var(--classic2-muted);
+		font-size: var(--classic2-font-small);
+	}
+
+	@media (max-width: 767px) {
+		:global(:root:has(.app-shell[data-presentation='classic'])) .section-block {
+			padding: 16px;
+		}
+
+		:global(:root:has(.app-shell[data-presentation='classic'])) .section-block__actions {
+			top: 16px;
+			right: 16px;
+		}
+
+		:global(:root:has(.app-shell[data-presentation='classic']))
+			.section-block:has(.section-block__actions)
+			.section-block__title {
+			max-width: calc(100% - 88px);
 		}
 	}
 </style>

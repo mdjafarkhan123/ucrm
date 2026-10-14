@@ -97,4 +97,74 @@
 		--badge-text: var(--color-informative--onSurface);
 		--badge-dot: var(--color-informative);
 	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .badge {
+		color: var(--classic2-body);
+		background: var(--classic2-chip);
+		font-family: var(--classic2-font);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .badge--small {
+		padding: 3px 8px;
+		border-radius: 10px;
+		font-size: var(--classic2-font-small);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .badge--base {
+		padding: 4px 10px;
+		border-radius: 10px;
+		font-size: var(--classic2-font-label);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .badge--large,
+	:global(:root:has(.app-shell[data-presentation='classic'])) .badge--larger {
+		border-radius: 12px;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .badge--status {
+		gap: 5px;
+		padding: 3px 8px;
+		border-radius: 10px;
+		font-size: var(--classic2-font-micro);
+		font-weight: 700;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .badge--no-dot {
+		padding: 3px 8px;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .badge__dot {
+		width: 6px;
+		height: 6px;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .badge--success {
+		--badge-background: var(--classic2-green-soft);
+		--badge-text: var(--classic2-green);
+		--badge-dot: var(--classic2-green-mid);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .badge--warning {
+		--badge-background: var(--classic2-amber-soft);
+		--badge-text: var(--classic2-amber);
+		--badge-dot: var(--classic2-amber-dot);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .badge--critical {
+		--badge-background: var(--classic2-rose-soft);
+		--badge-text: var(--classic2-rose);
+		--badge-dot: var(--classic2-rose);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .badge--inactive {
+		--badge-background: var(--classic2-chip);
+		--badge-text: var(--classic2-secondary);
+		--badge-dot: var(--classic2-icon-muted);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .badge--informative {
+		--badge-background: var(--classic2-blue-soft);
+		--badge-text: var(--classic2-blue);
+		--badge-dot: var(--classic2-blue-dot);
+	}
 </style>

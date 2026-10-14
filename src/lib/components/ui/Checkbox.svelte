@@ -169,4 +169,77 @@
 			background: var(--color-disabled);
 		}
 	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .checkbox {
+		gap: 8px;
+		color: var(--classic2-body);
+		font-family: var(--classic2-font);
+		font-size: var(--classic2-font-body);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .checkbox__box {
+		border: 1px solid var(--classic2-border-input);
+		border-radius: 6px;
+		color: var(--classic2-green-on);
+		background: var(--classic2-surface);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .checkbox__label,
+	:global(:root:has(.app-shell[data-presentation='classic'])) .checkbox__description {
+		color: var(--classic2-body);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .checkbox__description {
+		font-size: var(--classic2-font-small);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.checkbox:hover:not(.checkbox--disabled)
+		.checkbox__box {
+		border-color: var(--classic2-green);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.checkbox:has(input:checked)
+		.checkbox__box,
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.checkbox:has(input:indeterminate)
+		.checkbox__box {
+		border-color: var(--classic2-solid-green);
+		background: var(--classic2-solid-green);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.checkbox:has(input:focus-visible)
+		.checkbox__box {
+		outline: 3px solid var(--classic2-green-soft);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .checkbox--invalid .checkbox__box {
+		border-color: var(--classic2-rose);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.checkbox--invalid:has(input:checked)
+		.checkbox__box {
+		background: var(--classic2-rose);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .checkbox--disabled {
+		color: var(--classic2-muted);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .checkbox--disabled .checkbox__box {
+		border-color: var(--classic2-border-input);
+		background: var(--classic2-surface-soft);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .checkbox--disabled .checkbox__label,
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.checkbox--disabled
+		.checkbox__description {
+		color: var(--classic2-muted);
+	}
 </style>

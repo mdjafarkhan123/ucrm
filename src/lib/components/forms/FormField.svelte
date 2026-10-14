@@ -59,4 +59,32 @@
 		width: 16px;
 		height: 16px;
 	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .form-field {
+		gap: 7px;
+		font-family: var(--classic2-font);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .form-field__label {
+		color: var(--classic2-body);
+		font-size: var(--classic2-font-label);
+		font-weight: 600;
+		line-height: 1.25;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .form-field__hint {
+		color: var(--classic2-muted);
+		font-size: var(--classic2-font-small);
+		line-height: 1.45;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .form-field__error {
+		color: var(--classic2-rose);
+		font-size: var(--classic2-font-small);
+		line-height: 1.45;
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) :global(.field-required) {
+		color: var(--classic2-required);
+	}
 </style>
