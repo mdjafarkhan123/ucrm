@@ -259,16 +259,25 @@ colour, "now" is brand green.
 - **Header card:** padding 24/28/0/28. Row 1: status pill (record colour, pill, 7px dot, 12/600) + record
   number 12/600, letter-spacing 0.6, secondary + 3px dot + record kind 12/500; right: 40×40 history button,
   40-high "More ⌄", then the primary button named for the next step. Title 32/700, −0.8, 18 below row 1.
-  Meta row: 28 client avatar + name 14/600; icon-15 + 14/500 secondary facts 16 apart; quick contact buttons
-  right (34 circles, bordered).
-- **Lifecycle track:** the same five steps on every work record — Request, Quote, Job, Invoice, Paid — each
-  page lighting its own; a done step's sub-line says when ("Approved Sep 28"), the current one what it waits
-  on ("Waiting on David", "Due in 7 days"). Five equal steps, 6 apart, 24 above and below; 6px pill bars;
-  label 13/600 with a check-13 when done or a 7px dot when current; sub-line 12/500, the current one green.
-- **Key facts strip:** top divider, padding 18/0/22; four equal facts with 1px dividers and 20 side padding;
-  each a 36 icon tile, label 12/500 secondary, value 14/600. Facts that live nowhere else on the page, plus
-  the record total. Editable facts (an invoice's terms and dates) end the strip with a 32 bordered pencil
-  button instead of a separate section.
+  Meta row: 28 client avatar + name 14/600; icon-15 + 14/500 secondary facts 16 apart (the address, not the
+  phone number — Call carries it); quick contact buttons right (34 circles, bordered).
+- **Lifecycle track** (lighter version, Jafar 2026-10-14): the same five steps on every work record — Request,
+  Quote, Job, Invoice, Paid — each page lighting its own; a done step's sub-line says when ("Approved Sep 28"),
+  the current one what it waits on ("Waiting on David", "Due in 7 days"). Five equal steps, 14 apart, 22 above
+  and 20 below; 4px pill bars, 10 to the labels. No icon tiles. Label 13/600: a done step starts with a
+  check-13 in `green` and keeps its number and open arrow ("✓ Request #88 ↗"); the current step starts with a
+  7px dot in its sub-line's colour and shows only its name ("● Job"), because the record number already sits
+  in row 1; a future step's label is `muted`. Sub-line 12/500, 3 below the label.
+- **Key facts strip:** top divider, padding 18/0/22; four equal facts with 1px dividers and 16 side padding
+  (the first none); each a 36 icon tile (kept, Jafar 2026-10-14), 10 gap, label 12/500 secondary, value
+  14/600. Facts that live nowhere else on the page, plus the record total. Editable facts (an invoice's terms
+  and dates) end the strip with a 32 bordered pencil button instead of a separate section.
+- **Phone (390):** card padding 18/18/0/18. Row 1 status pill + record number only. Title 24/700, −0.5,
+  wraps. Client name, then the address on its own line. The main action takes the full width (44 high) with a
+  44 "⋯" More button beside it; History moves into More. Call / Message / Directions become three equal 38-high
+  labelled buttons. Track: bars with step names 11/600 under them, then one line "● Job · Visit 3 of 4 · now"
+  13/600 in the current step's colour. Key facts in a 2 × 2 grid with their icon tiles; the invoice's pencil
+  becomes a full-width "Edit terms and dates" button under the grid.
 - **Lists of dated work:** date tile 52×56, radius 12, bordered — weekday 10/700, letter-spacing 0.6, day
   20/700; today's tile filled `green` with a `green-on` day. Title 15/600, time 13/500 secondary, note 12/500
   with a 13 icon. Today's row tinted with a green live note ("Clocked in 8:04 AM · on site 2h 16m"). Crew

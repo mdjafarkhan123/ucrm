@@ -50,3 +50,11 @@ Jafar asked to carry the Settings coloured icon tiles onto the new screens, then
 meaningful and representative. Drawn on the six record pages per recipe § Colour rule — key facts neutral
 unless their value needs attention, invoice row blue, automation amber, waiting items amber, the rest neutral.
 Home and Reports still use the old look, so left alone. Jafar said "yes" 2026-10-13 to Job, Quote, Invoice, Request, Payment and Client details · 1440; saved and committed.
+
+## Lighter record header (approved 2026-10-14)
+
+Jafar felt the header cards were crowded. Claude drew `Concept · Lighter record header` in `classic.pen`
+(approved card beside the lighter one for Job, Quote, Invoice, Request, plus four 390 phone cards). Jafar:
+"its better but we can keep icon as it is now for the bottom row" — track tiles removed, key-fact tiles kept.
+Applied the same day to the Job, Quote, Invoice, Request and Payment `· 1440` screens, so they match the board
+and the recipe; B5 builds from them.
