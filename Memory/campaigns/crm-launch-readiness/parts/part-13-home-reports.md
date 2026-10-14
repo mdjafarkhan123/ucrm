@@ -15,8 +15,19 @@
   - [x] Design-system page (light) § "09 Numbers & charts": Trend, Metric, Date range, Donut meter, Chart
         empty, Avatar, Bar chart, Ranked bars, Aging bar, Report tile, Report link, Workflow column, Visit row,
         Tabs, Banner; Segmented control `LQ6rJ` gained two hidden options
-  - [x] `Home · Owner · 1440` (`Q4L9Xi`) redesigned 2026-10-14 — awaiting Jafar's review
-  - [ ] The other five screens and states; § 09 on the dark design-system page
+  - [x] `Home · Owner · 1440` (`m4ICXz`, y 17700) — fresh concept 2026-10-14 after Jafar deleted the first
+        draft; light and dark checked. **Approved by Jafar 2026-10-14** ("Approved your"); he deleted the
+        other agents' Home variants. New parts drawn inline (Today card, To do columns
+        with values, Business performance compare bars) — promote to § 09 after his yes
+  - [x] Two reviews of it, 2026-10-14, each drew alternatives beside it at y 17700 (light and dark checked):
+        `Concept · Home · Owner · 1440 (review proposal)` (`vVhpQ`, x 1560) and `Variant B · … (all fixes)`
+        (`sBwnT`, x 3120; adds crew map, "needs a look" strip, recurring-jobs banner, double-booking flag);
+        `Opus concept · Home · Owner · 1440` (`G8yMte`, x 4680) — Variant B with every fact shown once:
+        compact dark Today header (green = on site now, pale = done), 68px rows, no strip/banner/map,
+        "Ending soon" as a third To do › Jobs line, Money owed age table (grey not due → amber → red).
+        Row size and the age table are instance overrides; promote to `edouS`/§ 09 only after his choice
+  - [ ] Jafar picks one of the four Home versions (or a mix); delete the rest
+  - [ ] The other five screens and states, **one screen per session** (Jafar 2026-10-14); § 09 dark page
 - [ ] Jafar's yes on the designs, recorded here with screen names and date
 - [ ] Split the build into parts (To Tickets) and record them in the roadmap
 - [ ] Build, verify, screen check, live proof
@@ -27,9 +38,12 @@ Jafar, 2026-10-14: this is a **redesign, not a conversion** — new layouts in t
 (header card with key-fact tiles, lifecycle-style track, main column + 336 rail, one dark featured card),
 Dribbble quality. Keep the plan's content and permissions; change layout freely.
 
-1. Ask Jafar for feedback on `Home · Owner · 1440` and the question below; apply it.
-2. Redesign the rest the same way. The six `Working copy · …` frames (y 17900) are recolour-only
-   conversions — content only; delete them after. Ideas: Insights — Revenue chart in the dark
+1. Ask Jafar which Home version he wants (`m4ICXz`, `vVhpQ`, `sBwnT` or `G8yMte`) and the question below;
+   apply it. Open choices from the reviews: crew map (no live crew location exists — the Schedule's Mapbox
+   map shows one person's route only); double-booking warnings on Home (the Schedule's own rule warns only
+   while moving a visit, `src/lib/schedule/conflicts.ts`); recurring-jobs reminder as a banner or a To do line.
+2. Next session draws ONE more screen (Jafar 2026-10-14), researched first. Jafar deleted the
+   `Working copy · …` frames; the `Old look · …` frames (y 15740) hold the content. Ideas: Insights — Revenue chart in the dark
    featured card, overview figures as key-fact tiles; All reports — Settings-home groups (Group header
    `ILY7B` + Setting row `lWM0h`); report screens — sub-page header with back link, date range, Download CSV,
    tile filters, table card with totals row; Money owed — aging bar as hero.
