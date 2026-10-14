@@ -16,6 +16,8 @@ layout) — recipe § Record page structure. Calm slate dark mode approved
 to the first later Settings stage, after the first version. The `crm-design-system` worktree still owns only
 its Appearance demo; its shared shell files were untouched.
 
+**Alongside:** Home/Reports redesign — `../crm-launch-readiness/parts/part-13-home-reports.md`.
+
 **Limits:** The old Dashboard body still has two phone contrast findings on small buttons; B3 owns shared
 button styling. Settings remains on its older layout and clips at phone width and enlarged text; its layout is
 planned for the later Settings stage. See the B2 proof note.
