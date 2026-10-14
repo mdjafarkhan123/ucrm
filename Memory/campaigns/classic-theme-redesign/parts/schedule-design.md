@@ -49,7 +49,12 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
       the shared Sarah Mitchell visit appears in both Daniel's and Sofia's rows with "Shared with …"; each
       person shows visit count, booked hours and a neutral booked bar; the now line sits behind the cards.
       Legend adds Shared visit. Waiting for Jafar.
-- [ ] `Schedule · Month · 1440` (x 17020, y 4080) drawn by a subagent the same session; parent review pending.
+- [x] `Schedule · Month · 1440` (`MCHpH`, x 17020, y 4080) drawn by a subagent the same session, reviewed by the
+      parent, light and dark checked. Sep 27–Oct 31; each date shows count + attention count, at most 3 compact
+      status-coloured rows (Anytime first, then by time) and "+ N more"; Oct 11–17 match the Week; the "+ 4 more"
+      panel is open on Wed 14 listing all 7 items, with "Open Day view" and "New visit on this date" links
+      (the two links are a proposal, not in the contract). Closed days shaded; legend note "Shaded days are
+      closed". Waiting for Jafar.
 - Open question for Jafar: in the approved Week, Rachel Kim's 1:30pm assessment has no crew but shows as a
   white card; Day shows it amber Unassigned. Ask whether the Week card should turn amber too.
 
