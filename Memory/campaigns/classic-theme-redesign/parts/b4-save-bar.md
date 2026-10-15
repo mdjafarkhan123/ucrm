@@ -1,6 +1,6 @@
 # B4 — Classic Save bar
 
-**State:** Waiting to merge from `codex/classic-b4-save-bar` (`/tmp/ucrm-classic-b4`). **Plan:**
+**State:** Integration candidate `codex/b4-save-bar-integration` at merge commit `1add398c`, based on `32e5b80d`; waiting to update `main` after the active Schedule Pencil work is saved and the main writer releases the reservation. **Plan:**
 `docs/classic-theme-redesign-behavior-contract.md` § Settings additions and
 `docs/classic-theme-redesign-design-recipe.md` § Save bar.
 
@@ -42,13 +42,15 @@ other action bar behavior remains intact. Tokens and the Classic design guide do
   served the checked pages. The only compiler warning shown was the existing unused selector in
   `JobVisitsSection.svelte:1372`.
 - `git diff --check` passed. `prettier --check` passed for all changed Svelte, SCSS, route and memory files.
-- `npm run check` was started after implementation but produced no output for more than a minute; it was
-  stopped. The full Svelte/TypeScript check result is unknown. No test suite was run.
+- `npm run check` was run again on the integrated tree. `svelte-check` used more than 4 GB of memory and
+  kept running for 3 minutes 53 seconds without producing a result; it was stopped. The full Svelte/TypeScript
+  check result is unknown. No test suite was run.
 
 ## Next
 
-The save bar and automation builder have passed the live screen and behavior checks. This branch is rebased
-onto current `main` at `b2b295c1`. The main checkout still has uncommitted redesign notes, behavior-contract
-and Pencil changes, so do not merge until those are safely saved and the main-integration reservation is
-available. Then rerun the full check, integrate and push. Keep claim `1dab5a348cb4` until integration
-succeeds.
+The save bar and automation builder passed the live screen and behavior checks. The changes are merged in
+candidate commit `1add398c` against `32e5b80d`; `main` has not been updated because the root checkout now has
+a large uncommitted Schedule Pencil change under an active reservation. Formatting and `git diff --check`
+passed on the candidate; the full Svelte/TypeScript check remains inconclusive as noted above. Once the active
+writer saves and releases the reservation, fetch current `main`, merge again if needed, rerun the appropriate
+check and push. Keep source claim `1dab5a348cb4` and integration claim `023775c30fd3` until successful push.

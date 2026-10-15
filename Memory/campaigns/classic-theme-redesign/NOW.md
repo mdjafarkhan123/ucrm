@@ -5,16 +5,16 @@
 
 Control Room — built from shared blocks, with every existing feature, permission and save rule kept.
 **Plan:** `docs/classic-theme-redesign-behavior-contract.md` — first version approved by Jafar 2026-10-13.
-**Stage:** Build — `stages/first-version-build.md`; B3 shared UI integrated into `main` 2026-10-14; B4 is implemented and screen-checked on `codex/classic-b4-save-bar`, waiting to merge.
+**Stage:** Build — `stages/first-version-build.md`; B3 shared UI integrated into `main` 2026-10-14; B4 Save bar merge candidate prepared on `codex/b4-save-bar-integration`, based on `32e5b80d`; waiting for the current main writer to save and release the Schedule Pencil work.
 
 **Done:** Parts 1, 2, 2B (all six record pages approved), 3, B1, B2 and B3 — build order B1–B12 approved 2026-10-13
 ("all agreed"); [B1 tokens verified](../../../docs/research/classic-theme-b1-2026-10-13.md); B2 shell built,
-live-checked and integrated 2026-10-14; B3 shared cards and controls screen-checked and integrated 2026-10-14. Message (not Text) and Settings pages in the next stage recorded in
+live-checked and integrated 2026-10-14; B3 shared cards and controls screen-checked and integrated 2026-10-14; B4 Save bar live-checked and prepared for integration 2026-10-15. Message (not Text) and Settings pages in the next stage recorded in
 the plan. Lighter record header approved 2026-10-14 (track without icon tiles, key-fact tiles kept, phone
 layout) — recipe § Record page structure. Calm slate dark mode approved
 2026-10-14 (option D) — recipe § Tokens; B2 shell already takes it.
 
-**Next:** B4 is checked on the live Classic and Botanical screens and rebased onto `main` at `b2b295c1`; its full checker hung without output. Integrate after the main checkout’s uncommitted redesign notes, behavior contract and Pencil changes are safely saved and a main-integration reservation is available. Jafar approved the two Save bar states in `classic.pen` on 2026-10-15; screenshots and the remaining integration step are in [B4](parts/b4-save-bar.md). B3 remains integrated: the Dashboard small-button contrast findings were fixed through the shared Button, the dark search shortcut label passes, and Botanical’s Dashboard actions and Settings shared styles match main. See [B3 checkpoint](parts/b3-shared-ui.md). The separate `crm-design-system` A2a work is an Appearance chooser/notice demo, not the token foundation and not a B3 dependency. The approved Settings-in-main-search addition belongs to the first later Settings stage, after the first version.
+**Next:** B4 is merged in integration candidate commit `1add398c`, based on current main `32e5b80d`. The root main checkout now has an active Schedule Pencil reservation and uncommitted `classic.pen` changes; I will update main after that work is saved and the reservation released. B4 live checks and screenshots are in [B4](parts/b4-save-bar.md), and its Svelte/TypeScript check remains inconclusive. B3 remains integrated: the Dashboard small-button contrast findings were fixed through the shared Button, the dark search shortcut label passes, and Botanical’s Dashboard actions and Settings shared styles match main. See [B3 checkpoint](parts/b3-shared-ui.md). The separate `crm-design-system` A2a work is an Appearance chooser/notice demo, not the token foundation and not a B3 dependency. The approved Settings-in-main-search addition belongs to the first later Settings stage, after the first version.
 
 **Alongside:** List pages are designed before later-stage planning (Jafar, 2026-10-14): `Jobs`, `Clients`,
 `Requests`, `Quotes` and `Invoices · 1440` are approved. See [Clients list](parts/clients-list.md),
