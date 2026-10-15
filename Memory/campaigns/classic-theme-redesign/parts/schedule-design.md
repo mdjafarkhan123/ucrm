@@ -132,21 +132,28 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
       First visit tile turns green. Same wording and buttons. Light and dark checked. Waiting for Jafar to pick
       A or B. If B: the Segmented control part gains an icon slot, and the Week legend's grey Event icon may
       turn violet (ask).
+- [x] **Approved by Jafar 2026-10-15: version A** — `Schedule · New request from empty slot · 1440` (`AOJ6z`),
+      `… New event …` (`Xvtrv`) and `Schedule · New job · error · 1440` (`LWT2a`), with B's coloured icons added
+      at his request to all four A popups (the approved Job `rGwsg` included): a kind tile beside the title (Job
+      green hammer, Request amber clipboard-list, Event violet calendar) and the switch with each kind's coloured
+      icon. The ticket stays neutral with the green month strip; Job's First visit tile stays neutral. Light and
+      dark checked. B (`SDwZ7`, `PPcqH`, `dcJf1`) stays in `classic.pen` until he asks to delete it. Building
+      needs: the Segmented control part gains an optional icon per option; Event's violet is new (the Week
+      legend's Event icon is still grey — ask whether to match).
 
 ## Next (new sessions; redesign the look only, copy the live component's behaviour and wording)
 
 Commit `classic.pen` from main after Jafar presses Ctrl+S, if that wasn't done at session end. Then, in this order:
 
-1. Empty-slot quick create, remaining tabs — drawn 2026-10-15 (`AOJ6z`, `Xvtrv`, `LWT2a`); waiting for Jafar.
-2. Previews — `AssessmentPreview` (read-only, Open request) and `EventPreview` (Edit/Delete), alongside the
+1. Previews — `AssessmentPreview` (read-only, Open request) and `EventPreview` (Edit/Delete), alongside the
    approved Visit preview.
-3. Event form — `ScheduleEventDialog.svelte`: title, description, one day, timed or Anytime.
-4. Move confirmation — `MoveConfirm.svelte`: old → new, overlap and out-of-hours warnings, this visit or
+2. Event form — `ScheduleEventDialog.svelte`: title, description, one day, timed or Anytime.
+3. Move confirmation — `MoveConfirm.svelte`: old → new, overlap and out-of-hours warnings, this visit or
    this-and-future, notify customer. Also the Unschedule confirmation and the drag ghost.
-5. Filters panel — `ScheduleControls.svelte`: Employee, Status, density.
-6. Map workspace — `ScheduleRoute`, `RouteStopCard`, `RouteMap`: one employee's day, ordered stops with
+4. Filters panel — `ScheduleControls.svelte`: Employee, Status, density.
+5. Map workspace — `ScheduleRoute`, `RouteStopCard`, `RouteMap`: one employee's day, ordered stops with
    locks, map, Directions.
-7. Pipeline Task card — `TaskCard.svelte`, on the calendar.
+6. Pipeline Task card — `TaskCard.svelte`, on the calendar.
 
 Phone layouts are adapted while building.
 
