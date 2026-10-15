@@ -1,0 +1,87 @@
+# Schedule — design
+
+**Campaign:** classic-theme-redesign · **Plan:** `docs/classic-theme-redesign-behavior-contract.md` § Later stages
+**Stage:** Design · **Follows:** the five approved lists ([Requests, Quotes and Invoices](requests-quotes-invoices-lists.md)).
+**Code:** `classic.pen` in the main folder; commit it from main in its own commit after Jafar presses Ctrl+S in
+Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktrees/schedule-design`).
+**Done when:** Week, Day and Month are approved (done 2026-10-15) and `classic.pen` is committed from main.
+
+## Steps
+
+- [x] Jafar, 2026-10-14, chose Schedule as this session's screen; a subagent researches and draws, the parent
+      session reviews.
+- [x] Research: Jafar's saved screenshots (`Design/schedule-visits-research/`, `Design/Jobber Jobs/2026-08-31/`
+      62–70, `schedule1.webp`), Jobber, Housecall Pro and ServiceTitan help pages, and
+      `docs/schedule-behavior-contract.md` (Week is the default view).
+- [x] `Schedule · 1440` (`RrFyy`, x 10780, y 4080) drawn, light and dark checked. Parent review fixed a
+      clipped "Unassigned", per-person avatar colours (now one neutral style), the 7am label and long titles on
+      narrow cards.
+- [x] Jafar, 2026-10-14: asked for more variants and said the visit cards did not look premium; colour should
+      mean something. Three variants drawn beside the original (row y 4080), light and dark checked:
+  - `Schedule · 1440 · A · Colour shows status` (`QOFVk`, x 12340) — recommended. Scheduled = white card,
+    In progress = the one dark-green featured card, Late = rose tint, Unassigned = amber tint with Assign,
+    Completed = soft grey with green tick; Assessment and Event shown by icon. New legend.
+  - `Schedule · 1440 · B · Colour shows who` (`PmCvg`, x 13900) — Jobber/Housecall Pro way: each crew member
+    a tint (Daniel blue, Sofia violet, Amir teal, Maya amber); shared/unassigned stay white; legend lists people.
+  - `Schedule · 1440 · C · Day by team` (`JMYsG`, x 15460) — Day view, one column per crew member with booked
+    hours bar, A's status colours, live progress on the in-progress visit.
+- [x] Jafar, 2026-10-15: deleted C. Card colour shows status (his idea, confirmed against dispatch-board
+      practice); he likes A's soft red Late card and that each status badge has its own colour.
+- [x] A improved 2026-10-15 (Jafar: improve A first; keep B for now, delete later): amber "Unassigned" badge
+      replaces the Assign button (assigning happens from the preview); day headers add a coloured attention
+      count ("1 late", "1 unassigned"); the open card gets a rose selection ring; long Anytime names end "…".
+- [x] Jafar, 2026-10-15, asked why In progress is deep green. Review board `Schedule · Status colours review`
+      (`Dp8ki`, x 12340, y 5252) compares A's solid dark-green card with the suggestion: white card, green
+      outline, green "In progress" badge (ServiceTitan: Working = green, Done = light grey; Housecall Pro: in
+      progress = white tile with outline; Jobber: completed greyed with a tick). Jafar chose the suggestion
+      ("update"); A's In progress card and legend now use it, light and dark checked.
+- [x] **Approved by Jafar 2026-10-15: `Schedule · 1440 · A · Colour shows status` (`QOFVk`)** — Week view,
+      card colour by status. B and the review board stay in `classic.pen` until he asks to delete them.
+      Week stays the default view (contract).
+
+**Merged** into main 2026-10-15.
+
+- [x] 2026-10-15 (Jafar: subagents allowed for concepts): `Schedule · Day · 1440` (`eNrFP`, x 15460, y 4080)
+      drawn by the parent session, light and dark checked. Same shell and status colours as the approved
+      Week. Wednesday Oct 14 with the Week's seven items: Unassigned row first (Rachel Kim's assessment, amber),
+      then Daniel, Sofia, Amir, Maya rows on a 7am–5pm axis; Anytime first column with route-order numbers;
+      the shared Sarah Mitchell visit appears in both Daniel's and Sofia's rows with "Shared with …"; each
+      person shows visit count, booked hours and a neutral booked bar; the now line sits behind the cards.
+      Legend adds Shared visit. Waiting for Jafar.
+- [x] `Schedule · Month · 1440` (`MCHpH`, x 17020, y 4080) drawn by a subagent the same session, reviewed by the
+      parent, light and dark checked. Sep 27–Oct 31; each date shows count + attention count, at most 3 compact
+      status-coloured rows (Anytime first, then by time) and "+ N more"; Oct 11–17 match the Week; the "+ 4 more"
+      panel is open on Wed 14 listing all 7 items, with "Open Day view" and "New visit on this date" links
+      (the two links are a proposal, not in the contract). Closed days shaded; legend note "Shaded days are
+      closed". Waiting for Jafar.
+- Open question for Jafar: in the approved Week, Rachel Kim's 1:30pm assessment has no crew but shows as a
+  white card; Day shows it amber Unassigned. Ask whether the Week card should turn amber too.
+
+- [x] **Approved by Jafar 2026-10-15: `Schedule · Day · 1440` (`eNrFP`) and `Schedule · Month · 1440` (`MCHpH`).**
+      He then removed the page header (title + New job) from every Schedule screen and deleted variant B
+      (Jobber, Housecall Pro and Google Calendar also start the calendar under the top bar). Follow-up the same
+      day: Week, Day and Month became 1440×1024 with the calendar card filling the page — Week hours 65px
+      (7am–5pm), Day rows taller with a locality line on each card and a fifth person (Liam Ortiz, free all day),
+      Month rows share the extra height (still 3 rows per date; 4 do not fit). "New job" stays reachable through the top bar's Add new.
+
+- [x] 2026-10-15, after Jafar showed a Dribbble vet-clinic calendar (dribbble.com/shots/14994519): Week gets a faint
+      now line across every day behind the cards, solid on today (Apple Calendar way); Day already spans all rows.
+      Saved by Jafar and committed on main (`8cdb2940`). For Medspa planning: that shot's docked right-side
+      details panel and per-provider columns match Boulevard/Fresha; not adopted for Contractor (Jobber popover,
+      long visits suit rows). Its colour-by-service fills and tiny pale text were judged not to fit.
+- Open: should the Week's Rachel Kim card turn amber Unassigned to match Day and Month?
+
+## Next (new sessions, one screen each)
+
+Still undesigned: Unscheduled drawer; empty-slot New Job popover and type chooser; Event popover and create/edit
+modal; Filters menus; drag ghost, reschedule and conflict states; Map split view (Version 1.2). Phone layouts
+are adapted while building.
+
+## Proposals (not in the app today; data exists)
+
+- Card edge colour by kind (visit green, assessment amber, event grey, Late red); team shown by neutral initials,
+  replacing today's per-person `schedule_color` edges.
+- Green "New job" button in the page header, opening today's quick-create (Job / Request / Event).
+- Legend row under the calendar.
+- Sidebar collapsed on Schedule so seven columns stay readable.
+- If neutral team initials are approved, `Job details · 1440` still uses per-person tints; ask whether to match.
