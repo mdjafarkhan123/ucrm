@@ -17,6 +17,7 @@
 	} from '$lib/jobs/report-api';
 	import { resolve } from '$app/paths';
 	import fileReportIcon from '@tabler/icons/outline/file-report.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 
 	// The picture handed to a customer of what was done: photos, checklist answers and the work list, chosen
 	// from what already exists on the job rather than anything typed fresh here. Editing here only changes
@@ -25,9 +26,12 @@
 
 	let {
 		jobId,
+		variant = 'card',
 		onStateChange
 	}: {
 		jobId: string;
+		/** `row`: one line of the Classic Close-out card instead of a card of its own. */
+		variant?: 'card' | 'row';
 		/** Tells the page's own "···" menu whether Preview / Print / Copy work report link belong there. */
 		onStateChange?: (hasContent: boolean) => void;
 	} = $props();
@@ -106,6 +110,43 @@
 	});
 </script>
 
+{#if variant === 'row'}
+	<li
+		class="close-out__item"
+		class:close-out__item--done={hasContent}
+		class:close-out__item--waiting={Boolean(saved?.live_link && !saved.live_link.up_to_date)}
+	>
+		<span class="close-out__state" aria-hidden="true">
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			{#if hasContent}{@html checkIcon}{/if}
+		</span>
+		<div class="close-out__text">
+			<p class="close-out__label">Work report</p>
+			{#if stateQuery.isPending}
+				<p class="close-out__detail">Loading…</p>
+			{:else if stateQuery.isError}
+				<p class="close-out__detail" role="alert">The work report could not be loaded.</p>
+			{:else if !hasContent}
+				<p class="close-out__detail">Not started</p>
+			{:else}
+				<p class="close-out__detail">Ready to share{summaryText ? ` · ${summaryText}` : ''}</p>
+				{#if saved?.live_link && !saved.live_link.up_to_date}
+					<p class="close-out__detail close-out__detail--warn" role="status">
+						Changed since you sent it to {saved.live_link.recipient_email}.
+						<button type="button" class="close-out__link" onclick={() => void copyLink()}>
+							Copy updated link
+						</button>
+					</p>
+				{/if}
+			{/if}
+		</div>
+		{#if saved}
+			<button type="button" class="close-out__action" onclick={() => (editing = true)}>
+				{hasContent ? 'Edit' : 'Start'}
+			</button>
+		{/if}
+	</li>
+{:else}
 <RailCard title="Work report" icon={fileReportIcon}>
 	{#snippet actions()}
 		<Button size="small" variant="tertiary" onclick={() => (editing = true)}>Edit report</Button>
@@ -142,6 +183,7 @@
 		{/if}
 	{/if}
 </RailCard>
+{/if}
 
 {#if editing && saved}
 	<EditJobReportDialog

@@ -21,13 +21,30 @@ the rail below Billing; the frame omits it. History still swaps in for the rail.
 Expenses, Checklists) · e Profit card · f Close-out · g Billing (+ reminders, to-bill) + invoiced figure ·
 h Instructions/Photos/Notes. Then live-vs-Pencil comparison at 1440/1100 light/dark.
 
-**Progress 2026-10-15 (work in progress, not yet checked or run):** new `layout/RecordCard` (shared Classic
-card); `--classic2-button-surface` token + Classic secondary Button now white (Pencil `P1On1n`); header `meta`,
-primary `icon`, fact `icon` props; Visits Classic rows + `completeVisitById` + `today` prop; Tabs `count` may be
-text, `variant="card"`; `embedded` mode on Labor/Expenses/Checklists; new `jobs/JobWorkLog.svelte`.
-Nothing is wired into the job page yet, and no svelte-check/lint/browser run has happened.
+**Built, not yet run in a browser (session 2, 2026-10-15):** `layout/RecordCard` (shared Classic card);
+`--classic2-button-surface` token, Classic secondary Button now white (Pencil `P1On1n`); header `meta`, primary
+`icon`, fact `icon`; Visits Classic rows + `completeVisitById` + `today` prop; Tabs text `count` +
+`variant="card"`; `embedded` Labor/Expenses/Checklists + `jobs/JobWorkLog`; `jobs/JobProfitCard` (no margin
+while open, as before); `jobs/JobCloseOutCard` hosting `variant="row"` of JobSignaturesCard and
+JobWorkReportCard; Classic markup in JobBillingCard (new props `invoicedMinor`, `reminders` snippet) and
+JobRemindersCard `variant="list"`. Job page: Classic header facts/meta/primary and main order (Visits,
+Products, Work log) are wired; **the rail is not wired yet**. Script/markup of the new parts pass the Svelte
+autofixer (it cannot parse SCSS). Full `svelte-check` runs out of memory in this worktree.
 
-**Next:** run svelte autofixer + focused check on the changed files; wire the Classic branch in
-`jobs/[id=uuid]/+page.svelte` (slice a + header facts Schedule/Crew/Time on job/Job total, meta "Multi-day ·
-N visits", primary from `organization_today` visit); then slices e–h; update design-classic/recipe for the
-new token; compare with Pencil exports at 1440/1100 light/dark.
+**Next:**
+1. Invoiced figure, no migration: in `api/jobs/[id=uuid]/+server.ts` GET, when `canSeePrice && canSeeInvoiceStatus`,
+   read distinct `invoice_id` from `invoice_sources` for the job, call `invoice_money(ids)` (definer; checks
+   invoices.view / view_price) and sum `total_minor` of non-voided invoices (check invoice status column first);
+   return `invoiced_minor` (null otherwise); add to `JobDetail` type.
+2. Wire the Classic rail in `jobs/[id=uuid]/+page.svelte`: history (swaps for Photos + Notes) · JobProfitCard
+   (when `costing`) · JobCloseOutCard (bind `workReport` to the page's `workReportCard`; it replaces Signatures,
+   Work report, QuoteSummaryCard and JobCostingCard in Classic) · JobBillingCard with `reminders` =
+   JobRemindersCard variant list · VisitsToBill/PeriodsToBill · RecordAdjustmentsCard · Instructions RecordCard
+   (rail, pencil, one row per line from `instructionLines`, Textarea when editing; show when editable or filled)
+   · RecordFilesCard · Notes. Remove unused `pointIcon`/`RecordCard` imports if left unused.
+3. Classic look for Photos (RecordFilesCard grid) and Notes (NotesPanel) per Pencil `N7eBQ`/`n3RqB1`.
+4. Update design-classic/recipe for `button-surface`; run the app, compare with Pencil exports at 1440/1100
+   light/dark, check Botanical preview unchanged, prettier/eslint on changed files, then merge to main.
+
+**Known differences left on purpose:** visit row keeps its ··· menu (Pencil shows chevron/pencil); Profit card
+shows no margin pill while a one-off job is open; Instructions use one neutral icon per line.

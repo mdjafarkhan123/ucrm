@@ -15,6 +15,7 @@
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { recordLifecycle } from '$lib/components/work/record-lifecycle';
+	import type { RecordFact } from '$lib/components/work/types';
 	import WorkRecordHeader from '$lib/components/work/WorkRecordHeader.svelte';
 	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
 	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
@@ -35,6 +36,8 @@
 	import JobLaborSection from '$lib/components/jobs/JobLaborSection.svelte';
 	import JobExpensesSection from '$lib/components/jobs/JobExpensesSection.svelte';
 	import JobCostingCard from '$lib/components/jobs/JobCostingCard.svelte';
+	import JobWorkLog from '$lib/components/jobs/JobWorkLog.svelte';
+	import RecordCard from '$lib/components/layout/RecordCard.svelte';
 	import RequestReviewButton from '$lib/components/reviews/RequestReviewButton.svelte';
 	import NotesPanel from '$lib/components/collaboration/NotesPanel.svelte';
 	import RecordFilesCard from '$lib/components/files/RecordFilesCard.svelte';
@@ -47,6 +50,8 @@
 		saveJobDiscount,
 		saveJobTax,
 		fetchJobEvents,
+		fetchJobLabor,
+		jobLaborKey,
 		jobEventsKey,
 		jobCountsKey,
 		reopenJob,
@@ -67,10 +72,18 @@
 	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
 	import printIcon from '@tabler/icons/outline/printer.svg?raw';
 	import linkIcon from '@tabler/icons/outline/link.svg?raw';
+	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
+	import calendarRangeIcon from '@tabler/icons/outline/calendar-week.svg?raw';
+	import usersIcon from '@tabler/icons/outline/users.svg?raw';
+	import timerIcon from '@tabler/icons/outline/stopwatch.svg?raw';
+	import walletIcon from '@tabler/icons/outline/wallet.svg?raw';
+	import pointIcon from '@tabler/icons/outline/point-filled.svg?raw';
+	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
 	const jobId = $derived(page.params.id ?? '');
+	const classic = $derived(page.data.presentation === 'classic');
 
 	const jobQuery = createQuery(() => ({
 		queryKey: jobDetailKey(jobId),
@@ -168,6 +181,121 @@
 		},
 		...(saved?.job.from_quote ? [{ label: 'Source', value: 'From a quote' }] : [])
 	]);
+
+	// --- Classic header ----------------------------------------------------------------------------------
+	// classic.pen "Job hero": a short line after the job number, four facts (schedule, crew, time on job,
+	// total) and one primary button named for the next step: completing today's visit.
+	let visitsSection = $state<JobVisitsSection>();
+	const visitCount = $derived(saved?.visits.length ?? 0);
+	const jobMeta = $derived.by(() => {
+		if (!saved) return undefined;
+		const kind =
+			saved.job.job_type === 'one_off' && visitCount > 1
+				? 'Multi-day'
+				: JOB_TYPE_LABELS[saved.job.job_type];
+		return `${kind} · ${visitCount} ${visitCount === 1 ? 'visit' : 'visits'}`;
+	});
+	const todayVisit = $derived(
+		saved && saved.can_complete && saved.job.status === 'active'
+			? saved.visits.find(
+					(visit) => visit.visit_date === saved.organization_today && !visit.completed_at
+				)
+			: undefined
+	);
+	const todayAction = $derived(
+		classic && todayVisit
+			? {
+					label: "Complete today's visit",
+					icon: circleCheckIcon,
+					onclick: () => visitsSection?.completeVisitById(todayVisit.id)
+				}
+			: undefined
+	);
+
+	const classicTeamQuery = createQuery(() => ({
+		queryKey: assignableTeamKey,
+		queryFn: fetchAssignableTeam,
+		enabled: classic && Boolean(saved?.visits.some((visit) => visit.assignee_ids.length > 0)),
+		staleTime: 5 * 60 * 1000
+	}));
+	const classicLaborQuery = createQuery(() => ({
+		queryKey: jobLaborKey(jobId),
+		queryFn: () => fetchJobLabor(jobId),
+		enabled: classic && Boolean(jobId),
+		staleTime: 15_000,
+		retry: false
+	}));
+	const monthDay = $derived(
+		new Intl.DateTimeFormat(saved?.locale, { month: 'short', day: 'numeric' })
+	);
+
+	function hoursAndMinutes(minutes: number) {
+		const hours = Math.floor(minutes / 60);
+		const rest = minutes % 60;
+		if (hours === 0) return `${rest}m`;
+		if (rest === 0) return `${hours}h`;
+		return `${hours}h ${rest}m`;
+	}
+
+	const classicFacts = $derived.by(() => {
+		if (!saved) return [];
+		const dates = saved.visits
+			.map((visit) => visit.visit_date)
+			.filter((date): date is string => Boolean(date))
+			.sort();
+		const day = (date: string) => monthDay.format(new Date(`${date}T00:00`));
+		const schedule =
+			dates.length === 0
+				? null
+				: dates[0] === dates[dates.length - 1]
+					? day(dates[0])
+					: `${day(dates[0])} – ${day(dates[dates.length - 1])}`;
+
+		const crewIds = [...new Set(saved.visits.flatMap((visit) => visit.assignee_ids))];
+		const names = new Map(
+			(classicTeamQuery.data ?? []).map((member) => [member.id, member.full_name])
+		);
+		const firstNames = crewIds
+			.map((id) => names.get(id)?.split(' ')[0])
+			.filter((name): name is string => Boolean(name));
+		const crew =
+			crewIds.length === 0
+				? null
+				: firstNames.length === 0
+					? `${crewIds.length} ${crewIds.length === 1 ? 'person' : 'people'}`
+					: `${firstNames.slice(0, 2).join(', ')}${crewIds.length > 2 ? ` +${crewIds.length - 2}` : ''}`;
+
+		const facts: RecordFact[] = [
+			{ label: 'Job #', value: String(saved.job.job_number) },
+			{ label: 'Schedule', value: schedule, empty: 'Not scheduled', icon: calendarRangeIcon },
+			{ label: 'Crew', value: crew, empty: 'No one assigned', icon: usersIcon }
+		];
+		if (classicLaborQuery.data) {
+			facts.push({
+				label: 'Time on job',
+				value: hoursAndMinutes(classicLaborQuery.data.totals.minutes),
+				icon: timerIcon
+			});
+		}
+		if (saved.can_see_price && saved.money) {
+			facts.push({
+				label: 'Job total',
+				value: new Intl.NumberFormat(saved.locale, {
+					style: 'currency',
+					currency: saved.job.currency_code
+				}).format(saved.money.total_minor / 100),
+				icon: walletIcon
+			});
+		}
+		return facts;
+	});
+
+	const instructionLines = $derived(
+		(saved?.job.instructions ?? '')
+			.split('\n')
+			.map((line) => line.trim())
+			.filter(Boolean)
+	);
 
 	const propertyLine = $derived.by(() => {
 		const property = saved?.job.property;
@@ -472,6 +600,67 @@
 
 <svelte:head><title>{title || 'Job'} · Contractor CRM</title></svelte:head>
 
+<!-- Blocks both presentations place, in their own order. -->
+{#snippet productsBlock()}
+	{#if saved}
+		<ProductsAndServicesBlock
+					lines={jobLines}
+					revision={saved.job.revision}
+					editable={editable && saved.can_see_price}
+					showPrices={saved.can_see_price}
+					subtotalMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? 0) : null}
+					totals={{
+						discountMinor: saved.money?.discount_minor ?? 0,
+						discountLabel: saved.money?.discount_name ?? null,
+						taxMinor: saved.money?.tax_minor ?? 0,
+						taxLabel: saved.money?.tax_name ?? null,
+						totalMinor: saved.money?.total_minor ?? null,
+						totalLabel: 'Job total'
+					}}
+					currencyCode={saved.job.currency_code}
+					locale={saved.locale}
+					editorTotalLabel="Job subtotal"
+					saveLabel="Save scope"
+					emptyDescription="Add the products and services this job covers."
+					onSave={saveScope}
+				/>
+	{/if}
+{/snippet}
+
+{#snippet visitsBlock()}
+	{#if saved}
+		<JobVisitsSection
+					bind:this={visitsSection}
+					today={saved.organization_today}
+					jobId={saved.job.id}
+					visits={saved.visits}
+					jobTitle={title}
+					locale={saved.locale}
+					canSchedule={saved.can_schedule}
+					canComplete={saved.can_complete}
+					canClose={saved.can_close}
+					jobStatus={saved.job.status}
+					jobType={saved.job.job_type}
+					isAsNeeded={saved.job.is_as_needed}
+					recurrence={saved.recurrence}
+					jobRevision={saved.job.revision}
+					clientId={saved.job.client?.id ?? null}
+					clientName={saved.job.client?.display_name ??
+						saved.job.client?.company_name ??
+						'this client'}
+					priceBasis={saved.job.price_basis}
+					billingTiming={saved.job.billing_timing}
+					canInvoiceVisits={saved.can_invoice_visits}
+					canEditPricing={saved.can_edit}
+					canSeePrice={saved.can_see_price}
+					currentUserId={saved.current_user_id}
+					canRecord={saved.can_record_field_records}
+					canManageTeam={saved.can_manage_team_field_records}
+					currencyCode={saved.job.currency_code}
+				/>
+	{/if}
+{/snippet}
+
 <!-- eslint-disable svelte/no-at-html-tags -->
 <PageContainer>
 	{#if jobQuery.isPending}
@@ -498,6 +687,8 @@
 							: {}
 					)}
 					recordNumber={saved.job.job_number}
+					meta={classic ? jobMeta : undefined}
+					primaryAction={todayAction}
 					icon={briefcaseIcon}
 					recordType="Job"
 					{title}
@@ -527,7 +718,9 @@
 							menuItems={clientMenuItems}
 						/>
 					{/snippet}
-					{#snippet facts()}<RecordFactsList facts={headerFacts} />{/snippet}
+					{#snippet facts()}<RecordFactsList
+							facts={classic ? classicFacts : headerFacts}
+						/>{/snippet}
 					{#snippet badges()}
 						{#if canRequestReview}
 							<RequestReviewButton target={{ jobId: saved.job.id }} variant="tertiary" />
@@ -545,27 +738,19 @@
 					{/snippet}
 				</WorkRecordHeader>
 
-				<ProductsAndServicesBlock
-					lines={jobLines}
-					revision={saved.job.revision}
-					editable={editable && saved.can_see_price}
-					showPrices={saved.can_see_price}
-					subtotalMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? 0) : null}
-					totals={{
-						discountMinor: saved.money?.discount_minor ?? 0,
-						discountLabel: saved.money?.discount_name ?? null,
-						taxMinor: saved.money?.tax_minor ?? 0,
-						taxLabel: saved.money?.tax_name ?? null,
-						totalMinor: saved.money?.total_minor ?? null,
-						totalLabel: 'Job total'
-					}}
-					currencyCode={saved.job.currency_code}
-					locale={saved.locale}
-					editorTotalLabel="Job subtotal"
-					saveLabel="Save scope"
-					emptyDescription="Add the products and services this job covers."
-					onSave={saveScope}
-				/>
+				{#if classic}
+					{@render visitsBlock()}
+					{@render productsBlock()}
+					<JobWorkLog
+						jobId={saved.job.id}
+						visits={saved.visits}
+						locale={saved.locale}
+						currencyCode={saved.job.currency_code}
+						active={saved.job.status === 'active'}
+						onChange={refreshCosting}
+					/>
+				{:else}
+				{@render productsBlock()}
 
 				<!--
 					Labor sits under the job's scope and above its visits, the order Jobber uses: what the job
@@ -593,33 +778,7 @@
 
 				<JobChecklistsCard jobId={saved.job.id} active={saved.job.status === 'active'} />
 
-				<JobVisitsSection
-					jobId={saved.job.id}
-					visits={saved.visits}
-					jobTitle={title}
-					locale={saved.locale}
-					canSchedule={saved.can_schedule}
-					canComplete={saved.can_complete}
-					canClose={saved.can_close}
-					jobStatus={saved.job.status}
-					jobType={saved.job.job_type}
-					isAsNeeded={saved.job.is_as_needed}
-					recurrence={saved.recurrence}
-					jobRevision={saved.job.revision}
-					clientId={saved.job.client?.id ?? null}
-					clientName={saved.job.client?.display_name ??
-						saved.job.client?.company_name ??
-						'this client'}
-					priceBasis={saved.job.price_basis}
-					billingTiming={saved.job.billing_timing}
-					canInvoiceVisits={saved.can_invoice_visits}
-					canEditPricing={saved.can_edit}
-					canSeePrice={saved.can_see_price}
-					currentUserId={saved.current_user_id}
-					canRecord={saved.can_record_field_records}
-					canManageTeam={saved.can_manage_team_field_records}
-					currencyCode={saved.job.currency_code}
-				/>
+				{@render visitsBlock()}
 
 				{#if showInstructions}
 					<SectionBlock title="Instructions" icon={notesIcon} level={2} form={editingInstructions}>
@@ -655,6 +814,7 @@
 							/>
 						{/if}
 					</SectionBlock>
+				{/if}
 				{/if}
 			{/snippet}
 

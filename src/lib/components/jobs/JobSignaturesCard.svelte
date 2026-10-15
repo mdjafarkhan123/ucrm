@@ -20,6 +20,7 @@
 	import { jobEventsKey } from '$lib/jobs/api';
 	import signatureIcon from '@tabler/icons/outline/signature.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 
 	// The job's collected sign-offs, newest first. A signature is never edited, voided or deleted — that is
 	// the whole point of it — so this card only ever adds. When the job has moved on since one was signed,
@@ -34,7 +35,9 @@
 		locale,
 		clientName,
 		canRecord,
-		active
+		active,
+		variant = 'card',
+		onDoneChange
 	}: {
 		jobId: string;
 		lines: JobLineItem[];
@@ -46,6 +49,10 @@
 		clientName: string | null;
 		canRecord: boolean;
 		active: boolean;
+		/** `row`: one line of the Classic Close-out card instead of a card of its own. */
+		variant?: 'card' | 'row';
+		/** Tells the Close-out card whether a current signature is on file. */
+		onDoneChange?: (done: boolean) => void;
 	} = $props();
 
 	const queryClient = useQueryClient();
@@ -72,6 +79,11 @@
 	}));
 
 	const signatures = $derived(signaturesQuery.data?.signatures ?? []);
+	const signed = $derived(signatures.some((signature) => !signature.is_stale));
+	$effect(() => {
+		onDoneChange?.(signed);
+	});
+	const shortDate = $derived(new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }));
 	const canCollect = $derived(Boolean(signaturesQuery.data?.can_collect) && canRecord && active);
 
 	const TYPE_LABELS: Record<JobSignatureType, string> = {
@@ -122,6 +134,46 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
+{#if variant === 'row'}
+	<li
+		class="close-out__item"
+		class:close-out__item--done={signed}
+		class:close-out__item--waiting={!signed && signatures.length > 0}
+	>
+		<span class="close-out__state" aria-hidden="true">
+			{#if signed}{@html checkIcon}{:else if signatures.length > 0}{@html alertIcon}{/if}
+		</span>
+		<div class="close-out__text">
+			<p class="close-out__label">Customer signature</p>
+			{#if signaturesQuery.isPending}
+				<p class="close-out__detail">Loading…</p>
+			{:else if signaturesQuery.isError}
+				<p class="close-out__detail" role="alert">Signatures could not be loaded.</p>
+			{:else if signatures.length === 0}
+				<p class="close-out__detail">Not collected</p>
+			{:else}
+				{#each signatures as signature (signature.id)}
+					<button
+						type="button"
+						class="close-out__link"
+						onmouseenter={() => warmDocument(signature)}
+						onfocus={() => warmDocument(signature)}
+						onclick={() => (openSignature = signature)}
+					>
+						Signed by {signature.signer_name} · {shortDate.format(
+							new Date(signature.collected_at)
+						)}{signature.is_stale ? ' · job changed since' : ''}
+					</button>
+				{/each}
+			{/if}
+		</div>
+		{#if canCollect && !signed}
+			<button type="button" class="close-out__action" onclick={() => (collecting = true)}>
+				Collect
+			</button>
+		{/if}
+	</li>
+{:else}
 <RailCard title="Signatures" icon={signatureIcon} count={signatures.length || undefined}>
 	{#snippet actions()}
 		{#if canCollect}
@@ -182,6 +234,7 @@
 		{/if}
 	{/if}
 </RailCard>
+{/if}
 
 {#if collecting}
 	<CollectJobSignatureDialog

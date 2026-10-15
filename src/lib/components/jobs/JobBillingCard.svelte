@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { untrack, type Snippet } from 'svelte';
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
+	import RecordCard from '$lib/components/layout/RecordCard.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
@@ -13,6 +15,9 @@
 	import type { InvoiceDerivedStatus } from '$lib/invoices/statuses';
 	import type { JobType } from '$lib/jobs/statuses';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
+	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
+	import bellIcon from '@tabler/icons/outline/bell-ringing.svg?raw';
+	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 
 	// The job's billing setup, which the contract insists is *three* separate decisions and never one
 	// selector: how the work is priced, when we invoice, and how the money is collected. This card owns the
@@ -35,6 +40,8 @@
 		canSeePrice = true,
 		canInvoice = false,
 		clientId = null,
+		invoicedMinor = null,
+		reminders,
 		onSaved
 	}: {
 		jobId: string;
@@ -56,6 +63,10 @@
 		canInvoice?: boolean;
 		/** The job's client, which the invoice composer needs. Null on a job that somehow has none. */
 		clientId?: string | null;
+		/** How much of the job is already on invoices. Null when this reader may not see it. */
+		invoicedMinor?: number | null;
+		/** Classic: the job's open reminders, drawn under the Reminders row. */
+		reminders?: Snippet;
 		onSaved: () => Promise<void> | void;
 	} = $props();
 
@@ -101,6 +112,23 @@
 	}
 
 	const summary = $derived(summaryFor(priceBasis));
+
+	// --- Classic (classic.pen "Billing card") ---------------------------------------------------------------
+	const classic = $derived(page.data.presentation === 'classic');
+	const wholeMoney = $derived(
+		new Intl.NumberFormat(locale, { style: 'currency', currency: currencyCode, maximumFractionDigits: 0 })
+	);
+	const meter = $derived.by(() => {
+		if (!canSeePrice || invoicedMinor === null || totalMinor === null) return null;
+		const share = totalMinor > 0 ? Math.min(1, invoicedMinor / totalMinor) : 0;
+		const state =
+			invoicedMinor <= 0
+				? { label: 'Not invoiced', tone: 'amber' }
+				: invoicedMinor >= totalMinor
+					? { label: 'Fully invoiced', tone: 'green' }
+					: { label: 'Partly invoiced', tone: 'blue' };
+		return { share, ...state };
+	});
 
 	// --- The payment schedule -----------------------------------------------------------------------------
 	// Only a one-off job can carry one, and only a reader who may see the job's money can see what the stages
@@ -194,6 +222,109 @@
 	}
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
+{#if classic}
+	<RecordCard title="Billing" size="rail" id="job-billing" class="billing-card">
+		{#snippet actions()}
+			{#if editable}
+				<button type="button" class="billing-card__settings" onclick={openDialog}>
+					Settings<span aria-hidden="true">{@html arrowRightIcon}</span>
+				</button>
+			{/if}
+		{/snippet}
+
+		{#if meter}
+			<div class="billing-card__meter">
+				<div class="billing-card__meter-row">
+					<p class="billing-card__invoiced">
+						<strong>{wholeMoney.format((invoicedMinor ?? 0) / 100)}</strong>
+						of {wholeMoney.format((totalMinor ?? 0) / 100)} invoiced
+					</p>
+					<span class={`billing-card__pill billing-card__pill--${meter.tone}`}>{meter.label}</span>
+				</div>
+				<span class="billing-card__track" aria-hidden="true">
+					<span style:width={`${meter.share * 100}%`}></span>
+				</span>
+			</div>
+		{/if}
+
+		<div class="billing-card__row">
+			<span class="billing-card__tile billing-card__tile--blue" aria-hidden="true"
+				>{@html fileTextIcon}</span
+			>
+			<div class="billing-card__text">
+				<p class="billing-card__label">Invoice</p>
+				<p class="billing-card__value">{BASIS_LABEL[priceBasis] ?? priceBasis}</p>
+				{#if summary}<p class="billing-card__label">{summary}</p>{/if}
+			</div>
+		</div>
+
+		<div class="billing-card__row">
+			<span class="billing-card__tile billing-card__tile--amber" aria-hidden="true"
+				>{@html bellIcon}</span
+			>
+			<div class="billing-card__text">
+				<p class="billing-card__label">Reminders</p>
+				<p class="billing-card__value">{TIMING_LABEL[billingTiming] ?? billingTiming}</p>
+				{#if reminders}{@render reminders()}{/if}
+			</div>
+		</div>
+
+		{#if canScheduleStages && (stages.length > 0 || editable)}
+			<div class="billing-card__schedule">
+				<p class="billing-card__label">Payment schedule</p>
+				{#if stages.length > 0}
+					{#if schedule?.reconciles === false}
+						<p class="billing-card__warning" role="status">
+							These stages no longer add up to the job total. Edit the stages that have not been
+							invoiced yet so they match.
+						</p>
+					{/if}
+					<ul class="billing-card__stages">
+						{#each stages as stage (stage.installment_id)}
+							<li class="billing-card__stage">
+								<span class="billing-card__stage-name">{stage.description}</span>
+								{#if stage.amount_minor !== null}
+									<strong>{money.format(stage.amount_minor / 100)}</strong>
+								{/if}
+								<span class="billing-card__stage-meta">
+									<Badge size="small" status={stageTone(displayStatus(stage))}>
+										{STAGE_LABELS[displayStatus(stage)] ?? stage.status}
+									</Badge>
+									{#if canBillStage && displayStatus(stage) === 'remaining'}
+										<button
+											type="button"
+											class="billing-card__link"
+											onclick={() => billStage(stage.installment_id)}>Create invoice</button
+										>
+									{:else if stage.invoice}
+										<a
+											class="billing-card__link"
+											href={resolve('/(app)/invoices/[id=uuid]', { id: stage.invoice.id })}
+										>
+											Invoice #{stage.invoice.invoice_number}
+										</a>
+									{/if}
+								</span>
+							</li>
+						{/each}
+					</ul>
+				{:else}
+					<p class="billing-card__label">This job is invoiced in one go.</p>
+				{/if}
+				{#if editable}
+					<button type="button" class="billing-card__link" onclick={() => (scheduleOpen = true)}>
+						{stages.length > 0 ? 'Edit payment schedule' : 'Add a payment schedule'}
+					</button>
+				{/if}
+			</div>
+		{/if}
+
+		{#snippet footer()}
+			Reminders are prompts for your own team, not messages to the client.
+		{/snippet}
+	</RecordCard>
+{:else}
 <RailCard title="Billing" icon={receiptIcon}>
 	{#snippet actions()}
 		{#if editable}
@@ -292,6 +423,8 @@
 		hand for now.
 	</p>
 </RailCard>
+{/if}
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 {#if scheduleOpen}
 	<JobPaymentScheduleDialog
@@ -479,6 +612,213 @@
 			justify-content: flex-end;
 			gap: var(--space-small);
 			margin-top: var(--space-small);
+		}
+	}
+
+	// --- Classic (classic.pen "Billing card" h2RmA) ---------------------------------------------------------
+	.billing-card {
+		&__settings,
+		&__link {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+			padding: 0;
+			border: 0;
+			background: none;
+			color: var(--classic2-green);
+			font-family: var(--classic2-font);
+			font-size: var(--classic2-font-label);
+			font-weight: 600;
+			text-decoration: none;
+			cursor: pointer;
+
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
+
+			&:hover {
+				text-decoration: underline;
+			}
+
+			&:focus-visible {
+				outline: 2px solid var(--classic2-green);
+				outline-offset: 2px;
+			}
+		}
+
+		&__link {
+			font-size: var(--classic2-font-small);
+		}
+
+		&__meter {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			padding: 0 20px 16px;
+		}
+
+		&__meter-row {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 8px;
+		}
+
+		&__invoiced {
+			display: flex;
+			align-items: baseline;
+			gap: 6px;
+			margin: 0;
+			color: var(--classic2-secondary);
+			font-size: var(--classic2-font-label);
+			font-weight: 500;
+
+			strong {
+				color: var(--classic2-ink);
+				font-size: 22px;
+				font-weight: 700;
+				letter-spacing: -0.5px;
+				line-height: 1;
+			}
+		}
+
+		&__pill {
+			flex: 0 0 auto;
+			padding: 3px 8px;
+			border-radius: 999px;
+			font-size: var(--classic2-font-micro);
+			font-weight: 600;
+
+			&--amber {
+				background: var(--classic2-amber-tint);
+				color: var(--classic2-amber);
+			}
+
+			&--blue {
+				background: var(--classic2-blue-tint);
+				color: var(--classic2-blue);
+			}
+
+			&--green {
+				background: var(--classic2-green-tint);
+				color: var(--classic2-green);
+			}
+		}
+
+		&__track {
+			display: block;
+			height: 6px;
+			overflow: hidden;
+			border-radius: 999px;
+			background: var(--classic2-chip);
+
+			span {
+				display: block;
+				height: 100%;
+				border-radius: 999px;
+				background: var(--classic2-green);
+			}
+		}
+
+		&__row,
+		&__schedule {
+			display: flex;
+			align-items: flex-start;
+			gap: 12px;
+			padding: 12px 20px;
+			border-top: 1px solid var(--classic2-divider);
+			font-family: var(--classic2-font);
+		}
+
+		&__schedule {
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		&__tile {
+			display: inline-flex;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			box-sizing: border-box;
+			width: 32px;
+			height: 32px;
+			border-radius: 9px;
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+
+			&--blue {
+				border: 1px solid var(--classic2-blue-soft);
+				background: var(--classic2-blue-tint);
+				color: var(--classic2-blue);
+			}
+
+			&--amber {
+				border: 1px solid var(--classic2-amber-soft);
+				background: var(--classic2-amber-tint);
+				color: var(--classic2-amber);
+			}
+		}
+
+		&__text {
+			display: flex;
+			flex: 1 1 auto;
+			flex-direction: column;
+			gap: 2px;
+			min-width: 0;
+		}
+
+		&__label {
+			margin: 0;
+			color: var(--classic2-secondary);
+			font-size: var(--classic2-font-small);
+			font-weight: 500;
+		}
+
+		&__value {
+			margin: 0;
+			color: var(--classic2-ink);
+			font-size: var(--classic2-font-label);
+			font-weight: 600;
+		}
+
+		&__warning {
+			margin: 0;
+			color: var(--classic2-amber);
+			font-size: var(--classic2-font-small);
+		}
+
+		&__stages {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			width: 100%;
+			margin: 0;
+			padding: 0;
+			list-style: none;
+		}
+
+		&__stage {
+			display: grid;
+			gap: 4px 8px;
+			grid-template-columns: minmax(0, 1fr) auto;
+			color: var(--classic2-ink);
+			font-size: var(--classic2-font-label);
+		}
+
+		&__stage-name {
+			overflow-wrap: anywhere;
+		}
+
+		&__stage-meta {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			grid-column: 1 / -1;
 		}
 	}
 </style>
