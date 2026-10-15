@@ -74,14 +74,15 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
 
 - [x] Jafar, 2026-10-15 ("do what is best"): Week's Rachel Kim card is now amber Unassigned and Wed's header reads
       "7 items · 1 unassigned", matching Day and Month. Next screen chosen: the Unscheduled drawer.
-- [x] `Schedule · Unscheduled drawer · 1440` (`CAU2P`, x 18580, y 4080) and `… · states` (`FlsaG`, y 5184) drawn,
-      light and dark checked. Week with a 384px right drawer (contract § Unscheduled work): live amber count,
-      hint, search, Team and Status filters, Oldest first sort; each card has drag handle, client, job (Visit N of
-      M for recurring), address, waiting age (amber chip past 14 days), assignment or amber Unassigned, and a
-      white Schedule button (no extra green). Foot note: dropping asks to confirm. States: empty (Everything
-      has a date), filtered empty (Clear filters), failed (Try again, controls dimmed). Build rule: the drawer
-      tucks away while a visit is dragged so every day stays droppable (it covers Thu–Sat when open).
-      Waiting for Jafar.
+- [x] Unscheduled drawer redrawn to match the live app (Jafar 2026-10-15: "we are here not to change any
+      behavior, we are just to design screen"; checked against `ScheduleUnscheduledDrawer.svelte` and the page).
+      `Schedule · Unscheduled drawer · 1440` (`Obv2U`, x 18580, y 4080): the Day view with the drawer docked
+      beside the calendar (the calendar narrows, as in the app), search plus an All-employees select, oldest
+      first, a card per visit with drag handle, client, work, place, waiting age, assignment and Schedule, and a
+      foot note that a visit dropped here is unscheduled after confirming. `… · states` (`FlsaG`): empty,
+      filtered-empty and failed, using the app's wording. An earlier on-top version with status filter and sort
+      was deleted. To match the app the same day: Day rows show name + "N items" only (booked hours and bar
+      removed), and the Month "+ more" panel lost its two extra links. Light and dark checked. Waiting for Jafar.
 
 ## Next (new sessions, one screen each)
 
