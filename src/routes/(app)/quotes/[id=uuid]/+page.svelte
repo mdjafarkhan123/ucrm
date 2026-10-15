@@ -1479,10 +1479,10 @@
 				{#if classic}
 					{#if showHistory}{@render historyCard()}{/if}
 
-					{#if saved.can_see_price && saved.can_see_cost && saved.version && saved.version.cost_minor !== null}
+					{#if saved.can_see_price && saved.can_see_cost && saved.version && saved.version.cost_minor != null}
 						<QuoteProfitCard
-							subtotalMinor={saved.version.subtotal_minor}
-							discountMinor={saved.version.discount_minor}
+							subtotalMinor={saved.version.subtotal_minor ?? 0}
+							discountMinor={saved.version.discount_minor ?? 0}
 							costMinor={saved.version.cost_minor}
 							profitMinor={saved.version.profit_minor ?? null}
 							marginBasisPoints={saved.version.margin_basis_points ?? null}
