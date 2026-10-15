@@ -1,50 +1,80 @@
 # Classic theme redesign
 
-**Status:** First version (six record pages, card shells everywhere, four additions) approved by Jafar on
-2026-10-13; all six record pages designed and approved, and the build order approved the same day. Building
-next.
+**Status:** Whole-application goal and design-to-build method reaffirmed by Jafar on 2026-10-15. The first
+delivery (shared parts and six record pages) was approved on 2026-10-13. B1–B3 are integrated; B4 is awaiting
+integration. The revised delivery order was approved on 2026-10-15.
 
 ## Summary
 
 Classic is the design every contractor business uses today and the default for new businesses. This campaign
-gives Classic a premium, polished, modern look — the standard of a top product designer's portfolio — while
-keeping every existing feature, permission and save rule. It starts from the job details concept Jafar liked,
-carries the same look to the other record pages that share its building blocks, and then continues gradually
-through the whole app, including the Uplift Control Room (the `/jafar` panel).
+redesigns and rebuilds **the whole application**, in stages, with new concepts that feel premium, polished,
+modern, colorful, clear, calm and useful. The first delivery covers shared parts and six record pages; the
+remaining Business Workspace, Uplift Control Room, sign-in and customer-facing journeys follow. The theme
+selection foundation still covers only the signed-in Business Workspace in its first release; this campaign
+does not silently extend that separate contract. Existing features, permissions and save rules remain unless
+Jafar separately approves a behavior change.
 
 ## Problem and audience
 
-Owners, office staff and crews of contractor businesses using Classic, and later Jafar in the Control Room.
+Owners, office staff and crews of contractor businesses using Classic; their customers on application-owned
+pages; and later Jafar and his team in the Control Room.
 Today's record pages give every section the same weight: empty sections take as much room as busy ones, and
 the answers people open a record for — where it stands, whether anything needs attention today, and whether
 it makes money — have to be hunted for across a long stack of similar boxes.
 
 ## First version
 
-The six record pages that share building blocks: job, quote, invoice, request, payment and client (Jafar,
-2026-10-13). Each is designed at desktop width in Pencil, then built with its phone layout adapted during the
-build, and works in light and dark appearance. Every other Classic page takes the new card style at the same
-time, without layout changes.
+Finish the Classic shared parts, then the six record pages that share them: job, quote, invoice, request,
+payment and client (Jafar, 2026-10-13). Their approved desktop Pencil designs are the starting points; phone
+adaptations are reviewed before each page is coded. Each works in light and dark appearance. Other Classic pages already
+receive the shared card style; their full layouts are redesigned in later stages.
 
 ## Later stages
 
-The rest of the app follows gradually, including the Uplift Control Room (Jafar, 2026-10-13). Their order and
-grouping are planned after the first version, one stage at a time.
+The whole application follows gradually: the five approved lists; Schedule; Settings; Home and Reports;
+remaining Business Workspace areas and forms; the Uplift Control Room; and sign-in, setup and customer-facing
+journeys. Inventory routes and shared parts before each later stage so no screen is silently skipped. The
+currently approved sequence and later-stage gates live in the [roadmap](../Memory/campaigns/classic-theme-redesign/ROADMAP.md).
 
-## Direction agreed so far (don not write a long history, before writing show jafar for approval)
+## Design target
 
 - **Name:** `classic-theme-redesign` (Jafar, 2026-10-13).
-- **Target:** Dont convert exsiting real app screen design to classic pencil design. Its not a conversion work neither a random design. A new design concept like how top ui/ux engnieer design theri product on Dribbble. Jafar Like their design. Premium, Polished, Modern, Colored, Clarity, Clam, Meaningful. New design should meet what contractors really want to see - no vauge. Design should be based on real world related top product research to know what really works and what not, which layout or element to add not to add, their positioning etc
+- **New concepts come first.** Do not copy the live screen into Pencil and call it a redesign, and do not add
+  decoration without a purpose. Study the actual task and mature products relevant to it, then design a fresh
+  layout that makes the important answer or action easy to find. If an existing idea genuinely works best,
+  keep it and explain why. Jafar approves what people see before it is built.
+- **Visual quality:** Aim for the care of a leading product designer's work: premium, polished, modern,
+  colorful, clear, calm and meaningful. Icons and accents may use multiple colors wherever that improves
+  beauty and clarity. Keep status meanings consistent and ensure color never becomes the only way to
+  understand information. These are Jafar's priorities, reaffirmed 2026-10-15.
+
+## Design and build loop
+
+1. Establish the design-system foundations and **all shared parts needed by the approved screen batch** in
+   `classic.pen`, including states. Show Jafar the new or materially changed parts, record approval, then build
+   and verify their Classic-only implementation. Extend the system when later screens reveal a real need;
+   do not spend months inventing parts for hypothetical screens.
+2. For each screen, research the user's task and the current behavior, create a new Pencil concept at desktop
+   and phone widths, and get Jafar's approval. Earlier approved desktop screens retain their approval; add
+   and review their phone adaptation before coding without reopening the settled desktop concept.
+3. Build that screen using the shared parts. Check the main journey in the live app, desktop and phone, light
+   and dark, relevant roles, and the states it touches. Keep Botanical unchanged.
+4. If the screen improves a shared part, update its Pencil master, code component and design guidance in the
+   same delivery. Remove the finished screen's superseded app styling and rejected Pencil variants after the
+   approved reference is safely saved. Then move to the next screen. Limit new speculative Pencil work while
+   implementation is behind.
 
 ## Design principles
 
-Drawn from the job concept; later screens follow them unless Jafar changes them.
+These describe the approved record-page concepts. Later screen concepts use the parts that fit their task;
+they do not have to copy a record-page layout.
 
 1. **Answer the record's questions first.** The header card shows where the record stands (the lifecycle
    track), who and where it is for, and its key facts. Attention items show where the work is — today's visit
    in the visit list, not in a separate warning box.
-2. **Colour carries meaning only.** Different type of color (multicolor) is allowed where suits. Section, record type or status — the recipe's § Colour rule. Green
-   means done or happening now, amber waiting, red needs action.
+2. **Color adds meaning and visual quality.** Multicolor icons and accents are allowed where they make the
+   design more beautiful or easier to scan. Status colors stay consistent: green means done or happening now,
+   amber waiting, red needs action. See the recipe's color guidance.
 3. **Small things stay small.** An empty section shows its prompt and action compactly. Related small sections
    can share one card with tabs, as the job's Work log does for time, expenses and checklists.
 4. **Work on the left, money and wrap-up on the right.** The main column holds the work (visits, line items,
@@ -92,9 +122,11 @@ Jafar approved these on 2026-10-13 ("go with your recommendation"):
 
 - An owner opens an in-progress job → without scrolling sees its stage, today's visit, the job total and what
   is left before invoicing.
-- Every existing action on the redesigned pages still works for the same roles, with the same save behavior.
+- Every existing action on redesigned pages still works for the same roles, with the same save behavior.
 - Classic dark appearance and phone width show every redesigned page without cut-off or overlapping parts.
 - Botanical pages look the same before and after this campaign's changes.
+- The route inventory shows every application area assigned to a stage; each completed screen has an approved
+  design, a checked live journey and no obsolete local variant left as the current design.
 
 ## Assumptions
 
@@ -106,8 +138,9 @@ Jafar approved these on 2026-10-13 ("go with your recommendation"):
 
 ## Still unclear
 
-- **Whole-app boundary** — whether later stages also cover login and the pages customers see (request forms,
-  client portal, quote approval, payment pages). Does not block the first version.
+- The exact order and screen boundaries within later Business Workspace, Control Room, sign-in and
+  customer-facing stages are chosen from the route inventory before those stages begin. Their inclusion in
+  the campaign is approved; this sequencing does not block the first delivery.
 
 ## Not doing
 

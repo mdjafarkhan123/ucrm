@@ -1,7 +1,7 @@
 # Classic theme redesign — design recipe
 
 The short rules for designing Classic screens. Jafar's target is the
-[plan](classic-theme-redesign-behavior-contract.md) § Direction agreed so far. Each value lives in one place:
+[plan](classic-theme-redesign-behavior-contract.md) § Design target. Each value lives in one place:
 
 - **Values and parts:** the design-system page in `classic.pen` (`Classic design system · light` and `· dark`);
   in code, `src/lib/styles/_classic-theme-tokens.scss`. Older pointers to this recipe's § Tokens, § Page and
@@ -13,23 +13,30 @@ The short rules for designing Classic screens. Jafar's target is the
 
 ## Working method
 
-1. **Research first.** Study how top products (Jobber, Housecall Pro, ServiceTitan) handle the screen and what
-   contractors need from it; read the page's `+page.svelte` for its real content. Everything drawn exists in
-   code or the plan; anything new goes to Jafar as a proposal.
-2. **Redesign.** Give the screen a new layout in the record pages' language: header card with key facts, main
-   column beside a 336 rail, one dark featured card at most. Screens Jafar already approved keep their placement.
-3. **Build from parts.** Place instances from the design-system page with token colours; when a part must
-   change, change it there first.
+1. **Research first.** Study how relevant mature products (Jobber, Housecall Pro and ServiceTitan for
+   contractor work) handle the user's task; read the page and its real states. Draw from working behavior and
+   approved plans; show any new behavior to Jafar as a proposal.
+2. **Create a new concept.** Arrange information around the user's real question and next action; do not
+   redraw the live page box for box. Use the approved record-page language where it helps, not as a forced
+   template for unrelated screens. Keep an existing idea only when it is genuinely the strongest solution.
+3. **Build from parts.** Place instances from the design-system page with token colours. Complete the shared
+   parts needed for the approved screen batch before building its screens. When a screen improves a part,
+   update its design-system master, app component and guidance together.
 4. **Fill with busy, believable data:** one contractor (Raad LTD, Burnaby BC), amounts that add up.
 5. **Critique.** Export at scale 1 and read it full size: clipped text, misalignment, a fact shown twice,
    invented features, colour that breaks § Colour rule. Check dark mode. At most three rounds.
-6. **One screen per session.** Desktop 1440 only; phone layouts are adapted while building. Show Jafar and stop;
-   he presses Ctrl+S in Pencil before `classic.pen` is committed.
+6. **Finish one screen before advancing.** Draw new concepts at desktop 1440 and phone 390, show Jafar, and
+   wait for approval; he presses Ctrl+S in Pencil before `classic.pen` is committed. For the already approved
+   desktop record/list screens, add and review the phone adaptation before code without repeating the desktop
+   decision. Check the live screen in both widths and appearances. Remove superseded styling and rejected
+   variants only after the approved replacement is saved. A screen can span sessions.
 
 ## Colour rule
 
 A calm neutral base, and the brand green `#037741` with white text for each page's one main button. Light mode
-uses no light green. Colour appears only when it means something:
+uses no light green. Jafar approved more visual color on 2026-10-15: icons and accents may use multiple
+colors wherever they improve beauty, recognition or scanning. Keep status meanings consistent; a colored icon
+does not always need to announce a status. Use color deliberately and keep text readable.
 
 | Meaning     | Colours                                                                                         |
 | ----------- | ----------------------------------------------------------------------------------------------- |
@@ -37,8 +44,8 @@ uses no light green. Colour appears only when it means something:
 | Record type | Quote rose, invoice blue, request amber, job green, client violet                               |
 | Status      | Red needs action, amber waiting, green done or happening now                                    |
 
-A coloured icon tile tells the user something — a status needing attention, another record's type, an
-automation. Every other icon stays neutral.
+An icon tile may identify a section, record type or action, or simply add a useful visual rhythm. Do not
+apply the status palette to unrelated states in a way that changes its meaning.
 
 ## Record page structure
 
