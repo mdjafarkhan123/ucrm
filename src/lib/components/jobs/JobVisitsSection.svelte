@@ -313,17 +313,18 @@
 		[toBeScheduled.length, upcoming.length, past.length].filter((count) => count > 0).length > 1
 	);
 	const completedCount = $derived(visits.filter((visit) => visit.completed_at).length);
-	const lastVisitDate = $derived(seriesDates[seriesDates.length - 1] ?? null);
 	const weekdayFormat = $derived(new Intl.DateTimeFormat(locale, { weekday: 'short' }));
 	const shortDayFormat = $derived(
 		new Intl.DateTimeFormat(locale, { weekday: 'short', month: 'short', day: 'numeric' })
 	);
-	const monthDayFormat = $derived(new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }));
+	const monthDayFormat = $derived(
+		new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' })
+	);
 	const classicSubtitle = $derived.by(() => {
 		if (visits.length === 0) return undefined;
 		const done = `${completedCount} of ${visits.length} complete`;
-		if (!lastVisitDate) return done;
-		return `${done} · last visit ${shortDayFormat.format(new Date(`${lastVisitDate}T00:00`))}`;
+		if (!seriesLast) return done;
+		return `${done} · last visit ${shortDayFormat.format(new Date(`${seriesLast}T00:00`))}`;
 	});
 
 	function hoursBetween(start: string, end: string) {
@@ -344,7 +345,8 @@
 		if (!visit.start_time) return `${day} · Anytime`;
 		const start = formatTime(visit.start_time);
 		if (!visit.end_time) return `${day} · ${start}`;
-		const span = visit.visit_date === todayStr ? '' : hoursBetween(visit.start_time, visit.end_time);
+		const span =
+			visit.visit_date === todayStr ? '' : hoursBetween(visit.start_time, visit.end_time);
 		return `${day} · ${start} – ${formatTime(visit.end_time)}${span ? ` · ${span}` : ''}`;
 	}
 
@@ -1106,7 +1108,12 @@
 			{#each visit.assignee_ids.slice(0, 3) as memberId (memberId)}
 				{@const member = memberById.get(memberId)}
 				<span class="job-visit__face" title={member?.full_name ?? 'A team member'}>
-					<Avatar id={memberId} name={member?.full_name ?? '?'} src={member?.avatar_url} size="small" />
+					<Avatar
+						id={memberId}
+						name={member?.full_name ?? '?'}
+						src={member?.avatar_url}
+						size="small"
+					/>
 				</span>
 			{/each}
 			{#if visit.assignee_ids.length > 3}
@@ -1158,11 +1165,7 @@
 						Edit Schedule
 					</Button>
 				{/if}
-				<DropdownMenu
-					items={addMenuItems}
-					triggerLabel="Add visits"
-					triggerClass="job-visits__add"
-				>
+				<DropdownMenu items={addMenuItems} triggerLabel="Add visits" triggerClass="job-visits__add">
 					{#snippet trigger()}
 						<span class="job-visits__add-icon" aria-hidden="true">{@html plusIcon}</span>
 						Add visits
@@ -1201,7 +1204,10 @@
 				>
 					{#snippet action()}
 						{#if scheduleAllowed}
-							<Button variant="secondary" onclick={() => openAdd(isAsNeeded ? 'single' : 'multiple')}>
+							<Button
+								variant="secondary"
+								onclick={() => openAdd(isAsNeeded ? 'single' : 'multiple')}
+							>
 								{isAsNeeded ? 'Add a visit' : 'Add visits'}
 							</Button>
 						{/if}
@@ -1249,143 +1255,145 @@
 		{/if}
 	</RecordCard>
 {:else}
-<SectionBlock title="Visits" icon={calendarIcon} level={2}>
-	{#snippet actions()}
-		{#if scheduleAllowed}
-			{#if isRecurringScheduled}
-				<Button size="small" variant="tertiary" onclick={() => (editingAll = true)}>
-					Edit Schedule
-				</Button>
-			{/if}
-			<DropdownMenu
-				items={addMenuItems}
-				triggerLabel="Add visits"
-				triggerClass="job-visits-section__add-trigger"
-			>
-				{#snippet trigger()}
-					<span class="job-visits-section__add-icon" aria-hidden="true">{@html plusIcon}</span>
-					Add visits
-					<span class="job-visits-section__add-caret" aria-hidden="true"
-						>{@html chevronDownIcon}</span
-					>
-				{/snippet}
-			</DropdownMenu>
-		{/if}
-	{/snippet}
-
-	{#if addError}<p class="job-visits-section__error" role="alert">{addError}</p>{/if}
-
-	{#if isRecurringScheduled && recurrenceSummary}
-		<div class="job-visits-section__recurrence">
-			<span class="job-visits-section__recurrence-icon" aria-hidden="true">{@html repeatIcon}</span>
-			<span class="job-visits-section__recurrence-text">
-				<span class="job-visits-section__recurrence-summary">{recurrenceSummary}</span>
-				<span class="job-visits-section__recurrence-detail">
-					{visits.length}
-					{visits.length === 1 ? 'visit' : 'visits'}{seriesRange ? ` · ${seriesRange}` : ''}
-				</span>
-			</span>
-		</div>
-	{/if}
-
-	{#if timerElsewhere && jobStatus === 'active' && visits.some((visit) => !visit.completed_at)}
-		<div class="job-visits-section__timer-elsewhere">
-			<TimerRunningElsewhere timer={timerElsewhere} />
-		</div>
-	{/if}
-
-	{#if visits.length === 0}
-		<EmptyState
-			icon={calendarIcon}
-			title={isAsNeeded ? 'Dispatched as needed' : 'No visits yet'}
-			description={isAsNeeded
-				? 'This job has no set schedule. Add a visit whenever work comes up.'
-				: scheduleAllowed
-					? 'Add the days your team will be on site. You can pick several at once.'
-					: 'This job has no visits scheduled.'}
-		>
-			{#snippet action()}
-				{#if scheduleAllowed}
-					<Button variant="secondary" onclick={() => openAdd(isAsNeeded ? 'single' : 'multiple')}>
-						{isAsNeeded ? 'Add a visit' : 'Add visits'}
+	<SectionBlock title="Visits" icon={calendarIcon} level={2}>
+		{#snippet actions()}
+			{#if scheduleAllowed}
+				{#if isRecurringScheduled}
+					<Button size="small" variant="tertiary" onclick={() => (editingAll = true)}>
+						Edit Schedule
 					</Button>
 				{/if}
-			{/snippet}
-		</EmptyState>
-	{:else}
-		<div class="job-visits-section__groups">
-			{#if toBeScheduled.length > 0}
-				<div class="job-visits-section__group">
-					<p class="job-visits-section__group-title">
-						To be scheduled <span class="job-visits-section__group-count"
-							>{toBeScheduled.length}</span
+				<DropdownMenu
+					items={addMenuItems}
+					triggerLabel="Add visits"
+					triggerClass="job-visits-section__add-trigger"
+				>
+					{#snippet trigger()}
+						<span class="job-visits-section__add-icon" aria-hidden="true">{@html plusIcon}</span>
+						Add visits
+						<span class="job-visits-section__add-caret" aria-hidden="true"
+							>{@html chevronDownIcon}</span
 						>
-					</p>
-					<ul class="job-visits-section__list">
-						{#each toBeScheduled as visit (visit.id)}
-							{@render visitRow(visit)}
-						{/each}
-					</ul>
-				</div>
+					{/snippet}
+				</DropdownMenu>
 			{/if}
+		{/snippet}
 
-			{#if upcoming.length > 0}
-				<div class="job-visits-section__group">
-					<p class="job-visits-section__group-title">
-						Upcoming <span class="job-visits-section__group-count">{upcoming.length}</span>
-					</p>
-					<ul class="job-visits-section__list">
-						{#each upcomingVisible as visit (visit.id)}
-							{@render visitRow(visit)}
-						{/each}
-					</ul>
-					{#if upcomingHidden > 0}
-						<button
-							type="button"
-							class="job-visits-section__more"
-							onclick={() => (showAllUpcoming = true)}
-						>
-							Show all {upcoming.length} upcoming visits
-						</button>
-					{:else if showAllUpcoming && upcoming.length > 3}
-						<button
-							type="button"
-							class="job-visits-section__more"
-							onclick={() => (showAllUpcoming = false)}
-						>
-							Show fewer
-						</button>
+		{#if addError}<p class="job-visits-section__error" role="alert">{addError}</p>{/if}
+
+		{#if isRecurringScheduled && recurrenceSummary}
+			<div class="job-visits-section__recurrence">
+				<span class="job-visits-section__recurrence-icon" aria-hidden="true"
+					>{@html repeatIcon}</span
+				>
+				<span class="job-visits-section__recurrence-text">
+					<span class="job-visits-section__recurrence-summary">{recurrenceSummary}</span>
+					<span class="job-visits-section__recurrence-detail">
+						{visits.length}
+						{visits.length === 1 ? 'visit' : 'visits'}{seriesRange ? ` · ${seriesRange}` : ''}
+					</span>
+				</span>
+			</div>
+		{/if}
+
+		{#if timerElsewhere && jobStatus === 'active' && visits.some((visit) => !visit.completed_at)}
+			<div class="job-visits-section__timer-elsewhere">
+				<TimerRunningElsewhere timer={timerElsewhere} />
+			</div>
+		{/if}
+
+		{#if visits.length === 0}
+			<EmptyState
+				icon={calendarIcon}
+				title={isAsNeeded ? 'Dispatched as needed' : 'No visits yet'}
+				description={isAsNeeded
+					? 'This job has no set schedule. Add a visit whenever work comes up.'
+					: scheduleAllowed
+						? 'Add the days your team will be on site. You can pick several at once.'
+						: 'This job has no visits scheduled.'}
+			>
+				{#snippet action()}
+					{#if scheduleAllowed}
+						<Button variant="secondary" onclick={() => openAdd(isAsNeeded ? 'single' : 'multiple')}>
+							{isAsNeeded ? 'Add a visit' : 'Add visits'}
+						</Button>
 					{/if}
-				</div>
-			{/if}
-
-			{#if past.length > 0}
-				<div class="job-visits-section__group">
-					<button
-						type="button"
-						class="job-visits-section__group-toggle"
-						aria-expanded={showPast}
-						onclick={() => (showPast = !showPast)}
-					>
-						<span
-							class="job-visits-section__group-caret"
-							class:job-visits-section__group-caret--open={showPast}
-							aria-hidden="true">{@html chevronDownIcon}</span
-						>
-						Past <span class="job-visits-section__group-count">{past.length}</span>
-					</button>
-					{#if showPast}
+				{/snippet}
+			</EmptyState>
+		{:else}
+			<div class="job-visits-section__groups">
+				{#if toBeScheduled.length > 0}
+					<div class="job-visits-section__group">
+						<p class="job-visits-section__group-title">
+							To be scheduled <span class="job-visits-section__group-count"
+								>{toBeScheduled.length}</span
+							>
+						</p>
 						<ul class="job-visits-section__list">
-							{#each past as visit (visit.id)}
+							{#each toBeScheduled as visit (visit.id)}
 								{@render visitRow(visit)}
 							{/each}
 						</ul>
-					{/if}
-				</div>
-			{/if}
-		</div>
-	{/if}
-</SectionBlock>
+					</div>
+				{/if}
+
+				{#if upcoming.length > 0}
+					<div class="job-visits-section__group">
+						<p class="job-visits-section__group-title">
+							Upcoming <span class="job-visits-section__group-count">{upcoming.length}</span>
+						</p>
+						<ul class="job-visits-section__list">
+							{#each upcomingVisible as visit (visit.id)}
+								{@render visitRow(visit)}
+							{/each}
+						</ul>
+						{#if upcomingHidden > 0}
+							<button
+								type="button"
+								class="job-visits-section__more"
+								onclick={() => (showAllUpcoming = true)}
+							>
+								Show all {upcoming.length} upcoming visits
+							</button>
+						{:else if showAllUpcoming && upcoming.length > 3}
+							<button
+								type="button"
+								class="job-visits-section__more"
+								onclick={() => (showAllUpcoming = false)}
+							>
+								Show fewer
+							</button>
+						{/if}
+					</div>
+				{/if}
+
+				{#if past.length > 0}
+					<div class="job-visits-section__group">
+						<button
+							type="button"
+							class="job-visits-section__group-toggle"
+							aria-expanded={showPast}
+							onclick={() => (showPast = !showPast)}
+						>
+							<span
+								class="job-visits-section__group-caret"
+								class:job-visits-section__group-caret--open={showPast}
+								aria-hidden="true">{@html chevronDownIcon}</span
+							>
+							Past <span class="job-visits-section__group-count">{past.length}</span>
+						</button>
+						{#if showPast}
+							<ul class="job-visits-section__list">
+								{#each past as visit (visit.id)}
+									{@render visitRow(visit)}
+								{/each}
+							</ul>
+						{/if}
+					</div>
+				{/if}
+			</div>
+		{/if}
+	</SectionBlock>
 {/if}
 
 <CreateVisitsDialog
@@ -1879,7 +1887,7 @@
 			}
 		}
 
-		:global(.job-visits__add) {
+		@at-root :global(.job-visits__add) {
 			display: inline-flex;
 			align-items: center;
 			gap: 6px;
@@ -1896,11 +1904,11 @@
 			cursor: pointer;
 		}
 
-		:global(.job-visits__add:hover) {
+		@at-root :global(.job-visits__add:hover) {
 			border-color: var(--classic2-green);
 		}
 
-		:global(.job-visits__add:focus-visible) {
+		@at-root :global(.job-visits__add:focus-visible) {
 			outline: 2px solid var(--classic2-green);
 			outline-offset: 2px;
 		}

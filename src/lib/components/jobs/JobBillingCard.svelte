@@ -660,16 +660,16 @@
 
 		&__meter-row {
 			display: flex;
+			flex-wrap: wrap;
 			align-items: center;
 			justify-content: space-between;
-			gap: 8px;
+			gap: 6px 8px;
 		}
 
+		// One run of text, so "of $17,550 invoiced" wraps as a sentence rather than as a squeezed column.
 		&__invoiced {
-			display: flex;
-			align-items: baseline;
-			gap: 6px;
 			margin: 0;
+			white-space: nowrap;
 			color: var(--classic2-secondary);
 			font-size: var(--classic2-font-label);
 			font-weight: 500;
@@ -680,6 +680,7 @@
 				font-weight: 700;
 				letter-spacing: -0.5px;
 				line-height: 1;
+				margin-right: 4px;
 			}
 		}
 

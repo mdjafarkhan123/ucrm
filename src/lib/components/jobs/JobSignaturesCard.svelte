@@ -102,6 +102,21 @@
 		new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', year: 'numeric' })
 	);
 
+	// The Close-out row names the newest signature; earlier signed copies stay one click away behind
+	// "N earlier", so every frozen copy is still viewable from the row (Jafar, 2026-10-15).
+	const latestSignature = $derived(
+		signatures.reduce<JobSignatureRow | null>(
+			(newest, signature) =>
+				!newest || signature.collected_at > newest.collected_at ? signature : newest,
+			null
+		)
+	);
+
+	let showEarlier = $state(false);
+	const earlierSignatures = $derived(
+		signatures.filter((signature) => signature.id !== latestSignature?.id)
+	);
+
 	function warmDocument(signature: JobSignatureRow) {
 		void queryClient.prefetchQuery({
 			queryKey: jobSignatureDocumentKey(signature.id),
@@ -152,19 +167,41 @@
 			{:else if signatures.length === 0}
 				<p class="close-out__detail">Not collected</p>
 			{:else}
-				{#each signatures as signature (signature.id)}
+				{@const latest = latestSignature!}
+				<button
+					type="button"
+					class="close-out__link"
+					onmouseenter={() => warmDocument(latest)}
+					onfocus={() => warmDocument(latest)}
+					onclick={() => (openSignature = latest)}
+				>
+					Signed by {latest.signer_name} · {shortDate.format(
+						new Date(latest.collected_at)
+					)}{latest.is_stale ? ' · job changed since' : ''}
+				</button>
+				{#if showEarlier}
+					{#each earlierSignatures as signature (signature.id)}
+						<button
+							type="button"
+							class="close-out__link"
+							onmouseenter={() => warmDocument(signature)}
+							onfocus={() => warmDocument(signature)}
+							onclick={() => (openSignature = signature)}
+						>
+							{signature.signer_name} · {shortDate.format(new Date(signature.collected_at))}
+						</button>
+					{/each}
+				{:else if earlierSignatures.length > 0}
 					<button
 						type="button"
-						class="close-out__link"
-						onmouseenter={() => warmDocument(signature)}
-						onfocus={() => warmDocument(signature)}
-						onclick={() => (openSignature = signature)}
+						class="close-out__link close-out__link--quiet"
+						aria-expanded="false"
+						onclick={() => (showEarlier = true)}
 					>
-						Signed by {signature.signer_name} · {shortDate.format(
-							new Date(signature.collected_at)
-						)}{signature.is_stale ? ' · job changed since' : ''}
+						{earlierSignatures.length} earlier
+						{earlierSignatures.length === 1 ? 'signature' : 'signatures'}
 					</button>
-				{/each}
+				{/if}
 			{/if}
 		</div>
 		{#if canCollect && !signed}
@@ -174,66 +211,68 @@
 		{/if}
 	</li>
 {:else}
-<RailCard title="Signatures" icon={signatureIcon} count={signatures.length || undefined}>
-	{#snippet actions()}
-		{#if canCollect}
-			<Button size="small" variant="tertiary" onclick={() => (collecting = true)}>
-				Collect signature
-			</Button>
-		{/if}
-	{/snippet}
+	<RailCard title="Signatures" icon={signatureIcon} count={signatures.length || undefined}>
+		{#snippet actions()}
+			{#if canCollect}
+				<Button size="small" variant="tertiary" onclick={() => (collecting = true)}>
+					Collect signature
+				</Button>
+			{/if}
+		{/snippet}
 
-	{#if signaturesQuery.isPending}
-		<LoadingSkeleton variant="text" rows={2} label="Loading signatures" />
-	{:else if signaturesQuery.isError}
-		<p class="job-signatures__error" role="alert">Signatures could not be loaded.</p>
-	{:else if signatures.length === 0}
-		<EmptyState
-			icon={signatureIcon}
-			title="No signatures yet"
-			description={canCollect
-				? 'Have the customer sign to authorize the work, or to confirm it is finished.'
-				: 'Nobody has signed off on this job.'}
-		/>
-	{:else}
-		<ul class="job-signatures__list">
-			{#each signatures as signature (signature.id)}
-				<li>
-					<button
-						type="button"
-						class="job-signatures__row"
-						onmouseenter={() => warmDocument(signature)}
-						onfocus={() => warmDocument(signature)}
-						onclick={() => (openSignature = signature)}
-					>
-						<span class="job-signatures__type">{TYPE_LABELS[signature.signature_type]}</span>
-						<span class="job-signatures__signer">
-							{signature.signer_name}{signature.signer_role ? ` · ${signature.signer_role}` : ''}
-						</span>
-						<span class="job-signatures__meta">
-							{dateTimeFormat.format(new Date(signature.collected_at))}
-							{#if signature.collected_by_name}
-								· collected by {signature.collected_by_name}
-							{/if}
-						</span>
-						{#if signature.is_stale}
-							<span class="job-signatures__stale">
-								<span class="job-signatures__stale-icon" aria-hidden="true">{@html alertIcon}</span>
-								The job has changed since this was signed
+		{#if signaturesQuery.isPending}
+			<LoadingSkeleton variant="text" rows={2} label="Loading signatures" />
+		{:else if signaturesQuery.isError}
+			<p class="job-signatures__error" role="alert">Signatures could not be loaded.</p>
+		{:else if signatures.length === 0}
+			<EmptyState
+				icon={signatureIcon}
+				title="No signatures yet"
+				description={canCollect
+					? 'Have the customer sign to authorize the work, or to confirm it is finished.'
+					: 'Nobody has signed off on this job.'}
+			/>
+		{:else}
+			<ul class="job-signatures__list">
+				{#each signatures as signature (signature.id)}
+					<li>
+						<button
+							type="button"
+							class="job-signatures__row"
+							onmouseenter={() => warmDocument(signature)}
+							onfocus={() => warmDocument(signature)}
+							onclick={() => (openSignature = signature)}
+						>
+							<span class="job-signatures__type">{TYPE_LABELS[signature.signature_type]}</span>
+							<span class="job-signatures__signer">
+								{signature.signer_name}{signature.signer_role ? ` · ${signature.signer_role}` : ''}
 							</span>
-						{/if}
-					</button>
-				</li>
-			{/each}
-		</ul>
+							<span class="job-signatures__meta">
+								{dateTimeFormat.format(new Date(signature.collected_at))}
+								{#if signature.collected_by_name}
+									· collected by {signature.collected_by_name}
+								{/if}
+							</span>
+							{#if signature.is_stale}
+								<span class="job-signatures__stale">
+									<span class="job-signatures__stale-icon" aria-hidden="true"
+										>{@html alertIcon}</span
+									>
+									The job has changed since this was signed
+								</span>
+							{/if}
+						</button>
+					</li>
+				{/each}
+			</ul>
 
-		{#if canCollect && signatures.some((signature) => signature.is_stale)}
-			<Button size="small" variant="secondary" onclick={() => (collecting = true)}>
-				Collect a new signature
-			</Button>
+			{#if canCollect && signatures.some((signature) => signature.is_stale)}
+				<Button size="small" variant="secondary" onclick={() => (collecting = true)}>
+					Collect a new signature
+				</Button>
+			{/if}
 		{/if}
-	{/if}
-</RailCard>
+	</RailCard>
 {/if}
 
 {#if collecting}

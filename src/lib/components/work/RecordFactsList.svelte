@@ -10,6 +10,17 @@
 	import listIcon from '@tabler/icons/outline/list-details.svg?raw';
 
 	let { facts, class: className = '' }: { facts: RecordFact[]; class?: string } = $props();
+
+	// A fact's own icon wins; otherwise the label picks a calendar, a hash or a list.
+	function fallbackIcon(label: string) {
+		if (
+			/created|requested|assessment|date|due|sent|viewed|issued|approved|declined|received/i.test(
+				label
+			)
+		)
+			return calendarIcon;
+		return /#|version/i.test(label) ? hashIcon : listIcon;
+	}
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -18,14 +29,7 @@
 		<div class="record-facts__row" class:record-facts__row--number={fact.label.endsWith(' #')}>
 			<dt>
 				<span class="record-facts__icon" aria-hidden="true"
-					>{@html fact.icon ??
-						/created|requested|assessment|date|due|sent|viewed|issued|approved|declined|received/i.test(
-						fact.label
-					)
-						? calendarIcon
-						: /#|version/i.test(fact.label)
-							? hashIcon
-							: listIcon}</span
+					>{@html fact.icon ?? fallbackIcon(fact.label)}</span
 				>{fact.label}
 			</dt>
 			{#if fact.value}

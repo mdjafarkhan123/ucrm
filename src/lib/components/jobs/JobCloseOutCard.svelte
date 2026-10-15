@@ -313,6 +313,10 @@
 			cursor: pointer;
 		}
 
+		:global(.close-out__link--quiet) {
+			color: var(--classic2-secondary);
+		}
+
 		:global(.close-out__link:hover) {
 			text-decoration: underline;
 		}
