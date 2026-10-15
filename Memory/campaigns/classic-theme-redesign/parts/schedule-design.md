@@ -95,6 +95,11 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
       skeleton cards, empty (count 0), no match ("maple", Daniel Reyes), failed (rose icon, the page's fallback
       wording, Try again; no count), and over the limit ("Showing the first 500…", from `SCHEDULE_VISIT_LIMIT`).
       Light and dark checked. Waiting for Jafar; the old states board `FlsaG` is replaced if he approves.
+- [x] Jafar, 2026-10-15: the grey list matched the page and the drawer had no edge of its own. As in the live
+      page (the drawer is its own bordered panel beside the calendar), Concept 2's drawer is now a separate
+      white card with the calendar card's border, corners and shadow, 12px from the calendar; the list is
+      white and the cards keep their borders. The calendar card is 952 wide; its legend drops the
+      business-hours note while the drawer is open so it fits. States drawers match. Light and dark checked.
 
 ## Next (new sessions; redesign the look only, copy the live component's behaviour and wording)
 
