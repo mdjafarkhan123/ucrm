@@ -122,6 +122,16 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
 - [x] Jafar, 2026-10-15: an element the same colour as its background looks odd. The date tile's grey month
       strip matched the grey ticket behind it; the strip is now solid brand green with white "OCT" (the
       calendar's chosen-date colour) and the tile has the stronger control border. Light and dark checked.
+- [x] Jafar, 2026-10-15, asked for a more colourful variant of the popup. Row y 5184, under the A screens:
+      `Schedule · New job · B · Colour shows the kind · 1440` (`SDwZ7`, x 18518), `… New request · B …` (`PPcqH`,
+      x 19998), `… New event · B …` (`dcJf1`, x 21478). Colour = kind of booking: Job green (hammer), Request
+      amber (clipboard-list) — the recipe's record-type colours — and Event violet (calendar), proposed because
+      violet means Team and an event blocks the whole team's time. A kind tile beside the title; the switch
+      shows each kind's coloured icon (a Segmented control with icons, not yet a part); the slot ticket takes
+      the kind's tint, its month strip the kind's solid colour, its clock and arrow the kind's colour; Job's
+      First visit tile turns green. Same wording and buttons. Light and dark checked. Waiting for Jafar to pick
+      A or B. If B: the Segmented control part gains an icon slot, and the Week legend's grey Event icon may
+      turn violet (ask).
 
 ## Next (new sessions; redesign the look only, copy the live component's behaviour and wording)
 
