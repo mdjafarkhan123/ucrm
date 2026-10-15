@@ -6,6 +6,7 @@
 	type Option = {
 		value: string;
 		label: string;
+		icon?: string;
 		disabled?: boolean;
 		/** Shown on hover, e.g. why an option is closed off. */
 		title?: string;
@@ -118,6 +119,9 @@
 						onchange?.(option.value);
 					}}
 				/>
+				{#if option.icon}
+					<span class="segmented__icon" aria-hidden="true">{@html option.icon}</span>
+				{/if}
 				<span class="segmented__text">{option.label}</span>
 			</label>
 		{/each}
@@ -222,6 +226,19 @@
 			}
 		}
 
+		&__icon {
+			display: inline-grid;
+			width: 16px;
+			height: 16px;
+			flex: 0 0 auto;
+			place-items: center;
+			:global(svg) {
+				display: block;
+				width: 16px;
+				height: 16px;
+			}
+		}
+
 		&__track--base &__option {
 			min-height: 36px;
 			padding: 0 var(--space-base);
@@ -282,6 +299,12 @@
 
 	:global(:root:has(.app-shell[data-presentation='classic'])) .segmented__option--active {
 		color: var(--classic2-ink);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.segmented__option--active
+		.segmented__icon {
+		color: var(--classic2-green);
 	}
 
 	:global(:root:has(.app-shell[data-presentation='classic']))

@@ -8,6 +8,7 @@
 		// Needed only where two items in one menu can carry the same label.
 		key?: string;
 		icon?: string;
+		iconTone?: 'green' | 'teal' | 'blue' | 'amber' | 'violet' | 'rose';
 		onSelect: () => void;
 		destructive?: boolean;
 		disabled?: boolean;
@@ -60,7 +61,9 @@
 		onSelect={() => item.onSelect()}
 	>
 		{#if item.icon}
-			<span class="dropdown-menu__item-icon" aria-hidden="true">{@html item.icon}</span>
+			<span class="dropdown-menu__item-icon" data-tone={item.iconTone} aria-hidden="true"
+				>{@html item.icon}</span
+			>
 		{/if}
 		<span class="dropdown-menu__item-label">{item.label}</span>
 		{#if item.note}
@@ -255,5 +258,109 @@
 			width: 16px;
 			height: 16px;
 		}
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .dropdown-menu__trigger {
+		border-radius: 10px;
+		color: var(--classic2-muted);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.dropdown-menu__trigger:hover:not(:disabled),
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.dropdown-menu__trigger[data-state='open'] {
+		color: var(--classic2-ink);
+		background: var(--classic2-surface-soft);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.dropdown-menu__trigger:focus-visible {
+		outline: 3px solid var(--classic2-green-soft);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .dropdown-menu__content {
+		width: 224px;
+		padding: 8px;
+		border-color: var(--classic2-border);
+		border-radius: 16px;
+		background: var(--classic2-surface);
+		box-shadow: 0 14px 36px var(--classic2-shadow-lift);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .dropdown-menu__content--wide {
+		width: 280px;
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.dropdown-menu__group
+		+ .dropdown-menu__group {
+		margin-top: 6px;
+		padding-top: 6px;
+		border-color: var(--classic2-divider);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .dropdown-menu__heading {
+		padding: 6px 10px;
+		color: var(--classic2-muted);
+		font-family: var(--classic2-font);
+		font-size: var(--classic2-font-micro);
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .dropdown-menu__item {
+		min-height: 38px;
+		gap: 10px;
+		padding: 8px 10px;
+		border-radius: 10px;
+		color: var(--classic2-body);
+		font-family: var(--classic2-font);
+		font-size: var(--classic2-font-label);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.dropdown-menu__item[data-highlighted] {
+		color: var(--classic2-ink);
+		background: var(--classic2-surface-soft);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .dropdown-menu__item[data-disabled] {
+		color: var(--classic2-muted);
+		opacity: 0.58;
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .dropdown-menu__item--muted,
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.dropdown-menu__item--muted[data-highlighted] {
+		color: var(--classic2-secondary);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .dropdown-menu__item--destructive,
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.dropdown-menu__item--destructive[data-highlighted] {
+		color: var(--classic2-solid-rose);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.dropdown-menu__item--destructive[data-highlighted] {
+		background: var(--classic2-rose-tint);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .dropdown-menu__item-icon {
+		color: var(--classic2-icon-muted);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.dropdown-menu__item-icon[data-tone='green'] {
+		color: var(--classic2-green);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.dropdown-menu__item-icon[data-tone='teal'] {
+		color: var(--classic2-teal);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.dropdown-menu__item-icon[data-tone='blue'] {
+		color: var(--classic2-blue);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.dropdown-menu__item-icon[data-tone='amber'] {
+		color: var(--classic2-amber);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.dropdown-menu__item-icon[data-tone='violet'] {
+		color: var(--classic2-violet);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.dropdown-menu__item-icon[data-tone='rose'] {
+		color: var(--classic2-solid-rose);
 	}
 </style>

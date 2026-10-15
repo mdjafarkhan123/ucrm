@@ -270,16 +270,16 @@
 	}
 
 	:global(:root:has(.app-shell[data-presentation='classic'])) .button--destructive.button--primary {
-		border-color: var(--color-destructive);
-		background: var(--color-destructive);
+		border-color: var(--classic2-solid-rose);
+		background: var(--classic2-solid-rose);
 	}
 
 	:global(:root:has(.app-shell[data-presentation='classic']))
 		.button--destructive.button--primary:hover:not(:disabled),
 	:global(:root:has(.app-shell[data-presentation='classic']))
 		.button--destructive.button--primary:focus-visible:not(:disabled) {
-		border-color: var(--color-destructive--hover);
-		background: var(--color-destructive--hover);
+		border-color: var(--classic2-solid-rose);
+		background: var(--classic2-solid-rose);
 	}
 
 	:global(:root:has(.app-shell[data-presentation='classic']))

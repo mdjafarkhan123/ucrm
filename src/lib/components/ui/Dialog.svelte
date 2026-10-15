@@ -132,4 +132,44 @@
 		overflow-y: auto;
 		padding: var(--space-large);
 	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .dialog__overlay {
+		background: var(--classic2-overlay);
+		backdrop-filter: blur(2px);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .dialog__content {
+		width: min(calc(100vw - 48px), var(--modal--width, 600px));
+		max-height: calc(100dvh - 48px);
+		border-color: var(--classic2-border);
+		border-radius: var(--classic2-radius-card);
+		background: var(--classic2-surface);
+		box-shadow: 0 20px 56px var(--classic2-shadow-lift);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .dialog__header {
+		gap: var(--classic2-space-3);
+		padding: var(--classic2-space-4) var(--classic2-space-5);
+		border-color: var(--classic2-divider);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		.dialog__header
+		[data-slot='dialog-title'] {
+		color: var(--classic2-ink);
+		font-family: var(--classic2-font);
+		font-size: var(--classic2-font-section);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .dialog__close {
+		border-radius: 10px;
+		color: var(--classic2-muted);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .dialog__close:hover {
+		color: var(--classic2-ink);
+		background: var(--classic2-surface-soft);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .dialog__close:focus-visible {
+		outline: 3px solid var(--classic2-green-soft);
+		outline-offset: 2px;
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .dialog__body {
+		padding: var(--classic2-space-5);
+	}
 </style>
