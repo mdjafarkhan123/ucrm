@@ -14,6 +14,7 @@
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import { recordLifecycle } from '$lib/components/work/record-lifecycle';
 	import WorkRecordHeader from '$lib/components/work/WorkRecordHeader.svelte';
 	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
 	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
@@ -923,6 +924,20 @@
 		>
 			{#snippet main()}
 				<WorkRecordHeader
+					lifecycle={recordLifecycle(
+						'quote',
+						QUOTE_STATUS_LABELS[saved.quote.status],
+						saved.quote.request_id
+							? {
+									request: {
+										label: 'Request',
+										detail: 'Source request',
+										href: resolve('/(app)/requests/[id=uuid]', { id: saved.quote.request_id })
+									}
+								}
+							: {}
+					)}
+					recordNumber={saved.quote.quote_number}
 					icon={fileDollarIcon}
 					recordType="Quote"
 					{title}
@@ -948,6 +963,8 @@
 					{/snippet}
 					{#snippet summary()}
 						<ClientSummaryCard
+							clientId={saved.quote.client?.id}
+							directionsAddress={propertyLine}
 							name={saved.version?.client_display_name ??
 								saved.quote.client?.display_name ??
 								'No client'}

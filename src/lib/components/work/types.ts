@@ -36,3 +36,13 @@ export type StatusOverviewRow = {
 	count: number;
 	tone: StatusTone;
 };
+
+/** A known record in the work journey. Unknown steps stay neutral, never implied complete. */
+export type RecordLifecycleStep = {
+	key: 'request' | 'quote' | 'job' | 'invoice' | 'paid';
+	label: string;
+	detail?: string;
+	href?: string;
+	current?: boolean;
+	complete?: boolean;
+};

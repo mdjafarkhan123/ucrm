@@ -14,6 +14,7 @@
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import { recordLifecycle } from '$lib/components/work/record-lifecycle';
 	import WorkRecordHeader from '$lib/components/work/WorkRecordHeader.svelte';
 	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
 	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
@@ -150,11 +151,6 @@
 		}))
 	);
 
-	const dateFormat = new Intl.DateTimeFormat(undefined, {
-		day: 'numeric',
-		month: 'short',
-		year: 'numeric'
-	});
 	const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
 		day: 'numeric',
 		month: 'short',
@@ -207,9 +203,12 @@
 				label: 'Create invoice',
 				icon: fileInvoiceIcon,
 				onSelect: () =>
+					// The query string starts with the resolved invoice-create route.
+					/* eslint-disable svelte/no-navigation-without-resolve */
 					void goto(
 						`${resolve('/(app)/invoices/new')}?client=${saved.job.client!.id}&job=${saved.job.id}`
 					)
+				/* eslint-enable svelte/no-navigation-without-resolve */
 			});
 		}
 		// The work report's own door, offered only once there is something on it to see — the "Copy work
@@ -490,6 +489,12 @@
 		>
 			{#snippet main()}
 				<WorkRecordHeader
+					lifecycle={recordLifecycle(
+						'job',
+						JOB_STATUS_LABELS[saved.job.derived_status],
+						saved.job.from_quote ? { quote: { label: 'Quote', detail: 'Source quote' } } : {}
+					)}
+					recordNumber={saved.job.job_number}
 					icon={briefcaseIcon}
 					recordType="Job"
 					{title}
@@ -509,6 +514,8 @@
 				>
 					{#snippet summary()}
 						<ClientSummaryCard
+							clientId={saved.job.client?.id}
+							directionsAddress={propertyLine}
 							name={saved.job.client?.display_name ?? 'No client'}
 							href={clientHref}
 							addresses={[{ value: propertyLine, empty: 'No property on this job' }]}
