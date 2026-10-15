@@ -103,6 +103,13 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
 - [x] **Approved by Jafar 2026-10-15: the Unscheduled drawer (`HHi5u`) and its states (`FLIPT`).** Renamed
       `Schedule · Unscheduled drawer · 1440` and `… · states` and moved to x 16978 (y 4080 / 5184); the old
       redraw `Obv2U` deleted (its states board was already gone).
+- [x] 2026-10-15: `Schedule · New job from empty slot · 1440` (`rGwsg`, x 18518, y 4080) drawn from
+      `ScheduleJobCreate.svelte`: the approved Week, dimmed (preview closed), with the centred "New job" dialog
+      (560 wide). Job / Request / Event switch (Segmented control part); Job title; Client with Change property;
+      a soft "First visit" panel holding Schedule later, Day of the first visit + Time, Anytime and Notes for
+      the first visit; Assigned team; Notify customer (ticked); More options and Save job in the footer. Same
+      fields and wording as the app; the "First visit" panel heading is the one new label (grouping only).
+      Light and dark checked. Waiting for Jafar; the Request and Event tabs and the error message follow.
 
 ## Next (new sessions; redesign the look only, copy the live component's behaviour and wording)
 
