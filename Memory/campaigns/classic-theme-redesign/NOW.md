@@ -17,6 +17,7 @@ from `codex/b4-save-bar-integration`; [proof](parts/b4-save-bar.md). This replan
 **Next:** Integrate B4, then this replan. Start [B3b.1](stages/shared-parts.md): complete the reusable
 Pencil parts for approved screens, show Jafar changed visuals, then build them before B5.
 [Record build](stages/first-version-build.md) and [whole-app stages](stages/whole-app.md) have done-checks.
+[Handover](parts/replan-handover.md) has the saved branch and integration steps.
 
 **Approved designs:** six record pages; five lists ([Clients](parts/clients-list.md),
 [Requests/Quotes/Invoices](parts/requests-quotes-invoices-lists.md), Jobs in the list-design branch);
