@@ -84,9 +84,19 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
       was deleted. To match the app the same day: Day rows show name + "N items" only (booked hours and bar
       removed), and the Month "+ more" panel lost its two extra links. Light and dark checked. Waiting for Jafar.
 
+- [x] 2026-10-15, Jafar asked for a new design concept for the drawer instead of approving the redraw (NOW.md
+      **Target**: a new concept, not a conversion). `Schedule · Unscheduled drawer · 1440 · Concept 2` (`HHi5u`,
+      x 18518, y 4080), light and dark checked. Same controls and wording as the live drawer. New look: amber
+      inbox tile and count in the header; search, then a compact All-employees pill; grey list background with
+      white cards; each card has a full-height grip strip, client and waiting age on one line, work, place, then
+      crew initials (or the amber Unassigned badge) and Schedule. The first card shows hover lift. The hint line
+      and drop foot note are gone, since the live drawer has neither. The pressed Unscheduled button is neutral
+      grey. Waiting for Jafar. Its states (loading, empty, no match, failed, "Showing the first N") follow once
+      he says yes.
+
 ## Next (new sessions; redesign the look only, copy the live component's behaviour and wording)
 
-First, get Jafar's yes on the Unscheduled drawer and its states (drawn 2026-10-15). Then commit `classic.pen`
+First, get Jafar's yes on drawer Concept 2 (`HHi5u`), then redraw its states in the same look. Then commit `classic.pen`
 from main after he presses Ctrl+S, if that wasn't done at session end. Then, in this order:
 
 1. Empty-slot quick create — `ScheduleJobCreate.svelte`: a Job/Request switch and a light Job form seeded with
