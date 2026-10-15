@@ -39,8 +39,7 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
       card colour by status. B and the review board stay in `classic.pen` until he asks to delete them.
       Week stays the default view (contract).
 
-**Waiting to merge** — branch `claude/schedule-design`; main had another writer's uncommitted changes on
-2026-10-15, so integration waits for a clean main. Reservation `143ba86fc186` stays until then.
+**Merged** into main 2026-10-15.
 
 - [x] 2026-10-15 (Jafar: subagents allowed for concepts): `Schedule · Day · 1440` (`eNrFP`, x 15460, y 4080)
       drawn by the parent session, light and dark checked. Same shell and status colours as the approved
@@ -64,6 +63,13 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
       day: Week, Day and Month became 1440×1024 with the calendar card filling the page — Week hours 65px
       (7am–5pm), Day rows taller with a locality line on each card and a fifth person (Liam Ortiz, free all day),
       Month rows share the extra height (still 3 rows per date; 4 do not fit). "New job" stays reachable through the top bar's Add new.
+
+- [x] 2026-10-15, after Jafar showed a Dribbble vet-clinic calendar (dribbble.com/shots/14994519): Week gets a faint
+      now line across every day behind the cards, solid on today (Apple Calendar way); Day already spans all rows.
+      Saved by Jafar and committed on main (`8cdb2940`). For Medspa planning: that shot's docked right-side
+      details panel and per-provider columns match Boulevard/Fresha; not adopted for Contractor (Jobber popover,
+      long visits suit rows). Its colour-by-service fills and tiny pale text were judged not to fit.
+- Open: should the Week's Rachel Kim card turn amber Unassigned to match Day and Month?
 
 ## Next (new sessions, one screen each)
 
