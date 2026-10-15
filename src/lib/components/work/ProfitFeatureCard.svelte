@@ -8,7 +8,7 @@
 		share: number;
 		/** Whole-number percent shown before the amount, or null to leave it out. */
 		percent: number | null;
-		tone: 'violet' | 'blue' | 'amber' | 'green';
+		tone: 'violet' | 'blue' | 'amber' | 'green' | 'muted';
 	};
 </script>
 
@@ -17,9 +17,9 @@
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import trendIcon from '@tabler/icons/outline/trending-up.svg?raw';
 
-	// The dark featured card on Classic record pages (classic.pen "Profit card"): one headline figure, an
-	// optional margin pill, a split bar and its legend. It only draws what it is handed; the job and quote
-	// cards work out their own figures and wording.
+	// The dark featured card on Classic record pages (classic.pen "Profit card", and the invoice's "Balance
+	// card"): one headline figure, an optional pill, a split bar and its legend. It only draws what it is
+	// handed; the job, quote and invoice cards work out their own figures and wording.
 	let {
 		label,
 		eyebrow,
@@ -29,6 +29,8 @@
 		subline,
 		parts,
 		showBar = true,
+		chip,
+		pillIcon = trendIcon,
 		children
 	}: {
 		/** Names the card out loud, e.g. "Job profit". */
@@ -40,6 +42,10 @@
 		subline: string;
 		parts: ProfitPart[];
 		showBar?: boolean;
+		/** The small chip beside the eyebrow. Defaults to the profit card's "Team only" lock. */
+		chip?: { label: string; icon: string };
+		/** The icon inside the margin pill. */
+		pillIcon?: string;
 		/** Notes under the legend. */
 		children?: Snippet;
 	} = $props();
@@ -50,7 +56,7 @@
 	<header class="profit-card__header">
 		<p class="profit-card__eyebrow">{eyebrow}</p>
 		<span class="profit-card__team">
-			<span aria-hidden="true">{@html lockIcon}</span>Team only
+			<span aria-hidden="true">{@html chip?.icon ?? lockIcon}</span>{chip?.label ?? 'Team only'}
 		</span>
 	</header>
 
@@ -59,7 +65,7 @@
 			<p class="profit-card__value" class:profit-card__value--loss={loss}>{value}</p>
 			{#if margin}
 				<span class="profit-card__margin">
-					<span aria-hidden="true">{@html trendIcon}</span>{margin}
+					<span aria-hidden="true">{@html pillIcon}</span>{margin}
 				</span>
 			{/if}
 		</div>
@@ -231,6 +237,10 @@
 
 			&--green {
 				background: var(--classic2-green-mid);
+			}
+
+			&--muted {
+				background: var(--classic2-feature-muted);
 			}
 		}
 

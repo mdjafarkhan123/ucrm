@@ -6,6 +6,11 @@
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import RecordDetailLayout from '$lib/components/layout/RecordDetailLayout.svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
+	import RecordCard from '$lib/components/layout/RecordCard.svelte';
+	import Tabs from '$lib/components/ui/Tabs.svelte';
+	import TabPanel from '$lib/components/ui/TabPanel.svelte';
+	import ProfitFeatureCard from '$lib/components/work/ProfitFeatureCard.svelte';
+	import type { RecordFact } from '$lib/components/work/types';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
@@ -66,6 +71,7 @@
 		type ApplyInvoiceCreditInput,
 		type RecordInvoicePaymentInput,
 		type RecordInvoicePaymentResult,
+		type InvoicePaymentHistoryEntry,
 		clientOpenInvoicesKey,
 		fetchClientOpenInvoices
 	} from '$lib/invoices/api';
@@ -94,6 +100,8 @@
 	import creditCardIcon from '@tabler/icons/outline/credit-card.svg?raw';
 	import filePencilIcon from '@tabler/icons/outline/file-pencil.svg?raw';
 	import copyIcon from '@tabler/icons/outline/copy.svg?raw';
+	import calendarDueIcon from '@tabler/icons/outline/calendar-time.svg?raw';
+	import piggyBankIcon from '@tabler/icons/outline/pig-money.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -106,6 +114,7 @@
 		staleTime: 15_000
 	}));
 	const saved = $derived(invoiceQuery.data);
+	const classic = $derived(page.data.presentation === 'classic');
 
 	// Following Jobber: an issued bill stays editable, including after full payment. The database has always
 	// allowed this (`lock_invoice_for_edit` only ever refused voided and replaced), so this just stops the
@@ -277,6 +286,196 @@
 			: [])
 	]);
 
+	// --- Classic header ----------------------------------------------------------------------------------
+	// classic.pen "Invoice details · 1440": where the bill came from after its number, the work journey with
+	// how long is left to pay, and four dates — invoice date, due, sent and viewed.
+	const monthDay = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
+	const shortDateTime = new Intl.DateTimeFormat(undefined, {
+		month: 'short',
+		day: 'numeric',
+		hour: 'numeric',
+		minute: '2-digit'
+	});
+	function shortDay(value: string) {
+		return monthDay.format(new Date(`${value}T00:00`));
+	}
+
+	const invoiceMeta = $derived.by(() => {
+		if (!saved) return undefined;
+		const parts = [];
+		if (saved.source) parts.push(`From job #${saved.source.job.job_number}`);
+		if (saved.progress) parts.push(`Payment ${saved.progress.installment_number}`);
+		return parts.length ? parts.join(' \u00b7 ') : undefined;
+	});
+
+	// Whole days from today to the due date, in the browser's own calendar.
+	const daysToDue = $derived.by(() => {
+		if (!saved) return 0;
+		const now = new Date();
+		const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+		const due = new Date(`${saved.invoice.due_date}T00:00`);
+		return Math.round((due.getTime() - today.getTime()) / 86_400_000);
+	});
+	// Only an open bill counts down; a draft, a paid or a closed one says what it is instead.
+	const dueText = $derived.by(() => {
+		if (!saved) return '';
+		if (saved.invoice.is_replaced) return 'Replaced';
+		if (isVoided) return 'Voided';
+		if (saved.invoice.derived_status === 'paid') return 'Paid in full';
+		if (!isOpenIssued) return `Due ${shortDay(saved.invoice.due_date)}`;
+		if (daysToDue === 0) return 'Due today';
+		if (daysToDue === 1) return 'Due tomorrow';
+		if (daysToDue > 1) return `Due in ${daysToDue} days`;
+		return daysToDue === -1 ? '1 day overdue' : `${-daysToDue} days overdue`;
+	});
+
+	const classicLifecycle = $derived.by(() => {
+		if (!saved) return [];
+		const status = INVOICE_STATUS_LABELS[saved.invoice.derived_status];
+		const source = saved.source;
+		const paid = saved.invoice.derived_status === 'paid';
+		const remaining = saved.money?.remaining_minor;
+		return recordLifecycle('invoice', isOpenIssued ? dueText : status, {
+			...(source?.request_id
+				? {
+						request: {
+							label: 'Request',
+							detail: 'Converted',
+							complete: true,
+							href: resolve('/(app)/requests/[id=uuid]', { id: source.request_id })
+						}
+					}
+				: {}),
+			...(source?.quote
+				? {
+						quote: {
+							label: `Quote #${source.quote.quote_number}`,
+							detail: source.quote.decided_at
+								? `Approved ${monthDay.format(new Date(source.quote.decided_at))}`
+								: 'Converted',
+							complete: true,
+							href: resolve('/(app)/quotes/[id=uuid]', { id: source.quote.id })
+						}
+					}
+				: {}),
+			...(source || saved.progress
+				? {
+						job: {
+							label: source ? `Job #${source.job.job_number}` : 'Job',
+							detail: saved.progress?.description ?? 'Invoiced',
+							complete: true,
+							href: resolve('/(app)/jobs/[id=uuid]', {
+								id: source?.job.id ?? saved.progress!.job_id
+							})
+						}
+					}
+				: {}),
+			paid: paid
+				? { label: 'Paid', detail: 'Paid in full', complete: true }
+				: {
+						label: 'Paid',
+						detail:
+							isOpenIssued && typeof remaining === 'number'
+								? `${formatMoney(remaining)} left`
+								: undefined
+					}
+		});
+	});
+
+	// A bill due the day it is dated says so; otherwise the date, with a named term beside it ("Oct 20 · Net
+	// 14"). A custom date or the client's default has no short name worth repeating.
+	const dueFact = $derived.by(() => {
+		if (!saved) return '';
+		if (saved.invoice.due_date === saved.invoice.issue_date) return 'On receipt';
+		const day = shortDay(saved.invoice.due_date);
+		const name = saved.invoice.payment_term_snapshot?.name;
+		return saved.invoice.due_date_source !== 'custom' && typeof name === 'string' && name
+			? `${day} \u00b7 ${name}`
+			: day;
+	});
+
+	const classicFacts = $derived.by<RecordFact[]>(() => {
+		if (!saved) return [];
+		return [
+			{
+				label: 'Invoice date',
+				value: shortDay(saved.invoice.issue_date),
+				icon: calendarIcon
+			},
+			{
+				label: 'Due',
+				value: dueFact,
+				icon: calendarDueIcon,
+				tone: saved.invoice.derived_status === 'past_due' ? 'waiting' : 'neutral'
+			},
+			{
+				label: 'Sent',
+				value: saved.delivery.last_sent
+					? shortDateTime.format(new Date(saved.delivery.last_sent.sent_at))
+					: null,
+				empty: saved.invoice.issued_at ? 'Marked as sent' : 'Not sent yet',
+				icon: sendIcon,
+				tone: 'neutral'
+			},
+			{
+				label: 'Viewed',
+				value: saved.delivery.views.first_viewed_at
+					? shortDateTime.format(new Date(saved.delivery.views.first_viewed_at))
+					: null,
+				empty: 'Not viewed yet',
+				icon: eyeIcon,
+				tone: 'neutral'
+			}
+		];
+	});
+
+	// --- Classic Balance card and History ----------------------------------------------------------------
+	const balanceFigures = $derived.by(() => {
+		const money = saved?.money;
+		if (!money) return null;
+		const closed = Boolean(saved?.invoice.is_replaced) || isVoided;
+		const total = money.total_minor;
+		const paidMinor = closed ? 0 : money.allocated_minor;
+		const owed = closed ? 0 : money.remaining_minor;
+		const paidShare = total > 0 ? Math.min(1, paidMinor / total) : 0;
+		const paidPercent = Math.round(paidShare * 100);
+		// A voided or replaced bill owes nothing, so the card says why instead of drawing a split.
+		const closedNote = saved?.invoice.is_replaced
+			? 'Replaced \u2014 the newer invoice carries the balance'
+			: isVoided
+				? 'Voided \u2014 nothing is owed on this invoice'
+				: null;
+		return { total, paidMinor, owed, paidShare, paidPercent, closedNote };
+	});
+
+	// What the payments on this bill add up to: applied money less anything taken back off it.
+	const paymentsTotal = $derived(
+		(saved?.payment_history ?? []).reduce(
+			(sum, entry) => sum + (entry.entry_type === 'unapplied' ? -1 : 1) * entry.amount_minor,
+			0
+		)
+	);
+	let historyTab = $state('payments');
+	const historyTabs = $derived([
+		{
+			value: 'payments',
+			label: 'Payments',
+			count: saved?.payment_history?.length ? formatMoney(paymentsTotal) : 0
+		},
+		{ value: 'edits', label: 'Edits', count: saved?.document_history?.length ?? 0 }
+	]);
+
+	function showHistoryCard() {
+		document
+			.getElementById('invoice-history')
+			?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
+
+	const clientFirstName = $derived(
+		(saved?.client?.company_name || saved?.client?.display_name || '').trim().split(/\s+/)[0] ||
+			'Your client'
+	);
+
 	// A billing line from the frozen snapshot, read defensively — it is display-only and the shape comes from
 	// the database's own jsonb, never edited here.
 	const billingLine = $derived.by(() => {
@@ -401,6 +600,7 @@
 	// screen's ongoing primary action, so Send wins here whenever the draft can still be sent.
 	type PrimaryAction = {
 		label: string;
+		icon?: string;
 		loading?: boolean;
 		onclick: () => void;
 		onhover?: () => void;
@@ -418,14 +618,20 @@
 		if (isReplacementDraft && draftEditable && saved.can_send)
 			return {
 				label: 'Replace invoice',
+				icon: classic ? copyIcon : undefined,
 				onclick: () => (replaceOpen = true),
 				onhover: warmPredecessor
 			};
 		if (draftEditable && saved.can_send)
-			return { label: 'Send invoice', onclick: () => (emailOpen = true) };
+			return {
+				label: 'Send invoice',
+				icon: classic ? sendIcon : undefined,
+				onclick: () => (emailOpen = true)
+			};
 		if (canCollect)
 			return {
 				label: 'Collect payment',
+				icon: classic ? creditCardIcon : undefined,
 				onclick: () => (collectPaymentOpen = true),
 				onhover: warmOpenInvoices
 			};
@@ -965,6 +1171,148 @@
 	}
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
+{#snippet adjustments()}
+	{#if saved}
+		<RecordAdjustmentsCard>
+			<RecordDiscountCard
+				revision={saved.invoice.revision}
+				name={saved.money?.discount_name ?? null}
+				type={saved.money?.discount_type ?? null}
+				value={saved.money?.discount_value ?? null}
+				discountMinor={canSeePrice ? (saved.money?.discount_minor ?? 0) : null}
+				currencyCode={saved.invoice.currency_code}
+				locale={saved.locale}
+				editable={editable && !isProgress}
+				{canSeePrice}
+				recordNoun="invoice"
+				onSave={(revision, payload) => saveInvoiceDiscount(invoiceId, revision, payload)}
+				onSaved={refreshInvoice}
+			/>
+
+			<RecordTaxCard
+				revision={saved.invoice.revision}
+				propertyId={(saved.invoice.service_properties?.[0]?.property_id as string) ?? ''}
+				taxSource={(saved.money?.tax_source ?? 'not_configured') as QuoteTaxSource}
+				rateId={saved.money?.tax_rate_id ?? null}
+				name={saved.money?.tax_name ?? null}
+				rateBasisPoints={saved.money?.tax_rate_basis_points ?? 0}
+				taxMinor={canSeePrice ? (saved.money?.tax_minor ?? 0) : null}
+				currencyCode={saved.invoice.currency_code}
+				locale={saved.locale}
+				editable={editable && !isProgress}
+				{canSeePrice}
+				canManageTaxes={false}
+				recordNoun="invoice"
+				unsetHint="This invoice is not taxed yet."
+				onSave={(revision, payload) => saveInvoiceTax(invoiceId, revision, payload)}
+				onSaved={refreshInvoice}
+			/>
+		</RecordAdjustmentsCard>
+	{/if}
+{/snippet}
+
+{#snippet termsActions()}
+	{#if saved && editable && !editingTerms}
+		<PencilButton
+			onclick={() => {
+				termChoiceDraft = currentTermChoice;
+				issueDateDraft = currentIssueDate;
+				customDueDateDraft = currentCustomDue;
+				editingTerms = true;
+			}}
+			onhover={warmTerms}
+			label="Edit the terms and dates"
+		/>
+	{:else if termsChanged}
+		<Badge size="small" status="warning">Unsaved</Badge>
+	{/if}
+{/snippet}
+
+{#snippet termsEditor()}
+	<div class="invoice-detail__terms-edit">
+		<CalendarPicker
+			id="invoice-issue-date"
+			label="Invoice date"
+			value={calendarDateFromString(issueDateDraft)}
+			onchange={(value) => (issueDateDraft = calendarDateToString(value))}
+		/>
+		<Select
+			id="invoice-terms"
+			label="Payment terms"
+			bind:value={termChoiceDraft}
+			options={termOptions}
+		/>
+		{#if termChoiceDraft === 'custom'}
+			<CalendarPicker
+				id="invoice-due-date"
+				label="Due date"
+				value={calendarDateFromString(customDueDateDraft)}
+				minValue={calendarDateFromString(issueDateDraft)}
+				onchange={(value) => (customDueDateDraft = calendarDateToString(value))}
+			/>
+		{/if}
+	</div>
+{/snippet}
+
+{#snippet disclaimerActions()}
+	{#if saved && draftEditable && !editingDisclaimer}
+		<PencilButton
+			onclick={() => {
+				disclaimerDraft = saved.invoice.contract_disclaimer ?? '';
+				editingDisclaimer = true;
+			}}
+			label="Edit the contract disclaimer"
+		/>
+	{:else if disclaimerChanged}
+		<Badge size="small" status="warning">Unsaved</Badge>
+	{/if}
+{/snippet}
+
+{#snippet disclaimerEditor()}
+	<Textarea
+		id="invoice-disclaimer"
+		label="What the customer is agreeing to by paying this bill"
+		rows={5}
+		maxlength={5000}
+		bind:value={disclaimerDraft}
+	/>
+{/snippet}
+
+{#snippet partialToggle()}
+	{#if saved}
+		<Toggle
+			id="invoice-online-partial"
+			label="Allow partial payments"
+			description="Your client can choose to pay less than the full balance online."
+			checked={saved.online_payments.partial_allowed}
+			disabled={!saved.can_edit || partialSaving}
+			labelSide="start"
+			onchange={(allowed) => void togglePartialPayments(allowed)}
+		/>
+	{/if}
+{/snippet}
+
+{#snippet paymentLabel(entry: InvoicePaymentHistoryEntry)}
+	{entry.entry_type === 'unapplied'
+		? 'Payment removed'
+		: entry.source === 'deposit'
+			? 'Deposit applied'
+			: 'Payment received'}
+	{#if entry.method}
+		&middot; {INVOICE_PAYMENT_METHOD_LABELS[entry.method]}
+	{/if}
+{/snippet}
+
+{#snippet paymentMeta(entry: InvoicePaymentHistoryEntry)}
+	{entry.payment_date
+		? formatDay(entry.payment_date)
+		: dateFormat.format(new Date(entry.created_at))}
+	{#if entry.reference}
+		&middot; Ref {entry.reference}
+	{/if}
+{/snippet}
+
 <svelte:head><title>{subject || 'Invoice'} · Contractor CRM</title></svelte:head>
 
 <PageContainer>
@@ -984,25 +1332,25 @@
 		>
 			{#snippet main()}
 				<WorkRecordHeader
-					lifecycle={recordLifecycle(
-						'invoice',
-						INVOICE_STATUS_LABELS[saved.invoice.derived_status],
-						{
-							...(saved.progress
-								? {
-										job: {
-											label: 'Job',
-											detail: saved.progress.description,
-											href: resolve('/(app)/jobs/[id=uuid]', { id: saved.progress.job_id })
+					lifecycle={classic
+						? classicLifecycle
+						: recordLifecycle('invoice', INVOICE_STATUS_LABELS[saved.invoice.derived_status], {
+								...(saved.progress
+									? {
+											job: {
+												label: 'Job',
+												detail: saved.progress.description,
+												href: resolve('/(app)/jobs/[id=uuid]', { id: saved.progress.job_id })
+											}
 										}
-									}
-								: {}),
-							...(saved.invoice.derived_status === 'paid'
-								? { paid: { label: 'Paid', detail: 'Paid in full', complete: true } }
-								: {})
-						}
-					)}
+									: {}),
+								...(saved.invoice.derived_status === 'paid'
+									? { paid: { label: 'Paid', detail: 'Paid in full', complete: true } }
+									: {})
+							})}
 					recordNumber={saved.invoice.invoice_number}
+					meta={classic ? invoiceMeta : undefined}
+					onHistory={classic && canSeePrice ? showHistoryCard : undefined}
 					icon={receiptIcon}
 					recordType="Invoice"
 					menuItems={invoiceMenuItems}
@@ -1030,7 +1378,24 @@
 							menuItems={clientMenuItems}
 						/>
 					{/snippet}
-					{#snippet facts()}<RecordFactsList facts={headerFacts} />{/snippet}
+					{#snippet facts()}
+						{#if !classic}
+							<RecordFactsList facts={headerFacts} />
+						{:else if editingTerms}
+							<div class="invoice-terms">
+								<div class="invoice-terms__head">
+									<h2 class="invoice-terms__title">Terms and dates</h2>
+									{@render termsActions()}
+								</div>
+								{@render termsEditor()}
+							</div>
+						{:else}
+							<div class="invoice-facts">
+								<RecordFactsList facts={classicFacts} />
+								{#if editable}<span class="invoice-facts__edit">{@render termsActions()}</span>{/if}
+							</div>
+						{/if}
+					{/snippet}
 					{#snippet badges()}
 						{#if draftEditable}
 							<Button
@@ -1141,315 +1506,428 @@
 					onSave={saveLines}
 				/>
 
-				<SectionBlock title="Terms & dates" icon={calendarIcon} level={2} form={editingTerms}>
-					{#snippet actions()}
-						{#if editable && !editingTerms}
-							<PencilButton
-								onclick={() => {
-									termChoiceDraft = currentTermChoice;
-									issueDateDraft = currentIssueDate;
-									customDueDateDraft = currentCustomDue;
-									editingTerms = true;
-								}}
-								onhover={warmTerms}
-								label="Edit the terms and dates"
-							/>
-						{:else if termsChanged}
-							<Badge size="small" status="warning">Unsaved</Badge>
-						{/if}
-					{/snippet}
-
-					{#if editingTerms}
-						<div class="invoice-detail__terms-edit">
-							<CalendarPicker
-								id="invoice-issue-date"
-								label="Invoice date"
-								value={calendarDateFromString(issueDateDraft)}
-								onchange={(value) => (issueDateDraft = calendarDateToString(value))}
-							/>
-							<Select
-								id="invoice-terms"
-								label="Payment terms"
-								bind:value={termChoiceDraft}
-								options={termOptions}
-							/>
-							{#if termChoiceDraft === 'custom'}
-								<CalendarPicker
-									id="invoice-due-date"
-									label="Due date"
-									value={calendarDateFromString(customDueDateDraft)}
-									minValue={calendarDateFromString(issueDateDraft)}
-									onchange={(value) => (customDueDateDraft = calendarDateToString(value))}
-								/>
-							{/if}
-						</div>
-					{:else}
-						<dl class="invoice-detail__terms">
-							<div class="invoice-detail__term">
-								<dt>Invoice date</dt>
-								<dd>{formatDay(saved.invoice.issue_date)}</dd>
-							</div>
-							<div class="invoice-detail__term">
-								<dt>Due</dt>
-								<dd>{formatDay(saved.invoice.due_date)}</dd>
-							</div>
-							<div class="invoice-detail__term">
-								<dt>Terms</dt>
-								<dd>{currentTermLabel}</dd>
-							</div>
-						</dl>
-					{/if}
-				</SectionBlock>
-
-				<SectionBlock
-					title="Contract disclaimer"
-					icon={fileTextIcon}
-					level={2}
-					form={editingDisclaimer}
-				>
-					{#snippet actions()}
-						{#if draftEditable && !editingDisclaimer}
-							<PencilButton
-								onclick={() => {
-									disclaimerDraft = saved.invoice.contract_disclaimer ?? '';
-									editingDisclaimer = true;
-								}}
-								label="Edit the contract disclaimer"
-							/>
-						{:else if disclaimerChanged}
-							<Badge size="small" status="warning">Unsaved</Badge>
-						{/if}
-					{/snippet}
-
-					{#if editingDisclaimer}
-						<Textarea
-							id="invoice-disclaimer"
-							label="What the customer is agreeing to by paying this bill"
-							rows={5}
-							maxlength={5000}
-							bind:value={disclaimerDraft}
-						/>
-					{:else if saved.invoice.contract_disclaimer}
-						<p class="invoice-detail__disclaimer">{saved.invoice.contract_disclaimer}</p>
-					{:else}
-						<EmptyState
-							icon={fileTextIcon}
-							title="No contract disclaimer"
-							description="Add the terms the customer agrees to by paying this bill."
-						/>
-					{/if}
-				</SectionBlock>
-
-				{#if canSeePrice}
-					<SectionBlock title="Financial history" icon={cashIcon} level={2}>
-						{#if saved.payment_history?.length}
-							<ul class="invoice-detail__history">
-								{#each saved.payment_history as entry (entry.id)}
-									<li class="invoice-detail__history-row">
-										<div class="invoice-detail__history-main">
-											{#snippet historyLabel()}
-												{entry.entry_type === 'unapplied'
-													? 'Payment removed'
-													: entry.source === 'deposit'
-														? 'Deposit applied'
-														: 'Payment received'}
-												{#if entry.method}
-													&middot; {INVOICE_PAYMENT_METHOD_LABELS[entry.method]}
-												{/if}
-											{/snippet}
-											<!-- A recorded payment has a screen of its own; a reused quote deposit does
-											     not, so only the payment rows are links. -->
-											{#if entry.payment_event_id}
-												<a
-													class="invoice-detail__history-label invoice-detail__history-link"
-													href={resolve('/(app)/payments/[id=uuid]', {
-														id: entry.payment_event_id
-													})}
-												>
-													{@render historyLabel()}
-												</a>
-											{:else}
-												<span class="invoice-detail__history-label">
-													{@render historyLabel()}
-												</span>
-											{/if}
-											<span class="invoice-detail__history-meta">
-												{entry.payment_date
-													? formatDay(entry.payment_date)
-													: dateFormat.format(new Date(entry.created_at))}
-												{#if entry.reference}
-													&middot; Ref {entry.reference}
-												{/if}
-											</span>
-										</div>
-										<span
-											class="invoice-detail__history-amount"
-											class:invoice-detail__history-amount--negative={entry.entry_type ===
-												'unapplied'}
-										>
-											{entry.entry_type === 'unapplied' ? '−' : ''}{formatMoney(entry.amount_minor)}
-										</span>
-									</li>
-								{/each}
-							</ul>
-						{:else}
-							<EmptyState
-								icon={cashIcon}
-								title="No payments yet"
-								description="Payments recorded against this invoice will show up here."
-							/>
-						{/if}
-					</SectionBlock>
-				{/if}
-
-				{#if canSeePrice && saved.document_history?.length}
-					<SectionBlock title="Invoice history" icon={historyIcon} level={2}>
-						<ul class="invoice-detail__revisions">
-							{#each saved.document_history as entry (entry.id)}
-								{@const changes = diffInvoiceDocument(entry.before, entry.after, {
-									formatMoney,
-									formatDay
-								})}
-								<li class="invoice-detail__revision">
-									<div class="invoice-detail__revision-head">
-										<span class="invoice-detail__revision-actor">
-											{entry.actor_name ?? 'Someone'} edited the invoice
-										</span>
-										<span class="invoice-detail__revision-meta">
-											{dateTimeFormat.format(new Date(entry.created_at))}
-											{#if changes.length}
-												&middot; {changes.length} change{changes.length === 1 ? '' : 's'}
-											{/if}
-										</span>
-									</div>
-									{#if changes.length}
-										<ul class="invoice-detail__revision-changes">
-											{#each changes as change (change.label)}
-												<li>
-													<span class="invoice-detail__revision-field">{change.label}</span>
-													<span class="invoice-detail__revision-diff">
-														{change.before} &rarr; {change.after}
+				{#if classic}
+					{#if canSeePrice}
+						<RecordCard
+							title="History"
+							subtitle="Payments and changes on this invoice"
+							id="invoice-history"
+							class="invoice-history"
+						>
+							<Tabs
+								tabs={historyTabs}
+								bind:value={historyTab}
+								label="Invoice history"
+								variant="card"
+							>
+								<TabPanel value="payments">
+									{#if saved.payment_history?.length}
+										<ul class="invoice-history__list">
+											{#each saved.payment_history as entry (entry.id)}
+												{@const tone =
+													entry.entry_type === 'unapplied'
+														? 'rose'
+														: entry.source === 'deposit'
+															? 'blue'
+															: 'green'}
+												<li class="invoice-history__row">
+													<span
+														class={`invoice-history__icon invoice-history__icon--${tone}`}
+														aria-hidden="true"
+														>{@html entry.entry_type === 'unapplied'
+															? undoIcon
+															: entry.source === 'deposit'
+																? piggyBankIcon
+																: cashIcon}</span
+													>
+													<div class="invoice-history__main">
+														{#if entry.payment_event_id}
+															<a
+																class="invoice-history__label invoice-history__label--link"
+																href={resolve('/(app)/payments/[id=uuid]', {
+																	id: entry.payment_event_id
+																})}>{@render paymentLabel(entry)}</a
+															>
+														{:else}
+															<span class="invoice-history__label"
+																>{@render paymentLabel(entry)}</span
+															>
+														{/if}
+														<span class="invoice-history__meta">{@render paymentMeta(entry)}</span>
+													</div>
+													<span
+														class="invoice-history__amount"
+														class:invoice-history__amount--negative={entry.entry_type ===
+															'unapplied'}
+													>
+														{entry.entry_type === 'unapplied' ? '−' : ''}{formatMoney(
+															entry.amount_minor
+														)}
 													</span>
 												</li>
 											{/each}
 										</ul>
+									{:else}
+										<p class="invoice-history__empty">
+											No payments yet. Payments recorded against this invoice show up here.
+										</p>
 									{/if}
-								</li>
-							{/each}
-						</ul>
+								</TabPanel>
+								<TabPanel value="edits">
+									{#if saved.document_history?.length}
+										<ul class="invoice-history__list">
+											{#each saved.document_history as entry (entry.id)}
+												{@const changes = diffInvoiceDocument(entry.before, entry.after, {
+													formatMoney,
+													formatDay
+												})}
+												<li class="invoice-history__row invoice-history__row--edit">
+													<span
+														class="invoice-history__icon invoice-history__icon--neutral"
+														aria-hidden="true">{@html filePencilIcon}</span
+													>
+													<div class="invoice-history__main">
+														<span class="invoice-history__label">
+															{entry.actor_name ?? 'Someone'} edited the invoice
+														</span>
+														<span class="invoice-history__meta">
+															{dateTimeFormat.format(new Date(entry.created_at))}
+															{#if changes.length}
+																&middot; {changes.length} change{changes.length === 1 ? '' : 's'}
+															{/if}
+														</span>
+														{#if changes.length}
+															<ul class="invoice-history__changes">
+																{#each changes as change (change.label)}
+																	<li>
+																		<span class="invoice-history__field">{change.label}</span>
+																		<span>{change.before} &rarr; {change.after}</span>
+																	</li>
+																{/each}
+															</ul>
+														{/if}
+													</div>
+												</li>
+											{/each}
+										</ul>
+									{:else}
+										<p class="invoice-history__empty">
+											No edits yet. Changes made after the invoice is sent show up here.
+										</p>
+									{/if}
+								</TabPanel>
+							</Tabs>
+						</RecordCard>
+					{/if}
+
+					<RecordCard
+						title="Contract disclaimer"
+						subtitle="What the client agrees to by paying this bill"
+						id="invoice-disclaimer-card"
+					>
+						{#snippet actions()}{@render disclaimerActions()}{/snippet}
+						<div class="invoice-record__row">
+							{#if editingDisclaimer}
+								{@render disclaimerEditor()}
+							{:else if saved.invoice.contract_disclaimer}
+								<p class="invoice-detail__disclaimer">{saved.invoice.contract_disclaimer}</p>
+							{:else}
+								<p class="invoice-record__empty">No contract disclaimer on this invoice.</p>
+							{/if}
+						</div>
+					</RecordCard>
+				{:else}
+					<SectionBlock title="Terms & dates" icon={calendarIcon} level={2} form={editingTerms}>
+						{#snippet actions()}{@render termsActions()}{/snippet}
+
+						{#if editingTerms}
+							{@render termsEditor()}
+						{:else}
+							<dl class="invoice-detail__terms">
+								<div class="invoice-detail__term">
+									<dt>Invoice date</dt>
+									<dd>{formatDay(saved.invoice.issue_date)}</dd>
+								</div>
+								<div class="invoice-detail__term">
+									<dt>Due</dt>
+									<dd>{formatDay(saved.invoice.due_date)}</dd>
+								</div>
+								<div class="invoice-detail__term">
+									<dt>Terms</dt>
+									<dd>{currentTermLabel}</dd>
+								</div>
+							</dl>
+						{/if}
 					</SectionBlock>
+
+					<SectionBlock
+						title="Contract disclaimer"
+						icon={fileTextIcon}
+						level={2}
+						form={editingDisclaimer}
+					>
+						{#snippet actions()}{@render disclaimerActions()}{/snippet}
+
+						{#if editingDisclaimer}
+							{@render disclaimerEditor()}
+						{:else if saved.invoice.contract_disclaimer}
+							<p class="invoice-detail__disclaimer">{saved.invoice.contract_disclaimer}</p>
+						{:else}
+							<EmptyState
+								icon={fileTextIcon}
+								title="No contract disclaimer"
+								description="Add the terms the customer agrees to by paying this bill."
+							/>
+						{/if}
+					</SectionBlock>
+
+					{#if canSeePrice}
+						<SectionBlock title="Financial history" icon={cashIcon} level={2}>
+							{#if saved.payment_history?.length}
+								<ul class="invoice-detail__history">
+									{#each saved.payment_history as entry (entry.id)}
+										<li class="invoice-detail__history-row">
+											<div class="invoice-detail__history-main">
+												<!-- A recorded payment has a screen of its own; a reused quote deposit does
+											     not, so only the payment rows are links. -->
+												{#if entry.payment_event_id}
+													<a
+														class="invoice-detail__history-label invoice-detail__history-link"
+														href={resolve('/(app)/payments/[id=uuid]', {
+															id: entry.payment_event_id
+														})}
+													>
+														{@render paymentLabel(entry)}
+													</a>
+												{:else}
+													<span class="invoice-detail__history-label">
+														{@render paymentLabel(entry)}
+													</span>
+												{/if}
+												<span class="invoice-detail__history-meta">
+													{@render paymentMeta(entry)}
+												</span>
+											</div>
+											<span
+												class="invoice-detail__history-amount"
+												class:invoice-detail__history-amount--negative={entry.entry_type ===
+													'unapplied'}
+											>
+												{entry.entry_type === 'unapplied' ? '−' : ''}{formatMoney(
+													entry.amount_minor
+												)}
+											</span>
+										</li>
+									{/each}
+								</ul>
+							{:else}
+								<EmptyState
+									icon={cashIcon}
+									title="No payments yet"
+									description="Payments recorded against this invoice will show up here."
+								/>
+							{/if}
+						</SectionBlock>
+					{/if}
+
+					{#if canSeePrice && saved.document_history?.length}
+						<SectionBlock title="Invoice history" icon={historyIcon} level={2}>
+							<ul class="invoice-detail__revisions">
+								{#each saved.document_history as entry (entry.id)}
+									{@const changes = diffInvoiceDocument(entry.before, entry.after, {
+										formatMoney,
+										formatDay
+									})}
+									<li class="invoice-detail__revision">
+										<div class="invoice-detail__revision-head">
+											<span class="invoice-detail__revision-actor">
+												{entry.actor_name ?? 'Someone'} edited the invoice
+											</span>
+											<span class="invoice-detail__revision-meta">
+												{dateTimeFormat.format(new Date(entry.created_at))}
+												{#if changes.length}
+													&middot; {changes.length} change{changes.length === 1 ? '' : 's'}
+												{/if}
+											</span>
+										</div>
+										{#if changes.length}
+											<ul class="invoice-detail__revision-changes">
+												{#each changes as change (change.label)}
+													<li>
+														<span class="invoice-detail__revision-field">{change.label}</span>
+														<span class="invoice-detail__revision-diff">
+															{change.before} &rarr; {change.after}
+														</span>
+													</li>
+												{/each}
+											</ul>
+										{/if}
+									</li>
+								{/each}
+							</ul>
+						</SectionBlock>
+					{/if}
 				{/if}
 			{/snippet}
 
 			{#snippet rail()}
-				<QuoteSummaryCard
-					title="Invoice total"
-					subtotalMinor={canSeePrice ? (saved.money?.subtotal_minor ?? 0) : null}
-					discountMinor={saved.money?.discount_minor ?? 0}
-					taxMinor={saved.money?.tax_minor ?? 0}
-					totalMinor={saved.money?.total_minor ?? null}
-					discountLabel={saved.money?.discount_name ?? null}
-					taxLabel={saved.money?.tax_name ?? null}
-					currencyCode={saved.invoice.currency_code}
-					locale={saved.locale}
-				/>
-
-				{#if canSeePrice && saved.money}
-					<RailCard title="Balance" icon={cashIcon}>
-						<dl class="invoice-detail__balance">
-							<div class="invoice-detail__balance-row">
-								<dt>Invoice balance</dt>
-								<dd class="invoice-detail__balance-amount">
-									{formatMoney(
-										saved.invoice.is_replaced || isVoided ? 0 : saved.money.remaining_minor
-									)}
-								</dd>
-							</div>
-							{#if saved.client_balance}
-								<div class="invoice-detail__balance-row">
-									<dt>Client account balance</dt>
-									<dd>{formatMoney(saved.client_balance.account_balance_minor)}</dd>
+				{#if classic}
+					{#if canSeePrice && balanceFigures && saved.money}
+						<ProfitFeatureCard
+							label="Balance due"
+							eyebrow="Balance due"
+							value={formatMoney(balanceFigures.owed)}
+							chip={{ label: dueText, icon: calendarDueIcon }}
+							pillIcon={checkIcon}
+							margin={!balanceFigures.closedNote && balanceFigures.paidMinor > 0
+								? `${balanceFigures.paidPercent}% paid`
+								: null}
+							subline={balanceFigures.closedNote ??
+								`of the ${formatMoney(balanceFigures.total)} invoice total`}
+							showBar={!balanceFigures.closedNote}
+							parts={balanceFigures.closedNote
+								? []
+								: [
+										{
+											key: 'paid',
+											label: 'Paid',
+											amount: formatMoney(balanceFigures.paidMinor),
+											share: balanceFigures.paidShare,
+											percent: balanceFigures.paidPercent,
+											tone: 'green'
+										},
+										{
+											key: 'balance',
+											label: 'Balance',
+											amount: formatMoney(balanceFigures.owed),
+											share: 1 - balanceFigures.paidShare,
+											percent: 100 - balanceFigures.paidPercent,
+											tone: 'muted'
+										}
+									]}
+						>
+							{#if saved.client_balance || canAddDeposit}
+								<div class="invoice-balance__footer">
+									{#if saved.client_balance}
+										<div class="invoice-balance__row">
+											<span>Client account balance</span>
+											<strong>{formatMoney(saved.client_balance.account_balance_minor)}</strong>
+										</div>
+									{/if}
+									{#if canAddDeposit && saved.client_balance}
+										<div class="invoice-balance__credit">
+											<p>
+												{formatMoney(saved.client_balance.available_credit_minor)} of {clientFirstName}&rsquo;s
+												money is not on any invoice yet.
+											</p>
+											<button
+												type="button"
+												class="invoice-balance__deposit"
+												onmouseenter={prefetchInvoiceCredit}
+												onfocus={prefetchInvoiceCredit}
+												onclick={() => (addDepositOpen = true)}
+											>
+												<span aria-hidden="true">{@html piggyBankIcon}</span>Add deposit
+											</button>
+										</div>
+									{/if}
 								</div>
 							{/if}
-						</dl>
-						{#if canAddDeposit && saved.client_balance}
-							<div class="invoice-detail__credit">
-								<p class="invoice-detail__credit-note">
-									{formatMoney(saved.client_balance.available_credit_minor)} of this client&rsquo;s money
-									is not on any invoice yet.
-								</p>
-								<Button
-									variant="secondary"
-									size="small"
-									onhover={prefetchInvoiceCredit}
-									onclick={() => (addDepositOpen = true)}
-								>
-									Add deposit
-								</Button>
-							</div>
-						{/if}
-					</RailCard>
-				{/if}
+						</ProfitFeatureCard>
+					{/if}
 
-				{#if showOnlinePayments}
-					<RailCard title="Online payment" icon={creditCardIcon}>
-						<Toggle
-							id="invoice-online-partial"
-							label="Allow partial payments"
-							description="Your client can choose to pay less than the full balance online."
-							checked={saved.online_payments.partial_allowed}
-							disabled={!saved.can_edit || partialSaving}
-							labelSide="start"
-							onchange={(allowed) => void togglePartialPayments(allowed)}
-						/>
-					</RailCard>
-				{/if}
+					{#if showOnlinePayments}
+						<RecordCard
+							title="Online payment"
+							subtitle={`${clientFirstName} can pay from the invoice link`}
+							size="rail"
+							id="invoice-online-payment"
+						>
+							<div class="invoice-online">{@render partialToggle()}</div>
+						</RecordCard>
+					{/if}
 
-				<RecordAdjustmentsCard>
-					<RecordDiscountCard
-						revision={saved.invoice.revision}
-						name={saved.money?.discount_name ?? null}
-						type={saved.money?.discount_type ?? null}
-						value={saved.money?.discount_value ?? null}
-						discountMinor={canSeePrice ? (saved.money?.discount_minor ?? 0) : null}
+					{@render adjustments()}
+
+					<RecordFilesCard
+						entityType="invoice"
+						entityId={invoiceId}
+						recordLabel="this invoice"
+						pickerLabel="On this invoice"
+						clientId={saved.client?.id ?? null}
+						clientLabel={saved.client?.company_name || saved.client?.display_name || null}
+						canManage={editable}
+						title="Photos and files"
+						look="record"
+					/>
+				{:else}
+					<QuoteSummaryCard
+						title="Invoice total"
+						subtotalMinor={canSeePrice ? (saved.money?.subtotal_minor ?? 0) : null}
+						discountMinor={saved.money?.discount_minor ?? 0}
+						taxMinor={saved.money?.tax_minor ?? 0}
+						totalMinor={saved.money?.total_minor ?? null}
+						discountLabel={saved.money?.discount_name ?? null}
+						taxLabel={saved.money?.tax_name ?? null}
 						currencyCode={saved.invoice.currency_code}
 						locale={saved.locale}
-						editable={editable && !isProgress}
-						{canSeePrice}
-						recordNoun="invoice"
-						onSave={(revision, payload) => saveInvoiceDiscount(invoiceId, revision, payload)}
-						onSaved={refreshInvoice}
 					/>
 
-					<RecordTaxCard
-						revision={saved.invoice.revision}
-						propertyId={(saved.invoice.service_properties?.[0]?.property_id as string) ?? ''}
-						taxSource={(saved.money?.tax_source ?? 'not_configured') as QuoteTaxSource}
-						rateId={saved.money?.tax_rate_id ?? null}
-						name={saved.money?.tax_name ?? null}
-						rateBasisPoints={saved.money?.tax_rate_basis_points ?? 0}
-						taxMinor={canSeePrice ? (saved.money?.tax_minor ?? 0) : null}
-						currencyCode={saved.invoice.currency_code}
-						locale={saved.locale}
-						editable={editable && !isProgress}
-						{canSeePrice}
-						canManageTaxes={false}
-						recordNoun="invoice"
-						unsetHint="This invoice is not taxed yet."
-						onSave={(revision, payload) => saveInvoiceTax(invoiceId, revision, payload)}
-						onSaved={refreshInvoice}
-					/>
-				</RecordAdjustmentsCard>
+					{#if canSeePrice && saved.money}
+						<RailCard title="Balance" icon={cashIcon}>
+							<dl class="invoice-detail__balance">
+								<div class="invoice-detail__balance-row">
+									<dt>Invoice balance</dt>
+									<dd class="invoice-detail__balance-amount">
+										{formatMoney(
+											saved.invoice.is_replaced || isVoided ? 0 : saved.money.remaining_minor
+										)}
+									</dd>
+								</div>
+								{#if saved.client_balance}
+									<div class="invoice-detail__balance-row">
+										<dt>Client account balance</dt>
+										<dd>{formatMoney(saved.client_balance.account_balance_minor)}</dd>
+									</div>
+								{/if}
+							</dl>
+							{#if canAddDeposit && saved.client_balance}
+								<div class="invoice-detail__credit">
+									<p class="invoice-detail__credit-note">
+										{formatMoney(saved.client_balance.available_credit_minor)} of this client&rsquo;s
+										money is not on any invoice yet.
+									</p>
+									<Button
+										variant="secondary"
+										size="small"
+										onhover={prefetchInvoiceCredit}
+										onclick={() => (addDepositOpen = true)}
+									>
+										Add deposit
+									</Button>
+								</div>
+							{/if}
+						</RailCard>
+					{/if}
 
-				<RecordFilesCard
-					entityType="invoice"
-					entityId={invoiceId}
-					recordLabel="this invoice"
-					pickerLabel="On this invoice"
-					clientId={saved.client?.id ?? null}
-					clientLabel={saved.client?.company_name || saved.client?.display_name || null}
-					canManage={editable}
-				/>
+					{#if showOnlinePayments}
+						<RailCard title="Online payment" icon={creditCardIcon}>
+							{@render partialToggle()}
+						</RailCard>
+					{/if}
+
+					{@render adjustments()}
+
+					<RecordFilesCard
+						entityType="invoice"
+						entityId={invoiceId}
+						recordLabel="this invoice"
+						pickerLabel="On this invoice"
+						clientId={saved.client?.id ?? null}
+						clientLabel={saved.client?.company_name || saved.client?.display_name || null}
+						canManage={editable}
+					/>
+				{/if}
 			{/snippet}
 		</RecordDetailLayout>
 
@@ -1535,6 +2013,8 @@
 		{/if}
 	{/if}
 </PageContainer>
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.invoice-detail__terms,
@@ -1768,5 +2248,339 @@
 
 	.invoice-detail__revision-diff {
 		color: var(--color-text);
+	}
+	// classic.pen "Invoice details · 1440" ------------------------------------------------------------------
+
+	// The header's four dates with the terms pencil at the end of the row.
+	.invoice-facts {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+
+		:global(.record-facts) {
+			flex: 1 1 auto;
+			min-width: 0;
+		}
+
+		&__edit {
+			flex: 0 0 auto;
+		}
+	}
+
+	.invoice-terms {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		font-family: var(--classic2-font);
+
+		&__head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+		}
+
+		&__title {
+			margin: 0;
+			color: var(--classic2-ink);
+			font-size: var(--classic2-font-label);
+			font-weight: 600;
+		}
+
+		.invoice-detail__terms-edit {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		}
+	}
+
+	.invoice-record {
+		&__row {
+			padding: 18px 24px 20px;
+			border-top: 1px solid var(--classic2-divider);
+			font-family: var(--classic2-font);
+
+			.invoice-detail__disclaimer {
+				color: var(--classic2-body);
+				font-size: var(--classic2-font-body);
+				line-height: 1.6;
+			}
+		}
+
+		&__empty {
+			margin: 0;
+			color: var(--classic2-secondary);
+			font-size: var(--classic2-font-label);
+		}
+	}
+
+	:global(.invoice-history .tabs__list) {
+		border-bottom: 1px solid var(--classic2-divider);
+	}
+
+	.invoice-history {
+		&__list {
+			margin: 0;
+			padding: 0;
+			list-style: none;
+			font-family: var(--classic2-font);
+		}
+
+		&__row {
+			display: flex;
+			align-items: center;
+			gap: 14px;
+			padding: 14px 24px;
+
+			& + & {
+				border-top: 1px solid var(--classic2-divider);
+			}
+
+			&--edit {
+				align-items: flex-start;
+			}
+		}
+
+		&__icon {
+			display: inline-flex;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			width: 36px;
+			height: 36px;
+			border-radius: 999px;
+
+			:global(svg) {
+				width: 17px;
+				height: 17px;
+			}
+
+			&--green {
+				background: var(--classic2-green-tint);
+				color: var(--classic2-green);
+			}
+
+			&--blue {
+				background: var(--classic2-blue-tint);
+				color: var(--classic2-blue);
+			}
+
+			&--rose {
+				background: var(--classic2-rose-tint);
+				color: var(--classic2-rose);
+			}
+
+			&--neutral {
+				background: var(--classic2-surface-soft);
+				color: var(--classic2-secondary);
+			}
+		}
+
+		&__main {
+			display: flex;
+			flex: 1 1 auto;
+			flex-direction: column;
+			gap: 3px;
+			min-width: 0;
+		}
+
+		&__label {
+			color: var(--classic2-ink);
+			font-size: var(--classic2-font-body);
+			font-weight: 600;
+
+			&--link {
+				align-self: flex-start;
+				color: var(--classic2-green);
+				text-decoration: none;
+
+				&:hover {
+					text-decoration: underline;
+				}
+
+				&:focus-visible {
+					border-radius: 4px;
+					outline: 2px solid var(--classic2-green);
+					outline-offset: 2px;
+				}
+			}
+		}
+
+		&__meta {
+			color: var(--classic2-secondary);
+			font-size: var(--classic2-font-label);
+		}
+
+		&__amount {
+			flex: 0 0 auto;
+			color: var(--classic2-ink);
+			font-size: var(--classic2-font-body);
+			font-weight: 700;
+
+			&--negative {
+				color: var(--classic2-rose);
+			}
+		}
+
+		&__changes {
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+			margin: 6px 0 0;
+			padding: 0;
+			list-style: none;
+			color: var(--classic2-body);
+			font-size: var(--classic2-font-label);
+
+			li {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 6px;
+			}
+		}
+
+		&__field {
+			min-width: 6rem;
+			color: var(--classic2-secondary);
+		}
+
+		&__empty {
+			margin: 0;
+			padding: 18px 24px 20px;
+			color: var(--classic2-secondary);
+			font-family: var(--classic2-font);
+			font-size: var(--classic2-font-label);
+		}
+	}
+
+	// The Balance card's footer, on the dark featured card.
+	.invoice-balance {
+		&__footer {
+			display: flex;
+			flex-direction: column;
+			gap: 12px;
+			padding-top: 14px;
+			border-top: 1px solid var(--classic2-feature-line);
+		}
+
+		&__row {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+			font-size: var(--classic2-font-label);
+
+			span {
+				color: var(--classic2-feature-label);
+				font-weight: 500;
+			}
+
+			strong {
+				color: var(--classic2-white);
+				font-weight: 700;
+			}
+		}
+
+		&__credit {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 10px;
+			padding: 12px;
+			border-radius: 12px;
+			background: var(--classic2-feature-chip);
+
+			p {
+				margin: 0;
+				color: var(--classic2-feature-label);
+				font-size: var(--classic2-font-label);
+				font-weight: 500;
+				line-height: 1.35;
+			}
+		}
+
+		&__deposit {
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			height: 34px;
+			padding: 0 14px;
+			border: 0;
+			border-radius: var(--classic2-radius-control);
+			background: var(--classic2-white);
+			color: var(--classic2-on-white);
+			font-family: var(--classic2-font);
+			font-size: var(--classic2-font-label);
+			font-weight: 600;
+			cursor: pointer;
+
+			span {
+				display: inline-flex;
+			}
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+
+			&:hover {
+				opacity: 0.9;
+			}
+
+			&:focus-visible {
+				outline: 2px solid var(--classic2-white);
+				outline-offset: 2px;
+			}
+		}
+	}
+
+	// The partial-payments switch sits in a soft inset under the card heading.
+	.invoice-online {
+		margin: 0 20px 20px;
+		padding: 14px 16px;
+		border-radius: 14px;
+		background: var(--classic2-surface-soft);
+	}
+
+	// The voided / written-off / replaced notes under the header, as a calm Classic card with a tone edge.
+	:global(:root:has(.app-shell[data-presentation='classic'])) .invoice-detail__closure {
+		gap: 4px;
+		padding: 16px 24px;
+		border: 1px solid var(--classic2-border);
+		border-left-width: 4px;
+		border-radius: var(--classic2-radius-card);
+		background: var(--classic2-surface);
+		font-family: var(--classic2-font);
+
+		&.invoice-detail__closure--voided {
+			border-left-color: var(--classic2-rose);
+		}
+
+		&.invoice-detail__closure--bad-debt {
+			border-left-color: var(--classic2-amber);
+		}
+
+		&.invoice-detail__closure--received {
+			border-left-color: var(--classic2-green);
+		}
+
+		&.invoice-detail__closure--replacement {
+			border-left-color: var(--classic2-blue);
+		}
+
+		.invoice-detail__closure-title {
+			color: var(--classic2-ink);
+			font-size: var(--classic2-font-body);
+		}
+
+		.invoice-detail__closure-note {
+			color: var(--classic2-secondary);
+			font-size: var(--classic2-font-label);
+		}
+
+		.invoice-detail__closure-link {
+			color: var(--classic2-green);
+			font-size: var(--classic2-font-label);
+			text-decoration: none;
+		}
 	}
 </style>

@@ -60,13 +60,16 @@ export const GET: RequestHandler = async (event) => {
 		organizationFormatting(organizationId),
 		supabase
 			.from('invoices')
-			.select('online_partial_payments_allowed')
+			.select('online_partial_payments_allowed, root_invoice_id')
 			.eq('organization_id', organizationId)
 			.eq('id', invoiceId)
 			.maybeSingle(),
 		onlineInvoicePaymentsOffered(organizationId)
 	]);
 	if (balanceResult.error || partialResult.error) return databaseError();
+
+	const rootInvoiceId = partialResult.data?.root_invoice_id ?? invoiceId;
+	const source = await invoiceSource(supabase, organizationId, rootInvoiceId);
 	const balances = (balanceResult.data ?? {}) as Record<string, unknown>;
 	const clientBalance = clientId ? (balances[clientId] ?? null) : null;
 
@@ -74,6 +77,7 @@ export const GET: RequestHandler = async (event) => {
 		{
 			...document,
 			client_balance: clientBalance,
+			source,
 			online_payments: {
 				offered: onlineOffered,
 				partial_allowed: partialResult.data?.online_partial_payments_allowed ?? false
@@ -93,6 +97,40 @@ export const GET: RequestHandler = async (event) => {
 		{ headers: PRIVATE_READ_HEADERS }
 	);
 };
+
+// The job, quote and request behind a bill, from the work it claimed when it was made (`invoice_sources`, kept
+// on the first invoice of a correction chain). Read as the caller, so row security leaves out whatever the
+// reader may not open, and a bill made without a job simply has no journey links.
+async function invoiceSource(
+	supabase: App.Locals['supabase'],
+	organizationId: string,
+	rootInvoiceId: string
+) {
+	const { data } = await supabase
+		.from('invoice_sources')
+		.select(
+			'job:jobs!invoice_sources_job_fk(id, job_number, request_id, quote:quotes!jobs_quote_organization_fk(id, quote_number, request_id, decided_at))'
+		)
+		.eq('organization_id', organizationId)
+		.eq('root_invoice_id', rootInvoiceId)
+		.not('job_id', 'is', null)
+		.limit(1)
+		.maybeSingle();
+	const job = one(data?.job);
+	if (!job) return null;
+	const quote = one(job.quote);
+	return {
+		job: { id: job.id, job_number: job.job_number },
+		quote: quote
+			? { id: quote.id, quote_number: quote.quote_number, decided_at: quote.decided_at }
+			: null,
+		request_id: job.request_id ?? quote?.request_id ?? null
+	};
+}
+
+function one<T>(value: T | T[] | null | undefined): T | null {
+	return Array.isArray(value) ? (value[0] ?? null) : (value ?? null);
+}
 
 // Whether the customer's copy shows a Pay button at all: Stripe connected and invoice payments switched on.
 // The connection table is server-only, so it is asked with the owner client and only a yes/no leaves here.
