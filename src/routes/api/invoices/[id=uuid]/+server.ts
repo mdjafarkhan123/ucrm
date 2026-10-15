@@ -53,33 +53,23 @@ export const GET: RequestHandler = async (event) => {
 	// The client's whole-account balance, gated in the same call: a reader without invoices.view_price gets an
 	// empty map and the rail simply shows no balance. Only one client is asked for, so this is a single row.
 	const clientId = document.invoice.client_id;
-	const [balanceResult, formatting, partialResult, onlineOffered, sourceLine] = await Promise.all([
+	const [balanceResult, formatting, partialResult, onlineOffered] = await Promise.all([
 		canSeePrice && clientId
 			? supabase.rpc('client_account_balance', { target_client_ids: [clientId] })
 			: Promise.resolve({ data: {} as Record<string, unknown>, error: null }),
 		organizationFormatting(organizationId),
 		supabase
 			.from('invoices')
-			.select('online_partial_payments_allowed')
+			.select('online_partial_payments_allowed, root_invoice_id')
 			.eq('organization_id', organizationId)
 			.eq('id', invoiceId)
 			.maybeSingle(),
-		onlineInvoicePaymentsOffered(organizationId),
-		// The job this bill came from, for the header's work journey. Lines copied from a job remember it.
-		supabase
-			.from('invoice_lines')
-			.select('source_job_id')
-			.eq('organization_id', organizationId)
-			.eq('invoice_id', invoiceId)
-			.not('source_job_id', 'is', null)
-			.limit(1)
-			.maybeSingle()
+		onlineInvoicePaymentsOffered(organizationId)
 	]);
 	if (balanceResult.error || partialResult.error) return databaseError();
 
-	const progress = document.progress as { job_id: string } | null | undefined;
-	const sourceJobId = sourceLine.data?.source_job_id ?? progress?.job_id ?? null;
-	const source = sourceJobId ? await invoiceSource(supabase, organizationId, sourceJobId) : null;
+	const rootInvoiceId = partialResult.data?.root_invoice_id ?? invoiceId;
+	const source = await invoiceSource(supabase, organizationId, rootInvoiceId);
 	const balances = (balanceResult.data ?? {}) as Record<string, unknown>;
 	const clientBalance = clientId ? (balances[clientId] ?? null) : null;
 
@@ -108,30 +98,38 @@ export const GET: RequestHandler = async (event) => {
 	);
 };
 
-// The job, quote and request behind a bill. Read as the caller, so row security leaves out whatever the reader
-// may not open, and a missing job simply means no journey links.
+// The job, quote and request behind a bill, from the work it claimed when it was made (`invoice_sources`, kept
+// on the first invoice of a correction chain). Read as the caller, so row security leaves out whatever the
+// reader may not open, and a bill made without a job simply has no journey links.
 async function invoiceSource(
 	supabase: App.Locals['supabase'],
 	organizationId: string,
-	jobId: string
+	rootInvoiceId: string
 ) {
 	const { data } = await supabase
-		.from('jobs')
+		.from('invoice_sources')
 		.select(
-			'id, job_number, request_id, quote:quotes!jobs_quote_organization_fk(id, quote_number, request_id, decided_at)'
+			'job:jobs!invoice_sources_job_fk(id, job_number, request_id, quote:quotes!jobs_quote_organization_fk(id, quote_number, request_id, decided_at))'
 		)
 		.eq('organization_id', organizationId)
-		.eq('id', jobId)
+		.eq('root_invoice_id', rootInvoiceId)
+		.not('job_id', 'is', null)
+		.limit(1)
 		.maybeSingle();
-	if (!data) return null;
-	const quote = Array.isArray(data.quote) ? (data.quote[0] ?? null) : data.quote;
+	const job = one(data?.job);
+	if (!job) return null;
+	const quote = one(job.quote);
 	return {
-		job: { id: data.id, job_number: data.job_number },
+		job: { id: job.id, job_number: job.job_number },
 		quote: quote
 			? { id: quote.id, quote_number: quote.quote_number, decided_at: quote.decided_at }
 			: null,
-		request_id: data.request_id ?? quote?.request_id ?? null
+		request_id: job.request_id ?? quote?.request_id ?? null
 	};
+}
+
+function one<T>(value: T | T[] | null | undefined): T | null {
+	return Array.isArray(value) ? (value[0] ?? null) : (value ?? null);
 }
 
 // Whether the customer's copy shows a Pay button at all: Stripe connected and invoice payments switched on.

@@ -10,11 +10,11 @@ idea only when it works best. Dont use app existing old design skill, use the ne
 [Behavior rules](../../../docs/classic-theme-redesign-behavior-contract.md#behavior-that-must-not-change).
 
 **Plan:** `docs/classic-theme-redesign-behavior-contract.md` · **Order:** [Roadmap](ROADMAP.md), approved
-2026-10-15. **Stage:** First delivery. B1–B8 and B3b are integrated (B6 Job and B8 Quote details done 2026-10-15); B4's live proof and full-check limitation are
+2026-10-15. **Stage:** First delivery. B1–B9 and B3b are integrated (B6 Job, B8 Quote and B9 Invoice details done 2026-10-15); B4's live proof and full-check limitation are
 in the [Save bar note](parts/b4-save-bar.md).
 
-**Next:** B9 Invoice details ([B8 proof](parts/b8-quote-details.md); reuse `work/ProfitFeatureCard`, fact tones and
-`look="record"` Notes/Photos).
+**Next:** B10a Request details ([B9 proof](parts/b9-invoice-details.md); reuse `layout/RecordCard`, fact tones,
+`work/ProfitFeatureCard` and `look="record"` Notes/Photos).
 [B5 proof](parts/b5-record-header.md) closes the shared header prerequisite. The [record build](stages/first-version-build.md) and
 [whole-app stages](stages/whole-app.md) have done-checks.
 

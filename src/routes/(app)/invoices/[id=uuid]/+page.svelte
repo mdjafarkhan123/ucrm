@@ -319,6 +319,9 @@
 	// Only an open bill counts down; a draft, a paid or a closed one says what it is instead.
 	const dueText = $derived.by(() => {
 		if (!saved) return '';
+		if (saved.invoice.is_replaced) return 'Replaced';
+		if (isVoided) return 'Voided';
+		if (saved.invoice.derived_status === 'paid') return 'Paid in full';
 		if (!isOpenIssued) return `Due ${shortDay(saved.invoice.due_date)}`;
 		if (daysToDue === 0) return 'Due today';
 		if (daysToDue === 1) return 'Due tomorrow';
@@ -379,6 +382,18 @@
 		});
 	});
 
+	// A bill due the day it is dated says so; otherwise the date, with a named term beside it ("Oct 20 · Net
+	// 14"). A custom date or the client's default has no short name worth repeating.
+	const dueFact = $derived.by(() => {
+		if (!saved) return '';
+		if (saved.invoice.due_date === saved.invoice.issue_date) return 'On receipt';
+		const day = shortDay(saved.invoice.due_date);
+		const name = saved.invoice.payment_term_snapshot?.name;
+		return saved.invoice.due_date_source !== 'custom' && typeof name === 'string' && name
+			? `${day} \u00b7 ${name}`
+			: day;
+	});
+
 	const classicFacts = $derived.by<RecordFact[]>(() => {
 		if (!saved) return [];
 		return [
@@ -389,7 +404,7 @@
 			},
 			{
 				label: 'Due',
-				value: `${shortDay(saved.invoice.due_date)} \u00b7 ${currentTermLabel}`,
+				value: dueFact,
 				icon: calendarDueIcon,
 				tone: saved.invoice.derived_status === 'past_due' ? 'waiting' : 'neutral'
 			},
@@ -424,7 +439,13 @@
 		const owed = closed ? 0 : money.remaining_minor;
 		const paidShare = total > 0 ? Math.min(1, paidMinor / total) : 0;
 		const paidPercent = Math.round(paidShare * 100);
-		return { total, paidMinor, owed, paidShare, paidPercent };
+		// A voided or replaced bill owes nothing, so the card says why instead of drawing a split.
+		const closedNote = saved?.invoice.is_replaced
+			? 'Replaced \u2014 the newer invoice carries the balance'
+			: isVoided
+				? 'Voided \u2014 nothing is owed on this invoice'
+				: null;
+		return { total, paidMinor, owed, paidShare, paidPercent, closedNote };
 	});
 
 	// What the payments on this bill add up to: applied money less anything taken back off it.
@@ -1758,26 +1779,32 @@
 							value={formatMoney(balanceFigures.owed)}
 							chip={{ label: dueText, icon: calendarDueIcon }}
 							pillIcon={checkIcon}
-							margin={balanceFigures.paidMinor > 0 ? `${balanceFigures.paidPercent}% paid` : null}
-							subline={`of the ${formatMoney(balanceFigures.total)} invoice total`}
-							parts={[
-								{
-									key: 'paid',
-									label: 'Paid',
-									amount: formatMoney(balanceFigures.paidMinor),
-									share: balanceFigures.paidShare,
-									percent: balanceFigures.paidPercent,
-									tone: 'green'
-								},
-								{
-									key: 'balance',
-									label: 'Balance',
-									amount: formatMoney(balanceFigures.owed),
-									share: 1 - balanceFigures.paidShare,
-									percent: 100 - balanceFigures.paidPercent,
-									tone: 'muted'
-								}
-							]}
+							margin={!balanceFigures.closedNote && balanceFigures.paidMinor > 0
+								? `${balanceFigures.paidPercent}% paid`
+								: null}
+							subline={balanceFigures.closedNote ??
+								`of the ${formatMoney(balanceFigures.total)} invoice total`}
+							showBar={!balanceFigures.closedNote}
+							parts={balanceFigures.closedNote
+								? []
+								: [
+										{
+											key: 'paid',
+											label: 'Paid',
+											amount: formatMoney(balanceFigures.paidMinor),
+											share: balanceFigures.paidShare,
+											percent: balanceFigures.paidPercent,
+											tone: 'green'
+										},
+										{
+											key: 'balance',
+											label: 'Balance',
+											amount: formatMoney(balanceFigures.owed),
+											share: 1 - balanceFigures.paidShare,
+											percent: 100 - balanceFigures.paidPercent,
+											tone: 'muted'
+										}
+									]}
 						>
 							{#if saved.client_balance || canAddDeposit}
 								<div class="invoice-balance__footer">
@@ -2480,7 +2507,7 @@
 			border: 0;
 			border-radius: var(--classic2-radius-control);
 			background: var(--classic2-white);
-			color: var(--classic2-feature-button-text);
+			color: var(--classic2-on-white);
 			font-family: var(--classic2-font);
 			font-size: var(--classic2-font-label);
 			font-weight: 600;
@@ -2496,7 +2523,7 @@
 			}
 
 			&:hover {
-				background: var(--classic2-surface-soft);
+				opacity: 0.9;
 			}
 
 			&:focus-visible {
@@ -2512,5 +2539,48 @@
 		padding: 14px 16px;
 		border-radius: 14px;
 		background: var(--classic2-surface-soft);
+	}
+
+	// The voided / written-off / replaced notes under the header, as a calm Classic card with a tone edge.
+	:global(:root:has(.app-shell[data-presentation='classic'])) .invoice-detail__closure {
+		gap: 4px;
+		padding: 16px 24px;
+		border: 1px solid var(--classic2-border);
+		border-left-width: 4px;
+		border-radius: var(--classic2-radius-card);
+		background: var(--classic2-surface);
+		font-family: var(--classic2-font);
+
+		&.invoice-detail__closure--voided {
+			border-left-color: var(--classic2-rose);
+		}
+
+		&.invoice-detail__closure--bad-debt {
+			border-left-color: var(--classic2-amber);
+		}
+
+		&.invoice-detail__closure--received {
+			border-left-color: var(--classic2-green);
+		}
+
+		&.invoice-detail__closure--replacement {
+			border-left-color: var(--classic2-blue);
+		}
+
+		.invoice-detail__closure-title {
+			color: var(--classic2-ink);
+			font-size: var(--classic2-font-body);
+		}
+
+		.invoice-detail__closure-note {
+			color: var(--classic2-secondary);
+			font-size: var(--classic2-font-label);
+		}
+
+		.invoice-detail__closure-link {
+			color: var(--classic2-green);
+			font-size: var(--classic2-font-label);
+			text-decoration: none;
+		}
 	}
 </style>
