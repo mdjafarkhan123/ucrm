@@ -18,6 +18,6 @@ layout) — recipe § Record page structure. Calm slate dark mode approved
 `Requests`, `Quotes` and `Invoices · 1440` are approved. See [Clients list](parts/clients-list.md),
 [Requests, Quotes and Invoices](parts/requests-quotes-invoices-lists.md) and `parts/list-pages.md` on branch
 `claude/jobs-list-design`. Schedule Week, Day and Month approved 2026-10-15 (no page header; calendar fills the page) —
-[Schedule design](parts/schedule-design.md); Unscheduled drawer drawn, waiting for his yes; the remaining Schedule screens are listed in that note's Next. Home/Reports redesign — `../crm-launch-readiness/parts/part-13-home-reports.md`.
+[Schedule design](parts/schedule-design.md); Unscheduled drawer and its states approved 2026-10-15 (a new concept, its own panel beside the calendar); the remaining Schedule screens are listed in that note's Next. Home/Reports redesign — `../crm-launch-readiness/parts/part-13-home-reports.md`.
 
 **Limits:** Settings remains on its older layout and clips at phone width and enlarged text; its layout is planned for the later Settings stage. See the B2 proof note. The optional service-area field was not present on the test account, so that individual field state was not checked.

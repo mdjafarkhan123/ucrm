@@ -100,11 +100,13 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
       white card with the calendar card's border, corners and shadow, 12px from the calendar; the list is
       white and the cards keep their borders. The calendar card is 952 wide; its legend drops the
       business-hours note while the drawer is open so it fits. States drawers match. Light and dark checked.
+- [x] **Approved by Jafar 2026-10-15: the Unscheduled drawer (`HHi5u`) and its states (`FLIPT`).** Renamed
+      `Schedule · Unscheduled drawer · 1440` and `… · states` and moved to x 16978 (y 4080 / 5184); the old
+      redraw `Obv2U` deleted (its states board was already gone).
 
 ## Next (new sessions; redesign the look only, copy the live component's behaviour and wording)
 
-First, get Jafar's yes on drawer Concept 2 (`HHi5u`) and its states (`FLIPT`). Then commit `classic.pen`
-from main after he presses Ctrl+S, if that wasn't done at session end. Then, in this order:
+Commit `classic.pen` from main after Jafar presses Ctrl+S, if that wasn't done at session end. Then, in this order:
 
 1. Empty-slot quick create — `ScheduleJobCreate.svelte`: a Job/Request switch and a light Job form seeded with
    the slot, plus More options.
