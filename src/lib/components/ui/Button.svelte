@@ -233,6 +233,13 @@
 		background: var(--classic2-surface-soft);
 	}
 
+	// The design system's secondary button is a white control with a hairline edge, not a grey fill.
+	:global(:root:has(.app-shell[data-presentation='classic'])) .button--secondary {
+		color: var(--classic2-ink);
+		background: var(--classic2-button-surface);
+		box-shadow: 0 1px 2px var(--classic2-shadow-far);
+	}
+
 	:global(:root:has(.app-shell[data-presentation='classic']))
 		.button--secondary:hover:not(:disabled),
 	:global(:root:has(.app-shell[data-presentation='classic']))
@@ -243,7 +250,6 @@
 		.button--tertiary:focus-visible:not(:disabled) {
 		border-color: var(--classic2-green);
 		color: var(--classic2-green);
-		background: var(--classic2-surface-soft);
 	}
 
 	:global(:root:has(.app-shell[data-presentation='classic'])) .button--tertiary {

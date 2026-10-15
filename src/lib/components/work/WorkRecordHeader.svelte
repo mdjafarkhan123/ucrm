@@ -35,6 +35,8 @@
 		href?: string;
 		disabled?: boolean;
 		loading?: boolean;
+		/** A Tabler icon (`?raw`) drawn before the label. */
+		icon?: string;
 		/** Fires on hover, before the press. Start loading whatever the action opens. */
 		onhover?: () => void;
 	};
@@ -43,6 +45,7 @@
 		icon,
 		recordType,
 		recordNumber,
+		meta,
 		lifecycle = [],
 		title,
 		statusLabel,
@@ -66,6 +69,8 @@
 		/** What kind of record this is, e.g. "Request". Used to name the controls out loud. */
 		recordType: string;
 		recordNumber?: string | number;
+		/** A short line after the record number in Classic, e.g. "Multi-day · 4 visits". */
+		meta?: string;
 		lifecycle?: RecordLifecycleStep[];
 		title: string;
 		statusLabel: string;
@@ -116,6 +121,11 @@
 		{#if recordNumber != null}
 			<span class="work-header__number">{recordType} #{recordNumber}</span>
 		{/if}
+		{#if meta}
+			<span class="work-header__meta"
+				><span class="work-header__meta-dot" aria-hidden="true"></span>{meta}</span
+			>
+		{/if}
 		{#if badges}{@render badges()}{/if}
 
 		<div class="work-header__actions">
@@ -142,7 +152,9 @@
 					loading={primaryAction.loading}
 					onhover={primaryAction.onhover}
 				>
-					{primaryAction.label}
+					{#if primaryAction.icon}<span class="work-header__primary-icon" aria-hidden="true"
+							>{@html primaryAction.icon}</span
+						>{/if}{primaryAction.label}
 				</Button>
 			{/if}
 			{#if menuItems.length > 0}
@@ -203,7 +215,8 @@
 		&__legacy-menu {
 			display: inline-flex;
 		}
-		&__number {
+		&__number,
+		&__meta {
 			display: none;
 		}
 		display: flex;
@@ -366,6 +379,30 @@
 			font-weight: 600;
 			letter-spacing: 0.6px;
 			text-transform: uppercase;
+		}
+		&__meta {
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+			color: var(--classic2-secondary);
+			font-size: var(--classic2-font-small);
+			font-weight: 500;
+		}
+		&__meta-dot {
+			width: 3px;
+			height: 3px;
+			border-radius: 50%;
+			background: var(--classic2-icon-muted);
+		}
+		&__primary-icon {
+			display: inline-flex;
+		}
+		&__primary-icon :global(svg) {
+			width: 18px;
+			height: 18px;
+		}
+		&__actions :global(.button--primary) {
+			gap: 8px;
 		}
 		&__more {
 			display: inline-flex;

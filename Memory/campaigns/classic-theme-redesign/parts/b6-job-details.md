@@ -21,4 +21,13 @@ the rail below Billing; the frame omits it. History still swaps in for the rail.
 Expenses, Checklists) · e Profit card · f Close-out · g Billing (+ reminders, to-bill) + invoiced figure ·
 h Instructions/Photos/Notes. Then live-vs-Pencil comparison at 1440/1100 light/dark.
 
-**Next:** slice a.
+**Progress 2026-10-15 (work in progress, not yet checked or run):** new `layout/RecordCard` (shared Classic
+card); `--classic2-button-surface` token + Classic secondary Button now white (Pencil `P1On1n`); header `meta`,
+primary `icon`, fact `icon` props; Visits Classic rows + `completeVisitById` + `today` prop; Tabs `count` may be
+text, `variant="card"`; `embedded` mode on Labor/Expenses/Checklists; new `jobs/JobWorkLog.svelte`.
+Nothing is wired into the job page yet, and no svelte-check/lint/browser run has happened.
+
+**Next:** run svelte autofixer + focused check on the changed files; wire the Classic branch in
+`jobs/[id=uuid]/+page.svelte` (slice a + header facts Schedule/Crew/Time on job/Job total, meta "Multi-day ·
+N visits", primary from `organization_today` visit); then slices e–h; update design-classic/recipe for the
+new token; compare with Pencil exports at 1440/1100 light/dark.

@@ -18,7 +18,8 @@
 		<div class="record-facts__row" class:record-facts__row--number={fact.label.endsWith(' #')}>
 			<dt>
 				<span class="record-facts__icon" aria-hidden="true"
-					>{@html /created|requested|assessment|date|due|sent|viewed|issued|approved|declined|received/i.test(
+					>{@html fact.icon ??
+						/created|requested|assessment|date|due|sent|viewed|issued|approved|declined|received/i.test(
 						fact.label
 					)
 						? calendarIcon

@@ -19,7 +19,22 @@
 	import checklistIcon from '@tabler/icons/outline/checklist.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 
-	let { jobId, active }: { jobId: string; active: boolean } = $props();
+	let {
+		jobId,
+		active,
+		embedded = false
+	}: {
+		jobId: string;
+		active: boolean;
+		/** Classic Work log tab: rows only, no card of its own. The Work log draws the header and Add button. */
+		embedded?: boolean;
+	} = $props();
+
+	/** Opens the attach picker, for the Work log's header button. */
+	export function startAdd() {
+		warmTemplates();
+		adding = true;
+	}
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -102,6 +117,96 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
+{#snippet attachForm()}
+	<div class="job-checklists__attach">
+		{#if templatesQuery.isPending}
+			<LoadingSkeleton variant="text" label="Loading checklist library" />
+		{:else if templatesQuery.isError}
+			<p class="job-checklists__error" role="alert">The checklist library could not be loaded.</p>
+		{:else if templateOptions.length === 0}
+			<p class="job-checklists__empty">Every available checklist is already attached.</p>
+		{:else}
+			<Select
+				id="job-checklist-template"
+				label="Checklist"
+				options={templateOptions}
+				bind:value={selectedTemplateId}
+			/>
+		{/if}
+		<div class="job-checklists__actions">
+			<Button
+				variant="tertiary"
+				disabled={attaching}
+				onclick={() => {
+					selectedTemplateId = '';
+					adding = false;
+				}}>Cancel</Button
+			>
+			{#if templateOptions.length > 0}
+				<Button loading={attaching} disabled={!selectedTemplateId} onclick={() => void attach()}
+					>Attach checklist</Button
+				>
+			{/if}
+		</div>
+	</div>
+{/snippet}
+
+{#if embedded}
+	{#if jobQuery.isPending}
+		<div class="work-log__state">
+			<LoadingSkeleton variant="text" rows={2} label="Loading checklists" />
+		</div>
+	{:else if jobQuery.isError}
+		<p class="work-log__state" role="alert">Checklists could not be loaded.</p>
+	{:else}
+		{@const checklists = jobQuery.data?.checklists ?? []}
+		{#if checklists.length === 0 && !adding}
+			<div class="work-log__empty">
+				<EmptyState
+					icon={checklistIcon}
+					title="No checklists attached"
+					description={jobQuery.data?.can_edit && active
+						? 'Attach a checklist so every visit has the same questions to fill in.'
+						: 'This job has no checklists.'}
+				/>
+			</div>
+		{:else if checklists.length > 0}
+			<ul class="work-log__rows">
+				{#each checklists as checklist (checklist.id)}
+					<li class="work-log__row">
+						<span class="work-log__tile work-log__tile--teal" aria-hidden="true"
+							>{@html checklistIcon}</span
+						>
+						<div class="work-log__info">
+							<p class="work-log__who">{checklist.name}</p>
+							<p class="work-log__context">
+								{checklist.items.length}
+								{checklist.items.length === 1 ? 'question' : 'questions'} · {checklist.answers_count}
+								{checklist.answers_count === 1 ? 'answer' : 'answers'} so far
+							</p>
+						</div>
+						<span class="work-log__range"></span>
+						<span class="work-log__figure"></span>
+						<span class="work-log__menu">
+							{#if jobQuery.data?.can_edit && active}
+								<button
+									type="button"
+									class="work-log__icon-button"
+									aria-label={`Remove ${checklist.name}`}
+									title="Remove checklist"
+									onclick={() => (removeTarget = checklist)}>{@html trashIcon}</button
+								>
+							{/if}
+						</span>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+		{#if adding}
+			<div class="work-log__attach">{@render attachForm()}</div>
+		{/if}
+	{/if}
+{:else}
 <SectionBlock title="Checklists" icon={checklistIcon} level={2}>
 	{#snippet actions()}
 		{#if jobQuery.data?.can_edit && active && !adding}
@@ -193,6 +298,7 @@
 		{/if}
 	{/if}
 </SectionBlock>
+{/if}
 
 <ConfirmDialog
 	open={removeTarget !== null}

@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
@@ -26,6 +27,7 @@
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 
 	// The hours worked on this job, the way Jobber's Labor block reads: who, how long, and what it cost us.
 	// The section owns its own query rather than riding on the job payload, because who may see these rows —
@@ -38,6 +40,7 @@
 		visits = [],
 		locale = 'en-US',
 		currencyCode = 'USD',
+		embedded = false,
 		onChange
 	}: {
 		jobId: string;
@@ -45,6 +48,8 @@
 		visits?: JobVisit[];
 		locale?: string;
 		currencyCode?: string;
+		/** Classic Work log tab: rows only, no card of its own. The Work log draws the header and Add button. */
+		embedded?: boolean;
 		/** Called after hours are recorded, corrected or removed, so the page can refresh the costing card. */
 		onChange?: () => void;
 	} = $props();
@@ -99,7 +104,7 @@
 	let saving = $state(false);
 	let dialogError = $state('');
 
-	function openAdd() {
+	export function openAdd() {
 		editing = null;
 		dialogError = '';
 		dialogOpen = true;
@@ -166,6 +171,31 @@
 		}
 	}
 
+	// --- Classic Work log rows ----------------------------------------------------------------------------
+	const timeFormat = $derived(new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }));
+	const dayFormat = $derived(
+		new Intl.DateTimeFormat(locale, { weekday: 'short', month: 'short', day: 'numeric' })
+	);
+	const visitTitleById = $derived(new Map(visits.map((visit) => [visit.id, visit.title])));
+	let showAll = $state(false);
+	const visibleEntries = $derived(showAll ? entries : entries.slice(0, 4));
+
+	function isToday(iso: string) {
+		return new Date(iso).toDateString() === new Date().toDateString();
+	}
+
+	function context(startedAt: string, visitId: string | null) {
+		const day = isToday(startedAt) ? 'Today' : dayFormat.format(new Date(startedAt));
+		const visitTitle = visitId ? visitTitleById.get(visitId) : null;
+		return visitTitle ? `${day} · ${visitTitle}` : day;
+	}
+
+	function range(entry: JobTimeEntry) {
+		const start = new Date(entry.started_at);
+		const end = new Date(start.getTime() + entry.minutes * 60_000);
+		return `${timeFormat.format(start)} – ${timeFormat.format(end)}`;
+	}
+
 	function menuItems(entry: JobTimeEntry) {
 		return [
 			{ label: 'Edit hours', icon: pencilIcon, onSelect: () => openEdit(entry) },
@@ -179,6 +209,107 @@
 	}
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
+{#if embedded}
+	{#if laborQuery.isPending}
+		<div class="work-log__state">
+			<LoadingSkeleton variant="text" label="Loading recorded hours" rows={3} />
+		</div>
+	{:else if laborQuery.isError}
+		<p class="work-log__state">The hours on this job could not be loaded.</p>
+	{:else if entries.length === 0 && running.length === 0}
+		<div class="work-log__empty">
+			<EmptyState
+				icon={clockIcon}
+				title="No hours recorded"
+				description={labor?.can_track_team
+					? 'Time worked on this job shows up here, with what it cost.'
+					: 'Time you record on this job shows up here.'}
+			/>
+		</div>
+	{:else}
+		<ul class="work-log__rows">
+			{#each running as timer (timer.user_id)}
+				<li class="work-log__row">
+					<Avatar id={timer.user_id} name={timer.user_name ?? '?'} size="base" />
+					<div class="work-log__info">
+						<p class="work-log__who">{timer.user_name ?? 'A team member'}</p>
+						<p class="work-log__context">{context(timer.started_at, timer.visit_id)}</p>
+					</div>
+					<span class="work-log__range">{timeFormat.format(new Date(timer.started_at))} – now</span>
+					<span class="work-log__figure work-log__figure--live">
+						<span class="work-log__live-dot" aria-hidden="true"></span>
+						<RunningClock startedAt={timer.started_at} {offsetMs} />
+					</span>
+					<span class="work-log__menu"></span>
+				</li>
+			{/each}
+			{#each visibleEntries as entry (entry.id)}
+				<li class="work-log__row" class:work-log__row--busy={busyId === entry.id}>
+					<Avatar id={entry.user_id} name={entry.user_name ?? '?'} size="base" />
+					<div class="work-log__info">
+						<p class="work-log__who">{entry.user_name ?? 'A team member'}</p>
+						<p class="work-log__context">
+							{context(entry.started_at, entry.visit_id)}
+							{#if entry.source === 'timer'}· From a timer{/if}
+							{#if entry.approved}· Approved{/if}
+						</p>
+						{#if entry.notes}<p class="work-log__notes">{entry.notes}</p>{/if}
+					</div>
+					<span class="work-log__range">{range(entry)}</span>
+					<span class="work-log__figure">
+						{duration(entry.minutes)}
+						{#if labor?.can_see_cost}
+							<small class:work-log__unrated={entry.is_unrated}
+								>{entry.is_unrated
+									? 'No hourly cost'
+									: money.format((entry.cost_total_minor ?? 0) / 100)}</small
+							>
+						{/if}
+					</span>
+					<span class="work-log__menu">
+						{#if entry.can_edit}
+							<DropdownMenu
+								items={menuItems(entry)}
+								triggerLabel="Time entry actions"
+								disabled={busyId === entry.id}
+							/>
+						{/if}
+					</span>
+				</li>
+			{/each}
+		</ul>
+		{#if labor?.can_see_cost && (labor?.totals.unrated_count ?? 0) > 0}
+			<p class="work-log__band">
+				{labor.totals.unrated_count === 1
+					? 'One entry has'
+					: `${labor.totals.unrated_count} entries have`}
+				no hourly cost, so those hours are not in the total. Set an hourly cost on the person's team
+				profile — it applies to hours recorded from then on.
+			</p>
+		{/if}
+		<div class="work-log__footer">
+			<span>
+				{#if entries.length > visibleEntries.length}
+					Showing {visibleEntries.length} of {labor?.totals.entry_count ?? entries.length} entries
+				{:else}
+					{labor?.can_track_team ? 'Total hours' : 'Your hours'}
+					{duration(labor?.totals.minutes ?? 0)}
+				{/if}
+				{#if labor?.can_see_cost}
+					· labor cost so far {money.format((labor.totals.cost_total_minor ?? 0) / 100)}
+				{/if}
+				{#if labor?.has_more}· the totals count every entry{/if}
+			</span>
+			{#if entries.length > 4}
+				<button type="button" class="work-log__show" onclick={() => (showAll = !showAll)}>
+					{showAll ? 'Show fewer' : 'Show all'}
+					<span aria-hidden="true">{@html arrowRightIcon}</span>
+				</button>
+			{/if}
+		</div>
+	{/if}
+{:else}
 <SectionBlock title="Labor" icon={clockIcon} level={2}>
 	{#snippet actions()}
 		{#if labor?.can_add}
@@ -297,6 +428,8 @@
 		{/if}
 	{/if}
 </SectionBlock>
+{/if}
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <JobTimeEntryDialog
 	open={dialogOpen}

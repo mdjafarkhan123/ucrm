@@ -17,7 +17,8 @@
 	export type Tab = {
 		value: string;
 		label: string;
-		count?: number;
+		/** A small chip after the label: a count, or a short figure such as "24h 30m". */
+		count?: number | string;
 		/** Warms a tab's query before it is opened, matching Button's own `onhover` convention. Fires on
 		 * mouse hover and keyboard focus so revealed content (CLAUDE.md rule 9) is ready by the time the
 		 * tab is actually selected. */
@@ -29,6 +30,7 @@
 		value = $bindable(),
 		label,
 		onChange,
+		variant = 'default',
 		children
 	}: {
 		tabs: Tab[];
@@ -39,6 +41,8 @@
 		/** Give this when the caller owns the open tab itself — a page keeping it in the URL, say. It then
 		 * takes over from `bind:value`, and `value` is only ever read. */
 		onChange?: (value: string) => void;
+		/** `card`: the Classic row that sits inside a record card, e.g. the job's Work log. */
+		variant?: 'default' | 'card';
 		children: Snippet;
 	} = $props();
 
@@ -61,7 +65,7 @@
 		if (onChange) onChange(next);
 		else value = next;
 	}}
-	class="tabs"
+	class={`tabs tabs--${variant}`}
 >
 	<TabsPrimitive.List class="tabs__list" aria-label={label}>
 		{#each tabs as tab (tab.value)}
@@ -195,6 +199,49 @@
 			.tabs__count {
 			background: var(--classic2-chip);
 			color: var(--classic2-green);
+		}
+
+		// classic.pen Work log tabs: flush with the card's rows, a figure chip beside each label.
+		:root:has(.app-shell[data-presentation='classic']) .tabs--card .tabs__list {
+			gap: 24px;
+			margin-bottom: 0;
+			padding-inline: 24px;
+		}
+		:root:has(.app-shell[data-presentation='classic']) .tabs--card .tabs__tab {
+			gap: 8px;
+			height: auto;
+			padding: 0 0 12px;
+			border-radius: 0;
+			font-size: var(--classic2-font-body);
+		}
+		:root:has(.app-shell[data-presentation='classic']) .tabs--card .tabs__tab:hover {
+			background: transparent;
+		}
+		:root:has(.app-shell[data-presentation='classic'])
+			.tabs--card
+			.tabs__tab[data-state='active']::after {
+			height: 2px;
+			border-radius: 2px 2px 0 0;
+		}
+		:root:has(.app-shell[data-presentation='classic']) .tabs--card .tabs__count {
+			height: auto;
+			padding: 2px 8px;
+			background: var(--classic2-surface-soft);
+			color: var(--classic2-secondary);
+			font-size: var(--classic2-font-small);
+			font-weight: 600;
+			line-height: 1.25;
+		}
+		:root:has(.app-shell[data-presentation='classic'])
+			.tabs--card
+			.tabs__tab[data-state='active']
+			.tabs__count {
+			background: var(--classic2-green-tint);
+			color: var(--classic2-green);
+		}
+		:root:has(.app-shell[data-presentation='classic']) .tabs--card .tab-panel:not([hidden]) {
+			gap: 0;
+			padding: 0;
 		}
 	}
 </style>
