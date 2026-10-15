@@ -29,6 +29,5 @@ tile; toasts carry Undo/Retry (the live `Toast` already supports one action). Ne
 the theme foundation; keep their behaviour. The menu's "Needs a job first" reason and the confirm's preview
 line need checking against each real caller before use — show them only where the app already knows the fact.
 
-**Leftovers:** the unmerged `codex/classic-b3b-shared-parts` branch holds the superseded review images and an
-added "Top-tier UI/UX (Dribbble)" line for the plan; carry that line over when the plan document is next
-saved, then remove the branch and its worktree.
+**Leftovers:** the unmerged `codex/classic-b3b-shared-parts` branch holds only superseded review images; its
+Dribbble line is now in the plan. Remove that branch and its worktree when convenient.

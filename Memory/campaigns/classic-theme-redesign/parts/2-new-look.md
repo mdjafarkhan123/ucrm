@@ -1,12 +1,12 @@
 # 2 — Design: new Classic look and its design system
 
 **Campaign:** classic-theme-redesign · **Plan:** `docs/classic-theme-redesign-behavior-contract.md` § Direction
-agreed so far (New Classic look, design system rebuilt, colour), § Still unclear
+agreed so far (New Classic look, design system rebuilt, colour),
 **Stage:** Design
 **Code:** `classic.pen` in the main folder (Pencil saves there); commit it from main in its own commit, under a
 claim covering `classic-pen`.
 **Done when:** Jafar approves the reviewed reference screens and the rebuilt Classic design-system page (light
-and dark); his answers to every § Still unclear design question are recorded in the plan.
+and dark); his answers to every open design question are recorded in the plan.
 **Read next:** the design recipe (`docs/classic-theme-redesign-design-recipe.md`); design skill § Design in
 Pencil first; Pencil's skill and `execute.md`.
 

@@ -1,6 +1,6 @@
 # Classic redesign — whole-application stages
 
-**Plan:** `docs/classic-theme-redesign-behavior-contract.md` § Later stages · **Order approved:** Jafar,
+**Plan:** `docs/classic-theme-redesign-behavior-contract.md` § Summary · **Order approved:** Jafar,
 2026-10-15. Start after the shared-parts stage and first six record pages. Each named screen follows the
 plan's design → approval → build → live check → synchronize shared parts → remove superseded look loop.
 An approved Pencil frame is a head start, not proof that its application screen is built.

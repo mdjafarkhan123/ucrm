@@ -1,6 +1,6 @@
 # Schedule — design
 
-**Campaign:** classic-theme-redesign · **Plan:** `docs/classic-theme-redesign-behavior-contract.md` § Later stages
+**Campaign:** classic-theme-redesign · **Plan:** `docs/classic-theme-redesign-behavior-contract.md` § Summary
 **Stage:** Design · **Follows:** the five approved lists ([Requests, Quotes and Invoices](requests-quotes-invoices-lists.md)).
 **Code:** `classic.pen` in the main folder; commit it from main in its own commit after Jafar presses Ctrl+S in
 Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktrees/schedule-design`).

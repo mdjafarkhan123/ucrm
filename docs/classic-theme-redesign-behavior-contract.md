@@ -2,22 +2,10 @@
 
 ## Summary
 
-Classic is the design every contractor business uses today and the default for new businesses. This campaign
-redesigns and rebuilds **the whole desktop web application**, in stages, with new concepts that feel premium, polished,
+This campaign redesigns and rebuilds **the whole desktop web application**, in stages, with new concepts that feel premium, polished,
 modern, colorful, clear, calm and useful. The first delivery covers shared parts and six record pages; the
-remaining Business Workspace, Uplift Control Room, sign-in and customer-facing journeys follow. The theme
-selection foundation still covers only the signed-in Business Workspace in its first release; this campaign
-does not silently extend that separate contract. Existing features, permissions and save rules remain unless
-Jafar separately approves a behavior change. A separate phone application is planned outside this campaign;
-the desktop redesign does not require phone designs or phone-app implementation.
+remaining Business Workspace, Uplift Control Room, sign-in and customer-facing journeys follow. 
 
-## Problem and audience
-
-Owners, office staff and crews of contractor businesses using Classic; their customers on application-owned
-pages; and later Jafar and his team in the Control Room.
-Today's record pages give every section the same weight: empty sections take as much room as busy ones, and
-the answers people open a record for — where it stands, whether anything needs attention today, and whether
-it makes money — have to be hunted for across a long stack of similar boxes.
 
 ## First version
 
@@ -26,15 +14,12 @@ payment and client. Their approved desktop Pencil designs are the starting point
 dark appearance on desktop. Other Classic pages already
 receive the shared card style; their full layouts are redesigned in later stages.
 
-## Later stages
-
-The whole application follows gradually: the five approved lists; Schedule; Settings; Home and Reports;
-remaining Business Workspace areas and forms; the Uplift Control Room; and sign-in, setup and customer-facing
-journeys. Inventory routes and shared parts before each later stage so no screen is silently skipped. The
-currently approved sequence and later-stage gates live in the [roadmap](../Memory/campaigns/classic-theme-redesign/ROADMAP.md).
 
 ## Design target
 
+- **Top-tier UI/UX:** Jafar likes the visual craft he sees on Dribbble and wants that level of quality in
+  the application (clarified 2026-10-15). Use that inspiration for composition, spacing, color, detail and
+  polish while making real contractor tasks easy to understand and complete.
 - **New concepts come first.** Do not copy the live screen into Pencil and call it a redesign, and do not add
   decoration without a purpose. Study the actual task and mature products relevant to it, then design a fresh
   layout that makes the important answer or action easy to find. If an existing idea genuinely works best,
@@ -113,34 +98,6 @@ These additions are part of the agreed scope:
 - **"Where this is used" card** on settings pages.
 - **Save bar wording**: "You have unsaved changes" once something changes; a resting state while nothing has.
 
-## Success checks
-
-- An owner opens an in-progress job → without scrolling sees its stage, today's visit, the job total and what
-  is left before invoicing.
-- Every existing action on redesigned pages still works for the same roles, with the same save behavior.
-- Classic light and dark appearance show every redesigned page without cut-off or overlapping parts at
-  desktop widths, including a narrower laptop window.
-- Botanical pages look the same before and after this campaign's changes.
-- The route inventory shows every application area assigned to a stage; each completed screen has an approved
-  design, a checked live journey and no obsolete local variant left as the current design.
-
-## Technical boundaries
-
-- The pages above share the listed blocks.
-- Page content styles are not yet fully separated by theme; the Classic frame marks
-  `data-presentation="classic"`. Restyling a shared block would also change Botanical, so build planning must
-  use the CRM design system's theme foundation for Classic-only styling.
-
-## Still unclear
-
-- The exact order and screen boundaries within later Business Workspace, Control Room, sign-in and
-  customer-facing stages are chosen from the route inventory before those stages begin.
-
-## Not doing
-
-- Changing Botanical — the CRM design system campaign owns it.
-- Designing or building the separate phone application in this campaign.
-- Adding, removing or re-permissioning features, beyond the approved additions.
 
 ## References
 

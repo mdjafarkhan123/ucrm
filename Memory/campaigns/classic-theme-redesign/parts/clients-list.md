@@ -1,6 +1,6 @@
 # Clients list — design
 
-**Campaign:** classic-theme-redesign · **Plan:** `docs/classic-theme-redesign-behavior-contract.md` § Later stages
+**Campaign:** classic-theme-redesign · **Plan:** `docs/classic-theme-redesign-behavior-contract.md` § Summary
 **Stage:** Design (done) · **Follows:** the list-pages note on branch `claude/jobs-list-design`
 (`parts/list-pages.md`; Jobs list approved 2026-10-14, "list pages come first").
 **Code:** `classic.pen` in the main folder; commit it from main under a claim covering `classic-pen-clients-list`.

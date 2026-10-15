@@ -1,6 +1,6 @@
 # Requests, Quotes and Invoices lists — design
 
-**Campaign:** classic-theme-redesign · **Plan:** `docs/classic-theme-redesign-behavior-contract.md` § Later stages
+**Campaign:** classic-theme-redesign · **Plan:** `docs/classic-theme-redesign-behavior-contract.md` § Summary
 **Stage:** Design (done) · **Follows:** [Clients list](clients-list.md) and `parts/list-pages.md` on branch
 `claude/jobs-list-design` (Jobs list approved 2026-10-14).
 **Code:** `classic.pen` in the main folder; commit it from main in its own commit after Jafar presses Ctrl+S in
