@@ -54,6 +54,7 @@
 		canManage = true,
 		title = 'Files',
 		surface = 'rail',
+		look = 'default',
 		onChange
 	}: {
 		entityType: FileEntityType;
@@ -66,6 +67,8 @@
 		canManage?: boolean;
 		title?: string;
 		surface?: 'rail' | 'section';
+		/** `record`: the classic.pen record-rail card, used on Classic pages that have been rebuilt. */
+		look?: 'default' | 'record';
 		/** Fires after a file is attached to or removed from this record, once the list has refreshed. */
 		onChange?: () => void;
 	} = $props();
@@ -210,7 +213,7 @@
 
 	// classic.pen "Photos and files": a three-across grid of at most six tiles, the sixth carrying "+N" for
 	// the rest (it still opens the lightbox, which walks through every photo), then one row per document.
-	const classic = $derived(page.data.presentation === 'classic');
+	const classic = $derived(look === 'record' && page.data.presentation === 'classic');
 	const CLASSIC_TILES = 6;
 	const classicPhotos = $derived(photos.slice(0, CLASSIC_TILES));
 	const hiddenPhotos = $derived(Math.max(0, photos.length - CLASSIC_TILES));
@@ -759,6 +762,15 @@
 				outline-offset: 2px;
 				box-shadow: none;
 			}
+		}
+
+		// The tile is square; the thumbnail fills it rather than sitting in it at 4:3.
+		&__photos--classic &__photo-open :global(.file-thumb) {
+			width: 100%;
+			height: 100%;
+			aspect-ratio: auto;
+			border: 0;
+			border-radius: 0;
 		}
 
 		&__more {

@@ -42,6 +42,7 @@
 		canManageTeam = canManage,
 		currentUserId,
 		pending = [],
+		look = 'default',
 		onChange
 	}: {
 		entityType: EntityType;
@@ -52,6 +53,8 @@
 		currentUserId?: string;
 		/** Staged changes, held by the page so its action bar can save them. */
 		pending?: NoteChange[];
+		/** `record`: the classic.pen record-rail Notes, used on Classic pages that have been rebuilt. */
+		look?: 'default' | 'record';
 		onChange: (next: NoteChange[]) => void;
 	} = $props();
 
@@ -145,7 +148,7 @@
 	let newBody = $state('');
 	let composerOpen = $state(false);
 	// classic.pen "Notes": the list first, then a one-line composer that is always there for a manager.
-	const classic = $derived(page.data.presentation === 'classic');
+	const classic = $derived(look === 'record' && page.data.presentation === 'classic');
 	const showComposer = $derived(
 		canManage && (classic || composerOpen || notes.length > 0 || createdNotes.length > 0)
 	);
@@ -393,8 +396,8 @@
 			color: var(--classic2-ink);
 			font-size: var(--classic2-font-label);
 
-			// The note lines up with the author's name rather than under the avatar.
-			> :global(*:not(.notes-panel__item-header)) {
+			// The note lines up with the author's name rather than under the avatar (a draft has none).
+			&:not(.notes-panel__item--draft) > :global(*:not(.notes-panel__item-header)) {
 				margin-left: 38px;
 			}
 
@@ -407,6 +410,13 @@
 				border-color: var(--classic2-divider);
 				background: var(--classic2-surface-soft);
 			}
+		}
+
+		// classic.pen: name then time on one line beside the avatar.
+		.notes-panel__item :global(.author-meta__text) {
+			flex-direction: row;
+			align-items: baseline;
+			gap: 8px;
 		}
 
 		.notes-panel__muted--classic {
@@ -447,8 +457,12 @@
 			line-height: 1.4;
 			resize: none;
 
+			// The app's floating-label fields pad every placeholder down; this one sits on its own line.
 			&::placeholder {
+				padding: 0;
 				color: var(--classic2-icon-muted);
+				font-size: inherit;
+				line-height: inherit;
 			}
 
 			&:focus {

@@ -116,7 +116,11 @@
 	// --- Classic (classic.pen "Billing card") ---------------------------------------------------------------
 	const classic = $derived(page.data.presentation === 'classic');
 	const wholeMoney = $derived(
-		new Intl.NumberFormat(locale, { style: 'currency', currency: currencyCode, maximumFractionDigits: 0 })
+		new Intl.NumberFormat(locale, {
+			style: 'currency',
+			currency: currencyCode,
+			maximumFractionDigits: 0
+		})
 	);
 	const meter = $derived.by(() => {
 		if (!canSeePrice || invoicedMinor === null || totalMinor === null) return null;
@@ -325,104 +329,104 @@
 		{/snippet}
 	</RecordCard>
 {:else}
-<RailCard title="Billing" icon={receiptIcon}>
-	{#snippet actions()}
-		{#if editable}
-			<Button variant="tertiary" size="small" onclick={openDialog}>Edit</Button>
-		{/if}
-	{/snippet}
+	<RailCard title="Billing" icon={receiptIcon}>
+		{#snippet actions()}
+			{#if editable}
+				<Button variant="tertiary" size="small" onclick={openDialog}>Edit</Button>
+			{/if}
+		{/snippet}
 
-	<dl class="job-billing">
-		<div class="job-billing__row">
-			<dt class="job-billing__label">How it is priced</dt>
-			<dd class="job-billing__value">
-				{BASIS_LABEL[priceBasis] ?? priceBasis}
-				{#if summary}<span class="job-billing__summary">{summary}</span>{/if}
-			</dd>
-		</div>
-		<div class="job-billing__row">
-			<dt class="job-billing__label">Remind our team to invoice</dt>
-			<dd class="job-billing__value">{TIMING_LABEL[billingTiming] ?? billingTiming}</dd>
-		</div>
-	</dl>
+		<dl class="job-billing">
+			<div class="job-billing__row">
+				<dt class="job-billing__label">How it is priced</dt>
+				<dd class="job-billing__value">
+					{BASIS_LABEL[priceBasis] ?? priceBasis}
+					{#if summary}<span class="job-billing__summary">{summary}</span>{/if}
+				</dd>
+			</div>
+			<div class="job-billing__row">
+				<dt class="job-billing__label">Remind our team to invoice</dt>
+				<dd class="job-billing__value">{TIMING_LABEL[billingTiming] ?? billingTiming}</dd>
+			</div>
+		</dl>
 
-	{#if canScheduleStages}
-		<div class="job-billing__schedule">
-			<p class="job-billing__label">Payment schedule</p>
+		{#if canScheduleStages}
+			<div class="job-billing__schedule">
+				<p class="job-billing__label">Payment schedule</p>
 
-			{#if stages.length > 0}
-				{#if schedule?.reconciles === false}
-					<p class="job-billing__warning" role="status">
-						These stages no longer add up to the job total. Edit the stages that have not been
-						invoiced yet so they match.
-					</p>
-				{/if}
-				<ul class="job-billing__stages">
-					{#each stages as stage (stage.installment_id)}
-						<li class="job-billing__stage">
-							<span class="job-billing__stage-name">{stage.description}</span>
-							{#if stage.amount_minor !== null}
-								<span class="job-billing__stage-amount">
-									{money.format(stage.amount_minor / 100)}
-								</span>
-							{/if}
-							<div class="job-billing__stage-meta">
-								<Badge size="small" status={stageTone(displayStatus(stage))}>
-									{STAGE_LABELS[displayStatus(stage)] ?? stage.status}
-								</Badge>
-								{#if canBillStage && displayStatus(stage) === 'remaining'}
-									<Button
-										variant="tertiary"
-										size="small"
-										onclick={() => billStage(stage.installment_id)}
-									>
-										Create invoice
-									</Button>
-								{:else if stage.invoice}
-									<a
-										class="job-billing__stage-link"
-										href={resolve('/(app)/invoices/[id=uuid]', { id: stage.invoice.id })}
-									>
-										Invoice #{stage.invoice.invoice_number}
-									</a>
+				{#if stages.length > 0}
+					{#if schedule?.reconciles === false}
+						<p class="job-billing__warning" role="status">
+							These stages no longer add up to the job total. Edit the stages that have not been
+							invoiced yet so they match.
+						</p>
+					{/if}
+					<ul class="job-billing__stages">
+						{#each stages as stage (stage.installment_id)}
+							<li class="job-billing__stage">
+								<span class="job-billing__stage-name">{stage.description}</span>
+								{#if stage.amount_minor !== null}
+									<span class="job-billing__stage-amount">
+										{money.format(stage.amount_minor / 100)}
+									</span>
 								{/if}
-							</div>
-						</li>
-					{/each}
-				</ul>
-				{#if editable}
+								<div class="job-billing__stage-meta">
+									<Badge size="small" status={stageTone(displayStatus(stage))}>
+										{STAGE_LABELS[displayStatus(stage)] ?? stage.status}
+									</Badge>
+									{#if canBillStage && displayStatus(stage) === 'remaining'}
+										<Button
+											variant="tertiary"
+											size="small"
+											onclick={() => billStage(stage.installment_id)}
+										>
+											Create invoice
+										</Button>
+									{:else if stage.invoice}
+										<a
+											class="job-billing__stage-link"
+											href={resolve('/(app)/invoices/[id=uuid]', { id: stage.invoice.id })}
+										>
+											Invoice #{stage.invoice.invoice_number}
+										</a>
+									{/if}
+								</div>
+							</li>
+						{/each}
+					</ul>
+					{#if editable}
+						<Button
+							variant="secondary"
+							variation="subtle"
+							fullWidth
+							onclick={() => (scheduleOpen = true)}
+						>
+							Edit payment schedule
+						</Button>
+					{/if}
+				{:else if editable}
+					<p class="job-billing__note">
+						This job is invoiced in one go. Split it into stages to invoice it as the work goes.
+					</p>
 					<Button
 						variant="secondary"
 						variation="subtle"
 						fullWidth
 						onclick={() => (scheduleOpen = true)}
 					>
-						Edit payment schedule
+						Add a payment schedule
 					</Button>
+				{:else}
+					<p class="job-billing__note">This job is invoiced in one go.</p>
 				{/if}
-			{:else if editable}
-				<p class="job-billing__note">
-					This job is invoiced in one go. Split it into stages to invoice it as the work goes.
-				</p>
-				<Button
-					variant="secondary"
-					variation="subtle"
-					fullWidth
-					onclick={() => (scheduleOpen = true)}
-				>
-					Add a payment schedule
-				</Button>
-			{:else}
-				<p class="job-billing__note">This job is invoiced in one go.</p>
-			{/if}
-		</div>
-	{/if}
+			</div>
+		{/if}
 
-	<p class="job-billing__note">
-		Reminders are prompts for your own team, not messages to the client. Payment is collected by
-		hand for now.
-	</p>
-</RailCard>
+		<p class="job-billing__note">
+			Reminders are prompts for your own team, not messages to the client. Payment is collected by
+			hand for now.
+		</p>
+	</RailCard>
 {/if}
 <!-- eslint-enable svelte/no-at-html-tags -->
 

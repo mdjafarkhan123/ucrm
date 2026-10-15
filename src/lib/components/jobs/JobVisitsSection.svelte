@@ -299,14 +299,15 @@
 		staleTime: 15_000,
 		retry: false
 	}));
+	// Earliest running timer per visit, as a plain lookup rebuilt with the query (never mutated afterwards).
 	const runningByVisit = $derived.by(() => {
-		const map = new Map<string, string>();
+		const earliest: Record<string, string> = {};
 		for (const timer of classicLaborQuery.data?.running ?? []) {
 			if (!timer.visit_id) continue;
-			const earlier = map.get(timer.visit_id);
-			if (!earlier || timer.started_at < earlier) map.set(timer.visit_id, timer.started_at);
+			const earlier = earliest[timer.visit_id];
+			if (!earlier || timer.started_at < earlier) earliest[timer.visit_id] = timer.started_at;
 		}
-		return map;
+		return earliest;
 	});
 	// Group names only help when visits fall into more than one group; a single-group list reads as one.
 	const showGroupLabels = $derived(
@@ -359,7 +360,7 @@
 	type ClassicStatus = { label: string; tone: 'done' | 'live' | 'late' | 'plain'; icon: string };
 	function classicStatus(visit: JobVisit): ClassicStatus {
 		if (visit.completed_at) return { label: 'Completed', tone: 'done', icon: checkIcon };
-		if (runningByVisit.has(visit.id))
+		if (visit.id in runningByVisit)
 			return { label: 'On site now', tone: 'live', icon: broadcastIcon };
 		if (isOverdue(visit)) return { label: 'Overdue', tone: 'late', icon: alertIcon };
 		if (!visit.visit_date) return { label: 'Unscheduled', tone: 'plain', icon: calendarTimeIcon };
@@ -1061,7 +1062,7 @@
 {#snippet classicRow(visit: JobVisit)}
 	{@const status = classicStatus(visit)}
 	{@const isToday = visit.visit_date === todayStr && !visit.completed_at}
-	{@const running = runningByVisit.get(visit.id)}
+	{@const running = runningByVisit[visit.id]}
 	<li
 		class="job-visit"
 		class:job-visit--today={isToday}

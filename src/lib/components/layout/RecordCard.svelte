@@ -37,11 +37,7 @@
 	const titleId = $derived(id ? `${id}-title` : undefined);
 </script>
 
-<section
-	class={`record-card record-card--${size} ${className}`}
-	{id}
-	aria-labelledby={titleId}
->
+<section class={`record-card record-card--${size} ${className}`} {id} aria-labelledby={titleId}>
 	<header class="record-card__header">
 		{#if lead}<div class="record-card__lead">{@render lead()}</div>{/if}
 		<div class="record-card__heading">

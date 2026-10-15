@@ -207,97 +207,100 @@
 		{/if}
 	{/if}
 {:else}
-<SectionBlock title="Checklists" icon={checklistIcon} level={2}>
-	{#snippet actions()}
-		{#if jobQuery.data?.can_edit && active && !adding}
-			<Button
-				size="small"
-				variant="tertiary"
-				onhover={warmTemplates}
-				onclick={() => (adding = true)}>Add checklist</Button
-			>
-		{/if}
-	{/snippet}
+	<SectionBlock title="Checklists" icon={checklistIcon} level={2}>
+		{#snippet actions()}
+			{#if jobQuery.data?.can_edit && active && !adding}
+				<Button
+					size="small"
+					variant="tertiary"
+					onhover={warmTemplates}
+					onclick={() => (adding = true)}>Add checklist</Button
+				>
+			{/if}
+		{/snippet}
 
-	{#if jobQuery.isPending}
-		<LoadingSkeleton variant="text" rows={2} label="Loading checklists" />
-	{:else if jobQuery.isError}
-		<p class="job-checklists__error" role="alert">Checklists could not be loaded.</p>
-	{:else}
-		{@const checklists = jobQuery.data?.checklists ?? []}
-		{#if checklists.length === 0 && !adding}
-			<EmptyState
-				icon={checklistIcon}
-				title="No checklists attached"
-				description={jobQuery.data?.can_edit && active
-					? 'Attach a checklist so every visit has the same questions to fill in.'
-					: 'This job has no checklists.'}
-			/>
-		{:else if checklists.length > 0}
-			<ul class="job-checklists__list">
-				{#each checklists as checklist (checklist.id)}
-					<li class="job-checklists__item">
-						<div>
-							<p class="job-checklists__name">{checklist.name}</p>
-							<p class="job-checklists__summary">
-								{checklist.items.length}
-								{checklist.items.length === 1 ? 'question' : 'questions'}
-							</p>
-						</div>
-						{#if jobQuery.data?.can_edit && active}
-							<Button
-								size="small"
-								variant="tertiary"
-								variation="destructive"
-								onclick={() => (removeTarget = checklist)}
-							>
-								<span class="job-checklists__remove-icon" aria-hidden="true">{@html trashIcon}</span
+		{#if jobQuery.isPending}
+			<LoadingSkeleton variant="text" rows={2} label="Loading checklists" />
+		{:else if jobQuery.isError}
+			<p class="job-checklists__error" role="alert">Checklists could not be loaded.</p>
+		{:else}
+			{@const checklists = jobQuery.data?.checklists ?? []}
+			{#if checklists.length === 0 && !adding}
+				<EmptyState
+					icon={checklistIcon}
+					title="No checklists attached"
+					description={jobQuery.data?.can_edit && active
+						? 'Attach a checklist so every visit has the same questions to fill in.'
+						: 'This job has no checklists.'}
+				/>
+			{:else if checklists.length > 0}
+				<ul class="job-checklists__list">
+					{#each checklists as checklist (checklist.id)}
+						<li class="job-checklists__item">
+							<div>
+								<p class="job-checklists__name">{checklist.name}</p>
+								<p class="job-checklists__summary">
+									{checklist.items.length}
+									{checklist.items.length === 1 ? 'question' : 'questions'}
+								</p>
+							</div>
+							{#if jobQuery.data?.can_edit && active}
+								<Button
+									size="small"
+									variant="tertiary"
+									variation="destructive"
+									onclick={() => (removeTarget = checklist)}
 								>
-								Remove
-							</Button>
-						{/if}
-					</li>
-				{/each}
-			</ul>
-		{/if}
+									<span class="job-checklists__remove-icon" aria-hidden="true"
+										>{@html trashIcon}</span
+									>
+									Remove
+								</Button>
+							{/if}
+						</li>
+					{/each}
+				</ul>
+			{/if}
 
-		{#if adding}
-			<div class="job-checklists__attach">
-				{#if templatesQuery.isPending}
-					<LoadingSkeleton variant="text" label="Loading checklist library" />
-				{:else if templatesQuery.isError}
-					<p class="job-checklists__error" role="alert">
-						The checklist library could not be loaded.
-					</p>
-				{:else if templateOptions.length === 0}
-					<p class="job-checklists__empty">Every available checklist is already attached.</p>
-				{:else}
-					<Select
-						id="job-checklist-template"
-						label="Checklist"
-						options={templateOptions}
-						bind:value={selectedTemplateId}
-					/>
-				{/if}
-				<div class="job-checklists__actions">
-					<Button
-						variant="tertiary"
-						disabled={attaching}
-						onclick={() => {
-							selectedTemplateId = '';
-							adding = false;
-						}}>Cancel</Button
-					>
-					{#if templateOptions.length > 0}
-						<Button loading={attaching} disabled={!selectedTemplateId} onclick={() => void attach()}
-							>Attach checklist</Button
-						>
+			{#if adding}
+				<div class="job-checklists__attach">
+					{#if templatesQuery.isPending}
+						<LoadingSkeleton variant="text" label="Loading checklist library" />
+					{:else if templatesQuery.isError}
+						<p class="job-checklists__error" role="alert">
+							The checklist library could not be loaded.
+						</p>
+					{:else if templateOptions.length === 0}
+						<p class="job-checklists__empty">Every available checklist is already attached.</p>
+					{:else}
+						<Select
+							id="job-checklist-template"
+							label="Checklist"
+							options={templateOptions}
+							bind:value={selectedTemplateId}
+						/>
 					{/if}
+					<div class="job-checklists__actions">
+						<Button
+							variant="tertiary"
+							disabled={attaching}
+							onclick={() => {
+								selectedTemplateId = '';
+								adding = false;
+							}}>Cancel</Button
+						>
+						{#if templateOptions.length > 0}
+							<Button
+								loading={attaching}
+								disabled={!selectedTemplateId}
+								onclick={() => void attach()}>Attach checklist</Button
+							>
+						{/if}
+					</div>
 				</div>
-			</div>
+			{/if}
 		{/if}
-	{/if}
-</SectionBlock>
+	</SectionBlock>
 {/if}
 
 <ConfirmDialog

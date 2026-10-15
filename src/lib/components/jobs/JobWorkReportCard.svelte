@@ -147,42 +147,47 @@
 		{/if}
 	</li>
 {:else}
-<RailCard title="Work report" icon={fileReportIcon}>
-	{#snippet actions()}
-		<Button size="small" variant="tertiary" onclick={() => (editing = true)}>Edit report</Button>
-	{/snippet}
+	<RailCard title="Work report" icon={fileReportIcon}>
+		{#snippet actions()}
+			<Button size="small" variant="tertiary" onclick={() => (editing = true)}>Edit report</Button>
+		{/snippet}
 
-	{#if stateQuery.isPending}
-		<LoadingSkeleton variant="text" rows={2} label="Loading the work report" />
-	{:else if stateQuery.isError}
-		<p class="job-work-report__error" role="alert">The work report could not be loaded.</p>
-	{:else if !hasContent}
-		<EmptyState
-			icon={fileReportIcon}
-			title="No work report yet"
-			description="Choose photos, checklist answers or the work list to share with the customer."
-		/>
-	{:else}
-		<div class="job-work-report__summary">
-			<Badge size="small" status="success">Ready to share</Badge>
-			{#if summaryText}<p class="job-work-report__detail">{summaryText}</p>{/if}
-		</div>
-		<!-- The customer's link is frozen as sent. When the report has moved on, say so and offer the new
-		     link -- which turns the old one off, so the customer never reads an out-of-date copy. -->
-		{#if saved?.live_link && !saved.live_link.up_to_date}
-			<div class="job-work-report__stale" role="status">
-				<p class="job-work-report__stale-title">You've changed this report since you sent it.</p>
-				<p class="job-work-report__stale-text">
-					{saved.live_link.recipient_email} still has the old version. Copying the updated link turns
-					the old one off, so send them this new one.
-				</p>
-				<Button size="small" variant="primary" loading={linkSaving} onclick={() => void copyLink()}>
-					Copy updated link
-				</Button>
+		{#if stateQuery.isPending}
+			<LoadingSkeleton variant="text" rows={2} label="Loading the work report" />
+		{:else if stateQuery.isError}
+			<p class="job-work-report__error" role="alert">The work report could not be loaded.</p>
+		{:else if !hasContent}
+			<EmptyState
+				icon={fileReportIcon}
+				title="No work report yet"
+				description="Choose photos, checklist answers or the work list to share with the customer."
+			/>
+		{:else}
+			<div class="job-work-report__summary">
+				<Badge size="small" status="success">Ready to share</Badge>
+				{#if summaryText}<p class="job-work-report__detail">{summaryText}</p>{/if}
 			</div>
+			<!-- The customer's link is frozen as sent. When the report has moved on, say so and offer the new
+		     link -- which turns the old one off, so the customer never reads an out-of-date copy. -->
+			{#if saved?.live_link && !saved.live_link.up_to_date}
+				<div class="job-work-report__stale" role="status">
+					<p class="job-work-report__stale-title">You've changed this report since you sent it.</p>
+					<p class="job-work-report__stale-text">
+						{saved.live_link.recipient_email} still has the old version. Copying the updated link turns
+						the old one off, so send them this new one.
+					</p>
+					<Button
+						size="small"
+						variant="primary"
+						loading={linkSaving}
+						onclick={() => void copyLink()}
+					>
+						Copy updated link
+					</Button>
+				</div>
+			{/if}
 		{/if}
-	{/if}
-</RailCard>
+	</RailCard>
 {/if}
 
 {#if editing && saved}

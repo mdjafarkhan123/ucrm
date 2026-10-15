@@ -15,7 +15,8 @@ Use classic2 tokens. Their exact light and dark values are in docs/classic-theme
 | Large | 44px | 14px | Spacious header actions |
 
 - Primary: solid brand green with white text and the approved green shadow. Use one main action per page.
-- Secondary: surface-soft fill, border-control border and body text.
+- Secondary: `button-surface` fill (white in light, `#2a3438` in dark; Pencil `Button · secondary` `P1On1n`),
+  border-control border and ink text.
 - Tertiary: surface-soft fill with no border; use for low-emphasis actions.
 - Hover and focus use the green hover or green text treatment from the recipe.
 - Focus-visible: 3px green-soft outline with a 2px offset.

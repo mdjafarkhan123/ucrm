@@ -66,7 +66,13 @@
 		QuoteTaxSource
 	} from '$lib/quotes/api';
 	import { JOB_STATUS_LABELS, JOB_STATUS_TONES, JOB_TYPE_LABELS } from '$lib/jobs/statuses';
-	import { createNote, deleteNote, updateNote, type NoteChange } from '$lib/collaboration/api';
+	import {
+		createNote,
+		deleteNote,
+		notesKey,
+		updateNote,
+		type NoteChange
+	} from '$lib/collaboration/api';
 	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
@@ -576,7 +582,11 @@
 				notePending = notePending.filter((entry) => entry !== change);
 			}
 
-			await refreshJob();
+			// The notes list is its own query, so it learns about the notes just written from here.
+			await Promise.all([
+				refreshJob(),
+				queryClient.invalidateQueries({ queryKey: notesKey('job', jobId) })
+			]);
 			toast.success('Job saved');
 		} catch (caught) {
 			const writeError = caught as JobWriteError;
@@ -602,6 +612,7 @@
 
 <svelte:head><title>{title || 'Job'} · Contractor CRM</title></svelte:head>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
 <!-- Blocks both presentations place, in their own order. -->
 {#snippet productsBlock()}
 	{#if saved}
@@ -744,6 +755,7 @@
 			canManageTeam={saved.can_manage_team_field_records}
 			currentUserId={saved.current_user_id}
 			pending={notePending}
+			look={classic ? 'record' : 'default'}
 			onChange={(next) => (notePending = next)}
 		/>
 	{/if}
@@ -757,6 +769,7 @@
 			recordLabel="this job"
 			pickerLabel="On this job"
 			title="Photos and files"
+			look={classic ? 'record' : 'default'}
 			clientId={saved.job.client?.id ?? null}
 			clientLabel={saved.job.client?.display_name ?? null}
 			canManage={saved.can_record_field_records || saved.can_manage_team_field_records}
@@ -916,7 +929,6 @@
 	{/if}
 {/snippet}
 
-<!-- eslint-disable svelte/no-at-html-tags -->
 <PageContainer>
 	{#if jobQuery.isPending}
 		<LoadingSkeleton variant="card" label="Loading job" />

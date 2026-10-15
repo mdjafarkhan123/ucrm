@@ -198,7 +198,10 @@
 			<ul class="reminders-list__items">
 				{#each reminders as reminder (reminder.id)}
 					{@const due = dueState(reminder.due_on)}
-					<li class="reminders-list__item" class:reminders-list__item--busy={busyId === reminder.id}>
+					<li
+						class="reminders-list__item"
+						class:reminders-list__item--busy={busyId === reminder.id}
+					>
 						<div class="reminders-list__body">
 							<p class="reminders-list__date">
 								{formatDue(reminder.due_on)}
@@ -219,56 +222,58 @@
 		{/if}
 		{#if editable}
 			<button type="button" class="reminders-list__add" onclick={openAdd}>
-				{billingTiming === 'custom_dates' && reminders.length === 0 ? 'Pick a date' : 'Add a reminder'}
+				{billingTiming === 'custom_dates' && reminders.length === 0
+					? 'Pick a date'
+					: 'Add a reminder'}
 			</button>
 		{/if}
 	</div>
 {:else}
-<RailCard title="Invoice reminders" icon={bellIcon} count={reminders.length}>
-	{#snippet actions()}
-		{#if editable}
-			<Button variant="tertiary" size="small" onclick={openAdd}>Add</Button>
-		{/if}
-	{/snippet}
-
-	{#if reminders.length === 0 && !jobClosed && billingTiming === 'custom_dates'}
-		<div class="job-reminders__warning" role="status">
-			<p>No dates picked yet. This job will not be flagged for invoicing until you add one.</p>
+	<RailCard title="Invoice reminders" icon={bellIcon} count={reminders.length}>
+		{#snippet actions()}
 			{#if editable}
-				<Button variant="secondary" size="small" onclick={openAdd}>Pick a date</Button>
+				<Button variant="tertiary" size="small" onclick={openAdd}>Add</Button>
 			{/if}
-		</div>
-	{:else if reminders.length === 0}
-		<p class="job-reminders__empty">{emptyText}</p>
-	{:else}
-		<ul class="job-reminders">
-			{#each reminders as reminder (reminder.id)}
-				{@const due = dueState(reminder.due_on)}
-				<li class="job-reminders__item" class:job-reminders__item--busy={busyId === reminder.id}>
-					<div class="job-reminders__body">
-						<p class="job-reminders__date">
-							{formatDue(reminder.due_on)}
-							<span class="job-reminders__due job-reminders__due--{due.tone}">{due.label}</span>
-						</p>
-						<p class="job-reminders__kind">{KIND_LABEL[reminder.reminder_kind]}</p>
-						{#if reminder.note}<p class="job-reminders__note">{reminder.note}</p>{/if}
-					</div>
-					{#if editable}
-						<DropdownMenu
-							items={menuItems(reminder)}
-							triggerLabel="Reminder actions"
-							disabled={busyId === reminder.id}
-						/>
-					{/if}
-				</li>
-			{/each}
-		</ul>
-	{/if}
+		{/snippet}
 
-	<p class="job-reminders__hint">
-		Reminders are prompts for your own team, not messages to the client.
-	</p>
-</RailCard>
+		{#if reminders.length === 0 && !jobClosed && billingTiming === 'custom_dates'}
+			<div class="job-reminders__warning" role="status">
+				<p>No dates picked yet. This job will not be flagged for invoicing until you add one.</p>
+				{#if editable}
+					<Button variant="secondary" size="small" onclick={openAdd}>Pick a date</Button>
+				{/if}
+			</div>
+		{:else if reminders.length === 0}
+			<p class="job-reminders__empty">{emptyText}</p>
+		{:else}
+			<ul class="job-reminders">
+				{#each reminders as reminder (reminder.id)}
+					{@const due = dueState(reminder.due_on)}
+					<li class="job-reminders__item" class:job-reminders__item--busy={busyId === reminder.id}>
+						<div class="job-reminders__body">
+							<p class="job-reminders__date">
+								{formatDue(reminder.due_on)}
+								<span class="job-reminders__due job-reminders__due--{due.tone}">{due.label}</span>
+							</p>
+							<p class="job-reminders__kind">{KIND_LABEL[reminder.reminder_kind]}</p>
+							{#if reminder.note}<p class="job-reminders__note">{reminder.note}</p>{/if}
+						</div>
+						{#if editable}
+							<DropdownMenu
+								items={menuItems(reminder)}
+								triggerLabel="Reminder actions"
+								disabled={busyId === reminder.id}
+							/>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+		{/if}
+
+		<p class="job-reminders__hint">
+			Reminders are prompts for your own team, not messages to the client.
+		</p>
+	</RailCard>
 {/if}
 
 {#if addOpen}

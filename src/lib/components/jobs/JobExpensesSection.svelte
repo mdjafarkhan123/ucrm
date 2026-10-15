@@ -244,88 +244,88 @@
 		</div>
 	{/if}
 {:else}
-<SectionBlock title="Expenses" icon={receiptIcon} level={2}>
-	{#snippet actions()}
-		{#if data?.can_add}
-			<Button variant="tertiary" size="small" onclick={openAdd}>Add expense</Button>
-		{/if}
-	{/snippet}
+	<SectionBlock title="Expenses" icon={receiptIcon} level={2}>
+		{#snippet actions()}
+			{#if data?.can_add}
+				<Button variant="tertiary" size="small" onclick={openAdd}>Add expense</Button>
+			{/if}
+		{/snippet}
 
-	{#if expensesQuery.isPending}
-		<LoadingSkeleton variant="text" label="Loading expenses" rows={3} />
-	{:else if expensesQuery.isError}
-		<p class="job-expenses__note">The expenses on this job could not be loaded.</p>
-	{:else if expenses.length === 0}
-		<EmptyState
-			icon={receiptIcon}
-			title="No expenses recorded"
-			description={data?.can_manage_team
-				? 'Materials, dump fees and subcontractors show up here, with what they cost.'
-				: 'Expenses you record on this job show up here.'}
-		/>
-	{:else}
-		<ul class="job-expenses">
-			{#each expenses as expense (expense.id)}
-				<li class="job-expenses__item" class:job-expenses__item--busy={busyId === expense.id}>
-					<div class="job-expenses__body">
-						<p class="job-expenses__name">
-							{expense.name}
-							{#if expense.receipt_count > 0}
-								<span
-									class="job-expenses__receipt"
-									title={`${expense.receipt_count} receipt${expense.receipt_count === 1 ? '' : 's'}`}
+		{#if expensesQuery.isPending}
+			<LoadingSkeleton variant="text" label="Loading expenses" rows={3} />
+		{:else if expensesQuery.isError}
+			<p class="job-expenses__note">The expenses on this job could not be loaded.</p>
+		{:else if expenses.length === 0}
+			<EmptyState
+				icon={receiptIcon}
+				title="No expenses recorded"
+				description={data?.can_manage_team
+					? 'Materials, dump fees and subcontractors show up here, with what they cost.'
+					: 'Expenses you record on this job show up here.'}
+			/>
+		{:else}
+			<ul class="job-expenses">
+				{#each expenses as expense (expense.id)}
+					<li class="job-expenses__item" class:job-expenses__item--busy={busyId === expense.id}>
+						<div class="job-expenses__body">
+							<p class="job-expenses__name">
+								{expense.name}
+								{#if expense.receipt_count > 0}
+									<span
+										class="job-expenses__receipt"
+										title={`${expense.receipt_count} receipt${expense.receipt_count === 1 ? '' : 's'}`}
+									>
+										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+										{@html paperclipIcon}{expense.receipt_count}
+									</span>
+								{/if}
+							</p>
+							<p class="job-expenses__meta">
+								{dateFormat.format(new Date(`${expense.expense_date}T12:00:00`))}
+								{#if expense.accounting_code}· {expense.accounting_code}{/if}
+								{#if reimburseLabel(expense)}· {reimburseLabel(expense)}{/if}
+							</p>
+							{#if expense.description}<p class="job-expenses__desc">{expense.description}</p>{/if}
+						</div>
+
+						<div class="job-expenses__side">
+							{#if data?.can_see_cost}
+								<span class="job-expenses__cost"
+									>{money.format((expense.total_minor ?? 0) / 100)}</span
 								>
-									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-									{@html paperclipIcon}{expense.receipt_count}
-								</span>
 							{/if}
-						</p>
-						<p class="job-expenses__meta">
-							{dateFormat.format(new Date(`${expense.expense_date}T12:00:00`))}
-							{#if expense.accounting_code}· {expense.accounting_code}{/if}
-							{#if reimburseLabel(expense)}· {reimburseLabel(expense)}{/if}
-						</p>
-						{#if expense.description}<p class="job-expenses__desc">{expense.description}</p>{/if}
-					</div>
+							{#if expense.can_edit}
+								<DropdownMenu
+									items={menuItems(expense)}
+									triggerLabel="Expense actions"
+									disabled={busyId === expense.id}
+								/>
+							{/if}
+						</div>
+					</li>
+				{/each}
+			</ul>
 
-					<div class="job-expenses__side">
-						{#if data?.can_see_cost}
-							<span class="job-expenses__cost"
-								>{money.format((expense.total_minor ?? 0) / 100)}</span
-							>
-						{/if}
-						{#if expense.can_edit}
-							<DropdownMenu
-								items={menuItems(expense)}
-								triggerLabel="Expense actions"
-								disabled={busyId === expense.id}
-							/>
-						{/if}
-					</div>
-				</li>
-			{/each}
-		</ul>
-
-		<div class="job-expenses__totals">
-			<p class="job-expenses__total">
-				<span>{data?.can_manage_team ? 'Expenses' : 'Your expenses'}</span>
-				<strong>{data?.totals.expense_count ?? 0}</strong>
-			</p>
-			{#if data?.can_see_cost}
+			<div class="job-expenses__totals">
 				<p class="job-expenses__total">
-					<span>Expense cost</span>
-					<strong>{money.format((data.totals.total_minor ?? 0) / 100)}</strong>
+					<span>{data?.can_manage_team ? 'Expenses' : 'Your expenses'}</span>
+					<strong>{data?.totals.expense_count ?? 0}</strong>
+				</p>
+				{#if data?.can_see_cost}
+					<p class="job-expenses__total">
+						<span>Expense cost</span>
+						<strong>{money.format((data.totals.total_minor ?? 0) / 100)}</strong>
+					</p>
+				{/if}
+			</div>
+
+			{#if data?.has_more}
+				<p class="job-expenses__note">
+					Showing the 200 most recent expenses. The total above counts every one.
 				</p>
 			{/if}
-		</div>
-
-		{#if data?.has_more}
-			<p class="job-expenses__note">
-				Showing the 200 most recent expenses. The total above counts every one.
-			</p>
 		{/if}
-	{/if}
-</SectionBlock>
+	</SectionBlock>
 {/if}
 <!-- eslint-enable svelte/no-at-html-tags -->
 

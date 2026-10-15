@@ -74,9 +74,7 @@
 		return `${hours}h ${rest}m`;
 	}
 
-	const timeChip = $derived(
-		laborQuery.data ? duration(laborQuery.data.totals.minutes) : undefined
-	);
+	const timeChip = $derived(laborQuery.data ? duration(laborQuery.data.totals.minutes) : undefined);
 	const expensesChip = $derived.by(() => {
 		const data = expensesQuery.data;
 		if (!data) return undefined;
@@ -158,6 +156,7 @@
 		</TabPanel>
 	</Tabs>
 </RecordCard>
+
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
