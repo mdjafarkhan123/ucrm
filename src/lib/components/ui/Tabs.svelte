@@ -142,58 +142,59 @@
 		background: var(--color-interactive);
 	}
 
-	:global(:root:has(.app-shell[data-presentation='classic'])) .tabs__list {
-		gap: 8px;
-		border-color: var(--classic2-divider);
-	}
-	:global(:root:has(.app-shell[data-presentation='classic'])) .tabs__tab {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		height: 42px;
-		padding: 0 12px;
-		border-radius: 10px 10px 0 0;
-		background: transparent;
-		color: var(--classic2-secondary);
-		font-family: var(--classic2-font);
-		font-size: var(--classic2-font-label);
-		line-height: 1;
-	}
-	:global(:root:has(.app-shell[data-presentation='classic'])) .tabs__tab:hover {
-		color: var(--classic2-ink);
-		background: var(--classic2-surface-soft);
-	}
-	:global(:root:has(.app-shell[data-presentation='classic'])) .tabs__tab:focus-visible {
-		background: var(--classic2-surface-soft);
-		outline: 3px solid var(--classic2-green-soft);
-		outline-offset: -3px;
-	}
-	:global(:root:has(.app-shell[data-presentation='classic'])) .tabs__tab[data-state='active'] {
-		color: var(--classic2-ink);
-	}
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.tabs__tab[data-state='active']::after {
-		height: 3px;
-		border-radius: 3px 3px 0 0;
-		background: var(--classic2-solid-green);
-	}
-	:global(:root:has(.app-shell[data-presentation='classic'])) .tabs__count {
-		display: inline-grid;
-		min-width: 18px;
-		height: 18px;
-		place-items: center;
-		padding: 0 5px;
-		border-radius: 999px;
-		background: var(--classic2-chip);
-		color: var(--classic2-muted);
-		font-size: var(--classic2-font-micro);
-		font-weight: 700;
-		font-variant-numeric: tabular-nums;
-	}
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.tabs__tab[data-state='active']
-		.tabs__count {
-		background: var(--classic2-green-tint);
-		color: var(--classic2-green);
+	:global {
+		:root:has(.app-shell[data-presentation='classic']) .tabs__list {
+			gap: 8px;
+			border-color: var(--classic2-divider);
+		}
+		:root:has(.app-shell[data-presentation='classic']) .tabs__tab {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			height: 42px;
+			padding: 0 12px;
+			border-radius: 10px 10px 0 0;
+			background: transparent;
+			color: var(--classic2-secondary);
+			font-family: var(--classic2-font);
+			font-size: var(--classic2-font-label);
+			line-height: 1;
+		}
+		:root:has(.app-shell[data-presentation='classic']) .tabs__tab:hover {
+			color: var(--classic2-ink);
+			background: var(--classic2-surface-soft);
+		}
+		:root:has(.app-shell[data-presentation='classic']) .tabs__tab:focus-visible {
+			background: var(--classic2-surface-soft);
+			outline: 3px solid var(--classic2-green-soft);
+			outline-offset: -3px;
+		}
+		:root:has(.app-shell[data-presentation='classic']) .tabs__tab[data-state='active'] {
+			color: var(--classic2-ink);
+		}
+		:root:has(.app-shell[data-presentation='classic']) .tabs__tab[data-state='active']::after {
+			height: 3px;
+			border-radius: 3px 3px 0 0;
+			background: var(--classic2-solid-green);
+		}
+		:root:has(.app-shell[data-presentation='classic']) .tabs__count {
+			display: inline-grid;
+			min-width: 18px;
+			height: 18px;
+			place-items: center;
+			padding: 0 5px;
+			border-radius: 999px;
+			background: var(--classic2-chip);
+			color: var(--classic2-muted);
+			font-size: var(--classic2-font-micro);
+			font-weight: 700;
+			font-variant-numeric: tabular-nums;
+		}
+		:root:has(.app-shell[data-presentation='classic'])
+			.tabs__tab[data-state='active']
+			.tabs__count {
+			background: var(--classic2-chip);
+			color: var(--classic2-green);
+		}
 	}
 </style>

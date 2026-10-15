@@ -120,6 +120,8 @@
 					}}
 				/>
 				{#if option.icon}
+					<!-- Icons are trusted, bundled Tabler SVG imports, never user content. -->
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					<span class="segmented__icon" aria-hidden="true">{@html option.icon}</span>
 				{/if}
 				<span class="segmented__text">{option.label}</span>

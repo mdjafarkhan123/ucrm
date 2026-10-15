@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { DatePicker, Popover } from 'bits-ui';
 	import type { CalendarDate, DateValue } from '@internationalized/date';
+	import { today, getLocalTimeZone } from '@internationalized/date';
 	import type { DateMatcher, DateOnInvalid, DateValidator } from 'bits-ui';
 	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
 	import chevronLeftIcon from '@tabler/icons/outline/chevron-left.svg?raw';
@@ -59,6 +60,18 @@
 
 	type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 	let open = $state(false);
+	const currentDate = today(getLocalTimeZone());
+	const todayValidation = $derived(validate?.(currentDate));
+	const todayDisabled = $derived(
+		disabled ||
+			readonly ||
+			(minValue !== undefined && currentDate.compare(minValue) < 0) ||
+			(maxValue !== undefined && currentDate.compare(maxValue) > 0) ||
+			Boolean(isDateDisabled?.(currentDate)) ||
+			Boolean(isDateUnavailable?.(currentDate)) ||
+			((typeof todayValidation === 'string' || Array.isArray(todayValidation)) &&
+				todayValidation.length > 0)
+	);
 	// Day, month and year are typed in the order of the viewer's browser language, as the browser's own date boxes
 	// do: a US browser shows 10/09/2026 for 9 October, a UK one 09/10/2026. The server cannot know it, so a page
 	// drawn there starts in US order until it reaches the browser.
@@ -206,8 +219,19 @@
 					</DatePicker.Calendar>
 
 					<footer class="calendar-picker__footer">
-						<span>Use arrow keys to navigate</span>
+						<span class="calendar-picker__keyboard-hint">Use arrow keys to navigate</span>
 						{#if value}<span class="calendar-picker__selected-date">Selected</span>{/if}
+						<span class="calendar-picker__legend"><span>Today</span><span>Chosen</span></span>
+						<button
+							class="calendar-picker__today"
+							type="button"
+							disabled={todayDisabled}
+							onclick={() => {
+								if (todayDisabled) return;
+								handleValueChange(currentDate);
+								open = false;
+							}}>Today</button
+						>
 					</footer>
 				</Popover.Content>
 			</DatePicker.Portal>
@@ -220,6 +244,175 @@
 </div>
 
 <style lang="scss">
+	.calendar-picker__legend,
+	.calendar-picker__today {
+		display: none;
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) {
+		:global(.calendar-picker__control) {
+			border-color: var(--classic2-border-input);
+			border-radius: 12px;
+			background: var(--classic2-surface);
+		}
+		:global(.calendar-picker__control:focus-within) {
+			outline: 2px solid var(--classic2-green);
+			outline-offset: 2px;
+			box-shadow: none;
+		}
+		:global(.calendar-picker__input),
+		:global(.calendar-picker__label) {
+			color: var(--classic2-ink);
+			font-family: var(--classic2-font);
+			font-size: 13px;
+		}
+		:global(.calendar-picker__literal),
+		:global(.calendar-picker__trigger) {
+			color: var(--classic2-muted);
+		}
+		:global(.calendar-picker__content) {
+			width: min(330px, calc(100vw - 24px));
+			padding: 16px;
+			border-color: var(--classic2-border);
+			border-radius: 16px;
+			background: var(--classic2-surface-raised);
+			box-shadow: 0 12px 32px var(--classic2-shadow-lift);
+			font-family: var(--classic2-font);
+		}
+		:global(.calendar-picker__header) {
+			grid-template-columns: 1fr 30px 30px;
+			gap: 4px;
+			padding: 0;
+			background: transparent;
+		}
+		:global(.calendar-picker__heading) {
+			grid-column: 1;
+			grid-row: 1;
+			text-align: left;
+			color: var(--classic2-ink);
+			font-size: 14px;
+		}
+		:global(.calendar-picker__nav) {
+			width: 30px;
+			height: 30px;
+			border: 1px solid var(--classic2-border-control);
+			border-radius: 9px;
+			color: var(--classic2-ink);
+		}
+		:global(.calendar-picker__nav:first-child) {
+			grid-column: 2;
+			grid-row: 1;
+		}
+		:global(.calendar-picker__nav:last-child) {
+			grid-column: 3;
+			grid-row: 1;
+		}
+		:global(.calendar-picker__nav:hover),
+		:global(.calendar-picker__trigger:hover),
+		:global(.calendar-picker__segment:hover),
+		:global(.calendar-picker__segment:focus) {
+			background: var(--classic2-surface-soft);
+			color: var(--classic2-ink);
+		}
+		:global(.calendar-picker__nav:focus-visible),
+		:global(.calendar-picker__trigger:focus-visible) {
+			outline: 2px solid var(--classic2-green);
+			outline-offset: 2px;
+			box-shadow: none;
+		}
+		:global(.calendar-picker__weekday) {
+			color: var(--classic2-muted);
+			font-size: 11px;
+		}
+		:global(.calendar-picker__day) {
+			width: 38px;
+			max-width: 100%;
+			height: 38px;
+			border-radius: 10px;
+			color: var(--classic2-ink);
+			font-size: 13px;
+		}
+		:global([data-highlighted] .calendar-picker__day),
+		:global([data-focused] .calendar-picker__day) {
+			background: var(--classic2-surface-soft);
+		}
+		:global([data-today]:not([data-selected]) .calendar-picker__day) {
+			border-color: var(--classic2-solid-green);
+			color: var(--classic2-green);
+		}
+		:global([data-selected] .calendar-picker__day) {
+			border-color: var(--classic2-solid-green);
+			background: var(--classic2-solid-green);
+			color: var(--classic2-white);
+		}
+		:global([data-disabled] .calendar-picker__day),
+		:global([data-outside-month] .calendar-picker__day) {
+			color: var(--classic2-muted);
+		}
+		:global(.calendar-picker--invalid .calendar-picker__control),
+		:global(.calendar-picker--invalid .calendar-picker__control:focus-within) {
+			border-color: var(--classic2-rose);
+			outline-color: var(--classic2-rose);
+		}
+		:global(.calendar-picker--disabled .calendar-picker__control) {
+			background: var(--classic2-surface-soft);
+			border-color: var(--classic2-border);
+		}
+		:global(.calendar-picker__error) {
+			color: var(--classic2-rose);
+		}
+		:global(.calendar-picker__footer) {
+			border-color: var(--classic2-divider);
+			color: var(--classic2-muted);
+			font-size: 11px;
+		}
+		.calendar-picker__keyboard-hint,
+		.calendar-picker__selected-date {
+			display: none;
+		}
+		.calendar-picker__legend {
+			display: flex;
+			gap: 12px;
+			span {
+				display: inline-flex;
+				align-items: center;
+				gap: 5px;
+			}
+			span::before {
+				content: '';
+				width: 10px;
+				height: 10px;
+				border: 1px solid var(--classic2-solid-green);
+				border-radius: 3px;
+			}
+			span:last-child::before {
+				background: var(--classic2-solid-green);
+			}
+		}
+		.calendar-picker__today {
+			display: block;
+			height: 30px;
+			padding: 0 10px;
+			border: 1px solid var(--classic2-border-control);
+			border-radius: 9px;
+			color: var(--classic2-ink);
+			background: var(--classic2-surface);
+			font-size: 12px;
+			font-weight: 600;
+			cursor: pointer;
+		}
+		.calendar-picker__today:hover:not(:disabled) {
+			background: var(--classic2-surface-soft);
+		}
+		.calendar-picker__today:focus-visible {
+			outline: 2px solid var(--classic2-green);
+			outline-offset: 2px;
+		}
+		.calendar-picker__today:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+	}
+
 	:global {
 		.calendar-picker {
 			width: 100%;

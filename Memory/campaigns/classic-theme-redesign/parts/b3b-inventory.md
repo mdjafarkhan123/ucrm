@@ -1,10 +1,8 @@
 # B3b — remaining shared parts
 
 **Stage:** B3b.1 done — Jafar approved sections 09–11 (light and dark) on 2026-10-15 ("your design approved")
-and saved `classic.pen`. **B3b.2 built:** Classic Dialog, ConfirmDialog, DropdownMenu, Popover, Tabs and
-icon SegmentedControl styles are on branch `codex/classic-b3b2` under reservation `0b687fff4da0`.
-Formatting, whitespace and Svelte-markup checks pass; a live desktop light/dark screen check remains before
-integration. **After that:** B3b.3–B3b.4, then B5.
+and saved `classic.pen`. B3b.2–B3b.4 are built and verified:
+[overlays and record controls](b3b2-b3b3-proof.md), [feedback](b3b4-feedback.md). **Next:** B5.
 
 **Decision (2026-10-15):** Jafar compared two full sets of the 14 parts in Pencil — A "polished" (approved
 look, rough edges fixed) and B "new concept" (tray footers, ink selection, card rows, dark toasts) — and

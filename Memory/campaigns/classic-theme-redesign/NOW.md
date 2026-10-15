@@ -10,11 +10,11 @@ idea only when it works best.
 [Behavior rules](../../../docs/classic-theme-redesign-behavior-contract.md#behavior-that-must-not-change).
 
 **Plan:** `docs/classic-theme-redesign-behavior-contract.md` · **Order:** [Roadmap](ROADMAP.md), approved
-2026-10-15. **Stage:** First delivery. B1–B4 are integrated; B4's live proof and full-check limitation are
+2026-10-15. **Stage:** First delivery. B1–B4 and B3b shared parts are integrated; B4's live proof and full-check limitation are
 in the [Save bar note](parts/b4-save-bar.md).
 
-**Next:** build [B3b.2–B3b.4](stages/shared-parts.md) in code from the parts Jafar approved on 2026-10-15
-([note](parts/b3b-inventory.md)), then B5. The
+**Next:** B5 work-record header. [B3b.2/B3b.3 proof](parts/b3b2-b3b3-proof.md) and
+[B3b.4 proof](parts/b3b4-feedback.md) close the shared-parts prerequisite. The
 [record build](stages/first-version-build.md) and [whole-app stages](stages/whole-app.md) have done-checks.
 
 **Approved designs:** six record pages; five lists ([Clients](parts/clients-list.md),

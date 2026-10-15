@@ -62,6 +62,60 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	:global(:root:has(.app-shell[data-presentation='classic'])) .filter-chip {
+		min-height: 36px;
+		border-color: var(--classic2-border-control);
+		border-radius: 12px;
+		background: var(--classic2-surface);
+		box-shadow: 0 1px 2px var(--classic2-shadow-far);
+		&:hover {
+			background: var(--classic2-surface-soft);
+		}
+		&:focus-within {
+			outline: 2px solid var(--classic2-green);
+			outline-offset: 2px;
+		}
+		:global(.filter-chip__select .select__trigger) {
+			min-height: 34px;
+			padding-inline: 12px;
+			gap: 6px;
+			border-radius: 12px;
+			color: var(--classic2-ink);
+			font: 500 13px/1.5 var(--classic2-font);
+		}
+		:global(.filter-chip__select .select__prefix) {
+			color: var(--classic2-secondary);
+		}
+		:global(.filter-chip__select .select__value) {
+			color: var(--classic2-ink);
+		}
+		&--on {
+			border-color: var(--classic2-green);
+			background: var(--classic2-surface);
+		}
+		&--on :global(.filter-chip__select .select__trigger) {
+			padding-right: 4px;
+		}
+		&--on :global(.filter-chip__select .select__prefix),
+		&--on :global(.filter-chip__select .select__value) {
+			color: var(--classic2-green);
+		}
+		.filter-chip__clear {
+			height: 34px;
+			color: var(--classic2-muted);
+			border-radius: 10px;
+		}
+		.filter-chip__clear:hover {
+			color: var(--classic2-ink);
+			background: var(--classic2-surface-soft);
+		}
+		.filter-chip__clear:focus-visible {
+			outline: 2px solid var(--classic2-green);
+			outline-offset: -2px;
+			box-shadow: none;
+		}
+	}
+
 	.filter-chip {
 		display: inline-flex;
 		flex: 0 0 auto;

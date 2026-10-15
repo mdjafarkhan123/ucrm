@@ -24,6 +24,6 @@ Screenshots `/tmp/classic-feedback-*.png`; reproducible browser script `/tmp/cla
 Full project check intentionally stopped at Jafar's request due its 4.2 GiB RAM use; do not rerun it for
 this styling slice. Use focused checks. A pre-existing JobVisitsSection unused-selector warning is unrelated.
 
-**Next:** Recover the saved B3b.2/B3b.3 branches and their unfinished verification before B5.
+**Next:** B5; [B3b.2/B3b.3](b3b2-b3b3-proof.md) are now complete.
 Jafar confirmed 2026-10-15 that all other sessions are closed; old reservations are recovery markers,
 not evidence of active agents. Main's uncommitted instruction/Memory changes were preserved during integration.

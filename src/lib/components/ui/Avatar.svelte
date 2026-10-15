@@ -25,6 +25,38 @@
 </AvatarPrimitive.Root>
 
 <style lang="scss">
+	:global(:root:has(.app-shell[data-presentation='classic']) .avatar) {
+		border: 2px solid var(--classic2-surface);
+		font-family: var(--classic2-font);
+		font-weight: 700;
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']) .avatar--red),
+	:global(:root:has(.app-shell[data-presentation='classic']) .avatar--pink) {
+		--avatar-bg: var(--classic2-rose-soft);
+		--avatar-fg: var(--classic2-rose);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']) .avatar--orange) {
+		--avatar-bg: var(--classic2-amber-soft);
+		--avatar-fg: var(--classic2-amber);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']) .avatar--green),
+	:global(:root:has(.app-shell[data-presentation='classic']) .avatar--yellowGreen) {
+		--avatar-bg: var(--classic2-green-soft);
+		--avatar-fg: var(--classic2-green);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']) .avatar--teal) {
+		--avatar-bg: var(--classic2-teal-soft);
+		--avatar-fg: var(--classic2-teal);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']) .avatar--blue) {
+		--avatar-bg: var(--classic2-blue-soft);
+		--avatar-fg: var(--classic2-blue);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']) .avatar--purple) {
+		--avatar-bg: var(--classic2-violet-soft);
+		--avatar-fg: var(--classic2-violet);
+	}
+
 	:global(.avatar) {
 		position: relative;
 		display: inline-flex;

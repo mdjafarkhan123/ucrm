@@ -45,7 +45,7 @@
 		<AlertDialog.Content class="confirm-dialog__content confirm-dialog__content--{tone}">
 			<div class="confirm-dialog__heading">
 				{#if icon}<span class="confirm-dialog__icon" aria-hidden="true">{@html icon}</span>{/if}
-				<AlertDialog.Title level={2}>{title}</AlertDialog.Title>
+				<AlertDialog.Title class="confirm-dialog__title" level={2}>{title}</AlertDialog.Title>
 			</div>
 			<div class="confirm-dialog__body">
 				{@render children()}
@@ -166,66 +166,65 @@
 		margin-top: var(--space-large);
 	}
 
-	:global(:root:has(.app-shell[data-presentation='classic'])) .confirm-dialog__overlay {
-		background: var(--classic2-overlay);
-		backdrop-filter: blur(2px);
-	}
-	:global(:root:has(.app-shell[data-presentation='classic'])) .confirm-dialog__content {
-		width: min(calc(100vw - 48px), 480px);
-		padding: var(--classic2-space-5);
-		border-color: var(--classic2-border);
-		border-radius: var(--classic2-radius-card);
-		background: var(--classic2-surface);
-		box-shadow: 0 20px 56px var(--classic2-shadow-lift);
-	}
-	:global(:root:has(.app-shell[data-presentation='classic'])) .confirm-dialog__content--critical {
-		border-color: var(--classic2-rose-soft);
-	}
-	:global(:root:has(.app-shell[data-presentation='classic'])) .confirm-dialog__content--success {
-		border-color: var(--classic2-green-soft);
-	}
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.confirm-dialog__content
-		[data-slot='alert-dialog-title'] {
-		color: var(--classic2-ink);
-		font-family: var(--classic2-font);
-		font-size: var(--classic2-font-section);
-	}
-	:global(:root:has(.app-shell[data-presentation='classic'])) .confirm-dialog__heading {
-		gap: var(--classic2-space-3);
-	}
-	:global(:root:has(.app-shell[data-presentation='classic'])) .confirm-dialog__icon {
-		width: 40px;
-		height: 40px;
-		flex-basis: 40px;
-		border-radius: 12px;
-		background: var(--classic2-blue-tint);
-		color: var(--classic2-blue);
-	}
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.confirm-dialog__content--critical
-		.confirm-dialog__icon {
-		background: var(--classic2-rose-tint);
-		color: var(--classic2-solid-rose);
-	}
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.confirm-dialog__content--success
-		.confirm-dialog__icon {
-		background: var(--classic2-green-tint);
-		color: var(--classic2-green);
-	}
-	:global(:root:has(.app-shell[data-presentation='classic'])) .confirm-dialog__body {
-		margin-top: var(--classic2-space-3);
-		color: var(--classic2-body);
-		font-size: var(--classic2-font-body);
-	}
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.confirm-dialog__body
-		:global(strong) {
-		color: var(--classic2-ink);
-	}
-	:global(:root:has(.app-shell[data-presentation='classic'])) .confirm-dialog__actions {
-		gap: var(--classic2-space-2);
-		margin-top: var(--classic2-space-5);
+	:global {
+		:root:has(.app-shell[data-presentation='classic']) .confirm-dialog__overlay {
+			background: var(--classic2-overlay);
+			backdrop-filter: blur(2px);
+		}
+		:root:has(.app-shell[data-presentation='classic']) .confirm-dialog__content {
+			width: min(calc(100vw - 48px), 480px);
+			padding: var(--classic2-space-5);
+			border-color: var(--classic2-border);
+			border-radius: var(--classic2-radius-card);
+			background: var(--classic2-surface);
+			box-shadow: 0 20px 56px var(--classic2-shadow-lift);
+		}
+		:root:has(.app-shell[data-presentation='classic']) .confirm-dialog__content--critical {
+			border-color: var(--classic2-rose-soft);
+		}
+		:root:has(.app-shell[data-presentation='classic']) .confirm-dialog__content--success {
+			border-color: var(--classic2-green-soft);
+		}
+		:root:has(.app-shell[data-presentation='classic']) .confirm-dialog__title {
+			color: var(--classic2-ink);
+			font-family: var(--classic2-font);
+			font-size: var(--classic2-font-section);
+			font-weight: 700;
+		}
+		:root:has(.app-shell[data-presentation='classic']) .confirm-dialog__heading {
+			gap: var(--classic2-space-3);
+		}
+		:root:has(.app-shell[data-presentation='classic']) .confirm-dialog__icon {
+			width: 40px;
+			height: 40px;
+			flex-basis: 40px;
+			border-radius: 12px;
+			background: var(--classic2-blue-tint);
+			color: var(--classic2-blue);
+		}
+		:root:has(.app-shell[data-presentation='classic'])
+			.confirm-dialog__content--critical
+			.confirm-dialog__icon {
+			background: var(--classic2-rose-tint);
+			color: var(--classic2-solid-rose);
+		}
+		:root:has(.app-shell[data-presentation='classic'])
+			.confirm-dialog__content--success
+			.confirm-dialog__icon {
+			background: var(--classic2-green-tint);
+			color: var(--classic2-green);
+		}
+		:root:has(.app-shell[data-presentation='classic']) .confirm-dialog__body {
+			margin-top: var(--classic2-space-3);
+			color: var(--classic2-body);
+			font-size: var(--classic2-font-body);
+		}
+		:root:has(.app-shell[data-presentation='classic']) .confirm-dialog__body :global(strong) {
+			color: var(--classic2-ink);
+		}
+		:root:has(.app-shell[data-presentation='classic']) .confirm-dialog__actions {
+			gap: var(--classic2-space-2);
+			margin-top: var(--classic2-space-5);
+		}
 	}
 </style>
