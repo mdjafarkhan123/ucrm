@@ -35,6 +35,9 @@ currently approved sequence and later-stage gates live in the [roadmap](../Memor
 
 ## Design target
 
+- **Top-tier UI/UX:** Jafar likes the visual craft he sees on Dribbble and wants that level of quality in
+  the application (clarified 2026-10-15). Use that inspiration for composition, spacing, color, detail and
+  polish while making real contractor tasks easy to understand and complete.
 - **New concepts come first.** Do not copy the live screen into Pencil and call it a redesign, and do not add
   decoration without a purpose. Study the actual task and mature products relevant to it, then design a fresh
   layout that makes the important answer or action easy to find. If an existing idea genuinely works best,
