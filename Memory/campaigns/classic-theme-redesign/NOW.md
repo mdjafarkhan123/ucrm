@@ -19,7 +19,8 @@ in the [Save bar note](parts/b4-save-bar.md).
 
 **Approved designs:** six record pages; five lists ([Clients](parts/clients-list.md),
 [Requests/Quotes/Invoices](parts/requests-quotes-invoices-lists.md), Jobs in its design branch); Schedule
-views, drawer and quick-create ([note](parts/schedule-design.md)). Home/Reports is coordinated with
+views, drawer and quick-create ([note](parts/schedule-design.md)); unified inbox, approved early
+([note](parts/inbox-design.md)). Home/Reports is coordinated with
 `crm-launch-readiness` [Part 13](../crm-launch-readiness/parts/part-13-home-reports.md).
 
 **Scope:** Desktop web. A separate phone app is planned outside this campaign. Botanical stays unchanged.

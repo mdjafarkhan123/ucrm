@@ -98,6 +98,23 @@ These additions are part of the agreed scope:
 - **"Where this is used" card** on settings pages.
 - **Save bar wording**: "You have unsaved changes" once something changes; a resting state while nothing has.
 
+### Unified inbox additions
+
+Jafar approved these with the `Communications · Inbox · 1440` concept on 2026-10-15. Each follows the
+[unified inbox contract](unified-inbox-behavior-contract.md) for permissions and channel rules:
+
+- **List:** a filter button beside search; short times (10:11 AM, Yesterday, Oct 13); "You:" or "Auto:" before
+  a preview when the business sent the last message; a channel badge on each avatar.
+- **Conversation header:** the assignee picker and Follow move here from the customer panel, joined by Mark as
+  unread (opening still marks read, as Jobber allows), Archive and a More menu.
+- **Timeline as a chat:** customer bubbles left, team bubbles right; time and delivery ticks under each bubble;
+  an email reply shows a quote of the message it answers; Details, Forward and More appear on hover; a "New"
+  divider marks messages since the last visit.
+- **Internal notes:** a Reply / Internal note switch in the composer and violet note bubbles with @mentions,
+  visible only to the team.
+- **Customer panel:** Call / Text / Email buttons under the name (Text and Email switch the composer channel), a
+  dark "Open job" card with next visit, crew, approved quote and Open job, and an Address row in Contact.
+
 
 ## References
 

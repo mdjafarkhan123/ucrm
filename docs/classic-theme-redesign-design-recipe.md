@@ -42,6 +42,7 @@ does not always need to announce a status. Use color deliberately and keep text 
 | Section     | Business green, Sales & work teal, Communications blue, Automations amber, Team & access violet |
 | Record type | Quote rose, invoice blue, request amber, job green, client violet                               |
 | Status      | Red needs action, amber waiting, green done or happening now                                    |
+| Channel     | Email blue, text green, website chat teal                                                       |
 
 An icon tile may identify a section, record type or action, or simply add a useful visual rhythm. Do not
 apply the status palette to unrelated states in a way that changes its meaning.
