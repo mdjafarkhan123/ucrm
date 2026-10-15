@@ -3,6 +3,10 @@
 **Stage:** B3b.1 done — Jafar approved sections 09–11 (light and dark) on 2026-10-15 ("your design approved")
 and saved `classic.pen`. **Next:** build B3b.2–B3b.4 in code, then B5.
 
+**Active task:** B3b.3 — give shared record rows, filters, search, avatars and date pickers their approved
+Classic appearance while preserving selection, search, filtering and date-choice behaviour. Branch
+`codex/classic-b3b3`, reservation `5a5e1549bc54`.
+
 **Decision (2026-10-15):** Jafar compared two full sets of the 14 parts in Pencil — A "polished" (approved
 look, rough edges fixed) and B "new concept" (tray footers, ink selection, card rows, dark toasts) — and
 answered "A". B was deleted. Pencil is the visual guide for this redesign, not the old `design-classic`
