@@ -6,6 +6,7 @@
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import RecordDetailLayout from '$lib/components/layout/RecordDetailLayout.svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
+	import RecordCard from '$lib/components/layout/RecordCard.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
@@ -24,6 +25,8 @@
 	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
 	import RecordAdjustmentsCard from '$lib/components/work/RecordAdjustmentsCard.svelte';
 	import QuoteDepositCard from '$lib/components/quotes/QuoteDepositCard.svelte';
+	import QuoteProfitCard from '$lib/components/quotes/QuoteProfitCard.svelte';
+	import type { RecordFact } from '$lib/components/work/types';
 	import QuoteClientViewBlock from '$lib/components/quotes/QuoteClientViewBlock.svelte';
 	import QuoteEmailDialog from '$lib/components/quotes/QuoteEmailDialog.svelte';
 	import SendQuoteDialog from '$lib/components/quotes/SendQuoteDialog.svelte';
@@ -98,11 +101,16 @@
 	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
 	import archiveOffIcon from '@tabler/icons/outline/archive-off.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import calendarPlusIcon from '@tabler/icons/outline/calendar-plus.svg?raw';
+	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
+	import walletIcon from '@tabler/icons/outline/wallet.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
 	const quoteId = $derived(page.params.id ?? '');
 	const currentUserId = $derived(page.data.user?.id as string | undefined);
+	const classic = $derived(page.data.presentation === 'classic');
 	const sectionOptions = [
 		{ id: 'introduction', label: 'Introduction', icon: speakerphoneIcon },
 		{ id: 'client_message', label: 'Client Message', icon: messageIcon }
@@ -276,6 +284,68 @@
 					: 'No answer yet'
 		}
 	]);
+
+	// --- Classic header ----------------------------------------------------------------------------------
+	// classic.pen "Quote details · 1440": a short line after the quote number (which version, when it was
+	// sent) and four facts — created, sent, the client's answer and the total.
+	const monthDay = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
+	const shortDateTime = new Intl.DateTimeFormat(undefined, {
+		month: 'short',
+		day: 'numeric',
+		hour: 'numeric',
+		minute: '2-digit'
+	});
+	const quoteMeta = $derived.by(() => {
+		const published = saved?.published_version_number;
+		if (!saved) return undefined;
+		if (!published) return 'Not sent yet';
+		if (saved.version?.status !== 'published') return `Draft after version ${published}`;
+		const sent = saved.quote.sent_at
+			? ` · sent ${monthDay.format(new Date(saved.quote.sent_at))}`
+			: '';
+		return `Version ${published}${sent}`;
+	});
+	const classicFacts = $derived.by<RecordFact[]>(() => {
+		if (!saved) return [];
+		const declined = saved.quote.decision === 'declined';
+		const answered = Boolean(saved.quote.decided_at);
+		const facts: RecordFact[] = [
+			{
+				label: 'Created',
+				value: shortDateTime.format(new Date(saved.quote.created_at)),
+				icon: calendarPlusIcon,
+				tone: 'neutral'
+			},
+			{
+				label: 'Sent',
+				value: saved.quote.sent_at ? shortDateTime.format(new Date(saved.quote.sent_at)) : null,
+				empty: 'Not sent yet',
+				icon: sendIcon,
+				tone: 'neutral'
+			},
+			{
+				label: declined ? 'Declined' : 'Approved',
+				value: answered ? shortDateTime.format(new Date(saved.quote.decided_at!)) : null,
+				empty:
+					saved.quote.status === 'approved' || saved.quote.status === 'converted'
+						? 'Date not recorded'
+						: 'No answer yet',
+				icon: declined ? xIcon : circleCheckIcon,
+				tone: answered || saved.quote.status === 'draft' ? 'neutral' : 'waiting'
+			}
+		];
+		if (saved.can_see_price && saved.version?.total_minor !== undefined)
+			facts.push({
+				label: 'Quote total',
+				value: new Intl.NumberFormat(undefined, {
+					style: 'currency',
+					currency: saved.version.currency_code ?? saved.quote.currency_code ?? 'USD'
+				}).format(saved.version.total_minor / 100),
+				icon: walletIcon,
+				tone: 'neutral'
+			});
+		return facts;
+	});
 
 	// Only meaningful once approved and not yet converted: readiness is what stands between an approval
 	// and starting the job, and a converted quote has already crossed that line.
@@ -600,22 +670,25 @@
 
 	// One action, named for the next step this quote is waiting on. An approved quote's next step is a Job,
 	// which is not built, so it says nothing rather than offering a button that cannot work.
-	type PrimaryAction = { label: string; loading?: boolean; onclick: () => void };
+	type PrimaryAction = { label: string; icon?: string; loading?: boolean; onclick: () => void };
 	const primaryAction = $derived.by<PrimaryAction | undefined>(() => {
 		if (!saved) return undefined;
 		if (emailable)
 			return {
 				label: 'Send email',
+				icon: classic ? mailIcon : undefined,
 				onclick: () => (quoteEmailOpen = true)
 			};
 		if (sendable)
 			return {
 				label: 'Mark as awaiting response',
+				icon: classic ? sendIcon : undefined,
 				onclick: () => void send()
 			};
 		if (answerable && saved.quote.status !== 'draft')
 			return {
 				label: 'Mark as approved',
+				icon: classic ? checkIcon : undefined,
 				loading: lifecycleSaving,
 				onclick: () => void answer('approved')
 			};
@@ -785,6 +858,13 @@
 			: []
 	);
 
+	function addLowerSection(section: string) {
+		if (section === 'client_message') {
+			clientMessageDraft = '';
+			editingClientMessage = true;
+		}
+	}
+
 	function discardDraft() {
 		editingTitle = false;
 		titleDraft = '';
@@ -908,6 +988,297 @@
 
 <svelte:head><title>{title || 'Quote'} · Contractor CRM</title></svelte:head>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
+<!-- Blocks both presentations place, in their own order. -->
+{#snippet productsBlock()}
+	{#if saved}
+		<ProductsAndServicesBlock
+			lines={quoteLines}
+			quoteChoices
+			revision={saved.version?.revision ?? 0}
+			subtotalMinor={saved.can_see_price ? (saved.version?.subtotal_minor ?? 0) : null}
+			totals={{
+				discountMinor: saved.version?.discount_minor ?? 0,
+				discountLabel: saved.version?.discount_name ?? null,
+				taxMinor: saved.version?.tax_minor ?? 0,
+				taxLabel: saved.version?.tax_name ?? null,
+				totalMinor: saved.version?.total_minor ?? null,
+				totalLabel: 'Quote total'
+			}}
+			editable={editable && saved.can_see_price}
+			showPrices={saved.can_see_price}
+			currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
+			attachTo={{ entityType: 'quote', entityId: quoteId }}
+			emptyDescription="Add the products and services this quote covers."
+			footerNote={Object.values(savedVisibility).every(Boolean)
+				? 'Client sees every figure'
+				: 'Client sees some figures'}
+			editorTotalLabel="Quote subtotal"
+			saveLabel="Save pricing"
+			lockedMessage={saved.version?.status === 'published'
+				? classic
+					? `Locked because this quote was sent.${revisable ? ' Start a new version to change it.' : ''}`
+					: 'This version has been published, so its pricing cannot be changed.'
+				: saved.quote.status === 'draft'
+					? 'You can view this pricing, but you do not have access to change it.'
+					: 'Pricing is locked because this quote is no longer a draft.'}
+			onSave={saveLines}
+		>
+			{#snippet clientView()}
+				<QuoteClientViewBlock
+					saved={savedVisibility}
+					draft={visibility}
+					editing={editingVisibility}
+					changed={visibilityChanged}
+					{editable}
+					onEdit={() => {
+						if (editingVisibility) {
+							editingVisibility = false;
+							visibilityDraft = null;
+						} else {
+							visibilityDraft = { ...savedVisibility };
+							editingVisibility = true;
+						}
+					}}
+					onChange={(next) => (visibilityDraft = next)}
+				/>
+			{/snippet}
+		</ProductsAndServicesBlock>
+	{/if}
+{/snippet}
+
+{#snippet signatureBody()}
+	{#if saved?.signature}
+		<div class="quote-signature">
+			{#if saved.signature.has_image}
+				<img
+					class="quote-signature__image"
+					src={quoteSignatureImageHref(quoteId, saved.signature.quote_signature_id)}
+					alt={`Signature of ${saved.signature.signer_name}`}
+				/>
+			{:else}
+				<p class="quote-signature__typed">{saved.signature.signer_name}</p>
+			{/if}
+			<p class="quote-signature__meta">
+				Signed by {saved.signature.signer_name} on
+				{dateTimeFormat.format(new Date(saved.signature.signed_at))}, on version
+				{saved.signature.version_number}.
+			</p>
+		</div>
+	{/if}
+{/snippet}
+
+{#snippet introductionActions()}
+	{#if editable && !editingIntroduction}
+		<PencilButton
+			onclick={() => {
+				introductionDraft = saved?.version?.introduction ?? '';
+				editingIntroduction = true;
+			}}
+			label="Edit the introduction"
+		/>
+	{:else if introductionChanged}
+		<Badge size="small" status="warning">Unsaved</Badge>
+	{/if}
+{/snippet}
+
+{#snippet introductionBody()}
+	{#if editingIntroduction}
+		<Textarea
+			id="quote-introduction"
+			label="How this quote opens, above the pricing"
+			rows={4}
+			maxlength={10000}
+			bind:value={introductionDraft}
+		/>
+	{:else if saved?.version?.introduction}
+		<p class="quote-detail__copy">{saved.version.introduction}</p>
+	{:else if classic}
+		<p class="quote-record__empty">No introduction yet.</p>
+	{:else}
+		<EmptyState
+			icon={speakerphoneIcon}
+			title="No introduction"
+			description="Say what this quote is for before the client reaches the prices."
+		/>
+	{/if}
+{/snippet}
+
+{#snippet clientMessageActions()}
+	{#if editable && !editingClientMessage}
+		<PencilButton
+			onclick={() => {
+				clientMessageDraft = saved?.version?.client_message ?? '';
+				editingClientMessage = true;
+			}}
+			label="Edit the client message"
+		/>
+	{:else if clientMessageChanged}
+		<Badge size="small" status="warning">Unsaved</Badge>
+	{/if}
+{/snippet}
+
+{#snippet clientMessageBody()}
+	{#if editingClientMessage}
+		<Textarea
+			id="quote-client-message"
+			label="A short note to the client, under the pricing"
+			rows={4}
+			maxlength={5000}
+			bind:value={clientMessageDraft}
+		/>
+	{:else if saved?.version?.client_message}
+		<p class="quote-detail__copy">{saved.version.client_message}</p>
+	{:else if classic}
+		<p class="quote-record__empty">No client message yet.</p>
+	{:else}
+		<EmptyState
+			icon={messageIcon}
+			title="No client message"
+			description="Add a short note the client reads after the pricing."
+		/>
+	{/if}
+{/snippet}
+
+{#snippet disclaimerActions()}
+	{#if editable && !editingDisclaimer}
+		<PencilButton
+			onclick={() => {
+				disclaimerDraft = saved?.version?.contract_disclaimer ?? '';
+				editingDisclaimer = true;
+			}}
+			label="Edit the contract disclaimer"
+		/>
+	{:else if disclaimerChanged}
+		<Badge size="small" status="warning">Unsaved</Badge>
+	{/if}
+{/snippet}
+
+{#snippet disclaimerBody()}
+	{#if editingDisclaimer}
+		<Textarea
+			id="quote-disclaimer"
+			label="What the client is agreeing to when they approve this quote"
+			rows={5}
+			maxlength={5000}
+			bind:value={disclaimerDraft}
+		/>
+	{:else if saved?.version?.contract_disclaimer}
+		<p class="quote-detail__disclaimer">{saved.version.contract_disclaimer}</p>
+	{:else if classic}
+		<p class="quote-record__empty">No contract disclaimer yet.</p>
+	{:else}
+		<EmptyState
+			icon={fileTextIcon}
+			title="No contract disclaimer"
+			description="Add the terms the client agrees to when they approve this quote."
+		/>
+	{/if}
+{/snippet}
+
+{#snippet historyCard()}
+	<RailCard title="Quote history" icon={clockIcon}>
+		{#snippet actions()}
+			<Button size="small" variant="tertiary" onclick={() => (showHistory = false)}>Close</Button>
+		{/snippet}
+		<ActivityFeed entityType="quote" entityId={quoteId} {currentUserId} />
+	</RailCard>
+{/snippet}
+
+{#snippet adjustmentsCard()}
+	{#if saved}
+		<RecordAdjustmentsCard>
+			<RecordDiscountCard
+				revision={saved.version?.revision ?? 0}
+				name={saved.version?.discount_name ?? null}
+				type={saved.version?.discount_type ?? null}
+				value={saved.version?.discount_value ?? null}
+				discountMinor={saved.can_see_price ? (saved.version?.discount_minor ?? 0) : null}
+				currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
+				{editable}
+				canSeePrice={saved.can_see_price}
+				onSave={(revision, payload) => saveQuoteDiscount(quoteId, revision, payload)}
+				onSaved={refreshQuote}
+			/>
+
+			<RecordTaxCard
+				revision={saved.version?.revision ?? 0}
+				propertyId={saved.quote.property_id}
+				taxSource={saved.version?.tax_source ?? 'not_configured'}
+				rateId={saved.version?.tax_rate_id ?? null}
+				name={saved.version?.tax_name ?? null}
+				rateBasisPoints={saved.version?.tax_rate_basis_points ?? 0}
+				taxMinor={saved.can_see_price ? (saved.version?.tax_minor ?? 0) : null}
+				currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
+				{editable}
+				canSeePrice={saved.can_see_price}
+				canManageTaxes={saved.can_manage_taxes}
+				onSave={(revision, payload) => saveQuoteTax(quoteId, revision, payload)}
+				onSaved={refreshQuote}
+			/>
+		</RecordAdjustmentsCard>
+	{/if}
+{/snippet}
+
+{#snippet depositCard()}
+	{#if saved}
+		<QuoteDepositCard
+			{quoteId}
+			revision={saved.version?.revision ?? 0}
+			depositType={saved.version?.deposit_type ?? null}
+			scheduleItems={saved.deposit_schedule_items}
+			depositRequiredMinor={saved.can_see_price
+				? (saved.version?.deposit_required_minor ?? 0)
+				: null}
+			depositEvents={saved.deposit_events}
+			totalMinor={saved.can_see_price ? (saved.version?.total_minor ?? 0) : 0}
+			currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
+			{editable}
+			canSeePrice={saved.can_see_price}
+			canRecordDeposit={saved.can_record_deposit}
+			hasPublishedVersion={Boolean(saved.quote.current_published_version_id)}
+			onSaved={refreshQuote}
+		/>
+	{/if}
+{/snippet}
+
+{#snippet filesCard(surface: 'rail' | 'section')}
+	{#if saved}
+		<RecordFilesCard
+			entityType="quote"
+			entityId={quoteId}
+			recordLabel="this quote"
+			pickerLabel="On this quote"
+			clientId={saved.quote.client?.id ?? null}
+			clientLabel={saved.quote.client?.company_name || saved.quote.client?.display_name || null}
+			canManage={editable}
+			{surface}
+			title={classic ? 'Photos and files' : undefined}
+			look={classic ? 'record' : 'default'}
+			onChange={() => {
+				pendingFileSync = syncQuoteVersionAttachments(quoteId)
+					.catch(() => {})
+					.then(refreshQuote);
+			}}
+		/>
+	{/if}
+{/snippet}
+
+{#snippet notesPanel()}
+	{#if saved}
+		<NotesPanel
+			entityType="quote"
+			entityId={quoteId}
+			canManage={saved.can_edit}
+			{currentUserId}
+			pending={notePending}
+			look={classic ? 'record' : 'default'}
+			onChange={(next: NoteChange[]) => (notePending = next)}
+		/>
+	{/if}
+{/snippet}
+<!-- eslint-enable svelte/no-at-html-tags -->
+
 <PageContainer>
 	{#if quoteQuery.isPending}
 		<LoadingSkeleton variant="card" label="Loading quote" />
@@ -939,6 +1310,7 @@
 							: {}
 					)}
 					recordNumber={saved.quote.quote_number}
+					meta={classic ? quoteMeta : undefined}
 					icon={fileDollarIcon}
 					recordType="Quote"
 					{title}
@@ -976,327 +1348,197 @@
 							menuItems={clientMenuItems}
 						/>
 					{/snippet}
-					{#snippet facts()}<RecordFactsList facts={headerFacts} />{/snippet}
+					{#snippet facts()}<RecordFactsList
+							facts={classic ? classicFacts : headerFacts}
+						/>{/snippet}
 				</WorkRecordHeader>
+				{#if classic}
+					{#if saved.signature}
+						<RecordCard
+							title="Signature"
+							subtitle={`Signed on version ${saved.signature.version_number}`}
+							id="quote-signature"
+						>
+							<div class="quote-record__row">{@render signatureBody()}</div>
+						</RecordCard>
+					{/if}
 
-				{#if saved.signature}
-					<SectionBlock title="Signature" icon={signatureIcon} level={2}>
-						<div class="quote-signature">
-							{#if saved.signature.has_image}
-								<img
-									class="quote-signature__image"
-									src={quoteSignatureImageHref(quoteId, saved.signature.quote_signature_id)}
-									alt={`Signature of ${saved.signature.signer_name}`}
-								/>
-							{:else}
-								<p class="quote-signature__typed">{saved.signature.signer_name}</p>
-							{/if}
-							<p class="quote-signature__meta">
-								Signed by {saved.signature.signer_name} on
-								{dateTimeFormat.format(new Date(saved.signature.signed_at))}, on version
-								{saved.signature.version_number}.
-							</p>
-						</div>
-					</SectionBlock>
-				{/if}
-
-				{#if editable && !showIntroduction}
-					<AddSectionControl
-						options={introductionOption}
-						onAdd={() => {
-							introductionDraft = '';
-							editingIntroduction = true;
-						}}
-					/>
-				{/if}
-
-				{#if showIntroduction}<SectionBlock
-						title="Introduction"
-						icon={speakerphoneIcon}
-						level={2}
-						form={editingIntroduction}
-					>
-						{#snippet actions()}
-							{#if editable && !editingIntroduction}
-								<PencilButton
-									onclick={() => {
-										introductionDraft = saved.version?.introduction ?? '';
-										editingIntroduction = true;
-									}}
-									label="Edit the introduction"
-								/>
-							{:else if introductionChanged}
-								<Badge size="small" status="warning">Unsaved</Badge>
-							{/if}
-						{/snippet}
-
-						{#if editingIntroduction}
-							<Textarea
-								id="quote-introduction"
-								label="How this quote opens, above the pricing"
-								rows={4}
-								maxlength={10000}
-								bind:value={introductionDraft}
-							/>
-						{:else if saved.version?.introduction}
-							<p class="quote-detail__copy">{saved.version.introduction}</p>
-						{:else}
-							<EmptyState
-								icon={speakerphoneIcon}
-								title="No introduction"
-								description="Say what this quote is for before the client reaches the prices."
-							/>
-						{/if}
-					</SectionBlock>{/if}
-
-				<ProductsAndServicesBlock
-					lines={quoteLines}
-					quoteChoices
-					revision={saved.version?.revision ?? 0}
-					subtotalMinor={saved.can_see_price ? (saved.version?.subtotal_minor ?? 0) : null}
-					totals={{
-						discountMinor: saved.version?.discount_minor ?? 0,
-						discountLabel: saved.version?.discount_name ?? null,
-						taxMinor: saved.version?.tax_minor ?? 0,
-						taxLabel: saved.version?.tax_name ?? null,
-						totalMinor: saved.version?.total_minor ?? null,
-						totalLabel: 'Quote total'
-					}}
-					editable={editable && saved.can_see_price}
-					showPrices={saved.can_see_price}
-					currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
-					attachTo={{ entityType: 'quote', entityId: quoteId }}
-					emptyDescription="Add the products and services this quote covers."
-					footerNote={Object.values(savedVisibility).every(Boolean)
-						? 'Client sees every figure'
-						: 'Client sees some figures'}
-					editorTotalLabel="Quote subtotal"
-					saveLabel="Save pricing"
-					lockedMessage={saved.version?.status === 'published'
-						? 'This version has been published, so its pricing cannot be changed.'
-						: saved.quote.status === 'draft'
-							? 'You can view this pricing, but you do not have access to change it.'
-							: 'Pricing is locked because this quote is no longer a draft.'}
-					onSave={saveLines}
-				>
-					{#snippet clientView()}
-						<QuoteClientViewBlock
-							saved={savedVisibility}
-							draft={visibility}
-							editing={editingVisibility}
-							changed={visibilityChanged}
-							{editable}
-							onEdit={() => {
-								if (editingVisibility) {
-									editingVisibility = false;
-									visibilityDraft = null;
-								} else {
-									visibilityDraft = { ...savedVisibility };
-									editingVisibility = true;
-								}
+					{#if editable && !showIntroduction}
+						<AddSectionControl
+							options={introductionOption}
+							onAdd={() => {
+								introductionDraft = '';
+								editingIntroduction = true;
 							}}
-							onChange={(next) => (visibilityDraft = next)}
-						/>
-					{/snippet}
-				</ProductsAndServicesBlock>
-
-				{#if editable && availableLowerSections.length > 0}
-					<AddSectionControl
-						options={lowerSectionOptions}
-						onAdd={(section) => {
-							if (section === 'client_message') {
-								clientMessageDraft = '';
-								editingClientMessage = true;
-							}
-						}}
-					/>
-				{/if}
-
-				<RecordFilesCard
-					entityType="quote"
-					entityId={quoteId}
-					recordLabel="this quote"
-					pickerLabel="On this quote"
-					clientId={saved.quote.client?.id ?? null}
-					clientLabel={saved.quote.client?.company_name || saved.quote.client?.display_name || null}
-					canManage={editable}
-					surface="section"
-					onChange={() => {
-						pendingFileSync = syncQuoteVersionAttachments(quoteId)
-							.catch(() => {})
-							.then(refreshQuote);
-					}}
-				/>
-
-				{#if showClientMessage}<SectionBlock
-						title="Client message"
-						icon={messageIcon}
-						level={2}
-						form={editingClientMessage}
-					>
-						{#snippet actions()}
-							{#if editable && !editingClientMessage}
-								<PencilButton
-									onclick={() => {
-										clientMessageDraft = saved.version?.client_message ?? '';
-										editingClientMessage = true;
-									}}
-									label="Edit the client message"
-								/>
-							{:else if clientMessageChanged}
-								<Badge size="small" status="warning">Unsaved</Badge>
-							{/if}
-						{/snippet}
-
-						{#if editingClientMessage}
-							<Textarea
-								id="quote-client-message"
-								label="A short note to the client, under the pricing"
-								rows={4}
-								maxlength={5000}
-								bind:value={clientMessageDraft}
-							/>
-						{:else if saved.version?.client_message}
-							<p class="quote-detail__copy">{saved.version.client_message}</p>
-						{:else}
-							<EmptyState
-								icon={messageIcon}
-								title="No client message"
-								description="Add a short note the client reads after the pricing."
-							/>
-						{/if}
-					</SectionBlock>{/if}
-
-				<SectionBlock
-					title="Contract disclaimer"
-					icon={fileTextIcon}
-					level={2}
-					form={editingDisclaimer}
-				>
-					{#snippet actions()}
-						{#if editable && !editingDisclaimer}
-							<PencilButton
-								onclick={() => {
-									disclaimerDraft = saved.version?.contract_disclaimer ?? '';
-									editingDisclaimer = true;
-								}}
-								label="Edit the contract disclaimer"
-							/>
-						{:else if disclaimerChanged}
-							<Badge size="small" status="warning">Unsaved</Badge>
-						{/if}
-					{/snippet}
-
-					{#if editingDisclaimer}
-						<Textarea
-							id="quote-disclaimer"
-							label="What the client is agreeing to when they approve this quote"
-							rows={5}
-							maxlength={5000}
-							bind:value={disclaimerDraft}
-						/>
-					{:else if saved.version?.contract_disclaimer}
-						<p class="quote-detail__disclaimer">{saved.version.contract_disclaimer}</p>
-					{:else}
-						<EmptyState
-							icon={fileTextIcon}
-							title="No contract disclaimer"
-							description="Add the terms the client agrees to when they approve this quote."
 						/>
 					{/if}
-				</SectionBlock>
+
+					{#if showIntroduction}
+						<RecordCard
+							title="Introduction"
+							subtitle="How this quote opens, above the pricing"
+							id="quote-introduction-card"
+						>
+							{#snippet actions()}{@render introductionActions()}{/snippet}
+							<div class="quote-record__row">{@render introductionBody()}</div>
+						</RecordCard>
+					{/if}
+
+					{@render productsBlock()}
+
+					{#if editable && availableLowerSections.length > 0}
+						<AddSectionControl options={lowerSectionOptions} onAdd={addLowerSection} />
+					{/if}
+
+					<RecordCard
+						title={showClientMessage ? 'Client message and disclaimer' : 'Contract disclaimer'}
+						subtitle="Shown to the client below the pricing"
+						id="quote-client-copy"
+					>
+						{#if showClientMessage}
+							<div class="quote-record__row">
+								<div class="quote-record__row-head">
+									<h3 class="quote-record__label">Client message</h3>
+									{@render clientMessageActions()}
+								</div>
+								{@render clientMessageBody()}
+							</div>
+							<div class="quote-record__row">
+								<div class="quote-record__row-head">
+									<h3 class="quote-record__label">Contract disclaimer</h3>
+									{@render disclaimerActions()}
+								</div>
+								{@render disclaimerBody()}
+							</div>
+						{:else}
+							<!-- One row only, so its pencil sits in the card heading instead of on a line of its own. -->
+							<div class="quote-record__row">{@render disclaimerBody()}</div>
+						{/if}
+						{#snippet actions()}
+							{#if !showClientMessage}{@render disclaimerActions()}{/if}
+						{/snippet}
+					</RecordCard>
+				{:else}
+					{#if saved.signature}
+						<SectionBlock title="Signature" icon={signatureIcon} level={2}>
+							{@render signatureBody()}
+						</SectionBlock>
+					{/if}
+
+					{#if editable && !showIntroduction}
+						<AddSectionControl
+							options={introductionOption}
+							onAdd={() => {
+								introductionDraft = '';
+								editingIntroduction = true;
+							}}
+						/>
+					{/if}
+
+					{#if showIntroduction}<SectionBlock
+							title="Introduction"
+							icon={speakerphoneIcon}
+							level={2}
+							form={editingIntroduction}
+						>
+							{#snippet actions()}{@render introductionActions()}{/snippet}
+							{@render introductionBody()}
+						</SectionBlock>{/if}
+
+					{@render productsBlock()}
+
+					{#if editable && availableLowerSections.length > 0}
+						<AddSectionControl options={lowerSectionOptions} onAdd={addLowerSection} />
+					{/if}
+
+					{@render filesCard('section')}
+
+					{#if showClientMessage}<SectionBlock
+							title="Client message"
+							icon={messageIcon}
+							level={2}
+							form={editingClientMessage}
+						>
+							{#snippet actions()}{@render clientMessageActions()}{/snippet}
+							{@render clientMessageBody()}
+						</SectionBlock>{/if}
+
+					<SectionBlock
+						title="Contract disclaimer"
+						icon={fileTextIcon}
+						level={2}
+						form={editingDisclaimer}
+					>
+						{#snippet actions()}{@render disclaimerActions()}{/snippet}
+						{@render disclaimerBody()}
+					</SectionBlock>
+				{/if}
 			{/snippet}
 
 			{#snippet rail()}
-				{#if showHistory}
-					<RailCard title="Quote history" icon={clockIcon}>
-						{#snippet actions()}
-							<Button size="small" variant="tertiary" onclick={() => (showHistory = false)}>
-								Close
-							</Button>
-						{/snippet}
-						<ActivityFeed entityType="quote" entityId={quoteId} {currentUserId} />
+				{#if classic}
+					{#if showHistory}{@render historyCard()}{/if}
+
+					{#if saved.can_see_price && saved.can_see_cost && saved.version && saved.version.cost_minor != null}
+						<QuoteProfitCard
+							subtotalMinor={saved.version.subtotal_minor ?? 0}
+							discountMinor={saved.version.discount_minor ?? 0}
+							costMinor={saved.version.cost_minor}
+							profitMinor={saved.version.profit_minor ?? null}
+							marginBasisPoints={saved.version.margin_basis_points ?? null}
+							currencyCode={saved.version.currency_code ?? saved.quote.currency_code}
+						/>
+					{/if}
+
+					{@render depositCard()}
+					{@render adjustmentsCard()}
+
+					{#if AUTOMATION_JOURNEY_READY}
+						<QuoteAutomationCard {quoteId} />
+					{/if}
+
+					{#if !showHistory}
+						{@render filesCard('rail')}
+
+						<RecordCard
+							title="Notes"
+							subtitle="Only your team sees these"
+							size="rail"
+							id="quote-notes-card"
+						>
+							{@render notesPanel()}
+						</RecordCard>
+					{/if}
+				{:else}
+					{#if showHistory}{@render historyCard()}{/if}
+
+					<QuoteSummaryCard
+						subtotalMinor={saved.can_see_price ? (saved.version?.subtotal_minor ?? 0) : null}
+						discountMinor={saved.version?.discount_minor ?? 0}
+						taxMinor={saved.version?.tax_minor ?? 0}
+						totalMinor={saved.version?.total_minor ?? null}
+						discountLabel={saved.version?.discount_name ?? null}
+						taxLabel={saved.version?.tax_name ?? null}
+						costMinor={saved.can_see_cost ? (saved.version?.cost_minor ?? null) : null}
+						profitMinor={saved.can_see_cost ? (saved.version?.profit_minor ?? null) : null}
+						marginBasisPoints={saved.can_see_cost
+							? (saved.version?.margin_basis_points ?? null)
+							: null}
+						currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
+					/>
+
+					{@render adjustmentsCard()}
+
+					{@render depositCard()}
+
+					{#if AUTOMATION_JOURNEY_READY}
+						<QuoteAutomationCard {quoteId} />
+					{/if}
+
+					<RailCard title="Notes" icon={notesIcon} count={notesQuery.data?.length}>
+						{@render notesPanel()}
 					</RailCard>
 				{/if}
-
-				<QuoteSummaryCard
-					subtotalMinor={saved.can_see_price ? (saved.version?.subtotal_minor ?? 0) : null}
-					discountMinor={saved.version?.discount_minor ?? 0}
-					taxMinor={saved.version?.tax_minor ?? 0}
-					totalMinor={saved.version?.total_minor ?? null}
-					discountLabel={saved.version?.discount_name ?? null}
-					taxLabel={saved.version?.tax_name ?? null}
-					costMinor={saved.can_see_cost ? (saved.version?.cost_minor ?? null) : null}
-					profitMinor={saved.can_see_cost ? (saved.version?.profit_minor ?? null) : null}
-					marginBasisPoints={saved.can_see_cost
-						? (saved.version?.margin_basis_points ?? null)
-						: null}
-					currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
-				/>
-
-				<RecordAdjustmentsCard>
-					<RecordDiscountCard
-						revision={saved.version?.revision ?? 0}
-						name={saved.version?.discount_name ?? null}
-						type={saved.version?.discount_type ?? null}
-						value={saved.version?.discount_value ?? null}
-						discountMinor={saved.can_see_price ? (saved.version?.discount_minor ?? 0) : null}
-						currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
-						{editable}
-						canSeePrice={saved.can_see_price}
-						onSave={(revision, payload) => saveQuoteDiscount(quoteId, revision, payload)}
-						onSaved={refreshQuote}
-					/>
-
-					<RecordTaxCard
-						revision={saved.version?.revision ?? 0}
-						propertyId={saved.quote.property_id}
-						taxSource={saved.version?.tax_source ?? 'not_configured'}
-						rateId={saved.version?.tax_rate_id ?? null}
-						name={saved.version?.tax_name ?? null}
-						rateBasisPoints={saved.version?.tax_rate_basis_points ?? 0}
-						taxMinor={saved.can_see_price ? (saved.version?.tax_minor ?? 0) : null}
-						currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
-						{editable}
-						canSeePrice={saved.can_see_price}
-						canManageTaxes={saved.can_manage_taxes}
-						onSave={(revision, payload) => saveQuoteTax(quoteId, revision, payload)}
-						onSaved={refreshQuote}
-					/>
-				</RecordAdjustmentsCard>
-
-				<QuoteDepositCard
-					{quoteId}
-					revision={saved.version?.revision ?? 0}
-					depositType={saved.version?.deposit_type ?? null}
-					scheduleItems={saved.deposit_schedule_items}
-					depositRequiredMinor={saved.can_see_price
-						? (saved.version?.deposit_required_minor ?? 0)
-						: null}
-					depositEvents={saved.deposit_events}
-					totalMinor={saved.can_see_price ? (saved.version?.total_minor ?? 0) : 0}
-					currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
-					{editable}
-					canSeePrice={saved.can_see_price}
-					canRecordDeposit={saved.can_record_deposit}
-					hasPublishedVersion={Boolean(saved.quote.current_published_version_id)}
-					onSaved={refreshQuote}
-				/>
-
-				{#if AUTOMATION_JOURNEY_READY}
-					<QuoteAutomationCard {quoteId} />
-				{/if}
-
-				<RailCard title="Notes" icon={notesIcon} count={notesQuery.data?.length}>
-					<NotesPanel
-						entityType="quote"
-						entityId={quoteId}
-						canManage={saved.can_edit}
-						{currentUserId}
-						pending={notePending}
-						onChange={(next: NoteChange[]) => (notePending = next)}
-					/>
-				</RailCard>
 			{/snippet}
 		</RecordDetailLayout>
 
@@ -1447,6 +1689,47 @@
 		margin: 0;
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
+	}
+
+	// classic.pen "Quote details · 1440": the Introduction and the Client message and disclaimer cards hold
+	// edge-to-edge rows under the card heading, each with its own small label and pencil.
+	.quote-record {
+		&__row {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+			padding: 18px 24px 20px;
+			border-top: 1px solid var(--classic2-divider);
+			font-family: var(--classic2-font);
+
+			.quote-detail__copy,
+			.quote-detail__disclaimer {
+				color: var(--classic2-body);
+				font-size: var(--classic2-font-body);
+				line-height: 1.6;
+			}
+		}
+
+		&__row-head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+			min-height: 24px;
+		}
+
+		&__label {
+			margin: 0;
+			color: var(--classic2-ink);
+			font-size: var(--classic2-font-label);
+			font-weight: 600;
+		}
+
+		&__empty {
+			margin: 0;
+			color: var(--classic2-secondary);
+			font-size: var(--classic2-font-label);
+		}
 	}
 
 	.quote-detail__disclaimer,

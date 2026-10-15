@@ -15,6 +15,9 @@ export type RecordFact = {
 	wrap?: boolean;
 	/** A Tabler icon (`?raw`) for the fact's tile in Classic. Omit and the list picks one from the label. */
 	icon?: string;
+	/** The tile's colour in Classic. Leave it out and the first fact carries the brand tint; `neutral`
+	 *  keeps a tile plain and `waiting` marks a fact still waiting on someone, like an unanswered quote. */
+	tone?: 'neutral' | 'waiting';
 };
 
 /** One address slot on the client summary card. A quote shows only the property; an invoice shows the

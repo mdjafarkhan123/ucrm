@@ -26,7 +26,10 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <dl class={`record-facts ${className}`}>
 	{#each facts as fact (fact.label)}
-		<div class="record-facts__row" class:record-facts__row--number={fact.label.endsWith(' #')}>
+		<div
+			class={['record-facts__row', fact.tone && `record-facts__row--${fact.tone}`]}
+			class:record-facts__row--number={fact.label.endsWith(' #')}
+		>
 			<dt>
 				<span class="record-facts__icon" aria-hidden="true"
 					>{@html fact.icon ?? fallbackIcon(fact.label)}</span
@@ -136,6 +139,16 @@
 			border-color: var(--classic2-green-soft);
 			background: var(--classic2-green-tint);
 			color: var(--classic2-green);
+		}
+		&__row.record-facts__row--neutral .record-facts__icon {
+			border-color: var(--classic2-border);
+			background: var(--classic2-surface-soft);
+			color: var(--classic2-secondary);
+		}
+		&__row.record-facts__row--waiting .record-facts__icon {
+			border-color: var(--classic2-amber-soft);
+			background: var(--classic2-amber-tint);
+			color: var(--classic2-amber);
 		}
 		&__icon :global(svg) {
 			width: 17px;
