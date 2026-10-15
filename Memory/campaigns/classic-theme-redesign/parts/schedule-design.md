@@ -84,13 +84,40 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
       was deleted. To match the app the same day: Day rows show name + "N items" only (booked hours and bar
       removed), and the Month "+ more" panel lost its two extra links. Light and dark checked. Waiting for Jafar.
 
+- [x] 2026-10-15, Jafar asked for a new design concept for the drawer instead of approving the redraw (NOW.md
+      **Target**: a new concept, not a conversion). `Schedule · Unscheduled drawer · 1440 · Concept 2` (`HHi5u`,
+      x 18518, y 4080), light and dark checked. Same controls and wording as the live drawer. New look: amber
+      inbox tile and count in the header; search, then a compact All-employees pill; grey list background with
+      white cards; each card has a full-height grip strip, client and waiting age on one line, work, place, then
+      crew initials (or the amber Unassigned badge) and Schedule. The first card shows hover lift. The hint line
+      and drop foot note are gone, since the live drawer has neither. The pressed Unscheduled button is neutral
+      grey. States board `Schedule · Unscheduled drawer · Concept 2 · states` (`FLIPT`, x 18518, y 5184): loading
+      skeleton cards, empty (count 0), no match ("maple", Daniel Reyes), failed (rose icon, the page's fallback
+      wording, Try again; no count), and over the limit ("Showing the first 500…", from `SCHEDULE_VISIT_LIMIT`).
+      Light and dark checked. Waiting for Jafar; the old states board `FlsaG` is replaced if he approves.
+- [x] Jafar, 2026-10-15: the grey list matched the page and the drawer had no edge of its own. As in the live
+      page (the drawer is its own bordered panel beside the calendar), Concept 2's drawer is now a separate
+      white card with the calendar card's border, corners and shadow, 12px from the calendar; the list is
+      white and the cards keep their borders. The calendar card is 952 wide; its legend drops the
+      business-hours note while the drawer is open so it fits. States drawers match. Light and dark checked.
+- [x] **Approved by Jafar 2026-10-15: the Unscheduled drawer (`HHi5u`) and its states (`FLIPT`).** Renamed
+      `Schedule · Unscheduled drawer · 1440` and `… · states` and moved to x 16978 (y 4080 / 5184); the old
+      redraw `Obv2U` deleted (its states board was already gone).
+- [x] 2026-10-15: `Schedule · New job from empty slot · 1440` (`rGwsg`, x 18518, y 4080) drawn from
+      `ScheduleJobCreate.svelte`: the approved Week, dimmed (preview closed), with the centred "New job" dialog
+      (560 wide). Job / Request / Event switch (Segmented control part); Job title; Client with Change property;
+      a soft "First visit" panel holding Schedule later, Day of the first visit + Time, Anytime and Notes for
+      the first visit; Assigned team; Notify customer (ticked); More options and Save job in the footer. Same
+      fields and wording as the app; the "First visit" panel heading is the one new label (grouping only).
+      Light and dark checked. **Approved by Jafar 2026-10-15**, "First visit" heading included.
+
 ## Next (new sessions; redesign the look only, copy the live component's behaviour and wording)
 
-First, get Jafar's yes on the Unscheduled drawer and its states (drawn 2026-10-15). Then commit `classic.pen`
-from main after he presses Ctrl+S, if that wasn't done at session end. Then, in this order:
+Commit `classic.pen` from main after Jafar presses Ctrl+S, if that wasn't done at session end. Then, in this order:
 
-1. Empty-slot quick create — `ScheduleJobCreate.svelte`: a Job/Request switch and a light Job form seeded with
-   the slot, plus More options.
+1. Empty-slot quick create, remaining tabs — `ScheduleJobCreate.svelte`: draw the **Request** tab ("New request",
+   hand-off text, the slot summary, "Continue to new request") and the **Event** tab ("New event", "Continue to
+   new event"), plus the red error message above the Job form, beside the approved `rGwsg`.
 2. Previews — `AssessmentPreview` (read-only, Open request) and `EventPreview` (Edit/Delete), alongside the
    approved Visit preview.
 3. Event form — `ScheduleEventDialog.svelte`: title, description, one day, timed or Anytime.
