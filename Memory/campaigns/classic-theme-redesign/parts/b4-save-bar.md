@@ -47,6 +47,8 @@ other action bar behavior remains intact. Tokens and the Classic design guide do
 
 ## Next
 
-The save bar and automation builder have passed the live screen and behavior checks. Update this branch
-against current `main`, rerun the full check, then integrate and push when the main workspace is clean and
-its writer reservation is available. Keep claim `1dab5a348cb4` until integration succeeds.
+The save bar and automation builder have passed the live screen and behavior checks. This branch is rebased
+onto current `main` at `b2b295c1`. The main checkout still has uncommitted redesign notes, behavior-contract
+and Pencil changes, so do not merge until those are safely saved and the main-integration reservation is
+available. Then rerun the full check, integrate and push. Keep claim `1dab5a348cb4` until integration
+succeeds.
