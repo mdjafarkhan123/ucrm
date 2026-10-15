@@ -22,4 +22,8 @@ layout) — recipe § Record page structure. Calm slate dark mode approved
 `claude/jobs-list-design`. Schedule Week, Day and Month approved 2026-10-15 (no page header; calendar fills the page) —
 [Schedule design](parts/schedule-design.md); Unscheduled drawer and its states approved 2026-10-15 (a new concept, its own panel beside the calendar); the New job dialog from an empty slot approved the same day; its Request and Event tabs and the Job error message approved the same day, with coloured kind icons; the remaining Schedule screens are listed in that note's Next. Home/Reports redesign — `../crm-launch-readiness/parts/part-13-home-reports.md`.
 
+**Way of working (Jafar, 2026-10-15, to confirm at next session start):** stop piling up designs; go screen by
+screen — design, build, remove the old look and leftover variants, then the next screen. Recommended start: the
+approved B-order (B5 work-record header card; B4 is Codex's), then lists and Schedule, since all are designed.
+
 **Limits:** Settings remains on its older layout and clips at phone width and enlarged text; its layout is planned for the later Settings stage. See the B2 proof note. The optional service-area field was not present on the test account, so that individual field state was not checked.

@@ -139,7 +139,9 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
       icon. The ticket stays neutral with the green month strip; Job's First visit tile stays neutral. Light and
       dark checked. B (`SDwZ7`, `PPcqH`, `dcJf1`) stays in `classic.pen` until he asks to delete it. Building
       needs: the Segmented control part gains an optional icon per option; Event's violet is new (the Week
-      legend's Event icon is still grey — ask whether to match).
+      legend's Event icon is still grey).
+- [x] Jafar, 2026-10-15: "all approved" — includes Event violet everywhere: the Schedule legend's Event icon turns
+      violet when built (not yet changed in Pencil).
 
 ## Next (new sessions; redesign the look only, copy the live component's behaviour and wording)
 
