@@ -39,7 +39,8 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
       card colour by status. B and the review board stay in `classic.pen` until he asks to delete them.
       Week stays the default view (contract).
 
-**Merged** into main 2026-10-15.
+**Merged** into main 2026-10-15 (Week/Day/Month). Drawer notes on branch `claude/schedule-unscheduled`
+(worktree `.worktrees/schedule-design-2`), reservation `fab0c8fa27ba`.
 
 - [x] 2026-10-15 (Jafar: subagents allowed for concepts): `Schedule · Day · 1440` (`eNrFP`, x 15460, y 4080)
       drawn by the parent session, light and dark checked. Same shell and status colours as the approved
@@ -71,11 +72,36 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
       long visits suit rows). Its colour-by-service fills and tiny pale text were judged not to fit.
 - Open: should the Week's Rachel Kim card turn amber Unassigned to match Day and Month?
 
-## Next (new sessions, one screen each)
+- [x] Jafar, 2026-10-15 ("do what is best"): Week's Rachel Kim card is now amber Unassigned and Wed's header reads
+      "7 items · 1 unassigned", matching Day and Month. Next screen chosen: the Unscheduled drawer.
+- [x] Unscheduled drawer redrawn to match the live app (Jafar 2026-10-15: "we are here not to change any
+      behavior, we are just to design screen"; checked against `ScheduleUnscheduledDrawer.svelte` and the page).
+      `Schedule · Unscheduled drawer · 1440` (`Obv2U`, x 18580, y 4080): the Day view with the drawer docked
+      beside the calendar (the calendar narrows, as in the app), search plus an All-employees select, oldest
+      first, a card per visit with drag handle, client, work, place, waiting age, assignment and Schedule, and a
+      foot note that a visit dropped here is unscheduled after confirming. `… · states` (`FlsaG`): empty,
+      filtered-empty and failed, using the app's wording. An earlier on-top version with status filter and sort
+      was deleted. To match the app the same day: Day rows show name + "N items" only (booked hours and bar
+      removed), and the Month "+ more" panel lost its two extra links. Light and dark checked. Waiting for Jafar.
 
-Still undesigned: Unscheduled drawer; empty-slot New Job popover and type chooser; Event popover and create/edit
-modal; Filters menus; drag ghost, reschedule and conflict states; Map split view (Version 1.2). Phone layouts
-are adapted while building.
+## Next (new sessions; redesign the look only, copy the live component's behaviour and wording)
+
+First, get Jafar's yes on the Unscheduled drawer and its states (drawn 2026-10-15). Then commit `classic.pen`
+from main after he presses Ctrl+S, if that wasn't done at session end. Then, in this order:
+
+1. Empty-slot quick create — `ScheduleJobCreate.svelte`: a Job/Request switch and a light Job form seeded with
+   the slot, plus More options.
+2. Previews — `AssessmentPreview` (read-only, Open request) and `EventPreview` (Edit/Delete), alongside the
+   approved Visit preview.
+3. Event form — `ScheduleEventDialog.svelte`: title, description, one day, timed or Anytime.
+4. Move confirmation — `MoveConfirm.svelte`: old → new, overlap and out-of-hours warnings, this visit or
+   this-and-future, notify customer. Also the Unschedule confirmation and the drag ghost.
+5. Filters panel — `ScheduleControls.svelte`: Employee, Status, density.
+6. Map workspace — `ScheduleRoute`, `RouteStopCard`, `RouteMap`: one employee's day, ordered stops with
+   locks, map, Directions.
+7. Pipeline Task card — `TaskCard.svelte`, on the calendar.
+
+Phone layouts are adapted while building.
 
 ## Proposals (not in the app today; data exists)
 
