@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import StickyActionBar from './StickyActionBar.svelte';
+	import SaveBarStatus from './SaveBarStatus.svelte';
 	import FormErrorSummary from '$lib/components/forms/FormErrorSummary.svelte';
 
 	// The shape every create and edit page shares: a titled main card, a right rail of cards, and the
@@ -19,6 +20,7 @@
 		actions,
 		error = '',
 		errorFields = [],
+		dirty,
 		class: className = ''
 	}: {
 		title: string;
@@ -28,6 +30,7 @@
 		actions?: Snippet;
 		error?: string;
 		errorFields?: { anchor: string; label: string }[];
+		dirty?: boolean;
 		class?: string;
 	} = $props();
 
@@ -59,7 +62,10 @@
 	</div>
 
 	{#if actions}
-		<StickyActionBar>{@render actions()}</StickyActionBar>
+		<StickyActionBar class={dirty === undefined ? '' : 'sticky-action-bar--save'}>
+			{#if dirty !== undefined}<SaveBarStatus {dirty} />{/if}
+			<div class="record-form__save-actions">{@render actions()}</div>
+		</StickyActionBar>
 	{/if}
 </div>
 
@@ -117,6 +123,38 @@
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-base);
+		}
+
+		&__save-actions {
+			display: contents;
+		}
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']) .sticky-action-bar--save)
+		.record-form__save-actions {
+		display: flex;
+		align-items: center;
+		flex: 0 0 auto;
+		gap: var(--classic2-space-1);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']))
+		:global(.sticky-action-bar--save)
+		.record-form__save-actions:has(.builder__bar) {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	@media (max-width: 767px) {
+		:global(:root:has(.app-shell[data-presentation='classic']) .sticky-action-bar--save)
+			.record-form__save-actions {
+			width: 100%;
+		}
+
+		:global(:root:has(.app-shell[data-presentation='classic']) .sticky-action-bar--save)
+			.record-form__save-actions
+			:global(.button) {
+			flex: 1 1 0;
 		}
 	}
 

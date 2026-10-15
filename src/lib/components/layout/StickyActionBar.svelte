@@ -58,6 +58,44 @@
 			right var(--timing-base) ease-out;
 	}
 
+	:global(:root:has(.app-shell[data-presentation='classic'])) .sticky-action-bar--save {
+		gap: var(--classic2-space-2);
+		min-height: var(--classic2-savebar-height);
+		padding: 0 var(--classic2-savebar-padding-end) 0 var(--classic2-space-4);
+		border-color: var(--classic2-savebar-line);
+		border-radius: var(--classic2-radius-card);
+		background: var(--classic2-savebar);
+		box-shadow: 0 18px 40px var(--classic2-shadow-savebar);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']) .sticky-action-bar--save)
+		:global(.button) {
+		min-height: var(--classic2-savebar-button-height);
+		border-radius: var(--classic2-savebar-button-radius);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']) .sticky-action-bar--save)
+		:global(.button--secondary),
+	:global(:root:has(.app-shell[data-presentation='classic']) .sticky-action-bar--save)
+		:global(.button--tertiary) {
+		border-color: var(--classic2-feature-line);
+		color: var(--classic2-feature-button-text);
+		background: var(--classic2-feature-ring);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']) .sticky-action-bar--save)
+		:global(.button--secondary:hover:not(:disabled)),
+	:global(:root:has(.app-shell[data-presentation='classic']) .sticky-action-bar--save)
+		:global(.button--tertiary:hover:not(:disabled)) {
+		background: var(--classic2-feature-chip);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']) .sticky-action-bar--save)
+		:global(.button--primary) {
+		gap: var(--classic2-space-1);
+		padding-right: var(--classic2-space-4);
+	}
+
 	// Holds the bar's place in the flow so the last block on the page is never hidden behind it.
 	.sticky-action-bar__spacer {
 		flex: 0 0 auto;
@@ -66,6 +104,10 @@
 	@media (max-width: 767px) {
 		.sticky-action-bar {
 			flex-direction: column-reverse;
+			align-items: stretch;
+		}
+
+		:global(:root:has(.app-shell[data-presentation='classic'])) .sticky-action-bar--save {
 			align-items: stretch;
 		}
 	}

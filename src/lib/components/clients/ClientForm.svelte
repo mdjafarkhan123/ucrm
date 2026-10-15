@@ -362,7 +362,7 @@
 		void submit(false).finally(() => layout?.revealError());
 	}}
 >
-	<RecordFormLayout {title} icon={userIcon} bind:this={layout} error={formError}>
+	<RecordFormLayout {title} icon={userIcon} bind:this={layout} error={formError} dirty={isDirty}>
 		{#snippet main()}
 			<SectionBlock title="Primary details" icon={userIcon} variant="filled" form>
 				<div class="client-form__choices">
@@ -614,7 +614,7 @@
 						Save & create another
 					</Button>
 				{/if}
-				<Button variant="primary" type="submit" loading={saving} disabled={!isDirty}>
+				<Button variant="primary" showCheckIcon type="submit" loading={saving} disabled={!isDirty}>
 					{savedClientId ? 'Save changes' : 'Save client'}
 				</Button>
 			</div>
