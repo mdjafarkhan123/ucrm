@@ -22,7 +22,8 @@ The short rules for designing Classic screens. Jafar's target is the
    change, change it there first.
 4. **Fill with busy, believable data:** one contractor (Raad LTD, Burnaby BC), amounts that add up.
 5. **Critique.** Export at scale 1 and read it full size: clipped text, misalignment, a fact shown twice,
-   invented features, colour that breaks § Colour rule. Check dark mode. At most three rounds.
+   invented features, colour that breaks § Colour rule, an element that blends into its background. Check dark
+   mode. At most three rounds.
 6. **One screen per session.** Desktop 1440 only; phone layouts are adapted while building. Show Jafar and stop;
    he presses Ctrl+S in Pencil before `classic.pen` is committed.
 
@@ -39,6 +40,10 @@ uses no light green. Colour appears only when it means something:
 
 A coloured icon tile tells the user something — a status needing attention, another record's type, an
 automation. Every other icon stays neutral.
+
+Every element stands apart from what sits behind it, in light and dark. Never place a fill on a background of
+the same or a near-identical colour (for example `chip` on `surface-soft`, or `surface-soft` on `surface-raised`
+in dark): change the fill, or separate the two with a border.
 
 ## Record page structure
 

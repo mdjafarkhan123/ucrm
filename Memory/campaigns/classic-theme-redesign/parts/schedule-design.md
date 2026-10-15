@@ -110,23 +110,52 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
       the first visit; Assigned team; Notify customer (ticked); More options and Save job in the footer. Same
       fields and wording as the app; the "First visit" panel heading is the one new label (grouping only).
       Light and dark checked. **Approved by Jafar 2026-10-15**, "First visit" heading included.
+- [x] 2026-10-15: the two hand-off tabs and the Job error drawn from `ScheduleJobCreate.svelte`, same wording and
+      one button each (Jobber's empty-slot chooser has the same four kinds; ours hands Request and Event off).
+      `Schedule · New request from empty slot · 1440` (`AOJ6z`, x 19998) and `… New event …` (`Xvtrv`, x 21478):
+      lead line, the slot as a ticket (date tile "OCT 14", then "Wed, Oct 14" and a clock line "1:00 PM – 2:00 PM"
+      — the app's one-line summary split in two, look only), the note with an arrow, and "Continue to new
+      request / event" alone in the footer. `Schedule · New job · error · 1440` (`LWT2a`, x 22958): Client empty,
+      a rose alert with an alert icon above the form, "Choose a client to continue." Light and dark checked.
+      Not drawn: the dateless slot ("No date yet — you can pick the day next."); the ticket would show only that
+      line, without a date tile. Waiting for Jafar.
+- [x] Jafar, 2026-10-15: an element the same colour as its background looks odd. The date tile's grey month
+      strip matched the grey ticket behind it; the strip is now solid brand green with white "OCT" (the
+      calendar's chosen-date colour) and the tile has the stronger control border. Light and dark checked.
+- [x] Jafar, 2026-10-15, asked for a more colourful variant of the popup. Row y 5184, under the A screens:
+      `Schedule · New job · B · Colour shows the kind · 1440` (`SDwZ7`, x 18518), `… New request · B …` (`PPcqH`,
+      x 19998), `… New event · B …` (`dcJf1`, x 21478). Colour = kind of booking: Job green (hammer), Request
+      amber (clipboard-list) — the recipe's record-type colours — and Event violet (calendar), proposed because
+      violet means Team and an event blocks the whole team's time. A kind tile beside the title; the switch
+      shows each kind's coloured icon (a Segmented control with icons, not yet a part); the slot ticket takes
+      the kind's tint, its month strip the kind's solid colour, its clock and arrow the kind's colour; Job's
+      First visit tile turns green. Same wording and buttons. Light and dark checked. Waiting for Jafar to pick
+      A or B. If B: the Segmented control part gains an icon slot, and the Week legend's grey Event icon may
+      turn violet (ask).
+- [x] **Approved by Jafar 2026-10-15: version A** — `Schedule · New request from empty slot · 1440` (`AOJ6z`),
+      `… New event …` (`Xvtrv`) and `Schedule · New job · error · 1440` (`LWT2a`), with B's coloured icons added
+      at his request to all four A popups (the approved Job `rGwsg` included): a kind tile beside the title (Job
+      green hammer, Request amber clipboard-list, Event violet calendar) and the switch with each kind's coloured
+      icon. The ticket stays neutral with the green month strip; Job's First visit tile stays neutral. Light and
+      dark checked. B (`SDwZ7`, `PPcqH`, `dcJf1`) stays in `classic.pen` until he asks to delete it. Building
+      needs: the Segmented control part gains an optional icon per option; Event's violet is new (the Week
+      legend's Event icon is still grey).
+- [x] Jafar, 2026-10-15: "all approved" — includes Event violet everywhere: the Schedule legend's Event icon turns
+      violet when built (not yet changed in Pencil).
 
 ## Next (new sessions; redesign the look only, copy the live component's behaviour and wording)
 
 Commit `classic.pen` from main after Jafar presses Ctrl+S, if that wasn't done at session end. Then, in this order:
 
-1. Empty-slot quick create, remaining tabs — `ScheduleJobCreate.svelte`: draw the **Request** tab ("New request",
-   hand-off text, the slot summary, "Continue to new request") and the **Event** tab ("New event", "Continue to
-   new event"), plus the red error message above the Job form, beside the approved `rGwsg`.
-2. Previews — `AssessmentPreview` (read-only, Open request) and `EventPreview` (Edit/Delete), alongside the
+1. Previews — `AssessmentPreview` (read-only, Open request) and `EventPreview` (Edit/Delete), alongside the
    approved Visit preview.
-3. Event form — `ScheduleEventDialog.svelte`: title, description, one day, timed or Anytime.
-4. Move confirmation — `MoveConfirm.svelte`: old → new, overlap and out-of-hours warnings, this visit or
+2. Event form — `ScheduleEventDialog.svelte`: title, description, one day, timed or Anytime.
+3. Move confirmation — `MoveConfirm.svelte`: old → new, overlap and out-of-hours warnings, this visit or
    this-and-future, notify customer. Also the Unschedule confirmation and the drag ghost.
-5. Filters panel — `ScheduleControls.svelte`: Employee, Status, density.
-6. Map workspace — `ScheduleRoute`, `RouteStopCard`, `RouteMap`: one employee's day, ordered stops with
+4. Filters panel — `ScheduleControls.svelte`: Employee, Status, density.
+5. Map workspace — `ScheduleRoute`, `RouteStopCard`, `RouteMap`: one employee's day, ordered stops with
    locks, map, Directions.
-7. Pipeline Task card — `TaskCard.svelte`, on the calendar.
+6. Pipeline Task card — `TaskCard.svelte`, on the calendar.
 
 Phone layouts are adapted while building.
 
