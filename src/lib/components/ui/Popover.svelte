@@ -131,4 +131,43 @@
 	.popover__body {
 		padding: var(--space-base);
 	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .popover {
+		max-width: 380px;
+		border-color: var(--classic2-border);
+		border-radius: 16px;
+		background: var(--classic2-surface);
+		box-shadow: 0 14px 36px var(--classic2-shadow-lift);
+		color: var(--classic2-body);
+		font-family: var(--classic2-font);
+		font-size: var(--classic2-font-body);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .popover__arrow {
+		color: var(--classic2-surface);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .popover__header {
+		gap: var(--classic2-space-2);
+		padding: var(--classic2-space-3) var(--classic2-space-3) 0;
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .popover__title {
+		color: var(--classic2-ink);
+		font-family: var(--classic2-font);
+		font-size: var(--classic2-font-card);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .popover__close {
+		border-radius: 8px;
+		color: var(--classic2-muted);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .popover__close:hover {
+		color: var(--classic2-ink);
+		background: var(--classic2-surface-soft);
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .popover__close:focus-visible {
+		outline: 3px solid var(--classic2-green-soft);
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+	:global(:root:has(.app-shell[data-presentation='classic'])) .popover__body {
+		padding: var(--classic2-space-3);
+	}
 </style>
