@@ -109,14 +109,15 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
       a soft "First visit" panel holding Schedule later, Day of the first visit + Time, Anytime and Notes for
       the first visit; Assigned team; Notify customer (ticked); More options and Save job in the footer. Same
       fields and wording as the app; the "First visit" panel heading is the one new label (grouping only).
-      Light and dark checked. Waiting for Jafar; the Request and Event tabs and the error message follow.
+      Light and dark checked. **Approved by Jafar 2026-10-15**, "First visit" heading included.
 
 ## Next (new sessions; redesign the look only, copy the live component's behaviour and wording)
 
 Commit `classic.pen` from main after Jafar presses Ctrl+S, if that wasn't done at session end. Then, in this order:
 
-1. Empty-slot quick create — `ScheduleJobCreate.svelte`: a Job/Request switch and a light Job form seeded with
-   the slot, plus More options.
+1. Empty-slot quick create, remaining tabs — `ScheduleJobCreate.svelte`: draw the **Request** tab ("New request",
+   hand-off text, the slot summary, "Continue to new request") and the **Event** tab ("New event", "Continue to
+   new event"), plus the red error message above the Job form, beside the approved `rGwsg`.
 2. Previews — `AssessmentPreview` (read-only, Open request) and `EventPreview` (Edit/Delete), alongside the
    approved Visit preview.
 3. Event form — `ScheduleEventDialog.svelte`: title, description, one day, timed or Anytime.
