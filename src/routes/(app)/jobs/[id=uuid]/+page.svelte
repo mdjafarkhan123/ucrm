@@ -22,6 +22,7 @@
 	import QuoteSummaryCard from '$lib/components/quotes/QuoteSummaryCard.svelte';
 	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
 	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
+	import RecordAdjustmentsCard from '$lib/components/work/RecordAdjustmentsCard.svelte';
 	import JobBillingCard from '$lib/components/jobs/JobBillingCard.svelte';
 	import JobRemindersCard from '$lib/components/jobs/JobRemindersCard.svelte';
 	import JobVisitsToBillCard from '$lib/components/jobs/JobVisitsToBillCard.svelte';
@@ -550,6 +551,14 @@
 					editable={editable && saved.can_see_price}
 					showPrices={saved.can_see_price}
 					subtotalMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? 0) : null}
+					totals={{
+						discountMinor: saved.money?.discount_minor ?? 0,
+						discountLabel: saved.money?.discount_name ?? null,
+						taxMinor: saved.money?.tax_minor ?? 0,
+						taxLabel: saved.money?.tax_name ?? null,
+						totalMinor: saved.money?.total_minor ?? null,
+						totalLabel: 'Job total'
+					}}
 					currencyCode={saved.job.currency_code}
 					locale={saved.locale}
 					editorTotalLabel="Job subtotal"
@@ -809,41 +818,43 @@
 					/>
 				{/if}
 
-				<RecordDiscountCard
-					revision={saved.job.revision}
-					name={saved.money?.discount_name ?? null}
-					type={saved.money?.discount_type ?? null}
-					value={saved.money?.discount_value ?? null}
-					discountMinor={saved.can_see_price ? (saved.money?.discount_minor ?? 0) : null}
-					currencyCode={saved.job.currency_code}
-					locale={saved.locale}
-					{editable}
-					canSeePrice={saved.can_see_price}
-					recordNoun="job"
-					onSave={(revision, payload) => saveJobDiscount(jobId, revision, payload)}
-					onSaved={refreshJob}
-				/>
-
-				{#if saved.job.property}
-					<RecordTaxCard
+				<RecordAdjustmentsCard>
+					<RecordDiscountCard
 						revision={saved.job.revision}
-						propertyId={saved.job.property.id}
-						taxSource={(saved.money?.tax_source ?? 'not_configured') as QuoteTaxSource}
-						rateId={saved.money?.tax_rate_id ?? null}
-						name={saved.money?.tax_name ?? null}
-						rateBasisPoints={saved.money?.tax_rate_basis_points ?? 0}
-						taxMinor={saved.can_see_price ? (saved.money?.tax_minor ?? 0) : null}
+						name={saved.money?.discount_name ?? null}
+						type={saved.money?.discount_type ?? null}
+						value={saved.money?.discount_value ?? null}
+						discountMinor={saved.can_see_price ? (saved.money?.discount_minor ?? 0) : null}
 						currencyCode={saved.job.currency_code}
 						locale={saved.locale}
 						{editable}
 						canSeePrice={saved.can_see_price}
-						canManageTaxes={saved.can_manage_taxes}
 						recordNoun="job"
-						unsetHint="This job is not taxed yet."
-						onSave={(revision, payload) => saveJobTax(jobId, revision, payload)}
+						onSave={(revision, payload) => saveJobDiscount(jobId, revision, payload)}
 						onSaved={refreshJob}
 					/>
-				{/if}
+
+					{#if saved.job.property}
+						<RecordTaxCard
+							revision={saved.job.revision}
+							propertyId={saved.job.property.id}
+							taxSource={(saved.money?.tax_source ?? 'not_configured') as QuoteTaxSource}
+							rateId={saved.money?.tax_rate_id ?? null}
+							name={saved.money?.tax_name ?? null}
+							rateBasisPoints={saved.money?.tax_rate_basis_points ?? 0}
+							taxMinor={saved.can_see_price ? (saved.money?.tax_minor ?? 0) : null}
+							currencyCode={saved.job.currency_code}
+							locale={saved.locale}
+							{editable}
+							canSeePrice={saved.can_see_price}
+							canManageTaxes={saved.can_manage_taxes}
+							recordNoun="job"
+							unsetHint="This job is not taxed yet."
+							onSave={(revision, payload) => saveJobTax(jobId, revision, payload)}
+							onSaved={refreshJob}
+						/>
+					{/if}
+				</RecordAdjustmentsCard>
 			{/snippet}
 		</RecordDetailLayout>
 	{/if}

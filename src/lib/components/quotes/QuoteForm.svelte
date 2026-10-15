@@ -18,6 +18,7 @@
 	import PendingFilesCard from '$lib/components/files/PendingFilesCard.svelte';
 	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
 	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
+	import RecordAdjustmentsCard from '$lib/components/work/RecordAdjustmentsCard.svelte';
 	import { fetchClient, clientDetailKey, type ClientListItem } from '$lib/clients/api';
 	import { createNote, notesKey } from '$lib/collaboration/api';
 	import { fetchTaxPicker, taxPickerKey } from '$lib/settings/api';
@@ -463,40 +464,42 @@
 		{#snippet rail()}
 			<QuoteSummaryCard {subtotalMinor} {currencyCode} {locale} />
 
-			<RecordDiscountCard
-				revision={0}
-				name={discount?.name ?? null}
-				type={discount?.type ?? null}
-				value={discount?.value ?? null}
-				{currencyCode}
-				{locale}
-				editable
-				staged
-				onSave={async (_revision, payload) => {
-					discount = payload.type === null ? null : payload;
-					discountPending = true;
-				}}
-				onSaved={() => {}}
-			/>
+			<RecordAdjustmentsCard>
+				<RecordDiscountCard
+					revision={0}
+					name={discount?.name ?? null}
+					type={discount?.type ?? null}
+					value={discount?.value ?? null}
+					{currencyCode}
+					{locale}
+					editable
+					staged
+					onSave={async (_revision, payload) => {
+						discount = payload.type === null ? null : payload;
+						discountPending = true;
+					}}
+					onSaved={() => {}}
+				/>
 
-			<RecordTaxCard
-				revision={0}
-				propertyId={form.property_id}
-				taxSource={tax?.source ?? 'not_configured'}
-				rateId={tax?.rate_id ?? null}
-				name={taxPreview.name}
-				rateBasisPoints={taxPreview.rateBasisPoints}
-				{currencyCode}
-				{locale}
-				editable={Boolean(form.property_id)}
-				staged
-				unsetHint="Required before sending this quote."
-				onSave={async (_revision, payload) => {
-					tax = payload;
-					taxPending = true;
-				}}
-				onSaved={() => {}}
-			/>
+				<RecordTaxCard
+					revision={0}
+					propertyId={form.property_id}
+					taxSource={tax?.source ?? 'not_configured'}
+					rateId={tax?.rate_id ?? null}
+					name={taxPreview.name}
+					rateBasisPoints={taxPreview.rateBasisPoints}
+					{currencyCode}
+					{locale}
+					editable={Boolean(form.property_id)}
+					staged
+					unsetHint="Required before sending this quote."
+					onSave={async (_revision, payload) => {
+						tax = payload;
+						taxPending = true;
+					}}
+					onSaved={() => {}}
+				/>
+			</RecordAdjustmentsCard>
 
 			<FormNotesCard
 				id="quote-initial-note"

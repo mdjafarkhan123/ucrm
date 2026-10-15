@@ -22,6 +22,7 @@
 	import QuoteSummaryCard from '$lib/components/quotes/QuoteSummaryCard.svelte';
 	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
 	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
+	import RecordAdjustmentsCard from '$lib/components/work/RecordAdjustmentsCard.svelte';
 	import QuoteDepositCard from '$lib/components/quotes/QuoteDepositCard.svelte';
 	import QuoteClientViewBlock from '$lib/components/quotes/QuoteClientViewBlock.svelte';
 	import QuoteEmailDialog from '$lib/components/quotes/QuoteEmailDialog.svelte';
@@ -1053,11 +1054,22 @@
 					quoteChoices
 					revision={saved.version?.revision ?? 0}
 					subtotalMinor={saved.can_see_price ? (saved.version?.subtotal_minor ?? 0) : null}
+					totals={{
+						discountMinor: saved.version?.discount_minor ?? 0,
+						discountLabel: saved.version?.discount_name ?? null,
+						taxMinor: saved.version?.tax_minor ?? 0,
+						taxLabel: saved.version?.tax_name ?? null,
+						totalMinor: saved.version?.total_minor ?? null,
+						totalLabel: 'Quote total'
+					}}
 					editable={editable && saved.can_see_price}
 					showPrices={saved.can_see_price}
 					currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
 					attachTo={{ entityType: 'quote', entityId: quoteId }}
 					emptyDescription="Add the products and services this quote covers."
+					footerNote={Object.values(savedVisibility).every(Boolean)
+						? 'Client sees every figure'
+						: 'Client sees some figures'}
 					editorTotalLabel="Quote subtotal"
 					saveLabel="Save pricing"
 					lockedMessage={saved.version?.status === 'published'
@@ -1222,34 +1234,36 @@
 					currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
 				/>
 
-				<RecordDiscountCard
-					revision={saved.version?.revision ?? 0}
-					name={saved.version?.discount_name ?? null}
-					type={saved.version?.discount_type ?? null}
-					value={saved.version?.discount_value ?? null}
-					discountMinor={saved.can_see_price ? (saved.version?.discount_minor ?? 0) : null}
-					currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
-					{editable}
-					canSeePrice={saved.can_see_price}
-					onSave={(revision, payload) => saveQuoteDiscount(quoteId, revision, payload)}
-					onSaved={refreshQuote}
-				/>
+				<RecordAdjustmentsCard>
+					<RecordDiscountCard
+						revision={saved.version?.revision ?? 0}
+						name={saved.version?.discount_name ?? null}
+						type={saved.version?.discount_type ?? null}
+						value={saved.version?.discount_value ?? null}
+						discountMinor={saved.can_see_price ? (saved.version?.discount_minor ?? 0) : null}
+						currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
+						{editable}
+						canSeePrice={saved.can_see_price}
+						onSave={(revision, payload) => saveQuoteDiscount(quoteId, revision, payload)}
+						onSaved={refreshQuote}
+					/>
 
-				<RecordTaxCard
-					revision={saved.version?.revision ?? 0}
-					propertyId={saved.quote.property_id}
-					taxSource={saved.version?.tax_source ?? 'not_configured'}
-					rateId={saved.version?.tax_rate_id ?? null}
-					name={saved.version?.tax_name ?? null}
-					rateBasisPoints={saved.version?.tax_rate_basis_points ?? 0}
-					taxMinor={saved.can_see_price ? (saved.version?.tax_minor ?? 0) : null}
-					currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
-					{editable}
-					canSeePrice={saved.can_see_price}
-					canManageTaxes={saved.can_manage_taxes}
-					onSave={(revision, payload) => saveQuoteTax(quoteId, revision, payload)}
-					onSaved={refreshQuote}
-				/>
+					<RecordTaxCard
+						revision={saved.version?.revision ?? 0}
+						propertyId={saved.quote.property_id}
+						taxSource={saved.version?.tax_source ?? 'not_configured'}
+						rateId={saved.version?.tax_rate_id ?? null}
+						name={saved.version?.tax_name ?? null}
+						rateBasisPoints={saved.version?.tax_rate_basis_points ?? 0}
+						taxMinor={saved.can_see_price ? (saved.version?.tax_minor ?? 0) : null}
+						currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
+						{editable}
+						canSeePrice={saved.can_see_price}
+						canManageTaxes={saved.can_manage_taxes}
+						onSave={(revision, payload) => saveQuoteTax(quoteId, revision, payload)}
+						onSaved={refreshQuote}
+					/>
+				</RecordAdjustmentsCard>
 
 				<QuoteDepositCard
 					{quoteId}

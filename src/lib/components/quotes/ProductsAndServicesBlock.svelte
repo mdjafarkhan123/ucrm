@@ -44,6 +44,8 @@
 	import { firstLineProblem } from '$lib/quotes/lines';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import listIcon from '@tabler/icons/outline/list-details.svg?raw';
+	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
+	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
 	import bookIcon from '@tabler/icons/outline/book.svg?raw';
 	import bookmarkIcon from '@tabler/icons/outline/bookmark.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
@@ -79,11 +81,13 @@
 		carrySourceLine = false,
 		progressColumn = false,
 		subtotalMinor,
+		totals = null,
 		attachTo = null,
 		alwaysEditing = false,
 		editorTotalLabel = 'Subtotal',
 		saveLabel = 'Save pricing',
 		lockedMessage = '',
+		footerNote = '',
 		emptyDescription = 'Add the products and services this job needs before it becomes a quote.',
 		onSave,
 		onDraftChange,
@@ -117,6 +121,18 @@
 		progressColumn?: boolean;
 		/** Exact selected subtotal returned by the database; Quote screens must provide it. */
 		subtotalMinor?: number | null;
+		/**
+		 * What the record comes to after discount and tax, as the database worked it out. When given, the
+		 * saved card closes with these figures under the lines; this block formats them and adds nothing.
+		 */
+		totals?: {
+			discountMinor?: number;
+			discountLabel?: string | null;
+			taxMinor?: number;
+			taxLabel?: string | null;
+			totalMinor: number | null;
+			totalLabel: string;
+		} | null;
 		/** Where a line photo is stored. Null means there is nothing to attach it to yet, so no photos. */
 		attachTo?: { entityType: 'request' | 'quote'; entityId: string } | null;
 		/** The new-quote form types straight into the rows and saves from the page's own footer. */
@@ -125,6 +141,8 @@
 		editorTotalLabel?: string;
 		saveLabel?: string;
 		lockedMessage?: string;
+		/** A short fact for the right of the locked footer, e.g. what the client can see. */
+		footerNote?: string;
 		emptyDescription?: string;
 		onSave?: (expectedRevision: number, lines: RequestPricingLineInput[]) => Promise<void>;
 		onDraftChange?: (lines: RequestPricingLineInput[], subtotalMinor: number) => void;
@@ -836,6 +854,17 @@
 		1 + (anyLinePhoto ? 1 : 0) + (progressMoney ? 0 : 1) + (showPrices ? 2 : 0)
 	);
 
+	// The line under the card title: how many things are priced, and how many of them are add-ons.
+	const savedHint = $derived.by(() => {
+		const priced = savedLines.filter((line) => !quoteChoices || line.line_kind === 'priced');
+		if (priced.length === 0) return undefined;
+		const addOns = priced.filter((line) => line.selection_kind === 'optional').length;
+		const items = `${priced.length} ${priced.length === 1 ? 'item' : 'items'}`;
+		return addOns > 0
+			? `${items} and ${addOns} optional ${addOns === 1 ? 'add-on' : 'add-ons'}`
+			: items;
+	});
+
 	function savedSubtotal(lines: RequestPricingLine[]) {
 		if (subtotalMinor !== undefined && subtotalMinor !== null) return subtotalMinor;
 		return lines.reduce((sum, line) => sum + line.line_total_minor, 0);
@@ -932,7 +961,13 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<SectionBlock title="Products and services" icon={listIcon} level={2}>
+<SectionBlock
+	title="Products and services"
+	icon={listIcon}
+	level={2}
+	class="pricing-block"
+	hint={isEditing || loading || loadFailed ? undefined : savedHint}
+>
 	{#snippet actions()}
 		{#if editable && !isEditing && savedLines.length > 0}
 			<PencilButton onclick={openEdit} label="Edit products and services" />
@@ -1202,12 +1237,14 @@
 						{:else}
 							<tr>
 								<th scope="row">
-									<span class="pricing-table__name">{line.name}</span>
-									{#if quoteChoices && line.selection_kind === 'optional'}
-										<span class="pricing-table__choice">
-											{line.is_recommended ? 'Recommended add-on' : 'Optional add-on'}
-										</span>
-									{/if}
+									<span class="pricing-table__title">
+										<span class="pricing-table__name">{line.name}</span>
+										{#if quoteChoices && line.selection_kind === 'optional'}
+											<span class="pricing-table__choice">
+												{line.is_recommended ? 'Recommended add-on' : 'Optional add-on'}
+											</span>
+										{/if}
+									</span>
 									{#if line.description}
 										<span class="pricing-table__description">{line.description}</span>
 									{/if}
@@ -1241,17 +1278,48 @@
 			</table>
 		</div>
 		{#if showPrices}
-			<div class="pricing-block__totals">
+			<dl class="pricing-block__totals pricing-block__totals--saved">
 				<div class="pricing-block__totals-row">
-					<span>{progressColumn ? 'Due this invoice' : 'Subtotal'}</span>
-					<span>{formatMoney(savedSubtotal(savedLines))}</span>
+					<dt>{progressColumn ? 'Due this invoice' : 'Subtotal'}</dt>
+					<dd>{formatMoney(savedSubtotal(savedLines))}</dd>
 				</div>
-			</div>
+				{#if totals}
+					{#if (totals.discountMinor ?? 0) > 0}
+						<div class="pricing-block__totals-row pricing-block__totals-row--extra">
+							<dt>{totals.discountLabel || 'Discount'}</dt>
+							<dd>−{formatMoney(totals.discountMinor ?? 0)}</dd>
+						</div>
+					{/if}
+					{#if (totals.taxMinor ?? 0) > 0}
+						<div class="pricing-block__totals-row pricing-block__totals-row--extra">
+							<dt>{totals.taxLabel || 'Tax'}</dt>
+							<dd>{formatMoney(totals.taxMinor ?? 0)}</dd>
+						</div>
+					{/if}
+					{#if totals.totalMinor !== null}
+						<div
+							class="pricing-block__totals-row pricing-block__totals-row--extra pricing-block__totals-row--total"
+						>
+							<dt>{totals.totalLabel}</dt>
+							<dd>{formatMoney(totals.totalMinor)}</dd>
+						</div>
+					{/if}
+				{/if}
+			</dl>
 		{/if}
 	{/if}
 
 	{#if !editable && lockedMessage && !loading && !loadFailed}
-		<p class="pricing-block__hint">{lockedMessage}</p>
+		<p class="pricing-block__hint pricing-block__locked">
+			<span class="pricing-block__locked-icon" aria-hidden="true">{@html lockIcon}</span>
+			<span class="pricing-block__locked-text">{lockedMessage}</span>
+			{#if footerNote}
+				<span class="pricing-block__footer-note">
+					<span class="pricing-block__footer-note-icon" aria-hidden="true">{@html eyeIcon}</span>
+					{footerNote}
+				</span>
+			{/if}
+		</p>
 	{/if}
 </SectionBlock>
 
@@ -1369,6 +1437,10 @@
 			margin-top: var(--space-base);
 			width: min(320px, 100%);
 		}
+		&__locked-icon,
+		&__footer-note {
+			display: none;
+		}
 		&__totals-row {
 			display: flex;
 			align-items: baseline;
@@ -1376,6 +1448,16 @@
 			gap: var(--space-base);
 			color: var(--color-heading);
 			font-weight: 700;
+
+			dt,
+			dd {
+				margin: 0;
+			}
+		}
+		// Discount, tax and the grand total belong to the Classic card; Botanical keeps its single Subtotal
+		// and the rail summary card that still carries the rest.
+		&__totals-row--extra {
+			display: none;
 		}
 		&__actions {
 			display: flex;
@@ -1592,6 +1674,241 @@
 		}
 		.pricing-card__image {
 			min-height: 120px;
+		}
+	}
+	:global(.section-block.pricing-block .section-block__hint) {
+		display: none;
+	}
+
+	// Classic: the saved card reads like the approved Quote, Job and Invoice frames — a soft header band,
+	// hairline rows that run edge to edge, and the totals closing the card instead of floating under it.
+	:global(:root:has(.app-shell[data-presentation='classic'])) {
+		:global(.section-block.pricing-block:has(.pricing-table__scroll)) {
+			gap: 0;
+		}
+		:global(.section-block.pricing-block .section-block__icon) {
+			display: none;
+		}
+		:global(.section-block.pricing-block .section-block__hint) {
+			display: block;
+			margin-top: 0;
+			color: var(--classic2-secondary);
+			font-size: var(--classic2-font-label);
+			font-weight: 500;
+		}
+		:global(.section-block.pricing-block:has(.pricing-table__scroll) .section-block__hint) {
+			margin-bottom: 16px;
+		}
+
+		.pricing-table__scroll {
+			// The table scrolls inside the card; its width never decides how wide the card is.
+			contain: inline-size;
+			margin-inline: -24px;
+		}
+		.pricing-table {
+			font-size: var(--classic2-font-body);
+
+			th,
+			td {
+				padding: 14px 16px;
+				border-bottom: 1px solid var(--classic2-divider);
+			}
+			th:first-child,
+			td:first-child {
+				padding-left: 24px;
+			}
+			th:last-child,
+			td:last-child {
+				padding-right: 24px;
+			}
+			thead th {
+				padding-block: 10px;
+				border-top: 1px solid var(--classic2-divider);
+				color: var(--classic2-secondary);
+				background: var(--classic2-surface-soft);
+				font-size: var(--classic2-font-micro);
+				font-weight: 600;
+				letter-spacing: 0.6px;
+				text-transform: uppercase;
+			}
+			tbody tr:last-child th,
+			tbody tr:last-child td {
+				border-bottom: 1px solid var(--classic2-divider);
+			}
+			td {
+				color: var(--classic2-body);
+				font-weight: 500;
+			}
+			td.pricing-table__number:last-child {
+				color: var(--classic2-ink);
+				font-weight: 600;
+			}
+			th.pricing-table__number,
+			td.pricing-table__number {
+				width: 110px;
+			}
+			.pricing-table__title {
+				display: flex;
+				align-items: center;
+				flex-wrap: wrap;
+				gap: 8px;
+			}
+			.pricing-table__name {
+				color: var(--classic2-ink);
+				font-size: var(--classic2-font-body);
+				font-weight: 600;
+			}
+			.pricing-table__description {
+				padding-top: 3px;
+				color: var(--classic2-secondary);
+				font-size: var(--classic2-font-small);
+				font-weight: 500;
+			}
+			.pricing-table__choice {
+				display: inline-flex;
+				padding: 2px 8px;
+				border-radius: 999px;
+				color: var(--classic2-secondary);
+				background: var(--classic2-surface-soft);
+				box-shadow: inset 0 0 0 1px var(--classic2-border);
+				font-size: var(--classic2-font-micro);
+				font-weight: 600;
+				padding-top: 2px;
+			}
+			&__heading th {
+				background: var(--classic2-surface-soft);
+			}
+			&__photo img {
+				border-color: var(--classic2-border);
+				border-radius: 10px;
+			}
+		}
+
+		.pricing-block__totals {
+			border-top-color: var(--classic2-divider);
+		}
+		.pricing-block__totals--saved {
+			align-items: flex-end;
+			gap: 8px;
+			width: auto;
+			margin: 0 -24px;
+			padding: 16px 24px 20px;
+			border-top: 0;
+			.pricing-block__totals-row {
+				width: min(300px, 100%);
+				color: var(--classic2-body);
+				font-size: var(--classic2-font-label);
+				font-weight: 500;
+				dt {
+					color: var(--classic2-secondary);
+				}
+				dd {
+					margin: 0;
+				}
+			}
+			.pricing-block__totals-row--total {
+				padding-top: 10px;
+				border-top: 1px solid var(--classic2-divider);
+				color: var(--classic2-ink);
+				font-size: var(--classic2-font-body);
+				font-weight: 700;
+				dt {
+					color: var(--classic2-ink);
+				}
+				dd {
+					font-size: var(--classic2-font-section);
+					letter-spacing: -0.3px;
+				}
+			}
+		}
+
+		.pricing-block__locked {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			margin: 16px -24px -24px;
+			padding: 12px 24px;
+			border-top: 1px solid var(--classic2-divider);
+			border-radius: 0 0 20px 20px;
+			background: var(--classic2-surface-soft);
+			color: var(--classic2-secondary);
+			font-size: var(--classic2-font-small);
+			font-weight: 500;
+		}
+		:global(.section-block.pricing-block:has(.pricing-table__scroll)) .pricing-block__locked {
+			margin-top: 0;
+		}
+		.pricing-block__totals-row--extra {
+			display: flex;
+		}
+		.pricing-block__locked-icon {
+			display: inline-flex;
+		}
+		.pricing-block__locked-text {
+			flex: 1 1 auto;
+		}
+		.pricing-block__footer-note {
+			display: inline-flex;
+			flex: 0 0 auto;
+			align-items: center;
+			gap: 6px;
+			color: var(--classic2-green);
+			font-weight: 600;
+		}
+		.pricing-block__footer-note-icon :global(svg) {
+			display: block;
+			width: 13px;
+			height: 13px;
+		}
+		.pricing-block__locked-icon :global(svg) {
+			display: block;
+			width: 13px;
+			height: 13px;
+			color: var(--classic2-icon-muted);
+		}
+
+		// Editing keeps the same fields; only the shells around them take the Classic look.
+		.pricing-card {
+			padding: 16px;
+			border: 0;
+			border-radius: 16px;
+			background: var(--classic2-surface-soft);
+			box-shadow: inset 0 0 0 1px var(--classic2-border);
+		}
+		.pricing-block__actions {
+			padding: 16px 20px;
+			border: 0;
+			border-radius: 16px;
+			background: var(--classic2-surface-soft);
+			box-shadow: inset 0 0 0 1px var(--classic2-border);
+		}
+		.pricing-block__grand-total {
+			color: var(--classic2-ink);
+		}
+	}
+
+	@media (max-width: 767px) {
+		:global(:root:has(.app-shell[data-presentation='classic'])) {
+			.pricing-table__scroll,
+			.pricing-block__totals--saved,
+			.pricing-block__locked {
+				margin-inline: -16px;
+			}
+			.pricing-block__locked {
+				margin-bottom: -16px;
+				padding-inline: 16px;
+			}
+			.pricing-block__totals--saved {
+				padding-inline: 16px;
+			}
+			.pricing-table th:first-child,
+			.pricing-table td:first-child {
+				padding-left: 16px;
+			}
+			.pricing-table th:last-child,
+			.pricing-table td:last-child {
+				padding-right: 16px;
+			}
 		}
 	}
 </style>

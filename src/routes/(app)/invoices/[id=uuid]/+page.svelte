@@ -24,6 +24,7 @@
 	import QuoteSummaryCard from '$lib/components/quotes/QuoteSummaryCard.svelte';
 	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
 	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
+	import RecordAdjustmentsCard from '$lib/components/work/RecordAdjustmentsCard.svelte';
 	import InvoiceEmailDialog from '$lib/components/invoices/InvoiceEmailDialog.svelte';
 	import CollectPaymentDialog from '$lib/components/invoices/CollectPaymentDialog.svelte';
 	import AddDepositDialog from '$lib/components/invoices/AddDepositDialog.svelte';
@@ -1124,6 +1125,14 @@
 					progressColumn={isProgress}
 					lockedMessage={isProgress ? progressLockedMessage : ''}
 					subtotalMinor={canSeePrice ? (saved.money?.subtotal_minor ?? 0) : null}
+					totals={{
+						discountMinor: saved.money?.discount_minor ?? 0,
+						discountLabel: saved.money?.discount_name ?? null,
+						taxMinor: saved.money?.tax_minor ?? 0,
+						taxLabel: saved.money?.tax_name ?? null,
+						totalMinor: saved.money?.total_minor ?? null,
+						totalLabel: 'Invoice total'
+					}}
 					currencyCode={saved.invoice.currency_code}
 					locale={saved.locale}
 					editorTotalLabel="Invoice subtotal"
@@ -1396,39 +1405,41 @@
 					</RailCard>
 				{/if}
 
-				<RecordDiscountCard
-					revision={saved.invoice.revision}
-					name={saved.money?.discount_name ?? null}
-					type={saved.money?.discount_type ?? null}
-					value={saved.money?.discount_value ?? null}
-					discountMinor={canSeePrice ? (saved.money?.discount_minor ?? 0) : null}
-					currencyCode={saved.invoice.currency_code}
-					locale={saved.locale}
-					editable={editable && !isProgress}
-					{canSeePrice}
-					recordNoun="invoice"
-					onSave={(revision, payload) => saveInvoiceDiscount(invoiceId, revision, payload)}
-					onSaved={refreshInvoice}
-				/>
+				<RecordAdjustmentsCard>
+					<RecordDiscountCard
+						revision={saved.invoice.revision}
+						name={saved.money?.discount_name ?? null}
+						type={saved.money?.discount_type ?? null}
+						value={saved.money?.discount_value ?? null}
+						discountMinor={canSeePrice ? (saved.money?.discount_minor ?? 0) : null}
+						currencyCode={saved.invoice.currency_code}
+						locale={saved.locale}
+						editable={editable && !isProgress}
+						{canSeePrice}
+						recordNoun="invoice"
+						onSave={(revision, payload) => saveInvoiceDiscount(invoiceId, revision, payload)}
+						onSaved={refreshInvoice}
+					/>
 
-				<RecordTaxCard
-					revision={saved.invoice.revision}
-					propertyId={(saved.invoice.service_properties?.[0]?.property_id as string) ?? ''}
-					taxSource={(saved.money?.tax_source ?? 'not_configured') as QuoteTaxSource}
-					rateId={saved.money?.tax_rate_id ?? null}
-					name={saved.money?.tax_name ?? null}
-					rateBasisPoints={saved.money?.tax_rate_basis_points ?? 0}
-					taxMinor={canSeePrice ? (saved.money?.tax_minor ?? 0) : null}
-					currencyCode={saved.invoice.currency_code}
-					locale={saved.locale}
-					editable={editable && !isProgress}
-					{canSeePrice}
-					canManageTaxes={false}
-					recordNoun="invoice"
-					unsetHint="This invoice is not taxed yet."
-					onSave={(revision, payload) => saveInvoiceTax(invoiceId, revision, payload)}
-					onSaved={refreshInvoice}
-				/>
+					<RecordTaxCard
+						revision={saved.invoice.revision}
+						propertyId={(saved.invoice.service_properties?.[0]?.property_id as string) ?? ''}
+						taxSource={(saved.money?.tax_source ?? 'not_configured') as QuoteTaxSource}
+						rateId={saved.money?.tax_rate_id ?? null}
+						name={saved.money?.tax_name ?? null}
+						rateBasisPoints={saved.money?.tax_rate_basis_points ?? 0}
+						taxMinor={canSeePrice ? (saved.money?.tax_minor ?? 0) : null}
+						currencyCode={saved.invoice.currency_code}
+						locale={saved.locale}
+						editable={editable && !isProgress}
+						{canSeePrice}
+						canManageTaxes={false}
+						recordNoun="invoice"
+						unsetHint="This invoice is not taxed yet."
+						onSave={(revision, payload) => saveInvoiceTax(invoiceId, revision, payload)}
+						onSaved={refreshInvoice}
+					/>
+				</RecordAdjustmentsCard>
 
 				<RecordFilesCard
 					entityType="invoice"
