@@ -21,5 +21,8 @@ The exact light and dark values are in docs/classic-theme-redesign-design-recipe
   record cards: title, optional count chip and subtitle, actions, edge-to-edge rows and an optional footer.
   Shared Notes and Photos and files take `look="record"` there (NotesPanel, RecordFilesCard); every other page
   keeps their default look until its own redesign opts in.
+- The dark featured "Profit card" is work/ProfitFeatureCard (JobProfitCard and QuoteProfitCard feed it their own
+  figures). Header facts take `tone: 'neutral'` for a plain tile and `'waiting'` for an amber one, such as a quote
+  with no answer yet; without a tone the first fact carries the brand tint.
 
 SectionBlock and RailCard keep their own padding and heading rules in their modules. A static card has no hover effect. Interactive actions keep their hover and focus states on the action itself.
