@@ -52,7 +52,7 @@ delegation available, do the same read-through yourself and report that limitati
 technical questions yourself; bring remaining product choices to Jafar together.
 
 Planning is complete when no question needed for the first version remains unresolved and Jafar approves
-that scope. Record the scope and date. Later-version questions may remain if explicitly deferred. Existing
+that scope. Keep the plan as the current agreement; record the scope and approval date in Memory. Later-version questions may remain if explicitly deferred. Existing
 approval counts; uncertainty about changed scope does not undo unrelated approvals.
 
 ## Split the work

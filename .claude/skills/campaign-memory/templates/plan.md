@@ -1,10 +1,10 @@
 # <Feature>
 
-**Status:** Planning <!-- then: <scope/version> approved by Jafar on <date>; then built and verified on <date> -->
-
 ## Summary
 
-<A short explanation Jafar can read in a minute: who this serves, what they gain, and why.>
+<A short explanation Jafar can read in a minute: who this serves, what they gain, why, and the scope. This is
+part of the core agreement agents read on every resume. Keep it current; put approval dates and progress in
+Memory, not here.>
 
 ## Problem and audience
 
@@ -13,6 +13,11 @@
 ## First version
 
 <The complete useful result included in this release; distinguish later work in Not doing.>
+
+## Experience target
+
+<The owner's visual or interaction priorities that govern every part, when relevant. Link this section from
+NOW.md so every resuming agent reads it. Omit the section when the campaign has no such target.>
 
 ## <Behavior topic, e.g. "Sending a quote">
 
@@ -40,4 +45,4 @@
 ## Sources and design decisions
 
 - [<source>](<research file>) — <the decision it informs>
-- <approved example's path and scope/date of approval, when relevant>
+- <current approved example's path and what it governs; keep the approval record in Memory>
