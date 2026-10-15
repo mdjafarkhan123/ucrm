@@ -15,6 +15,7 @@
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import { recordLifecycle } from '$lib/components/work/record-lifecycle';
 	import WorkRecordHeader from '$lib/components/work/WorkRecordHeader.svelte';
 	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
 	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
@@ -77,6 +78,13 @@
 	const clientHref = $derived.by((): string | undefined => {
 		if (!saved?.client) return undefined;
 		return resolve('/(app)/clients/[id=uuid]', { id: saved.client.id });
+	});
+
+	const convertedHref = $derived.by((): string | undefined => {
+		const target = saved?.converted_to;
+		if (!target) return undefined;
+		if (target.kind === 'job') return resolve('/(app)/jobs/[id=uuid]', { id: target.id });
+		return resolve('/(app)/quotes/[id=uuid]', { id: target.id });
 	});
 
 	// The rail card carries the count, so the panel inside it needs no heading of its own, and both read
@@ -417,6 +425,19 @@
 		>
 			{#snippet main()}
 				<WorkRecordHeader
+					lifecycle={recordLifecycle(
+						'request',
+						REQUEST_STATUS_LABELS[status],
+						saved.converted_to
+							? {
+									[saved.converted_to.kind]: {
+										label: `${saved.converted_to.kind === 'job' ? 'Job' : 'Quote'} #${saved.converted_to.number}`,
+										href: convertedHref,
+										detail: 'Converted from this request'
+									}
+								}
+							: {}
+					)}
 					icon={fileTextIcon}
 					recordType="Request"
 					{title}
@@ -435,6 +456,8 @@
 				>
 					{#snippet summary()}
 						<ClientSummaryCard
+							clientId={saved.client?.id}
+							directionsAddress={propertyLine}
 							name={saved.client?.display_name ?? 'No client'}
 							href={clientHref}
 							addresses={[{ value: propertyLine, empty: 'No property on this request' }]}

@@ -112,4 +112,35 @@
 			padding: var(--space-base);
 		}
 	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .record-detail {
+		&__grid {
+			height: auto;
+			overflow: visible;
+			gap: 20px;
+			grid-template-columns: minmax(0, 1fr) 336px;
+		}
+		&__grid--no-rail {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		&__main {
+			height: auto;
+			overflow: visible;
+			gap: 20px;
+			padding: 0;
+			border-radius: 0;
+			background: transparent;
+			box-shadow: none;
+		}
+		&__rail {
+			height: auto;
+			overflow: visible;
+			gap: 16px;
+		}
+	}
+	@media (max-width: 1279px) {
+		:global(:root:has(.app-shell[data-presentation='classic'])) .record-detail__grid {
+			grid-template-columns: 1fr;
+		}
+	}
 </style>

@@ -16,6 +16,7 @@
 	import Toggle from '$lib/components/ui/Toggle.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
 	import { calendarDateFromString, calendarDateToString } from '$lib/components/ui/date-time';
+	import { recordLifecycle } from '$lib/components/work/record-lifecycle';
 	import WorkRecordHeader from '$lib/components/work/WorkRecordHeader.svelte';
 	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
 	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
@@ -982,6 +983,25 @@
 		>
 			{#snippet main()}
 				<WorkRecordHeader
+					lifecycle={recordLifecycle(
+						'invoice',
+						INVOICE_STATUS_LABELS[saved.invoice.derived_status],
+						{
+							...(saved.progress
+								? {
+										job: {
+											label: 'Job',
+											detail: saved.progress.description,
+											href: resolve('/(app)/jobs/[id=uuid]', { id: saved.progress.job_id })
+										}
+									}
+								: {}),
+							...(saved.invoice.derived_status === 'paid'
+								? { paid: { label: 'Paid', detail: 'Paid in full', complete: true } }
+								: {})
+						}
+					)}
+					recordNumber={saved.invoice.invoice_number}
 					icon={receiptIcon}
 					recordType="Invoice"
 					menuItems={invoiceMenuItems}
@@ -1001,6 +1021,8 @@
 				>
 					{#snippet summary()}
 						<ClientSummaryCard
+							clientId={saved.client?.id}
+							email={page.data.presentation === 'classic' ? saved.client?.email : undefined}
 							name={saved.client?.company_name || saved.client?.display_name || 'No client'}
 							href={clientHref}
 							addresses={[{ value: billingLine, empty: 'No billing address on this invoice' }]}

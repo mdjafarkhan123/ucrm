@@ -9,6 +9,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
+	import { recordLifecycle } from '$lib/components/work/record-lifecycle';
 	import WorkRecordHeader from '$lib/components/work/WorkRecordHeader.svelte';
 	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
 	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
@@ -314,6 +315,28 @@
 			requestHash
 		);
 	}
+	const lifecycle = $derived.by(() => {
+		const active =
+			saved?.applied_to.filter(
+				(entry) => entry.entry_type === 'applied' && !entry.is_reversed && entry.invoice_id
+			) ?? [];
+		const invoice = active[0];
+		return recordLifecycle(
+			'paid',
+			status.label,
+			invoice && active.length === 1
+				? {
+						invoice: {
+							label: `Invoice #${invoice.invoice_number}`,
+							detail: 'Payment applied',
+							href: resolve('/(app)/invoices/[id=uuid]', { id: invoice.invoice_id! })
+						}
+					}
+				: active.length
+					? { invoice: { label: 'Invoice', detail: 'See Applied to below' } }
+					: {}
+		);
+	});
 </script>
 
 <svelte:head>
@@ -329,6 +352,7 @@
 		<RecordDetailLayout class="payment-detail">
 			{#snippet main()}
 				<WorkRecordHeader
+					{lifecycle}
 					icon={cashIcon}
 					recordType="Payment"
 					title={formatMoney(saved.payment.amount_minor)}
@@ -341,6 +365,7 @@
 				>
 					{#snippet summary()}
 						<ClientSummaryCard
+							clientId={saved.client?.id}
 							name={clientName}
 							href={clientHref}
 							email={saved.client?.email ?? null}

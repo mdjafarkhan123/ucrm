@@ -5,7 +5,10 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
-	import type { StatusTone } from './types';
+	import type { StatusTone, RecordLifecycleStep } from './types';
+	import RecordLifecycleTrack from './RecordLifecycleTrack.svelte';
+	import dotsIcon from '@tabler/icons/outline/dots-vertical.svg?raw';
+	import chevronIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
 
 	// The card at the top of every work record — request, quote, job, invoice. They all draw the same
@@ -39,6 +42,8 @@
 	let {
 		icon,
 		recordType,
+		recordNumber,
+		lifecycle = [],
 		title,
 		statusLabel,
 		statusTone = 'informative',
@@ -60,6 +65,8 @@
 		icon: string;
 		/** What kind of record this is, e.g. "Request". Used to name the controls out loud. */
 		recordType: string;
+		recordNumber?: string | number;
+		lifecycle?: RecordLifecycleStep[];
 		title: string;
 		statusLabel: string;
 		statusTone?: StatusTone;
@@ -99,10 +106,16 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<section class={`work-header ${className}`} aria-label="{recordType} summary">
+<section
+	class={`work-header work-header--${recordType.toLowerCase()} ${className}`}
+	aria-label="{recordType} summary"
+>
 	<div class="work-header__top">
 		<span class="work-header__type" aria-hidden="true">{@html icon}</span>
 		<StatusBadge status={statusTone}>{statusLabel}</StatusBadge>
+		{#if recordNumber != null}
+			<span class="work-header__number">{recordType} #{recordNumber}</span>
+		{/if}
 		{#if badges}{@render badges()}{/if}
 
 		<div class="work-header__actions">
@@ -133,7 +146,18 @@
 				</Button>
 			{/if}
 			{#if menuItems.length > 0}
-				<DropdownMenu items={menuItems} triggerLabel="More {recordType.toLowerCase()} actions" />
+				<DropdownMenu
+					items={menuItems}
+					triggerLabel="More {recordType.toLowerCase()} actions"
+					triggerClass="dropdown-menu__trigger work-header__menu"
+				>
+					{#snippet trigger()}
+						<span class="work-header__more"
+							>More<span aria-hidden="true">{@html chevronIcon}</span></span
+						>
+						<span class="work-header__legacy-menu" aria-hidden="true">{@html dotsIcon}</span>
+					{/snippet}
+				</DropdownMenu>
 			{/if}
 		</div>
 	</div>
@@ -156,22 +180,32 @@
 		{/if}
 	</div>
 
-	{#if summary || facts}
-		<div class="work-header__body">
-			<div class="work-header__summary">
-				{#if summary}{@render summary()}{/if}
-			</div>
-			<div class="work-header__facts">
-				{#if facts}{@render facts()}{/if}
-			</div>
-		</div>
-	{/if}
+	<div class="work-header__body">
+		{#if summary}
+			<div class="work-header__summary">{@render summary()}</div>
+		{/if}
+		{#if lifecycle.length}
+			<RecordLifecycleTrack steps={lifecycle} />
+		{/if}
+		{#if facts}
+			<div class="work-header__facts">{@render facts()}</div>
+		{/if}
+	</div>
 </section>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.work-header {
+		&__more {
+			display: none;
+		}
+		&__legacy-menu {
+			display: inline-flex;
+		}
+		&__number {
+			display: none;
+		}
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-base);
@@ -303,6 +337,121 @@
 			&__body {
 				gap: var(--space-base);
 				grid-template-columns: 1fr;
+			}
+		}
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .work-header {
+		gap: 0;
+		padding: 24px 28px 0;
+		border: 1px solid var(--classic2-border);
+		border-radius: var(--classic2-radius-card);
+		background: var(--classic2-surface);
+		box-shadow:
+			0 1px 2px var(--classic2-shadow-near),
+			0 10px 28px var(--classic2-shadow-far);
+		font-family: var(--classic2-font);
+
+		&__top {
+			flex-wrap: wrap;
+			gap: 10px;
+		}
+		&__type {
+			display: none;
+		}
+		&__number {
+			display: inline;
+			color: var(--classic2-secondary);
+			font-size: var(--classic2-font-small);
+			font-weight: 600;
+			letter-spacing: 0.6px;
+			text-transform: uppercase;
+		}
+		&__more {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+		}
+		&__more span {
+			display: inline-flex;
+		}
+		&__more :global(svg) {
+			width: 16px;
+			height: 16px;
+		}
+		&__legacy-menu {
+			display: none;
+		}
+		&__actions :global(.work-header__menu) {
+			order: 2;
+			width: auto;
+			height: 40px;
+			padding: 0 14px;
+			border: 1px solid var(--classic2-border-control);
+			background: var(--classic2-surface);
+			color: var(--classic2-ink);
+			font-weight: 600;
+		}
+		&__actions :global(.button--primary) {
+			order: 3;
+			min-height: 40px;
+			padding: 0 16px;
+		}
+		&__actions {
+			flex-wrap: wrap;
+		}
+		&__identity {
+			padding-top: 18px;
+		}
+		&__identity h1 {
+			overflow: visible;
+			overflow-wrap: anywhere;
+			font-size: 32px;
+			line-height: 1.15;
+			letter-spacing: -0.8px;
+			color: var(--classic2-ink);
+		}
+		&__body {
+			display: flex;
+			flex-direction: column;
+			gap: 0;
+			width: 100%;
+		}
+		&__summary {
+			width: 100%;
+			padding-top: 14px;
+		}
+		&__facts {
+			width: 100%;
+			margin-top: 20px;
+			padding: 18px 0 22px;
+			border-top: 1px solid var(--classic2-divider);
+		}
+		&__icon-button {
+			width: 40px;
+			height: 40px;
+			border: 1px solid var(--classic2-border-control);
+			border-radius: var(--classic2-radius-control);
+			color: var(--classic2-secondary);
+			background: var(--classic2-surface);
+		}
+		&__icon-button:hover {
+			background: var(--classic2-surface-soft);
+			color: var(--classic2-ink);
+		}
+		&__icon-button:focus-visible {
+			outline: 2px solid var(--classic2-green);
+			outline-offset: 3px;
+		}
+	}
+	@media (max-width: 767px) {
+		:global(:root:has(.app-shell[data-presentation='classic'])) .work-header {
+			padding: 20px 16px 0;
+			&__identity h1 {
+				font-size: 26px;
+			}
+			&__actions {
+				gap: 6px;
 			}
 		}
 	}
