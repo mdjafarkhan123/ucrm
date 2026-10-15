@@ -1,6 +1,6 @@
 # B4 — Classic Save bar
 
-**State:** Integration candidate `codex/b4-save-bar-integration` at merge commit `1add398c`, based on `32e5b80d`; waiting to update `main` after the active Schedule Pencil work is saved and the main writer releases the reservation. **Plan:**
+**State:** Published integration candidate `origin/codex/b4-save-bar-integration` at checkpoint `a5b40c46` in `/home/jafar/.codex/worktrees/b4-integration/Ucrm`; it contains merge commit `1add398c` based on `32e5b80d`. Main integration waits for the active Schedule Pencil work to be saved and its reservation released. Source branch: `codex/classic-b4-save-bar` in `/tmp/ucrm-classic-b4`. **Plan:**
 `docs/classic-theme-redesign-behavior-contract.md` § Settings additions and
 `docs/classic-theme-redesign-design-recipe.md` § Save bar.
 
