@@ -1403,18 +1403,20 @@
 								</div>
 								{@render clientMessageBody()}
 							</div>
-						{/if}
-						<div class="quote-record__row">
-							{#if showClientMessage || editable || disclaimerChanged}
+							<div class="quote-record__row">
 								<div class="quote-record__row-head">
-									{#if showClientMessage}<h3 class="quote-record__label">
-											Contract disclaimer
-										</h3>{/if}
+									<h3 class="quote-record__label">Contract disclaimer</h3>
 									{@render disclaimerActions()}
 								</div>
-							{/if}
-							{@render disclaimerBody()}
-						</div>
+								{@render disclaimerBody()}
+							</div>
+						{:else}
+							<!-- One row only, so its pencil sits in the card heading instead of on a line of its own. -->
+							<div class="quote-record__row">{@render disclaimerBody()}</div>
+						{/if}
+						{#snippet actions()}
+							{#if !showClientMessage}{@render disclaimerActions()}{/if}
+						{/snippet}
 					</RecordCard>
 				{:else}
 					{#if saved.signature}
