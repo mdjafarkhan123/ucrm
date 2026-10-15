@@ -119,6 +119,9 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
       a rose alert with an alert icon above the form, "Choose a client to continue." Light and dark checked.
       Not drawn: the dateless slot ("No date yet — you can pick the day next."); the ticket would show only that
       line, without a date tile. Waiting for Jafar.
+- [x] Jafar, 2026-10-15: an element the same colour as its background looks odd. The date tile's grey month
+      strip matched the grey ticket behind it; the strip is now solid brand green with white "OCT" (the
+      calendar's chosen-date colour) and the tile has the stronger control border. Light and dark checked.
 
 ## Next (new sessions; redesign the look only, copy the live component's behaviour and wording)
 
