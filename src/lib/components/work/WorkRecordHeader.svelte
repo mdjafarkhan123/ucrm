@@ -185,7 +185,7 @@
 			<div class="work-header__summary">{@render summary()}</div>
 		{/if}
 		{#if lifecycle.length}
-			<RecordLifecycleTrack steps={lifecycle} />
+			<RecordLifecycleTrack steps={lifecycle} tone={statusTone} />
 		{/if}
 		{#if facts}
 			<div class="work-header__facts">{@render facts()}</div>
@@ -401,7 +401,23 @@
 			flex-wrap: wrap;
 		}
 		&__identity {
+			justify-content: flex-start;
 			padding-top: 18px;
+		}
+		// The approved header shows a clean title: the rename pencil waits beside it until the title is
+		// pointed at or reached by keyboard.
+		&__identity :global(.pencil-button) {
+			flex: 0 0 auto;
+			opacity: 0;
+			transition: opacity var(--timing-base) ease-out;
+		}
+		&__identity:hover :global(.pencil-button),
+		&__identity:focus-within :global(.pencil-button) {
+			opacity: 1;
+		}
+		&__actions :global(.work-header__menu),
+		&__icon-button {
+			box-shadow: 0 1px 2px var(--classic2-shadow-near);
 		}
 		&__identity h1 {
 			overflow: visible;
@@ -421,7 +437,10 @@
 			width: 100%;
 			padding-top: 14px;
 		}
+		// The facts flow to fit the card, so they must never be what makes the card wider.
 		&__facts {
+			overflow: hidden;
+			contain: inline-size;
 			width: 100%;
 			margin-top: 20px;
 			padding: 18px 0 22px;

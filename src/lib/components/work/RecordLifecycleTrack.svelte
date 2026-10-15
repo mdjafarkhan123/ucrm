@@ -1,17 +1,21 @@
 <script lang="ts">
-	import type { RecordLifecycleStep } from './types';
+	import type { RecordLifecycleStep, StatusTone } from './types';
 	import arrowIcon from '@tabler/icons/outline/arrow-up-right.svg?raw';
-	let { steps }: { steps: RecordLifecycleStep[] } = $props();
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	// `tone` is the record's status colour, so the current step agrees with the status pill: a declined
+	// quote reads red here, not green.
+	let { steps, tone = 'success' }: { steps: RecordLifecycleStep[]; tone?: StatusTone } = $props();
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<ol class="record-lifecycle" aria-label="Work journey">
-	{#each steps as step (step.key)}
+<ol class="record-lifecycle record-lifecycle--{tone}" aria-label="Work journey">
+	{#each steps as step, index (step.key)}
 		<li
 			class={[
 				'record-lifecycle__step',
 				{
 					'record-lifecycle__step--current': step.current,
+					'record-lifecycle__step--settled': step.current && steps[index + 1]?.complete,
 					'record-lifecycle__step--linked': step.href,
 					'record-lifecycle__step--complete': step.complete
 				}
@@ -23,12 +27,18 @@
 				<!-- The page supplies a resolved, permission-appropriate record link. -->
 				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 				<a class="record-lifecycle__label" href={step.href}
-					>{step.label}<span aria-hidden="true">{@html arrowIcon}</span></a
+					>{#if step.complete}<span class="record-lifecycle__tick" aria-hidden="true"
+							>{@html checkIcon}</span
+						>{/if}{step.label}<span class="record-lifecycle__open" aria-hidden="true"
+						>{@html arrowIcon}</span
+					></a
 				>
 			{:else}
 				<span class="record-lifecycle__label"
 					>{#if step.current}<span class="record-lifecycle__dot" aria-hidden="true"
-						></span>{/if}{step.label}</span
+						></span>{:else if step.complete}<span class="record-lifecycle__tick" aria-hidden="true"
+							>{@html checkIcon}</span
+						>{/if}{step.label}</span
 				>
 			{/if}
 			<span class="record-lifecycle__detail">{step.detail ?? '—'}</span>
@@ -50,6 +60,19 @@
 		padding: 22px 0 0;
 		list-style: none;
 		width: 100%;
+		--lifecycle-tone: var(--classic2-green);
+		&--warning {
+			--lifecycle-tone: var(--classic2-amber);
+		}
+		&--critical {
+			--lifecycle-tone: var(--classic2-rose);
+		}
+		&--informative {
+			--lifecycle-tone: var(--classic2-blue);
+		}
+		&--inactive {
+			--lifecycle-tone: var(--classic2-icon-muted);
+		}
 		&__step {
 			display: flex;
 			flex-direction: column;
@@ -59,6 +82,8 @@
 		}
 		&__bar {
 			display: block;
+			position: relative;
+			overflow: hidden;
 			height: 4px;
 			border-radius: 999px;
 			background: var(--classic2-chip);
@@ -69,7 +94,7 @@
 			align-items: center;
 			gap: 4px;
 			min-height: 20px;
-			color: var(--classic2-secondary);
+			color: var(--classic2-muted);
 			font-size: var(--classic2-font-label);
 			font-weight: 600;
 			text-decoration: none;
@@ -77,11 +102,18 @@
 		}
 		&__label span {
 			display: inline-flex;
+			flex-shrink: 0;
 		}
-		&__label :global(svg) {
+		&__tick :global(svg) {
 			width: 13px;
 			height: 13px;
-			flex-shrink: 0;
+			color: var(--classic2-green);
+			stroke-width: 2.5;
+		}
+		&__open :global(svg) {
+			width: 12px;
+			height: 12px;
+			color: var(--classic2-icon-muted);
 		}
 		&__label:hover {
 			text-decoration: underline;
@@ -93,25 +125,41 @@
 		}
 		&__detail {
 			font-size: var(--classic2-font-small);
+			font-weight: 500;
 			line-height: 1.5;
 			overflow-wrap: anywhere;
 		}
 		&__dot {
-			width: 6px;
-			height: 6px;
+			width: 7px;
+			height: 7px;
+			margin-right: 2px;
 			border-radius: 50%;
-			background: var(--classic2-green);
-			flex-shrink: 0;
+			background: var(--lifecycle-tone);
 		}
-		&__step--complete .record-lifecycle__bar,
-		&__step--current .record-lifecycle__bar {
+		&__step--complete .record-lifecycle__bar {
 			background: var(--classic2-green);
 		}
+		&__step--complete .record-lifecycle__label,
 		&__step--current .record-lifecycle__label {
-			color: var(--classic2-green);
+			color: var(--classic2-ink);
 		}
-		&__step--linked .record-lifecycle__bar {
-			background: var(--classic2-secondary);
+		&__step--complete .record-lifecycle__detail {
+			color: var(--classic2-muted);
+		}
+		// Where the record is now: the step is under way, not finished, so its bar is only part filled.
+		&__step--current .record-lifecycle__bar::after {
+			content: '';
+			position: absolute;
+			inset: 0 45% 0 0;
+			border-radius: inherit;
+			background: var(--lifecycle-tone);
+		}
+		// A later step is already done (a paid invoice), so this one is finished too.
+		&__step--settled .record-lifecycle__bar::after {
+			right: 0;
+		}
+		&__step--current .record-lifecycle__detail {
+			color: var(--lifecycle-tone);
 		}
 	}
 	@media (max-width: 767px) {

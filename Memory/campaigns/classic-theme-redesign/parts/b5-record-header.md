@@ -31,4 +31,16 @@ existing title-focus effect and request draft-reset effects were inspected and r
 unit tests pass. Full-project checks were not run. Typed ESLint project loading was stopped for memory;
 focused syntax lint uses the same repo rules with projectService disabled.
 
+**Pencil match, 2026-10-15:** Jafar found the live header did not match Job hero `mO4CI`. Fixed to the frame:
+finished steps show a green tick and dark label; the current step's bar is part filled (full once a later
+step is done) and its dot, bar and sub-line follow the status colour; a Job made from a quote shows Quote as
+finished ("Converted"); facts lead with 36px icon tiles (first one green) and keep values on one line,
+flowing to a second row instead; the address stays on one line with a tooltip; the title pencil and client
+menu appear on hover or keyboard focus. Checked Job/Quote/Request/Invoice at 1440/1100 light/dark.
+Still different, left for their own parts: the Job meta line ("Multi-day · 4 visits") and Schedule/Crew/
+Time/Total facts are B6 content; the email shortcut stays (approved in B5). Pre-existing: the Invoice page
+body is 3px too wide at 390px.
+
+**Rule from Jafar:** after each delivery, compare the live screen with its Pencil frame and fix differences.
+
 **Next:** B7 line items/totals before B6 Job details.

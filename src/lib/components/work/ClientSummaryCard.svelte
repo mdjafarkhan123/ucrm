@@ -95,7 +95,7 @@
 				<span class="client-summary__text">
 					{#if address.label}<span class="client-summary__label">{address.label}</span>{/if}
 					{#if address.value}
-						<span>{address.value}</span>
+						<span title={address.value}>{address.value}</span>
 					{:else}
 						<span class="client-summary__blank">{address.empty ?? 'No address yet'}</span>
 					{/if}
@@ -296,11 +296,34 @@
 		}
 		&__lines {
 			flex: 1 1 180px;
+			min-width: 0;
 			gap: 6px;
 			font-size: var(--classic2-font-body);
 		}
 		&__text {
 			color: var(--classic2-secondary);
+		}
+		// One calm line, as approved; the full address stays in the tooltip and in Directions.
+		&__line:not(.client-summary__line--contact) .client-summary__text,
+		&__line:not(.client-summary__line--contact) .client-summary__text span {
+			display: block;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+		// Client actions stay one click away but out of the way until the client is pointed at.
+		&__top :global(.dropdown-menu__trigger) {
+			width: 24px;
+			min-width: 24px;
+			height: 28px;
+			padding: 0;
+			opacity: 0;
+			transition: opacity var(--timing-base) ease-out;
+		}
+		&__top:hover :global(.dropdown-menu__trigger),
+		&__top:focus-within :global(.dropdown-menu__trigger),
+		&__top :global(.dropdown-menu__trigger[aria-expanded='true']) {
+			opacity: 1;
 		}
 		&__label,
 		&__blank {

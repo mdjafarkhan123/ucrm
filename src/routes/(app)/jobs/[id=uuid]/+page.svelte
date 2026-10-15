@@ -492,7 +492,9 @@
 					lifecycle={recordLifecycle(
 						'job',
 						JOB_STATUS_LABELS[saved.job.derived_status],
-						saved.job.from_quote ? { quote: { label: 'Quote', detail: 'Source quote' } } : {}
+						saved.job.from_quote
+							? { quote: { label: 'Quote', detail: 'Converted', complete: true } }
+							: {}
 					)}
 					recordNumber={saved.job.job_number}
 					icon={briefcaseIcon}

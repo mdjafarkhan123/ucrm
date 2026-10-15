@@ -88,46 +88,70 @@
 		flex-wrap: wrap;
 		gap: 12px 0;
 		margin: 0;
+		// Facts flow onto another line instead of squeezing a date onto two. Every fact carries its divider
+		// and lead space; the list is pulled left by that much and its parent clips it, so whichever fact
+		// starts a line sits flush with no stray divider.
+		margin-left: -17px;
 		&__row {
-			flex: 1 1 120px;
-			min-width: 0;
+			position: relative;
+			flex: 1 0 auto;
+			max-width: calc(100% - 17px);
+			min-height: 36px;
 			flex-direction: column;
 			align-items: flex-start;
-			justify-content: flex-start;
-			gap: 3px;
-			padding: 0 16px;
+			justify-content: center;
+			gap: 2px;
+			padding: 0 16px 0 62px;
 			border: 0;
 			border-left: 1px solid var(--classic2-divider);
+			box-sizing: border-box;
 		}
 		&__row--number {
 			display: none;
 		}
-		&__row--number + .record-facts__row,
-		&__row:first-child {
-			padding-left: 0;
-			border-left: 0;
-		}
+		// Each fact leads with a soft tile; the first, the record's headline fact, carries the brand tint.
 		&__icon {
 			display: inline-flex;
-			color: var(--classic2-icon-muted);
+			position: absolute;
+			top: 50%;
+			left: 16px;
+			align-items: center;
+			justify-content: center;
+			box-sizing: border-box;
+			width: 36px;
+			height: 36px;
+			border: 1px solid var(--classic2-border);
+			border-radius: var(--classic2-radius-control);
+			background: var(--classic2-surface-soft);
+			color: var(--classic2-secondary);
+			transform: translateY(-50%);
+		}
+		&__row:first-child .record-facts__icon,
+		&__row--number + .record-facts__row .record-facts__icon {
+			border-color: var(--classic2-green-soft);
+			background: var(--classic2-green-tint);
+			color: var(--classic2-green);
 		}
 		&__icon :global(svg) {
-			width: 14px;
-			height: 14px;
+			width: 17px;
+			height: 17px;
 		}
 		&__row dt {
-			display: flex;
-			align-items: center;
-			gap: 6px;
 			color: var(--classic2-secondary);
 			font-size: var(--classic2-font-small);
+			font-weight: 500;
 		}
 		&__row dd {
 			max-width: 100%;
 			margin: 0;
 			color: var(--classic2-ink);
 			font-size: var(--classic2-font-body);
+			overflow: hidden;
 			text-align: left;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+		&__row dd.record-facts__wrap {
 			white-space: normal;
 			overflow-wrap: anywhere;
 		}
