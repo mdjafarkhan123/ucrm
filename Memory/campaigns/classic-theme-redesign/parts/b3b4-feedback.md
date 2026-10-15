@@ -18,6 +18,8 @@ and child rendering because the installed floating content wrapper omitted its I
 no issues for all four touched components/pages. Browser preview at 1440, 1100 and 390, light/dark:
 no horizontal overflow; success/error/loading feedback visible; Undo, dismiss, hover, focus and Escape pass;
 tooltip's `aria-describedby` resolves to its content ID. Real `/settings/alerts` banner checked.
+Real Botanical preview also checked: banner retains its borderless appearance, no Classic tokens are
+present. The temporary preview server was stopped afterward to release memory.
 Screenshots `/tmp/classic-feedback-*.png`; reproducible browser script `/tmp/classic-feedback-check.cjs`.
 Full project check intentionally stopped at Jafar's request due its 4.2 GiB RAM use; do not rerun it for
 this styling slice. Use focused checks. A pre-existing JobVisitsSection unused-selector warning is unrelated.
