@@ -329,7 +329,13 @@
 		void submit().finally(() => layout?.revealError());
 	}}
 >
-	<RecordFormLayout title="New Quote" icon={fileDollarIcon} bind:this={layout} error={formError}>
+	<RecordFormLayout
+		title="New Quote"
+		icon={fileDollarIcon}
+		bind:this={layout}
+		error={formError}
+		dirty={isDirty}
+	>
 		{#snippet main()}
 			<PrimaryInfoCard
 				id="quote-primary"
@@ -507,7 +513,7 @@
 
 		{#snippet actions()}
 			<Button variant="tertiary" onclick={onCancel} disabled={saving}>Cancel</Button>
-			<Button variant="primary" type="submit" loading={saving} disabled={!isDirty}>
+			<Button variant="primary" showCheckIcon type="submit" loading={saving} disabled={!isDirty}>
 				{savedQuote ? 'Save changes' : 'Save Quote'}
 			</Button>
 		{/snippet}

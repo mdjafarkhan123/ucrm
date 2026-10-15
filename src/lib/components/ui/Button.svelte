@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 
 	let {
 		children,
@@ -9,6 +10,7 @@
 		type = 'button',
 		disabled = false,
 		loading = false,
+		showCheckIcon = false,
 		fullWidth = false,
 		href,
 		target,
@@ -23,6 +25,8 @@
 		type?: 'button' | 'submit' | 'reset';
 		disabled?: boolean;
 		loading?: boolean;
+		/** Shows the Tabler check mark used by a confirmed save action. */
+		showCheckIcon?: boolean;
 		fullWidth?: boolean;
 		/** Renders a link instead of a button. Use it for anything that goes to another page, so the
 		 *  browser can open it in a new tab and SvelteKit can preload the page on hover. */
@@ -53,6 +57,7 @@
 		class={classes}
 		class:button--full-width={fullWidth}
 		class:button--inactive={inactive}
+		class:button--check-icon={showCheckIcon}
 		aria-disabled={inactive ? 'true' : undefined}
 		aria-busy={loading}
 		{onclick}
@@ -60,6 +65,12 @@
 		onfocus={onhover}
 	>
 		{#if loading}<span class="button__spinner" aria-hidden="true"></span>{/if}
+		{#if showCheckIcon && !loading}
+			<span class="button__icon" aria-hidden="true">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html checkIcon}
+			</span>
+		{/if}
 		{@render children()}
 	</a>
 	<!-- eslint-enable svelte/no-navigation-without-resolve -->
@@ -68,6 +79,7 @@
 		{type}
 		class={classes}
 		class:button--full-width={fullWidth}
+		class:button--check-icon={showCheckIcon}
 		disabled={inactive}
 		aria-busy={loading}
 		{onclick}
@@ -75,6 +87,12 @@
 		onfocus={onhover}
 	>
 		{#if loading}<span class="button__spinner" aria-hidden="true"></span>{/if}
+		{#if showCheckIcon && !loading}
+			<span class="button__icon" aria-hidden="true">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html checkIcon}
+			</span>
+		{/if}
 		{@render children()}
 	</button>
 {/if}
@@ -168,6 +186,23 @@
 			border-radius: var(--radius-circle);
 			animation: spinning var(--timing-loading) linear infinite;
 		}
+		&__icon {
+			display: none;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			width: 16px;
+			height: 16px;
+		}
+		&__icon :global(svg) {
+			display: block;
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic'])) .button--check-icon .button__icon {
+		display: inline-flex;
 	}
 
 	:global(:root:has(.app-shell[data-presentation='classic'])) .button {

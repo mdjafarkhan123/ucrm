@@ -725,7 +725,11 @@
 	}
 </script>
 
-<RecordFormLayout title={mode === 'create' ? 'New automation' : 'Edit automation'} icon={robotIcon}>
+<RecordFormLayout
+	title={mode === 'create' ? 'New automation' : 'Edit automation'}
+	icon={robotIcon}
+	dirty={stale ? undefined : dirty}
+>
 	{#snippet main()}
 		<div class="builder">
 			<Input
@@ -1222,7 +1226,7 @@
 					<Button variant="primary" onclick={reviewLatest}>Review their version</Button>
 				</div>
 			{:else}
-				<span class="builder__bar-hint">
+				<span class="builder__bar-hint" class:builder__bar-hint--live={live}>
 					{#if dirty}
 						You have unsaved changes.
 					{:else if live}
@@ -1233,7 +1237,7 @@
 				</span>
 				<div class="builder__bar-actions">
 					<Button variant="secondary" href={homeHref}>Cancel</Button>
-					<Button variant="primary" loading={saving} onclick={save}>
+					<Button variant="primary" showCheckIcon loading={saving} onclick={save}>
 						{live ? 'Save changes' : 'Save draft'}
 					</Button>
 				</div>
@@ -1451,6 +1455,11 @@
 	.builder__bar-hint {
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
+	}
+
+	:global(:root:has(.app-shell[data-presentation='classic']) .sticky-action-bar--save)
+		.builder__bar-hint:not(.builder__bar-hint--live) {
+		display: none;
 	}
 
 	.builder__bar-actions {

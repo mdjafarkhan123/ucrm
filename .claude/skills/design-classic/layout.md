@@ -112,6 +112,24 @@ Each section has:
 - Prioritize high-impact orchestrated moments over scattered micro-interactions. A single well-sequenced page-load animation using staggered `animation-delay` delivers more perceived quality than many isolated effects.
 - Reserve scroll-triggered and hover transitions for moments that reinforce hierarchy or reward attention.
 
+## Save bar
+
+Use the approved reusable states in `classic.pen`, design-system page `07 Featured & saving`:
+`Save bar · unsaved` and `Save bar · resting`. In code, use `StickyActionBar` with its `--save` variant and
+the shared `SaveBarStatus` component. Full-page forms pass their existing dirty state through
+`RecordFormLayout`; detail pages continue to use `DetailEditBar`, which appears only while editing or when
+changes are waiting to be saved.
+
+The approved bar is 64px tall, with a 28px status indicator and 44px actions. Its Save action uses the Tabler
+check mark. Keep disabled buttons muted in the resting state and switch back to the existing spinner while
+a save is in progress.
+
+The full-page form bar keeps its resting state visible. Both states use the approved text: “No unsaved
+changes” with “Change any field, then press Save.”, and “You have unsaved changes” with “Nothing is saved
+until you press Save.” Save, Cancel, validation and error behavior remain owned by the existing form. Keep
+the status hidden outside Classic so shared form and action components preserve their Botanical and Control
+Room appearance. Use `--classic2-savebar-*` tokens for its surfaces, text, state dot and button height.
+
 ## Backgrounds & Visual Depth
 
 - Default to clean, flat solid backgrounds (`--color-surface`, `--color-surface--background`) suited to data-dense dashboard layouts

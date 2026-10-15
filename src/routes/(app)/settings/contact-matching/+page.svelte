@@ -135,6 +135,7 @@
 		icon={usersGroupIcon}
 		bind:this={layout}
 		error={saveError}
+		{dirty}
 	>
 		{#snippet main()}
 			{#if !canEdit}
@@ -175,6 +176,7 @@
 			{#if canEdit}
 				<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
 				<Button
+					showCheckIcon
 					onclick={() => void save().finally(() => layout?.revealError())}
 					disabled={!dirty || saving}
 					loading={saving}>Save</Button

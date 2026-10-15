@@ -266,7 +266,13 @@
 		items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Branding' }]}
 	/>
 
-	<RecordFormLayout title="Branding" icon={paletteIcon} bind:this={layout} error={saveError}>
+	<RecordFormLayout
+		title="Branding"
+		icon={paletteIcon}
+		bind:this={layout}
+		error={saveError}
+		{dirty}
+	>
 		{#snippet main()}
 			{#if !canEdit}
 				<p class="branding__readonly">
@@ -370,6 +376,7 @@
 			{#if canEdit}
 				<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
 				<Button
+					showCheckIcon
 					onclick={() => void save().finally(() => layout?.revealError())}
 					disabled={!dirty || saving}
 					loading={saving}>Save</Button

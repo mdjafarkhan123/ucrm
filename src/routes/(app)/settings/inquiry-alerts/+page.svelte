@@ -124,7 +124,13 @@
 		items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Inquiry alerts' }]}
 	/>
 
-	<RecordFormLayout title="Inquiry alerts" icon={bellIcon} bind:this={layout} error={errorMessage}>
+	<RecordFormLayout
+		title="Inquiry alerts"
+		icon={bellIcon}
+		bind:this={layout}
+		error={errorMessage}
+		{dirty}
+	>
 		{#snippet main()}
 			<p class="inquiry-alerts__intro">
 				When someone sends a request form or starts a chat on your website, the people you choose
@@ -170,6 +176,7 @@
 		{#snippet actions()}
 			<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
 			<Button
+				showCheckIcon
 				onclick={() => void save().finally(() => layout?.revealError())}
 				disabled={!dirty || saving}
 				loading={saving}>Save</Button
