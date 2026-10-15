@@ -84,11 +84,24 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
       was deleted. To match the app the same day: Day rows show name + "N items" only (booked hours and bar
       removed), and the Month "+ more" panel lost its two extra links. Light and dark checked. Waiting for Jafar.
 
-## Next (new sessions, one screen each)
+## Next (new sessions; redesign the look only, copy the live component's behaviour and wording)
 
-Still undesigned: empty-slot New Job popover and type chooser; Event popover and create/edit
-modal; Filters menus; drag ghost, reschedule and conflict states; Map split view (Version 1.2). Phone layouts
-are adapted while building.
+First, get Jafar's yes on the Unscheduled drawer and its states (drawn 2026-10-15). Then commit `classic.pen`
+from main after he presses Ctrl+S, if that wasn't done at session end. Then, in this order:
+
+1. Empty-slot quick create — `ScheduleJobCreate.svelte`: a Job/Request switch and a light Job form seeded with
+   the slot, plus More options.
+2. Previews — `AssessmentPreview` (read-only, Open request) and `EventPreview` (Edit/Delete), alongside the
+   approved Visit preview.
+3. Event form — `ScheduleEventDialog.svelte`: title, description, one day, timed or Anytime.
+4. Move confirmation — `MoveConfirm.svelte`: old → new, overlap and out-of-hours warnings, this visit or
+   this-and-future, notify customer. Also the Unschedule confirmation and the drag ghost.
+5. Filters panel — `ScheduleControls.svelte`: Employee, Status, density.
+6. Map workspace — `ScheduleRoute`, `RouteStopCard`, `RouteMap`: one employee's day, ordered stops with
+   locks, map, Directions.
+7. Pipeline Task card — `TaskCard.svelte`, on the calendar.
+
+Phone layouts are adapted while building.
 
 ## Proposals (not in the app today; data exists)
 
