@@ -349,7 +349,7 @@
 							<Avatar
 								id={invoice.client?.id ?? invoice.id}
 								name={clientName(invoice)}
-								size="small"
+								size="base"
 							/>
 							<a
 								class="invoices-table__client-link"

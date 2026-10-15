@@ -364,7 +364,7 @@
 				{#snippet row(job: JobListItem)}
 					<th scope="row">
 						<div class="jobs-table__client">
-							<Avatar id={job.client?.id ?? job.id} name={clientName(job)} size="small" />
+							<Avatar id={job.client?.id ?? job.id} name={clientName(job)} size="base" />
 							<a
 								class="jobs-table__client-link"
 								href={resolve('/(app)/jobs/[id=uuid]', { id: job.id })}>{clientName(job)}</a

@@ -162,7 +162,9 @@
 					</th>
 				{/each}
 				{#if rowActions}
-					<th scope="col" class="data-table__actions-cell">Actions</th>
+					<th scope="col" class="data-table__actions-cell"
+						><span class="data-table__actions-label">Actions</span></th
+					>
 				{:else if hasOpenAction}
 					<th scope="col" class="data-table__open-cell"
 						><span class="data-table__open-label">Open record</span></th
@@ -282,21 +284,59 @@
 			padding-inline: 16px;
 			border-color: var(--classic2-divider);
 		}
+		:global(th:first-child),
+		:global(td:first-child) {
+			padding-left: 24px;
+		}
+		:global(th:last-child),
+		:global(td:last-child) {
+			padding-right: 24px;
+		}
+		// Column titles are small capitals, as in the approved list designs.
 		:global(thead th) {
-			color: var(--classic2-muted);
+			padding-block: 10px;
+			color: var(--classic2-secondary);
 			font-size: 11px;
 			font-weight: 600;
+			line-height: 16px;
+			letter-spacing: 0.6px;
+			text-transform: uppercase;
+		}
+		// The select-all box is taller than a title, so its cell gives back the difference: 36px header.
+		:global(thead th.data-table__select-cell) {
+			padding-block: 7px;
+		}
+		// Buttons reset letter case and spacing, so the sortable titles take them from the cell.
+		.data-table__sort {
+			margin: 0;
+			padding: 0;
+			letter-spacing: inherit;
+			text-transform: inherit;
+		}
+		.data-table__sort:hover {
+			color: var(--classic2-ink);
+		}
+		.data-table__actions-cell .data-table__actions-label {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
 		}
 		:global(tbody th),
 		:global(tbody td) {
-			height: 60px;
-			padding-block: 12px;
+			height: 64px;
+			padding-block: 14px;
 		}
 		:global(tbody th) {
 			color: var(--classic2-ink);
+			font-size: 14px;
+			font-weight: 600;
 		}
 		:global(tbody td) {
-			color: var(--classic2-secondary);
+			color: var(--classic2-body);
+			font-weight: 500;
 		}
 		:global(tbody tr:hover),
 		:global(tbody tr:focus-within) {
@@ -311,9 +351,12 @@
 		:global(tbody tr.data-table__detail-row) {
 			background: var(--classic2-surface-soft);
 		}
+		.data-table__sort-icon {
+			color: var(--classic2-icon-muted);
+		}
 		.data-table__sort--active,
 		.data-table__sort--active .data-table__sort-icon {
-			color: var(--classic2-green);
+			color: var(--classic2-ink);
 		}
 		.data-table__sort:focus-visible {
 			outline: 2px solid var(--classic2-green);

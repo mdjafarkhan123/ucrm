@@ -29,6 +29,11 @@
 		border: 2px solid var(--classic2-surface);
 		font-family: var(--classic2-font);
 		font-weight: 700;
+		font-weight: 700;
+	}
+	:global(:root:has(.app-shell[data-presentation='classic']) .avatar--small),
+	:global(:root:has(.app-shell[data-presentation='classic']) .avatar--base) {
+		font-size: 11px;
 	}
 	:global(:root:has(.app-shell[data-presentation='classic']) .avatar--red),
 	:global(:root:has(.app-shell[data-presentation='classic']) .avatar--pink) {

@@ -33,3 +33,9 @@ same server with `DESIGN_SHELL_PREVIEW=botanical`; no Classic tokens or overlay 
 
 No full-project check: Jafar requested focused verification because the full Svelte check used 4.2 GiB RAM.
 Stop the temporary preview server after proof. Preserve main's unrelated uncommitted instructions/Memory.
+
+**Pencil match, 2026-10-15:** Jafar found list rows smaller than `Clients · 1440` (`iJgiT`). Fixed: 32px list
+avatars with 11px bold initials on all five lists; capital, spaced column titles (sortable ones too) in a
+36px header with the sorted one in ink; 64px rows, 14px names, 13px body text; 19px status and tag chips;
+tags as one chip plus "+N"; Lead amber. The rest of the approved Clients layout (book tiles, dark card,
+filters in the card header, phone above email, Person/Company line) is stage L work, not built yet.

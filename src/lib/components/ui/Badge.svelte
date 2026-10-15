@@ -104,10 +104,14 @@
 		font-family: var(--classic2-font);
 	}
 
+	// A plain small badge is the approved tag chip: squarer, tighter and never wrapping.
 	:global(:root:has(.app-shell[data-presentation='classic'])) .badge--small {
-		padding: 3px 8px;
-		border-radius: 10px;
-		font-size: var(--classic2-font-small);
+		padding: 3px 7px;
+		border-radius: 6px;
+		font-size: var(--classic2-font-micro);
+		font-weight: 600;
+		line-height: 13px;
+		white-space: nowrap;
 	}
 
 	:global(:root:has(.app-shell[data-presentation='classic'])) .badge--base {
@@ -127,6 +131,7 @@
 		border-radius: 10px;
 		font-size: var(--classic2-font-micro);
 		font-weight: 700;
+		line-height: 13px;
 	}
 
 	:global(:root:has(.app-shell[data-presentation='classic'])) .badge--no-dot {
