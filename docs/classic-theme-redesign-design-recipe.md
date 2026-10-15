@@ -34,7 +34,7 @@ The short rules for designing Classic screens. Jafar's target is the
 ## Colour rule
 
 A calm neutral base, and the brand green `#037741` with white text for each page's one main button. Light mode
-uses no light green. Jafar approved more visual color on 2026-10-15: icons and accents may use multiple
+uses no light green. Icons and accents may use multiple
 colors wherever they improve beauty, recognition or scanning. Keep status meanings consistent; a colored icon
 does not always need to announce a status. Use color deliberately and keep text readable.
 

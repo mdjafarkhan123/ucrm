@@ -1,9 +1,5 @@
 # Classic theme redesign
 
-**Status:** Whole-application goal and design-to-build method reaffirmed by Jafar on 2026-10-15. The first
-delivery (shared parts and six record pages) was approved on 2026-10-13. B1–B3 are integrated; B4 is awaiting
-integration. The revised delivery order was approved on 2026-10-15.
-
 ## Summary
 
 Classic is the design every contractor business uses today and the default for new businesses. This campaign
@@ -25,7 +21,7 @@ it makes money — have to be hunted for across a long stack of similar boxes.
 ## First version
 
 Finish the Classic shared parts, then the six record pages that share them: job, quote, invoice, request,
-payment and client (Jafar, 2026-10-13). Their approved desktop Pencil designs are the starting points; phone
+payment and client. Their approved desktop Pencil designs are the starting points; phone
 adaptations are reviewed before each page is coded. Each works in light and dark appearance. Other Classic pages already
 receive the shared card style; their full layouts are redesigned in later stages.
 
@@ -38,7 +34,6 @@ currently approved sequence and later-stage gates live in the [roadmap](../Memor
 
 ## Design target
 
-- **Name:** `classic-theme-redesign` (Jafar, 2026-10-13).
 - **New concepts come first.** Do not copy the live screen into Pencil and call it a redesign, and do not add
   decoration without a purpose. Study the actual task and mature products relevant to it, then design a fresh
   layout that makes the important answer or action easy to find. If an existing idea genuinely works best,
@@ -46,7 +41,7 @@ currently approved sequence and later-stage gates live in the [roadmap](../Memor
 - **Visual quality:** Aim for the care of a leading product designer's work: premium, polished, modern,
   colorful, clear, calm and meaningful. Icons and accents may use multiple colors wherever that improves
   beauty and clarity. Keep status meanings consistent and ensure color never becomes the only way to
-  understand information. These are Jafar's priorities, reaffirmed 2026-10-15.
+  understand information.
 
 ## Design and build loop
 
@@ -85,7 +80,7 @@ they do not have to copy a record-page layout.
 
 ## Shared building blocks
 
-Checked in code 2026-10-13. Restyling one changes every page listed.
+Restyling one changes every page listed.
 
 | Block | Pages using it |
 | --- | --- |
@@ -108,7 +103,7 @@ save bar. Permissions, loading and caching, preloading, and photo display rules 
 
 ### Settings additions
 
-Jafar approved these on 2026-10-13 ("go with your recommendation"):
+These additions are part of the agreed scope:
 
 - **Settings in the main search** — the top search finds settings pages too, instead of a second "Search
   settings" box on the page (as Stripe and Linear do).
@@ -128,26 +123,24 @@ Jafar approved these on 2026-10-13 ("go with your recommendation"):
 - The route inventory shows every application area assigned to a stage; each completed screen has an approved
   design, a checked live journey and no obsolete local variant left as the current design.
 
-## Assumptions
+## Technical boundaries
 
-- Confirmed: the pages above share the listed blocks (code check 2026-10-13).
-- Confirmed: page content styles are not yet separated by theme; the Classic frame only marks
+- The pages above share the listed blocks.
+- Page content styles are not yet fully separated by theme; the Classic frame marks
   `data-presentation="classic"`. Restyling a shared block would also change Botanical, so build planning must
-  use the CRM design system's theme foundation for Classic-only styling. This is technical and coordinated
-  with that campaign, not a choice for Jafar.
+  use the CRM design system's theme foundation for Classic-only styling.
 
 ## Still unclear
 
 - The exact order and screen boundaries within later Business Workspace, Control Room, sign-in and
-  customer-facing stages are chosen from the route inventory before those stages begin. Their inclusion in
-  the campaign is approved; this sequencing does not block the first delivery.
+  customer-facing stages are chosen from the route inventory before those stages begin.
 
 ## Not doing
 
 - Changing Botanical — the CRM design system campaign owns it.
 - Adding, removing or re-permissioning features, beyond the approved additions.
 
-## Sources and design decisions
+## References
 
 - [Design recipe](classic-theme-redesign-design-recipe.md) — read before designing or building any screen for
   this campaign: the working method and exact sizes, spacing and styles of the reference screens.
