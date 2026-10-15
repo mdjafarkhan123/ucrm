@@ -1,6 +1,8 @@
 # Classic theme redesign — now
 
-**Goal:** Classic takes the new premium look (Claude concept, chosen 2026-10-13) — first the six record pages, then the whole app including the
+**Goal:** Classic takes the new premium look (Claude concept, chosen 2026-10-13) — first the six record pages, then the whole app
+**Target:**  Dont convert exsiting real app screen design to classic pencil design. Its not a conversion work neither a random design. A new design concept like how top ui/ux engnieer design their product on Dribbble. Jafar Like their design. Premium, Polished, Modern, Colored, Clarity, Clam, Meaningful. New design should meet what contractors really want to see - no vauge. Design should be based on real world related top product research to know what really works and what not, which layout or element to add not to add, their positioning etc. Different type of color (multicolor) is allowed where suits. Color should carries meaning or reason.
+
 Control Room — built from shared blocks, with every existing feature, permission and save rule kept.
 **Plan:** `docs/classic-theme-redesign-behavior-contract.md` — first version approved by Jafar 2026-10-13.
 **Stage:** Build — `stages/first-version-build.md`; B3 shared UI integrated into `main` 2026-10-14.

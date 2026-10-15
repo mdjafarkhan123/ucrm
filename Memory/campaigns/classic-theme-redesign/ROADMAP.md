@@ -1,6 +1,8 @@
 # Classic theme redesign — roadmap
 
 **Plan:** `docs/classic-theme-redesign-behavior-contract.md` — first version approved by Jafar 2026-10-13;
+
+
 build order approved 2026-10-13 (stage file below).
 
 | Part | Plan section | Delivers | Waits for | Done when | State |

@@ -5,21 +5,21 @@ answers and approvals; a plan is allowed to grow over several planning parts.
 
 ## Start
 
-1. Search the campaign index and deferred index for matching work; open only matches. Agree a short goal:
+1. Search the campaign index and deferred index for matching work; open only matches. Agree a short goal: what actually user wants,
    who gains what ability, and why it matters. Several independently checkable outcomes or a conversation
    too crowded for careful work are reasons for a campaign; file count alone is not.
 2. Create the plan, `NOW.md`, and roadmap from their templates in the existing homes. Register the campaign.
    Point all three Memory records at the same first planning part; approved plans can start at a later stage.
-3. Read Proven Development for unresolved product behavior. Research facts yourself, distinguishing verified
-   behavior, inference, and our proposal. Use Grilling for remaining choices with recommendations in everyday
-   English. Use Grill with Docs when terms or lasting decisions need recording; its glossary is not the plan.
+3. Read `proven-development` skill for unresolved product behavior. Research facts yourself, distinguishing verified
+   behavior, inference, and our proposal. Use `grilling`  skill for remaining choices with recommendations in everyday
+   English. Use  `grill-with-docs` when terms or lasting decisions need recording; its glossary is not the plan.
 4. Record answers in the plan immediately and keep unanswered questions in **Still unclear**. Checkpoint an
    interrupted interview with its exact pending question and next action. Ask only questions whose answers
    are not already available; routine technical details belong to the AI.
 
 ## Specialist contract
 
-When Campaign Memory calls Grill with Docs, Wayfinder, To Spec, or To Tickets, use their discipline with
+When Campaign Memory calls `grill-with-docs`, `wayfinder`, `to-spec`, or `to-tickets`, use their discipline with
 this storage contract. The plan, campaign roadmap, and part notes remain authoritative; keep no competing
 `.scratch` tickets or issue-tracker statuses. Direct standalone invocation retains the helper's own workflow.
 
@@ -30,7 +30,7 @@ Campaign Memory for verification and checkpointing.
 
 ## Large planning
 
-Use Wayfinder when the decision work itself exceeds one session. The campaign's planning roadmap is the
+Use  `wayfinder` skill when the decision work itself exceeds one session. The campaign's planning roadmap is the
 map: a destination, small decision parts, their dependencies, and links to the plan sections holding answers.
 Keep questions that cannot yet be made precise in **Still unclear**, distinct from deliberate exclusions in
 **Not doing**. Only resolve a question with Jafar when it requires his decision. Research and safe prototypes
@@ -39,8 +39,8 @@ clears, write the consolidated plan before splitting build parts.
 
 ## Write the plan
 
-Use To Spec to write what is already understood. It is synthesis, not a substitute for unresolved planning.
-Use the plan template and plain English: the problem, audience, first version, journeys, permissions, failure
+Use `to-spec` skill to write what is already understood. It is synthesis, not a substitute for unresolved planning.
+Use the plan template and plain English: what user actually want, the problem, audience, first version, journeys, permissions, failure
 states, exclusions, and observable success. Keep proposals and assumptions separate from approved behavior.
 Write guarantees as behavior, such as “retrying does not send the customer a second copy.” Link research and
 design decisions rather than copying them; technical details stay with the current implementation part or ADR.

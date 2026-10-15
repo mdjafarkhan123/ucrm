@@ -8,7 +8,7 @@ description: Guide multi-session work from planning through design, building, ve
 Be the parent workflow: establish what Jafar wants, choose the necessary specialist guidance, and leave a
 fresh session able to continue without this chat. A **campaign** is work that cannot finish well in one
 session. Its product plan records the agreement; `Memory/` records the current position. This skill guides
-each session; it does not run in the background.
+each session.
 
 ## Start or resume
 

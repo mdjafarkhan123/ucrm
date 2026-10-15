@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Project instructions for Codex. Claude Code reads `CLAUDE.md`, which carries the same rules: when you change a
+Project instructions for Claude Code. Codex reads `AGENTS.md`, which carries the same rules: when you change a
 rule in one file, make the same change in the other in the same commit.
 
 ## Project
