@@ -6,7 +6,7 @@ screen-by-screen order below was approved 2026-10-15.
 
 Complete [B3b shared parts](shared-parts.md) after B4 and before B5. B5 and B7 prepare shared record pieces;
 then finish each page in turn. A page is done only after its approved Pencil design matches the real screen,
-its main journey works for the permitted roles at desktop and 390px in light/dark, shared design changes are
+its main journey works for the permitted roles at 1440px and a narrower desktop width in light/dark, shared design changes are
 synced, and its superseded styling and rejected variants are removed. Botanical must stay unchanged.
 
 | Part | Plan section | Delivers | Waits for | Done when | State |
@@ -23,4 +23,4 @@ synced, and its superseded styling and rejected variants are removed. Botanical 
 | B10a Request details | § Design principles | Approved Request concept | B9 | Assessment and conversion actions pass the page loop | Not started |
 | B10b Payment details | § Design principles | Approved Payment concept, receipt preview and Applied to | B10a | Receipt view, print and payment actions pass the page loop | Not started |
 | B11 Client details | § Design principles | Approved Client concept: summary, source, visits and tabs | B10b | All client actions pass the page loop | Not started |
-| B12 First-delivery check | § Success checks | Six completed record pages and their shared parts | B11 | Cross-page role, phone, dark, Botanical and proportional performance checks pass; Jafar's browser tour is complete | Not started |
+| B12 First-delivery check | § Success checks | Six completed record pages and their shared parts | B11 | Cross-page role, desktop width, dark, Botanical and proportional performance checks pass; Jafar's browser tour is complete | Not started |

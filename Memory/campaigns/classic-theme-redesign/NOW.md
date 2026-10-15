@@ -22,4 +22,4 @@ B5. The [record build](stages/first-version-build.md) and [whole-app stages](sta
 views, drawer and quick-create ([note](parts/schedule-design.md)). Home/Reports is coordinated with
 `crm-launch-readiness` [Part 13](../crm-launch-readiness/parts/part-13-home-reports.md).
 
-**Limits:** Settings' old layout still clips on phone; its later stage fixes it. Botanical stays unchanged.
+**Scope:** Desktop web. A separate phone app is planned outside this campaign. Botanical stays unchanged.

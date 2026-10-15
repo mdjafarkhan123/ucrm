@@ -1,6 +1,7 @@
 # Layout & Spacing
 
-Its a desktop web app. Mobile priority is not first
+Classic is currently a desktop web application. The redesign campaign targets desktop; a separate phone app
+is later work. Mobile values below document existing web behavior for maintenance, not a required new design.
 
 ## Spacing Tokens
 
@@ -142,4 +143,5 @@ Room appearance. Use `--classic2-savebar-*` tokens for its surfaces, text, state
 - All containers: full width, `var(--space-large)` horizontal padding
 - Section headers: `var(--space-largest)` (48px) bottom margin
 - Consistent vertical rhythm (via `--space-*` tokens), no crowded sections
-- Layouts readable and properly spaced on both desktop (≥ 1080px) and mobile (< 490px)
+- New redesign layouts readable and properly spaced at desktop widths (≥ 1080px); maintain existing mobile
+  web behavior when shared layout changes affect it

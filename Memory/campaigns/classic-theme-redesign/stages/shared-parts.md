@@ -5,7 +5,7 @@ Jafar, 2026-10-15. B1–B4 are integrated; start B3b without repeating those par
 
 Build only the shared parts needed by approved and next-up screens. Reuse the existing component when its
 structure and behavior match. Pencil is the visual source; the live app and product contracts own behavior.
-Each group covers light, dark, hover, focus, disabled, error or empty states that apply, and a 390px check.
+Each group covers light, dark, hover, focus, disabled, error or empty states that apply, and desktop-width checks.
 Verify a real use of each part in the app and compare Botanical before closing it.
 
 | Part | Delivers | Waits for | Done when | State |

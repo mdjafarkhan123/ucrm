@@ -31,6 +31,7 @@ Keep the existing explicit choice/OS preference behaviour and verify affected li
 Jafar approved the new Classic direction on 2026-10-13. For each redesigned part in
 `docs/classic-theme-redesign-behavior-contract.md`, use the reference screens in `classic.pen` and the
 token values, colour meanings and component recipe in `docs/classic-theme-redesign-design-recipe.md`.
+Read the campaign plan's platform scope before drawing screens or applying the shared screen check.
 `src/lib/styles/_classic-theme-tokens.scss` exposes those values as `--classic2-*` only while the Classic
 frame is active; menus and dialogs inherit them from the document root. Use these tokens for new Classic
 work. The older module values below describe the live parts that have not yet reached their build step.

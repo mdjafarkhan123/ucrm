@@ -157,7 +157,7 @@ Commit `classic.pen` from main after Jafar presses Ctrl+S, if that wasn't done a
    locks, map, Directions.
 6. Pipeline Task card — `TaskCard.svelte`, on the calendar.
 
-Phone layouts are adapted while building.
+This campaign designs and builds the desktop web layout; the separate phone app has its own future work.
 
 ## Proposals (not in the app today; data exists)
 

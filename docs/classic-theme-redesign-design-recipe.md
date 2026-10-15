@@ -8,8 +8,6 @@ The short rules for designing Classic screens. Jafar's target is the
   shell, § Cards and rows, § Fields and buttons, § Featured card, § Rail cards and § Save bar mean these.
 - **Layouts:** the approved frames in `classic.pen` — the six record pages (`… details · 1440`), the two
   Settings reference screens and `Home · Owner · 1440`. When this recipe and a frame disagree, the frame wins.
-- **Exact sizes and the approved phone layout** that no frame shows: the full earlier recipe, kept in Git at
-  commit `b35552b9` (`git show b35552b9:docs/classic-theme-redesign-design-recipe.md`).
 
 ## Working method
 
@@ -26,11 +24,11 @@ The short rules for designing Classic screens. Jafar's target is the
 5. **Critique.** Export at scale 1 and read it full size: clipped text, misalignment, a fact shown twice,
    invented features, colour that breaks § Colour rule, or an element that blends into its background. Check
    dark mode. At most three rounds.
-6. **Finish one screen before advancing.** Draw new concepts at desktop 1440 and phone 390, show Jafar, and
-   wait for approval; he presses Ctrl+S in Pencil before `classic.pen` is committed. For the already approved
-   desktop record/list screens, add and review the phone adaptation before code without repeating the desktop
-   decision. Check the live screen in both widths and appearances. Remove superseded styling and rejected
-   variants only after the approved replacement is saved. A screen can span sessions.
+6. **Finish one screen before advancing.** Draw the new desktop concept at 1440, show Jafar, and wait for
+   approval; he presses Ctrl+S in Pencil before `classic.pen` is committed. Keep already approved desktop
+   record/list designs as approved. Check the live screen at 1440 and a narrower desktop window in both
+   appearances. Remove superseded styling and rejected variants only after the approved replacement is saved.
+   A screen can span sessions.
 
 ## Colour rule
 

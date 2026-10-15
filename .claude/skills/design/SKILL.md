@@ -35,8 +35,8 @@ the colors, text sizes, spacing and parts copied from the app's real styles — 
 2. **Design from the file's own parts.** Place copies of its parts and use its color and size names, never raw
    values. If a part has to look different, change it on the design-system page first, so every screen using
    it follows. Pencil has no Tabler icons; use the Lucide icon with the same meaning, and Tabler in code.
-   Finished when each screen exists at 1440px and 390px wide, and a screenshot of each shows nothing cut off or
-   misaligned.
+   Finish at the widths in the approved product scope: 1440px for desktop web, plus 390px only when mobile web
+   is a deliverable. Screenshots at those widths show nothing cut off or misaligned.
 3. **Show Jafar and wait.** Tell him the names of the screens to look at, what each shows, and which parts
    changed. Finished when he says yes; write his yes, the date and the screen names in the campaign's part
    note.
@@ -51,15 +51,18 @@ them, and leave changes you did not make as they are.
 
 ## Before Calling a Screen Done
 
-**The screen check scales with the change.** A new screen or layout gets the full check below; a small change
-built from existing parts — an added field, option, card, or line — gets one desktop (1440px) and one phone
-(390px) screenshot of that spot, fixed until nothing looks off. Use the available browser tools; use Playwright when connected browser control is unavailable.
+**The screen check scales with the change and approved platform scope.** A new screen or layout gets the full
+check below; a small change built from existing parts — an added field, option, card, or line — gets a
+screenshot of that spot at each delivery width. Desktop-only work uses 1440px and a narrower desktop window;
+mobile web work also uses 390px. A shared change that affects an existing mobile web view gets a focused
+regression check even when mobile redesign is outside the campaign. Use the available browser tools; use
+Playwright when connected browser control is unavailable.
 
 The full check: look at the real screen the way a picky designer would, not at the code.
 
 1. Open each changed screen in the running app, signed in with a role from the login details in `Login.md`
    that sees the change.
-2. Screenshot it at desktop (1440px) and phone (390px) width, in every state the change touches: realistic
+2. Screenshot it at the approved delivery widths, in every state the change touches: realistic
    data, empty, loading, error, long names. For untouched screens, add dark mode when the change touches color. Botanical dark mode awaits
    its focused demo approval; report that gap rather than inventing an approved palette.
 3. Critique each screenshot against its approved Pencil screen when one exists, the approved demo and Botanical guidance for redesigned portions,
@@ -69,7 +72,7 @@ The full check: look at the real screen the way a picky designer would, not at t
    reachable phone navigation for the affected controls. Check permission differences touched by the change.
 5. Fix what the critique found, then screenshot again.
 
-Done when a fresh round at both widths turns up nothing you would fix. Cap it at three rounds, then report
+Done when a fresh round at the delivery widths turns up nothing you would fix. Cap it at three rounds, then report
 what still looks off. Tell Jafar which screens and states you checked, what you fixed, and the URL to open.
 
 ---

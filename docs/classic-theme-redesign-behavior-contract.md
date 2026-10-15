@@ -3,12 +3,13 @@
 ## Summary
 
 Classic is the design every contractor business uses today and the default for new businesses. This campaign
-redesigns and rebuilds **the whole application**, in stages, with new concepts that feel premium, polished,
+redesigns and rebuilds **the whole desktop web application**, in stages, with new concepts that feel premium, polished,
 modern, colorful, clear, calm and useful. The first delivery covers shared parts and six record pages; the
 remaining Business Workspace, Uplift Control Room, sign-in and customer-facing journeys follow. The theme
 selection foundation still covers only the signed-in Business Workspace in its first release; this campaign
 does not silently extend that separate contract. Existing features, permissions and save rules remain unless
-Jafar separately approves a behavior change.
+Jafar separately approves a behavior change. A separate phone application is planned outside this campaign;
+the desktop redesign does not require phone designs or phone-app implementation.
 
 ## Problem and audience
 
@@ -21,8 +22,8 @@ it makes money — have to be hunted for across a long stack of similar boxes.
 ## First version
 
 Finish the Classic shared parts, then the six record pages that share them: job, quote, invoice, request,
-payment and client. Their approved desktop Pencil designs are the starting points; phone
-adaptations are reviewed before each page is coded. Each works in light and dark appearance. Other Classic pages already
+payment and client. Their approved desktop Pencil designs are the starting points. Each works in light and
+dark appearance on desktop. Other Classic pages already
 receive the shared card style; their full layouts are redesigned in later stages.
 
 ## Later stages
@@ -49,10 +50,9 @@ currently approved sequence and later-stage gates live in the [roadmap](../Memor
    `classic.pen`, including states. Show Jafar the new or materially changed parts, record approval, then build
    and verify their Classic-only implementation. Extend the system when later screens reveal a real need;
    do not spend months inventing parts for hypothetical screens.
-2. For each screen, research the user's task and the current behavior, create a new Pencil concept at desktop
-   and phone widths, and get Jafar's approval. Earlier approved desktop screens retain their approval; add
-   and review their phone adaptation before coding without reopening the settled desktop concept.
-3. Build that screen using the shared parts. Check the main journey in the live app, desktop and phone, light
+2. For each screen, research the user's task and the current behavior, create a new desktop Pencil concept,
+   and get Jafar's approval. Earlier approved desktop screens retain their approval.
+3. Build that screen using the shared parts. Check the main journey in the live desktop app, light
    and dark, relevant roles, and the states it touches. Keep Botanical unchanged.
 4. If the screen improves a shared part, update its Pencil master, code component and design guidance in the
    same delivery. Remove the finished screen's superseded app styling and rejected Pencil variants after the
@@ -118,7 +118,8 @@ These additions are part of the agreed scope:
 - An owner opens an in-progress job → without scrolling sees its stage, today's visit, the job total and what
   is left before invoicing.
 - Every existing action on redesigned pages still works for the same roles, with the same save behavior.
-- Classic dark appearance and phone width show every redesigned page without cut-off or overlapping parts.
+- Classic light and dark appearance show every redesigned page without cut-off or overlapping parts at
+  desktop widths, including a narrower laptop window.
 - Botanical pages look the same before and after this campaign's changes.
 - The route inventory shows every application area assigned to a stage; each completed screen has an approved
   design, a checked live journey and no obsolete local variant left as the current design.
@@ -138,6 +139,7 @@ These additions are part of the agreed scope:
 ## Not doing
 
 - Changing Botanical — the CRM design system campaign owns it.
+- Designing or building the separate phone application in this campaign.
 - Adding, removing or re-permissioning features, beyond the approved additions.
 
 ## References
