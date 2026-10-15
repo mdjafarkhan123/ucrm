@@ -1,7 +1,6 @@
 # B5 — shared work-record header
 
-**Stage:** Verified; waiting to integrate. Branch `codex/classic-b5-header`, workspace
-`.worktrees/classic-b5`, claim `e456657c0377`.
+**Stage:** Complete and integrated 2026-10-15. Implementation `58c09284`.
 
 **Agreement:** Existing approved `classic.pen` record frames, especially Job hero `mO4CI`;
 [contract](../../../../docs/classic-theme-redesign-behavior-contract.md) and
@@ -32,4 +31,4 @@ existing title-focus effect and request draft-reset effects were inspected and r
 unit tests pass. Full-project checks were not run. Typed ESLint project loading was stopped for memory;
 focused syntax lint uses the same repo rules with projectService disabled.
 
-**Next:** Integrate and push, then B7 line items/totals before B6 Job details.
+**Next:** B7 line items/totals before B6 Job details.
