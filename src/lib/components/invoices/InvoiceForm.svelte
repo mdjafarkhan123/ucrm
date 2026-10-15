@@ -409,7 +409,13 @@
 		void submit().finally(() => layout?.revealError());
 	}}
 >
-	<RecordFormLayout title="New Invoice" icon={receiptIcon} bind:this={layout} error={formError}>
+	<RecordFormLayout
+		title="New Invoice"
+		icon={receiptIcon}
+		bind:this={layout}
+		error={formError}
+		dirty={isDirty}
+	>
 		{#snippet main()}
 			<PrimaryInfoCard
 				id="invoice-primary"
@@ -540,7 +546,7 @@
 
 		{#snippet actions()}
 			<Button variant="tertiary" onclick={onCancel} disabled={saving}>Cancel</Button>
-			<Button variant="primary" type="submit" loading={saving} disabled={!isDirty}>
+			<Button variant="primary" showCheckIcon type="submit" loading={saving} disabled={!isDirty}>
 				Save Invoice
 			</Button>
 		{/snippet}

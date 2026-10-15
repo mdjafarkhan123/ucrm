@@ -346,7 +346,13 @@
 		items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Payments' }]}
 	/>
 
-	<RecordFormLayout title="Payments" icon={creditCardIcon} bind:this={layout} error={saveError}>
+	<RecordFormLayout
+		title="Payments"
+		icon={creditCardIcon}
+		bind:this={layout}
+		error={saveError}
+		{dirty}
+	>
 		{#snippet main()}
 			<SectionBlock
 				title="Card payments with Stripe"
@@ -573,6 +579,7 @@
 		{#snippet actions()}
 			<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
 			<Button
+				showCheckIcon
 				onclick={() => void save().finally(() => layout?.revealError())}
 				disabled={!dirty || saving}
 				loading={saving}>Save</Button
