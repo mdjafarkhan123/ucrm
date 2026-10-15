@@ -110,14 +110,21 @@ Pencil. These notes live on branch `claude/schedule-design` (worktree `.worktree
       the first visit; Assigned team; Notify customer (ticked); More options and Save job in the footer. Same
       fields and wording as the app; the "First visit" panel heading is the one new label (grouping only).
       Light and dark checked. **Approved by Jafar 2026-10-15**, "First visit" heading included.
+- [x] 2026-10-15: the two hand-off tabs and the Job error drawn from `ScheduleJobCreate.svelte`, same wording and
+      one button each (Jobber's empty-slot chooser has the same four kinds; ours hands Request and Event off).
+      `Schedule · New request from empty slot · 1440` (`AOJ6z`, x 19998) and `… New event …` (`Xvtrv`, x 21478):
+      lead line, the slot as a ticket (date tile "OCT 14", then "Wed, Oct 14" and a clock line "1:00 PM – 2:00 PM"
+      — the app's one-line summary split in two, look only), the note with an arrow, and "Continue to new
+      request / event" alone in the footer. `Schedule · New job · error · 1440` (`LWT2a`, x 22958): Client empty,
+      a rose alert with an alert icon above the form, "Choose a client to continue." Light and dark checked.
+      Not drawn: the dateless slot ("No date yet — you can pick the day next."); the ticket would show only that
+      line, without a date tile. Waiting for Jafar.
 
 ## Next (new sessions; redesign the look only, copy the live component's behaviour and wording)
 
 Commit `classic.pen` from main after Jafar presses Ctrl+S, if that wasn't done at session end. Then, in this order:
 
-1. Empty-slot quick create, remaining tabs — `ScheduleJobCreate.svelte`: draw the **Request** tab ("New request",
-   hand-off text, the slot summary, "Continue to new request") and the **Event** tab ("New event", "Continue to
-   new event"), plus the red error message above the Job form, beside the approved `rGwsg`.
+1. Empty-slot quick create, remaining tabs — drawn 2026-10-15 (`AOJ6z`, `Xvtrv`, `LWT2a`); waiting for Jafar.
 2. Previews — `AssessmentPreview` (read-only, Open request) and `EventPreview` (Edit/Delete), alongside the
    approved Visit preview.
 3. Event form — `ScheduleEventDialog.svelte`: title, description, one day, timed or Anytime.
