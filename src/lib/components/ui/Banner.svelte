@@ -5,16 +5,18 @@
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import errorIcon from '@tabler/icons/outline/alert-circle.svg?raw';
 
-	// The design system's Banner (design skill, alerts.md): a borderless tinted strip that stays until its
-	// condition resolves. Message first, then an optional action.
+	// Persistent feedback. Classic uses the approved bordered card and tinted icon tile;
+	// other presentations retain their tinted strip. A title and follow-up action are optional.
 	let {
 		type = 'notice',
 		icon,
+		title,
 		children,
 		action
 	}: {
 		type?: 'notice' | 'success' | 'warning' | 'error';
 		icon?: string;
+		title?: string;
 		children: Snippet;
 		action?: Snippet;
 	} = $props();
@@ -30,11 +32,64 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <div class="banner banner--{type}" role={type === 'error' ? 'alert' : 'status'}>
 	<span class="banner__icon" aria-hidden="true">{@html icon ?? defaultIcons[type]}</span>
-	<div class="banner__content">{@render children()}</div>
+	<div class="banner__content">
+		{#if title}<strong class="banner__title">{title}</strong>{/if}
+		{@render children()}
+	</div>
 	{#if action}<div class="banner__action">{@render action()}</div>{/if}
 </div>
 
 <style lang="scss">
+	:global(:root:has(.app-shell[data-presentation='classic'])) .banner {
+		gap: 12px;
+		padding: 14px;
+		border: 1px solid var(--classic2-border);
+		border-radius: 14px;
+		background: var(--classic2-surface);
+		color: var(--classic2-body);
+		font-family: var(--classic2-font);
+
+		&--notice {
+			--banner-solid: var(--classic2-blue);
+			--banner-tile: var(--classic2-blue-soft);
+		}
+		&--success {
+			--banner-solid: var(--classic2-green);
+			--banner-tile: var(--classic2-green-soft);
+		}
+		&--warning {
+			--banner-solid: var(--classic2-amber);
+			--banner-tile: var(--classic2-amber-soft);
+		}
+		&--error {
+			--banner-solid: var(--classic2-rose);
+			--banner-tile: var(--classic2-rose-soft);
+		}
+		.banner__icon {
+			align-items: center;
+			justify-content: center;
+			width: 34px;
+			height: 34px;
+			padding: 8px;
+			border-radius: 10px;
+			color: var(--banner-solid);
+			background: var(--banner-tile);
+		}
+		.banner__content {
+			flex-basis: 180px;
+			font-size: 12px;
+			line-height: 1.5;
+			overflow-wrap: anywhere;
+		}
+		.banner__title {
+			display: block;
+			margin-bottom: 2px;
+			color: var(--classic2-ink);
+			font-size: 13px;
+			font-weight: 700;
+		}
+	}
+
 	.banner {
 		display: flex;
 		flex-wrap: wrap;
