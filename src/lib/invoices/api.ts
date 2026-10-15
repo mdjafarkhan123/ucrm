@@ -581,6 +581,12 @@ export type InvoiceDocumentHistoryEntry = {
 	after: InvoiceDocumentSnapshot;
 };
 
+export type InvoiceSource = {
+	job: { id: string; job_number: number };
+	quote: { id: string; quote_number: number; decided_at: string | null } | null;
+	request_id: string | null;
+};
+
 export type InvoiceDetail = {
 	invoice: {
 		id: string;
@@ -627,6 +633,8 @@ export type InvoiceDetail = {
 	lines: InvoiceLineItem[];
 	delivery: InvoiceDelivery;
 	client_balance: InvoiceClientBalance | null;
+	/** The job this bill came from and the quote and request behind it, when the reader may see them. */
+	source: InvoiceSource | null;
 	/** Whether the customer's copy offers online payment, and this invoice's partial-payment switch. */
 	online_payments: { offered: boolean; partial_allowed: boolean };
 	locale: string;
