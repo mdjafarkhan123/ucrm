@@ -10,10 +10,10 @@ Verify a real use of each part in the app and compare Botanical before closing i
 
 | Part | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- |
-| B3b.1 Catalogue in Pencil | Copy approved examples to the Classic design-system page and complete missing states for Dialog, ConfirmDialog, DropdownMenu, Popover, Tabs, table/list rows, Banner, Toast, Tooltip, Avatar, FilterChip, SearchInput, date picker and Segmented control icons | B4 | The parts needed by the approved record, list and Schedule screens are named, reusable, visually checked and approved by Jafar; speculative parts are left for their screen | Ready; read-only [inventory](../parts/b3b-inventory.md) done; claim Pencil ownership before edits |
-| B3b.2 Overlays and choices | Classic Dialog, ConfirmDialog, DropdownMenu, Popover, Tabs and Segmented control icons | B3b.1 | Existing open, dismiss, keyboard, focus and disabled behavior remains; approved visuals match in real record and Schedule examples | Waiting |
-| B3b.3 Finding and showing records | Table/list rows, FilterChip, SearchInput, Avatar and date picker | B3b.1 | List and form examples use the shared parts; searching, filtering, selection and date choice still work for permitted roles | Waiting |
-| B3b.4 Feedback | Banner, Toast and Tooltip | B3b.1 | Success, error, loading and help states remain understandable and reachable; Classic matches Pencil and Botanical stays unchanged | Waiting |
+| B3b.1 Catalogue in Pencil | Copy approved examples to the Classic design-system page and complete missing states for Dialog, ConfirmDialog, DropdownMenu, Popover, Tabs, table/list rows, Banner, Toast, Tooltip, Avatar, FilterChip, SearchInput, date picker and Segmented control icons | B4 | The parts needed by the approved record, list and Schedule screens are named, reusable, visually checked and approved by Jafar; speculative parts are left for their screen | Done 2026-10-15 — Jafar approved Option A, light and dark; [note](../parts/b3b-inventory.md) |
+| B3b.2 Overlays and choices | Classic Dialog, ConfirmDialog, DropdownMenu, Popover, Tabs and Segmented control icons | B3b.1 | Existing open, dismiss, keyboard, focus and disabled behavior remains; approved visuals match in real record and Schedule examples | Ready |
+| B3b.3 Finding and showing records | Table/list rows, FilterChip, SearchInput, Avatar and date picker | B3b.1 | List and form examples use the shared parts; searching, filtering, selection and date choice still work for permitted roles | Ready |
+| B3b.4 Feedback | Banner, Toast and Tooltip | B3b.1 | Success, error, loading and help states remain understandable and reachable; Classic matches Pencil and Botanical stays unchanged | Ready |
 
 If the inventory finds one of these already covered by B3, record that evidence and close that item without
 rebuilding it. A material visual change to an approved part returns to Jafar before code.

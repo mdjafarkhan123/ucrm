@@ -1,23 +1,34 @@
-# B3b — remaining shared parts inventory
+# B3b — remaining shared parts
 
-**Stage:** Preparation; [shared-parts order](../stages/shared-parts.md). **Next:** claim the Classic Pencil
-design-system area, re-read the live file, and start B3b.1. The `classic.pen` file is
-shared with other design sessions; this note records read-only findings, not a Pencil edit.
+**Stage:** B3b.1 done — Jafar approved sections 09–11 (light and dark) on 2026-10-15 ("your design approved")
+and saved `classic.pen`. **Next:** build B3b.2–B3b.4 in code, then B5.
 
-On 2026-10-15 the active `/home/jafar/Ucrm/classic.pen` was the correct Classic file. Its light and dark
-design-system frames (`GIgyC`, `yRKPF`) contain the B1–B4 foundations. The reusable component list has the
-shell, buttons, labels, fields, cards, Save bar and a basic Segmented control. The B3b Dialog,
-ConfirmDialog, DropdownMenu, Popover, Tabs, table/list rows, Banner, Toast, Tooltip, Avatar, FilterChip,
-SearchInput and date picker are **not yet reusable Pencil parts**. Some already appear as local groups on
-approved screens (for example Tabs, avatars and table rows), so copy and refine those examples instead of
-inventing a separate style. The approved Schedule popup needs an icon-capable Segmented control.
+**Decision (2026-10-15):** Jafar compared two full sets of the 14 parts in Pencil — A "polished" (approved
+look, rough edges fixed) and B "new concept" (tray footers, ink selection, card rows, dark toasts) — and
+answered "A". B was deleted. Pencil is the visual guide for this redesign, not the old `design-classic`
+modules (Jafar, same day).
 
-The application already has named components for those controls, including `Dialog`, `ConfirmDialog`,
-`DropdownMenu`, `Popover`, `Tabs`, `DataTable`, `Banner`, `Toast`, `Tooltip`, `Avatar`, `FilterChip`,
-`SearchInput`, `SegmentedControl`, `CalendarPicker` and `DateTimePicker` under `src/lib/components`.
-Inventory the current behavior and reuse them before changing styling. A file's existence is not proof its
-Classic design or states are finished.
+**Where it lives:** `classic.pen` → `Classic design system · light` and `· dark`, sections 09–11. The 14
+reusable masters sit in the light page; the dark page holds instances plus state examples. Masters: Dialog ·
+default, Confirm dialog · destructive, Dropdown menu, Popover · information, Tabs, Segmented control · icons,
+Search input, Filter chip, Avatar · initials, Table row, Date picker, Banner · success, Toast · success,
+Tooltip. Next to each master are state examples (hover, focus, disabled, selected, error, loading).
 
-**Do next:** read the current Pencil instances again because other sessions may edit them; organize the needed
-variants and states on both design-system frames; show Jafar the completed parts;
-then implement B3b.2–B3b.4. Do not change `classic.pen` while its current design ownership is unclear.
+**What A changed from the earlier draft:** no light-green fills in light mode; tabs show counts, a green
+underline when chosen and a green ring on keyboard focus; menu has a group label, record-type icon colours, a
+disabled item with its reason and a red danger item below a divider; confirm shows what will be removed;
+table rows have tick boxes, hover arrow button and a green left edge when selected; date picker separates
+today (outline) from the chosen day (filled) and has a Today button; banners are white with a tinted icon
+tile; toasts carry Undo/Retry (the live `Toast` already supports one action). New token
+`classic2-solid-rose` (#BE123C light, #E11D48 dark) for red buttons with white text — add it to
+`src/lib/styles/_classic-theme-tokens.scss` when building.
+
+**Build notes:** the app components already exist (`Dialog`, `ConfirmDialog`, `DropdownMenu`, `Popover`,
+`Tabs`, `SegmentedControl`, `SearchInput`, `FilterChip`, `Avatar`, `DataTable`, `CalendarPicker`/
+`DateTimePicker`, `Banner`, `Toast`, `Tooltip` under `src/lib/components`). Restyle them for Classic only via
+the theme foundation; keep their behaviour. The menu's "Needs a job first" reason and the confirm's preview
+line need checking against each real caller before use — show them only where the app already knows the fact.
+
+**Leftovers:** the unmerged `codex/classic-b3b-shared-parts` branch holds the superseded review images and an
+added "Top-tier UI/UX (Dribbble)" line for the plan; carry that line over when the plan document is next
+saved, then remove the branch and its worktree.

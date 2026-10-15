@@ -13,9 +13,9 @@ idea only when it works best.
 2026-10-15. **Stage:** First delivery. B1–B4 are integrated; B4's live proof and full-check limitation are
 in the [Save bar note](parts/b4-save-bar.md).
 
-**Next:** [B3b.1](stages/shared-parts.md): claim the shared Classic Pencil area, recheck the [inventory](parts/b3b-inventory.md),
-complete the reusable parts needed by approved screens, and show Jafar the visuals. Build those parts before
-B5. The [record build](stages/first-version-build.md) and [whole-app stages](stages/whole-app.md) have done-checks.
+**Next:** build [B3b.2–B3b.4](stages/shared-parts.md) in code from the parts Jafar approved on 2026-10-15
+([note](parts/b3b-inventory.md)), then B5. The
+[record build](stages/first-version-build.md) and [whole-app stages](stages/whole-app.md) have done-checks.
 
 **Approved designs:** six record pages; five lists ([Clients](parts/clients-list.md),
 [Requests/Quotes/Invoices](parts/requests-quotes-invoices-lists.md), Jobs in its design branch); Schedule
