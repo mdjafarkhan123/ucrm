@@ -21,7 +21,8 @@ handoff and whenever such information appears.
   If it cannot be determined, ask Jafar. Harmless repeatable actions need no action record.
 - Add discovered in-scope work to the roadmap; defer unrelated work, then continue the current part.
 
-Before committing, confirm necessary links and source sections resolve, touched Memory files fit their
+Before committing, confirm `NOW.md` still points to the plan's goal and every campaign-wide experience or
+behavior rule a new agent must know, necessary links and source sections resolve, touched Memory files fit their
 limits, and the plan's approval, roadmap, current note, and part agree about stage, dependencies, blockers,
 and next action. A blocked old part must not become the next action just because it was started first.
 Keep approved requirements and unfinished constraints when trimming. Use any existing project checker;

@@ -18,16 +18,18 @@ each session.
 2. Select the campaign Jafar named, or an existing one covering his goal. For an unnamed continuation, take
    the only campaign with unclaimed work that can move now; if several qualify, ask which and mention those
    waiting on Jafar. Never select from file order, recency, or another chat.
-3. For a new campaign, read [planning.md](planning.md). Otherwise read its `NOW.md`, then the named part's
-   note or roadmap line. Without a named part, prefer a started, unclaimed part that is waiting on nothing,
-   then the next part in `NOW.md`. Consult the roadmap only to choose or change parts. If these are claimed,
-   or Jafar asks for any available part, choose a dependency-ready part whose code and services do not
-   overlap claimed work. If none can move, explain what it waits for. A held claim stays held until its owner
-   releases it or Jafar confirms that session is closed.
+3. For a new campaign, read [planning.md](planning.md). Otherwise read its `NOW.md` **and the plan's core
+   agreement named there**: goal, scope, audience, experience or design target, and rules that govern every
+   part. This is required on every resume, before choosing work; it cannot be left behind a pointer reached
+   only for a specific task. Then read the named part's note or roadmap line. Without a named part, prefer a
+   started, unclaimed part that is waiting on nothing, then the next part in `NOW.md`. Consult the roadmap
+   only to choose or change parts. If these are claimed, or Jafar asks for any available part, choose a
+   dependency-ready part whose code and services do not overlap claimed work. If none can move, explain what
+   it waits for. A held claim stays held until its owner releases it or Jafar confirms that session is closed.
 4. Claim before changing files or outside services. Take over only the unfinished files identified as that
    part's work under the coordination rule; unknown changes need their ownership established first. If the
-   claim loses a race, choose again. Read the relevant plan section and source pointers, not all campaign
-   documents or all skills.
+   claim loses a race, choose again. Read the selected part's plan section and source pointers; the core
+   agreement was already read in step 3. Read other campaign documents only when that part needs them.
 5. Verify the saved position against actual code, approval records, and the outcome checks of outside
    actions. Resolve contradictory progress from evidence before following **Next**. If an outcome is unknown,
    or a correction changes agreed behavior, ask Jafar and continue independent authorized work.
@@ -66,7 +68,7 @@ arise. Already recorded authorization counts.
 Memory/
   INDEX.md
   campaigns/<campaign>/
-    NOW.md               goal, plan, stage, active and next part, blockers
+    NOW.md               goal, mandatory core-agreement pointers, stage, active and next part, blockers
     ROADMAP.md           part, plan section, dependency, done-check, state
     stages/<stage>.md    parts when the roadmap needs grouping
     parts/<part>.md      unfinished work, source pointers, exact next action
@@ -81,7 +83,8 @@ migrations, and Git show implementation. Ordinary unfinished technical reasoning
 larger implementation plans use a linked focused document.
 
 Use only the relevant [template](templates/) when creating a document. Keep agreement and state in their
-own homes, linked rather than copied; helpers use these campaign homes instead of creating another tracker.
+own homes, linked rather than copied; put a short goal and explicit core-agreement pointers in `NOW.md` so
+every resuming agent reaches the campaign-wide target. Helpers use these homes instead of another tracker.
 Memory points to meaningful proof and code locations instead of copying transcripts or session history.
 
 Word limits: `NOW.md` 200 · roadmap and stage file 800 each · part 500 · deferred task 150 · index row 50.

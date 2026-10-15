@@ -1,6 +1,6 @@
 # B4 — Classic Save bar
 
-**State:** Published integration candidate `origin/codex/b4-save-bar-integration` at checkpoint `a5b40c46` in `/home/jafar/.codex/worktrees/b4-integration/Ucrm`; it contains merge commit `1add398c` based on `32e5b80d`. Main integration waits for the active Schedule Pencil work to be saved and its reservation released. Source branch: `codex/classic-b4-save-bar` in `/tmp/ucrm-classic-b4`. **Plan:**
+**State:** Integrated into `main` in merge commit `f38bd6da` on 2026-10-15. **Plan:**
 `docs/classic-theme-redesign-behavior-contract.md` § Settings additions and
 `docs/classic-theme-redesign-design-recipe.md` § Save bar.
 
@@ -48,9 +48,7 @@ other action bar behavior remains intact. Tokens and the Classic design guide do
 
 ## Next
 
-The save bar and automation builder passed the live screen and behavior checks. The changes are merged in
-candidate commit `1add398c` against `32e5b80d`; `main` has not been updated because the root checkout now has
-a large uncommitted Schedule Pencil change under an active reservation. Formatting and `git diff --check`
-passed on the candidate; the full Svelte/TypeScript check remains inconclusive as noted above. Once the active
-writer saves and releases the reservation, fetch current `main`, merge again if needed, rerun the appropriate
-check and push. Keep source claim `1dab5a348cb4` and integration claim `023775c30fd3` until successful push.
+The Save bar and automation builder passed the live screen and behavior checks above. The integration merged
+cleanly with `main`; formatting and whitespace checks passed on the candidate and merged tree. The full
+Svelte/TypeScript check remains inconclusive as noted above. The next campaign part is
+[B3b.1](../stages/shared-parts.md).
