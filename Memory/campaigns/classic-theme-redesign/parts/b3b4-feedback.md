@@ -1,7 +1,7 @@
 # B3b.4 — feedback
 
-**Stage:** Built and checked; waiting to merge. Branch `codex/classic-b3b4`, worktree
-`/home/jafar/Ucrm/.worktrees/classic-b3b4`, reservation `0493f5153626`.
+**Stage:** Complete 2026-10-15. Implementation `4abfb491`, verification `e58b48cb`;
+integrated from `codex/classic-b3b4`.
 
 **Agreement:** B3b.1 Option A, approved 2026-10-15, saved `classic.pen` masters `WtnC7` (Banner),
 `ym1rY` (Toast), `Uh8vP` (Tooltip). No new product behavior. Pencil live connection was unavailable;
@@ -24,6 +24,6 @@ Screenshots `/tmp/classic-feedback-*.png`; reproducible browser script `/tmp/cla
 Full project check intentionally stopped at Jafar's request due its 4.2 GiB RAM use; do not rerun it for
 this styling slice. Use focused checks. A pre-existing JobVisitsSection unused-selector warning is unrelated.
 
-**Next:** Integrate once main is available. Main is held by `5a5e1549bc54` and contains other sessions'
-uncommitted instructions/Memory changes; preserve those. Update `stages/shared-parts.md` B3b.4 and the
-campaign checkpoint during integration, then release this claim. B3b.2/B3b.3 remain separate claimed parts.
+**Next:** Recover the saved B3b.2/B3b.3 branches and their unfinished verification before B5.
+Jafar confirmed 2026-10-15 that all other sessions are closed; old reservations are recovery markers,
+not evidence of active agents. Main's uncommitted instruction/Memory changes were preserved during integration.
