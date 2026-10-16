@@ -1,6 +1,6 @@
 # A2b — progress strip, quick contact, Request list lines
 
-Branch `claude/a2b-contact-strip` (worktree `.worktrees/a2b-contact-strip`). Claim `511a7383cecd`. **State:** Waiting to merge.
+Branch `claude/a2b-contact-strip` (worktree `.worktrees/a2b-contact-strip`). Claim `511a7383cecd`. **State:** Merged into main (fast-forward) 2026-10-16; claim released, branch and worktree removed. After the merge Request, Quote, Job, Invoice, Client and the Requests list were loaded on main with no errors (one failed photo thumbnail on a Quote, a 409 from the files route, not from this work).
 
 **Built**
 - Progress strip (Request > Quote > Job > Invoice > Paid) on Request, Quote, Job and Invoice pages. One database call
