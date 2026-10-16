@@ -1829,6 +1829,9 @@
 <style lang="scss">
 	:global(.communications) {
 		display: block;
+		/* The cards react to the room the page actually has, not to the window: an open sidebar takes
+		   250px of it, so the same window width fits fewer columns than a collapsed one. */
+		container-type: inline-size;
 	}
 	.communications__loading {
 		display: grid;
@@ -2289,6 +2292,7 @@
 		color: var(--color-text--secondary);
 		font-size: 12px;
 		font-weight: 500;
+		white-space: nowrap;
 	}
 	.communications__conversation-icon {
 		display: inline-flex;
@@ -2675,9 +2679,11 @@
 		clip: rect(0, 0, 0, 0);
 		white-space: nowrap;
 	}
-	@media (max-width: 1050px) {
+	/* Below about 1100px of room the customer panel moves behind the Info button, so the conversation keeps
+	   a readable width. */
+	@container (max-width: 1100px) {
 		.communications__workspace {
-			grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+			grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
 		}
 		.communications__context {
 			display: none;
@@ -2686,7 +2692,7 @@
 			display: inline-flex;
 		}
 	}
-	@media (max-width: 700px) {
+	@container (max-width: 720px) {
 		.communications__loading,
 		.communications__workspace {
 			grid-template-columns: 1fr;
