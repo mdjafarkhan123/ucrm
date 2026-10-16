@@ -10,4 +10,8 @@ Pencil (`classic.pen`) has only Settings Home `hBrzM` and Business profile `Q0Kh
 
 **Examples on the canvas (row y=0):** Business hours x=6160, Team x=7700, Alerts x=9240. Each copies Business profile's shell and header; look only, the live page's controls and wording.
 
-**Next:** review the three, show Jafar, record his yes here; then draw the other 14.
+**Drawn and reviewed (2026-10-16):** Business hours `W0Nff`, Team `STRSU`, Alerts `n87Rqu`. Lead review fixed Business hours: closed day shrinks to its heading row (code: `align-items: start` on the `WeeklyHoursEditor` grid) and the "Last changed" chip is hidden (owners never see it live). Look choices for the build: Team avatars drawn neutral (live `Avatar` colours each person), seat bar under "8 of 10 seats used", search/filter in the table card header like Clients; Alerts in two columns keeping group order, no save bar (saves per switch).
+
+**Waiting for Jafar:** his yes on the three, plus: Owner badge colour (amber, same as Pending); neutral avatars; Business hours hint says "by appointment … for each day" but the editor has no per-day option (wording bug, ask before fixing).
+
+**Next:** record his yes here; then draw the other 14.
