@@ -575,7 +575,7 @@
 						title="Notes"
 						icon={notesIcon}
 						count={notesQuery.data?.length}
-						hint="Only your team sees these"
+						description="Only your team sees these"
 					>
 						<NotesPanel
 							entityType="request"
