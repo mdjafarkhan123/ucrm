@@ -8,6 +8,7 @@
 		title,
 		icon,
 		count,
+		subtitle,
 		actions: actionSnippet,
 		children
 	}: {
@@ -15,6 +16,8 @@
 		title: string;
 		icon?: string;
 		count?: number;
+		/** A line under the title that stands in for the count, in the App look. */
+		subtitle?: string;
 		actions?: Snippet;
 		children: Snippet;
 	} = $props();
@@ -25,7 +28,7 @@
 		{@render children()}
 	</SectionBlock>
 {:else}
-	<RailCard {title} {icon} {count} actions={actionSnippet}>
+	<RailCard {title} {icon} count={subtitle ? undefined : count} {subtitle} actions={actionSnippet}>
 		{@render children()}
 	</RailCard>
 {/if}

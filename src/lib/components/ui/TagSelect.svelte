@@ -20,7 +20,8 @@
 		noun = 'tag',
 		addLabel = 'Add tags',
 		searchId,
-		readonly = false
+		readonly = false,
+		quiet = false
 	}: {
 		tagIds?: string[];
 		onChange?: (next: string[]) => void;
@@ -33,6 +34,8 @@
 		searchId: string;
 		/** Chips only: no remove buttons and no popover, for someone who may see the entries but not change them. */
 		readonly?: boolean;
+		/** App look: every chip is the same quiet grey instead of a colour of its own. */
+		quiet?: boolean;
 	} = $props();
 
 	function setTags(next: string[]) {
@@ -97,7 +100,7 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div class="tag-select">
+<div class="tag-select" class:tag-select--quiet={quiet}>
 	{#each chosen as tag (tag.id)}
 		<span class="tag-select__chip tag-select__chip--{colorForId(tag.id)}">
 			{tag.name}
@@ -248,6 +251,16 @@
 		&__chip--yellowGreen {
 			--tag-bg: var(--color-job--surface);
 			--tag-fg: var(--color-job--onSurface);
+		}
+
+		// App look: colour is kept for status, so a tag is a calm grey pill whatever its id says.
+		&--quiet &__chip {
+			--tag-bg: var(--color-surface--background--subtle);
+			--tag-fg: var(--color-text);
+			padding: 5px 10px;
+			border-radius: 999px;
+			font-size: 12px;
+			font-weight: 600;
 		}
 
 		&__dot {

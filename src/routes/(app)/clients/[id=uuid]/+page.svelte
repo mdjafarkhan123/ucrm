@@ -16,6 +16,8 @@
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
+	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
+	import MoneyFeatureCard from '$lib/components/work/MoneyFeatureCard.svelte';
 	import Tabs, { type Tab } from '$lib/components/ui/Tabs.svelte';
 	import TabPanel from '$lib/components/ui/TabPanel.svelte';
 	import ClientDetailHeader from '$lib/components/clients/ClientDetailHeader.svelte';
@@ -70,11 +72,11 @@
 	} from '$lib/collaboration/api';
 	import ActivityFeed from '$lib/components/collaboration/ActivityFeed.svelte';
 	import homeIcon from '@tabler/icons/outline/home.svg?raw';
-	import targetIcon from '@tabler/icons/outline/target-arrow.svg?raw';
-	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
+	import targetIcon from '@tabler/icons/outline/target.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
-	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 
 	const queryClient = useQueryClient();
@@ -440,6 +442,51 @@
 		});
 	}
 
+	// --- Lifetime card ------------------------------------------------------------------------------------
+	// Each figure is null when this member lacks the permission that gates it (customers.view_financials,
+	// quotes.view, jobs.view); it then says so instead of showing a zero that may not be true. A figure whose
+	// feature the business's package leaves out is not shown at all.
+	const workSummary = $derived(client?.work_summary);
+	const firstName = $derived(
+		client?.first_name || client?.company_name || client?.display_name || ''
+	);
+	const sinceFormat = new Intl.DateTimeFormat(undefined, { month: 'short', year: 'numeric' });
+	const lifetimeValue = $derived.by(() => {
+		if (!workSummary?.included.billing) return undefined;
+		if (workSummary.lifetime_billed_minor === null) return '—';
+		return new Intl.NumberFormat(undefined, {
+			style: 'currency',
+			currency: workSummary.currency_code
+		}).format(workSummary.lifetime_billed_minor / 100);
+	});
+	const lifetimeNote = $derived.by(() => {
+		if (!workSummary?.included.billing) return undefined;
+		if (workSummary.lifetime_billed_minor === null)
+			return 'You do not have access to this client’s billing';
+		return client?.created_at
+			? `Billed to ${firstName} since ${sinceFormat.format(new Date(client.created_at))}`
+			: `Billed to ${firstName}`;
+	});
+	const lifetimeDetails = $derived(
+		[
+			workSummary?.included.quotes && {
+				label: 'Open quotes',
+				value:
+					workSummary.open_quotes_count === null
+						? 'No access'
+						: String(workSummary.open_quotes_count)
+			},
+			workSummary?.included.jobs && {
+				label: 'Active jobs',
+				value:
+					workSummary.active_jobs_count === null
+						? 'No access'
+						: String(workSummary.active_jobs_count)
+			}
+		].filter((row): row is { label: string; value: string } => Boolean(row))
+	);
+	const showLifetime = $derived(lifetimeValue !== undefined || lifetimeDetails.length > 0);
+
 	// --- Dialogs --------------------------------------------------------------------------------------
 
 	let marketingConsentOpen = $state(false);
@@ -474,6 +521,13 @@
 		}
 	}
 
+	const consentLine = $derived.by(() => {
+		if (!marketingConsent?.effective_at) return 'No opt-in or opt-out recorded yet.';
+		const when = consentDateFormat.format(new Date(marketingConsent.effective_at));
+		const via = consentSourceLabel(marketingConsent.source);
+		return via ? `${when} · via ${via}` : when;
+	});
+
 	async function refreshMarketingConsent() {
 		marketingConsentOpen = false;
 		await queryClient.invalidateQueries({ queryKey: clientDetailKey(clientId) });
@@ -501,9 +555,9 @@
 
 	const propertyColumns: DataTableColumn[] = [
 		{ key: 'street', label: 'Street' },
-		{ key: 'city', label: 'City' },
-		{ key: 'state', label: 'State' },
-		{ key: 'zip', label: 'Zip' }
+		{ key: 'city', label: 'City', width: '150px' },
+		{ key: 'state', label: 'State', width: '100px' },
+		{ key: 'zip', label: 'Zip', width: '110px' }
 	];
 
 	// The line under a street tells the office which property this is: its name if it has one, or that the
@@ -526,7 +580,7 @@
 {/if}
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<PageContainer variant="fill">
+<PageContainer variant="open">
 	{#if clientQuery.isPending}
 		<LoadingSkeleton variant="card" label="Loading client" />
 	{:else if (clientQuery.error as ClientReadError | null)?.status === 403}
@@ -550,6 +604,7 @@
 	{:else if client}
 		<RecordDetailLayout
 			class="client-detail"
+			cards
 			editing={isEditing}
 			dirty={isDirty}
 			{saving}
@@ -558,73 +613,92 @@
 			onCancel={discardDraft}
 		>
 			{#snippet main()}
-				<ClientDetailHeader
-					{client}
-					{canMessage}
-					onEdit={() => openBlock('details')}
-					editing={editingBlock === 'details'}
-					onHistory={() => (showHistory = !showHistory)}
-					onHistoryHover={warmHistory}
-					onArchive={client.can_archive ? () => (archiveConfirmOpen = true) : undefined}
-					onRestore={client.can_archive
-						? () => archiveMutation.mutate({ archived: false })
-						: undefined}
-					onMerge={client.can_merge ? () => (mergeOpen = true) : undefined}
-					archiving={archiveMutation.isPending}
-				>
-					{#snippet editor()}
-						<ClientDetailsForm
-							values={identityOf(client)}
-							wasCustomer={client.lifecycle_status === 'customer'}
-							saving={blockSaving}
-							error={blockError}
-							fieldErrors={blockFieldErrors}
-							onSave={(next) => void saveBlock(next)}
-							onCancel={closeBlock}
-						/>
-					{/snippet}
-				</ClientDetailHeader>
-
 				<Tabs tabs={clientTabs} value={activeTab} onChange={selectTab} label="Client sections">
+					{#snippet header(tabList)}
+						<ClientDetailHeader
+							{client}
+							{canMessage}
+							tabs={tabList}
+							onEdit={() => openBlock('details')}
+							editing={editingBlock === 'details'}
+							onHistory={() => (showHistory = !showHistory)}
+							onHistoryHover={warmHistory}
+							onArchive={client.can_archive ? () => (archiveConfirmOpen = true) : undefined}
+							onRestore={client.can_archive
+								? () => archiveMutation.mutate({ archived: false })
+								: undefined}
+							onMerge={client.can_merge ? () => (mergeOpen = true) : undefined}
+							archiving={archiveMutation.isPending}
+						>
+							{#snippet editor()}
+								<ClientDetailsForm
+									values={identityOf(client)}
+									wasCustomer={client.lifecycle_status === 'customer'}
+									saving={blockSaving}
+									error={blockError}
+									fieldErrors={blockFieldErrors}
+									onSave={(next) => void saveBlock(next)}
+									onCancel={closeBlock}
+								/>
+							{/snippet}
+						</ClientDetailHeader>
+					{/snippet}
+
 					<TabPanel value="details">
-						<SectionBlock title="Properties" icon={homeIcon} level={2}>
+						<SectionBlock
+							title="Properties"
+							subtitle="Where the work happens"
+							icon={homeIcon}
+							level={2}
+							class="section-block--flush client-detail__properties"
+						>
 							{#snippet actions()}
 								<Button
 									size="small"
-									variant="tertiary"
+									variant="secondary"
+									class="client-detail__action"
 									onclick={() => (propertyDialog = { property: null })}
 									onhover={warmPropertyTaxPicker}
 								>
+									<span class="client-detail__action-icon" aria-hidden="true">{@html plusIcon}</span
+									>
 									Add property
 								</Button>
 							{/snippet}
 							{#if properties.length === 0}
-								<EmptyState
-									icon={homeIcon}
-									title="No properties yet"
-									description="Add where the work happens and it will show up here."
-								/>
+								<div class="client-detail__pad">
+									<EmptyState
+										icon={homeIcon}
+										title="No properties yet"
+										description="Add where the work happens and it will show up here."
+									/>
+								</div>
 							{:else}
 								<DataTable
 									columns={propertyColumns}
 									items={properties}
 									rowId={(property) => property.id}
 									caption="Properties"
+									variant="card"
 								>
 									{#snippet row(property: ClientProperty)}
 										<th scope="row">
 											<span class="client-detail__street">{streetOf(property)}</span>
-											<span class="client-detail__street-caption">
-												{propertyCaption(property)}
-												{#if property.is_primary}<Badge size="small">Main</Badge>{/if}
-											</span>
+											{#if propertyCaption(property) || property.is_primary}
+												<span class="client-detail__street-caption">
+													{propertyCaption(property)}
+													{#if property.is_primary}<span class="client-detail__main-pill">Main</span
+														>{/if}
+												</span>
+											{/if}
 										</th>
-										<td>{property.city}</td>
-										<td>{property.state_region ?? '—'}</td>
-										<td>{property.postal_code ?? '—'}</td>
+										<td class="client-detail__cell">{property.city}</td>
+										<td class="client-detail__cell">{property.state_region ?? '—'}</td>
+										<td class="client-detail__cell">{property.postal_code ?? '—'}</td>
 									{/snippet}
 									{#snippet rowActions(property: ClientProperty)}
 										<PencilButton
+											variant="secondary"
 											onclick={() => (propertyDialog = { property })}
 											onhover={warmPropertyTaxPicker}
 											label={`Edit ${streetOf(property)}`}
@@ -634,9 +708,9 @@
 							{/if}
 						</SectionBlock>
 
-						<ClientWorkOverview {clientId} />
+						<ClientWorkOverview {clientId} clientName={firstName} />
 
-						<ClientSchedule {clientId} />
+						<ClientSchedule {clientId} clientName={firstName} />
 					</TabPanel>
 
 					{#if canSeeCommunication}
@@ -662,99 +736,121 @@
 						<ActivityFeed entityType="client" entityId={clientId} {currentUserId} />
 					</RailCard>
 				{:else}
-					<RailCard title="Lead source" icon={targetIcon}>
-						{#snippet actions()}
-							{#if editingBlock !== 'lead_source'}
-								<PencilButton onclick={() => openBlock('lead_source')} label="Edit lead source" />
-							{/if}
-						{/snippet}
-						{#if editingBlock === 'lead_source'}
-							<LeadSourceEditor
-								value={client.lead_source ?? ''}
-								saving={blockSaving}
-								error={blockError}
-								onSave={(next) => void saveBlock({ lead_source: next })}
-								onCancel={closeBlock}
-							/>
-						{:else if client.lead_source}
-							<p class="client-detail__lead-source">
-								{client.lead_source}
-							</p>
-						{:else}
-							<p class="client-detail__rail-blank">
-								Not recorded yet. Add it so you know what brings work in.
-							</p>
-						{/if}
-					</RailCard>
+					{#if showLifetime}
+						<MoneyFeatureCard
+							eyebrow="Lifetime"
+							value={lifetimeValue}
+							note={lifetimeNote}
+							details={lifetimeDetails}
+						/>
+					{/if}
 
-					<RailCard title="Marketing email" icon={mailIcon}>
-						{#snippet actions()}
+					<RailCard title="Source and marketing" flush>
+						<div class="client-detail__row">
+							<span class="client-detail__row-icon" aria-hidden="true">{@html targetIcon}</span>
+							<div class="client-detail__row-text">
+								<span class="client-detail__row-label">Lead source</span>
+								{#if editingBlock === 'lead_source'}
+									<LeadSourceEditor
+										value={client.lead_source ?? ''}
+										saving={blockSaving}
+										error={blockError}
+										onSave={(next) => void saveBlock({ lead_source: next })}
+										onCancel={closeBlock}
+									/>
+								{:else if client.lead_source}
+									<span class="client-detail__row-value">{client.lead_source}</span>
+								{:else}
+									<span class="client-detail__row-blank">
+										Not recorded yet. Add it so you know what brings work in.
+									</span>
+								{/if}
+							</div>
+							{#if editingBlock !== 'lead_source'}
+								<PencilButton
+									variant="secondary"
+									onclick={() => openBlock('lead_source')}
+									label="Edit lead source"
+								/>
+							{/if}
+						</div>
+
+						<div class="client-detail__row">
+							<span class="client-detail__row-icon" aria-hidden="true">{@html mailIcon}</span>
+							<div class="client-detail__row-text">
+								<span class="client-detail__row-label">Marketing email</span>
+								{#if !marketingConsent}
+									<span class="client-detail__row-blank">
+										Add an email address to record marketing consent.
+									</span>
+								{:else}
+									<span class="client-detail__consent">
+										{#if marketingConsent.state === 'opted_in'}
+											<StatusBadge status="success" size="compact">Opted in</StatusBadge>
+										{:else if marketingConsent.state === 'opted_out'}
+											<StatusBadge status="critical" size="compact">Opted out</StatusBadge>
+										{:else}
+											<StatusBadge status="informative" size="compact">Not recorded</StatusBadge>
+										{/if}
+									</span>
+									<span class="client-detail__row-note">{consentLine}</span>
+								{/if}
+							</div>
 							{#if canRecordConsent && marketingConsent}
 								<Button
 									size="small"
-									variant="tertiary"
+									variant="secondary"
+									class="client-detail__action client-detail__action--small"
 									onclick={() => (marketingConsentOpen = true)}
 								>
 									Record
 								</Button>
 							{/if}
-						{/snippet}
-						{#if !marketingConsent}
-							<p class="client-detail__rail-blank">
-								Add an email address to record marketing consent.
-							</p>
-						{:else}
-							<p class="client-detail__consent">
-								{#if marketingConsent.state === 'opted_in'}
-									<Badge status="success">Opted in</Badge>
-								{:else if marketingConsent.state === 'opted_out'}
-									<Badge status="critical">Opted out</Badge>
-								{:else}
-									<Badge status="informative">Not recorded</Badge>
-								{/if}
-							</p>
-							{#if marketingConsent.effective_at}
-								<p class="client-detail__rail-caption">
-									{consentDateFormat.format(
-										new Date(marketingConsent.effective_at)
-									)}{#if consentSourceLabel(marketingConsent.source)}
-										· via {consentSourceLabel(marketingConsent.source)}{/if}
-								</p>
-							{:else}
-								<p class="client-detail__rail-caption">No opt-in or opt-out recorded yet.</p>
-							{/if}
-						{/if}
+						</div>
 					</RailCard>
 
 					<RailCard title="Tags" count={tagIds.length}>
 						{#snippet actions()}
 							{#if tagsChanged}<Badge size="small" status="warning">Unsaved</Badge>{/if}
 						{/snippet}
-						<ClientTagSelect {tagIds} onChange={(next) => (tagIdsDraft = next)} />
+						<ClientTagSelect {tagIds} quiet onChange={(next) => (tagIdsDraft = next)} />
 					</RailCard>
 
 					{#if canSeeCommunication}
-						<RailCard title="Last communication" icon={messageIcon}>
+						<RailCard title="Last communication">
 							{#if lastCommunicationQuery.isPending}
 								<LoadingSkeleton variant="text" />
 							{:else if lastCommunication}
-								<p class="client-detail__rail-caption">
-									{exactTime(lastCommunication.created_at)}
-								</p>
-								<p class="client-detail__last-communication-subject">
-									{lastCommunication.subject}
-								</p>
-								<Button size="small" variant="tertiary" onclick={() => selectTab('communication')}>
-									Read more...
-								</Button>
+								<div class="client-detail__message">
+									<p class="client-detail__message-when">
+										<span class="client-detail__message-icon" aria-hidden="true"
+											>{@html mailIcon}</span
+										>
+										{exactTime(lastCommunication.created_at)}
+									</p>
+									<p class="client-detail__last-communication-subject">
+										{lastCommunication.subject}
+									</p>
+									<button
+										type="button"
+										class="client-detail__read-more"
+										onclick={() => selectTab('communication')}
+									>
+										Read more
+										<span class="client-detail__read-more-icon" aria-hidden="true"
+											>{@html arrowRightIcon}</span
+										>
+									</button>
+								</div>
 							{:else}
 								<p class="client-detail__rail-blank">Nothing sent yet.</p>
 							{/if}
 						</RailCard>
 					{/if}
 
-					<RailCard title="Notes" icon={notesIcon} count={notesCount}>
+					<RailCard title="Notes" subtitle="Only your team sees these" flush>
 						<NotesPanel
+							flat
 							entityType="client"
 							entityId={clientId}
 							canManage
@@ -769,6 +865,8 @@
 						entityId={clientId}
 						recordLabel="this client"
 						pickerLabel="On this client"
+						title="Photos and files"
+						summary
 					/>
 				{/if}
 			{/snippet}
@@ -819,30 +917,156 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
-	// The grid, the main card, and the rail all live in RecordDetailLayout now. What is left here is only
+	// The grid, the cards and the rail all live in RecordDetailLayout (`cards`). What is left here is only
 	// what this page's own content needs.
+	// The tab row now sits inside the header card, so the tabs root only stacks the card and its panels.
+	:global(.client-detail .tabs) {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+	}
+	:global(.client-detail .tab-panel:not([hidden])) {
+		gap: 20px;
+		padding: 0;
+	}
+
+	// The outline button that sits in a card header: quiet border, heading-coloured label.
+	:global(.client-detail__action) {
+		gap: 6px;
+		min-height: 36px;
+		padding-inline: 12px;
+		border-color: var(--color-border);
+		color: var(--color-heading);
+		background: var(--color-surface);
+		font-size: 13px;
+		font-weight: 600;
+	}
+	:global(.client-detail__action--small) {
+		min-height: 30px;
+		padding-inline: 10px;
+		font-size: 12px;
+	}
+	:global(.client-detail__action-icon) {
+		display: inline-flex;
+		color: var(--color-text--secondary);
+
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	// The properties table is only four short columns, so it never needs the list tables' width floor.
+	:global(.client-detail__properties) {
+		--data-table-min-width: 520px;
+
+		:global(.data-table--card tbody tr:last-child th),
+		:global(.data-table--card tbody tr:last-child td) {
+			border-bottom: 0;
+		}
+	}
+
 	.client-detail {
+		&__pad {
+			padding: 0 24px 24px;
+		}
+
 		&__street {
 			display: block;
 			color: var(--color-heading);
-			font-weight: 700;
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
 		}
 
 		&__street-caption {
 			display: flex;
 			align-items: center;
 			gap: var(--space-small);
+			margin-top: 3px;
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 400;
+			font-size: 12px;
+			font-weight: 500;
 		}
 
-		&__lead-source {
+		&__main-pill {
+			padding: 2px 8px;
+			border-radius: 999px;
+			color: var(--color-text--secondary);
+			background: var(--color-surface--background--subtle);
+			font-size: 11px;
+			font-weight: 600;
+		}
+
+		&__cell {
+			color: var(--color-text);
+			font-weight: 500;
+		}
+
+		// A row inside the Source and marketing card: a small icon tile, the label over its value, and the
+		// row's one action at the end. Rows run edge to edge under a hairline.
+		&__row {
 			display: flex;
 			align-items: center;
-			gap: var(--space-small);
+			gap: 12px;
+			padding: 12px 20px;
+			border-top: var(--border-base) solid var(--color-border);
+		}
+
+		&__row-icon {
+			display: inline-grid;
+			flex: 0 0 32px;
+			width: 32px;
+			height: 32px;
+			place-items: center;
+			border: var(--border-base) solid var(--color-informative--surface);
+			border-radius: var(--radius-base);
+			color: var(--color-text);
+			background: var(--color-surface--background--subtle);
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+		}
+
+		&__row-text {
+			display: flex;
+			min-width: 0;
+			flex: 1 1 auto;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 2px;
+		}
+
+		&__row-label {
+			color: var(--color-text--secondary);
+			font-size: 12px;
+			font-weight: 500;
+		}
+
+		&__row-value {
 			color: var(--color-heading);
+			font-size: 13px;
 			font-weight: 600;
+			overflow-wrap: anywhere;
+		}
+
+		&__row-blank,
+		&__row-note {
+			color: var(--color-text--secondary);
+			font-size: 12px;
+			font-weight: 500;
+		}
+
+		&__row-text :global(.lead-source-editor) {
+			align-self: stretch;
+			margin-top: 4px;
+		}
+
+		&__consent {
+			display: flex;
+			align-items: center;
+			margin: 2px 0;
 		}
 
 		&__rail-blank {
@@ -850,24 +1074,74 @@
 			font-size: var(--typography--fontSize-small);
 		}
 
-		&__consent {
+		&__message {
 			display: flex;
-			align-items: center;
-			gap: var(--space-small);
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 4px;
+			margin-top: -2px;
 		}
 
-		&__rail-caption {
-			margin-top: var(--space-slim);
+		&__message-when {
+			display: flex;
+			align-items: center;
+			gap: 6px;
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			font-size: 12px;
+			font-weight: 500;
+		}
+
+		&__message-icon {
+			display: inline-flex;
+			color: var(--color-icon--secondary);
+
+			:global(svg) {
+				width: 13px;
+				height: 13px;
+			}
 		}
 
 		&__last-communication-subject {
-			color: var(--color-heading);
-			font-weight: 600;
+			max-width: 100%;
 			overflow: hidden;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
 			text-overflow: ellipsis;
 			white-space: nowrap;
+		}
+
+		&__read-more {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+			margin-top: 6px;
+			padding: 0;
+			border: 0;
+			border-radius: var(--radius-small);
+			color: var(--color-interactive);
+			background: transparent;
+			font: inherit;
+			font-size: 13px;
+			font-weight: 600;
+			cursor: pointer;
+
+			&:hover {
+				text-decoration: underline;
+			}
+			&:focus-visible {
+				outline: none;
+				box-shadow: var(--shadow-focus);
+			}
+		}
+
+		&__read-more-icon {
+			display: inline-flex;
+
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
 		}
 	}
 </style>

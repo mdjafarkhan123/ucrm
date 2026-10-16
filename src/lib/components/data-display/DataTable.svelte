@@ -393,7 +393,7 @@
 	}
 	/* Narrower than this the columns would crush each other, so the table scrolls sideways instead. */
 	.data-table--card table {
-		min-width: 1040px;
+		min-width: var(--data-table-min-width, 1040px);
 	}
 	.data-table--card :global(tbody th) {
 		white-space: normal;

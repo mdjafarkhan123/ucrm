@@ -52,6 +52,7 @@
 		canManage = true,
 		title = 'Files',
 		surface = 'rail',
+		summary = false,
 		onChange
 	}: {
 		entityType: FileEntityType;
@@ -64,6 +65,8 @@
 		canManage?: boolean;
 		title?: string;
 		surface?: 'rail' | 'section';
+		/** App look: say how many photos and files there are under the title instead of a count beside it. */
+		summary?: boolean;
 		/** Fires after a file is attached to or removed from this record, once the list has refreshed. */
 		onChange?: () => void;
 	} = $props();
@@ -197,6 +200,15 @@
 		}))
 	);
 
+	const summaryLine = $derived(
+		[
+			photos.length > 0 ? `${photos.length} ${photos.length === 1 ? 'photo' : 'photos'}` : '',
+			documents.length > 0 ? `${documents.length} ${documents.length === 1 ? 'file' : 'files'}` : ''
+		]
+			.filter(Boolean)
+			.join(' · ')
+	);
+
 	function openLightbox(file: FileListItem) {
 		const position = photos.findIndex((entry) => entry.id === file.id);
 		if (position === -1) return;
@@ -211,7 +223,13 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<AttachmentSurface {surface} {title} icon={paperclipIcon} count={files.length}>
+<AttachmentSurface
+	{surface}
+	{title}
+	icon={paperclipIcon}
+	count={summary ? undefined : files.length}
+	subtitle={summary && files.length > 0 ? summaryLine : undefined}
+>
 	{#snippet actions()}
 		{#if canManage}
 			<Button size="small" variant="secondary" onclick={() => (pickerOpen = true)}>
@@ -581,6 +599,21 @@
 		&__item-meta {
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-smaller);
+		}
+	}
+
+	// App look: an empty card is one quiet line, not a dashed box.
+	:global(.record-detail--cards) .record-files__empty {
+		flex-direction: row;
+		justify-content: flex-start;
+		padding: 0;
+		border: 0;
+		text-align: left;
+
+		:global(svg) {
+			width: 18px;
+			height: 18px;
+			flex: 0 0 auto;
 		}
 	}
 

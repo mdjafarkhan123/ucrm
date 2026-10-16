@@ -28,6 +28,7 @@
 		value = $bindable(),
 		label,
 		onChange,
+		header,
 		children
 	}: {
 		tabs: Tab[];
@@ -38,6 +39,9 @@
 		/** Give this when the caller owns the open tab itself — a page keeping it in the URL, say. It then
 		 * takes over from `bind:value`, and `value` is only ever read. */
 		onChange?: (value: string) => void;
+		/** Put the tab row somewhere else, e.g. at the foot of a card that sits above the panels. It is
+		 * handed the row to draw, and the panels still follow as children. */
+		header?: Snippet<[Snippet]>;
 		children: Snippet;
 	} = $props();
 
@@ -62,18 +66,25 @@
 	}}
 	class="tabs"
 >
-	<TabsPrimitive.List class="tabs__list" aria-label={label}>
-		{#each tabs as tab (tab.value)}
-			<TabsPrimitive.Trigger
-				value={tab.value}
-				class="tabs__tab"
-				onmouseenter={tab.onhover}
-				onfocus={tab.onhover}
-			>
-				{tab.label}
-			</TabsPrimitive.Trigger>
-		{/each}
-	</TabsPrimitive.List>
+	{#snippet list()}
+		<TabsPrimitive.List class="tabs__list" aria-label={label}>
+			{#each tabs as tab (tab.value)}
+				<TabsPrimitive.Trigger
+					value={tab.value}
+					class="tabs__tab"
+					onmouseenter={tab.onhover}
+					onfocus={tab.onhover}
+				>
+					{tab.label}
+				</TabsPrimitive.Trigger>
+			{/each}
+		</TabsPrimitive.List>
+	{/snippet}
+	{#if header}
+		{@render header(list)}
+	{:else}
+		{@render list()}
+	{/if}
 	{@render children()}
 </TabsPrimitive.Root>
 
