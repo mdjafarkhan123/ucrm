@@ -12,6 +12,8 @@ Pencil (`classic.pen`) has only Settings Home `hBrzM` and Business profile `Q0Kh
 
 **Drawn and reviewed (2026-10-16):** Business hours `W0Nff`, Team `STRSU`, Alerts `n87Rqu`. Lead review fixed Business hours: closed day shrinks to its heading row (code: `align-items: start` on the `WeeklyHoursEditor` grid) and the "Last changed" chip is hidden (owners never see it live). Look choices for the build: Team avatars drawn neutral (live `Avatar` colours each person), seat bar under "8 of 10 seats used", search/filter in the table card header like Clients; Alerts in two columns keeping group order, no save bar (saves per switch).
 
-**Waiting for Jafar:** his yes on the three, plus: Owner badge colour (amber, same as Pending); neutral avatars; Business hours hint says "by appointment … for each day" but the editor has no per-day option (wording bug, ask before fixing).
+**Icons colourised (Jafar, 2026-10-16):** section/group icon tiles carry their meaning — Alerts groups use record colours (Schedule/Time clock job, Messages informative, Sales quote, Money invoice, Team task, Reviews warning); Team page and seat tiles use Team & access `$color-quote`; seat bar wine = active, yellow = invited; "Open" day label green.
 
-**Next:** record his yes here; then draw the other 14.
+**Approved by Jafar 2026-10-16 ("approved"):** Business hours `W0Nff`, Team `STRSU`, Alerts `n87Rqu` as the pattern for forms, lists and switch pages, with the lead's recommendations: Owner badge dark (`$color-surface-reverse`, white text), avatars one neutral grey, Business hours hint reworded at build to match the editor (no per-day appointment option).
+
+**Batch 2 (drawing):** the other 20 top-level pages at row y=0 from x=10780, 1540 apart: Branding, Taxes, Payments, Quote settings, Invoice settings, Contact matching, Pipeline, Price book, Checklists, Request forms, Automation, Email, SMS, Website chat, Balance, Blocked addresses, Inquiry alerts, Snippets, Templates, Security. Later batch: sub-pages (automation `[id]`/new, forms `[id]`, invoices opening-balances, price-book import, team activity and `[userId]`).
