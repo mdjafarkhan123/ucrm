@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { page } from '$app/state';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
-	import RecordCard from '$lib/components/layout/RecordCard.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
@@ -26,7 +24,6 @@
 	import playIcon from '@tabler/icons/outline/player-play.svg?raw';
 	import skipIcon from '@tabler/icons/outline/player-skip-forward.svg?raw';
 	import stopIcon from '@tabler/icons/outline/player-stop.svg?raw';
-	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 
 	// The Quote detail's record-level Automation controls (contractor pilot). Nothing loads with the page:
 	// the card shows a skeleton and only fetches its enrollments once the pointer reaches it. When the server
@@ -34,7 +31,6 @@
 	let { quoteId }: { quoteId: string } = $props();
 
 	const queryClient = useQueryClient();
-	const classic = $derived(page.data.presentation === 'classic');
 	const toast = getToastManager();
 
 	let warm = $state(false);
@@ -191,72 +187,7 @@
 	}
 </script>
 
-<!-- eslint-disable svelte/no-at-html-tags -->
-{#if !accessDenied && classic}
-	<!-- classic.pen "Automation card": the same enrollments and controls in the record-card look. -->
-	<div role="presentation" onmouseenter={() => (warm = true)} onfocusin={() => (warm = true)}>
-		<RecordCard
-			title="Automation"
-			subtitle="Follow-ups sent for you"
-			size="rail"
-			id="quote-automation"
-			class="automation-card"
-		>
-			{#snippet actions()}
-				{#if canControl && (data?.enrollable_recipes.length ?? 0) > 0}
-					<Button size="small" variant="secondary" onclick={() => (enrolling = true)}>
-						<span class="automation-card__plus" aria-hidden="true">{@html plusIcon}</span>Enrol
-					</Button>
-				{/if}
-			{/snippet}
-
-			{#if !warm || query.isPending}
-				<div class="automation-card__pad">
-					<LoadingSkeleton variant="text" label="Loading automations" />
-				</div>
-			{:else if query.isError}
-				<div class="automation-card__pad">
-					<ErrorState
-						description="Automation history could not be loaded."
-						retry={() => query.refetch()}
-					/>
-				</div>
-			{:else if enrollments.length === 0}
-				<p class="automation-card__empty">This quote isn't in any follow-up yet.</p>
-			{:else}
-				<ul class="automation-card__list">
-					{#each enrollments as enrollment (enrollment.enrollment_id)}
-						<li class="automation-card__row">
-							<span class="automation-card__tile" aria-hidden="true">{@html robotIcon}</span>
-							<div class="automation-card__body">
-								<p class="automation-card__name">
-									<span>{enrollment.recipe_name}</span>
-									<span class="automation-card__version">v{enrollment.version_number}</span>
-								</p>
-								<p class="automation-card__meta">
-									<StatusBadge status={stateTone(enrollment.state)}>
-										{stateLabel(enrollment.state)}
-									</StatusBadge>
-									{nextLine(enrollment)}
-								</p>
-								{#if enrollment.state === 'stopped' && enrollment.stop_reason}
-									<p class="automation-card__reason">{stopReasonLine(enrollment.stop_reason)}</p>
-								{/if}
-							</div>
-							{#if canControl && isRunning(enrollment)}
-								<DropdownMenu
-									items={menuItems(enrollment)}
-									triggerLabel="Automation actions"
-									disabled={pendingId !== null}
-								/>
-							{/if}
-						</li>
-					{/each}
-				</ul>
-			{/if}
-		</RecordCard>
-	</div>
-{:else if !accessDenied}
+{#if !accessDenied}
 	<div role="presentation" onmouseenter={() => (warm = true)} onfocusin={() => (warm = true)}>
 		<RailCard title="Automation" icon={robotIcon}>
 			{#snippet actions()}
@@ -310,8 +241,6 @@
 	</div>
 {/if}
 
-<!-- eslint-enable svelte/no-at-html-tags -->
-
 {#if enrolling}
 	<QuoteAutomationEnrollDialog
 		{quoteId}
@@ -351,110 +280,6 @@
 {/if}
 
 <style lang="scss">
-	.automation-card {
-		&__plus {
-			display: inline-flex;
-			margin-right: 4px;
-
-			:global(svg) {
-				width: 14px;
-				height: 14px;
-			}
-		}
-
-		&__pad {
-			padding: 0 20px 18px;
-		}
-
-		&__empty {
-			margin: 0;
-			padding: 12px 20px 16px;
-			border-top: 1px solid var(--classic2-divider);
-			color: var(--classic2-secondary);
-			font-size: var(--classic2-font-label);
-		}
-
-		&__list {
-			margin: 0;
-			padding: 0;
-			list-style: none;
-		}
-
-		&__row {
-			display: flex;
-			align-items: flex-start;
-			gap: 12px;
-			padding: 14px 20px;
-			border-top: 1px solid var(--classic2-divider);
-		}
-
-		&__tile {
-			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-			box-sizing: border-box;
-			width: 32px;
-			height: 32px;
-			border: 1px solid var(--classic2-amber-soft);
-			border-radius: 9px;
-			background: var(--classic2-amber-tint);
-			color: var(--classic2-amber);
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
-		}
-
-		&__body {
-			display: flex;
-			flex: 1 1 auto;
-			flex-direction: column;
-			gap: 4px;
-			min-width: 0;
-		}
-
-		&__name {
-			display: flex;
-			align-items: baseline;
-			gap: 6px;
-			margin: 0;
-			color: var(--classic2-ink);
-			font-size: var(--classic2-font-label);
-			font-weight: 600;
-
-			span:first-child {
-				overflow: hidden;
-				text-overflow: ellipsis;
-				white-space: nowrap;
-			}
-		}
-
-		&__version {
-			color: var(--classic2-secondary);
-			font-size: var(--classic2-font-small);
-			font-weight: 500;
-		}
-
-		&__meta {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: center;
-			gap: 4px 8px;
-			margin: 0;
-			color: var(--classic2-secondary);
-			font-size: var(--classic2-font-small);
-		}
-
-		&__reason {
-			margin: 0;
-			color: var(--classic2-secondary);
-			font-size: var(--classic2-font-small);
-			font-style: italic;
-		}
-	}
-
 	.quote-automation__list {
 		display: flex;
 		flex-direction: column;

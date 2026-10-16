@@ -401,7 +401,7 @@
 				{#snippet row(client: ClientListItem)}
 					<th scope="row">
 						<div class="clients-table__name">
-							<Avatar id={client.id} name={client.display_name} size="base" />
+							<Avatar id={client.id} name={client.display_name} size="small" />
 							<a class="clients-table__name-text" href={clientHref(client)}>{client.display_name}</a
 							>
 						</div>
@@ -416,12 +416,7 @@
 					<td>
 						{#if client.tags.length > 0}
 							<div class="clients-table__tags">
-								<!-- The first tag plus a count keeps every row one line tall; the full list is in the title. -->
-								<span title={client.tags.map((tag) => tag.name).join(', ')}
-									><Badge size="small">{client.tags[0].name}</Badge></span
-								>
-								{#if client.tags.length > 1}<Badge size="small">+{client.tags.length - 1}</Badge
-									>{/if}
+								{#each client.tags as tag (tag.id)}<Badge>{tag.name}</Badge>{/each}
 							</div>
 						{:else}
 							—
@@ -431,7 +426,7 @@
 						{#if client.archived_at}
 							<Badge>Archived</Badge>
 						{:else}
-							<Badge status={client.lifecycle_status === 'customer' ? 'success' : 'warning'}
+							<Badge status={client.lifecycle_status === 'customer' ? 'success' : 'informative'}
 								>{statusLabel(client.lifecycle_status)}</Badge
 							>
 						{/if}
@@ -575,25 +570,6 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-smaller);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) {
-		.clients-table__name {
-			gap: 12px;
-		}
-		.clients-table__name-text {
-			color: var(--classic2-ink);
-			font-weight: 600;
-		}
-		.clients-table__more-properties {
-			color: var(--classic2-secondary);
-			font-size: var(--classic2-font-small);
-			font-weight: 600;
-		}
-		.clients-table__tags {
-			flex-wrap: nowrap;
-			gap: 4px;
-		}
 	}
 
 	@media (max-width: 767px) {

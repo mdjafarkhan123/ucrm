@@ -69,31 +69,4 @@
 			color: var(--color-icon--secondary);
 		}
 	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .rail-card {
-		gap: 16px;
-		padding: 20px;
-		border: 0;
-		border-radius: 20px;
-		background: var(--classic2-surface);
-		box-shadow:
-			inset 0 0 0 1px var(--classic2-border),
-			0 1px 2px var(--classic2-shadow-near),
-			0 10px 28px var(--classic2-shadow-far);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .rail-card__header {
-		gap: 12px;
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .rail-card__title {
-		color: var(--classic2-ink);
-		font-size: var(--classic2-font-card);
-		font-weight: 700;
-		line-height: 1.25;
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .rail-card__icon :global(svg) {
-		color: var(--classic2-icon-muted);
-	}
 </style>

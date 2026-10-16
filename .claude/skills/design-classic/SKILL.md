@@ -26,17 +26,6 @@ sources before changing values. Update affected guidance with approved token cha
 Classic dark colours come from the live variables file's dark-theme mixin and root `data-theme` handling.
 Keep the existing explicit choice/OS preference behaviour and verify affected light/dark states.
 
-## Approved new Classic look
-
-Jafar approved the new Classic direction on 2026-10-13. For each redesigned part in
-`docs/classic-theme-redesign-behavior-contract.md`, use the reference screens in `classic.pen` and the
-token values, colour meanings and component recipe in `docs/classic-theme-redesign-design-recipe.md`.
-Read the campaign plan's platform scope before drawing screens or applying the shared screen check.
-`src/lib/styles/_classic-theme-tokens.scss` exposes those values as `--classic2-*` only while the Classic
-frame is active; menus and dialogs inherit them from the document root. Use these tokens for new Classic
-work. The older module values below describe the live parts that have not yet reached their build step.
-Check the relevant approved Pencil frame before restyling one of those parts.
-
 ## Module Index
 
 ### Foundations

@@ -1,10 +1,10 @@
 # Part 13 — Home screen and Reports
 
 **Campaign:** crm-launch-readiness · **Plan:** `docs/home-and-reports-behavior-contract.md`
-**Stage:** Design
+**Stage:** Design · **2026-10-16:** Jafar rolled the app back to its pre-redesign Classic look and deleted the classic-theme-redesign campaign; ask Jafar which look Home and Reports should use before building.
 **Code:** `main` (plan merged 2026-10-12; build work starts a new `codex/` worktree)
 **Done when:** Figures match the books and respect each person's permissions
-**Read next:** `.claude/skills/design/SKILL.md` § "Design in Pencil first"; recipe `docs/classic-theme-redesign-design-recipe.md`
+**Read next:** `.claude/skills/design/SKILL.md` § "Design in Pencil first"
 
 ## Steps
 

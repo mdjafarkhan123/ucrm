@@ -4,7 +4,6 @@
 	import SetupCard from '$lib/components/dashboard/SetupCard.svelte';
 	import ReadinessCard from '$lib/components/dashboard/ReadinessCard.svelte';
 	import DayClockCard from '$lib/components/time-clock/DayClockCard.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
 	import CountryPicker from '$lib/components/ui/CountryPicker.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -290,10 +289,10 @@
 								<span class="panel__eyebrow">Relationship record</span>
 								<h2 id="customers-heading">Customers</h2>
 							</div>
-							<Button
-								class="dashboard__quick-action"
-								size="small"
-								onclick={() => openForm('customer')}>Add customer</Button
+							<button
+								class="button button--small"
+								type="button"
+								onclick={() => openForm('customer')}>Add customer</button
 							>
 						</div>
 						{#if data.clients.length === 0}<div class="empty">
@@ -342,11 +341,11 @@
 								<span class="panel__eyebrow">Incoming work</span>
 								<h2 id="requests-heading">Requests</h2>
 							</div>
-							<Button
-								class="dashboard__quick-action"
-								size="small"
+							<button
+								class="button button--small"
+								type="button"
 								onclick={() => openForm('request')}
-								disabled={data.properties.length === 0}>New request</Button
+								disabled={data.properties.length === 0}>New request</button
 							>
 						</div>
 						{#if data.requests.length === 0}<div class="empty">
@@ -628,36 +627,6 @@
 	.button--small {
 		padding: 8px 12px;
 		font-size: var(--typography--fontSize-small);
-	}
-	:global(:root:has(.botanical-shell[data-presentation='botanical']) .dashboard__quick-action) {
-		min-height: initial;
-		padding: 8px 12px;
-		border: 0;
-		border-radius: var(--radius-small);
-		color: var(--color-text--reverse);
-		background: var(--color-interactive);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 700;
-		line-height: 1.25;
-	}
-	:global(
-		:root:has(.botanical-shell[data-presentation='botanical'])
-			.dashboard__quick-action:hover:not(:disabled)
-	) {
-		color: var(--color-text--reverse);
-		background: var(--color-interactive--hover);
-	}
-	:global(
-		:root:has(.botanical-shell[data-presentation='botanical']) .dashboard__quick-action:disabled
-	) {
-		pointer-events: auto;
-		color: var(--color-text--reverse);
-		border: 0;
-		background: var(--color-interactive);
-		opacity: 0.45;
-		box-shadow: none;
-		cursor: not-allowed;
-		user-select: auto;
 	}
 	.stats {
 		display: grid;

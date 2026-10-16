@@ -269,13 +269,7 @@
 		void submit(false).finally(() => layout?.revealError());
 	}}
 >
-	<RecordFormLayout
-		{title}
-		icon={fileTextIcon}
-		bind:this={layout}
-		error={formError}
-		dirty={isDirty}
-	>
+	<RecordFormLayout {title} icon={fileTextIcon} bind:this={layout} error={formError}>
 		{#snippet main()}
 			<PrimaryInfoCard
 				bind:title={form.title}
@@ -375,7 +369,7 @@
 						Save & Create Another
 					</Button>
 				{/if}
-				<Button variant="primary" showCheckIcon type="submit" loading={saving} disabled={!isDirty}>
+				<Button variant="primary" type="submit" loading={saving} disabled={!isDirty}>
 					{savedRequestId ? 'Save changes' : 'Save Request'}
 				</Button>
 			</div>

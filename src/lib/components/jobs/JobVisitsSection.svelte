@@ -1,11 +1,8 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
-	import RecordCard from '$lib/components/layout/RecordCard.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -34,7 +31,7 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import NotifyCustomerCheckbox from '$lib/components/schedule/NotifyCustomerCheckbox.svelte';
 	import { customerNoticeToast, type CustomerNoticeKind } from '$lib/schedule/customer-notices';
-	import { assignableTeamKey, fetchAssignableTeam, type TeamMember } from '$lib/team/api';
+	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
 	import type { JobType } from '$lib/jobs/statuses';
 	import {
 		addJobVisits,
@@ -49,8 +46,6 @@
 		uncompleteJobVisit,
 		updateJobVisit,
 		fetchJobVisitLines,
-		fetchJobLabor,
-		jobLaborKey,
 		jobVisitLinesKey,
 		saveJobVisitLines,
 		type AddVisitInput,
@@ -73,12 +68,6 @@
 	import repeatOffIcon from '@tabler/icons/outline/repeat-off.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 	import folderIcon from '@tabler/icons/outline/folder.svg?raw';
-	import checkIcon from '@tabler/icons/outline/check.svg?raw';
-	import broadcastIcon from '@tabler/icons/outline/broadcast.svg?raw';
-	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
-	import calendarTimeIcon from '@tabler/icons/outline/calendar-time.svg?raw';
-	import calendarSmallIcon from '@tabler/icons/outline/calendar.svg?raw';
-	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 
 	// The persisted visits manager for a job's detail page — the same "child record with its own save" shape
 	// as a client's property: every action here writes for itself and reports its own toast, so the page's
@@ -107,8 +96,7 @@
 		currentUserId,
 		canRecord,
 		canManageTeam,
-		currencyCode = 'USD',
-		today
+		currencyCode = 'USD'
 	}: {
 		jobId: string;
 		visits: JobVisit[];
@@ -137,11 +125,7 @@
 		canRecord: boolean;
 		canManageTeam: boolean;
 		currencyCode?: string;
-		/** The organisation's calendar day (YYYY-MM-DD). Falls back to this device's day. */
-		today?: string;
 	} = $props();
-
-	const classic = $derived(page.data.presentation === 'classic');
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -246,7 +230,6 @@
 
 	// Local calendar day as YYYY-MM-DD, so "past" is a plain string compare against a visit's date-only value.
 	const todayStr = $derived.by(() => {
-		if (today) return today;
 		const now = new Date();
 		const y = now.getFullYear();
 		const m = String(now.getMonth() + 1).padStart(2, '0');
@@ -276,101 +259,6 @@
 
 	function isOverdue(visit: JobVisit) {
 		return !visit.completed_at && visit.visit_date !== null && visit.visit_date < todayStr;
-	}
-
-	// --- Classic rows ----------------------------------------------------------------------------------------
-	// The approved Classic visit row shows the crew's faces and who is on site right now. The names come from
-	// the same assignable-team list the visit dialog uses; the on-site state from the job's own labor read,
-	// which the Work log already loads. Either may be unavailable to a reader, and the row then just leaves
-	// that part out.
-	const classicTeamQuery = createQuery(() => ({
-		queryKey: assignableTeamKey,
-		queryFn: fetchAssignableTeam,
-		enabled: classic && visits.some((visit) => visit.assignee_ids.length > 0),
-		staleTime: 5 * 60 * 1000
-	}));
-	const memberById = $derived(
-		new Map<string, TeamMember>((classicTeamQuery.data ?? []).map((member) => [member.id, member]))
-	);
-	const classicLaborQuery = createQuery(() => ({
-		queryKey: jobLaborKey(jobId),
-		queryFn: () => fetchJobLabor(jobId),
-		enabled: classic && Boolean(jobId),
-		staleTime: 15_000,
-		retry: false
-	}));
-	// Earliest running timer per visit, as a plain lookup rebuilt with the query (never mutated afterwards).
-	const runningByVisit = $derived.by(() => {
-		const earliest: Record<string, string> = {};
-		for (const timer of classicLaborQuery.data?.running ?? []) {
-			if (!timer.visit_id) continue;
-			const earlier = earliest[timer.visit_id];
-			if (!earlier || timer.started_at < earlier) earliest[timer.visit_id] = timer.started_at;
-		}
-		return earliest;
-	});
-	// Group names only help when visits fall into more than one group; a single-group list reads as one.
-	const showGroupLabels = $derived(
-		[toBeScheduled.length, upcoming.length, past.length].filter((count) => count > 0).length > 1
-	);
-	const completedCount = $derived(visits.filter((visit) => visit.completed_at).length);
-	const weekdayFormat = $derived(new Intl.DateTimeFormat(locale, { weekday: 'short' }));
-	const shortDayFormat = $derived(
-		new Intl.DateTimeFormat(locale, { weekday: 'short', month: 'short', day: 'numeric' })
-	);
-	const monthDayFormat = $derived(
-		new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' })
-	);
-	const classicSubtitle = $derived.by(() => {
-		if (visits.length === 0) return undefined;
-		const done = `${completedCount} of ${visits.length} complete`;
-		if (!seriesLast) return done;
-		return `${done} · last visit ${shortDayFormat.format(new Date(`${seriesLast}T00:00`))}`;
-	});
-
-	function hoursBetween(start: string, end: string) {
-		const [sh, sm] = start.split(':').map(Number);
-		const [eh, em] = end.split(':').map(Number);
-		const minutes = eh * 60 + em - (sh * 60 + sm);
-		if (minutes <= 0) return '';
-		const hours = minutes / 60;
-		return `${Number.isInteger(hours) ? hours : hours.toFixed(1).replace(/\.0$/, '')}h`;
-	}
-
-	function classicWhen(visit: JobVisit) {
-		if (!visit.visit_date) return 'No date yet';
-		const day =
-			visit.visit_date === todayStr
-				? 'Today'
-				: monthDayFormat.format(new Date(`${visit.visit_date}T00:00`));
-		if (!visit.start_time) return `${day} · Anytime`;
-		const start = formatTime(visit.start_time);
-		if (!visit.end_time) return `${day} · ${start}`;
-		const span =
-			visit.visit_date === todayStr ? '' : hoursBetween(visit.start_time, visit.end_time);
-		return `${day} · ${start} – ${formatTime(visit.end_time)}${span ? ` · ${span}` : ''}`;
-	}
-
-	function onSiteFor(startedAt: string) {
-		const minutes = Math.max(0, Math.floor((Date.now() - Date.parse(startedAt)) / 60_000));
-		const hours = Math.floor(minutes / 60);
-		return hours > 0 ? `${hours}h ${minutes % 60}m` : `${minutes}m`;
-	}
-
-	type ClassicStatus = { label: string; tone: 'done' | 'live' | 'late' | 'plain'; icon: string };
-	function classicStatus(visit: JobVisit): ClassicStatus {
-		if (visit.completed_at) return { label: 'Completed', tone: 'done', icon: checkIcon };
-		if (visit.id in runningByVisit)
-			return { label: 'On site now', tone: 'live', icon: broadcastIcon };
-		if (isOverdue(visit)) return { label: 'Overdue', tone: 'late', icon: alertIcon };
-		if (!visit.visit_date) return { label: 'Unscheduled', tone: 'plain', icon: calendarTimeIcon };
-		return { label: 'Scheduled', tone: 'plain', icon: calendarTimeIcon };
-	}
-
-	/** Runs the same completion steps as a row's "Mark Complete", for the page's header button. */
-	export function completeVisitById(visitId: string) {
-		const visit = visits.find((entry) => entry.id === visitId);
-		if (visit && completeAllowed && !visit.completed_at) void handleComplete(visit);
 	}
 
 	// --- Recurrence summary -------------------------------------------------------------------------------
@@ -1059,343 +947,143 @@
 	</li>
 {/snippet}
 
-{#snippet classicRow(visit: JobVisit)}
-	{@const status = classicStatus(visit)}
-	{@const isToday = visit.visit_date === todayStr && !visit.completed_at}
-	{@const running = runningByVisit[visit.id]}
-	<li
-		class="job-visit"
-		class:job-visit--today={isToday}
-		onpointerenter={() => warmVisit(visit)}
-		onfocusin={() => warmVisit(visit)}
-	>
-		<span class="job-visit__date" class:job-visit__date--today={isToday} aria-hidden="true">
-			{#if visit.visit_date}
-				<span class="job-visit__weekday"
-					>{weekdayFormat.format(new Date(`${visit.visit_date}T00:00`))}</span
-				>
-				<span class="job-visit__day">{Number(visit.visit_date.slice(8, 10))}</span>
-			{:else}
-				<span class="job-visit__no-date">{@html calendarSmallIcon}</span>
+<SectionBlock title="Visits" icon={calendarIcon} level={2}>
+	{#snippet actions()}
+		{#if scheduleAllowed}
+			{#if isRecurringScheduled}
+				<Button size="small" variant="tertiary" onclick={() => (editingAll = true)}>
+					Edit Schedule
+				</Button>
 			{/if}
-		</span>
+			<DropdownMenu
+				items={addMenuItems}
+				triggerLabel="Add visits"
+				triggerClass="job-visits-section__add-trigger"
+			>
+				{#snippet trigger()}
+					<span class="job-visits-section__add-icon" aria-hidden="true">{@html plusIcon}</span>
+					Add visits
+					<span class="job-visits-section__add-caret" aria-hidden="true"
+						>{@html chevronDownIcon}</span
+					>
+				{/snippet}
+			</DropdownMenu>
+		{/if}
+	{/snippet}
 
-		<div class="job-visit__info">
-			<p class="job-visit__title">{visit.title || jobTitle || 'Visit'}</p>
-			<p class="job-visit__time">{classicWhen(visit)}</p>
-			{#if running}
-				<p class="job-visit__note job-visit__note--live">
-					<span aria-hidden="true">{@html broadcastIcon}</span>
-					Clocked in {timeFormat.format(new Date(running))} · on site {onSiteFor(running)}
-				</p>
-			{:else if visit.completed_at}
-				<p class="job-visit__note">
-					<span aria-hidden="true">{@html circleCheckIcon}</span>{completedWhen(visit)}
-				</p>
-			{/if}
-			{#if visit.off_series}
-				<p class="job-visit__note" title="This visit no longer follows the job's repeat schedule.">
-					<span aria-hidden="true">{@html repeatOffIcon}</span>{offSeriesNote(visit)}
-				</p>
-			{/if}
-			{#if visit.instructions}
-				<p class="job-visit__note">
-					<span aria-hidden="true">{@html infoIcon}</span>{visit.instructions}
-				</p>
-			{/if}
-		</div>
+	{#if addError}<p class="job-visits-section__error" role="alert">{addError}</p>{/if}
 
-		<div class="job-visit__crew">
-			{#each visit.assignee_ids.slice(0, 3) as memberId (memberId)}
-				{@const member = memberById.get(memberId)}
-				<span class="job-visit__face" title={member?.full_name ?? 'A team member'}>
-					<Avatar
-						id={memberId}
-						name={member?.full_name ?? '?'}
-						src={member?.avatar_url}
-						size="small"
-					/>
+	{#if isRecurringScheduled && recurrenceSummary}
+		<div class="job-visits-section__recurrence">
+			<span class="job-visits-section__recurrence-icon" aria-hidden="true">{@html repeatIcon}</span>
+			<span class="job-visits-section__recurrence-text">
+				<span class="job-visits-section__recurrence-summary">{recurrenceSummary}</span>
+				<span class="job-visits-section__recurrence-detail">
+					{visits.length}
+					{visits.length === 1 ? 'visit' : 'visits'}{seriesRange ? ` · ${seriesRange}` : ''}
 				</span>
-			{/each}
-			{#if visit.assignee_ids.length > 3}
-				<span class="job-visit__more-crew">+{visit.assignee_ids.length - 3}</span>
-			{/if}
-		</div>
-
-		<div class="job-visit__status">
-			<span class={`job-visit__pill job-visit__pill--${status.tone}`}>
-				<span aria-hidden="true">{@html status.icon}</span>{status.label}
 			</span>
 		</div>
-
-		<div class="job-visit__menu">
-			<DropdownMenu items={rowMenuItems(visit)} triggerLabel="Actions for this visit" />
-		</div>
-
-		{#if showsVisitTimer(visit)}
-			<div class="job-visit__timer">
-				<WorkTimerControl
-					target={{ kind: 'visit', jobId, visitId: visit.id }}
-					completed={Boolean(visit.completed_at) || jobStatus !== 'active'}
-				/>
-			</div>
-		{/if}
-	</li>
-{/snippet}
-
-{#snippet classicGroup(label: string, list: JobVisit[], count: number)}
-	{#if showGroupLabels}
-		<p class="job-visits__group">{label} <span>{count}</span></p>
 	{/if}
-	<ul class="job-visits__list">
-		{#each list as visit (visit.id)}
-			{@render classicRow(visit)}
-		{/each}
-	</ul>
-{/snippet}
 
-{#if classic}
-	<RecordCard title="Visits" count={visits.length} subtitle={classicSubtitle} id="job-visits">
-		{#snippet actions()}
-			<a class="job-visits__link" href={resolve('/(app)/schedule')}>
-				<span aria-hidden="true">{@html calendarSmallIcon}</span>View schedule
-			</a>
-			{#if scheduleAllowed}
-				{#if isRecurringScheduled}
-					<Button size="small" variant="secondary" onclick={() => (editingAll = true)}>
-						Edit Schedule
+	{#if timerElsewhere && jobStatus === 'active' && visits.some((visit) => !visit.completed_at)}
+		<div class="job-visits-section__timer-elsewhere">
+			<TimerRunningElsewhere timer={timerElsewhere} />
+		</div>
+	{/if}
+
+	{#if visits.length === 0}
+		<EmptyState
+			icon={calendarIcon}
+			title={isAsNeeded ? 'Dispatched as needed' : 'No visits yet'}
+			description={isAsNeeded
+				? 'This job has no set schedule. Add a visit whenever work comes up.'
+				: scheduleAllowed
+					? 'Add the days your team will be on site. You can pick several at once.'
+					: 'This job has no visits scheduled.'}
+		>
+			{#snippet action()}
+				{#if scheduleAllowed}
+					<Button variant="secondary" onclick={() => openAdd(isAsNeeded ? 'single' : 'multiple')}>
+						{isAsNeeded ? 'Add a visit' : 'Add visits'}
 					</Button>
 				{/if}
-				<DropdownMenu items={addMenuItems} triggerLabel="Add visits" triggerClass="job-visits__add">
-					{#snippet trigger()}
-						<span class="job-visits__add-icon" aria-hidden="true">{@html plusIcon}</span>
-						Add visits
-					{/snippet}
-				</DropdownMenu>
-			{/if}
-		{/snippet}
-
-		{#if addError}<p class="job-visits__error" role="alert">{addError}</p>{/if}
-
-		{#if isRecurringScheduled && recurrenceSummary}
-			<p class="job-visits__band">
-				<span aria-hidden="true">{@html repeatIcon}</span>
-				<strong>{recurrenceSummary}</strong>
-				{visits.length}
-				{visits.length === 1 ? 'visit' : 'visits'}{seriesRange ? ` · ${seriesRange}` : ''}
-			</p>
-		{/if}
-
-		{#if timerElsewhere && jobStatus === 'active' && visits.some((visit) => !visit.completed_at)}
-			<div class="job-visits__band">
-				<TimerRunningElsewhere timer={timerElsewhere} />
-			</div>
-		{/if}
-
-		{#if visits.length === 0}
-			<div class="job-visits__empty">
-				<EmptyState
-					icon={calendarIcon}
-					title={isAsNeeded ? 'Dispatched as needed' : 'No visits yet'}
-					description={isAsNeeded
-						? 'This job has no set schedule. Add a visit whenever work comes up.'
-						: scheduleAllowed
-							? 'Add the days your team will be on site. You can pick several at once.'
-							: 'This job has no visits scheduled.'}
-				>
-					{#snippet action()}
-						{#if scheduleAllowed}
-							<Button
-								variant="secondary"
-								onclick={() => openAdd(isAsNeeded ? 'single' : 'multiple')}
-							>
-								{isAsNeeded ? 'Add a visit' : 'Add visits'}
-							</Button>
-						{/if}
-					{/snippet}
-				</EmptyState>
-			</div>
-		{:else}
+			{/snippet}
+		</EmptyState>
+	{:else}
+		<div class="job-visits-section__groups">
 			{#if toBeScheduled.length > 0}
-				{@render classicGroup('To be scheduled', toBeScheduled, toBeScheduled.length)}
-			{/if}
-			{#if upcoming.length > 0}
-				{@render classicGroup('Upcoming', upcomingVisible, upcoming.length)}
-				{#if upcomingHidden > 0}
-					<button type="button" class="job-visits__more" onclick={() => (showAllUpcoming = true)}>
-						Show all {upcoming.length} upcoming visits
-					</button>
-				{:else if showAllUpcoming && upcoming.length > 3}
-					<button type="button" class="job-visits__more" onclick={() => (showAllUpcoming = false)}>
-						Show fewer
-					</button>
-				{/if}
-			{/if}
-			{#if past.length > 0}
-				<button
-					type="button"
-					class="job-visits__toggle"
-					aria-expanded={showPast}
-					onclick={() => (showPast = !showPast)}
-				>
-					<span
-						class="job-visits__caret"
-						class:job-visits__caret--open={showPast}
-						aria-hidden="true">{@html chevronDownIcon}</span
-					>
-					Past <span>{past.length}</span>
-				</button>
-				{#if showPast}
-					<ul class="job-visits__list">
-						{#each past as visit (visit.id)}
-							{@render classicRow(visit)}
+				<div class="job-visits-section__group">
+					<p class="job-visits-section__group-title">
+						To be scheduled <span class="job-visits-section__group-count"
+							>{toBeScheduled.length}</span
+						>
+					</p>
+					<ul class="job-visits-section__list">
+						{#each toBeScheduled as visit (visit.id)}
+							{@render visitRow(visit)}
 						{/each}
 					</ul>
-				{/if}
+				</div>
 			{/if}
-		{/if}
-	</RecordCard>
-{:else}
-	<SectionBlock title="Visits" icon={calendarIcon} level={2}>
-		{#snippet actions()}
-			{#if scheduleAllowed}
-				{#if isRecurringScheduled}
-					<Button size="small" variant="tertiary" onclick={() => (editingAll = true)}>
-						Edit Schedule
-					</Button>
-				{/if}
-				<DropdownMenu
-					items={addMenuItems}
-					triggerLabel="Add visits"
-					triggerClass="job-visits-section__add-trigger"
-				>
-					{#snippet trigger()}
-						<span class="job-visits-section__add-icon" aria-hidden="true">{@html plusIcon}</span>
-						Add visits
-						<span class="job-visits-section__add-caret" aria-hidden="true"
-							>{@html chevronDownIcon}</span
-						>
-					{/snippet}
-				</DropdownMenu>
-			{/if}
-		{/snippet}
 
-		{#if addError}<p class="job-visits-section__error" role="alert">{addError}</p>{/if}
-
-		{#if isRecurringScheduled && recurrenceSummary}
-			<div class="job-visits-section__recurrence">
-				<span class="job-visits-section__recurrence-icon" aria-hidden="true"
-					>{@html repeatIcon}</span
-				>
-				<span class="job-visits-section__recurrence-text">
-					<span class="job-visits-section__recurrence-summary">{recurrenceSummary}</span>
-					<span class="job-visits-section__recurrence-detail">
-						{visits.length}
-						{visits.length === 1 ? 'visit' : 'visits'}{seriesRange ? ` · ${seriesRange}` : ''}
-					</span>
-				</span>
-			</div>
-		{/if}
-
-		{#if timerElsewhere && jobStatus === 'active' && visits.some((visit) => !visit.completed_at)}
-			<div class="job-visits-section__timer-elsewhere">
-				<TimerRunningElsewhere timer={timerElsewhere} />
-			</div>
-		{/if}
-
-		{#if visits.length === 0}
-			<EmptyState
-				icon={calendarIcon}
-				title={isAsNeeded ? 'Dispatched as needed' : 'No visits yet'}
-				description={isAsNeeded
-					? 'This job has no set schedule. Add a visit whenever work comes up.'
-					: scheduleAllowed
-						? 'Add the days your team will be on site. You can pick several at once.'
-						: 'This job has no visits scheduled.'}
-			>
-				{#snippet action()}
-					{#if scheduleAllowed}
-						<Button variant="secondary" onclick={() => openAdd(isAsNeeded ? 'single' : 'multiple')}>
-							{isAsNeeded ? 'Add a visit' : 'Add visits'}
-						</Button>
-					{/if}
-				{/snippet}
-			</EmptyState>
-		{:else}
-			<div class="job-visits-section__groups">
-				{#if toBeScheduled.length > 0}
-					<div class="job-visits-section__group">
-						<p class="job-visits-section__group-title">
-							To be scheduled <span class="job-visits-section__group-count"
-								>{toBeScheduled.length}</span
-							>
-						</p>
-						<ul class="job-visits-section__list">
-							{#each toBeScheduled as visit (visit.id)}
-								{@render visitRow(visit)}
-							{/each}
-						</ul>
-					</div>
-				{/if}
-
-				{#if upcoming.length > 0}
-					<div class="job-visits-section__group">
-						<p class="job-visits-section__group-title">
-							Upcoming <span class="job-visits-section__group-count">{upcoming.length}</span>
-						</p>
-						<ul class="job-visits-section__list">
-							{#each upcomingVisible as visit (visit.id)}
-								{@render visitRow(visit)}
-							{/each}
-						</ul>
-						{#if upcomingHidden > 0}
-							<button
-								type="button"
-								class="job-visits-section__more"
-								onclick={() => (showAllUpcoming = true)}
-							>
-								Show all {upcoming.length} upcoming visits
-							</button>
-						{:else if showAllUpcoming && upcoming.length > 3}
-							<button
-								type="button"
-								class="job-visits-section__more"
-								onclick={() => (showAllUpcoming = false)}
-							>
-								Show fewer
-							</button>
-						{/if}
-					</div>
-				{/if}
-
-				{#if past.length > 0}
-					<div class="job-visits-section__group">
+			{#if upcoming.length > 0}
+				<div class="job-visits-section__group">
+					<p class="job-visits-section__group-title">
+						Upcoming <span class="job-visits-section__group-count">{upcoming.length}</span>
+					</p>
+					<ul class="job-visits-section__list">
+						{#each upcomingVisible as visit (visit.id)}
+							{@render visitRow(visit)}
+						{/each}
+					</ul>
+					{#if upcomingHidden > 0}
 						<button
 							type="button"
-							class="job-visits-section__group-toggle"
-							aria-expanded={showPast}
-							onclick={() => (showPast = !showPast)}
+							class="job-visits-section__more"
+							onclick={() => (showAllUpcoming = true)}
 						>
-							<span
-								class="job-visits-section__group-caret"
-								class:job-visits-section__group-caret--open={showPast}
-								aria-hidden="true">{@html chevronDownIcon}</span
-							>
-							Past <span class="job-visits-section__group-count">{past.length}</span>
+							Show all {upcoming.length} upcoming visits
 						</button>
-						{#if showPast}
-							<ul class="job-visits-section__list">
-								{#each past as visit (visit.id)}
-									{@render visitRow(visit)}
-								{/each}
-							</ul>
-						{/if}
-					</div>
-				{/if}
-			</div>
-		{/if}
-	</SectionBlock>
-{/if}
+					{:else if showAllUpcoming && upcoming.length > 3}
+						<button
+							type="button"
+							class="job-visits-section__more"
+							onclick={() => (showAllUpcoming = false)}
+						>
+							Show fewer
+						</button>
+					{/if}
+				</div>
+			{/if}
+
+			{#if past.length > 0}
+				<div class="job-visits-section__group">
+					<button
+						type="button"
+						class="job-visits-section__group-toggle"
+						aria-expanded={showPast}
+						onclick={() => (showPast = !showPast)}
+					>
+						<span
+							class="job-visits-section__group-caret"
+							class:job-visits-section__group-caret--open={showPast}
+							aria-hidden="true">{@html chevronDownIcon}</span
+						>
+						Past <span class="job-visits-section__group-count">{past.length}</span>
+					</button>
+					{#if showPast}
+						<ul class="job-visits-section__list">
+							{#each past as visit (visit.id)}
+								{@render visitRow(visit)}
+							{/each}
+						</ul>
+					{/if}
+				</div>
+			{/if}
+		</div>
+	{/if}
+</SectionBlock>
 
 <CreateVisitsDialog
 	open={creating}
@@ -1857,409 +1545,5 @@
 		display: block;
 		width: 14px;
 		height: 14px;
-	}
-
-	// --- Classic (classic.pen "Visits card" V63HK) ---------------------------------------------------------
-	.job-visits {
-		&__link {
-			display: inline-flex;
-			align-items: center;
-			gap: 6px;
-			height: 36px;
-			padding: 0 12px;
-			border-radius: var(--classic2-radius-control);
-			color: var(--classic2-green);
-			font-size: var(--classic2-font-label);
-			font-weight: 600;
-			text-decoration: none;
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
-
-			&:hover {
-				background: var(--classic2-green-tint);
-			}
-
-			&:focus-visible {
-				outline: 2px solid var(--classic2-green);
-				outline-offset: 2px;
-			}
-		}
-
-		@at-root :global(.job-visits__add) {
-			display: inline-flex;
-			align-items: center;
-			gap: 6px;
-			height: 36px;
-			padding: 0 12px;
-			border: 1px solid var(--classic2-border-control);
-			border-radius: var(--classic2-radius-control);
-			background: var(--classic2-button-surface);
-			box-shadow: 0 1px 2px var(--classic2-shadow-far);
-			color: var(--classic2-ink);
-			font-family: var(--classic2-font);
-			font-size: var(--classic2-font-label);
-			font-weight: 600;
-			cursor: pointer;
-		}
-
-		@at-root :global(.job-visits__add:hover) {
-			border-color: var(--classic2-green);
-		}
-
-		@at-root :global(.job-visits__add:focus-visible) {
-			outline: 2px solid var(--classic2-green);
-			outline-offset: 2px;
-		}
-
-		&__add-icon {
-			display: inline-flex;
-			color: var(--classic2-secondary);
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
-		}
-
-		&__error {
-			margin: 0;
-			padding: 0 24px 12px;
-			color: var(--classic2-rose);
-			font-size: var(--classic2-font-label);
-		}
-
-		&__band {
-			display: flex;
-			align-items: center;
-			gap: 8px;
-			margin: 0;
-			padding: 10px 24px;
-			border-top: 1px solid var(--classic2-divider);
-			background: var(--classic2-surface-soft);
-			color: var(--classic2-secondary);
-			font-size: var(--classic2-font-small);
-
-			strong {
-				color: var(--classic2-ink);
-				font-weight: 600;
-			}
-
-			:global(svg) {
-				width: 14px;
-				height: 14px;
-			}
-		}
-
-		&__empty {
-			padding: 0 24px 24px;
-		}
-
-		&__group,
-		&__toggle {
-			display: flex;
-			align-items: center;
-			gap: 6px;
-			width: 100%;
-			margin: 0;
-			padding: 8px 24px;
-			border: 0;
-			border-top: 1px solid var(--classic2-divider);
-			background: var(--classic2-surface-soft);
-			color: var(--classic2-secondary);
-			font-family: var(--classic2-font);
-			font-size: var(--classic2-font-micro);
-			font-weight: 700;
-			letter-spacing: 0.6px;
-			text-align: left;
-			text-transform: uppercase;
-
-			span {
-				color: var(--classic2-muted);
-			}
-		}
-
-		&__toggle {
-			cursor: pointer;
-
-			&:hover {
-				color: var(--classic2-ink);
-			}
-
-			&:focus-visible {
-				outline: 2px solid var(--classic2-green);
-				outline-offset: -2px;
-			}
-		}
-
-		&__caret {
-			display: inline-flex;
-			transform: rotate(-90deg);
-			transition: transform var(--timing-base) ease-out;
-
-			:global(svg) {
-				width: 14px;
-				height: 14px;
-			}
-
-			&--open {
-				transform: none;
-			}
-		}
-
-		&__list {
-			margin: 0;
-			padding: 0;
-			list-style: none;
-		}
-
-		&__more {
-			width: 100%;
-			padding: 12px 24px;
-			border: 0;
-			border-top: 1px solid var(--classic2-divider);
-			background: none;
-			color: var(--classic2-green);
-			font-family: var(--classic2-font);
-			font-size: var(--classic2-font-label);
-			font-weight: 600;
-			text-align: left;
-			cursor: pointer;
-
-			&:hover {
-				background: var(--classic2-surface-soft);
-			}
-
-			&:focus-visible {
-				outline: 2px solid var(--classic2-green);
-				outline-offset: -2px;
-			}
-		}
-	}
-
-	.job-visit {
-		display: grid;
-		align-items: center;
-		gap: 0 16px;
-		grid-template-columns: 52px minmax(0, 1fr) 96px 124px 36px;
-		padding: 16px 24px;
-		border-top: 1px solid var(--classic2-divider);
-		font-family: var(--classic2-font);
-
-		&--today {
-			background: var(--classic2-green-tint);
-		}
-
-		&__date {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-			gap: 1px;
-			box-sizing: border-box;
-			width: 52px;
-			height: 56px;
-			border: 1px solid var(--classic2-border-control);
-			border-radius: var(--classic2-radius-control);
-			background: var(--classic2-surface);
-
-			&--today {
-				border-color: var(--classic2-solid-green);
-				background: var(--classic2-solid-green);
-
-				.job-visit__weekday,
-				.job-visit__day {
-					color: var(--classic2-green-on);
-				}
-			}
-		}
-
-		&__weekday {
-			color: var(--classic2-secondary);
-			font-size: 10px;
-			font-weight: 700;
-			letter-spacing: 0.4px;
-			text-transform: uppercase;
-		}
-
-		&__day {
-			color: var(--classic2-ink);
-			font-size: 20px;
-			font-weight: 700;
-			line-height: 1.1;
-		}
-
-		&__no-date {
-			display: inline-flex;
-			color: var(--classic2-icon-muted);
-
-			:global(svg) {
-				width: 20px;
-				height: 20px;
-			}
-		}
-
-		&__info {
-			display: flex;
-			flex-direction: column;
-			gap: 4px;
-			min-width: 0;
-		}
-
-		&__title {
-			margin: 0;
-			overflow: hidden;
-			color: var(--classic2-ink);
-			font-size: 15px;
-			font-weight: 600;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-		}
-
-		&__time {
-			margin: 0;
-			color: var(--classic2-secondary);
-			font-size: var(--classic2-font-label);
-			font-weight: 500;
-		}
-
-		&__note {
-			display: flex;
-			align-items: flex-start;
-			gap: 6px;
-			margin: 0;
-			padding-top: 2px;
-			color: var(--classic2-secondary);
-			font-size: var(--classic2-font-small);
-			font-weight: 500;
-			overflow-wrap: anywhere;
-
-			span {
-				display: inline-flex;
-				flex: 0 0 auto;
-				margin-top: 1px;
-				color: var(--classic2-icon-muted);
-			}
-
-			:global(svg) {
-				width: 13px;
-				height: 13px;
-			}
-
-			&--live {
-				color: var(--classic2-green);
-				font-weight: 600;
-
-				span {
-					color: var(--classic2-green);
-				}
-			}
-		}
-
-		&__crew {
-			display: flex;
-			align-items: center;
-		}
-
-		&__face + &__face {
-			margin-left: -5px;
-		}
-
-		&__face :global(.avatar) {
-			width: 30px;
-			height: 30px;
-			font-size: 10px;
-		}
-
-		&--today &__face :global(.avatar) {
-			border-color: var(--classic2-green-tint);
-		}
-
-		&__more-crew {
-			margin-left: 4px;
-			color: var(--classic2-secondary);
-			font-size: var(--classic2-font-small);
-			font-weight: 600;
-		}
-
-		&__pill {
-			display: inline-flex;
-			align-items: center;
-			gap: 5px;
-			padding: 4px 10px 4px 8px;
-			border-radius: 999px;
-			font-size: var(--classic2-font-small);
-			font-weight: 600;
-			white-space: nowrap;
-
-			span {
-				display: inline-flex;
-			}
-
-			:global(svg) {
-				width: 13px;
-				height: 13px;
-			}
-
-			&--done {
-				background: var(--classic2-green-tint);
-				color: var(--classic2-green);
-			}
-
-			&--live {
-				background: var(--classic2-solid-green);
-				color: var(--classic2-green-on);
-			}
-
-			&--late {
-				background: var(--classic2-amber-tint);
-				color: var(--classic2-amber);
-			}
-
-			&--plain {
-				background: var(--classic2-chip);
-				color: var(--classic2-secondary);
-			}
-		}
-
-		&__menu {
-			display: flex;
-			justify-content: center;
-		}
-
-		&__timer {
-			grid-column: 2 / -1;
-			padding-top: 10px;
-		}
-	}
-
-	@media (max-width: 1023px) {
-		.job-visit {
-			grid-template-columns: 52px minmax(0, 1fr) auto 36px;
-
-			&__crew {
-				display: none;
-			}
-		}
-	}
-
-	@media (max-width: 767px) {
-		.job-visit {
-			gap: 8px 12px;
-			grid-template-columns: 52px minmax(0, 1fr) 36px;
-			padding: 14px 16px;
-
-			&__status {
-				grid-column: 2;
-				grid-row: 2;
-			}
-
-			&__menu {
-				grid-column: 3;
-				grid-row: 1;
-			}
-		}
 	}
 </style>

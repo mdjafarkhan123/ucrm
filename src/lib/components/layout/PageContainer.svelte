@@ -43,11 +43,4 @@
 			grid-template-columns: 1fr;
 		}
 	}
-
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.page-container:has(:global(.record-detail)) {
-		padding: 0;
-		border-radius: 0;
-		background: transparent;
-	}
 </style>

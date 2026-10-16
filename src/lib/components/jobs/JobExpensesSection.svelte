@@ -23,7 +23,6 @@
 	import paperclipIcon from '@tabler/icons/outline/paperclip.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
-	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 
 	// The expenses run up on this job, the way Jobber's Expenses block reads: what it was, when, who to pay
 	// back, and what it cost us. The section owns its own query rather than riding on the job payload, because
@@ -34,14 +33,11 @@
 		jobId,
 		locale = 'en-US',
 		currencyCode = 'USD',
-		embedded = false,
 		onChange
 	}: {
 		jobId: string;
 		locale?: string;
 		currencyCode?: string;
-		/** Classic Work log tab: rows only, no card of its own. The Work log draws the header and Add button. */
-		embedded?: boolean;
 		/** Called after an expense is recorded, corrected or removed, so the page can refresh the costing card. */
 		onChange?: () => void;
 	} = $props();
@@ -57,8 +53,6 @@
 	}));
 	const data = $derived(expensesQuery.data);
 	const expenses = $derived<JobExpense[]>(data?.expenses ?? []);
-	let showAll = $state(false);
-	const visibleExpenses = $derived(showAll ? expenses : expenses.slice(0, 4));
 
 	const money = $derived(
 		new Intl.NumberFormat(locale, { style: 'currency', currency: currencyCode })
@@ -76,7 +70,7 @@
 	let dialogOpen = $state(false);
 	let editing = $state<JobExpense | null>(null);
 
-	export function openAdd() {
+	function openAdd() {
 		editing = null;
 		dialogOpen = true;
 	}
@@ -161,54 +155,56 @@
 	}
 </script>
 
-<!-- eslint-disable svelte/no-at-html-tags -->
-{#if embedded}
+<SectionBlock title="Expenses" icon={receiptIcon} level={2}>
+	{#snippet actions()}
+		{#if data?.can_add}
+			<Button variant="tertiary" size="small" onclick={openAdd}>Add expense</Button>
+		{/if}
+	{/snippet}
+
 	{#if expensesQuery.isPending}
-		<div class="work-log__state">
-			<LoadingSkeleton variant="text" label="Loading expenses" rows={3} />
-		</div>
+		<LoadingSkeleton variant="text" label="Loading expenses" rows={3} />
 	{:else if expensesQuery.isError}
-		<p class="work-log__state">The expenses on this job could not be loaded.</p>
+		<p class="job-expenses__note">The expenses on this job could not be loaded.</p>
 	{:else if expenses.length === 0}
-		<div class="work-log__empty">
-			<EmptyState
-				icon={receiptIcon}
-				title="No expenses recorded"
-				description={data?.can_manage_team
-					? 'Materials, dump fees and subcontractors show up here, with what they cost.'
-					: 'Expenses you record on this job show up here.'}
-			/>
-		</div>
+		<EmptyState
+			icon={receiptIcon}
+			title="No expenses recorded"
+			description={data?.can_manage_team
+				? 'Materials, dump fees and subcontractors show up here, with what they cost.'
+				: 'Expenses you record on this job show up here.'}
+		/>
 	{:else}
-		<ul class="work-log__rows">
-			{#each visibleExpenses as expense (expense.id)}
-				<li class="work-log__row" class:work-log__row--busy={busyId === expense.id}>
-					<span class="work-log__tile work-log__tile--amber" aria-hidden="true"
-						>{@html receiptIcon}</span
-					>
-					<div class="work-log__info">
-						<p class="work-log__who">
+		<ul class="job-expenses">
+			{#each expenses as expense (expense.id)}
+				<li class="job-expenses__item" class:job-expenses__item--busy={busyId === expense.id}>
+					<div class="job-expenses__body">
+						<p class="job-expenses__name">
 							{expense.name}
 							{#if expense.receipt_count > 0}
 								<span
-									class="work-log__receipt"
+									class="job-expenses__receipt"
 									title={`${expense.receipt_count} receipt${expense.receipt_count === 1 ? '' : 's'}`}
-									>{@html paperclipIcon}{expense.receipt_count}</span
 								>
+									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+									{@html paperclipIcon}{expense.receipt_count}
+								</span>
 							{/if}
 						</p>
-						<p class="work-log__context">
+						<p class="job-expenses__meta">
 							{dateFormat.format(new Date(`${expense.expense_date}T12:00:00`))}
 							{#if expense.accounting_code}· {expense.accounting_code}{/if}
 							{#if reimburseLabel(expense)}· {reimburseLabel(expense)}{/if}
 						</p>
-						{#if expense.description}<p class="work-log__notes">{expense.description}</p>{/if}
+						{#if expense.description}<p class="job-expenses__desc">{expense.description}</p>{/if}
 					</div>
-					<span class="work-log__range"></span>
-					<span class="work-log__figure">
-						{#if data?.can_see_cost}{money.format((expense.total_minor ?? 0) / 100)}{/if}
-					</span>
-					<span class="work-log__menu">
+
+					<div class="job-expenses__side">
+						{#if data?.can_see_cost}
+							<span class="job-expenses__cost"
+								>{money.format((expense.total_minor ?? 0) / 100)}</span
+							>
+						{/if}
 						{#if expense.can_edit}
 							<DropdownMenu
 								items={menuItems(expense)}
@@ -216,118 +212,31 @@
 								disabled={busyId === expense.id}
 							/>
 						{/if}
-					</span>
+					</div>
 				</li>
 			{/each}
 		</ul>
-		<div class="work-log__footer">
-			<span>
-				{#if expenses.length > visibleExpenses.length}
-					Showing {visibleExpenses.length} of {data?.totals.expense_count ?? expenses.length} expenses
-				{:else}
-					{data?.totals.expense_count ?? 0}
-					{data?.can_manage_team ? '' : 'of your '}{(data?.totals.expense_count ?? 0) === 1
-						? 'expense'
-						: 'expenses'}
-				{/if}
-				{#if data?.can_see_cost}
-					· expense cost {money.format((data.totals.total_minor ?? 0) / 100)}
-				{/if}
-				{#if data?.has_more}· the total counts every expense{/if}
-			</span>
-			{#if expenses.length > 4}
-				<button type="button" class="work-log__show" onclick={() => (showAll = !showAll)}>
-					{showAll ? 'Show fewer' : 'Show all'}
-					<span aria-hidden="true">{@html arrowRightIcon}</span>
-				</button>
+
+		<div class="job-expenses__totals">
+			<p class="job-expenses__total">
+				<span>{data?.can_manage_team ? 'Expenses' : 'Your expenses'}</span>
+				<strong>{data?.totals.expense_count ?? 0}</strong>
+			</p>
+			{#if data?.can_see_cost}
+				<p class="job-expenses__total">
+					<span>Expense cost</span>
+					<strong>{money.format((data.totals.total_minor ?? 0) / 100)}</strong>
+				</p>
 			{/if}
 		</div>
-	{/if}
-{:else}
-	<SectionBlock title="Expenses" icon={receiptIcon} level={2}>
-		{#snippet actions()}
-			{#if data?.can_add}
-				<Button variant="tertiary" size="small" onclick={openAdd}>Add expense</Button>
-			{/if}
-		{/snippet}
 
-		{#if expensesQuery.isPending}
-			<LoadingSkeleton variant="text" label="Loading expenses" rows={3} />
-		{:else if expensesQuery.isError}
-			<p class="job-expenses__note">The expenses on this job could not be loaded.</p>
-		{:else if expenses.length === 0}
-			<EmptyState
-				icon={receiptIcon}
-				title="No expenses recorded"
-				description={data?.can_manage_team
-					? 'Materials, dump fees and subcontractors show up here, with what they cost.'
-					: 'Expenses you record on this job show up here.'}
-			/>
-		{:else}
-			<ul class="job-expenses">
-				{#each expenses as expense (expense.id)}
-					<li class="job-expenses__item" class:job-expenses__item--busy={busyId === expense.id}>
-						<div class="job-expenses__body">
-							<p class="job-expenses__name">
-								{expense.name}
-								{#if expense.receipt_count > 0}
-									<span
-										class="job-expenses__receipt"
-										title={`${expense.receipt_count} receipt${expense.receipt_count === 1 ? '' : 's'}`}
-									>
-										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-										{@html paperclipIcon}{expense.receipt_count}
-									</span>
-								{/if}
-							</p>
-							<p class="job-expenses__meta">
-								{dateFormat.format(new Date(`${expense.expense_date}T12:00:00`))}
-								{#if expense.accounting_code}· {expense.accounting_code}{/if}
-								{#if reimburseLabel(expense)}· {reimburseLabel(expense)}{/if}
-							</p>
-							{#if expense.description}<p class="job-expenses__desc">{expense.description}</p>{/if}
-						</div>
-
-						<div class="job-expenses__side">
-							{#if data?.can_see_cost}
-								<span class="job-expenses__cost"
-									>{money.format((expense.total_minor ?? 0) / 100)}</span
-								>
-							{/if}
-							{#if expense.can_edit}
-								<DropdownMenu
-									items={menuItems(expense)}
-									triggerLabel="Expense actions"
-									disabled={busyId === expense.id}
-								/>
-							{/if}
-						</div>
-					</li>
-				{/each}
-			</ul>
-
-			<div class="job-expenses__totals">
-				<p class="job-expenses__total">
-					<span>{data?.can_manage_team ? 'Expenses' : 'Your expenses'}</span>
-					<strong>{data?.totals.expense_count ?? 0}</strong>
-				</p>
-				{#if data?.can_see_cost}
-					<p class="job-expenses__total">
-						<span>Expense cost</span>
-						<strong>{money.format((data.totals.total_minor ?? 0) / 100)}</strong>
-					</p>
-				{/if}
-			</div>
-
-			{#if data?.has_more}
-				<p class="job-expenses__note">
-					Showing the 200 most recent expenses. The total above counts every one.
-				</p>
-			{/if}
+		{#if data?.has_more}
+			<p class="job-expenses__note">
+				Showing the 200 most recent expenses. The total above counts every one.
+			</p>
 		{/if}
-	</SectionBlock>
-{/if}
-<!-- eslint-enable svelte/no-at-html-tags -->
+	{/if}
+</SectionBlock>
 
 <JobExpenseDialog
 	open={dialogOpen}

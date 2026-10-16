@@ -6,7 +6,6 @@
 	type Option = {
 		value: string;
 		label: string;
-		icon?: string;
 		disabled?: boolean;
 		/** Shown on hover, e.g. why an option is closed off. */
 		title?: string;
@@ -119,11 +118,6 @@
 						onchange?.(option.value);
 					}}
 				/>
-				{#if option.icon}
-					<!-- Icons are trusted, bundled Tabler SVG imports, never user content. -->
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					<span class="segmented__icon" aria-hidden="true">{@html option.icon}</span>
-				{/if}
 				<span class="segmented__text">{option.label}</span>
 			</label>
 		{/each}
@@ -223,21 +217,8 @@
 				cursor: not-allowed;
 			}
 
-			&.segmented__option--active.segmented__option--disabled {
+			&--active#{&}--disabled {
 				color: var(--color-disabled);
-			}
-		}
-
-		&__icon {
-			display: inline-grid;
-			width: 16px;
-			height: 16px;
-			flex: 0 0 auto;
-			place-items: center;
-			:global(svg) {
-				display: block;
-				width: 16px;
-				height: 16px;
 			}
 		}
 
@@ -265,81 +246,5 @@
 		.segmented__thumb--animated {
 			transition: none;
 		}
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .segmented {
-		font-family: var(--classic2-font);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .segmented__caption {
-		color: var(--classic2-secondary);
-		font-size: var(--classic2-font-small);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .segmented__track {
-		gap: 2px;
-		padding: 3px;
-		border-color: var(--classic2-border-control);
-		border-radius: 12px;
-		background: var(--classic2-surface-soft);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .segmented__thumb {
-		top: 3px;
-		bottom: 3px;
-		border: 0;
-		border-radius: 9px;
-		background: var(--classic2-surface);
-		box-shadow: 0 1px 2px var(--classic2-shadow-near);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .segmented__option {
-		color: var(--classic2-secondary);
-		font-family: var(--classic2-font);
-		font-size: var(--classic2-font-label);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .segmented__option--active {
-		color: var(--classic2-ink);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.segmented__option--active
-		.segmented__icon {
-		color: var(--classic2-green);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.segmented__option:has(input:focus-visible) {
-		outline: 3px solid var(--classic2-green-soft);
-		outline-offset: 2px;
-		box-shadow: none;
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.segmented__track--base
-		.segmented__option {
-		min-height: 30px;
-		padding: 0 12px;
-		border-radius: 9px;
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.segmented__track--small
-		.segmented__option {
-		min-height: 28px;
-		padding: 0 10px;
-		border-radius: 8px;
-		font-size: var(--classic2-font-small);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .segmented__track--disabled {
-		background: var(--classic2-surface-soft);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.segmented__track--disabled
-		.segmented__option {
-		color: var(--classic2-muted);
 	}
 </style>

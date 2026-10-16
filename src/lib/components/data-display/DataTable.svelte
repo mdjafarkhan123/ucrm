@@ -12,12 +12,10 @@
 
 <script lang="ts" generics="T">
 	import type { Snippet } from 'svelte';
-	import { SvelteSet } from 'svelte/reactivity';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import selectorIcon from '@tabler/icons/outline/selector.svg?raw';
 	import chevronUpIcon from '@tabler/icons/outline/chevron-up.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
-	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
 
 	let {
 		columns,
@@ -80,7 +78,7 @@
 	const someSelected = $derived(items.some((item) => selectedIds.has(rowId(item))) && !allSelected);
 
 	function toggleAll(checked: boolean) {
-		const next = new SvelteSet(selectedIds);
+		const next = new Set(selectedIds);
 		for (const item of items) {
 			if (checked) next.add(rowId(item));
 			else next.delete(rowId(item));
@@ -111,14 +109,10 @@
 
 	// One cell has to span the whole table for a detail row, and the table's width is the caller's columns
 	// plus the two the table adds for itself.
-	// Expanded rows keep their caller's existing column layout in every presentation.
-	const hasOpenAction = $derived(Boolean(onRowActivate) && !rowActions && !rowDetail);
-	const spanAll = $derived(
-		columns.length + (selectable ? 1 : 0) + (rowActions || hasOpenAction ? 1 : 0)
-	);
+	const spanAll = $derived(columns.length + (selectable ? 1 : 0) + (rowActions ? 1 : 0));
 
 	function toggleRow(id: string, checked: boolean) {
-		const next = new SvelteSet(selectedIds);
+		const next = new Set(selectedIds);
 		if (checked) next.add(id);
 		else next.delete(id);
 		selectedIds = next;
@@ -162,20 +156,13 @@
 					</th>
 				{/each}
 				{#if rowActions}
-					<th scope="col" class="data-table__actions-cell"
-						><span class="data-table__actions-label">Actions</span></th
-					>
-				{:else if hasOpenAction}
-					<th scope="col" class="data-table__open-cell"
-						><span class="data-table__open-label">Open record</span></th
-					>
+					<th scope="col" class="data-table__actions-cell">Actions</th>
 				{/if}
 			</tr>
 		</thead>
 		<tbody>
 			{#each items as item (rowId(item))}
 				<tr
-					class:data-table__row--selected={selectedIds.has(rowId(item))}
 					class:data-table__row--clickable={Boolean(onRowActivate)}
 					onclick={(event) => activateRow(event, item)}
 					onmouseenter={onRowHover ? () => intendRow(item) : undefined}
@@ -196,18 +183,6 @@
 					{@render row(item)}
 					{#if rowActions}
 						<td class="data-table__actions-cell">{@render rowActions(item)}</td>
-					{:else if hasOpenAction}
-						<td class="data-table__open-cell">
-							<button
-								type="button"
-								class="data-table__open"
-								aria-label={rowLabel ? `Open ${rowLabel(item)}` : 'Open record'}
-								onclick={() => onRowActivate?.(item)}
-							>
-								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-								{@html chevronRightIcon}
-							</button>
-						</td>
 					{/if}
 				</tr>
 				{#if rowDetail && isExpanded?.(item)}
@@ -222,149 +197,6 @@
 </div>
 
 <style lang="scss">
-	.data-table__open-cell {
-		display: none;
-	}
-	.data-table__open-label {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip-path: inset(50%);
-	}
-	.data-table__open {
-		display: grid;
-		place-items: center;
-		width: 28px;
-		height: 28px;
-		padding: 0;
-		border: 0;
-		border-radius: 8px;
-		cursor: pointer;
-	}
-	.data-table__open :global(svg) {
-		width: 15px;
-		height: 15px;
-	}
-	:global(:root:has(.app-shell[data-presentation='classic'])) .data-table {
-		.data-table__open-cell {
-			display: table-cell;
-			width: 48px;
-		}
-		.data-table__open {
-			opacity: 0;
-			color: var(--classic2-muted);
-			background: transparent;
-		}
-		:global(tr:hover) .data-table__open,
-		:global(tr:focus-within) .data-table__open {
-			opacity: 1;
-		}
-		.data-table__open:focus-visible {
-			opacity: 1;
-			outline: 2px solid var(--classic2-green);
-			outline-offset: 2px;
-		}
-		.data-table__open:hover {
-			color: var(--classic2-ink);
-			background: var(--classic2-chip);
-		}
-		border-color: var(--classic2-border);
-		border-radius: 16px;
-		background: var(--classic2-surface);
-		table {
-			color: var(--classic2-body);
-			font: 13px/1.5 var(--classic2-font);
-		}
-		:global(thead) {
-			background: var(--classic2-surface-soft);
-		}
-		:global(th),
-		:global(td) {
-			padding-inline: 16px;
-			border-color: var(--classic2-divider);
-		}
-		:global(th:first-child),
-		:global(td:first-child) {
-			padding-left: 24px;
-		}
-		:global(th:last-child),
-		:global(td:last-child) {
-			padding-right: 24px;
-		}
-		// Column titles are small capitals, as in the approved list designs.
-		:global(thead th) {
-			padding-block: 10px;
-			color: var(--classic2-secondary);
-			font-size: 11px;
-			font-weight: 600;
-			line-height: 16px;
-			letter-spacing: 0.6px;
-			text-transform: uppercase;
-		}
-		// The select-all box is taller than a title, so its cell gives back the difference: 36px header.
-		:global(thead th.data-table__select-cell) {
-			padding-block: 7px;
-		}
-		// Buttons reset letter case and spacing, so the sortable titles take them from the cell.
-		.data-table__sort {
-			margin: 0;
-			padding: 0;
-			letter-spacing: inherit;
-			text-transform: inherit;
-		}
-		.data-table__sort:hover {
-			color: var(--classic2-ink);
-		}
-		.data-table__actions-cell .data-table__actions-label {
-			position: absolute;
-			width: 1px;
-			height: 1px;
-			overflow: hidden;
-			clip-path: inset(50%);
-			white-space: nowrap;
-		}
-		:global(tbody th),
-		:global(tbody td) {
-			height: 64px;
-			padding-block: 14px;
-		}
-		:global(tbody th) {
-			color: var(--classic2-ink);
-			font-size: 14px;
-			font-weight: 600;
-		}
-		:global(tbody td) {
-			color: var(--classic2-body);
-			font-weight: 500;
-		}
-		:global(tbody tr:hover),
-		:global(tbody tr:focus-within) {
-			background: var(--classic2-surface-soft);
-		}
-		:global(tbody tr.data-table__row--selected) {
-			background: var(--classic2-surface-soft);
-		}
-		:global(tbody tr.data-table__row--selected > :first-child) {
-			box-shadow: inset 3px 0 var(--classic2-solid-green);
-		}
-		:global(tbody tr.data-table__detail-row) {
-			background: var(--classic2-surface-soft);
-		}
-		.data-table__sort-icon {
-			color: var(--classic2-icon-muted);
-		}
-		.data-table__sort--active,
-		.data-table__sort--active .data-table__sort-icon {
-			color: var(--classic2-ink);
-		}
-		.data-table__sort:focus-visible {
-			outline: 2px solid var(--classic2-green);
-			outline-offset: -2px;
-			box-shadow: none;
-		}
-	}
-
 	.data-table {
 		overflow-x: auto;
 		// Lets this box shrink inside a flex/grid ancestor instead of forcing the whole layout wide to fit

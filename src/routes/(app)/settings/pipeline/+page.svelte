@@ -424,13 +424,7 @@
 		items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Pipeline' }]}
 	/>
 
-	<RecordFormLayout
-		title="Pipeline"
-		icon={layoutKanbanIcon}
-		bind:this={layout}
-		error={saveError}
-		{dirty}
-	>
+	<RecordFormLayout title="Pipeline" icon={layoutKanbanIcon} bind:this={layout} error={saveError}>
 		{#snippet main()}
 			{#if !canEdit}
 				<p class="pipeline-settings__readonly">
@@ -518,7 +512,6 @@
 			{#if canEdit}
 				<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
 				<Button
-					showCheckIcon
 					onclick={() => void save().finally(() => layout?.revealError())}
 					disabled={!dirty || saving}
 					loading={saving}>Save</Button

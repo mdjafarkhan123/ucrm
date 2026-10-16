@@ -375,7 +375,7 @@
 				{#snippet row(quote: QuoteListItem)}
 					<th scope="row">
 						<div class="quotes-table__client">
-							<Avatar id={quote.client?.id ?? quote.id} name={clientName(quote)} size="base" />
+							<Avatar id={quote.client?.id ?? quote.id} name={clientName(quote)} size="small" />
 							<span>{clientName(quote)}</span>
 						</div>
 					</th>

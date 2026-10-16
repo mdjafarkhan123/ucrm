@@ -149,15 +149,15 @@ export const GET: RequestHandler = async (event) => {
 				})
 			: Promise.resolve({ data: null, error: null }),
 		organizationFormatting(organizationId),
-		// Every claim an invoice holds on this job: the visit claims say which visits are billed, and all of
-		// them together name the invoices that count towards Billing's "invoiced so far". Scoped to one job
-		// and served by invoice_sources_job_idx, the same index the claim command itself relies on.
+		// Which of this job's visits an invoice already claims. Scoped to one job and served by
+		// invoice_sources_job_idx, the same index the claim command itself relies on.
 		canSeeInvoiceStatus
 			? supabase
 					.from('invoice_sources')
-					.select('visit_id, root_invoice_id, source_kind')
+					.select('visit_id')
 					.eq('organization_id', organizationId)
 					.eq('job_id', jobId)
+					.eq('source_kind', 'visit')
 			: Promise.resolve({ data: [], error: null }),
 		// A one-off job's payment stages with their money and the bill each one produced. Definer, and it
 		// applies jobs.view_price and invoices.view for itself, so a reader who may see less simply gets
@@ -270,37 +270,8 @@ export const GET: RequestHandler = async (event) => {
 	})();
 
 	const billedVisitIds = new Set(
-		(billedVisitRows.data ?? [])
-			.filter((claim) => claim.source_kind === 'visit')
-			.map((claim) => claim.visit_id as string)
+		(billedVisitRows.data ?? []).map((claim) => claim.visit_id as string)
 	);
-
-	// Billing's "$X of $Y invoiced": the totals of this job's live invoices — the current one in each
-	// replacement chain, never a voided one. Drafts count, as they do on the Invoices list. Only for a reader
-	// who sees both the job's price and its invoices; `invoice_money` applies invoices.view_price itself and
-	// answers {} without it, which reads as unknown (null) rather than as nothing invoiced.
-	const invoicedMinor = await (async (): Promise<number | null> => {
-		if (!canSeePrice || !canSeeInvoiceStatus) return null;
-		const roots = [
-			...new Set((billedVisitRows.data ?? []).map((claim) => claim.root_invoice_id as string))
-		];
-		if (roots.length === 0) return 0;
-		const live = await supabase
-			.from('invoices')
-			.select('id')
-			.eq('organization_id', organizationId)
-			.in('root_invoice_id', roots)
-			.is('voided_at', null)
-			.is('replaced_at', null);
-		if (live.error) return null;
-		const ids = (live.data ?? []).map((invoice) => invoice.id);
-		if (ids.length === 0) return 0;
-		const invoiceMoney = await supabase.rpc('invoice_money', { target_invoice_ids: ids });
-		if (invoiceMoney.error) return null;
-		const cells = Object.values(asMoneyMap(invoiceMoney.data));
-		if (cells.length === 0) return null;
-		return cells.reduce((sum, cell) => sum + toNumber(cell.total_minor), 0);
-	})();
 
 	// Who completed each visit, by name. `completed_by` points at the user rather than a profile, so the names
 	// come the way the job's history rail finds its actors: through `profiles`, whose RLS shows the reader
@@ -443,7 +414,6 @@ export const GET: RequestHandler = async (event) => {
 			reminders,
 			organization_today: organizationToday,
 			money,
-			invoiced_minor: invoicedMinor,
 			costing,
 			locale: formatting.ok ? formatting.formatting.locale : 'en-US',
 			can_edit: canEdit,

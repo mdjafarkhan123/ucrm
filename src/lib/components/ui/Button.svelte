@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 
 	let {
 		children,
@@ -10,7 +9,6 @@
 		type = 'button',
 		disabled = false,
 		loading = false,
-		showCheckIcon = false,
 		fullWidth = false,
 		href,
 		target,
@@ -25,8 +23,6 @@
 		type?: 'button' | 'submit' | 'reset';
 		disabled?: boolean;
 		loading?: boolean;
-		/** Shows the Tabler check mark used by a confirmed save action. */
-		showCheckIcon?: boolean;
 		fullWidth?: boolean;
 		/** Renders a link instead of a button. Use it for anything that goes to another page, so the
 		 *  browser can open it in a new tab and SvelteKit can preload the page on hover. */
@@ -57,7 +53,6 @@
 		class={classes}
 		class:button--full-width={fullWidth}
 		class:button--inactive={inactive}
-		class:button--check-icon={showCheckIcon}
 		aria-disabled={inactive ? 'true' : undefined}
 		aria-busy={loading}
 		{onclick}
@@ -65,12 +60,6 @@
 		onfocus={onhover}
 	>
 		{#if loading}<span class="button__spinner" aria-hidden="true"></span>{/if}
-		{#if showCheckIcon && !loading}
-			<span class="button__icon" aria-hidden="true">
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-				{@html checkIcon}
-			</span>
-		{/if}
 		{@render children()}
 	</a>
 	<!-- eslint-enable svelte/no-navigation-without-resolve -->
@@ -79,7 +68,6 @@
 		{type}
 		class={classes}
 		class:button--full-width={fullWidth}
-		class:button--check-icon={showCheckIcon}
 		disabled={inactive}
 		aria-busy={loading}
 		{onclick}
@@ -87,12 +75,6 @@
 		onfocus={onhover}
 	>
 		{#if loading}<span class="button__spinner" aria-hidden="true"></span>{/if}
-		{#if showCheckIcon && !loading}
-			<span class="button__icon" aria-hidden="true">
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-				{@html checkIcon}
-			</span>
-		{/if}
 		{@render children()}
 	</button>
 {/if}
@@ -186,135 +168,5 @@
 			border-radius: var(--radius-circle);
 			animation: spinning var(--timing-loading) linear infinite;
 		}
-		&__icon {
-			display: none;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-			width: 16px;
-			height: 16px;
-		}
-		&__icon :global(svg) {
-			display: block;
-			width: 16px;
-			height: 16px;
-		}
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .button--check-icon .button__icon {
-		display: inline-flex;
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .button {
-		border-color: var(--classic2-border-control);
-		border-radius: 12px;
-		font-family: var(--classic2-font);
-		font-size: var(--classic2-font-body);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .button--primary {
-		border-color: var(--classic2-solid-green);
-		color: var(--classic2-green-on);
-		background: var(--classic2-solid-green);
-		box-shadow: 0 6px 16px var(--classic2-shadow-green);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .button--primary:hover:not(:disabled),
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.button--primary:focus-visible:not(:disabled) {
-		border-color: var(--classic2-green-hover);
-		color: var(--classic2-green-on);
-		background: var(--classic2-green-hover);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .button--secondary,
-	:global(:root:has(.app-shell[data-presentation='classic'])) .button--tertiary {
-		color: var(--classic2-body);
-		background: var(--classic2-surface-soft);
-	}
-
-	// The design system's secondary button is a white control with a hairline edge, not a grey fill.
-	:global(:root:has(.app-shell[data-presentation='classic'])) .button--secondary {
-		color: var(--classic2-ink);
-		background: var(--classic2-button-surface);
-		box-shadow: 0 1px 2px var(--classic2-shadow-far);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.button--secondary:hover:not(:disabled),
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.button--secondary:focus-visible:not(:disabled),
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.button--tertiary:hover:not(:disabled),
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.button--tertiary:focus-visible:not(:disabled) {
-		border-color: var(--classic2-green);
-		color: var(--classic2-green);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .button--tertiary {
-		border-color: transparent;
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .button--small {
-		min-height: 30px;
-		padding: 0 12px;
-		border-radius: 9px;
-		font-size: var(--classic2-font-small);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .button--base {
-		min-height: 40px;
-		padding: 0 16px;
-		border-radius: 12px;
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .button--large {
-		min-height: 44px;
-		padding: 0 18px;
-		border-radius: 14px;
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .button--destructive.button--primary {
-		border-color: var(--classic2-solid-rose);
-		background: var(--classic2-solid-rose);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.button--destructive.button--primary:hover:not(:disabled),
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.button--destructive.button--primary:focus-visible:not(:disabled) {
-		border-color: var(--classic2-solid-rose);
-		background: var(--classic2-solid-rose);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.button--destructive.button--secondary,
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.button--destructive.button--tertiary {
-		color: var(--classic2-rose);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.button--destructive.button--secondary:hover:not(:disabled),
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.button--destructive.button--secondary:focus-visible:not(:disabled),
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.button--destructive.button--tertiary:hover:not(:disabled),
-	:global(:root:has(.app-shell[data-presentation='classic']))
-		.button--destructive.button--tertiary:focus-visible:not(:disabled) {
-		color: var(--classic2-rose);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .button:focus-visible {
-		outline: 3px solid var(--classic2-green-soft);
-		outline-offset: 2px;
-		box-shadow: none;
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .button:disabled,
-	:global(:root:has(.app-shell[data-presentation='classic'])) .button--inactive {
-		opacity: 0.45;
-		box-shadow: none;
 	}
 </style>

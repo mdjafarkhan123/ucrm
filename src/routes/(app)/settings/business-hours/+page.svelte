@@ -225,13 +225,7 @@
 		items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Business hours' }]}
 	/>
 
-	<RecordFormLayout
-		title="Business hours"
-		icon={clockIcon}
-		bind:this={layout}
-		error={saveError}
-		{dirty}
-	>
+	<RecordFormLayout title="Business hours" icon={clockIcon} bind:this={layout} error={saveError}>
 		{#snippet main()}
 			{#if !canEdit}
 				<p class="business-hours__readonly">
@@ -284,7 +278,6 @@
 			{#if canEdit && started}
 				<Button variant="secondary" onclick={cancel} disabled={saving}>Cancel</Button>
 				<Button
-					showCheckIcon
 					onclick={() => void save().finally(() => layout?.revealError())}
 					disabled={!dirty || saving}
 					loading={saving}>Save</Button

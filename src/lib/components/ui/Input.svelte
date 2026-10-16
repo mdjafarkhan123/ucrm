@@ -121,7 +121,7 @@
 			font-size: var(--typography--fontSize-small);
 			transform: none;
 		}
-		/* Room for the lifted label only exists where a label is shown; a field without one keeps its height. */
+		// Room for the lifted label only exists where a label is shown; a field without one keeps its height.
 		&--labeled:focus-within input,
 		&--labeled.input--has-value input {
 			padding-top: calc(var(--space-base) + var(--space-smaller));
@@ -170,101 +170,5 @@
 			width: 16px;
 			height: 16px;
 		}
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .input {
-		display: flex;
-		flex-direction: column;
-		gap: 7px;
-		color: var(--classic2-ink);
-		font-family: var(--classic2-font);
-		font-size: var(--classic2-font-body);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .input__label {
-		position: static;
-		z-index: auto;
-		max-width: 100%;
-		overflow: visible;
-		color: var(--classic2-body);
-		font-size: var(--classic2-font-label);
-		font-weight: 600;
-		line-height: 1.25;
-		text-overflow: clip;
-		transform: none;
-		transition: none;
-		pointer-events: auto;
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .input__control {
-		min-height: 44px;
-		border-color: var(--classic2-border-input);
-		border-radius: 12px;
-		background: var(--classic2-surface);
-		box-shadow: 0 1px 2px var(--classic2-shadow-near);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .input input {
-		min-height: 42px;
-		padding: 0 14px;
-		color: var(--classic2-ink);
-		font-family: var(--classic2-font);
-		font-size: var(--classic2-font-body);
-		line-height: 20px;
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .input input::placeholder {
-		color: var(--classic2-muted);
-		opacity: 1;
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .input:focus-within .input__control {
-		border-color: var(--classic2-green);
-		outline: 3px solid var(--classic2-green-soft);
-		outline-offset: 2px;
-		box-shadow: 0 1px 2px var(--classic2-shadow-near);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .input--invalid .input__control {
-		border-color: var(--classic2-rose);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .input--disabled .input__control {
-		border-color: var(--classic2-border-input);
-		background: var(--classic2-surface-soft);
-		box-shadow: none;
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .input--disabled input {
-		color: var(--classic2-muted);
-		-webkit-text-fill-color: var(--classic2-muted);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .input__error {
-		color: var(--classic2-rose);
-		font-size: var(--classic2-font-small);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .input--small .input__control {
-		min-height: 36px;
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .input--small input {
-		min-height: 34px;
-		padding: 0 12px;
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .input--large .input__control {
-		min-height: 64px;
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .input--large input {
-		min-height: 62px;
-		padding: 0 24px;
-		font-size: 16px;
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) :global(.field-required) {
-		color: var(--classic2-required);
 	}
 </style>

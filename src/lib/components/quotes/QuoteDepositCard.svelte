@@ -1,9 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { page } from '$app/state';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
-	import RecordCard from '$lib/components/layout/RecordCard.svelte';
-	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
@@ -23,7 +20,6 @@
 		type QuoteWriteError
 	} from '$lib/quotes/api';
 	import cashIcon from '@tabler/icons/outline/cash.svg?raw';
-	import creditCardIcon from '@tabler/icons/outline/credit-card.svg?raw';
 
 	// The deposit a quote asks for, folded into one card: configuring the shape (deposit-only or a payment
 	// schedule) and, once the quote is sent, recording or reversing the offline receipt against it — per
@@ -107,21 +103,6 @@
 		canRecordDeposit && hasPublishedVersion && !liveReceipt && (depositRequiredMinor ?? 0) > 0
 	);
 	const canReverse = $derived(canRecordDeposit && Boolean(liveReceipt));
-
-	// --- Classic (classic.pen "Deposit card") -------------------------------------------------------------
-	// The same facts as the default card: the asked-for figure, where the money stands, and the one button
-	// that records or reverses it.
-	const classic = $derived(page.data.presentation === 'classic');
-	const percentOfTotal = $derived.by(() => {
-		const first = scheduleItems[0];
-		if (depositType !== 'deposit_only' || first?.value_type !== 'percentage') return null;
-		return `${(first.value / 100).toLocaleString(locale, { maximumFractionDigits: 2 })}%`;
-	});
-	const receiptState = $derived.by(() => {
-		if (liveReceipt) return { pill: 'Deposit received', tone: 'green' };
-		if (hasPublishedVersion) return { pill: 'Awaiting deposit', tone: 'amber' };
-		return { pill: 'Not sent yet', tone: 'grey' };
-	});
 
 	// --- Configuring the deposit -------------------------------------------------------------------------
 
@@ -384,177 +365,75 @@
 	}
 </script>
 
-<!-- eslint-disable svelte/no-at-html-tags -->
-{#if classic}
-	<RecordCard title="Deposit" size="rail" id="quote-deposit" class="deposit-card">
-		{#snippet actions()}
-			{#if canSeePrice && configured}
-				<span class={`deposit-card__pill deposit-card__pill--${receiptState.tone}`}
-					>{receiptState.pill}</span
-				>
-			{/if}
-			{#if editable && canSeePrice && configured}
-				<PencilButton onclick={openConfig} label="Edit the deposit" />
-			{/if}
-		{/snippet}
+<RailCard title="Deposit" icon={cashIcon}>
+	{#snippet actions()}
+		{#if editable && canSeePrice && configured}
+			<Button variant="tertiary" size="small" onclick={openConfig}>Edit</Button>
+		{/if}
+	{/snippet}
 
-		{#if !canSeePrice}
-			<p class="deposit-card__muted">You do not have access to quote prices.</p>
-		{:else if configured}
-			<div class="deposit-card__figure">
-				<p class="deposit-card__amount">
-					<strong
-						>{depositRequiredMinor === null
-							? '—'
-							: money.format(depositRequiredMinor / 100)}</strong
-					>
-					{#if depositType === 'schedule'}
-						Payment schedule
-					{:else if percentOfTotal}
-						{percentOfTotal} of {money.format(totalMinor / 100)}
-					{:else}
-						of {money.format(totalMinor / 100)}
-					{/if}
-				</p>
-				<span class="deposit-card__track" aria-hidden="true">
-					<span style:width={liveReceipt ? '100%' : '0%'}></span>
-				</span>
-			</div>
+	{#if !canSeePrice}
+		<p class="quote-deposit__muted">You do not have access to quote prices.</p>
+	{:else if configured}
+		<div class="quote-deposit__set">
+			<p class="quote-deposit__name">
+				{depositType === 'schedule' ? 'Payment schedule' : 'Deposit'}
+			</p>
+			{#if depositRequiredMinor !== null}
+				<p class="quote-deposit__amount">{money.format(depositRequiredMinor / 100)}</p>
+			{/if}
 
 			{#if depositType === 'schedule'}
-				<ul class="deposit-card__schedule">
+				<ul class="quote-deposit__schedule">
 					{#each scheduleItems as item (item.id)}
-						<li>
+						<li class="quote-deposit__schedule-row">
 							<span>{item.description}</span>
-							<strong>{money.format(pricedAmount(item) / 100)}</strong>
+							<span>{money.format(pricedAmount(item) / 100)}</span>
 						</li>
 					{/each}
 				</ul>
 			{/if}
 
-			<div class="deposit-card__row">
-				<span
-					class={`deposit-card__tile deposit-card__tile--${liveReceipt ? 'green' : 'amber'}`}
-					aria-hidden="true">{@html creditCardIcon}</span
-				>
-				<div class="deposit-card__text">
-					<p class="deposit-card__label">Received</p>
-					{#if liveReceipt}
-						<p class="deposit-card__value">
-							{money.format(liveReceipt.amount_minor / 100)} · {METHOD_LABELS[liveReceipt.method]} ·
-							{dateFormat.format(new Date(liveReceipt.created_at))}
-						</p>
-						{#if liveReceipt.reference}
-							<p class="deposit-card__label">Ref: {liveReceipt.reference}</p>
-						{/if}
-						{#if liveReceipt.note}<p class="deposit-card__label">{liveReceipt.note}</p>{/if}
-					{:else if latestEvent?.event_type === 'reversed'}
-						<p class="deposit-card__value">
-							Reversed on {dateFormat.format(new Date(latestEvent.created_at))} — not recorded again
-						</p>
-					{:else if hasPublishedVersion}
-						<p class="deposit-card__value">Not yet — awaiting deposit</p>
-					{:else}
-						<p class="deposit-card__value">Requested once this quote is sent</p>
-					{/if}
-				</div>
-			</div>
-
-			{#if canRecord || canReverse}
-				<div class="deposit-card__action">
-					{#if canRecord}
-						<Button variant="secondary" fullWidth onclick={openRecord}>
-							<span class="deposit-card__button-icon" aria-hidden="true">{@html cashIcon}</span>
-							Record deposit received
-						</Button>
-					{:else}
-						<Button variant="tertiary" variation="destructive" fullWidth onclick={openReverse}>
-							Reverse deposit
-						</Button>
-					{/if}
-				</div>
-			{/if}
-		{:else if editable}
-			<div class="deposit-card__action deposit-card__action--empty">
-				<p class="deposit-card__muted">No deposit asked for yet.</p>
-				<Button variant="secondary" size="small" onclick={openConfig}>Add deposit</Button>
-			</div>
-		{:else}
-			<p class="deposit-card__muted">No deposit on this quote.</p>
-		{/if}
-	</RecordCard>
-{:else}
-	<RailCard title="Deposit" icon={cashIcon}>
-		{#snippet actions()}
-			{#if editable && canSeePrice && configured}
-				<Button variant="tertiary" size="small" onclick={openConfig}>Edit</Button>
-			{/if}
-		{/snippet}
-
-		{#if !canSeePrice}
-			<p class="quote-deposit__muted">You do not have access to quote prices.</p>
-		{:else if configured}
-			<div class="quote-deposit__set">
-				<p class="quote-deposit__name">
-					{depositType === 'schedule' ? 'Payment schedule' : 'Deposit'}
+			{#if liveReceipt}
+				<p class="quote-deposit__status quote-deposit__status--received">
+					Received {money.format(liveReceipt.amount_minor / 100)} · {METHOD_LABELS[
+						liveReceipt.method
+					]} · {dateFormat.format(new Date(liveReceipt.created_at))}
 				</p>
-				{#if depositRequiredMinor !== null}
-					<p class="quote-deposit__amount">{money.format(depositRequiredMinor / 100)}</p>
+				{#if liveReceipt.reference}
+					<p class="quote-deposit__note">Ref: {liveReceipt.reference}</p>
 				{/if}
+				{#if liveReceipt.note}
+					<p class="quote-deposit__note">{liveReceipt.note}</p>
+				{/if}
+			{:else if latestEvent?.event_type === 'reversed'}
+				<p class="quote-deposit__status">
+					Reversed on {dateFormat.format(new Date(latestEvent.created_at))} — not yet recorded again.
+				</p>
+			{:else if hasPublishedVersion}
+				<p class="quote-deposit__status">Awaiting deposit.</p>
+			{:else}
+				<p class="quote-deposit__muted">The deposit will be requested once this quote is sent.</p>
+			{/if}
 
-				{#if depositType === 'schedule'}
-					<ul class="quote-deposit__schedule">
-						{#each scheduleItems as item (item.id)}
-							<li class="quote-deposit__schedule-row">
-								<span>{item.description}</span>
-								<span>{money.format(pricedAmount(item) / 100)}</span>
-							</li>
-						{/each}
-					</ul>
-				{/if}
-
-				{#if liveReceipt}
-					<p class="quote-deposit__status quote-deposit__status--received">
-						Received {money.format(liveReceipt.amount_minor / 100)} · {METHOD_LABELS[
-							liveReceipt.method
-						]} · {dateFormat.format(new Date(liveReceipt.created_at))}
-					</p>
-					{#if liveReceipt.reference}
-						<p class="quote-deposit__note">Ref: {liveReceipt.reference}</p>
-					{/if}
-					{#if liveReceipt.note}
-						<p class="quote-deposit__note">{liveReceipt.note}</p>
-					{/if}
-				{:else if latestEvent?.event_type === 'reversed'}
-					<p class="quote-deposit__status">
-						Reversed on {dateFormat.format(new Date(latestEvent.created_at))} — not yet recorded again.
-					</p>
-				{:else if hasPublishedVersion}
-					<p class="quote-deposit__status">Awaiting deposit.</p>
-				{:else}
-					<p class="quote-deposit__muted">The deposit will be requested once this quote is sent.</p>
-				{/if}
-
-				{#if canRecord}
-					<Button variant="secondary" variation="subtle" fullWidth onclick={openRecord}>
-						Record deposit received
-					</Button>
-				{:else if canReverse}
-					<Button variant="tertiary" variation="destructive" fullWidth onclick={openReverse}>
-						Reverse deposit
-					</Button>
-				{/if}
-			</div>
-		{:else if editable}
-			<Button variant="secondary" variation="subtle" fullWidth onclick={openConfig}
-				>Add deposit</Button
-			>
-		{:else}
-			<p class="quote-deposit__muted">No deposit on this quote.</p>
-		{/if}
-	</RailCard>
-{/if}
-<!-- eslint-enable svelte/no-at-html-tags -->
+			{#if canRecord}
+				<Button variant="secondary" variation="subtle" fullWidth onclick={openRecord}>
+					Record deposit received
+				</Button>
+			{:else if canReverse}
+				<Button variant="tertiary" variation="destructive" fullWidth onclick={openReverse}>
+					Reverse deposit
+				</Button>
+			{/if}
+		</div>
+	{:else if editable}
+		<Button variant="secondary" variation="subtle" fullWidth onclick={openConfig}
+			>Add deposit</Button
+		>
+	{:else}
+		<p class="quote-deposit__muted">No deposit on this quote.</p>
+	{/if}
+</RailCard>
 
 {#if configOpen}
 	<Dialog
@@ -797,182 +676,6 @@
 {/if}
 
 <style lang="scss">
-	.deposit-card {
-		&__pill {
-			flex: 0 0 auto;
-			padding: 3px 8px;
-			border-radius: 999px;
-			font-size: var(--classic2-font-micro);
-			font-weight: 600;
-
-			&--amber {
-				background: var(--classic2-amber-tint);
-				color: var(--classic2-amber);
-			}
-
-			&--green {
-				background: var(--classic2-green-tint);
-				color: var(--classic2-green);
-			}
-
-			&--grey {
-				background: var(--classic2-chip);
-				color: var(--classic2-secondary);
-			}
-		}
-
-		&__muted {
-			margin: 0;
-			padding: 0 20px 18px;
-			color: var(--classic2-secondary);
-			font-size: var(--classic2-font-label);
-		}
-
-		&__figure {
-			display: flex;
-			flex-direction: column;
-			gap: 10px;
-			padding: 0 20px 16px;
-		}
-
-		&__amount {
-			margin: 0;
-			color: var(--classic2-secondary);
-			font-size: var(--classic2-font-label);
-			font-weight: 500;
-
-			strong {
-				margin-right: 4px;
-				color: var(--classic2-ink);
-				font-size: 22px;
-				font-weight: 700;
-				letter-spacing: -0.5px;
-				line-height: 1;
-			}
-		}
-
-		&__track {
-			display: block;
-			height: 6px;
-			overflow: hidden;
-			border-radius: 999px;
-			background: var(--classic2-chip);
-
-			span {
-				display: block;
-				height: 100%;
-				border-radius: 999px;
-				background: var(--classic2-green);
-			}
-		}
-
-		&__schedule {
-			display: flex;
-			flex-direction: column;
-			gap: 6px;
-			margin: 0;
-			padding: 12px 20px;
-			border-top: 1px solid var(--classic2-divider);
-			list-style: none;
-
-			li {
-				display: flex;
-				justify-content: space-between;
-				gap: 12px;
-				color: var(--classic2-body);
-				font-size: var(--classic2-font-label);
-			}
-
-			strong {
-				color: var(--classic2-ink);
-				font-weight: 600;
-			}
-		}
-
-		&__row {
-			display: flex;
-			align-items: flex-start;
-			gap: 12px;
-			padding: 14px 20px;
-			border-top: 1px solid var(--classic2-divider);
-		}
-
-		&__tile {
-			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-			box-sizing: border-box;
-			width: 32px;
-			height: 32px;
-			border-radius: 9px;
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
-
-			&--amber {
-				border: 1px solid var(--classic2-amber-soft);
-				background: var(--classic2-amber-tint);
-				color: var(--classic2-amber);
-			}
-
-			&--green {
-				border: 1px solid var(--classic2-green-soft);
-				background: var(--classic2-green-tint);
-				color: var(--classic2-green);
-			}
-		}
-
-		&__text {
-			display: flex;
-			flex: 1 1 auto;
-			flex-direction: column;
-			gap: 2px;
-			min-width: 0;
-		}
-
-		&__label {
-			margin: 0;
-			color: var(--classic2-secondary);
-			font-size: var(--classic2-font-small);
-			font-weight: 500;
-		}
-
-		&__value {
-			margin: 0;
-			color: var(--classic2-ink);
-			font-size: var(--classic2-font-label);
-			font-weight: 600;
-		}
-
-		&__button-icon {
-			display: inline-flex;
-			color: var(--classic2-secondary);
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
-		}
-
-		&__action {
-			padding: 0 20px 20px;
-
-			&--empty {
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-				gap: 12px;
-
-				.deposit-card__muted {
-					padding: 0;
-				}
-			}
-		}
-	}
-
 	.quote-deposit__muted {
 		margin: 0;
 		color: var(--color-text--secondary);

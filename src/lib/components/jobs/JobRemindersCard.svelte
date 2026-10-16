@@ -32,7 +32,6 @@
 		editable = false,
 		billingTiming,
 		jobClosed = false,
-		variant = 'card',
 		onChanged
 	}: {
 		jobId: string;
@@ -44,8 +43,6 @@
 		today: string;
 		locale?: string;
 		editable?: boolean;
-		/** `list`: just the reminders, for the Classic Billing card's Reminders row. */
-		variant?: 'card' | 'list';
 		onChanged: () => Promise<void> | void;
 	} = $props();
 
@@ -187,94 +184,51 @@
 	}
 </script>
 
-{#if variant === 'list'}
-	<div class="reminders-list">
-		{#if reminders.length === 0 && !jobClosed && billingTiming === 'custom_dates'}
-			<p class="reminders-list__warning" role="status">
-				No dates picked yet. This job will not be flagged for invoicing until you add one.
-			</p>
-		{/if}
-		{#if reminders.length > 0}
-			<ul class="reminders-list__items">
-				{#each reminders as reminder (reminder.id)}
-					{@const due = dueState(reminder.due_on)}
-					<li
-						class="reminders-list__item"
-						class:reminders-list__item--busy={busyId === reminder.id}
-					>
-						<div class="reminders-list__body">
-							<p class="reminders-list__date">
-								{formatDue(reminder.due_on)}
-								<span class="job-reminders__due job-reminders__due--{due.tone}">{due.label}</span>
-							</p>
-							{#if reminder.note}<p class="reminders-list__note">{reminder.note}</p>{/if}
-						</div>
-						{#if editable}
-							<DropdownMenu
-								items={menuItems(reminder)}
-								triggerLabel="Reminder actions"
-								disabled={busyId === reminder.id}
-							/>
-						{/if}
-					</li>
-				{/each}
-			</ul>
-		{/if}
+<RailCard title="Invoice reminders" icon={bellIcon} count={reminders.length}>
+	{#snippet actions()}
 		{#if editable}
-			<button type="button" class="reminders-list__add" onclick={openAdd}>
-				{billingTiming === 'custom_dates' && reminders.length === 0
-					? 'Pick a date'
-					: 'Add a reminder'}
-			</button>
+			<Button variant="tertiary" size="small" onclick={openAdd}>Add</Button>
 		{/if}
-	</div>
-{:else}
-	<RailCard title="Invoice reminders" icon={bellIcon} count={reminders.length}>
-		{#snippet actions()}
+	{/snippet}
+
+	{#if reminders.length === 0 && !jobClosed && billingTiming === 'custom_dates'}
+		<div class="job-reminders__warning" role="status">
+			<p>No dates picked yet. This job will not be flagged for invoicing until you add one.</p>
 			{#if editable}
-				<Button variant="tertiary" size="small" onclick={openAdd}>Add</Button>
+				<Button variant="secondary" size="small" onclick={openAdd}>Pick a date</Button>
 			{/if}
-		{/snippet}
+		</div>
+	{:else if reminders.length === 0}
+		<p class="job-reminders__empty">{emptyText}</p>
+	{:else}
+		<ul class="job-reminders">
+			{#each reminders as reminder (reminder.id)}
+				{@const due = dueState(reminder.due_on)}
+				<li class="job-reminders__item" class:job-reminders__item--busy={busyId === reminder.id}>
+					<div class="job-reminders__body">
+						<p class="job-reminders__date">
+							{formatDue(reminder.due_on)}
+							<span class="job-reminders__due job-reminders__due--{due.tone}">{due.label}</span>
+						</p>
+						<p class="job-reminders__kind">{KIND_LABEL[reminder.reminder_kind]}</p>
+						{#if reminder.note}<p class="job-reminders__note">{reminder.note}</p>{/if}
+					</div>
+					{#if editable}
+						<DropdownMenu
+							items={menuItems(reminder)}
+							triggerLabel="Reminder actions"
+							disabled={busyId === reminder.id}
+						/>
+					{/if}
+				</li>
+			{/each}
+		</ul>
+	{/if}
 
-		{#if reminders.length === 0 && !jobClosed && billingTiming === 'custom_dates'}
-			<div class="job-reminders__warning" role="status">
-				<p>No dates picked yet. This job will not be flagged for invoicing until you add one.</p>
-				{#if editable}
-					<Button variant="secondary" size="small" onclick={openAdd}>Pick a date</Button>
-				{/if}
-			</div>
-		{:else if reminders.length === 0}
-			<p class="job-reminders__empty">{emptyText}</p>
-		{:else}
-			<ul class="job-reminders">
-				{#each reminders as reminder (reminder.id)}
-					{@const due = dueState(reminder.due_on)}
-					<li class="job-reminders__item" class:job-reminders__item--busy={busyId === reminder.id}>
-						<div class="job-reminders__body">
-							<p class="job-reminders__date">
-								{formatDue(reminder.due_on)}
-								<span class="job-reminders__due job-reminders__due--{due.tone}">{due.label}</span>
-							</p>
-							<p class="job-reminders__kind">{KIND_LABEL[reminder.reminder_kind]}</p>
-							{#if reminder.note}<p class="job-reminders__note">{reminder.note}</p>{/if}
-						</div>
-						{#if editable}
-							<DropdownMenu
-								items={menuItems(reminder)}
-								triggerLabel="Reminder actions"
-								disabled={busyId === reminder.id}
-							/>
-						{/if}
-					</li>
-				{/each}
-			</ul>
-		{/if}
-
-		<p class="job-reminders__hint">
-			Reminders are prompts for your own team, not messages to the client.
-		</p>
-	</RailCard>
-{/if}
+	<p class="job-reminders__hint">
+		Reminders are prompts for your own team, not messages to the client.
+	</p>
+</RailCard>
 
 {#if addOpen}
 	<Dialog open={addOpen} title="Add an invoice reminder" size="small" onClose={closeAdd}>
@@ -447,84 +401,6 @@
 			justify-content: flex-end;
 			gap: var(--space-small);
 			margin-top: var(--space-small);
-		}
-	}
-
-	// Classic Billing card's Reminders row (variant="list").
-	.reminders-list {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 8px;
-		margin-top: 6px;
-		font-family: var(--classic2-font);
-
-		&__warning {
-			margin: 0;
-			color: var(--classic2-amber);
-			font-size: var(--classic2-font-small);
-		}
-
-		&__items {
-			display: flex;
-			flex-direction: column;
-			gap: 6px;
-			width: 100%;
-			margin: 0;
-			padding: 0;
-			list-style: none;
-		}
-
-		&__item {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			gap: 8px;
-
-			&--busy {
-				opacity: 0.6;
-			}
-		}
-
-		&__body {
-			min-width: 0;
-		}
-
-		&__date {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: center;
-			gap: 6px;
-			margin: 0;
-			color: var(--classic2-body);
-			font-size: var(--classic2-font-small);
-			font-weight: 600;
-		}
-
-		&__note {
-			margin: 0;
-			color: var(--classic2-secondary);
-			font-size: var(--classic2-font-small);
-		}
-
-		&__add {
-			padding: 0;
-			border: 0;
-			background: none;
-			color: var(--classic2-green);
-			font-family: var(--classic2-font);
-			font-size: var(--classic2-font-small);
-			font-weight: 600;
-			cursor: pointer;
-
-			&:hover {
-				text-decoration: underline;
-			}
-
-			&:focus-visible {
-				outline: 2px solid var(--classic2-green);
-				outline-offset: 2px;
-			}
 		}
 	}
 </style>

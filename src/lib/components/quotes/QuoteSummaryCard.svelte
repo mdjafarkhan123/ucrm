@@ -49,31 +49,31 @@
 	);
 </script>
 
-<RailCard {title} icon={receiptIcon} class="quote-summary-card">
+<RailCard {title} icon={receiptIcon}>
 	{#if subtotalMinor === null}
 		<p class="quote-summary__hidden">You do not have access to quote prices.</p>
 	{:else}
 		<dl class="quote-summary">
-			<div class="quote-summary__row quote-summary__row--money">
+			<div class="quote-summary__row">
 				<dt>Subtotal</dt>
 				<dd>{money.format(subtotalMinor / 100)}</dd>
 			</div>
 
 			{#if discountMinor > 0}
-				<div class="quote-summary__row quote-summary__row--money">
+				<div class="quote-summary__row">
 					<dt>{discountLabel || 'Discount'}</dt>
 					<dd>−{money.format(discountMinor / 100)}</dd>
 				</div>
 			{/if}
 
 			{#if taxMinor > 0}
-				<div class="quote-summary__row quote-summary__row--money">
+				<div class="quote-summary__row">
 					<dt>{taxLabel || 'Tax'}</dt>
 					<dd>{money.format(taxMinor / 100)}</dd>
 				</div>
 			{/if}
 
-			<div class="quote-summary__row quote-summary__row--money quote-summary__row--total">
+			<div class="quote-summary__row quote-summary__row--total">
 				<dt>Total</dt>
 				<dd>{money.format(total / 100)}</dd>
 			</div>
@@ -162,20 +162,5 @@
 	.quote-summary__hidden {
 		margin: 0;
 		color: var(--color-text--secondary);
-	}
-	// Classic puts what the record comes to inside its line-items card, so this card keeps only the
-	// figures that card cannot show (the team's cost and profit) and disappears when there are none.
-	:global(:root:has(.app-shell[data-presentation='classic'])) {
-		.quote-summary__row--money {
-			display: none;
-		}
-		.quote-summary__internal {
-			margin-top: 0;
-			padding-top: 0;
-			border-top: 0;
-		}
-		:global(.quote-summary-card:not(:has(.quote-summary__internal))) {
-			display: none;
-		}
 	}
 </style>

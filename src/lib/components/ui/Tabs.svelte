@@ -17,8 +17,6 @@
 	export type Tab = {
 		value: string;
 		label: string;
-		/** A small chip after the label: a count, or a short figure such as "24h 30m". */
-		count?: number | string;
 		/** Warms a tab's query before it is opened, matching Button's own `onhover` convention. Fires on
 		 * mouse hover and keyboard focus so revealed content (CLAUDE.md rule 9) is ready by the time the
 		 * tab is actually selected. */
@@ -30,7 +28,6 @@
 		value = $bindable(),
 		label,
 		onChange,
-		variant = 'default',
 		children
 	}: {
 		tabs: Tab[];
@@ -41,8 +38,6 @@
 		/** Give this when the caller owns the open tab itself — a page keeping it in the URL, say. It then
 		 * takes over from `bind:value`, and `value` is only ever read. */
 		onChange?: (value: string) => void;
-		/** `card`: the Classic row that sits inside a record card, e.g. the job's Work log. */
-		variant?: 'default' | 'card';
 		children: Snippet;
 	} = $props();
 
@@ -65,7 +60,7 @@
 		if (onChange) onChange(next);
 		else value = next;
 	}}
-	class={`tabs tabs--${variant}`}
+	class="tabs"
 >
 	<TabsPrimitive.List class="tabs__list" aria-label={label}>
 		{#each tabs as tab (tab.value)}
@@ -75,10 +70,7 @@
 				onmouseenter={tab.onhover}
 				onfocus={tab.onhover}
 			>
-				<span>{tab.label}</span>
-				{#if tab.count !== undefined}
-					<span class="tabs__count">{tab.count}</span>
-				{/if}
+				{tab.label}
 			</TabsPrimitive.Trigger>
 		{/each}
 	</TabsPrimitive.List>
@@ -144,104 +136,5 @@
 		left: 0;
 		height: var(--space-smaller);
 		background: var(--color-interactive);
-	}
-
-	:global {
-		:root:has(.app-shell[data-presentation='classic']) .tabs__list {
-			gap: 8px;
-			border-color: var(--classic2-divider);
-		}
-		:root:has(.app-shell[data-presentation='classic']) .tabs__tab {
-			display: inline-flex;
-			align-items: center;
-			gap: 6px;
-			height: 42px;
-			padding: 0 12px;
-			border-radius: 10px 10px 0 0;
-			background: transparent;
-			color: var(--classic2-secondary);
-			font-family: var(--classic2-font);
-			font-size: var(--classic2-font-label);
-			line-height: 1;
-		}
-		:root:has(.app-shell[data-presentation='classic']) .tabs__tab:hover {
-			color: var(--classic2-ink);
-			background: var(--classic2-surface-soft);
-		}
-		:root:has(.app-shell[data-presentation='classic']) .tabs__tab:focus-visible {
-			background: var(--classic2-surface-soft);
-			outline: 3px solid var(--classic2-green-soft);
-			outline-offset: -3px;
-		}
-		:root:has(.app-shell[data-presentation='classic']) .tabs__tab[data-state='active'] {
-			color: var(--classic2-ink);
-		}
-		:root:has(.app-shell[data-presentation='classic']) .tabs__tab[data-state='active']::after {
-			height: 3px;
-			border-radius: 3px 3px 0 0;
-			background: var(--classic2-solid-green);
-		}
-		:root:has(.app-shell[data-presentation='classic']) .tabs__count {
-			display: inline-grid;
-			min-width: 18px;
-			height: 18px;
-			place-items: center;
-			padding: 0 5px;
-			border-radius: 999px;
-			background: var(--classic2-chip);
-			color: var(--classic2-muted);
-			font-size: var(--classic2-font-micro);
-			font-weight: 700;
-			font-variant-numeric: tabular-nums;
-		}
-		:root:has(.app-shell[data-presentation='classic'])
-			.tabs__tab[data-state='active']
-			.tabs__count {
-			background: var(--classic2-chip);
-			color: var(--classic2-green);
-		}
-
-		// classic.pen Work log tabs: flush with the card's rows, a figure chip beside each label.
-		:root:has(.app-shell[data-presentation='classic']) .tabs--card .tabs__list {
-			gap: 24px;
-			margin-bottom: 0;
-			padding-inline: 24px;
-		}
-		:root:has(.app-shell[data-presentation='classic']) .tabs--card .tabs__tab {
-			gap: 8px;
-			height: auto;
-			padding: 0 0 12px;
-			border-radius: 0;
-			font-size: var(--classic2-font-body);
-		}
-		:root:has(.app-shell[data-presentation='classic']) .tabs--card .tabs__tab:hover {
-			background: transparent;
-		}
-		:root:has(.app-shell[data-presentation='classic'])
-			.tabs--card
-			.tabs__tab[data-state='active']::after {
-			height: 2px;
-			border-radius: 2px 2px 0 0;
-		}
-		:root:has(.app-shell[data-presentation='classic']) .tabs--card .tabs__count {
-			height: auto;
-			padding: 2px 8px;
-			background: var(--classic2-surface-soft);
-			color: var(--classic2-secondary);
-			font-size: var(--classic2-font-small);
-			font-weight: 600;
-			line-height: 1.25;
-		}
-		:root:has(.app-shell[data-presentation='classic'])
-			.tabs--card
-			.tabs__tab[data-state='active']
-			.tabs__count {
-			background: var(--classic2-green-tint);
-			color: var(--classic2-green);
-		}
-		:root:has(.app-shell[data-presentation='classic']) .tabs--card .tab-panel:not([hidden]) {
-			gap: 0;
-			padding: 0;
-		}
 	}
 </style>

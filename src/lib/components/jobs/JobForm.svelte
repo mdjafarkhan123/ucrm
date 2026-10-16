@@ -283,13 +283,7 @@
 		void submit().finally(() => layout?.revealError());
 	}}
 >
-	<RecordFormLayout
-		title="New Job"
-		icon={toolsIcon}
-		bind:this={layout}
-		error={formError}
-		dirty={isDirty}
-	>
+	<RecordFormLayout title="New Job" icon={toolsIcon} bind:this={layout} error={formError}>
 		{#snippet main()}
 			{#if sourceRequest}
 				<Banner type="notice">
@@ -421,9 +415,7 @@
 
 		{#snippet actions()}
 			<Button variant="tertiary" onclick={onCancel} disabled={saving}>Cancel</Button>
-			<Button variant="primary" showCheckIcon type="submit" loading={saving} disabled={!isDirty}>
-				Save Job
-			</Button>
+			<Button variant="primary" type="submit" loading={saving} disabled={!isDirty}>Save Job</Button>
 		{/snippet}
 	</RecordFormLayout>
 </form>
