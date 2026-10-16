@@ -136,7 +136,6 @@
 
 <style lang="scss">
 	.setup-card {
-		margin-bottom: var(--space-large);
 		padding: var(--space-base) var(--space-large);
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);

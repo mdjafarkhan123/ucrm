@@ -1,955 +1,426 @@
 <script lang="ts">
-	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
-	import SetupCard from '$lib/components/dashboard/SetupCard.svelte';
+	import { createQuery } from '@tanstack/svelte-query';
+	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
+	import coinsIcon from '@tabler/icons/outline/coins.svg?raw';
+	import FieldWorkerHome from '$lib/components/dashboard/FieldWorkerHome.svelte';
+	import HomeMoneyOwedCard from '$lib/components/dashboard/HomeMoneyOwedCard.svelte';
+	import HomePerformanceCard, {
+		type PerformanceMetric
+	} from '$lib/components/dashboard/HomePerformanceCard.svelte';
+	import HomeScheduleCard from '$lib/components/dashboard/HomeScheduleCard.svelte';
+	import HomeTodoCard from '$lib/components/dashboard/HomeTodoCard.svelte';
 	import ReadinessCard from '$lib/components/dashboard/ReadinessCard.svelte';
+	import SetupCard from '$lib/components/dashboard/SetupCard.svelte';
+	import PageContainer from '$lib/components/layout/PageContainer.svelte';
+	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import DayClockCard from '$lib/components/time-clock/DayClockCard.svelte';
-	import CountryPicker from '$lib/components/ui/CountryPicker.svelte';
-	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
-	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import {
+		collectedKey,
+		fetchCollected,
+		fetchInvoiced,
+		fetchMoneyOwed,
+		fetchPastDueInvoices,
+		invoicedKey,
+		moneyOwedKey,
+		pastDueInvoicesKey
+	} from '$lib/home/api';
+	import { monthComparison } from '$lib/home/money';
+	import { buildHomeSchedule, scheduleWindowFor } from '$lib/home/schedule';
+	import { buildTodoColumns, type TodoColumnKey } from '$lib/home/todo';
+	import { fallbackContractorNavigation } from '$lib/account/navigation';
+	import { fetchInvoiceOverview, invoiceCountsKey } from '$lib/invoices/api';
+	import { fetchJobOverview, jobCountsKey } from '$lib/jobs/api';
+	import { fetchQuoteOverview, quoteCountsKey } from '$lib/quotes/api';
+	import { fetchRequestCounts, requestCountsKey } from '$lib/requests/api';
+	import {
+		fetchScheduleContext,
+		fetchScheduleWindow,
+		scheduleContextKey,
+		scheduleWindowKey
+	} from '$lib/schedule/api';
+	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
+	import { calendarDay, clockMinutesInZone } from '$lib/time/calendar-day';
 	import type { PageProps } from './$types';
 
-	// The shell's server load already knows whether this account belongs to a business, so that answer is
-	// there before the first paint. The overview query is not, and treating "not loaded yet" as "no
-	// business" flashed a false warning and zero counts on every cold visit.
+	// Home. The owner, office and finance see the day at a glance (what is waiting, today's schedule, money
+	// owed, how the month is going), each card only if the person may see its area. A field worker keeps the
+	// workspace summary they always had. Every card reads on its own, so one failing never blocks the rest.
 	let { data: shell }: PageProps = $props();
 	const hasOrganization = $derived(Boolean(shell.organization));
+	const role = $derived(shell.organization?.role);
+	const isFieldWorker = $derived(role === 'field');
 	// Client setup is the owner's or an administrator's job, so nobody else is asked about it.
-	const runsSetup = $derived(
-		shell.organization?.role === 'owner' || shell.organization?.role === 'admin'
-	);
+	const runsSetup = $derived(role === 'owner' || role === 'admin');
+	const nav = $derived(shell.navigation ?? fallbackContractorNavigation);
+	const ready = $derived(hasOrganization && !isFieldWorker);
 
-	const queryClient = useQueryClient();
-	const toast = getToastManager();
+	// --- Time: the business's own day, ticking so a page left open overnight rolls over ---------------------
 
-	type Client = {
-		id: string;
-		display_name: string;
-		email: string | null;
-		phone: string | null;
-		lifecycle_status: string;
-		lead_source: string | null;
-	};
-	type Property = {
-		id: string;
-		client_id: string;
-		label: string;
-		address_line1: string;
-		city: string;
-		state_region: string | null;
-	};
-	type WorkRequest = {
-		id: string;
-		client_id: string;
-		property_id: string;
-		title: string;
-		description: string | null;
-		service_type: string | null;
-		status: string;
-		created_at: string;
-	};
-	type Overview = {
-		organization: { id: string; name: string; role: string };
-		clients: Client[];
-		properties: Property[];
-		requests: WorkRequest[];
-	};
-	type MutationInput = { endpoint: string; payload: Record<string, string> };
-	type ApiError = Error & { fieldErrors?: Record<string, string> };
+	let clock = $state(new Date());
+	$effect(() => {
+		const tick = setInterval(() => (clock = new Date()), 60_000);
+		return () => clearInterval(tick);
+	});
 
-	const emptyOverview: Overview = {
-		organization: { id: '', name: 'Contractor CRM', role: '' },
-		clients: [],
-		properties: [],
-		requests: []
-	};
-	const overview = createQuery<Overview>(() => ({
-		queryKey: ['crm', 'overview'],
-		queryFn: fetchOverview
-	}));
-	const mutation = createMutation<unknown, Error, MutationInput>(() => ({
-		mutationFn: submitMutation,
-		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: ['crm', 'overview'] });
-		}
+	const scheduleContext = createQuery(() => ({
+		queryKey: scheduleContextKey,
+		queryFn: fetchScheduleContext,
+		enabled: ready && nav.schedule,
+		staleTime: 10 * 60 * 1000
 	}));
 
-	let formMode = $state<'customer' | 'property' | 'request' | null>(null);
-	let formError = $state('');
-	let fieldErrors = $state<Record<string, string>>({});
-	let customerForm = $state({
-		display_name: '',
-		email: '',
-		phone: '',
-		lead_source: 'staff',
-		first_name: '',
-		last_name: '',
-		company_name: '',
-		initial_note: ''
-	});
-	let propertyForm = $state({
-		client_id: '',
-		label: '',
-		address_line1: '',
-		address_line2: '',
-		city: '',
-		state_region: '',
-		postal_code: '',
-		country: 'US',
-		access_notes: ''
-	});
-	let requestForm = $state({
-		client_id: '',
-		property_id: '',
-		title: '',
-		description: '',
-		service_type: '',
-		source: 'staff',
-		preferred_time: ''
-	});
+	// --- To do: the same overviews the list pages draw -----------------------------------------------------
 
-	const data = $derived(overview.data ?? emptyOverview);
-	const requestProperties = $derived(
-		data.properties.filter((property) => property.client_id === requestForm.client_id)
+	const requestCounts = createQuery(() => ({
+		queryKey: requestCountsKey,
+		queryFn: fetchRequestCounts,
+		enabled: ready && nav.requests,
+		staleTime: 30_000
+	}));
+	const quoteOverview = createQuery(() => ({
+		queryKey: quoteCountsKey,
+		queryFn: fetchQuoteOverview,
+		enabled: ready && nav.quotes,
+		staleTime: 30_000
+	}));
+	const jobOverview = createQuery(() => ({
+		queryKey: jobCountsKey,
+		queryFn: fetchJobOverview,
+		enabled: ready && nav.jobs,
+		staleTime: 30_000
+	}));
+	const invoiceOverview = createQuery(() => ({
+		queryKey: invoiceCountsKey,
+		queryFn: fetchInvoiceOverview,
+		enabled: ready && nav.invoices,
+		staleTime: 30_000
+	}));
+
+	const timezone = $derived(
+		scheduleContext.data?.timezone ??
+			quoteOverview.data?.timezone ??
+			Intl.DateTimeFormat().resolvedOptions().timeZone
+	);
+	// The business's timezone is known once the schedule context or the quotes overview has answered; before
+	// that the device's own is the best guess, and the day-dependent cards wait for the real one.
+	const timezoneKnown = $derived(
+		Boolean(scheduleContext.data?.timezone ?? quoteOverview.data?.timezone) ||
+			(!nav.schedule && !nav.quotes)
+	);
+	const today = $derived(calendarDay(clock, timezone));
+
+	const todoColumns = $derived(
+		buildTodoColumns(
+			{
+				requests: nav.requests,
+				quotes: nav.quotes,
+				jobs: nav.jobs,
+				invoices: nav.invoices
+			},
+			{
+				requests: requestCounts.data,
+				quotes: quoteOverview.data,
+				jobs: jobOverview.data,
+				invoices: invoiceOverview.data
+			}
+		)
+	);
+	const failedColumns = $derived<TodoColumnKey[]>([
+		...(requestCounts.isError ? (['requests'] as const) : []),
+		...(quoteOverview.isError ? (['quotes'] as const) : []),
+		...(jobOverview.isError ? (['jobs'] as const) : []),
+		...(invoiceOverview.isError ? (['invoices'] as const) : [])
+	]);
+	function retryColumn(key: TodoColumnKey) {
+		void { requests: requestCounts, quotes: quoteOverview, jobs: jobOverview, invoices: invoiceOverview }[
+			key
+		].refetch();
+	}
+	const currency = $derived(
+		invoiceOverview.data?.currency_code ??
+			jobOverview.data?.currency_code ??
+			quoteOverview.data?.currency_code ??
+			'USD'
+	);
+	const locale = $derived(
+		invoiceOverview.data?.locale ??
+			jobOverview.data?.locale ??
+			quoteOverview.data?.locale ??
+			'en-US'
 	);
 
-	async function fetchOverview(): Promise<Overview> {
-		const response = await fetch('/api/crm/overview');
-		if (!response.ok) throw new Error('We could not load your workspace.');
-		return response.json();
-	}
+	// --- Today's schedule ------------------------------------------------------------------------------------
 
-	async function submitMutation({ endpoint, payload }: MutationInput) {
-		const response = await fetch(endpoint, {
-			method: 'POST',
-			headers: { 'content-type': 'application/json' },
-			body: JSON.stringify(payload)
-		});
-		const result = await response.json();
-		if (!response.ok) {
-			const error = new Error(result.error ?? 'We could not save that record.') as ApiError;
-			error.fieldErrors = result.field_errors ?? {};
-			throw error;
+	const scheduleWindow = $derived(scheduleWindowFor(today));
+	const windowQuery = createQuery(() => ({
+		queryKey: scheduleWindowKey(scheduleWindow),
+		queryFn: () => fetchScheduleWindow(scheduleWindow),
+		enabled: ready && nav.schedule && Boolean(scheduleContext.data),
+		staleTime: 30_000
+	}));
+	const teamQuery = createQuery(() => ({
+		queryKey: assignableTeamKey,
+		queryFn: fetchAssignableTeam,
+		enabled: ready && nav.schedule,
+		staleTime: 5 * 60 * 1000
+	}));
+	const schedule = $derived(
+		windowQuery.data && scheduleContext.data
+			? buildHomeSchedule(windowQuery.data, scheduleContext.data.timezone, today)
+			: undefined
+	);
+
+	// --- Money: shown only to people who may see invoice prices -------------------------------------------
+
+	// Until the invoices overview answers, a person with invoice access is assumed to see money; the overview
+	// carries nothing for a reader without prices, and then the whole money rail is left out.
+	const canSeeMoney = $derived(
+		ready &&
+			nav.invoices &&
+			!invoiceOverview.isError &&
+			(invoiceOverview.data ? invoiceOverview.data.outstanding_minor !== null : true)
+	);
+	const moneyReady = $derived(canSeeMoney && timezoneKnown);
+
+	const moneyOwed = createQuery(() => ({
+		queryKey: moneyOwedKey(today),
+		queryFn: () => fetchMoneyOwed(today),
+		enabled: moneyReady,
+		staleTime: 60_000
+	}));
+	const pastDue = createQuery(() => ({
+		queryKey: pastDueInvoicesKey,
+		queryFn: fetchPastDueInvoices,
+		enabled: moneyReady,
+		staleTime: 60_000
+	}));
+
+	const months = $derived(monthComparison(today));
+	const invoicedNow = createQuery(() => ({
+		queryKey: invoicedKey(months.current),
+		queryFn: () => fetchInvoiced(months.current),
+		enabled: moneyReady,
+		staleTime: 60_000
+	}));
+	const invoicedBefore = createQuery(() => ({
+		queryKey: invoicedKey(months.previous),
+		queryFn: () => fetchInvoiced(months.previous),
+		enabled: moneyReady,
+		staleTime: 60_000
+	}));
+	const collectedNow = createQuery(() => ({
+		queryKey: collectedKey(months.current),
+		queryFn: () => fetchCollected(months.current),
+		enabled: moneyReady,
+		staleTime: 60_000
+	}));
+	const collectedBefore = createQuery(() => ({
+		queryKey: collectedKey(months.previous),
+		queryFn: () => fetchCollected(months.previous),
+		enabled: moneyReady,
+		staleTime: 60_000
+	}));
+
+	const metrics = $derived<PerformanceMetric[]>([
+		{
+			key: 'invoiced',
+			label: 'Invoiced · this month',
+			icon: receiptIcon,
+			tone: 'informative',
+			current: invoicedNow.data ?? null,
+			previous: invoicedBefore.data ?? null,
+			loading: !moneyReady || invoicedNow.isPending || invoicedBefore.isPending,
+			failed: invoicedNow.isError || invoicedBefore.isError
+		},
+		{
+			key: 'collected',
+			label: 'Collected · this month',
+			icon: coinsIcon,
+			tone: 'success',
+			current: collectedNow.data ?? null,
+			previous: collectedBefore.data ?? null,
+			loading: !moneyReady || collectedNow.isPending || collectedBefore.isPending,
+			failed: collectedNow.isError || collectedBefore.isError
 		}
-		return result;
-	}
-
-	function openForm(mode: 'customer' | 'property' | 'request') {
-		formMode = mode;
-		formError = '';
-		fieldErrors = {};
-	}
-
-	function closeForm() {
-		formMode = null;
-		formError = '';
-		fieldErrors = {};
-	}
-
-	async function save(mode: 'customer' | 'property' | 'request', payload: Record<string, string>) {
-		formError = '';
-		fieldErrors = {};
-		try {
-			await mutation.mutateAsync({
-				endpoint: `/api/${mode === 'customer' ? 'clients' : mode === 'property' ? 'properties' : 'requests'}`,
-				payload
-			});
-			toast.success(
-				mode === 'customer'
-					? 'Customer created.'
-					: mode === 'property'
-						? 'Property created.'
-						: 'Request created.'
-			);
-			closeForm();
-			if (mode === 'customer')
-				customerForm = {
-					display_name: '',
-					email: '',
-					phone: '',
-					lead_source: 'staff',
-					first_name: '',
-					last_name: '',
-					company_name: '',
-					initial_note: ''
-				};
-			if (mode === 'property')
-				propertyForm = {
-					client_id: '',
-					label: '',
-					address_line1: '',
-					address_line2: '',
-					city: '',
-					state_region: '',
-					postal_code: '',
-					country: 'US',
-					access_notes: ''
-				};
-			if (mode === 'request')
-				requestForm = {
-					client_id: '',
-					property_id: '',
-					title: '',
-					description: '',
-					service_type: '',
-					source: 'staff',
-					preferred_time: ''
-				};
-		} catch (error) {
-			const apiError = error as ApiError;
-			formError = apiError.message;
-			fieldErrors = apiError.fieldErrors ?? {};
+	]);
+	function retryMetric(key: string) {
+		if (key === 'invoiced') {
+			void invoicedNow.refetch();
+			void invoicedBefore.refetch();
+		} else {
+			void collectedNow.refetch();
+			void collectedBefore.refetch();
 		}
 	}
 
-	function errorFor(field: string) {
-		return fieldErrors[field];
-	}
-	function clientName(id: string) {
-		return data.clients.find((client) => client.id === id)?.display_name ?? 'Unknown customer';
-	}
-	function propertyName(id: string) {
-		const property = data.properties.find((property) => property.id === id);
-		return property ? property.label || property.address_line1 : 'Unknown property';
-	}
-	function formatDate(value: string) {
-		return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(
-			new Date(value)
-		);
-	}
+	// --- The header ------------------------------------------------------------------------------------------
+
+	const firstName = $derived(shell.account?.name?.trim().split(/\s+/)[0] ?? '');
+	const greeting = $derived.by(() => {
+		const hour = Math.floor(clockMinutesInZone(clock, timezone) / 60);
+		const part = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+		return firstName ? `${part}, ${firstName}` : part;
+	});
+	const dateLine = $derived.by(() => {
+		const day = new Intl.DateTimeFormat('en-US', {
+			weekday: 'long',
+			month: 'long',
+			day: 'numeric',
+			timeZone: timezone
+		}).format(clock);
+		const business = shell.organization?.name;
+		return business ? `${day} · Here’s your day at ${business}.` : `${day}.`;
+	});
+
+	const showSchedule = $derived(nav.schedule);
+	const showRail = $derived(canSeeMoney);
 </script>
 
-{#snippet count(value: number)}
-	{#if overview.isPending}
-		<div class="stat-card__pending">
-			<LoadingSkeleton variant="heading" label="Loading count" />
-		</div>
-	{:else}
-		<strong>{overview.isError ? '—' : value}</strong>
-	{/if}
-{/snippet}
+<svelte:head><title>Home · Contractor CRM</title></svelte:head>
 
-<svelte:head><title>Workspace · Contractor CRM</title></svelte:head>
+{#if isFieldWorker}
+	<FieldWorkerHome {hasOrganization} {runsSetup} userId={shell.user?.id ?? null} />
+{:else}
+	<div class="page-scroller">
+		<PageContainer variant="open">
+			<PageHeader class="home-page__header" eyebrow="Home" title={greeting} description={dateLine}>
+				{#snippet actions()}
+					{#if hasOrganization}<DayClockCard />{/if}
+				{/snippet}
+			</PageHeader>
 
-<div class="page-scroller">
-	<div class="workspace">
-		<main class="content">
-			<PageHeader title="Dashboard" description="Your workspace at a glance." />
 			{#if hasOrganization}
-				<DayClockCard />
-				{#if runsSetup}
-					<SetupCard userId={shell.user?.id ?? null} />
-					<ReadinessCard userId={shell.user?.id ?? null} />
-				{/if}
+				<div class="home">
+					{#if runsSetup}
+						<div class="home__setup">
+							<SetupCard userId={shell.user?.id ?? null} />
+							<ReadinessCard userId={shell.user?.id ?? null} />
+						</div>
+					{/if}
+
+					{#if todoColumns.length > 0}
+						<HomeTodoCard
+							columns={todoColumns}
+							failed={failedColumns}
+							{currency}
+							{locale}
+							onretry={retryColumn}
+						/>
+					{/if}
+
+					{#if showSchedule || showRail}
+						<div class={['home__grid', !showSchedule && 'home__grid--rail-only']}>
+							{#if showSchedule}
+								<HomeScheduleCard
+									{schedule}
+									team={teamQuery.data ?? []}
+									loading={!schedule && !scheduleContext.isError && !windowQuery.isError}
+									failed={scheduleContext.isError || windowQuery.isError}
+									onretry={() => {
+										if (scheduleContext.isError) void scheduleContext.refetch();
+										void windowQuery.refetch();
+									}}
+								/>
+							{/if}
+							{#if showRail}
+								<div class="home__rail">
+									<HomeMoneyOwedCard
+										owed={moneyOwed.data}
+										overdueInvoices={pastDue.data ?? []}
+										{today}
+										{currency}
+										{locale}
+										loading={!moneyReady || moneyOwed.isPending}
+										failed={moneyOwed.isError}
+										onretry={() => void moneyOwed.refetch()}
+									/>
+									<HomePerformanceCard
+										{metrics}
+										currentLabel={months.currentLabel}
+										previousLabel={months.previousLabel}
+										{currency}
+										{locale}
+										onretry={retryMetric}
+									/>
+								</div>
+							{/if}
+						</div>
+					{/if}
+				</div>
 			{:else}
-				<section class="notice">
+				<section class="home__notice">
 					<strong>Your account is signed in, but it is not connected to an organization yet.</strong
 					><span
 						>Ask the platform owner to add you to a contractor organization before creating records.</span
 					>
 				</section>
 			{/if}
-
-			<section class="stats" aria-label="Workspace summary">
-				<div class="stat-card">
-					<span>Customers</span>{@render count(data.clients.length)}<small
-						>Leads and active customers</small
-					>
-				</div>
-				<div class="stat-card">
-					<span>Properties</span>{@render count(data.properties.length)}<small
-						>Service locations</small
-					>
-				</div>
-				<div class="stat-card stat-card--request">
-					<span>Open requests</span>{@render count(
-						data.requests.filter((request) => !['converted', 'archived'].includes(request.status))
-							.length
-					)}<small>Ready for the next action</small>
-				</div>
-			</section>
-
-			{#if overview.isPending}
-				<div class="loading-grid">
-					<LoadingSkeleton variant="card" label="Loading workspace" />
-					<LoadingSkeleton variant="card" label="Loading workspace" />
-					<LoadingSkeleton variant="card" label="Loading workspace" />
-				</div>
-			{:else if overview.isError}
-				<section class="notice notice--error">
-					<strong>Workspace data could not be loaded.</strong><span
-						>Refresh the page and try again.</span
-					>
-				</section>
-			{:else}
-				<div class="workspace-grid">
-					<section class="panel panel--customers" aria-labelledby="customers-heading">
-						<div class="panel__header">
-							<div>
-								<span class="panel__eyebrow">Relationship record</span>
-								<h2 id="customers-heading">Customers</h2>
-							</div>
-							<button
-								class="button button--small"
-								type="button"
-								onclick={() => openForm('customer')}>Add customer</button
-							>
-						</div>
-						{#if data.clients.length === 0}<div class="empty">
-								<strong>No customers yet</strong><span
-									>Create the first lead and start a complete work history.</span
-								><button
-									class="button button--secondary"
-									type="button"
-									onclick={() => openForm('customer')}>Create first customer</button
-								>
-							</div>{/if}
-						<div class="record-list">
-							{#each data.clients as client (client.id)}
-								<article class="record">
-									<div class="record__avatar">{client.display_name.slice(0, 1).toUpperCase()}</div>
-									<div class="record__body">
-										<div class="record__title">
-											<strong>{client.display_name}</strong><span
-												class="badge badge--{client.lifecycle_status}"
-												>{client.lifecycle_status}</span
-											>
-										</div>
-										<span>{client.email || client.phone || 'No contact details yet'}</span><small
-											>{data.properties.filter((property) => property.client_id === client.id)
-												.length} properties · {data.requests.filter(
-												(request) => request.client_id === client.id
-											).length} requests</small
-										>
-									</div>
-									<button
-										class="text-button"
-										type="button"
-										onclick={() => {
-											propertyForm.client_id = client.id;
-											openForm('property');
-										}}>Add property</button
-									>
-								</article>
-							{/each}
-						</div>
-					</section>
-
-					<section class="panel" aria-labelledby="requests-heading">
-						<div class="panel__header">
-							<div>
-								<span class="panel__eyebrow">Incoming work</span>
-								<h2 id="requests-heading">Requests</h2>
-							</div>
-							<button
-								class="button button--small"
-								type="button"
-								onclick={() => openForm('request')}
-								disabled={data.properties.length === 0}>New request</button
-							>
-						</div>
-						{#if data.requests.length === 0}<div class="empty">
-								<strong>No requests yet</strong><span
-									>Add a property first, then record what the customer needs.</span
-								>
-							</div>{/if}
-						<div class="record-list">
-							{#each data.requests as request (request.id)}
-								<article class="request-record">
-									<div class="request-record__top">
-										<span class="request-dot"></span>
-										<div>
-											<strong>{request.title}</strong><small
-												>{clientName(request.client_id)} · {propertyName(
-													request.property_id
-												)}</small
-											>
-										</div>
-										<span class="badge badge--request">{request.status.replace('_', ' ')}</span>
-									</div>
-									<p>{request.description || 'No description added.'}</p>
-									<footer>
-										<span>{request.service_type || 'General service'}</span><span
-											>{formatDate(request.created_at)}</span
-										>
-									</footer>
-								</article>
-							{/each}
-						</div>
-					</section>
-				</div>
-			{/if}
-		</main>
+		</PageContainer>
 	</div>
-
-	{#if formMode}
-		<div
-			class="modal-backdrop"
-			role="presentation"
-			onclick={(event) => {
-				if (event.target === event.currentTarget) closeForm();
-			}}
-		>
-			<div class="modal" role="dialog" aria-modal="true" aria-labelledby="form-title">
-				<div class="modal__header">
-					<div>
-						<span class="panel__eyebrow"
-							>{formMode === 'customer'
-								? 'Relationship record'
-								: formMode === 'property'
-									? 'Service location'
-									: 'Incoming work'}</span
-						>
-						<h2 id="form-title">
-							{formMode === 'customer'
-								? 'Add customer'
-								: formMode === 'property'
-									? 'Add property'
-									: 'New request'}
-						</h2>
-					</div>
-					<button class="close-button" type="button" aria-label="Close form" onclick={closeForm}
-						>×</button
-					>
-				</div>
-				{#if formError}<div class="form-alert" role="alert">{formError}</div>{/if}
-				{#if formMode === 'customer'}
-					<form
-						onsubmit={(event) => {
-							event.preventDefault();
-							void save('customer', customerForm);
-						}}
-					>
-						<label
-							>Customer name<input
-								bind:value={customerForm.display_name}
-								aria-invalid={!!errorFor('display_name')}
-							/>{#if errorFor('display_name')}<small class="field-error"
-									>{errorFor('display_name')}</small
-								>{/if}</label
-						>
-						<div class="form-grid">
-							<label>Email<input type="email" bind:value={customerForm.email} /></label><label
-								>Phone<input type="tel" bind:value={customerForm.phone} /></label
-							>
-						</div>
-						<div class="form-grid">
-							<label>First name<input bind:value={customerForm.first_name} /></label><label
-								>Last name<input bind:value={customerForm.last_name} /></label
-							>
-						</div>
-						<label>How did they find you?<input bind:value={customerForm.lead_source} /></label
-						><label
-							>Notes<textarea rows="3" bind:value={customerForm.initial_note}></textarea></label
-						>
-						<div class="modal__actions">
-							<button class="button button--quiet" type="button" onclick={closeForm}>Cancel</button
-							><button class="button" type="submit" disabled={mutation.isPending}
-								>Save customer</button
-							>
-						</div>
-					</form>
-				{:else if formMode === 'property'}
-					<form
-						onsubmit={(event) => {
-							event.preventDefault();
-							void save('property', propertyForm);
-						}}
-					>
-						<label
-							>Customer<select bind:value={propertyForm.client_id}
-								><option value="">Choose customer</option
-								>{#each data.clients as client (client.id)}<option value={client.id}
-										>{client.display_name}</option
-									>{/each}</select
-							>{#if errorFor('client_id')}<small class="field-error">{errorFor('client_id')}</small
-								>{/if}</label
-						>
-						<label
-							>Property label<input
-								bind:value={propertyForm.label}
-								placeholder="Main home, office, rental…"
-							/></label
-						><label>Address<input bind:value={propertyForm.address_line1} /></label><label
-							>Address line 2<input bind:value={propertyForm.address_line2} /></label
-						>
-						<div class="form-grid">
-							<label>City<input bind:value={propertyForm.city} /></label><label
-								>State/region<input bind:value={propertyForm.state_region} /></label
-							>
-						</div>
-						<div class="form-grid">
-							<label>Postal code<input bind:value={propertyForm.postal_code} /></label>
-							<CountryPicker
-								id="dashboard-property-country"
-								label="Country"
-								bind:value={propertyForm.country}
-							/>
-						</div>
-						<label
-							>Access notes<textarea rows="3" bind:value={propertyForm.access_notes}
-							></textarea></label
-						>
-						<div class="modal__actions">
-							<button class="button button--quiet" type="button" onclick={closeForm}>Cancel</button
-							><button class="button" type="submit" disabled={mutation.isPending}
-								>Save property</button
-							>
-						</div>
-					</form>
-				{:else}
-					<form
-						onsubmit={(event) => {
-							event.preventDefault();
-							void save('request', requestForm);
-						}}
-					>
-						<div class="form-grid">
-							<label
-								>Customer<select
-									bind:value={requestForm.client_id}
-									onchange={() => (requestForm.property_id = '')}
-									><option value="">Choose customer</option
-									>{#each data.clients as client (client.id)}<option value={client.id}
-											>{client.display_name}</option
-										>{/each}</select
-								></label
-							><label
-								>Property<select
-									bind:value={requestForm.property_id}
-									disabled={!requestForm.client_id}
-									><option value="">Choose property</option
-									>{#each requestProperties as property (property.id)}<option value={property.id}
-											>{property.label || property.address_line1} · {property.city}</option
-										>{/each}</select
-								></label
-							>
-						</div>
-						<label
-							>What do they need?<input
-								bind:value={requestForm.title}
-								placeholder="Repair leaking kitchen faucet"
-							/></label
-						>
-						<div class="form-grid">
-							<label
-								>Service type<input
-									bind:value={requestForm.service_type}
-									placeholder="Plumbing"
-								/></label
-							><label
-								>Preferred timing<input
-									bind:value={requestForm.preferred_time}
-									placeholder="This week, mornings"
-								/></label
-							>
-						</div>
-						<label
-							>Description<textarea rows="4" bind:value={requestForm.description}></textarea></label
-						>
-						<div class="modal__actions">
-							<button class="button button--quiet" type="button" onclick={closeForm}>Cancel</button
-							><button class="button" type="submit" disabled={mutation.isPending}
-								>Save request</button
-							>
-						</div>
-					</form>
-				{/if}
-			</div>
-		</div>
-	{/if}
-</div>
+{/if}
 
 <style lang="scss">
-	.workspace {
-		min-height: 100vh;
-		background: var(--color-surface--background);
+	:global(.home-page__header) {
+		margin-bottom: var(--space-large);
 	}
-	.topbar__eyebrow,
-	.page-intro__eyebrow,
-	.panel__eyebrow {
-		display: block;
-		margin-bottom: 6px;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-	}
-	.content {
-		margin: 0 auto;
-		padding-top: var(--space-large);
-	}
-	.page-intro {
-		display: flex;
-		align-items: end;
-		justify-content: space-between;
-		gap: 24px;
-		margin-bottom: 32px;
-	}
-	.page-actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 8px;
-	}
-	.button {
-		padding: 11px 16px;
-		border: 0;
-		border-radius: var(--radius-small);
-		color: var(--color-text--reverse);
-		background: var(--color-interactive);
-		font-size: var(--typography--fontSize-base);
-		font-weight: 700;
-		transition:
-			background var(--timing-quick) ease,
-			opacity var(--timing-quick) ease;
-	}
-	.button:hover {
-		background: var(--color-interactive--hover);
-	}
-	.button:disabled {
-		opacity: 0.45;
-		cursor: not-allowed;
-	}
-	.button--secondary {
-		color: var(--color-heading);
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-	}
-	.button--secondary:hover,
-	.button--quiet:hover {
-		color: var(--color-heading);
-		background: var(--color-surface--hover);
-	}
-	.button--quiet {
-		color: var(--color-text);
-		background: transparent;
-	}
-	.button--small {
-		padding: 8px 12px;
-		font-size: var(--typography--fontSize-small);
-	}
-	.stats {
+
+	.home {
+		container-type: inline-size;
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 16px;
-		margin-bottom: 24px;
-	}
-	.stat-card {
-		padding: 20px;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-base);
-		background: var(--color-surface);
-	}
-	.stat-card span,
-	.stat-card small {
-		display: block;
-		color: var(--color-text--secondary);
-	}
-	.stat-card strong {
-		display: block;
-		margin: 10px 0 4px;
-		color: var(--color-heading);
-		font-size: 32px;
-	}
-	/* Holds the number's exact line box, so the card doesn't jump when the count arrives. */
-	.stat-card__pending {
-		display: flex;
-		align-items: center;
-		height: 1.2em;
-		margin: 10px 0 4px;
-		font-size: 32px;
-	}
-	.stat-card--request {
-		border-top: 3px solid var(--color-request);
-	}
-	.workspace-grid {
-		display: grid;
-		grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-		gap: 24px;
-	}
-	.panel {
+		gap: var(--space-large);
 		min-width: 0;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-base);
-		background: var(--color-surface);
+
+		&__setup {
+			display: grid;
+			gap: var(--space-large);
+			min-width: 0;
+
+			&:empty {
+				display: none;
+			}
+		}
+
+		/* The schedule takes the room it needs; the rail keeps a steady width beside it. */
+		&__grid {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) 336px;
+			align-items: start;
+			gap: 20px;
+
+			&--rail-only {
+				grid-template-columns: minmax(0, 1fr);
+			}
+		}
+		&__rail {
+			display: grid;
+			gap: 16px;
+			min-width: 0;
+		}
 	}
-	.panel__header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 16px;
-		padding: 24px;
-		border-bottom: 1px solid var(--color-border);
-	}
-	.panel h2 {
-		color: var(--color-heading);
-		font-size: 20px;
-	}
-	.record-list {
-		display: grid;
-	}
-	.record {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		padding: 16px 24px;
-		border-bottom: 1px solid var(--color-border);
-	}
-	.record:last-child,
-	.request-record:last-child {
-		border-bottom: 0;
-	}
-	.record__avatar {
-		display: grid;
-		flex: 0 0 40px;
-		place-items: center;
-		width: 40px;
-		height: 40px;
-		border-radius: 50%;
-		color: var(--color-client--onSurface);
-		background: var(--color-client--surface);
-		font-weight: 700;
-	}
-	.record__body {
-		min-width: 0;
-		flex: 1;
-	}
-	.record__body > span,
-	.record__body small,
-	.request-record small {
-		display: block;
-		overflow: hidden;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-	.record__body small {
-		margin-top: 5px;
-	}
-	.record__title {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		color: var(--color-heading);
-	}
-	.badge {
-		display: inline-flex;
-		padding: 4px 7px;
-		border-radius: 999px;
-		color: var(--color-client--onSurface);
-		background: var(--color-client--surface);
-		font-size: 10px;
-		font-weight: 700;
-		text-transform: capitalize;
-	}
-	.badge--customer {
-		color: var(--color-success--onSurface);
-		background: var(--color-success--surface);
-	}
-	.badge--request {
-		color: var(--color-request--onSurface);
-		background: var(--color-request--surface);
-	}
-	.text-button {
-		flex: 0 0 auto;
-		border: 0;
-		color: var(--color-interactive);
-		background: transparent;
-		font-size: var(--typography--fontSize-small);
-		font-weight: 700;
-	}
-	.text-button:hover {
-		text-decoration: underline;
-	}
-	.request-record {
-		padding: 18px 24px;
-		border-bottom: 1px solid var(--color-border);
-	}
-	.request-record__top {
-		display: flex;
-		align-items: flex-start;
-		gap: 10px;
-	}
-	.request-dot {
-		flex: 0 0 8px;
-		width: 8px;
-		height: 8px;
-		margin-top: 6px;
-		border-radius: 50%;
-		background: var(--color-request);
-	}
-	.request-record__top > div {
-		min-width: 0;
-		flex: 1;
-	}
-	.request-record__top strong {
-		display: block;
-		overflow: hidden;
-		color: var(--color-heading);
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-	.request-record p {
-		margin: 12px 0;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-base);
-		line-height: 1.45;
-	}
-	.request-record footer {
-		display: flex;
-		justify-content: space-between;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-	}
-	.empty {
-		display: grid;
-		justify-items: start;
-		gap: 8px;
-		padding: 32px 24px;
-		color: var(--color-text--secondary);
-	}
-	.empty strong {
-		color: var(--color-heading);
-	}
-	.empty .button {
-		margin-top: 8px;
-	}
-	.notice {
+	.home__notice {
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
-		margin-bottom: 24px;
 		padding: 16px 20px;
 		border: 1px solid var(--color-warning);
 		border-radius: var(--radius-base);
 		color: var(--color-warning--onSurface);
 		background: var(--color-warning--surface);
 	}
-	.notice--error {
-		color: var(--color-critical--onSurface);
-		background: var(--color-critical--surface);
-	}
-	.loading-grid {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 16px;
-	}
-	.modal-backdrop {
-		position: fixed;
-		inset: 0;
-		z-index: var(--elevation-modal);
-		display: grid;
-		place-items: center;
-		padding: 20px;
-		background: var(--color-overlay);
-	}
-	.modal {
-		width: min(100%, 600px);
-		max-height: min(90vh, 800px);
-		overflow: auto;
-		padding: 24px;
-		border-radius: var(--radius-large);
-		background: var(--color-surface);
-		box-shadow: var(--shadow-high);
-	}
-	.modal__header {
-		display: flex;
-		justify-content: space-between;
-		gap: 16px;
-		margin-bottom: 24px;
-	}
-	.modal h2 {
-		color: var(--color-heading);
-		font-size: 24px;
-	}
-	.close-button {
-		width: 32px;
-		height: 32px;
-		border: 0;
-		border-radius: 50%;
-		color: var(--color-text);
-		background: transparent;
-		font-size: 24px;
-	}
-	.close-button:hover {
-		background: var(--color-surface--hover);
-	}
-	.modal form {
-		display: grid;
-		gap: 16px;
-	}
-	.modal label {
-		display: grid;
-		gap: 6px;
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 700;
-	}
-	.modal input,
-	.modal select,
-	.modal textarea {
-		width: 100%;
-		padding: 11px 12px;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-small);
-		color: var(--color-text);
-		background: var(--color-surface);
-	}
-	.modal textarea {
-		resize: vertical;
-	}
-	.form-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 12px;
-	}
-	.modal__actions {
-		display: flex;
-		justify-content: flex-end;
-		gap: 8px;
-		margin-top: 8px;
-	}
-	.form-alert {
-		margin-bottom: 16px;
-		padding: 10px 12px;
-		border-radius: var(--radius-small);
-		color: var(--color-critical--onSurface);
-		background: var(--color-critical--surface);
-		font-size: var(--typography--fontSize-small);
-	}
-	.field-error {
-		color: var(--color-critical);
-		font-size: var(--typography--fontSize-small);
-	}
-	@media (max-width: 800px) {
-		.page-intro,
-		.workspace-grid {
-			display: block;
+
+	/* With less room, the rail drops under the schedule and its two cards sit side by side. */
+	@container (max-width: 900px) {
+		.home__grid {
+			grid-template-columns: minmax(0, 1fr);
 		}
-		.page-actions {
-			margin-top: 20px;
-		}
-		.panel + .panel {
-			margin-top: 24px;
+		.home__rail {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			align-items: start;
 		}
 	}
-	@media (max-width: 560px) {
-		.content {
-			width: min(100% - 24px, 1400px);
-		}
-		.stats {
-			grid-template-columns: 1fr;
-		}
-		.form-grid {
-			grid-template-columns: 1fr;
-		}
-		.record {
-			align-items: flex-start;
-			flex-wrap: wrap;
-		}
-		.text-button {
-			margin-left: 52px;
+	@container (max-width: 640px) {
+		.home__rail {
+			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 </style>
