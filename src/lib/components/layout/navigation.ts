@@ -25,6 +25,10 @@ import filesIcon from '@tabler/icons/outline/files.svg?raw';
 import rocketIcon from '@tabler/icons/outline/rocket.svg?raw';
 import listCheckIcon from '@tabler/icons/outline/list-check.svg?raw';
 import targetIcon from '@tabler/icons/outline/target.svg?raw';
+import homeIcon from '@tabler/icons/outline/home.svg?raw';
+import clipboardListIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
+import layoutKanbanIcon from '@tabler/icons/outline/layout-kanban.svg?raw';
+import folderOpenIcon from '@tabler/icons/outline/folder-open.svg?raw';
 
 /** `count` is a number waiting for attention, such as unread support conversations. Zero shows nothing. */
 export type NavItem = {
@@ -36,7 +40,8 @@ export type NavItem = {
 	/** Other pages that belong to this item, so it stays highlighted while one of them is open. */
 	matches?: string[];
 };
-export type NavGroup = { label?: string; items: NavItem[] };
+/** `pinned` groups sit at the bottom of the sidebar, behind a divider — Settings lives there. */
+export type NavGroup = { label?: string; items: NavItem[]; pinned?: boolean };
 
 export const iconMap: Record<string, string> = {
 	dashboard: dashboardIcon,
@@ -65,7 +70,11 @@ export const iconMap: Record<string, string> = {
 	files: filesIcon,
 	rocket: rocketIcon,
 	listCheck: listCheckIcon,
-	target: targetIcon
+	target: targetIcon,
+	home: homeIcon,
+	clipboardList: clipboardListIcon,
+	layoutKanban: layoutKanbanIcon,
+	folderOpen: folderOpenIcon
 };
 
 export function activeNavigationHref(groups: NavGroup[], pathname: string) {

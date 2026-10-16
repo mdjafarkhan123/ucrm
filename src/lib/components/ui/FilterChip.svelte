@@ -18,6 +18,8 @@
 		value,
 		options,
 		restValue,
+		icon,
+		variant = 'default',
 		onchange
 	}: {
 		id: string;
@@ -26,21 +28,34 @@
 		options: ChipOption[];
 		/** The value that means "not filtering". Leave out for a control that always has an answer. */
 		restValue?: string;
+		/** A Tabler icon (raw SVG) drawn at the start of the chip. */
+		icon?: string;
+		/** `toolbar` is the compact chip that sits in a table card's header: it always shows its value
+		 *  ("Status All"), where `default` shows only its name until something is picked. */
+		variant?: 'default' | 'toolbar';
 		onchange: (value: string) => void;
 	} = $props();
 
 	const filtering = $derived(restValue !== undefined && value !== restValue);
-	const resting = $derived(restValue !== undefined && value === restValue);
+	const resting = $derived(variant === 'default' && restValue !== undefined && value === restValue);
 	const selectedLabel = $derived(options.find((option) => option.value === value)?.label ?? '');
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<span class={['filter-chip', filtering && 'filter-chip--on', resting && 'filter-chip--resting']}>
+<span
+	class={[
+		'filter-chip',
+		variant === 'toolbar' && 'filter-chip--toolbar',
+		filtering && 'filter-chip--on',
+		resting && 'filter-chip--resting'
+	]}
+>
 	<Select
 		{id}
 		class="filter-chip__select"
 		{value}
 		{options}
+		{icon}
 		prefix={label}
 		ariaLabel={resting ? label : `${label}: ${selectedLabel}`}
 		fitOptions
@@ -118,6 +133,35 @@
 	}
 	.filter-chip--on :global(.filter-chip__select .select__chevron) {
 		display: none;
+	}
+
+	// Toolbar: a 38px chip for a table card's header, with the name quiet and the value bold beside it.
+	.filter-chip--toolbar {
+		min-height: 38px;
+		border-color: var(--color-border);
+
+		:global(.filter-chip__select .select__trigger) {
+			min-height: 36px;
+			padding: 0 var(--space-slim);
+			gap: 6px;
+			font-size: 13px;
+			font-weight: 500;
+		}
+		:global(.filter-chip__select .select__value) {
+			color: var(--color-heading);
+		}
+	}
+	.filter-chip--toolbar.filter-chip--on {
+		border-color: var(--color-interactive);
+		background: var(--color-surface);
+
+		:global(.filter-chip__select .select__icon) {
+			color: var(--color-interactive);
+		}
+	}
+	.filter-chip--toolbar .filter-chip__clear {
+		width: 28px;
+		height: 36px;
 	}
 
 	.filter-chip__clear {

@@ -22,7 +22,7 @@
 <div
 	class={`app-shell app-shell--${variant}`}
 	data-presentation="classic"
-	style={`--shell-nav-width: ${sidebarCollapsed ? '76px' : '256px'}`}
+	style={`--shell-nav-width: ${sidebarCollapsed ? '76px' : '248px'}`}
 >
 	<Sidebar {groups} {brand} {eyebrow} {logoUrl} bind:collapsed={sidebarCollapsed} />
 	<div class="app-shell__body">
@@ -40,7 +40,7 @@
 	.app-shell {
 		--shell-edge: var(--space-slim);
 		--shell-content-left: calc(
-			var(--shell-edge) + var(--shell-nav-width, 256px) + var(--space-large)
+			var(--shell-edge) + var(--shell-nav-width, 248px) + var(--space-large)
 		);
 		--shell-content-right: calc(var(--shell-edge) + var(--space-large));
 
@@ -53,7 +53,7 @@
 		overflow: clip;
 		background: var(--color-surface--background);
 		padding: var(--shell-edge);
-		gap: var(--space-base);
+		gap: 20px;
 	}
 	.app-shell__body {
 		display: flex;
@@ -66,7 +66,7 @@
 	.app-shell__main {
 		flex: 1;
 		min-height: 0;
-		padding-block: var(--space-base) 0;
+		padding: var(--space-base) var(--space-slim) 0 var(--space-smaller);
 	}
 	/* The sidebar is hidden here, so the content column runs the full width inside the shell padding. */
 	@media (max-width: 767px) {

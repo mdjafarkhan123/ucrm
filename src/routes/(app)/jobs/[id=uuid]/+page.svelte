@@ -6,7 +6,6 @@
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import RecordDetailLayout from '$lib/components/layout/RecordDetailLayout.svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
-	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
@@ -65,6 +64,10 @@
 	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
 	import printIcon from '@tabler/icons/outline/printer.svg?raw';
 	import linkIcon from '@tabler/icons/outline/link.svg?raw';
+	import hashIcon from '@tabler/icons/outline/hash.svg?raw';
+	import repeatIcon from '@tabler/icons/outline/repeat.svg?raw';
+	import calendarPlusIcon from '@tabler/icons/outline/calendar-plus.svg?raw';
+	import fileDescriptionIcon from '@tabler/icons/outline/file-description.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -163,13 +166,20 @@
 		minute: '2-digit'
 	});
 	const headerFacts = $derived([
-		{ label: 'Job #', value: saved ? String(saved.job.job_number) : null },
-		{ label: 'Type', value: saved ? JOB_TYPE_LABELS[saved.job.job_type] : null },
+		{ label: 'Job #', value: saved ? String(saved.job.job_number) : null, icon: hashIcon },
+		{
+			label: 'Type',
+			value: saved ? JOB_TYPE_LABELS[saved.job.job_type] : null,
+			icon: repeatIcon
+		},
 		{
 			label: 'Created',
-			value: saved ? dateTimeFormat.format(new Date(saved.job.created_at)) : null
+			value: saved ? dateTimeFormat.format(new Date(saved.job.created_at)) : null,
+			icon: calendarPlusIcon
 		},
-		...(saved?.job.from_quote ? [{ label: 'Source', value: 'From a quote' }] : [])
+		...(saved?.job.from_quote
+			? [{ label: 'Source', value: 'From a quote', icon: fileDescriptionIcon }]
+			: [])
 	]);
 
 	const propertyLine = $derived.by(() => {
@@ -473,7 +483,7 @@
 <svelte:head><title>{title || 'Job'} · Contractor CRM</title></svelte:head>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<PageContainer>
+<PageContainer variant="open">
 	{#if jobQuery.isPending}
 		<LoadingSkeleton variant="card" label="Loading job" />
 	{:else if jobQuery.isError}
@@ -481,6 +491,7 @@
 	{:else if saved}
 		<RecordDetailLayout
 			class="job-detail"
+			cards
 			editing={isEditing}
 			dirty={isDirty}
 			{saving}
@@ -510,6 +521,7 @@
 					{#snippet summary()}
 						<ClientSummaryCard
 							name={saved.job.client?.display_name ?? 'No client'}
+							avatarId={saved.job.client?.id}
 							href={clientHref}
 							addresses={[{ value: propertyLine, empty: 'No property on this job' }]}
 							phone={saved.job.client?.phone}
@@ -534,6 +546,34 @@
 						{/if}
 					{/snippet}
 				</WorkRecordHeader>
+
+				<JobVisitsSection
+					jobId={saved.job.id}
+					visits={saved.visits}
+					jobTitle={title}
+					locale={saved.locale}
+					canSchedule={saved.can_schedule}
+					canComplete={saved.can_complete}
+					canClose={saved.can_close}
+					jobStatus={saved.job.status}
+					jobType={saved.job.job_type}
+					isAsNeeded={saved.job.is_as_needed}
+					recurrence={saved.recurrence}
+					jobRevision={saved.job.revision}
+					clientId={saved.job.client?.id ?? null}
+					clientName={saved.job.client?.display_name ??
+						saved.job.client?.company_name ??
+						'this client'}
+					priceBasis={saved.job.price_basis}
+					billingTiming={saved.job.billing_timing}
+					canInvoiceVisits={saved.can_invoice_visits}
+					canEditPricing={saved.can_edit}
+					canSeePrice={saved.can_see_price}
+					currentUserId={saved.current_user_id}
+					canRecord={saved.can_record_field_records}
+					canManageTeam={saved.can_manage_team_field_records}
+					currencyCode={saved.job.currency_code}
+				/>
 
 				<ProductsAndServicesBlock
 					lines={jobLines}
@@ -574,70 +614,6 @@
 				/>
 
 				<JobChecklistsCard jobId={saved.job.id} active={saved.job.status === 'active'} />
-
-				<JobVisitsSection
-					jobId={saved.job.id}
-					visits={saved.visits}
-					jobTitle={title}
-					locale={saved.locale}
-					canSchedule={saved.can_schedule}
-					canComplete={saved.can_complete}
-					canClose={saved.can_close}
-					jobStatus={saved.job.status}
-					jobType={saved.job.job_type}
-					isAsNeeded={saved.job.is_as_needed}
-					recurrence={saved.recurrence}
-					jobRevision={saved.job.revision}
-					clientId={saved.job.client?.id ?? null}
-					clientName={saved.job.client?.display_name ??
-						saved.job.client?.company_name ??
-						'this client'}
-					priceBasis={saved.job.price_basis}
-					billingTiming={saved.job.billing_timing}
-					canInvoiceVisits={saved.can_invoice_visits}
-					canEditPricing={saved.can_edit}
-					canSeePrice={saved.can_see_price}
-					currentUserId={saved.current_user_id}
-					canRecord={saved.can_record_field_records}
-					canManageTeam={saved.can_manage_team_field_records}
-					currencyCode={saved.job.currency_code}
-				/>
-
-				{#if showInstructions}
-					<SectionBlock title="Instructions" icon={notesIcon} level={2} form={editingInstructions}>
-						{#snippet actions()}
-							{#if editable && !editingInstructions}
-								<PencilButton
-									onclick={() => {
-										instructionsDraft = saved.job.instructions ?? '';
-										editingInstructions = true;
-									}}
-									label="Edit the instructions"
-								/>
-							{:else if instructionsChanged}
-								<Badge size="small" status="warning">Unsaved</Badge>
-							{/if}
-						{/snippet}
-
-						{#if editingInstructions}
-							<Textarea
-								id="job-instructions"
-								label="Notes for the crew doing this work"
-								rows={5}
-								maxlength={4000}
-								bind:value={instructionsDraft}
-							/>
-						{:else if saved.job.instructions}
-							<p class="job-detail__copy">{saved.job.instructions}</p>
-						{:else}
-							<EmptyState
-								icon={notesIcon}
-								title="No instructions"
-								description="Add notes the crew should read before this work."
-							/>
-						{/if}
-					</SectionBlock>
-				{/if}
 			{/snippet}
 
 			{#snippet rail()}
@@ -671,60 +647,18 @@
 							</ol>
 						{/if}
 					</RailCard>
-				{:else}
-					<RailCard title="Notes" icon={notesIcon}>
-						<NotesPanel
-							entityType="job"
-							entityId={jobId}
-							canManage={saved.can_record_field_records}
-							canManageTeam={saved.can_manage_team_field_records}
-							currentUserId={saved.current_user_id}
-							pending={notePending}
-							onChange={(next) => (notePending = next)}
-						/>
-					</RailCard>
-
-					<RecordFilesCard
-						entityType="job"
-						entityId={jobId}
-						recordLabel="this job"
-						pickerLabel="On this job"
-						title="Photos and files"
-						clientId={saved.job.client?.id ?? null}
-						clientLabel={saved.job.client?.display_name ?? null}
-						canManage={saved.can_record_field_records || saved.can_manage_team_field_records}
-					/>
 				{/if}
 
 				<!--
-					The customer's own sign-off on this job, kept beside the notes and files it sits with in
-					the crew's head. Its own append-only record, not a note: what was signed is frozen and
-					later edits to the job cannot rewrite it.
+					What the job actually cost us against what it sells for. Its own card, below the selling
+					total: the breakdown, the open-vs-closed wording and the double-count heads-up do not fit
+					the shared quote summary. Renders only when the payload carried costing (jobs.view_cost).
 				-->
-				<JobSignaturesCard
-					jobId={saved.job.id}
-					lines={saved.lines}
-					visits={saved.visits}
-					totalMinor={saved.can_see_price ? (saved.money?.total_minor ?? null) : null}
+				<JobCostingCard
+					costing={saved.costing}
 					currencyCode={saved.job.currency_code}
 					locale={saved.locale}
-					clientName={saved.job.client?.display_name ?? null}
-					canRecord={saved.can_record_field_records}
-					active={saved.job.status === 'active'}
 				/>
-
-				<!--
-					The customer's own copy of what was done. jobs.edit-gated, the same right `job_report_state`
-					and `save_job_report` both require, so the card is never mounted for a reader who could
-					only ever see it error.
-				-->
-				{#if editable}
-					<JobWorkReportCard
-						bind:this={workReportCard}
-						jobId={saved.job.id}
-						onStateChange={(next) => (reportHasContent = next)}
-					/>
-				{/if}
 
 				<QuoteSummaryCard
 					title="Job total"
@@ -734,17 +668,6 @@
 					totalMinor={saved.money?.total_minor ?? null}
 					discountLabel={saved.money?.discount_name ?? null}
 					taxLabel={saved.money?.tax_name ?? null}
-					currencyCode={saved.job.currency_code}
-					locale={saved.locale}
-				/>
-
-				<!--
-					What the job actually cost us against what it sells for. Its own card, below the selling
-					total: the breakdown, the open-vs-closed wording and the double-count heads-up do not fit
-					the shared quote summary. Renders only when the payload carried costing (jobs.view_cost).
-				-->
-				<JobCostingCard
-					costing={saved.costing}
 					currencyCode={saved.job.currency_code}
 					locale={saved.locale}
 				/>
@@ -797,6 +720,97 @@
 						subtotalMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? null) : null}
 						currencyCode={saved.job.currency_code}
 						locale={saved.locale}
+					/>
+				{/if}
+
+				{#if showInstructions}
+					<RailCard title="Instructions">
+						{#snippet actions()}
+							{#if editable && !editingInstructions}
+								<PencilButton
+									onclick={() => {
+										instructionsDraft = saved.job.instructions ?? '';
+										editingInstructions = true;
+									}}
+									label="Edit the instructions"
+								/>
+							{:else if instructionsChanged}
+								<Badge size="small" status="warning">Unsaved</Badge>
+							{/if}
+						{/snippet}
+
+						{#if editingInstructions}
+							<Textarea
+								id="job-instructions"
+								label="Notes for the crew doing this work"
+								rows={5}
+								maxlength={4000}
+								bind:value={instructionsDraft}
+							/>
+						{:else if saved.job.instructions}
+							<p class="job-detail__copy">{saved.job.instructions}</p>
+						{:else}
+							<EmptyState
+								icon={notesIcon}
+								title="No instructions"
+								description="Add notes the crew should read before this work."
+							/>
+						{/if}
+					</RailCard>
+				{/if}
+
+				{#if !showHistory}
+					<RecordFilesCard
+						entityType="job"
+						entityId={jobId}
+						recordLabel="this job"
+						pickerLabel="On this job"
+						title="Photos and files"
+						clientId={saved.job.client?.id ?? null}
+						clientLabel={saved.job.client?.display_name ?? null}
+						canManage={saved.can_record_field_records || saved.can_manage_team_field_records}
+					/>
+
+					<RailCard title="Notes" icon={notesIcon}>
+						<NotesPanel
+							entityType="job"
+							entityId={jobId}
+							canManage={saved.can_record_field_records}
+							canManageTeam={saved.can_manage_team_field_records}
+							currentUserId={saved.current_user_id}
+							pending={notePending}
+							onChange={(next) => (notePending = next)}
+						/>
+					</RailCard>
+				{/if}
+
+				<!--
+					The customer's own sign-off on this job, kept beside the notes and files it sits with in
+					the crew's head. Its own append-only record, not a note: what was signed is frozen and
+					later edits to the job cannot rewrite it.
+				-->
+				<JobSignaturesCard
+					jobId={saved.job.id}
+					lines={saved.lines}
+					visits={saved.visits}
+					totalMinor={saved.can_see_price ? (saved.money?.total_minor ?? null) : null}
+					currencyCode={saved.job.currency_code}
+					locale={saved.locale}
+					clientName={saved.job.client?.display_name ?? null}
+					canRecord={saved.can_record_field_records}
+					active={saved.job.status === 'active'}
+				/>
+
+				<!--
+					The customer's own copy of what was done. jobs.edit-gated, the same right `job_report_state`
+					and `save_job_report` both require, so the card is never mounted for a reader who could
+					only ever see it error.
+				-->
+				{#if editable}
+					<JobWorkReportCard
+						bind:this={workReportCard}
+						jobId={saved.job.id}
+						onStateChange={(next) => (reportHasContent = next)}
 					/>
 				{/if}
 

@@ -23,6 +23,7 @@
 		class: className = '',
 		contentClass = '',
 		prefix,
+		icon,
 		fitOptions = false,
 		onchange
 	}: {
@@ -42,6 +43,8 @@
 		contentClass?: string;
 		/** A fixed word drawn inside the trigger ahead of the value, e.g. a filter's name. */
 		prefix?: string;
+		/** A Tabler icon (raw SVG) drawn at the start of the trigger, ahead of the prefix. */
+		icon?: string;
 		/** The open list is as wide as its longest option (never narrower than the trigger) instead of matching the trigger. */
 		fitOptions?: boolean;
 		onchange?: (value: string) => void;
@@ -83,6 +86,7 @@
 			aria-label={label ? undefined : ariaLabel}
 			aria-labelledby={labelId ?? ariaLabelledby}
 		>
+			{#if icon}<span class="select__icon" aria-hidden="true">{@html icon}</span>{/if}
 			{#if prefix}<span class="select__prefix">{prefix}</span>{/if}
 			<span class="select__value">{selectedLabel}</span>
 			<span class="select__chevron" aria-hidden="true">{@html chevronDownIcon}</span>
@@ -178,6 +182,18 @@
 			color: var(--color-disabled);
 			background: var(--color-disabled--secondary);
 			cursor: not-allowed;
+		}
+
+		:global(.select__icon) {
+			display: inline-flex;
+			flex: 0 0 auto;
+			color: var(--color-icon--secondary);
+		}
+
+		:global(.select__icon svg) {
+			display: block;
+			width: 16px;
+			height: 16px;
 		}
 
 		:global(.select__prefix) {

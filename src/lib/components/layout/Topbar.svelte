@@ -105,7 +105,7 @@
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger class="topbar__add">
 				<span aria-hidden="true">{@html plusIcon}</span><span class="topbar__add-label"
-					>Add New</span
+					>Add new</span
 				>
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Portal disabled>

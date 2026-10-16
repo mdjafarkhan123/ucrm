@@ -9,6 +9,7 @@
 		placeholder = 'Search',
 		ariaLabel = 'Search',
 		disabled = false,
+		size = 'base',
 		class: className = '',
 		onkeydown
 	}: {
@@ -18,6 +19,8 @@
 		placeholder?: string;
 		ariaLabel?: string;
 		disabled?: boolean;
+		/** `compact` is the 38px search that sits inside a table card's header. */
+		size?: 'base' | 'compact';
 		class?: string;
 		onkeydown?: (event: KeyboardEvent) => void;
 	} = $props();
@@ -32,6 +35,7 @@
 	class={`search-input ${className}`}
 	class:search-input--disabled={disabled}
 	class:search-input--labelled={Boolean(label)}
+	class:search-input--compact={size === 'compact'}
 >
 	{#if label}
 		<label class="search-input__label" for={id}>{label}</label>
@@ -72,6 +76,19 @@
 		transition:
 			box-shadow var(--timing-quick),
 			border-color var(--timing-quick);
+
+		&.search-input--compact {
+			min-height: 38px;
+			padding: 0 var(--space-slim);
+			border-color: var(--color-border);
+			font-size: 13px;
+			font-weight: 500;
+
+			.search-input__icon :global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+		}
 
 		&.search-input--labelled {
 			margin-top: var(--space-small);

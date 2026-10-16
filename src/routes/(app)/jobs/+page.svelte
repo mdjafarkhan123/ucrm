@@ -5,25 +5,25 @@
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
-	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
-	import { calendarDateFromString, calendarDateToString } from '$lib/components/ui/date-time';
+	import FilterChip from '$lib/components/ui/FilterChip.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import FilterBar from '$lib/components/data-display/FilterBar.svelte';
-	import FilterField from '$lib/components/data-display/FilterField.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
+	import DateRangeChip from '$lib/components/data-display/DateRangeChip.svelte';
 	import DataTable, {
 		type DataTableColumn,
 		type DataTableSort
 	} from '$lib/components/data-display/DataTable.svelte';
-	import ListLoadMore from '$lib/components/data-display/ListLoadMore.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
+	import ListLoadMore from '$lib/components/data-display/ListLoadMore.svelte';
+	import RecordListCard from '$lib/components/data-display/RecordListCard.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
-	import StatusOverviewCard from '$lib/components/work/StatusOverviewCard.svelte';
-	import KpiCard from '$lib/components/data-display/KpiCard.svelte';
-	import type { StatusOverviewRow } from '$lib/components/work/types';
+	import AttentionCard, {
+		type AttentionFact,
+		type AttentionTile
+	} from '$lib/components/work/AttentionCard.svelte';
+	import MoneyFeatureCard from '$lib/components/work/MoneyFeatureCard.svelte';
 	import {
 		fetchJobOverview,
 		fetchJobs,
@@ -37,7 +37,6 @@
 	} from '$lib/jobs/api';
 	import {
 		JOB_FILTERABLE_STATUSES,
-		JOB_OVERVIEW_STATUSES,
 		JOB_STATUS_LABELS,
 		JOB_STATUS_TONES,
 		JOB_TYPES,
@@ -46,10 +45,13 @@
 		type JobType
 	} from '$lib/jobs/statuses';
 	import toolsIcon from '@tabler/icons/outline/tools.svg?raw';
-	import filterIcon from '@tabler/icons/outline/filter.svg?raw';
-	import calendarIcon from '@tabler/icons/outline/calendar-stats.svg?raw';
-	import checksIcon from '@tabler/icons/outline/checks.svg?raw';
-	import chartIcon from '@tabler/icons/outline/chart-bar.svg?raw';
+	import calendarIcon from '@tabler/icons/outline/calendar-event.svg?raw';
+	import checkIcon from '@tabler/icons/outline/circle-check.svg?raw';
+	import dashedCircleIcon from '@tabler/icons/outline/circle-dashed.svg?raw';
+	import repeatIcon from '@tabler/icons/outline/repeat.svg?raw';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import dotsIcon from '@tabler/icons/outline/dots.svg?raw';
+	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
 
 	let search = $state('');
 	let debouncedSearch = $state('');
@@ -57,7 +59,6 @@
 	let jobType = $state<JobType | ''>('');
 	let createdFrom = $state('');
 	let createdTo = $state('');
-	let filtersOpen = $state(false);
 	let sortKey = $state<JobSortKey>('created');
 	let sortDir = $state<'asc' | 'desc'>('desc');
 
@@ -126,26 +127,46 @@
 		status !== '' || jobType !== '' || createdFrom !== '' || createdTo !== ''
 	);
 
-	function clearFilters() {
-		status = '';
-		jobType = '';
-		createdFrom = '';
-		createdTo = '';
-	}
+	// The five the office acts on, most urgent first, each with a line saying what it means. Picking one
+	// sets the Status filter below to it; picking it again, or choosing another status there, clears it.
+	const attentionOrder = [
+		{ key: 'late', hint: 'A visit date passed, not done' },
+		{ key: 'unscheduled', hint: 'Visits not booked yet' },
+		{ key: 'action_required', hint: 'No upcoming visit booked' },
+		{ key: 'requires_invoicing', hint: 'Work done, not billed yet' },
+		{ key: 'ending_soon', hint: 'Recurring, ends within 30 days' }
+	] as const;
 
-	// The five the office acts on. Counted, never clickable — filtering lives on the Status field in the
-	// filter panel below, the same split Jobber uses.
-	const overviewRows = $derived<StatusOverviewRow[]>(
-		JOB_OVERVIEW_STATUSES.map((key) => ({
+	const attentionTiles = $derived<AttentionTile[]>(
+		attentionOrder.map(({ key, hint }) => ({
+			key,
 			label: JOB_STATUS_LABELS[key],
+			hint,
 			count: countsQuery.data?.counts[key] ?? 0,
 			tone: JOB_STATUS_TONES[key]
 		}))
 	);
+	const selectedTile = $derived(attentionOrder.some(({ key }) => key === status) ? status : '');
 
 	function overviewNumber(value: number | undefined) {
 		return value === undefined ? '—' : String(value);
 	}
+	function plural(count: number | undefined, one: string, many: string) {
+		return count === 1 ? one : many;
+	}
+
+	const attentionFacts = $derived<AttentionFact[]>([
+		{
+			icon: calendarIcon,
+			value: overviewNumber(countsQuery.data?.visits_today),
+			label: `${plural(countsQuery.data?.visits_today, 'visit', 'visits')} scheduled today`
+		},
+		{
+			icon: checkIcon,
+			value: overviewNumber(countsQuery.data?.completed_past_30_days),
+			label: `${plural(countsQuery.data?.completed_past_30_days, 'visit', 'visits')} completed in the past 30 days`
+		}
+	]);
 
 	// Two answers on one card, both from the Invoices figures: money already collected this calendar month, and
 	// money still left to collect on open invoices. A role that cannot see invoice money gets dashes and a
@@ -156,31 +177,35 @@
 		if (amountMinor === null) return '—';
 		return new Intl.NumberFormat(countsQuery.data?.locale ?? 'en-US', {
 			style: 'currency',
-			currency: countsQuery.data?.currency_code ?? 'USD'
+			currency: countsQuery.data?.currency_code ?? 'USD',
+			maximumFractionDigits: 0
 		}).format(amountMinor / 100);
 	}
 	const collectedValue = $derived(formatOverviewMoney(collectedMinor));
 	const outstandingValue = $derived(formatOverviewMoney(outstandingMinor));
-	const collectedNote = $derived(
-		countsQuery.isPending
-			? 'Loading…'
-			: collectedMinor === null
-				? 'Needs invoice price access'
-				: 'Collected this month'
-	);
-	const outstandingNote = $derived(
-		countsQuery.isPending || collectedMinor === null ? '' : 'Left to collect'
-	);
+	const monthToDate = new Intl.DateTimeFormat(undefined, { month: 'short' });
+	const collectedNote = $derived.by(() => {
+		if (countsQuery.isPending) return 'Loading…';
+		if (collectedMinor === null) return 'Needs invoice price access';
+		const today = new Date();
+		return `From paid invoices, ${monthToDate.format(today)} 1–${today.getDate()}`;
+	});
 
 	const statusOptions = [
-		{ value: '', label: 'All statuses' },
+		{ value: '', label: 'All' },
 		...JOB_FILTERABLE_STATUSES.map((value) => ({ value, label: JOB_STATUS_LABELS[value] }))
 	];
 
 	const typeOptions = [
-		{ value: '', label: 'All types' },
+		{ value: '', label: 'All' },
 		...JOB_TYPES.map((value) => ({ value, label: JOB_TYPE_LABELS[value] }))
 	];
+
+	const sortSummary = $derived.by(() => {
+		if (sortKey === 'number')
+			return sortDir === 'asc' ? 'Lowest job number first' : 'Highest job number first';
+		return sortDir === 'asc' ? 'Oldest first' : 'Newest first';
+	});
 
 	const dateFormat = new Intl.DateTimeFormat(undefined, {
 		day: 'numeric',
@@ -202,12 +227,13 @@
 		return formatter.format(job.total_minor / 100);
 	}
 
-	function propertyAddress(property: JobListItem['property']) {
-		if (!property) return 'No property';
-		return (
-			[property.address_line1, property.city, property.state_region].filter(Boolean).join(', ') ||
-			'No property'
-		);
+	// The street on one line, the town and region under it. A job with no property says so on the first line.
+	function propertyStreet(property: JobListItem['property']) {
+		return property?.address_line1 || 'No property';
+	}
+	function propertyArea(property: JobListItem['property']) {
+		if (!property) return '';
+		return [property.city, property.state_region].filter(Boolean).join(', ');
 	}
 	function clientName(job: JobListItem) {
 		return job.client?.display_name ?? 'Client removed';
@@ -220,13 +246,13 @@
 	// No Schedule column yet: a job's dates live on its visits, and visits arrive with the scheduling
 	// part. Created is what the list is actually ordered by, so it is what the column shows.
 	const columns: DataTableColumn[] = [
-		{ key: 'client', label: 'Client' },
+		{ key: 'client', label: 'Client', width: '220px' },
 		{ key: 'number', label: 'Job', sortable: true },
-		{ key: 'property', label: 'Property' },
-		{ key: 'type', label: 'Type' },
-		{ key: 'created', label: 'Created', sortable: true },
-		{ key: 'status', label: 'Status' },
-		{ key: 'total', label: 'Total' }
+		{ key: 'property', label: 'Property', width: '200px' },
+		{ key: 'created', label: 'Created', sortable: true, width: '120px' },
+		{ key: 'status', label: 'Status', width: '150px' },
+		{ key: 'total', label: 'Total', align: 'end', width: '100px' },
+		{ key: 'open', label: 'Open job', hideLabel: true, width: '56px' }
 	];
 
 	function prefetchJob(item: { id: string }) {
@@ -241,189 +267,176 @@
 <svelte:head><title>Jobs · Contractor CRM</title></svelte:head>
 
 <div class="page-scroller">
-	<PageContainer variant="fill">
-		<PageHeader title="Jobs" description="The work you have agreed to do.">
+	<PageContainer variant="open">
+		<PageHeader
+			class="jobs-page__header"
+			eyebrow="Work & money"
+			title="Jobs"
+			description="The work you have agreed to do, from first visit to final invoice."
+		>
 			{#snippet actions()}
-				<Button variant="primary" href={resolve('/(app)/jobs/new')}>New Job</Button>
 				<span class="jobs-header__action" title={moreActionsReason}>
-					<Button variant="secondary" disabled>More Actions</Button>
+					<Button variant="secondary" class="jobs-header__button" disabled>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						<span class="jobs-header__icon" aria-hidden="true">{@html dotsIcon}</span>
+						More actions
+					</Button>
 					<span class="jobs-header__reason">{moreActionsReason}</span>
 				</span>
+				<Button
+					variant="primary"
+					class="jobs-header__button jobs-header__button--primary"
+					href={resolve('/(app)/jobs/new')}
+				>
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					<span class="jobs-header__icon" aria-hidden="true">{@html plusIcon}</span>
+					New job
+				</Button>
 			{/snippet}
 		</PageHeader>
 
-		<div class="jobs-stats">
-			<StatusOverviewCard rows={overviewRows} loading={countsQuery.isPending} />
-			<KpiCard
-				label="Visits today"
-				value={overviewNumber(countsQuery.data?.visits_today)}
-				note={countsQuery.isPending ? 'Loading…' : 'Scheduled for today'}
-				icon={calendarIcon}
-				variant="compact"
+		<div class="jobs-overview">
+			<AttentionCard
+				description="Jobs waiting on you. Pick one to see only those jobs."
+				tiles={attentionTiles}
+				selectedKey={selectedTile}
+				onSelect={(key) => (status = key as JobDerivedStatus | '')}
+				facts={attentionFacts}
+				loading={countsQuery.isPending}
 			/>
-			<KpiCard
-				label="Completed visits"
-				value={overviewNumber(countsQuery.data?.completed_past_30_days)}
-				note={countsQuery.isPending ? 'Loading…' : 'Past 30 days'}
-				icon={checksIcon}
-				variant="compact"
-			/>
-			<KpiCard
-				label="Revenue"
+			<MoneyFeatureCard
+				eyebrow="Collected this month"
 				value={collectedValue}
 				note={collectedNote}
-				secondaryValue={outstandingValue}
-				secondaryNote={outstandingNote}
-				icon={chartIcon}
-				variant="compact"
+				detailLabel="Left to collect on open invoices"
+				detailValue={outstandingValue}
+				loading={countsQuery.isPending}
 			/>
 		</div>
 
-		<div class="jobs-toolbar">
-			<div class="jobs-toolbar__search">
-				<SearchInput id="jobs-search" bind:value={search} placeholder="Search jobs" />
-			</div>
-			<!-- eslint-disable svelte/no-at-html-tags -->
-			<button
-				type="button"
-				class="jobs-toolbar__filters-toggle"
-				class:jobs-toolbar__filters-toggle--active={hasActiveFilters}
-				aria-pressed={filtersOpen}
-				onclick={() => (filtersOpen = !filtersOpen)}
-			>
-				<span aria-hidden="true">{@html filterIcon}</span>
-				Filters{hasActiveFilters ? ' •' : ''}
-			</button>
-			<!-- eslint-enable svelte/no-at-html-tags -->
-		</div>
+		<RecordListCard
+			title="All jobs"
+			subtitle={sortSummary}
+			padBody={jobsQuery.isPending || jobsQuery.isError || jobs.length === 0}
+		>
+			{#snippet toolbar()}
+				<div class="jobs-card__search">
+					<SearchInput
+						id="jobs-search"
+						bind:value={search}
+						placeholder="Search jobs"
+						size="compact"
+					/>
+				</div>
+				<FilterChip
+					id="jobs-status-filter"
+					variant="toolbar"
+					icon={dashedCircleIcon}
+					label="Status"
+					value={status}
+					options={statusOptions}
+					restValue=""
+					onchange={(value) => (status = value as JobDerivedStatus | '')}
+				/>
+				<FilterChip
+					id="jobs-type-filter"
+					variant="toolbar"
+					icon={repeatIcon}
+					label="Type"
+					value={jobType}
+					options={typeOptions}
+					restValue=""
+					onchange={(value) => (jobType = value as JobType | '')}
+				/>
+				<DateRangeChip
+					id="jobs-created"
+					label="Created"
+					from={createdFrom}
+					to={createdTo}
+					onchange={(range) => {
+						createdFrom = range.from;
+						createdTo = range.to;
+					}}
+				/>
+			{/snippet}
 
-		{#if filtersOpen}
-			<FilterBar onClear={hasActiveFilters ? clearFilters : undefined}>
-				<FilterField id="jobs-status-filter" label="Status">
-					<Select
-						id="jobs-status-filter"
-						value={status}
-						onchange={(value) => (status = value as JobDerivedStatus | '')}
-						options={statusOptions}
-					/>
-				</FilterField>
-				<FilterField id="jobs-type-filter" label="Job type">
-					<Select
-						id="jobs-type-filter"
-						value={jobType}
-						onchange={(value) => (jobType = value as JobType | '')}
-						options={typeOptions}
-					/>
-				</FilterField>
-				<FilterField id="jobs-created-from" label="Created from">
-					<CalendarPicker
-						id="jobs-created-from"
-						label="Created from"
-						hideLabel
-						value={calendarDateFromString(createdFrom)}
-						maxValue={calendarDateFromString(createdTo)}
-						onchange={(value) => (createdFrom = calendarDateToString(value))}
-					/>
-				</FilterField>
-				<FilterField id="jobs-created-to" label="Created to">
-					<CalendarPicker
-						id="jobs-created-to"
-						label="Created to"
-						hideLabel
-						value={calendarDateFromString(createdTo)}
-						minValue={calendarDateFromString(createdFrom)}
-						onchange={(value) => (createdTo = calendarDateToString(value))}
-					/>
-				</FilterField>
-			</FilterBar>
-		{/if}
-
-		{#if jobsQuery.isPending}
-			<LoadingSkeleton variant="table" label="Loading jobs" rows={5} />
-		{:else if jobsQuery.isError}
-			<ErrorState description="Jobs could not be loaded. Refresh and try again." />
-		{:else if jobs.length === 0}
-			<EmptyState
-				icon={toolsIcon}
-				title={hasActiveFilters || debouncedSearch ? 'No matching jobs' : 'No jobs yet'}
-				description={hasActiveFilters || debouncedSearch
-					? 'Try a different search term or clear your filters.'
-					: 'Work you have agreed to do will show up here.'}
-			/>
-		{:else}
-			<DataTable
-				{columns}
-				items={jobs}
-				rowId={(job) => job.id}
-				caption="Jobs"
-				{sort}
-				onSortChange={handleSortChange}
-				onRowHover={prefetchJob}
-				onRowActivate={(job) => goto(resolve('/(app)/jobs/[id=uuid]', { id: job.id }))}
-			>
-				{#snippet row(job: JobListItem)}
-					<th scope="row">
-						<div class="jobs-table__client">
-							<Avatar id={job.client?.id ?? job.id} name={clientName(job)} size="small" />
-							<a
-								class="jobs-table__client-link"
-								href={resolve('/(app)/jobs/[id=uuid]', { id: job.id })}>{clientName(job)}</a
-							>
-						</div>
-					</th>
-					<td>
-						<div class="jobs-table__number">#{job.job_number}</div>
-						<div class="jobs-table__title">{job.title}</div>
-					</td>
-					<td>{propertyAddress(job.property)}</td>
-					<td>{jobTypeLabel(job)}</td>
-					<td>{dateFormat.format(new Date(job.created_at))}</td>
-					<td>
-						<StatusBadge status={JOB_STATUS_TONES[job.derived_status]}>
-							{JOB_STATUS_LABELS[job.derived_status]}
-						</StatusBadge>
-					</td>
-					<td>{formatTotal(job)}</td>
-				{/snippet}
-				{#snippet footer()}
-					<ListLoadMore
-						hasNextPage={jobsQuery.hasNextPage}
-						isFetchingNextPage={jobsQuery.isFetchingNextPage}
-						onLoadMore={() => jobsQuery.fetchNextPage()}
-						searchNarrowed={jobsQuery.data?.pages.at(-1)?.search_narrowed ?? false}
-					/>
-				{/snippet}
-			</DataTable>
-		{/if}
+			{#if jobsQuery.isPending}
+				<LoadingSkeleton variant="table" label="Loading jobs" rows={5} />
+			{:else if jobsQuery.isError}
+				<ErrorState description="Jobs could not be loaded. Refresh and try again." />
+			{:else if jobs.length === 0}
+				<EmptyState
+					icon={toolsIcon}
+					title={hasActiveFilters || debouncedSearch ? 'No matching jobs' : 'No jobs yet'}
+					description={hasActiveFilters || debouncedSearch
+						? 'Try a different search term or clear your filters.'
+						: 'Work you have agreed to do will show up here.'}
+				/>
+			{:else}
+				<DataTable
+					variant="card"
+					{columns}
+					items={jobs}
+					rowId={(job) => job.id}
+					caption="Jobs"
+					{sort}
+					onSortChange={handleSortChange}
+					onRowHover={prefetchJob}
+					onRowActivate={(job) => goto(resolve('/(app)/jobs/[id=uuid]', { id: job.id }))}
+				>
+					{#snippet row(job: JobListItem)}
+						<th scope="row">
+							<div class="jobs-table__client">
+								<Avatar id={job.client?.id ?? job.id} name={clientName(job)} size="base" />
+								<a
+									class="jobs-table__client-link"
+									href={resolve('/(app)/jobs/[id=uuid]', { id: job.id })}>{clientName(job)}</a
+								>
+							</div>
+						</th>
+						<td>
+							<div class="jobs-table__title">{job.title}</div>
+							<div class="jobs-table__meta">#{job.job_number} · {jobTypeLabel(job)}</div>
+						</td>
+						<td>
+							<div class="jobs-table__street">{propertyStreet(job.property)}</div>
+							{#if propertyArea(job.property)}
+								<div class="jobs-table__meta">{propertyArea(job.property)}</div>
+							{/if}
+						</td>
+						<td class="jobs-table__date">{dateFormat.format(new Date(job.created_at))}</td>
+						<td>
+							<StatusBadge size="compact" status={JOB_STATUS_TONES[job.derived_status]}>
+								{JOB_STATUS_LABELS[job.derived_status]}
+							</StatusBadge>
+						</td>
+						<td class="jobs-table__total">{formatTotal(job)}</td>
+						<td class="jobs-table__open">
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							<span aria-hidden="true">{@html chevronRightIcon}</span>
+						</td>
+					{/snippet}
+					{#snippet footer()}
+						<ListLoadMore
+							variant="card"
+							label="Load more jobs"
+							hasNextPage={jobsQuery.hasNextPage}
+							isFetchingNextPage={jobsQuery.isFetchingNextPage}
+							onLoadMore={() => jobsQuery.fetchNextPage()}
+							searchNarrowed={jobsQuery.data?.pages.at(-1)?.search_narrowed ?? false}
+							narrowedLabel="Many jobs match — type more to see the rest."
+						/>
+					{/snippet}
+				</DataTable>
+			{/if}
+		</RecordListCard>
 	</PageContainer>
 </div>
 
 <style lang="scss">
-	.jobs-table__client {
-		display: flex;
-		align-items: center;
-		gap: var(--space-small);
-	}
-
-	/* The row's real navigation link — carries keyboard focus, new-tab and cmd-click, while a plain click
-	   anywhere on the row still opens the job through the table's onRowActivate. */
-	.jobs-table__client-link {
-		color: var(--color-heading);
-		font-weight: 700;
-		text-decoration: none;
-
-		&:hover {
-			text-decoration: underline;
-		}
-	}
-
-	.jobs-table__number {
-		color: var(--color-heading);
-		font-weight: 700;
-	}
-
-	.jobs-table__title {
-		color: var(--color-text--secondary);
+	/* The page header sits straight on the app background; the cards under it share one 24px rhythm. */
+	:global(.jobs-page__header) {
+		margin-bottom: var(--space-large);
 	}
 
 	.jobs-header__action {
@@ -440,59 +453,124 @@
 		white-space: nowrap;
 	}
 
-	/* Overview card plus three metric tiles, the same top row as Requests and Quotes. The tiles read "—"
-	   until visits and invoicing exist to fill them. */
-	.jobs-stats {
-		display: grid;
-		gap: var(--space-base);
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		margin-top: var(--space-large);
-	}
-
-	.jobs-toolbar {
-		display: flex;
+	:global(.jobs-header__button) {
+		min-height: 44px;
+		padding: 0 18px 0 14px;
+		border-radius: 12px;
+		border-color: var(--color-border);
+		color: var(--color-text);
 		gap: var(--space-small);
-		margin: var(--space-large) 0;
+	}
+	/* Unavailable, but still drawn as the white button it will become, so the header does not look half empty. */
+	:global(.jobs-header__button:disabled) {
+		border-color: var(--color-border);
+		color: var(--color-text--secondary);
+		background: var(--color-surface);
+		opacity: 0.7;
+	}
+	:global(.jobs-header__button--primary) {
+		border-color: var(--color-interactive);
+		color: var(--color-text--reverse);
+		box-shadow: 0 6px 16px color-mix(in srgb, var(--color-interactive) 20%, transparent);
+	}
+	.jobs-header__icon {
+		display: inline-flex;
 
-		&__search {
-			flex: 1;
-			min-width: 0;
+		:global(svg) {
+			display: block;
+			width: 18px;
+			height: 18px;
 		}
-		&__filters-toggle {
+	}
+
+	/* Needs attention takes the room it needs; the money card keeps a steady width beside it. */
+	.jobs-overview {
+		display: grid;
+		gap: var(--space-large);
+		grid-template-columns: minmax(0, 1fr) 336px;
+		margin-bottom: var(--space-large);
+	}
+
+	.jobs-card__search {
+		width: 260px;
+		max-width: 100%;
+	}
+
+	.jobs-table__client {
+		display: flex;
+		align-items: center;
+		gap: var(--space-slim);
+	}
+
+	/* The row's real navigation link — carries keyboard focus, new-tab and cmd-click, while a plain click
+	   anywhere on the row still opens the job through the table's onRowActivate. */
+	.jobs-table__client-link {
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-base);
+		font-weight: 600;
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+		&:focus-visible {
+			outline: none;
+			border-radius: var(--radius-small);
+			box-shadow: var(--shadow-focus);
+		}
+	}
+
+	.jobs-table__title {
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-base);
+		font-weight: 500;
+	}
+	.jobs-table__street {
+		display: -webkit-box;
+		overflow: hidden;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		color: var(--color-text);
+		font-size: 13px;
+		font-weight: 500;
+	}
+	.jobs-table__meta {
+		margin-top: 3px;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 500;
+	}
+	.jobs-table__date {
+		color: var(--color-text);
+		font-size: 13px;
+		font-weight: 500;
+		white-space: nowrap;
+	}
+	.jobs-table__total {
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-base);
+		font-variant-numeric: tabular-nums;
+		font-weight: 600;
+		text-align: end;
+		white-space: nowrap;
+	}
+	.jobs-table__open {
+		color: var(--color-icon--secondary);
+
+		span {
 			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			gap: var(--space-smaller);
-			padding: 0 var(--space-base);
-			border: var(--border-base) solid var(--color-border--interactive);
-			border-radius: var(--radius-base);
-			color: var(--color-heading);
-			background: var(--color-surface);
-			font-weight: 600;
-			cursor: pointer;
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
-			&:hover {
-				background: var(--color-surface--hover);
-			}
-			&--active {
-				border-color: var(--color-interactive);
-				color: var(--color-interactive);
-			}
+			vertical-align: middle;
+		}
+		:global(svg) {
+			display: block;
+			width: 16px;
+			height: 16px;
 		}
 	}
 
-	@media (max-width: 1023px) {
-		.jobs-stats {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-	}
-
-	@media (max-width: 639px) {
-		.jobs-stats {
+	@media (max-width: 1199px) {
+		.jobs-overview {
 			grid-template-columns: minmax(0, 1fr);
 		}
 	}

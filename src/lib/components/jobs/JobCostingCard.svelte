@@ -1,7 +1,6 @@
 <script lang="ts">
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import type { JobCosting } from '$lib/jobs/api';
-	import coinIcon from '@tabler/icons/outline/coin.svg?raw';
 
 	// What the job actually cost us set against what it sells for. Every figure here is one `job_costing`
 	// worked out and sent back — this card formats money, it never adds it up. It only exists for a member
@@ -72,7 +71,7 @@
 </script>
 
 {#if costing}
-	<RailCard title="Job costing" icon={coinIcon}>
+	<RailCard title="Job costing" class="job-costing-card">
 		<p class="job-costing__eyebrow">Only your team sees this</p>
 
 		{#if recurring}
@@ -157,6 +156,19 @@
 {/if}
 
 <style lang="scss">
+	// App look: the profit card is the dark one in the rail. Re-pointing the text tokens inside it keeps
+	// every row below readable in light and dark without a second set of colours.
+	:global(.record-detail--cards) :global(.job-costing-card) {
+		--color-heading: var(--color-white);
+		--color-text: var(--color-white);
+		--color-text--secondary: var(--color-base-blue--300);
+		--color-border: color-mix(in srgb, var(--color-white) 16%, transparent);
+
+		padding: 24px;
+		border-color: transparent;
+		background: var(--color-base-blue--900);
+	}
+
 	.job-costing {
 		display: flex;
 		flex-direction: column;

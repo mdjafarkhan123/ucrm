@@ -3,14 +3,17 @@
 
 	let {
 		children,
-		status
+		status,
+		size = 'base'
 	}: {
 		children: Snippet;
 		status: 'success' | 'warning' | 'critical' | 'inactive' | 'informative';
+		/** `compact` is the smaller pill a dense table row carries. */
+		size?: 'base' | 'compact';
 	} = $props();
 </script>
 
-<span class={`status-badge status-badge--${status}`} role="status">
+<span class={`status-badge status-badge--${status} status-badge--${size}`} role="status">
 	<span class="status-badge__dot" aria-hidden="true"></span>
 	<span class="status-badge__text">{@render children()}</span>
 </span>
@@ -26,6 +29,18 @@
 		font-size: var(--typography--fontSize-small);
 		line-height: 1;
 		white-space: nowrap;
+	}
+
+	.status-badge--compact {
+		gap: 5px;
+		padding: 4px 9px 4px 8px;
+		border-radius: 10px;
+		font-size: 11px;
+		font-weight: 700;
+	}
+	.status-badge--compact .status-badge__dot {
+		width: 6px;
+		height: 6px;
 	}
 
 	.status-badge__dot {

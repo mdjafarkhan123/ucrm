@@ -13,6 +13,8 @@ export type RecordFact = {
 	 *  the row clips by default; set this for the few that carry a phrase somebody typed, like a payment
 	 *  stage's name, where the clipped half is the half that identifies it. */
 	wrap?: boolean;
+	/** Tabler icon (`?raw`) drawn in a small tile beside the fact in the App look header. Other looks ignore it. */
+	icon?: string;
 };
 
 /** One address slot on the client summary card. A quote shows only the property; an invoice shows the

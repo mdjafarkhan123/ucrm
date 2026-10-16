@@ -287,6 +287,53 @@
 		}
 	}
 
+	// App look (inside `RecordDetailLayout cards`): a white card on the grey page. The status and the
+	// record's actions share the first row, the title follows, then the client row, and the facts close the
+	// card as a strip under a hairline. No icon tile and no tinted ground.
+	:global(.record-detail--cards) .work-header {
+		gap: 0;
+		padding: 24px 28px 0;
+		border-color: var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface);
+
+		.work-header__type {
+			display: none;
+		}
+		.work-header__top {
+			gap: 10px;
+		}
+		.work-header__identity {
+			padding-top: 18px;
+
+			h1 {
+				font-size: var(--typography--fontSize-largest);
+				letter-spacing: -0.8px;
+				line-height: 1.15;
+			}
+		}
+		.work-header__body {
+			display: flex;
+			flex-direction: column;
+			align-items: stretch;
+			gap: 0;
+		}
+		.work-header__summary {
+			padding-top: 14px;
+		}
+		.work-header__facts {
+			margin-top: 20px;
+			padding: 18px 0 22px;
+			border-top: var(--border-base) solid var(--color-border);
+		}
+		.work-header__icon-button {
+			width: 40px;
+			height: 40px;
+			border-color: var(--color-border);
+			color: var(--color-text--secondary);
+		}
+	}
+
 	@media (max-width: 767px) {
 		.work-header {
 			padding: var(--space-base);

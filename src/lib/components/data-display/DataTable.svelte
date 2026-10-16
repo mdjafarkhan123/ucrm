@@ -3,6 +3,10 @@
 		key: string;
 		label: string;
 		align?: 'start' | 'end';
+		/** A fixed width for this column (any CSS width). The other columns share what is left. */
+		width?: string;
+		/** Keeps the label for screen readers only, for a column that is drawn as an icon or nothing. */
+		hideLabel?: boolean;
 		/** This column's header becomes a button that calls `onSortChange` with its key. Needs `sort` and
 		 * `onSortChange` on the table to do anything. */
 		sortable?: boolean;
@@ -16,6 +20,9 @@
 	import selectorIcon from '@tabler/icons/outline/selector.svg?raw';
 	import chevronUpIcon from '@tabler/icons/outline/chevron-up.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
+	import arrowUpIcon from '@tabler/icons/outline/arrow-up.svg?raw';
+	import arrowDownIcon from '@tabler/icons/outline/arrow-down.svg?raw';
+	import arrowsSortIcon from '@tabler/icons/outline/arrows-sort.svg?raw';
 
 	let {
 		columns,
@@ -33,7 +40,8 @@
 		rowActions,
 		rowDetail,
 		isExpanded,
-		footer
+		footer,
+		variant = 'default'
 	}: {
 		columns: DataTableColumn[];
 		items: T[];
@@ -60,6 +68,9 @@
 		rowDetail?: Snippet<[T]>;
 		isExpanded?: (item: T) => boolean;
 		footer?: Snippet;
+		/** `card` is the table that sits inside a card with its own header: no outer border, a quiet
+		 *  uppercase head row, roomier rows and arrow sort icons. */
+		variant?: 'default' | 'card';
 	} = $props();
 
 	function ariaSort(column: DataTableColumn) {
@@ -68,6 +79,10 @@
 		return sort.direction === 'asc' ? 'ascending' : 'descending';
 	}
 	function sortIcon(column: DataTableColumn) {
+		if (variant === 'card') {
+			if (sort?.key !== column.key) return arrowsSortIcon;
+			return sort.direction === 'asc' ? arrowUpIcon : arrowDownIcon;
+		}
 		if (sort?.key !== column.key) return selectorIcon;
 		return sort.direction === 'asc' ? chevronUpIcon : chevronDownIcon;
 	}
@@ -119,7 +134,11 @@
 	}
 </script>
 
-<div class="data-table" role="region" aria-label={caption}>
+<div
+	class={['data-table', variant === 'card' && 'data-table--card']}
+	role="region"
+	aria-label={caption}
+>
 	<table>
 		<caption>{caption}</caption>
 		<thead>
@@ -135,7 +154,12 @@
 					</th>
 				{/if}
 				{#each columns as column (column.key)}
-					<th scope="col" class:align-end={column.align === 'end'} aria-sort={ariaSort(column)}>
+					<th
+						scope="col"
+						class:align-end={column.align === 'end'}
+						aria-sort={ariaSort(column)}
+						style:width={column.width}
+					>
 						{#if column.sortable && onSortChange}
 							<!-- eslint-disable svelte/no-at-html-tags -->
 							<button
@@ -150,6 +174,8 @@
 								>
 							</button>
 							<!-- eslint-enable svelte/no-at-html-tags -->
+						{:else if column.hideLabel}
+							<span class="data-table__hidden-label">{column.label}</span>
 						{:else}
 							{column.label}
 						{/if}
@@ -327,6 +353,87 @@
 		width: 48px;
 		text-align: end;
 	}
+	.data-table__hidden-label {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	/* Card variant: the card around the table draws the border and corners, so the table only draws its
+	   rows. The head row is a small quiet label strip and every row keeps a line under it. */
+	.data-table--card {
+		border: 0;
+		border-radius: 0;
+		background: transparent;
+	}
+	.data-table--card :global(thead th),
+	.data-table--card :global(thead td) {
+		padding: 10px var(--space-base);
+		color: var(--color-text--secondary);
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.6px;
+		text-transform: uppercase;
+	}
+	.data-table--card :global(thead th:first-child),
+	.data-table--card :global(tbody th:first-child),
+	.data-table--card :global(tbody td:first-child) {
+		padding-left: var(--space-large);
+	}
+	.data-table--card :global(thead th:last-child),
+	.data-table--card :global(tbody td:last-child) {
+		padding-right: var(--space-large);
+	}
+	/* Narrower than this the columns would crush each other, so the table scrolls sideways instead. */
+	.data-table--card table {
+		min-width: 1040px;
+	}
+	.data-table--card :global(tbody th) {
+		white-space: normal;
+	}
+	.data-table--card :global(thead) {
+		border-block: var(--border-base) solid var(--color-border);
+	}
+	.data-table--card :global(thead th) {
+		border-bottom: 0;
+	}
+	.data-table--card :global(tbody th),
+	.data-table--card :global(tbody td) {
+		padding-top: 14px;
+		padding-bottom: 14px;
+		padding-inline: var(--space-base);
+	}
+	.data-table--card :global(tbody tr:last-child th),
+	.data-table--card :global(tbody tr:last-child td) {
+		border-bottom: var(--border-base) solid var(--color-border);
+	}
+	.data-table--card .data-table__sort {
+		gap: 4px;
+		margin: calc(var(--space-small) * -1);
+		padding: var(--space-small);
+		border-radius: var(--radius-small);
+		text-transform: inherit;
+		letter-spacing: inherit;
+	}
+	.data-table--card .data-table__sort--active {
+		color: var(--color-heading);
+	}
+	.data-table--card .data-table__sort-icon {
+		color: var(--color-icon--secondary);
+
+		:global(svg) {
+			width: 12px;
+			height: 12px;
+		}
+	}
+	.data-table--card .data-table__sort--active .data-table__sort-icon {
+		color: var(--color-heading);
+	}
+
 	.data-table:focus-visible {
 		outline: none;
 		box-shadow: var(--shadow-focus);

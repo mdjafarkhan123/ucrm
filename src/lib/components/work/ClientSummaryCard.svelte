@@ -1,5 +1,6 @@
 <script lang="ts">
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import type { SummaryAddress } from './types';
 	import mapPinIcon from '@tabler/icons/outline/map-pin.svg?raw';
 	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
@@ -25,6 +26,7 @@
 		phone = null,
 		email = null,
 		menuItems = [],
+		avatarId,
 		class: className = ''
 	}: {
 		name: string;
@@ -34,6 +36,8 @@
 		phone?: string | null;
 		email?: string | null;
 		menuItems?: MenuItem[];
+		/** The client's id. Given, the App look header draws their initials beside the name. */
+		avatarId?: string;
 		class?: string;
 	} = $props();
 </script>
@@ -41,6 +45,11 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <div class={`client-summary ${className}`}>
 	<div class="client-summary__top">
+		{#if avatarId}
+			<span class="client-summary__avatar" aria-hidden="true">
+				<Avatar id={avatarId} {name} size="small" />
+			</span>
+		{/if}
 		<h3 class="client-summary__name">
 			{#if href}
 				<!-- The caller resolves the path; this card only renders what it is handed. -->
@@ -181,6 +190,64 @@
 
 		&__blank {
 			color: var(--color-text--secondary);
+		}
+
+		&__avatar {
+			display: inline-flex;
+			flex: 0 0 auto;
+		}
+	}
+
+	// App look: no inner card. The client reads as one row — avatar and name, then address, phone and email
+	// as quiet details beside it — and the actions menu sits at the far end.
+	:global(.record-detail--cards) .client-summary {
+		display: flex;
+		flex-flow: row wrap;
+		align-items: center;
+		gap: 10px 20px;
+		padding: 0;
+		border: 0;
+		border-radius: 0;
+		background: transparent;
+
+		.client-summary__top {
+			display: contents;
+		}
+		.client-summary__name {
+			flex: 0 1 auto;
+			order: 1;
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
+		}
+		.client-summary__avatar {
+			order: 0;
+			margin-right: -12px;
+		}
+		.client-summary__lines {
+			display: flex;
+			flex: 1 0 100%;
+			flex-flow: row wrap;
+			gap: 6px 20px;
+			order: 4;
+			min-width: 0;
+		}
+		.client-summary__line {
+			align-items: center;
+			gap: 6px;
+			color: var(--color-text--secondary);
+			font-weight: 500;
+		}
+		.client-summary__icon :global(svg) {
+			width: 15px;
+			height: 15px;
+			margin-top: 0;
+		}
+		.client-summary__text {
+			color: var(--color-text--secondary);
+		}
+		:global(.dropdown-menu__trigger) {
+			order: 3;
+			margin-left: auto;
 		}
 	}
 </style>

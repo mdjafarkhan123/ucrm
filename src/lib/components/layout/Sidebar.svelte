@@ -3,7 +3,7 @@
 <script lang="ts">
 	import { navigating, page } from '$app/state';
 	import { iconMap, activeNavigationHref, type NavGroup } from './navigation';
-	import hammerIcon from '@tabler/icons/outline/hammer.svg?raw';
+	import leafIcon from '@tabler/icons/outline/leaf.svg?raw';
 	import collapseIcon from '@tabler/icons/outline/layout-sidebar-left-collapse.svg?raw';
 	import expandIcon from '@tabler/icons/outline/layout-sidebar-left-expand.svg?raw';
 
@@ -45,11 +45,11 @@
 		<a class="sidebar__brand" href={brandHref}>
 			<span class="sidebar__mark" aria-hidden="true"
 				>{#if logoUrl}<img class="sidebar__mark-image" src={logoUrl} alt="" />{:else}<span
-						class="sidebar__mark-icon">{@html hammerIcon}</span
+						class="sidebar__mark-icon">{@html leafIcon}</span
 					>{/if}</span
 			>
 			<span class="sidebar__brand-text"
-				><span class="sidebar__eyebrow">{eyebrow}</span><strong>{brand}</strong></span
+				><strong>{brand}</strong><span class="sidebar__eyebrow">{eyebrow}</span></span
 			>
 		</a>
 		{#if collapsible}
@@ -67,7 +67,7 @@
 	</div>
 	<nav>
 		{#each groups as group, index (group.label ?? index)}
-			<div class="sidebar__group">
+			<div class="sidebar__group" class:sidebar__group--pinned={group.pinned}>
 				{#if group.label}<p class="sidebar__group-label">{group.label}</p>{/if}
 				<ul class="sidebar__list">
 					{#each group.items as item (item.href)}
@@ -119,56 +119,67 @@
 
 <style lang="scss">
 	.sidebar {
-		top: var(--space-large);
 		display: flex;
 		flex-direction: column;
-		width: 256px;
-		flex: 0 0 256px;
+		gap: 18px;
+		width: 248px;
+		flex: 0 0 248px;
 		height: 100%;
-		padding: var(--space-base) var(--space-slim);
-		border-right: var(--border-base) solid var(--color-border);
+		padding: 18px 14px 16px;
+		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-large);
 		background: var(--color-surface);
+		overflow-x: hidden;
 		overflow-y: auto;
 		transition:
 			width var(--timing-base) ease-out,
 			flex-basis var(--timing-base) ease-out;
 
+		// The workspace switcher: who you are working for, with the collapse control beside it.
 		&__brand-row {
 			display: flex;
 			align-items: center;
-			gap: var(--space-small);
-			margin-bottom: var(--space-large);
+			gap: var(--space-smaller);
+			padding: 10px;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-large);
+			background: var(--color-surface--background--subtle);
 		}
 		&__brand {
 			display: flex;
 			flex: 1;
 			min-width: 0;
 			align-items: center;
-			gap: var(--space-small);
-			min-height: 48px;
-			padding: var(--space-small);
+			gap: var(--space-slim);
 			color: var(--color-heading);
 			text-decoration: none;
+
+			&:focus-visible {
+				outline: none;
+				box-shadow: var(--shadow-focus);
+				border-radius: var(--radius-base);
+			}
 		}
 		&__brand:hover {
 			color: var(--color-heading);
 		}
 		&__brand-text {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smallest);
 			min-width: 0;
 			overflow: hidden;
 		}
 		&__mark {
 			display: grid;
-			flex: 0 0 32px;
+			flex: 0 0 40px;
 			place-items: center;
-			width: 32px;
-			height: 32px;
+			width: 40px;
+			height: 40px;
 			overflow: hidden;
-			border-radius: var(--radius-base);
+			border-radius: 12px;
 			color: var(--color-surface);
-			background: var(--color-brand);
-			font-size: var(--typography--fontSize-large);
+			background: var(--color-interactive);
 		}
 		&__mark-image {
 			width: 100%;
@@ -187,31 +198,34 @@
 		&__brand strong {
 			display: block;
 			overflow: hidden;
+			color: var(--color-heading);
+			font-size: 15px;
 			font-weight: 700;
+			line-height: 1.2;
 			text-overflow: ellipsis;
 			white-space: nowrap;
 		}
 		&__eyebrow {
 			display: block;
-			margin-bottom: var(--space-smaller);
 			overflow: hidden;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
-			line-height: 1;
+			font-weight: 500;
+			line-height: 1.25;
 			text-overflow: ellipsis;
 			white-space: nowrap;
 		}
 		&__collapse {
 			display: inline-grid;
 			flex: 0 0 auto;
-			width: 28px;
-			height: 28px;
+			width: 24px;
+			height: 24px;
 			place-items: center;
 			padding: 0;
-			border: var(--border-base) solid var(--color-border);
-			border-radius: var(--radius-small);
+			border: 0;
+			border-radius: var(--radius-base);
 			color: var(--color-icon);
-			background: var(--color-surface);
+			background: transparent;
 			transition: all var(--timing-base) ease-out;
 		}
 		&__collapse:hover {
@@ -225,29 +239,42 @@
 		&__collapse span,
 		&__collapse span :global(svg) {
 			display: inline-flex;
-			width: 16px;
-			height: 16px;
+			width: 18px;
+			height: 18px;
 		}
 		nav {
+			display: flex;
+			flex: 1;
+			min-height: 0;
+			flex-direction: column;
+			gap: 18px;
+			overflow-x: hidden;
 			overflow-y: auto;
 		}
-		&__group + &__group {
-			margin-top: var(--space-base);
-			padding-top: var(--space-base);
+		&__group {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smallest);
+		}
+		// Settings: pinned to the foot of the sidebar behind a rule.
+		&__group--pinned {
+			margin-top: auto;
+			padding-top: 10px;
 			border-top: var(--border-base) solid var(--color-border);
 		}
 		&__group-label {
-			margin-bottom: var(--space-small);
-			padding: 0 var(--space-small);
+			margin-bottom: var(--space-smaller);
+			padding: 0 var(--space-slim);
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-			letter-spacing: var(--typography--letterSpacing-loose);
+			font-size: 11px;
+			font-weight: 700;
+			letter-spacing: 0.8px;
 			text-transform: uppercase;
 		}
 		&__list {
 			display: grid;
-			gap: var(--space-small);
+			gap: var(--space-smallest);
+			margin: 0;
 			padding: 0;
 			list-style: none;
 		}
@@ -256,9 +283,9 @@
 			display: flex;
 			align-items: center;
 			gap: var(--space-slim);
-			min-height: 40px;
-			padding: var(--space-small);
-			border-radius: var(--radius-base);
+			min-height: 38px;
+			padding: 0 var(--space-slim);
+			border-radius: 12px;
 			color: var(--color-heading);
 			font-size: var(--typography--fontSize-base);
 			font-weight: 500;
@@ -267,13 +294,13 @@
 		}
 		&__item-icon {
 			display: inline-flex;
-			flex: 0 0 20px;
-			width: 20px;
+			flex: 0 0 18px;
+			width: 18px;
 			color: var(--color-icon);
 		}
 		&__item-icon :global(svg) {
-			width: 20px;
-			height: 20px;
+			width: 18px;
+			height: 18px;
 		}
 		&__item-label {
 			overflow: hidden;
@@ -284,21 +311,22 @@
 			color: var(--color-heading);
 			background: var(--color-surface--hover);
 		}
-		&__item--active {
-			color: var(--color-interactive);
-			background: var(--color-surface--active);
+		&__item:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
 		}
-		&__item--active::before {
-			position: absolute;
-			left: 0;
-			width: 3px;
-			height: 24px;
-			border-radius: 0 var(--radius-small) var(--radius-small) 0;
-			background: var(--color-brand);
-			content: '';
+		&__item--active,
+		&__item--active:hover {
+			color: var(--color-surface);
+			background: var(--color-interactive);
+			font-weight: 600;
 		}
-		&__item--active .sidebar__item-icon {
-			color: var(--color-interactive);
+		&__item--active:hover {
+			background: var(--color-interactive--hover);
+		}
+		&__item--active .sidebar__item-icon,
+		&__item--active:hover .sidebar__item-icon {
+			color: var(--color-surface);
 		}
 		&__item--unavailable {
 			color: var(--color-disabled);
@@ -321,46 +349,93 @@
 		&__count {
 			flex: 0 0 auto;
 			min-width: 20px;
+			height: 20px;
 			margin-left: auto;
-			padding: 0 var(--space-smaller);
-			border-radius: var(--radius-large);
-			color: var(--color-text--reverse);
-			background: var(--color-critical);
-			font-size: var(--typography--fontSize-smaller);
-			font-weight: 600;
+			padding: 0 7px;
+			border-radius: 10px;
+			color: var(--color-surface);
+			background: var(--color-interactive);
+			font-size: 11px;
+			font-weight: 700;
 			line-height: 20px;
 			text-align: center;
 		}
+		// On the green active item the pill would vanish, so it flips to the page colour.
+		&__item--active &__count {
+			color: var(--color-interactive);
+			background: var(--color-surface);
+		}
 	}
 
+	// Collapsed: a logo tile, an expand button, and one icon per page.
 	.sidebar--collapsed {
 		width: 76px;
 		flex: 0 0 76px;
+		align-items: center;
+		gap: 14px;
 
+		.sidebar__brand-row {
+			flex-direction: column;
+			gap: 14px;
+			padding: 0;
+			border: 0;
+			background: transparent;
+		}
+		.sidebar__brand {
+			flex: 0 0 auto;
+		}
+		.sidebar__collapse {
+			width: 48px;
+			height: 32px;
+			border-radius: 10px;
+		}
 		.sidebar__brand-text,
 		.sidebar__group-label,
 		.sidebar__item-label,
 		.sidebar__soon {
 			display: none;
 		}
-		.sidebar__brand {
-			flex: 0 0 auto;
-			padding: var(--space-small) 0;
+		nav {
+			align-items: center;
+			gap: 14px;
+			width: 100%;
 		}
-		.sidebar__brand-row {
-			justify-content: center;
+		.sidebar__group {
+			align-items: center;
+			gap: 14px;
+		}
+		.sidebar__group + .sidebar__group::before {
+			display: block;
+			width: 24px;
+			height: var(--border-base);
+			margin: 0 auto;
+			background: var(--color-border);
+			content: '';
+		}
+		.sidebar__group--pinned {
+			padding-top: 0;
+			border-top: 0;
+		}
+		.sidebar__list {
+			gap: 4px;
 		}
 		.sidebar__item {
 			justify-content: center;
+			width: 48px;
 			padding-inline: 0;
 		}
-		// Collapsed, the number sits on the icon's corner so it still shows.
+		// Collapsed, the unread count becomes a small dot on the icon's corner so it still shows.
 		.sidebar__count {
 			position: absolute;
-			top: 2px;
-			right: 10px;
-			min-width: 18px;
-			line-height: 18px;
+			top: 6px;
+			right: 11px;
+			width: 8px;
+			min-width: 0;
+			height: 8px;
+			padding: 0;
+			border: var(--border-base) solid var(--color-surface);
+			box-sizing: content-box;
+			font-size: 0;
 		}
 	}
 

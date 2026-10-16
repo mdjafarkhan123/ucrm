@@ -18,29 +18,31 @@
 	{@render menu()}
 	{@render identity?.()}
 	{@render search()}
-	{@render add()}
 	<div class="topbar__spacer"></div>
 	{@render timer?.()}
 	{@render appearance()}
 	{@render notifications?.()}
+	{@render add()}
 	{@render accountControl()}
 </header>
 
 <style lang="scss">
+	/* No card of its own: the controls sit straight on the page, 44px high, in line with the page below. */
 	.topbar {
 		display: flex;
 		align-items: center;
-		gap: var(--space-small);
-		min-height: 62px;
-		padding: var(--space-slim) var(--space-base);
-		border-bottom: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background: var(--color-surface);
+		gap: 10px;
+		min-height: 44px;
+		padding: var(--space-small) var(--space-slim) 0 var(--space-smaller);
+	}
+	.topbar :global(.notification-bell__trigger) {
+		width: 44px;
+		height: 44px;
 	}
 	:global(.topbar__search) {
 		flex: 1 1 320px;
 		min-width: 0;
-		max-width: 420px;
+		max-width: 440px;
 		container-type: inline-size;
 	}
 	// Squeezed by the header's other controls (a running timer beside the sidebar on a small laptop), the
@@ -69,11 +71,11 @@
 	:global(.topbar__search-placeholder) {
 		display: flex;
 		width: 100%;
-		min-height: 40px;
+		min-height: 44px;
 		align-items: center;
-		gap: var(--space-small);
-		padding: 0 var(--space-small);
-		border: var(--border-base) solid var(--color-border--interactive);
+		gap: 10px;
+		padding: 0 var(--space-small) 0 14px;
+		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 		color: var(--color-text--secondary);
 		background: var(--color-surface);
@@ -103,19 +105,22 @@
 		flex: 0 0 auto;
 		width: 18px;
 		height: 18px;
+		color: var(--color-icon--secondary);
 	}
 	:global(.topbar__search-label) {
 		flex: 1;
+		font-weight: 500;
 	}
 	:global(.topbar__search-trigger kbd) {
-		padding: var(--space-smallest) var(--space-smaller);
+		padding: 3px 7px;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-small);
+		border-radius: var(--radius-base);
 		color: var(--color-text--secondary);
-		background: var(--color-surface--background);
+		background: var(--color-surface--background--subtle);
 		font: inherit;
-		font-size: var(--typography--fontSize-small);
-		line-height: 1;
+		font-size: 11px;
+		font-weight: 600;
+		line-height: 1.2;
 	}
 	:global(.topbar__spacer) {
 		flex: 1;
@@ -124,18 +129,20 @@
 		display: inline-flex;
 		flex: 0 0 auto;
 		align-items: center;
-		gap: var(--space-smaller);
-		min-height: 40px;
-		padding: 0 var(--space-base);
+		gap: var(--space-small);
+		min-height: 44px;
+		padding: 0 18px 0 14px;
 		border: var(--border-base) solid var(--color-interactive);
 		border-radius: var(--radius-base);
 		color: var(--color-surface);
 		background: var(--color-interactive);
+		box-shadow: 0 6px 16px color-mix(in srgb, var(--color-interactive) 20%, transparent);
 		font-weight: 600;
 		white-space: nowrap;
 		transition: all var(--timing-base) ease-out;
 	}
 	:global(.topbar__add:hover) {
+		border-color: var(--color-interactive--hover);
 		background: var(--color-interactive--hover);
 	}
 	:global(.topbar__add:focus-visible) {
@@ -152,8 +159,8 @@
 	:global(.topbar__account) {
 		display: inline-grid;
 		flex: 0 0 auto;
-		width: 40px;
-		height: 40px;
+		width: 44px;
+		height: 44px;
 		place-items: center;
 		padding: 0;
 		border: var(--border-base) solid var(--color-border);
@@ -181,25 +188,36 @@
 	:global(.topbar__icon-btn span),
 	:global(.topbar__icon-btn span svg) {
 		display: inline-flex;
-		width: 20px;
-		height: 20px;
+		width: 18px;
+		height: 18px;
 	}
 	:global(.topbar__account) {
+		border-color: var(--color-interactive);
 		border-radius: var(--radius-circle);
 		overflow: hidden;
+		background: var(--color-interactive);
+	}
+	:global(.topbar__account:hover) {
+		border-color: var(--color-interactive--hover);
+		background: var(--color-interactive--hover);
 	}
 	:global(.topbar__avatar) {
 		display: grid;
 		width: 100%;
 		height: 100%;
 		place-items: center;
-		color: var(--color-brand);
-		background: var(--color-surface--active);
+		color: var(--color-surface);
+		background: var(--color-interactive);
 	}
-	// The person's own avatar fills the whole round button, border to border.
+	// The person's own avatar fills the whole round button, border to border. Without a photo it shows
+	// bold initials on the brand green.
 	:global(.topbar__avatar .avatar) {
+		--avatar-bg: var(--color-interactive);
+		--avatar-fg: var(--color-surface);
 		width: 100%;
 		height: 100%;
+		font-size: var(--typography--fontSize-base);
+		font-weight: 700;
 	}
 	:global(.topbar__avatar svg) {
 		width: 20px;

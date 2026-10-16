@@ -1575,6 +1575,59 @@
 		}
 	}
 
+	// App look: the saved table runs edge to edge inside its card — small uppercase column heads on the
+	// tinted row, lines a little taller — and the figures keep their right-hand column.
+	:global(.record-detail--cards) .pricing-table__scroll.pricing-table__scroll {
+		margin: 0;
+		border-top: var(--border-base) solid var(--color-border);
+	}
+	:global(.record-detail--cards) .pricing-table {
+		th,
+		td {
+			padding: 14px 16px;
+		}
+		th:first-child,
+		td:first-child {
+			padding-left: 24px;
+		}
+		th:last-child,
+		td:last-child {
+			padding-right: 24px;
+		}
+		thead th {
+			padding-block: 10px;
+			color: var(--color-text--secondary);
+			font-size: 11px;
+			font-weight: 600;
+			letter-spacing: 0.6px;
+			text-transform: uppercase;
+		}
+		tbody tr:last-child th,
+		tbody tr:last-child td {
+			border-bottom: var(--border-base) solid var(--color-border);
+		}
+		&__name {
+			font-size: var(--typography--fontSize-base);
+		}
+	}
+
+	@media (max-width: 1359px) {
+		:global(.record-detail--cards) .pricing-table {
+			th,
+			td {
+				padding-inline: 10px;
+			}
+			th:first-child,
+			td:first-child {
+				padding-left: 24px;
+			}
+			th:last-child,
+			td:last-child {
+				padding-right: 24px;
+			}
+		}
+	}
+
 	@media (max-width: 767px) {
 		// Four columns will not fit a phone. The name keeps a full row of its own, the three figures pair
 		// up underneath it, and the photo drops below the description.

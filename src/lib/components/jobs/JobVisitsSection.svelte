@@ -348,6 +348,18 @@
 		return timeFormat.format(new Date(`2000-01-01T${value}`));
 	}
 
+	// The App look draws each visit's day as a small tile. A date is a calendar day, not an instant, so
+	// its parts are placed by hand rather than read through UTC.
+	function weekdayOf(day: string) {
+		const [year, month, date] = day.split('-').map(Number);
+		return new Intl.DateTimeFormat(locale, { weekday: 'short' })
+			.format(new Date(year, month - 1, date))
+			.toUpperCase();
+	}
+	function dayOf(day: string) {
+		return String(Number(day.split('-')[2]));
+	}
+
 	function visitWhen(visit: JobVisit) {
 		if (!visit.visit_date) return 'No date yet';
 		const day = formatDay(visit.visit_date);
@@ -892,6 +904,12 @@
 		onfocusin={() => warmVisit(visit)}
 	>
 		<span class="job-visits-section__icon" aria-hidden="true">{@html calendarIcon}</span>
+		{#if visit.visit_date}
+			<span class="job-visits-section__date" aria-hidden="true">
+				<span class="job-visits-section__date-weekday">{weekdayOf(visit.visit_date)}</span>
+				<span class="job-visits-section__date-day">{dayOf(visit.visit_date)}</span>
+			</span>
+		{/if}
 
 		<div class="job-visits-section__body">
 			<p class="job-visits-section__when">
@@ -947,7 +965,12 @@
 	</li>
 {/snippet}
 
-<SectionBlock title="Visits" icon={calendarIcon} level={2}>
+<SectionBlock
+	title="Visits"
+	icon={calendarIcon}
+	level={2}
+	class="section-block--flush job-visits-card"
+>
 	{#snippet actions()}
 		{#if scheduleAllowed}
 			{#if isRecurringScheduled}
@@ -1510,6 +1533,82 @@
 				height: 16px;
 			}
 		}
+	}
+
+	// App look: the section is a card whose visits run edge to edge, one hairline apart. Each row leads with
+	// its day in a small tile and drops the calendar icon.
+	:global(.record-detail--cards) {
+		.job-visits-section__error,
+		.job-visits-section__recurrence,
+		.job-visits-section__timer-elsewhere {
+			margin: 0 24px 16px;
+		}
+		.job-visits-section__groups,
+		.job-visits-section__group,
+		.job-visits-section__list {
+			gap: 0;
+		}
+		.job-visits-section__group-title,
+		.job-visits-section__group-toggle {
+			width: auto;
+			padding: 10px 24px;
+			border-top: var(--border-base) solid var(--color-border);
+			background: var(--color-surface--background--subtle);
+		}
+		.job-visits-section__more {
+			align-self: stretch;
+			padding: 12px 24px;
+			border-top: var(--border-base) solid var(--color-border);
+			text-align: left;
+		}
+		.job-visits-section__item {
+			align-items: center;
+			padding: 16px 24px;
+			border: 0;
+			border-top: var(--border-base) solid var(--color-border);
+			border-radius: 0;
+			column-gap: 16px;
+		}
+		.job-visits-section__icon {
+			display: none;
+		}
+		.job-visits-section__date {
+			display: inline-flex;
+			grid-area: icon;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			width: 52px;
+			height: 56px;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-base);
+			background: var(--color-surface);
+		}
+		.job-visits-section__date-weekday {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-smaller);
+			font-weight: 700;
+			letter-spacing: 0.6px;
+			line-height: 12px;
+		}
+		.job-visits-section__date-day {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-larger);
+			font-weight: 700;
+			line-height: 22px;
+		}
+		.job-visits-section__when {
+			font-size: 15px;
+		}
+		.job-visits-section__sub,
+		.job-visits-section__note,
+		.job-visits-section__off-series {
+			font-size: 13px;
+		}
+	}
+
+	.job-visits-section__date {
+		display: none;
 	}
 
 	:global(.job-visits-section__add-trigger) {

@@ -24,6 +24,7 @@
 		saveLabel,
 		onSave,
 		onCancel,
+		cards = false,
 		class: className = ''
 	}: {
 		main: Snippet;
@@ -39,11 +40,15 @@
 		saveLabel?: string;
 		onSave?: () => void;
 		onCancel?: () => void;
+		/** The "App look" page: blocks are separate cards sitting straight on the app background, with the
+		 *  rail beside them, instead of one white sheet holding bordered blocks. Other record pages keep
+		 *  the sheet until they are converted. */
+		cards?: boolean;
 		class?: string;
 	} = $props();
 </script>
 
-<div class={`record-detail ${className} scroll-y-auto`}>
+<div class={`record-detail ${className} scroll-y-auto`} class:record-detail--cards={cards}>
 	<div class="record-detail__grid scroll-y-auto" class:record-detail__grid--no-rail={!rail}>
 		<div class="record-detail__main scroll-y-auto">{@render main()}</div>
 		{#if rail}
@@ -101,8 +106,37 @@
 		}
 	}
 
-	@media (max-width: 1079px) {
+	// App look. Each block is its own white card on the grey page; nothing wraps the column. The rail is a
+	// fixed 336px beside it, and 20px separates the two columns, as in the approved Job details design.
+	.record-detail--cards {
+		gap: 0;
+
 		.record-detail__grid {
+			grid-template-columns: minmax(0, 1fr) 336px;
+			gap: var(--space-large);
+
+			&--no-rail {
+				grid-template-columns: minmax(0, 1fr);
+			}
+		}
+
+		.record-detail__main {
+			gap: 20px;
+			padding: 0;
+			border-radius: 0;
+			background: transparent;
+			box-shadow: none;
+		}
+
+		.record-detail__rail {
+			gap: var(--space-base);
+			padding-bottom: 0;
+		}
+	}
+
+	@media (max-width: 1079px) {
+		.record-detail__grid,
+		.record-detail--cards .record-detail__grid {
 			grid-template-columns: 1fr;
 		}
 	}

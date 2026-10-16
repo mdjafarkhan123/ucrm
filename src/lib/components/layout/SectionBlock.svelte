@@ -137,6 +137,63 @@
 		}
 	}
 
+	// App look (inside `RecordDetailLayout cards`): the block becomes a white card whose title sits in its own
+	// header row, with the actions at the far end, instead of a bordered box with the title on its border.
+	// Content below the header gets the card's 24px side padding; a block that draws edge-to-edge rows or
+	// a table adds `section-block--flush` and pads what needs it itself.
+	:global(.record-detail--cards) .section-block {
+		display: grid;
+		overflow: clip;
+		margin-top: 0;
+		gap: 0;
+		padding: 0;
+		border-color: var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface);
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-content: start;
+
+		> :global(*) {
+			grid-column: 1 / -1;
+		}
+		> :global(.section-block__title),
+		> :global(.section-block__actions) {
+			position: static;
+			grid-column: auto;
+			grid-row: 1;
+			max-width: none;
+			padding: 20px 24px 16px;
+			background: transparent;
+			transform: none;
+			align-self: center;
+		}
+		> :global(.section-block__actions) {
+			padding-left: 0;
+		}
+		> :global(.section-block__title) {
+			font-size: var(--typography--fontSize-large);
+			letter-spacing: -0.2px;
+		}
+		:global(.section-block__icon) {
+			display: none;
+		}
+		> :global(.section-block__hint) {
+			margin: -8px 24px 12px;
+		}
+	}
+	// Low specificity on purpose, so a block's own contents can set their own margin where they differ.
+	:global(.record-detail--cards)
+		.section-block
+		> :global(:where(:not(.section-block__title, .section-block__actions, .section-block__hint))) {
+		width: auto;
+		margin: 0 24px 24px;
+	}
+	:global(.record-detail--cards)
+		.section-block--flush
+		> :global(:where(:not(.section-block__title, .section-block__actions, .section-block__hint))) {
+		margin: 0;
+	}
+
 	@media (max-width: 767px) {
 		.section-block {
 			padding: var(--space-base);

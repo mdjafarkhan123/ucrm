@@ -6,7 +6,7 @@
 		children,
 		class: className = ''
 	}: {
-		variant?: 'fill' | 'standard' | 'narrow' | 'two-panel';
+		variant?: 'fill' | 'standard' | 'narrow' | 'two-panel' | 'open';
 		children: Snippet;
 		class?: string;
 	} = $props();
@@ -23,6 +23,13 @@
 		padding: var(--space-large);
 		border-radius: var(--radius-base);
 
+		/* `open` lets the page sit straight on the app background — no white sheet, no padding — for screens
+		   built from their own cards, like Jobs. */
+		&--open {
+			padding: 0;
+			border-radius: 0;
+			background-color: transparent;
+		}
 		&--standard {
 			max-width: 1280px;
 			margin-inline: auto;

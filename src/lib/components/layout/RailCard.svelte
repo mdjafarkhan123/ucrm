@@ -69,4 +69,20 @@
 			color: var(--color-icon--secondary);
 		}
 	}
+
+	// App look (inside `RecordDetailLayout cards`): 8px card, no shadow, a 16px/700 title in a header row
+	// with 20px side padding. Rows placed straight in the card may run edge to edge.
+	:global(.record-detail--cards) .rail-card {
+		gap: 12px;
+		padding: 18px 20px 20px;
+		box-shadow: none;
+
+		.rail-card__title {
+			font-size: var(--typography--fontSize-large);
+			letter-spacing: -0.2px;
+		}
+		.rail-card__icon {
+			display: none;
+		}
+	}
 </style>

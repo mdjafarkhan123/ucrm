@@ -124,5 +124,6 @@
 		width: 100%;
 		min-height: 100%;
 		border: 0;
+		border-radius: 0;
 	}
 </style>

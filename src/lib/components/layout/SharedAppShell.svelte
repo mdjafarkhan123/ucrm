@@ -100,11 +100,15 @@
 	}
 
 	type ContractorNavItem = NavItem & { area?: keyof ContractorNavigation };
-	const allContractorGroups: Array<{ label: string; items: ContractorNavItem[] }> = [
+	const allContractorGroups: Array<{
+		label?: string;
+		pinned?: boolean;
+		items: ContractorNavItem[];
+	}> = [
 		{
 			label: 'Overview',
 			items: [
-				{ label: 'Dashboard', href: '/dashboard', icon: 'dashboard' },
+				{ label: 'Home', href: '/dashboard', icon: 'home' },
 				{ label: 'Schedule', href: '/schedule', icon: 'calendar', area: 'schedule' },
 				{ label: 'Timesheets', href: '/timesheets', icon: 'clock', area: 'timesheets' }
 			]
@@ -114,35 +118,29 @@
 			items: [
 				{ label: 'Inbox', href: '/communications', icon: 'inbox', area: 'inbox' },
 				{ label: 'Clients', href: '/clients', icon: 'users', area: 'clients' },
-				{ label: 'Requests', href: '/requests', icon: 'route', area: 'requests' },
-				{ label: 'Pipeline', href: '/pipeline', icon: 'chartBar', area: 'pipeline' }
+				{ label: 'Requests', href: '/requests', icon: 'clipboardList', area: 'requests' },
+				{ label: 'Pipeline', href: '/pipeline', icon: 'layoutKanban', area: 'pipeline' }
 			]
 		},
 		{
 			label: 'Work & Money',
 			items: [
 				{ label: 'Jobs', href: '/jobs', icon: 'tools', area: 'jobs' },
-				{ label: 'Quotes', href: '/quotes', icon: 'fileInvoice', area: 'quotes' },
+				{ label: 'Quotes', href: '/quotes', icon: 'fileText', area: 'quotes' },
 				{ label: 'Invoices', href: '/invoices', icon: 'receipt', area: 'invoices' },
-				{ label: 'Files', href: '/files', icon: 'files', area: 'files' }
+				{ label: 'Files', href: '/files', icon: 'folderOpen', area: 'files' }
 			]
 		},
 		{
 			label: 'Growth',
 			items: [
 				{ label: 'Marketing', href: '/marketing', icon: 'speakerphone', area: 'marketing' },
-				{ label: 'Reviews', href: '/reviews', icon: 'star', area: 'reviews' },
-				{ label: 'Growth Feed', href: '/growth', icon: 'trendingUp', unavailable: true }
+				{ label: 'Reviews', href: '/reviews', icon: 'star', area: 'reviews' }
 			]
 		},
 		{
-			label: 'System',
-			items: [
-				{ label: 'Settings', href: '/settings', icon: 'settings' },
-				{ label: 'Team', href: '/team', icon: 'usersGroup', unavailable: true },
-				{ label: 'Notifications', href: '/notifications', icon: 'mail', unavailable: true },
-				{ label: 'Usage', href: '/usage', icon: 'chartBar', unavailable: true }
-			]
+			pinned: true,
+			items: [{ label: 'Settings', href: '/settings', icon: 'settings' }]
 		}
 	];
 	// An item shows only when its area is open to this member, and a section with none left disappears.
@@ -150,6 +148,7 @@
 		allContractorGroups
 			.map((group) => ({
 				label: group.label,
+				pinned: group.pinned,
 				items: group.items.filter((item) => !item.area || navigation[item.area])
 			}))
 			.filter((group) => group.items.length > 0)
@@ -181,6 +180,7 @@
 		},
 		{
 			// System emails, Email templates and Email safety are set up from Settings (Jafar, 2026-10-07).
+			pinned: true,
 			items: [
 				{
 					label: 'Settings',
@@ -215,12 +215,21 @@
 	);
 	// The owner's own view passes no `account`; a teammate's carries their name and role.
 	const eyebrow = $derived(
-		variant === 'owner' ? (account ? 'Uplift team' : 'Platform owner') : 'Workspace'
+		variant === 'owner'
+			? account
+				? 'Uplift team'
+				: 'Platform owner'
+			: account
+				? `Workspace · ${accountRoleLabel(account.role)}`
+				: 'Workspace'
 	);
 	const sidebarLogoUrl = $derived(variant === 'contractor' ? logoUrl : null);
 	const accountLabel = $derived(
 		variant === 'owner' ? (account ? 'Uplift team' : 'Platform owner') : 'Your account'
 	);
+	function accountRoleLabel(role: string) {
+		return role === 'admin' ? 'Administrator' : `${role[0].toUpperCase()}${role.slice(1)}`;
+	}
 	let isSigningOut = $state(false);
 	const queryClient = useQueryClient();
 
