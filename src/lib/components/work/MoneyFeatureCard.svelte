@@ -5,11 +5,18 @@
 		value: string;
 		/** How much of the whole bar this part fills; only the proportions between parts matter. */
 		share: number;
-		tone: 'critical' | 'neutral';
+		tone: 'critical' | 'neutral' | 'success' | 'muted';
+		/** A quiet share figure before the value, e.g. "54%". */
+		percent?: string;
 	};
+
+	export type MoneyDetailRow = { label: string; value: string };
 </script>
 
 <script lang="ts">
+	import type { Snippet } from 'svelte';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+
 	// The dark money card beside a work list's overview: one big figure with a line under it, and a
 	// second figure below a hairline. It reads from the reverse tokens, so it is dark in the light theme
 	// and light in the dark theme.
@@ -20,6 +27,12 @@
 		detailLabel,
 		detailValue,
 		breakdown,
+		badge,
+		badgeIcon,
+		pill,
+		details,
+		children,
+		record = false,
 		loading = false
 	}: {
 		eyebrow: string;
@@ -29,14 +42,54 @@
 		detailValue?: string;
 		/** Instead of one detail row: a split bar with a legend row for each part. */
 		breakdown?: MoneyBreakdownPart[];
+		/** A small chip at the end of the eyebrow row, e.g. "Due in 7 days". */
+		badge?: string;
+		/** A Tabler icon (raw SVG) drawn in the chip. */
+		badgeIcon?: string;
+		/** A green pill beside the figure, e.g. "54% paid". */
+		pill?: string;
+		/** More label/value rows under a hairline, below the breakdown. */
+		details?: MoneyDetailRow[];
+		/** Extra content at the foot of the card, such as an inset call to action. */
+		children?: Snippet;
+		/** The record-page rail version: the breakdown sits straight under the figure and the hairline moves
+		 *  above the extra rows. */
+		record?: boolean;
 		loading?: boolean;
 	} = $props();
 </script>
 
-<section class="money-card" aria-label={eyebrow} aria-busy={loading}>
-	<p class="money-card__eyebrow">{eyebrow}</p>
+<!-- eslint-disable svelte/no-at-html-tags -->
+<section
+	class={['money-card', record && 'money-card--record']}
+	aria-label={eyebrow}
+	aria-busy={loading}
+>
+	{#if badge}
+		<div class="money-card__top">
+			<p class="money-card__eyebrow">{eyebrow}</p>
+			<span class="money-card__badge">
+				{#if badgeIcon}<span class="money-card__badge-icon" aria-hidden="true"
+						>{@html badgeIcon}</span
+					>{/if}
+				{badge}
+			</span>
+		</div>
+	{:else}
+		<p class="money-card__eyebrow">{eyebrow}</p>
+	{/if}
 	<div class="money-card__figure">
-		<p class="money-card__value">{value}</p>
+		{#if pill}
+			<div class="money-card__figure-row">
+				<p class="money-card__value">{value}</p>
+				<span class="money-card__pill">
+					<span class="money-card__pill-icon" aria-hidden="true">{@html checkIcon}</span>
+					{pill}
+				</span>
+			</div>
+		{:else}
+			<p class="money-card__value">{value}</p>
+		{/if}
 		{#if note}<p class="money-card__note">{note}</p>{/if}
 	</div>
 	{#if breakdown && breakdown.length > 0}
@@ -58,7 +111,10 @@
 							<span class={['money-card__swatch', `money-card__segment--${part.tone}`]}></span>
 							{part.label}
 						</dt>
-						<dd>{part.value}</dd>
+						<dd>
+							{#if part.percent}<span class="money-card__percent">{part.percent}</span>{/if}
+							{part.value}
+						</dd>
 					</div>
 				{/each}
 			</dl>
@@ -69,7 +125,24 @@
 			<dd>{detailValue ?? '—'}</dd>
 		</dl>
 	{/if}
+	{#if (details && details.length > 0) || children}
+		<div class="money-card__foot">
+			{#if details && details.length > 0}
+				<dl class="money-card__rows">
+					{#each details as row (row.label)}
+						<div class="money-card__legend-row">
+							<dt>{row.label}</dt>
+							<dd>{row.value}</dd>
+						</div>
+					{/each}
+				</dl>
+			{/if}
+			{#if children}<div class="money-card__inset">{@render children()}</div>{/if}
+		</div>
+	{/if}
 </section>
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.money-card {
@@ -124,6 +197,12 @@
 			flex: 1 1 0;
 			border-radius: 999px;
 
+			&--success {
+				background: var(--color-success);
+			}
+			&--muted {
+				background: var(--color-icon--secondary);
+			}
 			&--critical {
 				background: var(--color-critical);
 			}
@@ -154,6 +233,98 @@
 				font-variant-numeric: tabular-nums;
 				font-weight: 600;
 			}
+		}
+		&__percent {
+			margin-right: var(--space-small);
+			color: var(--color-icon--secondary);
+			font-weight: 500;
+		}
+		&__top {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: var(--space-small);
+		}
+		&__badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 5px;
+			padding: 4px 9px;
+			border-radius: 999px;
+			background: color-mix(in srgb, var(--color-text--reverse) 8%, transparent);
+			font-size: 12px;
+			font-weight: 600;
+		}
+		&__badge-icon,
+		&__pill-icon {
+			display: inline-flex;
+
+			:global(svg) {
+				display: block;
+				width: 12px;
+				height: 12px;
+			}
+		}
+		&__badge-icon {
+			color: var(--color-icon--secondary);
+		}
+		&__figure-row {
+			display: flex;
+			align-items: center;
+			flex-wrap: wrap;
+			gap: 10px;
+		}
+		&__pill {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+			padding: 4px 9px;
+			border-radius: 999px;
+			color: var(--color-surface);
+			background: var(--color-interactive);
+			font-size: 13px;
+			font-weight: 700;
+		}
+		&__foot {
+			display: grid;
+			gap: 12px;
+			padding-top: 14px;
+			border-top: var(--border-base) solid
+				color-mix(in srgb, var(--color-text--reverse) 14%, transparent);
+		}
+		&__rows {
+			display: grid;
+			gap: 12px;
+			margin: 0;
+			font-size: 13px;
+
+			dd {
+				font-weight: 700;
+			}
+		}
+		&__inset {
+			display: grid;
+			justify-items: start;
+			gap: 10px;
+			padding: 12px;
+			border-radius: var(--radius-base);
+			background: color-mix(in srgb, var(--color-text--reverse) 8%, transparent);
+			font-size: 13px;
+			font-weight: 500;
+
+			&:empty {
+				display: none;
+			}
+		}
+		// The record-page rail version: the split bar sits straight under the figure, with no hairline
+		// above it, and the card's rows carry the hairline instead.
+		&--record &__breakdown {
+			padding-top: 0;
+			border-top: 0;
+		}
+		&--record {
+			gap: 20px;
+			padding: 24px;
 		}
 		&__swatch {
 			flex: 0 0 8px;

@@ -7,6 +7,8 @@
 		title,
 		icon,
 		count,
+		description,
+		flush = false,
 		actions,
 		children,
 		class: className = ''
@@ -14,6 +16,11 @@
 		title: string;
 		icon?: string;
 		count?: number;
+		/** One quiet line under the title, e.g. "3 photos · 1 file". */
+		description?: string;
+		/** App look: the body runs edge to edge under the header, for rows that draw their own padding and
+		 *  hairlines. Only the header keeps the card's side padding. */
+		flush?: boolean;
 		actions?: Snippet;
 		children: Snippet;
 		class?: string;
@@ -21,12 +28,15 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<section class={`rail-card ${className}`}>
+<section class={`rail-card ${className}`} class:rail-card--flush={flush}>
 	<header class="rail-card__header">
-		<h2 class="rail-card__title">
-			{#if icon}<span class="rail-card__icon" aria-hidden="true">{@html icon}</span>{/if}
-			{title}{#if count !== undefined}&nbsp;({count}){/if}
-		</h2>
+		<div class="rail-card__heading">
+			<h2 class="rail-card__title">
+				{#if icon}<span class="rail-card__icon" aria-hidden="true">{@html icon}</span>{/if}
+				{title}{#if count !== undefined}&nbsp;({count}){/if}
+			</h2>
+			{#if description}<p class="rail-card__description">{description}</p>{/if}
+		</div>
 		{#if actions}<div class="rail-card__actions">{@render actions()}</div>{/if}
 	</header>
 	{@render children()}
@@ -62,6 +72,19 @@
 			line-height: var(--typography--lineHeight-tight);
 		}
 
+		&__heading {
+			display: grid;
+			min-width: 0;
+			gap: 2px;
+		}
+
+		&__description {
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+		}
+
 		&__icon :global(svg) {
 			display: block;
 			width: 20px;
@@ -83,6 +106,16 @@
 		}
 		.rail-card__icon {
 			display: none;
+		}
+
+		&.rail-card--flush {
+			gap: 0;
+			padding: 0;
+			overflow: clip;
+
+			.rail-card__header {
+				padding: 18px 20px 14px;
+			}
 		}
 	}
 </style>

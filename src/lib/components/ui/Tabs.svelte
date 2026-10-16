@@ -17,6 +17,10 @@
 	export type Tab = {
 		value: string;
 		label: string;
+		/** A small count or figure in a pill after the label, e.g. "1" or "$2,500.00". */
+		badge?: string;
+		/** `success` tints the pill green, for money that came in. */
+		badgeTone?: 'neutral' | 'success';
 		/** Warms a tab's query before it is opened, matching Button's own `onhover` convention. Fires on
 		 * mouse hover and keyboard focus so revealed content (CLAUDE.md rule 9) is ready by the time the
 		 * tab is actually selected. */
@@ -28,6 +32,7 @@
 		value = $bindable(),
 		label,
 		onChange,
+		compact = false,
 		children
 	}: {
 		tabs: Tab[];
@@ -38,6 +43,9 @@
 		/** Give this when the caller owns the open tab itself — a page keeping it in the URL, say. It then
 		 * takes over from `bind:value`, and `value` is only ever read. */
 		onChange?: (value: string) => void;
+		/** The App look's card tabs: 14px labels, set in the card's own side padding, with a pill for each
+		 *  tab's badge and no space reserved above the panel. */
+		compact?: boolean;
 		children: Snippet;
 	} = $props();
 
@@ -60,7 +68,7 @@
 		if (onChange) onChange(next);
 		else value = next;
 	}}
-	class="tabs"
+	class={compact ? 'tabs tabs--compact' : 'tabs'}
 >
 	<TabsPrimitive.List class="tabs__list" aria-label={label}>
 		{#each tabs as tab (tab.value)}
@@ -71,6 +79,11 @@
 				onfocus={tab.onhover}
 			>
 				{tab.label}
+				{#if tab.badge}
+					<span class={['tabs__badge', tab.badgeTone === 'success' && 'tabs__badge--success']}
+						>{tab.badge}</span
+					>
+				{/if}
 			</TabsPrimitive.Trigger>
 		{/each}
 	</TabsPrimitive.List>
@@ -136,5 +149,47 @@
 		left: 0;
 		height: var(--space-smaller);
 		background: var(--color-interactive);
+	}
+
+	// App look card tabs: set inside a card, the row takes the card's side padding and each tab can carry a
+	// pill. The active marker is a thinner line in the brand colour.
+	:global(.tabs--compact .tabs__list) {
+		gap: 24px;
+		padding-inline: 24px;
+		margin-bottom: 0;
+	}
+	:global(.tabs--compact .tabs__tab) {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		height: auto;
+		padding: 0 0 12px;
+		border-radius: 0;
+		background: transparent;
+		font-size: var(--typography--fontSize-base);
+		line-height: var(--typography--lineHeight-base);
+	}
+	:global(.tabs--compact .tabs__tab:focus-visible) {
+		background: transparent;
+		box-shadow: var(--shadow-focus);
+	}
+	:global(.tabs--compact .tabs__tab[data-state='active'])::after {
+		height: 2px;
+	}
+	:global(.tabs--compact .tab-panel:not([hidden])) {
+		padding: 0;
+	}
+	:global(.tabs__badge) {
+		padding: 2px 8px;
+		border-radius: 999px;
+		color: var(--color-text--secondary);
+		background: var(--color-surface--background--subtle);
+		font-size: var(--typography--fontSize-small);
+		font-variant-numeric: tabular-nums;
+		line-height: 15px;
+	}
+	:global(.tabs__badge--success) {
+		color: var(--color-interactive);
+		background: var(--color-success--surface);
 	}
 </style>

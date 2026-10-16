@@ -20,7 +20,8 @@
 	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
 	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
-	import QuoteSummaryCard from '$lib/components/quotes/QuoteSummaryCard.svelte';
+	import MoneyFeatureCard from '$lib/components/work/MoneyFeatureCard.svelte';
+	import InvoiceHistoryCard from '$lib/components/invoices/InvoiceHistoryCard.svelte';
 	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
 	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
 	import InvoiceEmailDialog from '$lib/components/invoices/InvoiceEmailDialog.svelte';
@@ -68,9 +69,7 @@
 		fetchClientOpenInvoices
 	} from '$lib/invoices/api';
 	import { INVOICE_STATUS_LABELS, INVOICE_STATUS_TONES } from '$lib/invoices/statuses';
-	import { diffInvoiceDocument } from '$lib/invoices/document-history';
 	import { INVOICE_VOID_REASON_LABELS, type InvoiceVoidReason } from '$lib/invoices/lifecycle';
-	import { INVOICE_PAYMENT_METHOD_LABELS } from '$lib/invoices/payment-methods';
 	import type {
 		RequestPricingLine,
 		RequestPricingLineInput,
@@ -78,7 +77,9 @@
 	} from '$lib/quotes/api';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 	import calendarIcon from '@tabler/icons/outline/calendar-event.svg?raw';
-	import cashIcon from '@tabler/icons/outline/cash.svg?raw';
+	import creditCardIcon from '@tabler/icons/outline/credit-card.svg?raw';
+	import calendarDueIcon from '@tabler/icons/outline/calendar-due.svg?raw';
+	import depositIcon from '@tabler/icons/outline/pig-money.svg?raw';
 	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
 	import printIcon from '@tabler/icons/outline/printer.svg?raw';
 	import sendIcon from '@tabler/icons/outline/send.svg?raw';
@@ -88,8 +89,6 @@
 	import banIcon from '@tabler/icons/outline/ban.svg?raw';
 	import cashOffIcon from '@tabler/icons/outline/cash-off.svg?raw';
 	import undoIcon from '@tabler/icons/outline/arrow-back-up.svg?raw';
-	import historyIcon from '@tabler/icons/outline/history.svg?raw';
-	import creditCardIcon from '@tabler/icons/outline/credit-card.svg?raw';
 	import filePencilIcon from '@tabler/icons/outline/file-pencil.svg?raw';
 	import copyIcon from '@tabler/icons/outline/copy.svg?raw';
 
@@ -194,6 +193,12 @@
 		...(termsQuery.data ?? []).map((term) => ({ value: term.id, label: term.name })),
 		{ value: 'custom', label: 'Custom due date' }
 	]);
+	function openTermsEditor() {
+		termChoiceDraft = currentTermChoice;
+		issueDateDraft = currentIssueDate;
+		customDueDateDraft = currentCustomDue;
+		editingTerms = true;
+	}
 	function warmTerms() {
 		void queryClient.prefetchQuery({
 			queryKey: invoicePaymentTermsKey,
@@ -238,42 +243,158 @@
 		return typeof name === 'string' ? name : "Client's default";
 	});
 
+	// The header's facts strip reads shorter than the page's other dates: no year for this year's dates.
+	function shortDay(value: string) {
+		const date = new Date(`${value}T00:00`);
+		return new Intl.DateTimeFormat(undefined, {
+			day: 'numeric',
+			month: 'short',
+			...(date.getFullYear() === new Date().getFullYear() ? {} : { year: 'numeric' })
+		}).format(date);
+	}
+	function shortDateTime(iso: string) {
+		const date = new Date(iso);
+		return new Intl.DateTimeFormat(undefined, {
+			day: 'numeric',
+			month: 'short',
+			hour: 'numeric',
+			minute: '2-digit',
+			...(date.getFullYear() === new Date().getFullYear() ? {} : { year: 'numeric' })
+		}).format(date);
+	}
+
+	// "Net 14" beside the due date, when the invoice follows a named term rather than a hand-picked day.
+	const dueTermName = $derived.by(() => {
+		if (!saved || saved.invoice.due_date_source === 'custom') return null;
+		const name = saved.invoice.payment_term_snapshot?.name;
+		return typeof name === 'string' && name ? name : null;
+	});
+
 	const headerFacts = $derived([
-		{ label: 'Invoice #', value: saved ? String(saved.invoice.invoice_number) : null },
 		...(saved?.progress
 			? [
 					{
 						label: 'Payment stage',
 						value: `Payment ${saved.progress.installment_number} \u00b7 ${saved.progress.description}`,
-						wrap: true
+						wrap: true,
+						icon: receiptIcon
 					}
 				]
 			: []),
 		{
 			label: 'Invoice date',
-			value: saved ? formatDay(saved.invoice.issue_date) : null
+			value: saved ? shortDay(saved.invoice.issue_date) : null,
+			icon: calendarIcon
 		},
-		{ label: 'Due', value: saved ? formatDay(saved.invoice.due_date) : null },
-		...(saved?.invoice.issued_at
-			? [{ label: 'Issued', value: dateTimeFormat.format(new Date(saved.invoice.issued_at)) }]
-			: []),
+		{
+			label: 'Due',
+			value: saved
+				? `${shortDay(saved.invoice.due_date)}${dueTermName ? ` \u00b7 ${dueTermName}` : ''}`
+				: null,
+			icon: calendarDueIcon
+		},
+		// A bill marked as sent by hand has an issue time but no email to name.
 		...(saved?.delivery.last_sent
 			? [
 					{
 						label: 'Sent',
-						value: dateTimeFormat.format(new Date(saved.delivery.last_sent.sent_at))
+						value: shortDateTime(saved.delivery.last_sent.sent_at),
+						icon: sendIcon
 					}
 				]
-			: []),
+			: saved?.invoice.issued_at
+				? [{ label: 'Issued', value: shortDateTime(saved.invoice.issued_at), icon: checkIcon }]
+				: []),
 		...(saved?.delivery.views.first_viewed_at
 			? [
 					{
 						label: 'Viewed',
-						value: dateTimeFormat.format(new Date(saved.delivery.views.first_viewed_at))
+						value: shortDateTime(saved.delivery.views.first_viewed_at),
+						icon: eyeIcon
 					}
 				]
 			: [])
 	]);
+
+	// --- The balance card and the totals under the lines ----------------------------------------------------
+	const settledAway = $derived(Boolean(saved?.invoice.is_replaced) || isVoided);
+	// A bill closed as paid owes nothing, even when the money was received outside the ledger.
+	const closedPaid = $derived(saved?.invoice.derived_status === 'paid');
+	const remainingMinor = $derived(
+		settledAway || closedPaid ? 0 : (saved?.money?.remaining_minor ?? 0)
+	);
+	const paidMinor = $derived(
+		settledAway
+			? 0
+			: closedPaid
+				? (saved?.money?.total_minor ?? 0)
+				: (saved?.money?.allocated_minor ?? 0)
+	);
+	const paidPercent = $derived.by(() => {
+		const total = saved?.money?.total_minor ?? 0;
+		if (total <= 0 || paidMinor <= 0) return 0;
+		return Math.min(100, Math.round((paidMinor / total) * 100));
+	});
+
+	// How far off the due date is, by the viewer's calendar day. Only worth saying while money is owed.
+	const dueChip = $derived.by(() => {
+		if (!saved || !isOpenIssued || remainingMinor <= 0) return undefined;
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+		const due = new Date(`${saved.invoice.due_date}T00:00`);
+		const days = Math.round((due.getTime() - today.getTime()) / 86_400_000);
+		if (days === 0) return 'Due today';
+		if (days > 0) return `Due in ${days} ${days === 1 ? 'day' : 'days'}`;
+		return `${-days} ${days === -1 ? 'day' : 'days'} overdue`;
+	});
+
+	// The work dates on the lines, for the products card's quiet line.
+	const productsHint = $derived.by(() => {
+		const lines = saved?.lines ?? [];
+		const count = lines.filter((line) => (line.line_kind ?? 'priced') === 'priced').length;
+		if (count === 0) return undefined;
+		const days = lines
+			.map((line) => line.service_date)
+			.filter((day): day is string => Boolean(day))
+			.sort();
+		const items = `${count} ${count === 1 ? 'item' : 'items'}`;
+		if (days.length === 0) return items;
+		const first = days[0];
+		const last = days[days.length - 1];
+		return first === last
+			? `${items} \u00b7 work done ${shortDay(first)}`
+			: `${items} \u00b7 work done ${shortDay(first)} \u2013 ${shortDay(last)}`;
+	});
+
+	const totalRows = $derived.by(() => {
+		if (!saved?.money || !canSeePrice) return undefined;
+		const money = saved.money;
+		const rows = [
+			{
+				label: isProgress ? 'Due this invoice' : 'Subtotal',
+				value: formatMoney(money.subtotal_minor)
+			}
+		];
+		if (money.discount_minor > 0)
+			rows.push({
+				label: money.discount_name || 'Discount',
+				value: `\u2212${formatMoney(money.discount_minor)}`
+			});
+		if (money.tax_minor > 0 || (money.tax_name && money.tax_rate_basis_points > 0))
+			rows.push({ label: money.tax_name || 'Tax', value: formatMoney(money.tax_minor) });
+		rows.push({ label: 'Invoice total', value: formatMoney(money.total_minor) });
+		return rows;
+	});
+
+	// The history button in the header takes the reader to the edits.
+	let historyTab = $state('payments');
+	function showHistory() {
+		historyTab = 'edits';
+		const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		document
+			.getElementById('invoice-history')
+			?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+	}
 
 	// A billing line from the frozen snapshot, read defensively — it is display-only and the shape comes from
 	// the database's own jsonb, never edited here.
@@ -399,6 +520,7 @@
 	// screen's ongoing primary action, so Send wins here whenever the draft can still be sent.
 	type PrimaryAction = {
 		label: string;
+		icon?: string;
 		loading?: boolean;
 		onclick: () => void;
 		onhover?: () => void;
@@ -420,10 +542,11 @@
 				onhover: warmPredecessor
 			};
 		if (draftEditable && saved.can_send)
-			return { label: 'Send invoice', onclick: () => (emailOpen = true) };
+			return { label: 'Send invoice', icon: sendIcon, onclick: () => (emailOpen = true) };
 		if (canCollect)
 			return {
 				label: 'Collect payment',
+				icon: creditCardIcon,
 				onclick: () => (collectPaymentOpen = true),
 				onhover: warmOpenInvoices
 			};
@@ -965,7 +1088,9 @@
 
 <svelte:head><title>{subject || 'Invoice'} · Contractor CRM</title></svelte:head>
 
-<PageContainer>
+<!-- eslint-disable svelte/no-at-html-tags -->
+
+<PageContainer variant="open">
 	{#if invoiceQuery.isPending}
 		<LoadingSkeleton variant="card" label="Loading invoice" />
 	{:else if invoiceQuery.isError}
@@ -973,6 +1098,7 @@
 	{:else if saved}
 		<RecordDetailLayout
 			class="invoice-detail"
+			cards
 			editing={isEditing}
 			dirty={isDirty}
 			{saving}
@@ -998,17 +1124,34 @@
 					{editingTitle}
 					bind:titleDraft
 					{primaryAction}
+					onHistory={canSeePrice ? showHistory : undefined}
 				>
 					{#snippet summary()}
 						<ClientSummaryCard
 							name={saved.client?.company_name || saved.client?.display_name || 'No client'}
+							avatarId={saved.client?.id}
 							href={clientHref}
 							addresses={[{ value: billingLine, empty: 'No billing address on this invoice' }]}
+							email={saved.client?.email}
 							menuItems={clientMenuItems}
 						/>
 					{/snippet}
-					{#snippet facts()}<RecordFactsList facts={headerFacts} />{/snippet}
+					{#snippet facts()}
+						<div class="invoice-detail__facts">
+							<RecordFactsList facts={headerFacts} class="invoice-detail__facts-list" />
+							{#if editable && !editingTerms}
+								<PencilButton
+									size="base"
+									variant="secondary"
+									onclick={openTermsEditor}
+									onhover={warmTerms}
+									label="Edit the terms and dates"
+								/>
+							{/if}
+						</div>
+					{/snippet}
 					{#snippet badges()}
+						<span class="invoice-detail__number">Invoice #{saved.invoice.invoice_number}</span>
 						{#if draftEditable}
 							<Button
 								size="small"
@@ -1038,8 +1181,7 @@
 						{#if closureBanner.tone === 'voided'}
 							{#if saved.delivery.void_notice}
 								<p class="invoice-detail__closure-note">
-									Cancellation emailed to {saved.delivery.void_notice.recipient_email} on
-									{dateTimeFormat.format(new Date(saved.delivery.void_notice.sent_at))}.
+									{`Cancellation emailed to ${saved.delivery.void_notice.recipient_email} on ${dateTimeFormat.format(new Date(saved.delivery.void_notice.sent_at))}.`}
 								</p>
 							{:else if voidNoticeEmail && saved.can_void}
 								<div class="invoice-detail__closure-action">
@@ -1107,28 +1249,19 @@
 					editorTotalLabel="Invoice subtotal"
 					saveLabel="Save lines"
 					emptyDescription="Add the products and services this invoice bills for."
+					hint={productsHint}
+					{totalRows}
 					onSave={saveLines}
 				/>
 
-				<SectionBlock title="Terms & dates" icon={calendarIcon} level={2} form={editingTerms}>
-					{#snippet actions()}
-						{#if editable && !editingTerms}
-							<PencilButton
-								onclick={() => {
-									termChoiceDraft = currentTermChoice;
-									issueDateDraft = currentIssueDate;
-									customDueDateDraft = currentCustomDue;
-									editingTerms = true;
-								}}
-								onhover={warmTerms}
-								label="Edit the terms and dates"
-							/>
-						{:else if termsChanged}
-							<Badge size="small" status="warning">Unsaved</Badge>
-						{/if}
-					{/snippet}
+				{#if editingTerms}
+					<SectionBlock title="Terms & dates" icon={calendarIcon} level={2}>
+						{#snippet actions()}
+							{#if termsChanged}
+								<Badge size="small" status="warning">Unsaved</Badge>
+							{/if}
+						{/snippet}
 
-					{#if editingTerms}
 						<div class="invoice-detail__terms-edit">
 							<CalendarPicker
 								id="invoice-issue-date"
@@ -1152,29 +1285,27 @@
 								/>
 							{/if}
 						</div>
-					{:else}
-						<dl class="invoice-detail__terms">
-							<div class="invoice-detail__term">
-								<dt>Invoice date</dt>
-								<dd>{formatDay(saved.invoice.issue_date)}</dd>
-							</div>
-							<div class="invoice-detail__term">
-								<dt>Due</dt>
-								<dd>{formatDay(saved.invoice.due_date)}</dd>
-							</div>
-							<div class="invoice-detail__term">
-								<dt>Terms</dt>
-								<dd>{currentTermLabel}</dd>
-							</div>
-						</dl>
-					{/if}
-				</SectionBlock>
+					</SectionBlock>
+				{/if}
+
+				{#if canSeePrice}
+					<InvoiceHistoryCard
+						id="invoice-history"
+						payments={saved.payment_history ?? []}
+						edits={saved.document_history ?? []}
+						bind:tab={historyTab}
+						{formatMoney}
+						{formatDay}
+						formatDate={(iso) => dateFormat.format(new Date(iso))}
+						formatDateTime={(iso) => dateTimeFormat.format(new Date(iso))}
+					/>
+				{/if}
 
 				<SectionBlock
 					title="Contract disclaimer"
-					icon={fileTextIcon}
+					hint="What the client agrees to by paying this bill"
 					level={2}
-					form={editingDisclaimer}
+					class="section-block--flush"
 				>
 					{#snippet actions()}
 						{#if draftEditable && !editingDisclaimer}
@@ -1190,229 +1321,148 @@
 						{/if}
 					{/snippet}
 
-					{#if editingDisclaimer}
-						<Textarea
-							id="invoice-disclaimer"
-							label="What the customer is agreeing to by paying this bill"
-							rows={5}
-							maxlength={5000}
-							bind:value={disclaimerDraft}
-						/>
-					{:else if saved.invoice.contract_disclaimer}
-						<p class="invoice-detail__disclaimer">{saved.invoice.contract_disclaimer}</p>
-					{:else}
-						<EmptyState
-							icon={fileTextIcon}
-							title="No contract disclaimer"
-							description="Add the terms the customer agrees to by paying this bill."
-						/>
-					{/if}
-				</SectionBlock>
-
-				{#if canSeePrice}
-					<SectionBlock title="Financial history" icon={cashIcon} level={2}>
-						{#if saved.payment_history?.length}
-							<ul class="invoice-detail__history">
-								{#each saved.payment_history as entry (entry.id)}
-									<li class="invoice-detail__history-row">
-										<div class="invoice-detail__history-main">
-											{#snippet historyLabel()}
-												{entry.entry_type === 'unapplied'
-													? 'Payment removed'
-													: entry.source === 'deposit'
-														? 'Deposit applied'
-														: 'Payment received'}
-												{#if entry.method}
-													&middot; {INVOICE_PAYMENT_METHOD_LABELS[entry.method]}
-												{/if}
-											{/snippet}
-											<!-- A recorded payment has a screen of its own; a reused quote deposit does
-											     not, so only the payment rows are links. -->
-											{#if entry.payment_event_id}
-												<a
-													class="invoice-detail__history-label invoice-detail__history-link"
-													href={resolve('/(app)/payments/[id=uuid]', {
-														id: entry.payment_event_id
-													})}
-												>
-													{@render historyLabel()}
-												</a>
-											{:else}
-												<span class="invoice-detail__history-label">
-													{@render historyLabel()}
-												</span>
-											{/if}
-											<span class="invoice-detail__history-meta">
-												{entry.payment_date
-													? formatDay(entry.payment_date)
-													: dateFormat.format(new Date(entry.created_at))}
-												{#if entry.reference}
-													&middot; Ref {entry.reference}
-												{/if}
-											</span>
-										</div>
-										<span
-											class="invoice-detail__history-amount"
-											class:invoice-detail__history-amount--negative={entry.entry_type ===
-												'unapplied'}
-										>
-											{entry.entry_type === 'unapplied' ? '−' : ''}{formatMoney(entry.amount_minor)}
-										</span>
-									</li>
-								{/each}
-							</ul>
+					<div class="invoice-detail__disclaimer-body">
+						{#if editingDisclaimer}
+							<Textarea
+								id="invoice-disclaimer"
+								label="What the customer is agreeing to by paying this bill"
+								rows={5}
+								maxlength={5000}
+								bind:value={disclaimerDraft}
+							/>
+						{:else if saved.invoice.contract_disclaimer}
+							<p class="invoice-detail__disclaimer">{saved.invoice.contract_disclaimer}</p>
 						{:else}
 							<EmptyState
-								icon={cashIcon}
-								title="No payments yet"
-								description="Payments recorded against this invoice will show up here."
+								icon={fileTextIcon}
+								title="No contract disclaimer"
+								description="Add the terms the customer agrees to by paying this bill."
 							/>
 						{/if}
-					</SectionBlock>
-				{/if}
-
-				{#if canSeePrice && saved.document_history?.length}
-					<SectionBlock title="Invoice history" icon={historyIcon} level={2}>
-						<ul class="invoice-detail__revisions">
-							{#each saved.document_history as entry (entry.id)}
-								{@const changes = diffInvoiceDocument(entry.before, entry.after, {
-									formatMoney,
-									formatDay
-								})}
-								<li class="invoice-detail__revision">
-									<div class="invoice-detail__revision-head">
-										<span class="invoice-detail__revision-actor">
-											{entry.actor_name ?? 'Someone'} edited the invoice
-										</span>
-										<span class="invoice-detail__revision-meta">
-											{dateTimeFormat.format(new Date(entry.created_at))}
-											{#if changes.length}
-												&middot; {changes.length} change{changes.length === 1 ? '' : 's'}
-											{/if}
-										</span>
-									</div>
-									{#if changes.length}
-										<ul class="invoice-detail__revision-changes">
-											{#each changes as change (change.label)}
-												<li>
-													<span class="invoice-detail__revision-field">{change.label}</span>
-													<span class="invoice-detail__revision-diff">
-														{change.before} &rarr; {change.after}
-													</span>
-												</li>
-											{/each}
-										</ul>
-									{/if}
-								</li>
-							{/each}
-						</ul>
-					</SectionBlock>
-				{/if}
+					</div>
+				</SectionBlock>
 			{/snippet}
 
 			{#snippet rail()}
-				<QuoteSummaryCard
-					title="Invoice total"
-					subtotalMinor={canSeePrice ? (saved.money?.subtotal_minor ?? 0) : null}
-					discountMinor={saved.money?.discount_minor ?? 0}
-					taxMinor={saved.money?.tax_minor ?? 0}
-					totalMinor={saved.money?.total_minor ?? null}
-					discountLabel={saved.money?.discount_name ?? null}
-					taxLabel={saved.money?.tax_name ?? null}
-					currencyCode={saved.invoice.currency_code}
-					locale={saved.locale}
-				/>
-
 				{#if canSeePrice && saved.money}
-					<RailCard title="Balance" icon={cashIcon}>
-						<dl class="invoice-detail__balance">
-							<div class="invoice-detail__balance-row">
-								<dt>Invoice balance</dt>
-								<dd class="invoice-detail__balance-amount">
-									{formatMoney(
-										saved.invoice.is_replaced || isVoided ? 0 : saved.money.remaining_minor
-									)}
-								</dd>
-							</div>
-							{#if saved.client_balance}
-								<div class="invoice-detail__balance-row">
-									<dt>Client account balance</dt>
-									<dd>{formatMoney(saved.client_balance.account_balance_minor)}</dd>
-								</div>
-							{/if}
-						</dl>
+					<MoneyFeatureCard
+						record
+						eyebrow="Balance due"
+						value={formatMoney(remainingMinor)}
+						badge={dueChip}
+						badgeIcon={calendarDueIcon}
+						pill={paidPercent > 0 ? `${paidPercent}% paid` : undefined}
+						note={`of the ${formatMoney(saved.money.total_minor)} invoice total`}
+						breakdown={saved.money.total_minor > 0 && !settledAway
+							? [
+									{
+										label: 'Paid',
+										value: formatMoney(paidMinor),
+										share: paidMinor,
+										tone: 'success',
+										percent: `${paidPercent}%`
+									},
+									{
+										label: 'Balance',
+										value: formatMoney(remainingMinor),
+										share: remainingMinor,
+										tone: 'muted',
+										percent: `${100 - paidPercent}%`
+									}
+								]
+							: undefined}
+						details={saved.client_balance
+							? [
+									{
+										label: 'Client account balance',
+										value: formatMoney(saved.client_balance.account_balance_minor)
+									}
+								]
+							: undefined}
+					>
 						{#if canAddDeposit && saved.client_balance}
-							<div class="invoice-detail__credit">
-								<p class="invoice-detail__credit-note">
-									{formatMoney(saved.client_balance.available_credit_minor)} of this client&rsquo;s money
-									is not on any invoice yet.
-								</p>
-								<Button
-									variant="secondary"
-									size="small"
-									onhover={prefetchInvoiceCredit}
-									onclick={() => (addDepositOpen = true)}
+							<p class="invoice-detail__credit-note">
+								{formatMoney(saved.client_balance.available_credit_minor)} of this client&rsquo;s money
+								is not on any invoice yet.
+							</p>
+							<button
+								type="button"
+								class="invoice-detail__deposit"
+								onmouseenter={prefetchInvoiceCredit}
+								onfocus={prefetchInvoiceCredit}
+								onclick={() => (addDepositOpen = true)}
+							>
+								<span class="invoice-detail__deposit-icon" aria-hidden="true"
+									>{@html depositIcon}</span
 								>
-									Add deposit
-								</Button>
-							</div>
+								Add deposit
+							</button>
 						{/if}
-					</RailCard>
+					</MoneyFeatureCard>
 				{/if}
 
 				{#if showOnlinePayments}
-					<RailCard title="Online payment" icon={creditCardIcon}>
-						<Toggle
-							id="invoice-online-partial"
-							label="Allow partial payments"
-							description="Your client can choose to pay less than the full balance online."
-							checked={saved.online_payments.partial_allowed}
-							disabled={!saved.can_edit || partialSaving}
-							labelSide="start"
-							onchange={(allowed) => void togglePartialPayments(allowed)}
-						/>
+					<RailCard
+						title="Online payment"
+						description="Your client can pay from their invoice link"
+					>
+						<div class="invoice-detail__online">
+							<Toggle
+								id="invoice-online-partial"
+								label="Allow partial payments"
+								description="Your client can choose to pay less than the full balance online."
+								checked={saved.online_payments.partial_allowed}
+								disabled={!saved.can_edit || partialSaving}
+								labelSide="start"
+								onchange={(allowed) => void togglePartialPayments(allowed)}
+							/>
+						</div>
 					</RailCard>
 				{/if}
 
-				<RecordDiscountCard
-					revision={saved.invoice.revision}
-					name={saved.money?.discount_name ?? null}
-					type={saved.money?.discount_type ?? null}
-					value={saved.money?.discount_value ?? null}
-					discountMinor={canSeePrice ? (saved.money?.discount_minor ?? 0) : null}
-					currencyCode={saved.invoice.currency_code}
-					locale={saved.locale}
-					editable={editable && !isProgress}
-					{canSeePrice}
-					recordNoun="invoice"
-					onSave={(revision, payload) => saveInvoiceDiscount(invoiceId, revision, payload)}
-					onSaved={refreshInvoice}
-				/>
-
-				<RecordTaxCard
-					revision={saved.invoice.revision}
-					propertyId={(saved.invoice.service_properties?.[0]?.property_id as string) ?? ''}
-					taxSource={(saved.money?.tax_source ?? 'not_configured') as QuoteTaxSource}
-					rateId={saved.money?.tax_rate_id ?? null}
-					name={saved.money?.tax_name ?? null}
-					rateBasisPoints={saved.money?.tax_rate_basis_points ?? 0}
-					taxMinor={canSeePrice ? (saved.money?.tax_minor ?? 0) : null}
-					currencyCode={saved.invoice.currency_code}
-					locale={saved.locale}
-					editable={editable && !isProgress}
-					{canSeePrice}
-					canManageTaxes={false}
-					recordNoun="invoice"
-					unsetHint="This invoice is not taxed yet."
-					onSave={(revision, payload) => saveInvoiceTax(invoiceId, revision, payload)}
-					onSaved={refreshInvoice}
-				/>
+				<RailCard title="Discount and tax" flush>
+					<RecordDiscountCard
+						embedded
+						revision={saved.invoice.revision}
+						name={saved.money?.discount_name ?? null}
+						type={saved.money?.discount_type ?? null}
+						value={saved.money?.discount_value ?? null}
+						discountMinor={canSeePrice ? (saved.money?.discount_minor ?? 0) : null}
+						currencyCode={saved.invoice.currency_code}
+						locale={saved.locale}
+						editable={editable && !isProgress}
+						{canSeePrice}
+						recordNoun="invoice"
+						onSave={(revision, payload) => saveInvoiceDiscount(invoiceId, revision, payload)}
+						onSaved={refreshInvoice}
+					/>
+					<RecordTaxCard
+						embedded
+						revision={saved.invoice.revision}
+						propertyId={(saved.invoice.service_properties?.[0]?.property_id as string) ?? ''}
+						taxSource={(saved.money?.tax_source ?? 'not_configured') as QuoteTaxSource}
+						rateId={saved.money?.tax_rate_id ?? null}
+						name={saved.money?.tax_name ?? null}
+						rateBasisPoints={saved.money?.tax_rate_basis_points ?? 0}
+						taxMinor={canSeePrice ? (saved.money?.tax_minor ?? 0) : null}
+						currencyCode={saved.invoice.currency_code}
+						locale={saved.locale}
+						editable={editable && !isProgress}
+						{canSeePrice}
+						canManageTaxes={false}
+						recordNoun="invoice"
+						unsetHint="This invoice is not taxed yet."
+						onSave={(revision, payload) => saveInvoiceTax(invoiceId, revision, payload)}
+						onSaved={refreshInvoice}
+					/>
+				</RailCard>
 
 				<RecordFilesCard
 					entityType="invoice"
 					entityId={invoiceId}
 					recordLabel="this invoice"
 					pickerLabel="On this invoice"
+					title="Photos and files"
 					clientId={saved.client?.id ?? null}
 					clientLabel={saved.client?.company_name || saved.client?.display_name || null}
 					canManage={editable}
@@ -1504,51 +1554,6 @@
 </PageContainer>
 
 <style lang="scss">
-	.invoice-detail__terms,
-	.invoice-detail__balance {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-small);
-		margin: 0;
-	}
-
-	.invoice-detail__term,
-	.invoice-detail__balance-row {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: var(--space-base);
-
-		dt {
-			color: var(--color-text--secondary);
-		}
-		dd {
-			margin: 0;
-			color: var(--color-heading);
-			font-weight: 600;
-		}
-	}
-
-	.invoice-detail__credit {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: var(--space-small);
-		margin-top: var(--space-base);
-		padding-top: var(--space-base);
-		border-top: var(--border-base) solid var(--color-border);
-	}
-
-	.invoice-detail__credit-note {
-		margin: 0;
-		color: var(--color-text);
-		font-size: var(--typography--fontSize-small);
-	}
-
-	.invoice-detail__balance-amount {
-		font-size: var(--typography--fontSize-large);
-	}
-
 	.invoice-detail__terms-edit {
 		display: flex;
 		flex-direction: column;
@@ -1620,120 +1625,89 @@
 		white-space: pre-wrap;
 	}
 
-	.invoice-detail__history {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-base);
-		margin: 0;
-		padding: 0;
-		list-style: none;
+	.invoice-detail__number {
+		color: var(--color-text--secondary);
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.6px;
+		text-transform: uppercase;
 	}
 
-	.invoice-detail__history-row {
+	// The facts and the terms pencil share the strip's row.
+	.invoice-detail__facts {
 		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: var(--space-base);
+		align-items: center;
+		gap: 12px;
 	}
-
-	.invoice-detail__history-main {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-smaller);
+	.invoice-detail__facts :global(.invoice-detail__facts-list) {
+		flex: 1 1 auto;
+		flex-wrap: nowrap;
 		min-width: 0;
 	}
-
-	.invoice-detail__history-label {
-		color: var(--color-heading);
-		font-weight: 600;
+	// A long value wraps under its label rather than being cut off.
+	.invoice-detail__facts :global(.record-facts__row) {
+		padding-inline: 14px;
+	}
+	.invoice-detail__facts :global(.record-facts__row:first-child) {
+		padding-left: 0;
+	}
+	.invoice-detail__facts :global(.record-facts__row dt) {
+		white-space: nowrap;
+	}
+	.invoice-detail__facts :global(.record-facts__row dd) {
+		overflow: visible;
+		white-space: normal;
 	}
 
-	a.invoice-detail__history-link {
-		color: var(--color-interactive);
+	.invoice-detail__disclaimer-body {
+		padding: 16px 24px 22px;
+		border-top: var(--border-base) solid var(--color-border);
+	}
+
+	.invoice-detail__credit-note {
+		margin: 0;
+	}
+
+	// White on the dark balance card, a button of its own because the card's colours flip with the theme.
+	.invoice-detail__deposit {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		min-height: 34px;
+		padding: 0 14px;
+		border: 0;
+		border-radius: var(--radius-base);
+		color: var(--color-surface--reverse);
+		background: var(--color-text--reverse);
+		font: inherit;
+		font-size: 14px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: opacity var(--timing-base) ease-out;
 
 		&:hover {
-			text-decoration: underline;
+			opacity: 0.9;
+		}
+		&:focus-visible {
+			outline: none;
+			box-shadow:
+				0 0 0 2px var(--color-surface--reverse),
+				0 0 0 4px var(--color-text--reverse);
 		}
 	}
-
-	.invoice-detail__history-meta {
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
+	.invoice-detail__deposit-icon :global(svg) {
+		display: block;
+		width: 16px;
+		height: 16px;
 	}
 
-	.invoice-detail__history-amount {
-		flex-shrink: 0;
-		color: var(--color-heading);
-		font-weight: 600;
+	.invoice-detail__online {
+		padding: 14px 16px;
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background--subtle);
 	}
-
-	.invoice-detail__history-amount--negative {
-		color: var(--color-critical);
-	}
-
-	.invoice-detail__revisions {
+	.invoice-detail__online :global(.toggle) {
 		display: flex;
-		flex-direction: column;
-		gap: var(--space-base);
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.invoice-detail__revision {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-smaller);
-		padding-bottom: var(--space-base);
-		border-bottom: var(--border-base) solid var(--color-border);
-
-		&:last-child {
-			padding-bottom: 0;
-			border-bottom: none;
-		}
-	}
-
-	.invoice-detail__revision-head {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: var(--space-base);
-	}
-
-	.invoice-detail__revision-actor {
-		color: var(--color-heading);
-		font-weight: 600;
-	}
-
-	.invoice-detail__revision-meta {
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-	}
-
-	.invoice-detail__revision-changes {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-smaller);
-		margin: 0;
-		padding: 0;
-		list-style: none;
-
-		li {
-			display: flex;
-			flex-wrap: wrap;
-			gap: var(--space-smaller);
-			font-size: var(--typography--fontSize-small);
-		}
-	}
-
-	.invoice-detail__revision-field {
-		flex-shrink: 0;
-		min-width: 6rem;
-		color: var(--color-text--secondary);
-	}
-
-	.invoice-detail__revision-diff {
-		color: var(--color-text);
+		width: 100%;
 	}
 </style>
