@@ -273,7 +273,7 @@
 		<Topbar
 			{Header}
 			{identity}
-			searchPlaceholder={variant === 'owner' ? 'Search' : 'Search anything in your workspace'}
+			searchPlaceholder={identity ? 'Search anything in your workspace' : 'Search'}
 			{accountLabel}
 			{account}
 			avatar={photo}

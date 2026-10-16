@@ -13,11 +13,6 @@ export type RecordFact = {
 	 *  the row clips by default; set this for the few that carry a phrase somebody typed, like a payment
 	 *  stage's name, where the clipped half is the half that identifies it. */
 	wrap?: boolean;
-	/** A Tabler icon (`?raw`) for the fact's tile in Classic. Omit and the list picks one from the label. */
-	icon?: string;
-	/** The tile's colour in Classic. Leave it out and the first fact carries the brand tint; `neutral`
-	 *  keeps a tile plain and `waiting` marks a fact still waiting on someone, like an unanswered quote. */
-	tone?: 'neutral' | 'waiting';
 };
 
 /** One address slot on the client summary card. A quote shows only the property; an invoice shows the
@@ -40,14 +35,4 @@ export type StatusOverviewRow = {
 	label: string;
 	count: number;
 	tone: StatusTone;
-};
-
-/** A known record in the work journey. Unknown steps stay neutral, never implied complete. */
-export type RecordLifecycleStep = {
-	key: 'request' | 'quote' | 'job' | 'invoice' | 'paid';
-	label: string;
-	detail?: string;
-	href?: string;
-	current?: boolean;
-	complete?: boolean;
 };

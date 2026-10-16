@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import AdjustmentRow from '$lib/components/work/AdjustmentRow.svelte';
+	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
@@ -148,30 +148,33 @@
 	}
 </script>
 
-<AdjustmentRow
-	icon={discountIcon}
-	label="Discount"
-	value={!canSeePrice
-		? 'You do not have access to these prices.'
-		: configured
-			? [
-					name || 'Discount',
-					`${valueText} off`,
-					discountMinor !== null ? `−${money.format(discountMinor / 100)}` : ''
-				]
-					.filter(Boolean)
-					.join(' · ')
-			: `No discount${editable ? '' : ` on this ${recordNoun}`}`}
-	muted={!canSeePrice || !configured}
->
-	{#snippet action()}
-		{#if editable && canSeePrice}
-			<Button variant="tertiary" size="small" onclick={openDialog}>
-				{configured ? 'Edit' : 'Add'}
-			</Button>
+<RailCard title="Discount" icon={discountIcon}>
+	{#snippet actions()}
+		{#if editable && canSeePrice && configured}
+			<Button variant="tertiary" size="small" onclick={openDialog}>Edit</Button>
 		{/if}
 	{/snippet}
-</AdjustmentRow>
+
+	{#if !canSeePrice}
+		<p class="record-discount__muted">You do not have access to these prices.</p>
+	{:else if configured}
+		<div class="record-discount__set">
+			<p class="record-discount__name">{name || 'Discount'}</p>
+			<p class="record-discount__value">
+				{valueText} off
+				{#if discountMinor !== null}
+					<span class="record-discount__amount">−{money.format(discountMinor / 100)}</span>
+				{/if}
+			</p>
+		</div>
+	{:else if editable}
+		<Button variant="secondary" variation="subtle" fullWidth onclick={openDialog}>
+			Add discount
+		</Button>
+	{:else}
+		<p class="record-discount__muted">No discount on this {recordNoun}.</p>
+	{/if}
+</RailCard>
 
 {#if open}
 	<Dialog {open} title={configured ? 'Edit discount' : 'Add discount'} size="small" onClose={close}>
@@ -245,6 +248,37 @@
 {/if}
 
 <style lang="scss">
+	.record-discount__muted {
+		margin: 0;
+		color: var(--color-text--secondary);
+	}
+
+	.record-discount__set {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-smallest);
+	}
+
+	.record-discount__name {
+		margin: 0;
+		color: var(--color-heading);
+		font-weight: 600;
+	}
+
+	.record-discount__value {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-base);
+		margin: 0;
+		color: var(--color-text--secondary);
+	}
+
+	.record-discount__amount {
+		color: var(--color-heading);
+		font-weight: 600;
+	}
+
 	.record-discount-dialog {
 		display: flex;
 		flex-direction: column;

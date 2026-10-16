@@ -17,7 +17,6 @@
 	} from '$lib/jobs/report-api';
 	import { resolve } from '$app/paths';
 	import fileReportIcon from '@tabler/icons/outline/file-report.svg?raw';
-	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 
 	// The picture handed to a customer of what was done: photos, checklist answers and the work list, chosen
 	// from what already exists on the job rather than anything typed fresh here. Editing here only changes
@@ -26,12 +25,9 @@
 
 	let {
 		jobId,
-		variant = 'card',
 		onStateChange
 	}: {
 		jobId: string;
-		/** `row`: one line of the Classic Close-out card instead of a card of its own. */
-		variant?: 'card' | 'row';
 		/** Tells the page's own "···" menu whether Preview / Print / Copy work report link belong there. */
 		onStateChange?: (hasContent: boolean) => void;
 	} = $props();
@@ -110,85 +106,42 @@
 	});
 </script>
 
-{#if variant === 'row'}
-	<li
-		class="close-out__item"
-		class:close-out__item--done={hasContent}
-		class:close-out__item--waiting={Boolean(saved?.live_link && !saved.live_link.up_to_date)}
-	>
-		<span class="close-out__state" aria-hidden="true">
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{#if hasContent}{@html checkIcon}{/if}
-		</span>
-		<div class="close-out__text">
-			<p class="close-out__label">Work report</p>
-			{#if stateQuery.isPending}
-				<p class="close-out__detail">Loading…</p>
-			{:else if stateQuery.isError}
-				<p class="close-out__detail" role="alert">The work report could not be loaded.</p>
-			{:else if !hasContent}
-				<p class="close-out__detail">Not started</p>
-			{:else}
-				<p class="close-out__detail">Ready to share{summaryText ? ` · ${summaryText}` : ''}</p>
-				{#if saved?.live_link && !saved.live_link.up_to_date}
-					<p class="close-out__detail close-out__detail--warn" role="status">
-						Changed since you sent it to {saved.live_link.recipient_email}.
-						<button type="button" class="close-out__link" onclick={() => void copyLink()}>
-							Copy updated link
-						</button>
-					</p>
-				{/if}
-			{/if}
-		</div>
-		{#if saved}
-			<button type="button" class="close-out__action" onclick={() => (editing = true)}>
-				{hasContent ? 'Edit' : 'Start'}
-			</button>
-		{/if}
-	</li>
-{:else}
-	<RailCard title="Work report" icon={fileReportIcon}>
-		{#snippet actions()}
-			<Button size="small" variant="tertiary" onclick={() => (editing = true)}>Edit report</Button>
-		{/snippet}
+<RailCard title="Work report" icon={fileReportIcon}>
+	{#snippet actions()}
+		<Button size="small" variant="tertiary" onclick={() => (editing = true)}>Edit report</Button>
+	{/snippet}
 
-		{#if stateQuery.isPending}
-			<LoadingSkeleton variant="text" rows={2} label="Loading the work report" />
-		{:else if stateQuery.isError}
-			<p class="job-work-report__error" role="alert">The work report could not be loaded.</p>
-		{:else if !hasContent}
-			<EmptyState
-				icon={fileReportIcon}
-				title="No work report yet"
-				description="Choose photos, checklist answers or the work list to share with the customer."
-			/>
-		{:else}
-			<div class="job-work-report__summary">
-				<Badge size="small" status="success">Ready to share</Badge>
-				{#if summaryText}<p class="job-work-report__detail">{summaryText}</p>{/if}
-			</div>
-			<!-- The customer's link is frozen as sent. When the report has moved on, say so and offer the new
+	{#if stateQuery.isPending}
+		<LoadingSkeleton variant="text" rows={2} label="Loading the work report" />
+	{:else if stateQuery.isError}
+		<p class="job-work-report__error" role="alert">The work report could not be loaded.</p>
+	{:else if !hasContent}
+		<EmptyState
+			icon={fileReportIcon}
+			title="No work report yet"
+			description="Choose photos, checklist answers or the work list to share with the customer."
+		/>
+	{:else}
+		<div class="job-work-report__summary">
+			<Badge size="small" status="success">Ready to share</Badge>
+			{#if summaryText}<p class="job-work-report__detail">{summaryText}</p>{/if}
+		</div>
+		<!-- The customer's link is frozen as sent. When the report has moved on, say so and offer the new
 		     link -- which turns the old one off, so the customer never reads an out-of-date copy. -->
-			{#if saved?.live_link && !saved.live_link.up_to_date}
-				<div class="job-work-report__stale" role="status">
-					<p class="job-work-report__stale-title">You've changed this report since you sent it.</p>
-					<p class="job-work-report__stale-text">
-						{saved.live_link.recipient_email} still has the old version. Copying the updated link turns
-						the old one off, so send them this new one.
-					</p>
-					<Button
-						size="small"
-						variant="primary"
-						loading={linkSaving}
-						onclick={() => void copyLink()}
-					>
-						Copy updated link
-					</Button>
-				</div>
-			{/if}
+		{#if saved?.live_link && !saved.live_link.up_to_date}
+			<div class="job-work-report__stale" role="status">
+				<p class="job-work-report__stale-title">You've changed this report since you sent it.</p>
+				<p class="job-work-report__stale-text">
+					{saved.live_link.recipient_email} still has the old version. Copying the updated link turns
+					the old one off, so send them this new one.
+				</p>
+				<Button size="small" variant="primary" loading={linkSaving} onclick={() => void copyLink()}>
+					Copy updated link
+				</Button>
+			</div>
 		{/if}
-	</RailCard>
-{/if}
+	{/if}
+</RailCard>
 
 {#if editing && saved}
 	<EditJobReportDialog

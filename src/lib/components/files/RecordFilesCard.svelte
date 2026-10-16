@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { onDestroy } from 'svelte';
-	import { page } from '$app/state';
-	import RecordCard from '$lib/components/layout/RecordCard.svelte';
 	import AttachmentSurface from '$lib/components/collaboration/AttachmentSurface.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
@@ -54,7 +52,6 @@
 		canManage = true,
 		title = 'Files',
 		surface = 'rail',
-		look = 'default',
 		onChange
 	}: {
 		entityType: FileEntityType;
@@ -67,8 +64,6 @@
 		canManage?: boolean;
 		title?: string;
 		surface?: 'rail' | 'section';
-		/** `record`: the classic.pen record-rail card, used on Classic pages that have been rebuilt. */
-		look?: 'default' | 'record';
 		/** Fires after a file is attached to or removed from this record, once the list has refreshed. */
 		onChange?: () => void;
 	} = $props();
@@ -209,35 +204,6 @@
 		lightboxOpen = true;
 	}
 
-	// --- Classic ----------------------------------------------------------------------------------------
-
-	// classic.pen "Photos and files": a three-across grid of at most six tiles, the sixth carrying "+N" for
-	// the rest (it still opens the lightbox, which walks through every photo), then one row per document.
-	const classic = $derived(look === 'record' && page.data.presentation === 'classic');
-	const CLASSIC_TILES = 6;
-	const classicPhotos = $derived(photos.slice(0, CLASSIC_TILES));
-	const hiddenPhotos = $derived(Math.max(0, photos.length - CLASSIC_TILES));
-	const plural = (count: number, one: string, many: string) =>
-		`${count} ${count === 1 ? one : many}`;
-	const classicSubtitle = $derived(
-		files.length === 0
-			? 'Nothing added yet'
-			: [
-					photos.length > 0 ? plural(photos.length, 'photo', 'photos') : '',
-					documents.length > 0 ? plural(documents.length, 'file', 'files') : ''
-				]
-					.filter(Boolean)
-					.join(' · ')
-	);
-	const addedFormat = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
-
-	function fileKind(file: FileListItem) {
-		const extension = file.display_name.includes('.')
-			? file.display_name.split('.').pop()
-			: file.mime_type.split('/').pop();
-		return (extension ?? 'File').toUpperCase();
-	}
-
 	function downloadFromLightbox(item: LightboxItem) {
 		const file = photos.find((entry) => entry.id === item.id);
 		if (file) void download(file);
@@ -245,54 +211,15 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-{#snippet photoTile(file: FileListItem, more = 0)}
-	<li class="record-files__photo">
-		<button
-			type="button"
-			class="record-files__photo-open"
-			aria-label={`View ${file.display_name}`}
-			onclick={() => openLightbox(file)}
-		>
-			<FileThumb
-				fileId={file.id}
-				displayName={file.display_name}
-				mimeType={file.mime_type}
-				kind={file.kind}
-				processingState={file.processing_state}
-				hasThumbnail={file.has_thumbnail}
-				signedSrc={file.thumb_url}
-			/>
-			{#if more > 0}
-				<span class="record-files__more" aria-hidden="true">+{more}</span>
-			{/if}
-		</button>
-		{#if offersDescribe}
-			<button
-				type="button"
-				class="record-files__photo-describe"
-				aria-label={`Caption and labels for ${file.display_name}`}
-				title="Caption and labels"
-				onpointerenter={() => prefetchDescribe(file)}
-				onfocus={() => prefetchDescribe(file)}
-				onclick={() => (describing = file)}
-			>
-				{@html tagIcon}
-			</button>
-		{/if}
+<AttachmentSurface {surface} {title} icon={paperclipIcon} count={files.length}>
+	{#snippet actions()}
 		{#if canManage}
-			<button
-				type="button"
-				class="record-files__photo-remove"
-				aria-label={`Remove ${file.display_name} from this record`}
-				onclick={() => (removing = file)}
-			>
-				{@html xIcon}
-			</button>
+			<Button size="small" variant="secondary" onclick={() => (pickerOpen = true)}>
+				<span class="record-files__button-icon" aria-hidden="true">{@html plusIcon}</span>Add
+			</Button>
 		{/if}
-	</li>
-{/snippet}
+	{/snippet}
 
-{#snippet notices()}
 	{#if actionError}
 		<p class="record-files__notice" role="alert">{actionError}</p>
 	{/if}
@@ -307,146 +234,101 @@
 			{/if}
 		</p>
 	{/if}
-{/snippet}
 
-{#if classic}
-	<RecordCard {title} subtitle={classicSubtitle} size="rail" class="record-files--classic">
-		{#snippet actions()}
-			{#if canManage}
-				<button
-					type="button"
-					class="record-files__add"
-					aria-label={`Add photos or files to ${recordLabel}`}
-					title="Add photos or files"
-					onclick={() => (pickerOpen = true)}
-				>
-					{@html plusIcon}
-				</button>
-			{/if}
-		{/snippet}
-
-		{#if actionError || waiting.length > 0}
-			<div class="record-files__pad record-files__stack">{@render notices()}</div>
-		{/if}
-
-		{#if filesQuery.isPending}
-			<p class="record-files__pad record-files__muted">Loading files…</p>
-		{:else if filesQuery.isError}
-			<div class="record-files__pad">
-				<p class="record-files__notice" role="alert">Files could not be loaded.</p>
-			</div>
-		{:else if files.length === 0}
-			<p class="record-files__pad record-files__muted">
-				{canManage ? 'Add before and after photos, permits and other documents.' : 'No files yet.'}
+	{#if filesQuery.isPending}
+		<p class="record-files__muted">Loading files…</p>
+	{:else if filesQuery.isError}
+		<p class="record-files__notice" role="alert">Files could not be loaded.</p>
+	{:else if files.length === 0}
+		<div class="record-files__empty">
+			<span aria-hidden="true">{@html paperclipIcon}</span>
+			<p>
+				{canManage
+					? 'Add photos and documents from your files, or upload new ones.'
+					: 'No files yet.'}
 			</p>
-		{:else}
-			{#if photos.length > 0}
-				<div class="record-files__pad">
-					<ul class="record-files__photos record-files__photos--classic">
-						{#each classicPhotos as file, index (file.id)}
-							{@render photoTile(file, index === CLASSIC_TILES - 1 ? hiddenPhotos : 0)}
-						{/each}
-					</ul>
-				</div>
-			{/if}
-
-			{#if documents.length > 0}
-				<ul class="record-files__rows">
-					{#each documents as file (file.id)}
-						<li class="record-files__row">
-							<span class="record-files__row-icon">
-								<FileThumb
-									fileId={file.id}
-									displayName={file.display_name}
-									mimeType={file.mime_type}
-									kind={file.kind}
-									processingState={file.processing_state}
-									hasThumbnail={file.has_thumbnail}
-									signedSrc={file.thumb_url}
-									size="row"
-								/>
-							</span>
-							<div class="record-files__item-body">
-								<span class="record-files__item-name">{file.display_name}</span>
-								<span class="record-files__item-meta">
-									{fileKind(file)} · {formatFileSize(file.size_bytes)} · added
-									{addedFormat.format(new Date(file.created_at))}
-								</span>
-							</div>
-							<DropdownMenu triggerLabel="File actions" items={menuFor(file)} />
-						</li>
-					{/each}
-				</ul>
-			{/if}
+		</div>
+	{:else}
+		{#if photos.length > 0}
+			<ul class="record-files__photos">
+				{#each photos as file (file.id)}
+					<li class="record-files__photo">
+						<button
+							type="button"
+							class="record-files__photo-open"
+							aria-label={`View ${file.display_name}`}
+							onclick={() => openLightbox(file)}
+						>
+							<FileThumb
+								fileId={file.id}
+								displayName={file.display_name}
+								mimeType={file.mime_type}
+								kind={file.kind}
+								processingState={file.processing_state}
+								hasThumbnail={file.has_thumbnail}
+								signedSrc={file.thumb_url}
+							/>
+						</button>
+						{#if offersDescribe}
+							<button
+								type="button"
+								class="record-files__photo-describe"
+								aria-label={`Caption and labels for ${file.display_name}`}
+								title="Caption and labels"
+								onpointerenter={() => prefetchDescribe(file)}
+								onfocus={() => prefetchDescribe(file)}
+								onclick={() => (describing = file)}
+							>
+								{@html tagIcon}
+							</button>
+						{/if}
+						{#if canManage}
+							<button
+								type="button"
+								class="record-files__photo-remove"
+								aria-label={`Remove ${file.display_name} from this record`}
+								onclick={() => (removing = file)}
+							>
+								{@html xIcon}
+							</button>
+						{/if}
+					</li>
+				{/each}
+			</ul>
 		{/if}
-	</RecordCard>
-{:else}
-	<AttachmentSurface {surface} {title} icon={paperclipIcon} count={files.length}>
-		{#snippet actions()}
-			{#if canManage}
-				<Button size="small" variant="secondary" onclick={() => (pickerOpen = true)}>
-					<span class="record-files__button-icon" aria-hidden="true">{@html plusIcon}</span>Add
-				</Button>
-			{/if}
-		{/snippet}
 
-		{@render notices()}
-
-		{#if filesQuery.isPending}
-			<p class="record-files__muted">Loading files…</p>
-		{:else if filesQuery.isError}
-			<p class="record-files__notice" role="alert">Files could not be loaded.</p>
-		{:else if files.length === 0}
-			<div class="record-files__empty">
-				<span aria-hidden="true">{@html paperclipIcon}</span>
-				<p>
-					{canManage
-						? 'Add photos and documents from your files, or upload new ones.'
-						: 'No files yet.'}
-				</p>
-			</div>
-		{:else}
-			{#if photos.length > 0}
-				<ul class="record-files__photos">
-					{#each photos as file (file.id)}
-						{@render photoTile(file)}
-					{/each}
-				</ul>
-			{/if}
-
-			{#if documents.length > 0}
-				<ul class="record-files__list">
-					{#each documents as file (file.id)}
-						<li class="record-files__item">
-							<span class="record-files__item-icon">
-								<FileThumb
-									fileId={file.id}
-									displayName={file.display_name}
-									mimeType={file.mime_type}
-									kind={file.kind}
-									processingState={file.processing_state}
-									hasThumbnail={file.has_thumbnail}
-									signedSrc={file.thumb_url}
-									size="row"
-								/>
+		{#if documents.length > 0}
+			<ul class="record-files__list">
+				{#each documents as file (file.id)}
+					<li class="record-files__item">
+						<span class="record-files__item-icon">
+							<FileThumb
+								fileId={file.id}
+								displayName={file.display_name}
+								mimeType={file.mime_type}
+								kind={file.kind}
+								processingState={file.processing_state}
+								hasThumbnail={file.has_thumbnail}
+								signedSrc={file.thumb_url}
+								size="row"
+							/>
+						</span>
+						<div class="record-files__item-body">
+							<span class="record-files__item-name">{file.display_name}</span>
+							<span class="record-files__item-meta">
+								{formatFileSize(file.size_bytes)}
+								{#if file.usage_count > 1}
+									· Used in {file.usage_count} places
+								{/if}
 							</span>
-							<div class="record-files__item-body">
-								<span class="record-files__item-name">{file.display_name}</span>
-								<span class="record-files__item-meta">
-									{formatFileSize(file.size_bytes)}
-									{#if file.usage_count > 1}
-										· Used in {file.usage_count} places
-									{/if}
-								</span>
-							</div>
-							<DropdownMenu triggerLabel="File actions" items={menuFor(file)} />
-						</li>
-					{/each}
-				</ul>
-			{/if}
+						</div>
+						<DropdownMenu triggerLabel="File actions" items={menuFor(file)} />
+					</li>
+				{/each}
+			</ul>
 		{/if}
-	</AttachmentSurface>
-{/if}
+	{/if}
+</AttachmentSurface>
 
 {#if pickerOpen}
 	<FilePicker
@@ -700,131 +582,6 @@
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-smaller);
 		}
-	}
-
-	// --- Classic (classic.pen "Photos and files") ---------------------------------------------------------
-	.record-files {
-		&__pad {
-			padding: 0 20px 18px;
-		}
-
-		&__stack {
-			display: flex;
-			flex-direction: column;
-			gap: 8px;
-		}
-
-		&__add {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			width: 32px;
-			height: 32px;
-			padding: 0;
-			border: 1px solid var(--classic2-border-control);
-			border-radius: 10px;
-			background: var(--classic2-surface);
-			color: var(--classic2-secondary);
-			cursor: pointer;
-			transition:
-				color var(--timing-quick),
-				background var(--timing-quick);
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
-
-			&:hover {
-				background: var(--classic2-surface-soft);
-				color: var(--classic2-green);
-			}
-
-			&:focus-visible {
-				outline: 2px solid var(--classic2-green);
-				outline-offset: 2px;
-			}
-		}
-
-		&__photos--classic {
-			grid-template-columns: repeat(3, minmax(0, 1fr));
-			gap: 8px;
-		}
-
-		&__photos--classic &__photo-open {
-			position: relative;
-			border: 0;
-			border-radius: 10px;
-			background: var(--classic2-surface-soft);
-
-			&:focus-visible {
-				outline: 2px solid var(--classic2-green);
-				outline-offset: 2px;
-				box-shadow: none;
-			}
-		}
-
-		// The tile is square; the thumbnail fills it rather than sitting in it at 4:3.
-		&__photos--classic &__photo-open :global(.file-thumb) {
-			width: 100%;
-			height: 100%;
-			aspect-ratio: auto;
-			border: 0;
-			border-radius: 0;
-		}
-
-		&__more {
-			position: absolute;
-			inset: 0;
-			display: grid;
-			place-items: center;
-			background: rgb(15 23 20 / 55%);
-			color: #fff;
-			font-size: 18px;
-			font-weight: 700;
-		}
-
-		&__rows {
-			margin: 0;
-			padding: 0;
-			list-style: none;
-		}
-
-		&__row {
-			display: flex;
-			align-items: center;
-			gap: 12px;
-			padding: 14px 20px;
-			border-top: 1px solid var(--classic2-divider);
-		}
-
-		&__row-icon {
-			display: grid;
-			flex: 0 0 auto;
-			width: 36px;
-			height: 36px;
-			overflow: hidden;
-			place-items: center;
-			border-radius: 10px;
-			background: var(--classic2-rose-tint);
-			color: var(--classic2-rose);
-		}
-
-		&__row &__item-name {
-			color: var(--classic2-ink);
-			font-size: var(--classic2-font-label);
-		}
-
-		&__row &__item-meta {
-			color: var(--classic2-secondary);
-			font-size: var(--classic2-font-small);
-		}
-	}
-
-	.record-files__pad.record-files__muted {
-		margin: 0;
-		color: var(--classic2-secondary);
-		font-size: var(--classic2-font-small);
 	}
 
 	@media (hover: none) {

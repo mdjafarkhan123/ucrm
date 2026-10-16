@@ -278,7 +278,7 @@
 							<Avatar
 								id={request.client?.id ?? request.id}
 								name={clientName(request)}
-								size="base"
+								size="small"
 							/>
 							<span>{clientName(request)}</span>
 						</div>

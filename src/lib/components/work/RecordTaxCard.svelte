@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import AdjustmentRow from '$lib/components/work/AdjustmentRow.svelte';
+	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Badge from '$lib/components/ui/Badge.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
@@ -232,33 +233,42 @@
 	}
 </script>
 
-<AdjustmentRow
-	icon={taxIcon}
-	label="Tax"
-	value={!canSeePrice
-		? 'You do not have access to these prices.'
-		: taxSource === 'not_configured'
-			? 'Not configured'
-			: taxSource === 'no_tax'
-				? 'No tax'
-				: [name || 'Tax', rateText, taxMinor !== null ? money.format(taxMinor / 100) : '']
-						.filter(Boolean)
-						.join(' · ')}
-	note={canSeePrice && taxSource === 'not_configured' && editable
-		? unsetHint
-		: canSeePrice && configured && taxSource !== 'no_tax'
-			? SOURCE_LABEL[taxSource]
-			: ''}
-	muted={!canSeePrice || taxSource === 'not_configured' || taxSource === 'no_tax'}
->
-	{#snippet action()}
-		{#if editable && canSeePrice}
-			<Button variant="tertiary" size="small" onclick={openDialog} onhover={warm}>
-				{configured ? 'Edit' : 'Set tax'}
-			</Button>
+<RailCard title="Tax" icon={taxIcon}>
+	{#snippet actions()}
+		{#if editable && canSeePrice && configured}
+			<Button variant="tertiary" size="small" onclick={openDialog} onhover={warm}>Edit</Button>
 		{/if}
 	{/snippet}
-</AdjustmentRow>
+
+	{#if !canSeePrice}
+		<p class="record-tax__muted">You do not have access to these prices.</p>
+	{:else if taxSource === 'not_configured'}
+		<div class="record-tax__unset">
+			<Badge status="warning" dot={false}>Not configured</Badge>
+			{#if editable}
+				<p class="record-tax__hint">{unsetHint}</p>
+			{/if}
+		</div>
+		{#if editable}
+			<Button variant="secondary" variation="subtle" fullWidth onclick={openDialog} onhover={warm}>
+				Set tax
+			</Button>
+		{/if}
+	{:else if taxSource === 'no_tax'}
+		<p class="record-tax__name">No tax</p>
+	{:else}
+		<div class="record-tax__set">
+			<p class="record-tax__name">{name || 'Tax'}</p>
+			<p class="record-tax__value">
+				{rateText}
+				{#if taxMinor !== null}
+					<span class="record-tax__amount">{money.format(taxMinor / 100)}</span>
+				{/if}
+			</p>
+			<p class="record-tax__source">{SOURCE_LABEL[taxSource]}</p>
+		</div>
+	{/if}
+</RailCard>
 
 {#if open}
 	<Dialog {open} title={configured ? 'Edit tax' : 'Set tax'} size="small" onClose={close}>
@@ -319,6 +329,56 @@
 {/if}
 
 <style lang="scss">
+	.record-tax__muted {
+		margin: 0;
+		color: var(--color-text--secondary);
+	}
+
+	.record-tax__unset {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-smallest);
+		margin-bottom: var(--space-small);
+	}
+
+	.record-tax__hint {
+		margin: 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+	}
+
+	.record-tax__set {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-smallest);
+	}
+
+	.record-tax__name {
+		margin: 0;
+		color: var(--color-heading);
+		font-weight: 600;
+	}
+
+	.record-tax__value {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-base);
+		margin: 0;
+		color: var(--color-text--secondary);
+	}
+
+	.record-tax__amount {
+		color: var(--color-heading);
+		font-weight: 600;
+	}
+
+	.record-tax__source {
+		margin: 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+	}
+
 	.record-tax-dialog {
 		display: flex;
 		flex-direction: column;

@@ -18,7 +18,6 @@
 	import PendingFilesCard from '$lib/components/files/PendingFilesCard.svelte';
 	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
 	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
-	import RecordAdjustmentsCard from '$lib/components/work/RecordAdjustmentsCard.svelte';
 	import { fetchClient, clientDetailKey, type ClientListItem } from '$lib/clients/api';
 	import { createNote, notesKey } from '$lib/collaboration/api';
 	import { fetchTaxPicker, taxPickerKey } from '$lib/settings/api';
@@ -330,13 +329,7 @@
 		void submit().finally(() => layout?.revealError());
 	}}
 >
-	<RecordFormLayout
-		title="New Quote"
-		icon={fileDollarIcon}
-		bind:this={layout}
-		error={formError}
-		dirty={isDirty}
-	>
+	<RecordFormLayout title="New Quote" icon={fileDollarIcon} bind:this={layout} error={formError}>
 		{#snippet main()}
 			<PrimaryInfoCard
 				id="quote-primary"
@@ -464,42 +457,40 @@
 		{#snippet rail()}
 			<QuoteSummaryCard {subtotalMinor} {currencyCode} {locale} />
 
-			<RecordAdjustmentsCard>
-				<RecordDiscountCard
-					revision={0}
-					name={discount?.name ?? null}
-					type={discount?.type ?? null}
-					value={discount?.value ?? null}
-					{currencyCode}
-					{locale}
-					editable
-					staged
-					onSave={async (_revision, payload) => {
-						discount = payload.type === null ? null : payload;
-						discountPending = true;
-					}}
-					onSaved={() => {}}
-				/>
+			<RecordDiscountCard
+				revision={0}
+				name={discount?.name ?? null}
+				type={discount?.type ?? null}
+				value={discount?.value ?? null}
+				{currencyCode}
+				{locale}
+				editable
+				staged
+				onSave={async (_revision, payload) => {
+					discount = payload.type === null ? null : payload;
+					discountPending = true;
+				}}
+				onSaved={() => {}}
+			/>
 
-				<RecordTaxCard
-					revision={0}
-					propertyId={form.property_id}
-					taxSource={tax?.source ?? 'not_configured'}
-					rateId={tax?.rate_id ?? null}
-					name={taxPreview.name}
-					rateBasisPoints={taxPreview.rateBasisPoints}
-					{currencyCode}
-					{locale}
-					editable={Boolean(form.property_id)}
-					staged
-					unsetHint="Required before sending this quote."
-					onSave={async (_revision, payload) => {
-						tax = payload;
-						taxPending = true;
-					}}
-					onSaved={() => {}}
-				/>
-			</RecordAdjustmentsCard>
+			<RecordTaxCard
+				revision={0}
+				propertyId={form.property_id}
+				taxSource={tax?.source ?? 'not_configured'}
+				rateId={tax?.rate_id ?? null}
+				name={taxPreview.name}
+				rateBasisPoints={taxPreview.rateBasisPoints}
+				{currencyCode}
+				{locale}
+				editable={Boolean(form.property_id)}
+				staged
+				unsetHint="Required before sending this quote."
+				onSave={async (_revision, payload) => {
+					tax = payload;
+					taxPending = true;
+				}}
+				onSaved={() => {}}
+			/>
 
 			<FormNotesCard
 				id="quote-initial-note"
@@ -516,7 +507,7 @@
 
 		{#snippet actions()}
 			<Button variant="tertiary" onclick={onCancel} disabled={saving}>Cancel</Button>
-			<Button variant="primary" showCheckIcon type="submit" loading={saving} disabled={!isDirty}>
+			<Button variant="primary" type="submit" loading={saving} disabled={!isDirty}>
 				{savedQuote ? 'Save changes' : 'Save Quote'}
 			</Button>
 		{/snippet}

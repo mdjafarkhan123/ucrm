@@ -1,29 +1,42 @@
 # Cards
 
-Classic card surfaces use the approved classic2 palette and the shared B3 components.
+> Dependencies: `colors.md`, `radius.md`,  `typography.md`
 
-## Appearance
+## Core Specs
 
-- Surface: classic2-surface
-- Border: classic2-border, 1px
-- Corners: 20px
-- Shadow: classic2-shadow-near at 0 1px 2px and classic2-shadow-far at 0 10px 28px
-- Heading: classic2-ink; keep the page heading hierarchy intact
+- **Background:** `var(--color-surface)`
+- **Border:** 1px solid `var(--color-border)`
+- **Radius:** `var(--radius-base)` = 8px
 
-The exact light and dark values are in docs/classic-theme-redesign-design-recipe.md.
+Dashboard metric cards rendered as semantic `<article>` elements may omit the shadow when a flatter summary treatment is explicitly approved for that surface.
 
-## Components
+## Card Heading
 
-- Use ui/Card for a plain card with optional heading.
-- Use layout/SectionBlock for titled sections and groups of form controls.
-- Use layout/RailCard for titled cards in a right rail.
-- On a rebuilt Classic record page, use layout/RecordCard (`size="main"` or `"rail"`) for the classic.pen
-  record cards: title, optional count chip and subtitle, actions, edge-to-edge rows and an optional footer.
-  Shared Notes and Photos and files take `look="record"` there (NotesPanel, RecordFilesCard); every other page
-  keeps their default look until its own redesign opts in.
-- The dark featured "Profit card" is work/ProfitFeatureCard (JobProfitCard and QuoteProfitCard feed it their own
-  figures). The invoice's "Balance due" card is the same part: `chip` replaces the "Team only" lock, `pillIcon`
-  the trend icon, and a `muted` part draws the grey "still owed" segment. One featured card per page. Header facts take `tone: 'neutral'` for a plain tile and `'waiting'` for an amber one, such as a quote
-  with no answer yet; without a tone the first fact carries the brand tint.
+- Desktop: 20px, medium weight, heading color
+- Mobile: 16px, medium weight, heading color
+- **Max font size: 20px** — card headings must never exceed 20px regardless of heading level or breakpoint.
+- Never skip heading levels — the page hierarchy must logically arrive at the card heading level.
 
-SectionBlock and RailCard keep their own padding and heading rules in their modules. A static card has no hover effect. Interactive actions keep their hover and focus states on the action itself.
+## States
+
+### Static Card (no interactivity)
+
+- Background: var(--color-surface)
+- Border: 1px, border-default
+- Radius: 8px
+- No hover styles. Non-interactive cards must NOT have hover background changes.
+
+### Interactive Card (clickable)
+
+- Same base styles as static card
+- Hover: neutral-secondary-medium background
+- Transition: colors
+- Cursor: pointer
+
+## Rules
+
+- Background: neutral-primary-soft
+- Border: 1px, var(--color-border)
+- Radius: 8px
+- Interactive hover: neutral-secondary-medium background
+- Non-interactive: no hover styles

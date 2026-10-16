@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { page } from '$app/state';
 	import { createQuery } from '@tanstack/svelte-query';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -30,7 +29,6 @@
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 	import undoIcon from '@tabler/icons/outline/arrow-back-up.svg?raw';
-	import sendIcon from '@tabler/icons/outline/arrow-up.svg?raw';
 
 	// Nothing here writes to the server. Adding, editing, pinning, and deleting a note all stage a change,
 	// and the page's action bar saves them together with the rest of the record. The container owns the
@@ -42,7 +40,6 @@
 		canManageTeam = canManage,
 		currentUserId,
 		pending = [],
-		look = 'default',
 		onChange
 	}: {
 		entityType: EntityType;
@@ -53,8 +50,6 @@
 		currentUserId?: string;
 		/** Staged changes, held by the page so its action bar can save them. */
 		pending?: NoteChange[];
-		/** `record`: the classic.pen record-rail Notes, used on Classic pages that have been rebuilt. */
-		look?: 'default' | 'record';
 		onChange: (next: NoteChange[]) => void;
 	} = $props();
 
@@ -147,18 +142,9 @@
 
 	let newBody = $state('');
 	let composerOpen = $state(false);
-	// classic.pen "Notes": the list first, then a one-line composer that is always there for a manager.
-	const classic = $derived(look === 'record' && page.data.presentation === 'classic');
 	const showComposer = $derived(
-		canManage && (classic || composerOpen || notes.length > 0 || createdNotes.length > 0)
+		canManage && (composerOpen || notes.length > 0 || createdNotes.length > 0)
 	);
-
-	// Enter adds the note to what the page will save, the way a chat box sends; Shift+Enter breaks a line.
-	function composerKeydown(event: KeyboardEvent) {
-		if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return;
-		event.preventDefault();
-		addNote();
-	}
 
 	async function openComposer() {
 		composerOpen = true;
@@ -204,8 +190,8 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div class="notes-panel" class:notes-panel--classic={classic}>
-	{#if showComposer && !classic}
+<div class="notes-panel">
+	{#if showComposer}
 		<div class="notes-panel__composer">
 			<Textarea
 				id={`note-composer-${entityId}`}
@@ -226,8 +212,6 @@
 		<p class="notes-panel__error" role="alert">
 			{notesQuery.error instanceof Error ? notesQuery.error.message : 'Notes could not be loaded.'}
 		</p>
-	{:else if notes.length === 0 && createdNotes.length === 0 && classic}
-		<p class="notes-panel__muted notes-panel__muted--classic">No notes yet.</p>
 	{:else if notes.length === 0 && createdNotes.length === 0 && !showComposer}
 		<EmptyState
 			title="No notes yet"
@@ -348,163 +332,11 @@
 			{/each}
 		</ul>
 	{/if}
-
-	{#if showComposer && classic}
-		<div class="notes-panel__quick">
-			<textarea
-				id={`note-composer-${entityId}`}
-				class="notes-panel__quick-input"
-				aria-label="Write a note for the team"
-				placeholder="Write a note for the team…"
-				rows="1"
-				maxlength={4000}
-				bind:value={newBody}
-				onkeydown={composerKeydown}></textarea>
-			<button
-				type="button"
-				class="notes-panel__quick-send"
-				aria-label="Add note"
-				title="Add note"
-				disabled={!newBody.trim()}
-				onclick={addNote}
-			>
-				{@html sendIcon}
-			</button>
-		</div>
-	{/if}
 </div>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
-	// classic.pen "Notes": rows edge to edge under the card header, the author's avatar beside each note,
-	// then the composer as one rounded field with a green send button.
-	.notes-panel--classic {
-		gap: 0;
-		font-family: var(--classic2-font);
-
-		.notes-panel__list {
-			gap: 0;
-		}
-
-		.notes-panel__item {
-			padding: 16px 20px;
-			border: 0;
-			border-top: 1px solid var(--classic2-divider);
-			border-radius: 0;
-			background: transparent;
-			color: var(--classic2-ink);
-			font-size: var(--classic2-font-label);
-
-			// The note lines up with the author's name rather than under the avatar (a draft has none).
-			&:not(.notes-panel__item--draft) > :global(*:not(.notes-panel__item-header)) {
-				margin-left: 38px;
-			}
-
-			&--pinned {
-				background: var(--classic2-amber-tint);
-			}
-
-			&--draft {
-				border-style: solid;
-				border-color: var(--classic2-divider);
-				background: var(--classic2-surface-soft);
-			}
-		}
-
-		// classic.pen: name then time on one line beside the avatar.
-		.notes-panel__item :global(.author-meta__text) {
-			flex-direction: row;
-			align-items: baseline;
-			gap: 8px;
-		}
-
-		.notes-panel__muted--classic {
-			margin: 0;
-			padding: 0 20px 4px;
-			color: var(--classic2-secondary);
-			font-size: var(--classic2-font-small);
-		}
-
-		.notes-panel__quick {
-			display: flex;
-			align-items: flex-end;
-			gap: 8px;
-			margin: 12px 20px 20px;
-			padding: 6px 6px 6px 14px;
-			border: 1px solid var(--classic2-border-control);
-			border-radius: 12px;
-			background: var(--classic2-surface-soft);
-			transition: border-color var(--timing-quick);
-
-			&:focus-within {
-				border-color: var(--classic2-green);
-				box-shadow: 0 0 0 3px var(--classic2-green-soft);
-			}
-		}
-
-		.notes-panel__quick-input {
-			flex: 1 1 0;
-			width: 100%;
-			min-width: 0;
-			height: 30px;
-			padding: 5px 0;
-			border: 0;
-			background: transparent;
-			color: var(--classic2-ink);
-			font: inherit;
-			font-size: var(--classic2-font-label);
-			line-height: 1.4;
-			resize: none;
-
-			// The app's floating-label fields pad every placeholder down; this one sits on its own line.
-			&::placeholder {
-				padding: 0;
-				color: var(--classic2-icon-muted);
-				font-size: inherit;
-				line-height: inherit;
-			}
-
-			&:focus {
-				outline: none;
-			}
-		}
-
-		.notes-panel__quick-send {
-			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-			width: 28px;
-			height: 28px;
-			padding: 0;
-			border: 0;
-			border-radius: 8px;
-			background: var(--classic2-green);
-			color: var(--classic2-green-on);
-			cursor: pointer;
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
-
-			&:hover:not(:disabled) {
-				background: var(--classic2-green-hover);
-			}
-
-			&:focus-visible {
-				outline: 2px solid var(--classic2-green);
-				outline-offset: 2px;
-			}
-
-			&:disabled {
-				opacity: 0.45;
-				cursor: not-allowed;
-			}
-		}
-	}
-
 	.notes-panel {
 		display: flex;
 		flex-direction: column;

@@ -1,17 +1,5 @@
 # Color Tokens
 
-For the approved new Classic look, use the `--classic2-*` tokens in
-`src/lib/styles/_classic-theme-tokens.scss`. Their light and dark values and semantic roles are listed in
-`docs/classic-theme-redesign-design-recipe.md` § Tokens and § Colour rule. A new Classic component reads the
-named role, such as `--classic2-page`, `--classic2-ink`, `--classic2-green` or `--classic2-amber-tint`.
-The tables below document older live components until each is rebuilt under the Classic redesign campaign.
-
-The save bar uses `--classic2-savebar`, `--classic2-savebar-line`, `--classic2-savebar-text` and
-`--classic2-savebar-muted` for its surface and copy. Its unsaved indicator uses the amber surface and dot
-tokens, the resting indicator uses the feature-chip and muted tokens, and its error uses the rose surface and
-`--classic2-savebar-error`. These are Classic-only tokens with separate light and dark values; keep the
-visible status text alongside each dot.
-
 Every color used by a component must come from a semantic CSS custom property:
 
 ```css

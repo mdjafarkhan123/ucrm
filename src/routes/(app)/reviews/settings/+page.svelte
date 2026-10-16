@@ -218,7 +218,6 @@
 		icon={starIcon}
 		bind:this={layout}
 		error={conflict ? '' : errorMessage}
-		{dirty}
 	>
 		{#snippet main()}
 			{#if draft}
@@ -375,7 +374,6 @@
 		{#snippet actions()}
 			<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
 			<Button
-				showCheckIcon
 				onclick={() => void save().finally(() => layout?.revealError())}
 				disabled={!dirty || saving || !urlValid}
 				loading={saving}>Save</Button

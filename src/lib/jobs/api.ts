@@ -453,9 +453,6 @@ export type JobDetail = {
 	// reminder that is already due from one still to come using the same clock the derived status does.
 	organization_today: string;
 	money: JobMoney | null;
-	// What this job's live invoices total (voided and replaced ones left out), for Billing's progress bar.
-	// Null when the reader cannot see both the job's price and its invoices, or when it could not be read.
-	invoiced_minor: number | null;
 	// The job's costing card. Null for a reader without jobs.view_cost.
 	costing: JobCosting | null;
 	locale: string;

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
-	import SaveBarStatus from './SaveBarStatus.svelte';
 	import StickyActionBar from './StickyActionBar.svelte';
 
 	// The save bar every detail page uses. A detail page is read-first: this stays out of the way until a
@@ -40,8 +39,7 @@
 </script>
 
 {#if editing || dirty}
-	<StickyActionBar class="sticky-action-bar--save">
-		<SaveBarStatus {dirty} {error} />
+	<StickyActionBar>
 		<p class="detail-edit-bar__text" role="status">
 			{#if error}
 				<span class="detail-edit-bar__error">{error}</span>
@@ -53,7 +51,7 @@
 		</p>
 		<div class="detail-edit-bar__buttons">
 			<Button variant="tertiary" onclick={onCancel} disabled={saving}>Cancel</Button>
-			<Button variant="primary" showCheckIcon onclick={onSave} loading={saving} disabled={!dirty}>
+			<Button variant="primary" onclick={onSave} loading={saving} disabled={!dirty}>
 				{saveLabel}
 			</Button>
 		</div>
@@ -76,27 +74,6 @@
 			display: flex;
 			flex: 0 0 auto;
 			gap: var(--space-small);
-		}
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic'])) .detail-edit-bar__buttons {
-		gap: var(--classic2-space-1);
-	}
-
-	:global(:root:has(.app-shell[data-presentation='classic']) .sticky-action-bar--save)
-		.detail-edit-bar__text {
-		display: none;
-	}
-
-	@media (max-width: 767px) {
-		:global(:root:has(.app-shell[data-presentation='classic'])) .detail-edit-bar__buttons {
-			flex: 1 1 auto;
-		}
-
-		:global(:root:has(.app-shell[data-presentation='classic']))
-			.detail-edit-bar__buttons
-			:global(.button) {
-			flex: 1 1 0;
 		}
 	}
 </style>

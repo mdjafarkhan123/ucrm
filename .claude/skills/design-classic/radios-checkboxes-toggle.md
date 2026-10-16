@@ -1,30 +1,123 @@
-# Radios, Checkboxes and Toggles
+# Radios, Checkboxes & Toggles
 
-Shared components: src/lib/components/ui/RadioGroup.svelte, Checkbox.svelte and Toggle.svelte.
+> Dependencies: `colors.md`, `radius.md`, `shadows.md`
 
-## Classic appearance
+## Checkbox
 
-Use classic2 tokens from docs/classic-theme-redesign-design-recipe.md.
+A checkbox opts a user into a choice. Use it for multi-select sets or a single opt-in decision — a paired on/off setting is a Toggle, and a single pick from discrete options is a Radio.
 
-### Checkbox
+- **Size:** 20×20px (`--checkbox--size`), `box-sizing: border-box`
+- **Radius:** `var(--radius-small)` (4px)
+- **Border:** `var(--border-thick)` (2px) solid `var(--color-border--interactive)`
+- **Background:** `var(--color-surface)`
+- **Label margin:** label text sits `var(--space-small)` (8px) right of the box, `margin-top: var(--space-smallest)` (2px)
+- **Hover:** border-color → `var(--color-interactive)`
+- **Checked / indeterminate:** border-color + background → `var(--color-interactive)`; icon stays `var(--color-surface)`
+- **Icon:** `checkmark` (checked), `minus2` (indeterminate), fill `var(--color-surface)`, centered
+- **Focus ring:** `box-shadow: var(--shadow-focus)`, `outline: none`
+- **Transition:** `all var(--timing-quick) ease-out` (100ms)
+- **Invalid:** border `var(--color-critical)`; checked/invalid background `var(--color-critical)`
 
-- 20px square, 6px corners, classic2-border-input border and surface fill
-- Checked and indeterminate: solid-green fill, white icon
-- Focus-visible: 3px green-soft outline with a 2px offset
-- Invalid: rose border; disabled: surface-soft and muted text
+The native input is visually hidden (1×1px, clipped) so the styled box replaces it; the label toggles the input and `:focus-visible` paints the ring on the box.
 
-### Radio
+### Disabled Checkbox
 
-- 20px circle with classic2-border-input border
-- Selected: green border
-- Focus-visible: 3px green-soft outline with a 2px offset
-- A cards variant uses surface, border and green selection tint
+- Box background → `var(--color-disabled--secondary)`; icon `opacity: 0` (reads as an empty box)
+- Checked / indeterminate: background → `var(--color-disabled)`; icon re-shown
+- Label + description text → `var(--color-disabled)`; `cursor: not-allowed`
+- No hover, focus ring, or interaction
 
-### Toggle
+## Radio
 
-- 44px by 26px track with a 20px thumb and 13px corners
-- Off: surface with border-input; on: green-mid with a white thumb
-- Focus-visible: 3px green-soft outline with a 2px offset
-- A disabled toggle stays muted and unavailable
+A radio chooses one discrete option from a small set (pair for binary choices, e.g. "Fixed price" vs "Per visit").
 
-Labels use 14px body text. Descriptions use 12px muted text. Keep the current native input, keyboard use, accessible name, disabled state and callback behavior.
+- **Size:** 20×20px circle (`--radio-diameter`), `flex-shrink: 0`
+- **Radius:** `var(--radius-circle)` (100%)
+- **Border:** `var(--border-thick)` (2px) solid `var(--color-border--interactive)`
+- **Background:** `var(--color-surface)`
+- **Gap to label:** `var(--space-small)` (8px), `align-items: flex-start`
+- **Hover:** border-color → `var(--color-interactive)`
+- **Checked:** border-color `var(--color-interactive)` with border-width `var(--radio--checked-thickness)` (6px) — the thick ring leaves an 8px `var(--color-surface)` center
+- **Focus ring:** `box-shadow: var(--shadow-focus)`, `outline: none`
+- **Transition:** `all var(--timing-quick) ease-out` (100ms)
+
+### Disabled Radio
+
+- Circle border → `var(--color-disabled--secondary)`
+- Label text → `var(--color-disabled)`, `cursor: not-allowed`
+- Checked-disabled: border-color → `var(--color-disabled)` (settings ring turn grey)
+
+### Radio Group
+
+- All options share the same `name`; the group renders `role="radiogroup"` with a single selection.
+- **Vertical** (default): options stack full-width; spacing flows from label height + description margins.
+- **Horizontal:** `gap: var(--space-base)` (16px) between options.
+- When volume of options > 5 (or vertical space is tight) use a Select instead; when every label is 1–2 words use a Chip instead.
+- **Cards** (`ui/RadioGroup.svelte` `variant="cards"`): on question-and-answer screens such as client setup, each
+  option is a tile — `var(--space-base)` padding, `var(--border-base)` `var(--color-border)` border,
+  `var(--radius-base)`. Hover: border → `var(--color-interactive)`. Checked: border and a 1px inset ring in
+  `var(--color-interactive)`, background `var(--color-interactive--background--subtle--hover)`, label 600.
+  Tiles sit side by side and stack full width under 560px. When the question is already shown above the
+  group, pass its id as `labelledby` and the group draws no label of its own.
+
+## Toggle (Switch)
+
+A single size — 48×24px track with a 16px thumb. Renders `role="switch"` + `aria-checked`; switches are for binary on/off settings only (label limited to ON/OFF).
+
+### Track
+
+- Width: `var(--switch--width)` (48px); height: `calc(var(--switch--width) / 2)` (24px)
+- Radius: `var(--switch--pipSize)` (16px)
+- Border: `var(--border-thick)` (2px) solid `var(--color-border--interactive)`
+- Background (off): `var(--color-inactive--surface)`
+- Background (on): `var(--color-interactive)`; on **hover** → `var(--color-interactive--hover)`
+- Hover / `:focus-visible` (any state): border-color → `var(--color-interactive)`
+- Focus ring: `box-shadow: var(--shadow-focus)`, `outline: none`
+- Container: `inline-flex`, `align-items: center`, `overflow: hidden`
+
+### Thumb (pip)
+
+- Size: 16×16px (`var(--switch--pipSize)`), `border-radius: var(--radius-circle)`
+- Off: background `var(--color-inactive--onSurface)`, `transform: translateX(2px)` (`--switch-pipOffPosition`)
+- On: background `var(--color-surface)`, `transform: translateX(26px)` (`--switch-pipOnPosition`)
+
+### Track icons
+
+- `checkmark` shown when on, `cross` when off — 16px, rendered inside the track on the opposite side of the thumb
+- Fill (on): `var(--color-surface)`; fill (off): `var(--color-inactive--onSurface)`
+
+### Transition
+
+- `all var(--timing-base) ease-in-out` (200ms) on the track and thumb.
+
+### Disabled Toggle
+
+| Part            | Off                                | On                                       |
+| --------------- | ---------------------------------- | ---------------------------------------- |
+| Track           | `var(--color-surface)` bg, `var(--color-disabled)` border | `var(--color-disabled)` bg      |
+| Thumb           | `var(--color-disabled)` bg, `var(--color-disabled--secondary)` border | `var(--color-surface)` bg |
+
+- Applies `cursor: not-allowed`; no hover or focus interaction.
+
+## Label + Control Layout
+
+- Wrapper: `display: flex; align-items: flex-start`, `user-select: none`.
+- Gap between control and text: `var(--space-small)` (8px) — checkbox via label `margin`, radio via circle `margin-right: 8px`.
+- Label: 14px (`var(--typography--fontSize-base)`), `var(--color-text)`, regular (400) weight.
+- Helper text: 12px (`var(--typography--fontSize-small)`), `var(--color-text--secondary)`.
+  - Radio helper: `margin-top: calc(var(--space-smaller) * -1)` (−4px), `margin-bottom: var(--space-small)` (8px).
+  - Indented to clear the control: `padding-left: calc(control-size + var(--space-small))` (28px at 20px controls).
+
+## Checkbox Group (CRM Filter Panel)
+
+- Vertical stack, `var(--space-slim)` (12px) gap between items.
+- Group label: 12px (`--typography--fontSize-small`), uppercase, `var(--color-text--secondary)`, `letter-spacing: 0.5px`.
+- Divider between groups: 1px `var(--color-border)`, `margin: var(--space-base)` (16px).
+- "Select all" + per-item partial state uses the indeterminate checkbox (minus icon).
+
+## Rules
+
+- Every control must have an `id` matched by its label's `htmlFor`/`for`.
+- Focus states use `var(--shadow-focus)` (brand focus ring) for each control.
+- Disabled states: no hover/focus interaction; text and control colors flip to grey tokens.
+- Indeterminate checkbox is reserved for "select all" partial state.
