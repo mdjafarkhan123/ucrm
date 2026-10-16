@@ -85,6 +85,8 @@
 		saveLabel = 'Save pricing',
 		lockedMessage = '',
 		emptyDescription = 'Add the products and services this job needs before it becomes a quote.',
+		hint,
+		totalRows,
 		onSave,
 		onDraftChange,
 		clientView
@@ -126,6 +128,11 @@
 		saveLabel?: string;
 		lockedMessage?: string;
 		emptyDescription?: string;
+		/** A quiet line under the title in the App look, e.g. "4 items · work done Sep 29 – Oct 3". */
+		hint?: string;
+		/** App look: the saved table closes with these rows (subtotal, tax, total) in place of the single
+		 *  subtotal line. The last row reads as the grand total. Formatted by the page, which owns the money. */
+		totalRows?: { label: string; value: string }[];
 		onSave?: (expectedRevision: number, lines: RequestPricingLineInput[]) => Promise<void>;
 		onDraftChange?: (lines: RequestPricingLineInput[], subtotalMinor: number) => void;
 		/** Quote-only controls rendered where Jobber puts them: below the line editor actions. */
@@ -932,7 +939,7 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<SectionBlock title="Products and services" icon={listIcon} level={2}>
+<SectionBlock title="Products and services" icon={listIcon} level={2} {hint}>
 	{#snippet actions()}
 		{#if editable && !isEditing && savedLines.length > 0}
 			<PencilButton onclick={openEdit} label="Edit products and services" />
@@ -1240,7 +1247,21 @@
 				</tbody>
 			</table>
 		</div>
-		{#if showPrices}
+		{#if showPrices && totalRows && totalRows.length > 0}
+			<dl class="pricing-block__summary">
+				{#each totalRows as row, index (row.label)}
+					<div
+						class={[
+							'pricing-block__summary-row',
+							index === totalRows.length - 1 && index > 0 && 'pricing-block__summary-row--total'
+						]}
+					>
+						<dt>{row.label}</dt>
+						<dd>{row.value}</dd>
+					</div>
+				{/each}
+			</dl>
+		{:else if showPrices}
 			<div class="pricing-block__totals">
 				<div class="pricing-block__totals-row">
 					<span>{progressColumn ? 'Due this invoice' : 'Subtotal'}</span>
@@ -1608,6 +1629,49 @@
 		}
 		&__name {
 			font-size: var(--typography--fontSize-base);
+		}
+	}
+
+	// The saved table's closing figures: a right-hand block under the money columns, the grand total set
+	// off by a hairline and a larger figure.
+	:global(.record-detail--cards) .pricing-block__summary {
+		display: flex;
+		flex-direction: column;
+		width: min(300px, 100%);
+		margin: 0 24px 0 auto;
+		padding: 16px 0 20px;
+		gap: 8px;
+	}
+	:global(.record-detail--cards) .pricing-block__summary-row {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-base);
+		color: var(--color-text);
+		font-size: 13px;
+		font-variant-numeric: tabular-nums;
+		font-weight: 500;
+
+		dt {
+			color: var(--color-text--secondary);
+		}
+		dd {
+			margin: 0;
+		}
+	}
+	:global(.record-detail--cards) .pricing-block__summary-row--total {
+		padding-top: 10px;
+		border-top: var(--border-base) solid var(--color-border);
+		color: var(--color-heading);
+		font-weight: 700;
+
+		dt {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+		}
+		dd {
+			font-size: 18px;
+			letter-spacing: -0.3px;
 		}
 	}
 

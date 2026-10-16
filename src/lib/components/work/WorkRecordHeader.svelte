@@ -28,6 +28,8 @@
 
 	type PrimaryAction = {
 		label: string;
+		/** A Tabler icon (raw SVG) drawn before the label. */
+		icon?: string;
 		onclick?: (event: MouseEvent) => void;
 		href?: string;
 		disabled?: boolean;
@@ -345,6 +347,15 @@
 			margin-top: 20px;
 			padding: 18px 0 22px;
 			border-top: var(--border-base) solid var(--color-border);
+		}
+		.work-header__actions :global(.button--primary) {
+			min-height: 40px;
+			padding-inline: 16px;
+		}
+		.work-header__action-icon :global(svg) {
+			display: block;
+			width: 18px;
+			height: 18px;
 		}
 		.work-header__icon-button {
 			width: 40px;

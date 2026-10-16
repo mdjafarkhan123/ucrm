@@ -177,8 +177,27 @@
 		:global(.section-block__icon) {
 			display: none;
 		}
+		// A lone pencil at the card's top corner keeps a border, so it reads as a button.
+		> :global(.section-block__actions) :global(.pencil-button--tertiary) {
+			border-color: var(--color-border--interactive);
+			background: var(--color-surface);
+		}
 		> :global(.section-block__hint) {
-			margin: -8px 24px 12px;
+			margin: -12px 24px 20px;
+		}
+		// With a quiet line under the title, the actions sit beside both lines and the two lines pack together.
+		&:has(> :global(.section-block__hint)) {
+			> :global(.section-block__title) {
+				padding-bottom: 0;
+			}
+			> :global(.section-block__hint) {
+				grid-column: 1;
+				grid-row: 2;
+				margin: 3px 24px 20px;
+			}
+			> :global(.section-block__actions) {
+				grid-row: 1 / span 2;
+			}
 		}
 	}
 	// Low specificity on purpose, so a block's own contents can set their own margin where they differ.
