@@ -24779,6 +24779,10 @@ export type Database = {
 				Args: { target_invoice_id: string; target_organization_id: string };
 				Returns: Json;
 			};
+			invoice_list_facts: {
+				Args: { target_organization_id: string };
+				Returns: Json;
+			};
 			invoice_list_page: {
 				Args: {
 					client_id_filter?: string;
@@ -24812,6 +24816,14 @@ export type Database = {
 				}[];
 			};
 			invoice_money: { Args: { target_invoice_ids: string[] }; Returns: Json };
+			invoice_list_views: {
+				Args: { target_invoice_ids: string[]; target_organization_id: string };
+				Returns: {
+					emailed: boolean;
+					invoice_id: string;
+					view_count: number;
+				}[];
+			};
 			invoice_money_overview: {
 				Args: { target_organization_id: string };
 				Returns: Json;
@@ -26968,6 +26980,20 @@ export type Database = {
 				Returns: Json;
 			};
 			quote_line_money: { Args: { target_version_id: string }; Returns: Json };
+			quote_list_activity: {
+				Args: { target_organization_id: string; target_quote_ids: string[] };
+				Returns: {
+					changes_requested_at: string;
+					job_id: string;
+					job_number: number;
+					quote_id: string;
+					view_count: number;
+				}[];
+			};
+			quote_list_overview: {
+				Args: { target_organization_id: string };
+				Returns: Json;
+			};
 			quote_online_deposit_context: {
 				Args: { supplied_token_hash: string };
 				Returns: Json;
