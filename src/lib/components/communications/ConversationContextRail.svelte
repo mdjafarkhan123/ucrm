@@ -1,10 +1,6 @@
 <script lang="ts">
 	import { Tabs as TabsPrimitive } from 'bits-ui';
-	import {
-		createQuery,
-		useQueryClient,
-		type CreateQueryResult
-	} from '@tanstack/svelte-query';
+	import { createQuery, useQueryClient, type CreateQueryResult } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import ConversationMessagingStatus from '$lib/components/communications/ConversationMessagingStatus.svelte';
@@ -190,7 +186,10 @@
 
 			<div class="context-rail__quick" role="group" aria-label="Contact this customer">
 				{#if phone}
-					<a class="context-rail__quick-button context-rail__quick-button--phone" href={`tel:${phone}`}>
+					<a
+						class="context-rail__quick-button context-rail__quick-button--phone"
+						href={`tel:${phone}`}
+					>
 						<span aria-hidden="true">{@html phoneIcon}</span>Call
 					</a>
 				{:else}
@@ -357,7 +356,7 @@
 		min-width: 0;
 		flex-direction: column;
 		gap: var(--space-base);
-		padding: 20px 18px;
+		padding: 20px 18px 84px;
 		overflow-y: auto;
 	}
 
