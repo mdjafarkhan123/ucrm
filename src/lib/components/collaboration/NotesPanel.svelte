@@ -42,6 +42,7 @@
 		currentUserId,
 		pending = [],
 		compact = false,
+		flat = false,
 		onChange
 	}: {
 		entityType: EntityType;
@@ -55,6 +56,9 @@
 		/** App look: notes read as rows under hairlines, and the note field sits at the bottom with a send
 		 *  button. Sending still only stages the note; the page's bar saves it. */
 		compact?: boolean;
+		/** App look: notes run edge to edge as quiet rows under hairlines, for a card that adds no padding
+		 *  of its own (`RailCard flush`). */
+		flat?: boolean;
 		onChange: (next: NoteChange[]) => void;
 	} = $props();
 
@@ -147,8 +151,9 @@
 
 	let newBody = $state('');
 	let composerOpen = $state(false);
+	// The flat App look has no room for a big empty prompt, so the composer is simply always there.
 	const showComposer = $derived(
-		canManage && (composerOpen || notes.length > 0 || createdNotes.length > 0)
+		canManage && (flat || composerOpen || notes.length > 0 || createdNotes.length > 0)
 	);
 
 	async function openComposer() {
@@ -210,7 +215,7 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div class="notes-panel" class:notes-panel--compact={compact}>
+<div class="notes-panel" class:notes-panel--compact={compact} class:notes-panel--flat={flat}>
 	{#if showComposer && !compact}
 		<div class="notes-panel__composer">
 			<Textarea
@@ -525,6 +530,73 @@
 			justify-content: flex-end;
 			gap: var(--space-small);
 		}
+
+		// App look: no boxes around each note. A hairline separates them, the author and time share one
+		// line, and the words sit under the name.
+		&--flat {
+			gap: 0;
+
+			.notes-panel__list {
+				gap: 0;
+			}
+			.notes-panel__item {
+				padding: 12px 20px;
+				border: 0;
+				border-top: var(--border-base) solid var(--color-border);
+				border-radius: 0;
+				background: transparent;
+
+				&--pinned {
+					background: var(--color-warning--surface);
+				}
+				&--draft {
+					border-top-style: dashed;
+					border-top-color: var(--color-warning);
+				}
+				&--removed {
+					border-top-style: dashed;
+				}
+			}
+			.notes-panel__item :global(.author-meta__text) {
+				flex-flow: row wrap;
+				align-items: baseline;
+				column-gap: 6px;
+			}
+			.notes-panel__item :global(.author-meta__name) {
+				font-size: 13px;
+			}
+			.notes-panel__item :global(.author-meta__time) {
+				font-size: 12px;
+				font-weight: 500;
+			}
+			.notes-panel__item :global(.note-body) {
+				margin-top: 4px;
+				padding-left: 32px;
+				font-size: 13px;
+				font-weight: 500;
+				line-height: 1.5;
+			}
+			.notes-panel__body {
+				font-size: 13px;
+			}
+			.notes-panel__composer {
+				order: 2;
+				padding: 12px 20px 16px;
+				border-top: var(--border-base) solid var(--color-border);
+			}
+			.notes-panel__muted,
+			.notes-panel__error {
+				padding: 0 20px 20px;
+			}
+			.notes-panel__edit {
+				padding-left: 32px;
+			}
+		}
+	}
+
+	// An empty card keeps the usual prompt, inset to the card's own side padding.
+	.notes-panel--flat > :global(.empty-state) {
+		margin: 0 20px 20px;
 	}
 
 	// App look: the panel sits flush in its card. Each note is a row under a hairline with the author and

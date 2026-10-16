@@ -1,27 +1,28 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { resolve } from '$app/paths';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
+	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
+	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
+	import type { RecordFact } from '$lib/components/work/types';
 	import ManualEmailDialog from '$lib/components/clients/ManualEmailDialog.svelte';
 	import RequestReviewButton from '$lib/components/reviews/RequestReviewButton.svelte';
 	import type { ClientDetail } from '$lib/clients/api';
 	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
-	import messageIcon from '@tabler/icons/outline/message.svg?raw';
+	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
-	import coinIcon from '@tabler/icons/outline/coin.svg?raw';
-	import fileIcon from '@tabler/icons/outline/file-text.svg?raw';
-	import toolIcon from '@tabler/icons/outline/tool.svg?raw';
+	import calendarCheckIcon from '@tabler/icons/outline/calendar-check.svg?raw';
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
 	import externalIcon from '@tabler/icons/outline/external-link.svg?raw';
 	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
 	import mergeIcon from '@tabler/icons/outline/arrow-merge.svg?raw';
+	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 
-	// The identity card at the top of a client's page: who they are, how to reach them, and how much work
-	// they represent. Money and job counts have no source yet, so they read as not-yet rather than zero.
+	// The card at the top of a client's page, in the App look: where the client stands and the page's
+	// actions on the first row, the name with the ways to reach them under it, a strip of their contact
+	// details, and the page's tabs along the foot. Money and job counts live in the Lifetime card in the rail.
 	// History matches the work records' own header: one icon button that swaps the rail, warmed on hover.
 	//
 	// Editing follows Jobber: the name's pencil turns this card into the details form where it sits (the
@@ -31,6 +32,7 @@
 		onEdit,
 		editing = false,
 		editor,
+		tabs,
 		onHistory,
 		onHistoryHover,
 		canMessage = true,
@@ -44,6 +46,8 @@
 		/** True while the details form is open in place of the name and contact facts. */
 		editing?: boolean;
 		editor?: Snippet;
+		/** The page's tab row, drawn along the foot of the card. */
+		tabs?: Snippet;
 		/** False for a member without conversations.send, who would only be refused on Send. */
 		canMessage?: boolean;
 		onHistory?: () => void;
@@ -58,20 +62,16 @@
 
 	const isCustomer = $derived(client.lifecycle_status === 'customer');
 	const isArchived = $derived(client.archived_at !== null);
+	const propertyCount = $derived(client.properties.length);
 
-	const dateFormat = new Intl.DateTimeFormat(undefined, {
-		day: 'numeric',
-		month: 'short',
-		year: 'numeric'
-	});
+	const monthFormat = new Intl.DateTimeFormat(undefined, { month: 'short', year: 'numeric' });
 	const clientSince = $derived(
-		client.created_at ? dateFormat.format(new Date(client.created_at)) : '—'
+		client.created_at ? monthFormat.format(new Date(client.created_at)) : ''
 	);
 
 	// Spelled out for screen readers as well as the hover title, because a disabled button never takes
 	// focus and its reason would otherwise reach mouse users only.
 	const callReason = 'Calling arrives with the communications work';
-	const messageReason = 'Messaging arrives with the communications work';
 	let manualEmailOpen = $state(false);
 
 	const menuItems = $derived([
@@ -93,65 +93,61 @@
 			: [])
 	]);
 
-	const moneyFormatters: Record<string, Intl.NumberFormat> = {};
-	function formatMoney(amountMinor: number, currency: string) {
-		let formatter = moneyFormatters[currency];
-		if (!formatter) {
-			formatter = new Intl.NumberFormat(undefined, { style: 'currency', currency });
-			moneyFormatters[currency] = formatter;
-		}
-		return formatter.format(amountMinor / 100);
-	}
-
-	// Each figure is null when this member lacks the permission that gates it (customers.view_financials,
-	// quotes.view, jobs.view) -- it then says why instead of showing a zero that may not be true. A tile
-	// whose feature the business's package leaves out is not shown at all.
-	const summary = $derived(client.work_summary);
-	const stats = $derived(
-		[
-			{
-				included: summary.included.billing,
-				icon: coinIcon,
-				label: 'Lifetime',
-				value:
-					summary.lifetime_billed_minor === null
-						? null
-						: formatMoney(summary.lifetime_billed_minor, summary.currency_code),
-				waiting: 'You do not have access to this client’s billing'
-			},
-			{
-				included: summary.included.quotes,
-				icon: fileIcon,
-				label: 'Open quotes',
-				value: summary.open_quotes_count === null ? null : String(summary.open_quotes_count),
-				waiting: 'You do not have access to quotes'
-			},
-			{
-				included: summary.included.jobs,
-				icon: toolIcon,
-				label: 'Active jobs',
-				value: summary.active_jobs_count === null ? null : String(summary.active_jobs_count),
-				waiting: 'You do not have access to jobs'
-			}
-		].filter((stat) => stat.included)
-	);
+	const facts = $derived<RecordFact[]>([
+		{
+			label: 'Main phone',
+			value: client.phone,
+			empty: 'Not added yet',
+			icon: phoneIcon,
+			fixed: true,
+			href: client.phone ? `tel:${client.phone}` : undefined
+		},
+		{
+			label: 'Main email',
+			value: client.email,
+			empty: 'Not added yet',
+			icon: mailIcon,
+			href: client.email ? `mailto:${client.email}` : undefined
+		},
+		...(client.billing_email
+			? [
+					{
+						label: 'Billing email',
+						value: client.billing_email,
+						icon: receiptIcon,
+						href: `mailto:${client.billing_email}`
+					}
+				]
+			: []),
+		{ label: 'Client since', value: clientSince, icon: calendarCheckIcon, fixed: true }
+	]);
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <section class="client-header" aria-label="Client summary">
 	<div class="client-header__top">
-		<Avatar id={client.id} name={client.display_name} size="medium" />
-		{#if isArchived}
-			<Badge>Archived</Badge>
-		{:else}
-			<Badge status={isCustomer ? 'success' : 'informative'}
-				>{isCustomer ? 'Customer' : 'Lead'}</Badge
-			>
-		{/if}
+		<div class="client-header__status">
+			{#if isArchived}
+				<StatusBadge status="inactive">Archived</StatusBadge>
+			{:else}
+				<StatusBadge status={isCustomer ? 'success' : 'informative'}>
+					{isCustomer ? 'Customer' : 'Lead'}
+				</StatusBadge>
+			{/if}
+			<span class="client-header__eyebrow">Client</span>
+			<span class="client-header__sep" aria-hidden="true"></span>
+			<span class="client-header__meta">
+				{propertyCount === 1 ? '1 property' : `${propertyCount} properties`}
+			</span>
+		</div>
+
 		<div class="client-header__buttons">
 			{#if isArchived && onRestore}
-				<Button variant="secondary" size="small" loading={archiving} onclick={onRestore}
-					>Restore</Button
+				<Button
+					variant="secondary"
+					class="client-header__button"
+					loading={archiving}
+					onclick={onRestore}>Restore</Button
 				>
 			{/if}
 			{#if onHistory}
@@ -167,79 +163,62 @@
 					<span aria-hidden="true">{@html historyIcon}</span>
 				</button>
 			{/if}
-			<span class="client-header__waiting" title={callReason}>
-				<Button variant="secondary" size="small" disabled>Call</Button>
-				<span class="client-header__reason">{callReason}</span>
-			</span>
-			{#if canMessage}
-				<Button variant="secondary" size="small" onclick={() => (manualEmailOpen = true)}
-					>Message</Button
-				>
-			{/if}
-			{#if client.can_request_review}
-				<RequestReviewButton target={{ clientId: client.id }} />
-			{/if}
-			<DropdownMenu items={menuItems} triggerLabel="More client actions" />
+			<DropdownMenu
+				items={menuItems}
+				triggerLabel="More client actions"
+				triggerClass="client-header__more"
+			>
+				{#snippet trigger()}
+					More
+					<span class="client-header__chevron" aria-hidden="true">{@html chevronDownIcon}</span>
+				{/snippet}
+			</DropdownMenu>
 		</div>
 	</div>
 
 	{#if editing && editor}
-		{@render editor()}
+		<div class="client-header__editor">{@render editor()}</div>
 	{:else}
 		<div class="client-header__identity">
-			<h1>{client.display_name}</h1>
-			<PencilButton size="base" onclick={onEdit} label="Edit {client.display_name}" />
+			<div class="client-header__name">
+				<h1 title={client.display_name}>{client.display_name}</h1>
+				<PencilButton size="base" onclick={onEdit} label="Edit {client.display_name}" />
+			</div>
+
+			<div class="client-header__actions">
+				<span class="client-header__waiting" title={callReason}>
+					<Button variant="secondary" class="client-header__button" disabled>
+						<span class="client-header__button-icon" aria-hidden="true">{@html phoneIcon}</span>
+						Call
+					</Button>
+					<span class="client-header__reason">{callReason}</span>
+				</span>
+				{#if canMessage}
+					<Button
+						variant="secondary"
+						class="client-header__button"
+						onclick={() => (manualEmailOpen = true)}
+					>
+						<span class="client-header__button-icon" aria-hidden="true">{@html mailIcon}</span>
+						Message
+					</Button>
+				{/if}
+				{#if client.can_request_review}
+					<RequestReviewButton
+						target={{ clientId: client.id }}
+						size="base"
+						class="client-header__button"
+					/>
+				{/if}
+			</div>
 		</div>
 
-		<div class="client-header__body">
-			<dl class="client-header__facts">
-				<div class="client-header__fact">
-					<dt><span aria-hidden="true">{@html phoneIcon}</span>Main phone</dt>
-					<dd>
-						{#if client.phone}
-							<a href={`tel:${client.phone}`}>{client.phone}</a>
-						{:else}
-							<span class="client-header__blank">Not added yet</span>
-						{/if}
-					</dd>
-				</div>
-				<div class="client-header__fact">
-					<dt><span aria-hidden="true">{@html messageIcon}</span>Main email</dt>
-					<dd>
-						{#if client.email}
-							<a href={`mailto:${client.email}`}>{client.email}</a>
-						{:else}
-							<span class="client-header__blank">Not added yet</span>
-						{/if}
-					</dd>
-				</div>
-				{#if client.billing_email}
-					<div class="client-header__fact">
-						<dt><span aria-hidden="true">{@html receiptIcon}</span>Billing email</dt>
-						<dd><a href={`mailto:${client.billing_email}`}>{client.billing_email}</a></dd>
-					</div>
-				{/if}
-				<div class="client-header__fact">
-					<dt>Client since</dt>
-					<dd>{clientSince}</dd>
-				</div>
-			</dl>
-
-			{#if stats.length > 0}
-				<ul class="client-header__stats">
-					{#each stats as stat (stat.label)}
-						<li class="client-header__stat">
-							<span class="client-header__stat-icon" aria-hidden="true">{@html stat.icon}</span>
-							<span class="client-header__stat-text">
-								<span class="client-header__stat-label">{stat.label}</span>
-								<span class="client-header__stat-value">{stat.value ?? stat.waiting}</span>
-							</span>
-						</li>
-					{/each}
-				</ul>
-			{/if}
+		<div class="client-header__facts">
+			<RecordFactsList {facts} neutralIcons />
 		</div>
 	{/if}
+
+	{#if tabs}<div class="client-header__tabs">{@render tabs()}</div>{/if}
 </section>
 
 {#if manualEmailOpen}
@@ -269,46 +248,81 @@
 	.client-header {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-base);
-		padding: var(--space-large);
+		padding: 24px 28px 0;
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
-		background: var(--color-surface--background);
+		background: var(--color-surface);
 
 		&__top {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: var(--space-base);
+		}
+
+		&__status {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			min-width: 0;
+			color: var(--color-text--secondary);
+			font-size: 12px;
+		}
+
+		&__eyebrow {
+			font-weight: 600;
+			letter-spacing: 0.6px;
+			text-transform: uppercase;
+		}
+
+		&__sep {
+			width: 3px;
+			height: 3px;
+			border-radius: 50%;
+			background: var(--color-icon--secondary);
+		}
+
+		&__meta {
+			font-weight: 500;
+		}
+
+		&__buttons,
+		&__actions {
 			display: flex;
 			align-items: center;
 			gap: var(--space-small);
 		}
 
 		&__buttons {
-			display: flex;
-			align-items: center;
-			gap: var(--space-small);
-			margin-left: auto;
+			flex: 0 0 auto;
+		}
+
+		&__actions {
+			flex: 0 0 auto;
+			justify-content: flex-end;
 		}
 
 		// Same square icon button the work records' header uses, so History reads identically wherever it is.
 		&__icon-button {
 			display: inline-flex;
 			box-sizing: border-box;
-			width: var(--space-larger);
-			height: var(--space-larger);
+			width: 40px;
+			height: 40px;
 			flex: 0 0 auto;
 			align-items: center;
 			justify-content: center;
 			padding: 0;
-			border: var(--border-base) solid var(--color-border--interactive);
+			border: var(--border-base) solid var(--color-border);
 			border-radius: var(--radius-base);
 			background: var(--color-surface);
-			color: var(--color-interactive--subtle);
+			color: var(--color-text--secondary);
 			cursor: pointer;
 			transition: all var(--timing-base) ease-out;
 
 			:global(svg) {
 				display: block;
-				width: 20px;
-				height: 20px;
+				width: 18px;
+				height: 18px;
 			}
 
 			&:hover,
@@ -332,136 +346,149 @@
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
-			gap: var(--space-small);
+			gap: var(--space-base);
+			padding: 18px 0 24px;
+		}
+
+		&__name {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			min-width: 0;
+			flex: 1 1 auto;
 
 			h1 {
+				overflow: hidden;
 				color: var(--color-heading);
 				font-size: var(--typography--fontSize-largest);
 				font-weight: 700;
-				line-height: var(--typography--lineHeight-tight);
+				letter-spacing: -0.8px;
+				line-height: 1.15;
+				text-overflow: ellipsis;
+				white-space: nowrap;
 			}
 		}
 
-		&__body {
-			display: grid;
-			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-			gap: var(--space-large);
-			align-items: start;
+		&__editor {
+			padding: 18px 0 24px;
 		}
 
 		&__facts {
-			display: flex;
-			flex-direction: column;
+			padding: 18px 0 22px;
+			border-top: var(--border-base) solid var(--color-border);
 		}
 
-		&__fact {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			gap: var(--space-base);
-			padding: var(--space-small) 0;
-
-			& + & {
-				border-top: var(--border-base) solid var(--color-border);
+		// The tab row closes the card. Its own divider is the card's edge.
+		&__tabs {
+			:global(.tabs__list) {
+				gap: 28px;
+				margin-bottom: 0;
+				border-bottom: 0;
 			}
-
-			dt {
-				display: flex;
-				align-items: center;
-				gap: var(--space-small);
-				color: var(--color-text--secondary);
-
-				:global(svg) {
-					display: block;
-					width: 16px;
-					height: 16px;
-					color: var(--color-icon--secondary);
-				}
+			:global(.tabs__tab) {
+				height: auto;
+				padding: 0 0 12px;
+				border-radius: 0;
+				background: transparent;
+				font-size: var(--typography--fontSize-base);
 			}
-
-			dd {
-				overflow: hidden;
-				color: var(--color-heading);
-				font-weight: 600;
-				text-overflow: ellipsis;
-				white-space: nowrap;
-
-				a {
-					color: inherit;
-					text-decoration: none;
-
-					&:hover {
-						text-decoration: underline;
-					}
-				}
+			:global(.tabs__tab:focus-visible) {
+				border-radius: var(--radius-small);
+				background: transparent;
+				box-shadow: var(--shadow-focus);
+			}
+			:global(.tabs__tab[data-state='active'])::after {
+				height: 2px;
 			}
 		}
+	}
 
-		&__blank {
-			color: var(--color-text--secondary);
-			font-weight: 400;
+	// The outline button the App look uses beside a heading: quiet border, heading-coloured label.
+	:global(.button.client-header__button) {
+		gap: 6px;
+		border-color: var(--color-border);
+		color: var(--color-heading);
+		background: var(--color-surface);
+		font-size: var(--typography--fontSize-base);
+		font-weight: 600;
+
+		&:hover:not(:disabled):not(.button--inactive),
+		&:focus-visible {
+			border-color: var(--color-interactive--subtle--hover);
+			background: var(--color-surface--hover);
 		}
 
-		&__stats {
-			display: flex;
-			flex-direction: column;
-			gap: var(--space-base);
-		}
-
-		&__stat {
-			display: flex;
-			align-items: center;
-			gap: var(--space-small);
-		}
-
-		&__stat-icon {
-			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-			width: var(--space-larger);
-			height: var(--space-larger);
-			border-radius: var(--radius-base);
-			color: var(--color-icon);
-			background: var(--color-surface);
-
-			:global(svg) {
-				display: block;
-				width: 20px;
-				height: 20px;
-			}
-		}
-
-		&__stat-text {
-			display: flex;
-			min-width: 0;
-			flex-direction: column;
-		}
-
-		&__stat-label {
+		&:disabled {
+			border-color: var(--color-border);
 			color: var(--color-heading);
-			font-weight: 700;
+			background: var(--color-surface);
+			opacity: 0.45;
 		}
+	}
+	:global(.client-header__button-icon) {
+		display: inline-flex;
+		color: var(--color-text--secondary);
 
-		&__stat-value {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
+	}
+	:global(.client-header__more) {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		height: 40px;
+		padding: 0 14px;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		color: var(--color-heading);
+		background: var(--color-surface);
+		font-size: var(--typography--fontSize-base);
+		font-weight: 600;
+		cursor: pointer;
+		transition: all var(--timing-base) ease-out;
+
+		&:hover,
+		&:focus-visible {
+			border-color: var(--color-interactive--subtle--hover);
+			background: var(--color-surface--hover);
+		}
+		&:focus-visible {
+			outline: transparent;
+			box-shadow: var(--shadow-focus);
+		}
+	}
+	:global(.client-header__chevron) {
+		display: inline-flex;
+		color: var(--color-text--secondary);
+
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	// A narrower laptop has no room for the name and three buttons side by side, so the buttons drop under it.
+	@media (max-width: 1359px) {
+		.client-header__identity {
+			flex-wrap: wrap;
+		}
+		.client-header__actions {
+			flex-wrap: wrap;
+			justify-content: flex-start;
 		}
 	}
 
 	@media (max-width: 767px) {
 		.client-header {
-			padding: var(--space-base);
+			padding: var(--space-base) var(--space-base) 0;
 
-			&__body {
-				grid-template-columns: 1fr;
-				gap: var(--space-base);
-			}
-			&__buttons {
-				width: 100%;
-				margin-left: 0;
-			}
 			&__top {
+				flex-wrap: wrap;
+			}
+			&__buttons,
+			&__actions {
 				flex-wrap: wrap;
 			}
 		}

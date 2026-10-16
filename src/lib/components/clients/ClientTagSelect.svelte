@@ -7,8 +7,9 @@
 	// `tagIds`; a detail page passes the ids one way and stages the change through `onChange`.
 	let {
 		tagIds = $bindable<string[]>([]),
+		quiet = false,
 		onChange
-	}: { tagIds?: string[]; onChange?: (next: string[]) => void } = $props();
+	}: { tagIds?: string[]; quiet?: boolean; onChange?: (next: string[]) => void } = $props();
 
 	const queryClient = useQueryClient();
 	const tagsQuery = createQuery<Tag[]>(() => ({ queryKey: tagsKey, queryFn: fetchTags }));
@@ -30,4 +31,5 @@
 	catalog={tagsQuery.data ?? []}
 	onCreate={create}
 	searchId="client-form-tag-search"
+	{quiet}
 />

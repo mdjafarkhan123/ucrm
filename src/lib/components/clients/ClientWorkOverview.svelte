@@ -20,10 +20,10 @@
 		type ClientWorkPage
 	} from '$lib/clients/work';
 	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
-	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
+	import clipboardListIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
 	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
-	import toolsIcon from '@tabler/icons/outline/tools.svg?raw';
-	import fileInvoiceIcon from '@tabler/icons/outline/file-invoice.svg?raw';
+	import hammerIcon from '@tabler/icons/outline/hammer.svg?raw';
+	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 
 	// The client page's Work overview: every request, quote, job and invoice for this client in one table,
 	// newest first, with a type filter — Jobber's client-page pattern (jobber-08-screen-patterns.md).
@@ -31,13 +31,17 @@
 	// The work is edited on its own pages, never here, so this reads fresh every time the client page opens
 	// (staleTime 0) while still painting the last answer straight away.
 
-	let { clientId }: { clientId: string } = $props();
+	let {
+		clientId,
+		clientName
+	}: { clientId: string; /** The first name, for the line under the title. */ clientName: string } =
+		$props();
 
 	const KIND_ICONS: Record<ClientWorkKind, string> = {
-		request: inboxIcon,
+		request: clipboardListIcon,
 		quote: fileTextIcon,
-		job: toolsIcon,
-		invoice: fileInvoiceIcon
+		job: hammerIcon,
+		invoice: receiptIcon
 	};
 	const KIND_PLURALS: Record<ClientWorkKind, string> = {
 		request: 'Requests',
@@ -82,9 +86,17 @@
 			: kindQuery.data?.pages.find((page) => page.locale)?.locale) ?? undefined
 	);
 
-	const dateFormat = $derived(
+	// Work from this year reads "Oct 6"; older work keeps its year so it cannot be mistaken for this year's.
+	const shortFormat = $derived(new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }));
+	const fullFormat = $derived(
 		new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' })
 	);
+	function formatDate(value: string) {
+		const date = new Date(value);
+		return (date.getFullYear() === new Date().getFullYear() ? shortFormat : fullFormat).format(
+			date
+		);
+	}
 	// One formatter per currency rather than one per figure. A plain object: nothing reads it reactively.
 	const moneyFormatters: Record<string, Intl.NumberFormat> = {};
 	function formatAmount(item: ClientWorkItem) {
@@ -112,15 +124,21 @@
 
 	const columns: DataTableColumn[] = [
 		{ key: 'item', label: 'Item' },
-		{ key: 'address', label: 'Address' },
-		{ key: 'date', label: 'Date' },
-		{ key: 'status', label: 'Status' },
-		{ key: 'amount', label: 'Amount', align: 'end' }
+		{ key: 'address', label: 'Address', width: '196px' },
+		{ key: 'date', label: 'Date', width: '86px' },
+		{ key: 'status', label: 'Status', width: '150px' },
+		{ key: 'amount', label: 'Amount', align: 'end', width: '104px' }
 	];
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<SectionBlock title="Work overview" icon={briefcaseIcon} level={2}>
+<SectionBlock
+	title="Work overview"
+	subtitle={`Latest work for ${clientName}`}
+	icon={briefcaseIcon}
+	level={2}
+	class="section-block--flush client-work"
+>
 	{#snippet actions()}
 		{#if kinds.length > 1}
 			<Select
@@ -134,28 +152,37 @@
 	{/snippet}
 
 	{#if activeQuery.isPending}
-		<LoadingSkeleton variant="table" label="Loading this client's work" rows={3} />
+		<div class="client-work__pad">
+			<LoadingSkeleton variant="table" label="Loading this client's work" rows={3} />
+		</div>
 	{:else if activeQuery.isError}
-		<ErrorState description="This client's work could not be loaded. Refresh and try again." />
+		<div class="client-work__pad">
+			<ErrorState description="This client's work could not be loaded. Refresh and try again." />
+		</div>
 	{:else if items.length === 0}
-		<EmptyState
-			icon={kind === 'all' ? briefcaseIcon : KIND_ICONS[kind]}
-			title={kind === 'all' ? 'No work yet' : `No ${KIND_PLURALS[kind].toLowerCase()} yet`}
-			description={kind === 'all'
-				? 'Requests, quotes, jobs, and invoices for this client will all be listed here once you start creating them.'
-				: `${KIND_PLURALS[kind]} for this client will be listed here.`}
-		/>
+		<div class="client-work__pad">
+			<EmptyState
+				icon={kind === 'all' ? briefcaseIcon : KIND_ICONS[kind]}
+				title={kind === 'all' ? 'No work yet' : `No ${KIND_PLURALS[kind].toLowerCase()} yet`}
+				description={kind === 'all'
+					? 'Requests, quotes, jobs, and invoices for this client will all be listed here once you start creating them.'
+					: `${KIND_PLURALS[kind]} for this client will be listed here.`}
+			/>
+		</div>
 	{:else}
 		<DataTable
 			{columns}
 			{items}
 			rowId={(item) => `${item.kind}:${item.id}`}
 			caption="This client's work"
+			variant="card"
 		>
 			{#snippet row(item: ClientWorkItem)}
 				<th scope="row" class="client-work__fluid client-work__fluid--item">
 					<div class="client-work__item">
-						<span class="client-work__icon" aria-hidden="true">{@html KIND_ICONS[item.kind]}</span>
+						<span class={`client-work__icon client-work__icon--${item.kind}`} aria-hidden="true"
+							>{@html KIND_ICONS[item.kind]}</span
+						>
 						<div class="client-work__text">
 							<a class="client-work__link" href={recordHref(item)}>{item.label}</a>
 							{#if item.title}<span class="client-work__title">{item.title}</span>{/if}
@@ -165,11 +192,15 @@
 				<td class="client-work__fluid client-work__fluid--address" title={item.address ?? undefined}
 					>{item.address ?? '—'}</td
 				>
-				<td class="client-work__nowrap">{dateFormat.format(new Date(item.created_at))}</td>
+				<td class="client-work__nowrap client-work__date">{formatDate(item.created_at)}</td>
 				<td>
-					<StatusBadge status={item.status_tone}>{item.status_label}</StatusBadge>
+					<StatusBadge status={item.status_tone} size="compact">{item.status_label}</StatusBadge>
 				</td>
-				<td class="align-end client-work__nowrap">{formatAmount(item)}</td>
+				<td
+					class="align-end client-work__nowrap client-work__amount"
+					class:client-work__amount--none={item.total_minor === null || !item.currency_code}
+					>{formatAmount(item)}</td
+				>
 			{/snippet}
 			{#snippet footer()}
 				{#if kind === 'all'}
@@ -192,35 +223,71 @@
 </SectionBlock>
 
 <style lang="scss">
+	// The card is 800px-ish wide, so the table fits it and never needs the list tables' 1040px floor.
+	:global(.client-work) {
+		--data-table-min-width: 640px;
+
+		:global(.data-table--card tbody tr:last-child th),
+		:global(.data-table--card tbody tr:last-child td) {
+			border-bottom: 0;
+		}
+	}
+
 	.client-work {
+		&__pad {
+			padding: 0 24px 24px;
+		}
+
 		&__item {
 			display: flex;
 			align-items: center;
-			gap: var(--space-small);
+			gap: 12px;
 			min-width: 0;
 		}
 
+		// A tile in the colour of the record's kind, as on every list and summary elsewhere in the app.
 		&__icon {
-			display: inline-flex;
-			flex-shrink: 0;
-			color: var(--color-text--secondary);
+			display: inline-grid;
+			flex: 0 0 32px;
+			width: 32px;
+			height: 32px;
+			place-items: center;
+			border-radius: 10px;
+			color: var(--color-success--onSurface);
+			background: var(--color-success--surface);
 
 			:global(svg) {
-				width: 18px;
-				height: 18px;
+				width: 15px;
+				height: 15px;
+			}
+
+			&--quote {
+				color: var(--color-critical);
+				background: var(--color-critical--surface);
+			}
+			&--request {
+				color: var(--color-warning--onSurface);
+				background: var(--color-warning--surface);
+			}
+			&--invoice {
+				color: var(--color-informative--onSurface);
+				background: var(--color-informative--surface);
 			}
 		}
 
 		&__text {
 			display: flex;
 			flex-direction: column;
+			gap: 2px;
 			min-width: 0;
 		}
 
 		&__link {
-			color: var(--color-heading);
+			overflow: hidden;
+			color: var(--color-interactive);
 			font-weight: 600;
 			text-decoration: none;
+			text-overflow: ellipsis;
 
 			&:hover {
 				text-decoration: underline;
@@ -236,16 +303,15 @@
 		&__title {
 			overflow: hidden;
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 400;
+			font-size: 12px;
+			font-weight: 500;
 			text-overflow: ellipsis;
 			white-space: nowrap;
 		}
 
 		// Item and Address share whatever width Date, Status and Amount leave, and cut long text with an
 		// ellipsis instead of pushing Amount off the edge. `max-width: 0` stops their text from setting the
-		// column's width; the full address is on hover and on the record itself. Below the minimums the
-		// table scrolls sideways, as every DataTable does on a phone.
+		// column's width; the full address is on hover and on the record itself.
 		&__fluid {
 			max-width: 0;
 			overflow: hidden;
@@ -253,18 +319,34 @@
 			white-space: nowrap;
 
 			&--item {
-				width: 45%;
-				min-width: 150px;
+				min-width: 180px;
 			}
 
 			&--address {
-				width: 35%;
-				min-width: 100px;
+				color: var(--color-text);
+				font-size: 13px;
+				font-weight: 500;
 			}
+		}
+
+		&__date {
+			color: var(--color-text);
+			font-size: 13px;
+			font-weight: 500;
 		}
 
 		&__nowrap {
 			white-space: nowrap;
+		}
+
+		&__amount {
+			color: var(--color-heading);
+			font-variant-numeric: tabular-nums;
+			font-weight: 600;
+
+			&--none {
+				color: var(--color-text--secondary);
+			}
 		}
 
 		&__more {

@@ -6,13 +6,22 @@
 	// A row with nothing in it says what it is waiting for rather than showing a blank line.
 	import type { RecordFact } from './types';
 
-	let { facts, class: className = '' }: { facts: RecordFact[]; class?: string } = $props();
+	let {
+		facts,
+		neutralIcons = false,
+		class: className = ''
+	}: {
+		facts: RecordFact[];
+		/** App look: every icon tile is the same quiet colour, instead of the first one being green. */
+		neutralIcons?: boolean;
+		class?: string;
+	} = $props();
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<dl class={`record-facts ${className}`}>
+<dl class={`record-facts ${className}`} class:record-facts--neutral={neutralIcons}>
 	{#each facts as fact (fact.label)}
-		<div class="record-facts__row">
+		<div class="record-facts__row" class:record-facts__row--fixed={fact.fixed}>
 			{#if fact.icon}<span
 					class={['record-facts__icon', fact.tone && `record-facts__icon--${fact.tone}`]}
 					aria-hidden="true">{@html fact.icon}</span
@@ -20,7 +29,11 @@
 			<dt>{fact.label}</dt>
 			{#if fact.value}
 				<dd class:record-facts__wrap={fact.wrap} class:record-facts__quiet={fact.quiet}>
-					{fact.value}
+					{#if fact.href}
+						<!-- The caller builds the link (tel:, mailto:); nothing here is an app route. -->
+						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+						<a class="record-facts__link" href={fact.href}>{fact.value}</a>
+					{:else}{fact.value}{/if}
 				</dd>
 			{:else}
 				<dd class="record-facts__empty">{fact.empty ?? '—'}</dd>
@@ -70,6 +83,20 @@
 			color: var(--color-text--secondary);
 		}
 
+		&__link {
+			color: inherit;
+			text-decoration: none;
+
+			&:hover {
+				text-decoration: underline;
+			}
+			&:focus-visible {
+				border-radius: var(--radius-small);
+				outline: none;
+				box-shadow: var(--shadow-focus);
+			}
+		}
+
 		&__wrap {
 			overflow: visible;
 			white-space: normal;
@@ -85,14 +112,17 @@
 	// above, the value below — with a hairline between columns.
 	:global(.record-detail--cards) .record-facts {
 		display: flex;
-		flex-flow: row wrap;
+		flex-flow: row nowrap;
 		align-items: center;
 		gap: 16px 0;
 
 		.record-facts__row {
 			display: grid;
 			flex: 1 1 auto;
+			align-content: center;
 			align-items: center;
+			min-width: 0;
+			row-gap: 2px;
 			padding: 0 16px;
 			column-gap: 10px;
 			grid-template-columns: auto minmax(0, 1fr);
@@ -104,7 +134,11 @@
 			&:first-child {
 				padding-left: 0;
 			}
+			&.record-facts__row--fixed {
+				flex-shrink: 0;
+			}
 			dt {
+				white-space: nowrap;
 				grid-column: 2;
 				grid-row: 1;
 				font-size: var(--typography--fontSize-small);
@@ -133,7 +167,7 @@
 				height: 17px;
 			}
 		}
-		.record-facts__row:first-child .record-facts__icon {
+		&:not(.record-facts--neutral) .record-facts__row:first-child .record-facts__icon {
 			color: var(--color-interactive);
 			background: var(--color-success--surface);
 		}
@@ -173,6 +207,7 @@
 			dd {
 				overflow: visible;
 				white-space: normal;
+				overflow-wrap: anywhere;
 			}
 		}
 	}

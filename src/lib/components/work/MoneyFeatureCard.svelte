@@ -48,7 +48,8 @@
 		loading = false
 	}: {
 		eyebrow: string;
-		value: string;
+		/** Leave out for a card that is only a list of figures. */
+		value?: string;
 		note?: string;
 		detailLabel?: string;
 		detailValue?: string;
@@ -103,9 +104,10 @@
 	{:else}
 		<p class="money-card__eyebrow">{eyebrow}</p>
 	{/if}
+	{#if value !== undefined || note}
 	<div class="money-card__figure">
 		<div class="money-card__figure-row">
-			<p class="money-card__value">{value}</p>
+			{#if value !== undefined}<p class="money-card__value">{value}</p>{/if}
 			{#if pill}
 				<span class="money-card__pill">
 					<span class="money-card__pill-icon" aria-hidden="true">{@html checkIcon}</span>
@@ -121,6 +123,7 @@
 		</div>
 		{#if note}<p class="money-card__note">{note}</p>{/if}
 	</div>
+	{/if}
 	{#if breakdown && breakdown.length > 0}
 		<div class="money-card__breakdown">
 			<div class="money-card__bar" aria-hidden="true">

@@ -33,6 +33,7 @@
 		label,
 		onChange,
 		compact = false,
+		header,
 		children
 	}: {
 		tabs: Tab[];
@@ -46,6 +47,9 @@
 		/** The App look's card tabs: 14px labels, set in the card's own side padding, with a pill for each
 		 *  tab's badge and no space reserved above the panel. */
 		compact?: boolean;
+		/** Put the tab row somewhere else, e.g. at the foot of a card that sits above the panels. It is
+		 * handed the row to draw, and the panels still follow as children. */
+		header?: Snippet<[Snippet]>;
 		children: Snippet;
 	} = $props();
 
@@ -70,23 +74,30 @@
 	}}
 	class={compact ? 'tabs tabs--compact' : 'tabs'}
 >
-	<TabsPrimitive.List class="tabs__list" aria-label={label}>
-		{#each tabs as tab (tab.value)}
-			<TabsPrimitive.Trigger
-				value={tab.value}
-				class="tabs__tab"
-				onmouseenter={tab.onhover}
-				onfocus={tab.onhover}
-			>
-				{tab.label}
-				{#if tab.badge}
-					<span class={['tabs__badge', tab.badgeTone === 'success' && 'tabs__badge--success']}
-						>{tab.badge}</span
-					>
-				{/if}
-			</TabsPrimitive.Trigger>
-		{/each}
-	</TabsPrimitive.List>
+	{#snippet list()}
+		<TabsPrimitive.List class="tabs__list" aria-label={label}>
+			{#each tabs as tab (tab.value)}
+				<TabsPrimitive.Trigger
+					value={tab.value}
+					class="tabs__tab"
+					onmouseenter={tab.onhover}
+					onfocus={tab.onhover}
+				>
+					{tab.label}
+					{#if tab.badge}
+						<span class={['tabs__badge', tab.badgeTone === 'success' && 'tabs__badge--success']}
+							>{tab.badge}</span
+						>
+					{/if}
+				</TabsPrimitive.Trigger>
+			{/each}
+		</TabsPrimitive.List>
+	{/snippet}
+	{#if header}
+		{@render header(list)}
+	{:else}
+		{@render list()}
+	{/if}
 	{@render children()}
 </TabsPrimitive.Root>
 
