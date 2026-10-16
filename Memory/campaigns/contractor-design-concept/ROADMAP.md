@@ -1,11 +1,15 @@
 # Contractor design concept — roadmap
 
-**Plan:** `docs/contractor-design-concept-behavior-contract.md` — scope drafted, not approved.
+**Plan:** `docs/contractor-design-concept-behavior-contract.md` — two phases; Phase B starts only after Phase A.
 
 | Part | Plan section | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- | --- |
-| 1 Research | Experience target | Cited file: what leading products show and omit per screen | — | `docs/research/` file saved; Jafar read it | Not started |
-| 2 Concept | Experience target | Colour rules, type, spacing, shell and core parts in `classic.pen` | 1 | Jafar approves the concept | Not started |
-| 3 Pilot screens | First version | Home, Jobs list, Job details designed to the concept | 2 | Jafar approves each screen | Not started |
-| 4 Build pilots | First version | Pilots built, compared with Pencil, branch decided | 3 | Live screens match Pencil | Not started |
-| 5 Rollout | First version | Whole app on one look; old styles deleted | 4 | Every page checked; no unused code | Not started |
+| A1 Shell, lists, Job details | First version A | New shell, 5 lists, Job details built | — | Pushed on branch; checked at 1440/1100 light+dark | Done, not merged |
+| A2 Other designed screens | First version A | Quote, Invoice, Request, Client, Payment details; Home; Inbox; Settings | A1 | Each matches its Pencil frame; no new behaviour | Not started |
+| A3 Schedule | First version A | Schedule month/day/states, drawers, new-item dialogs | A1 | Matches Pencil frames | Not started |
+| A4 Undesigned screens | First version A | Timesheets, Pipeline, Files, Marketing, Reviews, Reports designed in Pencil, approved, built | A1 | Jafar approves each design; built | Not started |
+| A5 Cleanup | First version A | Shared parts are the only look; old styles/options deleted; docs and design skills match | A2–A4 | Every page checked; lint and unused-code scan clean; merged to main | Not started |
+| B1 Research | First version B | Cited file of what top products show and omit | A5 | `docs/research/` saved; Jafar read it | Not started |
+| B2 Concept | Experience target | Colour, type, spacing, shell, core parts in Pencil | B1 | Jafar approves | Not started |
+| B3 Pilot screens | First version B | Home, Jobs list, Job details designed | B2 | Jafar approves each | Not started |
+| B4 Build and rollout | First version B | Pilots built, then whole app on the new look | B3 | Every page checked; no old code | Not started |

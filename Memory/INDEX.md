@@ -28,4 +28,4 @@ Deferred work is indexed separately at Memory/deferred/INDEX.md; read it only wh
 
 
 | crm-design-system | In progress 2026-10-12 — A1 complete/integrated; A2a chooser/notice demo next; approvals preserved | Selectable Classic/Botanical designs; foundation then complete Botanical | Memory/campaigns/crm-design-system/NOW.md | CRM themes, Botanical redesign, design skills or selected-only loading |
-| contractor-design-concept | Planning 2026-10-16 — plan drafted; research starts next session | A researched, premium, calm contractor design concept, proven on pilot screens, then applied app-wide | Memory/campaigns/contractor-design-concept/NOW.md | Contractor redesign, new design concept, design research, app-wide look |
+| contractor-design-concept | Building (Phase A) 2026-10-16 — A1 done on branch, A2 next; Phase B (research, new concept) after | Finish today's design everywhere and delete old code, then a researched premium new concept applied app-wide | Memory/campaigns/contractor-design-concept/NOW.md | Contractor redesign, App look build, shared parts cleanup, new design concept |
