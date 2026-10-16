@@ -42,9 +42,7 @@ npm run lint            # Prettier + ESLint
 npm run format          # format repo
 ```
 
-Claude Code and Codex tidy each file they edit with Prettier automatically (`scripts/format-edited-files.py`), and
-`npx prettier --check .` passes for the whole project. Check your own work with `npx prettier --check <paths>`; its CLI cannot match a glob
-containing `(app)`, so pass those file paths out in full.
+Avoid full-project checks for small styling changes and use focused checks on the affected components.
 
 **Database changes.** Apply a migration file to the remote database with `psql` through `SUPABASE_DB_URL` in
 `.env` (session pooler; never print it), recording it in the same transaction so a failure leaves nothing behind:
@@ -101,7 +99,7 @@ stay in the router. Classic remains live until approved rollout. Load both for w
 
 ## Campaign
 
--Load `.claude/skills/campaign-memory/SKILL.md` when user wants to build a product or planning or wanna let you work on any task
+-Load `.claude/skills/campaign-memory/SKILL.md` when user wants to build a product or planning or tell you to work on any task
 
 ## Concurrent agent work
 
