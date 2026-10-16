@@ -13,11 +13,15 @@
 <dl class={`record-facts ${className}`}>
 	{#each facts as fact (fact.label)}
 		<div class="record-facts__row">
-			{#if fact.icon}<span class="record-facts__icon" aria-hidden="true">{@html fact.icon}</span
+			{#if fact.icon}<span
+					class={['record-facts__icon', fact.tone && `record-facts__icon--${fact.tone}`]}
+					aria-hidden="true">{@html fact.icon}</span
 				>{/if}
 			<dt>{fact.label}</dt>
 			{#if fact.value}
-				<dd class:record-facts__wrap={fact.wrap}>{fact.value}</dd>
+				<dd class:record-facts__wrap={fact.wrap} class:record-facts__quiet={fact.quiet}>
+					{fact.value}
+				</dd>
 			{:else}
 				<dd class="record-facts__empty">{fact.empty ?? '—'}</dd>
 			{/if}
@@ -60,6 +64,10 @@
 		&__empty {
 			color: var(--color-text--secondary);
 			font-weight: 400;
+		}
+
+		&__quiet {
+			color: var(--color-text--secondary);
 		}
 
 		&__wrap {
@@ -128,6 +136,25 @@
 		.record-facts__row:first-child .record-facts__icon {
 			color: var(--color-interactive);
 			background: var(--color-success--surface);
+		}
+		// A page that names a tone per fact overrides the first-fact default above.
+		.record-facts__icon--neutral,
+		.record-facts__row:first-child .record-facts__icon--neutral {
+			color: var(--color-icon--secondary);
+			background: var(--color-surface--background--subtle);
+		}
+		.record-facts__icon--success,
+		.record-facts__row:first-child .record-facts__icon--success {
+			color: var(--color-interactive);
+			background: var(--color-success--surface);
+		}
+		.record-facts__icon--warning,
+		.record-facts__row:first-child .record-facts__icon--warning {
+			color: var(--color-warning--onSurface);
+			background: var(--color-warning--surface);
+		}
+		.record-facts__empty {
+			font-weight: 600;
 		}
 	}
 

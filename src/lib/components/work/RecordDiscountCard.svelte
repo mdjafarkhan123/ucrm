@@ -2,7 +2,9 @@
 	import { untrack } from 'svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import RecordAdjustmentRow from './RecordAdjustmentRow.svelte';
+	import RailRow from '$lib/components/layout/RailRow.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
@@ -10,6 +12,7 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import type { QuoteDiscountType, QuoteWriteError } from '$lib/quotes/api';
 	import discountIcon from '@tabler/icons/outline/discount.svg?raw';
+	import tagIcon from '@tabler/icons/outline/tag.svg?raw';
 
 	// The one discount a priced record carries, named the way the customer reads it. The card shows what is
 	// set and how much came off; the dialog is where it is changed. Like any dialog that owns a piece of the
@@ -53,8 +56,9 @@
 		/** The record does not exist yet. The page holds the choice and writes it when the record is saved, so
 		 * there is nothing to announce as saved here. */
 		staged?: boolean;
-		/** Draws one row for a shared "Discount and tax" card instead of a card of its own. */
-		embedded?: boolean;
+		/** Draws one row for a shared "Discount and tax" card instead of a card of its own. `true` ends the row
+		 *  in an "Add"/"Edit" word (Invoice details); `'pencil'` ends it in a pencil button (Quote details). */
+		embedded?: boolean | 'pencil';
 		/** Writes the discount against the revision it is handed. */
 		onSave: (
 			revision: number,
@@ -152,7 +156,28 @@
 	}
 </script>
 
-{#if embedded}
+{#if embedded === 'pencil'}
+	<RailRow
+		icon={tagIcon}
+		label="Discount"
+		value={!canSeePrice
+			? 'No access to prices'
+			: configured
+				? `${name || 'Discount'}${discountMinor !== null ? ` · −${money.format(discountMinor / 100)}` : ` · ${valueText} off`}`
+				: editable
+					? 'None added'
+					: `No discount on this ${recordNoun}`}
+	>
+		{#snippet actions()}
+			{#if editable && canSeePrice}
+				<PencilButton
+					onclick={openDialog}
+					label={configured ? 'Edit the discount' : 'Add a discount'}
+				/>
+			{/if}
+		{/snippet}
+	</RailRow>
+{:else if embedded}
 	<RecordAdjustmentRow
 		icon={discountIcon}
 		label="Discount"

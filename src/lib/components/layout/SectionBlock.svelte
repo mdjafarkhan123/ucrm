@@ -184,6 +184,8 @@
 		}
 		> :global(.section-block__hint) {
 			margin: -12px 24px 20px;
+			font-size: 13px;
+			font-weight: 500;
 		}
 		// With a quiet line under the title, the actions sit beside both lines and the two lines pack together.
 		&:has(> :global(.section-block__hint)) {

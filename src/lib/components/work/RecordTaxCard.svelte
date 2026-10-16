@@ -3,7 +3,9 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import RecordAdjustmentRow from './RecordAdjustmentRow.svelte';
+	import RailRow from '$lib/components/layout/RailRow.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
@@ -13,6 +15,7 @@
 	import type { QuoteTaxSource, QuoteWriteError } from '$lib/quotes/api';
 	import { fetchTaxPicker, taxPickerKey } from '$lib/settings/api';
 	import taxIcon from '@tabler/icons/outline/receipt-tax.svg?raw';
+	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 
 	// Five ways a priced record's tax can be set: follow the Business default, follow this property's own
 	// pin, freeze one saved rate, freeze a one-off custom rate, or say explicitly there is no tax. Whichever
@@ -62,8 +65,9 @@
 		staged?: boolean;
 		/** Why an unset tax matters here. A quote cannot be sent without one; a job simply is not taxed yet. */
 		unsetHint?: string;
-		/** Draws one row for a shared "Discount and tax" card instead of a card of its own. */
-		embedded?: boolean;
+		/** Draws one row for a shared "Discount and tax" card instead of a card of its own. `true` ends the row
+		 *  in an "Add"/"Edit" word (Invoice details); `'pencil'` ends it in a pencil button (Quote details). */
+		embedded?: boolean | 'pencil';
 		/** Writes the tax choice against the revision it is handed. */
 		onSave: (revision: number, payload: TaxPayload) => Promise<unknown>;
 		onSaved: (result: unknown) => Promise<void> | void;
@@ -237,7 +241,30 @@
 	}
 </script>
 
-{#if embedded}
+{#if embedded === 'pencil'}
+	<RailRow
+		icon={receiptIcon}
+		label="Tax"
+		tone={taxSource === 'not_configured' && canSeePrice ? 'warning' : 'neutral'}
+		value={!canSeePrice
+			? 'No access to prices'
+			: taxSource === 'not_configured'
+				? 'Not configured'
+				: taxSource === 'no_tax'
+					? 'No tax'
+					: `${name || 'Tax'} ${rateText}${taxMinor !== null ? ` · ${money.format(taxMinor / 100)}` : ''}`}
+	>
+		{#snippet actions()}
+			{#if editable && canSeePrice}
+				<PencilButton
+					onclick={openDialog}
+					onhover={warm}
+					label={taxSource === 'not_configured' ? 'Set the tax' : 'Edit the tax'}
+				/>
+			{/if}
+		{/snippet}
+	</RailRow>
+{:else if embedded}
 	<RecordAdjustmentRow
 		icon={taxIcon}
 		label="Tax"
