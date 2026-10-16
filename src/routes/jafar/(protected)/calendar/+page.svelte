@@ -12,6 +12,7 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import CalendarBar from '$lib/components/calendar/CalendarBar.svelte';
+	import CalendarCard from '$lib/components/calendar/CalendarCard.svelte';
 	import CalendarWeekGrid, {
 		type WeekGridGhost
 	} from '$lib/components/calendar/CalendarWeekGrid.svelte';
@@ -345,87 +346,91 @@
 		</div>
 	</header>
 
-	<CalendarBar
-		{view}
-		views={VIEWS}
-		{rangeLabel}
-		onstep={(direction) => navigate({ view, date: shiftScheduleDate(date, view, direction) })}
-		ontoday={() => navigate({ view, date: today })}
-		onview={(next) => navigate({ view: next, date: reanchorScheduleDate(date, view, next) })}
-	/>
-
-	{#if windowQuery.isError && !windowQuery.data}
-		<ErrorState
-			title="The calendar could not load"
-			description="Your dates are still here. Try again."
-			retry={() => void windowQuery.refetch()}
-		/>
-	{:else if !windowQuery.data}
-		<LoadingSkeleton variant="card" rows={4} label="Loading the calendar" />
-	{:else}
-		{#if windowQuery.data.truncated}
-			<p class="sales-calendar__notice" role="status">
-				This {view} holds more than the calendar can draw at once. Switch to Week or Day to see everything.
-			</p>
-		{/if}
-
-		{#if phone.current}
-			<SalesCalendarList
-				days={listDays}
-				{today}
-				{itemTime}
-				{passed}
-				onselect={select}
-				onbook={bookOnDay}
+	<CalendarCard class="sales-calendar__card">
+		{#snippet bar()}
+			<CalendarBar
+				{view}
+				views={VIEWS}
+				{rangeLabel}
+				onstep={(direction) => navigate({ view, date: shiftScheduleDate(date, view, direction) })}
+				ontoday={() => navigate({ view, date: today })}
+				onview={(next) => navigate({ view: next, date: reanchorScheduleDate(date, view, next) })}
 			/>
-		{:else if view === 'month'}
-			<CalendarMonthGrid
-				{days}
-				anchorDate={date}
-				itemsByDay={monthItems}
-				{today}
-				bookable
-				oncellclick={bookOnDay}
-			>
-				{#snippet card(item, density, relay)}
-					<SalesCalendarCard
-						{item}
-						density={density === 'micro' ? 'micro' : 'compact'}
-						time={itemTime(item, true)}
-						passed={passed(item)}
-						onselect={relay((chosen: CalendarItem) => select(chosen))}
-					/>
-				{/snippet}
-			</CalendarMonthGrid>
+		{/snippet}
+
+		{#if windowQuery.isError && !windowQuery.data}
+			<ErrorState
+				title="The calendar could not load"
+				description="Your dates are still here. Try again."
+				retry={() => void windowQuery.refetch()}
+			/>
+		{:else if !windowQuery.data}
+			<LoadingSkeleton variant="card" rows={4} label="Loading the calendar" />
 		{:else}
-			<CalendarWeekGrid
-				{columns}
-				{today}
-				nowMinutes={columns.some((column) => column.day === today) ? now.minutes : null}
-				{hourHeight}
-				{openingMinute}
-				{ghosts}
-				anytimeLabel="Due"
-				bookable
-				bind:columnEls
-				oncolumnpointerdown={beginSlot}
-			>
-				{#snippet anytimeItem(item)}
-					<SalesCalendarCard {item} density="micro" time="" onselect={select} />
-				{/snippet}
-				{#snippet block(placedBlock)}
-					{@const density = blockDensity(placedBlock)}
-					<SalesCalendarCard
-						item={placedBlock.item}
-						{density}
-						time={itemTime(placedBlock.item, density === 'micro')}
-						passed={passed(placedBlock.item)}
-						onselect={select}
-					/>
-				{/snippet}
-			</CalendarWeekGrid>
+			{#if windowQuery.data.truncated}
+				<p class="sales-calendar__notice" role="status">
+					This {view} holds more than the calendar can draw at once. Switch to Week or Day to see everything.
+				</p>
+			{/if}
+
+			{#if phone.current}
+				<SalesCalendarList
+					days={listDays}
+					{today}
+					{itemTime}
+					{passed}
+					onselect={select}
+					onbook={bookOnDay}
+				/>
+			{:else if view === 'month'}
+				<CalendarMonthGrid
+					{days}
+					anchorDate={date}
+					itemsByDay={monthItems}
+					{today}
+					bookable
+					oncellclick={bookOnDay}
+				>
+					{#snippet card(item, density, relay)}
+						<SalesCalendarCard
+							{item}
+							density={density === 'micro' ? 'micro' : 'compact'}
+							time={itemTime(item, true)}
+							passed={passed(item)}
+							onselect={relay((chosen: CalendarItem) => select(chosen))}
+						/>
+					{/snippet}
+				</CalendarMonthGrid>
+			{:else}
+				<CalendarWeekGrid
+					{columns}
+					{today}
+					nowMinutes={columns.some((column) => column.day === today) ? now.minutes : null}
+					{hourHeight}
+					{openingMinute}
+					{ghosts}
+					anytimeLabel="Due"
+					bookable
+					bind:columnEls
+					oncolumnpointerdown={beginSlot}
+				>
+					{#snippet anytimeItem(item)}
+						<SalesCalendarCard {item} density="micro" time="" onselect={select} />
+					{/snippet}
+					{#snippet block(placedBlock)}
+						{@const density = blockDensity(placedBlock)}
+						<SalesCalendarCard
+							item={placedBlock.item}
+							{density}
+							time={itemTime(placedBlock.item, density === 'micro')}
+							passed={passed(placedBlock.item)}
+							onselect={select}
+						/>
+					{/snippet}
+				</CalendarWeekGrid>
+			{/if}
 		{/if}
-	{/if}
+	</CalendarCard>
 </main>
 
 <Popover
@@ -475,6 +480,18 @@
 		min-width: 0;
 		display: grid;
 		gap: var(--space-base);
+	}
+
+	// The calendar is one card with a height of its own; the grid scrolls inside it.
+	.sales-calendar :global(.sales-calendar__card) {
+		height: clamp(520px, calc(100vh - 280px), 880px);
+	}
+
+	// On a phone the day list is as long as it needs to be and the page scrolls, not the card.
+	@media (max-width: 767px) {
+		.sales-calendar :global(.sales-calendar__card) {
+			height: auto;
+		}
 	}
 
 	.sales-calendar h1,
@@ -535,6 +552,7 @@
 	}
 
 	.sales-calendar__notice {
+		margin: var(--space-base) 20px 0;
 		padding: var(--space-small) var(--space-base);
 		border-radius: var(--radius-base);
 		background-color: var(--color-warning--surface);

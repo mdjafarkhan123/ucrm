@@ -10,6 +10,8 @@
 	import Popover from '$lib/components/ui/Popover.svelte';
 	import type { PopoverAnchor } from '$lib/components/ui/popover-anchor';
 	import ScheduleControls from '$lib/components/schedule/ScheduleControls.svelte';
+	import ScheduleLegend from '$lib/components/schedule/ScheduleLegend.svelte';
+	import CalendarCard from '$lib/components/calendar/CalendarCard.svelte';
 	import ScheduleDay from '$lib/components/schedule/ScheduleDay.svelte';
 	import ScheduleMonth from '$lib/components/schedule/ScheduleMonth.svelte';
 	import ScheduleWeek from '$lib/components/schedule/ScheduleWeek.svelte';
@@ -1292,6 +1294,13 @@
 		month: 'this month'
 	};
 
+	// What the shaded part of the grid means differs by view, so the key says it once, in the right words.
+	const LEGEND_NOTES = {
+		day: 'Shaded hours are outside your business hours',
+		week: 'Shaded hours are outside your business hours',
+		month: 'Shaded days are closed'
+	} as const;
+
 	const dayHeadingFormat: Intl.DateTimeFormatOptions = {
 		weekday: 'long',
 		month: 'short',
@@ -1308,7 +1317,7 @@
 		if (filters.view === 'day') {
 			return formatCalendarDay(activeWindow.from, {
 				weekday: 'long',
-				month: 'long',
+				month: 'short',
 				day: 'numeric',
 				year: 'numeric'
 			});
@@ -1334,7 +1343,7 @@
 	><title>{ownScheduleOnly ? 'My Schedule' : 'Schedule'} · UpliftContractor</title></svelte:head
 >
 
-<PageContainer variant="fill">
+<PageContainer variant="open">
 	<div class="schedule-page">
 		{#if contextQuery.isPending}
 			<LoadingSkeleton variant="card" rows={2} label="Loading the calendar" />
@@ -1345,135 +1354,147 @@
 				retry={() => void contextQuery.refetch()}
 			/>
 		{:else}
-			<ScheduleControls
-				{filters}
-				{rangeLabel}
-				employees={teamQuery.data ?? []}
-				employeesFailed={teamQuery.isError}
-				{ownScheduleOnly}
-				{zoom}
-				showZoom={filters.view !== 'month'}
-				{unscheduledCount}
-				{unscheduledOpen}
-				{mapOpen}
-				onstep={step}
-				ontoday={goToToday}
-				onchange={changeFilters}
-				onzoom={changeZoom}
-				onunscheduled={() => (unscheduledOpen = !unscheduledOpen)}
-				onunscheduledhover={() => (unscheduledWarm = true)}
-				onmap={toggleMap}
-			/>
+			{#snippet controlsBar()}
+				<ScheduleControls
+					{filters}
+					{rangeLabel}
+					employees={teamQuery.data ?? []}
+					employeesFailed={teamQuery.isError}
+					{ownScheduleOnly}
+					{zoom}
+					showZoom={filters.view !== 'month'}
+					{unscheduledCount}
+					{unscheduledOpen}
+					{mapOpen}
+					onstep={step}
+					ontoday={goToToday}
+					onchange={changeFilters}
+					onzoom={changeZoom}
+					onunscheduled={() => (unscheduledOpen = !unscheduledOpen)}
+					onunscheduledhover={() => (unscheduledWarm = true)}
+					onmap={toggleMap}
+				/>
+			{/snippet}
+
+			{#snippet legendKey()}
+				{#if !mapOpen}
+					<ScheduleLegend note={LEGEND_NOTES[filters.view]} shared={filters.view === 'day'} />
+				{/if}
+			{/snippet}
 
 			<!-- The calendar and the docked backlog sit side by side, so a card can be dragged straight out of
 			     the drawer onto the grid while both stay in view. -->
 			<div class="schedule-page__workspace">
-				<div class="schedule-page__calendar">
-					{#if windowQuery.isPending}
-						<LoadingSkeleton variant="card" rows={4} label="Loading this window" />
-					{:else if windowQuery.isError}
-						<ErrorState
-							title="This part of the calendar could not load"
-							description="The dates and filters you chose are still here. Try again."
-							retry={() => void windowQuery.refetch()}
-						/>
-					{:else if mapOpen}
-						<!-- The contextual Map workspace replaces the grid while it is open, keeping the same date,
-						     employee and filters; closing it returns to the calendar untouched. -->
-						<ScheduleRoute
-							stops={routeStopItems}
-							employeeName={selectedEmployeeName}
-							savedOrder={savedRouteOrder}
-							saving={saveRouteOrderMutation.isPending}
-							{selectedItemId}
-							onselect={openStopPreview}
-							onsave={(order) => saveRouteOrderMutation.mutate(order)}
-							onclose={() => (mapOpen = false)}
-						/>
-					{:else}
-						{#if windowQuery.data?.truncated}
-							<p class="schedule-page__notice" role="status">
-								This window holds more than {windowQuery.data.limit} visits, assessments, events, or Tasks,
-								so only the first {windowQuery.data.limit} of each are shown. Pick a shorter range to
-								see all of them.
-							</p>
-						{/if}
-
-						<!-- A calendar always draws its grid. When a filter empties it, the grid stays and says so,
-				     rather than being replaced by a page that has lost the dates. -->
-						{#if filteredEmpty}
-							<p class="schedule-page__notice schedule-page__notice--quiet" role="status">
-								There is work {WINDOW_WORDS[filters.view]}, but none of it matches the employee or
-								status you picked.
-							</p>
-						{/if}
-
-						{#if filters.view === 'week'}
-							<ScheduleWeek
-								bind:this={weekGrid}
-								window={activeWindow!}
-								items={visibleItems}
-								today={today!}
-								nowMinutes={activeWindow!.from <= today! && today! <= activeWindow!.to
-									? nowMinutes
-									: null}
-								workingWeek={workingHours}
-								{employeesById}
-								{selectedItemId}
-								{canSchedule}
-								{canCreate}
-								{zoom}
-								movingVisitId={pending?.visit.id ?? null}
-								unscheduleZone={unscheduleDropZone}
-								onselect={openPreview}
-								onselectassessment={openAssessmentPreview}
-								onselectevent={openEventPreview}
-								onpropose={proposeChange}
-								oncreate={openCreate}
-								onunschedule={(visit) => askUnschedule(visit)}
+				<CalendarCard class="schedule-page__calendar" bar={controlsBar} legend={legendKey}>
+					<div class="schedule-page__body">
+						{#if windowQuery.isPending}
+							<LoadingSkeleton variant="card" rows={4} label="Loading this window" />
+						{:else if windowQuery.isError}
+							<ErrorState
+								title="This part of the calendar could not load"
+								description="The dates and filters you chose are still here. Try again."
+								retry={() => void windowQuery.refetch()}
 							/>
-						{:else if filters.view === 'day'}
-							<ScheduleDay
-								bind:this={dayGrid}
-								day={activeWindow!.from}
-								items={visibleItems}
-								team={boardTeam}
-								today={today!}
-								nowMinutes={activeWindow!.from === today ? nowMinutes : null}
-								workingWeek={workingHours}
-								employeeFilter={boardEmployeeFilter}
-								{employeesById}
+						{:else if mapOpen}
+							<!-- The contextual Map workspace replaces the grid while it is open, keeping the same date,
+							     employee and filters; closing it returns to the calendar untouched. -->
+							<ScheduleRoute
+								stops={routeStopItems}
+								employeeName={selectedEmployeeName}
+								savedOrder={savedRouteOrder}
+								saving={saveRouteOrderMutation.isPending}
 								{selectedItemId}
-								{canSchedule}
-								{canCreate}
-								{zoom}
-								movingVisitId={pending?.visit.id ?? null}
-								unscheduleZone={unscheduleDropZone}
-								onselect={openPreview}
-								onselectassessment={openAssessmentPreview}
-								onselectevent={openEventPreview}
-								onpropose={proposeChange}
-								oneditassignment={(visit) => openReschedule(visit)}
-								oncreate={openCreate}
-								onunschedule={(visit) => askUnschedule(visit)}
+								onselect={openStopPreview}
+								onsave={(order) => saveRouteOrderMutation.mutate(order)}
+								onclose={() => (mapOpen = false)}
 							/>
 						{:else}
-							<ScheduleMonth
-								window={activeWindow!}
-								anchorDate={filters.date}
-								items={visibleItems}
-								today={today!}
-								{employeesById}
-								{selectedItemId}
-								{canCreate}
-								onselect={openPreview}
-								onselectassessment={openAssessmentPreview}
-								onselectevent={openEventPreview}
-								oncreate={openCreate}
-							/>
+							{#if windowQuery.data?.truncated}
+								<p class="schedule-page__notice" role="status">
+									This window holds more than {windowQuery.data.limit} visits, assessments, events, or
+									Tasks, so only the first {windowQuery.data.limit} of each are shown. Pick a shorter
+									range to see all of them.
+								</p>
+							{/if}
+
+							<!-- A calendar always draws its grid. When a filter empties it, the grid stays and says so,
+				     rather than being replaced by a page that has lost the dates. -->
+							{#if filteredEmpty}
+								<p class="schedule-page__notice schedule-page__notice--quiet" role="status">
+									There is work {WINDOW_WORDS[filters.view]}, but none of it matches the employee or
+									status you picked.
+								</p>
+							{/if}
+
+							{#if filters.view === 'week'}
+								<ScheduleWeek
+									bind:this={weekGrid}
+									window={activeWindow!}
+									items={visibleItems}
+									today={today!}
+									nowMinutes={activeWindow!.from <= today! && today! <= activeWindow!.to
+										? nowMinutes
+										: null}
+									workingWeek={workingHours}
+									{employeesById}
+									{selectedItemId}
+									{canSchedule}
+									{canCreate}
+									{zoom}
+									movingVisitId={pending?.visit.id ?? null}
+									unscheduleZone={unscheduleDropZone}
+									onselect={openPreview}
+									onselectassessment={openAssessmentPreview}
+									onselectevent={openEventPreview}
+									onpropose={proposeChange}
+									oncreate={openCreate}
+									onunschedule={(visit) => askUnschedule(visit)}
+								/>
+							{:else if filters.view === 'day'}
+								<ScheduleDay
+									bind:this={dayGrid}
+									day={activeWindow!.from}
+									items={visibleItems}
+									team={boardTeam}
+									today={today!}
+									nowMinutes={activeWindow!.from === today ? nowMinutes : null}
+									workingWeek={workingHours}
+									employeeFilter={boardEmployeeFilter}
+									{employeesById}
+									{selectedItemId}
+									{canSchedule}
+									{canCreate}
+									{zoom}
+									movingVisitId={pending?.visit.id ?? null}
+									unscheduleZone={unscheduleDropZone}
+									onselect={openPreview}
+									onselectassessment={openAssessmentPreview}
+									onselectevent={openEventPreview}
+									onpropose={proposeChange}
+									oneditassignment={(visit) => openReschedule(visit)}
+									oncreate={openCreate}
+									onunschedule={(visit) => askUnschedule(visit)}
+								/>
+							{:else}
+								<ScheduleMonth
+									window={activeWindow!}
+									anchorDate={filters.date}
+									items={visibleItems}
+									today={today!}
+									{nowMinutes}
+									workingWeek={workingHours}
+									{employeesById}
+									{selectedItemId}
+									{canCreate}
+									onselect={openPreview}
+									onselectassessment={openAssessmentPreview}
+									onselectevent={openEventPreview}
+									oncreate={openCreate}
+								/>
+							{/if}
 						{/if}
-					{/if}
-				</div>
+					</div>
+				</CalendarCard>
 
 				{#if unscheduledOpen}
 					<ScheduleUnscheduledDrawer
@@ -1507,10 +1528,12 @@
 </PageContainer>
 
 {#if selectedVisit && today}
+	{#snippet visitSubtitle()}{visitWorkLabel(selectedVisit!)}{/snippet}
 	<Popover
 		open
 		anchor={previewAnchor}
 		title={visitClientLabel(selectedVisit)}
+		subtitle={visitSubtitle}
 		onClose={closePreview}
 	>
 		<VisitPreview
@@ -1554,12 +1577,15 @@
 <!-- An assessment's own preview. It is Request-owned, so this only reads it and opens the Request; there is no
      reschedule, complete or unschedule here. -->
 {#if selectedAssessment && today}
+	{#snippet assessmentSubtitle()}{selectedAssessment!.request_title?.trim() ||
+			'On-site assessment'}{/snippet}
 	<Popover
 		open
 		anchor={previewAnchor}
 		title={selectedAssessment.client_name ??
 			selectedAssessment.client_company_name ??
 			'Client hidden'}
+		subtitle={assessmentSubtitle}
 		onClose={closePreview}
 	>
 		<AssessmentPreview
@@ -1577,7 +1603,14 @@
 <!-- An event's own preview. Schedule owns it outright, so this offers Edit and Delete in place -- both behind
      the schedule authority, and Delete confirmed because it is permanent. -->
 {#if selectedEvent}
-	<Popover open anchor={previewAnchor} title="Event" onClose={closePreview}>
+	{#snippet eventSubtitle()}Event{/snippet}
+	<Popover
+		open
+		anchor={previewAnchor}
+		title={selectedEvent.title.trim() || 'Event'}
+		subtitle={eventSubtitle}
+		onClose={closePreview}
+	>
 		<EventPreview
 			event={selectedEvent}
 			dayLabel={selectedEvent.visit_date
@@ -1792,26 +1825,56 @@
 {/if}
 
 <style lang="scss">
+	// The page is one card that fills the height the shell gives it: the toolbar on top, the grid scrolling
+	// inside, the colour key underneath. The backlog docks beside it as a card of its own.
 	.schedule-page {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-large);
+		height: 100%;
+		min-height: 520px;
 	}
 
 	// The calendar takes the room and the backlog docks beside it. The calendar column can shrink (min-width:
 	// 0) so the drawer's fixed width never squeezes it out of the row.
 	.schedule-page__workspace {
 		display: flex;
-		align-items: flex-start;
+		flex: 1 1 auto;
+		align-items: stretch;
 		gap: var(--space-large);
+		min-height: 0;
 	}
 
-	.schedule-page__calendar {
+	// The class rides on the shared CalendarCard, outside this component's own markup.
+	.schedule-page__workspace > :global(.schedule-page__calendar) {
+		flex: 1 1 auto;
+	}
+
+	// On a phone the page scrolls and the calendar is a card of its own height, with the backlog stacked
+	// under it, so neither is squeezed into the room beside the other.
+	@media (max-width: 767px) {
+		.schedule-page {
+			height: auto;
+			min-height: 0;
+		}
+
+		.schedule-page__workspace {
+			flex: 0 0 auto;
+			flex-direction: column;
+		}
+
+		.schedule-page__workspace > :global(.schedule-page__calendar) {
+			flex: 0 0 auto;
+			height: auto;
+		}
+	}
+
+	.schedule-page__body {
 		display: flex;
 		flex: 1 1 auto;
-		min-width: 0;
 		flex-direction: column;
 		gap: var(--space-base);
+		min-height: 0;
 	}
 
 	.schedule-page__dialog-error {
@@ -1846,6 +1909,7 @@
 	}
 
 	.schedule-page__notice {
+		margin: var(--space-base) 20px 0;
 		padding: var(--space-slim);
 		border: var(--border-base) solid var(--color-warning);
 		border-radius: var(--radius-base);

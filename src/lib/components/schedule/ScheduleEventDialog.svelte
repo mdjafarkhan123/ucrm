@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Dialog from '$lib/components/ui/Dialog.svelte';
+	import calendarEventIcon from '@tabler/icons/outline/calendar-event.svg?raw';
+	import alertCircleIcon from '@tabler/icons/outline/alert-circle.svg?raw';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
@@ -133,10 +135,23 @@
 	}
 </script>
 
-<Dialog {open} title={editing ? 'Edit event' : 'New event'} {onClose}>
+<!-- The icons are Tabler SVG files imported at build time, not user content. -->
+<!-- eslint-disable svelte/no-at-html-tags -->
+<Dialog
+	{open}
+	title={editing ? 'Edit event' : 'New event'}
+	initialFocusId="event-title"
+	icon={calendarEventIcon}
+	iconTone="critical"
+	{onClose}
+>
 	<div class="event-form">
-		{#if error}<p class="event-form__alert" role="alert">{error}</p>{/if}
-		{#if fieldError}<p class="event-form__alert" role="alert">{fieldError}</p>{/if}
+		{#each [error, fieldError].filter(Boolean) as message (message)}
+			<p class="event-form__alert" role="alert">
+				<span class="event-form__alert-icon" aria-hidden="true">{@html alertCircleIcon}</span>
+				{message}
+			</p>
+		{/each}
 
 		<Input
 			id="event-title"
@@ -174,13 +189,17 @@
 			maxlength={2000}
 			bind:value={description}
 		/>
+	</div>
 
+	{#snippet footer()}
 		<div class="event-form__actions">
 			<Button variant="tertiary" onclick={onClose} disabled={saving}>Cancel</Button>
 			<Button onclick={save} loading={saving}>{editing ? 'Save event' : 'Create event'}</Button>
 		</div>
-	</div>
+	{/snippet}
 </Dialog>
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.event-form {
@@ -189,19 +208,31 @@
 		gap: var(--space-base);
 
 		&__alert {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
 			margin: 0;
-			padding: var(--space-small) var(--space-base);
+			padding: 11px var(--space-base);
 			border-radius: var(--radius-base);
 			background: var(--color-critical--surface);
 			color: var(--color-critical--onSurface);
 			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+		}
+
+		&__alert-icon {
+			display: inline-flex;
+			flex-shrink: 0;
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
 		}
 
 		&__actions {
 			display: flex;
-			justify-content: flex-end;
 			gap: var(--space-small);
-			margin-top: var(--space-small);
 		}
 	}
 </style>

@@ -28,6 +28,7 @@
 		marker = null,
 		sharedLabel = null,
 		inlineChip = false,
+		badge = null,
 		selected = false,
 		summary,
 		interactive = true,
@@ -59,6 +60,8 @@
 		sharedLabel?: string | null;
 		/** The status chip sits beside the time rather than under it, for the wide Day board cards. */
 		inlineChip?: boolean;
+		/** A small number before the name on the one-line Anytime form, for a person's list of dated-only work. */
+		badge?: number | null;
 		selected?: boolean;
 		/** The whole card in words, for a screen reader and for the smallest form. */
 		summary: string;
@@ -75,6 +78,8 @@
 	);
 	const shownTime = $derived(density === 'standard' ? time : startTime);
 	const shownPeople = $derived(showPeople ? people.slice(0, 3) : []);
+	// A compact card is short, so its status chip sits beside the time instead of taking a line of its own.
+	const chipBesideTime = $derived(inlineChip || density === 'compact');
 </script>
 
 <!-- The icons are Tabler SVG files imported at build time, not user content. -->
@@ -92,8 +97,28 @@
 	{onkeydown}
 	{onblur}
 >
-	{#if density === 'pill'}
+	{#if density === 'row'}
+		<span class="item-card__list-line">
+			<span class="item-card__list-time">
+				{#if marker}<span class="item-card__marker" aria-hidden="true">{@html marker}</span>{/if}
+				{shownTime}
+			</span>
+			<span class="item-card__list-words">
+				<span class="item-card__client">{client}</span>
+				<span class="item-card__work">{work}</span>
+			</span>
+			{#if chip}
+				<span class="item-card__chip item-card__chip--{state}">
+					<span class="item-card__dot item-card__dot--{state}" aria-hidden="true"></span>
+					{chip}
+				</span>
+			{:else if state === 'completed'}
+				<span class="item-card__check" aria-hidden="true">{@html circleCheckIcon}</span>
+			{/if}
+		</span>
+	{:else if density === 'pill'}
 		<span class="item-card__line">
+			{#if badge !== null}<span class="item-card__badge" aria-hidden="true">{badge}</span>{/if}
 			{#if marker}<span class="item-card__marker" aria-hidden="true">{@html marker}</span>{/if}
 			<span class="item-card__words"><span class="item-card__client">{client}</span></span>
 			{#if state === 'completed'}
@@ -133,7 +158,7 @@
 						{sharedLabel}
 					</span>
 				{/if}
-				{#if chip && inlineChip}
+				{#if chip && chipBesideTime}
 					<span class="item-card__chip item-card__chip--{state}">
 						<span class="item-card__dot item-card__dot--{state}" aria-hidden="true"></span>
 						{chip}
@@ -145,7 +170,7 @@
 			</span>
 		</span>
 
-		{#if chip && !inlineChip}
+		{#if chip && !chipBesideTime}
 			<span class="item-card__chip item-card__chip--{state}">
 				<span class="item-card__dot item-card__dot--{state}" aria-hidden="true"></span>
 				{chip}
@@ -524,6 +549,68 @@
 
 	.item-card__people--pill {
 		margin-top: 0;
+	}
+
+	// The list of everything on one date: the time in a column of its own, the name and the work beside it.
+	.item-card--row {
+		justify-content: center;
+		padding: 0 var(--space-small);
+		border-radius: var(--radius-base);
+
+		.item-card__list-line {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
+			min-width: 0;
+		}
+
+		.item-card__list-time {
+			display: inline-flex;
+			flex: 0 0 56px;
+			align-items: center;
+			gap: var(--space-smaller);
+			color: var(--item-time);
+			font-size: 12px;
+			font-weight: 500;
+			white-space: nowrap;
+		}
+
+		.item-card__list-words {
+			display: flex;
+			flex: 1 1 auto;
+			flex-direction: column;
+			min-width: 0;
+			line-height: 1.25;
+		}
+
+		.item-card__client,
+		.item-card__work {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		.item-card__work {
+			font-size: 11.5px;
+		}
+
+		.item-card__chip {
+			align-self: center;
+		}
+	}
+
+	.item-card__badge {
+		display: inline-flex;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: 16px;
+		height: 16px;
+		border-radius: 999px;
+		background-color: var(--color-surface--background--subtle);
+		color: var(--color-text--secondary);
+		font-size: 10px;
+		font-weight: 700;
 	}
 
 	.item-card--compact .item-card__work--line .item-card__client {

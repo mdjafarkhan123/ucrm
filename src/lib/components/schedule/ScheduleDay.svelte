@@ -2,6 +2,8 @@
 	import { untrack } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import { initials } from '$lib/collaboration/format';
+	import { cardState } from '$lib/schedule/status';
 	import VisitCard from '$lib/components/schedule/VisitCard.svelte';
 	import AssessmentCard from '$lib/components/schedule/AssessmentCard.svelte';
 	import EventCard from '$lib/components/schedule/EventCard.svelte';
@@ -30,7 +32,7 @@
 	} from '$lib/schedule/drag';
 	import { startPointerDrag } from '$lib/schedule/pointer-drag';
 	import { anchorAtPoint, type PopoverAnchor } from '$lib/components/ui/popover-anchor';
-	import { clockLabel } from '$lib/schedule/labels';
+	import { clockLabel, formatCalendarDay } from '$lib/schedule/labels';
 	import type { ScheduleEmployeeFilter } from '$lib/schedule/filters';
 	import { DAY_HOUR_PX, type ScheduleZoom } from '$lib/schedule/density';
 	import type { ScheduleVisit } from '$lib/schedule/api';
@@ -112,11 +114,39 @@
 	/** One hour of the axis, in pixels, from the reader's zoom, and one lane of a row. Everything else is
 	 *  worked out from these. Zoom stretches the time axis only; a lane keeps its height. */
 	const HOUR_WIDTH = $derived(DAY_HOUR_PX[zoom]);
-	const LANE_HEIGHT = 92;
+	const LANE_HEIGHT = 122;
 	const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
 	const rows = $derived(buildDayRows(items, team, employeeFilter));
 	const workingBands = $derived(workingWeek?.get(weekdayOf(day)) ?? []);
+
+	// The corner of the board says what the day holds and how much of it needs a look: late work, and work
+	// nobody is assigned to. An event or a task has no crew by design, so it never counts as unassigned.
+	const attention = $derived.by(() => {
+		let late = 0;
+		let unassigned = 0;
+		for (const item of items) {
+			if (item.kind !== 'visit' && item.kind !== 'assessment') continue;
+			const state = cardState(item, today, nowMinutes);
+			if (state === 'late') late += 1;
+			else if (state === 'unassigned') unassigned += 1;
+		}
+		return { late, unassigned };
+	});
+
+	/** The other people on a visit a row's person shares, for `Shared with Sofia Chen` on that row's card. */
+	function sharedNames(visit: ScheduleVisit, employeeId: string | null): string[] {
+		if (!employeeId) return [];
+		return visit.assignee_ids
+			.filter((id) => id !== employeeId)
+			.map((id) => employeesById.get(id)?.full_name ?? 'One employee');
+	}
+
+	/** The time on the ruler's pill: 10:40, with no am or pm, since the hour labels already carry them. */
+	function nowLabel(minutes: number) {
+		const hour = Math.floor(minutes / 60) % 12 || 12;
+		return `${hour}:${String(Math.floor(minutes % 60)).padStart(2, '0')}`;
+	}
 
 	function percent(minutes: number) {
 		return `${(minutes / MINUTES_IN_DAY) * 100}%`;
@@ -571,14 +601,40 @@
 <div class="day" style:--day-hour="{HOUR_WIDTH}px" style:--day-lane="{LANE_HEIGHT}px">
 	<div class="day__scroll" {@attach openAtWorkingHours}>
 		<div class="day__grid">
-			<div class="day__head day__head--who"></div>
+			<div class="day__head day__head--who">
+				<span class="day__date-row">
+					<span class="day__weekday" class:day__weekday--today={day === today}>
+						{formatCalendarDay(day, { weekday: 'short' })}
+					</span>
+					<span class="day__date" class:day__date--today={day === today}>
+						{formatCalendarDay(day, { day: 'numeric' })}
+					</span>
+				</span>
+				{#if items.length > 0}
+					<span class="day__summary">
+						{itemCountLabel(items.length)}
+						{#if attention.late > 0}
+							<span class="day__attention day__attention--late">
+								<span class="day__attention-dot" aria-hidden="true"></span>
+								{attention.late} late
+							</span>
+						{/if}
+						{#if attention.unassigned > 0}
+							<span class="day__attention day__attention--unassigned">
+								<span class="day__attention-dot" aria-hidden="true"></span>
+								{attention.unassigned} unassigned
+							</span>
+						{/if}
+					</span>
+				{/if}
+			</div>
 			<div class="day__head day__head--anytime">Anytime</div>
 			<div class="day__head day__head--ruler">
 				{#each HOURS as hour (hour)}
 					<span class="day__hour" style:left="{hour * HOUR_WIDTH}px">{hourLabel(hour)}</span>
 				{/each}
 				{#if nowMinutes !== null}
-					<span class="day__now-marker" style:left={percent(nowMinutes)} aria-hidden="true"></span>
+					<span class="day__now-pill" style:left={percent(nowMinutes)}>{nowLabel(nowMinutes)}</span>
 				{/if}
 			</div>
 
@@ -590,12 +646,16 @@
 							{@html userOffIcon}
 						</span>
 					{:else if row.employee}
-						<Avatar
-							id={row.employee.id}
-							name={row.employee.full_name}
-							src={row.employee.avatar_url}
-							size="small"
-						/>
+						{#if row.employee.avatar_url}
+							<Avatar
+								id={row.employee.id}
+								name={row.employee.full_name}
+								src={row.employee.avatar_url}
+								size="medium"
+							/>
+						{:else}
+							<span class="day__avatar" aria-hidden="true">{initials(row.employee.full_name)}</span>
+						{/if}
 					{:else}
 						<span class="day__avatar day__avatar--unlisted" aria-hidden="true">?</span>
 					{/if}
@@ -617,7 +677,7 @@
 					bind:this={anytimeEls[rowIndex]}
 					onclick={createAnytime}
 				>
-					{#each row.anytime as item (item.id)}
+					{#each row.anytime as item, itemIndex (item.id)}
 						{#if item.kind === 'visit'}
 							<div
 								class="day__pickup"
@@ -627,7 +687,8 @@
 							>
 								<VisitCard
 									visit={item}
-									density="compact"
+									badge={row.anytime.length > 1 ? itemIndex + 1 : null}
+									density="pill"
 									{today}
 									{nowMinutes}
 									{employeesById}
@@ -643,7 +704,7 @@
 						{:else if item.kind === 'assessment'}
 							<AssessmentCard
 								assessment={item}
-								density="compact"
+								density="pill"
 								{today}
 								{nowMinutes}
 								{employeesById}
@@ -652,17 +713,11 @@
 								onselect={onselectassessment}
 							/>
 						{:else if item.kind === 'task'}
-							<TaskCard
-								task={item}
-								density="compact"
-								{today}
-								{employeesById}
-								showAssignment={false}
-							/>
+							<TaskCard task={item} density="pill" {today} {employeesById} showAssignment={false} />
 						{:else}
 							<EventCard
 								event={item}
-								density="compact"
+								density="pill"
 								selected={item.id === selectedItemId}
 								onselect={onselectevent}
 							/>
@@ -705,6 +760,7 @@
 							>
 								<VisitCard
 									{visit}
+									sharedWith={sharedNames(visit, row.employee?.id ?? null)}
 									density={cardDensityForWidth(((block.end - block.start) / 60) * HOUR_WIDTH)}
 									{today}
 									{nowMinutes}
@@ -816,26 +872,59 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	// The board has no frame of its own: the calendar card around it draws the edge, and the board takes
+	// whatever height the card gives it and scrolls inside.
 	.day {
 		--day-who: 208px;
-		--day-anytime: 132px;
+		--day-anytime: 156px;
 
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		display: flex;
+		flex: 1 1 auto;
+		flex-direction: column;
+		min-height: 320px;
 		background-color: var(--color-surface);
-		overflow: hidden;
+	}
+
+	@media (max-width: 767px) {
+		.day {
+			--day-who: 150px;
+			--day-anytime: 136px;
+		}
+
+		.day__who {
+			gap: 8px;
+			padding: 0 12px;
+		}
+
+		.day__avatar {
+			width: 30px;
+			height: 30px;
+		}
+
+		.day {
+			min-height: 0;
+		}
+
+		.day__scroll {
+			flex: 0 0 auto;
+			height: 440px;
+		}
 	}
 
 	.day__scroll {
-		height: clamp(360px, calc(100vh - 340px), 900px);
+		flex: 1 1 auto;
+		min-height: 0;
 		overflow: auto;
 		scrollbar-gutter: stable;
 	}
 
 	.day__grid {
 		display: grid;
-		// The two pinned columns keep their width; the hours are as wide as a whole day, and scroll.
+		// The two pinned columns keep their width; the hours are as wide as a whole day, and scroll. The grid
+		// is as wide as its columns, so the pinned cells have room to stay pinned wherever the hours are scrolled
+		// to; a narrower grid would drag the Anytime column back over the names.
 		grid-template-columns: var(--day-who) var(--day-anytime) calc(24 * var(--day-hour));
+		width: calc(var(--day-who) + var(--day-anytime) + 24 * var(--day-hour));
 	}
 
 	// The head sits above the rows while they scroll under it, and its first two cells sit above the
@@ -845,14 +934,94 @@
 		top: 0;
 		z-index: 2;
 		box-sizing: border-box;
-		height: 40px;
+		height: 64px;
 		border-bottom: var(--border-base) solid var(--color-border);
 		background-color: var(--color-surface);
 	}
 
+	// The corner says which day this is and what needs a look on it, in the same words as a Week column.
 	.day__head--who {
 		left: 0;
 		z-index: 4;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: var(--space-smallest);
+		padding: 0 18px;
+	}
+
+	.day__date-row {
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		height: 24px;
+	}
+
+	.day__weekday {
+		color: var(--color-text--secondary);
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.8px;
+		text-transform: uppercase;
+
+		&--today {
+			color: var(--color-interactive);
+		}
+	}
+
+	.day__date {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		height: 24px;
+		padding: 0 var(--space-smaller);
+		border-radius: 999px;
+		color: var(--color-heading);
+		font-size: 15px;
+		font-weight: 700;
+
+		&--today {
+			padding: 0 7px;
+			background-color: var(--color-interactive);
+			color: var(--color-text--reverse);
+			font-size: 13px;
+		}
+	}
+
+	.day__summary {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 2px var(--space-small);
+		color: var(--color-text--secondary);
+		font-size: 11px;
+		font-weight: 500;
+		line-height: 1.3;
+	}
+
+	.day__attention {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-smaller);
+		font-weight: 600;
+
+		&--late {
+			color: var(--color-critical);
+		}
+		&--unassigned {
+			color: var(--color-warning--onSurface);
+		}
+	}
+
+	.day__attention-dot {
+		width: 5px;
+		height: 5px;
+		border-radius: var(--radius-circle);
+		background-color: currentColor;
+	}
+
+	.day__attention--unassigned .day__attention-dot {
+		background-color: var(--color-warning);
 	}
 
 	.day__head--anytime {
@@ -860,36 +1029,41 @@
 		z-index: 4;
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		padding: 0 14px;
 		border-left: var(--border-base) solid var(--color-border);
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 700;
+		font-size: 12px;
+		font-weight: 600;
 	}
 
 	.day__head--ruler {
 		border-left: var(--border-base) solid var(--color-border);
 	}
 
-	// The current time is marked once, on the ruler, and then runs as a plain line through every row -- a
-	// dot on each of ten rows would be ten times the same fact.
-	.day__now-marker {
+	// The current time is marked once, on the ruler, as a pill, and then runs as a plain line through every
+	// row -- a pill on each of ten rows would be ten times the same fact.
+	.day__now-pill {
 		position: absolute;
 		bottom: 0;
-		width: 8px;
-		height: 8px;
-		margin-left: -4px;
-		border-radius: var(--radius-circle);
-		background-color: var(--color-critical);
+		z-index: 2;
+		transform: translate(-50%, 50%);
+		padding: 3px var(--space-small);
+		border-radius: 999px;
+		background-color: var(--color-interactive);
+		color: var(--color-text--reverse);
+		font-size: 10.5px;
+		font-weight: 700;
+		line-height: 1.3;
+		white-space: nowrap;
 	}
 
 	.day__hour {
 		position: absolute;
 		top: 50%;
 		// Sat on its own line rather than inside the hour it opens, so a label reads as the line's time.
-		transform: translate(var(--space-smaller), -50%);
+		transform: translate(var(--space-small), -50%);
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-smaller);
+		font-size: 11.5px;
 		line-height: var(--typography--lineHeight-tight);
 		white-space: nowrap;
 	}
@@ -899,10 +1073,10 @@
 		left: 0;
 		z-index: 3;
 		display: flex;
-		align-items: flex-start;
-		gap: var(--space-smaller);
+		align-items: center;
+		gap: 12px;
 		box-sizing: border-box;
-		padding: var(--space-small);
+		padding: 0 18px;
 		border-bottom: var(--border-base) solid var(--color-border);
 		background-color: var(--color-surface);
 	}
@@ -911,19 +1085,19 @@
 	// is not filled: a solid band at the top of every day stops being a warning and just becomes the header.
 	.day__who--unassigned .day__count {
 		color: var(--color-warning--onSurface);
-		font-weight: 700;
+		font-weight: 600;
 	}
 
 	.day__who-text {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-smallest);
+		gap: 2px;
 		min-width: 0;
 	}
 
 	.day__name {
 		color: var(--color-heading);
-		font-size: var(--typography--fontSize-small);
+		font-size: var(--typography--fontSize-base);
 		font-weight: 700;
 		line-height: var(--typography--lineHeight-tight);
 		overflow: hidden;
@@ -933,7 +1107,7 @@
 
 	.day__count {
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-smaller);
+		font-size: 12px;
 		line-height: var(--typography--lineHeight-tight);
 	}
 
@@ -942,23 +1116,23 @@
 		flex: 0 0 auto;
 		align-items: center;
 		justify-content: center;
-		width: 24px;
-		height: 24px;
+		width: 36px;
+		height: 36px;
 		border-radius: var(--radius-circle);
-		background-color: var(--color-surface--active);
+		background-color: var(--color-surface--background--subtle);
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-smaller);
+		font-size: 12px;
 		font-weight: 700;
 
 		:global(svg) {
-			width: 14px;
-			height: 14px;
+			width: 18px;
+			height: 18px;
 		}
 	}
 
 	.day__avatar--unassigned {
-		background-color: var(--color-warning);
-		color: var(--color-surface);
+		background-color: var(--color-warning--surface);
+		color: var(--color-warning--onSurface);
 	}
 
 	.day__anytime {
@@ -967,13 +1141,20 @@
 		z-index: 3;
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-smallest);
+		justify-content: center;
+		gap: 6px;
 		box-sizing: border-box;
-		padding: var(--space-smaller);
+		padding: var(--space-small);
 		overflow-y: auto;
 		border-left: var(--border-base) solid var(--color-border);
 		border-bottom: var(--border-base) solid var(--color-border);
 		background-color: var(--color-surface);
+	}
+
+	// An Anytime pill is the height the design draws; whatever it holds stays on one line.
+	.day__anytime > :global(*) {
+		flex: 0 0 auto;
+		height: 28px;
 	}
 
 	.day__track {
@@ -1012,7 +1193,7 @@
 	.day__block {
 		position: absolute;
 		box-sizing: border-box;
-		padding: var(--space-smallest) var(--space-smallest) var(--space-smallest) 0;
+		padding: 12px 6px 12px 0;
 	}
 
 	// A card that can be picked up gets out of the way while it is being moved: during a drag the ghost is
@@ -1032,9 +1213,9 @@
 
 	.day__resize {
 		position: absolute;
-		top: var(--space-smallest);
-		right: var(--space-smallest);
-		bottom: var(--space-smallest);
+		top: 12px;
+		right: 6px;
+		bottom: 12px;
 		width: 8px;
 		cursor: ew-resize;
 
@@ -1104,7 +1285,7 @@
 		position: absolute;
 		top: 0;
 		height: 100%;
-		border-left: var(--border-thick) solid var(--color-critical);
+		border-left: 2px solid var(--color-interactive);
 		pointer-events: none;
 	}
 </style>

@@ -3,20 +3,17 @@
 	import { resolve } from '$app/paths';
 	import Button from '$lib/components/ui/Button.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
+	import SchedulePreviewFacts from '$lib/components/schedule/SchedulePreviewFacts.svelte';
+	import arrowUpRightIcon from '@tabler/icons/outline/arrow-up-right.svg?raw';
 	import { visitDerivedStatus } from '$lib/schedule/status';
 	import { VISIT_STATUS_LABELS, VISIT_STATUS_TONES } from '$lib/schedule/statuses';
-	import {
-		visitAddressLabel,
-		visitAssignmentLabel,
-		visitTimeLabel,
-		visitWorkLabel
-	} from '$lib/schedule/labels';
+	import { visitAddressLabel, visitAssignmentLabel, visitTimeLabel } from '$lib/schedule/labels';
 	import type { ScheduleVisit } from '$lib/schedule/api';
 	import type { TeamMember } from '$lib/team/api';
 
 	// What a card says when you select it: enough to act on the visit without leaving the calendar, and
 	// nothing more. It is deliberately not a small copy of the Job page -- the way to the whole record is
-	// the button at the bottom.
+	// the link at the bottom. The client's name and the work sit in the popover's own heading, above this.
 
 	let {
 		visit,
@@ -58,25 +55,25 @@
 	const address = $derived(visitAddressLabel(visit));
 </script>
 
+<!-- The arrow is a Tabler SVG file imported at build time, not user content. -->
+<!-- eslint-disable svelte/no-at-html-tags -->
 <div class="visit-preview">
-	<p class="visit-preview__work">{visitWorkLabel(visit)}</p>
-
 	{#if status}
 		<StatusBadge status={VISIT_STATUS_TONES[status]}>{VISIT_STATUS_LABELS[status]}</StatusBadge>
 	{/if}
 
-	<dl class="visit-preview__facts">
-		<dt>When</dt>
-		<dd>{dayLabel} · {visitTimeLabel(visit)}</dd>
-
-		<dt>Team</dt>
-		<dd class:visit-preview__none={visit.assignee_ids.length === 0}>
-			{visitAssignmentLabel(visit, employeesById)}
-		</dd>
-
-		<dt>Where</dt>
-		<dd>{address ?? 'No property on this visit'}</dd>
-	</dl>
+	<SchedulePreviewFacts
+		facts={[
+			{ kind: 'when', label: 'When', value: `${dayLabel} · ${visitTimeLabel(visit)}` },
+			{
+				kind: 'team',
+				label: 'Team',
+				value: visitAssignmentLabel(visit, employeesById),
+				warn: visit.assignee_ids.length === 0
+			},
+			{ kind: 'where', label: 'Where', value: address ?? 'No property on this visit' }
+		]}
+	/>
 
 	{#if timer}
 		<!-- Time clock: a crew member's first action on arrival, so it sits above the dispatch actions. -->
@@ -99,71 +96,101 @@
 		{#if canSchedule && !visit.completed_at}
 			<Button variant="secondary" size="small" onclick={onreschedule}>Reschedule</Button>
 		{/if}
+	</div>
+
+	<div class="visit-preview__links">
+		<a class="visit-preview__link" href={resolve('/(app)/jobs/[id=uuid]', { id: visit.job_id })}>
+			Open job{visit.job_number ? ` #${visit.job_number}` : ''}
+			<span class="visit-preview__link-icon" aria-hidden="true">{@html arrowUpRightIcon}</span>
+		</a>
 		<!-- Take a placed visit off the calendar and back into the backlog. Absent for an already-unscheduled
 		     visit, which has no date to clear. -->
 		{#if canSchedule && !visit.completed_at && visit.visit_date && onunschedule}
-			<Button variant="tertiary" size="small" onclick={onunschedule}>Move to Unscheduled</Button>
+			<button type="button" class="visit-preview__quiet" onclick={onunschedule}>
+				Move to Unscheduled
+			</button>
 		{/if}
-		<Button
-			variant="secondary"
-			size="small"
-			href={resolve('/(app)/jobs/[id=uuid]', { id: visit.job_id })}
-		>
-			Open job{visit.job_number ? ` #${visit.job_number}` : ''}
-		</Button>
 	</div>
 </div>
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.visit-preview {
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		gap: var(--space-slim);
-	}
-
-	.visit-preview__work {
-		color: var(--color-text);
-		font-size: var(--typography--fontSize-base);
-		line-height: var(--typography--lineHeight-base);
-	}
-
-	.visit-preview__facts {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
-		gap: var(--space-smaller) var(--space-slim);
-		margin: 0;
-		width: 100%;
-
-		dt {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-			line-height: var(--typography--lineHeight-tighter);
-		}
-
-		dd {
-			margin: 0;
-			color: var(--color-text);
-			font-size: var(--typography--fontSize-small);
-			line-height: var(--typography--lineHeight-tighter);
-			overflow-wrap: anywhere;
-		}
+		gap: var(--space-base);
+		min-width: 260px;
 	}
 
 	.visit-preview__timer {
 		width: 100%;
 		padding-top: var(--space-small);
-		border-top: 1px solid var(--color-border);
+		border-top: var(--border-base) solid var(--color-border);
 	}
 
 	.visit-preview__actions {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-small);
+		width: 100%;
+		padding-top: var(--space-base);
+		border-top: var(--border-base) solid var(--color-border);
 	}
 
-	.visit-preview__none {
-		color: var(--color-warning--onSurface);
-		font-weight: 700;
+	.visit-preview__links {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-small) var(--space-base);
+		width: 100%;
+	}
+
+	.visit-preview__link {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-smaller);
+		color: var(--color-interactive);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
+	}
+
+	.visit-preview__link-icon {
+		display: inline-flex;
+
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+		}
+	}
+
+	.visit-preview__quiet {
+		padding: 0;
+		border: none;
+		background: none;
+		color: var(--color-text--secondary);
+		font-family: inherit;
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		cursor: pointer;
+
+		&:hover {
+			color: var(--color-text);
+		}
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
 	}
 </style>

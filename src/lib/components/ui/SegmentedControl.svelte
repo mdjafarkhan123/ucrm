@@ -9,6 +9,10 @@
 		disabled?: boolean;
 		/** Shown on hover, e.g. why an option is closed off. */
 		title?: string;
+		/** A Tabler icon (raw SVG) before the label. */
+		icon?: string;
+		/** The icon's own colour, when it says what kind of thing the option is. Defaults to the text colour. */
+		iconColor?: string;
 	};
 
 	let {
@@ -122,6 +126,13 @@
 						onchange?.(option.value);
 					}}
 				/>
+				{#if option.icon}
+					<!-- A Tabler SVG file imported at build time, not user content. -->
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					<span class="segmented__icon" style:color={option.iconColor} aria-hidden="true">
+						{@html option.icon}
+					</span>
+				{/if}
 				<span class="segmented__text">{option.label}</span>
 			</label>
 		{/each}
@@ -160,6 +171,17 @@
 		&--full-width &__track {
 			display: flex;
 			width: 100%;
+		}
+
+		&__icon {
+			display: inline-flex;
+			flex-shrink: 0;
+			margin-right: 7px;
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
 		}
 
 		&__thumb {

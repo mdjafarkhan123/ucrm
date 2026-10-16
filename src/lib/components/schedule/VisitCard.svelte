@@ -26,7 +26,8 @@
 		employeesById,
 		selected = false,
 		showAssignment = true,
-		sharedWith = null,
+		sharedWith = [],
+		badge = null,
 		keyboardMovable = false,
 		onselect,
 		onpickup,
@@ -45,8 +46,11 @@
 		/** False where the surface itself already says who is going, as the Day board's employee row does.
 		 * The card never repeats identity the row has already given. */
 		showAssignment?: boolean;
-		/** On a person's row, the other people the visit is shared with, for `Shared with Sofia Chen`. */
-		sharedWith?: string | null;
+		/** On a person's row, the names of the other people the visit is shared with. A wide card says
+		 *  `Shared with Sofia Chen`; a narrow one, with no room for words, shows how many are on it. */
+		sharedWith?: string[];
+		/** The one-line Anytime form can carry a small number before the name. */
+		badge?: number | null;
 		/** Whether the arrow keys can reschedule this card from the keyboard. Only true for a permitted,
 		 *  uncompleted visit -- the same gate a pointer drag uses. Adds the hint to the card's own label. */
 		keyboardMovable?: boolean;
@@ -61,6 +65,13 @@
 
 	const state = $derived(cardState(visit, today, nowMinutes));
 	const status = $derived(visitDerivedStatus(visit, today));
+	const sharedLabel = $derived(
+		sharedWith.length === 0
+			? null
+			: density === 'standard'
+				? `Shared with ${sharedWith.join(', ')}`
+				: String(sharedWith.length + 1)
+	);
 	const people = $derived(
 		visit.assignee_ids.map((id) => employeesById.get(id)?.full_name ?? 'One employee')
 	);
@@ -91,7 +102,8 @@
 	place={visitPlaceLabel(visit)}
 	{people}
 	showPeople={showAssignment}
-	sharedLabel={sharedWith ? `Shared with ${sharedWith}` : null}
+	{sharedLabel}
+	{badge}
 	inlineChip={!showAssignment}
 	{selected}
 	{summary}

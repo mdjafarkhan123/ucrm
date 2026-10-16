@@ -27,6 +27,8 @@
 		itemsByDay,
 		today,
 		bookable = false,
+		closed,
+		attention,
 		oncellclick,
 		card
 	}: {
@@ -39,6 +41,10 @@
 		today: string;
 		/** Empty cell space can start a new date-only entry, so it shows the cell cursor. */
 		bookable?: boolean;
+		/** Whether the business is shut that date, so its cell is shaded. Absent when no hours are known. */
+		closed?: (day: string) => boolean;
+		/** How many of a date's entries are late or have nobody assigned, said beside its count. */
+		attention?: (day: string) => { late: number; unassigned: number };
 		/** A click on a cell's empty space -- never one that landed on a card or "+ N more". */
 		oncellclick?: (day: string) => void;
 		card: Snippet<[T, 'micro' | 'compact', MonthGridRelay]>;
@@ -57,7 +63,9 @@
 				ordered,
 				shown: ordered.slice(0, VISIBLE_PER_DATE),
 				hidden: Math.max(0, ordered.length - VISIBLE_PER_DATE),
-				inMonth: day.slice(0, 7) === anchorMonth
+				inMonth: day.slice(0, 7) === anchorMonth,
+				closed: closed?.(day) ?? false,
+				attention: attention?.(day) ?? { late: 0, unassigned: 0 }
 			};
 		})
 	);
@@ -84,9 +92,8 @@
 	// month calendar normally moves from "everything on this date" to "this one".
 	let listDay = $state<string | null>(null);
 	let listAnchor = $state<HTMLElement | null>(null);
-	const listItems = $derived(
-		listDay ? (cells.find((cell) => cell.day === listDay)?.ordered ?? []) : []
-	);
+	const listCell = $derived(listDay ? (cells.find((cell) => cell.day === listDay) ?? null) : null);
+	const listItems = $derived(listCell?.ordered ?? []);
 
 	function openList(day: string, element: HTMLElement) {
 		listDay = day;
@@ -129,6 +136,7 @@
 				<div
 					class="calendar-month__cell"
 					class:calendar-month__cell--outside={!cell.inMonth}
+					class:calendar-month__cell--closed={cell.closed}
 					class:calendar-month__cell--today={cell.day === today}
 					class:calendar-month__cell--bookable={bookable}
 					onclick={(event) => clickCell(event, cell.day)}
@@ -146,6 +154,7 @@
 								<span class="calendar-month__count-word">
 									{cell.ordered.length === 1 ? 'item' : 'items'}
 								</span>
+								{@render attentionMarks(cell.attention)}
 							</span>
 						{/if}
 					</div>
@@ -174,11 +183,37 @@
 	</div>
 </div>
 
+{#snippet attentionMarks(marks: { late: number; unassigned: number })}
+	{#if marks.late > 0}
+		<span class="calendar-month__attention calendar-month__attention--late">
+			<span class="calendar-month__attention-dot" aria-hidden="true"></span>
+			{marks.late}
+			<span class="calendar-month__count-word">late</span>
+		</span>
+	{/if}
+	{#if marks.unassigned > 0}
+		<span class="calendar-month__attention calendar-month__attention--unassigned">
+			<span class="calendar-month__attention-dot" aria-hidden="true"></span>
+			{marks.unassigned}
+			<span class="calendar-month__count-word">unassigned</span>
+		</span>
+	{/if}
+{/snippet}
+
+{#snippet listSubtitle()}
+	{#if listCell}
+		{listCell.ordered.length}
+		{listCell.ordered.length === 1 ? 'item' : 'items'}
+		{@render attentionMarks(listCell.attention)}
+	{/if}
+{/snippet}
+
 {#if listDay}
 	<Popover
 		open
 		anchor={listAnchor}
 		title={formatCalendarDay(listDay, dayHeadingFormat)}
+		subtitle={listSubtitle}
 		onClose={closeList}
 	>
 		<ul class="calendar-month-list">
@@ -191,41 +226,46 @@
 
 <style lang="scss">
 	.calendar-month {
-		// The cell fits the date row, three micro cards and the + N more line without measuring anything at
-		// runtime. Change the card height and this follows.
-		--calendar-month-card: 22px;
-		--calendar-month-cell: 132px;
+		// The cell fits the date row, three cards and the + N more line without measuring anything at runtime.
+		// Change the card height and this follows. The grid has no frame of its own: the calendar card around
+		// it draws the edge.
+		--calendar-month-card: 25px;
+		--calendar-month-cell: 150px;
 
 		display: flex;
+		flex: 1 1 auto;
 		flex-direction: column;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		min-height: 320px;
 		background-color: var(--color-surface);
-		overflow: hidden;
 	}
 
 	.calendar-month__head,
 	.calendar-month__grid {
 		display: grid;
 		grid-template-columns: repeat(7, minmax(0, 1fr));
+		// The body scrolls under a scrollbar; the head keeps the same gutter so its columns line up with it.
+		scrollbar-gutter: stable;
 	}
 
 	.calendar-month__head {
+		flex: 0 0 auto;
 		border-bottom: var(--border-base) solid var(--color-border);
 	}
 
 	.calendar-month__weekday {
-		padding: var(--space-small) var(--space-smaller);
+		padding: 11px 14px;
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		text-align: center;
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.8px;
 		text-transform: uppercase;
-		letter-spacing: var(--typography--letterSpacing-loose);
 	}
 
 	.calendar-month__body {
-		// Six weeks keep their full height. On a short screen the month scrolls instead of clipping its last row.
-		max-height: clamp(360px, calc(100vh - 300px), 900px);
+		// Six weeks keep their full height. The month takes the room the card gives it and scrolls inside it
+		// rather than clipping its last row.
+		flex: 1 1 auto;
+		min-height: 0;
 		overflow-y: auto;
 		scrollbar-gutter: stable;
 	}
@@ -237,9 +277,9 @@
 	.calendar-month__cell {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-smaller);
+		gap: 5px;
 		min-width: 0;
-		padding: var(--space-smaller);
+		padding: 10px;
 		border-top: var(--border-base) solid var(--color-border);
 		border-left: var(--border-base) solid var(--color-border);
 
@@ -258,11 +298,17 @@
 	// A padding date still shows its real work; it simply recedes, so the month it belongs to reads as the
 	// month on screen.
 	.calendar-month__cell--outside {
-		background-color: var(--color-surface--background);
-
 		.calendar-month__number {
 			color: var(--color-text--secondary);
 		}
+		.calendar-month__items {
+			opacity: 0.6;
+		}
+	}
+
+	// A day the business is shut recedes too; the key at the bottom of the card says what the shading means.
+	.calendar-month__cell--closed {
+		background-color: var(--color-surface--background--subtle);
 	}
 
 	.calendar-month__date {
@@ -279,22 +325,64 @@
 		justify-content: center;
 		min-width: 24px;
 		height: 24px;
-		padding: 0 var(--space-smallest);
-		border-radius: var(--radius-circle);
+		padding: 0 var(--space-smaller);
+		border-radius: 999px;
 		color: var(--color-heading);
-		font-size: var(--typography--fontSize-small);
+		font-size: 14px;
 		font-weight: 700;
 	}
 
 	.calendar-month__cell--today .calendar-month__number {
 		background-color: var(--color-interactive);
-		color: var(--color-surface);
+		color: var(--color-text--reverse);
 	}
 
 	.calendar-month__count {
+		display: inline-flex;
+		align-items: center;
+		gap: 3px var(--space-small);
+		flex-wrap: wrap;
+		justify-content: flex-end;
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-smaller);
+		font-size: 11px;
+		font-weight: 500;
 		white-space: nowrap;
+	}
+
+	.calendar-month__attention {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-smaller);
+		font-weight: 600;
+
+		&--late {
+			color: var(--color-critical);
+		}
+		&--unassigned {
+			color: var(--color-warning--onSurface);
+		}
+	}
+
+	.calendar-month__attention-dot {
+		width: 5px;
+		height: 5px;
+		border-radius: var(--radius-circle);
+		background-color: currentColor;
+	}
+
+	.calendar-month__attention--unassigned .calendar-month__attention-dot {
+		background-color: var(--color-warning);
+	}
+
+	@media (max-width: 767px) {
+		.calendar-month {
+			min-height: 0;
+		}
+
+		.calendar-month__body {
+			flex: 0 0 auto;
+			max-height: 560px;
+		}
 	}
 
 	// The word goes first when the cell gets narrow; the number itself never does.
@@ -307,7 +395,7 @@
 	.calendar-month__items {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-smallest);
+		gap: 5px;
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -325,7 +413,7 @@
 		background: none;
 		color: var(--color-text--secondary);
 		font-family: inherit;
-		font-size: var(--typography--fontSize-smaller);
+		font-size: 11px;
 		font-weight: 700;
 		cursor: pointer;
 
@@ -342,11 +430,17 @@
 	.calendar-month-list {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-smaller);
+		gap: 6px;
+		width: 300px;
 		margin: 0;
 		padding: 0;
-		max-height: 320px;
+		max-height: 360px;
 		overflow-y: auto;
 		list-style: none;
+
+		> li {
+			flex: 0 0 auto;
+			min-height: 40px;
+		}
 	}
 </style>

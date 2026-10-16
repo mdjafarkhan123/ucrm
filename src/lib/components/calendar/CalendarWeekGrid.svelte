@@ -169,7 +169,10 @@
 	<div class="calendar-week__row calendar-week__body" {@attach openAtWorkingHours}>
 		<div class="calendar-week__times" style:height="{24 * hourHeight}px">
 			{#each HOURS as hour (hour)}
-				<span class="calendar-week__hour" style:top="{hour * hourHeight}px">{hourLabel(hour)}</span>
+				<!-- The hour the pill is sitting on is left unlabelled, or the two would be printed over each other. -->
+				{#if nowMinutes === null || Math.abs(nowMinutes - hour * 60) > 14}
+					<span class="calendar-week__hour" style:top="{hour * hourHeight}px">{hourLabel(hour)}</span>
+				{/if}
 			{/each}
 			{#if nowMinutes !== null}
 				<span class="calendar-week__now-pill" style:top={percent(nowMinutes)}>
@@ -239,6 +242,43 @@
 		flex-direction: column;
 		min-height: 0;
 		background-color: var(--color-surface);
+	}
+
+	@media (max-width: 767px) {
+		.calendar-week {
+			--calendar-week-gutter: 40px;
+		}
+
+		.calendar-week__day {
+			overflow: hidden;
+			padding: 8px 4px 10px;
+		}
+
+		.calendar-week__date-row {
+			gap: 3px;
+		}
+
+		.calendar-week__weekday {
+			font-size: 9px;
+			letter-spacing: 0.3px;
+		}
+
+		.calendar-week__count {
+			font-size: 9.5px;
+		}
+
+		.calendar-week__anytime-label {
+			padding: var(--space-slim) 3px 0 0;
+			font-size: 8.5px;
+			letter-spacing: -0.2px;
+		}
+
+		// The page scrolls on a phone, so the hours get a height of their own rather than what is left.
+		.calendar-week__body {
+			flex: 0 0 auto;
+			height: 440px;
+			min-height: 0;
+		}
 	}
 
 	.calendar-week__row {

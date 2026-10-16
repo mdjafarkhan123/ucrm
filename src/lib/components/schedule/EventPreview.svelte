@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import SchedulePreviewFacts from '$lib/components/schedule/SchedulePreviewFacts.svelte';
 	import { visitShape } from '$lib/schedule/status';
 	import { clockLabel } from '$lib/schedule/labels';
 	import type { EventItem } from '$lib/schedule/items';
@@ -34,18 +35,14 @@
 </script>
 
 <div class="event-preview">
-	<p class="event-preview__kind">Event</p>
-	<p class="event-preview__title">{event.title.trim() || 'Event'}</p>
-
-	<dl class="event-preview__facts">
-		<dt>When</dt>
-		<dd>{dayLabel} · {timeLabel}</dd>
-
-		{#if event.description?.trim()}
-			<dt>Details</dt>
-			<dd>{event.description.trim()}</dd>
-		{/if}
-	</dl>
+	<SchedulePreviewFacts
+		facts={[
+			{ kind: 'when', label: 'When', value: `${dayLabel} · ${timeLabel}` },
+			...(event.description?.trim()
+				? [{ kind: 'details' as const, label: 'Details', value: event.description.trim() }]
+				: [])
+		]}
+	/>
 
 	{#if canSchedule}
 		<div class="event-preview__actions">
@@ -60,51 +57,16 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		gap: var(--space-slim);
-	}
-
-	.event-preview__kind {
-		margin: 0;
-		color: var(--color-event--onSurface);
-		font-size: var(--typography--fontSize-smaller);
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: var(--typography--letterSpacing-loose);
-	}
-
-	.event-preview__title {
-		margin: 0;
-		color: var(--color-text);
-		font-size: var(--typography--fontSize-base);
-		line-height: var(--typography--lineHeight-base);
-	}
-
-	.event-preview__facts {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
-		gap: var(--space-smaller) var(--space-slim);
-		margin: 0;
-		width: 100%;
-
-		dt {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-			line-height: var(--typography--lineHeight-tighter);
-		}
-
-		dd {
-			margin: 0;
-			color: var(--color-text);
-			font-size: var(--typography--fontSize-small);
-			line-height: var(--typography--lineHeight-tighter);
-			overflow-wrap: anywhere;
-			white-space: pre-wrap;
-		}
+		gap: var(--space-base);
+		min-width: 260px;
 	}
 
 	.event-preview__actions {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-small);
+		width: 100%;
+		padding-top: var(--space-base);
+		border-top: var(--border-base) solid var(--color-border);
 	}
 </style>

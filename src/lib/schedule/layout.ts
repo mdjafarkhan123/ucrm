@@ -108,14 +108,15 @@ export function layoutTimedVisits<T extends { id: string }>(
 }
 
 // `pill` is the Anytime form: a date with no hour has no time to show, so it is one line holding the name.
-export type CardDensity = 'pill' | 'micro' | 'compact' | 'standard';
+// `row` is a list line -- the time in its own column -- for the list of everything on one date.
+export type CardDensity = 'pill' | 'row' | 'micro' | 'compact' | 'standard';
 
 // How much of a card fits in the space the grid gave it. A short visit keeps its true duration and drops to
 // the smallest form rather than being grown to fit its own text, and a visit sharing its hour with others
 // gives up detail before it gives up being readable.
 export function cardDensity(heightPx: number, columns: number): CardDensity {
 	if (heightPx < 34 || columns > 3) return 'micro';
-	if (heightPx < 64 || columns > 1) return 'compact';
+	if (heightPx < 84 || columns > 1) return 'compact';
 	return 'standard';
 }
 
