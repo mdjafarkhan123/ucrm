@@ -6,14 +6,11 @@
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
-	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
-	import { calendarDateFromString, calendarDateToString } from '$lib/components/ui/date-time';
+	import FilterChip from '$lib/components/ui/FilterChip.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import FilterBar from '$lib/components/data-display/FilterBar.svelte';
-	import FilterField from '$lib/components/data-display/FilterField.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
+	import DateRangeChip from '$lib/components/data-display/DateRangeChip.svelte';
 	import DataTable, {
 		type DataTableColumn,
 		type DataTableSort
@@ -21,10 +18,10 @@
 	import ListLoadMore from '$lib/components/data-display/ListLoadMore.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
-	import KpiCard from '$lib/components/data-display/KpiCard.svelte';
+	import RecordListCard from '$lib/components/data-display/RecordListCard.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
-	import StatusOverviewCard from '$lib/components/work/StatusOverviewCard.svelte';
-	import type { StatusOverviewRow } from '$lib/components/work/types';
+	import AttentionCard, { type AttentionTile } from '$lib/components/work/AttentionCard.svelte';
+	import MoneyFeatureCard from '$lib/components/work/MoneyFeatureCard.svelte';
 	import {
 		bulkArchiveQuotes,
 		fetchQuoteOverview,
@@ -46,10 +43,10 @@
 		type StoredQuoteStatus
 	} from '$lib/quotes/statuses';
 	import fileInvoiceIcon from '@tabler/icons/outline/file-invoice.svg?raw';
-	import filterIcon from '@tabler/icons/outline/filter.svg?raw';
-	import chartIcon from '@tabler/icons/outline/chart-bar.svg?raw';
-	import sendIcon from '@tabler/icons/outline/send.svg?raw';
-	import trendingIcon from '@tabler/icons/outline/trending-up.svg?raw';
+	import dashedCircleIcon from '@tabler/icons/outline/circle-dashed.svg?raw';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import dotsIcon from '@tabler/icons/outline/dots.svg?raw';
+	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -59,7 +56,6 @@
 	let status = $state<StoredQuoteStatus | ''>('');
 	let createdFrom = $state('');
 	let createdTo = $state('');
-	let filtersOpen = $state(false);
 	let selectedIds = $state<Set<string>>(new Set());
 	let sortKey = $state<QuoteSortKey>('created');
 	let sortDir = $state<'asc' | 'desc'>('desc');
@@ -158,29 +154,40 @@
 	const locale = $derived(quotesQuery.data?.pages[0]?.locale ?? 'en-US');
 	const hasActiveFilters = $derived(status !== '' || createdFrom !== '' || createdTo !== '');
 
-	function clearFilters() {
-		status = '';
-		createdFrom = '';
-		createdTo = '';
-	}
-
 	// The number the composer just saved, carried across in the URL so the list can say so out loud.
 	const savedNumber = $derived(page.url.searchParams.get('saved') ?? '');
 
-	// The four the office acts on. Counted, never clickable — filtering lives on the Status field in the
-	// filter panel below, the same split Jobber uses.
-	const overviewRows = $derived<StatusOverviewRow[]>(
+	// The four the office acts on, each with a line saying what it means. Picking one sets the Status
+	// filter in the list's header to it; picking it again, or choosing another status there, clears it.
+	const attentionHints: Record<(typeof QUOTE_OVERVIEW_STATUSES)[number], string> = {
+		draft: 'Not sent yet',
+		awaiting_response: 'Waiting on the client',
+		changes_requested: 'Client asked for edits',
+		approved: 'Ready for a job'
+	};
+	const attentionTiles = $derived<AttentionTile[]>(
 		QUOTE_OVERVIEW_STATUSES.map((key) => ({
+			key,
 			label: QUOTE_STATUS_LABELS[key],
+			hint: attentionHints[key],
 			count: countsQuery.data?.counts[key] ?? 0,
 			tone: QUOTE_STATUS_TONES[key]
 		}))
 	);
+	const selectedTile = $derived(
+		(QUOTE_OVERVIEW_STATUSES as readonly string[]).includes(status) ? status : ''
+	);
 
 	const statusOptions = [
-		{ value: '', label: 'All statuses' },
+		{ value: '', label: 'All' },
 		...STORED_QUOTE_STATUSES.map((value) => ({ value, label: QUOTE_STATUS_LABELS[value] }))
 	];
+
+	const sortSummary = $derived.by(() => {
+		if (sortKey === 'number')
+			return sortDir === 'asc' ? 'Lowest quote number first' : 'Highest quote number first';
+		return sortDir === 'asc' ? 'Oldest first' : 'Newest first';
+	});
 
 	const dateFormat = new Intl.DateTimeFormat(undefined, {
 		day: 'numeric',
@@ -189,28 +196,31 @@
 	});
 
 	// One formatter per currency rather than one per figure — a page of quotes writes a total on every row.
-	const moneyFormatters = new Map<string, Intl.NumberFormat>();
+	// A plain object, not a Map: nothing reads it reactively, it is only a cache the formatter fills.
+	const moneyFormatters: Record<string, Intl.NumberFormat> = {};
 	function formatTotal(quote: QuoteListItem) {
 		if (quote.total_minor === null) return '—';
 		const key = `${locale}:${quote.currency_code}`;
-		let formatter = moneyFormatters.get(key);
+		let formatter = moneyFormatters[key];
 		if (!formatter) {
 			formatter = new Intl.NumberFormat(locale, {
 				style: 'currency',
 				currency: quote.currency_code
 			});
-			moneyFormatters.set(key, formatter);
+			moneyFormatters[key] = formatter;
 		}
 		return formatter.format(quote.total_minor / 100);
 	}
 
-	function propertyAddress(quote: QuoteListItem) {
+	// The street on one line, the town and region under it. A quote sent earlier keeps the one-line address
+	// its version froze at send, so that row shows it whole on the first line.
+	function propertyStreet(quote: QuoteListItem) {
 		if (quote.property_address) return quote.property_address;
-		const property = quote.property;
-		if (!property) return 'No property';
-		return [property.address_line1, property.city, property.state_region]
-			.filter(Boolean)
-			.join(', ');
+		return quote.property?.address_line1 || 'No property';
+	}
+	function propertyArea(quote: QuoteListItem) {
+		if (quote.property_address || !quote.property) return '';
+		return [quote.property.city, quote.property.state_region].filter(Boolean).join(', ');
 	}
 	function clientName(quote: QuoteListItem) {
 		return quote.client_display_name ?? quote.client?.display_name ?? 'Client removed';
@@ -220,12 +230,13 @@
 	}
 
 	const columns: DataTableColumn[] = [
-		{ key: 'client', label: 'Client' },
+		{ key: 'client', label: 'Client', width: '200px' },
 		{ key: 'number', label: 'Quote', sortable: true },
-		{ key: 'property', label: 'Property' },
-		{ key: 'created', label: 'Created', sortable: true },
-		{ key: 'status', label: 'Status' },
-		{ key: 'total', label: 'Total' }
+		{ key: 'property', label: 'Property', width: '170px' },
+		{ key: 'created', label: 'Created', sortable: true, width: '120px' },
+		{ key: 'status', label: 'Status', width: '160px' },
+		{ key: 'total', label: 'Total', align: 'end', width: '100px' },
+		{ key: 'open', label: 'Open quote', hideLabel: true, width: '48px' }
 	];
 
 	function prefetchQuote(item: { id: string }) {
@@ -240,172 +251,182 @@
 <svelte:head><title>Quotes · Contractor CRM</title></svelte:head>
 
 <div class="page-scroller">
-	<PageContainer variant="fill">
+	<PageContainer variant="open">
 		{#if savedNumber}
 			<p class="quotes__saved" role="status">Quote #{savedNumber} was saved.</p>
 		{/if}
-		<PageHeader title="Quotes" description="Every price you have put in front of a client.">
+		<PageHeader
+			class="quotes-page__header"
+			eyebrow="Work & money"
+			title="Quotes"
+			description="Every price you have put in front of a client, from draft to approved."
+		>
 			{#snippet actions()}
 				{#if quotesActionsAllowed}
-					<Button variant="primary" href={resolve('/(app)/quotes/new')}>New Quote</Button>
 					<span class="quotes-header__action" title={moreActionsReason}>
-						<Button variant="secondary" disabled>More Actions</Button>
+						<Button variant="secondary" class="quotes-header__button" disabled>
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							<span class="quotes-header__icon" aria-hidden="true">{@html dotsIcon}</span>
+							More actions
+						</Button>
 						<span class="quotes-header__reason">{moreActionsReason}</span>
 					</span>
+					<Button
+						variant="primary"
+						class="quotes-header__button quotes-header__button--primary"
+						href={resolve('/(app)/quotes/new')}
+					>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						<span class="quotes-header__icon" aria-hidden="true">{@html plusIcon}</span>
+						New quote
+					</Button>
 				{/if}
 			{/snippet}
 		</PageHeader>
 
-		<div class="quotes-stats">
-			<StatusOverviewCard rows={overviewRows} loading={countsQuery.isPending} />
-			<KpiCard
-				label="Conversion rate"
+		<div class="quotes-overview">
+			<AttentionCard
+				title="Open quotes"
+				description="Where every unfinished quote stands. Pick one to see only those quotes."
+				tiles={attentionTiles}
+				selectedKey={selectedTile}
+				onSelect={(key) => (status = key as StoredQuoteStatus | '')}
+				loading={countsQuery.isPending}
+			/>
+			<MoneyFeatureCard
+				eyebrow="Conversion rate"
 				value="—"
 				note="Once quotes are being sent and approved"
-				icon={chartIcon}
-				variant="compact"
-			/>
-			<KpiCard
-				label="Sent"
-				value="—"
-				note="Once there are 30 days of sent quotes"
-				icon={sendIcon}
-				variant="compact"
-			/>
-			<KpiCard
-				label="Converted"
-				value="—"
-				note="Once approved quotes turn into jobs"
-				icon={trendingIcon}
-				variant="compact"
+				detailLabel="Sent and converted"
+				detailValue="—"
 			/>
 		</div>
 
-		<div class="quotes-toolbar">
-			<div class="quotes-toolbar__search">
-				<SearchInput id="quotes-search" bind:value={search} placeholder="Search quotes" />
-			</div>
-			<!-- eslint-disable svelte/no-at-html-tags -->
-			<button
-				type="button"
-				class="quotes-toolbar__filters-toggle"
-				class:quotes-toolbar__filters-toggle--active={hasActiveFilters}
-				aria-pressed={filtersOpen}
-				onclick={() => (filtersOpen = !filtersOpen)}
-			>
-				<span aria-hidden="true">{@html filterIcon}</span>
-				Filters{hasActiveFilters ? ' •' : ''}
-			</button>
-			<!-- eslint-enable svelte/no-at-html-tags -->
-		</div>
+		<RecordListCard
+			title="All quotes"
+			subtitle={sortSummary}
+			padBody={quotesQuery.isPending || quotesQuery.isError || quotes.length === 0}
+		>
+			{#snippet toolbar()}
+				<div class="quotes-card__search">
+					<SearchInput
+						id="quotes-search"
+						bind:value={search}
+						placeholder="Search quotes"
+						size="compact"
+					/>
+				</div>
+				<FilterChip
+					id="quotes-status-filter"
+					variant="toolbar"
+					icon={dashedCircleIcon}
+					label="Status"
+					value={status}
+					options={statusOptions}
+					restValue=""
+					onchange={(value) => (status = value as StoredQuoteStatus | '')}
+				/>
+				<DateRangeChip
+					id="quotes-created"
+					label="Created"
+					from={createdFrom}
+					to={createdTo}
+					onchange={(range) => {
+						createdFrom = range.from;
+						createdTo = range.to;
+					}}
+				/>
+			{/snippet}
 
-		{#if filtersOpen}
-			<FilterBar onClear={hasActiveFilters ? clearFilters : undefined}>
-				<FilterField id="quotes-status-filter" label="Status">
-					<Select
-						id="quotes-status-filter"
-						value={status}
-						onchange={(value) => (status = value as StoredQuoteStatus | '')}
-						options={statusOptions}
-					/>
-				</FilterField>
-				<FilterField id="quotes-created-from" label="Created from">
-					<CalendarPicker
-						id="quotes-created-from"
-						label="Created from"
-						hideLabel
-						value={calendarDateFromString(createdFrom)}
-						maxValue={calendarDateFromString(createdTo)}
-						onchange={(value) => (createdFrom = calendarDateToString(value))}
-					/>
-				</FilterField>
-				<FilterField id="quotes-created-to" label="Created to">
-					<CalendarPicker
-						id="quotes-created-to"
-						label="Created to"
-						hideLabel
-						value={calendarDateFromString(createdTo)}
-						minValue={calendarDateFromString(createdFrom)}
-						onchange={(value) => (createdTo = calendarDateToString(value))}
-					/>
-				</FilterField>
-			</FilterBar>
-		{/if}
+			{#if selectedIds.size > 0}
+				<div class="quotes-bulk-bar">
+					<span>{selectedIds.size} selected</span>
+					<Button
+						variant="secondary"
+						size="small"
+						loading={bulkArchiving}
+						onclick={() => void bulkArchive()}
+					>
+						Archive
+					</Button>
+				</div>
+			{/if}
 
-		{#if selectedIds.size > 0}
-			<div class="quotes-bulk-bar">
-				<span>{selectedIds.size} selected</span>
-				<Button
-					variant="secondary"
-					size="small"
-					loading={bulkArchiving}
-					onclick={() => void bulkArchive()}
+			{#if quotesQuery.isPending}
+				<LoadingSkeleton variant="table" label="Loading quotes" rows={5} />
+			{:else if quotesQuery.isError}
+				<ErrorState description="Quotes could not be loaded. Refresh and try again." />
+			{:else if quotes.length === 0}
+				<EmptyState
+					icon={fileInvoiceIcon}
+					title={hasActiveFilters || debouncedSearch ? 'No matching quotes' : 'No quotes yet'}
+					description={hasActiveFilters || debouncedSearch
+						? 'Try a different search term or clear your filters.'
+						: 'Prices you send out will show up here.'}
+				/>
+			{:else}
+				<DataTable
+					variant="card"
+					{columns}
+					items={quotes}
+					rowId={(quote) => quote.id}
+					caption="Quotes"
+					selectable
+					bind:selectedIds
+					rowLabel={(quote) => `Select quote #${quote.quote_number}`}
+					onRowHover={prefetchQuote}
+					onRowActivate={(quote) => void goto(resolve('/(app)/quotes/[id=uuid]', { id: quote.id }))}
+					{sort}
+					onSortChange={handleSortChange}
 				>
-					Archive
-				</Button>
-			</div>
-		{/if}
-
-		{#if quotesQuery.isPending}
-			<LoadingSkeleton variant="table" label="Loading quotes" rows={5} />
-		{:else if quotesQuery.isError}
-			<ErrorState description="Quotes could not be loaded. Refresh and try again." />
-		{:else if quotes.length === 0}
-			<EmptyState
-				icon={fileInvoiceIcon}
-				title={hasActiveFilters || debouncedSearch ? 'No matching quotes' : 'No quotes yet'}
-				description={hasActiveFilters || debouncedSearch
-					? 'Try a different search term or clear your filters.'
-					: 'Prices you send out will show up here.'}
-			/>
-		{:else}
-			<DataTable
-				{columns}
-				items={quotes}
-				rowId={(quote) => quote.id}
-				caption="Quotes"
-				selectable
-				bind:selectedIds
-				rowLabel={(quote) => `Select quote #${quote.quote_number}`}
-				onRowHover={prefetchQuote}
-				onRowActivate={(quote) => void goto(resolve('/(app)/quotes/[id=uuid]', { id: quote.id }))}
-				{sort}
-				onSortChange={handleSortChange}
-			>
-				{#snippet row(quote: QuoteListItem)}
-					<th scope="row">
-						<div class="quotes-table__client">
-							<Avatar id={quote.client?.id ?? quote.id} name={clientName(quote)} size="small" />
-							<span>{clientName(quote)}</span>
-						</div>
-					</th>
-					<td>
-						<div class="quotes-table__number">
-							<a href={resolve('/(app)/quotes/[id=uuid]', { id: quote.id })}
-								>#{quote.quote_number}</a
-							>
-						</div>
-						<div class="quotes-table__title">{quoteTitle(quote)}</div>
-					</td>
-					<td>{propertyAddress(quote)}</td>
-					<td>{dateFormat.format(new Date(quote.created_at))}</td>
-					<td>
-						<StatusBadge status={QUOTE_STATUS_TONES[quote.status]}>
-							{QUOTE_STATUS_LABELS[quote.status]}
-						</StatusBadge>
-					</td>
-					<td>{formatTotal(quote)}</td>
-				{/snippet}
-				{#snippet footer()}
-					<ListLoadMore
-						hasNextPage={quotesQuery.hasNextPage}
-						isFetchingNextPage={quotesQuery.isFetchingNextPage}
-						onLoadMore={() => quotesQuery.fetchNextPage()}
-						searchNarrowed={quotesQuery.data?.pages.at(-1)?.search_narrowed ?? false}
-					/>
-				{/snippet}
-			</DataTable>
-		{/if}
+					{#snippet row(quote: QuoteListItem)}
+						<th scope="row">
+							<div class="quotes-table__client">
+								<Avatar id={quote.client?.id ?? quote.id} name={clientName(quote)} size="base" />
+								<a
+									class="quotes-table__client-link"
+									href={resolve('/(app)/quotes/[id=uuid]', { id: quote.id })}>{clientName(quote)}</a
+								>
+							</div>
+						</th>
+						<td>
+							<div class="quotes-table__title">{quoteTitle(quote)}</div>
+							<div class="quotes-table__meta">
+								#{quote.quote_number}{quote.from_request ? ' · From request' : ''}
+							</div>
+						</td>
+						<td>
+							<div class="quotes-table__street">{propertyStreet(quote)}</div>
+							{#if propertyArea(quote)}
+								<div class="quotes-table__meta">{propertyArea(quote)}</div>
+							{/if}
+						</td>
+						<td class="quotes-table__date">{dateFormat.format(new Date(quote.created_at))}</td>
+						<td>
+							<StatusBadge size="compact" status={QUOTE_STATUS_TONES[quote.status]}>
+								{QUOTE_STATUS_LABELS[quote.status]}
+							</StatusBadge>
+						</td>
+						<td class="quotes-table__total">{formatTotal(quote)}</td>
+						<td class="quotes-table__open">
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							<span aria-hidden="true">{@html chevronRightIcon}</span>
+						</td>
+					{/snippet}
+					{#snippet footer()}
+						<ListLoadMore
+							variant="card"
+							label="Load more quotes"
+							hasNextPage={quotesQuery.hasNextPage}
+							isFetchingNextPage={quotesQuery.isFetchingNextPage}
+							onLoadMore={() => quotesQuery.fetchNextPage()}
+							searchNarrowed={quotesQuery.data?.pages.at(-1)?.search_narrowed ?? false}
+							narrowedLabel="Many quotes match — type more to see the rest."
+						/>
+					{/snippet}
+				</DataTable>
+			{/if}
+		</RecordListCard>
 	</PageContainer>
 </div>
 
@@ -422,28 +443,9 @@
 		font-size: var(--typography--fontSize-small);
 	}
 
-	.quotes-table__client {
-		display: flex;
-		align-items: center;
-		gap: var(--space-small);
-	}
-
-	.quotes-table__number {
-		color: var(--color-heading);
-		font-weight: 700;
-
-		a {
-			color: inherit;
-			text-decoration: none;
-
-			&:hover {
-				text-decoration: underline;
-			}
-		}
-	}
-
-	.quotes-table__title {
-		color: var(--color-text--secondary);
+	/* The page header sits straight on the app background; the cards under it share one 24px rhythm. */
+	:global(.quotes-page__header) {
+		margin-bottom: var(--space-large);
 	}
 
 	.quotes-header__action {
@@ -460,69 +462,134 @@
 		white-space: nowrap;
 	}
 
-	.quotes-stats {
-		display: grid;
-		gap: var(--space-base);
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		margin-top: var(--space-large);
+	:global(.quotes-header__button) {
+		min-height: 44px;
+		padding: 0 18px 0 14px;
+		border-radius: 12px;
+		border-color: var(--color-border);
+		color: var(--color-text);
+		gap: var(--space-small);
+	}
+	/* Unavailable, but still drawn as the white button it will become, so the header does not look half empty. */
+	:global(.quotes-header__button:disabled) {
+		border-color: var(--color-border);
+		color: var(--color-text--secondary);
+		background: var(--color-surface);
+		opacity: 0.7;
+	}
+	:global(.quotes-header__button--primary) {
+		border-color: var(--color-interactive);
+		color: var(--color-text--reverse);
+		box-shadow: 0 6px 16px color-mix(in srgb, var(--color-interactive) 20%, transparent);
+	}
+	.quotes-header__icon {
+		display: inline-flex;
+
+		:global(svg) {
+			display: block;
+			width: 18px;
+			height: 18px;
+		}
 	}
 
-	.quotes-toolbar {
-		display: flex;
-		gap: var(--space-small);
-		margin: var(--space-large) 0;
+	/* Open quotes takes the room it needs; the conversion card keeps a steady width beside it. */
+	.quotes-overview {
+		display: grid;
+		gap: var(--space-large);
+		grid-template-columns: minmax(0, 1fr) 336px;
+		margin-bottom: var(--space-large);
+	}
 
-		&__search {
-			flex: 1;
-			min-width: 0;
-		}
-		&__filters-toggle {
-			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			gap: var(--space-smaller);
-			padding: 0 var(--space-base);
-			border: var(--border-base) solid var(--color-border--interactive);
-			border-radius: var(--radius-base);
-			color: var(--color-heading);
-			background: var(--color-surface);
-			font-weight: 600;
-			cursor: pointer;
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
-			&:hover {
-				background: var(--color-surface--hover);
-			}
-			&--active {
-				border-color: var(--color-interactive);
-				color: var(--color-interactive);
-			}
-		}
+	.quotes-card__search {
+		width: 260px;
+		max-width: 100%;
 	}
 
 	.quotes-bulk-bar {
 		display: flex;
 		align-items: center;
 		gap: var(--space-base);
-		margin-bottom: var(--space-base);
-		padding: var(--space-small) var(--space-base);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background: var(--color-surface);
+		padding: var(--space-small) var(--space-large);
+		border-top: var(--border-base) solid var(--color-border);
+		background: var(--color-surface--background--subtle);
 		font-weight: 600;
 	}
 
-	@media (max-width: 1023px) {
-		.quotes-stats {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
+	.quotes-table__client {
+		display: flex;
+		align-items: center;
+		gap: var(--space-slim);
+	}
+
+	/* The row's real navigation link — carries keyboard focus, new-tab and cmd-click, while a plain click
+	   anywhere on the row still opens the quote through the table's onRowActivate. */
+	.quotes-table__client-link {
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-base);
+		font-weight: 600;
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+		&:focus-visible {
+			outline: none;
+			border-radius: var(--radius-small);
+			box-shadow: var(--shadow-focus);
 		}
 	}
 
-	@media (max-width: 639px) {
-		.quotes-stats {
+	.quotes-table__title {
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-base);
+		font-weight: 500;
+	}
+	.quotes-table__street {
+		display: -webkit-box;
+		overflow: hidden;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		color: var(--color-text);
+		font-size: 13px;
+		font-weight: 500;
+	}
+	.quotes-table__meta {
+		margin-top: 3px;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 500;
+	}
+	.quotes-table__date {
+		color: var(--color-text);
+		font-size: 13px;
+		font-weight: 500;
+		white-space: nowrap;
+	}
+	.quotes-table__total {
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-base);
+		font-variant-numeric: tabular-nums;
+		font-weight: 600;
+		text-align: end;
+		white-space: nowrap;
+	}
+	.quotes-table__open {
+		color: var(--color-icon--secondary);
+
+		span {
+			display: inline-flex;
+			vertical-align: middle;
+		}
+		:global(svg) {
+			display: block;
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	@media (max-width: 1199px) {
+		.quotes-overview {
 			grid-template-columns: minmax(0, 1fr);
 		}
 	}

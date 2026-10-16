@@ -1,3 +1,14 @@
+<script module lang="ts">
+	export type MoneyBreakdownPart = {
+		label: string;
+		/** The figure to show, already formatted. */
+		value: string;
+		/** How much of the whole bar this part fills; only the proportions between parts matter. */
+		share: number;
+		tone: 'critical' | 'neutral';
+	};
+</script>
+
 <script lang="ts">
 	// The dark money card beside a work list's overview: one big figure with a line under it, and a
 	// second figure below a hairline. It reads from the reverse tokens, so it is dark in the light theme
@@ -8,6 +19,7 @@
 		note,
 		detailLabel,
 		detailValue,
+		breakdown,
 		loading = false
 	}: {
 		eyebrow: string;
@@ -15,6 +27,8 @@
 		note?: string;
 		detailLabel?: string;
 		detailValue?: string;
+		/** Instead of one detail row: a split bar with a legend row for each part. */
+		breakdown?: MoneyBreakdownPart[];
 		loading?: boolean;
 	} = $props();
 </script>
@@ -25,7 +39,31 @@
 		<p class="money-card__value">{value}</p>
 		{#if note}<p class="money-card__note">{note}</p>{/if}
 	</div>
-	{#if detailLabel}
+	{#if breakdown && breakdown.length > 0}
+		<div class="money-card__breakdown">
+			<div class="money-card__bar" aria-hidden="true">
+				{#each breakdown as part (part.label)}
+					{#if part.share > 0}
+						<span
+							class={['money-card__segment', `money-card__segment--${part.tone}`]}
+							style:flex-grow={part.share}
+						></span>
+					{/if}
+				{/each}
+			</div>
+			<dl class="money-card__legend">
+				{#each breakdown as part (part.label)}
+					<div class="money-card__legend-row">
+						<dt>
+							<span class={['money-card__swatch', `money-card__segment--${part.tone}`]}></span>
+							{part.label}
+						</dt>
+						<dd>{part.value}</dd>
+					</div>
+				{/each}
+			</dl>
+		</div>
+	{:else if detailLabel}
 		<dl class="money-card__detail">
 			<dt>{detailLabel}</dt>
 			<dd>{detailValue ?? '—'}</dd>
@@ -69,6 +107,59 @@
 			color: var(--color-icon--secondary);
 			font-size: 13px;
 			font-weight: 500;
+		}
+		&__breakdown {
+			display: grid;
+			gap: var(--space-slim);
+			padding-top: var(--space-base);
+			border-top: var(--border-base) solid
+				color-mix(in srgb, var(--color-text--reverse) 14%, transparent);
+		}
+		&__bar {
+			display: flex;
+			gap: 3px;
+			height: 8px;
+		}
+		&__segment {
+			flex: 1 1 0;
+			border-radius: 999px;
+
+			&--critical {
+				background: var(--color-critical);
+			}
+			&--neutral {
+				background: var(--color-text--reverse);
+			}
+		}
+		&__legend {
+			display: grid;
+			gap: var(--space-small);
+			margin: 0;
+			font-size: 13px;
+		}
+		&__legend-row {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: var(--space-base);
+
+			dt {
+				display: flex;
+				align-items: center;
+				gap: var(--space-small);
+				font-weight: 500;
+			}
+			dd {
+				margin: 0;
+				font-variant-numeric: tabular-nums;
+				font-weight: 600;
+			}
+		}
+		&__swatch {
+			flex: 0 0 8px;
+			width: 8px;
+			height: 8px;
+			border-radius: 999px;
 		}
 		&__detail {
 			display: flex;

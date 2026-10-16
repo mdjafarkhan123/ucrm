@@ -10,8 +10,8 @@
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
-	import Badge from '$lib/components/ui/Badge.svelte';
+	import FilterChip from '$lib/components/ui/FilterChip.svelte';
+	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
@@ -22,9 +22,8 @@
 		type DataTableColumn,
 		type DataTableSort
 	} from '$lib/components/data-display/DataTable.svelte';
-	import FilterBar from '$lib/components/data-display/FilterBar.svelte';
-	import FilterField from '$lib/components/data-display/FilterField.svelte';
 	import ListLoadMore from '$lib/components/data-display/ListLoadMore.svelte';
+	import RecordListCard from '$lib/components/data-display/RecordListCard.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
@@ -43,7 +42,10 @@
 	import { fetchTags, tagsKey } from '$lib/collaboration/api';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
-	import filterIcon from '@tabler/icons/outline/filter.svg?raw';
+	import dashedCircleIcon from '@tabler/icons/outline/circle-dashed.svg?raw';
+	import tagIcon from '@tabler/icons/outline/tag.svg?raw';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import dotsIcon from '@tabler/icons/outline/dots.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
@@ -58,7 +60,6 @@
 	let debouncedSearch = $state('');
 	let status = $state<'lead' | 'customer' | 'archived' | ''>('');
 	let tagId = $state('');
-	let filtersOpen = $state(false);
 	let sortKey = $state<ClientSortKey>('updated_at');
 	let sortDir = $state<'asc' | 'desc'>('desc');
 
@@ -90,10 +91,6 @@
 	function setTag(value: string) {
 		tagId = value;
 	}
-	function clearFilters() {
-		status = '';
-		tagId = '';
-	}
 
 	const filters = $derived({
 		search: debouncedSearch,
@@ -121,7 +118,7 @@
 	const canMerge = $derived(clientsQuery.data?.pages[0]?.can_merge === true);
 	let mergeOpen = $state(false);
 	const tagOptions = $derived([
-		{ value: '', label: 'All tags' },
+		{ value: '', label: 'All' },
 		...(tagsQuery.data ?? []).map((tag) => ({ value: tag.id, label: tag.name }))
 	]);
 	const hasActiveFilters = $derived(status !== '' || tagId !== '');
@@ -159,22 +156,50 @@
 
 	let selectedIds = $state<Set<string>>(new Set());
 
-	function formatAddress(property: ClientListItem['primary_property']) {
-		if (!property) return 'No property yet';
-		return [property.address_line1, property.city, property.state_region]
-			.filter(Boolean)
-			.join(', ');
-	}
 	function statusLabel(lifecycleStatus: string) {
 		return lifecycleStatus === 'customer' ? 'Customer' : 'Lead';
 	}
+	// "Person · Referral": what kind of client it is, and where they came from when that is known.
+	function clientMeta(client: ClientListItem) {
+		const kind = client.client_type === 'company' ? 'Company' : 'Person';
+		return client.lead_source ? `${kind} · ${client.lead_source}` : kind;
+	}
+	// The street on one line; the town and region sit under it.
+	function propertyArea(property: ClientListItem['primary_property']) {
+		if (!property) return '';
+		return [property.city, property.state_region].filter(Boolean).join(', ');
+	}
+	// The first tag is named in the row and the rest are counted, so a client with many tags keeps a one-line row.
+	const SHOWN_TAGS = 1;
+
+	const dateFormat = new Intl.DateTimeFormat(undefined, {
+		day: 'numeric',
+		month: 'short',
+		year: 'numeric'
+	});
+
+	const statusOptions = [
+		{ value: '', label: 'All' },
+		{ value: 'lead', label: 'Lead' },
+		{ value: 'customer', label: 'Customer' },
+		// Archived clients live in this same list behind their own filter, the way Jobber
+		// keeps them — they are never a separate screen.
+		{ value: 'archived', label: 'Archived' }
+	];
+
+	const sortSummary = $derived.by(() => {
+		if (sortKey === 'name') return sortDir === 'asc' ? 'Name A to Z' : 'Name Z to A';
+		if (sortKey === 'status') return sortDir === 'asc' ? 'Leads first' : 'Customers first';
+		return sortDir === 'asc' ? 'Least recently updated first' : 'Recently updated first';
+	});
 
 	const columns: DataTableColumn[] = [
-		{ key: 'name', label: 'Name', sortable: true },
-		{ key: 'address', label: 'Address' },
-		{ key: 'contact', label: 'Email & Phone' },
-		{ key: 'tags', label: 'Tags' },
-		{ key: 'status', label: 'Status', sortable: true }
+		{ key: 'name', label: 'Client', sortable: true, width: '270px' },
+		{ key: 'contact', label: 'Contact', width: '200px' },
+		{ key: 'address', label: 'Property', width: '200px' },
+		{ key: 'tags', label: 'Tags', width: '150px' },
+		{ key: 'status', label: 'Status', sortable: true, width: '100px' },
+		{ key: 'updated_at', label: 'Updated', sortable: true, width: '110px' }
 	];
 	function clientHref(client: ClientListItem) {
 		return resolve('/(app)/clients/[id=uuid]', { id: client.id });
@@ -280,175 +305,235 @@
 	<ClientMergeDialog open onClose={() => (mergeOpen = false)} />
 {/if}
 
-<PageContainer variant="fill">
-	<PageHeader title="Clients" description="Every lead and customer relationship in one place.">
-		{#snippet actions()}
-			{#if !refused}
-				<div class="clients-header-actions">
-					<DropdownMenu triggerLabel="More client actions" items={moreClientActions} />
-					<Button variant="primary" href={resolve('/clients/new')}>New Client</Button>
-				</div>
-			{/if}
-		{/snippet}
-	</PageHeader>
-
-	{#if refused}
-		<EmptyState
-			icon={lockIcon}
-			title="You do not have access to clients"
-			description="Clients on your assigned visits open from the Schedule and your Jobs. Ask an owner or admin if you need the full client list."
-		/>
-	{:else}
-		<div class="clients-toolbar">
-			<div class="clients-toolbar__search">
-				<SearchInput id="clients-search" bind:value={search} placeholder="Search clients" />
-			</div>
-			<!-- eslint-disable svelte/no-at-html-tags -->
-			<button
-				type="button"
-				class="clients-toolbar__filters-toggle"
-				class:clients-toolbar__filters-toggle--active={hasActiveFilters}
-				aria-pressed={filtersOpen}
-				onclick={() => (filtersOpen = !filtersOpen)}
-			>
-				<span aria-hidden="true">{@html filterIcon}</span>
-				Filters{hasActiveFilters ? ' •' : ''}
-			</button>
-			<!-- eslint-enable svelte/no-at-html-tags -->
-		</div>
-
-		{#if filtersOpen}
-			<FilterBar onClear={hasActiveFilters ? clearFilters : undefined}>
-				<FilterField id="clients-status-filter" label="Status">
-					<Select
-						id="clients-status-filter"
-						value={status}
-						onchange={setStatus}
-						options={[
-							{ value: '', label: 'All statuses' },
-							{ value: 'lead', label: 'Lead' },
-							{ value: 'customer', label: 'Customer' },
-							// Archived clients live in this same list behind their own filter, the way Jobber
-							// keeps them — they are never a separate screen.
-							{ value: 'archived', label: 'Archived' }
-						]}
-					/>
-				</FilterField>
-				<FilterField id="clients-tag-filter" label="Tag">
-					<Select id="clients-tag-filter" value={tagId} onchange={setTag} options={tagOptions} />
-				</FilterField>
-			</FilterBar>
-		{/if}
-
-		{#if selectedIds.size > 0}
-			<div class="clients-bulk-bar">
-				<span>{selectedIds.size} selected</span>
-				{#if canArchive}
-					{#if viewingArchived}
-						<Button
-							variant="secondary"
-							size="small"
-							loading={archiveMutation.isPending}
-							onclick={() => archiveMutation.mutate({ ids: [...selectedIds], archived: false })}
-							>Restore</Button
+<div class="page-scroller">
+	<PageContainer variant="open">
+		<PageHeader
+			class="clients-page__header"
+			eyebrow="Customers"
+			title="Clients"
+			description="Every lead and customer relationship in one place."
+		>
+			{#snippet actions()}
+				{#if !refused}
+					<div class="clients-header-actions">
+						<DropdownMenu
+							triggerLabel="More client actions"
+							triggerClass="clients-header__button"
+							items={moreClientActions}
 						>
-					{:else}
+							{#snippet trigger()}
+								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+								<span class="clients-header__icon" aria-hidden="true">{@html dotsIcon}</span>
+								More actions
+							{/snippet}
+						</DropdownMenu>
 						<Button
-							variant="secondary"
-							size="small"
-							loading={archiveMutation.isPending}
-							onclick={() => (archiveTarget = { ids: [...selectedIds], name: null })}
-							>Archive</Button
+							variant="primary"
+							class="clients-header__button clients-header__button--primary"
+							href={resolve('/clients/new')}
 						>
-					{/if}
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							<span class="clients-header__icon" aria-hidden="true">{@html plusIcon}</span>
+							New client
+						</Button>
+					</div>
 				{/if}
-				<span class="clients-bulk-bar__action" title={deleteReason}>
-					<Button variant="secondary" variation="destructive" size="small" disabled>Delete</Button>
-					<span class="clients-bulk-bar__reason">{deleteReason}</span>
-				</span>
-			</div>
-		{/if}
+			{/snippet}
+		</PageHeader>
 
-		{#if clientsQuery.isPending}
-			<LoadingSkeleton variant="table" label="Loading clients" rows={5} />
-		{:else if clientsQuery.isError}
-			<ErrorState
-				description="Clients could not be loaded. Try again."
-				retry={() => clientsQuery.refetch()}
-			/>
-		{:else if clients.length === 0}
+		{#if refused}
 			<EmptyState
-				icon={usersIcon}
-				title={hasActiveFilters || debouncedSearch ? 'No matching clients' : 'No clients yet'}
-				description={hasActiveFilters || debouncedSearch
-					? 'Try a different search term or clear your filters.'
-					: 'Clients you add will show up here.'}
+				icon={lockIcon}
+				title="You do not have access to clients"
+				description="Clients on your assigned visits open from the Schedule and your Jobs. Ask an owner or admin if you need the full client list."
 			/>
 		{:else}
-			<DataTable
-				{columns}
-				items={clients}
-				rowId={(client) => client.id}
-				caption="Clients"
-				selectable
-				bind:selectedIds
-				rowLabel={(client) => `Select ${client.display_name}`}
-				onRowHover={prefetchClient}
-				onRowActivate={(client) => goto(clientHref(client))}
-				{sort}
-				onSortChange={handleSortChange}
+			{#if selectedIds.size > 0}
+				<div class="clients-bulk-bar">
+					<span>{selectedIds.size} selected</span>
+					{#if canArchive}
+						{#if viewingArchived}
+							<Button
+								variant="secondary"
+								size="small"
+								loading={archiveMutation.isPending}
+								onclick={() => archiveMutation.mutate({ ids: [...selectedIds], archived: false })}
+								>Restore</Button
+							>
+						{:else}
+							<Button
+								variant="secondary"
+								size="small"
+								loading={archiveMutation.isPending}
+								onclick={() => (archiveTarget = { ids: [...selectedIds], name: null })}
+								>Archive</Button
+							>
+						{/if}
+					{/if}
+					<span class="clients-bulk-bar__action" title={deleteReason}>
+						<Button variant="secondary" variation="destructive" size="small" disabled>Delete</Button
+						>
+						<span class="clients-bulk-bar__reason">{deleteReason}</span>
+					</span>
+				</div>
+			{/if}
+
+			<RecordListCard
+				title="All clients"
+				subtitle={sortSummary}
+				padBody={clientsQuery.isPending || clientsQuery.isError || clients.length === 0}
 			>
-				{#snippet row(client: ClientListItem)}
-					<th scope="row">
-						<div class="clients-table__name">
-							<Avatar id={client.id} name={client.display_name} size="small" />
-							<a class="clients-table__name-text" href={clientHref(client)}>{client.display_name}</a
-							>
-						</div>
-					</th>
-					<td
-						>{formatAddress(client.primary_property)}{#if client.additional_property_count > 0}
-							<span class="clients-table__more-properties"
-								>+{client.additional_property_count} more</span
-							>{/if}</td
+				{#snippet toolbar()}
+					<div class="clients-card__search">
+						<SearchInput
+							id="clients-search"
+							bind:value={search}
+							placeholder="Search clients"
+							size="compact"
+						/>
+					</div>
+					<FilterChip
+						id="clients-status-filter"
+						variant="toolbar"
+						icon={dashedCircleIcon}
+						label="Status"
+						value={status}
+						options={statusOptions}
+						restValue=""
+						onchange={setStatus}
+					/>
+					<FilterChip
+						id="clients-tag-filter"
+						variant="toolbar"
+						icon={tagIcon}
+						label="Tags"
+						value={tagId}
+						options={tagOptions}
+						restValue=""
+						onchange={setTag}
+					/>
+				{/snippet}
+
+				{#if clientsQuery.isPending}
+					<LoadingSkeleton variant="table" label="Loading clients" rows={5} />
+				{:else if clientsQuery.isError}
+					<ErrorState
+						description="Clients could not be loaded. Try again."
+						retry={() => clientsQuery.refetch()}
+					/>
+				{:else if clients.length === 0}
+					<EmptyState
+						icon={usersIcon}
+						title={hasActiveFilters || debouncedSearch ? 'No matching clients' : 'No clients yet'}
+						description={hasActiveFilters || debouncedSearch
+							? 'Try a different search term or clear your filters.'
+							: 'Clients you add will show up here.'}
+					/>
+				{:else}
+					<DataTable
+						variant="card"
+						{columns}
+						items={clients}
+						rowId={(client) => client.id}
+						caption="Clients"
+						selectable
+						bind:selectedIds
+						rowLabel={(client) => `Select ${client.display_name}`}
+						onRowHover={prefetchClient}
+						onRowActivate={(client) => goto(clientHref(client))}
+						{sort}
+						onSortChange={handleSortChange}
 					>
-					<td>{client.email ?? client.phone ?? '—'}</td>
-					<td>
-						{#if client.tags.length > 0}
-							<div class="clients-table__tags">
-								{#each client.tags as tag (tag.id)}<Badge>{tag.name}</Badge>{/each}
-							</div>
-						{:else}
-							—
-						{/if}
-					</td>
-					<td>
-						{#if client.archived_at}
-							<Badge>Archived</Badge>
-						{:else}
-							<Badge status={client.lifecycle_status === 'customer' ? 'success' : 'informative'}
-								>{statusLabel(client.lifecycle_status)}</Badge
-							>
-						{/if}
-					</td>
-				{/snippet}
-				{#snippet rowActions(client: ClientListItem)}
-					<DropdownMenu
-						items={clientMenuItems(client)}
-						triggerLabel={`Actions for ${client.display_name}`}
-					/>
-				{/snippet}
-				{#snippet footer()}
-					<ListLoadMore
-						hasNextPage={clientsQuery.hasNextPage}
-						isFetchingNextPage={clientsQuery.isFetchingNextPage}
-						onLoadMore={() => clientsQuery.fetchNextPage()}
-					/>
-				{/snippet}
-			</DataTable>
+						{#snippet row(client: ClientListItem)}
+							<th scope="row">
+								<div class="clients-table__name">
+									<span class="clients-table__avatar">
+										<Avatar id={client.id} name={client.display_name} size="base" />
+									</span>
+									<div class="clients-table__name-block">
+										<a class="clients-table__name-text" href={clientHref(client)}
+											>{client.display_name}</a
+										>
+										<span class="clients-table__meta">{clientMeta(client)}</span>
+									</div>
+								</div>
+							</th>
+							<td>
+								<div class="clients-table__line">{client.phone ?? 'No phone'}</div>
+								<div class="clients-table__meta clients-table__meta--clip">
+									{client.email ?? 'No email'}
+								</div>
+							</td>
+							<td>
+								<div class="clients-table__street">
+									{client.primary_property?.address_line1 ?? 'No property yet'}
+								</div>
+								{#if client.primary_property && (propertyArea(client.primary_property) || client.additional_property_count > 0)}
+									<div class="clients-table__meta">
+										{propertyArea(client.primary_property)}
+										{#if client.additional_property_count > 0}
+											<span class="clients-table__more"
+												>+{client.additional_property_count} more</span
+											>
+										{/if}
+									</div>
+								{/if}
+							</td>
+							<td>
+								{#if client.tags.length > 0}
+									<div class="clients-table__tags">
+										{#each client.tags.slice(0, SHOWN_TAGS) as tag (tag.id)}
+											<span class="clients-table__tag">{tag.name}</span>
+										{/each}
+										{#if client.tags.length > SHOWN_TAGS}
+											<span
+												class="clients-table__tag clients-table__tag--more"
+												title={client.tags
+													.slice(SHOWN_TAGS)
+													.map((tag) => tag.name)
+													.join(', ')}>+{client.tags.length - SHOWN_TAGS}</span
+											>
+										{/if}
+									</div>
+								{:else}
+									<span class="clients-table__none">—</span>
+								{/if}
+							</td>
+							<td>
+								{#if client.archived_at}
+									<StatusBadge size="compact" status="inactive">Archived</StatusBadge>
+								{:else}
+									<StatusBadge
+										size="compact"
+										status={client.lifecycle_status === 'customer' ? 'success' : 'warning'}
+										>{statusLabel(client.lifecycle_status)}</StatusBadge
+									>
+								{/if}
+							</td>
+							<td class="clients-table__date">{dateFormat.format(new Date(client.updated_at))}</td>
+						{/snippet}
+						{#snippet rowActions(client: ClientListItem)}
+							<DropdownMenu
+								items={clientMenuItems(client)}
+								triggerLabel={`Actions for ${client.display_name}`}
+								triggerIcon={dotsIcon}
+							/>
+						{/snippet}
+						{#snippet footer()}
+							<ListLoadMore
+								variant="card"
+								label="Load more clients"
+								hasNextPage={clientsQuery.hasNextPage}
+								isFetchingNextPage={clientsQuery.isFetchingNextPage}
+								onLoadMore={() => clientsQuery.fetchNextPage()}
+							/>
+						{/snippet}
+					</DataTable>
+				{/if}
+			</RecordListCard>
 		{/if}
-	{/if}
-</PageContainer>
+	</PageContainer>
+</div>
 
 <ConfirmDialog
 	open={archiveTarget !== null}
@@ -476,46 +561,62 @@
 </ConfirmDialog>
 
 <style lang="scss">
+	/* The page header sits straight on the app background; the card under it keeps the 24px rhythm. */
+	:global(.clients-page__header) {
+		margin-bottom: var(--space-large);
+	}
+
 	.clients-header-actions {
 		display: flex;
 		align-items: center;
 		gap: var(--space-small);
 	}
-
-	.clients-toolbar {
-		display: flex;
+	:global(.clients-header__button) {
+		display: inline-flex;
+		min-height: 44px;
+		align-items: center;
+		justify-content: center;
 		gap: var(--space-small);
-		margin: var(--space-large) 0;
+		padding: 0 18px 0 14px;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		color: var(--color-text);
+		background: var(--color-surface);
+		font-size: var(--typography--fontSize-base);
+		font-weight: 600;
+		cursor: pointer;
+		transition: all var(--timing-base) ease-out;
+	}
+	:global(.clients-header__button:hover:not(:disabled)) {
+		background: var(--color-surface--hover);
+	}
+	:global(.clients-header__button:focus-visible) {
+		outline: none;
+		box-shadow: var(--shadow-focus);
+	}
+	:global(.clients-header__button--primary),
+	:global(.clients-header__button--primary:hover:not(:disabled)) {
+		border-color: var(--color-interactive);
+		color: var(--color-text--reverse);
+		background: var(--color-interactive);
+		box-shadow: 0 6px 16px color-mix(in srgb, var(--color-interactive) 20%, transparent);
+	}
+	:global(.clients-header__button--primary:hover:not(:disabled)) {
+		background: var(--color-interactive--hover);
+	}
+	.clients-header__icon {
+		display: inline-flex;
 
-		&__search {
-			flex: 1;
-			min-width: 0;
+		:global(svg) {
+			display: block;
+			width: 18px;
+			height: 18px;
 		}
-		&__filters-toggle {
-			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			gap: var(--space-smaller);
-			padding: 0 var(--space-base);
-			border: var(--border-base) solid var(--color-border--interactive);
-			border-radius: var(--radius-base);
-			color: var(--color-heading);
-			background: var(--color-surface);
-			font-weight: 600;
-			cursor: pointer;
+	}
 
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
-			&:hover {
-				background: var(--color-surface--hover);
-			}
-			&--active {
-				border-color: var(--color-interactive);
-				color: var(--color-interactive);
-			}
-		}
+	.clients-card__search {
+		width: 260px;
+		max-width: 100%;
 	}
 
 	.clients-bulk-bar__action {
@@ -550,31 +651,102 @@
 	.clients-table__name {
 		display: flex;
 		align-items: center;
-		gap: var(--space-small);
+		gap: var(--space-slim);
 	}
+	/* This list draws its client avatars as rounded squares. */
+	.clients-table__avatar {
+		display: inline-flex;
+		flex: 0 0 auto;
+
+		:global(.avatar) {
+			border-radius: var(--radius-base);
+		}
+	}
+	.clients-table__name-block {
+		display: grid;
+		min-width: 0;
+		gap: 3px;
+	}
+	/* The row's real navigation link — carries keyboard focus, new-tab and cmd-click, while a plain click
+	   anywhere on the row still opens the client through the table's onRowActivate. */
 	.clients-table__name-text {
+		display: -webkit-box;
+		overflow: hidden;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		color: var(--color-heading);
-		font-weight: 700;
+		font-size: var(--typography--fontSize-base);
+		font-weight: 600;
 		text-decoration: none;
 
 		&:hover {
 			text-decoration: underline;
 		}
+		&:focus-visible {
+			outline: none;
+			border-radius: var(--radius-small);
+			box-shadow: var(--shadow-focus);
+		}
 	}
-	.clients-table__more-properties {
-		display: block;
+	.clients-table__meta {
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
+		font-weight: 500;
+
+		&--clip {
+			overflow: hidden;
+			max-width: 220px;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	}
+	.clients-table__line {
+		margin-bottom: 3px;
+		color: var(--color-text);
+		font-size: 13px;
+		font-weight: 500;
+	}
+	.clients-table__street {
+		display: -webkit-box;
+		overflow: hidden;
+		margin-bottom: 3px;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		color: var(--color-text);
+		font-size: 13px;
+		font-weight: 500;
+	}
+	.clients-table__more {
+		margin-left: 6px;
+		font-weight: 600;
 	}
 	.clients-table__tags {
 		display: flex;
 		flex-wrap: wrap;
-		gap: var(--space-smaller);
+		gap: 4px;
 	}
+	.clients-table__tag {
+		padding: 3px 7px;
+		border-radius: 6px;
+		color: var(--color-text);
+		background: var(--color-surface--background--subtle);
+		font-size: 11px;
+		font-weight: 600;
+		white-space: nowrap;
 
-	@media (max-width: 767px) {
-		.clients-toolbar {
-			flex-wrap: wrap;
+		&--more {
+			color: var(--color-text--secondary);
 		}
+	}
+	.clients-table__none {
+		color: var(--color-text--secondary);
+	}
+	.clients-table__date {
+		color: var(--color-text);
+		font-size: 13px;
+		font-weight: 500;
+		white-space: nowrap;
 	}
 </style>

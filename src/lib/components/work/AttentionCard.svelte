@@ -56,7 +56,7 @@
 		<h2 id={titleId}>{title}</h2>
 		<p>{description}</p>
 	</header>
-	<ul class="attention-card__tiles">
+	<ul class="attention-card__tiles" style:--attention-columns={tiles.length}>
 		{#each tiles as tile (tile.key)}
 			{@const selected = selectedKey === tile.key}
 			<li>
@@ -133,7 +133,8 @@
 
 		&__tiles {
 			display: grid;
-			grid-template-columns: repeat(5, minmax(0, 1fr));
+			/* One column per tile (five when nothing says otherwise), so four tiles fill the row too. */
+			grid-template-columns: repeat(var(--attention-columns, 5), minmax(0, 1fr));
 			gap: 0;
 			margin: 0;
 			padding: var(--space-small) 6px;

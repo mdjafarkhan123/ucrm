@@ -182,7 +182,10 @@
 					</th>
 				{/each}
 				{#if rowActions}
-					<th scope="col" class="data-table__actions-cell">Actions</th>
+					<th scope="col" class="data-table__actions-cell">
+						<!-- The card look draws no heading over the row menu; screen readers still get it. -->
+						<span class={variant === 'card' ? 'data-table__hidden-label' : undefined}>Actions</span>
+					</th>
 				{/if}
 			</tr>
 		</thead>

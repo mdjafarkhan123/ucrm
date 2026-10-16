@@ -30,3 +30,15 @@ export function conversionRateCard(current: RequestWindow, previous: RequestWind
 	if (rate === null) return { value: '—', note: 'No new requests in the past 30 days' };
 	return { value: `${Math.round(rate)}%`, note: trendNote(rate, conversionRate(previous)) };
 }
+
+// The same trend the Conversion rate card carries, on its own, for the dark card that reads
+// "16 of 26 new requests became a quote or job · ↑ 13% vs the 30 days before". Null when there is nothing
+// to compare against, or when the rate has not moved enough to say.
+export function conversionTrend(current: RequestWindow, previous: RequestWindow): string | null {
+	const rate = conversionRate(current);
+	const before = conversionRate(previous);
+	if (rate === null || before === null || before === 0) return null;
+	const change = Math.round(((rate - before) / before) * 100);
+	if (change === 0) return 'same as the 30 days before';
+	return `${change > 0 ? '↑' : '↓'} ${Math.abs(change)}% vs the 30 days before`;
+}

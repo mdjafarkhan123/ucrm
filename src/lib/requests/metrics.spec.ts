@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { conversionRateCard, newRequestsCard } from './metrics';
+import { conversionRateCard, conversionTrend, newRequestsCard } from './metrics';
 
 const period = (created: number, converted: number) => ({ new: created, converted });
 
@@ -43,5 +43,19 @@ describe('Requests list 30-day cards', () => {
 			value: '—',
 			note: 'No new requests in the past 30 days'
 		});
+	});
+});
+
+describe('Requests conversion trend', () => {
+	it('words the change in the conversion rate against the 30 days before', () => {
+		expect(conversionTrend(period(10, 5), period(10, 2))).toBe('↑ 150% vs the 30 days before');
+		expect(conversionTrend(period(10, 1), period(10, 2))).toBe('↓ 50% vs the 30 days before');
+		expect(conversionTrend(period(10, 2), period(5, 1))).toBe('same as the 30 days before');
+	});
+
+	it('says nothing when there is nothing to compare', () => {
+		expect(conversionTrend(period(0, 0), period(10, 2))).toBeNull();
+		expect(conversionTrend(period(10, 2), period(0, 0))).toBeNull();
+		expect(conversionTrend(period(10, 2), period(10, 0))).toBeNull();
 	});
 });
