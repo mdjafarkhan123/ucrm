@@ -18,7 +18,7 @@
 	} = $props();
 
 	function channelDetails(value: ComposerChannel) {
-		if (value === 'sms') return { label: 'SMS', icon: messageIcon };
+		if (value === 'sms') return { label: 'Text', icon: messageIcon };
 		if (value === 'website_chat') return { label: 'Website chat', icon: messagesIcon };
 		return { label: 'Email', icon: mailIcon };
 	}
@@ -35,7 +35,9 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 {#snippet trigger()}
-	<span class="composer-channel-menu__icon" aria-hidden="true">{@html current.icon}</span>
+	<span class="composer-channel-menu__icon composer-channel-menu__icon--{channel}" aria-hidden="true"
+		>{@html current.icon}</span
+	>
 	<span>{current.label}</span>
 	<span class="composer-channel-menu__chevron" aria-hidden="true">{@html chevronDownIcon}</span>
 {/snippet}
@@ -50,7 +52,9 @@
 	/>
 {:else}
 	<span class="composer-channel-menu__static">
-		<span class="composer-channel-menu__icon" aria-hidden="true">{@html current.icon}</span>
+		<span class="composer-channel-menu__icon composer-channel-menu__icon--{channel}" aria-hidden="true"
+			>{@html current.icon}</span
+		>
 		<span>{current.label}</span>
 	</span>
 {/if}
@@ -61,17 +65,17 @@
 	:global(.composer-channel-menu__trigger),
 	.composer-channel-menu__static {
 		display: inline-flex;
-		min-height: 32px;
+		height: 32px;
 		align-items: center;
-		gap: var(--space-smaller);
-		padding: var(--space-smaller) var(--space-small);
+		gap: 6px;
+		padding: 0 10px 0 8px;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-small);
+		border-radius: 999px;
 		color: var(--color-text);
-		background: var(--color-surface);
+		background: var(--color-surface--background--subtle);
 		font: inherit;
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
+		font-size: 12px;
+		font-weight: 700;
 	}
 
 	:global(.composer-channel-menu__trigger) {
@@ -97,10 +101,6 @@
 		background: var(--color-surface--hover);
 	}
 
-	.composer-channel-menu__static {
-		border-color: transparent;
-	}
-
 	.composer-channel-menu__icon,
 	.composer-channel-menu__chevron {
 		display: inline-grid;
@@ -108,13 +108,25 @@
 		color: var(--color-icon--secondary);
 	}
 
+	.composer-channel-menu__icon--email {
+		color: var(--color-informative--onSurface);
+	}
+
+	.composer-channel-menu__icon--sms {
+		color: var(--color-interactive);
+	}
+
+	.composer-channel-menu__icon--website_chat {
+		color: var(--color-dataViz--categorical--2);
+	}
+
 	.composer-channel-menu__icon :global(svg) {
-		width: 16px;
-		height: 16px;
+		width: 14px;
+		height: 14px;
 	}
 
 	.composer-channel-menu__chevron :global(svg) {
-		width: 14px;
-		height: 14px;
+		width: 13px;
+		height: 13px;
 	}
 </style>

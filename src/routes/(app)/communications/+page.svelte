@@ -22,6 +22,8 @@
 	import MessageDetailsDialog from '$lib/components/communications/MessageDetailsDialog.svelte';
 	import ForwardEmailDialog from '$lib/components/communications/ForwardEmailDialog.svelte';
 	import ConversationContextRail from '$lib/components/communications/ConversationContextRail.svelte';
+	import ConversationAssignField from '$lib/components/communications/ConversationAssignField.svelte';
+	import ConversationMessage from '$lib/components/communications/ConversationMessage.svelte';
 	import ConversationComposer from '$lib/components/communications/ConversationComposer.svelte';
 	import ChooseClientDialog from '$lib/components/communications/ChooseClientDialog.svelte';
 	import ChooseChannelDialog from '$lib/components/communications/ChooseChannelDialog.svelte';
@@ -64,7 +66,7 @@
 		type WebsiteChatInboxSession
 	} from '$lib/communications/inbox';
 	import { takeComposerDraft } from '$lib/communications/composer-draft';
-	import { previewText } from '$lib/collaboration/format';
+	import { initials, previewText } from '$lib/collaboration/format';
 	import { clientDetailKey, fetchClient, fetchClients } from '$lib/clients/api';
 	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil-plus.svg?raw';
@@ -77,6 +79,10 @@
 	import messageOffIcon from '@tabler/icons/outline/message-circle-off.svg?raw';
 	import messageCheckIcon from '@tabler/icons/outline/message-circle-check.svg?raw';
 	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import bellIcon from '@tabler/icons/outline/bell.svg?raw';
+	import bellFilledIcon from '@tabler/icons/filled/bell.svg?raw';
+	import forwardIcon from '@tabler/icons/outline/arrow-forward-up.svg?raw';
+	import quoteReplyIcon from '@tabler/icons/outline/corner-up-left.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -418,8 +424,10 @@
 		);
 	}
 
+	// A text has no subject, so its row is the preview alone; an email shows its subject and a chat says so.
 	function rowHeadline(group: ConversationGroup) {
-		return isWebsiteChatMessage(group.latest) ? 'Website Chat' : group.latest.subject;
+		if (isWebsiteChatMessage(group.latest)) return 'Website Chat';
+		return group.latest.channel === 'sms' ? '' : group.latest.subject;
 	}
 
 	function rowPreview(group: ConversationGroup) {
@@ -428,10 +436,43 @@
 		);
 	}
 
-	function rowChannel(group: ConversationGroup): { label: string; icon: string } {
-		if (isWebsiteChatMessage(group.latest)) return { label: 'Website chat', icon: messagesIcon };
-		if (group.latest.channel === 'sms') return { label: 'SMS', icon: messageIcon };
-		return { label: 'Email', icon: emailIcon };
+	// "You:" or "Auto:" ahead of the preview when the business spoke last, so the list says who is waiting.
+	function rowPrefix(group: ConversationGroup): string | null {
+		const latest = group.latest;
+		if (isWebsiteChatMessage(latest)) {
+			if (latest.sender_type === 'staff') return 'You:';
+			return latest.sender_type === 'automation' ? 'Auto:' : null;
+		}
+		if (latest.direction !== 'outbound') return null;
+		return latest.send_kind === 'automated' ? 'Auto:' : 'You:';
+	}
+
+	function rowChannel(group: ConversationGroup): {
+		label: string;
+		icon: string;
+		tone: 'email' | 'sms' | 'chat';
+	} {
+		if (isWebsiteChatMessage(group.latest))
+			return { label: 'Website chat', icon: messagesIcon, tone: 'chat' };
+		if (group.latest.channel === 'sms') return { label: 'SMS', icon: messageIcon, tone: 'sms' };
+		return { label: 'Email', icon: emailIcon, tone: 'email' };
+	}
+
+	// The list's own short time: the hour for today, then the day, so a glance tells how stale a row is.
+	function formatListTime(value: string) {
+		const date = new Date(value);
+		const now = new Date();
+		if (calendarDay(value) === calendarDay(now.toISOString())) {
+			return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(date);
+		}
+		if (calendarDay(value) === calendarDay(new Date(Date.now() - 86_400_000).toISOString())) {
+			return 'Yesterday';
+		}
+		return new Intl.DateTimeFormat(undefined, {
+			month: 'short',
+			day: 'numeric',
+			year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric'
+		}).format(date);
 	}
 
 	// The row's own unread badge means the same "unread messages" count everywhere, but a guarded group has
@@ -594,6 +635,13 @@
 		}
 	}));
 
+	// The customer panel's Text and Email buttons: open the reply box on that channel.
+	function chooseChannel(channel: 'email' | 'sms') {
+		activeChannel = channel;
+		composerExpanded = true;
+		contextPanelOpen = false;
+	}
+
 	function scrollToMessage(id: string) {
 		timelineEl?.querySelector(`[data-message-id="${CSS.escape(id)}"]`)?.scrollIntoView({
 			behavior: 'smooth',
@@ -609,6 +657,9 @@
 	// the send invalidated, the messages array changed, and the effect re-anchored on an old unread.
 	let anchoredKey: string | null = null;
 	let anchoredLatestId: string | null = null;
+	// Where the "New" line sits: just above the oldest message that was unread when the conversation was
+	// opened. Remembered here because opening marks it read, which would otherwise erase the line at once.
+	let newDivider = $state<{ key: string; messageId: string } | null>(null);
 	let stickToBottom = $state(true);
 	// Read out by screen readers when a customer's message arrives in the conversation that is open. Only the
 	// open conversation is announced, so a busy inbox never talks over the person while they read or type.
@@ -664,6 +715,7 @@
 				const target = group.messages.find(
 					(message) => message.direction === 'inbound' && message.unread
 				);
+				newDivider = target ? { key, messageId: target.id } : null;
 				const anchor = el.querySelector(
 					`[data-message-id="${CSS.escape((target ?? group.messages.at(-1))?.id ?? '')}"]`
 				);
@@ -760,10 +812,10 @@
 		}).format(date);
 	}
 
-	function sentByLabel(email: OutboundInboxMessage) {
+	function sentByName(email: OutboundInboxMessage) {
 		return email.send_kind === 'automated'
 			? 'Sent automatically'
-			: `Sent by ${email.created_by_name ?? 'a teammate'}`;
+			: (email.created_by_name ?? 'A teammate');
 	}
 
 	function draftFor(group: OpenConversation, channel: 'email' | 'sms') {
@@ -839,10 +891,37 @@
 	</p>
 {/snippet}
 
+<!-- What an email or text answers: the message of ours it replied to, quoted above the reply, and a jump to
+     it. When that message is not in this thread any more, it says so in words. -->
+{#snippet replyQuote(replyTarget: OutboundInboxMessage | null)}
+	{#if replyTarget}
+		<button
+			type="button"
+			class="communications__quote"
+			onclick={() => scrollToMessage(replyTarget.id)}
+		>
+			<span class="communications__quote-bar" aria-hidden="true"></span>
+			<span class="communications__quote-copy">
+				<strong>
+					<span aria-hidden="true">{@html quoteReplyIcon}</span>
+					{replyTarget.created_by_name ?? 'Your team'}{replyTarget.subject
+						? ` · ${replyTarget.subject}`
+						: ''}
+				</strong>
+				<span>{previewText(replyTarget.text_content)}</span>
+			</span>
+		</button>
+	{:else}
+		<p class="communications__notice communications__notice--quiet" role="status">
+			In reply to an earlier message on this thread.
+		</p>
+	{/if}
+{/snippet}
+
 <svelte:head><title>Communications · Contractor CRM</title></svelte:head>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<PageContainer variant="fill" class="communications">
+<PageContainer variant="open" class="communications">
 	<!-- No page header here on purpose: GHL's Conversations screen has none, and the inbox needs the
 	     vertical space. Jafar removed it 2026-08-25. -->
 	<h1 class="sr-only">Communications</h1>
@@ -875,7 +954,7 @@
 		>
 			<aside class="communications__list" aria-label="Conversation history">
 				<div class="communications__list-header">
-					<div class="communications__inbox-identity">
+					<div class="communications__scope-row">
 						{#if inboxQuery.data?.can_view_team}
 							<div class="communications__inbox-switcher" role="group" aria-label="Inbox view">
 								<button
@@ -896,59 +975,65 @@
 						{:else}
 							<h2>My Inbox</h2>
 						{/if}
-						<p>{visibleGroups.length} conversation{visibleGroups.length === 1 ? '' : 's'}</p>
+						<!-- Pick a client, then a channel they actually have -- Continue lands directly on that
+						     conversation in the main pane, never in a popup composer. -->
+						<Button
+							size="small"
+							variant="secondary"
+							onhover={prefetchClientPicker}
+							onclick={() => (newConversationOpen = true)}
+						>
+							<span class="communications__compose-icon" aria-hidden="true">{@html pencilIcon}</span>
+							<span class="communications__new-label">New</span>
+						</Button>
 					</div>
-					<!-- Pick a client, then a channel they actually have -- Continue lands directly on that
-					     conversation in the main pane, never in a popup composer. -->
-					<Button
-						size="small"
-						variant="secondary"
-						onhover={prefetchClientPicker}
-						onclick={() => (newConversationOpen = true)}
+					<form
+						class="communications__search"
+						onsubmit={(event) => {
+							event.preventDefault();
+							search = searchDraft;
+						}}
 					>
-						<span class="communications__compose-icon" aria-hidden="true">{@html pencilIcon}</span>
-						<span class="communications__new-label">New</span>
-					</Button>
-				</div>
-				<form
-					class="communications__search"
-					onsubmit={(event) => {
-						event.preventDefault();
-						search = searchDraft;
-					}}
-				>
-					<label class="sr-only" for="communications-search">Search email or subject</label><input
-						id="communications-search"
-						type="search"
-						bind:value={searchDraft}
-						placeholder="Search email or subject"
-					/><button
-						class="communications__search-submit"
-						type="submit"
-						aria-label="Search email or subject"
-					>
-						<span aria-hidden="true">{@html searchIcon}</span>
-					</button>
-				</form>
-				<div class="communications__list-tabs" role="group" aria-label="Conversation status">
-					<button
-						type="button"
-						class:communications__list-tab--active={listTab === 'unread'}
-						class="communications__list-tab"
-						aria-pressed={listTab === 'unread'}
-						onclick={() => (listTab = 'unread')}
-					>
-						Unread{#if unreadGroupCount > 0}
-							<span>{unreadGroupCount}</span>
-						{/if}
-					</button>
-					<button
-						type="button"
-						class:communications__list-tab--active={listTab === 'all'}
-						class="communications__list-tab"
-						aria-pressed={listTab === 'all'}
-						onclick={() => (listTab = 'all')}>All</button
-					>
+						<label class="sr-only" for="communications-search">Search email or subject</label>
+						<button
+							class="communications__search-submit"
+							type="submit"
+							aria-label="Search email or subject"
+						>
+							<span aria-hidden="true">{@html searchIcon}</span>
+						</button>
+						<input
+							id="communications-search"
+							type="search"
+							bind:value={searchDraft}
+							placeholder="Search email or subject"
+						/>
+					</form>
+					<div class="communications__list-tabs-row">
+						<div class="communications__list-tabs" role="group" aria-label="Conversation status">
+							<button
+								type="button"
+								class:communications__list-tab--active={listTab === 'unread'}
+								class="communications__list-tab"
+								aria-pressed={listTab === 'unread'}
+								onclick={() => (listTab = 'unread')}
+							>
+								Unread{#if unreadGroupCount > 0}
+									<span>{unreadGroupCount}</span>
+								{/if}
+							</button>
+							<button
+								type="button"
+								class:communications__list-tab--active={listTab === 'all'}
+								class="communications__list-tab"
+								aria-pressed={listTab === 'all'}
+								onclick={() => (listTab = 'all')}>All</button
+							>
+						</div>
+						<p class="communications__list-count">
+							{visibleGroups.length} conversation{visibleGroups.length === 1 ? '' : 's'}
+						</p>
+					</div>
 				</div>
 				{#if visibleGroups.length === 0}
 					<EmptyState
@@ -969,6 +1054,8 @@
 						{#each visibleGroups as group (group.key)}
 							{@const channel = rowChannel(group)}
 							{@const preview = rowPreview(group)}
+							{@const headline = rowHeadline(group)}
+							{@const prefix = rowPrefix(group)}
 							<div role="listitem">
 								<button
 									class:communications__row--selected={selectedGroup?.key === group.key}
@@ -981,54 +1068,55 @@
 									onclick={() => selectGroup(group)}
 									onkeydown={handleRowKeydown}
 								>
-									<Avatar id={group.avatarId} name={group.name} size="base" />
-									<span class="communications__row-copy">
-										<span class="communications__row-heading">
-											<span
-												class="communications__row-channel"
-												title={channel.label}
-												aria-hidden="true">{@html channel.icon}</span
-											>
-											<strong>{group.name}</strong>
-										</span>
-										<small class="communications__row-preview"
-											><span>{rowHeadline(group)}</span>{#if preview}<span>{preview}</span
-												>{/if}</small
+									<span class="communications__row-avatar">
+										<Avatar id={group.avatarId} name={group.name} size="medium" />
+										<span
+											class="communications__row-channel communications__row-channel--{channel.tone}"
+											title={channel.label}
+											aria-hidden="true">{@html channel.icon}</span
 										>
 									</span>
-									<span class="communications__row-end">
-										<time datetime={group.latest.created_at}
-											>{formatWhen(group.latest.created_at)}</time
-										>
-										{#if group.assignedToName}
-											<span title={`Assigned to ${group.assignedToName}`}>
-												<Avatar
-													id={group.assignedTo ?? group.key}
-													name={group.assignedToName}
-													size="small"
-												/>
-											</span>
+									<span class="communications__row-copy">
+										<span class="communications__row-line">
+											<strong>{group.name}</strong>
+											<time datetime={group.latest.created_at}
+												>{formatListTime(group.latest.created_at)}</time
+											>
+										</span>
+										{#if headline}
+											<span class="communications__row-subject">{headline}</span>
 										{/if}
-										{#if group.guarded}
-											{@const hint = needsReviewHint(group)}
-											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-											<span class="communications__attention" title={hint}>
-												<span class="communications__attention-icon" aria-hidden="true"
-													>{@html alertTriangleIcon}</span
+										<span class="communications__row-line communications__row-line--preview">
+											<small class="communications__row-preview"
+												>{#if prefix}<b>{prefix}</b>{/if}{preview}</small
+											>
+											{#if group.assignedToName}
+												<span
+													class="communications__row-assigned"
+													title={`Assigned to ${group.assignedToName}`}
+													aria-hidden="true">{initials(group.assignedToName)}</span
 												>
-												{#if group.unreadCount > 0}
-													<span class="communications__attention-count" aria-hidden="true"
-														>{group.unreadCount}</span
+											{/if}
+											{#if group.guarded}
+												{@const hint = needsReviewHint(group)}
+												<span class="communications__attention" title={hint}>
+													<span class="communications__attention-icon" aria-hidden="true"
+														>{@html alertTriangleIcon}</span
 													>
-												{/if}
-												<span class="sr-only">{hint}</span>
-											</span>
-										{:else if group.unreadCount > 0}
-											<span class="communications__unread-count">
-												<span class="sr-only">{group.unreadCount} unread</span>
-												<span aria-hidden="true">{group.unreadCount}</span>
-											</span>
-										{/if}
+													{#if group.unreadCount > 0}
+														<span class="communications__attention-count" aria-hidden="true"
+															>{group.unreadCount}</span
+														>
+													{/if}
+													<span class="sr-only">{hint}</span>
+												</span>
+											{:else if group.unreadCount > 0}
+												<span class="communications__unread-count">
+													<span class="sr-only">{group.unreadCount} unread</span>
+													<span aria-hidden="true">{group.unreadCount}</span>
+												</span>
+											{/if}
+										</span>
 									</span>
 								</button>
 							</div>
@@ -1059,13 +1147,21 @@
 				<main class="communications__message" aria-label="Conversation timeline">
 					<header class="communications__thread-header">
 						<div class="communications__recipient">
-							<Avatar id={group.avatarId} name={group.name} size="base" />
+							<Avatar id={group.avatarId} name={group.name} size="large" />
 							<div>
 								<h2>{group.name}</h2>
 								{#if group.clientId}
-									<span class="communications__conversation-type"
-										>{channel ? `${channel.label} conversation` : 'New conversation'}</span
+									<span
+										class="communications__conversation-type communications__conversation-type--{channel?.tone ??
+											'email'}"
 									>
+										{#if channel}
+											<span class="communications__conversation-icon" aria-hidden="true"
+												>{@html channel.icon}</span
+											>
+										{/if}
+										{channel ? `${channel.label} conversation` : 'New conversation'}
+									</span>
 								{:else}
 									<span class="communications__unresolved-sender"
 										>Needs review — not yet linked</span
@@ -1075,7 +1171,7 @@
 						</div>
 						<div class="communications__thread-actions">
 							<!-- ≤1050px only (CSS-gated): the inline context rail is hidden there, so this is
-							     the only way to reach assignment/follow/related-work below that width. -->
+							     the only way to reach the customer's details below that width. -->
 							<Button
 								size="small"
 								variant="secondary"
@@ -1099,6 +1195,28 @@
 								<Button size="small" variant="secondary" onclick={() => (endSessionTarget = group)}
 									>End conversation</Button
 								>
+							{/if}
+							{#if group.clientId}
+								{@const clientId = group.clientId}
+								<ConversationAssignField
+									{clientId}
+									assignedToId={group.assignedTo}
+									assignedToName={group.assignedToName}
+									canManage={inboxQuery.data?.can_manage_assignment ?? false}
+								/>
+								<button
+									type="button"
+									class="communications__icon-button"
+									class:communications__icon-button--on={group.isFollowing}
+									aria-pressed={group.isFollowing}
+									aria-label={group.isFollowing ? 'Following — stop following' : 'Follow'}
+									title={group.isFollowing ? 'Following' : 'Follow this conversation'}
+									disabled={followMutationState.isPending}
+									onclick={() =>
+										followMutationState.mutate({ clientId, following: group.isFollowing })}
+								>
+									<span aria-hidden="true">{@html group.isFollowing ? bellFilledIcon : bellIcon}</span>
+								</button>
 							{/if}
 						</div>
 					</header>
@@ -1126,6 +1244,11 @@
 									<span>{formatTimelineDay(message.created_at)}</span>
 								</div>
 							{/if}
+							{#if newDivider && newDivider.key === group.key && newDivider.messageId === message.id}
+								<div class="communications__date-divider communications__date-divider--new" role="separator">
+									<span>New</span>
+								</div>
+							{/if}
 							{#if isWebsiteChatMessage(message) && index > 0}
 								{@const previous = group.messages[index - 1]}
 								{#if isWebsiteChatMessage(previous) && previous.session_id !== message.session_id}
@@ -1138,146 +1261,37 @@
 										{message.body}
 									</p>
 								{:else}
-									<article
-										class="communications__thread-message"
-										class:communications__thread-message--outbound={message.direction ===
-											'outbound'}
-										class:communications__thread-message--unread={message.direction === 'inbound' &&
-											message.unread}
-										data-message-id={message.id}
+									<ConversationMessage
+										id={message.id}
+										channel="website_chat"
+										outbound={message.direction === 'outbound'}
+										senderId={group.avatarId}
+										senderName={chatSenderLabel(message)}
+										who={chatSenderLabel(message)}
+										when={message.created_at}
+										unread={message.direction === 'inbound' && message.unread}
 									>
-										<div class="communications__thread-message-meta">
-											<span>{chatSenderLabel(message)}</span>
-											<time datetime={message.created_at}>{formatWhen(message.created_at)}</time>
-										</div>
-										<p>{message.body}</p>
-									</article>
+										<p class="communications__text">{message.body}</p>
+									</ConversationMessage>
 								{/if}
-							{:else}
-								<article
-									class="communications__thread-message"
-									class:communications__thread-message--outbound={message.direction === 'outbound'}
-									class:communications__thread-message--unread={message.direction === 'inbound' &&
-										message.unread}
-									class:communications__thread-message--email={message.channel === 'email'}
-									data-message-id={message.id}
-								>
-									{#if message.channel === 'sms'}
-										<!-- SMS reads as a text message, not a mail: no subject line, no Forward (an
-										     email-only feature -- communication_forward_events has no channel of its
-										     own). An outbound picture (Stage 6D-2) reuses the same AttachmentList as
-										     email; an inbound picture isn't fetched yet (Stage 6D-1 descoped display),
-										     so it shows as a plain notice instead of silently vanishing. -->
-										{#if message.direction === 'outbound'}
-											<div class="communications__thread-message-meta">
-												<span>{sentByLabel(message)}</span>
-												<time datetime={message.created_at}>{formatWhen(message.created_at)}</time>
-											</div>
-											<div class="communications__thread-message-badges">
-												<Badge status={outboundEmailStatus(message).tone}
-													>{outboundEmailStatus(message).label}</Badge
-												>
-												{#if message.can_resend}
-													<Button
-														size="small"
-														variant="secondary"
-														onclick={() => (resendTarget = message)}>Resend</Button
-													>
-												{/if}
-											</div>
-											<p>{message.text_content}</p>
-											{#if message.resent_from_intent_id}<p
-													class="communications__notice"
-													role="status"
-												>
-													This is a resend of an earlier attempt.
-												</p>{/if}
-											{#if message.resent_into_intent_id}
-												{@const newerAttempt = outboundIn(group, message.resent_into_intent_id)}
-												{#if newerAttempt}
-													<p class="communications__notice" role="status">
-														This message was resent.
-														<button
-															type="button"
-															class="communications__notice-action"
-															onclick={() => scrollToMessage(newerAttempt.id)}
-															>View the newer attempt</button
-														>
-													</p>
-												{/if}
-											{/if}
-											{#if message.failure_message}<p class="communications__notice" role="status">
-													{message.failure_message}
-												</p>{/if}
-											{#if message.quote_id}
-												<p class="communications__notice communications__notice--quiet">
-													Related work: <a
-														href={resolve('/(app)/quotes/[id=uuid]', { id: message.quote_id })}
-														>View quote</a
-													>
-												</p>
-											{/if}
-											{#if message.attachments.length > 0}
-												<div class="communications__attachments">
-													<AttachmentList
-														attachments={message.attachments}
-														fetchDownloadUrl={fetchOutboundAttachmentDownloadUrl}
-													/>
-												</div>
-											{/if}
-										{:else}
-											{@const kind = kindBadge(message)}
-											{@const review = reviewBadge(message)}
-											<div class="communications__thread-message-meta">
-												<span>{message.sender_name ?? message.sender_phone}</span>
-												<time datetime={message.created_at}>{formatWhen(message.created_at)}</time>
-											</div>
-											<div class="communications__thread-message-badges">
-												{#if review}<Badge status={review.tone}>{review.label}</Badge>{/if}
-												{#if kind}<Badge status={kind.tone}>{kind.label}</Badge>{/if}
-												<Button
-													size="small"
-													variant="secondary"
-													onclick={() => (detailsMessage = message)}>Details</Button
-												>
-											</div>
-											<p>{message.text_content}</p>
-											{#if message.in_reply_to_intent_id}
-												{@const replyTarget = outboundIn(group, message.in_reply_to_intent_id)}
-												<p class="communications__notice" role="status">
-													{#if replyTarget}
-														In reply to
-														<button
-															type="button"
-															class="communications__notice-action"
-															onclick={() => scrollToMessage(replyTarget.id)}
-															>{replyTarget.subject}</button
-														>
-													{:else}
-														In reply to an earlier message on this thread.
-													{/if}
-												</p>
-											{/if}
-											{#if message.attachment_count > 0}
-												<p class="communications__notice communications__notice--quiet">
-													This text included a picture. Picture messages aren't shown yet.
-												</p>
-											{/if}
-											{#if message.automation_suppressed}
-												<p class="communications__notice communications__notice--quiet">
-													Automation is suppressed for this message.
-												</p>
-											{/if}
-										{/if}
-									{:else if message.direction === 'outbound'}
-										<div class="communications__thread-message-meta">
-											<span>{sentByLabel(message)}</span>
-											<time datetime={message.created_at}>{formatWhen(message.created_at)}</time>
-										</div>
-										<div class="communications__thread-message-badges">
-											<Badge status={outboundEmailStatus(message).tone}
-												>{outboundEmailStatus(message).label}</Badge
-											>
+							{:else if message.channel === 'sms'}
+								<!-- SMS reads as a text message, not a mail: no subject line, no Forward (an
+								     email-only feature -- communication_forward_events has no channel of its
+								     own). An outbound picture (Stage 6D-2) reuses the same AttachmentList as
+								     email; an inbound picture isn't fetched yet (Stage 6D-1 descoped display),
+								     so it shows as a plain notice instead of silently vanishing. -->
+								{#if message.direction === 'outbound'}
+									{@const delivery = outboundEmailStatus(message)}
+									<ConversationMessage
+										id={message.id}
+										channel="sms"
+										outbound
+										who={sentByName(message)}
+										when={message.created_at}
+										status={delivery.label}
+										statusTone={delivery.tone}
+									>
+										{#snippet badges()}
 											{#if message.can_resend}
 												<Button
 													size="small"
@@ -1285,16 +1299,8 @@
 													onclick={() => (resendTarget = message)}>Resend</Button
 												>
 											{/if}
-											{#if message.can_cancel_scheduled}
-												<Button
-													size="small"
-													variant="secondary"
-													onclick={() => (cancelScheduledTarget = message)}>Cancel</Button
-												>
-											{/if}
-										</div>
-										<h3>{message.subject}</h3>
-										<p>{message.text_content}</p>
+										{/snippet}
+										<p class="communications__text">{message.text_content}</p>
 										{#if message.resent_from_intent_id}<p
 												class="communications__notice"
 												role="status"
@@ -1318,12 +1324,6 @@
 										{#if message.failure_message}<p class="communications__notice" role="status">
 												{message.failure_message}
 											</p>{/if}
-										{#if message.failure_code === 'email_balance_insufficient'}
-											<p class="communications__notice communications__notice--quiet">
-												<a href={resolve('/(app)/settings/communications/balance')}>Add credit</a>
-												to send it.
-											</p>
-										{/if}
 										{#if message.quote_id}
 											<p class="communications__notice communications__notice--quiet">
 												Related work: <a
@@ -1340,62 +1340,183 @@
 												/>
 											</div>
 										{/if}
-									{:else}
-										{@const kind = kindBadge(message)}
-										{@const review = reviewBadge(message)}
-										<div class="communications__thread-message-meta">
-											<span>{message.sender_name ?? message.sender_email}</span>
-											<time datetime={message.created_at}>{formatWhen(message.created_at)}</time>
-										</div>
-										<div class="communications__thread-message-badges">
+									</ConversationMessage>
+								{:else}
+									{@const kind = kindBadge(message)}
+									{@const review = reviewBadge(message)}
+									<ConversationMessage
+										id={message.id}
+										channel="sms"
+										senderId={group.avatarId}
+										senderName={message.sender_name ?? group.name}
+										when={message.created_at}
+										unread={message.unread}
+									>
+										{#snippet badges()}
 											{#if review}<Badge status={review.tone}>{review.label}</Badge>{/if}
 											{#if kind}<Badge status={kind.tone}>{kind.label}</Badge>{/if}
-											<Button
-												size="small"
-												variant="secondary"
-												onclick={() => (detailsMessage = message)}>Details</Button
+										{/snippet}
+										{#snippet actions()}
+											<button
+												type="button"
+												class="communications__action"
+												aria-label="Message details"
+												title="Details"
+												onclick={() => (detailsMessage = message)}
 											>
-											{#if inboxQuery.data?.can_forward && message.client_id !== null}
-												<Button
-													size="small"
-													variant="secondary"
-													onclick={() => (forwardTarget = message)}>Forward</Button
-												>
-											{/if}
-										</div>
-										<h3>{message.subject}</h3>
-										<p>{message.text_content}</p>
+												<span aria-hidden="true">{@html infoIcon}</span>
+											</button>
+										{/snippet}
+										<p class="communications__text">{message.text_content}</p>
 										{#if message.in_reply_to_intent_id}
 											{@const replyTarget = outboundIn(group, message.in_reply_to_intent_id)}
-											<p class="communications__notice" role="status">
-												{#if replyTarget}
-													In reply to
-													<button
-														type="button"
-														class="communications__notice-action"
-														onclick={() => scrollToMessage(replyTarget.id)}
-														>{replyTarget.subject}</button
-													>
-												{:else}
-													In reply to an earlier message on this thread.
-												{/if}
-											</p>
+											{@render replyQuote(replyTarget)}
 										{/if}
 										{#if message.attachment_count > 0}
-											<div class="communications__attachments">
-												<AttachmentList
-													attachments={message.attachments}
-													fetchDownloadUrl={fetchInboundAttachmentDownloadUrl}
-												/>
-											</div>
+											<p class="communications__notice communications__notice--quiet">
+												This text included a picture. Picture messages aren't shown yet.
+											</p>
 										{/if}
 										{#if message.automation_suppressed}
 											<p class="communications__notice communications__notice--quiet">
 												Automation is suppressed for this message.
 											</p>
 										{/if}
+									</ConversationMessage>
+								{/if}
+							{:else if message.direction === 'outbound'}
+								{@const delivery = outboundEmailStatus(message)}
+								<ConversationMessage
+									id={message.id}
+									channel="email"
+									outbound
+									who={sentByName(message)}
+									when={message.created_at}
+									status={delivery.label}
+									statusTone={delivery.tone}
+								>
+									{#snippet badges()}
+										{#if message.can_resend}
+											<Button
+												size="small"
+												variant="secondary"
+												onclick={() => (resendTarget = message)}>Resend</Button
+											>
+										{/if}
+										{#if message.can_cancel_scheduled}
+											<Button
+												size="small"
+												variant="secondary"
+												onclick={() => (cancelScheduledTarget = message)}>Cancel</Button
+											>
+										{/if}
+									{/snippet}
+									<h3 class="communications__subject">
+										<span aria-hidden="true">{@html emailIcon}</span>{message.subject}
+									</h3>
+									<p class="communications__text">{message.text_content}</p>
+									{#if message.resent_from_intent_id}<p class="communications__notice" role="status">
+											This is a resend of an earlier attempt.
+										</p>{/if}
+									{#if message.resent_into_intent_id}
+										{@const newerAttempt = outboundIn(group, message.resent_into_intent_id)}
+										{#if newerAttempt}
+											<p class="communications__notice" role="status">
+												This message was resent.
+												<button
+													type="button"
+													class="communications__notice-action"
+													onclick={() => scrollToMessage(newerAttempt.id)}
+													>View the newer attempt</button
+												>
+											</p>
+										{/if}
 									{/if}
-								</article>
+									{#if message.failure_message}<p class="communications__notice" role="status">
+											{message.failure_message}
+										</p>{/if}
+									{#if message.failure_code === 'email_balance_insufficient'}
+										<p class="communications__notice communications__notice--quiet">
+											<a href={resolve('/(app)/settings/communications/balance')}>Add credit</a>
+											to send it.
+										</p>
+									{/if}
+									{#if message.quote_id}
+										<p class="communications__notice communications__notice--quiet">
+											Related work: <a
+												href={resolve('/(app)/quotes/[id=uuid]', { id: message.quote_id })}
+												>View quote</a
+											>
+										</p>
+									{/if}
+									{#if message.attachments.length > 0}
+										<div class="communications__attachments">
+											<AttachmentList
+												attachments={message.attachments}
+												fetchDownloadUrl={fetchOutboundAttachmentDownloadUrl}
+											/>
+										</div>
+									{/if}
+								</ConversationMessage>
+							{:else}
+								{@const kind = kindBadge(message)}
+								{@const review = reviewBadge(message)}
+								<ConversationMessage
+									id={message.id}
+									channel="email"
+									senderId={group.avatarId}
+									senderName={message.sender_name ?? message.sender_email}
+									when={message.created_at}
+									unread={message.unread}
+								>
+									{#snippet badges()}
+										{#if review}<Badge status={review.tone}>{review.label}</Badge>{/if}
+										{#if kind}<Badge status={kind.tone}>{kind.label}</Badge>{/if}
+									{/snippet}
+									{#snippet actions()}
+										<button
+											type="button"
+											class="communications__action"
+											aria-label="Message details"
+											title="Details"
+											onclick={() => (detailsMessage = message)}
+										>
+											<span aria-hidden="true">{@html infoIcon}</span>
+										</button>
+										{#if inboxQuery.data?.can_forward && message.client_id !== null}
+											<button
+												type="button"
+												class="communications__action"
+												aria-label="Forward this email"
+												title="Forward"
+												onclick={() => (forwardTarget = message)}
+											>
+												<span aria-hidden="true">{@html forwardIcon}</span>
+											</button>
+										{/if}
+									{/snippet}
+									{#if message.in_reply_to_intent_id}
+										{@const replyTarget = outboundIn(group, message.in_reply_to_intent_id)}
+										{@render replyQuote(replyTarget)}
+									{/if}
+									<h3 class="communications__subject">
+										<span aria-hidden="true">{@html emailIcon}</span>{message.subject}
+									</h3>
+									<p class="communications__text">{message.text_content}</p>
+									{#if message.attachment_count > 0}
+										<div class="communications__attachments">
+											<AttachmentList
+												attachments={message.attachments}
+												fetchDownloadUrl={fetchInboundAttachmentDownloadUrl}
+											/>
+										</div>
+									{/if}
+									{#if message.automation_suppressed}
+										<p class="communications__notice communications__notice--quiet">
+											Automation is suppressed for this message.
+										</p>
+									{/if}
+								</ConversationMessage>
 							{/if}
 						{/each}
 						{#each notePlacement?.trailing ?? [] as slot (slot.note.id)}
@@ -1404,32 +1525,32 @@
 						{#if visiblePendingSend}
 							{@const send = visiblePendingSend}
 							{@const mark = pendingSendStatus(send)}
-							<article
-								class="communications__thread-message communications__thread-message--outbound"
-								class:communications__thread-message--pending={send.state === 'sending'}
-								class:communications__thread-message--failed={send.state === 'failed'}
-								class:communications__thread-message--email={send.channel === 'email'}
-								data-message-id={send.id}
-								aria-busy={send.state === 'sending'}
+							<ConversationMessage
+								id={send.id}
+								channel={send.channel}
+								outbound
+								who="You"
+								when={send.created_at}
+								pending={send.state === 'sending'}
+								failed={send.state === 'failed'}
+								status={mark?.label ?? null}
+								statusTone={mark?.tone ?? 'inactive'}
 							>
-								<div class="communications__thread-message-meta">
-									<span>You</span>
-									<time datetime={send.created_at}>{formatWhen(send.created_at)}</time>
-								</div>
-								{#if mark}
-									<div class="communications__thread-message-badges">
-										<Badge status={mark.tone}>{mark.label}</Badge>
-										{#if send.state === 'failed'}
-											<Button size="small" variant="secondary" onclick={send.retry}>Retry</Button>
-										{/if}
-									</div>
+								{#snippet badges()}
+									{#if send.state === 'failed'}
+										<Button size="small" variant="secondary" onclick={send.retry}>Retry</Button>
+									{/if}
+								{/snippet}
+								{#if send.subject}
+									<h3 class="communications__subject">
+										<span aria-hidden="true">{@html emailIcon}</span>{send.subject}
+									</h3>
 								{/if}
-								{#if send.subject}<h3>{send.subject}</h3>{/if}
-								<p>{send.body}</p>
+								<p class="communications__text">{send.body}</p>
 								{#if send.state === 'failed' && send.error}
 									<p class="communications__notice" role="alert">{send.error}</p>
 								{/if}
-							</article>
+							</ConversationMessage>
 						{/if}
 						{#if showJumpToLatest}
 							<button class="communications__jump-to-latest" type="button" onclick={scrollToLatest}>
@@ -1517,11 +1638,8 @@
 	<ConversationContextRail
 		{group}
 		context={contextQuery}
-		canManageAssignment={inboxQuery.data?.can_manage_assignment ?? false}
-		followPending={followMutationState.isPending}
-		onToggleFollow={() =>
-			group.clientId &&
-			followMutationState.mutate({ clientId: group.clientId, following: group.isFollowing })}
+		channels={composerChannels}
+		onChooseChannel={chooseChannel}
 	/>
 {/snippet}
 
@@ -1710,97 +1828,100 @@
 
 <style lang="scss">
 	:global(.communications) {
-		display: grid;
-		gap: var(--space-base);
-		/* No min-height here: the workspace below sizes itself to the viewport, and a taller floor on the
-		   page container would only add dead space under it. */
+		display: block;
 	}
 	.communications__loading {
 		display: grid;
-		grid-template-columns: 0.9fr 1.5fr 0.8fr;
+		grid-template-columns: 320px 1fr 344px;
 		gap: var(--space-base);
 	}
 	.communications__loading :global(.skeleton) {
 		min-height: 520px;
 	}
+
+	/* Three separate cards on the page background, the way the approved Inbox is drawn: the conversation
+	   list, the conversation itself, and the customer. The workspace is pinned to the window so the thread
+	   scrolls inside its own card and the reply box stays at the bottom of it.
+	   100px is everything around it: the shell's padding, the top bar, and the gap above the cards. */
 	.communications__workspace {
 		display: grid;
-		grid-template-columns: minmax(284px, 0.82fr) minmax(360px, 1.5fr) minmax(340px, 0.85fr);
-		/* GHL docks the composer to the bottom of the conversation panel, and this bound is what makes that
-		   happen: pinned to the viewport, the timeline scrolls inside its own column instead of growing and
-		   pushing the composer below the fold. Each column then needs min-height: 0 to be allowed to shrink,
-		   since a grid item defaults to min-height: auto.
-		   217px is everything around it, measured on this page: 145px above (top bar plus the app shell,
-		   main, and page-container top padding) and 72px of bottom padding from those same three. */
+		grid-template-columns: minmax(280px, 320px) minmax(0, 1fr) 344px;
+		gap: var(--space-base);
+		height: calc(100dvh - 100px);
 		min-height: 420px;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		overflow: hidden;
-		background: var(--color-surface);
+		padding-bottom: var(--space-smaller);
 	}
 	.communications__workspace--single {
 		grid-template-columns: 1fr;
 	}
+	.communications__list,
+	.communications__message,
+	.communications__context {
+		min-width: 0;
+		min-height: 0;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface);
+		overflow: hidden;
+	}
 	.communications__list {
 		display: flex;
-		min-height: 0;
 		flex-direction: column;
-		border-right: var(--border-base) solid var(--color-border);
-	}
-	.communications__workspace--single .communications__list {
-		border-right: 0;
 	}
 	.communications__list-header {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		padding: 18px var(--space-base) 0;
+		border-bottom: var(--border-base) solid var(--color-border);
+	}
+	.communications__scope-row {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-small);
-		min-height: 60px;
-		padding: var(--space-small) var(--space-slim);
-		border-bottom: var(--border-base) solid var(--color-border);
 	}
-	.communications__inbox-identity {
-		min-width: 0;
-	}
-	.communications__inbox-identity > p {
-		margin: var(--space-smallest) 0 0;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-smaller);
+	.communications__scope-row h2 {
+		margin: 0;
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-large);
+		font-weight: 700;
 	}
 	.communications__inbox-switcher {
-		display: flex;
+		display: inline-flex;
 		align-items: center;
-		gap: var(--space-small);
+		gap: 2px;
+		padding: 2px;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background--subtle);
 	}
 	.communications__inbox-switcher-button {
-		position: relative;
-		min-height: 32px;
-		padding: var(--space-smallest) 0;
+		min-height: 30px;
+		padding: 0 var(--space-slim);
 		border: 0;
+		border-radius: 6px;
 		color: var(--color-text--secondary);
 		font: inherit;
-		font-size: var(--typography--fontSize-base);
+		font-size: var(--typography--fontSize-small);
 		font-weight: 600;
 		background: transparent;
 		cursor: pointer;
+		transition:
+			background var(--timing-quick) ease-out,
+			color var(--timing-quick) ease-out;
 	}
-	.communications__inbox-switcher-button:hover,
-	.communications__inbox-switcher-button:focus-visible,
+	.communications__inbox-switcher-button:hover {
+		color: var(--color-heading);
+	}
 	.communications__inbox-switcher-button--active {
 		color: var(--color-heading);
+		background: var(--color-surface);
+		box-shadow: var(--shadow-base);
 	}
 	.communications__inbox-switcher-button:focus-visible {
 		outline: none;
 		box-shadow: var(--shadow-focus);
-	}
-	.communications__inbox-switcher-button--active::after {
-		position: absolute;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		height: 2px;
-		background: var(--color-interactive);
-		content: '';
 	}
 	.communications__compose-icon {
 		display: inline-flex;
@@ -1809,37 +1930,30 @@
 		width: 16px;
 		height: 16px;
 	}
-	.communications__list-header h2,
-	.communications__message h2 {
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-large);
-	}
 	.communications__search {
 		display: flex;
 		align-items: center;
-		gap: var(--space-smallest);
-		margin: var(--space-small) var(--space-slim);
-		padding: 0 var(--space-small);
+		gap: var(--space-smaller);
+		height: 40px;
+		padding: 0 var(--space-small) 0 var(--space-smaller);
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-small);
+		border-radius: var(--radius-base);
 		color: var(--color-icon--secondary);
-		background: var(--color-surface--background--subtle);
+		background: var(--color-surface);
 	}
-	.communications__search :global(svg) {
-		width: 18px;
-		height: 18px;
+	.communications__search:focus-within {
+		border-color: var(--color-border--interactive);
+		box-shadow: var(--shadow-focus);
 	}
 	.communications__search input {
 		width: 100%;
 		min-height: 32px;
 		border: 0;
 		outline: 0;
+		box-shadow: none;
 		color: var(--color-text);
 		background: transparent;
-	}
-	.communications__search:focus-within {
-		border-color: var(--color-border--interactive);
-		box-shadow: var(--shadow-focus);
+		font-size: var(--typography--fontSize-small);
 	}
 	.communications__search-submit {
 		display: inline-flex;
@@ -1865,234 +1979,374 @@
 		box-shadow: var(--shadow-focus);
 	}
 	.communications__search-submit :global(svg) {
-		width: 16px;
-		height: 16px;
+		width: 17px;
+		height: 17px;
+	}
+	.communications__list-tabs-row {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: var(--space-small);
 	}
 	.communications__list-tabs {
 		display: flex;
-		gap: var(--space-large);
-		padding: 0 var(--space-slim);
-		border-bottom: var(--border-base) solid var(--color-border);
+		gap: var(--space-smaller);
 	}
 	.communications__list-tab {
 		position: relative;
 		display: inline-flex;
-		min-height: 36px;
+		height: 38px;
 		align-items: center;
-		gap: var(--space-smallest);
-		padding: var(--space-smallest) 0;
+		gap: 6px;
+		padding: 0 var(--space-small);
 		border: 0;
 		color: var(--color-text--secondary);
 		font: inherit;
-		font-size: var(--typography--fontSize-small);
+		font-size: 13px;
 		font-weight: 600;
 		background: transparent;
 		cursor: pointer;
 	}
 	.communications__list-tab:hover,
-	.communications__list-tab:focus-visible,
 	.communications__list-tab--active {
 		color: var(--color-heading);
 	}
 	.communications__list-tab:focus-visible {
 		outline: none;
+		border-radius: var(--radius-small);
 		box-shadow: var(--shadow-focus);
 	}
 	.communications__list-tab--active::after {
 		position: absolute;
 		right: 0;
-		bottom: -1px;
+		bottom: 0;
 		left: 0;
-		height: 3px;
+		height: 2px;
+		border-radius: 2px;
 		background: var(--color-interactive);
 		content: '';
 	}
 	.communications__list-tab span {
 		display: inline-flex;
-		min-width: 16px;
-		height: 16px;
+		min-width: 18px;
+		height: 18px;
 		align-items: center;
 		justify-content: center;
-		border-radius: var(--radius-pill);
-		color: var(--color-surface);
-		background: var(--color-interactive);
-		font-size: 10px;
+		padding: 0 6px;
+		border-radius: var(--radius-large);
+		color: #fff;
+		background: var(--color-base-lightBlue--700);
+		font-size: 11px;
+		font-weight: 700;
+	}
+	.communications__list-count {
+		margin: 0 var(--space-smallest) 10px 0;
+		color: var(--color-text--secondary);
+		font-size: 12px;
+		font-weight: 500;
+		white-space: nowrap;
 	}
 	.communications__rows {
+		display: flex;
 		flex: 1;
 		min-height: 0;
+		flex-direction: column;
+		gap: 2px;
+		padding: var(--space-small);
 		overflow-y: auto;
 	}
 	.communications__row {
+		position: relative;
 		display: flex;
 		width: 100%;
-		gap: var(--space-small);
-		padding: var(--space-small) var(--space-slim);
+		gap: 10px;
+		padding: var(--space-slim);
 		border: 0;
-		border-bottom: var(--border-base) solid var(--color-border);
+		border-radius: 14px;
 		color: var(--color-text);
-		background: var(--color-surface);
+		background: transparent;
 		text-align: left;
 		cursor: pointer;
+		transition: background var(--timing-quick) ease-out;
 	}
 	.communications__row:hover,
 	.communications__row--selected {
-		background: var(--color-surface--active);
-	}
-	/* Secondary text on the highlighted row falls below 4.5:1 in dark mode, so it steps up to full text colour. */
-	.communications__row:hover .communications__row-preview,
-	.communications__row:hover time,
-	.communications__row--selected .communications__row-preview,
-	.communications__row.communications__row--selected time {
-		color: var(--color-text);
-	}
-	.communications__row--unread {
 		background: var(--color-surface--background--subtle);
+	}
+	.communications__row--selected::before {
+		position: absolute;
+		top: 50%;
+		left: 0;
+		width: 3px;
+		height: 36px;
+		border-radius: 2px;
+		background: var(--color-interactive);
+		content: '';
+		transform: translateY(-50%);
 	}
 	.communications__row:focus-visible {
 		outline: none;
 		box-shadow: inset 0 0 0 2px var(--color-focus);
 	}
-	.communications__row-copy {
-		display: grid;
-		min-width: 0;
-		flex: 1;
-		gap: 2px;
-	}
-	.communications__row-heading {
-		display: flex;
-		align-items: center;
-		gap: var(--space-smaller);
-		min-width: 0;
-	}
-	.communications__row-heading strong {
-		overflow: hidden;
-		color: var(--color-heading);
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-	.communications__row--unread .communications__row-heading strong {
-		font-weight: 700;
-	}
-	.communications__row-channel {
+	.communications__row-avatar {
+		position: relative;
 		display: inline-flex;
 		flex: 0 0 auto;
-		color: var(--color-icon--secondary);
+		align-self: flex-start;
+	}
+	.communications__row-avatar :global(.avatar--medium) {
+		width: 40px;
+		height: 40px;
+		font-size: 13px;
+		font-weight: 700;
+	}
+	/* The channel the last message came in on, on the avatar's corner, in that channel's own colour. */
+	.communications__row-channel {
+		position: absolute;
+		right: -4px;
+		bottom: -4px;
+		display: inline-flex;
+		width: 20px;
+		height: 20px;
+		align-items: center;
+		justify-content: center;
+		border: var(--border-thick) solid var(--color-surface);
+		border-radius: var(--radius-circle);
+		color: #fff;
+	}
+	.communications__row--selected .communications__row-channel,
+	.communications__row:hover .communications__row-channel {
+		border-color: var(--color-surface--background--subtle);
 	}
 	.communications__row-channel :global(svg) {
-		width: 14px;
-		height: 14px;
+		width: 11px;
+		height: 11px;
 	}
-	.communications__row-preview {
+	.communications__row-channel--email {
+		background: var(--color-base-lightBlue--700);
+	}
+	.communications__row-channel--sms {
+		background: var(--color-base-green--700);
+	}
+	.communications__row-channel--chat {
+		background: var(--color-base-teal--600);
+	}
+	.communications__row-copy {
+		display: flex;
+		min-width: 0;
+		flex: 1;
+		flex-direction: column;
+		gap: 3px;
+	}
+	.communications__row-line {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		min-width: 0;
+	}
+	.communications__row-line strong {
+		min-width: 0;
+		flex: 1;
 		overflow: hidden;
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-base);
+		font-weight: 600;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
 	}
-	.communications__row-preview span + span::before {
-		margin: 0 var(--space-smallest);
-		content: '\00b7';
+	.communications__row--unread .communications__row-line strong {
+		font-weight: 700;
 	}
-	.communications__row time {
+	.communications__row-line time {
+		flex: 0 0 auto;
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-smaller);
+		font-size: 11px;
+		font-weight: 500;
 		white-space: nowrap;
 	}
-	.communications__row-end {
-		display: flex;
-		flex: 0 0 auto;
-		flex-direction: column;
-		align-items: flex-end;
-		gap: var(--space-smallest);
+	.communications__row--unread .communications__row-line time {
+		color: var(--color-text);
+		font-weight: 600;
 	}
-	/* A real unread count: bold and brand-colored, the way an unread badge reads in any messaging app --
-	   distinct from the "needs review" indicator below, which is never just a plain number. */
+	.communications__row-subject {
+		overflow: hidden;
+		color: var(--color-heading);
+		font-size: 13px;
+		font-weight: 500;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.communications__row--unread .communications__row-subject {
+		font-weight: 600;
+	}
+	.communications__row-preview {
+		min-width: 0;
+		flex: 1;
+		overflow: hidden;
+		color: var(--color-text--secondary);
+		font-size: 12px;
+		line-height: 1.35;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.communications__row-preview b {
+		margin-right: 5px;
+		color: var(--color-text);
+		font-weight: 600;
+	}
+	.communications__row-assigned {
+		display: inline-flex;
+		width: 20px;
+		height: 20px;
+		flex: 0 0 auto;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--radius-circle);
+		color: #fff;
+		background: var(--color-base-blue--900);
+		font-size: 8px;
+		font-weight: 700;
+	}
+	/* A real unread count: bold and blue, the way an unread badge reads in any messaging app -- distinct
+	   from the "needs review" indicator below, which is never just a plain number. */
 	.communications__unread-count {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		min-width: 20px;
-		height: 20px;
-		padding: 0 var(--space-smaller);
-		border-radius: var(--radius-large);
-		background: var(--color-interactive);
-		color: var(--color-surface);
-		font-size: var(--typography--fontSize-smaller);
+		min-width: 19px;
+		height: 18px;
+		padding: 0 6px;
+		border-radius: 10px;
+		background: var(--color-base-lightBlue--700);
+		color: #fff;
+		font-size: 11px;
 		font-weight: 700;
 		line-height: 1;
 	}
 	/* A guarded conversation's count can never clear by opening it -- there is no client yet to hold a read
 	   position against (see needsReviewHint). A plain unread-style number would promise otherwise, so this
-	   reuses the app's own "needs attention" icon instead, with the count riding its corner and the "why" in
-	   its title -- one glance says review, not read. */
+	   is its own warm pill with the "why" in its title -- one glance says review, not read. */
 	.communications__attention {
-		position: relative;
 		display: inline-flex;
 		flex: 0 0 auto;
 		align-items: center;
-		justify-content: center;
-		width: 24px;
-		height: 24px;
-		border-radius: var(--radius-circle);
+		gap: 3px;
+		padding: 2px 7px 2px 6px;
+		border-radius: 10px;
+		color: var(--color-warning--onSurface);
 		background: var(--color-warning--surface);
+		font-size: 11px;
+		font-weight: 700;
+		line-height: 1.3;
 	}
 	.communications__attention-icon {
 		display: inline-flex;
 	}
 	.communications__attention-icon :global(svg) {
-		width: 16px;
-		height: 16px;
-		color: var(--color-warning);
-	}
-	.communications__attention-count {
-		position: absolute;
-		top: -4px;
-		right: -4px;
-		display: inline-flex;
-		min-width: 16px;
-		height: 16px;
-		align-items: center;
-		justify-content: center;
-		padding: 0 3px;
-		border-radius: var(--radius-circle);
-		box-shadow: 0 0 0 2px var(--color-surface);
-		background: var(--color-warning);
-		color: var(--color-heading);
-		font-size: 9px;
-		font-weight: 700;
-		line-height: 1;
+		width: 11px;
+		height: 11px;
 	}
 	.communications__message {
 		display: flex;
-		min-width: 0;
-		min-height: 0;
 		flex-direction: column;
 	}
-	.communications__message > header {
+	.communications__thread-header {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: var(--space-base);
-		padding: var(--space-slim);
+		gap: var(--space-slim);
+		padding: var(--space-slim) var(--space-base) var(--space-slim) 20px;
 		border-bottom: var(--border-base) solid var(--color-border);
 	}
 	.communications__recipient {
 		display: flex;
 		min-width: 0;
 		align-items: center;
-		gap: var(--space-small);
+		gap: var(--space-slim);
+	}
+	.communications__recipient > div {
+		min-width: 0;
+	}
+	.communications__recipient :global(.avatar--large) {
+		font-size: 15px;
+		font-weight: 700;
+	}
+	.communications__recipient h2 {
+		margin: 0;
+		overflow: hidden;
+		color: var(--color-heading);
+		font-size: 17px;
+		font-weight: 700;
+		line-height: 1.25;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 	.communications__unresolved-sender,
 	.communications__conversation-type {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
+		font-size: 12px;
+		font-weight: 500;
+	}
+	.communications__conversation-icon {
+		display: inline-flex;
+	}
+	.communications__conversation-icon :global(svg) {
+		width: 13px;
+		height: 13px;
+	}
+	.communications__conversation-type--email .communications__conversation-icon {
+		color: var(--color-informative--onSurface);
+	}
+	.communications__conversation-type--sms .communications__conversation-icon {
+		color: var(--color-interactive);
+	}
+	.communications__conversation-type--chat .communications__conversation-icon {
+		color: var(--color-dataViz--categorical--2);
 	}
 	.communications__thread-actions {
 		display: flex;
 		flex: 0 0 auto;
 		align-items: center;
 		gap: var(--space-small);
+	}
+	.communications__icon-button {
+		display: inline-flex;
+		width: 36px;
+		height: 36px;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: 10px;
+		color: var(--color-text);
+		background: var(--color-surface);
+		cursor: pointer;
+		transition: background var(--timing-quick) ease-out;
+	}
+	.communications__icon-button :global(svg) {
+		width: 16px;
+		height: 16px;
+	}
+	.communications__icon-button > span {
+		display: inline-flex;
+	}
+	.communications__icon-button:hover:not(:disabled) {
+		background: var(--color-surface--hover);
+	}
+	.communications__icon-button--on {
+		color: var(--color-interactive);
+		border-color: var(--color-interactive);
+	}
+	.communications__icon-button:focus-visible {
+		outline: none;
+		box-shadow: var(--shadow-focus);
+	}
+	.communications__icon-button:disabled {
+		cursor: not-allowed;
+		opacity: 0.6;
 	}
 	/* Only reachable below 1050px, where the inline context rail is hidden -- see the width media query.
 	   Doubled selector for specificity over Button's own base `.button { display: inline-flex }` rule,
@@ -2111,99 +2365,126 @@
 		outline: none;
 		box-shadow: inset 0 0 0 2px var(--color-focus);
 	}
+	/* The thread sits at the bottom of its card when it is short, like a chat: an empty first row pushes
+	   the messages down without breaking scrolling when the thread is long. */
 	.communications__timeline {
 		position: relative;
 		display: flex;
 		flex: 1;
 		flex-direction: column;
-		gap: var(--space-slim);
-		padding: var(--space-large) clamp(var(--space-large), 5vw, var(--space-largest));
-		background: var(--color-surface);
+		gap: 14px;
+		padding: var(--space-slim) var(--space-large) var(--space-base);
+		background: var(--color-surface--background--subtle);
 		overflow-y: auto;
 	}
-	.communications__thread-message {
-		align-self: flex-start;
-		width: fit-content;
-		max-width: min(72%, 680px);
-		padding: var(--space-slim) var(--space-base);
-		border: 0;
-		border-radius: var(--radius-large) var(--radius-large) var(--radius-large) var(--radius-small);
-		background: var(--color-surface--background--subtle);
-		box-shadow: inset 0 0 0 var(--border-base) var(--color-border);
+	.communications__timeline::before {
+		margin-top: auto;
+		content: '';
 	}
-	.communications__thread-message--outbound {
-		align-self: flex-end;
-		border-radius: var(--radius-large) var(--radius-large) var(--radius-small) var(--radius-large);
-		background: var(--color-interactive--background);
-		box-shadow: none;
-	}
-	/* Email is a document-shaped record, not a chat bubble. It spans the timeline like GHL's mail cards
-	   while the sender, delivery, forwarding and review controls above remain exactly the existing real
-	   actions. SMS and Website Chat retain the smaller conversational geometry. */
-	.communications__thread-message--email {
-		align-self: stretch;
-		width: auto;
-		max-width: none;
-		padding: var(--space-slim) var(--space-base);
-		border-radius: var(--radius-base);
-		background: var(--color-surface);
-		box-shadow: inset 0 0 0 var(--border-base) var(--color-border);
-	}
-	.communications__thread-message--email.communications__thread-message--outbound {
-		background: var(--color-surface);
-	}
-	.communications__thread-message--unread {
-		box-shadow:
-			inset 3px 0 0 var(--color-informative),
-			inset 0 0 0 var(--border-base) var(--color-border);
-	}
-	/* Only a send still in flight reads as provisional -- muted, the way an unconfirmed message does in any
-	   messenger. Once the server has accepted it the muting drops and it reads as an ordinary sent message,
-	   which is what it is; the re-read that swaps in its stored row then changes nothing visible. A failure
-	   takes the critical border, because at that point it is not in progress, it is something to act on. */
-	.communications__thread-message--pending {
-		opacity: 0.7;
-		border-style: dashed;
-	}
-	.communications__thread-message--failed {
-		box-shadow: inset 0 0 0 var(--border-thick) var(--color-critical);
-	}
-	.communications__thread-message-meta {
-		display: flex;
-		align-items: center;
-		justify-content: flex-start;
-		gap: var(--space-small);
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-smaller);
-		line-height: var(--typography--lineHeight-tight);
-	}
-	.communications__thread-message-meta span {
-		color: var(--color-text);
-		font-weight: 600;
-	}
-	.communications__thread-message-meta time::before {
-		margin-right: var(--space-small);
-		content: '\00b7';
-	}
-	.communications__thread-message-badges {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: var(--space-small);
-		margin-top: var(--space-small);
-	}
-	.communications__thread-message h3 {
-		margin-top: var(--space-small);
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-base);
-		line-height: var(--typography--lineHeight-base);
-	}
-	.communications__thread-message p {
-		margin-top: var(--space-smaller);
+	.communications__text {
+		margin: 0;
 		white-space: pre-wrap;
+	}
+	.communications__subject {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		margin: 0;
+		color: var(--message-heading, var(--color-heading));
+		font-size: 13px;
+		font-weight: 700;
+		line-height: 1.4;
+	}
+	.communications__subject > span {
+		display: inline-flex;
+		color: var(--message-accent, var(--color-informative--onSurface));
+	}
+	.communications__subject > span :global(svg) {
+		width: 13px;
+		height: 13px;
+	}
+	.communications__quote {
+		display: flex;
+		width: 100%;
+		align-items: stretch;
+		gap: var(--space-small);
+		padding: 7px 10px 7px 0;
+		border: 0;
+		border-radius: 10px;
+		color: inherit;
+		background: var(--color-surface--background--subtle);
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+	}
+	.communications__quote:hover {
+		background: var(--color-surface--background--subtle--hover);
+	}
+	.communications__quote:focus-visible {
+		outline: none;
+		box-shadow: var(--shadow-focus);
+	}
+	.communications__quote-bar {
+		flex: 0 0 3px;
+		border-radius: 2px;
+		background: var(--color-informative--onSurface);
+	}
+	.communications__quote-copy {
+		display: grid;
+		min-width: 0;
+		gap: 1px;
+	}
+	.communications__quote-copy strong {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		overflow: hidden;
+		color: var(--color-informative--onSurface);
+		font-size: 11px;
+		font-weight: 700;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.communications__quote-copy strong > span {
+		display: inline-flex;
+	}
+	.communications__quote-copy strong :global(svg) {
+		width: 12px;
+		height: 12px;
+	}
+	.communications__quote-copy > span {
+		overflow: hidden;
+		color: var(--color-text--secondary);
+		font-size: 12px;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.communications__action {
+		display: inline-flex;
+		width: 24px;
+		height: 24px;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		border: 0;
+		border-radius: 7px;
 		color: var(--color-text);
-		font-size: var(--typography--fontSize-base);
-		line-height: 1.45;
+		background: transparent;
+		cursor: pointer;
+	}
+	.communications__action > span {
+		display: inline-flex;
+	}
+	.communications__action :global(svg) {
+		width: 14px;
+		height: 14px;
+	}
+	.communications__action:hover {
+		background: var(--color-surface--active);
+	}
+	.communications__action:focus-visible {
+		outline: none;
+		box-shadow: var(--shadow-focus);
 	}
 	.communications__jump-to-latest {
 		position: sticky;
@@ -2213,10 +2494,9 @@
 		align-items: center;
 		gap: var(--space-smaller);
 		min-height: 32px;
-		margin-top: auto;
 		padding: var(--space-smallest) var(--space-slim);
 		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
+		border-radius: 999px;
 		color: var(--color-heading);
 		font: inherit;
 		font-size: var(--typography--fontSize-small);
@@ -2240,12 +2520,11 @@
 	.communications__date-divider {
 		display: flex;
 		align-items: center;
-		gap: var(--space-base);
+		gap: var(--space-slim);
 		width: 100%;
-		margin: var(--space-base) 0 var(--space-small);
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-smaller);
-		font-weight: 600;
+		font-size: 11px;
+		font-weight: 700;
 		text-align: center;
 	}
 	.communications__date-divider::before,
@@ -2256,25 +2535,43 @@
 		content: '';
 	}
 	.communications__date-divider span {
-		padding: var(--space-smallest) var(--space-small);
-		border-radius: var(--radius-pill);
-		background: var(--color-surface--background--subtle);
+		padding: 3px 10px;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: 999px;
+		background: var(--color-surface);
+	}
+	/* Everything since the last visit: the same line, in the unread blue. */
+	.communications__date-divider--new {
+		color: #fff;
+	}
+	.communications__date-divider--new::before,
+	.communications__date-divider--new::after {
+		background: color-mix(in srgb, var(--color-base-lightBlue--500) 30%, transparent);
+	}
+	.communications__date-divider--new span {
+		border-color: transparent;
+		background: var(--color-base-lightBlue--700);
 	}
 	.communications__attachments {
-		margin-top: var(--space-small);
+		padding: var(--space-smaller);
+		border-radius: 10px;
+		color: var(--color-text);
+		background: var(--color-surface);
 	}
 	.communications__notice {
-		margin-top: var(--space-small);
-		padding: var(--space-base);
-		border-radius: var(--radius-base);
+		margin: 0;
+		padding: var(--space-small) var(--space-slim);
+		border-radius: 10px;
 		color: var(--color-warning--onSurface);
 		background: var(--color-warning--surface);
-		font-size: var(--typography--fontSize-small);
+		font-size: 12px;
+		line-height: 1.4;
 	}
 	.communications__notice--quiet {
 		padding: 0;
-		color: var(--color-text--secondary);
+		color: inherit;
 		background: none;
+		opacity: 0.85;
 	}
 	.communications__notice-action {
 		padding: 0;
@@ -2285,7 +2582,6 @@
 		background: none;
 		cursor: pointer;
 	}
-	/* A `system` part narrates the conversation rather than speaking in it -- a centered note, not a bubble. */
 	.communications__opening {
 		padding: var(--space-base);
 	}
@@ -2295,10 +2591,11 @@
 		font-size: var(--typography--fontSize-small);
 		text-align: center;
 	}
+	/* A `system` part narrates the conversation rather than speaking in it -- a centered note, not a bubble. */
 	.communications__chat-note {
 		margin: 0;
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
+		font-size: 12px;
 		text-align: center;
 	}
 	.communications__stop-note {
@@ -2309,7 +2606,7 @@
 		gap: var(--space-smaller);
 		margin: 0;
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
+		font-size: 12px;
 		text-align: center;
 	}
 	.communications__stop-note-icon {
@@ -2317,11 +2614,11 @@
 		color: var(--color-text--secondary);
 	}
 	.communications__stop-note--stopped .communications__stop-note-icon {
-		color: var(--color-warning--onSurface);
+		color: var(--color-critical);
 	}
 	.communications__stop-note-icon :global(svg) {
-		width: 1rem;
-		height: 1rem;
+		width: 14px;
+		height: 14px;
 	}
 	.communications__stop-note-reason {
 		font-style: italic;
@@ -2330,9 +2627,8 @@
 		display: flex;
 		align-items: center;
 		gap: var(--space-small);
-		margin: var(--space-small) 0;
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-smaller);
+		font-size: 11px;
 		text-align: center;
 	}
 	.communications__chat-divider::before,
@@ -2342,20 +2638,19 @@
 		background: var(--color-border);
 		content: '';
 	}
-	.communications__chat-ended {
-		margin: 0;
-		padding: var(--space-large);
-		border-top: var(--border-base) solid var(--color-border);
+	.communications__chat-ended,
+	.communications__no-permission,
+	.communications__resolve-banner {
+		margin: 0 var(--space-base) var(--space-base);
+		padding: var(--space-slim) var(--space-base);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: 14px;
 		color: var(--color-text--secondary);
+		background: var(--color-surface);
 		font-size: var(--typography--fontSize-small);
-		text-align: center;
 	}
-	.communications__no-permission {
-		margin: 0;
-		padding: var(--space-large);
-		border-top: var(--border-base) solid var(--color-border);
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
+	.communications__chat-ended {
+		text-align: center;
 	}
 	.communications__resolve-banner {
 		display: flex;
@@ -2363,17 +2658,14 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-small);
-		padding: var(--space-base) var(--space-large);
-		border-top: var(--border-base) solid var(--color-border);
+		margin-bottom: var(--space-small);
 		color: var(--color-warning--onSurface);
+		border-color: transparent;
 		background: var(--color-warning--surface);
-		font-size: var(--typography--fontSize-small);
 	}
 	.communications__context {
-		min-height: 0;
-		border-left: var(--border-base) solid var(--color-border);
-		background: var(--color-surface--background--subtle);
-		overflow: hidden;
+		display: flex;
+		flex-direction: column;
 	}
 	.sr-only {
 		position: absolute;
@@ -2385,7 +2677,7 @@
 	}
 	@media (max-width: 1050px) {
 		.communications__workspace {
-			grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.4fr);
+			grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
 		}
 		.communications__context {
 			display: none;
@@ -2405,31 +2697,19 @@
 			height: auto;
 		}
 		.communications__list {
-			border-right: 0;
-			border-bottom: var(--border-base) solid var(--color-border);
 			max-height: 330px;
 		}
 		.communications__message {
 			min-height: 460px;
 		}
-		.communications__message > header {
+		.communications__thread-header {
 			flex-wrap: wrap;
 		}
 		.communications__thread-actions {
 			flex-wrap: wrap;
 		}
-		.communications__thread-message-meta {
-			display: grid;
-			gap: var(--space-smallest);
-		}
 		.communications__timeline {
 			padding-inline: var(--space-base);
-		}
-		.communications__thread-message {
-			max-width: 88%;
-		}
-		.communications__thread-message-meta time::before {
-			display: none;
 		}
 	}
 </style>

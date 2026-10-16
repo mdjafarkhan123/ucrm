@@ -2,7 +2,6 @@
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -13,6 +12,10 @@
 		textStopNotesKey,
 		type ConversationMessagingPhone
 	} from '$lib/communications/inbox';
+	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
+	import messageOffIcon from '@tabler/icons/outline/message-circle-off.svg?raw';
+	import messageCheckIcon from '@tabler/icons/outline/message-circle-check.svg?raw';
+	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
 
 	// Whether this customer can be texted, and their marketing-email standing, in the Contact tab. Stopping
 	// texts follows the industry pattern: a staff member records "the customer asked me to stop", it blocks
@@ -92,6 +95,7 @@
 	}
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
 <section class="messaging" aria-label="Messaging">
 	<h4 class="messaging__label">Messaging</h4>
 
@@ -105,7 +109,9 @@
 				<div class="messaging__row">
 					<div class="messaging__head">
 						<div class="messaging__what">
-							<span class="messaging__kind">Texts</span>
+							<span class="messaging__kind messaging__kind--text"
+								><span class="messaging__kind-icon" aria-hidden="true">{@html messageIcon}</span>Texts</span
+							>
 							<span class="messaging__value">{phone.value}</span>
 						</div>
 						{#if phone.state === 'opted_in'}
@@ -123,35 +129,35 @@
 							<p class="messaging__quote">“{phone.note}”</p>
 						{/if}
 						{#if canManage && phone.can_undo}
-							<div class="messaging__actions">
-								<Button
-									size="small"
-									variant="secondary"
-									variation="subtle"
-									onclick={() => ask(phone, 'undo')}>Turn texts back on</Button
-								>
-							</div>
+							<button
+								type="button"
+								class="messaging__action messaging__action--undo"
+								onclick={() => ask(phone, 'undo')}
+							>
+								<span aria-hidden="true">{@html messageCheckIcon}</span>Turn texts back on
+							</button>
 						{/if}
 					{:else if phone.state === 'unknown'}
 						<p class="messaging__note">
 							Texts cannot be sent until the customer has agreed to them.
 						</p>
 					{:else if canManage}
-						<div class="messaging__actions">
-							<Button
-								size="small"
-								variant="secondary"
-								variation="destructive"
-								onclick={() => ask(phone, 'stop')}>Stop texts</Button
-							>
-						</div>
+						<button
+							type="button"
+							class="messaging__action messaging__action--stop"
+							onclick={() => ask(phone, 'stop')}
+						>
+							<span aria-hidden="true">{@html messageOffIcon}</span>Stop texts
+						</button>
 					{/if}
 				</div>
 			{:else}
 				<div class="messaging__row">
 					<div class="messaging__head">
 						<div class="messaging__what">
-							<span class="messaging__kind">Texts</span>
+							<span class="messaging__kind messaging__kind--text"
+								><span class="messaging__kind-icon" aria-hidden="true">{@html messageIcon}</span>Texts</span
+							>
 							<span class="messaging__value">No phone number</span>
 						</div>
 					</div>
@@ -162,7 +168,9 @@
 				<div class="messaging__row">
 					<div class="messaging__head">
 						<div class="messaging__what">
-							<span class="messaging__kind">Marketing email</span>
+							<span class="messaging__kind messaging__kind--email"
+								><span class="messaging__kind-icon" aria-hidden="true">{@html mailIcon}</span>Marketing email</span
+							>
 							<span class="messaging__value">{marketing.email}</span>
 						</div>
 						{#if marketing.state === 'opted_in'}
@@ -218,62 +226,89 @@
 <style lang="scss">
 	.messaging {
 		display: grid;
-		gap: var(--space-smaller);
+		gap: var(--space-small);
 	}
 
 	.messaging__label {
 		margin: 0;
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
 	}
 
 	.messaging__card {
 		display: grid;
+		overflow: hidden;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border-radius: 14px;
 		background: var(--color-surface);
 	}
 
 	.messaging__row {
 		display: grid;
-		gap: var(--space-small);
-		padding: var(--space-base);
+		gap: var(--space-smaller);
+		padding: var(--space-slim) 14px;
 
 		& + & {
 			border-top: var(--border-base) solid var(--color-border);
 		}
 	}
 
+	/* The kind and its status pill share the top line; the number or address gets the full width below. */
 	.messaging__head {
-		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
-		gap: var(--space-small);
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: center;
+		gap: var(--space-smallest) var(--space-small);
 	}
 
 	.messaging__what {
-		display: grid;
-		min-width: 0;
-		gap: 2px;
+		display: contents;
 	}
 
 	.messaging__kind {
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-base);
-		font-weight: 600;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		color: var(--color-text--secondary);
+		font-size: 11px;
+		font-weight: 500;
+		white-space: nowrap;
+	}
+
+	.messaging__kind-icon {
+		display: inline-flex;
+
+		:global(svg) {
+			width: 13px;
+			height: 13px;
+		}
+	}
+
+	.messaging__kind--text .messaging__kind-icon {
+		color: var(--color-interactive);
+	}
+
+	.messaging__kind--email .messaging__kind-icon {
+		color: var(--color-informative--onSurface);
 	}
 
 	.messaging__value {
-		color: var(--color-text--secondary);
+		grid-column: 1 / -1;
+		grid-row: 2;
+		color: var(--color-heading);
 		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
 		overflow-wrap: anywhere;
 	}
 
 	.messaging__note {
 		margin: 0;
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
+		font-size: 12px;
+		line-height: 1.45;
 	}
 
 	.messaging__quote {
@@ -281,14 +316,49 @@
 		padding-left: var(--space-small);
 		border-left: 2px solid var(--color-border);
 		color: var(--color-text);
-		font-size: var(--typography--fontSize-small);
+		font-size: 12px;
 		overflow-wrap: anywhere;
 	}
 
-	.messaging__actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-small);
+	.messaging__action {
+		display: inline-flex;
+		width: fit-content;
+		align-items: center;
+		gap: 6px;
+		padding: var(--space-smaller) 0 0;
+		border: 0;
+		background: transparent;
+		font: inherit;
+		font-size: 12px;
+		font-weight: 600;
+		cursor: pointer;
+
+		span {
+			display: inline-flex;
+		}
+
+		:global(svg) {
+			width: 13px;
+			height: 13px;
+		}
+
+		&:hover {
+			text-decoration: underline;
+		}
+
+		&:focus-visible {
+			outline: none;
+			border-radius: var(--radius-small);
+			box-shadow: var(--shadow-focus);
+		}
+	}
+
+	.messaging__action--stop {
+		color: var(--color-destructive);
+	}
+
+	.messaging__action--undo {
+		color: var(--color-interactive);
 	}
 
 	.messaging__dialog-text {
