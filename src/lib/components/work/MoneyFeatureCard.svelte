@@ -31,6 +31,7 @@
 		detailValue,
 		breakdown,
 		rows,
+		progress,
 		change,
 		loading = false
 	}: {
@@ -43,12 +44,19 @@
 		breakdown?: MoneyBreakdownPart[];
 		/** Instead of a detail row or a breakdown: plain legend rows under the hairline. */
 		rows?: MoneyFigureRow[];
+		/** A thin bar over the plain rows, filled to this share (0 to 1). */
+		progress?: number | null;
 		/** A pill beside the big figure comparing it with the period before. */
 		change?: { direction: 'up' | 'down' | 'same'; text: string } | null;
 		loading?: boolean;
 	} = $props();
 
 	const changeIcons = { up: trendingUpIcon, down: trendingDownIcon, same: equalIcon };
+	const progressPercent = $derived(
+		progress === null || progress === undefined
+			? null
+			: Math.round(Math.min(1, Math.max(0, progress)) * 100)
+	);
 </script>
 
 <section class="money-card" aria-label={eyebrow} aria-busy={loading}>
@@ -91,17 +99,24 @@
 			</dl>
 		</div>
 	{:else if rows && rows.length > 0}
-		<dl class="money-card__legend money-card__legend--ruled">
-			{#each rows as row (row.label)}
-				<div class="money-card__legend-row">
-					<dt>{row.label}</dt>
-					<dd class="money-card__figures">
-						{#if row.count}<span class="money-card__count">{row.count}</span>{/if}
-						<span>{row.value}</span>
-					</dd>
+		<div class="money-card__rows">
+			{#if progressPercent !== null}
+				<div class="money-card__progress" aria-hidden="true">
+					<span style:width={`${progressPercent}%`}></span>
 				</div>
-			{/each}
-		</dl>
+			{/if}
+			<dl class="money-card__legend">
+				{#each rows as row (row.label)}
+					<div class="money-card__legend-row">
+						<dt>{row.label}</dt>
+						<dd class="money-card__figures">
+							{#if row.count}<span class="money-card__count">{row.count}</span>{/if}
+							<span>{row.value}</span>
+						</dd>
+					</div>
+				{/each}
+			</dl>
+		</div>
 	{:else if detailLabel}
 		<dl class="money-card__detail">
 			<dt>{detailLabel}</dt>
@@ -137,18 +152,20 @@
 			display: flex;
 			flex-wrap: wrap;
 			align-items: flex-end;
-			gap: 10px;
+			gap: 6px 10px;
 		}
 		&__change {
 			display: inline-flex;
 			align-items: center;
 			gap: 4px;
+			margin-bottom: 2px;
 			padding: 4px 9px;
 			border-radius: 999px;
 			color: var(--color-text--reverse);
 			background: color-mix(in srgb, var(--color-text--reverse) 8%, transparent);
 			font-size: var(--typography--fontSize-small);
 			font-weight: 600;
+			line-height: 1.2;
 		}
 		&__change-icon {
 			display: inline-flex;
@@ -159,11 +176,26 @@
 				height: 13px;
 			}
 		}
-		&__legend--ruled {
+		&__rows {
+			display: grid;
 			gap: 10px;
 			padding-top: 14px;
 			border-top: var(--border-base) solid
 				color-mix(in srgb, var(--color-text--reverse) 8%, transparent);
+		}
+		&__progress {
+			overflow: hidden;
+			height: 6px;
+			margin-bottom: 2px;
+			border-radius: 3px;
+			background: color-mix(in srgb, var(--color-text--reverse) 8%, transparent);
+
+			span {
+				display: block;
+				height: 100%;
+				border-radius: 3px;
+				background: var(--color-text--reverse);
+			}
 		}
 		&__figures {
 			display: inline-flex;

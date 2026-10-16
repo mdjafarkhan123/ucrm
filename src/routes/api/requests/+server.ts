@@ -68,6 +68,13 @@ export const POST: RequestHandler = async (event) => {
 	return json({ request: data }, { status: 201, headers: NO_STORE_HEADERS });
 };
 
+// The Created filter: two instants, each optional. The page turns the days it picked into the start and
+// end of those days where the person is, the way the Jobs list does.
+const createdRangeSchema = z.object({
+	created_from: z.string().datetime({ offset: true }).optional(),
+	created_to: z.string().datetime({ offset: true }).optional()
+});
+
 const PAGE_SIZE_DEFAULT = 25;
 const PAGE_SIZE_MAX = 50;
 
@@ -138,6 +145,14 @@ export const GET: RequestHandler = async (event) => {
 		return validationError({ client_id: 'Choose a client in your organization.' });
 	}
 
+	const createdRange = createdRangeSchema.safeParse({
+		created_from: params.get('created_from') || undefined,
+		created_to: params.get('created_to') || undefined
+	});
+	if (!createdRange.success) {
+		return validationError({ created_from: 'Choose a valid date range.' });
+	}
+
 	// The contractor's timezone is needed twice — for the filter's day boundaries and for each row's
 	// badge — so it is read once, up front.
 	const timezone = await organizationTimezone(organizationId);
@@ -155,6 +170,9 @@ export const GET: RequestHandler = async (event) => {
 		)
 		.eq('organization_id', organizationId);
 	if (clientId) query = query.eq('client_id', clientId.data);
+	// Rides the same (organization_id, created_at) index the default sort scans.
+	if (createdRange.data.created_from) query = query.gte('created_at', createdRange.data.created_from);
+	if (createdRange.data.created_to) query = query.lte('created_at', createdRange.data.created_to);
 
 	const statusFilter = displayStatusFilter(statuses, organizationDayRange(timezone, now));
 	if (statusFilter) query = query.or(statusFilter);

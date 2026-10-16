@@ -214,6 +214,24 @@ async function readError(response: Response, fallback: string): Promise<ClientRe
 	return error;
 }
 
+// The Client book and New clients cards above the list (GET /api/clients/overview). Under ['clients'], so
+// every client write that refreshes the list refreshes these numbers too.
+export const clientOverviewKey = ['clients', 'overview'] as const;
+
+export type ClientOverview = {
+	counts: { lead: number; customer: number; archived: number };
+	popular_tags: { id: string; name: string; total: number }[];
+	new_clients: { current: number; previous: number; period: { from: string; to: string } };
+	new_leads_30_days: number;
+	new_clients_this_year: number;
+};
+
+export async function fetchClientOverview(): Promise<ClientOverview> {
+	const response = await fetch('/api/clients/overview');
+	if (!response.ok) throw await readError(response, 'The overview could not be loaded.');
+	return response.json();
+}
+
 export async function fetchClient(clientId: string): Promise<ClientDetail> {
 	const response = await fetch(`/api/clients/${clientId}`);
 	if (!response.ok) throw await readError(response, 'That client could not be loaded.');

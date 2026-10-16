@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { conversionRateCard, conversionTrend, newRequestsCard } from './metrics';
+import {
+	conversionChange,
+	conversionRateCard,
+	conversionShare,
+	conversionTrend,
+	newRequestsCard
+} from './metrics';
 
 const period = (created: number, converted: number) => ({ new: created, converted });
 
@@ -57,5 +63,26 @@ describe('Requests conversion trend', () => {
 		expect(conversionTrend(period(0, 0), period(10, 2))).toBeNull();
 		expect(conversionTrend(period(10, 2), period(0, 0))).toBeNull();
 		expect(conversionTrend(period(10, 2), period(10, 0))).toBeNull();
+	});
+});
+
+describe('Requests conversion card pill and bar', () => {
+	it('splits the movement into a direction and the words beside the icon', () => {
+		expect(conversionChange(period(10, 5), period(10, 4))).toEqual({
+			direction: 'up',
+			text: '25% vs the 30 days before'
+		});
+		expect(conversionChange(period(10, 2), period(10, 4))).toEqual({
+			direction: 'down',
+			text: '50% vs the 30 days before'
+		});
+		expect(conversionChange(period(4, 2), period(8, 4))?.direction).toBe('same');
+		expect(conversionChange(period(4, 2), period(0, 0))).toBeNull();
+		expect(conversionChange(period(4, 2), period(5, 0))).toBeNull();
+	});
+
+	it('fills the bar to the share converted, and draws none without new requests', () => {
+		expect(conversionShare(period(26, 16))).toBeCloseTo(0.615, 3);
+		expect(conversionShare(period(0, 0))).toBeNull();
 	});
 });
