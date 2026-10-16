@@ -1251,6 +1251,7 @@
 					emptyDescription="Add the products and services this invoice bills for."
 					hint={productsHint}
 					{totalRows}
+					flush
 					onSave={saveLines}
 				/>
 

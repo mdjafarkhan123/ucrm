@@ -253,6 +253,29 @@
 		})
 	);
 
+	// The closing figures under the products table: subtotal, then the discount and tax the database worked
+	// out, then the grand total.
+	const totalRows = $derived.by(() => {
+		const version = saved?.version;
+		if (!saved?.can_see_price || !version) return undefined;
+		const rows = [{ label: 'Subtotal', value: moneyFormat.format((version.subtotal_minor ?? 0) / 100) }];
+		if ((version.discount_minor ?? 0) > 0)
+			rows.push({
+				label: version.discount_name || 'Discount',
+				value: `\u2212${moneyFormat.format((version.discount_minor ?? 0) / 100)}`
+			});
+		if ((version.tax_minor ?? 0) > 0)
+			rows.push({
+				label: version.tax_name || 'Tax',
+				value: moneyFormat.format((version.tax_minor ?? 0) / 100)
+			});
+		rows.push({
+			label: 'Quote total',
+			value: moneyFormat.format((version.total_minor ?? version.subtotal_minor ?? 0) / 100)
+		});
+		return rows;
+	});
+
 	// What sits beside the status: the quote's number, which version this is, and when it went out. A quote
 	// that has never been published has no versions worth naming, so that part stays away entirely rather
 	// than saying 'Version 1' about a draft nobody has seen.
@@ -1207,16 +1230,7 @@
 					currencyCode={saved.version?.currency_code ?? saved.quote.currency_code}
 					attachTo={{ entityType: 'quote', entityId: quoteId }}
 					hint={pricingHint}
-					totals={saved.can_see_price
-						? {
-								discountMinor: saved.version?.discount_minor ?? 0,
-								discountLabel: saved.version?.discount_name ?? null,
-								taxMinor: saved.version?.tax_minor ?? 0,
-								taxLabel: saved.version?.tax_name ?? null,
-								totalMinor: saved.version?.total_minor ?? saved.version?.subtotal_minor ?? 0,
-								totalLabel: 'Quote total'
-							}
-						: undefined}
+					{totalRows}
 					clientSees={saved.can_see_price ? clientSeesText : undefined}
 					emptyDescription="Add the products and services this quote covers."
 					editorTotalLabel="Quote subtotal"
