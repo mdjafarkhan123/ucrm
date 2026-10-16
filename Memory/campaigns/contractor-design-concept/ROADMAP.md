@@ -5,6 +5,7 @@
 | Part | Plan section | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- | --- |
 | A1 Shell, lists, Job details | First version A | New shell, 5 lists, Job details built | — | Pushed on branch; checked at 1440/1100 light+dark | Merged 2026-10-16; list gaps listed in NOW |
+| A1b List data gaps | First version A | Every piece of the 4 list frames built: Clients cards, Quotes/Invoices/Requests totals, bars, footers, row lines, Created filter | A1 | Matches Pencil; part note `parts/a1b-list-data.md` | Started |
 | A2 Other designed screens | First version A | Quote, Invoice, Request, Client, Payment details; Home; Inbox; Settings | A1 | Each matches its Pencil frame; no new behaviour | Not started |
 | A3 Schedule | First version A | Schedule month/day/states, drawers, new-item dialogs | A1 | Matches Pencil frames | Not started |
 | A4 Undesigned screens | First version A | Timesheets, Pipeline, Files, Marketing, Reviews, Reports designed in Pencil, approved, built | A1 | Jafar approves each design; built | Not started |
