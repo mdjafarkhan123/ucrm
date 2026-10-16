@@ -479,8 +479,11 @@
 	:global(.record-detail--cards) .work-header--app .work-header__top > :global(.status-badge) {
 		flex: 0 0 auto;
 	}
-	:global(.record-detail--cards) .work-header--app .work-header__track {
+	:global(.record-detail--cards) .work-header__track {
 		padding: 22px 0 20px;
+	}
+	:global(.record-detail--cards) .work-header__track + .work-header__facts {
+		margin-top: 0;
 	}
 	:global(.record-detail--cards) .work-header--app .work-header__facts {
 		margin-top: 0;

@@ -4,6 +4,7 @@
 	import { resolve } from '$app/paths';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
+	import { RECORD_CHAIN_KEY_PREFIX } from '$lib/work/record-chain';
 	import RecordDetailLayout from '$lib/components/layout/RecordDetailLayout.svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -19,7 +20,7 @@
 	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
 	import ProfitCard from '$lib/components/work/ProfitCard.svelte';
-	import LifecycleTrack, { type TrackStep } from '$lib/components/work/LifecycleTrack.svelte';
+	import RecordTrack from '$lib/components/work/RecordTrack.svelte';
 	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
 	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
 	import QuoteDepositCard from '$lib/components/quotes/QuoteDepositCard.svelte';
@@ -73,7 +74,6 @@
 		type RequestPricingLine,
 		type RequestPricingLineInput
 	} from '$lib/quotes/api';
-	import { fetchRequest, requestDetailKey } from '$lib/requests/api';
 	import { jobCountsKey } from '$lib/jobs/api';
 	import { QUOTE_STATUS_LABELS, QUOTE_STATUS_TONES } from '$lib/quotes/statuses';
 	import CollectSignatureDialog from '$lib/components/quotes/CollectSignatureDialog.svelte';
@@ -355,76 +355,6 @@
 						}
 					]
 				: [])
-		];
-	});
-
-	// The quote's place on the line from Request to Paid. Only the first two steps are known from here: the
-	// request it came from (if any) and where the quote itself stands. The rest wait on later records.
-	const requestQuery = createQuery(() => ({
-		queryKey: requestDetailKey(saved?.quote.request_id ?? ''),
-		queryFn: () => fetchRequest(saved?.quote.request_id ?? ''),
-		enabled: Boolean(saved?.quote.request_id),
-		staleTime: 60_000
-	}));
-	const requestHref = $derived.by((): string | undefined => {
-		const id = saved?.quote.request_id;
-		if (!id) return undefined;
-		return resolve('/(app)/requests/[id=uuid]', { id });
-	});
-	const lifecycleSteps = $derived.by((): TrackStep[] => {
-		if (!saved) return [];
-		const status = saved.quote.status;
-		const clientName = saved.quote.client?.display_name ?? '';
-		const clientFirstName =
-			!clientName || saved.quote.client?.company_name === clientName
-				? 'the client'
-				: clientName.split(' ')[0];
-		const answered = status === 'approved' || status === 'converted';
-		const quoteStep: TrackStep = (() => {
-			if (status === 'declined')
-				return { label: 'Quote', sub: 'Declined', state: 'current', tone: 'critical', progress: 1 };
-			if (answered)
-				return {
-					label: 'Quote',
-					sub: saved.quote.decided_at
-						? `Approved ${shortDate.format(new Date(saved.quote.decided_at))}`
-						: 'Approved',
-					state: 'done'
-				};
-			if (status === 'archived')
-				return { label: 'Quote', sub: 'Archived', state: 'current', progress: 0.5 };
-			if (status === 'draft')
-				return { label: 'Quote', sub: 'Draft, not sent', state: 'current', progress: 0.25 };
-			return {
-				label: 'Quote',
-				sub:
-					status === 'changes_requested'
-						? `${clientFirstName} wants changes`
-						: `Waiting on ${clientFirstName}`,
-				state: 'current',
-				tone: 'critical',
-				progress: 0.55
-			};
-		})();
-		return [
-			saved.quote.request_id
-				? {
-						label: 'Request',
-						sub: requestQuery.data
-							? `${shortDate.format(new Date(requestQuery.data.created_at))} · requested`
-							: 'Where this started',
-						state: 'done',
-						href: requestHref
-					}
-				: { label: 'Request', sub: 'Started as a quote', state: 'todo' },
-			quoteStep,
-			{
-				label: 'Job',
-				sub: status === 'converted' ? 'Job created' : 'After approval',
-				state: status === 'converted' ? 'done' : 'todo'
-			},
-			{ label: 'Invoice', sub: 'After the work', state: 'todo' },
-			{ label: 'Paid', sub: 'Not yet', state: 'todo' }
 		];
 	});
 
@@ -983,6 +913,7 @@
 	async function refreshQuote() {
 		await Promise.all([
 			queryClient.invalidateQueries({ queryKey: quoteDetailKey(quoteId) }),
+			queryClient.invalidateQueries({ queryKey: RECORD_CHAIN_KEY_PREFIX }),
 			queryClient.invalidateQueries({ queryKey: quoteLinesKey(quoteId) }),
 			queryClient.invalidateQueries({ queryKey: ['quotes', 'list'] }),
 			queryClient.invalidateQueries({ queryKey: quoteCountsKey }),
@@ -1145,7 +1076,14 @@
 							menuItems={clientMenuItems}
 						/>
 					{/snippet}
-					{#snippet track()}<LifecycleTrack steps={lifecycleSteps} label="Quote progress" />{/snippet}
+					{#snippet track()}
+						<RecordTrack
+							kind="quote"
+							id={quoteId}
+							clientName={saved.quote.client?.display_name}
+							clientIsCompany={saved.quote.client?.company_name === saved.quote.client?.display_name}
+						/>
+					{/snippet}
 					{#snippet facts()}<RecordFactsList facts={headerFacts} />{/snippet}
 				</WorkRecordHeader>
 

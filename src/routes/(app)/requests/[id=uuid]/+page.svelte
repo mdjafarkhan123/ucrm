@@ -5,6 +5,8 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
+	import RecordTrack from '$lib/components/work/RecordTrack.svelte';
+	import { RECORD_CHAIN_KEY_PREFIX } from '$lib/work/record-chain';
 	import RecordDetailLayout from '$lib/components/layout/RecordDetailLayout.svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -199,6 +201,7 @@
 	async function refresh() {
 		await Promise.all([
 			queryClient.invalidateQueries({ queryKey: requestDetailKey(requestId) }),
+			queryClient.invalidateQueries({ queryKey: RECORD_CHAIN_KEY_PREFIX }),
 			queryClient.invalidateQueries({ queryKey: ['requests', 'list'] }),
 			queryClient.invalidateQueries({ queryKey: requestCountsKey }),
 			queryClient.invalidateQueries({ queryKey: notesKey('request', requestId) }),
@@ -481,6 +484,7 @@
 				>
 					{#snippet summary()}
 						<ClientSummaryCard
+							quickContact
 							name={saved.client?.display_name ?? 'No client'}
 							avatarId={saved.client?.id}
 							href={clientHref}
@@ -489,6 +493,9 @@
 							email={saved.email}
 							menuItems={clientMenuItems}
 						/>
+					{/snippet}
+					{#snippet track()}
+						<RecordTrack kind="request" id={requestId} clientName={saved.client?.display_name} />
 					{/snippet}
 					{#snippet facts()}
 						<RecordFactsList facts={headerFacts} />

@@ -1,12 +1,11 @@
 <script lang="ts">
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import QuickContactButtons from './QuickContactButtons.svelte';
 	import type { SummaryAddress } from './types';
 	import mapPinIcon from '@tabler/icons/outline/map-pin.svg?raw';
 	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
-	import messageIcon from '@tabler/icons/outline/message.svg?raw';
-	import navigationIcon from '@tabler/icons/outline/navigation.svg?raw';
 
 	// Who this piece of work is for, shown on every request, quote, job and invoice. The card names the
 	// client, lists whichever addresses that record carries, and gives the two ways to reach them.
@@ -51,11 +50,6 @@
 	} = $props();
 
 	const firstAddress = $derived(addresses.find((address) => address.value)?.value ?? null);
-	const directionsHref = $derived(
-		firstAddress
-			? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(firstAddress)}`
-			: null
-	);
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -121,34 +115,9 @@
 		</li>
 	</ul>
 
-	{#if quickContact && (phone || directionsHref)}
+	{#if quickContact && (phone || email || firstAddress)}
 		<div class="client-summary__quick">
-			{#if phone}
-				<a class="client-summary__round" href={`tel:${phone}`} aria-label={`Call ${phone}`} title={`Call ${phone}`}>
-					{@html phoneIcon}
-				</a>
-				<a class="client-summary__round" href={`sms:${phone}`} aria-label={`Text ${phone}`} title={`Text ${phone}`}>
-					{@html messageIcon}
-				</a>
-			{/if}
-			{#if email}
-				<a class="client-summary__round" href={`mailto:${email}`} aria-label={`Email ${email}`} title={`Email ${email}`}>
-					{@html mailIcon}
-				</a>
-			{/if}
-			{#if directionsHref}
-				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-				<a
-					class="client-summary__round"
-					href={directionsHref}
-					target="_blank"
-					rel="noopener"
-					aria-label="Get directions"
-					title="Get directions"
-				>
-					{@html navigationIcon}
-				</a>
-			{/if}
+			<QuickContactButtons {phone} {email} address={firstAddress} />
 		</div>
 	{/if}
 </div>
@@ -323,32 +292,6 @@
 			gap: 6px;
 			order: 5;
 			margin-left: auto;
-		}
-		.client-summary__round {
-			display: inline-grid;
-			width: 34px;
-			height: 34px;
-			place-items: center;
-			border: var(--border-base) solid var(--color-border);
-			border-radius: 999px;
-			color: var(--color-text--secondary);
-			background: var(--color-surface--background--subtle);
-			text-decoration: none;
-			transition: all var(--timing-base) ease-out;
-
-			:global(svg) {
-				display: block;
-				width: 15px;
-				height: 15px;
-			}
-			&:hover {
-				color: var(--color-interactive);
-				background: var(--color-surface--hover);
-			}
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
 		}
 	}
 	.client-summary__quick {

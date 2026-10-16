@@ -7,6 +7,7 @@
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
 	import type { RecordFact } from '$lib/components/work/types';
+	import QuickContactButtons from '$lib/components/work/QuickContactButtons.svelte';
 	import ManualEmailDialog from '$lib/components/clients/ManualEmailDialog.svelte';
 	import RequestReviewButton from '$lib/components/reviews/RequestReviewButton.svelte';
 	import type { ClientDetail } from '$lib/clients/api';
@@ -60,6 +61,20 @@
 		archiving?: boolean;
 	} = $props();
 
+	// Directions go to the client's main property, written the way a map search reads it.
+	const directionsAddress = $derived.by(() => {
+		const property = client.primary_property ?? client.properties[0];
+		if (!property) return null;
+		const parts = [
+			property.address_line1,
+			property.address_line2,
+			property.city,
+			property.state_region,
+			property.postal_code
+		].filter((part): part is string => typeof part === 'string' && part.length > 0);
+		return parts.length ? parts.join(', ') : null;
+	});
+
 	const isCustomer = $derived(client.lifecycle_status === 'customer');
 	const isArchived = $derived(client.archived_at !== null);
 	const propertyCount = $derived(client.properties.length);
@@ -69,9 +84,6 @@
 		client.created_at ? monthFormat.format(new Date(client.created_at)) : ''
 	);
 
-	// Spelled out for screen readers as well as the hover title, because a disabled button never takes
-	// focus and its reason would otherwise reach mouse users only.
-	const callReason = 'Calling arrives with the communications work';
 	let manualEmailOpen = $state(false);
 
 	const menuItems = $derived([
@@ -186,13 +198,9 @@
 			</div>
 
 			<div class="client-header__actions">
-				<span class="client-header__waiting" title={callReason}>
-					<Button variant="secondary" class="client-header__button" disabled>
-						<span class="client-header__button-icon" aria-hidden="true">{@html phoneIcon}</span>
-						Call
-					</Button>
-					<span class="client-header__reason">{callReason}</span>
-				</span>
+				<div class="client-header__quick">
+					<QuickContactButtons phone={client.phone} address={directionsAddress} />
+				</div>
 				{#if canMessage}
 					<Button
 						variant="secondary"
@@ -228,21 +236,10 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
-	.client-header__waiting {
+	.client-header__quick {
 		display: inline-flex;
 		align-items: center;
-	}
-
-	.client-header__reason {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		margin: -1px;
-		padding: 0;
-		overflow: hidden;
-		clip: rect(0 0 0 0);
-		white-space: nowrap;
-		border: 0;
+		gap: 6px;
 	}
 
 	.client-header {
