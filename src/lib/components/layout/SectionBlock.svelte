@@ -215,7 +215,6 @@
 				font-size: 13px;
 				font-weight: 500;
 			}
-			}
 		}
 		> :global(.section-block__hint) {
 			margin: -12px 24px 20px;

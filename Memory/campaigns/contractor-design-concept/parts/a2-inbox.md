@@ -1,6 +1,6 @@
 # A2 — Inbox (App look)
 
-**Branch/worktree:** `claude/a2-inbox`, `.worktrees/a2-inbox`. **Claim:** `39159686480a` (took over from `4a22b1fa0db8` with Jafar's yes, 2026-10-16). **State:** Waiting to merge. Do not merge until Jafar says.
+**Branch/worktree:** `claude/a2-inbox`, `.worktrees/a2-inbox`. **Claim:** `39159686480a` (took over from `4a22b1fa0db8` with Jafar's yes, 2026-10-16). **State:** Merged to main 2026-10-16.
 
 **Built (Pencil `g0wGU1`):** three cards (conversation list, thread, customer panel with the record-coloured section strip), channel avatars, chat bubbles with delivery ticks, New divider, rounded reply box with green Send, assignee and Follow in the thread header, dark Open job card, tinted contact rows, messaging card. Sidebar opens slim on Inbox and Schedule until a choice is made, and remembers the choice (small behaviour addition in `SharedAppShell`; Jafar to confirm).
 
