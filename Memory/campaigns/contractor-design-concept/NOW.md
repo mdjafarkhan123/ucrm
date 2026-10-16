@@ -10,4 +10,4 @@
 
 **Decisions by Jafar (2026-10-16):** money/feature cards stay light in dark mode. Jafar delegated the rest to a contractor's view; do these as A2b after merging: progress strip (Request→Quote→Job→Invoice→Paid) on every record page using existing links (verify invoice→job link); Call/Text/Directions icons on Request, Invoice, Client headers; Request list lines "Asked for", assessor, "Quote #". Skipped: Payment History button, labelled "More" button.
 
-**Still open:** "Changes requested" colour on Quotes.
+**Still open:** "Changes requested" colour on Quotes. Merge left two looks in place for Jafar to pick one: Discount/Tax edit as an "Add/Edit" word (Invoice) or a pencil (Quote); Notes box as a send-button field (Quote) or the standard box (Client). Also two totals blocks under the products table (Invoice, Quote).
