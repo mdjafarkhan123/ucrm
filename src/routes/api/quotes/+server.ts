@@ -111,10 +111,11 @@ export const GET: RequestHandler = async (event) => {
 		.from('quotes')
 		.select(
 			`id, quote_number, title, status, currency_code, created_at, client_id, request_id,
+			 sent_at, decision, decided_at, decision_method, archived_at,
 			 client:clients!quotes_client_organization_fk(id, display_name, company_name),
 			 property:properties!quotes_property_organization_fk(id, label, address_line1, city, state_region, postal_code),
 			 draft:quote_versions!quotes_draft_version_organization_fk(id, client_display_name, service_address_line1, service_city, service_state_region, service_postal_code),
-			 published:quote_versions!quotes_current_published_version_fk(id, client_display_name, service_address_line1, service_city, service_state_region, service_postal_code)`
+			 published:quote_versions!quotes_current_published_version_fk(id, version_number, client_display_name, service_address_line1, service_city, service_state_region, service_postal_code)`
 		)
 		.eq('organization_id', organizationId)
 		.in('status', statuses);
@@ -181,11 +182,24 @@ export const GET: RequestHandler = async (event) => {
 				.filter((version): version is { id: string } => Boolean(version))
 				.map((version) => version.id)
 		: [];
-	const { data: versionMoney, error: moneyError } = pageVersionIds.length
-		? await supabase.rpc('quote_version_money', { target_version_ids: pageVersionIds })
-		: { data: {}, error: null };
-	if (moneyError) return databaseError();
+	// The line under each row's status (opens, when changes were asked for, the job it became) comes back in
+	// one keyed call for the page, alongside the money.
+	const pageIds = page.map((row) => row.id);
+	const [{ data: versionMoney, error: moneyError }, { data: activityRows, error: activityError }] =
+		await Promise.all([
+			pageVersionIds.length
+				? supabase.rpc('quote_version_money', { target_version_ids: pageVersionIds })
+				: Promise.resolve({ data: {}, error: null }),
+			pageIds.length
+				? supabase.rpc('quote_list_activity', {
+						target_organization_id: organizationId,
+						target_quote_ids: pageIds
+					})
+				: Promise.resolve({ data: [], error: null })
+		]);
+	if (moneyError || activityError) return databaseError();
 	const money = asMoneyMap(versionMoney);
+	const activity = new Map((activityRows ?? []).map((entry) => [entry.quote_id, entry]));
 
 	const quotes = page.map((row) => {
 		const version = (embeddedOne(row.draft) ?? embeddedOne(row.published)) as {
@@ -197,6 +211,8 @@ export const GET: RequestHandler = async (event) => {
 			service_postal_code: string | null;
 		} | null;
 		const total = version ? money[version.id]?.total_minor : undefined;
+		const published = embeddedOne(row.published) as { version_number: number } | null;
+		const facts = activity.get(row.id);
 		// The version's own columns are what was actually shown when the quote was sent — a later client
 		// rename or property address edit must not rewrite what this row displays, same as the customer's
 		// own copy already stays frozen.
@@ -226,7 +242,17 @@ export const GET: RequestHandler = async (event) => {
 			// table shows a dash instead of a wrong total.
 			// The column says Total, so it is the total: what the client would pay after any discount and
 			// tax, not the subtotal the lines add up to.
-			total_minor: canSeePrice ? (typeof total === 'number' ? total : 0) : null
+			total_minor: canSeePrice ? (typeof total === 'number' ? total : 0) : null,
+			sent_at: row.sent_at,
+			decision: row.decision,
+			decided_at: row.decided_at,
+			decision_method: row.decision_method,
+			archived_at: row.archived_at,
+			published_version_number: published?.version_number ?? null,
+			view_count: facts?.view_count ?? 0,
+			changes_requested_at: facts?.changes_requested_at ?? null,
+			// The job only when this person may open jobs; the database leaves both empty otherwise.
+			job: facts?.job_id ? { id: facts.job_id, job_number: facts.job_number } : null
 		};
 	});
 

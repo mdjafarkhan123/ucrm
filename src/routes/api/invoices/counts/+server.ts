@@ -4,6 +4,7 @@ import { requireOrganizationPermission } from '$lib/server/access/permission';
 import { PRIVATE_READ_HEADERS, databaseError } from '$lib/server/api/errors';
 import { INVOICE_DERIVED_STATUSES } from '$lib/server/validation/invoices.schema';
 import { organizationFormatting } from '$lib/server/requests/timezone';
+import { readInvoiceListFacts } from '$lib/invoices/list-facts';
 
 // The Overview card on the Invoices list. Counted live, like the Jobs and Quotes cards, so the numbers are
 // never stale; the database derives each label from the same rule the list draws and this route only fills in
@@ -12,16 +13,25 @@ export const GET: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'invoices.view');
 	if ('response' in check) return check.response;
 
-	const [{ data, error }, { data: money, error: moneyError }, formatting] = await Promise.all([
+	const [
+		{ data, error },
+		{ data: money, error: moneyError },
+		{ data: facts, error: factsError },
+		formatting
+	] = await Promise.all([
 		event.locals.supabase.rpc('invoice_status_counts', {
 			target_organization_id: check.auth.organization.id
 		}),
 		event.locals.supabase.rpc('invoice_money_overview', {
 			target_organization_id: check.auth.organization.id
 		}),
+		// The facts strip: average days to get paid and the overdue reminder setting. No money in it.
+		event.locals.supabase.rpc('invoice_list_facts', {
+			target_organization_id: check.auth.organization.id
+		}),
 		organizationFormatting(check.auth.organization.id)
 	]);
-	if (error || moneyError) return databaseError();
+	if (error || moneyError || factsError) return databaseError();
 
 	const counts = Object.fromEntries(
 		INVOICE_DERIVED_STATUSES.map((status) => [status, 0])
@@ -43,7 +53,8 @@ export const GET: RequestHandler = async (event) => {
 			overdue_minor: moneyRow.overdue_minor ?? null,
 			collected_this_month_minor: moneyRow.collected_this_month_minor ?? null,
 			currency_code: formatting.ok ? formatting.formatting.currency_code : 'USD',
-			locale: formatting.ok ? formatting.formatting.locale : 'en-US'
+			locale: formatting.ok ? formatting.formatting.locale : 'en-US',
+			facts: readInvoiceListFacts(facts)
 		},
 		{ headers: PRIVATE_READ_HEADERS }
 	);

@@ -110,12 +110,30 @@ export const GET: RequestHandler = async (event) => {
 
 	// Money never leaves the invoice table on its own grant, so the page's totals come back in one gated call
 	// that checks invoices.view_price for itself. A reader without it is not asked at all.
+	// How often the client opened each bill rides alongside, in one keyed call for the whole page.
 	const pageIds = canSeePrice ? page.map((row) => row.id) : [];
-	const { data: invoiceMoney, error: moneyError } = pageIds.length
-		? await supabase.rpc('invoice_money', { target_invoice_ids: pageIds })
-		: { data: {}, error: null };
-	if (moneyError) return databaseError();
+	const viewIds = page.map((row) => row.id);
+	const [{ data: invoiceMoney, error: moneyError }, { data: viewRows, error: viewError }] =
+		await Promise.all([
+			pageIds.length
+				? supabase.rpc('invoice_money', { target_invoice_ids: pageIds })
+				: Promise.resolve({ data: {}, error: null }),
+			viewIds.length
+				? supabase.rpc('invoice_list_views', {
+						target_organization_id: organizationId,
+						target_invoice_ids: viewIds
+					})
+				: Promise.resolve({ data: [], error: null })
+		]);
+	if (moneyError || viewError) return databaseError();
 	const money = asMoneyMap(invoiceMoney);
+	// No row means the bill was never emailed, so there is nothing to have opened.
+	const views = new Map(
+		((viewRows ?? []) as { invoice_id: string; view_count: number }[]).map((view) => [
+			view.invoice_id,
+			Number(view.view_count)
+		])
+	);
 
 	const invoices = page.map((row) => {
 		const cell = money[row.id];
@@ -149,7 +167,8 @@ export const GET: RequestHandler = async (event) => {
 					: typeof remaining === 'number'
 						? remaining
 						: 0
-				: null
+				: null,
+			view_count: views.get(row.id) ?? null
 		};
 	});
 
