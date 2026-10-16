@@ -478,4 +478,41 @@
 			gap: var(--space-small);
 		}
 	}
+
+	// App look: the notes run edge to edge inside their rail card — each one a row under a hairline, the
+	// composer last with a hairline above it — instead of bordered boxes stacked above a text area.
+	:global(.record-detail--cards) .notes-panel {
+		gap: 0;
+		margin: 0 -20px -20px;
+
+		.notes-panel__list {
+			gap: 0;
+			order: 1;
+		}
+		.notes-panel__item {
+			padding: 14px 20px;
+			border: 0;
+			border-top: var(--border-base) solid var(--color-border);
+			border-radius: 0;
+			background: transparent;
+		}
+		.notes-panel__item--pinned {
+			background: var(--color-warning--surface);
+		}
+		.notes-panel__item--draft {
+			border-top-style: dashed;
+		}
+		.notes-panel__composer {
+			order: 2;
+			padding: 14px 20px 18px;
+			border-top: var(--border-base) solid var(--color-border);
+		}
+		.notes-panel__muted,
+		.notes-panel__error {
+			padding: 0 20px 20px;
+		}
+		> :global(.empty-state) {
+			margin: 0 20px 20px;
+		}
+	}
 </style>

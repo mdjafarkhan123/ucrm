@@ -48,13 +48,22 @@
 		updateNote,
 		type NoteChange
 	} from '$lib/collaboration/api';
-	import { convertRequestToQuote, requestPricingKey, type QuoteWriteError } from '$lib/quotes/api';
+	import {
+		convertRequestToQuote,
+		fetchRequestPricing,
+		requestPricingKey,
+		type QuoteWriteError
+	} from '$lib/quotes/api';
 	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import clipboardIcon from '@tabler/icons/outline/clipboard-text.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import quoteIcon from '@tabler/icons/outline/file-invoice.svg?raw';
 	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
+	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
+	import calendarCheckIcon from '@tabler/icons/outline/calendar-check.svg?raw';
+	import toolIcon from '@tabler/icons/outline/tool.svg?raw';
+	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 	import InquiryAutomationCard from '$lib/components/automation/InquiryAutomationCard.svelte';
 	import { AUTOMATION_JOURNEY_READY } from '$lib/automation/journey';
 	import { customerNoticeToast, type CustomerNoticeSent } from '$lib/schedule/customer-notices';
@@ -130,6 +139,9 @@
 	});
 
 	const title = $derived(saved?.title ?? '');
+	const overviewHint = $derived(
+		saved?.client ? `What ${saved.client.display_name.split(' ')[0]} is asking for` : undefined
+	);
 	const description = $derived(saved?.description ?? '');
 
 	async function saveDraft() {
@@ -284,17 +296,50 @@
 			: dateTimeFormat.format(start);
 	});
 
+	// The block below reads the same key, so the two share one fetch. The subtotal is the fourth fact in the
+	// header; while it loads, or when the reader may not see prices, the fact just stays empty.
+	const pricingQuery = createQuery(() => ({
+		queryKey: requestPricingKey(requestId),
+		queryFn: () => fetchRequestPricing(requestId),
+		enabled: Boolean(requestId)
+	}));
+	const subtotalFact = $derived.by(() => {
+		const pricing = pricingQuery.data;
+		if (!pricing || pricing.lines.length === 0) return null;
+		return new Intl.NumberFormat(pricing.locale, {
+			style: 'currency',
+			currency: pricing.currency_code
+		}).format(pricing.subtotal_minor / 100);
+	});
+
 	const headerFacts = $derived([
 		{
 			label: 'Requested',
-			value: saved ? dateFormat.format(new Date(saved.created_at)) : null
+			value: saved ? dateFormat.format(new Date(saved.created_at)) : null,
+			icon: calendarIcon
 		},
 		// A website booking held for approval carries the customer's own time, which is what the office is
 		// being asked to accept.
 		saved?.stored_status === 'needs_approval' && !saved.assessment
-			? { label: 'Assessment', value: saved.preferred_time, empty: 'Waiting for approval' }
-			: { label: 'Assessment', value: assessmentFact, empty: 'Not booked yet' },
-		{ label: 'Service', value: saved?.service_type, empty: 'Not recorded' }
+			? {
+					label: 'Assessment',
+					value: saved.preferred_time,
+					empty: 'Waiting for approval',
+					icon: calendarCheckIcon
+				}
+			: {
+					label: 'Assessment',
+					value: assessmentFact,
+					empty: 'Not booked yet',
+					icon: calendarCheckIcon
+				},
+		{ label: 'Service', value: saved?.service_type, empty: 'Not recorded', icon: toolIcon },
+		{
+			label: 'Request subtotal',
+			value: subtotalFact,
+			empty: pricingQuery.isPending ? '—' : 'Not priced yet',
+			icon: receiptIcon
+		}
 	]);
 
 	const propertyLine = $derived.by(() => {
@@ -400,7 +445,7 @@
 	}
 </script>
 
-<PageContainer>
+<PageContainer variant="open">
 	{#if requestQuery.isPending}
 		<LoadingSkeleton variant="card" label="Loading request" />
 	{:else if requestQuery.isError}
@@ -408,6 +453,7 @@
 	{:else if saved}
 		<RecordDetailLayout
 			class="request-detail"
+			cards
 			editing={isEditing}
 			dirty={isDirty}
 			{saving}
@@ -436,6 +482,7 @@
 					{#snippet summary()}
 						<ClientSummaryCard
 							name={saved.client?.display_name ?? 'No client'}
+							avatarId={saved.client?.id}
 							href={clientHref}
 							addresses={[{ value: propertyLine, empty: 'No property on this request' }]}
 							phone={saved.phone}
@@ -452,7 +499,7 @@
 					title="Service overview"
 					icon={clipboardIcon}
 					level={2}
-					form={editingOverview}
+					hint={overviewHint}
 				>
 					{#snippet actions()}
 						{#if !editingOverview}
@@ -524,7 +571,12 @@
 						<InquiryAutomationCard record={{ kind: 'request', id: requestId }} />
 					{/if}
 
-					<RailCard title="Notes" icon={notesIcon} count={notesQuery.data?.length}>
+					<RailCard
+						title="Notes"
+						icon={notesIcon}
+						count={notesQuery.data?.length}
+						hint="Only your team sees these"
+					>
 						<NotesPanel
 							entityType="request"
 							entityId={requestId}
@@ -540,6 +592,7 @@
 						entityId={requestId}
 						recordLabel="this request"
 						pickerLabel="On this request"
+						title="Photos and files"
 						clientId={saved.client?.id ?? null}
 						clientLabel={saved.client?.display_name ?? null}
 					/>

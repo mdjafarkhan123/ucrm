@@ -7,6 +7,7 @@
 		title,
 		icon,
 		count,
+		hint,
 		actions,
 		children,
 		class: className = ''
@@ -14,6 +15,8 @@
 		title: string;
 		icon?: string;
 		count?: number;
+		/** A quiet line under the title, e.g. "Only your team sees these". */
+		hint?: string;
 		actions?: Snippet;
 		children: Snippet;
 		class?: string;
@@ -23,10 +26,13 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <section class={`rail-card ${className}`}>
 	<header class="rail-card__header">
-		<h2 class="rail-card__title">
-			{#if icon}<span class="rail-card__icon" aria-hidden="true">{@html icon}</span>{/if}
-			{title}{#if count !== undefined}&nbsp;({count}){/if}
-		</h2>
+		<div class="rail-card__heading">
+			<h2 class="rail-card__title">
+				{#if icon}<span class="rail-card__icon" aria-hidden="true">{@html icon}</span>{/if}
+				{title}{#if count !== undefined}<span class="rail-card__count">({count})</span>{/if}
+			</h2>
+			{#if hint}<p class="rail-card__hint">{hint}</p>{/if}
+		</div>
 		{#if actions}<div class="rail-card__actions">{@render actions()}</div>{/if}
 	</header>
 	{@render children()}
@@ -50,6 +56,17 @@
 			align-items: center;
 			justify-content: space-between;
 			gap: var(--space-small);
+		}
+
+		&__heading {
+			min-width: 0;
+		}
+
+		&__hint {
+			margin: 2px 0 0;
+			color: var(--color-text--secondary);
+			font-size: 13px;
+			font-weight: 500;
 		}
 
 		&__title {
@@ -78,11 +95,16 @@
 		box-shadow: none;
 
 		.rail-card__title {
+			gap: 6px;
 			font-size: var(--typography--fontSize-large);
 			letter-spacing: -0.2px;
 		}
 		.rail-card__icon {
 			display: none;
+		}
+		.rail-card__count {
+			color: var(--color-text--secondary);
+			font-weight: 500;
 		}
 	}
 </style>

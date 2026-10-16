@@ -29,7 +29,7 @@
 	} = $props();
 
 	const blockClass = $derived(
-		`section-block section-block--${variant} ${form ? '' : 'section-block--standalone'} ${className}`
+		`section-block section-block--${variant} ${form ? '' : 'section-block--standalone'} ${hint ? 'section-block--hinted' : ''} ${className}`
 	);
 	const titleId = $derived(id ? `${id}-title` : undefined);
 </script>
@@ -179,6 +179,46 @@
 		}
 		> :global(.section-block__hint) {
 			margin: -8px 24px 12px;
+		}
+
+		// A block with a hint reads as a two-line header: the title, the hint under it, and the actions
+		// centred beside both. The body starts straight after, so no gap opens between hint and content.
+		&.section-block--hinted {
+			> :global(.section-block__title) {
+				padding-bottom: 2px;
+			}
+			> :global(.section-block__hint) {
+				grid-column: 1;
+				grid-row: 2;
+				margin: 0;
+				padding: 0 24px 18px;
+				font-size: 13px;
+				font-weight: 500;
+			}
+			> :global(.section-block__actions) {
+				grid-row: 1 / span 2;
+				padding: 0 24px 0 0;
+			}
+		}
+
+		// The pencil on a card header is a small bordered button, as in the approved designs.
+		:global(.section-block__actions .pencil-button) {
+			width: 40px;
+			height: 36px;
+			border-color: var(--color-border);
+			color: var(--color-text--secondary);
+			background: var(--color-surface);
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+			&:hover:not(:disabled),
+			&:focus-visible:not(:disabled) {
+				border-color: var(--color-border--interactive);
+				color: var(--color-heading);
+				background: var(--color-surface--hover);
+			}
 		}
 	}
 	// Low specificity on purpose, so a block's own contents can set their own margin where they differ.

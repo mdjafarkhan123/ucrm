@@ -82,6 +82,8 @@
 		attachTo = null,
 		alwaysEditing = false,
 		editorTotalLabel = 'Subtotal',
+		totalLabel = 'Subtotal',
+		hint,
 		saveLabel = 'Save pricing',
 		lockedMessage = '',
 		emptyDescription = 'Add the products and services this job needs before it becomes a quote.',
@@ -123,6 +125,10 @@
 		alwaysEditing?: boolean;
 		/** What the editor's own action bar calls the running total, e.g. "Request subtotal". */
 		editorTotalLabel?: string;
+		/** What the saved table's total row is called, e.g. "Request subtotal". */
+		totalLabel?: string;
+		/** A quiet line under the card title, e.g. "4 items". */
+		hint?: string;
 		saveLabel?: string;
 		lockedMessage?: string;
 		emptyDescription?: string;
@@ -932,7 +938,7 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<SectionBlock title="Products and services" icon={listIcon} level={2}>
+<SectionBlock title="Products and services" icon={listIcon} level={2} {hint}>
 	{#snippet actions()}
 		{#if editable && !isEditing && savedLines.length > 0}
 			<PencilButton onclick={openEdit} label="Edit products and services" />
@@ -1243,7 +1249,7 @@
 		{#if showPrices}
 			<div class="pricing-block__totals">
 				<div class="pricing-block__totals-row">
-					<span>{progressColumn ? 'Due this invoice' : 'Subtotal'}</span>
+					<span>{progressColumn ? 'Due this invoice' : totalLabel}</span>
 					<span>{formatMoney(savedSubtotal(savedLines))}</span>
 				</div>
 			</div>
