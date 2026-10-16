@@ -38,12 +38,17 @@ Phase B has a clean base.
   decoration, never a rainbow. Brand green stays `#037741`.
 - Desktop web app. No phone-size design work.
 - Research only shows what products show and leave out. It never means copying a design.
+- **Phase B is a new concept, not a polish of today's pages.** Layout, grouping and the content of each screen
+  can differ from the live page, as the Pencil Job details already differs from the live one. The test is what
+  a contractor most needs on that screen, not what the page has today.
 
 ## Not doing
 
 - Copying any product's design.
 - Phone layouts.
-- New features or behaviour: design changes the look only; behaviour ideas go to Jafar as suggestions.
+- Phase A adds no new features or behaviour: it changes the look only.
+- Phase B may rearrange screens and change what each shows. When the concept needs data or behaviour the app
+  lacks, list it for Jafar's decision before building; never build it silently.
 - Phase B work before Phase A is complete (Jafar, 2026-10-16).
 
 ## Still unclear
