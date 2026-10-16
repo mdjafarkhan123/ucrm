@@ -8,6 +8,8 @@
 		title,
 		icon,
 		count,
+		description,
+		flush = false,
 		actions: actionSnippet,
 		children
 	}: {
@@ -15,6 +17,10 @@
 		title: string;
 		icon?: string;
 		count?: number;
+		/** One quiet line under the title that stands in for the count, in the App look. */
+		description?: string;
+		/** App look: the body runs edge to edge under the header; see `RailCard`. */
+		flush?: boolean;
 		actions?: Snippet;
 		children: Snippet;
 	} = $props();
@@ -25,7 +31,7 @@
 		{@render children()}
 	</SectionBlock>
 {:else}
-	<RailCard {title} {icon} {count} actions={actionSnippet}>
+	<RailCard {title} {icon} {count} {description} {flush} actions={actionSnippet}>
 		{@render children()}
 	</RailCard>
 {/if}

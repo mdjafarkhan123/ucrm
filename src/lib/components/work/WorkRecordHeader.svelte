@@ -7,6 +7,7 @@
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import type { StatusTone } from './types';
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
+	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 
 	// The card at the top of every work record — request, quote, job, invoice. They all draw the same
 	// thing: what kind of record this is and where it stands, the one action that moves it forward, the
@@ -28,10 +29,14 @@
 
 	type PrimaryAction = {
 		label: string;
+		/** A Tabler icon (raw SVG) drawn before the label. */
+		icon?: string;
 		onclick?: (event: MouseEvent) => void;
 		href?: string;
 		disabled?: boolean;
 		loading?: boolean;
+		/** Tabler icon (`?raw`) drawn before the label. Omit for a text-only button. */
+		icon?: string;
 		/** Fires on hover, before the press. Start loading whatever the action opens. */
 		onhover?: () => void;
 	};
@@ -54,6 +59,9 @@
 		summary,
 		facts,
 		badges,
+		look = 'default',
+		meta = [],
+		track,
 		class: className = ''
 	}: {
 		/** Tabler icon for this kind of record, imported with `?raw`. */
@@ -86,6 +94,13 @@
 		/** Extra status context beside the main status badge, e.g. a quote's deposit readiness. Omit and
 		 * nothing extra is drawn — the shared header stays ignorant of what any one record type means. */
 		badges?: Snippet;
+		/** `app` draws the App look header from the approved design: the record's identifiers beside the
+		 *  status, a bordered "More" button, an icon on the main action, and room for a lifecycle track. */
+		look?: 'default' | 'app';
+		/** Short identifiers shown after the status in the App look, e.g. ["QUOTE #326", "Version 2"]. */
+		meta?: string[];
+		/** The record's place in the Request → Quote → Job → Invoice → Paid line. Normally `LifecycleTrack`. */
+		track?: Snippet;
 		class?: string;
 	} = $props();
 
@@ -99,11 +114,23 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<section class={`work-header ${className}`} aria-label="{recordType} summary">
+<section
+	class={`work-header ${className}`}
+	class:work-header--app={look === 'app'}
+	aria-label="{recordType} summary"
+>
 	<div class="work-header__top">
 		<span class="work-header__type" aria-hidden="true">{@html icon}</span>
 		<StatusBadge status={statusTone}>{statusLabel}</StatusBadge>
 		{#if badges}{@render badges()}{/if}
+		{#if meta.length > 0}
+			<p class="work-header__meta">
+				{#each meta as part, index (index)}
+					{#if index > 0}<span class="work-header__meta-dot" aria-hidden="true"></span>{/if}
+					<span class={{ 'work-header__meta-first': index === 0 }}>{part}</span>
+				{/each}
+			</p>
+		{/if}
 
 		<div class="work-header__actions">
 			{#if onHistory}
@@ -122,18 +149,38 @@
 			{#if primaryAction}
 				<Button
 					variant="primary"
-					size="small"
+					size={look === 'app' ? 'base' : 'small'}
 					href={primaryAction.href}
 					onclick={primaryAction.onclick}
 					disabled={primaryAction.disabled}
 					loading={primaryAction.loading}
 					onhover={primaryAction.onhover}
 				>
+					{#if primaryAction.icon}
+						<span class="work-header__action-icon" aria-hidden="true"
+							>{@html primaryAction.icon}</span
+						>
+					{/if}
 					{primaryAction.label}
 				</Button>
 			{/if}
 			{#if menuItems.length > 0}
-				<DropdownMenu items={menuItems} triggerLabel="More {recordType.toLowerCase()} actions" />
+				{#if look === 'app'}
+					<DropdownMenu
+						items={menuItems}
+						triggerLabel="More {recordType.toLowerCase()} actions"
+						triggerClass="work-header__more"
+					>
+						{#snippet trigger()}
+							More
+							<span class="work-header__more-chevron" aria-hidden="true"
+								>{@html chevronDownIcon}</span
+							>
+						{/snippet}
+					</DropdownMenu>
+				{:else}
+					<DropdownMenu items={menuItems} triggerLabel="More {recordType.toLowerCase()} actions" />
+				{/if}
 			{/if}
 		</div>
 	</div>
@@ -161,6 +208,7 @@
 			<div class="work-header__summary">
 				{#if summary}{@render summary()}{/if}
 			</div>
+			{#if track}<div class="work-header__track">{@render track()}</div>{/if}
 			<div class="work-header__facts">
 				{#if facts}{@render facts()}{/if}
 			</div>
@@ -213,6 +261,15 @@
 		}
 
 		// The history control is a lone icon on this card, so it keeps a border to read as a button.
+		&__action-icon {
+			display: inline-flex;
+
+			:global(svg) {
+				width: 18px;
+				height: 18px;
+			}
+		}
+
 		&__icon-button {
 			display: inline-flex;
 			box-sizing: border-box;
@@ -301,7 +358,11 @@
 			display: none;
 		}
 		.work-header__top {
-			gap: 10px;
+			flex-wrap: wrap;
+			gap: 8px 10px;
+		}
+		.work-header__actions :global(.button) {
+			white-space: nowrap;
 		}
 		.work-header__identity {
 			padding-top: 18px;
@@ -326,12 +387,103 @@
 			padding: 18px 0 22px;
 			border-top: var(--border-base) solid var(--color-border);
 		}
+		.work-header__actions :global(.button--primary) {
+			min-height: 40px;
+			padding-inline: 16px;
+		}
+		.work-header__action-icon :global(svg) {
+			display: block;
+			width: 18px;
+			height: 18px;
+		}
 		.work-header__icon-button {
 			width: 40px;
 			height: 40px;
 			border-color: var(--color-border);
 			color: var(--color-text--secondary);
 		}
+	}
+
+	// The App look's own parts. Only a header given `look="app"` carries them.
+	.work-header__meta {
+		display: inline-flex;
+		min-width: 0;
+		flex: 1 1 auto;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0 8px;
+		margin: 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 500;
+	}
+	.work-header__meta-first {
+		font-weight: 600;
+		letter-spacing: 0.6px;
+		text-transform: uppercase;
+	}
+	.work-header__meta-dot {
+		width: 3px;
+		height: 3px;
+		border-radius: 999px;
+		background: var(--color-icon--secondary);
+	}
+	.work-header__action-icon :global(svg) {
+		display: block;
+		width: 18px;
+		height: 18px;
+	}
+	:global(.work-header__more) {
+		display: inline-flex;
+		box-sizing: border-box;
+		height: 40px;
+		align-items: center;
+		gap: 6px;
+		padding: 0 14px;
+		border: var(--border-base) solid var(--color-border--interactive);
+		border-radius: var(--radius-base);
+		color: var(--color-heading);
+		background: var(--color-surface);
+		font: inherit;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all var(--timing-base) ease-out;
+
+		&:hover,
+		&[data-state='open'] {
+			background: var(--color-surface--hover);
+		}
+		&:focus-visible {
+			outline: transparent;
+			box-shadow: var(--shadow-focus);
+		}
+	}
+	.work-header__more-chevron :global(svg) {
+		display: block;
+		width: 16px;
+		height: 16px;
+		color: var(--color-text--secondary);
+	}
+	// A narrow column (a laptop, or a rail beside a long page) wraps the top row rather than squeezing it:
+	// the identifiers drop under the status and the actions keep their full size.
+	:global(.record-detail--cards) .work-header--app .work-header__top {
+		flex-wrap: wrap;
+		row-gap: 12px;
+	}
+	:global(.record-detail--cards) .work-header--app .work-header__actions {
+		flex: 0 1 auto;
+		flex-wrap: wrap;
+		max-width: 100%;
+		white-space: nowrap;
+	}
+	:global(.record-detail--cards) .work-header--app .work-header__top > :global(.status-badge) {
+		flex: 0 0 auto;
+	}
+	:global(.record-detail--cards) .work-header--app .work-header__track {
+		padding: 22px 0 20px;
+	}
+	:global(.record-detail--cards) .work-header--app .work-header__facts {
+		margin-top: 0;
 	}
 
 	@media (max-width: 767px) {

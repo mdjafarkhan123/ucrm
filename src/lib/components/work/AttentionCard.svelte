@@ -6,6 +6,8 @@
 		label: string;
 		/** One line under the count saying what the status means. */
 		hint: string;
+		/** A money figure drawn in bold before the hint ("$8,920 not sent yet"). Leave out to show the hint alone. */
+		amount?: string;
 		count: number;
 		tone: StatusTone;
 		/** Make the tile a link to another page instead of a list filter. Leave out to filter in place. */
@@ -14,12 +16,25 @@
 	export type AttentionFact = {
 		/** A Tabler icon (raw SVG). */
 		icon: string;
+		/** The bold part. Leave empty for a fact that is all plain words. */
 		value: string;
 		label: string;
+		/** Push this fact to the far end of the strip, away from the counted facts. */
+		align?: 'end';
+		/** Colour the icon, for a fact about something switched on. */
+		tone?: 'warning';
+	};
+	/** One slice of the proportion bar under the header; only the shares between slices matter. */
+	export type AttentionBarPart = {
+		key: string;
+		label: string;
+		share: number;
+		tone: StatusTone;
 	};
 </script>
 
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 
 	// The "Needs attention" card above a work list: the few statuses the office acts on, each as a tile
@@ -32,6 +47,9 @@
 		selectedKey = '',
 		onSelect,
 		facts = [],
+		footer,
+		summary,
+		bar = [],
 		loading = false
 	}: {
 		title?: string;
@@ -43,8 +61,20 @@
 		 *  again. Tiles that carry an `href` are links and never call it. */
 		onSelect?: (key: string) => void;
 		facts?: AttentionFact[];
+		/** Your own content for the strip under the tiles, in place of `facts` (the Clients page's tags). */
+		footer?: Snippet;
+		/** A headline figure at the end of the header, with a line under it. */
+		summary?: { value: string; label: string };
+		/** A thin proportion bar under the header, one slice per part with a share above zero. */
+		bar?: AttentionBarPart[];
 		loading?: boolean;
 	} = $props();
+
+	const barParts = $derived(bar.filter((part) => part.share > 0));
+	const barTotal = $derived(barParts.reduce((sum, part) => sum + part.share, 0) || 1);
+	const barLabel = $derived(
+		barParts.map((part) => `${part.label} ${Math.round((part.share / barTotal) * 100)}%`).join(', ')
+	);
 
 	const uid = $props.id();
 	const titleId = `${uid}-title`;
@@ -52,10 +82,28 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <section class="attention-card" aria-labelledby={titleId}>
-	<header class="attention-card__header">
-		<h2 id={titleId}>{title}</h2>
-		<p>{description}</p>
+	<header class={['attention-card__header', barParts.length > 0 && 'attention-card__header--barred']}>
+		<div class="attention-card__heading">
+			<h2 id={titleId}>{title}</h2>
+			<p>{description}</p>
+		</div>
+		{#if summary}
+			<div class="attention-card__summary">
+				<p class="attention-card__summary-value">{summary.value}</p>
+				<p class="attention-card__summary-label">{summary.label}</p>
+			</div>
+		{/if}
 	</header>
+	{#if barParts.length > 0}
+		<div class="attention-card__bar" role="img" aria-label={barLabel}>
+			{#each barParts as part (part.key)}
+				<span
+					class={['attention-card__bar-part', `attention-card__bar-part--${part.tone}`]}
+					style:flex-grow={part.share}
+				></span>
+			{/each}
+		</div>
+	{/if}
 	<ul class="attention-card__tiles" style:--attention-columns={tiles.length}>
 		{#each tiles as tile (tile.key)}
 			{@const selected = selectedKey === tile.key}
@@ -73,7 +121,7 @@
 					aria-pressed={tile.href ? undefined : selected}
 					aria-label={loading
 						? `${tile.label}: ${tile.hint}`
-						: `${tile.label}: ${tile.count}. ${tile.hint}`}
+						: `${tile.label}: ${tile.count}. ${tile.amount ? `${tile.amount} ` : ''}${tile.hint}`}
 					onclick={tile.href ? undefined : () => onSelect?.(selected ? '' : tile.key)}
 				>
 					<span class="attention-card__label">
@@ -83,18 +131,27 @@
 						<span class="attention-card__count">{loading ? '—' : tile.count}</span>
 						<span class="attention-card__arrow" aria-hidden="true">{@html arrowRightIcon}</span>
 					</span>
-					<span class="attention-card__hint">{tile.hint}</span>
+					<span class="attention-card__hint"
+						>{#if tile.amount && !loading}<strong>{tile.amount}</strong>{' '}{/if}{tile.hint}</span
+					>
 				</svelte:element>
 			</li>
 		{/each}
 	</ul>
-	{#if facts.length > 0}
-		<ul class="attention-card__facts">
-			{#each facts as fact (fact.label)}
-				<li>
+	{#if footer}
+		<div class="attention-card__strip">{@render footer()}</div>
+	{:else if facts.length > 0}
+		<ul class="attention-card__strip attention-card__facts">
+			{#each facts as fact (`${fact.value}|${fact.label}`)}
+				<li
+					class={[
+						fact.align === 'end' && 'attention-card__fact--end',
+						fact.tone && `attention-card__fact--${fact.tone}`
+					]}
+				>
 					<span class="attention-card__fact-icon" aria-hidden="true">{@html fact.icon}</span>
-					<strong>{fact.value}</strong>
-					<span>{fact.label}</span>
+					{#if fact.value}<strong>{fact.value}</strong>{/if}
+					{#if fact.label}<span>{fact.label}</span>{/if}
 				</li>
 			{/each}
 		</ul>
@@ -113,10 +170,21 @@
 		background: var(--color-surface);
 
 		&__header {
-			display: grid;
-			gap: 3px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: var(--space-base);
 			padding: var(--space-large) var(--space-large) var(--space-base);
 			border-bottom: var(--border-base) solid var(--color-border);
+
+			&--barred {
+				border-bottom: 0;
+			}
+		}
+		&__heading {
+			display: grid;
+			gap: 3px;
+			min-width: 0;
 
 			h2 {
 				color: var(--color-heading);
@@ -128,6 +196,53 @@
 				color: var(--color-text--secondary);
 				font-size: 13px;
 				font-weight: 500;
+			}
+		}
+
+		&__summary {
+			display: grid;
+			flex: 0 0 auto;
+			gap: 3px;
+			justify-items: end;
+			text-align: end;
+		}
+		&__summary-value {
+			color: var(--color-heading);
+			font-size: 20px;
+			font-variant-numeric: tabular-nums;
+			font-weight: 700;
+			letter-spacing: -0.4px;
+		}
+		&__summary-label {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+		}
+
+		&__bar {
+			display: flex;
+			gap: 4px;
+			height: 26px;
+			padding: 0 var(--space-large) 18px;
+			border-bottom: var(--border-base) solid var(--color-border);
+		}
+		&__bar-part {
+			flex: 1 1 0;
+			min-width: 8px;
+			border-radius: 4px;
+			background: var(--color-icon--secondary);
+
+			&--warning {
+				background: var(--color-warning);
+			}
+			&--success {
+				background: var(--color-success);
+			}
+			&--critical {
+				background: var(--color-critical);
+			}
+			&--informative {
+				background: var(--color-informative);
 			}
 		}
 
@@ -269,9 +384,15 @@
 			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 			line-height: 1.25;
+
+			strong {
+				color: var(--color-heading);
+				font-variant-numeric: tabular-nums;
+				font-weight: 700;
+			}
 		}
 
-		&__facts {
+		&__strip {
 			display: flex;
 			flex-wrap: wrap;
 			align-items: center;
@@ -281,7 +402,8 @@
 			border-top: var(--border-base) solid var(--color-border);
 			background: var(--color-surface--background--subtle);
 			list-style: none;
-
+		}
+		&__facts {
 			li {
 				display: flex;
 				align-items: center;
@@ -294,6 +416,12 @@
 				color: var(--color-heading);
 				font-weight: 700;
 			}
+		}
+		&__fact--end {
+			margin-inline-start: auto;
+		}
+		&__fact--warning &__fact-icon {
+			color: var(--color-warning--onSurface);
 		}
 		&__fact-icon {
 			display: inline-flex;

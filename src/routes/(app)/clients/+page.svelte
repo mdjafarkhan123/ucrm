@@ -27,9 +27,14 @@
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import AttentionCard, { type AttentionTile } from '$lib/components/work/AttentionCard.svelte';
+	import MoneyFeatureCard from '$lib/components/work/MoneyFeatureCard.svelte';
+	import { newClientsChange, periodLabel } from '$lib/clients/overview';
 	import {
 		fetchClients,
 		fetchClient,
+		fetchClientOverview,
+		clientOverviewKey,
 		setClientsArchived,
 		clientDetailKey,
 		clientsListKey,
@@ -110,6 +115,48 @@
 		getNextPageParam: (lastPage: ClientListPage) => lastPage.next_cursor ?? undefined
 	}));
 	const tagsQuery = createQuery(() => ({ queryKey: tagsKey, queryFn: fetchTags }));
+	// The two cards above the list. A 403 never changes on retry, so it is not retried.
+	const overviewQuery = createQuery(() => ({
+		queryKey: clientOverviewKey,
+		queryFn: fetchClientOverview,
+		retry: (count: number, error: Error) =>
+			(error as ClientReadError).status !== 403 && count < 2
+	}));
+	const overview = $derived(overviewQuery.data);
+
+	// The Client book: the three statuses as tiles, each one picking that Status filter below (picking it
+	// again clears it), with the most used tags in the strip under them.
+	const bookTiles = $derived<AttentionTile[]>([
+		{
+			key: 'lead',
+			label: 'Leads',
+			hint: 'Interested, not a customer yet',
+			count: overview?.counts.lead ?? 0,
+			tone: 'warning'
+		},
+		{
+			key: 'customer',
+			label: 'Customers',
+			hint: 'People and companies you work for',
+			count: overview?.counts.customer ?? 0,
+			tone: 'success'
+		},
+		{
+			key: 'archived',
+			label: 'Archived',
+			hint: 'Kept for history, off your working list',
+			count: overview?.counts.archived ?? 0,
+			tone: 'inactive'
+		}
+	]);
+	const newClientsTrend = $derived(
+		overview ? newClientsChange(overview.new_clients.current, overview.new_clients.previous) : null
+	);
+	const newClientsNote = $derived(
+		overview
+			? `Became customers, ${periodLabel(overview.new_clients.period.from, overview.new_clients.period.to)}`
+			: 'Loading…'
+	);
 
 	const clients = $derived(clientsQuery.data?.pages.flatMap((page) => page.clients) ?? []);
 	// The server answers whether this member may archive; the page never guesses from a role.
@@ -348,6 +395,62 @@
 				description="Clients on your assigned visits open from the Schedule and your Jobs. Ask an owner or admin if you need the full client list."
 			/>
 		{:else}
+			<div class="clients-overview">
+				<AttentionCard
+					title="Client book"
+					description="Leads and customers you work with. Pick one to see only those clients."
+					tiles={bookTiles}
+					selectedKey={status}
+					onSelect={setStatus}
+					loading={overviewQuery.isPending}
+				>
+					{#snippet footer()}
+						<span class="clients-tags__label">Popular tags</span>
+						{#if overviewQuery.isPending}
+							<span class="clients-tags__empty">Loading…</span>
+						{:else if !overview || overview.popular_tags.length === 0}
+							<span class="clients-tags__empty">No tags on clients yet</span>
+						{:else}
+							<ul class="clients-tags">
+								{#each overview.popular_tags as tag (tag.id)}
+									<li>
+										<button
+											type="button"
+											class={['clients-tags__chip', tagId === tag.id && 'clients-tags__chip--selected']}
+											aria-pressed={tagId === tag.id}
+											aria-label={`${tag.name}: ${tag.total} clients`}
+											onclick={() => setTag(tagId === tag.id ? '' : tag.id)}
+										>
+											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+											<span class="clients-tags__icon" aria-hidden="true">{@html tagIcon}</span>
+											<span class="clients-tags__name">{tag.name}</span>
+											<span class="clients-tags__count">{tag.total}</span>
+										</button>
+									</li>
+								{/each}
+							</ul>
+						{/if}
+					{/snippet}
+				</AttentionCard>
+				<MoneyFeatureCard
+					eyebrow="New clients · past 30 days"
+					value={overview ? String(overview.new_clients.current) : '—'}
+					change={newClientsTrend}
+					note={newClientsNote}
+					rows={[
+						{
+							label: 'New leads · past 30 days',
+							value: overview ? String(overview.new_leads_30_days) : '—'
+						},
+						{
+							label: 'New clients this year',
+							value: overview ? String(overview.new_clients_this_year) : '—'
+						}
+					]}
+					loading={overviewQuery.isPending}
+				/>
+			</div>
+
 			{#if selectedIds.size > 0}
 				<div class="clients-bulk-bar">
 					<span>{selectedIds.size} selected</span>
@@ -611,6 +714,81 @@
 			display: block;
 			width: 18px;
 			height: 18px;
+		}
+	}
+
+	/* The Client book takes the room it needs; the New clients card keeps a steady width beside it. */
+	.clients-overview {
+		display: grid;
+		gap: var(--space-large);
+		grid-template-columns: minmax(0, 1fr) 336px;
+		margin-bottom: var(--space-large);
+	}
+
+	.clients-tags__label,
+	.clients-tags__empty {
+		color: var(--color-text--secondary);
+		font-size: 13px;
+		font-weight: 500;
+	}
+	.clients-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-small);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.clients-tags__chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 3px 10px;
+		border: var(--border-base) solid var(--color-border--interactive);
+		border-radius: 999px;
+		color: var(--color-text);
+		background: var(--color-surface);
+		font: inherit;
+		font-size: var(--typography--fontSize-small);
+		cursor: pointer;
+		transition:
+			background-color var(--timing-quick),
+			border-color var(--timing-quick);
+
+		&:hover {
+			background: var(--color-surface--hover);
+		}
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
+		&--selected {
+			border-color: var(--color-interactive);
+			box-shadow: inset 0 0 0 1px var(--color-interactive);
+		}
+	}
+	.clients-tags__icon {
+		display: inline-flex;
+		color: var(--color-icon--secondary);
+
+		:global(svg) {
+			display: block;
+			width: 12px;
+			height: 12px;
+		}
+	}
+	.clients-tags__name {
+		font-weight: 600;
+	}
+	.clients-tags__count {
+		color: var(--color-text--secondary);
+		font-weight: 500;
+		font-variant-numeric: tabular-nums;
+	}
+
+	@media (max-width: 1199px) {
+		.clients-overview {
+			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 

@@ -172,7 +172,11 @@
 
 {#if !accessDenied}
 	<div role="presentation" onmouseenter={() => (warm = true)} onfocusin={() => (warm = true)}>
-		<RailCard title="Automatic follow-up" icon={robotIcon}>
+		<RailCard
+			title="Automatic follow-up"
+			icon={robotIcon}
+			class={enrollments.length > 0 && warm && !query.isPending ? 'inquiry-automation__feature' : ''}
+		>
 			{#if !warm || query.isPending}
 				<LoadingSkeleton variant="table" rows={2} label="Loading automatic follow-up" />
 			{:else if query.isError}
@@ -302,6 +306,42 @@
 			margin: 0;
 			color: var(--color-warning--onSurface);
 			font-size: var(--typography--fontSize-small);
+		}
+	}
+
+	// App look: a live follow-up is the dark feature card in the rail. Re-pointing the text tokens inside it
+	// keeps every line readable in light and dark without a second set of colours.
+	:global(.record-detail--cards) :global(.inquiry-automation__feature) {
+		--color-heading: var(--color-white);
+		--color-text: var(--color-white);
+		--color-text--secondary: var(--color-base-blue--300);
+		--color-border: color-mix(in srgb, var(--color-white) 16%, transparent);
+		--color-icon--secondary: var(--color-base-blue--300);
+		--color-icon: var(--color-white);
+		--color-surface--hover: color-mix(in srgb, var(--color-white) 12%, transparent);
+		--color-surface--active: color-mix(in srgb, var(--color-white) 18%, transparent);
+
+		padding: 24px;
+		border-color: transparent;
+		background: var(--color-base-blue--900);
+
+		:global(.rail-card__title) {
+			color: var(--color-base-blue--300);
+			font-size: 11px;
+			font-weight: 700;
+			letter-spacing: 0.8px;
+			text-transform: uppercase;
+		}
+
+		.inquiry-automation__name {
+			overflow: visible;
+			font-size: 20px;
+			font-weight: 700;
+			letter-spacing: -0.3px;
+			white-space: normal;
+		}
+		.inquiry-automation__row {
+			border-bottom-color: var(--color-border);
 		}
 	}
 </style>

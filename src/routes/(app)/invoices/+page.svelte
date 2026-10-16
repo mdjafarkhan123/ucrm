@@ -19,7 +19,13 @@
 	import ListLoadMore from '$lib/components/data-display/ListLoadMore.svelte';
 	import RecordListCard from '$lib/components/data-display/RecordListCard.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
-	import AttentionCard, { type AttentionTile } from '$lib/components/work/AttentionCard.svelte';
+	import AttentionCard, {
+		type AttentionFact,
+		type AttentionTile
+	} from '$lib/components/work/AttentionCard.svelte';
+	import { averagePaidFact, invoiceRowNote, overdueReminderFact } from '$lib/invoices/list-facts';
+	import hourglassIcon from '@tabler/icons/outline/hourglass.svg?raw';
+	import boltIcon from '@tabler/icons/outline/bolt.svg?raw';
 	import MoneyFeatureCard, {
 		type MoneyBreakdownPart
 	} from '$lib/components/work/MoneyFeatureCard.svelte';
@@ -161,15 +167,15 @@
 	// below to it; picking it again, or choosing another status there, clears it.
 	const attentionTiles = $derived<AttentionTile[]>(
 		INVOICE_OVERVIEW_STATUSES.map((key) => {
+			// With money the amount is drawn in bold before the words ("$8,940 still owed").
 			let hint: string;
+			let amount: string | undefined;
 			if (key === 'past_due') {
-				hint =
-					overdueMinor === null ? 'Past the due date' : `${formatWhole(overdueMinor)} still owed`;
+				amount = overdueMinor === null ? undefined : formatWhole(overdueMinor);
+				hint = overdueMinor === null ? 'Past the due date' : 'still owed';
 			} else if (key === 'awaiting_payment') {
-				hint =
-					notDueMinor === null
-						? 'Sent, not due yet'
-						: `${formatWhole(notDueMinor)} owed, not due yet`;
+				amount = notDueMinor === null ? undefined : formatWhole(notDueMinor);
+				hint = notDueMinor === null ? 'Sent, not due yet' : 'owed, not due yet';
 			} else if (key === 'draft') {
 				hint = 'Not sent yet';
 			} else {
@@ -179,6 +185,7 @@
 				key,
 				label: INVOICE_STATUS_LABELS[key],
 				hint,
+				amount,
 				count: countsQuery.data?.counts[key] ?? 0,
 				tone: INVOICE_STATUS_TONES[key]
 			};
@@ -187,6 +194,23 @@
 	const selectedTile = $derived(
 		(INVOICE_OVERVIEW_STATUSES as readonly string[]).includes(status) ? status : ''
 	);
+
+	// The strip under the tiles: how long bills take to get paid, and whether overdue reminders go out.
+	const gettingPaidFacts = $derived.by<AttentionFact[]>(() => {
+		const facts = countsQuery.data?.facts;
+		if (!facts) return [];
+		const average = averagePaidFact(facts);
+		const reminders = overdueReminderFact(facts);
+		return [
+			{ icon: hourglassIcon, value: average.value, label: average.label },
+			{
+				icon: boltIcon,
+				value: reminders.value,
+				label: reminders.label,
+				tone: facts.overdue_reminders_on ? 'warning' : undefined
+			}
+		];
+	});
 
 	const openCount = $derived(
 		(countsQuery.data?.counts.awaiting_payment ?? 0) + (countsQuery.data?.counts.past_due ?? 0)
@@ -364,6 +388,7 @@
 				tiles={attentionTiles}
 				selectedKey={selectedTile}
 				onSelect={(key) => (status = key as InvoiceDerivedStatus | '')}
+				facts={gettingPaidFacts}
 				loading={countsQuery.isPending}
 			/>
 			<MoneyFeatureCard
@@ -438,6 +463,7 @@
 				>
 					{#snippet row(invoice: InvoiceListItem)}
 						{@const note = dueNote(invoice)}
+						{@const rowNote = invoiceRowNote({ ...invoice, part_paid: isPartPaid(invoice) })}
 						<th scope="row">
 							<div class="invoices-table__client">
 								<Avatar
@@ -459,7 +485,9 @@
 							<div class="invoices-table__meta">
 								#{invoice.invoice_number}
 								{#if invoice.is_replaced}<span class="invoices-table__replaced">Replaced</span>{/if}
-								{#if isPartPaid(invoice)}<span>· Part paid</span>{/if}
+								{#if rowNote}<span>·</span>
+									<span class={[rowNote.unopened && 'invoices-table__unopened']}>{rowNote.text}</span>
+								{/if}
 							</div>
 						</td>
 						<td class="invoices-table__date">{dateFormat.format(new Date(invoice.created_at))}</td>
@@ -599,6 +627,11 @@
 		&--late {
 			color: var(--color-critical);
 		}
+	}
+	/* Sent and still owed, and the client has not opened it: worth chasing. */
+	.invoices-table__unopened {
+		color: var(--color-critical);
+		font-weight: 600;
 	}
 	/* A superseded bill: its correction or rebill is the live one. A quiet mark, not a status badge. */
 	.invoices-table__replaced {

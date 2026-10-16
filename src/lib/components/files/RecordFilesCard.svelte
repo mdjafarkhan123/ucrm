@@ -52,6 +52,8 @@
 		canManage = true,
 		title = 'Files',
 		surface = 'rail',
+		compact = false,
+		summary = false,
 		onChange
 	}: {
 		entityType: FileEntityType;
@@ -64,6 +66,11 @@
 		canManage?: boolean;
 		title?: string;
 		surface?: 'rail' | 'section';
+		/** App look: six photos in a grid with a "+N" tile, a quiet count under the title, and an icon-only
+		 *  add button. Meant for the rail of a record page drawn with `RecordDetailLayout cards`. */
+		compact?: boolean;
+		/** App look: say how many photos and files there are under the title instead of a count beside it. */
+		summary?: boolean;
 		/** Fires after a file is attached to or removed from this record, once the list has refreshed. */
 		onChange?: () => void;
 	} = $props();
@@ -112,6 +119,10 @@
 
 	const photos = $derived(files.filter((file) => file.kind === 'image'));
 	const documents = $derived(files.filter((file) => file.kind !== 'image'));
+	const PHOTO_TILES = 6;
+	const shownPhotos = $derived(compact ? photos.slice(0, PHOTO_TILES) : photos);
+	const hiddenPhotoCount = $derived(compact ? Math.max(0, photos.length - PHOTO_TILES) : 0);
+	const addedFormat = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
 
 	let pickerOpen = $state(false);
 	let removing = $state<FileListItem | null>(null);
@@ -197,6 +208,15 @@
 		}))
 	);
 
+	const summaryLine = $derived(
+		[
+			photos.length > 0 ? `${photos.length} ${photos.length === 1 ? 'photo' : 'photos'}` : '',
+			documents.length > 0 ? `${documents.length} ${documents.length === 1 ? 'file' : 'files'}` : ''
+		]
+			.filter(Boolean)
+			.join(' · ')
+	);
+
 	function openLightbox(file: FileListItem) {
 		const position = photos.findIndex((entry) => entry.id === file.id);
 		if (position === -1) return;
@@ -211,12 +231,31 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<AttachmentSurface {surface} {title} icon={paperclipIcon} count={files.length}>
+<AttachmentSurface
+	{surface}
+	{title}
+	icon={paperclipIcon}
+	count={compact || summary ? undefined : files.length}
+	description={(compact || summary) && files.length > 0 ? summaryLine : undefined}
+	flush={compact}
+>
 	{#snippet actions()}
 		{#if canManage}
-			<Button size="small" variant="secondary" onclick={() => (pickerOpen = true)}>
-				<span class="record-files__button-icon" aria-hidden="true">{@html plusIcon}</span>Add
-			</Button>
+			{#if compact}
+				<button
+					type="button"
+					class="record-files__add"
+					aria-label="Add files"
+					title="Add files"
+					onclick={() => (pickerOpen = true)}
+				>
+					{@html plusIcon}
+				</button>
+			{:else}
+				<Button size="small" variant="secondary" onclick={() => (pickerOpen = true)}>
+					<span class="record-files__button-icon" aria-hidden="true">{@html plusIcon}</span>Add
+				</Button>
+			{/if}
 		{/if}
 	{/snippet}
 
@@ -251,7 +290,7 @@
 	{:else}
 		{#if photos.length > 0}
 			<ul class="record-files__photos">
-				{#each photos as file (file.id)}
+				{#each shownPhotos as file, position (file.id)}
 					<li class="record-files__photo">
 						<button
 							type="button"
@@ -268,6 +307,11 @@
 								hasThumbnail={file.has_thumbnail}
 								signedSrc={file.thumb_url}
 							/>
+							{#if hiddenPhotoCount > 0 && position === shownPhotos.length - 1}
+								<span class="record-files__more" aria-label={`${hiddenPhotoCount} more photos`}>
+									+{hiddenPhotoCount}
+								</span>
+							{/if}
 						</button>
 						{#if offersDescribe}
 							<button
@@ -316,7 +360,13 @@
 						<div class="record-files__item-body">
 							<span class="record-files__item-name">{file.display_name}</span>
 							<span class="record-files__item-meta">
-								{formatFileSize(file.size_bytes)}
+								{#if compact}{file.mime_type === 'application/pdf'
+										? 'PDF'
+										: file.kind} ·
+								{/if}{formatFileSize(file.size_bytes)}
+								{#if compact}
+									· added {addedFormat.format(new Date(file.created_at))}
+								{/if}
 								{#if file.usage_count > 1}
 									· Used in {file.usage_count} places
 								{/if}
@@ -581,6 +631,103 @@
 		&__item-meta {
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-smaller);
+		}
+	}
+
+	// App look: the card is flush, so each part sets its own side padding. Photos sit in a three-column grid,
+	// documents are rows under a hairline, and the add button is a small square with just a plus.
+	.record-files__add {
+		display: inline-grid;
+		width: 32px;
+		height: 32px;
+		padding: 0;
+		place-items: center;
+		border: var(--border-base) solid var(--color-border--interactive);
+		border-radius: var(--radius-base);
+		color: var(--color-text--secondary);
+		background: var(--color-surface);
+		cursor: pointer;
+		transition: all var(--timing-base) ease-out;
+
+		:global(svg) {
+			display: block;
+			width: 15px;
+			height: 15px;
+		}
+
+		&:hover {
+			border-color: var(--color-interactive--subtle--hover);
+			color: var(--color-interactive--subtle--hover);
+			background: var(--color-surface--hover);
+		}
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
+	}
+
+	.record-files__more {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		color: var(--color-white);
+		background: color-mix(in srgb, var(--color-base-blue--900) 62%, transparent);
+		font-size: 18px;
+		font-weight: 700;
+	}
+
+	:global(.record-detail--cards .rail-card--flush) {
+		.record-files__notice,
+		.record-files__waiting,
+		.record-files__muted {
+			margin: 0 20px 14px;
+		}
+		.record-files__empty {
+			margin: 0 20px 18px;
+		}
+		.record-files__photos {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 8px;
+			padding: 0 20px 16px;
+		}
+		.record-files__photo {
+			aspect-ratio: auto;
+			height: 92px;
+		}
+		.record-files__photo-open {
+			position: relative;
+		}
+		.record-files__list {
+			gap: 0;
+		}
+		.record-files__item {
+			padding: 12px 20px;
+			border: 0;
+			border-top: var(--border-base) solid var(--color-border);
+			border-radius: 0;
+		}
+		.record-files__item-name {
+			font-size: 13px;
+		}
+		.record-files__item-meta {
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+		}
+	}
+
+	// App look: an empty card is one quiet line, not a dashed box.
+	:global(.record-detail--cards) .record-files__empty {
+		flex-direction: row;
+		justify-content: flex-start;
+		padding: 0;
+		border: 0;
+		text-align: left;
+
+		:global(svg) {
+			width: 18px;
+			height: 18px;
+			flex: 0 0 auto;
 		}
 	}
 

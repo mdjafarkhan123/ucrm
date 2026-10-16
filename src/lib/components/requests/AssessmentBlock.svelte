@@ -25,6 +25,7 @@
 	import { fetchMyTimer, myTimerKey } from '$lib/time-clock/api';
 	import truckIcon from '@tabler/icons/outline/truck.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
+	import calendarIcon from '@tabler/icons/outline/calendar-question.svg?raw';
 
 	// The on-site assessment, the way Jobber does it: an empty card inviting you to book the visit, which
 	// opens into a panel on the page itself rather than a dialog. The panel owns its own Save, because an
@@ -291,6 +292,22 @@
 
 	const isComplete = $derived(Boolean(assessment?.completed_at));
 
+	// The date tile beside a booked visit: weekday over day of the month, in the office's own clock.
+	const tileWeekday = $derived(
+		assessment?.starts_at
+			? new Intl.DateTimeFormat('en-GB', { timeZone: timezone, weekday: 'short' })
+					.format(new Date(assessment.starts_at))
+					.toUpperCase()
+			: ''
+	);
+	const tileDay = $derived(
+		assessment?.starts_at
+			? new Intl.DateTimeFormat('en-GB', { timeZone: timezone, day: 'numeric' }).format(
+					new Date(assessment.starts_at)
+				)
+			: ''
+	);
+
 	// The person's own Start and Stop (plan § Assessment timers): offered only on the day the visit is booked,
 	// as Jobber does, and on an Assessment not yet complete. A timer already running here always shows, so it
 	// can be stopped. The timer query is the one shared by every Start control and the header.
@@ -323,7 +340,13 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<SectionBlock title="On-site assessment" icon={truckIcon} level={2} form={editing}>
+<SectionBlock
+	title="On-site assessment"
+	icon={truckIcon}
+	level={2}
+	form={editing && draft}
+	hint={draft ? undefined : 'Visit the property before you price the work'}
+>
 	{#snippet actions()}
 		{#if assessment && !editing}
 			<PencilButton onclick={openPanel} label="Edit the on-site assessment" />
@@ -442,45 +465,64 @@
 		</EmptyState>
 	{:else}
 		<div class="assessment__booked">
-			<p class="assessment__when">
-				{scheduleLine}
-				{#if isComplete}<Badge size="small" status="success">Done</Badge>{/if}
-			</p>
+			<div class="assessment__visit">
+				<span
+					class="assessment__tile"
+					class:assessment__tile--open={!assessment.starts_at}
+					aria-hidden="true"
+				>
+					{#if assessment.starts_at}
+						<span class="assessment__tile-weekday">{tileWeekday}</span>
+						<span class="assessment__tile-day">{tileDay}</span>
+					{:else}
+						<span class="assessment__tile-icon">{@html calendarIcon}</span>
+					{/if}
+				</span>
 
-			{#if assessment.instructions}
-				<p class="assessment__instructions">{assessment.instructions}</p>
-			{/if}
+				<div class="assessment__info">
+					<p class="assessment__when">
+						{scheduleLine}
+						{#if isComplete}<Badge size="small" status="success">Done</Badge>{/if}
+					</p>
 
-			<p class="assessment__assigned">
-				<span class="assessment__assigned-icon" aria-hidden="true">{@html usersIcon}</span>
-				{#if assignedNames.length > 0}
-					{assignedNames.join(', ')}
-				{:else}
-					Nobody assigned yet
-				{/if}
-			</p>
+					{#if assessment.instructions}
+						<p class="assessment__instructions">{assessment.instructions}</p>
+					{/if}
 
-			{#if showsTimer && assessment}
-				<div class="assessment__timer">
-					<WorkTimerControl
-						target={{ kind: 'assessment', assessmentId: assessment.id }}
-						completed={isComplete || !isToday}
-					/>
+					<p class="assessment__assigned">
+						<span class="assessment__assigned-icon" aria-hidden="true">{@html usersIcon}</span>
+						{#if assignedNames.length > 0}
+							{assignedNames.join(', ')}
+						{:else}
+							Nobody assigned yet
+						{/if}
+					</p>
 				</div>
-			{/if}
 
-			<Checkbox
-				id="assessment-complete"
-				label="Assessment complete"
-				description="Tick this once the visit has happened and you know what the work involves."
-				checked={isComplete}
-				disabled={saving}
-				onchange={(checked) => void onComplete?.(checked)}
-			/>
+				{#if showsTimer && assessment}
+					<div class="assessment__timer">
+						<WorkTimerControl
+							target={{ kind: 'assessment', assessmentId: assessment.id }}
+							completed={isComplete || !isToday}
+						/>
+					</div>
+				{/if}
+			</div>
 
-			{#if error}
-				<p class="assessment__error" role="alert">{error}</p>
-			{/if}
+			<div class="assessment__complete">
+				<Checkbox
+					id="assessment-complete"
+					label="Assessment complete"
+					description="Tick this once the visit has happened and you know what the work involves."
+					checked={isComplete}
+					disabled={saving}
+					onchange={(checked) => void onComplete?.(checked)}
+				/>
+
+				{#if error}
+					<p class="assessment__error" role="alert">{error}</p>
+				{/if}
+			</div>
 		</div>
 	{/if}
 </SectionBlock>
@@ -530,19 +572,76 @@
 			list-style: none;
 		}
 
-		&__booked {
+		// The booked visit: a tinted strip with the date tile, what and who, and the timer at the far end,
+		// then a footer strip for ticking the visit complete. Both run edge to edge inside the card.
+		// Doubled class: the card's own rule gives its children side margins, and this one has to win it.
+		&__booked.assessment__booked {
 			display: flex;
 			flex-direction: column;
-			gap: var(--space-base);
+			margin: 0;
+		}
+
+		&__visit {
+			display: flex;
+			align-items: center;
+			gap: 16px;
+			padding: 18px 24px;
+			border-top: var(--border-base) solid var(--color-border);
+			background: var(--color-surface--background--subtle);
+		}
+
+		&__tile {
+			display: flex;
+			flex: 0 0 auto;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			width: 52px;
+			height: 56px;
+			border-radius: var(--radius-base);
+			color: var(--color-white);
+			background: var(--color-interactive);
+			line-height: 1;
+
+			&--open {
+				border: var(--border-base) solid var(--color-border);
+				color: var(--color-icon--secondary);
+				background: var(--color-surface);
+			}
+		}
+		&__tile-weekday {
+			font-size: 11px;
+			font-weight: 600;
+			letter-spacing: 0.6px;
+		}
+		&__tile-day {
+			margin-top: 3px;
+			font-size: 22px;
+			font-weight: 700;
+			letter-spacing: -0.4px;
+		}
+		&__tile-icon :global(svg) {
+			display: block;
+			width: 22px;
+			height: 22px;
+		}
+
+		&__info {
+			display: flex;
+			flex: 1 1 auto;
+			min-width: 0;
+			flex-direction: column;
+			gap: 4px;
 		}
 
 		&__when {
 			display: flex;
+			flex-wrap: wrap;
 			align-items: center;
 			gap: var(--space-small);
 			margin: 0;
 			color: var(--color-heading);
-			font-size: var(--typography--fontSize-large);
+			font-size: 15px;
 			font-weight: 600;
 		}
 
@@ -554,23 +653,34 @@
 
 		&__timer {
 			display: flex;
+			flex: 0 0 auto;
 			flex-wrap: wrap;
 			align-items: center;
 			gap: var(--space-small);
 		}
 
+		&__complete {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-small);
+			padding: 16px 24px 18px;
+			border-top: var(--border-base) solid var(--color-border);
+		}
+
 		&__assigned {
 			display: flex;
 			align-items: center;
-			gap: var(--space-small);
+			gap: 6px;
 			margin: 0;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
 		}
 
 		&__assigned-icon :global(svg) {
-			width: 18px;
-			height: 18px;
+			display: block;
+			width: 15px;
+			height: 15px;
 			color: var(--color-icon--secondary);
 		}
 

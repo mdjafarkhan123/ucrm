@@ -20532,6 +20532,31 @@ export type Database = {
 				Args: { p_primary_client_id: string; p_secondary_client_id: string };
 				Returns: Json;
 			};
+			client_overview_counts: {
+				Args: {
+					current_since: string;
+					previous_since: string;
+					target_organization_id: string;
+					year_since: string;
+				};
+				Returns: {
+					archived: number;
+					customers: number;
+					leads: number;
+					new_clients_current: number;
+					new_clients_previous: number;
+					new_clients_year: number;
+					new_leads_current: number;
+				}[];
+			};
+			client_popular_tags: {
+				Args: { tag_limit?: number; target_organization_id: string };
+				Returns: {
+					name: string;
+					tag_id: string;
+					total: number;
+				}[];
+			};
 			client_save_setup_preview_note: {
 				Args: {
 					new_choice: string;
@@ -24779,6 +24804,10 @@ export type Database = {
 				Args: { target_invoice_id: string; target_organization_id: string };
 				Returns: Json;
 			};
+			invoice_list_facts: {
+				Args: { target_organization_id: string };
+				Returns: Json;
+			};
 			invoice_list_page: {
 				Args: {
 					client_id_filter?: string;
@@ -24812,6 +24841,14 @@ export type Database = {
 				}[];
 			};
 			invoice_money: { Args: { target_invoice_ids: string[] }; Returns: Json };
+			invoice_list_views: {
+				Args: { target_invoice_ids: string[]; target_organization_id: string };
+				Returns: {
+					emailed: boolean;
+					invoice_id: string;
+					view_count: number;
+				}[];
+			};
 			invoice_money_overview: {
 				Args: { target_organization_id: string };
 				Returns: Json;
@@ -26968,6 +27005,20 @@ export type Database = {
 				Returns: Json;
 			};
 			quote_line_money: { Args: { target_version_id: string }; Returns: Json };
+			quote_list_activity: {
+				Args: { target_organization_id: string; target_quote_ids: string[] };
+				Returns: {
+					changes_requested_at: string;
+					job_id: string;
+					job_number: number;
+					quote_id: string;
+					view_count: number;
+				}[];
+			};
+			quote_list_overview: {
+				Args: { target_organization_id: string };
+				Returns: Json;
+			};
 			quote_online_deposit_context: {
 				Args: { supplied_token_hash: string };
 				Returns: Json;

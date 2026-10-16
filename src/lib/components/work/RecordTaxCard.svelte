@@ -2,7 +2,10 @@
 	import { untrack } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
+	import RecordAdjustmentRow from './RecordAdjustmentRow.svelte';
+	import RailRow from '$lib/components/layout/RailRow.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
@@ -12,6 +15,7 @@
 	import type { QuoteTaxSource, QuoteWriteError } from '$lib/quotes/api';
 	import { fetchTaxPicker, taxPickerKey } from '$lib/settings/api';
 	import taxIcon from '@tabler/icons/outline/receipt-tax.svg?raw';
+	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 
 	// Five ways a priced record's tax can be set: follow the Business default, follow this property's own
 	// pin, freeze one saved rate, freeze a one-off custom rate, or say explicitly there is no tax. Whichever
@@ -36,6 +40,7 @@
 		recordNoun = 'quote',
 		staged = false,
 		unsetHint = 'Required before sending this quote.',
+		embedded = false,
 		onSave,
 		onSaved
 	}: {
@@ -60,6 +65,9 @@
 		staged?: boolean;
 		/** Why an unset tax matters here. A quote cannot be sent without one; a job simply is not taxed yet. */
 		unsetHint?: string;
+		/** Draws one row for a shared "Discount and tax" card instead of a card of its own. `true` ends the row
+		 *  in an "Add"/"Edit" word (Invoice details); `'pencil'` ends it in a pencil button (Quote details). */
+		embedded?: boolean | 'pencil';
 		/** Writes the tax choice against the revision it is handed. */
 		onSave: (revision: number, payload: TaxPayload) => Promise<unknown>;
 		onSaved: (result: unknown) => Promise<void> | void;
@@ -233,42 +241,90 @@
 	}
 </script>
 
-<RailCard title="Tax" icon={taxIcon}>
-	{#snippet actions()}
-		{#if editable && canSeePrice && configured}
-			<Button variant="tertiary" size="small" onclick={openDialog} onhover={warm}>Edit</Button>
-		{/if}
-	{/snippet}
-
-	{#if !canSeePrice}
-		<p class="record-tax__muted">You do not have access to these prices.</p>
-	{:else if taxSource === 'not_configured'}
-		<div class="record-tax__unset">
-			<Badge status="warning" dot={false}>Not configured</Badge>
-			{#if editable}
-				<p class="record-tax__hint">{unsetHint}</p>
+{#if embedded === 'pencil'}
+	<RailRow
+		icon={receiptIcon}
+		label="Tax"
+		tone={taxSource === 'not_configured' && canSeePrice ? 'warning' : 'neutral'}
+		value={!canSeePrice
+			? 'No access to prices'
+			: taxSource === 'not_configured'
+				? 'Not configured'
+				: taxSource === 'no_tax'
+					? 'No tax'
+					: `${name || 'Tax'} ${rateText}${taxMinor !== null ? ` · ${money.format(taxMinor / 100)}` : ''}`}
+	>
+		{#snippet actions()}
+			{#if editable && canSeePrice}
+				<PencilButton
+					onclick={openDialog}
+					onhover={warm}
+					label={taxSource === 'not_configured' ? 'Set the tax' : 'Edit the tax'}
+				/>
 			{/if}
-		</div>
-		{#if editable}
-			<Button variant="secondary" variation="subtle" fullWidth onclick={openDialog} onhover={warm}>
-				Set tax
-			</Button>
-		{/if}
-	{:else if taxSource === 'no_tax'}
-		<p class="record-tax__name">No tax</p>
-	{:else}
-		<div class="record-tax__set">
-			<p class="record-tax__name">{name || 'Tax'}</p>
-			<p class="record-tax__value">
-				{rateText}
-				{#if taxMinor !== null}
-					<span class="record-tax__amount">{money.format(taxMinor / 100)}</span>
+		{/snippet}
+	</RailRow>
+{:else if embedded}
+	<RecordAdjustmentRow
+		icon={taxIcon}
+		label="Tax"
+		value={!canSeePrice
+			? 'Hidden'
+			: taxSource === 'not_configured'
+				? 'Not taxed yet'
+				: taxSource === 'no_tax'
+					? 'No tax'
+					: `${(name ?? '').includes(rateText) ? name : `${name || 'Tax'} ${rateText}`}${taxMinor !== null ? ` · ${money.format(taxMinor / 100)}` : ''}`}
+		muted={!canSeePrice || taxSource === 'not_configured' || taxSource === 'no_tax'}
+		actionLabel={editable && canSeePrice ? (configured ? 'Edit' : 'Set') : undefined}
+		actionName={configured ? 'Edit the tax' : 'Set the tax'}
+		onaction={openDialog}
+		onhover={warm}
+	/>
+{:else}
+	<RailCard title="Tax" icon={taxIcon}>
+		{#snippet actions()}
+			{#if editable && canSeePrice && configured}
+				<Button variant="tertiary" size="small" onclick={openDialog} onhover={warm}>Edit</Button>
+			{/if}
+		{/snippet}
+
+		{#if !canSeePrice}
+			<p class="record-tax__muted">You do not have access to these prices.</p>
+		{:else if taxSource === 'not_configured'}
+			<div class="record-tax__unset">
+				<Badge status="warning" dot={false}>Not configured</Badge>
+				{#if editable}
+					<p class="record-tax__hint">{unsetHint}</p>
 				{/if}
-			</p>
-			<p class="record-tax__source">{SOURCE_LABEL[taxSource]}</p>
-		</div>
-	{/if}
-</RailCard>
+			</div>
+			{#if editable}
+				<Button
+					variant="secondary"
+					variation="subtle"
+					fullWidth
+					onclick={openDialog}
+					onhover={warm}
+				>
+					Set tax
+				</Button>
+			{/if}
+		{:else if taxSource === 'no_tax'}
+			<p class="record-tax__name">No tax</p>
+		{:else}
+			<div class="record-tax__set">
+				<p class="record-tax__name">{name || 'Tax'}</p>
+				<p class="record-tax__value">
+					{rateText}
+					{#if taxMinor !== null}
+						<span class="record-tax__amount">{money.format(taxMinor / 100)}</span>
+					{/if}
+				</p>
+				<p class="record-tax__source">{SOURCE_LABEL[taxSource]}</p>
+			</div>
+		{/if}
+	</RailCard>
+{/if}
 
 {#if open}
 	<Dialog {open} title={configured ? 'Edit tax' : 'Set tax'} size="small" onClose={close}>

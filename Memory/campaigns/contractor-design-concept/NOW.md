@@ -1,14 +1,13 @@
 # Contractor design concept — now
 
-**Goal:** Phase A: build every designed screen, update shared parts, delete old code. Phase B: researched, premium, calm, meaningful new concept, then applied app-wide.
+**Goal:** Phase A: build every designed screen, update shared parts, delete old code. Phase B: researched, premium new concept, applied app-wide.
 **Core agreement — read on every resume:** `docs/contractor-design-concept-behavior-contract.md` — Summary, Experience target, Not doing.
-**Plan:** same file — rewritten 2026-10-16 with Jafar's two-phase workflow; not yet approved as a whole.
-**Stage:** Building, Phase A. Phase B (research, concept) waits until Phase A is complete.
+**Stage:** Building, Phase A. A1 and the whole A2 batch (Home, Inbox, Quote/Request/Invoice/Client/Payment details, all list gaps) are on main as of 2026-10-16. Their part notes are in `parts/`.
 
-**Done:** Phase A part 1 merged to main 2026-10-16: shell, Jobs, Clients, Requests, Quotes, Invoices lists, Job details.
+**Not run yet (Jafar: once, after every screen is built):** `npm run check`, lint, the focused tests, and the speed check for the Quotes and Invoices list slices. The merge was checked by loading every screen in the running app: no errors. The merge fixed one broken brace in `SectionBlock.svelte`.
 
-**Known gaps (checked live vs Pencil 2026-10-16, awaiting Jafar's yes to fix):** Clients lacks the Client book card and dark New-clients card; Quotes lacks total, proportion bar, footer strip, status second lines and red Changes-requested; Requests lacks the Created filter; Invoices lacks the footer strip; More actions looks greyed on every list. Jobs matches.
+**Next:** (1) A2b below; (2) Settings: Pencil has only Home and Business profile, so Jafar decides how the other ~15 pages follow; (3) A3 Schedule (11 Pencil frames); (4) A4 undesigned screens; (5) A5 cleanup; then one whole-app check.
 
-**Next part:** A2 — build the remaining designed screens (details pages, Home, Inbox, Schedule, Settings) from `classic.pen`, one subagent per screen, reusing shared parts.
+**Decisions by Jafar (2026-10-16):** money/feature cards stay light in dark mode. Jafar delegated the rest to a contractor's view; do these as A2b after merging: progress strip (Request→Quote→Job→Invoice→Paid) on every record page using existing links (verify invoice→job link); Call/Text/Directions icons on Request, Invoice, Client headers; Request list lines "Asked for", assessor, "Quote #". Skipped: Payment History button, labelled "More" button.
 
-**Blockers:** Jafar's answers on the open list questions (plan, Still unclear) can wait; they do not block A2.
+**Still open:** "Changes requested" colour on Quotes.

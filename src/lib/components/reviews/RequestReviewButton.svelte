@@ -16,11 +16,13 @@
 	let {
 		target,
 		size = 'small',
-		variant = 'secondary'
+		variant = 'secondary',
+		class: className = ''
 	}: {
 		target: ReviewRequestTarget;
 		size?: 'small' | 'base';
 		variant?: 'primary' | 'secondary' | 'tertiary';
+		class?: string;
 	} = $props();
 
 	const queryClient = useQueryClient();
@@ -49,7 +51,7 @@
 	}
 </script>
 
-<Button {size} {variant} onhover={warm} onclick={show}>Request a review</Button>
+<Button {size} {variant} class={className} onhover={warm} onclick={show}>Request a review</Button>
 
 {#if open}
 	<Dialog {open} title="Request a review" onClose={() => (open = false)}>

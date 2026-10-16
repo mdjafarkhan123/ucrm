@@ -7,6 +7,8 @@
 		title,
 		icon,
 		count,
+		description,
+		flush = false,
 		actions,
 		children,
 		class: className = ''
@@ -14,6 +16,11 @@
 		title: string;
 		icon?: string;
 		count?: number;
+		/** One quiet line under the title, e.g. "3 photos · 1 file". */
+		description?: string;
+		/** App look: the body runs edge to edge under the header, for rows that draw their own padding and
+		 *  hairlines. Only the header keeps the card's side padding. */
+		flush?: boolean;
 		actions?: Snippet;
 		children: Snippet;
 		class?: string;
@@ -21,12 +28,15 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<section class={`rail-card ${className}`}>
+<section class={`rail-card ${className}`} class:rail-card--flush={flush}>
 	<header class="rail-card__header">
-		<h2 class="rail-card__title">
-			{#if icon}<span class="rail-card__icon" aria-hidden="true">{@html icon}</span>{/if}
-			{title}{#if count !== undefined}&nbsp;({count}){/if}
-		</h2>
+		<div class="rail-card__heading">
+			<h2 class="rail-card__title">
+				{#if icon}<span class="rail-card__icon" aria-hidden="true">{@html icon}</span>{/if}
+				{title}{#if count !== undefined}<span class="rail-card__count">{count}</span>{/if}
+			</h2>
+			{#if description}<p class="rail-card__description">{description}</p>{/if}
+		</div>
 		{#if actions}<div class="rail-card__actions">{@render actions()}</div>{/if}
 	</header>
 	{@render children()}
@@ -52,6 +62,17 @@
 			gap: var(--space-small);
 		}
 
+		&__heading {
+			min-width: 0;
+		}
+
+		&__hint {
+			margin: 2px 0 0;
+			color: var(--color-text--secondary);
+			font-size: 13px;
+			font-weight: 500;
+		}
+
 		&__title {
 			display: flex;
 			align-items: center;
@@ -60,6 +81,29 @@
 			font-size: var(--typography--fontSize-larger);
 			font-weight: 700;
 			line-height: var(--typography--lineHeight-tight);
+		}
+
+		&__heading {
+			display: grid;
+			min-width: 0;
+			gap: 2px;
+		}
+
+		&__description {
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+		}
+
+		// Outside the App look the count reads as "Tags (2)".
+		&__count {
+			&::before {
+				content: '\00a0(';
+			}
+			&::after {
+				content: ')';
+			}
 		}
 
 		&__icon :global(svg) {
@@ -78,11 +122,40 @@
 		box-shadow: none;
 
 		.rail-card__title {
+			gap: 6px;
 			font-size: var(--typography--fontSize-large);
 			letter-spacing: -0.2px;
 		}
 		.rail-card__icon {
 			display: none;
+		}
+		.rail-card__count {
+			margin-left: 8px;
+			padding: 2px 8px;
+			border-radius: 999px;
+			color: var(--color-text--secondary);
+			background: var(--color-border);
+			font-size: 11px;
+			font-weight: 700;
+			letter-spacing: 0;
+			line-height: 1.4;
+
+			&::before,
+			&::after {
+				content: none;
+			}
+		}
+		.rail-card__description {
+			font-size: 12px;
+		}
+		&.rail-card--flush {
+			gap: 0;
+			padding: 0;
+			overflow: clip;
+
+			.rail-card__header {
+				padding: 18px 20px 14px;
+			}
 		}
 	}
 </style>

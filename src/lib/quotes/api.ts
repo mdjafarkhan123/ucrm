@@ -314,6 +314,19 @@ export type QuoteListItem = {
 	property_address: string | null;
 	/** Null when this person may not see money at all — the table shows a dash, never a wrong number. */
 	total_minor: number | null;
+	/** When the quote was first sent. The line under the status is built from these facts. */
+	sent_at: string | null;
+	decision: 'approved' | 'declined' | null;
+	decided_at: string | null;
+	decision_method: 'offline_verbal' | 'online' | 'in_person' | null;
+	archived_at: string | null;
+	/** The number of the version the client was last sent; "Version 2" shows from the second one. */
+	published_version_number: number | null;
+	/** Opens of the version the client was last sent. */
+	view_count: number;
+	changes_requested_at: string | null;
+	/** The job the quote became, only when this person may open jobs. */
+	job: { id: string; job_number: number } | null;
 };
 
 export type QuoteListPage = {

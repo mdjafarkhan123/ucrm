@@ -1,4 +1,5 @@
 import type { InvoiceDerivedStatus } from './statuses';
+import type { InvoiceListFacts } from './list-facts';
 import type { InvoicePaymentMethod, PaymentMethod } from './payment-methods';
 import type { InvoiceVoidReason } from './lifecycle';
 import type { QuoteDiscountType, QuoteTaxSource } from '$lib/quotes/api';
@@ -46,6 +47,8 @@ export type InvoiceListItem = {
 	total_minor: number | null;
 	/** What is still owed on the bill. Null on the same money-visibility rule as total. */
 	remaining_minor: number | null;
+	/** How often the client opened the bill; null when it was never emailed. */
+	view_count: number | null;
 };
 
 export type InvoiceListPage = {
@@ -107,6 +110,8 @@ export type InvoiceOverview = {
 	collected_this_month_minor: number | null;
 	currency_code: string;
 	locale: string;
+	/** The facts strip under the tiles. */
+	facts: InvoiceListFacts;
 };
 
 export async function fetchInvoiceOverview(): Promise<InvoiceOverview> {

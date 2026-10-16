@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
+	import logoutIcon from '@tabler/icons/outline/logout.svg?raw';
 	import Button from '$lib/components/ui/Button.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import RunningClock from '$lib/components/time-clock/RunningClock.svelte';
@@ -20,11 +21,12 @@
 	const offsetMs = $derived(serverOffsetMs(mine, timerQuery.dataUpdatedAt));
 	const actions = createTimerActions();
 
+	const startedFormat = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
 	const title = $derived(
 		timer === null
 			? 'You’re clocked out'
 			: timer.kind === 'general'
-				? 'Clocked in'
+				? `Clocked in at ${startedFormat.format(new Date(timer.started_at))}`
 				: timer.kind === 'assessment'
 					? mine?.clocked_in
 						? 'On an assessment'
@@ -35,53 +37,52 @@
 	);
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
 {#if timerQuery.isPending}
 	<div class="day-clock day-clock--pending">
 		<LoadingSkeleton variant="heading" label="Loading your day clock" />
 	</div>
 {:else if timerQuery.isError}
 	<section class="day-clock" aria-labelledby="day-clock-heading">
+		<span class="day-clock__mark day-clock__mark--off" aria-hidden="true"
+			><span class="day-clock__dot"></span></span
+		>
 		<div class="day-clock__body">
-			<span class="day-clock__eyebrow">Day clock</span>
 			<h2 id="day-clock-heading">Your day clock could not be loaded</h2>
 			<p>Check your connection, then refresh the page.</p>
 		</div>
 	</section>
 {:else if mine && (mine.can_time || timer)}
 	<section class="day-clock" aria-labelledby="day-clock-heading">
+		<span class={['day-clock__mark', timer === null && 'day-clock__mark--off']} aria-hidden="true"
+			><span class="day-clock__dot"></span></span
+		>
 		<div class="day-clock__body">
-			<span class="day-clock__eyebrow">Day clock</span>
-			<div class="day-clock__title">
-				<h2 id="day-clock-heading">{title}</h2>
-				{#if timer}<RunningClock startedAt={timer.started_at} {offsetMs} flagLong />{/if}
-			</div>
+			<h2 id="day-clock-heading">{title}</h2>
 			{#if timer === null}
-				<p>
-					Clock in when your working day starts. Starting a visit’s timer counts that time on the
-					job instead.
-				</p>
+				<p>Clock in when your working day starts.</p>
 			{:else if timer.kind === 'general'}
-				<p>
-					General time: travel, the shop, anything not on a visit. Starting a visit’s timer pauses
-					it.
+				<p class="day-clock__running">
+					<RunningClock startedAt={timer.started_at} {offsetMs} flagLong />
 				</p>
 			{:else}
 				<p>
-					Timing
 					{#if timer.kind === 'visit'}
 						<a href={resolve('/(app)/jobs/[id=uuid]', { id: timer.job_id })}
 							>{timer.job_number ? `Job #${timer.job_number}` : 'a job'}</a
-						>{timer.job_title ? ` · ${timer.job_title}` : ''}.
+						>{timer.job_title ? ` · ${timer.job_title}` : ''}
 					{:else if timer.request_id}
-						the assessment for
 						<a href={resolve('/(app)/requests/[id=uuid]', { id: timer.request_id })}
 							>{timer.request_title ?? 'a request'}</a
-						>.
+						>
 					{:else}
-						an assessment.
+						an assessment
 					{/if}
+					· <RunningClock startedAt={timer.started_at} {offsetMs} flagLong />
+				</p>
+				<p class="day-clock__note">
 					{mine.clocked_in
-						? 'Your day clock is paused and starts again when you stop this timer.'
+						? 'Your day clock is paused until you stop this timer.'
 						: 'You’re not clocked in for the day.'}
 				</p>
 			{/if}
@@ -94,8 +95,11 @@
 					variant="secondary"
 					onclick={() => actions.clockOut(timer)}
 					loading={actions.busy === 'clock-out'}
-					disabled={actions.busy !== null}>Clock out</Button
+					disabled={actions.busy !== null}
 				>
+					<span class="day-clock__button-icon" aria-hidden="true">{@html logoutIcon}</span>
+					Clock out
+				</Button>
 			{:else}
 				<Button
 					variant="secondary"
@@ -124,39 +128,67 @@
 	</section>
 {/if}
 
+<!-- eslint-enable svelte/no-at-html-tags -->
+
 <style lang="scss">
 	.day-clock {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-base) var(--space-large);
-		margin-bottom: var(--space-large);
-		padding: var(--space-base) var(--space-large);
+		gap: 14px;
+		width: fit-content;
+		max-width: 100%;
+		padding: 8px 8px 8px 16px;
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 		background: var(--color-surface);
 
 		&--pending {
-			min-height: 112px;
+			width: 280px;
+			min-height: 64px;
+		}
+
+		&__mark {
+			display: inline-flex;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			width: 28px;
+			height: 28px;
+			border-radius: var(--radius-base);
+			background: var(--color-success--surface);
+
+			&--off {
+				background: var(--color-surface--background--subtle);
+
+				.day-clock__dot {
+					background: var(--color-icon--secondary);
+				}
+			}
+		}
+		&__dot {
+			width: 8px;
+			height: 8px;
+			border-radius: var(--radius-circle);
+			background: var(--color-success);
 		}
 
 		&__body {
 			display: grid;
-			gap: var(--space-smaller);
+			gap: 2px;
 			min-width: 0;
 
 			h2 {
 				margin: 0;
 				color: var(--color-heading);
-				font-size: var(--typography--fontSize-larger);
+				font-size: 13px;
+				font-weight: 600;
 			}
-
 			p {
 				margin: 0;
-				max-width: 62ch;
 				color: var(--color-text--secondary);
+				font-size: 12px;
+				font-weight: 500;
 			}
-
 			a {
 				color: var(--color-interactive--subtle);
 				font-weight: 700;
@@ -164,7 +196,6 @@
 				&:hover {
 					color: var(--color-interactive--subtle--hover);
 				}
-
 				&:focus-visible {
 					outline: 2px solid var(--color-interactive--subtle);
 					outline-offset: 2px;
@@ -172,19 +203,15 @@
 				}
 			}
 		}
-
-		&__eyebrow {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-			letter-spacing: 0.08em;
-			text-transform: uppercase;
+		&__running :global(.running-clock) {
+			padding: 0;
+			background: none;
+			font-size: 12px;
+			font-weight: 500;
+			font-variant-numeric: tabular-nums;
 		}
-
-		&__title {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: center;
-			gap: var(--space-small) var(--space-base);
+		&__note {
+			max-width: 34ch;
 		}
 
 		&__actions {
@@ -194,14 +221,24 @@
 			align-items: center;
 			gap: var(--space-small);
 		}
+		&__button-icon {
+			display: inline-flex;
+
+			:global(svg) {
+				width: 15px;
+				height: 15px;
+			}
+		}
 	}
 
 	@media (max-width: 639px) {
 		.day-clock {
-			align-items: stretch;
-			flex-direction: column;
-			padding: var(--space-base);
+			width: 100%;
+			flex-wrap: wrap;
 
+			&__actions {
+				width: 100%;
+			}
 			&__actions > :global(*) {
 				flex: 1 1 auto;
 			}

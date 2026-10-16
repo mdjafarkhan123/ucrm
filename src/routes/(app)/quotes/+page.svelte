@@ -20,8 +20,22 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import RecordListCard from '$lib/components/data-display/RecordListCard.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
-	import AttentionCard, { type AttentionTile } from '$lib/components/work/AttentionCard.svelte';
-	import MoneyFeatureCard from '$lib/components/work/MoneyFeatureCard.svelte';
+	import AttentionCard, {
+		type AttentionBarPart,
+		type AttentionFact,
+		type AttentionTile
+	} from '$lib/components/work/AttentionCard.svelte';
+	import MoneyFeatureCard, {
+		type MoneyFigureRow
+	} from '$lib/components/work/MoneyFeatureCard.svelte';
+	import {
+		conversionChange,
+		fetchQuoteListOverview,
+		followUpText,
+		percentText,
+		quoteListOverviewKey,
+		quoteStatusDetail
+	} from '$lib/quotes/list-overview';
 	import {
 		bulkArchiveQuotes,
 		fetchQuoteOverview,
@@ -47,6 +61,9 @@
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import dotsIcon from '@tabler/icons/outline/dots.svg?raw';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
+	import hourglassIcon from '@tabler/icons/outline/hourglass.svg?raw';
+	import eyeOffIcon from '@tabler/icons/outline/eye-off.svg?raw';
+	import mailCheckIcon from '@tabler/icons/outline/mail-check.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -144,6 +161,36 @@
 		queryFn: fetchQuoteOverview
 	}));
 
+	// The money per status, the conversion card and the follow-up strip. Its key sits under the counts key,
+	// so everything that already refreshes the counts after a quote changes refreshes this too.
+	const overviewQuery = createQuery(() => ({
+		queryKey: quoteListOverviewKey,
+		queryFn: fetchQuoteListOverview
+	}));
+	const overview = $derived(overviewQuery.data);
+	const overviewLoading = $derived(overviewQuery.isPending);
+
+	// Whole currency units on the overview cards; the table keeps cents.
+	const wholeFormatter = $derived(
+		new Intl.NumberFormat(countsQuery.data?.locale ?? 'en-US', {
+			style: 'currency',
+			currency: countsQuery.data?.currency_code ?? 'USD',
+			maximumFractionDigits: 0
+		})
+	);
+	function formatWhole(amountMinor: number | null | undefined) {
+		if (amountMinor === null || amountMinor === undefined) return '—';
+		return wholeFormatter.format(amountMinor / 100);
+	}
+	const shortDay = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
+	function formatShortDay(iso: string) {
+		return shortDay.format(new Date(iso));
+	}
+	// A YYYY-MM-DD calendar day, kept on its own date wherever the browser is.
+	function formatCalendarDay(day: string) {
+		return day ? shortDay.format(new Date(`${day}T00:00`)) : '';
+	}
+
 	// A Field member holds no quotes.view -- the list query is the thing that actually finds out. Default
 	// to visible so a permitted member's buttons aren't delayed behind this fetch, and hide only once a
 	// real denial comes back.
@@ -159,20 +206,93 @@
 
 	// The four the office acts on, each with a line saying what it means. Picking one sets the Status
 	// filter in the list's header to it; picking it again, or choosing another status there, clears it.
+	// With money the line reads "$8,920 not sent yet"; without it the plain sentence stands alone.
 	const attentionHints: Record<(typeof QUOTE_OVERVIEW_STATUSES)[number], string> = {
-		draft: 'Not sent yet',
-		awaiting_response: 'Waiting on the client',
-		changes_requested: 'Client asked for edits',
-		approved: 'Ready for a job'
+		draft: 'not sent yet',
+		awaiting_response: 'waiting on the client',
+		changes_requested: 'client asked for edits',
+		approved: 'ready for a job'
 	};
+	const statusMoney = $derived(overview?.status_minor ?? null);
+	function sentence(text: string) {
+		return text.charAt(0).toUpperCase() + text.slice(1);
+	}
 	const attentionTiles = $derived<AttentionTile[]>(
 		QUOTE_OVERVIEW_STATUSES.map((key) => ({
 			key,
 			label: QUOTE_STATUS_LABELS[key],
-			hint: attentionHints[key],
+			amount: statusMoney ? formatWhole(statusMoney[key]) : undefined,
+			hint: statusMoney ? attentionHints[key] : sentence(attentionHints[key]),
 			count: countsQuery.data?.counts[key] ?? 0,
 			tone: QUOTE_STATUS_TONES[key]
 		}))
+	);
+	// The headline: what the open quotes are worth, or a dash for someone who may not see prices.
+	const openSummary = $derived(
+		overview
+			? {
+					value: formatWhole(overview.open_minor),
+					label: `${overview.open_count} ${overview.open_count === 1 ? 'quote' : 'quotes'} not yet a job`
+				}
+			: undefined
+	);
+	// Slices by value; by count for someone who may not see prices, so the bar never hints at money.
+	const valueBar = $derived<AttentionBarPart[]>(
+		QUOTE_OVERVIEW_STATUSES.map((key) => ({
+			key,
+			label: QUOTE_STATUS_LABELS[key],
+			share: statusMoney ? statusMoney[key] : (countsQuery.data?.counts[key] ?? 0),
+			tone: QUOTE_STATUS_TONES[key]
+		}))
+	);
+	const followUpFacts = $derived<AttentionFact[]>(
+		overview
+			? [
+					{
+						icon: hourglassIcon,
+						value: String(overview.waiting_over_7_days),
+						label: 'waiting more than 7 days'
+					},
+					{
+						icon: eyeOffIcon,
+						value: String(overview.sent_not_opened),
+						label: 'sent but not opened yet'
+					},
+					{
+						icon: mailCheckIcon,
+						value: '',
+						label: followUpText(overview.follow_up_days),
+						align: 'end'
+					}
+				]
+			: []
+	);
+
+	// The dark card: of the quotes first sent in the past 30 days, how many became jobs.
+	const conversionValue = $derived(
+		overview?.rate_basis_points != null ? percentText(overview.rate_basis_points) : '—'
+	);
+	const conversionNote = $derived.by(() => {
+		if (!overview) return 'Loading…';
+		const range = `${formatCalendarDay(overview.window_start)} – ${formatCalendarDay(overview.window_end)}`;
+		if (overview.sent_count === 0) return `No quotes sent ${range}`;
+		return `Sent quotes that became jobs, ${range}`;
+	});
+	const conversionRows = $derived<MoneyFigureRow[]>(
+		overview
+			? [
+					{
+						label: 'Quotes sent',
+						count: String(overview.sent_count),
+						value: formatWhole(overview.sent_minor)
+					},
+					{
+						label: 'Converted to jobs',
+						count: String(overview.converted_count),
+						value: formatWhole(overview.converted_minor)
+					}
+				]
+			: []
 	);
 	const selectedTile = $derived(
 		(QUOTE_OVERVIEW_STATUSES as readonly string[]).includes(status) ? status : ''
@@ -291,14 +411,20 @@
 				tiles={attentionTiles}
 				selectedKey={selectedTile}
 				onSelect={(key) => (status = key as StoredQuoteStatus | '')}
-				loading={countsQuery.isPending}
+				summary={openSummary}
+				bar={valueBar}
+				facts={followUpFacts}
+				loading={countsQuery.isPending || overviewLoading}
 			/>
 			<MoneyFeatureCard
-				eyebrow="Conversion rate"
-				value="—"
-				note="Once quotes are being sent and approved"
-				detailLabel="Sent and converted"
-				detailValue="—"
+				eyebrow="Conversion rate · past 30 days"
+				value={conversionValue}
+				change={overview
+					? conversionChange(overview.rate_basis_points, overview.prior_rate_basis_points)
+					: null}
+				note={conversionNote}
+				rows={conversionRows}
+				loading={overviewLoading}
 			/>
 		</div>
 
@@ -380,6 +506,7 @@
 					onSortChange={handleSortChange}
 				>
 					{#snippet row(quote: QuoteListItem)}
+						{@const detail = quoteStatusDetail(quote, formatShortDay)}
 						<th scope="row">
 							<div class="quotes-table__client">
 								<Avatar id={quote.client?.id ?? quote.id} name={clientName(quote)} size="base" />
@@ -392,7 +519,10 @@
 						<td>
 							<div class="quotes-table__title">{quoteTitle(quote)}</div>
 							<div class="quotes-table__meta">
-								#{quote.quote_number}{quote.from_request ? ' · From request' : ''}
+								#{quote.quote_number}{quote.from_request ? ' · From request' : ''}{(quote.published_version_number ??
+									0) > 1
+									? ` · Version ${quote.published_version_number}`
+									: ''}
 							</div>
 						</td>
 						<td>
@@ -406,6 +536,18 @@
 							<StatusBadge size="compact" status={QUOTE_STATUS_TONES[quote.status]}>
 								{QUOTE_STATUS_LABELS[quote.status]}
 							</StatusBadge>
+							{#if detail}
+								<div class="quotes-table__meta quotes-table__detail">
+									{detail.text}
+									{#if detail.job}
+										<a
+											class="quotes-table__job-link"
+											href={resolve('/(app)/jobs/[id=uuid]', { id: detail.job.id })}
+											onclick={(event) => event.stopPropagation()}>{detail.job.label}</a
+										>
+									{/if}
+								</div>
+							{/if}
 						</td>
 						<td class="quotes-table__total">{formatTotal(quote)}</td>
 						<td class="quotes-table__open">
@@ -559,6 +701,24 @@
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
+	}
+	.quotes-table__detail {
+		margin-top: 5px;
+		white-space: nowrap;
+	}
+	.quotes-table__job-link {
+		color: var(--color-interactive);
+		font-weight: 600;
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+		&:focus-visible {
+			outline: none;
+			border-radius: var(--radius-small);
+			box-shadow: var(--shadow-focus);
+		}
 	}
 	.quotes-table__date {
 		color: var(--color-text);

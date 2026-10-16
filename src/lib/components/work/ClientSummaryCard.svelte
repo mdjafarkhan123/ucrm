@@ -5,6 +5,8 @@
 	import mapPinIcon from '@tabler/icons/outline/map-pin.svg?raw';
 	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import messageIcon from '@tabler/icons/outline/message.svg?raw';
+	import navigationIcon from '@tabler/icons/outline/navigation.svg?raw';
 
 	// Who this piece of work is for, shown on every request, quote, job and invoice. The card names the
 	// client, lists whichever addresses that record carries, and gives the two ways to reach them.
@@ -27,6 +29,8 @@
 		email = null,
 		menuItems = [],
 		avatarId,
+		hidePhone = false,
+		quickContact = false,
 		class: className = ''
 	}: {
 		name: string;
@@ -38,12 +42,24 @@
 		menuItems?: MenuItem[];
 		/** The client's id. Given, the App look header draws their initials beside the name. */
 		avatarId?: string;
+		/** For a record that never carries a phone number, so the card does not nag about one. */
+		hidePhone?: boolean;
+		/** App look: phone and email are not listed as text; three round buttons at the end of the row call,
+		 *  text and get directions to the first address instead. A button with nothing behind it is not drawn. */
+		quickContact?: boolean;
 		class?: string;
 	} = $props();
+
+	const firstAddress = $derived(addresses.find((address) => address.value)?.value ?? null);
+	const directionsHref = $derived(
+		firstAddress
+			? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(firstAddress)}`
+			: null
+	);
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div class={`client-summary ${className}`}>
+<div class={`client-summary ${className}`} class:client-summary--quick={quickContact}>
 	<div class="client-summary__top">
 		{#if avatarId}
 			<span class="client-summary__avatar" aria-hidden="true">
@@ -80,18 +96,20 @@
 			</li>
 		{/each}
 
-		<li class="client-summary__line">
-			<span class="client-summary__icon" aria-hidden="true">{@html phoneIcon}</span>
-			<span class="client-summary__text">
-				{#if phone}
-					<a href={`tel:${phone}`}>{phone}</a>
-				{:else}
-					<span class="client-summary__blank">No phone number yet</span>
-				{/if}
-			</span>
-		</li>
+		{#if !hidePhone}
+			<li class="client-summary__line client-summary__line--contact">
+				<span class="client-summary__icon" aria-hidden="true">{@html phoneIcon}</span>
+				<span class="client-summary__text">
+					{#if phone}
+						<a href={`tel:${phone}`}>{phone}</a>
+					{:else}
+						<span class="client-summary__blank">No phone number yet</span>
+					{/if}
+				</span>
+			</li>
+		{/if}
 
-		<li class="client-summary__line">
+		<li class="client-summary__line client-summary__line--contact">
 			<span class="client-summary__icon" aria-hidden="true">{@html mailIcon}</span>
 			<span class="client-summary__text">
 				{#if email}
@@ -102,6 +120,37 @@
 			</span>
 		</li>
 	</ul>
+
+	{#if quickContact && (phone || directionsHref)}
+		<div class="client-summary__quick">
+			{#if phone}
+				<a class="client-summary__round" href={`tel:${phone}`} aria-label={`Call ${phone}`} title={`Call ${phone}`}>
+					{@html phoneIcon}
+				</a>
+				<a class="client-summary__round" href={`sms:${phone}`} aria-label={`Text ${phone}`} title={`Text ${phone}`}>
+					{@html messageIcon}
+				</a>
+			{/if}
+			{#if email}
+				<a class="client-summary__round" href={`mailto:${email}`} aria-label={`Email ${email}`} title={`Email ${email}`}>
+					{@html mailIcon}
+				</a>
+			{/if}
+			{#if directionsHref}
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+				<a
+					class="client-summary__round"
+					href={directionsHref}
+					target="_blank"
+					rel="noopener"
+					aria-label="Get directions"
+					title="Get directions"
+				>
+					{@html navigationIcon}
+				</a>
+			{/if}
+		</div>
+	{/if}
 </div>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
@@ -249,5 +298,63 @@
 			order: 3;
 			margin-left: auto;
 		}
+	}
+
+	// App look with quick contact: the client reads as one line — avatar, name, address — with the round
+	// contact buttons at the far end, and no phone or email text.
+	:global(.record-detail--cards) .client-summary--quick {
+		flex-wrap: wrap;
+
+		.client-summary__lines {
+			flex: 1 1 240px;
+			order: 2;
+		}
+		.client-summary__name {
+			max-width: 100%;
+		}
+		.client-summary__line--contact,
+		:global(.dropdown-menu__trigger) {
+			display: none;
+		}
+		.client-summary__quick {
+			display: flex;
+			flex: 0 0 auto;
+			align-items: center;
+			gap: 6px;
+			order: 5;
+			margin-left: auto;
+		}
+		.client-summary__round {
+			display: inline-grid;
+			width: 34px;
+			height: 34px;
+			place-items: center;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: 999px;
+			color: var(--color-text--secondary);
+			background: var(--color-surface--background--subtle);
+			text-decoration: none;
+			transition: all var(--timing-base) ease-out;
+
+			:global(svg) {
+				display: block;
+				width: 15px;
+				height: 15px;
+			}
+			&:hover {
+				color: var(--color-interactive);
+				background: var(--color-surface--hover);
+			}
+			&:focus-visible {
+				outline: none;
+				box-shadow: var(--shadow-focus);
+			}
+		}
+	}
+	.client-summary__quick {
+		display: none;
+	}
+	:global(.record-detail--cards) .client-summary--quick .client-summary__quick {
+		display: flex;
 	}
 </style>

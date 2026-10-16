@@ -8,6 +8,7 @@
 		title,
 		icon,
 		hint,
+		subtitle,
 		variant = 'plain',
 		level = 2,
 		form = false,
@@ -19,6 +20,8 @@
 		title: string;
 		icon?: string;
 		hint?: string;
+		/** App look only: a quiet line directly under the title, inside the card header. */
+		subtitle?: string;
 		variant?: 'plain' | 'filled';
 		level?: 2 | 3 | 4;
 		form?: boolean;
@@ -29,7 +32,7 @@
 	} = $props();
 
 	const blockClass = $derived(
-		`section-block section-block--${variant} ${form ? '' : 'section-block--standalone'} ${className}`
+		`section-block section-block--${variant} ${form ? '' : 'section-block--standalone'} ${subtitle ? 'section-block--has-subtitle' : ''} ${className}`
 	);
 	const titleId = $derived(id ? `${id}-title` : undefined);
 </script>
@@ -38,6 +41,10 @@
 {#snippet titleContent()}
 	{#if icon}<span class="section-block__icon" aria-hidden="true">{@html icon}</span>{/if}
 	<span class="section-block__title-text">{title}</span>
+{/snippet}
+
+{#snippet subtitleLine()}
+	{#if subtitle}<p class="section-block__subtitle">{subtitle}</p>{/if}
 {/snippet}
 
 {#snippet body()}
@@ -55,10 +62,13 @@
 	<section class={blockClass} {id} aria-labelledby={titleId}>
 		{#if level === 2}
 			<h2 class="section-block__title" id={titleId}>{@render titleContent()}</h2>
+			{@render subtitleLine()}
 		{:else if level === 3}
 			<h3 class="section-block__title" id={titleId}>{@render titleContent()}</h3>
+			{@render subtitleLine()}
 		{:else}
 			<h4 class="section-block__title" id={titleId}>{@render titleContent()}</h4>
+			{@render subtitleLine()}
 		{/if}
 		{#if actions}<div class="section-block__actions">{@render actions()}</div>{/if}
 		{@render body()}
@@ -130,6 +140,11 @@
 			transform: translateY(-50%);
 		}
 
+		// Only drawn in the App look; the older bordered block has no room for it.
+		&__subtitle {
+			display: none;
+		}
+
 		&__hint {
 			margin-top: calc(var(--space-small) * -1);
 			color: var(--color-text--secondary);
@@ -177,8 +192,66 @@
 		:global(.section-block__icon) {
 			display: none;
 		}
+		// A lone pencil at the card's top corner keeps a border, so it reads as a button.
+		> :global(.section-block__actions) :global(.pencil-button--tertiary) {
+			border-color: var(--color-border--interactive);
+			background: var(--color-surface);
+		}
+		// A subtitle sits in the header's second row, under the title, while the actions stay centred on both.
+		&.section-block--has-subtitle {
+			> :global(.section-block__title) {
+				padding-bottom: 3px;
+			}
+			> :global(.section-block__actions) {
+				grid-row: 1 / span 2;
+			}
+			> :global(.section-block__subtitle) {
+				display: block;
+				grid-column: 1;
+				grid-row: 2;
+				margin: 0;
+				padding: 0 24px 16px;
+				color: var(--color-text--secondary);
+				font-size: 13px;
+				font-weight: 500;
+			}
+		}
 		> :global(.section-block__hint) {
-			margin: -8px 24px 12px;
+			margin: -12px 24px 20px;
+			font-size: 13px;
+			font-weight: 500;
+		}
+		// With a quiet line under the title, the actions sit beside both lines and the two lines pack together.
+		&:has(> :global(.section-block__hint)) {
+			> :global(.section-block__title) {
+				padding-bottom: 0;
+			}
+			> :global(.section-block__hint) {
+				grid-column: 1;
+				grid-row: 2;
+				margin: 3px 24px 20px;
+			}
+			> :global(.section-block__actions) {
+				grid-row: 1 / span 2;
+			}
+		}
+
+		// The pencil on a card header is a small bordered button, as in the approved designs.
+		:global(.section-block__actions .pencil-button) {
+			width: 40px;
+			height: 36px;
+			color: var(--color-text--secondary);
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+			&:hover:not(:disabled),
+			&:focus-visible:not(:disabled) {
+				border-color: var(--color-border--interactive);
+				color: var(--color-heading);
+				background: var(--color-surface--hover);
+			}
 		}
 	}
 	// Low specificity on purpose, so a block's own contents can set their own margin where they differ.
