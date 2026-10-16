@@ -771,8 +771,9 @@
 						canManage={saved.can_record_field_records || saved.can_manage_team_field_records}
 					/>
 
-					<RailCard title="Notes" icon={notesIcon}>
+					<RailCard title="Notes" description="Only your team sees these" icon={notesIcon} flush>
 						<NotesPanel
+							compact
 							entityType="job"
 							entityId={jobId}
 							canManage={saved.can_record_field_records}

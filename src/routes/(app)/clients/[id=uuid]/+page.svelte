@@ -848,9 +848,9 @@
 						</RailCard>
 					{/if}
 
-					<RailCard title="Notes" subtitle="Only your team sees these" flush>
+					<RailCard title="Notes" description="Only your team sees these" flush>
 						<NotesPanel
-							flat
+							compact
 							entityType="client"
 							entityId={clientId}
 							canManage

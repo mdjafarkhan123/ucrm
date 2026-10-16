@@ -576,8 +576,10 @@
 						icon={notesIcon}
 						count={notesQuery.data?.length}
 						description="Only your team sees these"
+						flush
 					>
 						<NotesPanel
+							compact
 							entityType="request"
 							entityId={requestId}
 							canManage

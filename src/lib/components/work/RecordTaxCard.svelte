@@ -2,7 +2,6 @@
 	import { untrack } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
-	import RecordAdjustmentRow from './RecordAdjustmentRow.svelte';
 	import RailRow from '$lib/components/layout/RailRow.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
@@ -65,9 +64,8 @@
 		staged?: boolean;
 		/** Why an unset tax matters here. A quote cannot be sent without one; a job simply is not taxed yet. */
 		unsetHint?: string;
-		/** Draws one row for a shared "Discount and tax" card instead of a card of its own. `true` ends the row
-		 *  in an "Add"/"Edit" word (Invoice details); `'pencil'` ends it in a pencil button (Quote details). */
-		embedded?: boolean | 'pencil';
+		/** App look: draw one row to sit inside a shared "Discount and tax" card instead of a card. */
+		embedded?: boolean;
 		/** Writes the tax choice against the revision it is handed. */
 		onSave: (revision: number, payload: TaxPayload) => Promise<unknown>;
 		onSaved: (result: unknown) => Promise<void> | void;
@@ -241,7 +239,7 @@
 	}
 </script>
 
-{#if embedded === 'pencil'}
+{#if embedded}
 	<RailRow
 		icon={receiptIcon}
 		label="Tax"
@@ -264,23 +262,6 @@
 			{/if}
 		{/snippet}
 	</RailRow>
-{:else if embedded}
-	<RecordAdjustmentRow
-		icon={taxIcon}
-		label="Tax"
-		value={!canSeePrice
-			? 'Hidden'
-			: taxSource === 'not_configured'
-				? 'Not taxed yet'
-				: taxSource === 'no_tax'
-					? 'No tax'
-					: `${(name ?? '').includes(rateText) ? name : `${name || 'Tax'} ${rateText}`}${taxMinor !== null ? ` · ${money.format(taxMinor / 100)}` : ''}`}
-		muted={!canSeePrice || taxSource === 'not_configured' || taxSource === 'no_tax'}
-		actionLabel={editable && canSeePrice ? (configured ? 'Edit' : 'Set') : undefined}
-		actionName={configured ? 'Edit the tax' : 'Set the tax'}
-		onaction={openDialog}
-		onhover={warm}
-	/>
 {:else}
 	<RailCard title="Tax" icon={taxIcon}>
 		{#snippet actions()}

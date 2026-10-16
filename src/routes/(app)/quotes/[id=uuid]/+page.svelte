@@ -1391,7 +1391,7 @@
 
 				<RailCard title="Discount and tax" flush>
 					<RecordDiscountCard
-							embedded="pencil"
+							embedded
 						revision={saved.version?.revision ?? 0}
 						name={saved.version?.discount_name ?? null}
 						type={saved.version?.discount_type ?? null}
@@ -1405,7 +1405,7 @@
 					/>
 
 					<RecordTaxCard
-							embedded="pencil"
+							embedded
 						revision={saved.version?.revision ?? 0}
 						propertyId={saved.quote.property_id}
 						taxSource={saved.version?.tax_source ?? 'not_configured'}
