@@ -20532,6 +20532,31 @@ export type Database = {
 				Args: { p_primary_client_id: string; p_secondary_client_id: string };
 				Returns: Json;
 			};
+			client_overview_counts: {
+				Args: {
+					current_since: string;
+					previous_since: string;
+					target_organization_id: string;
+					year_since: string;
+				};
+				Returns: {
+					archived: number;
+					customers: number;
+					leads: number;
+					new_clients_current: number;
+					new_clients_previous: number;
+					new_clients_year: number;
+					new_leads_current: number;
+				}[];
+			};
+			client_popular_tags: {
+				Args: { tag_limit?: number; target_organization_id: string };
+				Returns: {
+					name: string;
+					tag_id: string;
+					total: number;
+				}[];
+			};
 			client_save_setup_preview_note: {
 				Args: {
 					new_choice: string;

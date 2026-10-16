@@ -20,6 +20,7 @@
 </script>
 
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 
 	// The "Needs attention" card above a work list: the few statuses the office acts on, each as a tile
@@ -32,6 +33,7 @@
 		selectedKey = '',
 		onSelect,
 		facts = [],
+		footer,
 		loading = false
 	}: {
 		title?: string;
@@ -43,6 +45,8 @@
 		 *  again. Tiles that carry an `href` are links and never call it. */
 		onSelect?: (key: string) => void;
 		facts?: AttentionFact[];
+		/** Your own content for the strip under the tiles, in place of `facts` (the Clients page's tags). */
+		footer?: Snippet;
 		loading?: boolean;
 	} = $props();
 
@@ -88,8 +92,10 @@
 			</li>
 		{/each}
 	</ul>
-	{#if facts.length > 0}
-		<ul class="attention-card__facts">
+	{#if footer}
+		<div class="attention-card__strip">{@render footer()}</div>
+	{:else if facts.length > 0}
+		<ul class="attention-card__strip attention-card__facts">
 			{#each facts as fact (fact.label)}
 				<li>
 					<span class="attention-card__fact-icon" aria-hidden="true">{@html fact.icon}</span>
@@ -271,7 +277,7 @@
 			line-height: 1.25;
 		}
 
-		&__facts {
+		&__strip {
 			display: flex;
 			flex-wrap: wrap;
 			align-items: center;
@@ -281,7 +287,8 @@
 			border-top: var(--border-base) solid var(--color-border);
 			background: var(--color-surface--background--subtle);
 			list-style: none;
-
+		}
+		&__facts {
 			li {
 				display: flex;
 				align-items: center;

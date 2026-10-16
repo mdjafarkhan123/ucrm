@@ -12,6 +12,9 @@ export type RequestListFilters = {
 	client_id?: string;
 	/** Rows per page when a caller needs fewer than the list's default. */
 	limit?: number;
+	/** The Created filter, as instants (ISO). Empty or unset means no bound. */
+	created_from?: string;
+	created_to?: string;
 };
 
 export type RequestListItem = {
@@ -76,6 +79,8 @@ export async function fetchRequests(
 	if (filters.dir !== 'desc') params.set('dir', filters.dir);
 	if (filters.client_id) params.set('client_id', filters.client_id);
 	if (filters.limit) params.set('limit', String(filters.limit));
+	if (filters.created_from) params.set('created_from', filters.created_from);
+	if (filters.created_to) params.set('created_to', filters.created_to);
 	if (cursor) params.set('cursor', cursor);
 
 	const response = await fetch(`/api/requests?${params.toString()}`);

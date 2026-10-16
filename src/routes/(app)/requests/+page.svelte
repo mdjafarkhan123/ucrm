@@ -19,9 +19,14 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import RecordListCard from '$lib/components/data-display/RecordListCard.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
-	import AttentionCard, { type AttentionTile } from '$lib/components/work/AttentionCard.svelte';
+	import DateRangeChip from '$lib/components/data-display/DateRangeChip.svelte';
+	import AttentionCard, {
+		type AttentionFact,
+		type AttentionTile
+	} from '$lib/components/work/AttentionCard.svelte';
 	import MoneyFeatureCard from '$lib/components/work/MoneyFeatureCard.svelte';
-	import { conversionRateCard, conversionTrend } from '$lib/requests/metrics';
+	import { conversionChange, conversionShare } from '$lib/requests/metrics';
+	import { waitingLabel } from '$lib/requests/waiting';
 	import {
 		fetchRequestCounts,
 		fetchRequests,
@@ -42,10 +47,14 @@
 	import dashedCircleIcon from '@tabler/icons/outline/circle-dashed.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import dotsIcon from '@tabler/icons/outline/dots.svg?raw';
+	import calendarTodayIcon from '@tabler/icons/outline/calendar-event.svg?raw';
+	import calendarUpcomingIcon from '@tabler/icons/outline/calendar-time.svg?raw';
 
 	let search = $state('');
 	let debouncedSearch = $state('');
 	let status = $state<DisplayRequestStatus | ''>('');
+	let createdFrom = $state('');
+	let createdTo = $state('');
 	let selectedIds = $state<Set<string>>(new Set());
 	let sortKey = $state<RequestSortKey>('requested');
 	let sortDir = $state<'asc' | 'desc'>('desc');
@@ -71,9 +80,31 @@
 		return () => clearTimeout(handle);
 	});
 
+	// A date picked in the filter means the whole of that day where the person is, so From starts at
+	// midnight and To runs to the last moment — otherwise "to today" would hide everything made today.
+	function dayStart(day: string) {
+		if (!day) return '';
+		const [year, month, date] = day.split('-').map(Number);
+		return new Date(year, month - 1, date, 0, 0, 0, 0).toISOString();
+	}
+	function dayEnd(day: string) {
+		if (!day) return '';
+		const [year, month, date] = day.split('-').map(Number);
+		return new Date(year, month - 1, date, 23, 59, 59, 999).toISOString();
+	}
+
+	// "Waiting 25 min" moves on while the page is open, so the clock it reads ticks once a minute.
+	let now = $state(new Date());
+	$effect(() => {
+		const handle = setInterval(() => (now = new Date()), 60_000);
+		return () => clearInterval(handle);
+	});
+
 	const filters = $derived({
 		search: debouncedSearch,
 		statuses: status ? [status] : [],
+		created_from: dayStart(createdFrom),
+		created_to: dayEnd(createdTo),
 		sort: sortKey,
 		dir: sortDir
 	});
@@ -96,7 +127,7 @@
 	}));
 
 	const requests = $derived(requestsQuery.data?.pages.flatMap((page) => page.requests) ?? []);
-	const hasActiveFilters = $derived(status !== '');
+	const hasActiveFilters = $derived(status !== '' || createdFrom !== '' || createdTo !== '');
 
 	// The five the office acts on, most urgent first, each with a line saying what it means. Picking one
 	// sets the Status filter beside the search to it; picking it again, or choosing another status there,
@@ -120,21 +151,47 @@
 	);
 	const selectedTile = $derived(attentionOrder.some(({ key }) => key === status) ? status : '');
 
-	// One dark card for the two 30-day figures: the share of new requests that became a quote or job
-	// (with how it moved against the 30 days before) and how many new requests there were.
-	const conversion = $derived(
+	// Two plain facts under the tiles, read from the same counts: assessments booked for today and those
+	// booked for a later day, both still to be done.
+	const attentionFacts = $derived<AttentionFact[]>(
 		countsQuery.data
-			? conversionRateCard(countsQuery.data.last_30_days, countsQuery.data.previous_30_days)
-			: { value: '—', note: 'Loading…' }
+			? [
+					{
+						icon: calendarTodayIcon,
+						value: String(countsQuery.data.counts.today),
+						label: countsQuery.data.counts.today === 1 ? 'assessment today' : 'assessments today'
+					},
+					{
+						icon: calendarUpcomingIcon,
+						value: String(countsQuery.data.counts.upcoming),
+						label:
+							countsQuery.data.counts.upcoming === 1
+								? 'upcoming assessment booked'
+								: 'upcoming assessments booked'
+					}
+				]
+			: []
 	);
-	const conversionNote = $derived.by(() => {
-		const data = countsQuery.data;
-		if (!data) return 'Loading…';
-		if (data.last_30_days.new === 0) return conversion.note;
-		const trend = conversionTrend(data.last_30_days, data.previous_30_days);
-		const base = `${data.last_30_days.converted} of ${data.last_30_days.new} became a quote or job`;
-		return trend ? `${base} · ${trend}` : base;
-	});
+
+	// One dark card for the 30-day conversion: the share of new requests that became a quote or job, how
+	// it moved against the 30 days before, a bar filled to that share, and the two counts behind it.
+	const lastWindow = $derived(countsQuery.data?.last_30_days);
+	const conversionShareValue = $derived(lastWindow ? conversionShare(lastWindow) : null);
+	const conversionValue = $derived(
+		conversionShareValue === null ? '—' : `${Math.round(conversionShareValue * 100)}%`
+	);
+	const conversionPill = $derived(
+		countsQuery.data
+			? conversionChange(countsQuery.data.last_30_days, countsQuery.data.previous_30_days)
+			: null
+	);
+	const conversionNote = $derived(
+		!countsQuery.data
+			? 'Loading…'
+			: countsQuery.data.last_30_days.new === 0
+				? 'No new requests in the past 30 days'
+				: 'of new requests became a quote or job'
+	);
 
 	// Every status a badge can show, calendar ones included, so picking one lists exactly the rows
 	// wearing that badge.
@@ -260,14 +317,25 @@
 				tiles={attentionTiles}
 				selectedKey={selectedTile}
 				onSelect={(key) => (status = key as DisplayRequestStatus | '')}
+				facts={attentionFacts}
 				loading={countsQuery.isPending}
 			/>
 			<MoneyFeatureCard
 				eyebrow="Conversion · past 30 days"
-				value={conversion.value}
+				value={conversionValue}
+				trend={conversionPill}
 				note={conversionNote}
-				detailLabel="New requests · past 30 days"
-				detailValue={countsQuery.data ? String(countsQuery.data.last_30_days.new) : '—'}
+				progress={conversionShareValue}
+				details={[
+					{
+						label: 'New requests · past 30 days',
+						value: lastWindow ? String(lastWindow.new) : '—'
+					},
+					{
+						label: 'Turned into a quote or job',
+						value: lastWindow ? String(lastWindow.converted) : '—'
+					}
+				]}
 				loading={countsQuery.isPending}
 			/>
 		</div>
@@ -306,6 +374,16 @@
 					restValue=""
 					onchange={(value) => (status = value as DisplayRequestStatus | '')}
 				/>
+				<DateRangeChip
+					id="requests-created"
+					label="Created"
+					from={createdFrom}
+					to={createdTo}
+					onchange={(range) => {
+						createdFrom = range.from;
+						createdTo = range.to;
+					}}
+				/>
 			{/snippet}
 
 			{#if requestsQuery.isPending}
@@ -337,6 +415,7 @@
 				>
 					{#snippet row(request: RequestListItem)}
 						{@const assessment = assessmentText(request)}
+						{@const waiting = waitingLabel(request.status, request.requested_at, now)}
 						<th scope="row">
 							<div class="requests-table__client">
 								<Avatar
@@ -376,8 +455,13 @@
 								<div class="requests-table__text requests-table__text--muted">Not booked</div>
 							{/if}
 						</td>
-						<td class="requests-table__text">
-							{dateFormat.format(new Date(request.requested_at))}
+						<td class="requests-table__requested">
+							<div class="requests-table__text">
+								{dateFormat.format(new Date(request.requested_at))}
+							</div>
+							{#if waiting}
+								<div class="requests-table__waiting">{waiting}</div>
+							{/if}
 						</td>
 						<td>
 							<StatusBadge size="compact" status={REQUEST_STATUS_TONES[request.status]}>
@@ -552,7 +636,13 @@
 	.requests-table__text--muted {
 		color: var(--color-text--secondary);
 	}
-	td.requests-table__text,
+	.requests-table__waiting {
+		margin-top: 3px;
+		color: var(--color-warning--onSurface);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+	}
+	.requests-table__requested,
 	.requests-table__assessment .requests-table__meta {
 		white-space: nowrap;
 	}

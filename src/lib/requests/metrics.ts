@@ -42,3 +42,26 @@ export function conversionTrend(current: RequestWindow, previous: RequestWindow)
 	if (change === 0) return 'same as the 30 days before';
 	return `${change > 0 ? '↑' : '↓'} ${Math.abs(change)}% vs the 30 days before`;
 }
+
+// The same movement as conversionTrend, split for the dark card's pill: which way it went and the words
+// beside the icon ("13% vs the 30 days before"). Null when there is nothing to compare against.
+export function conversionChange(
+	current: RequestWindow,
+	previous: RequestWindow
+): { direction: 'up' | 'down' | 'flat'; label: string } | null {
+	const rate = conversionRate(current);
+	const before = conversionRate(previous);
+	if (rate === null || before === null || before === 0) return null;
+	const change = Math.round(((rate - before) / before) * 100);
+	if (change === 0) return { direction: 'flat', label: 'Same as the 30 days before' };
+	return {
+		direction: change > 0 ? 'up' : 'down',
+		label: `${Math.abs(change)}% vs the 30 days before`
+	};
+}
+
+// How much of the bar under the conversion figure is filled: the share of new requests that became a
+// quote or job, 0 to 1. Null with no new requests, so no bar is drawn.
+export function conversionShare(current: RequestWindow): number | null {
+	return current.new === 0 ? null : Math.min(1, current.converted / current.new);
+}
