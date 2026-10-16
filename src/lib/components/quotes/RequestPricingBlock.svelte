@@ -21,6 +21,11 @@
 	}));
 	const saved = $derived(pricingQuery.data);
 
+	const itemsHint = $derived.by(() => {
+		const count = saved?.lines.length ?? 0;
+		return count > 0 ? `${count} ${count === 1 ? 'item' : 'items'}` : undefined;
+	});
+
 	async function save(expectedRevision: number, lines: RequestPricingLineInput[]) {
 		try {
 			await saveRequestPricing(requestId, expectedRevision, lines);
@@ -42,6 +47,8 @@
 	loadFailed={pricingQuery.isError}
 	attachTo={{ entityType: 'request', entityId: requestId }}
 	editorTotalLabel="Request subtotal"
+	totalLabel="Request subtotal"
+	hint={itemsHint}
 	saveLabel="Save pricing"
 	lockedMessage="Pricing is locked because this request has already become a quote."
 	onSave={save}

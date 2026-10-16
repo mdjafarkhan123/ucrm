@@ -85,6 +85,7 @@
 		attachTo = null,
 		alwaysEditing = false,
 		editorTotalLabel = 'Subtotal',
+		totalLabel = 'Subtotal',
 		saveLabel = 'Save pricing',
 		lockedMessage = '',
 		hint,
@@ -131,6 +132,8 @@
 		alwaysEditing?: boolean;
 		/** What the editor's own action bar calls the running total, e.g. "Request subtotal". */
 		editorTotalLabel?: string;
+		/** What the saved table's total row is called, e.g. "Request subtotal". */
+		totalLabel?: string;
 		saveLabel?: string;
 		lockedMessage?: string;
 		/** A quiet line under the title in the App look, e.g. "4 items · work done Sep 29 – Oct 3". */
@@ -1323,7 +1326,7 @@
 		{:else if showPrices}
 			<div class="pricing-block__totals">
 				<div class="pricing-block__totals-row">
-					<span>{progressColumn ? 'Due this invoice' : 'Subtotal'}</span>
+					<span>{progressColumn ? 'Due this invoice' : totalLabel}</span>
 					<span>{formatMoney(savedSubtotal(savedLines))}</span>
 				</div>
 			</div>

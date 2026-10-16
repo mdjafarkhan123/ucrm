@@ -62,6 +62,17 @@
 			gap: var(--space-small);
 		}
 
+		&__heading {
+			min-width: 0;
+		}
+
+		&__hint {
+			margin: 2px 0 0;
+			color: var(--color-text--secondary);
+			font-size: 13px;
+			font-weight: 500;
+		}
+
 		&__title {
 			display: flex;
 			align-items: center;
@@ -111,6 +122,7 @@
 		box-shadow: none;
 
 		.rail-card__title {
+			gap: 6px;
 			font-size: var(--typography--fontSize-large);
 			letter-spacing: -0.2px;
 		}

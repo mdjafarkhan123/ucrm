@@ -236,6 +236,24 @@
 				grid-row: 1 / span 2;
 			}
 		}
+
+		// The pencil on a card header is a small bordered button, as in the approved designs.
+		:global(.section-block__actions .pencil-button) {
+			width: 40px;
+			height: 36px;
+			color: var(--color-text--secondary);
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+			&:hover:not(:disabled),
+			&:focus-visible:not(:disabled) {
+				border-color: var(--color-border--interactive);
+				color: var(--color-heading);
+				background: var(--color-surface--hover);
+			}
+		}
 	}
 	// Low specificity on purpose, so a block's own contents can set their own margin where they differ.
 	:global(.record-detail--cards)
