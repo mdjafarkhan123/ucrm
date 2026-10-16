@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
+	import RailRow from '$lib/components/layout/RailRow.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
@@ -9,6 +11,7 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import type { QuoteDiscountType, QuoteWriteError } from '$lib/quotes/api';
 	import discountIcon from '@tabler/icons/outline/discount.svg?raw';
+	import tagIcon from '@tabler/icons/outline/tag.svg?raw';
 
 	// The one discount a priced record carries, named the way the customer reads it. The card shows what is
 	// set and how much came off; the dialog is where it is changed. Like any dialog that owns a piece of the
@@ -31,6 +34,7 @@
 		canSeePrice = true,
 		recordNoun = 'quote',
 		staged = false,
+		embedded = false,
 		onSave,
 		onSaved
 	}: {
@@ -51,6 +55,8 @@
 		/** The record does not exist yet. The page holds the choice and writes it when the record is saved, so
 		 * there is nothing to announce as saved here. */
 		staged?: boolean;
+		/** App look: draw one row to sit inside a shared "Discount and tax" card instead of a card. */
+		embedded?: boolean;
 		/** Writes the discount against the revision it is handed. */
 		onSave: (
 			revision: number,
@@ -148,33 +154,56 @@
 	}
 </script>
 
-<RailCard title="Discount" icon={discountIcon}>
-	{#snippet actions()}
-		{#if editable && canSeePrice && configured}
-			<Button variant="tertiary" size="small" onclick={openDialog}>Edit</Button>
+{#if embedded}
+	<RailRow
+		icon={tagIcon}
+		label="Discount"
+		value={!canSeePrice
+			? 'No access to prices'
+			: configured
+				? `${name || 'Discount'}${discountMinor !== null ? ` · −${money.format(discountMinor / 100)}` : ` · ${valueText} off`}`
+				: editable
+					? 'None added'
+					: `No discount on this ${recordNoun}`}
+	>
+		{#snippet actions()}
+			{#if editable && canSeePrice}
+				<PencilButton
+					onclick={openDialog}
+					label={configured ? 'Edit the discount' : 'Add a discount'}
+				/>
+			{/if}
+		{/snippet}
+	</RailRow>
+{:else}
+	<RailCard title="Discount" icon={discountIcon}>
+		{#snippet actions()}
+			{#if editable && canSeePrice && configured}
+				<Button variant="tertiary" size="small" onclick={openDialog}>Edit</Button>
+			{/if}
+		{/snippet}
+	
+		{#if !canSeePrice}
+			<p class="record-discount__muted">You do not have access to these prices.</p>
+		{:else if configured}
+			<div class="record-discount__set">
+				<p class="record-discount__name">{name || 'Discount'}</p>
+				<p class="record-discount__value">
+					{valueText} off
+					{#if discountMinor !== null}
+						<span class="record-discount__amount">−{money.format(discountMinor / 100)}</span>
+					{/if}
+				</p>
+			</div>
+		{:else if editable}
+			<Button variant="secondary" variation="subtle" fullWidth onclick={openDialog}>
+				Add discount
+			</Button>
+		{:else}
+			<p class="record-discount__muted">No discount on this {recordNoun}.</p>
 		{/if}
-	{/snippet}
-
-	{#if !canSeePrice}
-		<p class="record-discount__muted">You do not have access to these prices.</p>
-	{:else if configured}
-		<div class="record-discount__set">
-			<p class="record-discount__name">{name || 'Discount'}</p>
-			<p class="record-discount__value">
-				{valueText} off
-				{#if discountMinor !== null}
-					<span class="record-discount__amount">−{money.format(discountMinor / 100)}</span>
-				{/if}
-			</p>
-		</div>
-	{:else if editable}
-		<Button variant="secondary" variation="subtle" fullWidth onclick={openDialog}>
-			Add discount
-		</Button>
-	{:else}
-		<p class="record-discount__muted">No discount on this {recordNoun}.</p>
-	{/if}
-</RailCard>
+	</RailCard>
+{/if}
 
 {#if open}
 	<Dialog {open} title={configured ? 'Edit discount' : 'Add discount'} size="small" onClose={close}>

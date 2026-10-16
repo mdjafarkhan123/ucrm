@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
+	import RailRow from '$lib/components/layout/RailRow.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
@@ -20,6 +21,8 @@
 		type QuoteWriteError
 	} from '$lib/quotes/api';
 	import cashIcon from '@tabler/icons/outline/cash.svg?raw';
+	import creditCardIcon from '@tabler/icons/outline/credit-card.svg?raw';
+	import bankNoteIcon from '@tabler/icons/outline/cash-banknote.svg?raw';
 
 	// The deposit a quote asks for, folded into one card: configuring the shape (deposit-only or a payment
 	// schedule) and, once the quote is sent, recording or reversing the offline receipt against it — per
@@ -101,6 +104,11 @@
 	);
 	const canRecord = $derived(
 		canRecordDeposit && hasPublishedVersion && !liveReceipt && (depositRequiredMinor ?? 0) > 0
+	);
+	const depositShare = $derived(
+		totalMinor > 0 && depositRequiredMinor !== null
+			? Math.round((depositRequiredMinor / totalMinor) * 100)
+			: 0
 	);
 	const canReverse = $derived(canRecordDeposit && Boolean(liveReceipt));
 
@@ -365,73 +373,126 @@
 	}
 </script>
 
-<RailCard title="Deposit" icon={cashIcon}>
+<RailCard title="Deposit" icon={cashIcon} flush>
 	{#snippet actions()}
-		{#if editable && canSeePrice && configured}
-			<Button variant="tertiary" size="small" onclick={openConfig}>Edit</Button>
+		{#if !canSeePrice || !configured}
+			<!-- Nothing to show beside the title until a deposit exists. -->
+		{:else}
+			{#if hasPublishedVersion}
+				<span
+					class={[
+						'quote-deposit__pill',
+						liveReceipt ? 'quote-deposit__pill--received' : 'quote-deposit__pill--awaiting'
+					]}
+				>
+					{liveReceipt ? 'Received' : 'Awaiting deposit'}
+				</span>
+			{/if}
+			{#if editable}
+				<Button variant="tertiary" size="small" onclick={openConfig}>Edit</Button>
+			{/if}
 		{/if}
 	{/snippet}
 
 	{#if !canSeePrice}
-		<p class="quote-deposit__muted">You do not have access to quote prices.</p>
+		<p class="quote-deposit__muted quote-deposit__pad">You do not have access to quote prices.</p>
 	{:else if configured}
-		<div class="quote-deposit__set">
-			<p class="quote-deposit__name">
-				{depositType === 'schedule' ? 'Payment schedule' : 'Deposit'}
-			</p>
-			{#if depositRequiredMinor !== null}
-				<p class="quote-deposit__amount">{money.format(depositRequiredMinor / 100)}</p>
-			{/if}
+		<div class="quote-deposit__meter">
+			<div class="quote-deposit__figure">
+				{#if depositRequiredMinor !== null}
+					<span class="quote-deposit__amount">{money.format(depositRequiredMinor / 100)}</span>
+					{#if totalMinor > 0}
+						<span class="quote-deposit__of">
+							{depositType === 'schedule' ? 'Payment schedule' : `${depositShare}%`} of {money.format(
+								totalMinor / 100
+							)}
+						</span>
+					{/if}
+				{/if}
+			</div>
+			<div class="quote-deposit__track" aria-hidden="true">
+				<span class="quote-deposit__fill" style:width={liveReceipt ? '100%' : '0%'}></span>
+			</div>
+		</div>
 
-			{#if depositType === 'schedule'}
-				<ul class="quote-deposit__schedule">
-					{#each scheduleItems as item (item.id)}
-						<li class="quote-deposit__schedule-row">
-							<span>{item.description}</span>
-							<span>{money.format(pricedAmount(item) / 100)}</span>
-						</li>
-					{/each}
-				</ul>
-			{/if}
+		{#if depositType === 'schedule' && scheduleItems.length > 0}
+			<ul class="quote-deposit__schedule quote-deposit__pad">
+				{#each scheduleItems as item (item.id)}
+					<li class="quote-deposit__schedule-row">
+						<span>{item.description}</span>
+						<span>{money.format(pricedAmount(item) / 100)}</span>
+					</li>
+				{/each}
+			</ul>
+		{/if}
 
-			{#if liveReceipt}
-				<p class="quote-deposit__status quote-deposit__status--received">
-					Received {money.format(liveReceipt.amount_minor / 100)} · {METHOD_LABELS[
-						liveReceipt.method
-					]} · {dateFormat.format(new Date(liveReceipt.created_at))}
-				</p>
+		{#if liveReceipt}
+			<RailRow
+				icon={creditCardIcon}
+				label="Received"
+				value={`${money.format(liveReceipt.amount_minor / 100)} · ${METHOD_LABELS[liveReceipt.method]} · ${dateFormat.format(new Date(liveReceipt.created_at))}`}
+			>
 				{#if liveReceipt.reference}
-					<p class="quote-deposit__note">Ref: {liveReceipt.reference}</p>
+					<span class="quote-deposit__note">Ref: {liveReceipt.reference}</span>
 				{/if}
 				{#if liveReceipt.note}
-					<p class="quote-deposit__note">{liveReceipt.note}</p>
+					<span class="quote-deposit__note">{liveReceipt.note}</span>
 				{/if}
-			{:else if latestEvent?.event_type === 'reversed'}
-				<p class="quote-deposit__status">
-					Reversed on {dateFormat.format(new Date(latestEvent.created_at))} — not yet recorded again.
-				</p>
-			{:else if hasPublishedVersion}
-				<p class="quote-deposit__status">Awaiting deposit.</p>
-			{:else}
-				<p class="quote-deposit__muted">The deposit will be requested once this quote is sent.</p>
-			{/if}
+			</RailRow>
+		{:else if latestEvent?.event_type === 'reversed'}
+			<RailRow
+				icon={creditCardIcon}
+				tone="warning"
+				label="Received"
+				value={`Reversed on ${dateFormat.format(new Date(latestEvent.created_at))} — not yet recorded again`}
+			/>
+		{:else if hasPublishedVersion}
+			<RailRow
+				icon={creditCardIcon}
+				tone="warning"
+				label="Received"
+				value="Not yet — awaiting deposit"
+			/>
+		{:else}
+			<RailRow
+				icon={creditCardIcon}
+				label="Received"
+				value="Requested once this quote is sent"
+			/>
+		{/if}
 
-			{#if canRecord}
-				<Button variant="secondary" variation="subtle" fullWidth onclick={openRecord}>
+		{#if canRecord}
+			<div class="quote-deposit__action">
+				<Button
+					variant="secondary"
+					variation="subtle"
+					fullWidth
+					class="quote-deposit__record"
+					onclick={openRecord}
+				>
+					<span class="quote-deposit__action-icon" aria-hidden="true">{@html bankNoteIcon}</span>
 					Record deposit received
 				</Button>
-			{:else if canReverse}
+			</div>
+		{:else if canReverse}
+			<div class="quote-deposit__action">
 				<Button variant="tertiary" variation="destructive" fullWidth onclick={openReverse}>
 					Reverse deposit
 				</Button>
-			{/if}
-		</div>
+			</div>
+		{/if}
 	{:else if editable}
-		<Button variant="secondary" variation="subtle" fullWidth onclick={openConfig}
-			>Add deposit</Button
-		>
+		<div class="quote-deposit__pad">
+			<Button
+				variant="secondary"
+				variation="subtle"
+				fullWidth
+				class="quote-deposit__record"
+				onclick={openConfig}>Add deposit</Button
+			>
+		</div>
 	{:else}
-		<p class="quote-deposit__muted">No deposit on this quote.</p>
+		<p class="quote-deposit__muted quote-deposit__pad">No deposit on this quote.</p>
 	{/if}
 </RailCard>
 
@@ -681,30 +742,100 @@
 		color: var(--color-text--secondary);
 	}
 
-	.quote-deposit__set {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-smallest);
+	.quote-deposit__pad {
+		margin: 0;
+		padding: 0 20px 18px;
+		font-size: 13px;
 	}
 
-	.quote-deposit__name {
-		margin: 0;
-		color: var(--color-heading);
+	.quote-deposit__pill {
+		padding: 3px 9px;
+		border-radius: 999px;
+		font-size: 11px;
 		font-weight: 600;
+
+		&--awaiting {
+			color: var(--color-warning--onSurface);
+			background: var(--color-warning--surface);
+		}
+		&--received {
+			color: var(--color-interactive);
+			background: var(--color-success--surface);
+		}
+	}
+
+	.quote-deposit__meter {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 0 20px 16px;
+	}
+
+	.quote-deposit__figure {
+		display: flex;
+		align-items: baseline;
+		gap: 6px;
 	}
 
 	.quote-deposit__amount {
-		margin: 0;
 		color: var(--color-heading);
+		font-size: 22px;
+		font-variant-numeric: tabular-nums;
+		font-weight: 700;
+		letter-spacing: -0.5px;
+		line-height: 1;
+	}
+
+	.quote-deposit__of {
+		color: var(--color-text--secondary);
+		font-size: 13px;
+		font-weight: 500;
+	}
+
+	.quote-deposit__track {
+		height: 6px;
+		overflow: hidden;
+		border-radius: 999px;
+		background: var(--color-surface--background--subtle);
+	}
+
+	.quote-deposit__fill {
+		display: block;
+		height: 100%;
+		border-radius: 999px;
+		background: var(--color-interactive);
+	}
+
+	.quote-deposit__action {
+		padding: 4px 20px 20px;
+	}
+
+	.quote-deposit__action :global(.quote-deposit__record),
+	.quote-deposit__pad :global(.quote-deposit__record) {
+		height: 38px;
+		border-color: var(--color-border--interactive);
+		border-radius: 10px;
+		color: var(--color-heading);
+		font-size: 13px;
 		font-weight: 600;
+	}
+
+	.quote-deposit__action-icon {
+		display: inline-flex;
+		margin-right: 8px;
+		color: var(--color-text--secondary);
+	}
+
+	.quote-deposit__action-icon :global(svg) {
+		display: block;
+		width: 15px;
+		height: 15px;
 	}
 
 	.quote-deposit__schedule {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-smallest);
-		margin: 0;
-		padding: 0;
 		list-style: none;
 	}
 
@@ -715,18 +846,9 @@
 		color: var(--color-text--secondary);
 	}
 
-	.quote-deposit__status {
-		margin: 0;
-		color: var(--color-text--secondary);
-
-		&--received {
-			color: var(--color-heading);
-			font-weight: 600;
-		}
-	}
-
 	.quote-deposit__note {
 		margin: 0;
+		font-weight: 500;
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 	}

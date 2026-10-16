@@ -19,6 +19,7 @@
 		type EnrollmentControl
 	} from '$lib/quotes/automation';
 	import type { QuoteWriteError } from '$lib/quotes/api';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import robotIcon from '@tabler/icons/outline/robot.svg?raw';
 	import pauseIcon from '@tabler/icons/outline/player-pause.svg?raw';
 	import playIcon from '@tabler/icons/outline/player-play.svg?raw';
@@ -189,39 +190,57 @@
 
 {#if !accessDenied}
 	<div role="presentation" onmouseenter={() => (warm = true)} onfocusin={() => (warm = true)}>
-		<RailCard title="Automation" icon={robotIcon}>
+		<RailCard title="Automation" sub="Follow-ups sent for you" icon={robotIcon} flush>
 			{#snippet actions()}
 				{#if canControl && (data?.enrollable_recipes.length ?? 0) > 0}
-					<Button size="small" variant="tertiary" onclick={() => (enrolling = true)}>Enrol</Button>
+					<Button
+						size="small"
+						variant="secondary"
+						variation="subtle"
+						class="quote-automation__enrol"
+						onclick={() => (enrolling = true)}
+					>
+						<span class="quote-automation__plus" aria-hidden="true">{@html plusIcon}</span>
+						Enrol
+					</Button>
 				{/if}
 			{/snippet}
 
 			{#if !warm || query.isPending}
-				<LoadingSkeleton variant="table" rows={2} label="Loading automations" />
+				<div class="quote-automation__pad">
+					<LoadingSkeleton variant="table" rows={2} label="Loading automations" />
+				</div>
 			{:else if query.isError}
-				<ErrorState
-					description="Automation history could not be loaded."
-					retry={() => query.refetch()}
-				/>
+				<div class="quote-automation__pad">
+					<ErrorState
+						description="Automation history could not be loaded."
+						retry={() => query.refetch()}
+					/>
+				</div>
 			{:else if enrollments.length === 0}
-				<EmptyState
-					icon={robotIcon}
-					title="No automations"
-					description="This quote isn't in any follow-up automation yet."
-				/>
+				<div class="quote-automation__pad">
+					<EmptyState
+						icon={robotIcon}
+						title="No automations"
+						description="This quote isn't in any follow-up automation yet."
+					/>
+				</div>
 			{:else}
 				<ul class="quote-automation__list">
 					{#each enrollments as enrollment (enrollment.enrollment_id)}
 						<li class="quote-automation__row">
+							<span class="quote-automation__icon" aria-hidden="true">{@html robotIcon}</span>
 							<div class="quote-automation__body">
 								<div class="quote-automation__heading">
 									<span class="quote-automation__name">{enrollment.recipe_name}</span>
 									<span class="quote-automation__version">v{enrollment.version_number}</span>
 								</div>
-								<StatusBadge status={stateTone(enrollment.state)}>
-									{stateLabel(enrollment.state)}
-								</StatusBadge>
-								<p class="quote-automation__meta">{nextLine(enrollment)}</p>
+								<div class="quote-automation__status">
+									<StatusBadge status={stateTone(enrollment.state)}>
+										{stateLabel(enrollment.state)}
+									</StatusBadge>
+									<p class="quote-automation__meta">{nextLine(enrollment)}</p>
+								</div>
 								{#if enrollment.state === 'stopped' && enrollment.stop_reason}
 									<p class="quote-automation__reason">{stopReasonLine(enrollment.stop_reason)}</p>
 								{/if}
@@ -280,10 +299,33 @@
 {/if}
 
 <style lang="scss">
+	.quote-automation__pad {
+		padding: 0 20px 18px;
+	}
+
+	:global(.quote-automation__enrol) {
+		border-color: var(--color-border--interactive);
+		border-radius: 10px;
+		color: var(--color-heading);
+		font-size: 13px;
+		font-weight: 600;
+	}
+
+	.quote-automation__plus {
+		display: inline-flex;
+		margin-right: 6px;
+		color: var(--color-text--secondary);
+	}
+
+	.quote-automation__plus :global(svg) {
+		display: block;
+		width: 14px;
+		height: 14px;
+	}
+
 	.quote-automation__list {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-base);
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -291,33 +333,53 @@
 
 	.quote-automation__row {
 		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
-		gap: var(--space-small);
-		padding-bottom: var(--space-base);
-		border-bottom: var(--border-base) solid var(--color-border);
+		align-items: center;
+		gap: 12px;
+		padding: 14px 20px 18px;
+		border-top: var(--border-base) solid var(--color-border);
+	}
 
-		&:last-child {
-			padding-bottom: 0;
-			border-bottom: 0;
+	.quote-automation__icon {
+		display: inline-grid;
+		flex: 0 0 auto;
+		width: 32px;
+		height: 32px;
+		place-items: center;
+		border-radius: var(--radius-base);
+		color: var(--color-warning--onSurface);
+		background: var(--color-warning--surface);
+
+		:global(svg) {
+			display: block;
+			width: 16px;
+			height: 16px;
 		}
 	}
 
 	.quote-automation__body {
 		display: flex;
+		flex: 1 1 auto;
 		flex-direction: column;
-		gap: var(--space-smaller);
+		gap: 4px;
 		min-width: 0;
+	}
+
+	.quote-automation__status {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 4px 8px;
 	}
 
 	.quote-automation__heading {
 		display: flex;
 		align-items: baseline;
-		gap: var(--space-small);
+		gap: 6px;
 	}
 
 	.quote-automation__name {
 		color: var(--color-heading);
+		font-size: 13px;
 		font-weight: 600;
 		overflow: hidden;
 		text-overflow: ellipsis;

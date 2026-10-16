@@ -8,6 +8,8 @@
 		title,
 		icon,
 		count,
+		sub,
+		flush = false,
 		actions: actionSnippet,
 		children
 	}: {
@@ -15,6 +17,8 @@
 		title: string;
 		icon?: string;
 		count?: number;
+		sub?: string;
+		flush?: boolean;
 		actions?: Snippet;
 		children: Snippet;
 	} = $props();
@@ -25,7 +29,7 @@
 		{@render children()}
 	</SectionBlock>
 {:else}
-	<RailCard {title} {icon} {count} actions={actionSnippet}>
+	<RailCard {title} {icon} {count} {sub} {flush} actions={actionSnippet}>
 		{@render children()}
 	</RailCard>
 {/if}

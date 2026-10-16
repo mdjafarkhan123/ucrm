@@ -7,6 +7,8 @@
 		title,
 		icon,
 		count,
+		sub,
+		flush = false,
 		actions,
 		children,
 		class: className = ''
@@ -14,6 +16,11 @@
 		title: string;
 		icon?: string;
 		count?: number;
+		/** A quiet line under the title (App look). */
+		sub?: string;
+		/** App look: the card has no padding of its own, so rows placed in it can run edge to edge. The
+		 *  header keeps its padding; everything else sets its own. */
+		flush?: boolean;
 		actions?: Snippet;
 		children: Snippet;
 		class?: string;
@@ -21,12 +28,15 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<section class={`rail-card ${className}`}>
+<section class={`rail-card ${className}`} class:rail-card--flush={flush}>
 	<header class="rail-card__header">
-		<h2 class="rail-card__title">
-			{#if icon}<span class="rail-card__icon" aria-hidden="true">{@html icon}</span>{/if}
-			{title}{#if count !== undefined}&nbsp;({count}){/if}
-		</h2>
+		<div class="rail-card__heading">
+			<h2 class="rail-card__title">
+				{#if icon}<span class="rail-card__icon" aria-hidden="true">{@html icon}</span>{/if}
+				{title}{#if count !== undefined}&nbsp;({count}){/if}
+			</h2>
+			{#if sub}<p class="rail-card__sub">{sub}</p>{/if}
+		</div>
 		{#if actions}<div class="rail-card__actions">{@render actions()}</div>{/if}
 	</header>
 	{@render children()}
@@ -50,6 +60,20 @@
 			align-items: center;
 			justify-content: space-between;
 			gap: var(--space-small);
+		}
+
+		&__heading {
+			display: flex;
+			min-width: 0;
+			flex-direction: column;
+			gap: 2px;
+		}
+
+		&__sub {
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
 		}
 
 		&__title {
@@ -83,6 +107,15 @@
 		}
 		.rail-card__icon {
 			display: none;
+		}
+	}
+	:global(.record-detail--cards) .rail-card--flush {
+		gap: 0;
+		padding: 0;
+		overflow: clip;
+
+		.rail-card__header {
+			padding: 18px 20px 14px;
 		}
 	}
 </style>

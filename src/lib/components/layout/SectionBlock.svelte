@@ -178,7 +178,9 @@
 			display: none;
 		}
 		> :global(.section-block__hint) {
-			margin: -8px 24px 12px;
+			margin: -13px 24px 20px;
+			font-size: 13px;
+			font-weight: 500;
 		}
 	}
 	// Low specificity on purpose, so a block's own contents can set their own margin where they differ.

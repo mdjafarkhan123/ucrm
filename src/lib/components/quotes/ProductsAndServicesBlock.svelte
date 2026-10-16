@@ -54,6 +54,9 @@
 	import taxIcon from '@tabler/icons/outline/receipt-tax.svg?raw';
 	import taxOffIcon from '@tabler/icons/outline/receipt-off.svg?raw';
 	import gripIcon from '@tabler/icons/outline/grip-vertical.svg?raw';
+	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
+	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
+	import circlePlusIcon from '@tabler/icons/outline/circle-plus.svg?raw';
 
 	// One "Products and services" section, matching the real Jobber quote line-item card
 	// (jobber-03-quotes.md §8.1): name/qty/price/total on top, description + a photo underneath, drag to
@@ -84,6 +87,9 @@
 		editorTotalLabel = 'Subtotal',
 		saveLabel = 'Save pricing',
 		lockedMessage = '',
+		hint,
+		totals,
+		clientSees,
 		emptyDescription = 'Add the products and services this job needs before it becomes a quote.',
 		onSave,
 		onDraftChange,
@@ -125,6 +131,20 @@
 		editorTotalLabel?: string;
 		saveLabel?: string;
 		lockedMessage?: string;
+		/** A quiet line under the title (App look). */
+		hint?: string;
+		/** The saved totals, drawn under the table instead of one Subtotal row: the discount and tax the
+		 *  database worked out, then the grand total. Omit and the card shows only the subtotal. */
+		totals?: {
+			discountMinor: number;
+			discountLabel: string | null;
+			taxMinor: number;
+			taxLabel: string | null;
+			totalMinor: number;
+			totalLabel: string;
+		};
+		/** What the client's copy shows, e.g. "Client sees every figure". Sits at the end of the locked strip. */
+		clientSees?: string;
 		emptyDescription?: string;
 		onSave?: (expectedRevision: number, lines: RequestPricingLineInput[]) => Promise<void>;
 		onDraftChange?: (lines: RequestPricingLineInput[], subtotalMinor: number) => void;
@@ -932,7 +952,15 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<SectionBlock title="Products and services" icon={listIcon} level={2}>
+<SectionBlock
+	title="Products and services"
+	icon={listIcon}
+	level={2}
+	{hint}
+	class={!isEditing && !loading && !loadFailed && savedLines.length > 0
+		? 'section-block--flush'
+		: ''}
+>
 	{#snippet actions()}
 		{#if editable && !isEditing && savedLines.length > 0}
 			<PencilButton onclick={openEdit} label="Edit products and services" />
@@ -1202,12 +1230,17 @@
 						{:else}
 							<tr>
 								<th scope="row">
-									<span class="pricing-table__name">{line.name}</span>
-									{#if quoteChoices && line.selection_kind === 'optional'}
-										<span class="pricing-table__choice">
-											{line.is_recommended ? 'Recommended add-on' : 'Optional add-on'}
-										</span>
-									{/if}
+									<span class="pricing-table__title">
+										<span class="pricing-table__name">{line.name}</span>
+										{#if quoteChoices && line.selection_kind === 'optional'}
+											<span class="pricing-table__choice">
+												<span class="pricing-table__choice-icon" aria-hidden="true"
+													>{@html circlePlusIcon}</span
+												>
+												{line.is_recommended ? 'Recommended add-on' : 'Optional add-on'}
+											</span>
+										{/if}
+									</span>
 									{#if line.description}
 										<span class="pricing-table__description">{line.description}</span>
 									{/if}
@@ -1240,7 +1273,32 @@
 				</tbody>
 			</table>
 		</div>
-		{#if showPrices}
+		{#if showPrices && totals}
+			<div class="pricing-block__summary">
+				<dl class="pricing-block__summary-list">
+					<div class="pricing-block__summary-row">
+						<dt>Subtotal</dt>
+						<dd>{formatMoney(savedSubtotal(savedLines))}</dd>
+					</div>
+					{#if totals.discountMinor > 0}
+						<div class="pricing-block__summary-row">
+							<dt>{totals.discountLabel || 'Discount'}</dt>
+							<dd>−{formatMoney(totals.discountMinor)}</dd>
+						</div>
+					{/if}
+					{#if totals.taxMinor > 0}
+						<div class="pricing-block__summary-row">
+							<dt>{totals.taxLabel || 'Tax'}</dt>
+							<dd>{formatMoney(totals.taxMinor)}</dd>
+						</div>
+					{/if}
+					<div class="pricing-block__summary-row pricing-block__summary-row--total">
+						<dt>{totals.totalLabel}</dt>
+						<dd>{formatMoney(totals.totalMinor)}</dd>
+					</div>
+				</dl>
+			</div>
+		{:else if showPrices}
 			<div class="pricing-block__totals">
 				<div class="pricing-block__totals-row">
 					<span>{progressColumn ? 'Due this invoice' : 'Subtotal'}</span>
@@ -1250,8 +1308,21 @@
 		{/if}
 	{/if}
 
-	{#if !editable && lockedMessage && !loading && !loadFailed}
-		<p class="pricing-block__hint">{lockedMessage}</p>
+	{#if !editable && (lockedMessage || clientSees) && !loading && !loadFailed}
+		<div class="pricing-block__locked">
+			{#if lockedMessage}
+				<p class="pricing-block__hint pricing-block__locked-note">
+					<span class="pricing-block__locked-icon" aria-hidden="true">{@html lockIcon}</span>
+					{lockedMessage}
+				</p>
+			{/if}
+			{#if clientSees && savedLines.length > 0}
+				<p class="pricing-block__client-sees">
+					<span class="pricing-block__locked-icon" aria-hidden="true">{@html eyeIcon}</span>
+					{clientSees}
+				</p>
+			{/if}
+		</div>
 	{/if}
 </SectionBlock>
 
@@ -1323,6 +1394,85 @@
 			margin: 0;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
+		}
+		// App look: the totals sit under the table in a right-hand block, and the locked note runs along the
+		// foot of the card as a quiet strip.
+		&__summary {
+			display: flex;
+			justify-content: flex-end;
+			padding: 16px 24px 20px;
+			border-top: var(--border-base) solid var(--color-border);
+		}
+		&__summary-list {
+			display: flex;
+			width: min(300px, 100%);
+			flex-direction: column;
+			gap: 8px;
+			margin: 0;
+		}
+		&__summary-row {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: var(--space-base);
+			font-size: 13px;
+			font-weight: 500;
+
+			dt {
+				color: var(--color-text--secondary);
+			}
+			dd {
+				margin: 0;
+				color: var(--color-text);
+				font-variant-numeric: tabular-nums;
+			}
+
+			&--total {
+				padding-top: 10px;
+				border-top: var(--border-base) solid var(--color-border);
+
+				dt {
+					color: var(--color-heading);
+					font-size: var(--typography--fontSize-base);
+					font-weight: 700;
+				}
+				dd {
+					color: var(--color-heading);
+					font-size: 18px;
+					font-weight: 700;
+					letter-spacing: -0.3px;
+				}
+			}
+		}
+		&__locked {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			justify-content: space-between;
+			gap: var(--space-small) var(--space-base);
+		}
+		&__locked-note,
+		&__client-sees {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+		}
+		&__client-sees {
+			margin-left: auto;
+			color: var(--color-interactive);
+			font-weight: 600;
+		}
+		&__locked-icon :global(svg) {
+			display: block;
+			width: 13px;
+			height: 13px;
+		}
+		&__locked-note &__locked-icon {
+			color: var(--color-icon--secondary);
 		}
 		&__notice {
 			margin: 0 0 var(--space-base);
@@ -1551,12 +1701,18 @@
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 		}
+		&__title {
+			display: block;
+		}
 		&__choice {
 			display: block;
 			padding-top: var(--space-smallest);
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 			font-weight: 600;
+		}
+		&__choice-icon {
+			display: none;
 		}
 		&__heading th {
 			background: var(--color-surface--background--subtle);
@@ -1609,6 +1765,39 @@
 		&__name {
 			font-size: var(--typography--fontSize-base);
 		}
+		&__title {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 4px 8px;
+		}
+		&__choice {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+			padding: 2px 8px;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: 999px;
+			background: var(--color-surface--background--subtle);
+			font-size: 11px;
+		}
+		&__choice-icon {
+			display: inline-flex;
+
+			:global(svg) {
+				display: block;
+				width: 11px;
+				height: 11px;
+			}
+		}
+	}
+
+	// The strip along the foot of the saved card; only present when the card is flush, so it carries its
+	// own padding. The totals block above it already drew its own top rule.
+	:global(.record-detail--cards .section-block--flush) .pricing-block__locked {
+		padding: 12px 24px;
+		border-top: var(--border-base) solid var(--color-border);
+		background: var(--color-surface--background--subtle);
 	}
 
 	@media (max-width: 1359px) {

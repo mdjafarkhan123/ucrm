@@ -22,6 +22,7 @@
 		type NoteFile
 	} from '$lib/collaboration/api';
 	import { downloadFile, fileImageUrl } from '$lib/files/api';
+	import arrowUpIcon from '@tabler/icons/outline/arrow-up.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 	import pencilPlusIcon from '@tabler/icons/outline/pencil-plus.svg?raw';
 	import pinIcon from '@tabler/icons/outline/pin.svg?raw';
@@ -40,6 +41,7 @@
 		canManageTeam = canManage,
 		currentUserId,
 		pending = [],
+		compact = false,
 		onChange
 	}: {
 		entityType: EntityType;
@@ -50,6 +52,9 @@
 		currentUserId?: string;
 		/** Staged changes, held by the page so its action bar can save them. */
 		pending?: NoteChange[];
+		/** App look: notes read as rows under hairlines, and the note field sits at the bottom with a send
+		 *  button. Sending still only stages the note; the page's bar saves it. */
+		compact?: boolean;
 		onChange: (next: NoteChange[]) => void;
 	} = $props();
 
@@ -152,11 +157,26 @@
 		document.getElementById(`note-composer-${entityId}`)?.focus();
 	}
 
+	// One line until the note needs more, then it grows with the text up to the CSS limit.
+	function growField(event: Event) {
+		const field = event.currentTarget as HTMLTextAreaElement;
+		field.style.height = '28px';
+		field.style.height = `${Math.min(field.scrollHeight, 120)}px`;
+	}
+
+	function sendFromField(event: KeyboardEvent) {
+		if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return;
+		event.preventDefault();
+		addNote();
+	}
+
 	function addNote() {
 		const body = newBody.trim();
 		if (!body) return;
 		stage({ kind: 'create', key: crypto.randomUUID(), body });
 		newBody = '';
+		const field = document.getElementById(`note-composer-${entityId}`);
+		if (field && compact) field.style.height = '28px';
 	}
 
 	// --- Editing an existing note -----------------------------------------------------------------------
@@ -190,8 +210,8 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div class="notes-panel">
-	{#if showComposer}
+<div class="notes-panel" class:notes-panel--compact={compact}>
+	{#if showComposer && !compact}
 		<div class="notes-panel__composer">
 			<Textarea
 				id={`note-composer-${entityId}`}
@@ -212,6 +232,8 @@
 		<p class="notes-panel__error" role="alert">
 			{notesQuery.error instanceof Error ? notesQuery.error.message : 'Notes could not be loaded.'}
 		</p>
+	{:else if compact && notes.length === 0 && createdNotes.length === 0}
+		{#if !canManage}<p class="notes-panel__muted notes-panel__empty">No notes yet.</p>{/if}
 	{:else if notes.length === 0 && createdNotes.length === 0 && !showComposer}
 		<EmptyState
 			title="No notes yet"
@@ -331,6 +353,32 @@
 				</li>
 			{/each}
 		</ul>
+	{/if}
+
+	{#if compact && canManage}
+		<div class="notes-panel__field">
+			<textarea
+				id={`note-composer-${entityId}`}
+				class="notes-panel__field-input"
+				aria-label="Write a note for the team"
+				placeholder="Write a note for the team…"
+				rows="1"
+				maxlength="4000"
+				bind:value={newBody}
+				onkeydown={sendFromField}
+				oninput={growField}
+			></textarea>
+			<button
+				type="button"
+				class="notes-panel__send"
+				aria-label="Add note"
+				title="Add note"
+				disabled={!newBody.trim()}
+				onclick={addNote}
+			>
+				{@html arrowUpIcon}
+			</button>
+		</div>
 	{/if}
 </div>
 
@@ -476,6 +524,142 @@
 			display: flex;
 			justify-content: flex-end;
 			gap: var(--space-small);
+		}
+	}
+
+	// App look: the panel sits flush in its card. Each note is a row under a hairline with the author and
+	// time on one line, and the note field is a quiet bar at the bottom.
+	.notes-panel--compact {
+		gap: 0;
+
+		.notes-panel__list {
+			gap: 0;
+		}
+		.notes-panel__item {
+			padding: 12px 20px;
+			border: 0;
+			border-top: var(--border-base) solid var(--color-border);
+			border-radius: 0;
+			background: transparent;
+		}
+		.notes-panel__item--pinned {
+			background: var(--color-warning--surface);
+		}
+		.notes-panel__item--removed {
+			border-top-style: dashed;
+		}
+		.notes-panel__body {
+			margin-top: 2px;
+			margin-left: 38px;
+			font-size: 13px;
+			font-weight: 500;
+			line-height: 1.5;
+		}
+		.notes-panel__edit,
+		.notes-panel__muted:not(.notes-panel__empty) {
+			margin-left: 38px;
+		}
+		.notes-panel__empty {
+			margin: 0;
+			padding: 0 20px 18px;
+		}
+		:global(.author-meta__text) {
+			flex-direction: row;
+			align-items: baseline;
+			gap: 6px;
+		}
+		:global(.author-meta__name) {
+			color: var(--color-heading);
+			font-size: 13px;
+		}
+		:global(.author-meta__time) {
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+		}
+		// The note's own text, drawn by NoteBody, lines up under the name.
+		:global(.note-body),
+		:global(.note-files) {
+			margin-left: 38px;
+		}
+		:global(.note-body) {
+			margin-top: 2px;
+			font-size: 13px;
+			font-weight: 500;
+			line-height: 1.5;
+		}
+	}
+
+	.notes-panel__field {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin: 12px 20px 16px;
+		padding: 5px 6px 5px 14px;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background--subtle);
+
+		&:focus-within {
+			border-color: var(--color-interactive);
+			box-shadow: var(--shadow-focus);
+		}
+	}
+
+	.notes-panel__field-input {
+		flex: 1 1 auto;
+		min-width: 0;
+		min-height: 28px;
+		max-height: 120px;
+		padding: 4px 0;
+		border: 0;
+		outline: none;
+		color: var(--color-text);
+		background: transparent;
+		font: inherit;
+		font-size: 13px;
+		font-weight: 500;
+		line-height: 1.4;
+		resize: none;
+		height: 28px;
+		overflow-y: auto;
+
+		// The app-wide placeholder rule leaves room above it for a floating label; this field has none.
+		&::placeholder {
+			padding-top: 0;
+			color: var(--color-icon--secondary);
+			font-size: 13px;
+		}
+	}
+
+	.notes-panel__send {
+		display: inline-grid;
+		flex: 0 0 auto;
+		width: 28px;
+		height: 28px;
+		padding: 0;
+		place-items: center;
+		border: 0;
+		border-radius: 8px;
+		color: var(--color-text--reverse);
+		background: var(--color-interactive);
+		cursor: pointer;
+		transition: opacity var(--timing-base) ease-out;
+
+		:global(svg) {
+			display: block;
+			width: 15px;
+			height: 15px;
+		}
+		&:hover:not(:disabled) {
+			background: var(--color-interactive--hover);
+		}
+		&:disabled {
+			cursor: not-allowed;
+			opacity: 0.45;
+		}
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
 		}
 	}
 </style>

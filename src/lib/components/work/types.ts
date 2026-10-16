@@ -15,6 +15,10 @@ export type RecordFact = {
 	wrap?: boolean;
 	/** Tabler icon (`?raw`) drawn in a small tile beside the fact in the App look header. Other looks ignore it. */
 	icon?: string;
+	/** Colour of the icon tile in the App look. Left out, the first fact is green and the rest are quiet. */
+	tone?: 'neutral' | 'success' | 'warning';
+	/** Draw the value in the quiet colour, for a fact still waiting on something (e.g. "No answer yet"). */
+	quiet?: boolean;
 };
 
 /** One address slot on the client summary card. A quote shows only the property; an invoice shows the
