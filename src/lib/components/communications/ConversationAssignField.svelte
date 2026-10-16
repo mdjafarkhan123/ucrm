@@ -86,14 +86,14 @@
 	:global(.conversation-assign__trigger) {
 		display: inline-flex;
 		width: auto;
-		height: auto;
 		align-items: center;
-		gap: var(--space-smaller);
-		padding: var(--space-smaller) var(--space-small);
+		gap: var(--space-small);
+		height: 36px;
+		padding: 0 10px 0 5px;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border-radius: 10px;
 		color: var(--color-text);
-		font-size: var(--typography--fontSize-small);
+		font-size: 13px;
 		font-weight: 600;
 		background: var(--color-surface);
 		cursor: pointer;
@@ -125,9 +125,14 @@
 
 	.conversation-assign__readonly {
 		display: inline-flex;
+		height: 36px;
 		align-items: center;
-		gap: var(--space-smaller);
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
+		gap: var(--space-small);
+		padding: 0 12px 0 5px;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: 10px;
+		color: var(--color-text);
+		font-size: 13px;
+		font-weight: 600;
 	}
 </style>

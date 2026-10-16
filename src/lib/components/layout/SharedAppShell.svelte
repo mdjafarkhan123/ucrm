@@ -9,6 +9,8 @@
 	import TeamNotificationBell from '$lib/components/team/TeamNotificationBell.svelte';
 	import HeaderTimer from '$lib/components/time-clock/HeaderTimer.svelte';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+	import { onMount } from 'svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { useQueryClient } from '@tanstack/svelte-query';
@@ -52,7 +54,28 @@
 		ownerPhoto?: { id: string; url: string | null; name: string | null } | null;
 	} = $props();
 	let mobileOpen = $state(false);
-	let sidebarCollapsed = $state(false);
+	// Open or slim sidebar. The person's own choice is remembered on this device and wins everywhere; until
+	// they have made one, the Inbox and Schedule open slim, since those screens use all the width they can get.
+	const SIDEBAR_KEY = 'sidebar-collapsed';
+	let sidebarChoice = $state<boolean | null>(null);
+	const prefersSlim = $derived(/^\/(communications|schedule)(\/|$)/.test(page.url.pathname));
+	const sidebarCollapsed = $derived(sidebarChoice ?? prefersSlim);
+	onMount(() => {
+		try {
+			const saved = localStorage.getItem(SIDEBAR_KEY);
+			if (saved === '1' || saved === '0') sidebarChoice = saved === '1';
+		} catch {
+			// Storage can be blocked; the sidebar then just follows the page's default.
+		}
+	});
+	function setSidebarCollapsed(next: boolean) {
+		sidebarChoice = next;
+		try {
+			localStorage.setItem(SIDEBAR_KEY, next ? '1' : '0');
+		} catch {
+			// Not remembered on this device, but it still works for this visit.
+		}
+	}
 	let signOutError = $state('');
 	let searchOpen = $state(false);
 	let photoOpen = $state(false);
@@ -273,7 +296,7 @@
 	{variant}
 	{notice}
 	bind:mobileOpen
-	bind:sidebarCollapsed
+	bind:sidebarCollapsed={() => sidebarCollapsed, setSidebarCollapsed}
 >
 	{#snippet header(
 		Header: import('./presentations/header-types').HeaderFrame,

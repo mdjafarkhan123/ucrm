@@ -19,6 +19,7 @@
 	import maximizeIcon from '@tabler/icons/outline/arrows-maximize.svg?raw';
 	import minimizeIcon from '@tabler/icons/outline/arrows-minimize.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
+	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import {
 		clientCommunicationHistoryKey,
 		conversationMessagingKey,
@@ -454,6 +455,7 @@
 		aria-busy={sending}
 		disabled={sending || uploading || smsStopped}
 	>
+		<span class="conversation-composer__send-label">Send</span>
 		{#if sending}
 			<span class="conversation-composer__send-spinner" aria-hidden="true"></span>
 		{:else}
@@ -470,6 +472,21 @@
 		onsubmit={submit}
 	>
 		<header class="conversation-composer__header">
+			{#if channel !== 'website_chat'}
+				<p class="conversation-composer__route">
+					<span class="conversation-composer__route-from">
+						{#if channel === 'sms'}
+							{estimate?.ready ? estimate.sender_phone : 'Organization default SMS number'}
+						{:else}
+							<EmailSenderLabel kind="manual" />
+						{/if}
+					</span>
+					<span class="conversation-composer__route-arrow" aria-hidden="true">{@html arrowRightIcon}</span>
+					<span class="conversation-composer__route-to">{recipientLabel}</span>
+				</p>
+			{:else}
+				<span class="conversation-composer__route-from">Replying in website chat</span>
+			{/if}
 			<button
 				type="button"
 				class="conversation-composer__collapse"
@@ -489,24 +506,6 @@
 				{@html popped ? minimizeIcon : maximizeIcon}
 			</button>
 		</header>
-		{#if channel !== 'website_chat'}
-			<dl class="conversation-composer__meta">
-				<div>
-					<dt>From</dt>
-					<dd>
-						{#if channel === 'sms'}
-							{estimate?.ready ? estimate.sender_phone : 'Organization default SMS number'}
-						{:else}
-							<EmailSenderLabel kind="manual" />
-						{/if}
-					</dd>
-				</div>
-				<div>
-					<dt>To</dt>
-					<dd>{recipientLabel}</dd>
-				</div>
-			</dl>
-		{/if}
 		{#if channel === 'email'}
 			<div
 				class="conversation-composer__subject"
@@ -563,20 +562,6 @@
 		{/if}
 		{#if channel === 'sms'}
 			<p class="conversation-composer__impact">
-				{#if estimating}
-					Estimating…
-				{:else if estimate?.ready}
-					{body.length} character{body.length === 1 ? '' : 's'} · {estimate.segment_count} segment{estimate.segment_count ===
-					1
-						? ''
-						: 's'} · {formatEstimateCost(estimate)} estimated
-				{:else if estimate && !estimate.ready}
-					{estimate.reason}
-				{:else}
-					{body.length} character{body.length === 1 ? '' : 's'}
-				{/if}
-			</p>
-			<p class="conversation-composer__impact">
 				{mmsEligible
 					? 'A picture attaches as a real picture text. Other files send as a secure link in the text.'
 					: 'A file attaches as a secure link in the text for this number.'}
@@ -620,6 +605,22 @@
 					/>
 				{/if}
 			</div>
+			{#if channel === 'sms'}
+				<p class="conversation-composer__estimate">
+					{#if estimating}
+						Estimating…
+					{:else if estimate?.ready}
+						{body.length} character{body.length === 1 ? '' : 's'} · {estimate.segment_count} segment{estimate.segment_count ===
+						1
+							? ''
+							: 's'} · {formatEstimateCost(estimate)}
+					{:else if estimate && !estimate.ready}
+						{estimate.reason}
+					{:else}
+						{body.length} character{body.length === 1 ? '' : 's'}
+					{/if}
+				</p>
+			{/if}
 			{#if channel === 'email'}
 				<div class="conversation-composer__send-group">
 					{@render sendButton()}
@@ -729,42 +730,37 @@
 {/if}
 
 <style lang="scss">
+	/* The reply area sits on the thread's own background, with the box itself as a rounded card floating in
+	   it, the way the approved Inbox is drawn. */
 	.conversation-composer {
-		border-top: var(--border-base) solid var(--color-border);
-		background: var(--color-surface);
-	}
-
-	.conversation-composer--expanded {
-		padding: var(--space-small);
+		padding: var(--space-smaller) var(--space-base) var(--space-base);
+		background: var(--color-surface--background--subtle);
 	}
 
 	.conversation-composer__collapsed {
 		display: flex;
 		width: 100%;
 		align-items: center;
-		gap: var(--space-smaller);
+		gap: var(--space-small);
 		padding: var(--space-small);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: 18px;
 		background: var(--color-surface);
 	}
 
 	.conversation-composer__collapsed-input {
 		min-width: 0;
-		min-height: 34px;
+		min-height: 36px;
 		flex: 1;
 		padding: 0 var(--space-small);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-small);
+		border: 0;
+		border-radius: var(--radius-base);
 		color: var(--color-text--secondary);
-		background: var(--color-surface);
+		background: transparent;
 		font: inherit;
-		font-size: var(--typography--fontSize-base);
+		font-size: 14px;
 		text-align: left;
 		cursor: text;
-		transition: background-color var(--timing-quick);
-
-		&:hover {
-			background: var(--color-surface--hover);
-		}
 	}
 
 	.conversation-composer__collapsed-input:focus-visible,
@@ -776,33 +772,34 @@
 
 	.conversation-composer__collapsed-send {
 		display: inline-flex;
-		width: 38px;
-		height: 34px;
+		width: 36px;
+		height: 36px;
 		flex: 0 0 auto;
 		align-items: center;
 		justify-content: center;
 		padding: 0;
 		border: 0;
-		border-radius: var(--radius-small);
+		border-radius: 999px;
 		color: var(--color-disabled);
 		background: var(--color-disabled--secondary);
 	}
 
 	.conversation-composer__collapsed-send :global(svg) {
-		width: 18px;
-		height: 18px;
+		width: 17px;
+		height: 17px;
 	}
 
 	.conversation-composer__form {
 		display: flex;
 		flex-direction: column;
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: 18px;
 		background: var(--color-surface);
 		overflow: hidden;
 
 		&:focus-within {
-			border-color: var(--color-focus);
+			border-color: var(--color-border--interactive);
+			box-shadow: 0 0 0 1px var(--color-border--interactive);
 		}
 	}
 
@@ -841,24 +838,66 @@
 	.conversation-composer__header {
 		display: flex;
 		align-items: center;
-		justify-content: flex-end;
 		gap: var(--space-smallest);
-		padding: var(--space-smaller) var(--space-small);
-		border-bottom: var(--border-base) solid var(--color-border);
-		background: var(--color-surface--background--subtle);
+		padding: 10px 10px 0 var(--space-slim);
+	}
+
+	.conversation-composer__route {
+		display: flex;
+		min-width: 0;
+		flex: 1;
+		align-items: center;
+		gap: 6px;
+		margin: 0;
+		font-size: 12px;
+		line-height: 1.3;
+	}
+
+	.conversation-composer__route-from {
+		flex: 0 1 auto;
+		min-width: 0;
+		overflow: hidden;
+		color: var(--color-text--secondary);
+		font-weight: 500;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.conversation-composer__header > .conversation-composer__route-from {
+		flex: 1;
+	}
+
+	.conversation-composer__route-arrow {
+		display: inline-flex;
+		flex: 0 0 auto;
+		color: var(--color-icon--secondary);
+
+		:global(svg) {
+			width: 12px;
+			height: 12px;
+		}
+	}
+
+	.conversation-composer__route-to {
+		min-width: 0;
+		overflow: hidden;
+		color: var(--color-text);
+		font-weight: 600;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.conversation-composer__collapse {
 		display: inline-flex;
-		width: 32px;
-		height: 32px;
+		width: 30px;
+		height: 30px;
 		flex: 0 0 auto;
 		align-items: center;
 		justify-content: center;
 		padding: 0;
 		border: 0;
 		border-radius: var(--radius-base);
-		color: var(--color-icon--secondary);
+		color: var(--color-text--secondary);
 		background: transparent;
 		cursor: pointer;
 	}
@@ -869,53 +908,25 @@
 	}
 
 	.conversation-composer__collapse :global(svg) {
-		width: 18px;
-		height: 18px;
-	}
-
-	.conversation-composer__meta {
-		display: flex;
-		flex-direction: column;
-		margin: 0;
-	}
-
-	.conversation-composer__meta div {
-		display: flex;
-		min-height: 36px;
-		align-items: center;
-		gap: var(--space-small);
-		padding: var(--space-smaller) var(--space-small);
-		border-bottom: var(--border-base) solid var(--color-border);
-	}
-
-	.conversation-composer__meta dt {
-		width: 44px;
-		flex: 0 0 auto;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-	}
-
-	.conversation-composer__meta dd {
-		margin: 0;
-		color: var(--color-text);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 500;
-		overflow-wrap: anywhere;
+		width: 15px;
+		height: 15px;
 	}
 
 	.conversation-composer__subject {
 		display: flex;
-		min-height: 38px;
+		min-height: 36px;
 		align-items: center;
 		gap: var(--space-small);
-		padding: var(--space-smaller) var(--space-small);
-		border-bottom: var(--border-base) solid var(--color-border);
+		margin: var(--space-small) var(--space-slim) 0;
+		padding: 0 var(--space-slim);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: 10px;
 
 		label {
-			width: 44px;
 			flex: 0 0 auto;
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			font-size: 12px;
+			font-weight: 600;
 		}
 
 		input {
@@ -928,7 +939,8 @@
 			color: var(--color-heading);
 			background: transparent;
 			font: inherit;
-			font-size: var(--typography--fontSize-base);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
 		}
 	}
 
@@ -937,23 +949,22 @@
 	}
 
 	.conversation-composer__editor {
-		min-height: 116px;
-		padding: var(--space-small);
-		border-bottom: var(--border-base) solid var(--color-border);
+		min-height: 64px;
+		padding: var(--space-slim) var(--space-base) var(--space-smaller);
 
 		textarea {
 			display: block;
 			width: 100%;
-			min-height: 100px;
+			min-height: 44px;
 			padding: 0;
 			border: 0;
 			outline: none;
 			box-shadow: none;
-			color: var(--color-text);
+			color: var(--color-heading);
 			background: transparent;
 			font: inherit;
-			font-size: var(--typography--fontSize-base);
-			line-height: var(--typography--lineHeight-base);
+			font-size: 14px;
+			line-height: 1.5;
 			resize: vertical;
 
 			&::placeholder {
@@ -968,23 +979,15 @@
 
 	.conversation-composer__impact {
 		margin: 0;
-		padding: 0 var(--space-small);
+		padding: 0 var(--space-base) var(--space-smaller);
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-	}
-
-	.conversation-composer__editor + .conversation-composer__impact {
-		padding-top: var(--space-small);
-	}
-
-	.conversation-composer__impact + .conversation-composer__impact {
-		padding-top: var(--space-smaller);
+		font-size: 11px;
 	}
 
 	.conversation-composer__field-error,
 	.conversation-composer__error {
 		margin: 0;
-		padding: var(--space-smaller) var(--space-small) 0;
+		padding: var(--space-smaller) var(--space-base) 0;
 		color: var(--color-critical);
 		font-size: var(--typography--fontSize-small);
 	}
@@ -994,7 +997,7 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-small);
-		padding: var(--space-small);
+		padding: 6px 10px 10px;
 	}
 
 	.conversation-composer__tools {
@@ -1006,25 +1009,36 @@
 		gap: var(--space-smaller);
 	}
 
-	/* The compact composer's paper-plane button, live: the same 38x34 size, so the button doesn't change
-	   shape when the composer opens. */
+	.conversation-composer__estimate {
+		margin: 0;
+		color: var(--color-text--secondary);
+		font-size: 11px;
+		font-weight: 500;
+		white-space: nowrap;
+	}
+
+	/* Send is a green pill with its label, the one loud thing in the box. */
 	.conversation-composer__send {
 		display: inline-flex;
-		width: 38px;
-		height: 34px;
+		height: 36px;
 		flex: 0 0 auto;
 		align-items: center;
 		justify-content: center;
-		padding: 0;
+		gap: 7px;
+		padding: 0 14px 0 16px;
 		border: 0;
-		border-radius: var(--radius-small);
-		color: var(--color-surface);
-		background: var(--color-interactive);
+		border-radius: 999px;
+		color: #fff;
+		background: var(--color-base-green--700);
+		box-shadow: 0 4px 12px rgb(3 119 65 / 0.2);
+		font: inherit;
+		font-size: 13px;
+		font-weight: 600;
 		cursor: pointer;
 		transition: background var(--timing-base) ease-out;
 
 		&:hover:not(:disabled) {
-			background: var(--color-interactive--hover);
+			background: var(--color-base-green--800);
 		}
 
 		&:disabled {
@@ -1038,48 +1052,50 @@
 		}
 
 		:global(svg) {
-			width: 18px;
-			height: 18px;
+			width: 15px;
+			height: 15px;
 		}
 	}
 
 	.conversation-composer__send-spinner {
-		width: 16px;
-		height: 16px;
+		width: 15px;
+		height: 15px;
 		border: 2px solid currentColor;
 		border-right-color: transparent;
 		border-radius: var(--radius-circle);
 		animation: spinning var(--timing-loading) linear infinite;
 	}
 
-	/* The paper plane and the chevron read as one split button: the chevron sits flush against Send with a
-	   hairline seam, and the two outer corners each owns are rounded to match. */
+	/* The pill and the chevron read as one split button: the chevron sits flush against Send with a
+	   hairline seam, and the two outer ends are rounded to match. */
 	.conversation-composer__send-group {
 		display: flex;
 		flex: 0 0 auto;
 		align-items: stretch;
 
 		.conversation-composer__send {
-			border-radius: var(--radius-small) 0 0 var(--radius-small);
+			border-radius: 999px 0 0 999px;
+			padding-right: 12px;
+			box-shadow: none;
 		}
 	}
 
 	.conversation-composer__send-later-trigger {
 		display: inline-flex;
-		width: 28px;
+		width: 30px;
 		flex: 0 0 auto;
 		align-items: center;
 		justify-content: center;
-		padding: 0;
+		padding: 0 4px 0 0;
 		border: 0;
-		border-left: var(--border-base) solid var(--color-overlay);
-		border-radius: 0 var(--radius-small) var(--radius-small) 0;
-		color: var(--color-surface);
-		background: var(--color-interactive);
+		border-left: var(--border-base) solid rgb(255 255 255 / 0.3);
+		border-radius: 0 999px 999px 0;
+		color: #fff;
+		background: var(--color-base-green--700);
 		cursor: pointer;
 
 		&:hover:not(:disabled) {
-			background: var(--color-interactive--hover);
+			background: var(--color-base-green--800);
 		}
 
 		&:disabled {
@@ -1093,8 +1109,8 @@
 		}
 
 		:global(svg) {
-			width: 16px;
-			height: 16px;
+			width: 15px;
+			height: 15px;
 		}
 	}
 
@@ -1131,19 +1147,12 @@
 	}
 
 	@media (max-width: 560px) {
-		.conversation-composer--expanded {
-			padding: var(--space-smallest);
-		}
-
-		.conversation-composer__collapsed {
-			padding: var(--space-smaller);
-		}
-
-		.conversation-composer__meta div,
-		.conversation-composer__subject,
-		.conversation-composer__editor,
-		.conversation-composer__footer {
+		.conversation-composer {
 			padding-inline: var(--space-small);
+		}
+
+		.conversation-composer__estimate {
+			display: none;
 		}
 	}
 </style>
