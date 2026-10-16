@@ -11,6 +11,8 @@
 		count: number;
 		/** Working hours painted as the ordinary surface; the rest of the day recedes. */
 		working: WorkingBand[];
+		/** How many of the day's entries need a look, said under the date. Absent where the calendar has none. */
+		attention?: { late: number; unassigned: number };
 	};
 
 	/** A dashed outline of where something would go: a move in progress, or a new entry being drawn. */
@@ -87,6 +89,12 @@
 		return `${(minutes / MINUTES_IN_DAY) * 100}%`;
 	}
 
+	/** The now pill's words: 10:40, with no am or pm, since the hour labels beside it already carry them. */
+	function clockText(minutes: number) {
+		const hour = Math.floor(minutes / 60) % 12 || 12;
+		return `${hour}:${String(Math.floor(minutes % 60)).padStart(2, '0')}`;
+	}
+
 	function hourLabel(hour: number) {
 		if (hour === 0 || hour === 12) return hour === 0 ? '12am' : '12pm';
 		return hour < 12 ? `${hour}am` : `${hour - 12}pm`;
@@ -108,12 +116,30 @@
 		<div class="calendar-week__corner"></div>
 		{#each columns as column (column.day)}
 			<div class="calendar-week__day" class:calendar-week__day--today={column.day === today}>
-				<span class="calendar-week__weekday">
-					{formatCalendarDay(column.day, { weekday: 'short' })}
+				<span class="calendar-week__date-row">
+					<span class="calendar-week__weekday">
+						{formatCalendarDay(column.day, { weekday: 'short' })}
+					</span>
+					<span class="calendar-week__date">
+						{formatCalendarDay(column.day, { day: 'numeric' })}
+					</span>
 				</span>
-				<span class="calendar-week__date">{formatCalendarDay(column.day, { day: 'numeric' })}</span>
 				{#if column.count > 0}
-					<span class="calendar-week__count">{itemCountLabel(column.count)}</span>
+					<span class="calendar-week__count">
+						{itemCountLabel(column.count)}
+						{#if column.attention && column.attention.late > 0}
+							<span class="calendar-week__attention calendar-week__attention--late">
+								<span class="calendar-week__attention-dot" aria-hidden="true"></span>
+								{column.attention.late} late
+							</span>
+						{/if}
+						{#if column.attention && column.attention.unassigned > 0}
+							<span class="calendar-week__attention calendar-week__attention--unassigned">
+								<span class="calendar-week__attention-dot" aria-hidden="true"></span>
+								{column.attention.unassigned} unassigned
+							</span>
+						{/if}
+					</span>
 				{/if}
 			</div>
 		{/each}
@@ -145,6 +171,11 @@
 			{#each HOURS as hour (hour)}
 				<span class="calendar-week__hour" style:top="{hour * hourHeight}px">{hourLabel(hour)}</span>
 			{/each}
+			{#if nowMinutes !== null}
+				<span class="calendar-week__now-pill" style:top={percent(nowMinutes)}>
+					{clockText(nowMinutes)}
+				</span>
+			{/if}
 		</div>
 
 		{#each columns as column, index (column.day)}
@@ -201,14 +232,13 @@
 
 <style lang="scss">
 	.calendar-week {
-		--calendar-week-gutter: 56px;
+		--calendar-week-gutter: 60px;
 
 		display: flex;
+		flex: 1 1 auto;
 		flex-direction: column;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		min-height: 0;
 		background-color: var(--color-surface);
-		overflow: hidden;
 	}
 
 	.calendar-week__row {
@@ -220,8 +250,11 @@
 	}
 
 	.calendar-week__head {
+		flex: 0 0 auto;
 		border-bottom: var(--border-base) solid var(--color-border);
 		background-color: var(--color-surface);
+		// The body scrolls under a scrollbar; the head keeps the same gutter so its columns line up with it.
+		scrollbar-gutter: stable;
 	}
 
 	.calendar-week__corner {
@@ -231,72 +264,135 @@
 	.calendar-week__day {
 		display: flex;
 		flex-direction: column;
-		align-items: center;
+		align-items: flex-start;
 		gap: var(--space-smallest);
-		padding: var(--space-small) var(--space-smaller);
+		min-width: 0;
+		padding: 10px 14px 12px;
 		border-left: var(--border-base) solid var(--color-border);
+	}
+
+	.calendar-week__corner + .calendar-week__day {
+		border-left: none;
+	}
+
+	.calendar-week__date-row {
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		height: 24px;
 	}
 
 	.calendar-week__weekday {
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.8px;
 		text-transform: uppercase;
-		letter-spacing: var(--typography--letterSpacing-loose);
 	}
 
 	.calendar-week__date {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		min-width: 28px;
-		height: 28px;
-		border-radius: var(--radius-circle);
+		height: 24px;
+		padding: 0 var(--space-smaller);
+		border-radius: 999px;
 		color: var(--color-heading);
-		font-size: var(--typography--fontSize-large);
+		font-size: 15px;
 		font-weight: 700;
 	}
 
+	.calendar-week__day--today .calendar-week__weekday {
+		color: var(--color-interactive);
+	}
+
 	.calendar-week__day--today .calendar-week__date {
+		padding: 0 7px;
 		background-color: var(--color-interactive);
-		color: var(--color-surface);
+		color: var(--color-text--reverse);
+		font-size: 13px;
 	}
 
 	.calendar-week__count {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 2px var(--space-small);
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-smaller);
-		line-height: var(--typography--lineHeight-tight);
+		font-size: 11px;
+		font-weight: 500;
+		line-height: 1.3;
+	}
+
+	.calendar-week__attention {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-smaller);
+		font-weight: 600;
+
+		&--late {
+			color: var(--color-critical);
+		}
+		&--unassigned {
+			color: var(--color-warning--onSurface);
+		}
+	}
+
+	.calendar-week__attention-dot {
+		width: 5px;
+		height: 5px;
+		border-radius: var(--radius-circle);
+		background-color: currentColor;
+	}
+
+	.calendar-week__attention--unassigned .calendar-week__attention-dot {
+		background-color: var(--color-warning);
 	}
 
 	.calendar-week__anytime {
+		flex: 0 0 auto;
 		border-bottom: var(--border-base) solid var(--color-border);
-		background-color: var(--color-surface--background--subtle);
+		background-color: var(--color-surface);
+		scrollbar-gutter: stable;
 	}
 
 	.calendar-week__anytime-label {
 		display: flex;
-		align-items: center;
+		align-items: flex-start;
 		justify-content: flex-end;
-		padding: var(--space-small) var(--space-smaller);
+		padding: var(--space-slim) var(--space-small) 0 var(--space-smaller);
 		border-right: var(--border-base) solid var(--color-border);
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 700;
+		font-size: 11px;
+		font-weight: 600;
 		text-align: right;
 	}
 
 	.calendar-week__anytime-column {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-smallest);
-		padding: var(--space-smaller);
-		max-height: 112px;
+		gap: var(--space-smaller);
+		padding: var(--space-small);
+		max-height: 132px;
 		overflow-y: auto;
 		border-left: var(--border-base) solid var(--color-border);
 	}
 
+	// An Anytime pill is the height the design draws; whatever it holds stays on one line.
+	.calendar-week__anytime-column > :global(*) {
+		flex: 0 0 auto;
+		height: 28px;
+	}
+
+	.calendar-week__anytime-label + .calendar-week__anytime-column {
+		border-left: none;
+	}
+
 	.calendar-week__body {
-		// The gutter scrolls with the columns, so the hour labels can never drift away from their lines.
-		height: clamp(360px, calc(100vh - 340px), 900px);
+		// The grid takes the room the card gives it and scrolls inside it. The gutter scrolls with the
+		// columns, so the hour labels can never drift away from their lines.
+		flex: 1 1 auto;
+		min-height: 320px;
 		overflow-y: auto;
 		scrollbar-gutter: stable;
 	}
@@ -308,12 +404,28 @@
 
 	.calendar-week__hour {
 		position: absolute;
-		right: var(--space-small);
+		right: var(--space-slim);
 		// Sat on its own line rather than inside the hour it opens, so a label reads as the line's time.
 		transform: translateY(-50%);
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-smaller);
+		font-size: 11px;
+		font-weight: 500;
 		line-height: var(--typography--lineHeight-tight);
+		white-space: nowrap;
+	}
+
+	.calendar-week__now-pill {
+		position: absolute;
+		right: var(--space-small);
+		z-index: 2;
+		transform: translateY(-50%);
+		padding: 3px var(--space-small);
+		border-radius: 999px;
+		background-color: var(--color-interactive);
+		color: var(--color-text--reverse);
+		font-size: 10.5px;
+		font-weight: 700;
+		line-height: 1.3;
 		white-space: nowrap;
 	}
 
@@ -322,7 +434,11 @@
 		border-left: var(--border-base) solid var(--color-border);
 		// Outside working hours the column recedes; the working band paints itself back to the ordinary
 		// surface. With no known hours nothing is painted and the whole day recedes equally.
-		background-color: var(--color-surface--background);
+		background-color: var(--color-surface--background--subtle);
+	}
+
+	.calendar-week__times + .calendar-week__column {
+		border-left: none;
 	}
 
 	.calendar-week__working {
@@ -348,19 +464,19 @@
 	.calendar-week__block {
 		position: absolute;
 		box-sizing: border-box;
-		padding-right: var(--space-smallest);
+		padding: 2px var(--space-smaller) 2px 3px;
 	}
 
 	.calendar-week__ghost {
 		position: absolute;
-		right: var(--space-smallest);
-		left: 0;
+		right: var(--space-smaller);
+		left: 3px;
 		box-sizing: border-box;
 		display: flex;
 		align-items: flex-start;
-		padding: var(--space-smallest) var(--space-smaller);
+		padding: var(--space-smallest) var(--space-small);
 		border: var(--border-thick) dashed var(--color-interactive);
-		border-radius: var(--radius-small);
+		border-radius: var(--radius-base);
 		background-color: var(--color-informative--surface);
 		pointer-events: none;
 	}
@@ -394,20 +510,21 @@
 
 	.calendar-week__now {
 		position: absolute;
+		z-index: 1;
 		left: 0;
 		width: 100%;
-		border-top: var(--border-thick) solid var(--color-critical);
+		border-top: 2px solid var(--color-interactive);
 		pointer-events: none;
 
 		&::before {
 			content: '';
 			position: absolute;
-			top: -4px;
-			left: 0;
+			top: -5px;
+			left: -4px;
 			width: 8px;
 			height: 8px;
 			border-radius: var(--radius-circle);
-			background-color: var(--color-critical);
+			background-color: var(--color-interactive);
 		}
 	}
 </style>

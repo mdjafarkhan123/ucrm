@@ -2,7 +2,7 @@ import { browser } from '$app/environment';
 
 // How tall an hour is drawn on the time-based views. This is a per-reader viewing preference -- a zoom, not a
 // filter -- so it lives in the browser and never touches the URL, the window read or anyone else's screen.
-// Compact is the default and matches the grid's original size, so turning this on changes nobody's view.
+// Compact is the default and the size the approved design draws.
 
 export type ScheduleZoom = 'compact' | 'comfortable' | 'spacious';
 
@@ -14,11 +14,11 @@ export const SCHEDULE_ZOOM_LABELS: Record<ScheduleZoom, string> = {
 	spacious: 'Spacious'
 };
 
-/** Pixels per hour down a Week day column. Compact is the grid's original height. */
+/** Pixels per hour down a Week day column. Compact is the height the approved design draws. */
 export const WEEK_HOUR_PX: Record<ScheduleZoom, number> = {
-	compact: 48,
-	comfortable: 68,
-	spacious: 92
+	compact: 64,
+	comfortable: 84,
+	spacious: 108
 };
 
 /** Pixels per hour across a Day board row. Compact is the board's original width. */

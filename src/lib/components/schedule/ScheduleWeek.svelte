@@ -410,7 +410,7 @@
 		if (
 			target.closest('.week__pickup') ||
 			target.closest('.week__resize') ||
-			target.closest('.assessment-card') ||
+			target.closest('.item-card--assessment') ||
 			target.closest('.event-card') ||
 			target.closest('.task-card')
 		)
@@ -456,7 +456,7 @@
 		const target = event.target as HTMLElement;
 		if (
 			target.closest('.week__pickup') ||
-			target.closest('.assessment-card') ||
+			target.closest('.item-card--assessment') ||
 			target.closest('.event-card') ||
 			target.closest('.task-card')
 		)
@@ -541,6 +541,7 @@
 					visit={item}
 					density="compact"
 					{today}
+					{nowMinutes}
 					{employeesById}
 					selected={item.id === selectedItemId}
 					keyboardMovable={canDragVisit(item, canSchedule)}
@@ -555,6 +556,7 @@
 				assessment={item}
 				density="compact"
 				{today}
+				{nowMinutes}
 				{employeesById}
 				selected={item.id === selectedItemId}
 				onselect={onselectassessment}
@@ -585,6 +587,7 @@
 					{visit}
 					{density}
 					{today}
+					{nowMinutes}
 					{employeesById}
 					selected={visit.id === selectedItemId}
 					keyboardMovable={canDragVisit(visit, canSchedule)}
@@ -611,6 +614,7 @@
 				assessment={block.item}
 				{density}
 				{today}
+				{nowMinutes}
 				{employeesById}
 				selected={block.item.id === selectedItemId}
 				onselect={onselectassessment}

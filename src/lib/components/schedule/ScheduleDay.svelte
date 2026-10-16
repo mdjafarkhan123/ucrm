@@ -503,7 +503,7 @@
 		if (
 			target.closest('.day__pickup') ||
 			target.closest('.day__resize') ||
-			target.closest('.assessment-card') ||
+			target.closest('.item-card--assessment') ||
 			target.closest('.event-card') ||
 			target.closest('.task-card')
 		)
@@ -546,7 +546,7 @@
 		const target = event.target as HTMLElement;
 		if (
 			target.closest('.day__pickup') ||
-			target.closest('.assessment-card') ||
+			target.closest('.item-card--assessment') ||
 			target.closest('.event-card') ||
 			target.closest('.task-card')
 		)
@@ -629,6 +629,7 @@
 									visit={item}
 									density="compact"
 									{today}
+									{nowMinutes}
 									{employeesById}
 									showAssignment={false}
 									selected={item.id === selectedItemId}
@@ -644,6 +645,7 @@
 								assessment={item}
 								density="compact"
 								{today}
+								{nowMinutes}
 								{employeesById}
 								showAssignment={false}
 								selected={item.id === selectedItemId}
@@ -705,6 +707,7 @@
 									{visit}
 									density={cardDensityForWidth(((block.end - block.start) / 60) * HOUR_WIDTH)}
 									{today}
+									{nowMinutes}
 									{employeesById}
 									showAssignment={false}
 									selected={visit.id === selectedItemId}
@@ -738,6 +741,7 @@
 									assessment={block.item}
 									density={cardDensityForWidth(((block.end - block.start) / 60) * HOUR_WIDTH)}
 									{today}
+									{nowMinutes}
 									{employeesById}
 									showAssignment={false}
 									selected={block.item.id === selectedItemId}

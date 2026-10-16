@@ -107,7 +107,8 @@ export function layoutTimedVisits<T extends { id: string }>(
 	return blocks;
 }
 
-export type CardDensity = 'micro' | 'compact' | 'standard';
+// `pill` is the Anytime form: a date with no hour has no time to show, so it is one line holding the name.
+export type CardDensity = 'pill' | 'micro' | 'compact' | 'standard';
 
 // How much of a card fits in the space the grid gave it. A short visit keeps its true duration and drops to
 // the smallest form rather than being grown to fit its own text, and a visit sharing its hour with others
