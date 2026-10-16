@@ -27,6 +27,7 @@
 		email = null,
 		menuItems = [],
 		avatarId,
+		hidePhone = false,
 		class: className = ''
 	}: {
 		name: string;
@@ -38,6 +39,8 @@
 		menuItems?: MenuItem[];
 		/** The client's id. Given, the App look header draws their initials beside the name. */
 		avatarId?: string;
+		/** For a record that never carries a phone number, so the card does not nag about one. */
+		hidePhone?: boolean;
 		class?: string;
 	} = $props();
 </script>
@@ -80,16 +83,18 @@
 			</li>
 		{/each}
 
-		<li class="client-summary__line">
-			<span class="client-summary__icon" aria-hidden="true">{@html phoneIcon}</span>
-			<span class="client-summary__text">
-				{#if phone}
-					<a href={`tel:${phone}`}>{phone}</a>
-				{:else}
-					<span class="client-summary__blank">No phone number yet</span>
-				{/if}
-			</span>
-		</li>
+		{#if !hidePhone}
+			<li class="client-summary__line">
+				<span class="client-summary__icon" aria-hidden="true">{@html phoneIcon}</span>
+				<span class="client-summary__text">
+					{#if phone}
+						<a href={`tel:${phone}`}>{phone}</a>
+					{:else}
+						<span class="client-summary__blank">No phone number yet</span>
+					{/if}
+				</span>
+			</li>
+		{/if}
 
 		<li class="client-summary__line">
 			<span class="client-summary__icon" aria-hidden="true">{@html mailIcon}</span>
