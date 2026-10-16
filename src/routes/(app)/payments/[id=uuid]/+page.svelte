@@ -8,11 +8,11 @@
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
-	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import WorkRecordHeader from '$lib/components/work/WorkRecordHeader.svelte';
 	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
 	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
+	import PaymentReceiptCard from '$lib/components/invoices/PaymentReceiptCard.svelte';
 	import RefundPaymentDialog from '$lib/components/invoices/RefundPaymentDialog.svelte';
 	import StripeRefundDialog from '$lib/components/invoices/StripeRefundDialog.svelte';
 	import UnapplyPaymentDialog from '$lib/components/invoices/UnapplyPaymentDialog.svelte';
@@ -34,7 +34,6 @@
 	} from '$lib/invoices/api';
 	import { INVOICE_PAYMENT_METHOD_LABELS } from '$lib/invoices/payment-methods';
 	import cashIcon from '@tabler/icons/outline/cash.svg?raw';
-	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import printIcon from '@tabler/icons/outline/printer.svg?raw';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 	import receiptRefundIcon from '@tabler/icons/outline/receipt-refund.svg?raw';
@@ -42,6 +41,11 @@
 	import arrowsExchangeIcon from '@tabler/icons/outline/arrows-exchange.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import banIcon from '@tabler/icons/outline/ban.svg?raw';
+	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
+	import creditCardIcon from '@tabler/icons/outline/credit-card.svg?raw';
+	import hashIcon from '@tabler/icons/outline/hash.svg?raw';
+	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
 
 	// One recorded payment. Jobber has this screen and Send Receipt lives on it, so ours is the same idea:
 	// what was paid, how, against which bill, and the two things staff do with it afterwards — send the
@@ -76,6 +80,7 @@
 		month: 'short',
 		year: 'numeric'
 	});
+	const shortDateFormat = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' });
 	const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
 		day: 'numeric',
 		month: 'short',
@@ -87,6 +92,29 @@
 	// backwards for anybody west of Greenwich. The local-midnight form keeps the day the contractor picked.
 	function formatDay(value: string) {
 		return dateFormat.format(new Date(`${value}T00:00`));
+	}
+	// The header's facts leave the year off for this year's dates ("Oct 9"), as the design does, and keep it
+	// for any other year so an old payment is never mistaken for a recent one.
+	const thisYear = new Date().getFullYear();
+	const factDayFormat = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' });
+	const factDateTimeFormat = new Intl.DateTimeFormat(undefined, {
+		day: 'numeric',
+		month: 'short',
+		hour: 'numeric',
+		minute: '2-digit'
+	});
+	function factDay(value: string) {
+		const date = new Date(`${value}T00:00`);
+		return date.getFullYear() === thisYear ? factDayFormat.format(date) : formatDay(value);
+	}
+	function factDateTime(value: string) {
+		const date = new Date(value);
+		return date.getFullYear() === thisYear
+			? factDateTimeFormat.format(date)
+			: dateTimeFormat.format(date);
+	}
+	function formatShortDay(value: string) {
+		return shortDateFormat.format(new Date(`${value}T00:00`));
 	}
 	const money = $derived(
 		new Intl.NumberFormat(saved?.locale ?? 'en-US', {
@@ -105,16 +133,24 @@
 	const headerFacts = $derived([
 		{
 			label: 'Transaction date',
-			value: saved ? formatDay(saved.payment.payment_date) : null
+			value: saved ? factDay(saved.payment.payment_date) : null,
+			icon: calendarIcon
 		},
 		{
 			label: 'Method',
-			value: saved ? INVOICE_PAYMENT_METHOD_LABELS[saved.payment.method] : null
+			value: saved ? INVOICE_PAYMENT_METHOD_LABELS[saved.payment.method] : null,
+			icon: creditCardIcon
 		},
-		{ label: 'Reference #', value: saved?.payment.reference ?? null, empty: 'None given' },
+		{
+			label: 'Reference #',
+			value: saved?.payment.reference ?? null,
+			empty: 'None given',
+			icon: hashIcon
+		},
 		{
 			label: 'Recorded',
-			value: saved ? dateTimeFormat.format(new Date(saved.payment.created_at)) : null
+			value: saved ? factDateTime(saved.payment.created_at) : null,
+			icon: clockIcon
 		}
 	]);
 
@@ -269,6 +305,40 @@
 			(entry) => entry.entry_type === 'applied' && !entry.is_reversed && entry.invoice_id
 		)
 	);
+	const invoiceCountLabel = $derived.by(() => {
+		const count = liveAllocations.length;
+		if (count === 0) return 'Not on an invoice';
+		return count === 1 ? 'On 1 invoice' : `On ${count} invoices`;
+	});
+
+	// The receipt card draws what the customer's email says, from this payment's own figures.
+	const clientFirstName = $derived(
+		(saved?.client?.display_name || saved?.client?.company_name || '').trim().split(/\s+/)[0] || ''
+	);
+	const receiptLines = $derived.by(() => {
+		if (!saved) return [];
+		const payment = saved.payment;
+		const lines = [
+			{
+				icon: cashIcon,
+				text: `${formatMoney(payment.amount_minor)} paid on ${formatShortDay(payment.payment_date)}`
+			},
+			{
+				icon: creditCardIcon,
+				text: [
+					INVOICE_PAYMENT_METHOD_LABELS[payment.method],
+					payment.reference && `Ref ${payment.reference}`
+				]
+					.filter(Boolean)
+					.join(' · ')
+			},
+			...liveAllocations.map((entry) => ({
+				icon: receiptIcon,
+				text: `Invoice #${entry.invoice_number} · ${formatMoney(entry.amount_minor)}`
+			}))
+		];
+		return lines;
+	});
 	const fixPinned = $derived(
 		liveAllocations.map((entry) => ({
 			id: entry.invoice_id!,
@@ -320,13 +390,14 @@
 	<title>Payment</title>
 </svelte:head>
 
-<PageContainer>
+<!-- eslint-disable svelte/no-at-html-tags -->
+<PageContainer variant="open">
 	{#if paymentQuery.isPending}
 		<LoadingSkeleton variant="card" label="Loading payment" />
 	{:else if paymentQuery.isError}
 		<ErrorState description="That payment could not be loaded. Refresh and try again." />
 	{:else if saved}
-		<RecordDetailLayout class="payment-detail">
+		<RecordDetailLayout class="payment-detail" cards>
 			{#snippet main()}
 				<WorkRecordHeader
 					icon={cashIcon}
@@ -336,18 +407,31 @@
 					statusTone={status.tone}
 					{menuItems}
 					primaryAction={saved.can_send_receipt && !isCorrected
-						? { label: 'Send receipt', loading: sending, onclick: () => void sendReceipt() }
+						? {
+								label: 'Send receipt',
+								icon: mailIcon,
+								loading: sending,
+								onclick: () => void sendReceipt()
+							}
 						: undefined}
 				>
+					{#snippet badges()}
+						<span class="payment-detail__kind">Payment</span>
+						<span class="payment-detail__dot" aria-hidden="true"></span>
+						<span class="payment-detail__count">{invoiceCountLabel}</span>
+					{/snippet}
 					{#snippet summary()}
 						<ClientSummaryCard
 							name={clientName}
+							avatarId={saved.client?.id}
 							href={clientHref}
 							email={saved.client?.email ?? null}
+							hidePhone
+							class="payment-client"
 							menuItems={clientMenuItems}
 						/>
 					{/snippet}
-					{#snippet facts()}<RecordFactsList facts={headerFacts} />{/snippet}
+					{#snippet facts()}<RecordFactsList facts={headerFacts} class="payment-facts" />{/snippet}
 				</WorkRecordHeader>
 
 				{#if saved.correction}
@@ -382,23 +466,19 @@
 					</div>
 				{/if}
 
-				<SectionBlock title="Details" icon={fileTextIcon} level={2}>
-					{#if saved.payment.note}
-						<p class="payment-detail__note">{saved.payment.note}</p>
-					{:else}
-						<EmptyState
-							icon={fileTextIcon}
-							title="No details"
-							description="Nothing was noted when this payment was recorded."
-						/>
-					{/if}
-				</SectionBlock>
-
-				<SectionBlock title="Applied to" icon={receiptIcon} level={2}>
+				<SectionBlock
+					title="Applied to"
+					hint="The invoices this money paid"
+					level={2}
+					class="section-block--flush payment-detail__card"
+				>
 					{#if saved.applied_to.length}
 						<ul class="payment-detail__applied">
 							{#each saved.applied_to as entry (entry.allocation_id)}
 								<li class="payment-detail__applied-row">
+									<span class="payment-detail__applied-icon" aria-hidden="true"
+										>{@html receiptIcon}</span
+									>
 									<div class="payment-detail__applied-main">
 										{#if entry.invoice_id}
 											<a
@@ -413,8 +493,12 @@
 											</span>
 										{/if}
 										<span class="payment-detail__applied-meta">
-											{entry.entry_type === 'unapplied' ? 'Taken off this bill' : entry.subject}
-											&middot; {dateFormat.format(new Date(entry.created_at))}
+											{[
+												entry.entry_type === 'unapplied' ? 'Taken off this bill' : entry.subject,
+												dateFormat.format(new Date(entry.created_at))
+											]
+												.filter(Boolean)
+												.join(' \u00b7 ')}
 										</span>
 									</div>
 									<span
@@ -422,25 +506,54 @@
 										class:payment-detail__applied-amount--negative={entry.entry_type ===
 											'unapplied'}
 									>
-										{entry.entry_type === 'unapplied' ? '−' : ''}{formatMoney(entry.amount_minor)}
+										{entry.entry_type === 'unapplied' ? '\u2212' : ''}{formatMoney(
+											entry.amount_minor
+										)}
 									</span>
 									{#if allocationMenuFor(entry).length > 0}
 										<DropdownMenu
 											triggerLabel="Actions for invoice #{entry.invoice_number}"
 											items={allocationMenuFor(entry)}
 										/>
+									{:else}
+										<span class="payment-detail__applied-spacer" aria-hidden="true"></span>
 									{/if}
 								</li>
 							{/each}
 						</ul>
 					{:else}
-						<EmptyState
-							icon={receiptIcon}
-							title="Not applied to a bill"
-							description="This money sits on the client's account as credit."
-						/>
+						<p class="payment-detail__quiet">
+							Not applied to a bill. This money sits on the client's account as credit.
+						</p>
 					{/if}
 				</SectionBlock>
+
+				<SectionBlock
+					title="Details"
+					hint="Noted when this payment was recorded"
+					level={2}
+					class="section-block--flush payment-detail__card"
+				>
+					{#if saved.payment.note}
+						<p class="payment-detail__note">{saved.payment.note}</p>
+					{:else}
+						<p class="payment-detail__quiet">Nothing was noted when this payment was recorded.</p>
+					{/if}
+				</SectionBlock>
+			{/snippet}
+
+			{#snippet rail()}
+				<PaymentReceiptCard
+					businessName={page.data.organization?.name ?? 'Your business'}
+					logoUrl={page.data.logoUrl ?? null}
+					recipient={clientFirstName || 'your client'}
+					tagline={clientFirstName
+						? `Payment received \u2014 thank you, ${clientFirstName}.`
+						: 'Payment received \u2014 thank you.'}
+					lines={receiptLines}
+					onView={() => openReceipt()}
+					onPrint={() => openReceipt(true)}
+				/>
 			{/snippet}
 		</RecordDetailLayout>
 
@@ -555,7 +668,32 @@
 	{/if}
 </PageContainer>
 
+<!-- eslint-enable svelte/no-at-html-tags -->
+
 <style lang="scss">
+	// The status row's own words: what kind of record this is, and how many invoices the money went on.
+	.payment-detail__kind {
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		letter-spacing: 0.6px;
+		text-transform: uppercase;
+	}
+
+	.payment-detail__dot {
+		width: 3px;
+		height: 3px;
+		border-radius: var(--radius-circle);
+		background: var(--color-icon--secondary);
+	}
+
+	.payment-detail__count {
+		white-space: nowrap;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 500;
+	}
+
 	.payment-detail__correction {
 		display: flex;
 		flex-direction: column;
@@ -564,7 +702,7 @@
 		border: var(--border-base) solid var(--color-border);
 		border-left: 3px solid var(--color-warning);
 		border-radius: var(--radius-base);
-		background: var(--color-surface--background--subtle);
+		background: var(--color-surface);
 	}
 
 	.payment-detail__correction--info {
@@ -593,10 +731,50 @@
 		}
 	}
 
+	// One line for the client (name, then email) rather than two.
+	:global(.record-detail--cards .client-summary.payment-client .client-summary__lines) {
+		flex: 0 1 auto;
+		order: 2;
+	}
+
+	// A reference can be a long Stripe id, so the strip never lets it spill into the next column: it breaks
+	// inside the column instead. On a wide screen the four facts sit on one line with the reference taking
+	// whatever room the others leave.
+	:global(.record-detail--cards .record-facts.payment-facts .record-facts__row) {
+		min-width: 0;
+	}
+	:global(.record-detail--cards .record-facts.payment-facts dd) {
+		overflow-wrap: anywhere;
+	}
+	@media (min-width: 1360px) {
+		:global(.record-detail--cards .record-facts.payment-facts) {
+			display: grid;
+			gap: 0;
+			grid-template-columns: max-content max-content minmax(150px, 1fr) max-content;
+		}
+		:global(.record-detail--cards .record-facts.payment-facts dd) {
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+	}
+
+	// The card's own header (title and one-line hint) comes from the shared block; these rows and the note run
+	// edge to edge beneath it, one hairline apart.
 	.payment-detail__note {
 		margin: 0;
-		white-space: pre-wrap;
+		padding: 16px 24px 22px;
+		border-top: var(--border-base) solid var(--color-border);
 		color: var(--color-text);
+		line-height: 1.6;
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+	}
+
+	.payment-detail__quiet {
+		margin: 0;
+		padding: 16px 24px 22px;
+		border-top: var(--border-base) solid var(--color-border);
+		color: var(--color-text--secondary);
 	}
 
 	.payment-detail__applied {
@@ -605,20 +783,38 @@
 		padding: 0;
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-base);
 	}
 
 	.payment-detail__applied-row {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-base);
+		gap: 14px;
+		padding: 14px 24px;
+		border-top: var(--border-base) solid var(--color-border);
+	}
+
+	.payment-detail__applied-icon {
+		display: grid;
+		flex: 0 0 34px;
+		place-items: center;
+		width: 34px;
+		height: 34px;
+		border-radius: 10px;
+		color: var(--color-informative--onSurface);
+		background: var(--color-informative--surface);
+
+		:global(svg) {
+			display: block;
+			width: 16px;
+			height: 16px;
+		}
 	}
 
 	.payment-detail__applied-main {
 		display: flex;
+		flex: 1;
 		flex-direction: column;
-		gap: var(--space-smaller);
+		gap: 3px;
 		min-width: 0;
 	}
 
@@ -629,25 +825,60 @@
 
 	a.payment-detail__applied-link {
 		color: var(--color-interactive);
+		text-decoration: none;
 
 		&:hover {
 			text-decoration: underline;
 		}
+
+		&:focus-visible {
+			outline: none;
+			border-radius: var(--radius-small);
+			box-shadow: var(--shadow-focus);
+		}
 	}
 
 	.payment-detail__applied-meta {
-		font-size: var(--typography--fontSize-small);
+		overflow: hidden;
+		font-size: 12px;
+		font-weight: 500;
 		color: var(--color-text--secondary);
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.payment-detail__applied-amount {
-		flex-shrink: 0;
-		font-weight: 600;
+		flex: 0 0 110px;
+		font-weight: 700;
+		text-align: right;
 		white-space: nowrap;
 		color: var(--color-heading);
 	}
 
 	.payment-detail__applied-amount--negative {
 		color: var(--color-critical);
+	}
+
+	.payment-detail__applied-spacer {
+		flex: 0 0 32px;
+	}
+
+	// The row's `...` button wears the app's quiet outline, as the other cards' row actions do.
+	.payment-detail__applied-row :global(.dropdown-menu__trigger) {
+		border: var(--border-base) solid var(--color-border--interactive);
+		background: var(--color-surface);
+	}
+
+	@media (max-width: 767px) {
+		.payment-detail__applied-row {
+			padding-inline: 16px;
+		}
+		.payment-detail__applied-amount {
+			flex-basis: auto;
+		}
+		.payment-detail__note,
+		.payment-detail__quiet {
+			padding-inline: 16px;
+		}
 	}
 </style>

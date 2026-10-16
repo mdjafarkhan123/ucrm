@@ -32,6 +32,8 @@
 		href?: string;
 		disabled?: boolean;
 		loading?: boolean;
+		/** Tabler icon (`?raw`) drawn before the label. Omit for a text-only button. */
+		icon?: string;
 		/** Fires on hover, before the press. Start loading whatever the action opens. */
 		onhover?: () => void;
 	};
@@ -129,6 +131,11 @@
 					loading={primaryAction.loading}
 					onhover={primaryAction.onhover}
 				>
+					{#if primaryAction.icon}
+						<span class="work-header__action-icon" aria-hidden="true"
+							>{@html primaryAction.icon}</span
+						>
+					{/if}
 					{primaryAction.label}
 				</Button>
 			{/if}
@@ -213,6 +220,15 @@
 		}
 
 		// The history control is a lone icon on this card, so it keeps a border to read as a button.
+		&__action-icon {
+			display: inline-flex;
+
+			:global(svg) {
+				width: 18px;
+				height: 18px;
+			}
+		}
+
 		&__icon-button {
 			display: inline-flex;
 			box-sizing: border-box;
@@ -301,7 +317,11 @@
 			display: none;
 		}
 		.work-header__top {
-			gap: 10px;
+			flex-wrap: wrap;
+			gap: 8px 10px;
+		}
+		.work-header__actions :global(.button) {
+			white-space: nowrap;
 		}
 		.work-header__identity {
 			padding-top: 18px;
