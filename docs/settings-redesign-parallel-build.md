@@ -21,7 +21,7 @@ their page-local components. Counts are routes, not independently designed layou
 | Session | Routes | Count | Branch / working folder | Port |
 | --- | --- | --- | --- | --- |
 | Codex business sub-agent | root, business-profile, business-hours, branding, security | 5 | `codex/settings-business-app`, `/tmp/ucrm-settings-business-app` | 5211 |
-| OpenCode | communications/email, communications/sms, communications/website-chat | 3 | `codex/settings-communications-app`, `/tmp/ucrm-settings-communications-app` | 5214 |
+| Claude (communications handover) | communications/email, communications/sms, communications/website-chat | 3 | `codex/settings-communications-claude`, `/tmp/ucrm-settings-communications-claude` | 5214 |
 | Claude | price-book, pipeline, checklists | 3 | `codex/settings-workflows-app`, `/tmp/ucrm-settings-workflows-app` | 5215 |
 
 Jafar narrowed OpenCode's assignment to three pages on 2026-10-17. The other seven
@@ -38,6 +38,14 @@ applies only to the active routes. Keep any already started deferred work isolat
 and checkpointed; it is outside this batch.
 
 ## Continuation and review queue
+
+**Current communications owner:** Jafar transferred OpenCode's three pages to
+Claude on 2026-10-17 after review. Old claim `8f01ab1601d5` released; Claude claim
+`e54334278ed5` reserves the same implementation/progress areas in the new worktree
+above. Existing code is preserved from `c1405242`. Read that branch's
+`docs/settings-redesign-progress/communications-handover.md` and
+`communications-review.md` for exact corrections and validation limits. The old
+OpenCode worktree is retained for recovery and is no longer a writing assignment.
 
 Jafar subsequently authorized Codex to continue with another claimed five-page
 batch: Taxes, Payments, Quote settings, Invoice settings and Team (main page only).
