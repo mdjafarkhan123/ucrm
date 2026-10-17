@@ -5,8 +5,7 @@
 **Stage:** Designing. C1 Foundation approved 2026-10-17 (`concept.pen` boards "Colour that means something" and "The parts every screen is built from").
 
 **Next:**
-1a. Hand-made buttons → shared `Button`: two batches built and pushed on branch `claude/c1e-buttons-everywhere` (worktree `.worktrees/c1e-buttons`, claim `c532bc8e39a9` still held), **not merged**: Jafar has not yet said whether the small bordered row-menu dots are OK. Details and what is left: `parts/c1e-buttons-everywhere.md`.
-1b. **Next session (Jafar, 2026-10-17): design the "switched on" look for toggle buttons in Pencil** (schedule Unscheduled / Map / Filters stay highlighted while their panel is open). One small board in `concept.pen`; research Jobber and Boulevard first; Jafar approves; then add it to `Button` and `buttons.md`. After that: finish the remaining plain buttons and merge the branch.
+1a. Hand-made buttons → shared `Button` on branch `claude/c1e-buttons-everywhere` (worktree `.worktrees/c1e-buttons`, claim `cacaf65df925`): menu triggers, record-page menus, top bar and the Schedule's switched-on buttons done; Jafar approved the row-menu dots and the switched-on look (2026-10-18). **Next:** move the remaining plain `<button>`s (`grep -rl "<button" src`) in parallel groups by helper agents (Jafar agreed), review, then merge into main. Details: `parts/c1e-buttons-everywhere.md`.
 0c. Concept buttons in the live app: done and merged 2026-10-17 (`parts/c1d-buttons-in-app.md`); menu triggers and other own-made buttons still to move.
 0b. Live sidebar coloured icons: done and merged into main 2026-10-17 (`parts/c1c-sidebar-icons.md`).
 0. Button set (`c1b-button-set`): merged into main 2026-10-17; rules in `buttons.md`. Live `Button` greys out while loading; the concept keeps its colour — change it with the first built screen.

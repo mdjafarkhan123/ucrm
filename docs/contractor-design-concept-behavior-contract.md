@@ -76,5 +76,9 @@ designs as the record of the live app.
   softer mid-grey, as Stripe and Linear do); the Delete button's border turns red on hover.
 - Decision 2026-10-17 (Jafar): tables are not redesigned — they keep today's app look (`classic.pen` App-look frames,
   `design-classic/tables.md`). The concept table was removed from the Parts board.
+- Decision 2026-10-18 (Jafar): a switched-on button (Schedule Unscheduled, Map, Filters) is white with a
+  brand-green border, label and icon, and a solid green number bubble (`concept.pen` board "Switched-on buttons",
+  option A). Dark fill (Atlassian, Linear, Notion) was too heavy beside the main button; the pressed-in grey
+  (Shopify's press button) blended into the page. Jafar also approved the small bordered row-menu dots.
 - Decision 2026-10-17 (Jafar): keep two sets of styling modules for now — `design` (concept) and
   `design-classic` (live look) — until rollout; revisit then.

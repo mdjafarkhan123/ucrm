@@ -2,7 +2,8 @@
 
 > Dependencies: `colors.md`, `radius.md`, `borders.md`, `shadows.md`
 
-Pencil: `concept.pen` → Parts board → "Buttons" (kinds, pairs, every state of every kind, sizes, loading).
+Pencil: `concept.pen` → Parts board → "Buttons" (kinds, pairs, every state of every kind, sizes, loading), and
+the "Switched-on buttons" board (option A).
 
 ## Core Specs
 
@@ -46,6 +47,14 @@ An icon button is square at the size's height.
 
 ### Icon button
 - 36×36 (40×40 in the top bar), radius 8, white, bordered; 16–18 icon in `--color-icon`. Needs an `aria-label`.
+
+### Switched on
+- A white bordered button that works like a light switch (Unscheduled, Map, Filters) stays on while its panel
+  shows or its filter is set: border, label and icon `--color-interactive`, background stays `--color-surface`.
+- Hover and pressed: border, label and icon `--color-interactive--hover`; pressed adds a soft inner shadow.
+- Number bubble after the label: 20 high, padding 0 7, pill corners, 12/600. Off: `--color-inactive--surface`
+  with `--color-heading` text. On: `--color-interactive` with `--color-surface` text (`--color-interactive--hover`
+  on hover).
 
 ## States
 
