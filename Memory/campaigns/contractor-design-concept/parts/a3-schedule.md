@@ -1,6 +1,6 @@
 # A3 — Schedule (App look)
 
-**Branch/worktree:** `claude/a3-schedule`, `.worktrees/a3-schedule`. **Claim:** `6c3a8f4511f7` (keep until merged). **State:** Built, NOT merged (Jafar: merge only when he says). Not type-checked or tested (his rule: once, after every screen).
+**Branch/worktree:** `claude/a3-schedule`, `.worktrees/a3-schedule`. **Claim:** `6c3a8f4511f7` (keep until merged). **State:** Merged into main 2026-10-17 (Jafar approved). Combined branch passed svelte-check (0 errors, 0 warnings) and eslint on the Schedule files; /schedule Week, Day and Month loaded with no console errors.
 
 **Pencil frames (classic.pen, 10 distinct):** Week `b6j0I2` ("A · Colour shows status", the chosen one; `KGgbV` is the older stripe version, ignore), Day `NfODm`, Month `uxjN7`, drawer `F62jz`, drawer states `F8bfX1`, New job `hCKLj`, New request `Hn3RV`, New event `K5LTfu`, New job error `O2Oari`. Export with Pencil `Export` to the scratchpad to compare.
 
