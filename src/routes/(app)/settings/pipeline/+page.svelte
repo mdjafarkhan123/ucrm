@@ -2,7 +2,7 @@
 	import { untrack } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { beforeNavigate } from '$app/navigation';
-		import WorkflowPageHeader from '../_workflows/WorkflowPageHeader.svelte';
+		import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
@@ -425,7 +425,7 @@
 	{@const canEdit = query.data.permissions.edit}
 	{@const editor = query.data.pipeline.last_editor}
 
-	<WorkflowPageHeader
+	<SettingsPageHeader
 		title="Pipeline"
 		description="The columns requests and quotes move through on the Pipeline board, and the reasons your team picks when work is lost."
 		icon={layoutKanbanIcon}
@@ -543,8 +543,8 @@
 							<strong>{dirty ? 'You have unsaved changes' : 'No unsaved changes'}</strong>
 							<span
 								>{dirty
-									? 'Nothing is saved until you press Save.'
-									: 'Change any field, then press Save.'}</span
+									? 'Stage and assessment changes are saved when you press Save.'
+									: 'Change stages or assessments, then press Save.'}</span
 							>
 						</span>
 					</div>

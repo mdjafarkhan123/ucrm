@@ -2,7 +2,7 @@
 	import { createQuery, createInfiniteQuery } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import WorkflowPageHeader from '../_workflows/WorkflowPageHeader.svelte';
+	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
@@ -124,7 +124,7 @@
 		{ tone: 'success' | 'warning' | 'informative' | 'inactive'; label: string }
 	> = {
 		active: { tone: 'success', label: 'Active' },
-		paused: { tone: 'inactive', label: 'Paused' },
+		paused: { tone: 'warning', label: 'Paused' },
 		draft: { tone: 'warning', label: 'Draft' },
 		archived: { tone: 'inactive', label: 'Archived' }
 	};
@@ -175,7 +175,7 @@
 		{@const segments = meterSegments(access.limits.automation_active_recipes)}
 
 		<div class="automation-settings">
-			<WorkflowPageHeader
+			<SettingsPageHeader
 				title="Automation"
 				description="Set up automations that follow up with customers for you, without lifting a finger."
 				icon={robotIcon}
@@ -190,7 +190,7 @@
 						</Button>
 					{/if}
 				{/snippet}
-			</WorkflowPageHeader>
+			</SettingsPageHeader>
 
 			{#if suspended || disabled}
 				<p
@@ -266,6 +266,10 @@
 				title="Your automations"
 				padBody={recipesQuery.isPending || recipesQuery.isError || recipes.length === 0}
 			>
+				{#snippet headingIcon()}
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					<span class="automation-settings__list-icon">{@html robotIcon}</span>
+				{/snippet}
 				{#snippet toolbar()}
 					<div class="automation-settings__search">
 						<SearchInput
@@ -522,6 +526,16 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 10px;
+	}
+	.automation-settings__list-icon {
+		display: grid;
+		place-items: center;
+		width: 32px;
+		height: 32px;
+		border-radius: var(--radius-base);
+		color: var(--color-warning--onSurface);
+		background: var(--color-warning--surface);
+		:global(svg) { width: 16px; height: 16px; }
 	}
 	.automation-table__trigger-icon {
 		display: inline-flex;

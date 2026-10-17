@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import WorkflowPageHeader from '../_workflows/WorkflowPageHeader.svelte';
+	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
@@ -93,7 +93,7 @@
 <svelte:head><title>Checklists · Settings · Contractor CRM</title></svelte:head>
 
 <PageContainer variant="open">
-	<WorkflowPageHeader
+	<SettingsPageHeader
 		title="Checklists"
 		description="Build a checklist once, attach it to a job, and every visit on that job gets its own copy to fill in."
 		icon={checklistIcon}

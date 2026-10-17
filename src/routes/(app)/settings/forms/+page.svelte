@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import WorkflowPageHeader from '../_workflows/WorkflowPageHeader.svelte';
+	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
@@ -145,7 +145,7 @@
 <svelte:head><title>Request Forms · Settings · Contractor CRM</title></svelte:head>
 
 <PageContainer variant="open">
-	<WorkflowPageHeader
+	<SettingsPageHeader
 		title="Request Forms"
 		description="Build the forms customers fill in to reach you online. Publish one to make it live, and mark one as your default."
 		icon={clipboardTextIcon}

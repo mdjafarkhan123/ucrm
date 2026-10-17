@@ -1,8 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { resolve } from '$app/paths';
-	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import SettingsPageHeader from './SettingsPageHeader.svelte';
 	let {
 		title,
 		description,
@@ -22,44 +20,12 @@
 	class="business-settings"
 	style={`--settings-icon-color: var(--color-${iconTone}); --settings-icon-surface: var(--color-${iconTone}--surface)`}
 >
-	<Breadcrumbs
-		items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: title }]}
-	/>
-	<div class="business-settings__heading">
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-		<span class="business-settings__icon" aria-hidden="true">{@html icon}</span>
-		<PageHeader {title} {description} />
-	</div>
+	<SettingsPageHeader {title} {description} {icon} tone={iconTone} presentation="business" />
 	{@render children()}
 </div>
 
 <style lang="scss">
 	.business-settings {
-		&__heading {
-			display: flex;
-			align-items: center;
-			gap: var(--space-base);
-			margin: var(--space-base) 0 var(--space-large);
-		}
-		&__heading :global(.page-header) {
-			margin: 0;
-			padding: 0;
-		}
-		&__icon {
-			display: grid;
-			place-items: center;
-			width: 56px;
-			height: 56px;
-			flex: 0 0 auto;
-			background: var(--settings-icon-color);
-			color: var(--color-text--reverse);
-			border-radius: var(--radius-base);
-			box-shadow: var(--shadow-base);
-		}
-		&__icon :global(svg) {
-			width: 28px;
-			height: 28px;
-		}
 		:global(.record-form__main) {
 			padding: 0;
 			border: 0;

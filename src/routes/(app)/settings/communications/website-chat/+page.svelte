@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
+	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
@@ -346,20 +346,7 @@
 
 <PageContainer variant="open">
 	<div class="website-chat record-detail--cards">
-		<header class="website-chat__header">
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			<span class="website-chat__header-icon" aria-hidden="true">{@html messageCircleIcon}</span>
-			<div class="website-chat__header-copy">
-				<Breadcrumbs
-					items={[
-						{ label: 'Settings', href: resolve('/(app)/settings') },
-						{ label: 'Website Chat' }
-					]}
-				/>
-				<h1>Website Chat</h1>
-				<p>The chat widgets your website can show customers.</p>
-			</div>
-		</header>
+		<SettingsPageHeader title="Website Chat" description="The chat widgets your website can show customers." icon={messageCircleIcon} tone="task" presentation="communication" />
 
 		{#if widgetsQuery.isPending}
 			<LoadingSkeleton variant="table" label="Loading Website Chat widgets" />
@@ -444,7 +431,11 @@
 				level={2}
 			>
 				{#snippet actions()}
-					<Button disabled={!canCreate} onclick={openCreate}>New widget</Button>
+					<Button disabled={!canCreate} onclick={openCreate}>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						<span class="website-chat__action-icon" aria-hidden="true">{@html plusIcon}</span>
+						New widget
+					</Button>
 				{/snippet}
 				{#if atCap}
 					<p class="website-chat__notice" role="status">
@@ -765,64 +756,6 @@
 		color: var(--color-critical--onSurface);
 		background: var(--color-critical--surface);
 	}
-	.website-chat__header {
-		display: flex;
-		align-items: flex-start;
-		gap: 18px;
-		margin-top: 16px;
-	}
-	.website-chat__header-icon {
-		display: inline-flex;
-		flex: 0 0 auto;
-		align-items: center;
-		justify-content: center;
-		width: 60px;
-		height: 60px;
-		margin-top: 4px;
-		border-radius: 18px;
-		color: var(--color-white);
-		background: var(--color-task);
-		box-shadow: 0 6px 16px color-mix(in srgb, var(--color-task) 35%, transparent);
-
-		:global(svg) {
-			width: 28px;
-			height: 28px;
-		}
-	}
-	.website-chat__header-copy {
-		display: grid;
-		gap: var(--space-smaller);
-
-		:global(.breadcrumbs) {
-			margin-bottom: 0;
-			font-size: 13px;
-			font-weight: 600;
-		}
-		:global(.breadcrumbs a svg) {
-			display: none;
-		}
-
-		h1,
-		p {
-			margin: 0;
-		}
-
-		h1 {
-			color: var(--color-heading);
-			font-size: 36px;
-			font-weight: 900;
-			letter-spacing: -1.2px;
-			line-height: var(--typography--lineHeight-tight);
-		}
-
-		p {
-			max-width: none;
-			color: var(--color-text--secondary);
-			font-size: 14px;
-			font-weight: 500;
-			line-height: var(--typography--lineHeight-large);
-		}
-	}
 	/* The usage row sits in its own quiet tile, as the approved frame draws it. */
 	.website-chat__usage {
 		display: grid;
@@ -879,16 +812,20 @@
 			height: 12px;
 		}
 	}
+	.website-chat__action-icon {
+		display: inline-flex;
+		:global(svg) { width: 18px; height: 18px; }
+	}
 	.website-chat__meter {
 		overflow: hidden;
 		width: 100%;
 		height: 8px;
-		border-radius: var(--radius-circle);
+		border-radius: var(--radius-base);
 		background: var(--color-surface--background--hover);
 	}
 	.website-chat__meter-fill {
 		height: 100%;
-		border-radius: var(--radius-circle);
+		border-radius: var(--radius-base);
 		background: var(--color-interactive);
 	}
 	/* The card table owns its head, spacing and row lines; the page only sets its width floor and

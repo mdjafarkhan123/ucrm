@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
+	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
@@ -308,22 +308,7 @@
 
 <PageContainer variant="open">
 	<div class="email-identities record-detail--cards">
-		<header class="email-identities__header">
-			<span class="email-identities__header-icon" aria-hidden="true">
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-				{@html atIcon}
-			</span>
-			<div class="email-identities__header-copy">
-				<Breadcrumbs
-					items={[
-						{ label: 'Settings', href: resolve('/(app)/settings') },
-						{ label: 'Email identity' }
-					]}
-				/>
-				<h1>Email identity</h1>
-				<p>Choose the verified email addresses your team and automations can use.</p>
-			</div>
-		</header>
+		<SettingsPageHeader title="Email identity" description="Choose the verified email addresses your team and automations can use." icon={atIcon} tone="task" presentation="communication" />
 
 		<SectionBlock
 			title="Email included this period"
@@ -452,7 +437,10 @@
 		>
 			{#snippet actions()}
 				<Button disabled={!canCreate} onhover={() => void prefetchTeam()} onclick={openCreate}
-					>Add sender</Button
+					>
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					<span class="email-identities__action-icon" aria-hidden="true">{@html plusIcon}</span>
+					Add sender</Button
 				>
 			{/snippet}
 			{#if sendersQuery.isPending}
@@ -738,53 +726,9 @@
 		height: 18px;
 		color: var(--color-informative--onSurface);
 	}
-	.email-identities__header {
-		display: flex;
-		align-items: flex-start;
-		gap: 18px;
-		margin-top: 16px;
-	}
-	.email-identities__header-icon {
-		display: grid;
-		flex: 0 0 auto;
-		place-items: center;
-		width: 60px;
-		height: 60px;
-		margin-top: 4px;
-		border-radius: 18px;
-		color: var(--color-text--reverse);
-		background: var(--color-task);
-		box-shadow: 0 6px 16px color-mix(in srgb, var(--color-task) 35%, transparent);
-	}
-	.email-identities__header-icon :global(svg) {
-		width: 28px;
-		height: 28px;
-	}
-	.email-identities__header-copy {
-		min-width: 0;
-	}
-	.email-identities__header-copy :global(.breadcrumbs) {
-		margin-bottom: 4px;
-		font-size: 13px;
-		font-weight: 600;
-	}
-	.email-identities__header-copy :global(.breadcrumbs a svg) {
-		display: none;
-	}
-	.email-identities__header h1 {
-		margin: 0;
-		color: var(--color-heading);
-		font-size: 36px;
-		font-weight: 900;
-		letter-spacing: -1.2px;
-		line-height: var(--typography--lineHeight-tight);
-	}
-	.email-identities__header p {
-		margin: var(--space-smaller) 0 0;
-		color: var(--color-text--secondary);
-		font-size: 14px;
-		font-weight: 500;
-		line-height: var(--typography--lineHeight-large);
+	.email-identities__action-icon {
+		display: inline-flex;
+		:global(svg) { width: 18px; height: 18px; }
 	}
 	.email-identities__notice,
 	.email-identities__fixed-address {
@@ -982,12 +926,6 @@
 	@media (max-width: 639px) {
 		.email-identities {
 			gap: var(--space-base);
-		}
-		.email-identities__header {
-			align-items: flex-start;
-		}
-		.email-identities__header h1 {
-			font-size: 28px;
 		}
 		.email-identities__actions {
 			justify-content: flex-start;

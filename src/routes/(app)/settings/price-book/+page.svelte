@@ -3,7 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import WorkflowPageHeader from '../_workflows/WorkflowPageHeader.svelte';
+	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import FilterChip from '$lib/components/ui/FilterChip.svelte';
@@ -202,7 +202,7 @@
 
 <div class="page-scroller">
 	<PageContainer variant="open">
-		<WorkflowPageHeader
+		<SettingsPageHeader
 			title="Price Book"
 			description="The products and services you sell, ready to add to any quote or request."
 			icon={bookIcon}
@@ -222,7 +222,7 @@
 					</Button>
 				{/if}
 			{/snippet}
-		</WorkflowPageHeader>
+		</SettingsPageHeader>
 
 		{#if itemsQuery.isPending}
 			<RecordListCard title="Price Book items" padBody>

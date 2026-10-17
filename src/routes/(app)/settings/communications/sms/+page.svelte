@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
+	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
@@ -465,19 +464,7 @@
 
 <PageContainer variant="open">
 	<div class="sms-settings record-detail--cards">
-		<header class="sms-settings__header">
-			<span class="sms-settings__header-icon" aria-hidden="true">
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-				{@html phoneIcon}
-			</span>
-			<div class="sms-settings__header-copy">
-				<Breadcrumbs
-					items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Phone & SMS' }]}
-				/>
-				<h1>Phone & SMS</h1>
-				<p>Understand what is ready and what needs attention.</p>
-			</div>
-		</header>
+		<SettingsPageHeader title="Phone & SMS" description="Understand what is ready and what needs attention." icon={phoneIcon} tone="task" presentation="communication" compactDescription />
 
 		{#if homeQuery.isPending}
 			<LoadingSkeleton variant="card" rows={3} />
@@ -1150,57 +1137,6 @@
 	}
 
 	/* Page header: a 60px blue tile beside the breadcrumb, 36px title and sentence, as in the approved frame. */
-	.sms-settings__header {
-		display: flex;
-		align-items: flex-start;
-		gap: 18px;
-		margin-top: 16px;
-	}
-	.sms-settings__header-icon {
-		display: grid;
-		flex: 0 0 auto;
-		place-items: center;
-		width: 60px;
-		height: 60px;
-		margin-top: 4px;
-		border-radius: 18px;
-		color: var(--color-text--reverse);
-		background: var(--color-task);
-		box-shadow: 0 6px 16px color-mix(in srgb, var(--color-task) 35%, transparent);
-	}
-	.sms-settings__header-icon :global(svg) {
-		display: block;
-		width: 28px;
-		height: 28px;
-	}
-	.sms-settings__header-copy {
-		display: grid;
-		min-width: 0;
-
-		:global(.breadcrumbs) {
-			margin-bottom: 4px;
-			font-size: 13px;
-			font-weight: 600;
-		}
-		:global(.breadcrumbs a svg) {
-			display: none;
-		}
-		h1 {
-			margin: 0;
-			color: var(--color-heading);
-			font-size: 36px;
-			font-weight: 900;
-			letter-spacing: -1.2px;
-			line-height: var(--typography--lineHeight-tight);
-		}
-		p {
-			margin: 2px 0 0;
-			color: var(--color-text--secondary);
-			font-size: 14px;
-			font-weight: 500;
-			line-height: var(--typography--lineHeight-large);
-		}
-	}
 
 	/* Readiness strip: the framed heading and the four facts share one row, with thin dividers between. */
 	.sms-settings__readiness {
@@ -1527,7 +1463,12 @@
 	}
 
 	@media (max-width: 900px) {
+		.sms-settings__readiness-row {
+			flex-direction: column;
+			align-items: stretch;
+		}
 		.sms-settings__facts {
+			display: grid;
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 		.sms-settings__fact:nth-child(n + 2) {
@@ -1546,10 +1487,6 @@
 	@media (max-width: 639px) {
 		.sms-settings {
 			gap: var(--space-base);
-		}
-		.sms-settings__header-copy h1 {
-			font-size: var(--typography--fontSize-largest);
-			letter-spacing: -0.8px;
 		}
 		.sms-settings__facts {
 			grid-template-columns: minmax(0, 1fr);
