@@ -46,3 +46,10 @@ money or adding an unrelated data load. Service-area preview has no invented map
 
 Next: parent reviews branch, combines with the other assigned groups when safe,
 then performs final deferred validation after the screen batch is built.
+
+## Shared presentation followup
+
+2026-10-17: replaced the four route-local wrapper imports with the shared
+`SettingsPresentation` from parent commit `a309defa` (cherry-picked as `5530c1bc`).
+Removed duplicate wrapper; retained BusinessPreview. Quick live browser spot check
+confirmed original green presentation. No expensive checks run.

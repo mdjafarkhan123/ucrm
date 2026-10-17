@@ -4,7 +4,7 @@
 	import { beforeNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import BusinessSettingsPresentation from '../_components/BusinessSettingsPresentation.svelte';
+	import BusinessSettingsPresentation from '$lib/components/settings/SettingsPresentation.svelte';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';

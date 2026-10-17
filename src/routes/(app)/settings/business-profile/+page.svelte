@@ -3,7 +3,7 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { beforeNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import BusinessSettingsPresentation from '../_components/BusinessSettingsPresentation.svelte';
+	import BusinessSettingsPresentation from '$lib/components/settings/SettingsPresentation.svelte';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Input from '$lib/components/ui/Input.svelte';

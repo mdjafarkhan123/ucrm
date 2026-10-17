@@ -1,5 +1,5 @@
 <script lang="ts">
-	import BusinessSettingsPresentation from '../_components/BusinessSettingsPresentation.svelte';
+	import BusinessSettingsPresentation from '$lib/components/settings/SettingsPresentation.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import shieldIcon from '@tabler/icons/outline/shield-lock.svg?raw';
