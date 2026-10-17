@@ -47,16 +47,16 @@ Agreed with Jafar on 2026-10-17. Every design, in Pencil or in code, follows all
 ## Critical Rules
 
 - **Tokens only.** Every value maps to a token in `src/lib/styles/_variables.scss` (Pencil uses the same names
-  without `--`). Add a token only when none fits, in Pencil, code and these modules in the same commit.
+  without `--`). A new token goes into Pencil, code and these modules in the same commit.
 - **Cross-reference modules.** A card with buttons meets `cards.md` and `buttons.md`.
-- **Dark mode comes from the tokens.** Every fill differs from the colour behind it, in light and dark.
+- **Dark mode comes from the tokens;** never swap colours by hand.
 - **Every interactive part** has hover, focus-visible, active and disabled states.
 - **Semantic HTML:** headings in order, `<button>` for actions, `<a>` for navigation, labels on fields.
 
 ## Pencil Design Requirements
 
 - Draw in `concept.pen` from its Foundation parts and token names, following every preference above.
-- The step-by-step (open the file, show Jafar, save, keep Pencil and code the same) is in
+- Working in Pencil (opening the file, saving, recording Jafar's approval): read
   [Pencil workflow](../../../docs/pencil-workflow.md).
 
 ## Module Index

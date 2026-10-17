@@ -21,5 +21,4 @@ Tokens on a 4px grid: `--space-smaller` 4, `--space-small` 8, `--space-slim` 12,
 
 ## Rules
 
-- One focal point per screen: the area the contractor acts on first.
 - Line up columns (status, date, amount) across rows.

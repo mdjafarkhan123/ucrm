@@ -68,7 +68,8 @@ its `apply_migration` stamps today's version instead of the file's.
 
 Skills live under `.claude/skills/`. Codex finds them through links in `.agents/skills/`; when you add a skill,
 add its link with `ln -s ../../.claude/skills/<name> .agents/skills/<name>`. Load every skill relevant to the
-current task; do not load the full library by default.
+current task, and tell subagents which skills to load when you start them; do not load the full library by
+default.
 
 | Work / Subject / Topic / Stage                                                                         | Skill                                                      |
 | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
@@ -129,7 +130,7 @@ before changing files (`--mode read` for research). Release after safe integrati
   real choice, bring researched options with a recommendation and wait for his answer. The same holds for
   questions that come up mid-way or in later sessions. Choose technical details yourself using proven methods.
   Tell Jafar which product or method you followed.
-- **Frontend design.** Screens look premium, professional, and modern.
+- **Frontend design.** Screens follow "Jafar's Design Preferences" in `.claude/skills/design/SKILL.md`.
 - **Design in Pencil first.** Before code, design in Pencil and get Jafar's yes for a new
   screen, a redesign of an existing screen, a new layout, a new kind of part,
   or a change to how an existing part looks. Bug fixes that restore the approved look, and small additions made

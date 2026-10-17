@@ -10,7 +10,7 @@
 
 ### Main
 - Background `--color-interactive`; text and icon `--color-surface`.
-- Hover `--color-interactive--hover`. One per area.
+- Hover `--color-interactive--hover`.
 
 ### Secondary
 - Background `--color-surface`; 1px `--color-border--interactive`; text `--color-heading`.

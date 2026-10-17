@@ -18,7 +18,3 @@
 ## States
 
 - **Current page (sidebar):** solid tile in `--color-<meaning>`, icon `--color-text--reverse`.
-
-## Rules
-
-- Tiles name things (records, sections, statuses). Actions use a plain icon or an icon button.

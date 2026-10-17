@@ -31,11 +31,7 @@ staff open the app between jobs and want to see what needs them right now, in a 
 
 ## Experience target
 
-The [design skill](../.claude/skills/design/SKILL.md) is the target. On top of it:
-
-- **A new concept, not a polish of today's pages.** Layout, grouping and content can differ from the live page.
-  The test is what a contractor most needs on that screen.
-- Each screen is researched first: what leading products (Jobber first) show and leave out. Never a copy.
+The target is "Jafar's Design Preferences" in the [design skill](../.claude/skills/design/SKILL.md).
 
 ## Not doing
 

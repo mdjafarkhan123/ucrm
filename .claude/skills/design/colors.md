@@ -55,7 +55,4 @@ They are in `concept.pen`; add them to `_variables.scss` with the first screen t
 
 ## Rules
 
-- Colour an icon when it names a record, section or status; actions (edit, delete, copy, share, download, more)
-  stay `--color-icon`.
 - A record keeps its colour everywhere: tile, pill, schedule line.
-- Status colour always comes with its words.
