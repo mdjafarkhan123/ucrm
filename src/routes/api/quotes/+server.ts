@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import type { Database } from '$lib/database.types';
 import { hasPermission, requireOrganizationPermission } from '$lib/server/access/permission';
 import {
 	NO_STORE_HEADERS,
@@ -77,6 +78,8 @@ function readCursor(raw: string | undefined) {
 function quoteFilterValue(value: string) {
 	return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
 }
+
+type QuoteActivityRow = Database['public']['Functions']['quote_list_activity']['Returns'][number];
 
 export const GET: RequestHandler = async (event) => {
 	const check = await requireOrganizationPermission(event, 'quotes.view');
@@ -199,7 +202,9 @@ export const GET: RequestHandler = async (event) => {
 		]);
 	if (moneyError || activityError) return databaseError();
 	const money = asMoneyMap(versionMoney);
-	const activity = new Map((activityRows ?? []).map((entry) => [entry.quote_id, entry]));
+	const activity = new Map<string, QuoteActivityRow>(
+		((activityRows ?? []) as QuoteActivityRow[]).map((entry) => [entry.quote_id, entry])
+	);
 
 	const quotes = page.map((row) => {
 		const version = (embeddedOne(row.draft) ?? embeddedOne(row.published)) as {

@@ -2,8 +2,7 @@
 	import { untrack } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { beforeNavigate } from '$app/navigation';
-	import { resolve } from '$app/paths';
-	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
+	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
@@ -45,6 +44,12 @@
 	} from '$lib/pipeline/stages';
 	import { DEFAULT_INACTIVITY_DAYS, INACTIVITY_DAYS_MAX } from '$lib/pipeline/freshness';
 	import layoutKanbanIcon from '@tabler/icons/outline/layout-kanban.svg?raw';
+	import layoutColumnsIcon from '@tabler/icons/outline/layout-columns.svg?raw';
+	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
+	import fileDescriptionIcon from '@tabler/icons/outline/file-description.svg?raw';
+	import thumbDownIcon from '@tabler/icons/outline/thumb-down.svg?raw';
+	import infoCircleIcon from '@tabler/icons/outline/info-circle.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -420,105 +425,146 @@
 	{@const canEdit = query.data.permissions.edit}
 	{@const editor = query.data.pipeline.last_editor}
 
-	<Breadcrumbs
-		items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Pipeline' }]}
+	<SettingsPageHeader
+		title="Pipeline"
+		description="The columns requests and quotes move through on the Pipeline board, and the reasons your team picks when work is lost."
+		icon={layoutKanbanIcon}
 	/>
 
-	<RecordFormLayout title="Pipeline" icon={layoutKanbanIcon} bind:this={layout} error={saveError}>
-		{#snippet main()}
-			{#if !canEdit}
-				<p class="pipeline-settings__readonly">
-					Only owners and administrators can change this. {#if editor}Last changed by {editor.name ??
-							'a teammate'}.{/if}
-				</p>
-			{/if}
+	<div class="pipeline-settings">
+		<RecordFormLayout title="Pipeline" bind:this={layout} error={saveError}>
+			{#snippet main()}
+				{#if !canEdit}
+					<p class="pipeline-settings__readonly">
+						Only owners and administrators can change this. {#if editor}Last changed by {editor.name ??
+								'a teammate'}.{/if}
+					</p>
+				{/if}
 
-			{#if detailed !== null}
-				{@const d = detailed}
-				<!-- Locked while a save is on its way: the form is reloaded from what was saved, which would
-				     otherwise wipe anything typed in the meantime. -->
-				<fieldset class="pipeline-settings__fields" disabled={saving}>
-					<SectionBlock
-						title="Assessment column"
-						hint="How the board groups the three assessment stages for everyone in this organization."
-						form
-						level={3}
-					>
-						<Toggle
-							id="pipeline-detailed-toggle"
-							label="Show assessment stages as separate columns"
-							description={d
-								? 'The board shows Unscheduled, Scheduled, and Completed as three columns.'
-								: 'The board shows one Assessment column, with each card’s state on the card itself.'}
-							checked={d}
-							disabled={!canEdit}
-							labelSide="start"
-							onchange={(checked) => (detailed = checked)}
-						/>
-					</SectionBlock>
-
-					{#each BOARD_SECTIONS as section (section)}
+				{#if detailed !== null}
+					{@const d = detailed}
+					<!-- Locked while a save is on its way: the form is reloaded from what was saved, which would
+					     otherwise wipe anything typed in the meantime. -->
+					<fieldset class="pipeline-settings__fields" disabled={saving}>
 						<SectionBlock
-							title={section === 'request' ? 'Request stages' : 'Quote stages'}
-							hint={section === 'request'
-								? 'The columns a request moves through. Add your own follow-up stages between the built-in ones.'
-								: 'The columns a quote moves through. Add your own follow-up stages between the built-in ones.'}
-							form
+							class="pipeline-card pipeline-card--assessment"
+							title="Assessment column"
+							icon={layoutColumnsIcon}
+							hint="How the board groups the three assessment stages for everyone in this organization."
 							level={3}
 						>
-							<PipelineStageList
-								columns={columns[section]}
-								{canEdit}
-								canAdd={!atLimit}
-								errors={rowErrors}
-								days={builtInDays}
-								daysErrors={attempted ? daysErrors : {}}
-								onBuiltInDays={setBuiltInDays}
-								onStageDays={setStageDays}
-								onAdd={() => addStage(section)}
-								onRename={renameStage}
-								onRequireTask={requireTask}
-								onMove={(index, by) => moveStage(section, index, by)}
-								onRemove={removeStage}
-								onRemoveIntent={warmStageCardCount}
-							/>
+							<div class="pipeline-settings__toggle-panel">
+								<Toggle
+									id="pipeline-detailed-toggle"
+									label="Show assessment stages as separate columns"
+									description={d
+										? 'The board shows Unscheduled, Scheduled, and Completed as three columns.'
+										: 'The board shows one Assessment column, with each card’s state on the card itself.'}
+									checked={d}
+									disabled={!canEdit}
+									labelSide="start"
+									onchange={(checked) => (detailed = checked)}
+								/>
+							</div>
 						</SectionBlock>
-					{/each}
-				</fieldset>
 
-				<p class="pipeline-settings__limit">
-					{stages.length} of {CUSTOM_STAGE_LIMIT} custom stages used.
-					{#if atLimit}You have reached the limit, so no more can be added.{/if}
-					Built-in stages follow real work — a request coming in, an assessment being booked, a quote
-					being sent — so they cannot be renamed, moved, or removed. Removing one of your own stages asks
-					where its cards go first. Switch on “On hold stage” for a column like “Waiting till spring”:
-					cards there stay open and are never counted as lost. “Warn after” is how many days a card in
-					that stage can go without real progress — a customer reply, a booked visit, a quote sent, or
-					a finished task — before it is marked as needing attention.
-				</p>
+						{#each BOARD_SECTIONS as section (section)}
+							<SectionBlock
+								class={`pipeline-card pipeline-card--${section}`}
+								title={section === 'request' ? 'Request stages' : 'Quote stages'}
+								icon={section === 'request' ? inboxIcon : fileDescriptionIcon}
+								hint={section === 'request'
+									? 'The columns a request moves through. Add your own follow-up stages between the built-in ones.'
+									: 'The columns a quote moves through. Add your own follow-up stages between the built-in ones.'}
+								level={3}
+							>
+								<PipelineStageList
+									columns={columns[section]}
+									{canEdit}
+									canAdd={!atLimit}
+									errors={rowErrors}
+									days={builtInDays}
+									daysErrors={attempted ? daysErrors : {}}
+									onBuiltInDays={setBuiltInDays}
+									onStageDays={setStageDays}
+									onAdd={() => addStage(section)}
+									onRename={renameStage}
+									onRequireTask={requireTask}
+									onMove={(index, by) => moveStage(section, index, by)}
+									onRemove={removeStage}
+									onRemoveIntent={warmStageCardCount}
+								/>
+							</SectionBlock>
+						{/each}
+					</fieldset>
 
-				<SectionBlock
-					title="Lost reasons"
-					hint="The reasons your team picks from when work is lost. Changes here save straight away."
-					form
-					level={3}
-				>
-					<PipelineLostReasonList {canEdit} />
-				</SectionBlock>
-			{/if}
-		{/snippet}
+					<div class="pipeline-settings__limit">
+						<span class="pipeline-settings__limit-icon" aria-hidden="true">
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							{@html infoCircleIcon}
+						</span>
+						<p>
+							<strong>
+								{stages.length} of {CUSTOM_STAGE_LIMIT} custom stages used.
+								{#if atLimit}You have reached the limit, so no more can be added.{/if}
+							</strong>
+							Built-in stages follow real work — a request coming in, an assessment being booked, a quote
+							being sent — so they cannot be renamed, moved, or removed. Removing one of your own stages
+							asks where its cards go first. Switch on “On hold stage” for a column like “Waiting till
+							spring”: cards there stay open and are never counted as lost. “Warn after” is how many days
+							a card in that stage can go without real progress — a customer reply, a booked visit, a
+							quote sent, or a finished task — before it is marked as needing attention.
+						</p>
+					</div>
+				{/if}
+			{/snippet}
 
-		{#snippet actions()}
-			{#if canEdit}
-				<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
-				<Button
-					onclick={() => void save().finally(() => layout?.revealError())}
-					disabled={!dirty || saving}
-					loading={saving}>Save</Button
-				>
-			{/if}
-		{/snippet}
-	</RecordFormLayout>
+			{#snippet rail()}
+				{#if detailed !== null}
+					<fieldset class="pipeline-settings__fields" disabled={saving}>
+						<SectionBlock
+							class="pipeline-card pipeline-card--lost pipeline-card--flush"
+							title="Lost reasons"
+							icon={thumbDownIcon}
+							hint="The reasons your team picks from when work is lost. Changes here save straight away."
+							level={3}
+						>
+							<PipelineLostReasonList {canEdit} />
+						</SectionBlock>
+					</fieldset>
+				{/if}
+			{/snippet}
+
+			{#snippet actions()}
+				{#if canEdit}
+					<div class="pipeline-settings__status" class:pipeline-settings__status--dirty={dirty}>
+						<span class="pipeline-settings__status-dot" aria-hidden="true"></span>
+						<span class="pipeline-settings__status-text">
+							<strong>{dirty ? 'You have unsaved changes' : 'No unsaved changes'}</strong>
+							<span
+								>{dirty
+									? 'Stage and assessment changes are saved when you press Save.'
+									: 'Change stages or assessments, then press Save.'}</span
+							>
+						</span>
+					</div>
+					<div class="pipeline-settings__buttons">
+						<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
+						<Button
+							onclick={() => void save().finally(() => layout?.revealError())}
+							disabled={!dirty || saving}
+							loading={saving}
+						>
+							<span class="pipeline-settings__save">
+								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+								<span aria-hidden="true">{@html checkIcon}</span>Save
+							</span>
+						</Button>
+					</div>
+				{/if}
+			{/snippet}
+		</RecordFormLayout>
+	</div>
 
 	<PipelineStageRemoveDialog
 		stage={removingStage}
@@ -545,9 +591,210 @@
 			display: contents;
 		}
 
+		// "Show assessment stages…" sits in a quiet panel with the switch at the far end.
+		&__toggle-panel {
+			padding: 14px 16px;
+			border-radius: var(--radius-base);
+			background: var(--color-surface--background--subtle);
+		}
+
 		&__limit {
+			display: flex;
+			gap: 12px;
+			padding: 0 4px;
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			font-size: 12px;
+			line-height: 1.6;
+
+			p {
+				margin: 0;
+			}
+			strong {
+				display: block;
+				color: var(--color-heading);
+				font-size: 13px;
+				font-weight: 600;
+			}
+		}
+		&__limit-icon {
+			flex: 0 0 auto;
+			padding-top: 2px;
+			color: var(--color-icon--secondary);
+
+			:global(svg) {
+				display: block;
+				width: 16px;
+				height: 16px;
+			}
+		}
+
+		// The save bar's left side: a dot, what is true now, and the one thing to do about it.
+		&__status {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			min-width: 0;
+		}
+		&__status-dot {
+			display: grid;
+			flex: 0 0 auto;
+			place-items: center;
+			width: 28px;
+			height: 28px;
+			border-radius: 14px;
+			background: color-mix(in srgb, var(--color-base-white) 12%, transparent);
+
+			&::after {
+				content: '';
+				width: 8px;
+				height: 8px;
+				border-radius: 50%;
+				background: var(--color-base-blue--400);
+			}
+		}
+		&__status--dirty &__status-dot {
+			background: color-mix(in srgb, var(--color-base-yellow--400) 18%, transparent);
+
+			&::after {
+				background: var(--color-base-yellow--400);
+			}
+		}
+		&__status-text {
+			display: grid;
+			min-width: 0;
+
+			strong {
+				color: var(--color-base-white);
+				font-size: 14px;
+				font-weight: 600;
+			}
+			span {
+				color: var(--color-base-blue--300);
+				font-size: 12px;
+			}
+		}
+		&__buttons {
+			display: flex;
+			flex: 0 0 auto;
+			gap: 8px;
+		}
+		&__save {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+
+			:global(svg) {
+				display: block;
+				width: 16px;
+				height: 16px;
+			}
+		}
+
+		// ---- The page frame: two columns of cards straight on the app background, as drawn. ----
+		:global(.record-form__header) {
+			display: none;
+		}
+		:global(.record-form__main) {
+			padding: 0;
+			border: 0;
+			border-radius: 0;
+			background: transparent;
+			box-shadow: none;
+			gap: 20px;
+			overflow: visible;
+		}
+		:global(.record-form__rail) {
+			max-height: none;
+			overflow: visible;
+		}
+		:global(.record-form) {
+			height: auto;
+		}
+
+		// ---- Dark save bar with its own words, centred under the content like the design. ----
+		:global(.sticky-action-bar) {
+			max-width: 720px;
+			margin-inline: auto;
+			padding: 10px 10px 10px 20px;
+			border-color: var(--color-base-blue--700);
+			border-radius: 20px;
+			background: var(--color-base-blue--900);
+			color: var(--color-base-white);
+			box-shadow: var(--shadow-high);
+		}
+		:global(.sticky-action-bar .button--secondary) {
+			border-color: var(--color-base-blue--600);
+			background: var(--color-base-blue--800);
+			color: var(--color-base-white);
+		}
+		:global(.sticky-action-bar .button--secondary:disabled),
+		:global(.sticky-action-bar .button--secondary.button--inactive) {
+			opacity: 0.7;
+		}
+
+		// ---- Card headers: a tinted icon tile beside the title and its quiet line. ----
+		:global(.pipeline-card) {
+			display: block;
+			position: relative;
+			overflow: clip;
+			margin: 0;
+			padding: 0;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-base);
+			background: var(--color-surface);
+		}
+		:global(.pipeline-card .section-block__title) {
+			position: static;
+			max-width: none;
+			padding: 20px 24px 0 72px;
+			background: transparent;
+			transform: none;
+			font-size: 16px;
+			letter-spacing: -0.2px;
+		}
+		:global(.pipeline-card .section-block__icon) {
+			position: absolute;
+			top: 20px;
+			left: 24px;
+			display: grid;
+			place-items: center;
+			width: 36px;
+			height: 36px;
+			border-radius: 11px;
+			background: var(--color-informative--surface);
+			color: var(--color-informative);
+		}
+		:global(.pipeline-card .section-block__icon svg) {
+			width: 18px;
+			height: 18px;
+			color: inherit;
+		}
+		:global(.pipeline-card--request .section-block__icon) {
+			background: var(--color-request--surface);
+			color: var(--color-request);
+		}
+		:global(.pipeline-card--quote .section-block__icon) {
+			background: var(--color-quote--surface);
+			color: var(--color-quote);
+		}
+		:global(.pipeline-card .section-block__hint) {
+			margin: 2px 24px 18px 72px;
+			font-size: 13px;
+			font-weight: 500;
+			line-height: 1.4;
+		}
+		:global(.pipeline-card > :not(.section-block__title, .section-block__hint)) {
+			margin: 0 24px 24px;
+		}
+		:global(.pipeline-card--flush > :not(.section-block__title, .section-block__hint)) {
+			margin: 0;
+		}
+	}
+
+	// Beside each other from the width the design was drawn for; stacked below it.
+	@media (min-width: 1080px) {
+		.pipeline-settings :global(.record-form__grid) {
+			grid-template-columns: minmax(0, 1fr) 440px;
 		}
 	}
 </style>

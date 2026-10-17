@@ -44,7 +44,13 @@ describe('buildTodoColumns', () => {
 					overdue_minor: 30_00,
 					collected_this_month_minor: 0,
 					currency_code: 'USD',
-					locale: 'en-US'
+					locale: 'en-US',
+					facts: {
+						paid_count: 0,
+						average_days_to_paid: null,
+						overdue_reminders_on: false,
+						overdue_reminder_days_after_due: null
+					}
 				}
 			}
 		);

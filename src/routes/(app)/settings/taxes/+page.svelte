@@ -1,9 +1,6 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { resolve } from '$app/paths';
-	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
-	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import SettingsPresentation from '$lib/components/settings/SettingsPresentation.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
@@ -28,6 +25,7 @@
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 	import eyeOffIcon from '@tabler/icons/outline/eye-off.svg?raw';
+	import badgeCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
 
 	const queryClient = useQueryClient();
@@ -128,19 +126,16 @@
 	];
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
+
 <svelte:head><title>Taxes · Settings · Contractor CRM</title></svelte:head>
 
-<PageContainer variant="fill">
-	<Breadcrumbs
-		items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Taxes' }]}
-	/>
-
-	<PageHeader
-		eyebrow="Business"
-		title="Taxes"
-		description="The rates your business charges, and which one applies by default."
-	/>
-
+<SettingsPresentation
+	title="Taxes"
+	description="The rates your business charges, and which one applies by default."
+	icon={receiptTaxIcon}
+	iconTone="job"
+>
 	{#if query.isPending}
 		<LoadingSkeleton variant="card" rows={3} />
 	{:else if query.isError}
@@ -150,7 +145,54 @@
 		{@const activeRates = taxes.rates.filter((rate) => rate.is_active)}
 
 		<div class="taxes-page">
-			<SectionBlock title="Saved tax rates" level={2}>
+			<section class="taxes-page__hero" aria-labelledby="business-tax-default">
+				<div class="taxes-page__hero-copy">
+					<div class="taxes-page__eyebrow">
+						<span class="taxes-page__hero-icon" aria-hidden="true">{@html badgeCheckIcon}</span
+						>Business default
+					</div>
+					<div class="taxes-page__hero-value">
+						<h2 id="business-tax-default">
+							{#if taxes.default.source === 'not_configured'}Not configured
+							{:else if taxes.default.source === 'no_tax'}No tax
+							{:else}{taxes.rates.find((rate) => rate.id === taxes.default.rate_id)?.name ??
+									'A saved rate'}{/if}
+						</h2>
+						{#if taxes.default.source === 'rate'}
+							{@const defaultRate = taxes.rates.find((rate) => rate.id === taxes.default.rate_id)}
+							{#if defaultRate}<span class="taxes-page__hero-pill"
+									>{rateText(defaultRate.rate_basis_points)}</span
+								>{/if}
+						{/if}
+					</div>
+					<p>
+						{taxes.default.source === 'not_configured'
+							? 'Set a business default before publishing a priced quote.'
+							: "Used for any Property that doesn't pin its own rate."}
+					</p>
+				</div>
+				<dl class="taxes-page__counts">
+					<div>
+						<dt>Saved rates</dt>
+						<dd>{taxes.rates.length}</dd>
+					</div>
+					<div>
+						<dt>Active</dt>
+						<dd>{activeRates.length}</dd>
+					</div>
+					<div>
+						<dt>Inactive</dt>
+						<dd>{taxes.rates.length - activeRates.length}</dd>
+					</div>
+				</dl>
+				<div class="taxes-page__hero-action">
+					<Button size="small" variant="secondary" onclick={() => (defaultDialogOpen = true)}
+						>{taxes.default.source === 'not_configured' ? 'Set default' : 'Change'}</Button
+					>
+				</div>
+			</section>
+
+			<SectionBlock title="Saved tax rates" icon={receiptTaxIcon} level={2}>
 				{#snippet actions()}
 					<Button size="small" onclick={() => (rateDialog = { rate: null })}>Add rate</Button>
 				{/snippet}
@@ -169,16 +211,25 @@
 					</EmptyState>
 				{:else}
 					<DataTable
+						variant="card"
 						{columns}
 						items={taxes.rates}
 						rowId={(rate) => rate.id}
 						caption="Saved tax rates"
 					>
 						{#snippet row(rate: TaxRate)}
-							<th scope="row">{rate.name}</th>
+							<th scope="row"
+								><span class="taxes-page__name"
+									><span class="taxes-page__rate-icon" aria-hidden="true"
+										>{@html receiptTaxIcon}</span
+									>{rate.name}{#if taxes.default.source === 'rate' && taxes.default.rate_id === rate.id}<span
+											class="taxes-page__default-badge">Default</span
+										>{/if}</span
+								></th
+							>
 							<td class="taxes-page__rate">{rateText(rate.rate_basis_points)}</td>
 							<td>
-								<StatusBadge status={rate.is_active ? 'success' : 'inactive'}>
+								<StatusBadge size="compact" status={rate.is_active ? 'success' : 'inactive'}>
 									{rate.is_active ? 'Active' : 'Inactive'}
 								</StatusBadge>
 							</td>
@@ -194,31 +245,6 @@
 							/>
 						{/snippet}
 					</DataTable>
-				{/if}
-			</SectionBlock>
-
-			<SectionBlock
-				title="Business default"
-				hint="Used for any Property that doesn't pin its own rate."
-				level={2}
-			>
-				{#snippet actions()}
-					<Button size="small" variant="secondary" onclick={() => (defaultDialogOpen = true)}>
-						{taxes.default.source === 'not_configured' ? 'Set default' : 'Change'}
-					</Button>
-				{/snippet}
-
-				{#if taxes.default.source === 'not_configured'}
-					<p class="taxes-page__default-value taxes-page__default-value--muted">
-						Not configured — a priced Quote can't be published until this is set.
-					</p>
-				{:else if taxes.default.source === 'no_tax'}
-					<p class="taxes-page__default-value">No tax</p>
-				{:else}
-					{@const rate = taxes.rates.find((entry) => entry.id === taxes.default.rate_id)}
-					<p class="taxes-page__default-value">
-						{rate ? `${rate.name} (${rateText(rate.rate_basis_points)})` : 'A saved rate'}
-					</p>
 				{/if}
 			</SectionBlock>
 		</div>
@@ -274,27 +300,200 @@
 			{/if}
 		</ConfirmDialog>
 	{/if}
-</PageContainer>
+</SettingsPresentation>
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	.taxes-page :global(.section-block__title) {
+		margin: 0;
+		text-align: left;
+		justify-content: flex-start;
+	}
+	.taxes-page :global(.data-table) {
+		margin: 0 -24px -24px;
+		width: calc(100% + 48px);
+		--data-table-min-width: 0px;
+	}
+	.taxes-page :global(.section-block:has(> .section-block__actions)) {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-content: start;
+	}
+	.taxes-page :global(.section-block > *) {
+		grid-column: 1 / -1;
+	}
+	.taxes-page :global(.section-block > .section-block__title) {
+		grid-column: 1;
+		grid-row: 1;
+		align-self: center;
+		margin: 0;
+		justify-self: start;
+	}
+	.taxes-page :global(.section-block > .section-block__actions) {
+		position: static;
+		transform: none;
+		padding: 0;
+		background: transparent;
+		grid-column: 2;
+		grid-row: 1;
+		align-self: center;
+	}
+
 	.taxes-page {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-large);
+		gap: 20px;
 
 		&__rate {
 			font-variant-numeric: tabular-nums;
+			text-align: right;
 		}
 
-		&__default-value {
-			margin: 0;
-			color: var(--color-heading);
-			font-weight: 600;
-
-			&--muted {
-				color: var(--color-warning--onSurface);
-				font-weight: 400;
+		&__hero {
+			position: relative;
+			isolation: isolate;
+			overflow: hidden;
+			display: flex;
+			align-items: center;
+			gap: 32px;
+			padding: 28px 32px;
+			border-radius: var(--radius-base);
+			background: var(--color-base-lightBlue--800);
+			color: var(--color-white);
+		}
+		&__hero::before,
+		&__hero::after {
+			content: '';
+			position: absolute;
+			z-index: -1;
+			width: 300px;
+			height: 300px;
+			right: -40px;
+			top: -120px;
+			border: 1px solid rgb(255 255 255 / 8%);
+			border-radius: 50%;
+			pointer-events: none;
+		}
+		&__hero::after {
+			width: 420px;
+			height: 420px;
+			right: -100px;
+			top: -180px;
+		}
+		&__hero-copy {
+			flex: 1;
+			min-width: 0;
+			display: grid;
+			gap: 14px;
+			p {
+				margin: 0;
+				color: rgb(255 255 255 / 70%);
+				font-size: 13px;
 			}
+		}
+		&__eyebrow {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			color: rgb(255 255 255 / 70%);
+			text-transform: uppercase;
+			font-size: 12px;
+			font-weight: 700;
+			letter-spacing: 1.2px;
+		}
+		&__hero-icon {
+			display: grid;
+			place-items: center;
+			width: 40px;
+			height: 40px;
+			border-radius: var(--radius-base);
+			color: var(--color-white);
+			background: var(--color-interactive);
+			:global(svg) {
+				width: 20px;
+				height: 20px;
+			}
+		}
+		&__hero-value {
+			display: flex;
+			align-items: center;
+			flex-wrap: wrap;
+			gap: 14px;
+			h2 {
+				margin: 0;
+				color: inherit;
+				font-size: 34px;
+				font-weight: 800;
+				overflow-wrap: anywhere;
+			}
+		}
+		&__hero-pill {
+			padding: 5px 10px;
+			border: 1px solid rgb(255 255 255 / 15%);
+			border-radius: 999px;
+			background: rgb(255 255 255 / 10%);
+			font-size: 13px;
+			font-weight: 700;
+		}
+		&__counts {
+			display: flex;
+			gap: 10px;
+			margin: 0;
+			div {
+				min-width: 92px;
+				padding: 16px;
+				border: 1px solid rgb(255 255 255 / 10%);
+				border-radius: var(--radius-base);
+				background: rgb(255 255 255 / 8%);
+			}
+			dt {
+				color: rgb(255 255 255 / 70%);
+				font-size: 12px;
+			}
+			dd {
+				margin: 6px 0 0;
+				font-size: 24px;
+				font-weight: 800;
+			}
+		}
+		&__hero-action {
+			flex: 0 0 auto;
+		}
+		&__name {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+		}
+		&__rate-icon {
+			display: grid;
+			place-items: center;
+			width: 30px;
+			height: 30px;
+			flex: 0 0 auto;
+			border-radius: var(--radius-base);
+			background: var(--color-job--surface);
+			color: var(--color-job--onSurface);
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+		}
+		&__default-badge {
+			padding: 3px 8px;
+			border-radius: 999px;
+			background: var(--color-base-lightBlue--800);
+			color: var(--color-white);
+			font-size: 11px;
+			font-weight: 700;
+		}
+	}
+	@media (max-width: 1100px) {
+		.taxes-page__hero {
+			flex-wrap: wrap;
+		}
+		.taxes-page__hero-copy {
+			flex-basis: 100%;
 		}
 	}
 </style>

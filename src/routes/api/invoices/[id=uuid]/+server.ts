@@ -84,12 +84,12 @@ export const GET: RequestHandler = async (event) => {
 	const balances = (balanceResult.data ?? {}) as Record<string, unknown>;
 	const clientBalance = clientId ? (balances[clientId] ?? null) : null;
 
+	const client = document.client as object | null;
+
 	return json(
 		{
 			...document,
-			client: (document as { client: object | null }).client
-				? { ...(document as { client: object }).client, phone: phoneResult.data?.value ?? null }
-				: null,
+			client: client ? { ...client, phone: phoneResult.data?.value ?? null } : null,
 			client_balance: clientBalance,
 			online_payments: {
 				offered: onlineOffered,

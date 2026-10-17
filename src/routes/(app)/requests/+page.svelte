@@ -290,12 +290,11 @@
 			who
 		};
 	}
-	function convertedHref(request: RequestListItem) {
+	function convertedHref(request: RequestListItem): string | null {
 		const target = request.converted_to;
 		if (!target) return null;
-		return target.kind === 'job'
-			? resolve('/(app)/jobs/[id=uuid]', { id: target.id })
-			: resolve('/(app)/quotes/[id=uuid]', { id: target.id });
+		if (target.kind === 'job') return resolve('/(app)/jobs/[id=uuid]', { id: target.id });
+		return resolve('/(app)/quotes/[id=uuid]', { id: target.id });
 	}
 	function clientName(request: RequestListItem) {
 		return request.client?.display_name ?? 'Client removed';

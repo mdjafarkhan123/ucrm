@@ -1,19 +1,17 @@
 <script lang="ts">
 	import { createInfiniteQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
+	import FilterChip from '$lib/components/ui/FilterChip.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import DataTable, { type DataTableColumn } from '$lib/components/data-display/DataTable.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
-	import FilterBar from '$lib/components/data-display/FilterBar.svelte';
-	import FilterField from '$lib/components/data-display/FilterField.svelte';
+	import RecordListCard from '$lib/components/data-display/RecordListCard.svelte';
 	import ListLoadMore from '$lib/components/data-display/ListLoadMore.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -34,6 +32,8 @@
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 	import refreshIcon from '@tabler/icons/outline/refresh.svg?raw';
+	import folderIcon from '@tabler/icons/outline/folder.svg?raw';
+	import layoutListIcon from '@tabler/icons/outline/layout-list.svg?raw';
 
 	// Settings → Communications → Templates: the organization's own email library, copied from Jafar's
 	// platform templates or written from scratch. Owners/admins manage it; `conversations.send` (checked
@@ -181,94 +181,104 @@
 
 <svelte:head><title>Templates · Communications · Contractor CRM</title></svelte:head>
 
-<PageContainer variant="fill">
+<PageContainer variant="open">
 	<div class="templates-page">
-		<PageHeader
-			eyebrow="Communications"
+		<SettingsPageHeader
 			title="Templates"
 			description="Reusable emails your team can send from any conversation."
+			icon={layoutListIcon}
+			tone="task"
+			presentation="communication"
 		>
 			{#snippet actions()}
-				<Button href={resolve('/settings')} variant="secondary" variation="subtle">
-					Back to settings
-				</Button>
 				<Button variant="secondary" onclick={() => (libraryOpen = true)}>Copy from library</Button>
 				<Button onclick={() => (dialogState = { mode: 'create' })}>New template</Button>
 			{/snippet}
-		</PageHeader>
+		</SettingsPageHeader>
 
 		{#if itemsQuery.isPending}
-			<LoadingSkeleton variant="table" label="Loading Templates" rows={5} />
+			<RecordListCard title="Templates" padBody>
+				<LoadingSkeleton variant="table" label="Loading Templates" rows={5} />
+			</RecordListCard>
 		{:else if itemsQuery.isError}
 			<ErrorState
 				description="Templates could not be loaded. Refresh and try again."
 				retry={() => itemsQuery.refetch()}
 			/>
 		{:else}
-			<FilterBar onClear={hasFilters ? clearFilters : undefined}>
-				<FilterField id="templates-search" label="Search">
-					<SearchInput
-						id="templates-search"
-						bind:value={search}
-						placeholder="Search name or subject"
-						ariaLabel="Search Templates"
-					/>
-				</FilterField>
-				<FilterField id="templates-folder" label="Folder">
-					<Select
-						id="templates-folder"
-						value={folder}
-						onchange={(value) => (folder = value)}
-						options={[{ value: '', label: 'All folders' }, ...folderOptions]}
-					/>
-				</FilterField>
-			</FilterBar>
-
-			{#if items.length === 0}
-				<EmptyState
-					icon={fileTextIcon}
-					title={hasFilters ? 'Nothing matches that' : 'No templates yet'}
-					description={hasFilters
-						? 'Try a different search term or clear your filters.'
-						: 'Copy one from the platform library or write your own, and it will be ready in the composer.'}
-				>
-					{#snippet action()}
-						<Button variant="secondary" onclick={() => (libraryOpen = true)}>
-							Copy from library
-						</Button>
-					{/snippet}
-				</EmptyState>
-			{:else}
-				<DataTable {columns} {items} rowId={(item) => item.id} caption="Templates">
-					{#snippet row(item: CommunicationEmailTemplateListItem)}
-						<th scope="row">
-							<div class="templates-page__title">
-								<strong>{item.name}</strong>
-								{#if item.folder}<Badge size="small">{item.folder}</Badge>{/if}
-								{#if item.update_available}
-									<Badge size="small" status="warning">Update available</Badge>
-								{/if}
-							</div>
-						</th>
-						<td>
-							<span class="templates-page__subject">{item.subject}</span>
-						</td>
-						<td>
-							<span title={exactTime(item.updated_at)}>{relativeTime(item.updated_at)}</span>
-						</td>
-					{/snippet}
-					{#snippet rowActions(item: CommunicationEmailTemplateListItem)}
-						<DropdownMenu triggerLabel={`Actions for ${item.name}`} items={itemMenuItems(item)} />
-					{/snippet}
-					{#snippet footer()}
-						<ListLoadMore
-							hasNextPage={itemsQuery.hasNextPage}
-							isFetchingNextPage={itemsQuery.isFetchingNextPage}
-							onLoadMore={() => itemsQuery.fetchNextPage()}
+			<RecordListCard title="Templates" padBody={items.length === 0}>
+				{#snippet toolbar()}
+					<div class="templates-page__search">
+						<SearchInput
+							id="templates-search"
+							bind:value={search}
+							placeholder="Search name or subject"
+							ariaLabel="Search Templates"
+							size="compact"
 						/>
-					{/snippet}
-				</DataTable>
-			{/if}
+					</div>
+					<FilterChip
+						id="templates-folder"
+						variant="toolbar"
+						icon={folderIcon}
+						label="Folder"
+						value={folder}
+						options={[{ value: '', label: 'All folders' }, ...folderOptions]}
+						restValue=""
+						onchange={(value) => (folder = value)}
+					/>
+					{#if hasFilters}
+						<Button variant="tertiary" size="small" onclick={clearFilters}>Clear filters</Button>
+					{/if}
+				{/snippet}
+
+				{#if items.length === 0}
+					<EmptyState
+						icon={fileTextIcon}
+						title={hasFilters ? 'Nothing matches that' : 'No templates yet'}
+						description={hasFilters
+							? 'Try a different search term or clear your filters.'
+							: 'Copy one from the platform library or write your own, and it will be ready in the composer.'}
+					>
+						{#snippet action()}
+							<Button variant="secondary" onclick={() => (libraryOpen = true)}>
+								Copy from library
+							</Button>
+						{/snippet}
+					</EmptyState>
+				{:else}
+					<DataTable variant="card" {columns} {items} rowId={(item) => item.id} caption="Templates">
+						{#snippet row(item: CommunicationEmailTemplateListItem)}
+							<th scope="row">
+								<div class="templates-page__title">
+									<strong>{item.name}</strong>
+									{#if item.folder}<Badge size="small">{item.folder}</Badge>{/if}
+									{#if item.update_available}
+										<Badge size="small" status="warning">Update available</Badge>
+									{/if}
+								</div>
+							</th>
+							<td>
+								<span class="templates-page__subject">{item.subject}</span>
+							</td>
+							<td>
+								<span title={exactTime(item.updated_at)}>{relativeTime(item.updated_at)}</span>
+							</td>
+						{/snippet}
+						{#snippet rowActions(item: CommunicationEmailTemplateListItem)}
+							<DropdownMenu triggerLabel={`Actions for ${item.name}`} items={itemMenuItems(item)} />
+						{/snippet}
+						{#snippet footer()}
+							<ListLoadMore
+								variant="card"
+								hasNextPage={itemsQuery.hasNextPage}
+								isFetchingNextPage={itemsQuery.isFetchingNextPage}
+								onLoadMore={() => itemsQuery.fetchNextPage()}
+							/>
+						{/snippet}
+					</DataTable>
+				{/if}
+			</RecordListCard>
 		{/if}
 	</div>
 </PageContainer>
@@ -308,19 +318,33 @@
 </ConfirmDialog>
 
 <style lang="scss">
-	.templates-page__title {
+	.templates-page {
 		display: flex;
-		align-items: center;
-		gap: var(--space-smaller);
-	}
+		flex-direction: column;
+		gap: 20px;
 
-	.templates-page__subject {
-		display: -webkit-box;
-		overflow: hidden;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		-webkit-box-orient: vertical;
-		-webkit-line-clamp: 2;
-		line-clamp: 2;
+		&__search {
+			width: 300px;
+			max-width: 100%;
+		}
+		&__title {
+			display: flex;
+			align-items: center;
+			gap: var(--space-smaller);
+
+			strong {
+				color: var(--color-heading);
+				font-weight: 600;
+			}
+		}
+		&__subject {
+			display: -webkit-box;
+			overflow: hidden;
+			color: var(--color-text);
+			font-size: 14px;
+			-webkit-box-orient: vertical;
+			-webkit-line-clamp: 2;
+			line-clamp: 2;
+		}
 	}
 </style>

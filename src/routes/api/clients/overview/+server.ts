@@ -1,9 +1,12 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import type { Database } from '$lib/database.types';
 import { requireClientPermission } from '$lib/server/access/clients';
 import { PRIVATE_READ_HEADERS, databaseError } from '$lib/server/api/errors';
 import { organizationTimezone } from '$lib/server/requests/timezone';
 import { clientOverviewWindows } from '$lib/server/clients/overview';
+
+type PopularTagRow = Database['public']['Functions']['client_popular_tags']['Returns'][number];
 
 // The two cards above the Clients list: the Client book (leads, customers, archived, popular tags) and the
 // dark New clients card. Counted live by the database in one trip (two RPCs side by side); this route
@@ -38,7 +41,7 @@ export const GET: RequestHandler = async (event) => {
 				customer: Number(counts?.customers ?? 0),
 				archived: Number(counts?.archived ?? 0)
 			},
-			popular_tags: (tagRows ?? []).map((row) => ({
+			popular_tags: (tagRows ?? []).map((row: PopularTagRow) => ({
 				id: row.tag_id,
 				name: row.name,
 				total: Number(row.total)

@@ -66,6 +66,26 @@
 	});
 </script>
 
+{#snippet list()}
+	<TabsPrimitive.List class="tabs__list" aria-label={label}>
+		{#each tabs as tab (tab.value)}
+			<TabsPrimitive.Trigger
+				value={tab.value}
+				class="tabs__tab"
+				onmouseenter={tab.onhover}
+				onfocus={tab.onhover}
+			>
+				{tab.label}
+				{#if tab.badge}
+					<span class={['tabs__badge', tab.badgeTone === 'success' && 'tabs__badge--success']}
+						>{tab.badge}</span
+					>
+				{/if}
+			</TabsPrimitive.Trigger>
+		{/each}
+	</TabsPrimitive.List>
+{/snippet}
+
 <TabsPrimitive.Root
 	value={current}
 	onValueChange={(next) => {
@@ -74,25 +94,6 @@
 	}}
 	class={compact ? 'tabs tabs--compact' : 'tabs'}
 >
-	{#snippet list()}
-		<TabsPrimitive.List class="tabs__list" aria-label={label}>
-			{#each tabs as tab (tab.value)}
-				<TabsPrimitive.Trigger
-					value={tab.value}
-					class="tabs__tab"
-					onmouseenter={tab.onhover}
-					onfocus={tab.onhover}
-				>
-					{tab.label}
-					{#if tab.badge}
-						<span class={['tabs__badge', tab.badgeTone === 'success' && 'tabs__badge--success']}
-							>{tab.badge}</span
-						>
-					{/if}
-				</TabsPrimitive.Trigger>
-			{/each}
-		</TabsPrimitive.List>
-	{/snippet}
 	{#if header}
 		{@render header(list)}
 	{:else}

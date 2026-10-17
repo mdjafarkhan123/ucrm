@@ -108,6 +108,7 @@
 		{#each tiles as tile (tile.key)}
 			{@const selected = selectedKey === tile.key}
 			<li>
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<svelte:element
 					this={tile.href ? 'a' : 'button'}
 					type={tile.href ? undefined : 'button'}

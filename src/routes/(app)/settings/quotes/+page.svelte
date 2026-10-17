@@ -1,10 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { resolve } from '$app/paths';
-	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
-	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import SettingsPresentation from '$lib/components/settings/SettingsPresentation.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
@@ -390,17 +387,12 @@
 	{/if}
 {/snippet}
 
-<PageContainer variant="fill">
-	<Breadcrumbs
-		items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Quote Settings' }]}
-	/>
-
-	<PageHeader
-		eyebrow="Business"
-		title="Quote Settings"
-		description="What every new quote starts with: your terms, who it's from, your private margin target, and whether a customer must sign."
-	/>
-
+<SettingsPresentation
+	title="Quote Settings"
+	description="What every new quote starts with: your terms, who it’s from, your private margin target, and whether a customer must sign."
+	icon={fileTextIcon}
+	iconTone="invoice"
+>
 	{#if query.isPending}
 		<LoadingSkeleton variant="card" rows={4} />
 	{:else if query.isError}
@@ -417,13 +409,13 @@
 			>
 				{@render conflictBanner(termsConflict)}
 				{#if termsError}<p class="quote-settings__error" role="alert">{termsError}</p>{/if}
-				{@render lastEditorNote(quotes.terms.last_editor)}
 
 				{#if termsDraft !== null}
 					<QuoteTermsEditor id="quote-terms" bind:value={termsDraft} disabled={termsSaving} />
 				{/if}
 
 				<div class="quote-settings__actions">
+					{@render lastEditorNote(quotes.terms.last_editor)}
 					<Button
 						variant="secondary"
 						size="small"
@@ -447,7 +439,6 @@
 			>
 				{@render conflictBanner(repConflict)}
 				{#if repError}<p class="quote-settings__error" role="alert">{repError}</p>{/if}
-				{@render lastEditorNote(quotes.representative.last_editor)}
 
 				{#if repEnabled !== null}
 					<Toggle
@@ -483,6 +474,7 @@
 				{/if}
 
 				<div class="quote-settings__actions">
+					{@render lastEditorNote(quotes.representative.last_editor)}
 					<Button
 						variant="secondary"
 						size="small"
@@ -507,13 +499,11 @@
 				>
 					{@render conflictBanner(marginConflict)}
 					{#if marginError}<p class="quote-settings__error" role="alert">{marginError}</p>{/if}
-					{@render lastEditorNote(quotes.target_margin.last_editor)}
 
 					{#if marginDraft !== null}
 						<Input
 							id="target-margin"
 							label="Target margin %"
-							size="small"
 							inputmode="decimal"
 							placeholder="Not set"
 							bind:value={marginDraft}
@@ -522,6 +512,7 @@
 					{/if}
 
 					<div class="quote-settings__actions">
+						{@render lastEditorNote(quotes.target_margin.last_editor)}
 						<Button
 							variant="secondary"
 							size="small"
@@ -546,7 +537,6 @@
 			>
 				{@render conflictBanner(sigConflict)}
 				{#if sigError}<p class="quote-settings__error" role="alert">{sigError}</p>{/if}
-				{@render lastEditorNote(quotes.signature_policy.last_editor)}
 
 				{#if sigRequired !== null}
 					<Toggle
@@ -559,6 +549,7 @@
 				{/if}
 
 				<div class="quote-settings__actions">
+					{@render lastEditorNote(quotes.signature_policy.last_editor)}
 					<Button
 						variant="secondary"
 						size="small"
@@ -575,15 +566,24 @@
 			</SectionBlock>
 		</div>
 	{/if}
-</PageContainer>
+</SettingsPresentation>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	.quote-settings :global(.section-block) {
+		min-width: 0;
+		overflow: hidden;
+	}
+	.quote-settings :global(.section-block__hint) {
+		min-height: 36px;
+	}
+
 	.quote-settings {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-large);
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-items: stretch;
+		gap: 20px;
 
 		&__row {
 			display: grid;
@@ -625,13 +625,23 @@
 		}
 
 		&__actions {
+			margin: auto -24px -24px;
+			padding: 14px 24px;
+			background: var(--color-surface--background--subtle, var(--color-surface--background));
+			border-top: 1px solid var(--color-border);
 			display: flex;
 			justify-content: flex-end;
+			align-items: center;
+			flex-wrap: wrap;
 			gap: var(--space-small);
+			.quote-settings__note {
+				margin-right: auto;
+			}
 		}
 	}
 
 	@media (max-width: 767px) {
+		.quote-settings,
 		.quote-settings__row {
 			grid-template-columns: 1fr;
 		}
