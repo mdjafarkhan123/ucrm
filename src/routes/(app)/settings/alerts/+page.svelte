@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import { resolve } from '$app/paths';
+	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
+	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -35,6 +38,13 @@
 	import bellIcon from '@tabler/icons/outline/bell-ringing.svg?raw';
 	import deviceIcon from '@tabler/icons/outline/device-desktop.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
+	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
+	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
+	import cashIcon from '@tabler/icons/outline/cash.svg?raw';
+	import usersIcon from '@tabler/icons/outline/users.svg?raw';
+	import starIcon from '@tabler/icons/outline/star.svg?raw';
+	import stopwatchIcon from '@tabler/icons/outline/stopwatch.svg?raw';
 
 	// My alerts (docs/alerts-behavior-contract.md): each person chooses, for themselves, whether an alert also
 	// reaches their email or the browser on this computer. The bell always shows every alert they can receive.
@@ -78,6 +88,43 @@
 			})
 		})).filter((group) => group.rows.length > 0)
 	);
+
+	// Each group's tile carries its meaning: the record colour of what the alerts are about.
+	const GROUP_LOOK: Record<string, { icon: string; tone: string; surface: string }> = {
+		schedule: { icon: calendarIcon, tone: 'var(--color-job)', surface: 'var(--color-job--surface)' },
+		messages: {
+			icon: messageIcon,
+			tone: 'var(--color-informative--onSurface)',
+			surface: 'var(--color-informative--surface)'
+		},
+		sales: { icon: fileTextIcon, tone: 'var(--color-quote)', surface: 'var(--color-quote--surface)' },
+		money: { icon: cashIcon, tone: 'var(--color-invoice)', surface: 'var(--color-invoice--surface)' },
+		team: { icon: usersIcon, tone: 'var(--color-task)', surface: 'var(--color-task--surface)' },
+		reviews: {
+			icon: starIcon,
+			tone: 'var(--color-warning--onSurface)',
+			surface: 'var(--color-warning--surface)'
+		},
+		time: { icon: stopwatchIcon, tone: 'var(--color-job)', surface: 'var(--color-job--surface)' }
+	};
+
+	// Two columns that keep the groups in order: the computers card plus the first groups fill the left
+	// column until it holds about half of the page's rows, and the rest continue on the right.
+	const columns = $derived.by(() => {
+		const total = groups.reduce((sum, group) => sum + group.rows.length + 2, 7);
+		let used = 7;
+		const left: typeof groups = [];
+		const right: typeof groups = [];
+		for (const group of groups) {
+			if (used < total / 2) {
+				left.push(group);
+				used += group.rows.length + 2;
+			} else {
+				right.push(group);
+			}
+		}
+		return { left, right };
+	});
 
 	async function change(row: AlertSettingsRow, channel: AlertChannel, enabled: boolean) {
 		const before = queryClient.getQueryData<AlertSettings>(alertSettingsKey);
@@ -169,163 +216,204 @@
 
 <svelte:head><title>My alerts · Contractor CRM</title></svelte:head>
 
-<section class="alerts-page" aria-labelledby="alerts-title">
-	<header class="alerts-page__header">
-		<p class="alerts-page__eyebrow">Account settings</p>
-		<h1 id="alerts-title">My alerts</h1>
-		<p>
-			The bell at the top of the app always shows every alert you can receive. Here you choose
-			whether an alert also reaches your email, or pops up in your browser even when the CRM is in
-			the background. These choices are only yours.
-		</p>
-	</header>
-
-	<section class="alerts-card" aria-labelledby="browser-title">
-		<div class="alerts-card__heading">
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			<span class="alerts-card__icon" aria-hidden="true">{@html deviceIcon}</span>
-			<div>
-				<h2 id="browser-title">Browser alerts on your computers</h2>
+<PageContainer variant="open">
+	<div class="alerts-page">
+		<header class="alerts-page__header">
+			<span class="alerts-page__header-icon" aria-hidden="true">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+				{@html bellIcon}
+			</span>
+			<div class="alerts-page__header-copy">
+				<Breadcrumbs
+					items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Alerts' }]}
+				/>
+				<h1 id="alerts-title">My alerts</h1>
 				<p>
-					A pop-up on this computer for the alerts you switch on below, even when the CRM is not the
-					window you are looking at.
+					The bell at the top of the app always shows every alert you can receive. Here you choose
+					whether an alert also reaches your email, or pops up in your browser even when the CRM is
+					in the background. These choices are only yours.
 				</p>
 			</div>
-		</div>
+		</header>
 
-		{#if computers.isPending}
-			<LoadingSkeleton variant="card" rows={2} />
-		{:else if computers.isError}
-			<ErrorState
-				description="Your computers could not be loaded."
-				retry={() => computers.refetch()}
-			/>
-		{:else if !computers.data.public_key}
-			<Banner type="notice">Browser alerts are not set up on this server yet.</Banner>
-		{:else if support === 'needs-home-screen'}
-			<Banner type="notice">
-				On iPhone and iPad, add the CRM to your Home Screen first (tap Share, then Add to Home
-				Screen), open it from there, and come back to this page.
-			</Banner>
-		{:else if support === 'unsupported'}
-			<Banner type="notice">
-				This browser cannot show alerts. Chrome, Edge, Firefox and Safari on a computer, and Chrome
-				on Android, can.
-			</Banner>
-		{:else if permission === 'denied'}
-			<Banner type="warning">
-				Your browser is blocking alerts from this site. Click the lock icon next to the address, set
-				Notifications to Allow, then reload this page.
-			</Banner>
-		{:else if thisComputer}
-			<div class="alerts-card__status">
-				<Badge status="success" size="base">On for this computer</Badge>
-				<Button variant="secondary" size="small" onclick={() => void turnOff()} disabled={working}
-					>Turn off on this computer</Button
-				>
-			</div>
-		{:else}
-			<div class="alerts-card__status">
-				<Badge status="inactive" size="base">Off for this computer</Badge>
-				<Button onclick={() => (confirming = true)} loading={working} disabled={working}
-					>Turn on for this computer</Button
-				>
-			</div>
-		{/if}
-
-		{#if computers.data && computers.data.computers.length > 0}
-			<ul class="alerts-card__computers" aria-label="Computers that get your browser alerts">
-				{#each computers.data.computers as computer (computer.id)}
-					{@const isThisOne = computer.id === thisComputer?.id}
-					<li class="alerts-card__computer">
+		<div class="alerts-page__columns">
+			<div class="alerts-page__column">
+				<section class="alerts-card" aria-labelledby="browser-title">
+					<div class="alerts-card__heading">
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						<span class="alerts-card__icon" aria-hidden="true">{@html deviceIcon}</span>
 						<div>
-							<strong>{computer.label}</strong>
-							{#if isThisOne}<Badge size="small">This computer</Badge>{/if}
-							<span>Added {addedOn(computer.created_at)}</span>
+							<h2 id="browser-title">Browser alerts on your computers</h2>
+							<p>
+								A pop-up on this computer for the alerts you switch on below, even when the CRM is
+								not the window you are looking at.
+							</p>
 						</div>
-						<button
-							type="button"
-							class="alerts-card__remove"
-							aria-label={`Remove ${computer.label}`}
-							disabled={working}
-							onclick={() => void remove(computer.id, isThisOne)}
-						>
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							<span aria-hidden="true">{@html trashIcon}</span>
-							Remove
-						</button>
-					</li>
-				{/each}
-			</ul>
-		{/if}
-	</section>
-
-	{#if settings.isPending}
-		<LoadingSkeleton variant="card" rows={4} />
-	{:else if settings.isError}
-		<ErrorState
-			description="Your alert settings could not be loaded."
-			retry={() => settings.refetch()}
-		/>
-	{:else}
-		{@const hasComputer = settings.data.has_device}
-		{#if !hasComputer}
-			<p class="alerts-page__hint">
-				Turn on browser alerts for a computer above to use the Browser switches.
-			</p>
-		{/if}
-		{#each groups as group (group.id)}
-			<section class="alerts-card" aria-labelledby={`group-${group.id}`}>
-				<h2 id={`group-${group.id}`}>{group.label}</h2>
-				<div class="alerts-table" role="table" aria-labelledby={`group-${group.id}`}>
-					<div class="alerts-table__head" role="row">
-						<span role="columnheader">Alert</span>
-						<span role="columnheader" class="alerts-table__channel">
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							<span aria-hidden="true">{@html bellIcon}</span> Bell
-						</span>
-						<span role="columnheader" class="alerts-table__channel">Email</span>
-						<span role="columnheader" class="alerts-table__channel">Browser</span>
 					</div>
-					{#each group.rows as row (row.kind)}
-						{@const info = ALERT_KIND_INFO[row.kind]}
-						<div class="alerts-table__row" role="row">
-							<div class="alerts-table__what" role="cell">
-								<strong>{info.label}</strong>
-								<span>{info.description}</span>
+
+					<div class="alerts-card__body">
+						{#if computers.isPending}
+							<LoadingSkeleton variant="card" rows={2} />
+						{:else if computers.isError}
+							<ErrorState
+								description="Your computers could not be loaded."
+								retry={() => computers.refetch()}
+							/>
+						{:else if !computers.data.public_key}
+							<Banner type="notice">Browser alerts are not set up on this server yet.</Banner>
+						{:else if support === 'needs-home-screen'}
+							<Banner type="notice">
+								On iPhone and iPad, add the CRM to your Home Screen first (tap Share, then Add to
+								Home Screen), open it from there, and come back to this page.
+							</Banner>
+						{:else if support === 'unsupported'}
+							<Banner type="notice">
+								This browser cannot show alerts. Chrome, Edge, Firefox and Safari on a computer, and
+								Chrome on Android, can.
+							</Banner>
+						{:else if permission === 'denied'}
+							<Banner type="warning">
+								Your browser is blocking alerts from this site. Click the lock icon next to the
+								address, set Notifications to Allow, then reload this page.
+							</Banner>
+						{:else if thisComputer}
+							<div class="alerts-card__status">
+								<Badge status="success" size="base">On for this computer</Badge>
+								<Button
+									variant="secondary"
+									size="small"
+									onclick={() => void turnOff()}
+									disabled={working}>Turn off on this computer</Button
+								>
 							</div>
-							<div class="alerts-table__cell" role="cell">
-								<span class="alerts-table__mobile-name">Bell</span>
-								<span class="alerts-table__always">Always on</span>
+						{:else}
+							<div class="alerts-card__status">
+								<Badge status="inactive" size="base">Off for this computer</Badge>
+								<Button onclick={() => (confirming = true)} loading={working} disabled={working}
+									>Turn on for this computer</Button
+								>
 							</div>
-							<div class="alerts-table__cell" role="cell">
-								<span class="alerts-table__mobile-name">Email</span>
-								<Toggle
-									id={`email-${row.kind}`}
-									label={`${info.label}: email`}
-									checked={row.email}
-									onchange={(checked) => void change(row, 'email', checked)}
-								/>
-							</div>
-							<div class="alerts-table__cell" role="cell">
-								<span class="alerts-table__mobile-name">Browser</span>
-								<Toggle
-									id={`browser-${row.kind}`}
-									label={`${info.label}: browser`}
-									checked={hasComputer && row.browser}
-									disabled={!hasComputer}
-									onchange={(checked) => void change(row, 'browser', checked)}
-								/>
-							</div>
-						</div>
+						{/if}
+
+						{#if computers.data && computers.data.computers.length > 0}
+							<ul class="alerts-card__computers" aria-label="Computers that get your browser alerts">
+								{#each computers.data.computers as computer (computer.id)}
+									{@const isThisOne = computer.id === thisComputer?.id}
+									<li class="alerts-card__computer">
+										<div>
+											<strong>{computer.label}</strong>
+											{#if isThisOne}<Badge size="small">This computer</Badge>{/if}
+											<span>Added {addedOn(computer.created_at)}</span>
+										</div>
+										<button
+											type="button"
+											class="alerts-card__remove"
+											aria-label={`Remove ${computer.label}`}
+											disabled={working}
+											onclick={() => void remove(computer.id, isThisOne)}
+										>
+											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+											<span aria-hidden="true">{@html trashIcon}</span>
+											Remove
+										</button>
+									</li>
+								{/each}
+							</ul>
+						{/if}
+					</div>
+				</section>
+
+				{#if settings.isPending}
+					<LoadingSkeleton variant="card" rows={4} />
+				{:else if settings.isError}
+					<ErrorState
+						description="Your alert settings could not be loaded."
+						retry={() => settings.refetch()}
+					/>
+				{:else}
+					{#if !settings.data.has_device}
+						<p class="alerts-page__hint">
+							Turn on browser alerts for a computer above to use the Browser switches.
+						</p>
+					{/if}
+					{#each columns.left as group (group.id)}
+						{@render groupCard(group, settings.data.has_device)}
+					{:else}
+						<Banner type="notice">There are no alerts for your role yet.</Banner>
+					{/each}
+				{/if}
+			</div>
+
+			{#if settings.data && columns.right.length > 0}
+				<div class="alerts-page__column">
+					{#each columns.right as group (group.id)}
+						{@render groupCard(group, settings.data.has_device)}
 					{/each}
 				</div>
-			</section>
-		{:else}
-			<Banner type="notice">There are no alerts for your role yet.</Banner>
-		{/each}
-	{/if}
-</section>
+			{/if}
+		</div>
+	</div>
+</PageContainer>
+
+{#snippet groupCard(group: (typeof groups)[number], hasComputer: boolean)}
+	{@const look = GROUP_LOOK[group.id]}
+	<section class="alerts-card" aria-labelledby={`group-${group.id}`}>
+		<div class="alerts-card__heading">
+			{#if look}
+				<span
+					class="alerts-card__icon"
+					style={`--alerts-tone: ${look.tone}; --alerts-tone-surface: ${look.surface}`}
+					aria-hidden="true"
+					><!-- eslint-disable-next-line svelte/no-at-html-tags -->{@html look.icon}</span
+				>
+			{/if}
+			<h2 id={`group-${group.id}`}>{group.label}</h2>
+		</div>
+		<div class="alerts-table" role="table" aria-labelledby={`group-${group.id}`}>
+			<div class="alerts-table__head" role="row">
+				<span role="columnheader">Alert</span>
+				<span role="columnheader" class="alerts-table__channel">
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					<span aria-hidden="true">{@html bellIcon}</span> Bell
+				</span>
+				<span role="columnheader" class="alerts-table__channel">Email</span>
+				<span role="columnheader" class="alerts-table__channel">Browser</span>
+			</div>
+			{#each group.rows as row (row.kind)}
+				{@const info = ALERT_KIND_INFO[row.kind]}
+				<div class="alerts-table__row" role="row">
+					<div class="alerts-table__what" role="cell">
+						<strong>{info.label}</strong>
+						<span>{info.description}</span>
+					</div>
+					<div class="alerts-table__cell" role="cell">
+						<span class="alerts-table__mobile-name">Bell</span>
+						<span class="alerts-table__always">Always on</span>
+					</div>
+					<div class="alerts-table__cell" role="cell">
+						<span class="alerts-table__mobile-name">Email</span>
+						<Toggle
+							id={`email-${row.kind}`}
+							label={`${info.label}: email`}
+							checked={row.email}
+							onchange={(checked) => void change(row, 'email', checked)}
+						/>
+					</div>
+					<div class="alerts-table__cell" role="cell">
+						<span class="alerts-table__mobile-name">Browser</span>
+						<Toggle
+							id={`browser-${row.kind}`}
+							label={`${info.label}: browser`}
+							checked={hasComputer && row.browser}
+							disabled={!hasComputer}
+							onchange={(checked) => void change(row, 'browser', checked)}
+						/>
+					</div>
+				</div>
+			{/each}
+		</div>
+	</section>
+{/snippet}
 
 <ConfirmDialog
 	open={confirming}
@@ -346,79 +434,137 @@
 <style lang="scss">
 	.alerts-page {
 		display: grid;
-		width: min(100%, 880px);
 		gap: var(--space-large);
 
 		&__header {
+			display: flex;
+			align-items: flex-start;
+			gap: 18px;
+			margin-top: 16px;
+		}
+
+		&__header-icon {
 			display: grid;
-			gap: var(--space-small);
+			flex: 0 0 auto;
+			place-items: center;
+			width: 60px;
+			height: 60px;
+			margin-top: 4px;
+			border-radius: 18px;
+			color: var(--color-text--reverse);
+			background: var(--color-interactive);
+			box-shadow: 0 6px 16px color-mix(in srgb, var(--color-interactive) 35%, transparent);
+
+			:global(svg) {
+				display: block;
+				width: 28px;
+				height: 28px;
+			}
+		}
+
+		&__header-copy {
+			min-width: 0;
+
+			:global(.breadcrumbs) {
+				margin-bottom: 4px;
+				font-size: 13px;
+				font-weight: 600;
+			}
+
+			:global(.breadcrumbs a svg) {
+				display: none;
+			}
 
 			h1 {
 				margin: 0;
 				color: var(--color-heading);
-				font-size: var(--typography--fontSize-jumbo);
-				line-height: var(--typography--lineHeight-minuscule);
+				font-size: 36px;
+				font-weight: 900;
+				letter-spacing: -1.2px;
+				line-height: var(--typography--lineHeight-tight);
 			}
 
 			p {
-				margin: 0;
+				max-width: 900px;
+				margin: var(--space-smaller) 0 0;
 				color: var(--color-text--secondary);
+				font-size: 14px;
+				font-weight: 500;
 				line-height: var(--typography--lineHeight-large);
 			}
 		}
 
-		&__eyebrow {
-			font-size: var(--typography--fontSize-small);
-			letter-spacing: 0.08em;
-			text-transform: uppercase;
+		// Two columns in group order; they stack into one column below laptop width.
+		&__columns {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 20px;
+			align-items: start;
+		}
+
+		&__column {
+			display: grid;
+			gap: 20px;
+			min-width: 0;
 		}
 
 		&__hint {
 			margin: 0;
 			color: var(--color-text--secondary);
+			font-size: 13px;
 		}
 	}
 
 	.alerts-card {
 		display: grid;
-		gap: var(--space-base);
-		padding: var(--space-large);
+		overflow: clip;
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 		background: var(--color-surface);
-		box-shadow: var(--shadow-low);
 
 		h2 {
 			margin: 0;
 			color: var(--color-heading);
-			font-size: var(--typography--fontSize-larger);
+			font-size: var(--typography--fontSize-large);
+			font-weight: 700;
+			letter-spacing: -0.2px;
 		}
 
 		&__heading {
 			display: flex;
-			align-items: flex-start;
-			gap: var(--space-base);
+			align-items: center;
+			gap: var(--space-slim);
+			padding: 20px 24px 16px;
 
 			p {
-				margin: var(--space-smaller) 0 0;
+				margin: 2px 0 0;
 				color: var(--color-text--secondary);
+				font-size: 13px;
+				font-weight: 500;
 			}
 		}
 
 		&__icon {
-			display: inline-grid;
+			display: grid;
 			flex: 0 0 auto;
 			place-items: center;
-			padding: var(--space-small);
-			border-radius: var(--radius-circle);
-			color: var(--color-interactive);
-			background: var(--color-interactive--surface);
+			width: 36px;
+			height: 36px;
+			border-radius: var(--radius-base);
+			color: var(--alerts-tone, var(--color-job));
+			background: var(--alerts-tone-surface, var(--color-job--surface));
 
 			:global(svg) {
 				display: block;
-				width: 22px;
-				height: 22px;
+				width: 18px;
+				height: 18px;
 			}
+		}
+
+		&__body {
+			display: grid;
+			gap: var(--space-small);
+			padding: 0 24px 20px;
 		}
 
 		&__status {
@@ -427,6 +573,9 @@
 			align-items: center;
 			justify-content: space-between;
 			gap: var(--space-small);
+			padding: 10px 12px;
+			border-radius: var(--radius-base);
+			background: var(--color-surface--background--subtle);
 		}
 
 		&__computers {
@@ -434,7 +583,6 @@
 			margin: 0;
 			padding: 0;
 			list-style: none;
-			border-top: var(--border-base) solid var(--color-border);
 		}
 
 		&__computer {
@@ -447,6 +595,7 @@
 
 			&:last-child {
 				border-bottom: 0;
+				padding-bottom: 0;
 			}
 
 			div {
@@ -454,6 +603,11 @@
 				flex-wrap: wrap;
 				align-items: center;
 				gap: var(--space-small);
+			}
+
+			strong {
+				color: var(--color-heading);
+				font-weight: 600;
 			}
 
 			span {
@@ -502,22 +656,25 @@
 		&__head,
 		&__row {
 			display: grid;
-			grid-template-columns: minmax(0, 1fr) 96px 96px 96px;
+			grid-template-columns: minmax(0, 1fr) 84px 64px 64px;
 			align-items: center;
-			gap: var(--space-base);
+			gap: var(--space-small);
+			padding-inline: 24px;
 		}
 
 		&__head {
-			padding-bottom: var(--space-small);
-			border-bottom: var(--border-base) solid var(--color-border);
+			padding-block: 10px;
+			border-block: var(--border-base) solid var(--color-border);
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			background: var(--color-surface--background--subtle);
+			font-size: 12px;
 			font-weight: 600;
 		}
 
 		&__channel {
 			display: inline-flex;
 			align-items: center;
+			justify-content: center;
 			gap: var(--space-smaller);
 
 			:global(svg) {
@@ -528,7 +685,7 @@
 		}
 
 		&__row {
-			padding: var(--space-slim) 0;
+			padding-block: 12px;
 			border-bottom: var(--border-base) solid var(--color-border);
 
 			&:last-child {
@@ -536,24 +693,33 @@
 			}
 		}
 
+		&__cell {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
 		&__what {
 			display: grid;
-			gap: var(--space-smaller);
+			gap: 2px;
 
 			strong {
 				color: var(--color-heading);
+				font-size: 14px;
 				font-weight: 600;
 			}
 
 			span {
 				color: var(--color-text--secondary);
-				font-size: var(--typography--fontSize-small);
+				font-size: 12px;
+				font-weight: 500;
 			}
 		}
 
 		&__always {
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			font-size: 12px;
+			white-space: nowrap;
 		}
 
 		&__mobile-name {
@@ -598,9 +764,9 @@
 		}
 	}
 
-	@media (max-width: 720px) {
-		.alerts-card {
-			padding: var(--space-base);
+	@media (max-width: 1079px) {
+		.alerts-page__columns {
+			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 </style>

@@ -74,3 +74,29 @@ Screenshots (scratchpad): `shots/comm-email-*.png`, `comm-sms-*.png`, `comm-chat
   which conflicts with the approved blue 60px tile and SectionBlock's existing card mode.
 
 Next action: Codex reviews and merges; run the deferred checks after all screens are implemented.
+
+---
+
+## Unassigned Settings pages built by Claude (2026-10-17)
+
+Same branch, claim `e54334278ed5` (expanded with `settings-alerts-ui`, `settings-contact-matching-ui`). Visual only; behaviour, data,
+permissions, validation and saves unchanged. **Implemented, pending final validation.** Deferred at Jafar's request: type checks, svelte-check,
+lint, automated tests, production builds, autofixer, full-project scans, phone width and keyboard checks.
+
+| Route | Frame | Notes |
+| --- | --- | --- |
+| communications/balance | FQtlx | dark-green Available balance card + 2×2 stat grid, top-up strip, health tiles, requests, ledger with type icons |
+| communications/blocked-addresses | K20fhu | two card tables, avatars/pills, removal-request flow unchanged |
+| communications/templates | X6iCs | `RecordListCard` with search + Folder chip, card table |
+| communications/snippets | M5vL5 | same pattern; checked also with faked rows in the browser (not saved) |
+| alerts | n87Rqu | two columns in group order, record-colour icon tiles, still saves per switch (no save bar) |
+| inquiry-alerts | UnRB9 | "Who gets alerted" card with row avatars, dark centred save bar; fieldset → labelled section |
+| contact-matching | XqHYz | one card, Match by control + note panel, dark centred save bar; fieldset → section |
+
+**Evidence:** Playwright, 1440px, light and dark, owner login, no console errors on any page (Chrome extension not connected).
+Screenshots in the session scratchpad `shots/`: `bal*`, `block-*`, `tmpl-*`, `snip-*`, `alerts-*`, `inq-*`, `match-*`.
+
+**Gaps:** states not seen with test data (pending/declined top-ups, refund rows, blocked rows, Update-available badge, alerts "on for this computer" list,
+checked inquiry recipients, dirty save bars). `RecordListCard` has no icon slot, so Templates/Snippets/Automation omit the small tile beside the card title.
+`Button` has no icon prop (Pencil plus icons omitted). Header and card-header CSS is page-local on every page: consolidate into one shared Settings header
+(Codex). Header tile icon reads dim in dark mode on all pages (no dark Pencil frame).

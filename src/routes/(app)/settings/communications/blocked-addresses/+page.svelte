@@ -2,19 +2,25 @@
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import DataTable from '$lib/components/data-display/DataTable.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import mailOffIcon from '@tabler/icons/outline/mail-off.svg?raw';
+	import mailCheckIcon from '@tabler/icons/outline/mail-check.svg?raw';
+	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import usersIcon from '@tabler/icons/outline/users.svg?raw';
+	import shieldCheckIcon from '@tabler/icons/outline/shield-check.svg?raw';
 
 	type OpenRequest = {
 		id: string;
@@ -169,130 +175,166 @@
 
 <svelte:head><title>Blocked addresses · Contractor CRM</title></svelte:head>
 
-<PageContainer variant="fill">
-	<div class="blocked">
-		<PageHeader
-			eyebrow="Communications"
-			title="Blocked addresses"
-			description="When a customer's email keeps bouncing or they mark your email as spam, UCRM stops sending to that address to protect your sender reputation. Corrected addresses can be unblocked here."
-		>
-			{#snippet actions()}
-				<Button href={resolve('/settings')} variant="secondary" variation="subtle">
-					Back to settings
-				</Button>
-			{/snippet}
-		</PageHeader>
+<PageContainer variant="open">
+	<div class="blocked record-detail--cards">
+		<header class="blocked__header">
+			<span class="blocked__header-icon" aria-hidden="true">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+				{@html mailOffIcon}
+			</span>
+			<div class="blocked__header-copy">
+				<Breadcrumbs
+					items={[
+						{ label: 'Settings', href: resolve('/(app)/settings') },
+						{ label: 'Blocked addresses' }
+					]}
+				/>
+				<h1>Blocked addresses</h1>
+				<p>
+					When a customer's email keeps bouncing or they mark your email as spam, UCRM stops sending
+					to that address to protect your sender reputation. Corrected addresses can be unblocked
+					here.
+				</p>
+			</div>
+		</header>
 
 		<SectionBlock
 			title="Blocked email addresses"
 			hint="Nothing your team sends reaches these addresses until they are unblocked."
 			icon={mailOffIcon}
 			level={2}
+			class="section-block--flush"
 		>
 			{#if blockedQuery.isPending}
-				<LoadingSkeleton variant="table" label="Loading blocked addresses" />
+				<div class="blocked__pad">
+					<LoadingSkeleton variant="table" label="Loading blocked addresses" />
+				</div>
 			{:else if blockedQuery.isError}
-				<ErrorState
-					description="Blocked addresses could not be loaded."
-					retry={() => blockedQuery.refetch()}
-				/>
+				<div class="blocked__pad">
+					<ErrorState
+						description="Blocked addresses could not be loaded."
+						retry={() => blockedQuery.refetch()}
+					/>
+				</div>
 			{:else if blocked.length === 0}
-				<EmptyState
-					title="No blocked addresses"
-					description="Every customer address your team emails is currently deliverable."
-				/>
+				<div class="blocked__pad">
+					<EmptyState
+						title="No blocked addresses"
+						description="Every customer address your team emails is currently deliverable."
+					/>
+				</div>
 			{:else}
 				{#if overCap}
 					<p class="blocked__notice" role="status">
 						Showing the {blocked.length} most recent of {blockedQuery.data?.blocked_total} blocked addresses.
 					</p>
 				{/if}
-				<div class="blocked__table-wrap">
-					<table class="blocked__table">
-						<thead>
-							<tr>
-								<th scope="col">Address</th>
-								<th scope="col">Why</th>
-								<th scope="col">Blocked</th>
-								<th scope="col">Status</th>
-								<th scope="col"><span class="blocked__sr-only">Actions</span></th>
-							</tr>
-						</thead>
-						<tbody>
-							{#each blocked as address (address.suppression_id)}
-								<tr>
-									<th scope="row">
-										<strong>{address.recipient_email}</strong>
-										{#if address.client_display_name}
-											<small>{address.client_display_name}</small>
-										{/if}
-									</th>
-									<td>
-										<Badge status={reasonTone(address.reason)} dot={false}>
-											{reasonLabel(address.reason)}
-										</Badge>
-									</td>
-									<td>{formatDate(address.created_at)}</td>
-									<td>
-										{#if address.open_request}
-											<Badge status="informative" dot={false}>Removal pending review</Badge>
-										{:else}
-											<Badge status="inactive" dot={false}>Blocked</Badge>
-										{/if}
-									</td>
-									<td class="blocked__row-action">
-										{#if address.open_request}
-											<Button
-												size="small"
-												variant="secondary"
-												variation="subtle"
-												onclick={() => (withdrawTarget = address)}
-											>
-												Withdraw request
-											</Button>
-										{:else}
-											<Button
-												size="small"
-												variant="secondary"
-												variation="subtle"
-												onclick={() => openRequest(address)}
-											>
-												Request removal
-											</Button>
-										{/if}
-									</td>
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				</div>
+				<DataTable
+					variant="card"
+					caption="Blocked email addresses"
+					columns={[
+						{ key: 'address', label: 'Address' },
+						{ key: 'why', label: 'Why', width: '170px' },
+						{ key: 'blocked', label: 'Blocked', width: '150px' },
+						{ key: 'status', label: 'Status', width: '210px' }
+					]}
+					items={blocked}
+					rowId={(address) => address.suppression_id}
+				>
+					{#snippet row(address)}
+						<th scope="row">
+							<div class="blocked__address">
+								{#if address.client_display_name}
+									<Avatar id={address.suppression_id} name={address.client_display_name} size="base" />
+								{:else}
+									<span class="blocked__address-icon" aria-hidden="true">
+										<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+										{@html mailIcon}
+									</span>
+								{/if}
+								<div class="blocked__address-copy">
+									<strong>{address.recipient_email}</strong>
+									{#if address.client_display_name}
+										<small>{address.client_display_name}</small>
+									{/if}
+								</div>
+							</div>
+						</th>
+						<td>
+							<Badge status={reasonTone(address.reason)} dot={false} size="small">
+								{reasonLabel(address.reason)}
+							</Badge>
+						</td>
+						<td>{formatDate(address.created_at)}</td>
+						<td>
+							{#if address.open_request}
+								<Badge status="informative" dot={false} size="small">Removal pending review</Badge>
+							{:else}
+								<Badge status="inactive" dot={false} size="small">Blocked</Badge>
+							{/if}
+						</td>
+					{/snippet}
+					{#snippet rowActions(address)}
+						{#if address.open_request}
+							<Button
+								size="small"
+								variant="secondary"
+								variation="subtle"
+								onclick={() => (withdrawTarget = address)}
+							>
+								Withdraw request
+							</Button>
+						{:else}
+							<Button
+								size="small"
+								variant="secondary"
+								variation="subtle"
+								onclick={() => openRequest(address)}
+							>
+								Request removal
+							</Button>
+						{/if}
+					{/snippet}
+				</DataTable>
 			{/if}
 		</SectionBlock>
 
 		{#if cleared.length > 0}
-			<SectionBlock title="Recently unblocked" icon={mailOffIcon} level={2}>
-				<div class="blocked__table-wrap">
-					<table class="blocked__table">
-						<thead>
-							<tr>
-								<th scope="col">Address</th>
-								<th scope="col">Was blocked for</th>
-								<th scope="col">Unblocked</th>
-								<th scope="col">By</th>
-							</tr>
-						</thead>
-						<tbody>
-							{#each cleared as address (address.suppression_id)}
-								<tr>
-									<th scope="row">{address.recipient_email}</th>
-									<td>{reasonLabel(address.reason)}</td>
-									<td>{formatDate(address.released_at)}</td>
-									<td>{clearedBy(address.released_by_kind)}</td>
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				</div>
+			<SectionBlock
+				title="Recently unblocked"
+				icon={mailCheckIcon}
+				level={2}
+				class="section-block--flush"
+			>
+				<DataTable
+					variant="card"
+					caption="Recently unblocked addresses"
+					columns={[
+						{ key: 'address', label: 'Address' },
+						{ key: 'was', label: 'Was blocked for', width: '215px' },
+						{ key: 'unblocked', label: 'Unblocked', width: '186px' },
+						{ key: 'by', label: 'By', width: '220px' }
+					]}
+					items={cleared}
+					rowId={(address) => address.suppression_id}
+				>
+					{#snippet row(address)}
+						<th scope="row">{address.recipient_email}</th>
+						<td>{reasonLabel(address.reason)}</td>
+						<td>{formatDate(address.released_at)}</td>
+						<td>
+							<span class="blocked__by">
+								<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+								<span aria-hidden="true"
+									>{@html address.released_by_kind === 'organization_admin'
+										? usersIcon
+										: shieldCheckIcon}</span
+								>
+								{clearedBy(address.released_by_kind)}
+							</span>
+						</td>
+					{/snippet}
+				</DataTable>
 			</SectionBlock>
 		{/if}
 	</div>
@@ -381,66 +423,144 @@
 	.blocked {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-large);
+		gap: 20px;
 	}
-	.blocked :global(.section-block) {
-		--section-block-notch: var(--color-surface);
+	/* App-look cards: each block is a white card on the app background. The shared card rules (the
+	   `record-detail--cards` context) put the heading, hint and actions inside the card header; the page
+	   only restores the framed icon tile, which sits beside the header lines as the approved frame shows. */
+	.blocked.record-detail--cards :global(.section-block > .section-block__title) {
+		padding-left: 72px;
+	}
+	.blocked.record-detail--cards :global(.section-block:has(> .section-block__hint)) {
+		> :global(.section-block__hint) {
+			margin-left: 72px;
+		}
+	}
+	.blocked.record-detail--cards :global(.section-block .section-block__icon) {
+		position: absolute;
+		top: 20px;
+		left: 24px;
+		display: grid;
+		place-items: center;
+		width: 36px;
+		height: 36px;
+		border-radius: 11px;
+		background: var(--color-informative--surface);
+	}
+	.blocked.record-detail--cards :global(.section-block .section-block__icon svg) {
+		width: 18px;
+		height: 18px;
+		color: var(--color-informative--onSurface);
+	}
+	.blocked.record-detail--cards :global(.section-block:not(:has(> .section-block__hint)) > .section-block__title) {
+		min-height: 76px;
+		padding-top: 0;
+		padding-bottom: 0;
+		box-sizing: border-box;
+	}
+	.blocked__header {
+		display: flex;
+		align-items: flex-start;
+		gap: 18px;
+		margin-top: 16px;
+	}
+	.blocked__header-icon {
+		display: grid;
+		flex: 0 0 auto;
+		place-items: center;
+		width: 60px;
+		height: 60px;
+		margin-top: 4px;
+		border-radius: 18px;
+		color: var(--color-text--reverse);
+		background: var(--color-task);
+		box-shadow: 0 6px 16px color-mix(in srgb, var(--color-task) 35%, transparent);
+	}
+	.blocked__header-icon :global(svg) {
+		width: 28px;
+		height: 28px;
+	}
+	.blocked__header-copy {
+		min-width: 0;
+	}
+	.blocked__header-copy :global(.breadcrumbs) {
+		margin-bottom: 4px;
+		font-size: 13px;
+		font-weight: 600;
+	}
+	.blocked__header-copy :global(.breadcrumbs a svg) {
+		display: none;
+	}
+	.blocked__header h1 {
+		margin: 0;
+		color: var(--color-heading);
+		font-size: 36px;
+		font-weight: 900;
+		letter-spacing: -1.2px;
+		line-height: var(--typography--lineHeight-tight);
+	}
+	.blocked__header p {
+		max-width: 880px;
+		margin: var(--space-smaller) 0 0;
+		color: var(--color-text--secondary);
+		font-size: 14px;
+		font-weight: 500;
+		line-height: var(--typography--lineHeight-large);
+	}
+	.blocked__pad {
+		padding: 0 24px 24px;
 	}
 	.blocked__notice {
-		margin: 0 0 var(--space-base);
+		margin: 0 24px var(--space-base);
 		padding: var(--space-base);
 		border-radius: var(--radius-base);
 		color: var(--color-informative--onSurface);
 		background: var(--color-informative--surface);
 		font-size: var(--typography--fontSize-small);
 	}
-	.blocked__table-wrap {
-		overflow-x: auto;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+	.blocked__address {
+		display: flex;
+		align-items: center;
+		gap: 14px;
 	}
-	.blocked__table {
-		width: 100%;
-		min-width: 680px;
-		border-collapse: collapse;
-		color: var(--color-text);
-	}
-	.blocked__table th,
-	.blocked__table td {
-		padding: var(--space-base) var(--space-large);
-		border-bottom: var(--border-base) solid var(--color-border);
-		text-align: left;
-		vertical-align: middle;
-	}
-	.blocked__table thead th {
-		background: var(--color-surface--background--subtle);
-		color: var(--color-heading);
-		font-weight: 700;
-	}
-	.blocked__table tbody tr:last-child th,
-	.blocked__table tbody tr:last-child td {
-		border-bottom: 0;
-	}
-	.blocked__table tbody th strong,
-	.blocked__table tbody th small {
-		display: block;
-	}
-	.blocked__table tbody th small {
-		margin-top: var(--space-smallest);
+	.blocked__address-icon {
+		display: grid;
+		flex: 0 0 auto;
+		place-items: center;
+		width: 32px;
+		height: 32px;
+		border-radius: var(--radius-circle);
 		color: var(--color-text--secondary);
+		background: var(--color-surface--active);
+	}
+	.blocked__address-icon :global(svg) {
+		width: 16px;
+		height: 16px;
+	}
+	.blocked__address-copy {
+		display: grid;
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+	.blocked__address-copy strong {
+		color: var(--color-heading);
+		font-weight: 600;
+	}
+	.blocked__address-copy small {
+		color: var(--color-text--secondary);
+		font-size: 13px;
 		font-weight: 400;
 	}
-	.blocked__row-action {
-		text-align: right;
-		white-space: nowrap;
+	.blocked__by {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		color: var(--color-text--secondary);
 	}
-	.blocked__sr-only {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip: rect(0 0 0 0);
-		white-space: nowrap;
+	.blocked__by :global(svg) {
+		display: block;
+		width: 16px;
+		height: 16px;
 	}
 	.blocked__form {
 		display: grid;
