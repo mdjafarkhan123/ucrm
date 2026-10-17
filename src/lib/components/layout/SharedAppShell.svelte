@@ -131,39 +131,75 @@
 		{
 			label: 'Overview',
 			items: [
-				{ label: 'Home', href: '/dashboard', icon: 'home' },
-				{ label: 'Schedule', href: '/schedule', icon: 'calendar', area: 'schedule' },
-				{ label: 'Timesheets', href: '/timesheets', icon: 'clock', area: 'timesheets' }
+				{ label: 'Home', href: '/dashboard', icon: 'home', tone: 'inactive' },
+				{ label: 'Schedule', href: '/schedule', icon: 'calendar', tone: 'time', area: 'schedule' },
+				{
+					label: 'Timesheets',
+					href: '/timesheets',
+					icon: 'clock',
+					tone: 'time',
+					area: 'timesheets'
+				}
 			]
 		},
 		{
 			label: 'Customers',
 			items: [
-				{ label: 'Inbox', href: '/communications', icon: 'inbox', area: 'inbox' },
-				{ label: 'Clients', href: '/clients', icon: 'users', area: 'clients' },
-				{ label: 'Requests', href: '/requests', icon: 'clipboardList', area: 'requests' },
-				{ label: 'Pipeline', href: '/pipeline', icon: 'layoutKanban', area: 'pipeline' }
+				{
+					label: 'Inbox',
+					href: '/communications',
+					icon: 'inbox',
+					tone: 'conversation',
+					area: 'inbox'
+				},
+				{ label: 'Clients', href: '/clients', icon: 'users', tone: 'client', area: 'clients' },
+				{
+					label: 'Requests',
+					href: '/requests',
+					icon: 'clipboardList',
+					tone: 'request',
+					area: 'requests'
+				},
+				{
+					label: 'Pipeline',
+					href: '/pipeline',
+					icon: 'layoutKanban',
+					tone: 'growth',
+					area: 'pipeline'
+				}
 			]
 		},
 		{
 			label: 'Work & Money',
 			items: [
-				{ label: 'Jobs', href: '/jobs', icon: 'tools', area: 'jobs' },
-				{ label: 'Quotes', href: '/quotes', icon: 'fileText', area: 'quotes' },
-				{ label: 'Invoices', href: '/invoices', icon: 'receipt', area: 'invoices' },
-				{ label: 'Files', href: '/files', icon: 'folderOpen', area: 'files' }
+				{ label: 'Jobs', href: '/jobs', icon: 'tools', tone: 'job', area: 'jobs' },
+				{ label: 'Quotes', href: '/quotes', icon: 'fileText', tone: 'quote', area: 'quotes' },
+				{
+					label: 'Invoices',
+					href: '/invoices',
+					icon: 'receipt',
+					tone: 'invoice',
+					area: 'invoices'
+				},
+				{ label: 'Files', href: '/files', icon: 'folderOpen', tone: 'inactive', area: 'files' }
 			]
 		},
 		{
 			label: 'Growth',
 			items: [
-				{ label: 'Marketing', href: '/marketing', icon: 'speakerphone', area: 'marketing' },
-				{ label: 'Reviews', href: '/reviews', icon: 'star', area: 'reviews' }
+				{
+					label: 'Marketing',
+					href: '/marketing',
+					icon: 'speakerphone',
+					tone: 'growth',
+					area: 'marketing'
+				},
+				{ label: 'Reviews', href: '/reviews', icon: 'star', tone: 'review', area: 'reviews' }
 			]
 		},
 		{
 			pinned: true,
-			items: [{ label: 'Settings', href: '/settings', icon: 'settings' }]
+			items: [{ label: 'Settings', href: '/settings', icon: 'settings', tone: 'inactive' }]
 		}
 	];
 	// An item shows only when its area is open to this member, and a section with none left disappears.

@@ -30,11 +30,26 @@ import clipboardListIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
 import layoutKanbanIcon from '@tabler/icons/outline/layout-kanban.svg?raw';
 import folderOpenIcon from '@tabler/icons/outline/folder-open.svg?raw';
 
+/** The colour family an icon takes from what it opens: a record, a part of the app, or your business. */
+export type NavTone =
+	| 'inactive'
+	| 'time'
+	| 'conversation'
+	| 'client'
+	| 'request'
+	| 'growth'
+	| 'job'
+	| 'quote'
+	| 'invoice'
+	| 'review';
+
 /** `count` is a number waiting for attention, such as unread support conversations. Zero shows nothing. */
 export type NavItem = {
 	label: string;
 	href: string;
 	icon: string;
+	/** Colours the icon; without it the icon stays the neutral icon colour. */
+	tone?: NavTone;
 	unavailable?: boolean;
 	count?: number;
 	/** Other pages that belong to this item, so it stays highlighted while one of them is open. */
