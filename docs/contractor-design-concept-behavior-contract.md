@@ -65,5 +65,10 @@ designs as the record of the live app.
 - Decision 2026-10-17 (Jafar): the Foundation's off-scale sizes become new tokens — text 11, 13, 32; tile
   corners 6 and 10; card padding 20 — added to `concept.pen` and the design skill, and to `_variables.scss`
   with the first screen that uses them.
+- Decision 2026-10-17 (Jafar): complete the button set — every state for every kind, three sizes, a confirm-red
+  button, a More menu button and a faint raised look — and every button that waits on the server shows loading,
+  in the app whether or not a screen has a Pencil design. Loading follows GitHub Primer and Shopify Polaris: the
+  spinner replaces the icon (or the label, keeping the width) and blocks a second press. The Pencil drawing awaits
+  Jafar's review.
 - Decision 2026-10-17 (Jafar): keep two sets of styling modules for now — `design` (concept) and
   `design-classic` (live look) — until rollout; revisit then.

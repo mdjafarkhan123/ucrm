@@ -18,7 +18,7 @@
 | Card title | 16 (`-large`) | 600 | 0 |
 | Row title, button | 14 (`-base`) | 600 | 0 |
 | Body | 14 (`-base`) | 400–500 | 0 |
-| Field label | 13 | 600 | 0 |
+| Field label, small button | 13 | 600 | 0 |
 | Meta, dates, pills | 12 (`-small`) | 400–600 | 0 |
 | Group and table labels | 11, uppercase | 600 | 0.6–0.8 |
 
