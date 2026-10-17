@@ -124,18 +124,17 @@
 				</ol>
 			{/if}
 
-			<DropdownMenu
-				items={addBlockItems}
-				triggerLabel="Add a block"
-				triggerClass="email-step__add-trigger"
-				align="start"
-				disabled={!canAddBlock}
-			>
-				{#snippet trigger()}
-					<span class="email-step__button-icon" aria-hidden="true">{@html plusIcon}</span>
-					Add a block
-				{/snippet}
-			</DropdownMenu>
+			<div class="email-step__add">
+				<DropdownMenu
+					items={addBlockItems}
+					triggerLabel="Add a block"
+					triggerText="Add a block"
+					triggerLeadingIcon={plusIcon}
+					triggerChevron={false}
+					align="start"
+					disabled={!canAddBlock}
+				/>
+			</div>
 			{#if !canAddBlock}
 				<p class="panel__hint">You've reached the {MARKETING_MAX_BLOCKS}-block limit.</p>
 			{/if}
@@ -263,33 +262,8 @@
 		display: block;
 	}
 
-	:global(.email-step__add-trigger) {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-smaller);
-		align-self: flex-start;
-		height: 36px;
-		padding: 0 var(--space-base);
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		color: var(--color-interactive);
-		background: var(--color-surface);
-		font-size: var(--typography--fontSize-base);
-		font-weight: 600;
-		cursor: pointer;
-		transition: all var(--timing-quick) ease-out;
-	}
-	:global(.email-step__add-trigger:hover:not(:disabled)) {
-		background: var(--color-interactive--background--subtle--hover);
-	}
-	:global(.email-step__add-trigger:focus-visible) {
-		outline: none;
-		box-shadow: var(--shadow-focus);
-	}
-	:global(.email-step__add-trigger:disabled) {
-		color: var(--color-disabled);
-		border-color: var(--color-border);
-		cursor: not-allowed;
+	.email-step__add {
+		display: flex;
 	}
 
 	@media (max-width: 560px) {

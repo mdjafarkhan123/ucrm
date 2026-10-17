@@ -10,6 +10,7 @@
 	import userIcon from '@tabler/icons/outline/user.svg?raw';
 	import logoutIcon from '@tabler/icons/outline/logout.svg?raw';
 	import { resolve } from '$app/paths';
+	import Button from '$lib/components/ui/Button.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import photoIcon from '@tabler/icons/outline/user-circle.svg?raw';
@@ -81,9 +82,16 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <Header {identity} {notifications} {timer}>
 	{#snippet menu()}
-		<button class="topbar__menu" type="button" aria-label="Open navigation" onclick={onmenutoggle}>
-			<span aria-hidden="true">{@html menuIcon}</span>
-		</button>
+		<Button
+			class="topbar__menu"
+			variant="quiet"
+			size="large"
+			iconOnly
+			label="Open navigation"
+			onclick={onmenutoggle}
+		>
+			{@html menuIcon}
+		</Button>
 	{/snippet}
 	{#snippet search()}
 		<div class="topbar__search">
@@ -103,10 +111,13 @@
 	{/snippet}
 	{#snippet add()}
 		<DropdownMenu.Root>
-			<DropdownMenu.Trigger class="topbar__add">
-				<span aria-hidden="true">{@html plusIcon}</span><span class="topbar__add-label"
-					>Add new</span
-				>
+			<DropdownMenu.Trigger>
+				{#snippet child({ props })}
+					<Button {...props} class="topbar__add" size="large">
+						{@html plusIcon}
+						<span class="topbar__add-label">Add new</span>
+					</Button>
+				{/snippet}
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Portal disabled>
 				<DropdownMenu.Content class="topbar__menu-panel" align="start" sideOffset={8}>
@@ -116,16 +127,16 @@
 		</DropdownMenu.Root>
 	{/snippet}
 	{#snippet appearance()}
-		<button
-			class="topbar__icon-btn"
-			type="button"
-			aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+		<Button
+			variant="secondary"
+			size="large"
+			iconOnly
+			label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
 			aria-pressed={isDark}
-			title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
 			onclick={toggleTheme}
 		>
-			<span aria-hidden="true">{@html isDark ? sunIcon : moonIcon}</span>
-		</button>
+			{@html isDark ? sunIcon : moonIcon}
+		</Button>
 	{/snippet}
 	{#snippet accountControl()}
 		<DropdownMenu.Root>

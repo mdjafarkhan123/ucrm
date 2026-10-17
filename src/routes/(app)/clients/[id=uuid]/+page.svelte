@@ -698,7 +698,6 @@
 									{/snippet}
 									{#snippet rowActions(property: ClientProperty)}
 										<PencilButton
-											variant="secondary"
 											onclick={() => (propertyDialog = { property })}
 											onhover={warmPropertyTaxPicker}
 											label={`Edit ${streetOf(property)}`}
@@ -767,11 +766,7 @@
 								{/if}
 							</div>
 							{#if editingBlock !== 'lead_source'}
-								<PencilButton
-									variant="secondary"
-									onclick={() => openBlock('lead_source')}
-									label="Edit lead source"
-								/>
+								<PencilButton onclick={() => openBlock('lead_source')} label="Edit lead source" />
 							{/if}
 						</div>
 

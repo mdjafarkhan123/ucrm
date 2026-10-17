@@ -364,22 +364,13 @@
 					<div class="clients-header-actions">
 						<DropdownMenu
 							triggerLabel="More client actions"
-							triggerClass="clients-header__button"
+							triggerText="More actions"
+							triggerLeadingIcon={dotsIcon}
+							triggerChevron={false}
 							items={moreClientActions}
-						>
-							{#snippet trigger()}
-								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-								<span class="clients-header__icon" aria-hidden="true">{@html dotsIcon}</span>
-								More actions
-							{/snippet}
-						</DropdownMenu>
-						<Button
-							variant="primary"
-							class="clients-header__button clients-header__button--primary"
-							href={resolve('/clients/new')}
-						>
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							<span class="clients-header__icon" aria-hidden="true">{@html plusIcon}</span>
+						/>
+						<Button variant="primary" href={resolve('/clients/new')}>
+							{@html plusIcon}
 							New client
 						</Button>
 					</div>
@@ -675,48 +666,6 @@
 		display: flex;
 		align-items: center;
 		gap: var(--space-small);
-	}
-	// More actions is a menu trigger, not a Button, so it is drawn here as the concept's white button.
-	:global(.clients-header__button:not(.button)) {
-		display: inline-flex;
-		min-height: 36px;
-		align-items: center;
-		justify-content: center;
-		gap: var(--space-small);
-		padding: 0 14px;
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		color: var(--color-heading);
-		background: var(--color-surface);
-		box-shadow: var(--shadow-button);
-		font-size: var(--typography--fontSize-base);
-		font-weight: 600;
-		cursor: pointer;
-		transition: all var(--timing-base) ease-out;
-
-		&:hover:not(:disabled) {
-			border-color: var(--color-border--interactive--hover);
-			background: var(--color-surface--hover);
-		}
-		&:active:not(:disabled),
-		&[data-state='open'] {
-			border-color: var(--color-border--interactive--hover);
-			background: var(--color-surface--active);
-			box-shadow: none;
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-	}
-	.clients-header__icon {
-		display: inline-flex;
-
-		:global(svg) {
-			display: block;
-			width: 16px;
-			height: 16px;
-		}
 	}
 
 	/* The Client book takes the room it needs; the New clients card keeps a steady width beside it. */

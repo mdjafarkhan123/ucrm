@@ -980,17 +980,10 @@
 			{/if}
 			<DropdownMenu
 				items={addMenuItems}
-				triggerLabel="Add visits"
-				triggerClass="job-visits-section__add-trigger"
-			>
-				{#snippet trigger()}
-					<span class="job-visits-section__add-icon" aria-hidden="true">{@html plusIcon}</span>
-					Add visits
-					<span class="job-visits-section__add-caret" aria-hidden="true"
-						>{@html chevronDownIcon}</span
-					>
-				{/snippet}
-			</DropdownMenu>
+				triggerText="Add visits"
+				triggerLeadingIcon={plusIcon}
+				triggerSize="small"
+			/>
 		{/if}
 	{/snippet}
 
@@ -1609,40 +1602,5 @@
 
 	.job-visits-section__date {
 		display: none;
-	}
-
-	:global(.job-visits-section__add-trigger) {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-smaller);
-		padding: var(--space-smaller) var(--space-small);
-		border: 0;
-		border-radius: var(--radius-base);
-		color: var(--color-interactive);
-		background: transparent;
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-		cursor: pointer;
-		transition: background-color var(--timing-base) ease-out;
-
-		&:hover:not(:disabled) {
-			background: var(--color-surface--hover);
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-	}
-
-	:global(.job-visits-section__add-icon svg) {
-		display: block;
-		width: 16px;
-		height: 16px;
-	}
-
-	:global(.job-visits-section__add-caret svg) {
-		display: block;
-		width: 14px;
-		height: 14px;
 	}
 </style>

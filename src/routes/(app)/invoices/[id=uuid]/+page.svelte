@@ -418,9 +418,13 @@
 	const siteLine = $derived.by(() => {
 		const site = saved?.invoice.service_properties?.[0] as Record<string, unknown> | undefined;
 		if (!site) return null;
-		const parts = [site.address_line1, site.address_line2, site.city, site.state_region, site.postal_code].filter(
-			(part): part is string => typeof part === 'string' && part.length > 0
-		);
+		const parts = [
+			site.address_line1,
+			site.address_line2,
+			site.city,
+			site.state_region,
+			site.postal_code
+		].filter((part): part is string => typeof part === 'string' && part.length > 0);
 		return parts.length ? parts.join(', ') : null;
 	});
 
@@ -1166,7 +1170,6 @@
 							{#if editable && !editingTerms}
 								<PencilButton
 									size="base"
-									variant="secondary"
 									onclick={openTermsEditor}
 									onhover={warmTerms}
 									label="Edit the terms and dates"

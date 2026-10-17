@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import RouteStopCard from '$lib/components/schedule/RouteStopCard.svelte';
 	import RouteMap from '$lib/components/schedule/RouteMap.svelte';
@@ -168,26 +169,24 @@
 			<!-- Save appears only once the dispatcher has rearranged the route, so there is never a permanently
 			     disabled button here; it saves this employee's order for this day and then steps aside. -->
 			{#if dirty || saving}
-				<button
-					type="button"
-					class="route__save"
-					onclick={save}
-					disabled={!canSave}
-					aria-busy={saving}
-				>
-					{@html saveIcon}<span>{saving ? 'Saving…' : 'Save Route Order'}</span>
-				</button>
+				<Button size="small" onclick={save} disabled={!canSave} loading={saving}>
+					{@html saveIcon}
+					Save Route Order
+				</Button>
 			{/if}
 			{#if canRouteDirect}
-				<DropdownMenu items={routeItems} triggerLabel="Directions for the whole route">
-					{#snippet trigger()}
-						<span class="route__direct">{@html directionIcon}<span>Directions</span></span>
-					{/snippet}
-				</DropdownMenu>
+				<DropdownMenu
+					items={routeItems}
+					triggerText="Directions"
+					triggerLabel="Directions for the whole route"
+					triggerLeadingIcon={directionIcon}
+					triggerChevron={false}
+					triggerSize="small"
+				/>
 			{/if}
-			<button type="button" class="route__close" aria-label="Close map" onclick={onclose}>
+			<Button variant="secondary" size="small" iconOnly label="Close map" onclick={onclose}>
 				{@html closeIcon}
-			</button>
+			</Button>
 		</div>
 	</header>
 
@@ -276,87 +275,8 @@
 		gap: var(--space-small);
 	}
 
-	.route__direct {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-smaller);
-		height: 34px;
-		padding: 0 var(--space-small);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		color: var(--color-text);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-
-		:global(svg) {
-			width: 16px;
-			height: 16px;
-		}
-	}
-
 	/* A compact work action sitting next to the Directions pill: green so a pending save reads as the thing to
 	   do, matching the header's 34px control height rather than the taller base Button. */
-	.route__save {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-smaller);
-		height: 34px;
-		padding: 0 var(--space-small);
-		border: var(--border-base) solid var(--color-interactive);
-		border-radius: var(--radius-base);
-		background-color: var(--color-interactive);
-		color: var(--color-surface);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-		cursor: pointer;
-		transition: background-color var(--timing-quick) ease;
-
-		&:hover {
-			background-color: var(--color-interactive--hover);
-			border-color: var(--color-interactive--hover);
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-		&:disabled {
-			background-color: var(--color-disabled--secondary);
-			border-color: var(--color-disabled--secondary);
-			color: var(--color-disabled);
-			cursor: not-allowed;
-		}
-
-		:global(svg) {
-			width: 16px;
-			height: 16px;
-		}
-	}
-
-	.route__close {
-		display: inline-grid;
-		place-items: center;
-		width: 34px;
-		height: 34px;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background-color: var(--color-surface);
-		color: var(--color-icon);
-		cursor: pointer;
-		transition: background-color var(--timing-quick) ease;
-
-		&:hover {
-			background-color: var(--color-surface--hover);
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-
-		:global(svg) {
-			width: 18px;
-			height: 18px;
-		}
-	}
 
 	.route__body {
 		display: flex;

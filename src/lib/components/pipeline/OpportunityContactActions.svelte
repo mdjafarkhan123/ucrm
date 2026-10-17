@@ -86,19 +86,17 @@
 			<DropdownMenu
 				align="start"
 				triggerLabel={`Call ${clientName}`}
-				triggerClass="contact-actions__call"
+				triggerText="Call"
+				triggerLeadingIcon={phoneIcon}
+				triggerChevron={false}
+				triggerSize="small"
 				items={phones.map((method) => ({
 					key: method.id,
 					label: method.is_primary ? `${method.value} (main)` : method.value,
 					icon: phoneIcon,
 					onSelect: () => dial(method.value)
 				}))}
-			>
-				{#snippet trigger()}
-					<span class="contact-actions__icon" aria-hidden="true">{@html phoneIcon}</span>
-					Call
-				{/snippet}
-			</DropdownMenu>
+			/>
 		{/if}
 	</div>
 {/if}
@@ -118,29 +116,6 @@
 		:global(svg) {
 			width: 16px;
 			height: 16px;
-		}
-	}
-	:global(.contact-actions__call) {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: var(--space-smaller);
-		min-height: 32px;
-		padding: 0 var(--space-slim);
-		border: var(--border-base) solid var(--color-interactive);
-		border-radius: var(--radius-base);
-		color: var(--color-interactive);
-		background: var(--color-surface);
-		font-size: var(--typography--fontSize-base);
-		font-weight: 600;
-		line-height: var(--typography--lineHeight-base);
-		cursor: pointer;
-		transition: all var(--timing-base) ease-out;
-
-		&:hover,
-		&:focus-visible {
-			color: var(--color-interactive--hover);
-			background: var(--color-surface--hover);
 		}
 	}
 </style>

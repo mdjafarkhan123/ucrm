@@ -125,37 +125,6 @@
 	:global(.topbar__spacer) {
 		flex: 1;
 	}
-	:global(.topbar__add) {
-		display: inline-flex;
-		flex: 0 0 auto;
-		align-items: center;
-		gap: var(--space-small);
-		min-height: 44px;
-		padding: 0 18px 0 14px;
-		border: var(--border-base) solid var(--color-interactive);
-		border-radius: var(--radius-base);
-		color: var(--color-surface);
-		background: var(--color-interactive);
-		box-shadow: 0 6px 16px color-mix(in srgb, var(--color-interactive) 20%, transparent);
-		font-weight: 600;
-		white-space: nowrap;
-		transition: all var(--timing-base) ease-out;
-	}
-	:global(.topbar__add:hover) {
-		border-color: var(--color-interactive--hover);
-		background: var(--color-interactive--hover);
-	}
-	:global(.topbar__add:focus-visible) {
-		outline: none;
-		box-shadow: var(--shadow-focus);
-	}
-	:global(.topbar__add span:first-child),
-	:global(.topbar__add span:first-child svg) {
-		display: inline-flex;
-		width: 18px;
-		height: 18px;
-	}
-	:global(.topbar__icon-btn),
 	:global(.topbar__account) {
 		display: inline-grid;
 		flex: 0 0 auto;
@@ -169,27 +138,14 @@
 		background: var(--color-surface);
 		transition: all var(--timing-base) ease-out;
 	}
-	:global(.topbar__icon-btn:hover),
 	:global(.topbar__account:hover) {
 		border-color: var(--color-border--interactive);
 		color: var(--color-interactive--subtle--hover);
 		background: var(--color-surface--hover);
 	}
-	:global(.topbar__icon-btn:focus-visible),
 	:global(.topbar__account:focus-visible) {
 		outline: none;
 		box-shadow: var(--shadow-focus);
-	}
-	:global(.topbar__icon-btn:disabled),
-	:global(.topbar__icon-btn[aria-disabled='true']) {
-		color: var(--color-disabled);
-		cursor: not-allowed;
-	}
-	:global(.topbar__icon-btn span),
-	:global(.topbar__icon-btn span svg) {
-		display: inline-flex;
-		width: 18px;
-		height: 18px;
 	}
 	:global(.topbar__account) {
 		border-color: var(--color-interactive);
@@ -223,45 +179,22 @@
 		width: 20px;
 		height: 20px;
 	}
-	:global(.topbar__menu) {
+	// The navigation button shows only where the sidebar folds away.
+	.topbar :global(.topbar__menu.button) {
 		display: none;
-		flex: 0 0 auto;
-		padding: var(--space-small);
-		border: 0;
-		border-radius: var(--radius-small);
-		color: var(--color-icon);
-		background: transparent;
-		font-size: var(--typography--fontSize-largest);
-	}
-	:global(.topbar__menu span),
-	:global(.topbar__menu span svg) {
-		display: inline-flex;
-		width: 20px;
-		height: 20px;
-	}
-	:global(.topbar__menu):hover {
-		background: var(--color-surface--hover);
-	}
-	:global(.topbar__menu):focus-visible {
-		outline: none;
-		box-shadow: var(--shadow-focus);
 	}
 	@media (max-width: 767px) {
 		.topbar {
 			flex-wrap: wrap;
 			padding-inline: var(--space-base);
 		}
-		:global(.topbar__menu) {
-			display: inline-grid;
-			place-items: center;
+		.topbar :global(.topbar__menu.button) {
+			display: inline-flex;
 		}
 	}
 	@media (max-width: 639px) {
 		:global(.topbar__add-label) {
 			display: none;
-		}
-		:global(.topbar__add) {
-			padding: 0 var(--space-small);
 		}
 	}
 	@media (max-width: 489px) {

@@ -18,43 +18,9 @@
 <DropdownMenu
 	{items}
 	triggerLabel="Insert a variable"
-	triggerClass="insert-variable__trigger"
+	triggerText="Variable"
+	triggerLeadingIcon={plusIcon}
+	triggerChevron={false}
+	triggerSize="small"
 	align="end"
->
-	{#snippet trigger()}
-		<span class="insert-variable__icon" aria-hidden="true">{@html plusIcon}</span>
-		Variable
-	{/snippet}
-</DropdownMenu>
-
-<style lang="scss">
-	:global(.insert-variable__trigger) {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-smaller);
-		height: var(--space-largest);
-		padding: 0 var(--space-small);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		color: var(--color-text--secondary);
-		background: var(--color-surface);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-		white-space: nowrap;
-		cursor: pointer;
-		transition: all var(--timing-quick) ease-out;
-	}
-	:global(.insert-variable__trigger:hover:not(:disabled)) {
-		border-color: var(--color-border--interactive);
-		color: var(--color-interactive);
-	}
-	:global(.insert-variable__trigger:focus-visible) {
-		outline: none;
-		box-shadow: var(--shadow-focus);
-	}
-	.insert-variable__icon :global(svg) {
-		width: 14px;
-		height: 14px;
-		display: block;
-	}
-</style>
+/>

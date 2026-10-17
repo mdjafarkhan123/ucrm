@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
-	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import type { SetupOwnerChoice } from '$lib/jafar/deals';
@@ -96,17 +95,13 @@
 		>
 			<DropdownMenu
 				{items}
+				triggerText="Change"
 				triggerLabel={changeLabel}
-				triggerClass="owner-picker__trigger"
+				triggerSize="small"
 				disabled={saving}
 				align="start"
 				bind:open={menuOpen}
-			>
-				{#snippet trigger()}
-					Change<span class="owner-picker__chevron" aria-hidden="true">{@html chevronDownIcon}</span
-					>
-				{/snippet}
-			</DropdownMenu>
+			/>
 		</span>
 	{/if}
 </div>
@@ -127,45 +122,6 @@
 
 		&__change {
 			margin-left: auto;
-
-			:global(.owner-picker__trigger) {
-				display: inline-flex;
-				align-items: center;
-				padding: var(--space-smaller) var(--space-small);
-				border: var(--border-base) solid var(--color-border);
-				border-radius: var(--radius-base);
-				background: var(--color-surface);
-				color: var(--color-heading);
-				font: inherit;
-				font-size: var(--typography--fontSize-small);
-				font-weight: 600;
-				cursor: pointer;
-				transition: background-color var(--timing-quick);
-
-				&:hover:not(:disabled) {
-					background: var(--color-surface--hover);
-				}
-
-				&:focus-visible {
-					outline: none;
-					box-shadow: var(--shadow-focus);
-				}
-
-				&:disabled {
-					cursor: progress;
-					opacity: 0.6;
-				}
-			}
-		}
-
-		&__chevron {
-			display: inline-flex;
-			margin-left: var(--space-smaller);
-
-			:global(svg) {
-				width: 14px;
-				height: 14px;
-			}
 		}
 	}
 </style>

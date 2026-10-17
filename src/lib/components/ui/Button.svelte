@@ -10,11 +10,14 @@
 		disabled = false,
 		loading = false,
 		fullWidth = false,
+		iconOnly = false,
+		label,
 		href,
 		target,
 		class: className = '',
 		onclick,
-		onhover
+		onhover,
+		...rest
 	}: {
 		children: Snippet;
 		/** `primary` is the green main button (red when `destructive`). `secondary` and `tertiary` are the white
@@ -26,6 +29,10 @@
 		disabled?: boolean;
 		loading?: boolean;
 		fullWidth?: boolean;
+		/** A square button that holds only an icon, as wide as its size is tall. Needs `label`. */
+		iconOnly?: boolean;
+		/** The accessible name and hover title. Required for an icon-only button, which has no text. */
+		label?: string;
 		/** Renders a link instead of a button. Use it for anything that goes to another page, so the
 		 *  browser can open it in a new tab and SvelteKit can preload the page on hover. */
 		href?: string;
@@ -37,10 +44,12 @@
 		/** Fires when the pointer or keyboard reaches the button, before it is pressed. Use it to start
 		 *  loading whatever pressing it will reveal, so the panel is already there on the click. */
 		onhover?: () => void;
+		/** Anything else lands on the element, so a menu or tooltip trigger can hand its props through. */
+		[key: string]: unknown;
 	} = $props();
 
 	const classes = $derived(
-		`button button--${variant} button--${variation} button--${size} ${className}`
+		`button button--${variant} button--${variation} button--${size} ${iconOnly ? 'button--icon-only' : ''} ${className}`
 	);
 	const inactive = $derived(disabled || loading);
 </script>
@@ -49,6 +58,7 @@
 	<!-- The caller resolves the path; this component only renders whatever it is handed. -->
 	<!-- eslint-disable svelte/no-navigation-without-resolve -->
 	<a
+		{...rest}
 		href={inactive ? undefined : href}
 		{target}
 		rel={target === '_blank' ? 'noopener noreferrer' : undefined}
@@ -57,6 +67,8 @@
 		class:button--inactive={inactive}
 		aria-disabled={inactive ? 'true' : undefined}
 		aria-busy={loading}
+		aria-label={label}
+		title={label}
 		{onclick}
 		onmouseenter={onhover}
 		onfocus={onhover}
@@ -67,11 +79,14 @@
 	<!-- eslint-enable svelte/no-navigation-without-resolve -->
 {:else}
 	<button
+		{...rest}
 		{type}
 		class={classes}
 		class:button--full-width={fullWidth}
 		disabled={inactive}
 		aria-busy={loading}
+		aria-label={label}
+		title={label}
 		{onclick}
 		onmouseenter={onhover}
 		onfocus={onhover}
@@ -126,6 +141,21 @@
 		}
 		&--full-width {
 			width: 100%;
+		}
+		// Icon only: square at the size's height, no side padding.
+		&--icon-only {
+			width: 36px;
+			padding: 0;
+		}
+		&--icon-only.button--secondary,
+		&--icon-only.button--tertiary {
+			color: var(--color-icon);
+		}
+		&--icon-only.button--small {
+			width: 32px;
+		}
+		&--icon-only.button--large {
+			width: 44px;
 		}
 
 		// Main: green (red for the final step of a delete), slightly raised.

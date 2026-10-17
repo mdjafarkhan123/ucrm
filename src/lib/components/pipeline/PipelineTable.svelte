@@ -268,11 +268,11 @@
 					items={ownerItems}
 					align="start"
 					disabled={working}
-					triggerClass="pipeline-table__bulk-trigger"
+					triggerText="Change owner"
 					triggerLabel={`Change the owner of ${cardCount(selectedIds.size)}`}
-				>
-					{#snippet trigger()}Change owner{/snippet}
-				</DropdownMenu>
+					triggerChevron={false}
+					triggerSize="small"
+				/>
 				<Button
 					variant="secondary"
 					size="small"
@@ -284,11 +284,11 @@
 						groups={stageGroups}
 						align="start"
 						disabled={working}
-						triggerClass="pipeline-table__bulk-trigger"
+						triggerText="Move to stage"
 						triggerLabel={`Move ${cardCount(selectedIds.size)} to a follow-up stage`}
-					>
-						{#snippet trigger()}Move to stage{/snippet}
-					</DropdownMenu>
+						triggerChevron={false}
+						triggerSize="small"
+					/>
 				{/if}
 			{/if}
 			<Button
@@ -426,32 +426,6 @@
 	}
 	.pipeline-table__bulk :global(.pipeline-table__bulk-clear) {
 		margin-left: auto;
-	}
-	.pipeline-table__bulk :global(.pipeline-table__bulk-trigger) {
-		display: inline-flex;
-		align-items: center;
-		min-height: 36px;
-		padding: 0 var(--space-base);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		color: var(--color-heading);
-		background: var(--color-surface);
-		font: inherit;
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-		cursor: pointer;
-
-		&:hover {
-			background: var(--color-surface--hover);
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-		&:disabled {
-			cursor: not-allowed;
-			opacity: 0.6;
-		}
 	}
 	.pipeline-table__open {
 		display: block;

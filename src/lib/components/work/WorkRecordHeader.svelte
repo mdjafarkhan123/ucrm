@@ -7,7 +7,6 @@
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import type { StatusTone } from './types';
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
-	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 
 	// The card at the top of every work record — request, quote, job, invoice. They all draw the same
 	// thing: what kind of record this is and where it stands, the one action that moves it forward, the
@@ -132,17 +131,16 @@
 
 		<div class="work-header__actions">
 			{#if onHistory}
-				<button
-					type="button"
-					class="work-header__icon-button"
-					aria-label="{recordType} history"
-					title="{recordType} history"
+				<Button
+					variant="secondary"
+					size={look === 'app' ? 'base' : 'small'}
+					iconOnly
+					label="{recordType} history"
 					onclick={onHistory}
-					onmouseenter={onHistoryHover}
-					onfocus={onHistoryHover}
+					onhover={onHistoryHover}
 				>
-					<span aria-hidden="true">{@html historyIcon}</span>
-				</button>
+					{@html historyIcon}
+				</Button>
 			{/if}
 			{#if primaryAction}
 				<Button
@@ -166,16 +164,9 @@
 				{#if look === 'app'}
 					<DropdownMenu
 						items={menuItems}
+						triggerText="More"
 						triggerLabel="More {recordType.toLowerCase()} actions"
-						triggerClass="work-header__more"
-					>
-						{#snippet trigger()}
-							More
-							<span class="work-header__more-chevron" aria-hidden="true"
-								>{@html chevronDownIcon}</span
-							>
-						{/snippet}
-					</DropdownMenu>
+					/>
 				{:else}
 					<DropdownMenu items={menuItems} triggerLabel="More {recordType.toLowerCase()} actions" />
 				{/if}
@@ -258,52 +249,12 @@
 			margin-left: auto;
 		}
 
-		// The history control is a lone icon on this card, so it keeps a border to read as a button.
 		&__action-icon {
 			display: inline-flex;
 
 			:global(svg) {
 				width: 18px;
 				height: 18px;
-			}
-		}
-
-		&__icon-button {
-			display: inline-flex;
-			box-sizing: border-box;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-			width: var(--space-larger);
-			height: var(--space-larger);
-			padding: 0;
-			border: var(--border-base) solid var(--color-border--interactive);
-			border-radius: var(--radius-base);
-			color: var(--color-interactive--subtle);
-			background: var(--color-surface);
-			cursor: pointer;
-			transition: all var(--timing-base) ease-out;
-
-			:global(svg) {
-				display: block;
-				width: 20px;
-				height: 20px;
-			}
-
-			&:hover,
-			&:focus-visible {
-				border-color: var(--color-interactive--subtle--hover);
-				color: var(--color-interactive--subtle--hover);
-				background: var(--color-surface--hover);
-			}
-
-			&:active {
-				background: var(--color-surface--active);
-			}
-
-			&:focus-visible {
-				outline: transparent;
-				box-shadow: var(--shadow-focus);
 			}
 		}
 
@@ -390,12 +341,6 @@
 			width: 18px;
 			height: 18px;
 		}
-		.work-header__icon-button {
-			width: 40px;
-			height: 40px;
-			border-color: var(--color-border);
-			color: var(--color-text--secondary);
-		}
 	}
 
 	// The App look's own parts. Only a header given `look="app"` carries them.
@@ -426,39 +371,6 @@
 		display: block;
 		width: 18px;
 		height: 18px;
-	}
-	:global(.work-header__more) {
-		display: inline-flex;
-		box-sizing: border-box;
-		height: 40px;
-		align-items: center;
-		gap: 6px;
-		padding: 0 14px;
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		color: var(--color-heading);
-		background: var(--color-surface);
-		font: inherit;
-		font-weight: 600;
-		cursor: pointer;
-		transition: all var(--timing-base) ease-out;
-
-		&:hover {
-			background: var(--color-surface--hover);
-		}
-		&:focus-visible {
-			outline: transparent;
-			box-shadow: var(--shadow-focus);
-		}
-	}
-	:global(.work-header__more[data-state='open']) {
-		background: var(--color-surface--hover);
-	}
-	.work-header__more-chevron :global(svg) {
-		display: block;
-		width: 16px;
-		height: 16px;
-		color: var(--color-text--secondary);
 	}
 	// A narrow column (a laptop, or a rail beside a long page) wraps the top row rather than squeezing it:
 	// the identifiers drop under the status and the actions keep their full size.

@@ -31,19 +31,10 @@
 				</div>
 			</SectionBlock>
 
-			<SectionBlock title="Variations" level={3}>
-				<div class="preview-row">
-					<span class="preview-row__label">Subtle, the default</span>
-					<PencilButton label="Edit quietly" onclick={() => clicks++} />
-					<span class="preview-row__label">Work, when editing is the main action</span>
-					<PencilButton label="Edit loudly" variation="work" onclick={() => clicks++} />
-				</div>
-			</SectionBlock>
-
-			<SectionBlock title="Bordered and disabled" level={3}>
+			<SectionBlock title="Disabled" level={3}>
 				<div class="preview-row">
 					<span class="preview-row__label">Secondary keeps its border</span>
-					<PencilButton label="Edit on a busy surface" variant="secondary" />
+					<PencilButton label="Edit on a busy surface" />
 					<span class="preview-row__label">Disabled</span>
 					<PencilButton label="Cannot edit this" disabled />
 				</div>

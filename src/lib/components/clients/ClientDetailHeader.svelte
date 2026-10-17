@@ -19,7 +19,6 @@
 	import externalIcon from '@tabler/icons/outline/external-link.svg?raw';
 	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
 	import mergeIcon from '@tabler/icons/outline/arrow-merge.svg?raw';
-	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 
 	// The card at the top of a client's page, in the App look: where the client stands and the page's
 	// actions on the first row, the name with the ways to reach them under it, a strip of their contact
@@ -163,28 +162,17 @@
 				>
 			{/if}
 			{#if onHistory}
-				<button
-					type="button"
-					class="client-header__icon-button"
-					aria-label="Client history"
-					title="Client history"
+				<Button
+					variant="secondary"
+					iconOnly
+					label="Client history"
 					onclick={onHistory}
-					onmouseenter={onHistoryHover}
-					onfocus={onHistoryHover}
+					onhover={onHistoryHover}
 				>
-					<span aria-hidden="true">{@html historyIcon}</span>
-				</button>
+					{@html historyIcon}
+				</Button>
 			{/if}
-			<DropdownMenu
-				items={menuItems}
-				triggerLabel="More client actions"
-				triggerClass="client-header__more"
-			>
-				{#snippet trigger()}
-					More
-					<span class="client-header__chevron" aria-hidden="true">{@html chevronDownIcon}</span>
-				{/snippet}
-			</DropdownMenu>
+			<DropdownMenu items={menuItems} triggerText="More" triggerLabel="More client actions" />
 		</div>
 	</div>
 
@@ -299,46 +287,6 @@
 			justify-content: flex-end;
 		}
 
-		// Same square icon button the work records' header uses, so History reads identically wherever it is.
-		&__icon-button {
-			display: inline-flex;
-			box-sizing: border-box;
-			width: 40px;
-			height: 40px;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-			padding: 0;
-			border: var(--border-base) solid var(--color-border);
-			border-radius: var(--radius-base);
-			background: var(--color-surface);
-			color: var(--color-text--secondary);
-			cursor: pointer;
-			transition: all var(--timing-base) ease-out;
-
-			:global(svg) {
-				display: block;
-				width: 18px;
-				height: 18px;
-			}
-
-			&:hover,
-			&:focus-visible {
-				border-color: var(--color-interactive--subtle--hover);
-				background: var(--color-surface--hover);
-				color: var(--color-interactive--subtle--hover);
-			}
-
-			&:active {
-				background: var(--color-surface--active);
-			}
-
-			&:focus-visible {
-				outline: transparent;
-				box-shadow: var(--shadow-focus);
-			}
-		}
-
 		&__identity {
 			display: flex;
 			align-items: center;
@@ -401,40 +349,6 @@
 	}
 
 	:global(.client-header__button-icon) {
-		display: inline-flex;
-		color: var(--color-text--secondary);
-
-		:global(svg) {
-			width: 16px;
-			height: 16px;
-		}
-	}
-	:global(.client-header__more) {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		height: 40px;
-		padding: 0 14px;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		color: var(--color-heading);
-		background: var(--color-surface);
-		font-size: var(--typography--fontSize-base);
-		font-weight: 600;
-		cursor: pointer;
-		transition: all var(--timing-base) ease-out;
-
-		&:hover,
-		&:focus-visible {
-			border-color: var(--color-interactive--subtle--hover);
-			background: var(--color-surface--hover);
-		}
-		&:focus-visible {
-			outline: transparent;
-			box-shadow: var(--shadow-focus);
-		}
-	}
-	:global(.client-header__chevron) {
 		display: inline-flex;
 		color: var(--color-text--secondary);
 

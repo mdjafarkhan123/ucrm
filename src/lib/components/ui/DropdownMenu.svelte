@@ -2,6 +2,8 @@
 	import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
 	import type { Snippet } from 'svelte';
 	import dotsIcon from '@tabler/icons/outline/dots-vertical.svg?raw';
+	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
+	import Button from './Button.svelte';
 
 	type MenuItem = {
 		label: string;
@@ -25,9 +27,14 @@
 		groups = [],
 		footer = [],
 		wide = false,
-		triggerLabel = 'Open menu',
+		triggerLabel,
 		triggerIcon = dotsIcon,
-		triggerClass = 'dropdown-menu__trigger',
+		triggerText,
+		triggerLeadingIcon,
+		triggerChevron = true,
+		triggerVariant = 'secondary',
+		triggerSize,
+		triggerClass,
 		trigger,
 		align = 'end',
 		disabled = false,
@@ -40,16 +47,28 @@
 		footer?: MenuItem[];
 		// Room for longer labels than a short action list needs.
 		wide?: boolean;
+		// Names an icon-only trigger. A text trigger is named by its text unless this says more.
 		triggerLabel?: string;
+		// The icon of the default icon-only trigger (three dots).
 		triggerIcon?: string;
-		// Overrides the default 32px icon button — the trigger content and its class travel together, so a
-		// custom trigger (an avatar, say) never inherits the icon button's box.
+		// Draws the trigger as a text button instead of an icon button: "More" with a chevron, or "Add" with
+		// a leading icon (`triggerLeadingIcon`). `triggerChevron={false}` drops the chevron.
+		triggerText?: string;
+		triggerLeadingIcon?: string;
+		triggerChevron?: boolean;
+		triggerVariant?: 'primary' | 'secondary' | 'quiet';
+		// Defaults: small for the icon-only trigger (it sits inside rows), base for a text trigger.
+		triggerSize?: 'small' | 'base' | 'large';
+		// A trigger that is not a button (an avatar or a picker field): the class and the `trigger` snippet
+		// travel together, so it never inherits the button's box. Leave both out for the shared Button.
 		triggerClass?: string;
 		trigger?: Snippet;
 		align?: 'start' | 'center' | 'end';
 		disabled?: boolean;
 		open?: boolean;
 	} = $props();
+
+	const customTrigger = $derived(Boolean(trigger || triggerClass));
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -75,13 +94,40 @@
 {/snippet}
 
 <DropdownMenuPrimitive.Root bind:open>
-	<DropdownMenuPrimitive.Trigger class={triggerClass} aria-label={triggerLabel} {disabled}>
-		{#if trigger}
-			{@render trigger()}
-		{:else}
-			{@html triggerIcon}
-		{/if}
-	</DropdownMenuPrimitive.Trigger>
+	{#if customTrigger}
+		<DropdownMenuPrimitive.Trigger
+			class={triggerClass ?? 'dropdown-menu__trigger'}
+			aria-label={triggerLabel ?? 'Open menu'}
+			{disabled}
+		>
+			{#if trigger}
+				{@render trigger()}
+			{:else}
+				{@html triggerIcon}
+			{/if}
+		</DropdownMenuPrimitive.Trigger>
+	{:else}
+		<DropdownMenuPrimitive.Trigger {disabled}>
+			{#snippet child({ props })}
+				<Button
+					{...props}
+					variant={triggerVariant}
+					size={triggerSize ?? (triggerText ? 'base' : 'small')}
+					iconOnly={!triggerText}
+					label={triggerLabel ?? (triggerText ? undefined : 'Open menu')}
+					{disabled}
+				>
+					{#if triggerText}
+						{#if triggerLeadingIcon}{@html triggerLeadingIcon}{/if}
+						{triggerText}
+						{#if triggerChevron}{@html chevronDownIcon}{/if}
+					{:else}
+						{@html triggerIcon}
+					{/if}
+				</Button>
+			{/snippet}
+		</DropdownMenuPrimitive.Trigger>
+	{/if}
 	<DropdownMenuPrimitive.Portal>
 		<DropdownMenuPrimitive.Content
 			class={`dropdown-menu__content ${wide ? 'dropdown-menu__content--wide' : ''}`}

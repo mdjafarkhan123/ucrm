@@ -116,21 +116,17 @@
 		</ol>
 	{/if}
 
-	<DropdownMenu
-		items={addItems}
-		triggerLabel="Add a question"
-		triggerClass="section-editor__add-trigger"
-		align="start"
-		disabled={!canAddQuestion}
-	>
-		{#snippet trigger()}
-			<span class="section-editor__button-icon" aria-hidden="true">
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-				{@html plusIcon}
-			</span>
-			Add a question
-		{/snippet}
-	</DropdownMenu>
+	<div class="section-editor__add">
+		<DropdownMenu
+			items={addItems}
+			triggerLabel="Add a question"
+			triggerText="Add a question"
+			triggerLeadingIcon={plusIcon}
+			triggerChevron={false}
+			align="start"
+			disabled={!canAddQuestion}
+		/>
+	</div>
 	{#if !canAddQuestion}
 		<p class="section-editor__cap">You’ve reached the 20-question limit for this form.</p>
 	{/if}
@@ -231,34 +227,7 @@
 		}
 	}
 
-	// The "Add a question" trigger lives inside DropdownMenu's own template, so it must be reached globally.
-	:global(.section-editor__add-trigger) {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-smaller);
-		align-self: flex-start;
-		height: 36px;
-		padding: 0 var(--space-base);
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		color: var(--color-interactive);
-		background: var(--color-surface);
-		font-size: var(--typography--fontSize-base);
-		font-weight: 600;
-		cursor: pointer;
-		transition: all var(--timing-quick) ease-out;
-	}
-	:global(.section-editor__add-trigger:hover:not(:disabled)),
-	:global(.section-editor__add-trigger:focus-visible:not(:disabled)) {
-		background: var(--color-interactive--background--subtle--hover);
-	}
-	:global(.section-editor__add-trigger:focus-visible) {
-		outline: none;
-		box-shadow: var(--shadow-focus);
-	}
-	:global(.section-editor__add-trigger:disabled) {
-		color: var(--color-disabled);
-		border-color: var(--color-border);
-		cursor: not-allowed;
+	.section-editor__add {
+		display: flex;
 	}
 </style>
