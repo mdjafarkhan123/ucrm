@@ -8,4 +8,4 @@
 
 **Checked:** Live screenshots at 1440 (light, dark, collapsed) and 390 (phone menu), owner login; computed icon colours match the map. Type check and slow suites deferred to campaign end (Jafar, 2026-10-17).
 
-**Next:** Jafar saves `concept.pen` (Ctrl+S); commit it on this branch; merge into main.
+**Next:** Merge into main.

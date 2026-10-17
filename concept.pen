@@ -7995,6 +7995,2637 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "e6igv",
+      "x": 3080,
+      "y": 0,
+      "name": "Live sidebar · coloured icons",
+      "clip": true,
+      "fill": "$color-surface-background",
+      "layout": "vertical",
+      "gap": 32,
+      "padding": 56,
+      "children": [
+        {
+          "type": "frame",
+          "id": "m8vaf",
+          "name": "Intro",
+          "layout": "vertical",
+          "gap": 8,
+          "children": [
+            {
+              "type": "text",
+              "id": "RSCeY",
+              "name": "Title",
+              "fill": "$color-heading",
+              "content": "Live sidebar · coloured icons",
+              "fontFamily": "$font-family",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "a8oGYw",
+              "name": "Lead",
+              "fill": "$color-text-secondary",
+              "textGrowth": "fixed-width",
+              "width": 820,
+              "content": "Same sidebar as the live app. Only the icon colours change: each icon takes the colour of what it opens (colour map in the Foundation). The current page stays brand green with a white icon.",
+              "lineHeight": 1.5,
+              "fontFamily": "$font-family",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "f7DJ29",
+          "name": "Row",
+          "gap": 40,
+          "children": [
+            {
+              "type": "frame",
+              "id": "leCSy",
+              "name": "Today",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "r8wPp",
+                  "name": "Caption",
+                  "fill": "$color-text-secondary",
+                  "content": "Today",
+                  "fontFamily": "$font-family",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "wI2FF",
+                  "name": "Page",
+                  "fill": "$color-surface-background",
+                  "cornerRadius": 16,
+                  "padding": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ZK75i",
+                      "name": "Sidebar",
+                      "width": 248,
+                      "height": 860,
+                      "fill": "$color-surface",
+                      "cornerRadius": 16,
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 18,
+                      "padding": [
+                        18,
+                        14,
+                        16,
+                        14
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "qymao",
+                          "name": "Brand row",
+                          "width": "fill_container",
+                          "fill": "$color-surface-background-subtle",
+                          "cornerRadius": 16,
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "gap": 8,
+                          "padding": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "yR1T7",
+                              "name": "Mark",
+                              "width": 40,
+                              "height": 40,
+                              "fill": "$color-interactive",
+                              "cornerRadius": 12,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "F9zeyY",
+                                  "name": "Leaf",
+                                  "width": 20,
+                                  "height": 20,
+                                  "icon": "leaf",
+                                  "library": "lucide",
+                                  "fill": "$color-surface"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "df6jf",
+                              "name": "Brand text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "OQ8xW",
+                                  "name": "Brand",
+                                  "fill": "$color-heading",
+                                  "content": "Reed Ltd",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 15,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "aRQIB",
+                                  "name": "Eyebrow",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Workspace",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "Gujs1",
+                              "name": "Collapse",
+                              "width": 18,
+                              "height": 18,
+                              "icon": "panel-left-close",
+                              "library": "lucide",
+                              "fill": "$color-icon"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "w6jfkJ",
+                          "name": "Nav",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 18,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "b9eWi9",
+                              "name": "Group Overview",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "q8Xaj",
+                                  "name": "Group label",
+                                  "padding": [
+                                    0,
+                                    10,
+                                    6,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "PcUjg",
+                                      "name": "Label text",
+                                      "fill": "$color-text-secondary",
+                                      "content": "OVERVIEW",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 0.8
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "c9JdXl",
+                                  "name": "Item · Home",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "tvRCJ",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "house",
+                                      "library": "lucide",
+                                      "fill": "$color-icon"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "FybqH",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Home",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "mdalm",
+                                  "name": "Item · Schedule",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "X3WDv",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "calendar",
+                                      "library": "lucide",
+                                      "fill": "$color-icon"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "UEgwW",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Schedule",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Sd3vg",
+                                  "name": "Item · Timesheets",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "BQ0VK",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "clock-4",
+                                      "library": "lucide",
+                                      "fill": "$color-icon"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "z0deD",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Timesheets",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "XgulD",
+                              "name": "Group Customers",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "znX9d",
+                                  "name": "Group label",
+                                  "padding": [
+                                    0,
+                                    10,
+                                    6,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "T2za8c",
+                                      "name": "Label text",
+                                      "fill": "$color-text-secondary",
+                                      "content": "CUSTOMERS",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 0.8
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "P4O4U",
+                                  "name": "Item · Inbox",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "t37kr",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "inbox",
+                                      "library": "lucide",
+                                      "fill": "$color-icon"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "q70kz",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Inbox",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "IyOZs",
+                                      "name": "Count",
+                                      "height": 20,
+                                      "fill": "$color-interactive",
+                                      "cornerRadius": 10,
+                                      "padding": [
+                                        0,
+                                        7
+                                      ],
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "v2OUT",
+                                          "name": "Count text",
+                                          "fill": "$color-surface",
+                                          "content": "5",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 11,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "k8WfsH",
+                                  "name": "Item · Clients",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "v8Tvrm",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "users",
+                                      "library": "lucide",
+                                      "fill": "$color-icon"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "qf7Ej",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Clients",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "yAx0F",
+                                  "name": "Item · Requests",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "Q1EAt",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "clipboard-list",
+                                      "library": "lucide",
+                                      "fill": "$color-icon"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "nvH87",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Requests",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "BtV3I",
+                                  "name": "Item · Pipeline",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "F2QQKy",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "square-kanban",
+                                      "library": "lucide",
+                                      "fill": "$color-icon"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "Y9rJth",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Pipeline",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "lLPTQ",
+                              "name": "Group Work & Money",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "b78ImG",
+                                  "name": "Group label",
+                                  "padding": [
+                                    0,
+                                    10,
+                                    6,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "W9gIC",
+                                      "name": "Label text",
+                                      "fill": "$color-text-secondary",
+                                      "content": "WORK & MONEY",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 0.8
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "VT0Nw",
+                                  "name": "Item · Jobs",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "fill": "$color-interactive",
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "fa9R6",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "wrench",
+                                      "library": "lucide",
+                                      "fill": "$color-surface"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "AHjBg",
+                                      "name": "Label",
+                                      "fill": "$color-surface",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Jobs",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "XlHzy",
+                                  "name": "Item · Quotes",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "XIn0T",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "file-text",
+                                      "library": "lucide",
+                                      "fill": "$color-icon"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "k1jGN",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Quotes",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Y995N7",
+                                  "name": "Item · Invoices",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "yRH4w",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "receipt",
+                                      "library": "lucide",
+                                      "fill": "$color-icon"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "F6mh9",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Invoices",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "CeIJE",
+                                  "name": "Item · Files",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "t0ZeMx",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "folder-open",
+                                      "library": "lucide",
+                                      "fill": "$color-icon"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "Sn026",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Files",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Lje10",
+                              "name": "Group Growth",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "EjLmC",
+                                  "name": "Group label",
+                                  "padding": [
+                                    0,
+                                    10,
+                                    6,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "O3kPEZ",
+                                      "name": "Label text",
+                                      "fill": "$color-text-secondary",
+                                      "content": "GROWTH",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 0.8
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "T2imc",
+                                  "name": "Item · Marketing",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "qSsIm",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "megaphone",
+                                      "library": "lucide",
+                                      "fill": "$color-icon"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "F7yXu",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Marketing",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "molrX",
+                                  "name": "Item · Reviews",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "EjWOL",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "star",
+                                      "library": "lucide",
+                                      "fill": "$color-icon"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "l0HGhp",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Reviews",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "BWlwA",
+                          "name": "Spacer",
+                          "width": "fill_container",
+                          "height": "fill_container"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "f6zPXZ",
+                          "name": "Pinned",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "id": "HTF7e",
+                              "name": "Rule",
+                              "fill": "$color-border",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "type": "frame",
+                              "id": "l6IfH",
+                              "name": "Item · Settings",
+                              "width": "fill_container",
+                              "height": 38,
+                              "cornerRadius": 12,
+                              "gap": 10,
+                              "padding": [
+                                0,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "JViia",
+                                  "name": "Icon",
+                                  "width": 18,
+                                  "height": 18,
+                                  "icon": "settings",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "nZkAB",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Settings",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 14,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Sj9IY",
+              "name": "Coloured icons · light",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "xZO6w",
+                  "name": "Caption",
+                  "fill": "$color-text-secondary",
+                  "content": "Coloured icons · light",
+                  "fontFamily": "$font-family",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "ONpOF",
+                  "name": "Page",
+                  "fill": "$color-surface-background",
+                  "cornerRadius": 16,
+                  "padding": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "XgJ18",
+                      "name": "Sidebar",
+                      "width": 248,
+                      "height": 860,
+                      "fill": "$color-surface",
+                      "cornerRadius": 16,
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 18,
+                      "padding": [
+                        18,
+                        14,
+                        16,
+                        14
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "C0I07",
+                          "name": "Brand row",
+                          "width": "fill_container",
+                          "fill": "$color-surface-background-subtle",
+                          "cornerRadius": 16,
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "gap": 8,
+                          "padding": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "P6B9c7",
+                              "name": "Mark",
+                              "width": 40,
+                              "height": 40,
+                              "fill": "$color-interactive",
+                              "cornerRadius": 12,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "ZVgXz",
+                                  "name": "Leaf",
+                                  "width": 20,
+                                  "height": 20,
+                                  "icon": "leaf",
+                                  "library": "lucide",
+                                  "fill": "$color-surface"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "uh5fB",
+                              "name": "Brand text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Y6WRS",
+                                  "name": "Brand",
+                                  "fill": "$color-heading",
+                                  "content": "Reed Ltd",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 15,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "x4JAM",
+                                  "name": "Eyebrow",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Workspace",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "KAydK",
+                              "name": "Collapse",
+                              "width": 18,
+                              "height": 18,
+                              "icon": "panel-left-close",
+                              "library": "lucide",
+                              "fill": "$color-icon"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Rs8Jj",
+                          "name": "Nav",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 18,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "xUKTV",
+                              "name": "Group Overview",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Ux8t0",
+                                  "name": "Group label",
+                                  "padding": [
+                                    0,
+                                    10,
+                                    6,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Gk3aY",
+                                      "name": "Label text",
+                                      "fill": "$color-text-secondary",
+                                      "content": "OVERVIEW",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 0.8
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "R8Mzl",
+                                  "name": "Item · Home",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "sOhe6",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "house",
+                                      "library": "lucide",
+                                      "fill": "$color-inactive"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "JlvaL",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Home",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "T8pQY",
+                                  "name": "Item · Schedule",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "rX7d9",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "calendar",
+                                      "library": "lucide",
+                                      "fill": "$color-time"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "zSXxg",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Schedule",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ABtJh",
+                                  "name": "Item · Timesheets",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "O6m7BT",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "clock-4",
+                                      "library": "lucide",
+                                      "fill": "$color-time"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "Z5SGYQ",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Timesheets",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "N9Bs0",
+                              "name": "Group Customers",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "JTm4L",
+                                  "name": "Group label",
+                                  "padding": [
+                                    0,
+                                    10,
+                                    6,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "WdGCI",
+                                      "name": "Label text",
+                                      "fill": "$color-text-secondary",
+                                      "content": "CUSTOMERS",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 0.8
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "MrTC8",
+                                  "name": "Item · Inbox",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "SHYIN",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "inbox",
+                                      "library": "lucide",
+                                      "fill": "$color-conversation"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "pi8XU",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Inbox",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "L1xoBN",
+                                      "name": "Count",
+                                      "height": 20,
+                                      "fill": "$color-interactive",
+                                      "cornerRadius": 10,
+                                      "padding": [
+                                        0,
+                                        7
+                                      ],
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "v3Xd6",
+                                          "name": "Count text",
+                                          "fill": "$color-surface",
+                                          "content": "5",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 11,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "DeuwU",
+                                  "name": "Item · Clients",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "SkyVw",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "users",
+                                      "library": "lucide",
+                                      "fill": "$color-client"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "rOz9i",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Clients",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "tbWwl",
+                                  "name": "Item · Requests",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "nuQv8",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "clipboard-list",
+                                      "library": "lucide",
+                                      "fill": "$color-request"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "jUTaE",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Requests",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "D6EHGs",
+                                  "name": "Item · Pipeline",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "b3t1TO",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "square-kanban",
+                                      "library": "lucide",
+                                      "fill": "$color-growth"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "vEzGN",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Pipeline",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "rj7gf",
+                              "name": "Group Work & Money",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "uXm3J",
+                                  "name": "Group label",
+                                  "padding": [
+                                    0,
+                                    10,
+                                    6,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "l2lzds",
+                                      "name": "Label text",
+                                      "fill": "$color-text-secondary",
+                                      "content": "WORK & MONEY",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 0.8
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "WtHYO",
+                                  "name": "Item · Jobs",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "fill": "$color-interactive",
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "gT45T",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "wrench",
+                                      "library": "lucide",
+                                      "fill": "$color-surface"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "YvXLj",
+                                      "name": "Label",
+                                      "fill": "$color-surface",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Jobs",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ODJhb",
+                                  "name": "Item · Quotes",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "KSWCE",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "file-text",
+                                      "library": "lucide",
+                                      "fill": "$color-quote"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "UtQZu",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Quotes",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "DSLfF",
+                                  "name": "Item · Invoices",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "jEjA7",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "receipt",
+                                      "library": "lucide",
+                                      "fill": "$color-invoice"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "lBIBA",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Invoices",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "o4EBY",
+                                  "name": "Item · Files",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "AyfG5",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "folder-open",
+                                      "library": "lucide",
+                                      "fill": "$color-inactive"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "RxND3",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Files",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "L3W3d",
+                              "name": "Group Growth",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "HtbDh",
+                                  "name": "Group label",
+                                  "padding": [
+                                    0,
+                                    10,
+                                    6,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "dCogX",
+                                      "name": "Label text",
+                                      "fill": "$color-text-secondary",
+                                      "content": "GROWTH",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 0.8
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "EgALG",
+                                  "name": "Item · Marketing",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "k5CyYb",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "megaphone",
+                                      "library": "lucide",
+                                      "fill": "$color-growth"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "A7viBF",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Marketing",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "HfrT0",
+                                  "name": "Item · Reviews",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "C1OX7d",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "star",
+                                      "library": "lucide",
+                                      "fill": "$color-review"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "R5O1Z3",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Reviews",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "s8i5O",
+                          "name": "Spacer",
+                          "width": "fill_container",
+                          "height": "fill_container"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "KpOoN",
+                          "name": "Pinned",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "id": "EsnyZ",
+                              "name": "Rule",
+                              "fill": "$color-border",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "type": "frame",
+                              "id": "tF3kY",
+                              "name": "Item · Settings",
+                              "width": "fill_container",
+                              "height": 38,
+                              "cornerRadius": 12,
+                              "gap": 10,
+                              "padding": [
+                                0,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "G41Zjt",
+                                  "name": "Icon",
+                                  "width": 18,
+                                  "height": 18,
+                                  "icon": "settings",
+                                  "library": "lucide",
+                                  "fill": "$color-inactive"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "FRKM4",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Settings",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 14,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "p0Sfjn",
+              "name": "Coloured icons · dark",
+              "theme": {
+                "mode": "dark"
+              },
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "MQx8C",
+                  "name": "Caption",
+                  "fill": "$color-text-secondary",
+                  "content": "Coloured icons · dark",
+                  "fontFamily": "$font-family",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "pX9pc",
+                  "name": "Page",
+                  "fill": "$color-surface-background",
+                  "cornerRadius": 16,
+                  "padding": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "FBZ2H",
+                      "name": "Sidebar",
+                      "width": 248,
+                      "height": 860,
+                      "fill": "$color-surface",
+                      "cornerRadius": 16,
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 18,
+                      "padding": [
+                        18,
+                        14,
+                        16,
+                        14
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Uvoxd",
+                          "name": "Brand row",
+                          "width": "fill_container",
+                          "fill": "$color-surface-background-subtle",
+                          "cornerRadius": 16,
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "gap": 8,
+                          "padding": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "meGtb",
+                              "name": "Mark",
+                              "width": 40,
+                              "height": 40,
+                              "fill": "$color-interactive",
+                              "cornerRadius": 12,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "j9yfun",
+                                  "name": "Leaf",
+                                  "width": 20,
+                                  "height": 20,
+                                  "icon": "leaf",
+                                  "library": "lucide",
+                                  "fill": "$color-surface"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "NvdW8",
+                              "name": "Brand text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "g2yHZ",
+                                  "name": "Brand",
+                                  "fill": "$color-heading",
+                                  "content": "Reed Ltd",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 15,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "o0dVBg",
+                                  "name": "Eyebrow",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Workspace",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "XTq06",
+                              "name": "Collapse",
+                              "width": 18,
+                              "height": 18,
+                              "icon": "panel-left-close",
+                              "library": "lucide",
+                              "fill": "$color-icon"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "LidVb",
+                          "name": "Nav",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 18,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "b7EPmL",
+                              "name": "Group Overview",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Xn5Q8",
+                                  "name": "Group label",
+                                  "padding": [
+                                    0,
+                                    10,
+                                    6,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "SPPLN",
+                                      "name": "Label text",
+                                      "fill": "$color-text-secondary",
+                                      "content": "OVERVIEW",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 0.8
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "m4us4Y",
+                                  "name": "Item · Home",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "O8KPO0",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "house",
+                                      "library": "lucide",
+                                      "fill": "$color-inactive"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "GDw2M",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Home",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "H5YZ7",
+                                  "name": "Item · Schedule",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "A5xjg",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "calendar",
+                                      "library": "lucide",
+                                      "fill": "$color-time"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "ICLIM",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Schedule",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "o8QBfV",
+                                  "name": "Item · Timesheets",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "sN6pk",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "clock-4",
+                                      "library": "lucide",
+                                      "fill": "$color-time"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "U3ufz",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Timesheets",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "qSc9X",
+                              "name": "Group Customers",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "e0nwPZ",
+                                  "name": "Group label",
+                                  "padding": [
+                                    0,
+                                    10,
+                                    6,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "N3jgJo",
+                                      "name": "Label text",
+                                      "fill": "$color-text-secondary",
+                                      "content": "CUSTOMERS",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 0.8
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "m0VvOe",
+                                  "name": "Item · Inbox",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "O8KRfN",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "inbox",
+                                      "library": "lucide",
+                                      "fill": "$color-conversation"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "DOvMx",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Inbox",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "lqBCQ",
+                                      "name": "Count",
+                                      "height": 20,
+                                      "fill": "$color-interactive",
+                                      "cornerRadius": 10,
+                                      "padding": [
+                                        0,
+                                        7
+                                      ],
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "GZu9O",
+                                          "name": "Count text",
+                                          "fill": "$color-surface",
+                                          "content": "5",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 11,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "zT9D2",
+                                  "name": "Item · Clients",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "G8pCCl",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "users",
+                                      "library": "lucide",
+                                      "fill": "$color-client"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "DVklo",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Clients",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "E3Vdc4",
+                                  "name": "Item · Requests",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "NzXXj",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "clipboard-list",
+                                      "library": "lucide",
+                                      "fill": "$color-request"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "cQYcx",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Requests",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "fnlln",
+                                  "name": "Item · Pipeline",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "R7kFtg",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "square-kanban",
+                                      "library": "lucide",
+                                      "fill": "$color-growth"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "w1vsZ",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Pipeline",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "pTAnL",
+                              "name": "Group Work & Money",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "ngGvH",
+                                  "name": "Group label",
+                                  "padding": [
+                                    0,
+                                    10,
+                                    6,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "j5Yps",
+                                      "name": "Label text",
+                                      "fill": "$color-text-secondary",
+                                      "content": "WORK & MONEY",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 0.8
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Pyf9H",
+                                  "name": "Item · Jobs",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "fill": "$color-interactive",
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "Z2xbr",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "wrench",
+                                      "library": "lucide",
+                                      "fill": "$color-surface"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "V6V3d",
+                                      "name": "Label",
+                                      "fill": "$color-surface",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Jobs",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "GTmXW",
+                                  "name": "Item · Quotes",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "xjf7m",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "file-text",
+                                      "library": "lucide",
+                                      "fill": "$color-quote"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "H0ImcA",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Quotes",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "VHRmS",
+                                  "name": "Item · Invoices",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "P8TjZ4",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "receipt",
+                                      "library": "lucide",
+                                      "fill": "$color-invoice"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "KFbBI",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Invoices",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "a500y",
+                                  "name": "Item · Files",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "IzcBQ",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "folder-open",
+                                      "library": "lucide",
+                                      "fill": "$color-inactive"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "qsLrI",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Files",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Ih08x",
+                              "name": "Group Growth",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "LS53I",
+                                  "name": "Group label",
+                                  "padding": [
+                                    0,
+                                    10,
+                                    6,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ZV2AN",
+                                      "name": "Label text",
+                                      "fill": "$color-text-secondary",
+                                      "content": "GROWTH",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 0.8
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "BU2Bd",
+                                  "name": "Item · Marketing",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "P6wVJ",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "megaphone",
+                                      "library": "lucide",
+                                      "fill": "$color-growth"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "o6x7ih",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Marketing",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ucNix",
+                                  "name": "Item · Reviews",
+                                  "width": "fill_container",
+                                  "height": 38,
+                                  "cornerRadius": 12,
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "qfXwE",
+                                      "name": "Icon",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "star",
+                                      "library": "lucide",
+                                      "fill": "$color-review"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "VSQYu",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Reviews",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "l4NL3",
+                          "name": "Spacer",
+                          "width": "fill_container",
+                          "height": "fill_container"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "XItoJ",
+                          "name": "Pinned",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "id": "OBePh",
+                              "name": "Rule",
+                              "fill": "$color-border",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "type": "frame",
+                              "id": "X0G3R",
+                              "name": "Item · Settings",
+                              "width": "fill_container",
+                              "height": 38,
+                              "cornerRadius": 12,
+                              "gap": 10,
+                              "padding": [
+                                0,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "I7p1m",
+                                  "name": "Icon",
+                                  "width": 18,
+                                  "height": 18,
+                                  "icon": "settings",
+                                  "library": "lucide",
+                                  "fill": "$color-inactive"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Y164pE",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Settings",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 14,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "themes": {
