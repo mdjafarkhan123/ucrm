@@ -5,6 +5,7 @@
 **Stage:** Designing. C1 Foundation approved 2026-10-17 (`concept.pen` boards "Colour that means something" and "The parts every screen is built from").
 
 **Next:**
+1a. **Next session (Jafar, 2026-10-17):** replace every hand-made button with the shared `Button` (record-page More menus via `DropdownMenu` triggers, `PencilButton`, top-bar Add new, icon-only buttons). Give `Button` what they need first (an icon-only form with `aria-label`, use as a menu trigger), then move each caller; screenshot each changed screen.
 0c. Concept buttons in the live app: done and merged 2026-10-17 (`parts/c1d-buttons-in-app.md`); menu triggers and other own-made buttons still to move.
 0b. Live sidebar coloured icons: done and merged into main 2026-10-17 (`parts/c1c-sidebar-icons.md`).
 0. Button set (`c1b-button-set`): merged into main 2026-10-17; rules in `buttons.md`. Live `Button` greys out while loading; the concept keeps its colour — change it with the first built screen.
