@@ -23,8 +23,14 @@ their page-local components. Counts are routes, not independently designed layou
 | Codex business sub-agent | root, business-profile, business-hours, branding, security | 5 | `codex/settings-business-app`, `/tmp/ucrm-settings-business-app` | 5211 |
 | Codex billing sub-agent | taxes, payments, quotes, invoices, invoices/opening-balances/import | 5 | `codex/settings-billing-app`, `/tmp/ucrm-settings-billing-app` | 5212 |
 | Codex team sub-agent | team, team/activity, team/[userId] | 3 | `codex/settings-team-app`, `/tmp/ucrm-settings-team-app` | 5213 |
-| OpenCode | communications/email, communications/sms, communications/website-chat, communications/balance, communications/blocked-addresses, communications/templates, communications/snippets, alerts, inquiry-alerts, contact-matching | 10 | `codex/settings-communications-app`, `/tmp/ucrm-settings-communications-app` | 5214 |
+| OpenCode | communications/email, communications/sms, communications/website-chat | 3 | `codex/settings-communications-app`, `/tmp/ucrm-settings-communications-app` | 5214 |
 | Claude | price-book, price-book/import, automation, automation/new, automation/[id], automation/[id]/edit, forms, forms/[id], pipeline, checklists | 10 | `codex/settings-workflows-app`, `/tmp/ucrm-settings-workflows-app` | 5215 |
+
+Jafar narrowed OpenCode's assignment to three pages on 2026-10-17. The other seven
+routes (communications/balance, communications/blocked-addresses,
+communications/templates, communications/snippets, alerts, inquiry-alerts and
+contact-matching) are unassigned for a later batch. This supersedes earlier
+ten-page OpenCode handoffs. EmailSetupCard remains owned by OpenCode for its three pages.
 
 Codex parent reviews the first three groups and owns integration. OpenCode and
 Claude are separate user-run sessions; they have not started just because this
