@@ -129,11 +129,7 @@ before changing files (`--mode read` for research). Release after safe integrati
   questions that come up mid-way or in later sessions. Choose technical details yourself using proven methods.
   Tell Jafar which product or method you followed.
 - **Frontend design.** Screens follow "Jafar's Design Preferences" in `.claude/skills/design/SKILL.md`.
-- **Design in Pencil first.** Before code, design in Pencil and get Jafar's yes for a new
-  screen, a redesign of an existing screen, a new layout, a new kind of part,
-  or a change to how an existing part looks. Bug fixes that restore the approved look, and small additions made
-  only from existing parts used the way they already are (one more form field, table column or menu item), go
-  straight to code. The steps are in `docs/pencil-workflow.md`.
+- Desing in pencil first before building in app follwing design skill. If Jafar tell to change any design that does not match with current design skill then update the design skill to match with pencil approved look. Design skill should only talks about the look. Nothing else. Follow `entriprise` folder where all reference design skill contains to follow how to write design skill
 - **Svelte 5 only.** No Svelte 4 syntax anywhere.
 - Record detail pages, their save bar and attachments follow `docs/record-page-behaviour.md`.
 - SCSS + BEM for all styling. Tabler icons for all icons.

@@ -33,7 +33,7 @@ Agreed with Jafar on 2026-10-17. Every design, in Pencil or in code, follows all
 9. **A new concept, not a touch-up.** New buttons, parts and screens are welcome; a screen's layout and content
    may differ from today's page.
 10. **Researched, never copied.** Check what Jobber and other leading products show and leave out on a screen,
-    then draw our own look.
+    then draw our own look. This research is for just what they show and what not. Not to copy their design
 11. **Desktop web app.** Design at 1440px wide; phone layouts wait for the native apps.
 12. **Design → review → approve → build.** Jafar approves each screen in Pencil before it is built. If a design
     needs data or behaviour the app does not have, list it for Jafar's decision first.
