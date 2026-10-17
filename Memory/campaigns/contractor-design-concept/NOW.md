@@ -1,11 +1,13 @@
 # Contractor design concept — now
 
 **Goal:** A new design concept for the whole app, drawn in `concept.pen` from the app's own variables: design → review → approve → build.
-**Core agreement — read on every resume:** `docs/contractor-design-concept-behavior-contract.md` — Summary, First version, Not doing; and Jafar's design brief in `.claude/skills/design/SKILL.md`.
-**Stage:** Designing. C1 Foundation approved by Jafar 2026-10-17 (boards "Colour that means something" and "The parts every screen is built from" in `concept.pen`).
+**Core agreement — read on every resume:** `docs/contractor-design-concept-behavior-contract.md` (Summary, First version, Not doing, decisions) and the design skill `.claude/skills/design/SKILL.md` with its modules.
+**Stage:** Designing. C1 Foundation approved 2026-10-17 (`concept.pen` boards "Colour that means something" and "The parts every screen is built from").
 
-**Next:** C2 Home in the concept — research what a contractor needs on Home (Jobber first), draw it at 1440 from the Foundation parts, show Jafar. Then C3 Jobs list, C4 Job details.
+**Next:**
+1. Ask Jafar to open `/home/jafar/Ucrm/concept.pen` in Pencil. Add six number variables and bind the Foundation nodes that use those values: text 11, 13, 32; tile corners 6 and 10; card padding 20. Name them in the app's style (e.g. `typography--fontSize-micro`/`-label`/`-display`, `radius-tile--small`/`--large`, `space-medium`) and update `typography.md`, `radius.md`, `layout.md`, `cards.md`, `icon-shapes.md` in the same commit. Code gets them with the first built screen.
+2. C2 Home: research what a contractor needs on Home (Jobber first), draw at 1440 from the Foundation parts, show Jafar.
 
-**Working notes:** Pencil edits only the open file; Jafar opens `concept.pen` and saves it (Ctrl+S) before commits. Old App-look work (Phase A) is all on main; see the plan's "Earlier work".
+**Working notes:** Pencil edits only the open file and writes only on Ctrl+S (`docs/pencil-workflow.md`).
 
-**Still open:** rollout (all at once or screen by screen); money cards in dark mode; "Changes requested" colour.
+**Still open:** rollout (all at once or screen by screen); money cards in dark mode; "Changes requested" colour; whether to keep two styling-module sets after rollout.

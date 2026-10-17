@@ -5,8 +5,8 @@
 A new design concept for the whole contractor app. It is drawn in Pencil (`concept.pen`) from the app's own
 colours, sizes and spacing, then each screen goes **design → review → approve → build** (Jafar, 2026-10-17).
 New buttons, parts and screens are allowed; the look follows
-[Jafar's design brief](../.claude/skills/design/SKILL.md#jafars-design-brief), which every agent reads before
-designing.
+the [design skill](../.claude/skills/design/SKILL.md) (Style, Critical Rules, Pencil Design Requirements and its
+modules), which every agent reads before designing.
 
 ## Problem and audience
 
@@ -31,7 +31,7 @@ staff open the app between jobs and want to see what needs them right now, in a 
 
 ## Experience target
 
-The [design brief](../.claude/skills/design/SKILL.md#jafars-design-brief) is the target. On top of it:
+The [design skill](../.claude/skills/design/SKILL.md) is the target. On top of it:
 
 - **A new concept, not a polish of today's pages.** Layout, grouping and content can differ from the live page.
   The test is what a contractor most needs on that screen.
@@ -66,3 +66,8 @@ designs as the record of the live app.
   help clarify the meaning of an icon" (https://developer.apple.com/design/human-interface-guidelines/sidebars).
 - Decision 2026-10-17 (Jafar): concept work starts now with the simple flow; Phase A screens already built stay.
 - Decision 2026-10-17 (Jafar): Foundation boards approved.
+- Decision 2026-10-17 (Jafar): the Foundation's off-scale sizes become new tokens — text 11, 13, 32; tile
+  corners 6 and 10; card padding 20 — added to `concept.pen` and the design skill, and to `_variables.scss`
+  with the first screen that uses them.
+- Decision 2026-10-17 (Jafar): keep two sets of styling modules for now — `design` (concept) and
+  `design-classic` (live look) — until rollout; revisit then.

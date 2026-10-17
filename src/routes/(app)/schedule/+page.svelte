@@ -40,7 +40,6 @@
 		describeChange,
 		futureScopeFields,
 		proposeMove,
-		type DropTarget,
 		type NewVisitDraft,
 		type ScheduleProposal
 	} from '$lib/schedule/drag';
