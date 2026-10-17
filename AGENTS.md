@@ -152,6 +152,8 @@ before changing files (`--mode read` for research). Release after safe integrati
   - After a mutation or an external event, invalidate every affected query.
 - Server secrets stay server-side.
 - All writes go through `/api/*` routes. Every `POST` and `PATCH` validates with Zod before database access.
+- **Every button that waits on the server shows loading** from press to finish and cannot be pressed twice
+  (`loading` on `Button`; its look is in the design skill's `buttons.md`). This holds with or without a Pencil design.
 - **Performance — proportional evidence.** Follow `performance-review`'s invocation gate and two-stage
   completion contract: design qualifying paths before code, verify them after the coherent slice exists, and run
   its whole-application branch before an industry release. A filename or technical layer alone does not trigger

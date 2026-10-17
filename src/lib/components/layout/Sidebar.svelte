@@ -90,6 +90,7 @@
 								<a
 									class="sidebar__item"
 									class:sidebar__item--active={isActive(item.href)}
+									style:--sidebar-item-tone={item.tone ? `var(--color-${item.tone})` : undefined}
 									href={item.href}
 									onclick={onnavigate}
 									aria-current={isActive(item.href) ? 'page' : undefined}
@@ -296,7 +297,7 @@
 			display: inline-flex;
 			flex: 0 0 18px;
 			width: 18px;
-			color: var(--color-icon);
+			color: var(--sidebar-item-tone, var(--color-icon));
 		}
 		&__item-icon :global(svg) {
 			width: 18px;

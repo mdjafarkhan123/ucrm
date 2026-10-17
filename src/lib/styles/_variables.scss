@@ -297,6 +297,18 @@
 	--color-client: var(--color-base-taupe--700);
 	--color-client--surface: var(--color-base-taupe--200);
 	--color-client--onSurface: var(--color-base-taupe--800);
+	--color-time: var(--color-indigo);
+	--color-time--surface: var(--color-indigo--lightest);
+	--color-time--onSurface: var(--color-indigo--dark);
+	--color-conversation: var(--color-base-teal--600);
+	--color-conversation--surface: var(--color-base-teal--200);
+	--color-conversation--onSurface: var(--color-base-teal--800);
+	--color-growth: var(--color-base-purple--700);
+	--color-growth--surface: var(--color-base-purple--200);
+	--color-growth--onSurface: var(--color-base-purple--800);
+	--color-review: var(--color-base-yellow--600);
+	--color-review--surface: var(--color-base-yellow--200);
+	--color-review--onSurface: var(--color-base-yellow--800);
 	--radius-base: 8px;
 	--radius-small: 4px;
 	--radius-large: 16px;
@@ -456,6 +468,18 @@
 		--color-client: var(--color-base-blue--200);
 		--color-client--surface: var(--color-base-blue--800);
 		--color-client--onSurface: var(--color-base-blue--300);
+		--color-time: var(--color-indigo--light);
+		--color-time--surface: var(--color-indigo--dark);
+		--color-time--onSurface: var(--color-indigo--lightest);
+		--color-conversation: var(--color-base-teal--400);
+		--color-conversation--surface: var(--color-base-teal--800);
+		--color-conversation--onSurface: var(--color-base-teal--300);
+		--color-growth: var(--color-base-purple--500);
+		--color-growth--surface: var(--color-base-purple--800);
+		--color-growth--onSurface: var(--color-base-purple--300);
+		--color-review: var(--color-base-yellow--400);
+		--color-review--surface: var(--color-base-yellow--700);
+		--color-review--onSurface: var(--color-base-yellow--200);
 		--shadow-low:
 			0px var(--space-minuscule) var(--space-smallest) #00000026,
 			0px 0px var(--space-smallest) #00000040;
