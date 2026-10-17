@@ -9,6 +9,7 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
@@ -17,8 +18,6 @@
 	import DataTable, { type DataTableColumn } from '$lib/components/data-display/DataTable.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
-	import FilterBar from '$lib/components/data-display/FilterBar.svelte';
-	import FilterField from '$lib/components/data-display/FilterField.svelte';
 	import ListLoadMore from '$lib/components/data-display/ListLoadMore.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import {
@@ -33,6 +32,10 @@
 		type TeamMemberStatus
 	} from '$lib/team/api';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
+	import armchairIcon from '@tabler/icons/outline/armchair.svg?raw';
+	import historyIcon from '@tabler/icons/outline/history.svg?raw';
+	import userPlusIcon from '@tabler/icons/outline/user-plus.svg?raw';
+	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
 
 	const queryClient = useQueryClient();
 	const actorUserId = $derived(page.data.user?.id ?? '');
@@ -75,10 +78,11 @@
 	});
 
 	const columns: DataTableColumn[] = [
-		{ key: 'member', label: 'Team member' },
-		{ key: 'role', label: 'Role' },
+		{ key: 'member', label: 'Team member', width: '29%' },
+		{ key: 'role', label: 'Role', width: '17%' },
 		{ key: 'work_details', label: 'Work details' },
-		{ key: 'status', label: 'Status' }
+		{ key: 'status', label: 'Status', width: '21%' },
+		{ key: 'open', label: 'Open member', hideLabel: true, width: '40px' }
 	];
 
 	function setStatus(value: string) {
@@ -140,7 +144,6 @@
 	}
 
 	function roleTone(role: TeamMemberRole): 'warning' | 'informative' | undefined {
-		if (role === 'owner') return 'warning';
 		if (role === 'admin') return 'informative';
 		return undefined;
 	}
@@ -167,52 +170,46 @@
 <svelte:head><title>Team · Contractor CRM</title></svelte:head>
 
 <div class="page-scroller">
-	<PageContainer variant="fill">
-		<PageHeader
-			eyebrow="Team & access"
-			title="Team"
-			description="The people who work in your business and their current access."
-		>
-			{#snippet actions()}
-				<Button href={resolve('/(app)/settings/team/activity')} variant="secondary"
-					>Activity log</Button
-				>
-				<Button onclick={() => (inviteOpen = true)}>Invite member</Button>
-			{/snippet}
-		</PageHeader>
-
-		<div class="team__summary" aria-live="polite">
-			<span class="team__summary-label">Team seats</span>
-			{#if teamQuery.isPending}
-				<span class="team__summary-loading">Loading seat usage…</span>
-			{:else if seats}
-				<strong>{seatSummary}</strong>
-			{/if}
+	<PageContainer variant="open">
+		<div class="team__header">
+			<span class="team__page-icon" aria-hidden="true">{@html usersIcon}</span>
+			<div class="team__heading">
+				<Breadcrumbs items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Team' }]} />
+				<PageHeader title="Team" description="The people who work in your business and their current access.">
+					{#snippet actions()}
+						<Button href={resolve('/(app)/settings/team/activity')} variant="secondary"><span class="team__button-icon" aria-hidden="true">{@html historyIcon}</span>Activity log</Button>
+						<Button onclick={() => (inviteOpen = true)}><span class="team__button-icon" aria-hidden="true">{@html userPlusIcon}</span>Invite member</Button>
+					{/snippet}
+				</PageHeader>
+			</div>
 		</div>
 
-		<FilterBar onClear={hasFilters ? clearFilters : undefined}>
-			<FilterField id="team-search" label="Search">
-				<SearchInput
-					id="team-search"
-					bind:value={search}
-					placeholder="Search people or invited email"
-					ariaLabel="Search team members"
-				/>
-			</FilterField>
-			<FilterField id="team-status-filter" label="Status">
-				<Select
-					id="team-status-filter"
-					value={status}
-					onchange={setStatus}
-					options={[
-						{ value: '', label: 'All statuses' },
-						{ value: 'pending', label: 'Pending' },
-						{ value: 'active', label: 'Active' },
-						{ value: 'deactivated', label: 'Deactivated' }
-					]}
-				/>
-			</FilterField>
-		</FilterBar>
+		<div class="team__summary" aria-live="polite">
+			<span class="team__seat-icon" aria-hidden="true">{@html armchairIcon}</span>
+			<div class="team__seat-copy">
+				<span class="team__summary-label">Team seats</span>
+				{#if teamQuery.isPending}
+					<span class="team__summary-loading">Loading seat usage…</span>
+				{:else if seats}
+					<strong>{seatSummary}</strong>
+					{#if !seats.is_unlimited && seats.limit > 0}
+						<meter class="team__seat-meter" min="0" max={seats.limit} value={Math.min(seats.used, seats.limit)} aria-label={seatSummary}>{seatSummary}</meter>
+					{/if}
+				{/if}
+			</div>
+		</div>
+
+		<section class="team__card" aria-labelledby="team-members-heading">
+			<div class="team__card-header">
+				<h2 id="team-members-heading">Team members</h2>
+				<div class="team__toolbar">
+					<SearchInput id="team-search" bind:value={search} placeholder="Search people or invited email" ariaLabel="Search team members" />
+					<Select id="team-status-filter" ariaLabel="Filter team members by status" prefix="Status" value={status} onchange={setStatus} options={[
+						{ value: '', label: 'All statuses' }, { value: 'pending', label: 'Pending' }, { value: 'active', label: 'Active' }, { value: 'deactivated', label: 'Deactivated' }
+					]} />
+					{#if hasFilters}<Button size="small" variant="tertiary" onclick={clearFilters}>Clear</Button>{/if}
+				</div>
+			</div>
 
 		{#if teamQuery.isPending}
 			<LoadingSkeleton variant="table" label="Loading team members" rows={5} />
@@ -232,6 +229,7 @@
 		{:else}
 			<div class="team__directory">
 				<DataTable
+					variant="card"
 					{columns}
 					items={members}
 					rowId={(member) => member.user_id}
@@ -246,7 +244,7 @@
 									id={member.user_id}
 									name={memberName(member)}
 									src={member.avatar_url}
-									size="small"
+									size="base"
 								/>
 								<a
 									href={resolve('/(app)/settings/team/[userId]', { userId: member.user_id })}
@@ -255,7 +253,7 @@
 							</div>
 						</th>
 						<td class="team__role"
-							><Badge status={roleTone(member.role)} dot={false}>{memberRole(member)}</Badge></td
+							><Badge class={member.role === 'owner' ? 'team__owner-badge' : ''} status={roleTone(member.role)} dot={false}>{memberRole(member)}</Badge></td
 						>
 						<td class="team__work-details">{memberWorkDetails(member)}</td>
 						<td>
@@ -268,6 +266,7 @@
 								{/if}
 							</div>
 						</td>
+						<td><span class="team__chevron" aria-hidden="true">{@html chevronRightIcon}</span></td>
 					{/snippet}
 					{#snippet footer()}
 						<ListLoadMore
@@ -279,6 +278,7 @@
 				</DataTable>
 			</div>
 		{/if}
+		</section>
 	</PageContainer>
 </div>
 
@@ -344,28 +344,36 @@
 {/if}
 
 <style lang="scss">
-	.team__summary {
-		display: flex;
-		align-items: baseline;
-		gap: var(--space-small);
-		margin: var(--space-large) 0;
-		padding: var(--space-base);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background: var(--color-surface);
-		color: var(--color-text);
-	}
-
-	.team__summary-label {
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-	}
-
-	.team__summary-loading {
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-	}
+	.team__header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+	.team__heading { flex: 1; min-width: 0; }
+	.team__heading :global(.breadcrumbs) { margin-bottom: 4px; font-size: 12px; }
+	.team__heading :global(.page-header) { margin-bottom: 0; padding-top: 0; }
+	.team__page-icon, .team__seat-icon { display: flex; flex: 0 0 auto; align-items: center; justify-content: center; border-radius: var(--radius-base); }
+	.team__page-icon { width: 48px; height: 48px; background: var(--color-quote); color: var(--color-text--reverse); }
+	.team__page-icon :global(svg) { width: 24px; height: 24px; }
+	.team__seat-icon { width: 36px; height: 36px; background: var(--color-quote--surface); color: var(--color-quote); }
+	.team__seat-icon :global(svg) { width: 18px; height: 18px; }
+	.team__button-icon, .team__chevron { display: inline-flex; }
+	.team__button-icon :global(svg), .team__chevron :global(svg) { width: 16px; height: 16px; }
+	.team__chevron { color: var(--color-icon--secondary); }
+	.team__summary { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; padding: 16px 20px; border: var(--border-base) solid var(--color-border); border-radius: var(--radius-base); background: var(--color-surface); color: var(--color-text); }
+	.team__seat-copy { display: grid; gap: 3px; }
+	.team__seat-copy strong { color: var(--color-heading); font-size: 15px; }
+	.team__summary-label, .team__summary-loading { color: var(--color-text--secondary); font-size: 12px; }
+	.team__summary-label { font-weight: 600; }
+	.team__seat-meter { appearance: none; width: 240px; height: 8px; margin-top: 5px; border: 0; border-radius: var(--radius-large); background: var(--color-surface--active); }
+	.team__seat-meter::-webkit-meter-bar { background: var(--color-surface--active); border: 0; border-radius: var(--radius-large); }
+	.team__seat-meter::-webkit-meter-optimum-value { background: var(--color-quote); border-radius: var(--radius-large); }
+	.team__seat-meter::-moz-meter-bar { background: var(--color-quote); border-radius: var(--radius-large); }
+	.team__card { overflow: hidden; border: var(--border-base) solid var(--color-border); border-radius: var(--radius-base); background: var(--color-surface); }
+	.team__card-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 24px; }
+	.team__card-header h2 { color: var(--color-heading); font-size: 16px; font-weight: 700; }
+	.team__toolbar { display: flex; align-items: center; gap: 8px; }
+	.team__toolbar :global(.search-input) { width: 300px; }
+	.team__directory { --data-table-min-width: 900px; }
+	.team__member :global(.avatar) { --avatar-bg: var(--color-surface--active); --avatar-fg: var(--color-text); }
+	.team__role :global(.team__owner-badge) { color: var(--color-text--reverse); background: var(--color-surface--reverse); }
+	.team__work-details { color: var(--color-text--secondary); font-size: 13px; }
 
 	.team__member {
 		display: flex;
