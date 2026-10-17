@@ -8,14 +8,22 @@
 		title,
 		description,
 		icon,
+		tone = 'informative',
 		actions
-	}: { title: string; description: string; icon: string; actions?: Snippet } = $props();
+	}: {
+		title: string;
+		description: string;
+		icon: string;
+		/** The tile colour; Pencil draws most Settings pages blue and Automation yellow. */
+		tone?: 'informative' | 'warning';
+		actions?: Snippet;
+	} = $props();
 </script>
 
 <!-- The Settings "App look" heading: a coloured icon tile beside the breadcrumb, title and sentence. -->
 <div class="workflow-header">
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-	<span class="workflow-header__icon" aria-hidden="true">{@html icon}</span>
+	<span class={`workflow-header__icon workflow-header__icon--${tone}`} aria-hidden="true">{@html icon}</span>
 	<div class="workflow-header__copy">
 		<Breadcrumbs
 			items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: title }]}
@@ -44,6 +52,11 @@
 			background: var(--color-informative);
 			color: var(--color-white);
 			box-shadow: 0 6px 16px color-mix(in srgb, var(--color-informative) 35%, transparent);
+		}
+		&__icon--warning {
+			background: var(--color-warning);
+			color: var(--color-heading);
+			box-shadow: 0 6px 16px color-mix(in srgb, var(--color-warning) 35%, transparent);
 		}
 		&__icon :global(svg) {
 			width: 28px;
