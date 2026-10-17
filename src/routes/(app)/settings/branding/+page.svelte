@@ -4,7 +4,7 @@
 	import { beforeNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
+	import BusinessSettingsPresentation from '$lib/components/settings/SettingsPresentation.svelte';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -262,121 +262,126 @@
 	{@const canEdit = query.data.permissions.edit}
 	{@const editor = query.data.branding.last_editor}
 
-	<Breadcrumbs
-		items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Branding' }]}
-	/>
+	<BusinessSettingsPresentation
+		title="Branding"
+		description="The logo and brand color customers see on quotes and invoices."
+		icon={paletteIcon}
+	>
+		<RecordFormLayout title="Branding" icon={paletteIcon} bind:this={layout} error={saveError}>
+			{#snippet main()}
+				{#if !canEdit}
+					<p class="branding__readonly">
+						Only owners and administrators can change this. {#if editor}Last changed by {editor.name ??
+								'a teammate'}.{/if}
+					</p>
+				{/if}
 
-	<RecordFormLayout title="Branding" icon={paletteIcon} bind:this={layout} error={saveError}>
-		{#snippet main()}
-			{#if !canEdit}
-				<p class="branding__readonly">
-					Only owners and administrators can change this. {#if editor}Last changed by {editor.name ??
-							'a teammate'}.{/if}
-				</p>
-			{/if}
-
-			<div class="branding__columns">
-				<div class="branding__column">
-					<SectionBlock
-						title="Logo"
-						hint="Shown on quotes, invoices, emails, and the client portal."
-						level={3}
-					>
-						<div class="branding__logo">
-							<div
-								class="branding__logo-preview"
-								class:branding__logo-preview--empty={!displayLogoUrl}
-							>
-								{#if displayLogoUrl}
-									<img src={displayLogoUrl} alt="Business logo" />
-								{:else}
-									<span>No logo yet</span>
-								{/if}
-							</div>
-							{#if pendingLogoFile}
-								<p class="branding__logo-pending">Not saved yet</p>
-							{:else if pendingLogoRemove}
-								<p class="branding__logo-pending">
-									Removed when you save. Quotes and invoices already sent to customers keep showing
-									it.
-								</p>
-							{:else if waitingForLogo}
-								<p class="branding__logo-pending">
-									One file is being checked for safety. It appears here as soon as that finishes.
-								</p>
-							{/if}
-							{#if canEdit}
-								<div class="branding__logo-actions">
-									<Button variant="secondary" onclick={() => fileInput?.click()}
-										><!-- eslint-disable-next-line svelte/no-at-html-tags -->
-										<span aria-hidden="true">{@html uploadIcon}</span>{displayLogoUrl
-											? 'Replace logo'
-											: 'Upload logo'}</Button
-									>
-									{#if pendingLogoRemove}
-										<Button variant="tertiary" onclick={undoRemoveLogo}>Undo</Button>
-									{:else if displayLogoUrl}
-										<Button variant="tertiary" variation="destructive" onclick={removeLogo}
-											><!-- eslint-disable-next-line svelte/no-at-html-tags -->
-											<span aria-hidden="true">{@html trashIcon}</span>Remove</Button
-										>
-									{/if}
-									<input
-										bind:this={fileInput}
-										type="file"
-										accept="image/png,image/jpeg,image/webp"
-										class="branding__file-input"
-										onchange={handleFileChosen}
-									/>
-								</div>
-								<p class="branding__logo-hint">PNG, JPG, or WEBP. Up to 2 MB.</p>
-							{/if}
-						</div>
-					</SectionBlock>
-				</div>
-
-				<div class="branding__column">
-					{#if color}
-						{@const c = color}
+				<div class="branding__columns">
+					<div class="branding__column">
 						<SectionBlock
-							title="Brand color"
-							hint="Colors quote and invoice headers, buttons, and the client portal."
-							form
+							title="Logo"
+							icon={paletteIcon}
+							hint="Shown on quotes, invoices, emails, and the client portal."
 							level={3}
 						>
-							<div class="branding__color">
-								<input
-									id="branding-color"
-									class="branding__color-swatch"
-									type="color"
-									bind:value={color}
-									disabled={!canEdit}
-								/>
-								<div class="branding__color-preview" style={`--preview-color: ${c}`}>
-									<span class="branding__color-code">{c.toUpperCase()}</span>
-									<button class="branding__color-chip" type="button">Preview</button>
+							<div class="branding__logo">
+								<div
+									class="branding__logo-preview"
+									class:branding__logo-preview--empty={!displayLogoUrl}
+								>
+									{#if displayLogoUrl}
+										<img src={displayLogoUrl} alt="Business logo" />
+									{:else}
+										<span>No logo yet</span>
+									{/if}
 								</div>
+								{#if pendingLogoFile}
+									<p class="branding__logo-pending">Not saved yet</p>
+								{:else if pendingLogoRemove}
+									<p class="branding__logo-pending">
+										Removed when you save. Quotes and invoices already sent to customers keep
+										showing it.
+									</p>
+								{:else if waitingForLogo}
+									<p class="branding__logo-pending">
+										One file is being checked for safety. It appears here as soon as that finishes.
+									</p>
+								{/if}
 								{#if canEdit}
-									<Button variant="tertiary" onclick={resetToDefault}>Reset to default</Button>
+									<div class="branding__logo-actions">
+										<Button variant="secondary" onclick={() => fileInput?.click()}
+											><!-- eslint-disable-next-line svelte/no-at-html-tags -->
+											<span aria-hidden="true">{@html uploadIcon}</span>{displayLogoUrl
+												? 'Replace logo'
+												: 'Upload logo'}</Button
+										>
+										{#if pendingLogoRemove}
+											<Button variant="tertiary" onclick={undoRemoveLogo}>Undo</Button>
+										{:else if displayLogoUrl}
+											<Button variant="tertiary" variation="destructive" onclick={removeLogo}
+												><!-- eslint-disable-next-line svelte/no-at-html-tags -->
+												<span aria-hidden="true">{@html trashIcon}</span>Remove</Button
+											>
+										{/if}
+										<input
+											bind:this={fileInput}
+											type="file"
+											accept="image/png,image/jpeg,image/webp"
+											class="branding__file-input"
+											onchange={handleFileChosen}
+										/>
+									</div>
+									<p class="branding__logo-hint">PNG, JPG, or WEBP. Up to 2 MB.</p>
 								{/if}
 							</div>
 						</SectionBlock>
-					{/if}
-				</div>
-			</div>
-		{/snippet}
+					</div>
 
-		{#snippet actions()}
-			{#if canEdit}
-				<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
-				<Button
-					onclick={() => void save().finally(() => layout?.revealError())}
-					disabled={!dirty || saving}
-					loading={saving}>Save</Button
-				>
-			{/if}
-		{/snippet}
-	</RecordFormLayout>
+					<div class="branding__column">
+						{#if color}
+							{@const c = color}
+							<SectionBlock
+								title="Brand color"
+								icon={paletteIcon}
+								hint="Colors quote and invoice headers, buttons, and the client portal."
+								form
+								level={3}
+							>
+								<div class="branding__color">
+									<input
+										id="branding-color"
+										aria-label="Brand color"
+										class="branding__color-swatch"
+										type="color"
+										bind:value={color}
+										disabled={!canEdit}
+									/>
+									<div class="branding__color-preview" style={`--preview-color: ${c}`}>
+										<span class="branding__color-code">{c.toUpperCase()}</span>
+										<button class="branding__color-chip" type="button">Preview</button>
+									</div>
+									{#if canEdit}
+										<Button variant="tertiary" onclick={resetToDefault}>Reset to default</Button>
+									{/if}
+								</div>
+							</SectionBlock>
+						{/if}
+					</div>
+				</div>
+			{/snippet}
+
+			{#snippet actions()}
+				{#if canEdit}
+					<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
+					<Button
+						onclick={() => void save().finally(() => layout?.revealError())}
+						disabled={!dirty || saving}
+						loading={saving}>Save</Button
+					>
+				{/if}
+			{/snippet}
+		</RecordFormLayout>
+	</BusinessSettingsPresentation>
 {/if}
 
 <style lang="scss">
@@ -405,8 +410,8 @@
 		}
 		&__logo-preview {
 			display: grid;
-			width: 160px;
-			height: 100px;
+			width: 100%;
+			height: 180px;
 			place-items: center;
 			border: var(--border-base) solid var(--color-border);
 			border-radius: var(--radius-base);

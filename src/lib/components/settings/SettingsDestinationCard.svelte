@@ -55,8 +55,9 @@
 		align-items: flex-start;
 		gap: var(--space-base);
 		padding: var(--space-base);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border: 0;
+		border-bottom: var(--border-base) solid var(--color-border);
+		border-radius: 0;
 		background: var(--color-surface);
 		text-decoration: none;
 		transition: background-color var(--timing-quick);
