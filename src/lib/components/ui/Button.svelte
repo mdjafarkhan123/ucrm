@@ -11,6 +11,8 @@
 		loading = false,
 		fullWidth = false,
 		iconOnly = false,
+		pressed,
+		count,
 		label,
 		href,
 		target,
@@ -31,6 +33,12 @@
 		fullWidth?: boolean;
 		/** A square button that holds only an icon, as wide as its size is tall. Needs `label`. */
 		iconOnly?: boolean;
+		/** A switch-like button that stays on while what it opens is showing (Map, Unscheduled, Filters). Only
+		 *  for the white bordered kinds. Sets `aria-pressed`, except on a menu or popover trigger, whose own
+		 *  `aria-expanded` already tells a screen reader it is open. */
+		pressed?: boolean;
+		/** A number bubble after the label, e.g. how many filters are set. Hidden when null. */
+		count?: number | null;
 		/** The accessible name and hover title. Required for an icon-only button, which has no text. */
 		label?: string;
 		/** Renders a link instead of a button. Use it for anything that goes to another page, so the
@@ -49,7 +57,10 @@
 	} = $props();
 
 	const classes = $derived(
-		`button button--${variant} button--${variation} button--${size} ${iconOnly ? 'button--icon-only' : ''} ${className}`
+		`button button--${variant} button--${variation} button--${size} ${iconOnly ? 'button--icon-only' : ''} ${pressed ? 'button--pressed' : ''} ${className}`
+	);
+	const ariaPressed = $derived(
+		pressed === undefined || 'aria-expanded' in rest ? undefined : pressed
 	);
 	const inactive = $derived(disabled || loading);
 </script>
@@ -75,6 +86,7 @@
 	>
 		{#if loading}<span class="button__spinner" aria-hidden="true"></span>{/if}
 		{@render children()}
+		{#if count != null}<span class="button__count">{count}</span>{/if}
 	</a>
 	<!-- eslint-enable svelte/no-navigation-without-resolve -->
 {:else}
@@ -85,6 +97,7 @@
 		class:button--full-width={fullWidth}
 		disabled={inactive}
 		aria-busy={loading}
+		aria-pressed={ariaPressed}
 		aria-label={label}
 		title={label}
 		{onclick}
@@ -93,6 +106,7 @@
 	>
 		{#if loading}<span class="button__spinner" aria-hidden="true"></span>{/if}
 		{@render children()}
+		{#if count != null}<span class="button__count">{count}</span>{/if}
 	</button>
 {/if}
 
@@ -214,6 +228,50 @@
 			&:active {
 				box-shadow: none;
 			}
+		}
+
+		// Switched on: brand-green border, label and icon, while its panel shows or its filter is set.
+		&--pressed.button--secondary,
+		&--pressed.button--tertiary {
+			color: var(--color-interactive);
+			border-color: var(--color-interactive);
+
+			&:hover,
+			&:active {
+				color: var(--color-interactive--hover);
+				border-color: var(--color-interactive--hover);
+			}
+			&:active {
+				box-shadow: inset 0 1px 3px color-mix(in srgb, var(--color-heading) 12%, transparent);
+			}
+		}
+
+		// The number bubble: grey while off, solid green while on.
+		&__count {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-width: 20px;
+			height: 20px;
+			padding: 0 7px;
+			border-radius: var(--radius-large);
+			background: var(--color-inactive--surface);
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+			line-height: 1;
+		}
+		&--pressed &__count {
+			background: var(--color-interactive);
+			color: var(--color-surface);
+		}
+		&--pressed:hover &__count,
+		&--pressed:active &__count {
+			background: var(--color-interactive--hover);
+		}
+		&:disabled:not([aria-busy='true']) &__count {
+			background: var(--color-surface);
+			color: var(--color-disabled);
 		}
 
 		&--quiet {

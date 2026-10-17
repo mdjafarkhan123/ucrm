@@ -1,5 +1,6 @@
 <script lang="ts" generics="V extends string">
 	import type { Snippet } from 'svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import chevronLeftIcon from '@tabler/icons/outline/chevron-left.svg?raw';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
@@ -53,7 +54,7 @@
 			</button>
 		</div>
 
-		<button type="button" class="calendar-bar__button" onclick={ontoday}>Today</button>
+		<Button variant="secondary" onclick={ontoday}>Today</Button>
 
 		<p class="calendar-bar__range" aria-live="polite">{rangeLabel}</p>
 	</div>
@@ -93,7 +94,7 @@
 		display: flex;
 		align-items: center;
 		box-sizing: border-box;
-		height: 38px;
+		height: 36px;
 		border: var(--border-base) solid var(--color-border--interactive);
 		border-radius: var(--radius-base);
 		background-color: var(--color-surface);
@@ -131,50 +132,6 @@
 			width: 16px;
 			height: 16px;
 		}
-	}
-
-	// The toolbar's one button shape: the calendar's own Today, and the buttons a calendar adds through
-	// `extras`. Global because some of them are Bits UI triggers, which render their own <button>.
-	:global(.calendar-bar__button) {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		box-sizing: border-box;
-		height: 38px;
-		padding: 0 14px;
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		background-color: var(--color-surface);
-		color: var(--color-text);
-		font-family: inherit;
-		font-size: 13px;
-		font-weight: 600;
-		white-space: nowrap;
-		cursor: pointer;
-		transition:
-			background-color var(--timing-quick) ease,
-			border-color var(--timing-quick) ease;
-	}
-
-	:global(.calendar-bar__button:hover) {
-		background-color: var(--color-surface--hover);
-	}
-
-	:global(.calendar-bar__button:focus-visible) {
-		outline: none;
-		box-shadow: var(--shadow-focus);
-	}
-
-	:global(.calendar-bar__button--active),
-	:global(.calendar-bar__button[data-state='open']) {
-		border-color: var(--color-interactive);
-		background-color: var(--color-surface--hover);
-	}
-
-	:global(.calendar-bar__button svg) {
-		width: 15px;
-		height: 15px;
-		color: var(--color-text--secondary);
 	}
 
 	.calendar-bar__range {

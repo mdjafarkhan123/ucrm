@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Popover } from 'bits-ui';
 	import CalendarBar from '$lib/components/calendar/CalendarBar.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import {
@@ -124,46 +125,39 @@
 >
 	{#snippet extras()}
 		{#if onunscheduled}
-			<button
-				type="button"
-				class="calendar-bar__button"
-				class:calendar-bar__button--active={unscheduledOpen}
-				aria-pressed={unscheduledOpen}
+			<Button
+				variant="secondary"
+				pressed={unscheduledOpen}
+				count={unscheduledCount}
 				onclick={onunscheduled}
-				onpointerenter={onunscheduledhover}
-				onfocus={onunscheduledhover}
+				onhover={onunscheduledhover}
 			>
 				{@html inboxIcon}
 				Unscheduled
-				{#if unscheduledCount !== null}
-					<span class="schedule-controls__badge">{unscheduledCount}</span>
-				{/if}
-			</button>
+			</Button>
 		{/if}
 
 		{#if onmap}
-			<button
-				type="button"
-				class="calendar-bar__button"
-				class:calendar-bar__button--active={mapOpen}
-				aria-pressed={mapOpen}
-				onclick={onmap}
-			>
+			<Button variant="secondary" pressed={mapOpen} onclick={onmap}>
 				{@html mapIcon}
 				Map
-			</button>
+			</Button>
 		{/if}
 
 		<Popover.Root bind:open={filtersOpen}>
-			<Popover.Trigger
-				class="calendar-bar__button {activeFilterCount > 0 ? 'calendar-bar__button--active' : ''}"
-				aria-label={activeFilterCount > 0 ? `Filters, ${activeFilterCount} active` : 'Filters'}
-			>
-				{@html filterIcon}
-				Filters
-				{#if activeFilterCount > 0}
-					<span class="schedule-controls__badge">{activeFilterCount}</span>
-				{/if}
+			<Popover.Trigger>
+				{#snippet child({ props })}
+					<Button
+						{...props}
+						variant="secondary"
+						pressed={filtersOpen || activeFilterCount > 0}
+						count={activeFilterCount > 0 ? activeFilterCount : null}
+						label={activeFilterCount > 0 ? `Filters, ${activeFilterCount} active` : undefined}
+					>
+						{@html filterIcon}
+						Filters
+					</Button>
+				{/snippet}
 			</Popover.Trigger>
 			<Popover.Portal>
 				<Popover.Content
@@ -220,20 +214,6 @@
 </CalendarBar>
 
 <style lang="scss">
-	.schedule-controls__badge {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-width: 20px;
-		height: 20px;
-		padding: 0 6px;
-		border-radius: 999px;
-		background-color: var(--color-warning--surface);
-		color: var(--color-warning--onSurface);
-		font-size: 11px;
-		font-weight: 700;
-	}
-
 	/* The floating Filters panel, on the design skill's popover tokens (surface, base border, --shadow-base,
 	   --elevation-tooltip). A Select inside is width:100%, so it fills the column on its own. */
 	:global(.schedule-controls__filters-panel) {
