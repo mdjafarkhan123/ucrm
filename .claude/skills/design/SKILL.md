@@ -1,71 +1,66 @@
 ---
 name: design
-description: Route every screen, component, styling or frontend task to its design guidance and run the shared screen check.
+description: Design system for the CRM's look — brand, colour meaning, type, spacing and component styling, plus what a Pencil design must meet. Use for any screen, component, styling, frontend or Pencil design task.
 ---
 
-# Shared design workflow
+# Design System — Agent Instructions
 
-## Choose the look
+This skill describes how the CRM looks. Every component, layout and screen follows the modules below. They
+describe what the design looks like; you choose how to build it. The approved reference is the Foundation in
+`concept.pen` (boards "Colour that means something" and "The parts every screen is built from", approved by
+Jafar 2026-10-17).
 
-1. **New concept** (the app's next look, drawn in `concept.pen`): follow the brief below, the approved Foundation
-   boards in that file, and the [concept plan](../../../docs/contractor-design-concept-behavior-contract.md).
-2. **Fixing or extending a live screen:** load [Classic](../design-classic/SKILL.md) and keep the screen as it is.
-   Classic stays live until Jafar approves a new look for rollout.
-3. **Botanical:** load [Botanical](../design-botanical/SKILL.md).
+## Style
 
-Control Room, login and customer-facing pages keep their current look.
+A premium, calm product for contractors: clean spacing, clear hierarchy, soft white cards on a warm page, and
+colour that names what each thing is. Each screen shows what a contractor most needs right now.
 
-## Jafar's design brief
+## Before Writing Any Code
 
-Every design, in Pencil or in code, meets this brief (Jafar, 2026-10-17).
+1. **Read every module that applies.** Any screen: `brand.md`, `colors.md`, `typography.md`, `layout.md`,
+   `radius.md`, `borders.md`, `shadows.md`, `icon-shapes.md`, then each component module it uses.
+2. **Screens not yet moved to the concept** keep their live look: use [design-classic](../design-classic/SKILL.md).
 
-- **Premium and calm.** Clean spacing, clear hierarchy, soft cards, one focal point per screen.
-- **Contractor first.** Each block answers a question a contractor has on that screen. Remove blocks that do not.
-- **Meaningful colour.** Colour names a kind of record, a part of the app, or a status. Icons carry that colour
-  on tinted tiles across the whole app; actions (edit, delete, share, download) stay neutral. The colour map is
-  the "Colour that means something" board in `concept.pen`.
-- **One green action.** Brand green `#037741` (`--color-interactive`) marks the main button of each area. Light
-  greens are for dark mode only.
-- **Contrast with the background.** Every fill differs from the colour behind it, in light and dark mode.
-- **App variables first.** Build from `src/lib/styles/_variables.scss`. Add a variable only when none fits.
-- **Researched, not copied.** Check what Jobber and other leading products show and leave out; draw our own look.
-- **Desktop web.** Design at 1440px wide.
-- **Design → review → approve → build.** When a design needs data or behaviour the app lacks, list it for Jafar's
-  decision before building.
+## Critical Rules
 
-In code, use semantic HTML and design tokens, and give every interactive control hover, focus and disabled
-states. For a record detail page, its save bar or image attachments, read
-[record page behaviour](../../../docs/record-page-behaviour.md) first.
+- **Tokens only.** Every value maps to a token in `src/lib/styles/_variables.scss` (Pencil uses the same names
+  without `--`). Add a token only when none fits, in Pencil, code and these modules in the same commit.
+- **Colour means something.** It names a kind of record, a part of the app, or a status (`colors.md`).
+- **One green action** per area (`buttons.md`).
+- **Cross-reference modules.** A card with buttons meets `cards.md` and `buttons.md`.
+- **Dark mode comes from the tokens.** Every fill differs from the colour behind it, in light and dark.
+- **Every interactive part** has hover, focus-visible, active and disabled states.
+- **Semantic HTML:** headings in order, `<button>` for actions, `<a>` for navigation, labels on fields.
 
-## Design in Pencil first
+## Pencil Design Requirements
 
-Each look has its own Pencil file in the main project folder: `concept.pen`, `classic.pen`, `botanical.pen`.
-Each opens with its design-system page: the app's colours, text sizes, spacing and parts.
+- Draw in `concept.pen` at 1440px wide, from its Foundation parts and token names.
+- Research what Jobber and other leading products show and leave out on that screen; draw our own look.
+- Layout and content may differ from today's page; the test is what a contractor most needs there.
+- List any data or behaviour the design needs that the app lacks, for Jafar's decision.
+- Jafar approves each screen before it is built. Steps: [Pencil workflow](../../../docs/pencil-workflow.md).
 
-1. **Open the right file.** Call `get_app_state`; the Pencil tools change only the open file. If it is the wrong
-   one, ask Jafar to open the right one and wait.
-2. **Design from the file's own parts.** Use copies of its parts and its colour and size names, never raw values.
-   To change a part, change it on the design-system page first so every screen follows. Use the Lucide icon that
-   matches the Tabler icon used in code. Finished when each screen exists at 1440px and a screenshot shows
-   nothing cut off or misaligned.
-3. **Show Jafar and wait.** Name the screens, say what each shows and which parts changed. Finished when he says
-   yes; record his yes, the date and the screen names in the campaign's part note.
-4. **Keep Pencil, code and skill the same.** A colour, size or part changed in Pencil changes in
-   `src/lib/styles/_variables.scss` (or the component) and in this skill's pages in the same commit.
+## Module Index
 
-**Saving.** Pencil writes to disk only when the file is saved in the app (Ctrl+S). Before committing, check the
-`.pen` file's modified time is newer than your last edit; if not, ask Jafar to save. Commit it in its own commit,
-under a claim. Read a part again just before changing it, and leave changes you did not make as they are.
+### Foundation (read first for any UI work)
+- [brand.md](brand.md) — Brand
+- [colors.md](colors.md) — Colour
+- [typography.md](typography.md) — Typography
+- [layout.md](layout.md) — Layout and spacing
+- [radius.md](radius.md) — Radius
+- [borders.md](borders.md) — Borders
+- [shadows.md](shadows.md) — Shadows
+- [icon-shapes.md](icon-shapes.md) — Icon tiles
 
-## Screen check
+### Components
+- [buttons.md](buttons.md) — Button
+- [badges.md](badges.md) — Status pill
+- [inputs.md](inputs.md) — Field
+- [cards.md](cards.md) — Card
+- [lists.md](lists.md) — List row
+- [tables.md](tables.md) — Table
+- [sidebars.md](sidebars.md) — Sidebar
+- [top-bar.md](top-bar.md) — Top bar
 
-Run this before calling any visible change done.
-
-1. Open the changed screen in the running app, signed in with a role from `Login.md` that sees the change.
-2. Screenshot it at 1440px and 390px wide in every state the change touches: real data, empty, loading, error,
-   long names; dark mode too when colour changed. A small change from existing parts needs only the changed spot.
-3. Compare each screenshot with its approved Pencil screen: alignment, spacing, hierarchy, crowding, cut-off
-   text, overflow.
-4. Check keyboard use, visible focus, labels, contrast, and any permission difference the change touches.
-5. Fix what you found and screenshot again. Done when a fresh round finds nothing to fix (at most three rounds;
-   report what is left). Tell Jafar which screens and states you checked and the link to open.
+Not yet designed in the concept — use the Classic module until it is: accordion, alerts, avatars, button group,
+dropdown, modals, pagination, radios/checkboxes/toggle, tabs, tooltips/popovers.

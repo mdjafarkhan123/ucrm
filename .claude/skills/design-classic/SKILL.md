@@ -5,7 +5,7 @@ description: Classic presentation guidance for existing-app maintenance or expli
 
 # Classic design
 
-Read [shared design](../design/SKILL.md) for workflow, engineering and screen checks. These modules are
+Read [shared design](../design/SKILL.md) for the design rules and [screen check](../../../docs/screen-check.md). These modules are
 Classic-only: use the relevant modules together (for example, cards and their buttons). `brand.md`
 owns same-name brand token precedence. Existing screens and verified implementation take precedence
 over stale reference claims; preserve actual appearance rather than restyling to match an old document.

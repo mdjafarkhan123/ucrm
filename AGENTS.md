@@ -57,7 +57,7 @@ its `apply_migration` stamps today's version instead of the file's.
 
 ## Before saying done
 
-- Anything a user can see has been through the design skill's screen check.
+- Anything a user can see has been through the screen check in `docs/screen-check.md`.
 - A behaviour's main journey is proven once on the live app; edge cases are left to automated tests.
 - Your report shows the evidence: the commands you ran and their results, or the screenshots.
 - The work is committed and pushed to GitHub, so it lives off this computer. If the push fails, tell Jafar.
@@ -92,9 +92,9 @@ current task; do not load the full library by default.
 
 ---
 
-Design guidance: always enter through `.claude/skills/design/SKILL.md`. It routes existing-app work to
-`design-classic` and Botanical demos/redesign to `design-botanical`; shared workflow and screen checks
-stay in the router. Classic remains live until approved rollout. Load both for work affecting both.
+Design guidance: always enter through `.claude/skills/design/SKILL.md`. It holds the brand, colour, type and
+component styling rules and what a Pencil design must meet; screens not yet moved to the new concept use
+`design-classic`. Classic remains live until approved rollout. Load both for work affecting both.
 
 ## Campaign
 
@@ -134,8 +134,9 @@ before changing files (`--mode read` for research). Release after safe integrati
   screen, a redesign of an existing screen, a new layout, a new kind of part,
   or a change to how an existing part looks. Bug fixes that restore the approved look, and small additions made
   only from existing parts used the way they already are (one more form field, table column or menu item), go
-  straight to code. The steps are in the design skill under "Design in Pencil first".
+  straight to code. The steps are in `docs/pencil-workflow.md`.
 - **Svelte 5 only.** No Svelte 4 syntax anywhere.
+- Record detail pages, their save bar and attachments follow `docs/record-page-behaviour.md`.
 - SCSS + BEM for all styling. Tabler icons for all icons.
 - Component styles live inside the component's own `<style lang="scss">` block. `app.scss` holds only the global
   baseline, so component styles are never imported through it. SCSS variables and mixins reach every component

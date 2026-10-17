@@ -19,7 +19,7 @@ all its patterns approved. The module index in `SKILL.md` is a catalog, not a re
 
 | Updated source                     | Coverage available for redesign                                                             |
 | ---------------------------------- | ------------------------------------------------------------------------------------------- |
-| Shared `design/SKILL.md`           | Review process, screen checks, accessibility, engineering and existing workflow constraints |
+| Shared `design/SKILL.md`           | Design rules; screen check in `docs/screen-check.md`; Pencil steps in `docs/pencil-workflow.md` |
 | Botanical starter guidance         | Demonstrated v3 visual foundations within its stated boundaries                             |
 | `shell.md` — Sidebar section       | Variant 2 revision 2 sidebar appearance; see linked approval record for boundaries          |
 | `shell.md` — Header/layout section | Header B revision 4 appearance and shared shell-body gutter; approval record owns scope     |
