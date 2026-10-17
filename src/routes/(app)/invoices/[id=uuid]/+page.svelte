@@ -1156,7 +1156,7 @@
 						<RecordTrack
 							kind="invoice"
 							id={invoiceId}
-							clientName={saved.client?.company_name || saved.client?.display_name}
+							clientName={saved.client?.company_name || saved.client?.display_name || undefined}
 							clientIsCompany={Boolean(saved.client?.company_name)}
 						/>
 					{/snippet}

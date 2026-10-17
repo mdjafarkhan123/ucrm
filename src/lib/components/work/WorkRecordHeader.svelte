@@ -35,8 +35,6 @@
 		href?: string;
 		disabled?: boolean;
 		loading?: boolean;
-		/** Tabler icon (`?raw`) drawn before the label. Omit for a text-only button. */
-		icon?: string;
 		/** Fires on hover, before the press. Start loading whatever the action opens. */
 		onhover?: () => void;
 	};
@@ -449,14 +447,16 @@
 		cursor: pointer;
 		transition: all var(--timing-base) ease-out;
 
-		&:hover,
-		&[data-state='open'] {
+		&:hover {
 			background: var(--color-surface--hover);
 		}
 		&:focus-visible {
 			outline: transparent;
 			box-shadow: var(--shadow-focus);
 		}
+	}
+	:global(.work-header__more[data-state='open']) {
+		background: var(--color-surface--hover);
 	}
 	.work-header__more-chevron :global(svg) {
 		display: block;
