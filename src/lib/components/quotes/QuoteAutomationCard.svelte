@@ -303,14 +303,6 @@
 		padding: 0 20px 18px;
 	}
 
-	:global(.quote-automation__enrol) {
-		border-color: var(--color-border--interactive);
-		border-radius: 10px;
-		color: var(--color-heading);
-		font-size: 13px;
-		font-weight: 600;
-	}
-
 	.quote-automation__plus {
 		display: inline-flex;
 		margin-right: 6px;

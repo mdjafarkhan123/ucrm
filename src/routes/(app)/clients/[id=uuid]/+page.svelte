@@ -930,22 +930,6 @@
 		padding: 0;
 	}
 
-	// The outline button that sits in a card header: quiet border, heading-coloured label.
-	:global(.client-detail__action) {
-		gap: 6px;
-		min-height: 36px;
-		padding-inline: 12px;
-		border-color: var(--color-border);
-		color: var(--color-heading);
-		background: var(--color-surface);
-		font-size: 13px;
-		font-weight: 600;
-	}
-	:global(.client-detail__action--small) {
-		min-height: 30px;
-		padding-inline: 10px;
-		font-size: 12px;
-	}
 	:global(.client-detail__action-icon) {
 		display: inline-flex;
 		color: var(--color-text--secondary);

@@ -400,28 +400,6 @@
 		}
 	}
 
-	// The outline button the App look uses beside a heading: quiet border, heading-coloured label.
-	:global(.button.client-header__button) {
-		gap: 6px;
-		border-color: var(--color-border);
-		color: var(--color-heading);
-		background: var(--color-surface);
-		font-size: var(--typography--fontSize-base);
-		font-weight: 600;
-
-		&:hover:not(:disabled):not(.button--inactive),
-		&:focus-visible {
-			border-color: var(--color-interactive--subtle--hover);
-			background: var(--color-surface--hover);
-		}
-
-		&:disabled {
-			border-color: var(--color-border);
-			color: var(--color-heading);
-			background: var(--color-surface);
-			opacity: 0.45;
-		}
-	}
 	:global(.client-header__button-icon) {
 		display: inline-flex;
 		color: var(--color-text--secondary);

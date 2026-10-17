@@ -248,15 +248,9 @@
 			grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
 			gap: 8px;
 
-			// Quiet outline buttons, as in the design: the neutral border and ink, green only on hover.
 			:global(.button) {
-				--button--color-variation: var(--color-text);
-				--button--color-variation--hover: var(--color-interactive);
 				width: 100%;
 				padding-inline: 8px;
-				justify-content: center;
-				border-color: var(--color-border--interactive);
-				font-size: var(--typography--fontSize-small);
 				white-space: nowrap;
 			}
 		}
