@@ -31,7 +31,9 @@
 
 <section class="record-list-card" aria-labelledby={titleId}>
 	<header class="record-list-card__header">
-		{#if headingIcon}<div class="record-list-card__heading-icon" aria-hidden="true">{@render headingIcon()}</div>{/if}
+		{#if headingIcon}<div class="record-list-card__heading-icon" aria-hidden="true">
+				{@render headingIcon()}
+			</div>{/if}
 		<div class="record-list-card__heading">
 			<h2 id={titleId}>{title}</h2>
 			{#if subtitle}<p>{subtitle}</p>{/if}

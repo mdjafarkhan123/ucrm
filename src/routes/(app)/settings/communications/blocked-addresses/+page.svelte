@@ -172,6 +172,8 @@
 	}
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
+
 <svelte:head><title>Blocked addresses · Contractor CRM</title></svelte:head>
 
 <PageContainer variant="open">
@@ -231,7 +233,11 @@
 						<th scope="row">
 							<div class="blocked__address">
 								{#if address.client_display_name}
-									<Avatar id={address.suppression_id} name={address.client_display_name} size="base" />
+									<Avatar
+										id={address.suppression_id}
+										name={address.client_display_name}
+										size="base"
+									/>
 								{:else}
 									<span class="blocked__address-icon" aria-hidden="true">
 										<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
@@ -405,6 +411,8 @@
 	</p>
 </ConfirmDialog>
 
+<!-- eslint-enable svelte/no-at-html-tags -->
+
 <style lang="scss">
 	.blocked {
 		display: flex;
@@ -438,7 +446,8 @@
 		height: 18px;
 		color: var(--color-informative--onSurface);
 	}
-	.blocked.record-detail--cards :global(.section-block:not(:has(> .section-block__hint)) > .section-block__title) {
+	.blocked.record-detail--cards
+		:global(.section-block:not(:has(> .section-block__hint)) > .section-block__title) {
 		min-height: 76px;
 		padding-top: 0;
 		padding-bottom: 0;

@@ -312,169 +312,172 @@
 				<Button onclick={openRequest}>Request top-up</Button>
 			</div>
 
-		<SectionBlock
-			title="SMS messaging health"
-			subtitle={`The last ${usage.messaging_health.period_days} days. For message-by-message detail, use Conversations once it supports SMS.`}
-			icon={activityIcon}
-			level={2}
-		>
-			<div class="balance__health-grid">
-				{#each [{ label: 'Sent', value: String(usage.messaging_health.sent), note: 'Outbound attempts', tone: 'neutral' }, { label: 'Delivered', value: String(usage.messaging_health.delivered), note: 'Confirmed by carrier', tone: 'success' }, { label: 'Failed', value: String(usage.messaging_health.failed), note: 'Could not be delivered', tone: 'critical' }, { label: 'Received', value: String(usage.messaging_health.received), note: 'Coming with Conversations SMS', tone: 'neutral' }, { label: 'Opt-out rate', value: formatPercent(usage.messaging_health.opt_out_rate), note: 'Of messages sent', tone: 'neutral' }] as stat (stat.label)}
-					<div class={`balance__health balance__health--${stat.tone}`}>
-						<span class="balance__health-label">
-							<span class="balance__dot" aria-hidden="true"></span>{stat.label}
-						</span>
-						<strong>{stat.value}</strong>
-						<small>{stat.note}</small>
-					</div>
-				{/each}
-			</div>
-		</SectionBlock>
-
-		<SectionBlock
-			title="Top-up requests"
-			icon={receiptIcon}
-			level={2}
-			class={topupsQuery.data?.requests.length ? 'section-block--flush' : ''}
-		>
-			{#if topupsQuery.isPending}
-				<LoadingSkeleton variant="table" rows={2} />
-			{:else if topupsQuery.isError}
-				<ErrorState
-					description="The top-up requests could not be loaded."
-					retry={() => topupsQuery.refetch()}
-				/>
-			{:else if topupsQuery.data.requests.length === 0}
-				<EmptyState
-					icon={receiptIcon}
-					title="No top-up requests yet"
-					description="Request a top-up above once you need more balance."
-				/>
-			{:else}
-				<ul class="balance__topups">
-					{#each topupsQuery.data.requests as request (request.id)}
-						<li class="balance__topup">
-							<span
-								class={`balance__tile balance__tile--${smsCreditTopupStatusTone[request.status]}`}
-								aria-hidden="true"
-							>
-								<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-								{@html topupStatusIcon[request.status]}
+			<SectionBlock
+				title="SMS messaging health"
+				subtitle={`The last ${usage.messaging_health.period_days} days. For message-by-message detail, use Conversations once it supports SMS.`}
+				icon={activityIcon}
+				level={2}
+			>
+				<div class="balance__health-grid">
+					{#each [{ label: 'Sent', value: String(usage.messaging_health.sent), note: 'Outbound attempts', tone: 'neutral' }, { label: 'Delivered', value: String(usage.messaging_health.delivered), note: 'Confirmed by carrier', tone: 'success' }, { label: 'Failed', value: String(usage.messaging_health.failed), note: 'Could not be delivered', tone: 'critical' }, { label: 'Received', value: String(usage.messaging_health.received), note: 'Coming with Conversations SMS', tone: 'neutral' }, { label: 'Opt-out rate', value: formatPercent(usage.messaging_health.opt_out_rate), note: 'Of messages sent', tone: 'neutral' }] as stat (stat.label)}
+						<div class={`balance__health balance__health--${stat.tone}`}>
+							<span class="balance__health-label">
+								<span class="balance__dot" aria-hidden="true"></span>{stat.label}
 							</span>
-							<div class="balance__topup-copy">
-								<p class="balance__topup-amount">
-									{formatSmsMoney(request.requested_amount_minor, request.currency_code)} requested
-								</p>
-								<p class="balance__topup-meta">
-									{formatTime(request.requested_at)}
-									{#if request.offsite_reference}· Ref: {request.offsite_reference}{/if}
-								</p>
-								{#if request.status === 'confirmed' && request.settled_amount_minor !== null}
-									<p class="balance__topup-meta">
-										Confirmed: {formatSmsMoney(request.settled_amount_minor, request.currency_code)}
-									</p>
-								{/if}
-								{#if request.status === 'rejected' && request.decision_reason}
-									<p class="balance__topup-meta">Declined: {request.decision_reason}</p>
-								{/if}
-							</div>
-							<div class="balance__topup-actions">
-								<StatusBadge size="compact" status={smsCreditTopupStatusTone[request.status]}>
-									{smsCreditTopupStatusLabel[request.status]}
-								</StatusBadge>
-								{#if request.status === 'awaiting_confirmation'}
-									<Button
-										size="small"
-										variant="secondary"
-										variation="subtle"
-										loading={cancelMutation.isPending && cancellingId === request.id}
-										onclick={() => cancelRequest(request.id)}
-									>
-										Cancel
-									</Button>
-								{/if}
-							</div>
-						</li>
+							<strong>{stat.value}</strong>
+							<small>{stat.note}</small>
+						</div>
 					{/each}
-				</ul>
-			{/if}
-		</SectionBlock>
+				</div>
+			</SectionBlock>
 
-		<SectionBlock
-			title="Ledger"
-			icon={historyIcon}
-			level={2}
-			class={ledgerEntries.length ? 'section-block--flush' : ''}
-		>
-			{#snippet actions()}
-				<FilterChip
-					id="balance-ledger-entry-kind"
-					variant="toolbar"
-					icon={filterIcon}
-					label="Entry type"
-					value={entryKindFilter}
-					options={entryKindOptions}
-					restValue=""
-					onchange={(value) => (entryKindFilter = value)}
-				/>
-			{/snippet}
-
-			{#if ledgerQuery.isPending}
-				<LoadingSkeleton variant="table" rows={4} />
-			{:else if ledgerQuery.isError}
-				<ErrorState
-					description="The ledger could not be loaded."
-					retry={() => ledgerQuery.refetch()}
-				/>
-			{:else if ledgerEntries.length === 0}
-				<EmptyState
-					icon={historyIcon}
-					title="Nothing here yet"
-					description="Charges, top-up credits, refunds and adjustments will appear here once your account has activity."
-				/>
-			{:else}
-				<DataTable
-					variant="card"
-					columns={ledgerColumns}
-					items={ledgerEntries}
-					rowId={(entry: SmsLedgerEntry) => entry.id}
-					caption="Communication Balance ledger"
-				>
-					{#snippet row(entry: SmsLedgerEntry)}
-						<td>{formatTime(entry.occurred_at)}</td>
-						<td>
-							<span class="balance__kind">
+			<SectionBlock
+				title="Top-up requests"
+				icon={receiptIcon}
+				level={2}
+				class={topupsQuery.data?.requests.length ? 'section-block--flush' : ''}
+			>
+				{#if topupsQuery.isPending}
+					<LoadingSkeleton variant="table" rows={2} />
+				{:else if topupsQuery.isError}
+					<ErrorState
+						description="The top-up requests could not be loaded."
+						retry={() => topupsQuery.refetch()}
+					/>
+				{:else if topupsQuery.data.requests.length === 0}
+					<EmptyState
+						icon={receiptIcon}
+						title="No top-up requests yet"
+						description="Request a top-up above once you need more balance."
+					/>
+				{:else}
+					<ul class="balance__topups">
+						{#each topupsQuery.data.requests as request (request.id)}
+							<li class="balance__topup">
 								<span
-									class={`balance__kind-icon balance__kind-icon--${entry.entry_kind}`}
+									class={`balance__tile balance__tile--${smsCreditTopupStatusTone[request.status]}`}
 									aria-hidden="true"
 								>
 									<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-									{@html ledgerKindIcon[entry.entry_kind]}
+									{@html topupStatusIcon[request.status]}
 								</span>
-								{smsLedgerEntryKindLabel[entry.entry_kind]}
-							</span>
-						</td>
-						<td class="balance__reference">{entry.reference}</td>
-						<td>Purchased</td>
-						<td
-							class={`align-end balance__amount${entry.amount_minor > 0 ? ' balance__amount--in' : ''}`}
-						>
-							{formatSmsMoney(entry.amount_minor, usage.balance.currency_code)}
-						</td>
-						<td class="align-end">
-							{formatSmsMoney(entry.balance_after_minor, usage.balance.currency_code)}
-						</td>
-					{/snippet}
-				</DataTable>
-				<ListLoadMore
-					variant="card"
-					hasNextPage={ledgerQuery.hasNextPage}
-					isFetchingNextPage={ledgerQuery.isFetchingNextPage}
-					onLoadMore={() => void ledgerQuery.fetchNextPage()}
-					endLabel="That’s the whole ledger."
-				/>
-			{/if}
-		</SectionBlock>
+								<div class="balance__topup-copy">
+									<p class="balance__topup-amount">
+										{formatSmsMoney(request.requested_amount_minor, request.currency_code)} requested
+									</p>
+									<p class="balance__topup-meta">
+										{formatTime(request.requested_at)}
+										{#if request.offsite_reference}· Ref: {request.offsite_reference}{/if}
+									</p>
+									{#if request.status === 'confirmed' && request.settled_amount_minor !== null}
+										<p class="balance__topup-meta">
+											Confirmed: {formatSmsMoney(
+												request.settled_amount_minor,
+												request.currency_code
+											)}
+										</p>
+									{/if}
+									{#if request.status === 'rejected' && request.decision_reason}
+										<p class="balance__topup-meta">Declined: {request.decision_reason}</p>
+									{/if}
+								</div>
+								<div class="balance__topup-actions">
+									<StatusBadge size="compact" status={smsCreditTopupStatusTone[request.status]}>
+										{smsCreditTopupStatusLabel[request.status]}
+									</StatusBadge>
+									{#if request.status === 'awaiting_confirmation'}
+										<Button
+											size="small"
+											variant="secondary"
+											variation="subtle"
+											loading={cancelMutation.isPending && cancellingId === request.id}
+											onclick={() => cancelRequest(request.id)}
+										>
+											Cancel
+										</Button>
+									{/if}
+								</div>
+							</li>
+						{/each}
+					</ul>
+				{/if}
+			</SectionBlock>
+
+			<SectionBlock
+				title="Ledger"
+				icon={historyIcon}
+				level={2}
+				class={ledgerEntries.length ? 'section-block--flush' : ''}
+			>
+				{#snippet actions()}
+					<FilterChip
+						id="balance-ledger-entry-kind"
+						variant="toolbar"
+						icon={filterIcon}
+						label="Entry type"
+						value={entryKindFilter}
+						options={entryKindOptions}
+						restValue=""
+						onchange={(value) => (entryKindFilter = value)}
+					/>
+				{/snippet}
+
+				{#if ledgerQuery.isPending}
+					<LoadingSkeleton variant="table" rows={4} />
+				{:else if ledgerQuery.isError}
+					<ErrorState
+						description="The ledger could not be loaded."
+						retry={() => ledgerQuery.refetch()}
+					/>
+				{:else if ledgerEntries.length === 0}
+					<EmptyState
+						icon={historyIcon}
+						title="Nothing here yet"
+						description="Charges, top-up credits, refunds and adjustments will appear here once your account has activity."
+					/>
+				{:else}
+					<DataTable
+						variant="card"
+						columns={ledgerColumns}
+						items={ledgerEntries}
+						rowId={(entry: SmsLedgerEntry) => entry.id}
+						caption="Communication Balance ledger"
+					>
+						{#snippet row(entry: SmsLedgerEntry)}
+							<td>{formatTime(entry.occurred_at)}</td>
+							<td>
+								<span class="balance__kind">
+									<span
+										class={`balance__kind-icon balance__kind-icon--${entry.entry_kind}`}
+										aria-hidden="true"
+									>
+										<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+										{@html ledgerKindIcon[entry.entry_kind]}
+									</span>
+									{smsLedgerEntryKindLabel[entry.entry_kind]}
+								</span>
+							</td>
+							<td class="balance__reference">{entry.reference}</td>
+							<td>Purchased</td>
+							<td
+								class={`align-end balance__amount${entry.amount_minor > 0 ? ' balance__amount--in' : ''}`}
+							>
+								{formatSmsMoney(entry.amount_minor, usage.balance.currency_code)}
+							</td>
+							<td class="align-end">
+								{formatSmsMoney(entry.balance_after_minor, usage.balance.currency_code)}
+							</td>
+						{/snippet}
+					</DataTable>
+					<ListLoadMore
+						variant="card"
+						hasNextPage={ledgerQuery.hasNextPage}
+						isFetchingNextPage={ledgerQuery.isFetchingNextPage}
+						onLoadMore={() => void ledgerQuery.fetchNextPage()}
+						endLabel="That’s the whole ledger."
+					/>
+				{/if}
+			</SectionBlock>
 		{/if}
 	</div>
 </PageContainer>
@@ -879,7 +882,6 @@
 		&__amount {
 			white-space: nowrap;
 			font-weight: 700;
-
 		}
 		td.balance__amount--in {
 			color: var(--color-success--onSurface);

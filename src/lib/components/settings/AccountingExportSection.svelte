@@ -39,6 +39,8 @@
 	);
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
+
 <SectionBlock
 	title="Accounting export"
 	icon={downloadIcon}
@@ -83,6 +85,8 @@
 		</div>
 	</div>
 </SectionBlock>
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.accounting-export {

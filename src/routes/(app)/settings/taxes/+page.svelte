@@ -126,6 +126,8 @@
 	];
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
+
 <svelte:head><title>Taxes · Settings · Contractor CRM</title></svelte:head>
 
 <SettingsPresentation
@@ -299,6 +301,8 @@
 		</ConfirmDialog>
 	{/if}
 </SettingsPresentation>
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.taxes-page :global(.section-block__title) {

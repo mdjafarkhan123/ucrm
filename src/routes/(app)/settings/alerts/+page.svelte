@@ -90,14 +90,26 @@
 
 	// Each group's tile carries its meaning: the record colour of what the alerts are about.
 	const GROUP_LOOK: Record<string, { icon: string; tone: string; surface: string }> = {
-		schedule: { icon: calendarIcon, tone: 'var(--color-job)', surface: 'var(--color-job--surface)' },
+		schedule: {
+			icon: calendarIcon,
+			tone: 'var(--color-job)',
+			surface: 'var(--color-job--surface)'
+		},
 		messages: {
 			icon: messageIcon,
 			tone: 'var(--color-informative--onSurface)',
 			surface: 'var(--color-informative--surface)'
 		},
-		sales: { icon: fileTextIcon, tone: 'var(--color-quote)', surface: 'var(--color-quote--surface)' },
-		money: { icon: cashIcon, tone: 'var(--color-invoice)', surface: 'var(--color-invoice--surface)' },
+		sales: {
+			icon: fileTextIcon,
+			tone: 'var(--color-quote)',
+			surface: 'var(--color-quote--surface)'
+		},
+		money: {
+			icon: cashIcon,
+			tone: 'var(--color-invoice)',
+			surface: 'var(--color-invoice--surface)'
+		},
 		team: { icon: usersIcon, tone: 'var(--color-task)', surface: 'var(--color-task--surface)' },
 		reviews: {
 			icon: starIcon,
@@ -213,6 +225,8 @@
 	}
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
+
 <svelte:head><title>My alerts · Contractor CRM</title></svelte:head>
 
 <PageContainer variant="open">
@@ -229,7 +243,6 @@
 			<div class="alerts-page__column">
 				<section class="alerts-card" aria-labelledby="browser-title">
 					<div class="alerts-card__heading">
-						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						<span class="alerts-card__icon" aria-hidden="true">{@html deviceIcon}</span>
 						<div>
 							<h2 id="browser-title">Browser alerts on your computers</h2>
@@ -285,7 +298,10 @@
 						{/if}
 
 						{#if computers.data && computers.data.computers.length > 0}
-							<ul class="alerts-card__computers" aria-label="Computers that get your browser alerts">
+							<ul
+								class="alerts-card__computers"
+								aria-label="Computers that get your browser alerts"
+							>
 								{#each computers.data.computers as computer (computer.id)}
 									{@const isThisOne = computer.id === thisComputer?.id}
 									<li class="alerts-card__computer">
@@ -301,7 +317,6 @@
 											disabled={working}
 											onclick={() => void remove(computer.id, isThisOne)}
 										>
-											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 											<span aria-hidden="true">{@html trashIcon}</span>
 											Remove
 										</button>
@@ -362,7 +377,6 @@
 			<div class="alerts-table__head" role="row">
 				<span role="columnheader">Alert</span>
 				<span role="columnheader" class="alerts-table__channel">
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					<span aria-hidden="true">{@html bellIcon}</span> Bell
 				</span>
 				<span role="columnheader" class="alerts-table__channel">Email</span>
@@ -419,6 +433,8 @@
 	</p>
 	<p>You can turn this off here at any time.</p>
 </ConfirmDialog>
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.alerts-page {

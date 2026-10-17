@@ -25,11 +25,17 @@
 </script>
 
 <div
-	class={['settings-page-header', `settings-page-header--${presentation}`, compactDescription && 'settings-page-header--compact-description']}
+	class={[
+		'settings-page-header',
+		`settings-page-header--${presentation}`,
+		compactDescription && 'settings-page-header--compact-description'
+	]}
 	style={`--settings-header-tone: var(--color-${tone}); --settings-header-ink: var(--color-${tone === 'warning' ? 'heading' : 'text--reverse'})`}
 >
 	{#snippet breadcrumb()}
-		<Breadcrumbs items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: title }]} />
+		<Breadcrumbs
+			items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: title }]}
+		/>
 	{/snippet}
 	{#if presentation === 'business'}{@render breadcrumb()}{/if}
 	<div class="settings-page-header__row">
@@ -63,9 +69,19 @@
 			color: var(--settings-header-ink);
 			box-shadow: 0 6px 16px color-mix(in srgb, var(--settings-header-tone) 35%, transparent);
 		}
-		&__icon :global(svg) { display: block; width: 28px; height: 28px; }
-		&__copy { flex: 1; min-width: 0; }
-		&__copy :global(.page-header) { margin: 0; padding: 0; }
+		&__icon :global(svg) {
+			display: block;
+			width: 28px;
+			height: 28px;
+		}
+		&__copy {
+			flex: 1;
+			min-width: 0;
+		}
+		&__copy :global(.page-header) {
+			margin: 0;
+			padding: 0;
+		}
 		&__actions {
 			display: flex;
 			flex: 0 0 auto;
@@ -75,19 +91,47 @@
 		}
 		&--workflow {
 			margin-bottom: var(--space-large);
-			:global(.breadcrumbs) { margin-bottom: 6px; font-size: 13px; font-weight: 600; }
-			:global(.breadcrumbs a svg) { display: none; }
-			:global(.page-header h1) { font-size: 36px; font-weight: 900; }
-			:global(.page-header__description) { max-width: none; font-size: 14px; }
+			:global(.breadcrumbs) {
+				margin-bottom: 6px;
+				font-size: 13px;
+				font-weight: 600;
+			}
+			:global(.breadcrumbs a svg) {
+				display: none;
+			}
+			:global(.page-header h1) {
+				font-size: 36px;
+				font-weight: 900;
+			}
+			:global(.page-header__description) {
+				max-width: none;
+				font-size: 14px;
+			}
 		}
 		&--communication {
-			:global(.breadcrumbs) { margin-bottom: 4px; font-size: 13px; font-weight: 600; }
-			:global(.breadcrumbs a svg) { display: none; }
-			:global(.page-header__copy) { gap: var(--space-smaller); }
-			:global(.page-header h1) { font-size: 36px; line-height: var(--typography--lineHeight-tight); }
-			:global(.page-header__description) { max-width: none; font-size: 14px; }
+			:global(.breadcrumbs) {
+				margin-bottom: 4px;
+				font-size: 13px;
+				font-weight: 600;
+			}
+			:global(.breadcrumbs a svg) {
+				display: none;
+			}
+			:global(.page-header__copy) {
+				gap: var(--space-smaller);
+			}
+			:global(.page-header h1) {
+				font-size: 36px;
+				line-height: var(--typography--lineHeight-tight);
+			}
+			:global(.page-header__description) {
+				max-width: none;
+				font-size: 14px;
+			}
 		}
-		&--compact-description :global(.page-header__copy) { gap: 2px; }
+		&--compact-description :global(.page-header__copy) {
+			gap: 2px;
+		}
 		&--business &__row {
 			align-items: center;
 			gap: var(--space-base);
@@ -102,7 +146,11 @@
 		}
 	}
 	@media (max-width: 639px) {
-		.settings-page-header--workflow .settings-page-header__row { flex-wrap: wrap; }
-		.settings-page-header--communication :global(.page-header h1) { font-size: 28px; }
+		.settings-page-header--workflow .settings-page-header__row {
+			flex-wrap: wrap;
+		}
+		.settings-page-header--communication :global(.page-header h1) {
+			font-size: 28px;
+		}
 	}
 </style>

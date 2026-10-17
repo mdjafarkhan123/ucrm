@@ -86,7 +86,9 @@
 	}
 
 	function requiredShare(template: ChecklistTemplate) {
-		return template.items.length === 0 ? 0 : (requiredCount(template) / template.items.length) * 100;
+		return template.items.length === 0
+			? 0
+			: (requiredCount(template) / template.items.length) * 100;
 	}
 </script>
 

@@ -115,6 +115,8 @@
 	}
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
+
 <svelte:head><title>Contact matching · Settings · Contractor CRM</title></svelte:head>
 
 {#if query.isPending || priority === null}
@@ -176,7 +178,9 @@
 							<div class="contact-matching__notes">
 								<div class="contact-matching__note">
 									<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-									<span class="contact-matching__note-icon" aria-hidden="true">{@html mailIcon}</span>
+									<span class="contact-matching__note-icon" aria-hidden="true"
+										>{@html mailIcon}</span
+									>
 									<p>{EXPLANATIONS[priority]}</p>
 								</div>
 								<div class="contact-matching__note">
@@ -185,8 +189,8 @@
 										>{@html gitMergeIcon}</span
 									>
 									<p>
-										Neither client's details are changed. If the two clients are really the same person,
-										merge them from either client's page.
+										Neither client's details are changed. If the two clients are really the same
+										person, merge them from either client's page.
 									</p>
 								</div>
 							</div>
@@ -226,6 +230,8 @@
 		</RecordFormLayout>
 	</div>
 {/if}
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.contact-matching {

@@ -464,7 +464,14 @@
 
 <PageContainer variant="open">
 	<div class="sms-settings record-detail--cards">
-		<SettingsPageHeader title="Phone & SMS" description="Understand what is ready and what needs attention." icon={phoneIcon} tone="task" presentation="communication" compactDescription />
+		<SettingsPageHeader
+			title="Phone & SMS"
+			description="Understand what is ready and what needs attention."
+			icon={phoneIcon}
+			tone="task"
+			presentation="communication"
+			compactDescription
+		/>
 
 		{#if homeQuery.isPending}
 			<LoadingSkeleton variant="card" rows={3} />
@@ -487,8 +494,10 @@
 						<div class="sms-settings__fact">
 							<span>SMS mode</span>
 							<strong>
-								{#if readiness.effective_mode === 'operational'
-									}<span class="sms-settings__dot" aria-hidden="true"></span>{/if}
+								{#if readiness.effective_mode === 'operational'}<span
+										class="sms-settings__dot"
+										aria-hidden="true"
+									></span>{/if}
 								{readiness.effective_mode === 'operational' ? 'On' : 'Off'}
 							</strong>
 						</div>
@@ -509,8 +518,10 @@
 						<div class="sms-settings__fact">
 							<span>Outbound availability</span>
 							<strong>
-								{#if readiness.readiness_state === 'ready'
-									}<span class="sms-settings__dot" aria-hidden="true"></span>{/if}
+								{#if readiness.readiness_state === 'ready'}<span
+										class="sms-settings__dot"
+										aria-hidden="true"
+									></span>{/if}
 								{readiness.readiness_state === 'ready' ? 'Available' : 'Not yet available'}
 							</strong>
 						</div>
@@ -804,8 +815,7 @@
 												type="button"
 												size="small"
 												variant="secondary"
-												onclick={addSampleMessage}
-												>Add sample message</Button
+												onclick={addSampleMessage}>Add sample message</Button
 											>
 										{/if}
 									</div>
@@ -926,8 +936,7 @@
 													type="button"
 													size="small"
 													loading={renameSaving}
-													onclick={saveRename}
-													>Save name</Button
+													onclick={saveRename}>Save name</Button
 												>
 												<Button
 													type="button"
@@ -965,8 +974,8 @@
 									<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
 									{@html infoCircleIcon}
 								</span>
-								To release or replace a number, contact Jafar — buying and releasing numbers stay a
-								provider-owned action.
+								To release or replace a number, contact Jafar — buying and releasing numbers stay a provider-owned
+								action.
 							</p>
 						{/if}
 					</SectionBlock>
@@ -991,7 +1000,10 @@
 								</div>
 							</div>
 							{#if !holdsQuery.data.holds.length}
-								<p class="sms-settings__notice sms-settings__notice--success sms-settings__notice--icon" role="status">
+								<p
+									class="sms-settings__notice sms-settings__notice--success sms-settings__notice--icon"
+									role="status"
+								>
 									<span class="sms-settings__notice-icon" aria-hidden="true">
 										<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
 										{@html checkCircleIcon}
@@ -1021,8 +1033,8 @@
 									{/each}
 								</ul>
 								<p class="sms-settings__notice" role="status">
-									Holds are released by Jafar or the provider, never directly by a contractor. Contact
-									Jafar if a hold needs review.
+									Holds are released by Jafar or the provider, never directly by a contractor.
+									Contact Jafar if a hold needs review.
 								</p>
 							{/if}
 						{/if}

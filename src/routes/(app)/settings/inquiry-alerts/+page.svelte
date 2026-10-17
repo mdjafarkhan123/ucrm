@@ -141,9 +141,8 @@
 						<div class="inquiry-alerts__banner" role="status">
 							<span class="inquiry-alerts__banner-icon" aria-hidden="true">{@html alertIcon}</span>
 							<p>
-								Nobody is chosen, so only the account owner{owner
-									? ` (${memberName(owner)})`
-									: ''} is alerted. Choose the people who answer new customers.
+								Nobody is chosen, so only the account owner{owner ? ` (${memberName(owner)})` : ''} is
+								alerted. Choose the people who answer new customers.
 							</p>
 						</div>
 						<!-- eslint-enable svelte/no-at-html-tags -->
@@ -157,7 +156,11 @@
 						level={3}
 						class="section-block--flush"
 					>
-						<ul class="inquiry-alerts__list" role="group" aria-labelledby="inquiry-alerts-who-title">
+						<ul
+							class="inquiry-alerts__list"
+							role="group"
+							aria-labelledby="inquiry-alerts-who-title"
+						>
 							{#each members as member (member.user_id)}
 								<li
 									class="inquiry-alerts__item"
@@ -252,7 +255,8 @@
 		:global(.section-block > .section-block__title) {
 			padding-left: 72px;
 		}
-		&.record-detail--cards :global(.section-block:has(> .section-block__hint) > .section-block__hint) {
+		&.record-detail--cards
+			:global(.section-block:has(> .section-block__hint) > .section-block__hint) {
 			margin-left: 72px;
 		}
 		:global(.section-block .section-block__icon) {

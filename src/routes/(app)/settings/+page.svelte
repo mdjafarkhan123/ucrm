@@ -14,7 +14,6 @@
 	import { fetchSettingsHome, settingsHomeKey } from '$lib/settings/api';
 	import { smsRegistrationBadge } from '$lib/communications/sms-registration';
 	import { AUTOMATION_JOURNEY_READY } from '$lib/automation/journey';
-	import userIcon from '@tabler/icons/outline/user.svg?raw';
 	import buildingIcon from '@tabler/icons/outline/building-store.svg?raw';
 	import paletteIcon from '@tabler/icons/outline/palette.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
@@ -54,6 +53,8 @@
 	// pilot, so its card stays hidden from ordinary packages until the shared journey flag flips. The
 	// permission gate below already handles who may see it once it is on.
 </script>
+
+<!-- eslint-disable svelte/no-at-html-tags -->
 
 <svelte:head><title>Settings · Contractor CRM</title></svelte:head>
 
@@ -411,6 +412,8 @@
 		{/if}
 	</div>
 </PageContainer>
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.settings-page {

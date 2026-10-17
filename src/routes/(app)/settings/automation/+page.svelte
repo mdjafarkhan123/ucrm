@@ -147,6 +147,8 @@
 	];
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
+
 <svelte:head><title>Automation · Settings · Contractor CRM</title></svelte:head>
 
 <PageContainer variant="open">
@@ -184,8 +186,9 @@
 				{#snippet actions()}
 					{#if access.can_manage}
 						<Button variant="primary" href={resolve('/(app)/settings/automation/new')}>
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							<span class="automation-settings__button-icon" aria-hidden="true">{@html plusIcon}</span>
+							<span class="automation-settings__button-icon" aria-hidden="true"
+								>{@html plusIcon}</span
+							>
 							New automation
 						</Button>
 					{/if}
@@ -198,11 +201,9 @@
 					class:automation-settings__banner--suspended={suspended}
 					role="status"
 				>
-					<!-- eslint-disable svelte/no-at-html-tags -->
 					<span class="automation-settings__banner-icon" aria-hidden="true"
 						>{@html alertTriangleIcon}</span
 					>
-					<!-- eslint-enable svelte/no-at-html-tags -->
 					<span>
 						{#if suspended}
 							Automation is suspended for your business. You can still read your automations, but
@@ -220,7 +221,6 @@
 
 			<div class="automation-settings__strip">
 				<span class="automation-settings__strip-icon" aria-hidden="true">
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					{@html boltIcon}
 				</span>
 				<span class="automation-settings__strip-label"
@@ -228,7 +228,7 @@
 				>
 				{#if segments !== null}
 					<span class="automation-settings__meter" aria-hidden="true">
-						{#each { length: 10 } as _, index (index)}
+						{#each [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as index (index)}
 							<span class:automation-settings__meter-segment--on={index < segments}></span>
 						{/each}
 					</span>
@@ -267,7 +267,6 @@
 				padBody={recipesQuery.isPending || recipesQuery.isError || recipes.length === 0}
 			>
 				{#snippet headingIcon()}
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					<span class="automation-settings__list-icon">{@html robotIcon}</span>
 				{/snippet}
 				{#snippet toolbar()}
@@ -366,7 +365,6 @@
 							<td>
 								<span class="automation-table__trigger">
 									{#if trigger}
-										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 										<span
 											class={`automation-table__trigger-icon automation-table__trigger-icon--${trigger.tone}`}
 											aria-hidden="true">{@html trigger.icon}</span
@@ -397,6 +395,8 @@
 		</div>
 	{/if}
 </PageContainer>
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.automation-settings {
@@ -535,7 +535,10 @@
 		border-radius: var(--radius-base);
 		color: var(--color-warning--onSurface);
 		background: var(--color-warning--surface);
-		:global(svg) { width: 16px; height: 16px; }
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
 	}
 	.automation-table__trigger-icon {
 		display: inline-flex;

@@ -142,6 +142,8 @@
 	];
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
+
 <svelte:head><title>Request Forms · Settings · Contractor CRM</title></svelte:head>
 
 <PageContainer variant="open">
@@ -185,14 +187,13 @@
 						{@const badge = statusOf(form)}
 						<th scope="row">
 							<span class="forms-page__form">
-								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-								<span class={`forms-page__icon forms-page__icon--${form.outcome}`} aria-hidden="true"
-									>{@html outcomeIcons[form.outcome]}</span
+								<span
+									class={`forms-page__icon forms-page__icon--${form.outcome}`}
+									aria-hidden="true">{@html outcomeIcons[form.outcome]}</span
 								>
 								<a class="forms-page__name" href={builderHref(form.id)}>{form.name}</a>
 								{#if form.is_default}
 									<span class="forms-page__default">
-										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 										<span aria-hidden="true">{@html starIcon}</span>Default
 									</span>
 								{/if}
@@ -216,6 +217,8 @@
 </PageContainer>
 
 <FormCreateDialog open={creating} {onCreated} onClose={() => (creating = false)} />
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.forms-page {

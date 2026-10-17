@@ -247,13 +247,7 @@
 						{/snippet}
 					</EmptyState>
 				{:else}
-					<DataTable
-						variant="card"
-						{columns}
-						{items}
-						rowId={(item) => item.id}
-						caption="Templates"
-					>
+					<DataTable variant="card" {columns} {items} rowId={(item) => item.id} caption="Templates">
 						{#snippet row(item: CommunicationEmailTemplateListItem)}
 							<th scope="row">
 								<div class="templates-page__title">

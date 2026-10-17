@@ -308,7 +308,13 @@
 
 <PageContainer variant="open">
 	<div class="email-identities record-detail--cards">
-		<SettingsPageHeader title="Email identity" description="Choose the verified email addresses your team and automations can use." icon={atIcon} tone="task" presentation="communication" />
+		<SettingsPageHeader
+			title="Email identity"
+			description="Choose the verified email addresses your team and automations can use."
+			icon={atIcon}
+			tone="task"
+			presentation="communication"
+		/>
 
 		<SectionBlock
 			title="Email included this period"
@@ -436,8 +442,7 @@
 			level={2}
 		>
 			{#snippet actions()}
-				<Button disabled={!canCreate} onhover={() => void prefetchTeam()} onclick={openCreate}
-					>
+				<Button disabled={!canCreate} onhover={() => void prefetchTeam()} onclick={openCreate}>
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					<span class="email-identities__action-icon" aria-hidden="true">{@html plusIcon}</span>
 					Add sender</Button
@@ -506,7 +511,11 @@
 									? 'Manual'
 									: 'Automated'}</td
 						>
-						<td><StatusBadge status={senderStatus.tone} size="compact">{senderStatus.label}</StatusBadge></td>
+						<td
+							><StatusBadge status={senderStatus.tone} size="compact"
+								>{senderStatus.label}</StatusBadge
+							></td
+						>
 					{/snippet}
 					{#snippet rowActions(sender)}
 						<Button
@@ -728,7 +737,10 @@
 	}
 	.email-identities__action-icon {
 		display: inline-flex;
-		:global(svg) { width: 18px; height: 18px; }
+		:global(svg) {
+			width: 18px;
+			height: 18px;
+		}
 	}
 	.email-identities__notice,
 	.email-identities__fixed-address {

@@ -36,6 +36,7 @@
 		</span>
 	</div>
 {:else}
+	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- callers pass hrefs already built with resolve() -->
 	<a class="settings-card" {href}>
 		<span class="settings-card__icon" aria-hidden="true">{@html icon}</span>
 		<span class="settings-card__body">

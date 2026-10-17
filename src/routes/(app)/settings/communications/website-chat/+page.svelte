@@ -342,11 +342,19 @@
 	}
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
+
 <svelte:head><title>Website Chat · Contractor CRM</title></svelte:head>
 
 <PageContainer variant="open">
 	<div class="website-chat record-detail--cards">
-		<SettingsPageHeader title="Website Chat" description="The chat widgets your website can show customers." icon={messageCircleIcon} tone="task" presentation="communication" />
+		<SettingsPageHeader
+			title="Website Chat"
+			description="The chat widgets your website can show customers."
+			icon={messageCircleIcon}
+			tone="task"
+			presentation="communication"
+		/>
 
 		{#if widgetsQuery.isPending}
 			<LoadingSkeleton variant="table" label="Loading Website Chat widgets" />
@@ -366,13 +374,14 @@
 					<div class="website-chat__usage-copy">
 						<span>Accepted conversations</span>
 						<strong class="website-chat__usage-count"
-							>{conversationUsage?.accepted_count ?? 0}{#if conversationUsage?.state === 'numeric'}<small
+							>{conversationUsage?.accepted_count ??
+								0}{#if conversationUsage?.state === 'numeric'}<small
 									>of {conversationUsage.value ?? 0}</small
-								>{:else if conversationUsage?.state === 'unlimited'}<small>· unlimited</small>{/if}</strong
+								>{:else if conversationUsage?.state === 'unlimited'}<small>· unlimited</small
+								>{/if}</strong
 						>
 						{#if conversationUsage?.period_ends_at}
 							<small class="website-chat__usage-reset">
-								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 								<span class="website-chat__usage-reset-icon" aria-hidden="true"
 									>{@html refreshIcon}</span
 								>
@@ -432,7 +441,6 @@
 			>
 				{#snippet actions()}
 					<Button disabled={!canCreate} onclick={openCreate}>
-						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						<span class="website-chat__action-icon" aria-hidden="true">{@html plusIcon}</span>
 						New widget
 					</Button>
@@ -461,15 +469,17 @@
 							{@const widgetStatus = status(widget)}
 							<th scope="row" class="website-chat__widget-cell">
 								<div class="website-chat__widget">
-									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-									<span class="website-chat__widget-icon" aria-hidden="true">{@html messageCircleIcon}</span>
+									<span class="website-chat__widget-icon" aria-hidden="true"
+										>{@html messageCircleIcon}</span
+									>
 									<span class="website-chat__widget-name">{widget.name}</span>
 								</div>
 							</th>
 							<td>
 								<div class="website-chat__launcher">
-									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-									<span class="website-chat__launcher-icon" aria-hidden="true">{@html messageCircleIcon}</span>
+									<span class="website-chat__launcher-icon" aria-hidden="true"
+										>{@html messageCircleIcon}</span
+									>
 									{widget.launcher_position === 'bottom_left' ? 'Bottom left' : 'Bottom right'}
 								</div>
 							</td>
@@ -702,6 +712,8 @@
 	</Dialog>
 {/if}
 
+<!-- eslint-enable svelte/no-at-html-tags -->
+
 <style lang="scss">
 	.website-chat {
 		display: grid;
@@ -814,7 +826,10 @@
 	}
 	.website-chat__action-icon {
 		display: inline-flex;
-		:global(svg) { width: 18px; height: 18px; }
+		:global(svg) {
+			width: 18px;
+			height: 18px;
+		}
 	}
 	.website-chat__meter {
 		overflow: hidden;

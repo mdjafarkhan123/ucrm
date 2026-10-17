@@ -201,13 +201,7 @@
 						{/snippet}
 					</EmptyState>
 				{:else}
-					<DataTable
-						variant="card"
-						{columns}
-						{items}
-						rowId={(item) => item.id}
-						caption="Snippets"
-					>
+					<DataTable variant="card" {columns} {items} rowId={(item) => item.id} caption="Snippets">
 						{#snippet row(item: CommunicationSnippet)}
 							<th scope="row">
 								<div class="snippets-page__title">
@@ -223,7 +217,10 @@
 							</td>
 						{/snippet}
 						{#snippet rowActions(item: CommunicationSnippet)}
-							<DropdownMenu triggerLabel={`Actions for ${item.title}`} items={itemMenuItems(item)} />
+							<DropdownMenu
+								triggerLabel={`Actions for ${item.title}`}
+								items={itemMenuItems(item)}
+							/>
 						{/snippet}
 						{#snippet footer()}
 							<ListLoadMore
