@@ -454,11 +454,7 @@
 				value="Not yet — awaiting deposit"
 			/>
 		{:else}
-			<RailRow
-				icon={creditCardIcon}
-				label="Received"
-				value="Requested once this quote is sent"
-			/>
+			<RailRow icon={creditCardIcon} label="Received" value="Requested once this quote is sent" />
 		{/if}
 
 		{#if canRecord}
@@ -808,16 +804,6 @@
 
 	.quote-deposit__action {
 		padding: 4px 20px 20px;
-	}
-
-	.quote-deposit__action :global(.quote-deposit__record),
-	.quote-deposit__pad :global(.quote-deposit__record) {
-		height: 38px;
-		border-color: var(--color-border--interactive);
-		border-radius: 10px;
-		color: var(--color-heading);
-		font-size: 13px;
-		font-weight: 600;
 	}
 
 	.quote-deposit__action-icon {

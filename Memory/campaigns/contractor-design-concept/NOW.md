@@ -5,6 +5,7 @@
 **Stage:** Designing. C1 Foundation approved 2026-10-17 (`concept.pen` boards "Colour that means something" and "The parts every screen is built from").
 
 **Next:**
+0c. Concept buttons in the live app: done and merged 2026-10-17 (`parts/c1d-buttons-in-app.md`); menu triggers and other own-made buttons still to move.
 0b. Live sidebar coloured icons: done and merged into main 2026-10-17 (`parts/c1c-sidebar-icons.md`).
 0. Button set (`c1b-button-set`): merged into main 2026-10-17; rules in `buttons.md`. Live `Button` greys out while loading; the concept keeps its colour — change it with the first built screen.
 1. In `concept.pen`, add number variables for text 11, 13, 32; tile corners 6 and 10; card padding 20, and bind the Foundation nodes using them. Name them in the app's style (e.g. `typography--fontSize-label`, `radius-tile--small`, `space-medium`); update the matching modules in the same commit. Code gets them, plus `shadow-button`, `shadow-button--raised` (`shadows.md`) and `color-border--interactive--hover` (base blue 400, both modes; in Pencil already), with the first built screen.

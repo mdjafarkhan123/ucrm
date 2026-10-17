@@ -574,33 +574,18 @@
 		white-space: nowrap;
 	}
 
-	:global(.requests-header__button) {
-		min-height: 44px;
-		padding: 0 18px 0 14px;
-		border-radius: 12px;
-		border-color: var(--color-border);
-		color: var(--color-text);
-		gap: var(--space-small);
-	}
-	/* Unavailable, but still drawn as the white button it will become, so the header does not look half empty. */
-	:global(.requests-header__button:disabled) {
-		border-color: var(--color-border);
-		color: var(--color-text--secondary);
+	/* Unavailable, but still drawn as a white button so it does not blend into the page. */
+	:global(.button.button--secondary.requests-header__button:disabled:not([aria-busy='true'])) {
+		border-color: var(--color-border--interactive);
 		background: var(--color-surface);
-		opacity: 0.7;
-	}
-	:global(.requests-header__button--primary) {
-		border-color: var(--color-interactive);
-		color: var(--color-text--reverse);
-		box-shadow: 0 6px 16px color-mix(in srgb, var(--color-interactive) 20%, transparent);
 	}
 	.requests-header__icon {
 		display: inline-flex;
 
 		:global(svg) {
 			display: block;
-			width: 18px;
-			height: 18px;
+			width: 16px;
+			height: 16px;
 		}
 	}
 

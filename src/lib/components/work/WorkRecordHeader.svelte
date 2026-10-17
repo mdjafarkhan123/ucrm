@@ -385,10 +385,6 @@
 			padding: 18px 0 22px;
 			border-top: var(--border-base) solid var(--color-border);
 		}
-		.work-header__actions :global(.button--primary) {
-			min-height: 40px;
-			padding-inline: 16px;
-		}
 		.work-header__action-icon :global(svg) {
 			display: block;
 			width: 18px;

@@ -119,8 +119,7 @@
 	const overviewQuery = createQuery(() => ({
 		queryKey: clientOverviewKey,
 		queryFn: fetchClientOverview,
-		retry: (count: number, error: Error) =>
-			(error as ClientReadError).status !== 403 && count < 2
+		retry: (count: number, error: Error) => (error as ClientReadError).status !== 403 && count < 2
 	}));
 	const overview = $derived(overviewQuery.data);
 
@@ -416,7 +415,10 @@
 									<li>
 										<button
 											type="button"
-											class={['clients-tags__chip', tagId === tag.id && 'clients-tags__chip--selected']}
+											class={[
+												'clients-tags__chip',
+												tagId === tag.id && 'clients-tags__chip--selected'
+											]}
 											aria-pressed={tagId === tag.id}
 											aria-label={`${tag.name}: ${tag.total} clients`}
 											onclick={() => setTag(tagId === tag.id ? '' : tag.id)}
@@ -674,46 +676,46 @@
 		align-items: center;
 		gap: var(--space-small);
 	}
-	:global(.clients-header__button) {
+	// More actions is a menu trigger, not a Button, so it is drawn here as the concept's white button.
+	:global(.clients-header__button:not(.button)) {
 		display: inline-flex;
-		min-height: 44px;
+		min-height: 36px;
 		align-items: center;
 		justify-content: center;
 		gap: var(--space-small);
-		padding: 0 18px 0 14px;
-		border: var(--border-base) solid var(--color-border);
+		padding: 0 14px;
+		border: var(--border-base) solid var(--color-border--interactive);
 		border-radius: var(--radius-base);
-		color: var(--color-text);
+		color: var(--color-heading);
 		background: var(--color-surface);
+		box-shadow: var(--shadow-button);
 		font-size: var(--typography--fontSize-base);
 		font-weight: 600;
 		cursor: pointer;
 		transition: all var(--timing-base) ease-out;
-	}
-	:global(.clients-header__button:hover:not(:disabled)) {
-		background: var(--color-surface--hover);
-	}
-	:global(.clients-header__button:focus-visible) {
-		outline: none;
-		box-shadow: var(--shadow-focus);
-	}
-	:global(.clients-header__button--primary),
-	:global(.clients-header__button--primary:hover:not(:disabled)) {
-		border-color: var(--color-interactive);
-		color: var(--color-text--reverse);
-		background: var(--color-interactive);
-		box-shadow: 0 6px 16px color-mix(in srgb, var(--color-interactive) 20%, transparent);
-	}
-	:global(.clients-header__button--primary:hover:not(:disabled)) {
-		background: var(--color-interactive--hover);
+
+		&:hover:not(:disabled) {
+			border-color: var(--color-border--interactive--hover);
+			background: var(--color-surface--hover);
+		}
+		&:active:not(:disabled),
+		&[data-state='open'] {
+			border-color: var(--color-border--interactive--hover);
+			background: var(--color-surface--active);
+			box-shadow: none;
+		}
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
 	}
 	.clients-header__icon {
 		display: inline-flex;
 
 		:global(svg) {
 			display: block;
-			width: 18px;
-			height: 18px;
+			width: 16px;
+			height: 16px;
 		}
 	}
 

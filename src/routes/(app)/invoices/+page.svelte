@@ -486,7 +486,9 @@
 								#{invoice.invoice_number}
 								{#if invoice.is_replaced}<span class="invoices-table__replaced">Replaced</span>{/if}
 								{#if rowNote}<span>·</span>
-									<span class={[rowNote.unopened && 'invoices-table__unopened']}>{rowNote.text}</span>
+									<span class={[rowNote.unopened && 'invoices-table__unopened']}
+										>{rowNote.text}</span
+									>
 								{/if}
 							</div>
 						</td>
@@ -536,29 +538,13 @@
 		margin-bottom: var(--space-large);
 	}
 
-	:global(.button.button--secondary.invoices-header__button),
-	:global(.button.button--primary.invoices-header__button) {
-		min-height: 44px;
-		padding: 0 18px 0 14px;
-		border-radius: var(--radius-base);
-		gap: var(--space-small);
-	}
-	/* Plain white buttons with a quiet border, like the design; only New invoice is green. */
-	:global(.button.button--secondary.invoices-header__button) {
-		--button--color-variation: var(--color-text);
-		--button--color-variation--hover: var(--color-heading);
-		border-color: var(--color-border);
-	}
-	:global(.button.button--primary.invoices-header__button) {
-		box-shadow: 0 6px 16px color-mix(in srgb, var(--color-interactive) 20%, transparent);
-	}
 	.invoices-header__icon {
 		display: inline-flex;
 
 		:global(svg) {
 			display: block;
-			width: 18px;
-			height: 18px;
+			width: 16px;
+			height: 16px;
 		}
 	}
 	/* The number of jobs waiting to be billed, in the same warning tint as a warning status. */

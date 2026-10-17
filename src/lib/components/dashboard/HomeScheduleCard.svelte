@@ -131,7 +131,9 @@
 		<div class="home-schedule__hero-top">
 			<div class="home-schedule__headline">
 				<p class="home-schedule__eyebrow">
-					<span class="home-schedule__eyebrow-icon" aria-hidden="true">{@html calendarEventIcon}</span>
+					<span class="home-schedule__eyebrow-icon" aria-hidden="true"
+						>{@html calendarEventIcon}</span
+					>
 					Today
 				</p>
 				<h2 id="{uid}-title">{loading ? 'Today’s schedule' : headline}</h2>
@@ -160,11 +162,13 @@
 			<div class="home-schedule__legend">
 				<ul class="home-schedule__statuses">
 					<li>
-						<span class="home-schedule__swatch home-schedule__swatch--done" aria-hidden="true"></span>
+						<span class="home-schedule__swatch home-schedule__swatch--done" aria-hidden="true"
+						></span>
 						Completed <strong>{counts.completed}</strong>
 					</li>
 					<li>
-						<span class="home-schedule__swatch home-schedule__swatch--todo" aria-hidden="true"></span>
+						<span class="home-schedule__swatch home-schedule__swatch--todo" aria-hidden="true"
+						></span>
 						Still to do <strong>{counts.todo}</strong>
 					</li>
 				</ul>
@@ -172,13 +176,17 @@
 					<ul class="home-schedule__flags">
 						{#if counts.late > 0}
 							<li class="home-schedule__flag">
-								<span class="home-schedule__flag-dot home-schedule__flag-dot--late" aria-hidden="true"
+								<span
+									class="home-schedule__flag-dot home-schedule__flag-dot--late"
+									aria-hidden="true"
 								></span>{counts.late} late
 							</li>
 						{/if}
 						{#if counts.unassigned > 0}
 							<li class="home-schedule__flag">
-								<span class="home-schedule__flag-dot home-schedule__flag-dot--open" aria-hidden="true"
+								<span
+									class="home-schedule__flag-dot home-schedule__flag-dot--open"
+									aria-hidden="true"
 								></span>{counts.unassigned} unassigned
 							</li>
 						{/if}
@@ -346,21 +354,6 @@
 			font-size: 14px;
 			font-weight: 500;
 			opacity: 0.88;
-		}
-		:global(.home-schedule__open) {
-			min-height: 44px;
-			gap: var(--space-small);
-			border-color: transparent;
-			border-radius: var(--radius-base);
-			color: var(--color-heading);
-			background: var(--color-text--reverse);
-			font-weight: 600;
-
-			&:hover {
-				border-color: transparent;
-				background: var(--color-text--reverse);
-				filter: brightness(0.94);
-			}
 		}
 		&__open-icon {
 			display: inline-flex;
