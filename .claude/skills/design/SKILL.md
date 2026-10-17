@@ -13,6 +13,27 @@ description: Route every screen, component, styling or frontend task to its desi
 3. When work spans both designs, load each separately and verify each affected presentation. For an
    unspecified new presentation, resolve the intended design with Jafar before choosing visual rules.
    Control Room, login and customer-facing surfaces retain their current appearance in the first release.
+4. For the **new concept** (the app's next look, designed in `concept.pen`), follow the brief below, the approved
+   Foundation boards in that file, and the [concept plan](../../../docs/contractor-design-concept-behavior-contract.md).
+
+## Jafar's design brief
+
+Every design, in Pencil or in code, meets this brief (Jafar, 2026-10-17). Read it before drawing anything.
+
+- **Premium and calm.** Polished, modern product work, as a top Dribbble product designer would make it: crafted
+  enough to feel premium, quiet enough to read at a glance.
+- **Contractor first.** Each screen shows what a contractor most needs right now; every block earns its place.
+- **Meaningful colour.** Colour names a kind of record, a part of the app, or a status. Icons carry that colour
+  across the whole app on tinted tiles; actions (edit, delete, share, download) stay neutral. The colour map is
+  the "Colour that means something" board in `concept.pen`.
+- **One green action.** Brand green `#037741` (`--color-interactive`) marks the main button of each area. Light
+  greens belong to dark mode.
+- **Contrast with the background.** Every fill stands apart from what sits behind it, in light and dark mode.
+- **App variables first.** Build from `src/lib/styles/_variables.scss`. Add a variable only when none fits.
+- **Proven, then original.** Research what leading products show and leave out; design our own look.
+- **Desktop web.** Design at 1440px; phone layouts wait for the native-app phase.
+- **Design → review → approve → build.** When a design needs data or behaviour the app lacks, list it for Jafar's
+  decision before building.
 
 The [CRM design-system agreement](../../../docs/crm-design-system-behavior-contract.md) and its
 [approved foundation](../../../docs/crm-theme-foundation-behavior-contract.md) own current theme scope,
@@ -27,7 +48,7 @@ control needs hover, focus and disabled states. A skill edit alone never changes
 ## Design in Pencil first
 
 The project rule decides which work starts here. Each design has its own Pencil file in the main project
-folder: `classic.pen` for Classic, `botanical.pen` for Botanical. Each file opens with its design-system page —
+folder: `classic.pen` for Classic, `botanical.pen` for Botanical, `concept.pen` for the new concept. Each file opens with its design-system page —
 the colors, text sizes, spacing and parts copied from the app's real styles — and new screens sit below it.
 
 1. **Open the right file.** Call `get_app_state`: it names the file open in Pencil, and the Pencil tools change
@@ -35,8 +56,7 @@ the colors, text sizes, spacing and parts copied from the app's real styles — 
 2. **Design from the file's own parts.** Place copies of its parts and use its color and size names, never raw
    values. If a part has to look different, change it on the design-system page first, so every screen using
    it follows. Pencil has no Tabler icons; use the Lucide icon with the same meaning, and Tabler in code.
-   Finished when each screen exists at 1440px and 390px wide, and a screenshot of each shows nothing cut off or
-   misaligned.
+   Finished when each screen exists at 1440px wide and a screenshot of each shows nothing cut off or misaligned.
 3. **Show Jafar and wait.** Tell him the names of the screens to look at, what each shows, and which parts
    changed. Finished when he says yes; write his yes, the date and the screen names in the campaign's part
    note.
@@ -44,8 +64,10 @@ the colors, text sizes, spacing and parts copied from the app's real styles — 
    code (`src/lib/styles/_variables.scss` or the component) and in the design skill page that describes it, in
    the same commit. Finished when Pencil, the code and the skill page all give the same value.
 
-**Saving the file.** Pencil saves into the main project folder, not your worktree, so commit `.pen` files from
-the main folder under a claim covering them, in their own commit. Someone else may be editing the same file
+**Saving the file.** Pencil writes to the file it opened (normally in the main project folder) and only when the
+file is saved in the app (Ctrl+S); edits made through the tools stay in memory until then. Before committing,
+check the `.pen` file's modified time is newer than your last edit, and ask Jafar to save if it is not. Commit
+`.pen` files from the folder Pencil opened, under a claim covering them, in their own commit. Someone else may be editing the same file
 — Jafar in the app, or another agent — so read the parts you are about to change again just before changing
 them, and leave changes you did not make as they are.
 
