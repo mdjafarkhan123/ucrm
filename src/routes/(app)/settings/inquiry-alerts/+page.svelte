@@ -5,8 +5,10 @@
 	import { beforeNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
+	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -21,6 +23,9 @@
 	} from '$lib/team/notifications';
 	import bellIcon from '@tabler/icons/outline/bell-ringing.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import usersIcon from '@tabler/icons/outline/users.svg?raw';
+	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 
 	// Who hears about a new website inquiry — Jobber's settings-level team notification: pick people, save.
 	// Nobody chosen still alerts the account owner, so an inquiry is never silently missed.
@@ -120,69 +125,284 @@
 	{@const members = query.data.members}
 	{@const owner = members.find((member) => member.role === 'owner')}
 
-	<Breadcrumbs
-		items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Inquiry alerts' }]}
-	/>
-
-	<RecordFormLayout title="Inquiry alerts" icon={bellIcon} bind:this={layout} error={errorMessage}>
-		{#snippet main()}
-			<p class="inquiry-alerts__intro">
-				When someone sends a request form or starts a chat on your website, the people you choose
-				get an alert in the bell at the top of the app and by email, so a new customer hears back
-				fast.
-			</p>
-
-			{#if chosen.size === 0}
-				<!-- eslint-disable svelte/no-at-html-tags -->
-				<div class="inquiry-alerts__banner" role="status">
-					<span class="inquiry-alerts__banner-icon" aria-hidden="true">{@html alertIcon}</span>
+	<PageContainer variant="open">
+		<div class="inquiry-alerts record-detail--cards">
+			<header class="inquiry-alerts__header">
+				<span class="inquiry-alerts__header-icon" aria-hidden="true">
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+					{@html bellIcon}
+				</span>
+				<div class="inquiry-alerts__header-copy">
+					<Breadcrumbs
+						items={[
+							{ label: 'Settings', href: resolve('/(app)/settings') },
+							{ label: 'Inquiry alerts' }
+						]}
+					/>
+					<h1>Inquiry alerts</h1>
 					<p>
-						Nobody is chosen, so only the account owner{owner ? ` (${memberName(owner)})` : ''} is alerted.
-						Choose the people who answer new customers.
+						When someone sends a request form or starts a chat on your website, the people you
+						choose get an alert in the bell at the top of the app and by email, so a new customer
+						hears back fast.
 					</p>
 				</div>
-				<!-- eslint-enable svelte/no-at-html-tags -->
-			{/if}
+			</header>
 
-			<SectionBlock
-				title="Who gets alerted"
-				hint="Only people who can see every request can be chosen."
-				form
-				level={3}
-			>
-				<ul class="inquiry-alerts__list">
-					{#each members as member (member.user_id)}
-						<li class="inquiry-alerts__item">
-							<Checkbox
-								id={`inquiry-alert-${member.user_id}`}
-								label={memberName(member)}
-								description={memberDescription(member)}
-								checked={chosen.has(member.user_id)}
-								disabled={!member.can_receive || saving}
-								onchange={(checked) => toggle(member.user_id, checked)}
-							/>
-						</li>
-					{/each}
-				</ul>
-			</SectionBlock>
-		{/snippet}
+			<RecordFormLayout title="Inquiry alerts" bind:this={layout} error={errorMessage}>
+				{#snippet main()}
+					{#if chosen.size === 0}
+						<!-- eslint-disable svelte/no-at-html-tags -->
+						<div class="inquiry-alerts__banner" role="status">
+							<span class="inquiry-alerts__banner-icon" aria-hidden="true">{@html alertIcon}</span>
+							<p>
+								Nobody is chosen, so only the account owner{owner
+									? ` (${memberName(owner)})`
+									: ''} is alerted. Choose the people who answer new customers.
+							</p>
+						</div>
+						<!-- eslint-enable svelte/no-at-html-tags -->
+					{/if}
 
-		{#snippet actions()}
-			<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
-			<Button
-				onclick={() => void save().finally(() => layout?.revealError())}
-				disabled={!dirty || saving}
-				loading={saving}>Save</Button
-			>
-		{/snippet}
-	</RecordFormLayout>
+					<SectionBlock
+						title="Who gets alerted"
+						hint="Only people who can see every request can be chosen."
+						icon={usersIcon}
+						id="inquiry-alerts-who"
+						level={3}
+						class="section-block--flush"
+					>
+						<ul class="inquiry-alerts__list" role="group" aria-labelledby="inquiry-alerts-who-title">
+							{#each members as member (member.user_id)}
+								<li
+									class="inquiry-alerts__item"
+									class:inquiry-alerts__item--locked={!member.can_receive}
+								>
+									<Checkbox
+										id={`inquiry-alert-${member.user_id}`}
+										label={memberName(member)}
+										description={memberDescription(member)}
+										hideLabel
+										checked={chosen.has(member.user_id)}
+										disabled={!member.can_receive || saving}
+										onchange={(checked) => toggle(member.user_id, checked)}
+									/>
+									<span class="inquiry-alerts__avatar" aria-hidden="true">
+										<Avatar id={member.user_id} name={memberName(member)} />
+									</span>
+									<span class="inquiry-alerts__who" aria-hidden="true">
+										<strong>
+											{memberName(member)}
+											{#if !member.can_receive}
+												<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+												<span class="inquiry-alerts__lock">{@html lockIcon}</span>
+											{/if}
+										</strong>
+										<span>{memberDescription(member)}</span>
+									</span>
+								</li>
+							{/each}
+						</ul>
+					</SectionBlock>
+				{/snippet}
+
+				{#snippet actions()}
+					<div class="inquiry-alerts__status" class:inquiry-alerts__status--dirty={dirty}>
+						<span class="inquiry-alerts__status-dot" aria-hidden="true"></span>
+						<span class="inquiry-alerts__status-text">
+							<strong>{dirty ? 'You have unsaved changes' : 'No unsaved changes'}</strong>
+							<span
+								>{dirty
+									? 'Nothing is saved until you press Save.'
+									: 'Change any field, then press Save.'}</span
+							>
+						</span>
+					</div>
+					<div class="inquiry-alerts__buttons">
+						<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
+						<Button
+							onclick={() => void save().finally(() => layout?.revealError())}
+							disabled={!dirty || saving}
+							loading={saving}
+						>
+							<span class="inquiry-alerts__save">
+								<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+								<span aria-hidden="true">{@html checkIcon}</span>Save
+							</span>
+						</Button>
+					</div>
+				{/snippet}
+			</RecordFormLayout>
+		</div>
+	</PageContainer>
 {/if}
 
 <style lang="scss">
 	.inquiry-alerts {
-		&__intro {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+
+		// ---- Heading: icon tile, breadcrumb above the title, as drawn. ----
+		&__header {
+			display: flex;
+			align-items: flex-start;
+			gap: 18px;
+			margin-top: 16px;
+		}
+		&__header-icon {
+			display: grid;
+			flex: 0 0 auto;
+			place-items: center;
+			width: 60px;
+			height: 60px;
+			margin-top: 4px;
+			border-radius: 18px;
+			color: var(--color-text--reverse);
+			background: var(--color-task);
+			box-shadow: 0 6px 16px color-mix(in srgb, var(--color-task) 35%, transparent);
+
+			:global(svg) {
+				width: 28px;
+				height: 28px;
+			}
+		}
+		&__header-copy {
+			min-width: 0;
+
+			:global(.breadcrumbs) {
+				margin-bottom: 4px;
+				font-size: 13px;
+				font-weight: 600;
+			}
+			:global(.breadcrumbs a svg) {
+				display: none;
+			}
+			h1 {
+				margin: 0;
+				color: var(--color-heading);
+				font-size: 36px;
+				font-weight: 900;
+				letter-spacing: -1.2px;
+				line-height: var(--typography--lineHeight-tight);
+			}
+			p {
+				margin: var(--space-smaller) 0 0;
+				color: var(--color-text--secondary);
+				font-size: 14px;
+				font-weight: 500;
+				line-height: var(--typography--lineHeight-large);
+			}
+		}
+
+		// ---- The shared form frame drops its white sheet and header so the card sits on the page. ----
+		:global(.record-form) {
+			height: auto;
+		}
+		:global(.record-form__header) {
+			display: none;
+		}
+		:global(.record-form__main > :empty) {
+			display: none;
+		}
+		:global(.record-form__main) {
+			gap: 20px;
+			padding: 0;
+			border: 0;
+			border-radius: 0;
+			background: transparent;
+			box-shadow: none;
+			overflow: visible;
+		}
+
+		// ---- Card header: framed icon tile beside the title and its quiet line. ----
+		:global(.section-block > .section-block__title) {
+			padding-left: 72px;
+		}
+		&.record-detail--cards :global(.section-block:has(> .section-block__hint) > .section-block__hint) {
+			margin-left: 72px;
+		}
+		:global(.section-block .section-block__icon) {
+			position: absolute;
+			top: 20px;
+			left: 24px;
+			display: grid;
+			place-items: center;
+			width: 36px;
+			height: 36px;
+			border-radius: 11px;
+			background: var(--color-informative--surface);
+		}
+		:global(.section-block .section-block__icon svg) {
+			width: 18px;
+			height: 18px;
+			color: var(--color-informative--onSurface);
+		}
+
+		// ---- Member rows ----
+		&__list {
+			display: flex;
+			flex-direction: column;
 			margin: 0;
+			padding: 0;
+			list-style: none;
+		}
+		&__item {
+			display: flex;
+			align-items: center;
+			gap: 14px;
+			padding: 16px 24px;
+			border-top: var(--border-base) solid var(--color-border);
+
+			// The checkbox's own label and description stay for screen readers; the row draws its own text.
+			:global(.checkbox__description) {
+				position: absolute;
+				width: 1px;
+				height: 1px;
+				overflow: hidden;
+				clip-path: inset(50%);
+				white-space: nowrap;
+			}
+			:global(.avatar) {
+				--avatar-bg: var(--color-surface--background);
+				--avatar-fg: var(--color-text--secondary);
+			}
+		}
+		&__avatar {
+			display: inline-flex;
+			flex: 0 0 auto;
+		}
+		&__who {
+			display: grid;
+			min-width: 0;
+			gap: 2px;
+
+			strong {
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				color: var(--color-heading);
+				font-size: 14px;
+				font-weight: 600;
+			}
+			span {
+				color: var(--color-text--secondary);
+				font-size: 13px;
+				font-weight: 500;
+			}
+		}
+		&__item--locked &__who strong {
 			color: var(--color-text--secondary);
+		}
+		&__item--locked &__avatar {
+			opacity: 0.6;
+		}
+		&__lock {
+			display: inline-flex;
+
+			:global(svg) {
+				width: 13px;
+				height: 13px;
+			}
 		}
 
 		&__banner {
@@ -216,20 +436,80 @@
 			}
 		}
 
-		&__list {
-			display: flex;
-			flex-direction: column;
-			margin: 0;
-			padding: 0;
-			list-style: none;
+		// ---- Dark save bar with its own words, centred under the content like the design. ----
+		:global(.sticky-action-bar) {
+			max-width: 720px;
+			margin-inline: auto;
+			padding: 10px 10px 10px 20px;
+			border-color: var(--color-base-blue--700);
+			border-radius: 20px;
+			background: var(--color-base-blue--900);
+			color: var(--color-base-white);
+			box-shadow: var(--shadow-high);
 		}
+		:global(.sticky-action-bar .button--secondary) {
+			border-color: var(--color-base-blue--600);
+			background: var(--color-base-blue--800);
+			color: var(--color-base-white);
+		}
+		&__status {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			min-width: 0;
+		}
+		&__status-dot {
+			display: grid;
+			flex: 0 0 auto;
+			place-items: center;
+			width: 28px;
+			height: 28px;
+			border-radius: 14px;
+			background: color-mix(in srgb, var(--color-base-white) 12%, transparent);
 
-		&__item {
-			padding: var(--space-base) 0;
-			border-bottom: var(--border-base) solid var(--color-border);
+			&::after {
+				content: '';
+				width: 8px;
+				height: 8px;
+				border-radius: 50%;
+				background: var(--color-base-blue--400);
+			}
+		}
+		&__status--dirty &__status-dot {
+			background: color-mix(in srgb, var(--color-base-yellow--400) 18%, transparent);
 
-			&:last-child {
-				border-bottom: 0;
+			&::after {
+				background: var(--color-base-yellow--400);
+			}
+		}
+		&__status-text {
+			display: grid;
+			min-width: 0;
+
+			strong {
+				color: var(--color-base-white);
+				font-size: 14px;
+				font-weight: 600;
+			}
+			span {
+				color: var(--color-base-blue--300);
+				font-size: 12px;
+			}
+		}
+		&__buttons {
+			display: flex;
+			flex: 0 0 auto;
+			gap: 8px;
+		}
+		&__save {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+
+			:global(svg) {
+				display: block;
+				width: 16px;
+				height: 16px;
 			}
 		}
 	}
