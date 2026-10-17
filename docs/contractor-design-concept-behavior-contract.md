@@ -63,3 +63,9 @@ Phase B has a clean base.
 - Built so far (2026-10-16): branch `claude/jobs-list-app-look`, worktree `.worktrees/jobs-list-app-look`.
 - Decision 2026-10-16 (Jafar): one look everywhere, Control Room included; old styles deleted, not kept.
 - Decision 2026-10-16 (Jafar): Needs attention tiles filter their list.
+- Decision 2026-10-17 (Jafar): "original all approved" — use the original Settings designs,
+  including the Taxes dark featured card (`o1A1w`) and Checklists three-column card grid
+  (`YZ8Wg`), rather than alternative B (`dPdYI`, `N7x4v`). The original Settings direction
+  is approved for continuation and implementation. Unshown sub-pages still follow the
+  project's design approval rule. This records visual approval, not completion of the build
+  or permission to merge the separately held Schedule branch.
