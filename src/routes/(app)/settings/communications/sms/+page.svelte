@@ -2,7 +2,7 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
@@ -44,6 +44,12 @@
 	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
 	import shieldCheckIcon from '@tabler/icons/outline/shield-check.svg?raw';
 	import banIcon from '@tabler/icons/outline/ban.svg?raw';
+	import buildingIcon from '@tabler/icons/outline/building.svg?raw';
+	import mapPinIcon from '@tabler/icons/outline/map-pin.svg?raw';
+	import userCheckIcon from '@tabler/icons/outline/user-check.svg?raw';
+	import messageIcon from '@tabler/icons/outline/message.svg?raw';
+	import checkCircleIcon from '@tabler/icons/outline/circle-check.svg?raw';
+	import infoCircleIcon from '@tabler/icons/outline/info-circle.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -459,17 +465,21 @@
 
 <PageContainer variant="fill">
 	<div class="sms-settings">
-		<PageHeader
-			eyebrow="Communications"
-			title="Phone & SMS"
-			description="Understand what is ready and what needs attention."
-		>
-			{#snippet actions()}
-				<Button href={resolve('/settings')} variant="secondary" variation="subtle"
-					>Back to settings</Button
-				>
-			{/snippet}
-		</PageHeader>
+		<header class="sms-settings__header">
+			<Breadcrumbs
+				items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Phone & SMS' }]}
+			/>
+			<div class="sms-settings__header-row">
+				<span class="sms-settings__header-icon" aria-hidden="true">
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+					{@html phoneIcon}
+				</span>
+				<div class="sms-settings__header-copy">
+					<h1>Phone & SMS</h1>
+					<p>Understand what is ready and what needs attention.</p>
+				</div>
+			</div>
+		</header>
 
 		{#if homeQuery.isPending}
 			<LoadingSkeleton variant="card" rows={3} />
@@ -483,13 +493,19 @@
 				<div class="sms-settings__facts">
 					<div class="sms-settings__fact">
 						<span>SMS mode</span>
-						<strong>{readiness.effective_mode === 'operational' ? 'On' : 'Off'}</strong>
+						<strong>
+							{#if readiness.effective_mode === 'operational'
+								}<span class="sms-settings__dot" aria-hidden="true"></span>{/if}
+							{readiness.effective_mode === 'operational' ? 'On' : 'Off'}
+						</strong>
 					</div>
 					<div class="sms-settings__fact">
 						<span>Registration</span>
-						<StatusBadge status={smsRegistrationBadge(readiness.readiness_state).tone}
-							>{registrationStatusLabel(registration?.status)}</StatusBadge
-						>
+						<strong>
+							<StatusBadge status={smsRegistrationBadge(readiness.readiness_state).tone}
+								>{registrationStatusLabel(registration?.status)}</StatusBadge
+							>
+						</strong>
 					</div>
 					<div class="sms-settings__fact">
 						<span>Ready numbers</span>
@@ -497,9 +513,11 @@
 					</div>
 					<div class="sms-settings__fact">
 						<span>Outbound availability</span>
-						<strong
-							>{readiness.readiness_state === 'ready' ? 'Available' : 'Not yet available'}</strong
-						>
+						<strong>
+							{#if readiness.readiness_state === 'ready'
+								}<span class="sms-settings__dot" aria-hidden="true"></span>{/if}
+							{readiness.readiness_state === 'ready' ? 'Available' : 'Not yet available'}
+						</strong>
 					</div>
 				</div>
 
@@ -556,101 +574,119 @@
 						}}
 					>
 						<div class="sms-settings__group">
-							<h3>Business identity</h3>
-							<Input
-								id="sms-legal-name"
-								label="Legal business name"
-								required
-								disabled={!isEditable}
-								bind:value={draft.legal_business_name}
-								invalid={Boolean(fieldErrors.legal_business_name)}
-								errorMessage={fieldErrors.legal_business_name}
-							/>
-							<Select
-								id="sms-business-type"
-								label="Business type"
-								options={businessTypeOptions}
-								disabled={!isEditable}
-								bind:value={draft.business_type}
-							/>
-							{#if isSoleProprietorship}
-								<Toggle
-									id="sms-has-registration-id"
-									label="I have a business registration number (EIN)"
-									description="Turn this off if you run the business under your own name with no registered
-										company and no EIN. You'll register as a sole proprietor instead, which Twilio
-										verifies with a text to your own phone rather than a registration number."
-									checked={hasRegistrationId}
-									disabled={!isEditable}
-									onchange={handleHasRegistrationIdChange}
-								/>
-							{/if}
-							{#if showRegistrationIdFields}
+							<div class="sms-settings__group-head">
+								<span class="sms-settings__group-icon" aria-hidden="true">
+									<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+									{@html buildingIcon}
+								</span>
+								<h3>Business identity</h3>
+							</div>
+							<div class="sms-settings__fields">
 								<Input
-									id="sms-registration-id-type"
-									label="Registration ID type (e.g. EIN)"
+									id="sms-legal-name"
+									label="Legal business name"
+									required
 									disabled={!isEditable}
-									bind:value={draft.business_registration_id_type}
+									bind:value={draft.legal_business_name}
+									invalid={Boolean(fieldErrors.legal_business_name)}
+									errorMessage={fieldErrors.legal_business_name}
 								/>
+								<Select
+									id="sms-business-type"
+									label="Business type"
+									options={businessTypeOptions}
+									disabled={!isEditable}
+									bind:value={draft.business_type}
+								/>
+								{#if showRegistrationIdFields}
+									<Input
+										id="sms-registration-id-type"
+										label="Registration ID type (e.g. EIN)"
+										disabled={!isEditable}
+										bind:value={draft.business_registration_id_type}
+									/>
+									<Input
+										id="sms-registration-id"
+										label="Business registration ID"
+										disabled={!isEditable}
+										bind:value={draft.business_registration_id}
+										invalid={Boolean(fieldErrors.business_registration_id)}
+										errorMessage={fieldErrors.business_registration_id}
+									/>
+								{/if}
+								{#if isSoleProprietorship}
+									<div class="sms-settings__field--full">
+										<Toggle
+											id="sms-has-registration-id"
+											label="I have a business registration number (EIN)"
+											description="Turn this off if you run the business under your own name with no registered
+												company and no EIN. You'll register as a sole proprietor instead, which Twilio
+												verifies with a text to your own phone rather than a registration number."
+											checked={hasRegistrationId}
+											disabled={!isEditable}
+											onchange={handleHasRegistrationIdChange}
+										/>
+									</div>
+								{/if}
 								<Input
-									id="sms-registration-id"
-									label="Business registration ID"
+									id="sms-website-url"
+									label="Website"
+									type="url"
+									placeholder="https://example.com"
 									disabled={!isEditable}
-									bind:value={draft.business_registration_id}
-									invalid={Boolean(fieldErrors.business_registration_id)}
-									errorMessage={fieldErrors.business_registration_id}
+									bind:value={draft.website_url}
+									invalid={Boolean(fieldErrors.website_url)}
+									errorMessage={fieldErrors.website_url}
 								/>
-							{/if}
-							<Input
-								id="sms-website-url"
-								label="Website"
-								type="url"
-								placeholder="https://example.com"
-								disabled={!isEditable}
-								bind:value={draft.website_url}
-								invalid={Boolean(fieldErrors.website_url)}
-								errorMessage={fieldErrors.website_url}
-							/>
+							</div>
 						</div>
 
 						<div class="sms-settings__group">
-							<h3>Business address</h3>
-							<Input
-								id="sms-address-line1"
-								label="Street address"
-								disabled={!isEditable}
-								bind:value={draft.business_address.line1}
-							/>
-							<Input
-								id="sms-address-line2"
-								label="Suite / unit (optional)"
-								disabled={!isEditable}
-								bind:value={draft.business_address.line2}
-							/>
-							<Input
-								id="sms-address-city"
-								label="City"
-								disabled={!isEditable}
-								bind:value={draft.business_address.city}
-							/>
-							<Input
-								id="sms-address-region"
-								label="State / province"
-								disabled={!isEditable}
-								bind:value={draft.business_address.region}
-							/>
-							<Input
-								id="sms-address-postal"
-								label="Postal code"
-								disabled={!isEditable}
-								bind:value={draft.business_address.postal_code}
-							/>
-							<CountryPicker
-								id="sms-address-country"
-								label="Country"
-								disabled={!isEditable}
-								bind:value={draft.business_address.country_code}
-							/>
+							<div class="sms-settings__group-head">
+								<span class="sms-settings__group-icon" aria-hidden="true">
+									<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+									{@html mapPinIcon}
+								</span>
+								<h3>Business address</h3>
+							</div>
+							<div class="sms-settings__fields">
+								<Input
+									id="sms-address-line1"
+									label="Street address"
+									disabled={!isEditable}
+									bind:value={draft.business_address.line1}
+								/>
+								<Input
+									id="sms-address-line2"
+									label="Suite / unit (optional)"
+									disabled={!isEditable}
+									bind:value={draft.business_address.line2}
+								/>
+								<Input
+									id="sms-address-city"
+									label="City"
+									disabled={!isEditable}
+									bind:value={draft.business_address.city}
+								/>
+								<Input
+									id="sms-address-region"
+									label="State / province"
+									disabled={!isEditable}
+									bind:value={draft.business_address.region}
+								/>
+								<Input
+									id="sms-address-postal"
+									label="Postal code"
+									disabled={!isEditable}
+									bind:value={draft.business_address.postal_code}
+								/>
+								<CountryPicker
+									id="sms-address-country"
+									label="Country"
+									disabled={!isEditable}
+									bind:value={draft.business_address.country_code}
+								/>
+							</div>
 							{#if isSoleProprietorship && !hasRegistrationId}
 								<p class="sms-settings__hint">
 									Sole proprietors with no registration number must use a US or Canada address --
@@ -660,124 +696,148 @@
 						</div>
 
 						<div class="sms-settings__group">
-							<h3>Authorized representative</h3>
-							<Input
-								id="sms-rep-first-name"
-								label="First name"
-								disabled={!isEditable}
-								bind:value={draft.authorized_representative.first_name}
-							/>
-							<Input
-								id="sms-rep-last-name"
-								label="Last name"
-								disabled={!isEditable}
-								bind:value={draft.authorized_representative.last_name}
-							/>
-							<Input
-								id="sms-rep-title"
-								label="Business title"
-								disabled={!isEditable}
-								bind:value={draft.authorized_representative.business_title}
-							/>
-							<Input
-								id="sms-rep-position"
-								label="Job position"
-								disabled={!isEditable}
-								bind:value={draft.authorized_representative.job_position}
-							/>
-							<Input
-								id="sms-rep-email"
-								label="Email"
-								type="email"
-								disabled={!isEditable}
-								bind:value={draft.authorized_representative.email}
-							/>
-							<Input
-								id="sms-rep-phone"
-								label="Phone (e.g. +15125550100)"
-								disabled={!isEditable}
-								bind:value={draft.authorized_representative.phone_number}
-							/>
+							<div class="sms-settings__group-head">
+								<span class="sms-settings__group-icon" aria-hidden="true">
+									<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+									{@html userCheckIcon}
+								</span>
+								<h3>Authorized representative</h3>
+							</div>
+							<div class="sms-settings__fields">
+								<Input
+									id="sms-rep-first-name"
+									label="First name"
+									disabled={!isEditable}
+									bind:value={draft.authorized_representative.first_name}
+								/>
+								<Input
+									id="sms-rep-last-name"
+									label="Last name"
+									disabled={!isEditable}
+									bind:value={draft.authorized_representative.last_name}
+								/>
+								<Input
+									id="sms-rep-title"
+									label="Business title"
+									disabled={!isEditable}
+									bind:value={draft.authorized_representative.business_title}
+								/>
+								<Input
+									id="sms-rep-position"
+									label="Job position"
+									disabled={!isEditable}
+									bind:value={draft.authorized_representative.job_position}
+								/>
+								<Input
+									id="sms-rep-email"
+									label="Email"
+									type="email"
+									disabled={!isEditable}
+									bind:value={draft.authorized_representative.email}
+								/>
+								<Input
+									id="sms-rep-phone"
+									label="Phone (e.g. +15125550100)"
+									disabled={!isEditable}
+									bind:value={draft.authorized_representative.phone_number}
+								/>
+							</div>
 						</div>
 
 						<div class="sms-settings__group">
-							<h3>Messaging</h3>
-							<Textarea
-								id="sms-messaging-description"
-								label="How will you use texting?"
-								rows={3}
-								maxlength={2000}
-								disabled={!isEditable}
-								bind:value={draft.messaging.description}
-							/>
-							<Select
-								id="sms-consent-method"
-								label="How do customers agree to receive texts?"
-								options={consentMethodOptions}
-								disabled={!isEditable}
-								bind:value={draft.messaging.consent_method}
-							/>
-							<Textarea
-								id="sms-consent-description"
-								label="Describe how consent is collected"
-								rows={2}
-								maxlength={2000}
-								disabled={!isEditable}
-								bind:value={draft.messaging.consent_description}
-							/>
-
-							<div class="sms-settings__samples">
-								<span class="sms-settings__group-label">Sample messages (2–5)</span>
-								<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-								{#each draft.messaging.sample_messages ?? [] as _, index (index)}
-									<div class="sms-settings__sample-row">
-										<Input
-											id={`sms-sample-message-${index}`}
-											label={`Sample message ${index + 1}`}
-											hideLabel
-											maxlength={1600}
-											disabled={!isEditable}
-											bind:value={draft.messaging.sample_messages![index]}
-										/>
-										{#if isEditable && (draft.messaging.sample_messages?.length ?? 0) > 2}
+							<div class="sms-settings__group-head">
+								<span class="sms-settings__group-icon" aria-hidden="true">
+									<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+									{@html messageIcon}
+								</span>
+								<h3>Messaging</h3>
+							</div>
+							<div class="sms-settings__messaging">
+								<div class="sms-settings__messaging-col">
+									<Textarea
+										id="sms-messaging-description"
+										label="How will you use texting?"
+										rows={3}
+										maxlength={2000}
+										disabled={!isEditable}
+										bind:value={draft.messaging.description}
+									/>
+									<Select
+										id="sms-consent-method"
+										label="How do customers agree to receive texts?"
+										options={consentMethodOptions}
+										disabled={!isEditable}
+										bind:value={draft.messaging.consent_method}
+									/>
+									<Textarea
+										id="sms-consent-description"
+										label="Describe how consent is collected"
+										rows={2}
+										maxlength={2000}
+										disabled={!isEditable}
+										bind:value={draft.messaging.consent_description}
+									/>
+								</div>
+								<div class="sms-settings__messaging-col">
+									<div class="sms-settings__samples">
+										<span class="sms-settings__group-label">Sample messages (2–5)</span>
+										<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+										{#each draft.messaging.sample_messages ?? [] as _, index (index)}
+											<div class="sms-settings__sample-row">
+												<Input
+													id={`sms-sample-message-${index}`}
+													label={`Sample message ${index + 1}`}
+													hideLabel
+													maxlength={1600}
+													disabled={!isEditable}
+													bind:value={draft.messaging.sample_messages![index]}
+												/>
+												{#if isEditable && (draft.messaging.sample_messages?.length ?? 0) > 2}
+													<Button
+														type="button"
+														size="small"
+														variant="secondary"
+														variation="subtle"
+														onclick={() => removeSampleMessage(index)}>Remove</Button
+													>
+												{/if}
+											</div>
+										{/each}
+										{#if isEditable && (draft.messaging.sample_messages?.length ?? 0) < 5}
 											<Button
 												type="button"
 												size="small"
 												variant="secondary"
-												variation="subtle"
-												onclick={() => removeSampleMessage(index)}>Remove</Button
+												onclick={addSampleMessage}
+												>Add sample message</Button
 											>
 										{/if}
 									</div>
-								{/each}
-								{#if isEditable && (draft.messaging.sample_messages?.length ?? 0) < 5}
-									<Button type="button" size="small" variant="secondary" onclick={addSampleMessage}
-										>Add sample message</Button
-									>
-								{/if}
+									<div class="sms-settings__links">
+										<Input
+											id="sms-privacy-url"
+											label="Privacy policy link (optional)"
+											type="url"
+											disabled={!isEditable}
+											bind:value={draft.messaging.privacy_policy_url}
+										/>
+										<Input
+											id="sms-terms-url"
+											label="Terms link (optional)"
+											type="url"
+											disabled={!isEditable}
+											bind:value={draft.messaging.terms_url}
+										/>
+									</div>
+									<Select
+										id="sms-estimated-volume"
+										label="Estimated monthly messages"
+										options={estimatedVolumeOptions}
+										disabled={!isEditable}
+										bind:value={draft.messaging.estimated_monthly_messages}
+									/>
+								</div>
 							</div>
-
-							<Input
-								id="sms-privacy-url"
-								label="Privacy policy link (optional)"
-								type="url"
-								disabled={!isEditable}
-								bind:value={draft.messaging.privacy_policy_url}
-							/>
-							<Input
-								id="sms-terms-url"
-								label="Terms link (optional)"
-								type="url"
-								disabled={!isEditable}
-								bind:value={draft.messaging.terms_url}
-							/>
-							<Select
-								id="sms-estimated-volume"
-								label="Estimated monthly messages"
-								options={estimatedVolumeOptions}
-								disabled={!isEditable}
-								bind:value={draft.messaging.estimated_monthly_messages}
-							/>
 						</div>
 
 						{#if isEditable}
@@ -801,233 +861,254 @@
 				</SectionBlock>
 			{/if}
 
-			<SectionBlock title="Phone numbers" icon={phoneIcon} level={2}>
-				{#if numbersQuery.isPending}
-					<LoadingSkeleton variant="table" rows={2} />
-				{:else if numbersQuery.isError}
-					<ErrorState
-						description="The phone numbers could not be loaded."
-						retry={() => numbersQuery.refetch()}
-					/>
-				{:else if !numbersQuery.data?.numbers.length}
-					<EmptyState
-						title="No numbers yet"
-						description="A sending number is set up by Jafar once registration is approved. Contact Jafar to request one."
-					/>
-				{:else}
-					<ul class="sms-settings__numbers">
-						{#each numbersQuery.data.numbers as number (number.id)}
-							<li class="sms-settings__number-row">
-								<div class="sms-settings__number-main">
-									{#if renamingId === number.id}
-										<Input
-											id={`sms-number-name-${number.id}`}
-											label="Number name"
-											hideLabel
-											maxlength={60}
-											placeholder={number.phone_number}
-											bind:value={renameDraft}
-										/>
-									{:else}
-										<div class="sms-settings__number-identity">
-											<strong>{number.display_name || number.phone_number}</strong>
-											{#if number.display_name}<span>{number.phone_number}</span>{/if}
+			<div class="sms-settings__lower">
+				<div class="sms-settings__lower-left">
+					<SectionBlock title="Phone numbers" icon={phoneIcon} level={2}>
+						{#if numbersQuery.isPending}
+							<LoadingSkeleton variant="table" rows={2} />
+						{:else if numbersQuery.isError}
+							<ErrorState
+								description="The phone numbers could not be loaded."
+								retry={() => numbersQuery.refetch()}
+							/>
+						{:else if !numbersQuery.data?.numbers.length}
+							<EmptyState
+								title="No numbers yet"
+								description="A sending number is set up by Jafar once registration is approved. Contact Jafar to request one."
+							/>
+						{:else}
+							<ul class="sms-settings__numbers">
+								{#each numbersQuery.data.numbers as number (number.id)}
+									<li class="sms-settings__number-row">
+										<span class="sms-settings__number-icon" aria-hidden="true">
+											<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+											{@html phoneIcon}
+										</span>
+										<div class="sms-settings__number-main">
+											{#if renamingId === number.id}
+												<Input
+													id={`sms-number-name-${number.id}`}
+													label="Number name"
+													hideLabel
+													maxlength={60}
+													placeholder={number.phone_number}
+													bind:value={renameDraft}
+												/>
+											{:else}
+												<div class="sms-settings__number-identity">
+													<strong>{number.display_name || number.phone_number}</strong>
+													{#if number.display_name}<span>{number.phone_number}</span>{/if}
+												</div>
+											{/if}
+											<div class="sms-settings__number-badges">
+												{#if number.is_default_sender}
+													<Badge dot={false} class="sms-settings__chip-default">Default</Badge>
+												{/if}
+												<StatusBadge
+													status={number.lifecycle_state === 'ready'
+														? 'success'
+														: number.lifecycle_state === 'pending_setup'
+															? 'warning'
+															: 'critical'}
+												>
+													{number.lifecycle_state === 'ready'
+														? 'Ready'
+														: number.lifecycle_state === 'pending_setup'
+															? 'Setting up'
+															: number.lifecycle_state === 'restricted'
+																? 'Restricted'
+																: 'Suspended'}
+												</StatusBadge>
+												{#if number.capabilities.sms}<Badge dot={false}>SMS</Badge>{/if}
+												{#if number.capabilities.mms}<Badge dot={false}>MMS</Badge>{/if}
+												{#if number.capabilities.voice}<Badge dot={false}>Voice</Badge>{/if}
+											</div>
 										</div>
-									{/if}
-									<div class="sms-settings__number-badges">
-										{#if number.is_default_sender}
-											<Badge status="informative" dot={false}>Default</Badge>
-										{/if}
-										<StatusBadge
-											status={number.lifecycle_state === 'ready'
-												? 'success'
-												: number.lifecycle_state === 'pending_setup'
-													? 'warning'
-													: 'critical'}
-										>
-											{number.lifecycle_state === 'ready'
-												? 'Ready'
-												: number.lifecycle_state === 'pending_setup'
-													? 'Setting up'
-													: number.lifecycle_state === 'restricted'
-														? 'Restricted'
-														: 'Suspended'}
-										</StatusBadge>
-										{#if number.capabilities.sms}<Badge dot={false}>SMS</Badge>{/if}
-										{#if number.capabilities.mms}<Badge dot={false}>MMS</Badge>{/if}
-										{#if number.capabilities.voice}<Badge dot={false}>Voice</Badge>{/if}
-									</div>
-								</div>
-								<div class="sms-settings__number-actions">
-									{#if renamingId === number.id}
-										<Button type="button" size="small" loading={renameSaving} onclick={saveRename}
-											>Save name</Button
-										>
-										<Button
-											type="button"
-											size="small"
-											variant="secondary"
-											variation="subtle"
-											disabled={renameSaving}
-											onclick={cancelRename}>Cancel</Button
-										>
-									{:else}
-										<Button
-											type="button"
-											size="small"
-											variant="secondary"
-											variation="subtle"
-											onclick={() => startRename(number)}>Rename</Button
-										>
-										{#if !number.is_default_sender}
-											<Button
-												type="button"
-												size="small"
-												variant="secondary"
-												disabled={!number.can_be_default}
-												loading={defaultSavingId === number.id}
-												onclick={() => makeDefault(number.id)}>Make default</Button
-											>
-										{/if}
-									{/if}
-								</div>
-							</li>
-						{/each}
-					</ul>
-					<p class="sms-settings__notice" role="status">
-						To release or replace a number, contact Jafar — buying and releasing numbers stay a
-						provider-owned action.
-					</p>
-				{/if}
-			</SectionBlock>
+										<div class="sms-settings__number-actions">
+											{#if renamingId === number.id}
+												<Button
+													type="button"
+													size="small"
+													loading={renameSaving}
+													onclick={saveRename}
+													>Save name</Button
+												>
+												<Button
+													type="button"
+													size="small"
+													variant="secondary"
+													variation="subtle"
+													disabled={renameSaving}
+													onclick={cancelRename}>Cancel</Button
+												>
+											{:else}
+												<Button
+													type="button"
+													size="small"
+													variant="secondary"
+													variation="subtle"
+													onclick={() => startRename(number)}>Rename</Button
+												>
+												{#if !number.is_default_sender}
+													<Button
+														type="button"
+														size="small"
+														variant="secondary"
+														disabled={!number.can_be_default}
+														loading={defaultSavingId === number.id}
+														onclick={() => makeDefault(number.id)}>Make default</Button
+													>
+												{/if}
+											{/if}
+										</div>
+									</li>
+								{/each}
+							</ul>
+							<p class="sms-settings__notice sms-settings__notice--icon" role="status">
+								<span class="sms-settings__notice-icon" aria-hidden="true">
+									<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+									{@html infoCircleIcon}
+								</span>
+								To release or replace a number, contact Jafar — buying and releasing numbers stay a
+								provider-owned action.
+							</p>
+						{/if}
+					</SectionBlock>
 
-			<SectionBlock title="Compliance & sender info" icon={shieldCheckIcon} level={2}>
-				{#if complianceQuery.isPending}
-					<LoadingSkeleton variant="card" rows={2} />
-				{:else if complianceQuery.isError}
-					<ErrorState
-						description="The compliance settings could not be loaded."
-						retry={() => complianceQuery.refetch()}
-					/>
-				{:else}
-					{#if complianceError}<p class="sms-settings__error" role="alert">
-							{complianceError}
-						</p>{/if}
-					<div class="sms-settings__form">
-						<div class="sms-settings__group">
-							<Toggle
-								id="sms-compliance-opt-out"
-								label="Add opt-out instructions to outbound texts"
-								description="Appends wording like “Reply STOP to unsubscribe” so customers can opt out."
-								labelSide="start"
-								bind:checked={complianceDraft.opt_out_enabled}
+					<SectionBlock title="Holds & opt-outs" icon={banIcon} level={2}>
+						{#if holdsQuery.isPending}
+							<LoadingSkeleton variant="card" rows={2} />
+						{:else if holdsQuery.isError}
+							<ErrorState
+								description="Holds and opt-outs could not be loaded."
+								retry={() => holdsQuery.refetch()}
 							/>
-							<Textarea
-								id="sms-compliance-opt-out-text"
-								label="Custom opt-out wording (optional)"
-								rows={2}
-								maxlength={320}
-								disabled={!complianceDraft.opt_out_enabled}
-								value={complianceDraft.opt_out_text ?? ''}
-								oninput={setOptOutText}
-								invalid={Boolean(complianceFieldErrors.opt_out_text)}
-								errorMessage={complianceFieldErrors.opt_out_text}
-							/>
-						</div>
-						<div class="sms-settings__group">
-							<Toggle
-								id="sms-compliance-sender-info"
-								label="Identify the business in outbound texts"
-								description="Appends your business name so customers know who is texting them."
-								labelSide="start"
-								bind:checked={complianceDraft.sender_info_enabled}
-							/>
-							<Textarea
-								id="sms-compliance-sender-info-text"
-								label="Custom sender wording (optional)"
-								rows={2}
-								maxlength={320}
-								disabled={!complianceDraft.sender_info_enabled}
-								value={complianceDraft.sender_info_text ?? ''}
-								oninput={setSenderInfoText}
-								invalid={Boolean(complianceFieldErrors.sender_info_text)}
-								errorMessage={complianceFieldErrors.sender_info_text}
-							/>
-						</div>
-						<div class="sms-settings__group">
-							<Input
-								id="sms-compliance-reinsert-days"
-								label="Re-add opt-out/sender wording every (days)"
-								type="number"
-								min={1}
-								max={60}
-								value={complianceDraft.periodic_reinsert_days}
-								oninput={setReinsertDays}
-								invalid={Boolean(complianceFieldErrors.periodic_reinsert_days)}
-								errorMessage={complianceFieldErrors.periodic_reinsert_days}
-							/>
-						</div>
-						<div class="sms-settings__actions">
-							<Button type="button" loading={complianceSaving} onclick={saveCompliance}
-								>Save compliance settings</Button
-							>
-						</div>
-					</div>
-				{/if}
-			</SectionBlock>
+						{:else}
+							<div class="sms-settings__tiles">
+								<div class="sms-settings__tile">
+									<span>Customers opted out</span>
+									<strong>{holdsQuery.data.opt_outs.total}</strong>
+								</div>
+								<div class="sms-settings__tile">
+									<span>Active holds</span>
+									<strong>{holdsQuery.data.holds.length}</strong>
+								</div>
+							</div>
+							{#if !holdsQuery.data.holds.length}
+								<p class="sms-settings__notice sms-settings__notice--success sms-settings__notice--icon" role="status">
+									<span class="sms-settings__notice-icon" aria-hidden="true">
+										<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+										{@html checkCircleIcon}
+									</span>
+									No active holds. Sending is not paused for any reason right now.
+								</p>
+							{:else}
+								<ul class="sms-settings__numbers">
+									{#each holdsQuery.data.holds as hold (hold.id)}
+										<li class="sms-settings__number-row">
+											<div class="sms-settings__number-main">
+												<div class="sms-settings__number-identity">
+													<strong>{hold.reason}</strong>
+													<span
+														>{holdSourceLabel(hold.source)} · placed {new Date(
+															hold.placed_at
+														).toLocaleDateString()}</span
+													>
+												</div>
+												<div class="sms-settings__number-badges">
+													<StatusBadge status={holdBadgeTone(hold.status)}
+														>{hold.status === 'active' ? 'Active' : hold.status}</StatusBadge
+													>
+												</div>
+											</div>
+										</li>
+									{/each}
+								</ul>
+								<p class="sms-settings__notice" role="status">
+									Holds are released by Jafar or the provider, never directly by a contractor. Contact
+									Jafar if a hold needs review.
+								</p>
+							{/if}
+						{/if}
+					</SectionBlock>
+				</div>
 
-			<SectionBlock title="Holds & opt-outs" icon={banIcon} level={2}>
-				{#if holdsQuery.isPending}
-					<LoadingSkeleton variant="card" rows={2} />
-				{:else if holdsQuery.isError}
-					<ErrorState
-						description="Holds and opt-outs could not be loaded."
-						retry={() => holdsQuery.refetch()}
-					/>
-				{:else}
-					<div class="sms-settings__facts">
-						<div class="sms-settings__fact">
-							<span>Customers opted out</span>
-							<strong>{holdsQuery.data.opt_outs.total}</strong>
-						</div>
-						<div class="sms-settings__fact">
-							<span>Active holds</span>
-							<strong>{holdsQuery.data.holds.length}</strong>
-						</div>
-					</div>
-					{#if !holdsQuery.data.holds.length}
-						<p class="sms-settings__notice" role="status">
-							No active holds. Sending is not paused for any reason right now.
-						</p>
+				<SectionBlock title="Compliance & sender info" icon={shieldCheckIcon} level={2}>
+					{#if complianceQuery.isPending}
+						<LoadingSkeleton variant="card" rows={2} />
+					{:else if complianceQuery.isError}
+						<ErrorState
+							description="The compliance settings could not be loaded."
+							retry={() => complianceQuery.refetch()}
+						/>
 					{:else}
-						<ul class="sms-settings__numbers">
-							{#each holdsQuery.data.holds as hold (hold.id)}
-								<li class="sms-settings__number-row">
-									<div class="sms-settings__number-main">
-										<div class="sms-settings__number-identity">
-											<strong>{hold.reason}</strong>
-											<span
-												>{holdSourceLabel(hold.source)} · placed {new Date(
-													hold.placed_at
-												).toLocaleDateString()}</span
-											>
-										</div>
-										<div class="sms-settings__number-badges">
-											<StatusBadge status={holdBadgeTone(hold.status)}
-												>{hold.status === 'active' ? 'Active' : hold.status}</StatusBadge
-											>
-										</div>
-									</div>
-								</li>
-							{/each}
-						</ul>
-						<p class="sms-settings__notice" role="status">
-							Holds are released by Jafar or the provider, never directly by a contractor. Contact
-							Jafar if a hold needs review.
-						</p>
+						{#if complianceError}<p class="sms-settings__error" role="alert">
+								{complianceError}
+							</p>{/if}
+						<div class="sms-settings__form">
+							<div class="sms-settings__group">
+								<Toggle
+									id="sms-compliance-opt-out"
+									label="Add opt-out instructions to outbound texts"
+									description="Appends wording like “Reply STOP to unsubscribe” so customers can opt out."
+									labelSide="start"
+									bind:checked={complianceDraft.opt_out_enabled}
+								/>
+								<Textarea
+									id="sms-compliance-opt-out-text"
+									label="Custom opt-out wording (optional)"
+									rows={2}
+									maxlength={320}
+									disabled={!complianceDraft.opt_out_enabled}
+									value={complianceDraft.opt_out_text ?? ''}
+									oninput={setOptOutText}
+									invalid={Boolean(complianceFieldErrors.opt_out_text)}
+									errorMessage={complianceFieldErrors.opt_out_text}
+								/>
+							</div>
+							<div class="sms-settings__group">
+								<Toggle
+									id="sms-compliance-sender-info"
+									label="Identify the business in outbound texts"
+									description="Appends your business name so customers know who is texting them."
+									labelSide="start"
+									bind:checked={complianceDraft.sender_info_enabled}
+								/>
+								<Textarea
+									id="sms-compliance-sender-info-text"
+									label="Custom sender wording (optional)"
+									rows={2}
+									maxlength={320}
+									disabled={!complianceDraft.sender_info_enabled}
+									value={complianceDraft.sender_info_text ?? ''}
+									oninput={setSenderInfoText}
+									invalid={Boolean(complianceFieldErrors.sender_info_text)}
+									errorMessage={complianceFieldErrors.sender_info_text}
+								/>
+							</div>
+							<div class="sms-settings__group">
+								<Input
+									id="sms-compliance-reinsert-days"
+									label="Re-add opt-out/sender wording every (days)"
+									type="number"
+									min={1}
+									max={60}
+									value={complianceDraft.periodic_reinsert_days}
+									oninput={setReinsertDays}
+									invalid={Boolean(complianceFieldErrors.periodic_reinsert_days)}
+									errorMessage={complianceFieldErrors.periodic_reinsert_days}
+									class="sms-settings__field-days"
+								/>
+							</div>
+							<div class="sms-settings__actions">
+								<Button type="button" loading={complianceSaving} onclick={saveCompliance}
+									>Save compliance settings</Button
+								>
+							</div>
+						</div>
 					{/if}
-				{/if}
-			</SectionBlock>
+				</SectionBlock>
+			</div>
 		{/if}
 	</div>
 </PageContainer>
@@ -1041,10 +1122,57 @@
 	.sms-settings :global(.section-block) {
 		--section-block-notch: var(--color-surface);
 	}
+
+	/* Page header: breadcrumbs, then a colored icon tile beside the title and description. */
+	.sms-settings__header-row {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--space-base);
+	}
+	.sms-settings__header-icon {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		flex: 0 0 auto;
+		border-radius: var(--radius-base);
+		color: var(--color-informative--onSurface);
+		background: var(--color-informative--surface);
+	}
+	.sms-settings__header-icon :global(svg) {
+		display: block;
+		width: 22px;
+		height: 22px;
+	}
+	.sms-settings__header-copy {
+		display: grid;
+		gap: 2px;
+		min-width: 0;
+
+		h1 {
+			margin: 0;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-jumbo);
+			font-weight: 900;
+			letter-spacing: -1.2px;
+			line-height: var(--typography--lineHeight-tight);
+		}
+		p {
+			margin: 0;
+			max-width: 65ch;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 500;
+			line-height: var(--typography--lineHeight-large);
+		}
+	}
+
+	/* Readiness: four facts in one row with thin dividers between them. */
 	.sms-settings__facts {
 		display: grid;
 		grid-template-columns: repeat(4, minmax(0, 1fr));
-		gap: var(--space-large);
+		column-gap: var(--space-large);
+		row-gap: var(--space-base);
 		margin-bottom: var(--space-base);
 	}
 	.sms-settings__fact {
@@ -1056,11 +1184,52 @@
 			font-size: var(--typography--fontSize-small);
 		}
 		strong {
+			display: inline-flex;
+			align-items: center;
+			gap: var(--space-smaller);
 			color: var(--color-heading);
 			font-size: var(--typography--fontSize-large);
 		}
 	}
+	.sms-settings__fact:nth-child(n + 2) {
+		border-left: var(--border-base) solid var(--color-border);
+		padding-left: var(--space-large);
+	}
+	.sms-settings__dot {
+		width: 8px;
+		height: 8px;
+		flex: 0 0 auto;
+		border-radius: var(--radius-circle);
+		background: var(--color-success);
+	}
+	.sms-settings__tiles {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--space-base);
+		margin-bottom: var(--space-base);
+	}
+	.sms-settings__tile {
+		display: grid;
+		gap: var(--space-smaller);
+		padding: var(--space-base);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background--subtle);
+
+		span {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+		strong {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-largest);
+			line-height: var(--typography--lineHeight-tight);
+		}
+	}
 	.sms-settings__notice {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--space-small);
 		margin: 0 0 var(--space-base);
 		padding: var(--space-base);
 		border-radius: var(--radius-base);
@@ -1070,6 +1239,19 @@
 	.sms-settings__notice--critical {
 		color: var(--color-critical--onSurface);
 		background: var(--color-critical--surface);
+	}
+	.sms-settings__notice--success {
+		color: var(--color-success--onSurface);
+		background: var(--color-success--surface);
+	}
+	.sms-settings__notice-icon {
+		display: inline-flex;
+		flex: 0 0 auto;
+	}
+	.sms-settings__notice-icon :global(svg) {
+		display: block;
+		width: 16px;
+		height: 16px;
 	}
 	.sms-settings__error {
 		margin: 0 0 var(--space-base);
@@ -1081,7 +1263,8 @@
 		gap: var(--space-large);
 	}
 	.sms-settings__group {
-		display: grid;
+		display: flex;
+		flex-direction: column;
 		gap: var(--space-base);
 		padding-top: var(--space-large);
 		border-top: var(--border-base) solid var(--color-border);
@@ -1090,12 +1273,53 @@
 			padding-top: 0;
 			border-top: 0;
 		}
+	}
+	.sms-settings__group-head {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
 
 		h3 {
 			margin: 0;
 			color: var(--color-heading);
-			font-size: var(--typography--fontSize-large);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
+			line-height: var(--typography--lineHeight-base);
 		}
+	}
+	.sms-settings__group-icon {
+		display: inline-flex;
+		color: var(--color-icon--secondary);
+	}
+	.sms-settings__group-icon :global(svg) {
+		display: block;
+		width: 16px;
+		height: 16px;
+	}
+	.sms-settings__fields {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: var(--space-base);
+	}
+	.sms-settings__field--full {
+		grid-column: 1 / -1;
+	}
+	.sms-settings__messaging {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--space-large);
+		align-items: start;
+	}
+	.sms-settings__messaging-col {
+		display: grid;
+		gap: var(--space-base);
+		align-content: start;
+		min-width: 0;
+	}
+	.sms-settings__links {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--space-base);
 	}
 	.sms-settings__group-label {
 		color: var(--color-text--secondary);
@@ -1106,6 +1330,10 @@
 		margin: calc(var(--space-small) * -1) 0 0;
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
+	}
+	/* The re-add-days field reads best short, as drawn in the approved frame. */
+	.sms-settings :global(.sms-settings__field-days) {
+		max-width: 14rem;
 	}
 	.sms-settings__samples {
 		display: grid;
@@ -1126,6 +1354,19 @@
 		justify-content: flex-end;
 		gap: var(--space-small);
 	}
+
+	/* Lower area: phone numbers + holds stacked on the left, compliance on the right. */
+	.sms-settings__lower {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: var(--space-large);
+		align-items: start;
+	}
+	.sms-settings__lower-left {
+		display: grid;
+		gap: var(--space-large);
+		min-width: 0;
+	}
 	.sms-settings__numbers {
 		display: grid;
 		gap: var(--space-small);
@@ -1137,18 +1378,37 @@
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		justify-content: space-between;
 		gap: var(--space-base);
 		padding: var(--space-base);
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 	}
+	.sms-settings__number-icon {
+		display: grid;
+		place-items: center;
+		width: 36px;
+		height: 36px;
+		flex: 0 0 auto;
+		border-radius: var(--radius-circle);
+		color: var(--color-informative--onSurface);
+		background: var(--color-informative--surface);
+	}
+	.sms-settings__number-icon :global(svg) {
+		display: block;
+		width: 18px;
+		height: 18px;
+	}
 	.sms-settings__number-main {
 		display: flex;
+		flex: 1 1 0;
 		flex-wrap: wrap;
 		align-items: center;
 		gap: var(--space-base);
 		min-width: 0;
+
+		:global(.input) {
+			flex: 1 1 10rem;
+		}
 	}
 	.sms-settings__number-identity {
 		display: grid;
@@ -1169,32 +1429,64 @@
 		align-items: center;
 		gap: var(--space-small);
 	}
+	.sms-settings__number-badges :global(.sms-settings__chip-default) {
+		color: var(--color-surface);
+		background: var(--color-surface--reverse);
+	}
 	.sms-settings__number-actions {
 		display: flex;
+		flex: 0 0 auto;
 		flex-wrap: wrap;
+		margin-left: auto;
 		gap: var(--space-small);
 	}
+
 	@media (max-width: 900px) {
 		.sms-settings__facts {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+		.sms-settings__fact:nth-child(n + 2) {
+			border-left: 0;
+			padding-left: 0;
+		}
+		.sms-settings__fact:nth-child(even) {
+			border-left: var(--border-base) solid var(--color-border);
+			padding-left: var(--space-large);
+		}
+		.sms-settings__messaging,
+		.sms-settings__lower {
+			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 	@media (max-width: 639px) {
 		.sms-settings {
 			gap: var(--space-base);
 		}
+		.sms-settings__header-copy h1 {
+			font-size: var(--typography--fontSize-largest);
+			letter-spacing: -0.8px;
+		}
 		.sms-settings__facts {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		.sms-settings__fact:nth-child(even) {
+			border-left: 0;
+			padding-left: 0;
+		}
+		.sms-settings__fact:nth-child(n + 2) {
+			border-top: var(--border-base) solid var(--color-border);
+			padding-top: var(--space-base);
+		}
+		.sms-settings__tiles,
+		.sms-settings__fields,
+		.sms-settings__links {
 			grid-template-columns: minmax(0, 1fr);
 		}
 		.sms-settings__actions {
 			justify-content: flex-start;
 		}
-		.sms-settings__number-row {
-			flex-direction: column;
-			align-items: stretch;
-		}
 		.sms-settings__number-actions {
-			justify-content: flex-start;
+			margin-left: 0;
 		}
 	}
 </style>

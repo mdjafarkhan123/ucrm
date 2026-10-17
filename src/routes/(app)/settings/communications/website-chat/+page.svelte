@@ -2,7 +2,7 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
@@ -11,7 +11,8 @@
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
-	import Badge from '$lib/components/ui/Badge.svelte';
+	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
+	import DataTable, { type DataTableColumn } from '$lib/components/data-display/DataTable.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
@@ -86,6 +87,14 @@
 		{ value: 'hidden', label: 'Hidden' },
 		{ value: 'show_when_available', label: 'Show when available' },
 		{ value: 'always', label: 'Always show' }
+	];
+
+	const widgetColumns: DataTableColumn[] = [
+		{ key: 'widget', label: 'Widget' },
+		{ key: 'launcher', label: 'Launcher' },
+		{ key: 'domains', label: 'Domains' },
+		{ key: 'status', label: 'Status' },
+		{ key: 'actions', label: 'Actions', hideLabel: true }
 	];
 
 	const limit = $derived(widgetsQuery.data?.limit);
@@ -336,17 +345,18 @@
 
 <PageContainer variant="fill">
 	<div class="website-chat">
-		<PageHeader
-			eyebrow="Communications"
-			title="Website Chat"
-			description="The chat widgets your website can show customers."
-		>
-			{#snippet actions()}
-				<Button href={resolve('/settings')} variant="secondary" variation="subtle"
-					>Back to settings</Button
-				>
-			{/snippet}
-		</PageHeader>
+		<Breadcrumbs
+			items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Website Chat' }]}
+		/>
+
+		<header class="website-chat__header">
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			<span class="website-chat__header-icon" aria-hidden="true">{@html messageCircleIcon}</span>
+			<div class="website-chat__header-copy">
+				<h1>Website Chat</h1>
+				<p>The chat widgets your website can show customers.</p>
+			</div>
+		</header>
 
 		{#if widgetsQuery.isPending}
 			<LoadingSkeleton variant="table" label="Loading Website Chat widgets" />
@@ -365,24 +375,29 @@
 				<div class="website-chat__usage">
 					<div class="website-chat__usage-copy">
 						<span>Accepted conversations</span>
-						<strong>
-							{conversationUsage?.accepted_count ?? 0}
-							{#if conversationUsage?.state === 'numeric'}
-								of {conversationUsage.value ?? 0}
-							{:else if conversationUsage?.state === 'unlimited'}
-								· unlimited
-							{/if}
-						</strong>
+						<strong class="website-chat__usage-count"
+							>{conversationUsage?.accepted_count ?? 0}{#if conversationUsage?.state === 'numeric'}<small
+									>of {conversationUsage.value ?? 0}</small
+								>{:else if conversationUsage?.state === 'unlimited'}<small>· unlimited</small>{/if}</strong
+						>
 						{#if conversationUsage?.period_ends_at}
 							<small>Resets {formatPeriodEnd(conversationUsage.period_ends_at)}</small>
 						{/if}
 					</div>
 					{#if conversationUsage?.state === 'numeric'}
-						<progress
-							max="100"
-							value={conversationUsagePercent}
+						<div
+							class="website-chat__meter"
+							role="progressbar"
+							aria-valuemin={0}
+							aria-valuemax={100}
+							aria-valuenow={conversationUsagePercent}
 							aria-label={`${conversationUsagePercent}% of Website Chat conversations used`}
-						></progress>
+						>
+							<div
+								class="website-chat__meter-fill"
+								style="width: {conversationUsagePercent}%"
+							></div>
+						</div>
 					{/if}
 				</div>
 
@@ -434,42 +449,45 @@
 						{#snippet action()}<Button onclick={openCreate}>New widget</Button>{/snippet}
 					</EmptyState>
 				{:else}
-					<div class="website-chat__table-wrap">
-						<table>
-							<thead
-								><tr
-									><th scope="col">Widget</th><th scope="col">Launcher</th><th scope="col"
-										>Domains</th
-									><th scope="col">Status</th><th scope="col"
-										><span class="website-chat__sr-only">Actions</span></th
-									></tr
-								></thead
-							>
-							<tbody>
-								{#each widgetsQuery.data.widgets as widget (widget.id)}
-									{@const widgetStatus = status(widget)}
-									<tr>
-										<th scope="row">{widget.name}</th>
-										<td
-											>{widget.launcher_position === 'bottom_left'
-												? 'Bottom left'
-												: 'Bottom right'}</td
-										>
-										<td>{widget.origins.length}</td>
-										<td><Badge status={widgetStatus.tone}>{widgetStatus.label}</Badge></td>
-										<td
-											><Button
-												size="small"
-												variant="secondary"
-												variation="subtle"
-												onclick={() => openEdit(widget)}>Edit</Button
-											></td
-										>
-									</tr>
-								{/each}
-							</tbody>
-						</table>
-					</div>
+					<DataTable
+						columns={widgetColumns}
+						items={widgetsQuery.data.widgets}
+						rowId={(widget) => widget.id}
+						caption="Website Chat widgets"
+						variant="card"
+					>
+						{#snippet row(widget)}
+							{@const widgetStatus = status(widget)}
+							<th scope="row" class="website-chat__widget-cell">
+								<div class="website-chat__widget">
+									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+									<span class="website-chat__widget-icon" aria-hidden="true">{@html messageCircleIcon}</span>
+									<span class="website-chat__widget-name">{widget.name}</span>
+								</div>
+							</th>
+							<td>
+								<div class="website-chat__launcher">
+									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+									<span class="website-chat__launcher-icon" aria-hidden="true">{@html messageCircleIcon}</span>
+									{widget.launcher_position === 'bottom_left' ? 'Bottom left' : 'Bottom right'}
+								</div>
+							</td>
+							<td class="website-chat__origins-cell">{widget.origins.length}</td>
+							<td>
+								<StatusBadge status={widgetStatus.tone} size="compact"
+									>{widgetStatus.label}</StatusBadge
+								>
+							</td>
+							<td class="website-chat__edit-cell">
+								<Button
+									size="small"
+									variant="secondary"
+									variation="subtle"
+									onclick={() => openEdit(widget)}>Edit</Button
+								>
+							</td>
+						{/snippet}
+					</DataTable>
 				{/if}
 			</SectionBlock>
 		{/if}
@@ -707,62 +725,165 @@
 		color: var(--color-critical--onSurface);
 		background: var(--color-critical--surface);
 	}
+	.website-chat__header {
+		display: flex;
+		align-items: center;
+		gap: var(--space-base);
+	}
+	.website-chat__header-icon {
+		display: inline-flex;
+		flex: 0 0 auto;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		border-radius: var(--radius-base);
+		color: var(--color-informative--onSurface);
+		background: var(--color-informative--surface);
+
+		:global(svg) {
+			width: 22px;
+			height: 22px;
+		}
+	}
+	.website-chat__header-copy {
+		display: grid;
+		gap: var(--space-smaller);
+
+		h1,
+		p {
+			margin: 0;
+		}
+
+		h1 {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-jumbo);
+			font-weight: 700;
+			line-height: var(--typography--lineHeight-minuscule);
+		}
+
+		p {
+			color: var(--color-text--secondary);
+			line-height: var(--typography--lineHeight-large);
+		}
+	}
 	.website-chat__usage {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) minmax(200px, 40%);
 		align-items: center;
 		gap: var(--space-large);
-
-		progress {
-			width: 100%;
-			height: var(--space-small);
-			accent-color: var(--color-interactive);
-		}
 	}
 	.website-chat__usage-copy {
 		display: grid;
 		gap: var(--space-smaller);
 
-		span,
-		small {
+		> span,
+		> small {
 			color: var(--color-text--secondary);
 		}
 
-		strong {
-			color: var(--color-heading);
-			font-size: var(--typography--fontSize-larger);
+		> span {
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
 		}
 
-		small {
+		> small {
 			font-size: var(--typography--fontSize-small);
 		}
+
+		strong {
+			display: flex;
+			align-items: baseline;
+			gap: var(--space-smaller);
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-larger);
+			font-weight: 700;
+
+			small {
+				color: var(--color-text--secondary);
+				font-size: var(--typography--fontSize-base);
+				font-weight: 600;
+			}
+		}
 	}
-	.website-chat__table-wrap {
-		overflow-x: auto;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-	}
-	.website-chat table {
+	.website-chat__meter {
+		overflow: hidden;
 		width: 100%;
-		min-width: 640px;
-		border-collapse: collapse;
-		color: var(--color-text);
+		height: var(--space-small);
+		border-radius: var(--radius-circle);
+		background: var(--color-border);
 	}
-	.website-chat th,
-	.website-chat td {
-		padding: var(--space-base) var(--space-large);
-		border-bottom: var(--border-base) solid var(--color-border);
-		text-align: left;
-		vertical-align: middle;
+	.website-chat__meter-fill {
+		height: 100%;
+		border-radius: var(--radius-circle);
+		background: var(--color-interactive);
 	}
-	.website-chat thead th {
-		background: var(--color-surface--background--subtle);
+	/* The card table owns its head, spacing and row lines; the page only sets its width floor and
+	   drops the last row's line where the card closes. */
+	.website-chat :global(.data-table) {
+		--data-table-min-width: 640px;
+	}
+	.website-chat :global(.data-table--card tbody tr:last-child th),
+	.website-chat :global(.data-table--card tbody tr:last-child td) {
+		border-bottom: 0;
+	}
+	.website-chat__widget {
+		display: flex;
+		align-items: center;
+		gap: var(--space-slim);
+		min-width: 0;
+	}
+	.website-chat__widget-icon {
+		display: inline-grid;
+		flex: 0 0 auto;
+		place-items: center;
+		width: 32px;
+		height: 32px;
+		border-radius: var(--radius-base);
+		color: var(--color-heading);
+		background: var(--color-surface--active);
+
+		:global(svg) {
+			width: 15px;
+			height: 15px;
+		}
+	}
+	.website-chat__widget-name {
+		overflow: hidden;
 		color: var(--color-heading);
 		font-weight: 700;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
-	.website-chat tbody tr:last-child th,
-	.website-chat tbody tr:last-child td {
-		border-bottom: 0;
+	.website-chat__launcher {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-smaller);
+		color: var(--color-text);
+		font-weight: 500;
+	}
+	.website-chat__launcher-icon {
+		display: inline-grid;
+		flex: 0 0 auto;
+		place-items: center;
+		width: 24px;
+		height: 24px;
+		border-radius: var(--radius-small);
+		color: var(--color-heading);
+		background: var(--color-surface--active);
+
+		:global(svg) {
+			width: 12px;
+			height: 12px;
+		}
+	}
+	.website-chat__origins-cell {
+		color: var(--color-heading);
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+	}
+	.website-chat__edit-cell {
+		text-align: end;
 	}
 	.website-chat__form,
 	.website-chat__channels,
@@ -824,14 +945,6 @@
 	}
 	.website-chat__origin-form :global(.input) {
 		flex: 1 1 auto;
-	}
-	.website-chat__sr-only {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip: rect(0 0 0 0);
-		white-space: nowrap;
 	}
 	@media (max-width: 1079px) {
 		.website-chat__dialog-grid {
