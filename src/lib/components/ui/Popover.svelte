@@ -15,6 +15,7 @@
 		open,
 		anchor,
 		title,
+		subtitle,
 		onClose,
 		children
 	}: {
@@ -22,6 +23,8 @@
 		/** What the popover points at -- an element, or a bare point. Nothing is drawn until there is one. */
 		anchor: PopoverAnchor | null;
 		title: string;
+		/** A line under the title, for what the title is about -- the work, or what a date holds. */
+		subtitle?: Snippet;
 		onClose: () => void;
 		children: Snippet;
 	} = $props();
@@ -49,7 +52,10 @@
 			}}
 		>
 			<header class="popover__header">
-				<h2 class="popover__title">{title}</h2>
+				<div class="popover__heading">
+					<h2 class="popover__title">{title}</h2>
+					{#if subtitle}<p class="popover__subtitle">{@render subtitle()}</p>{/if}
+				</div>
 				<PopoverPrimitive.Close class="popover__close" aria-label="Close">
 					{@html closeIcon}
 				</PopoverPrimitive.Close>
@@ -92,6 +98,20 @@
 		justify-content: space-between;
 		gap: var(--space-small);
 		padding: var(--space-base) var(--space-base) 0;
+	}
+
+	.popover__heading {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-smallest);
+		min-width: 0;
+	}
+
+	.popover__subtitle {
+		margin: 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		line-height: var(--typography--lineHeight-tight);
 	}
 
 	.popover__title {

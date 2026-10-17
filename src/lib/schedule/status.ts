@@ -34,3 +34,44 @@ export function visitDerivedStatus(visit: VisitTiming, today: string): VisitDeri
 	if (visit.visit_date === today) return 'today';
 	return 'upcoming';
 }
+
+// What a calendar card wears. The Schedule's card colour says where the work stands, in one reading order:
+// done, then late, then nobody assigned, then happening right now, and otherwise plain. These are all read off
+// columns the visit already has -- no new state is stored -- so the card, the legend and the day heading all
+// agree. "Happening now" is only ever true for today, between the visit's own start and end time.
+export type CardState = 'completed' | 'late' | 'unassigned' | 'in-progress' | 'scheduled';
+
+export type CardStateInput = VisitTiming & {
+	end_time: string | null;
+	assignee_ids: string[];
+};
+
+function minutesOf(clock: string | null): number | null {
+	if (!clock) return null;
+	const [hour, minute] = clock.split(':').map(Number);
+	return Number.isFinite(hour) ? hour * 60 + (Number.isFinite(minute) ? minute : 0) : null;
+}
+
+export function cardState(
+	item: CardStateInput,
+	today: string,
+	nowMinutes: number | null
+): CardState {
+	if (item.completed_at !== null) return 'completed';
+	if (item.visit_date !== null && item.visit_date < today) return 'late';
+	if (item.assignee_ids.length === 0) return 'unassigned';
+	if (item.visit_date === today && nowMinutes !== null) {
+		const start = minutesOf(item.start_time);
+		const end = minutesOf(item.end_time);
+		if (start !== null && end !== null && start <= nowMinutes && nowMinutes < end) {
+			return 'in-progress';
+		}
+	}
+	return 'scheduled';
+}
+
+export const CARD_STATE_LABELS: Record<Exclude<CardState, 'scheduled' | 'completed'>, string> = {
+	late: 'Late',
+	unassigned: 'Unassigned',
+	'in-progress': 'In progress'
+};

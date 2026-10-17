@@ -7,11 +7,9 @@
 
 	// One Schedule-owned event, drawn at whatever size the calendar could give it.
 	//
-	// It mirrors the visit and assessment cards' shape so a day reads as one calendar, but an event is the
-	// lightest item there is: it has no client, no crew and no property, so the card carries only its time and
-	// its title. It wears the Event accent and, where there is room, a marker and an "Event" tag both say what
-	// it is, so colour alone never carries the difference. It never drags or resizes -- editing is a
-	// deliberate action from its own popover.
+	// An event is the lightest item there is: it has no client, no crew and no property, so the card carries
+	// only its time and its title, with a calendar marker that says what it is. It never drags or resizes --
+	// editing is a deliberate action from its own popover.
 
 	let {
 		event,
@@ -33,9 +31,8 @@
 		const end = clockLabel(event.end_time);
 		return end ? `${start} – ${end}` : start;
 	});
-	const startLabel = $derived(
-		visitShape(event) === 'anytime' ? 'Anytime' : (clockLabel(event.start_time) ?? 'Anytime')
-	);
+	const timed = $derived(visitShape(event) !== 'anytime' && Boolean(clockLabel(event.start_time)));
+	const startLabel = $derived(clockLabel(event.start_time) ?? '');
 
 	const titleLabel = $derived(event.title.trim() || 'Event');
 
@@ -52,46 +49,37 @@
 	title={summary}
 	onclick={(domEvent) => onselect(event, domEvent.currentTarget)}
 >
-	<span class="event-card__accent" aria-hidden="true"></span>
-
-	{#if density === 'micro'}
-		<span class="event-card__line">
-			<span class="event-card__marker" aria-hidden="true">{@html calendarEventIcon}</span>
-			<span class="event-card__time">{startLabel}</span>
-			<span class="event-card__title">{titleLabel}</span>
-		</span>
-	{:else}
+	{#if density === 'standard'}
 		<span class="event-card__time">
 			<span class="event-card__marker" aria-hidden="true">{@html calendarEventIcon}</span>
-			{density === 'standard' ? timeLabel : startLabel}
+			{timeLabel}
 		</span>
+		<span class="event-card__title event-card__title--block">{titleLabel}</span>
+	{:else}
+		<span class="event-card__marker" aria-hidden="true">{@html calendarEventIcon}</span>
+		{#if timed}<span class="event-card__time">{startLabel}</span>{/if}
 		<span class="event-card__title">{titleLabel}</span>
-
-		{#if density === 'standard'}
-			<span class="event-card__foot">
-				<span class="event-card__tag">Event</span>
-			</span>
-		{/if}
 	{/if}
 </button>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	// An event blocks time for the whole team -- a meeting, a training day, a holiday. It is a quiet pill on
+	// the calendar's own tint rather than a coloured card, so it never competes with work that has a status.
 	.event-card {
-		position: relative;
 		display: flex;
-		flex-direction: column;
-		gap: var(--space-smallest);
+		align-items: center;
+		gap: 6px;
 		box-sizing: border-box;
 		width: 100%;
 		height: 100%;
 		min-width: 0;
-		padding: var(--space-smaller) var(--space-small);
+		padding: 0 var(--space-small);
 		overflow: hidden;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-small);
-		background-color: var(--color-surface);
+		border: var(--border-base) solid var(--color-surface--background--subtle);
+		border-radius: var(--radius-base);
+		background-color: var(--color-surface--background--subtle);
 		color: var(--color-text);
 		font-family: inherit;
 		text-align: left;
@@ -101,7 +89,7 @@
 			box-shadow var(--timing-quick) ease;
 
 		&:hover {
-			background-color: var(--color-surface--hover);
+			background-color: var(--color-surface--background--subtle--hover);
 		}
 		&:focus-visible {
 			outline: none;
@@ -109,94 +97,53 @@
 		}
 	}
 
-	.event-card__accent {
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		left: 0;
-		width: var(--space-smaller);
-		// The Event accent, so an event reads as a different kind of block from a job visit at a glance.
-		background-color: var(--color-event);
+	.event-card--standard {
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: flex-start;
+		gap: var(--space-smallest);
+		padding: 7px var(--space-small) var(--space-small) 9px;
 	}
 
 	.event-card--selected {
-		background-color: var(--color-surface--active);
 		box-shadow: var(--shadow-focus);
-	}
-
-	.event-card__line {
-		display: flex;
-		align-items: center;
-		gap: var(--space-smaller);
-		min-width: 0;
 	}
 
 	.event-card__marker {
 		display: inline-flex;
 		flex-shrink: 0;
-		color: var(--color-event--onSurface);
+		color: var(--color-text--secondary);
 
 		:global(svg) {
-			width: 13px;
-			height: 13px;
+			width: 12px;
+			height: 12px;
 		}
 	}
 
 	.event-card__time {
-		display: flex;
+		display: inline-flex;
+		flex-shrink: 0;
 		align-items: center;
 		gap: var(--space-smaller);
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 700;
-		line-height: var(--typography--lineHeight-tighter);
+		color: var(--color-text--secondary);
+		font-size: 11px;
+		font-weight: 600;
+		line-height: 1.3;
 		white-space: nowrap;
 	}
 
 	.event-card__title {
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-		line-height: var(--typography--lineHeight-tighter);
+		min-width: 0;
 		overflow: hidden;
+		color: var(--color-heading);
+		font-size: 12px;
+		font-weight: 600;
+		line-height: 1.25;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 
-	.event-card__foot {
-		display: flex;
-		align-items: center;
-		justify-content: flex-end;
-		gap: var(--space-small);
-		margin-top: auto;
-		min-width: 0;
-	}
-
-	.event-card__tag {
-		flex-shrink: 0;
-		padding: 0 var(--space-smaller);
-		border-radius: var(--radius-small);
-		background-color: var(--color-event--surface);
-		color: var(--color-event--onSurface);
-		font-size: var(--typography--fontSize-smaller);
-		font-weight: 700;
-		line-height: var(--typography--lineHeight-loose);
-		white-space: nowrap;
-	}
-
-	.event-card--micro {
-		justify-content: center;
-		padding: 0 var(--space-smaller) 0 var(--space-small);
-
-		.event-card__time {
-			flex-shrink: 0;
-		}
-
-		.event-card__title {
-			flex: 1 1 auto;
-			min-width: 0;
-			color: var(--color-text);
-			font-weight: 500;
-		}
+	.event-card__title--block {
+		white-space: normal;
 	}
 </style>

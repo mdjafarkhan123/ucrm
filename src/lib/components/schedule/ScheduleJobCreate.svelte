@@ -23,6 +23,14 @@
 	import type { JobCreateSeed, JobFirstVisitSeed } from '$lib/jobs/createDraft';
 	import type { AssessmentCreateSeed } from '$lib/requests/assessmentSeed';
 	import type { NewVisitDraft } from '$lib/schedule/drag';
+	import hammerIcon from '@tabler/icons/outline/hammer.svg?raw';
+	import clipboardListIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
+	import calendarEventIcon from '@tabler/icons/outline/calendar-event.svg?raw';
+	import calendarTimeIcon from '@tabler/icons/outline/calendar-time.svg?raw';
+	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
+	import alertCircleIcon from '@tabler/icons/outline/alert-circle.svg?raw';
+	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
+	import adjustmentsIcon from '@tabler/icons/outline/adjustments-horizontal.svg?raw';
 
 	// Booking work from empty calendar space, the way Jobber starts one in place. A Job/Request switch at the
 	// top follows Jobber's empty-slot work-type chooser: Job is the default and its light form -- seeded with
@@ -78,11 +86,29 @@
 	// dialog.
 	type CreateType = 'job' | 'request' | 'event';
 	let createType = $state<CreateType>('job');
+	// Each kind wears its own colour, the same ones the rest of the app gives a job, a request and an event.
 	const typeOptions = [
-		{ value: 'job', label: 'Job' },
-		{ value: 'request', label: 'Request' },
-		{ value: 'event', label: 'Event' }
+		{ value: 'job', label: 'Job', icon: hammerIcon, iconColor: 'var(--color-success--onSurface)' },
+		{
+			value: 'request',
+			label: 'Request',
+			icon: clipboardListIcon,
+			iconColor: 'var(--color-warning--onSurface)'
+		},
+		{
+			value: 'event',
+			label: 'Event',
+			icon: calendarEventIcon,
+			iconColor: 'var(--color-critical--onSurface)'
+		}
 	];
+	const dialogLook = $derived(
+		createType === 'request'
+			? { icon: clipboardListIcon, tone: 'warning' as const }
+			: createType === 'event'
+				? { icon: calendarEventIcon, tone: 'critical' as const }
+				: { icon: hammerIcon, tone: 'success' as const }
+	);
 
 	let title = $state('');
 	let clientId = $state('');
@@ -293,9 +319,64 @@
 			);
 		return end ? `${dayLabel}, ${clock(start)} – ${clock(end)}` : `${dayLabel}, ${clock(start)}`;
 	});
+
+	// The same slot as a date tile, a day in words and a time, for the two tabs that hand it on. Null when
+	// there is no date yet, and the plain sentence above says so instead.
+	const slotParts = $derived.by(() => {
+		if (scheduleLater) return null;
+		const day = calendarDateToString(when.date);
+		if (!day) return null;
+		const date = new Date(`${day}T00:00`);
+		const clock = (time: string) =>
+			new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }).format(
+				new Date(`${day}T${time}`)
+			);
+		const start = timeToString(when.startTime);
+		const end = timeToString(when.endTime);
+		const time = anytime
+			? 'Anytime'
+			: start
+				? end
+					? `${clock(start)} – ${clock(end)}`
+					: clock(start)
+				: null;
+		return {
+			month: new Intl.DateTimeFormat(locale, { month: 'short' }).format(date).toUpperCase(),
+			dayNumber: date.getDate(),
+			label: new Intl.DateTimeFormat(locale, {
+				weekday: 'short',
+				month: 'short',
+				day: 'numeric'
+			}).format(date),
+			time
+		};
+	});
 </script>
 
+<!-- The icons are Tabler SVG files imported at build time, not user content. -->
 <!-- eslint-disable svelte/no-at-html-tags -->
+{#snippet slotCard()}
+	{#if slotParts}
+		<div class="job-create__slot">
+			<span class="job-create__slot-tile" aria-hidden="true">
+				<span class="job-create__slot-month">{slotParts.month}</span>
+				<span class="job-create__slot-day">{slotParts.dayNumber}</span>
+			</span>
+			<span class="job-create__slot-text">
+				<span class="job-create__slot-label">{slotParts.label}</span>
+				{#if slotParts.time}
+					<span class="job-create__slot-time">
+						<span class="job-create__slot-clock" aria-hidden="true">{@html clockIcon}</span>
+						{slotParts.time}
+					</span>
+				{/if}
+			</span>
+		</div>
+	{:else}
+		<p class="job-create__slot job-create__slot--none">{slotSummary}</p>
+	{/if}
+{/snippet}
+
 <Dialog
 	{open}
 	title={createType === 'request'
@@ -303,13 +384,19 @@
 		: createType === 'event'
 			? 'New event'
 			: 'New job'}
+	size="medium"
+	initialFocusId="job-create-title"
+	icon={dialogLook.icon}
+	iconTone={dialogLook.tone}
 	{onClose}
 >
 	<div class="job-create">
 		<SegmentedControl
 			value={createType}
 			options={typeOptions}
-			label="What are you booking?"
+			ariaLabel="What are you booking?"
+			size="small"
+			tone="plain"
 			fullWidth
 			onchange={(value) => (createType = value as CreateType)}
 		/>
@@ -321,13 +408,11 @@
 				<p class="job-create__handoff-lead">
 					A request opens the full New Request form, with the on-site visit booked onto this slot:
 				</p>
-				<p class="job-create__handoff-slot">{slotSummary}</p>
+				{@render slotCard()}
 				<p class="job-create__handoff-note">
+					<span class="job-create__handoff-arrow" aria-hidden="true">{@html arrowRightIcon}</span>
 					You will add the client and what they are asking for there.
 				</p>
-			</div>
-			<div class="job-create__actions">
-				<Button onclick={continueToRequest}>Continue to new request</Button>
 			</div>
 		{:else if createType === 'event'}
 			<!-- An event is Schedule's own, so this tab only carries the slot into the event dialog. It belongs
@@ -336,17 +421,19 @@
 				<p class="job-create__handoff-lead">
 					An event blocks this slot for the whole team — a meeting, training or holiday:
 				</p>
-				<p class="job-create__handoff-slot">{slotSummary}</p>
+				{@render slotCard()}
 				<p class="job-create__handoff-note">
+					<span class="job-create__handoff-arrow" aria-hidden="true">{@html arrowRightIcon}</span>
 					You will give it a title and any details next. It has no client or crew.
 				</p>
 			</div>
-			<div class="job-create__actions">
-				<Button onclick={continueToEvent}>Continue to new event</Button>
-			</div>
 		{:else}
-			{#if error}<p class="job-create__alert" role="alert">{error}</p>{/if}
-			{#if fieldError}<p class="job-create__alert" role="alert">{fieldError}</p>{/if}
+			{#each [error, fieldError].filter(Boolean) as message (message)}
+				<p class="job-create__alert" role="alert">
+					<span class="job-create__alert-icon" aria-hidden="true">{@html alertCircleIcon}</span>
+					{message}
+				</p>
+			{/each}
 
 			<Input
 				id="job-create-title"
@@ -385,53 +472,69 @@
 				{/if}
 			</div>
 
-			<Checkbox
-				id="job-create-later"
-				label="Schedule later"
-				description="Book the job now and give its first visit a date when you know it."
-				bind:checked={scheduleLater}
-			/>
+			<section class="job-create__group" aria-labelledby="job-create-first-visit">
+				<header class="job-create__group-head">
+					<span class="job-create__group-icon" aria-hidden="true">{@html calendarTimeIcon}</span>
+					<h3 class="job-create__group-title" id="job-create-first-visit">First visit</h3>
+				</header>
 
-			{#if !scheduleLater}
-				<DateTimePicker
-					id="job-create-when"
-					range
-					showTime={!anytime}
-					dateLabel="Day of the first visit"
-					timeLabel="Time"
-					{locale}
-					bind:value={when}
-				/>
 				<Checkbox
-					id="job-create-anytime"
-					label="Anytime"
-					description="Promise the day without promising an hour."
-					checked={anytime}
-					onchange={(checked) => {
-						anytime = checked;
-						if (checked) when = { ...when, startTime: undefined, endTime: undefined };
-					}}
+					id="job-create-later"
+					label="Schedule later"
+					description="Book the job now and give its first visit a date when you know it."
+					bind:checked={scheduleLater}
 				/>
-			{/if}
 
-			<Textarea
-				id="job-create-notes"
-				label="Notes for the first visit"
-				rows={3}
-				maxlength={2000}
-				bind:value={workNotes}
-			/>
+				{#if !scheduleLater}
+					<DateTimePicker
+						id="job-create-when"
+						range
+						showTime={!anytime}
+						dateLabel="Day of the first visit"
+						timeLabel="Time"
+						{locale}
+						bind:value={when}
+					/>
+					<Checkbox
+						id="job-create-anytime"
+						label="Anytime"
+						description="Promise the day without promising an hour."
+						checked={anytime}
+						onchange={(checked) => {
+							anytime = checked;
+							if (checked) when = { ...when, startTime: undefined, endTime: undefined };
+						}}
+					/>
+				{/if}
+
+				<Textarea
+					id="job-create-notes"
+					label="Notes for the first visit"
+					rows={3}
+					maxlength={2000}
+					bind:value={workNotes}
+				/>
+			</section>
 
 			<TeamPicker id="job-create-team" bind:value={assigneeIds} {open} />
 
 			{@render notice?.()}
-
-			<div class="job-create__actions">
-				<Button variant="tertiary" onclick={moreOptions} disabled={saving}>More options</Button>
-				<Button onclick={save} loading={saving}>Save job</Button>
-			</div>
 		{/if}
 	</div>
+
+	{#snippet footer()}
+		{#if createType === 'request'}
+			<Button onclick={continueToRequest}>Continue to new request</Button>
+		{:else if createType === 'event'}
+			<Button onclick={continueToEvent}>Continue to new event</Button>
+		{:else}
+			<Button variant="tertiary" onclick={moreOptions} disabled={saving}>
+				<span class="job-create__button-icon" aria-hidden="true">{@html adjustmentsIcon}</span>
+				More options
+			</Button>
+			<Button onclick={save} loading={saving}>Save job</Button>
+		{/if}
+	{/snippet}
 </Dialog>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
@@ -443,12 +546,26 @@
 		gap: var(--space-base);
 
 		&__alert {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
 			margin: 0;
-			padding: var(--space-small) var(--space-base);
+			padding: 11px var(--space-base);
 			border-radius: var(--radius-base);
 			background: var(--color-critical--surface);
 			color: var(--color-critical--onSurface);
 			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+		}
+
+		&__alert-icon {
+			display: inline-flex;
+			flex-shrink: 0;
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
 		}
 
 		&__client {
@@ -478,40 +595,161 @@
 			}
 		}
 
-		&__actions {
-			display: flex;
-			justify-content: flex-end;
-			gap: var(--space-small);
-			margin-top: var(--space-small);
-		}
-
-		&__handoff {
+		// Everything about the first visit, in one tinted group, so the form reads as who it is for, when, and
+		// who is going.
+		&__group {
 			display: flex;
 			flex-direction: column;
-			gap: var(--space-small);
+			gap: var(--space-base);
 			padding: var(--space-base);
 			border: var(--border-base) solid var(--color-border);
 			border-radius: var(--radius-base);
 			background: var(--color-surface--background--subtle);
 		}
 
+		&__group-head {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+		&__group-icon {
+			display: grid;
+			width: 28px;
+			height: 28px;
+			place-items: center;
+			border: var(--border-base) solid var(--color-border--interactive);
+			border-radius: var(--radius-small);
+			background: var(--color-surface);
+			color: var(--color-icon--secondary);
+
+			:global(svg) {
+				width: 15px;
+				height: 15px;
+			}
+		}
+
+		&__group-title {
+			margin: 0;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 700;
+		}
+
+		&__button-icon {
+			display: inline-flex;
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+		}
+
+		&__handoff {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-base);
+			padding-top: var(--space-smaller);
+		}
+
 		&__handoff-lead {
 			margin: 0;
+			color: var(--color-text);
+			font-size: var(--typography--fontSize-base);
+			line-height: var(--typography--lineHeight-base);
+		}
+
+		&__slot {
+			display: flex;
+			align-items: center;
+			gap: var(--space-base);
+			margin: 0;
+			padding: var(--space-small) var(--space-base);
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-base);
+			background: var(--color-surface--background--subtle);
+
+			&--none {
+				color: var(--color-text--secondary);
+				font-size: var(--typography--fontSize-small);
+			}
+		}
+
+		// A little calendar page: the month on a green strip, the day under it.
+		&__slot-tile {
+			display: flex;
+			flex: 0 0 auto;
+			flex-direction: column;
+			width: 50px;
+			overflow: hidden;
+			border: var(--border-base) solid var(--color-border--interactive);
+			border-radius: var(--radius-small);
+			background: var(--color-surface);
+			text-align: center;
+		}
+
+		&__slot-month {
+			padding: 2px 0;
+			background: var(--color-interactive);
+			color: var(--color-text--reverse);
+			font-size: 10px;
+			font-weight: 700;
+			letter-spacing: 0.8px;
+		}
+
+		&__slot-day {
+			padding: 3px 0 4px;
+			color: var(--color-heading);
+			font-size: 20px;
+			font-weight: 700;
+			line-height: 1.1;
+		}
+
+		&__slot-text {
+			display: flex;
+			flex-direction: column;
+			gap: 3px;
+		}
+
+		&__slot-label {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-large);
+			font-weight: 700;
+		}
+
+		&__slot-time {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 		}
 
-		&__handoff-slot {
-			margin: 0;
-			color: var(--color-heading);
-			font-size: var(--typography--fontSize-large);
-			font-weight: 600;
+		&__slot-clock {
+			display: inline-flex;
+
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
 		}
 
 		&__handoff-note {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
 			margin: 0;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
+		}
+
+		&__handoff-arrow {
+			display: inline-flex;
+
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
 		}
 	}
 </style>

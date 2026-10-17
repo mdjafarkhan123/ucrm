@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import Button from '$lib/components/ui/Button.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
+	import SchedulePreviewFacts from '$lib/components/schedule/SchedulePreviewFacts.svelte';
 	import { visitDerivedStatus, visitShape } from '$lib/schedule/status';
 	import { VISIT_STATUS_LABELS, VISIT_STATUS_TONES } from '$lib/schedule/statuses';
 	import { assignmentLabel, clockLabel } from '$lib/schedule/labels';
@@ -56,28 +57,23 @@
 </script>
 
 <div class="assessment-preview">
-	<p class="assessment-preview__kind">On-site assessment</p>
-	<p class="assessment-preview__work">{assessment.request_title?.trim() || 'Assessment'}</p>
-
 	{#if status}
 		<StatusBadge status={VISIT_STATUS_TONES[status]}>{VISIT_STATUS_LABELS[status]}</StatusBadge>
 	{/if}
 
-	<dl class="assessment-preview__facts">
-		<dt>Client</dt>
-		<dd>{client}</dd>
-
-		<dt>When</dt>
-		<dd>{dayLabel} · {timeLabel}</dd>
-
-		<dt>Team</dt>
-		<dd class:assessment-preview__none={assessment.assignee_ids.length === 0}>
-			{assignmentLabel(assessment.assignee_ids, employeesById)}
-		</dd>
-
-		<dt>Where</dt>
-		<dd>{address ?? 'No property on this assessment'}</dd>
-	</dl>
+	<SchedulePreviewFacts
+		facts={[
+			{ kind: 'client', label: 'Client', value: client },
+			{ kind: 'when', label: 'When', value: `${dayLabel} · ${timeLabel}` },
+			{
+				kind: 'team',
+				label: 'Team',
+				value: assignmentLabel(assessment.assignee_ids, employeesById),
+				warn: assessment.assignee_ids.length === 0
+			},
+			{ kind: 'where', label: 'Where', value: address ?? 'No property on this assessment' }
+		]}
+	/>
 
 	{#if timer}
 		<!-- Time clock: a crew member's first action on arrival, so it sits above the way to the Request. -->
@@ -102,61 +98,22 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		gap: var(--space-slim);
-	}
-
-	.assessment-preview__kind {
-		margin: 0;
-		color: var(--color-request--onSurface);
-		font-size: var(--typography--fontSize-smaller);
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: var(--typography--letterSpacing-loose);
-	}
-
-	.assessment-preview__work {
-		margin: 0;
-		color: var(--color-text);
-		font-size: var(--typography--fontSize-base);
-		line-height: var(--typography--lineHeight-base);
-	}
-
-	.assessment-preview__facts {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
-		gap: var(--space-smaller) var(--space-slim);
-		margin: 0;
-		width: 100%;
-
-		dt {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-			line-height: var(--typography--lineHeight-tighter);
-		}
-
-		dd {
-			margin: 0;
-			color: var(--color-text);
-			font-size: var(--typography--fontSize-small);
-			line-height: var(--typography--lineHeight-tighter);
-			overflow-wrap: anywhere;
-		}
+		gap: var(--space-base);
+		min-width: 260px;
 	}
 
 	.assessment-preview__timer {
 		width: 100%;
 		padding-top: var(--space-small);
-		border-top: 1px solid var(--color-border);
+		border-top: var(--border-base) solid var(--color-border);
 	}
 
 	.assessment-preview__actions {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-small);
-	}
-
-	.assessment-preview__none {
-		color: var(--color-warning--onSurface);
-		font-weight: 700;
+		width: 100%;
+		padding-top: var(--space-base);
+		border-top: var(--border-base) solid var(--color-border);
 	}
 </style>

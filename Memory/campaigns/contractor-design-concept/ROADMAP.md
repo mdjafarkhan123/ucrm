@@ -13,4 +13,4 @@
 | C7 Build | First version 4 | Approved screens built; variables in code and skill | C6 | Each screen matches its frame; full screen check | Not started |
 | C8 Old look removed | First version 4 | Old styles and unused code deleted | C7 | Every page on the concept; lint and unused-code scan clean | Not started |
 
-**Earlier Phase A (App look):** A1, A2, A2b, Settings (25 pages) and A3 Schedule built; A4 and A5 folded into C5 and C8 on 2026-10-17.
+**Earlier Phase A (App look):** A1, A2, A2b, Settings (25 pages) and A3 Schedule built and on main (`parts/a3-schedule.md` lists its open Pencil differences); A4 and A5 folded into C5 and C8 on 2026-10-17.

@@ -7,6 +7,7 @@
 	import EventCard from '$lib/components/schedule/EventCard.svelte';
 	import TaskCard from '$lib/components/schedule/TaskCard.svelte';
 	import { bucketVisitsByDay } from '$lib/schedule/grouping';
+	import { cardState } from '$lib/schedule/status';
 	import { type AssessmentItem, type EventItem, type ScheduleItem } from '$lib/schedule/items';
 	import { earliestWorkingMinute, weekdayOf, type WorkingWeek } from '$lib/schedule/hours';
 	import {
@@ -104,14 +105,30 @@
 	const days = $derived(eachDayInWindow(activeWindow));
 	const byDay = $derived(bucketVisitsByDay(items));
 
+	// The day heading says how many things on it need a look: late work and work nobody is assigned to. Only
+	// booked work counts -- an event or a task has no crew by design, so it is never "unassigned".
+	function attentionFor(dayItems: ScheduleItem[]) {
+		let late = 0;
+		let unassigned = 0;
+		for (const item of dayItems) {
+			if (item.kind !== 'visit' && item.kind !== 'assessment') continue;
+			const state = cardState(item, today, nowMinutes);
+			if (state === 'late') late += 1;
+			else if (state === 'unassigned') unassigned += 1;
+		}
+		return { late, unassigned };
+	}
+
 	const columns = $derived(
 		days.map((day) => {
-			const split = splitDayVisits(byDay.get(day) ?? []);
+			const dayItems = byDay.get(day) ?? [];
+			const split = splitDayVisits(dayItems);
 			return {
 				day,
 				anytime: split.anytime,
 				blocks: layoutTimedVisits(split.timed),
-				count: (byDay.get(day) ?? []).length,
+				count: dayItems.length,
+				attention: attentionFor(dayItems),
 				working: workingWeek?.get(weekdayOf(day)) ?? []
 			};
 		})
@@ -410,7 +427,7 @@
 		if (
 			target.closest('.week__pickup') ||
 			target.closest('.week__resize') ||
-			target.closest('.assessment-card') ||
+			target.closest('.item-card--assessment') ||
 			target.closest('.event-card') ||
 			target.closest('.task-card')
 		)
@@ -456,7 +473,7 @@
 		const target = event.target as HTMLElement;
 		if (
 			target.closest('.week__pickup') ||
-			target.closest('.assessment-card') ||
+			target.closest('.item-card--assessment') ||
 			target.closest('.event-card') ||
 			target.closest('.task-card')
 		)
@@ -539,8 +556,9 @@
 			>
 				<VisitCard
 					visit={item}
-					density="compact"
+					density="pill"
 					{today}
+					{nowMinutes}
 					{employeesById}
 					selected={item.id === selectedItemId}
 					keyboardMovable={canDragVisit(item, canSchedule)}
@@ -553,18 +571,19 @@
 		{:else if item.kind === 'assessment'}
 			<AssessmentCard
 				assessment={item}
-				density="compact"
+				density="pill"
 				{today}
+				{nowMinutes}
 				{employeesById}
 				selected={item.id === selectedItemId}
 				onselect={onselectassessment}
 			/>
 		{:else if item.kind === 'task'}
-			<TaskCard task={item} density="compact" {today} {employeesById} />
+			<TaskCard task={item} density="pill" {today} {employeesById} />
 		{:else}
 			<EventCard
 				event={item}
-				density="compact"
+				density="pill"
 				selected={item.id === selectedItemId}
 				onselect={onselectevent}
 			/>
@@ -585,6 +604,7 @@
 					{visit}
 					{density}
 					{today}
+					{nowMinutes}
 					{employeesById}
 					selected={visit.id === selectedItemId}
 					keyboardMovable={canDragVisit(visit, canSchedule)}
@@ -611,6 +631,7 @@
 				assessment={block.item}
 				{density}
 				{today}
+				{nowMinutes}
 				{employeesById}
 				selected={block.item.id === selectedItemId}
 				onselect={onselectassessment}

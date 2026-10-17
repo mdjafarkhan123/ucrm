@@ -14,6 +14,7 @@
 	import type { TeamMember } from '$lib/team/api';
 	import mapIcon from '@tabler/icons/outline/map-2.svg?raw';
 	import filterIcon from '@tabler/icons/outline/filter.svg?raw';
+	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
 
 	let {
 		filters,
@@ -125,13 +126,14 @@
 		{#if onunscheduled}
 			<button
 				type="button"
-				class="schedule-controls__unscheduled"
-				class:schedule-controls__unscheduled--active={unscheduledOpen}
+				class="calendar-bar__button"
+				class:calendar-bar__button--active={unscheduledOpen}
 				aria-pressed={unscheduledOpen}
 				onclick={onunscheduled}
 				onpointerenter={onunscheduledhover}
 				onfocus={onunscheduledhover}
 			>
+				{@html inboxIcon}
 				Unscheduled
 				{#if unscheduledCount !== null}
 					<span class="schedule-controls__badge">{unscheduledCount}</span>
@@ -142,8 +144,8 @@
 		{#if onmap}
 			<button
 				type="button"
-				class="schedule-controls__unscheduled schedule-controls__map"
-				class:schedule-controls__unscheduled--active={mapOpen}
+				class="calendar-bar__button"
+				class:calendar-bar__button--active={mapOpen}
 				aria-pressed={mapOpen}
 				onclick={onmap}
 			>
@@ -154,10 +156,7 @@
 
 		<Popover.Root bind:open={filtersOpen}>
 			<Popover.Trigger
-				class="schedule-controls__unscheduled schedule-controls__filters-trigger {activeFilterCount >
-				0
-					? 'schedule-controls__unscheduled--active'
-					: ''}"
+				class="calendar-bar__button {activeFilterCount > 0 ? 'calendar-bar__button--active' : ''}"
 				aria-label={activeFilterCount > 0 ? `Filters, ${activeFilterCount} active` : 'Filters'}
 			>
 				{@html filterIcon}
@@ -221,77 +220,17 @@
 </CalendarBar>
 
 <style lang="scss">
-	/* Global, not scoped: the Filters trigger is a Bits UI Popover.Trigger, which renders its own <button>
-	   outside the reach of Svelte's per-component style scoping. A scoped .schedule-controls__unscheduled
-	   rule silently never matches it, so it fell back to the browser's raw default button border. Making the
-	   whole pill global fixes the trigger and is a no-op for the plain Unscheduled/Map buttons, which still
-	   carry the class either way. */
-	:global(.schedule-controls__unscheduled) {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-smaller);
-		height: 34px;
-		padding: 0 var(--space-small);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background-color: var(--color-surface);
-		color: var(--color-text);
-		font-family: inherit;
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-		cursor: pointer;
-		transition: background-color var(--timing-quick) ease;
-	}
-
-	:global(.schedule-controls__unscheduled:hover) {
-		background-color: var(--color-surface--hover);
-	}
-	:global(.schedule-controls__unscheduled:focus-visible) {
-		outline: none;
-		box-shadow: var(--shadow-focus);
-	}
-	:global(.schedule-controls__unscheduled--active) {
-		border-color: var(--color-interactive);
-		background-color: var(--color-surface--active);
-	}
-
-	.schedule-controls__map {
-		gap: var(--space-smaller);
-
-		:global(svg) {
-			width: 16px;
-			height: 16px;
-		}
-	}
-
-	/* The Filters trigger reuses the same pill as Map/Unscheduled. Its class rides on a Bits UI component, so
-	   the selectors are global (as the notification trigger's are). Bits UI stamps data-state="open" on it
-	   while the panel is open, so it reads as pressed then too, not only when filters are active. */
-	:global(.schedule-controls__filters-trigger) {
-		gap: var(--space-smaller);
-	}
-
-	:global(.schedule-controls__filters-trigger svg) {
-		width: 16px;
-		height: 16px;
-	}
-
-	:global(.schedule-controls__filters-trigger[data-state='open']) {
-		border-color: var(--color-interactive);
-		background-color: var(--color-surface--active);
-	}
-
 	.schedule-controls__badge {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		min-width: 20px;
-		height: 18px;
-		padding: 0 var(--space-smallest);
-		border-radius: var(--radius-large);
-		background-color: var(--color-interactive);
-		color: var(--color-surface);
-		font-size: var(--typography--fontSize-smaller);
+		height: 20px;
+		padding: 0 6px;
+		border-radius: 999px;
+		background-color: var(--color-warning--surface);
+		color: var(--color-warning--onSurface);
+		font-size: 11px;
 		font-weight: 700;
 	}
 

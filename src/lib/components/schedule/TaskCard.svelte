@@ -95,8 +95,6 @@
 	class:task-card--saving={completionMutation.isPending}
 	title={summary}
 >
-	<span class="task-card__accent" aria-hidden="true"></span>
-
 	<span class="task-card__line">
 		{#if canToggle}
 			<button
@@ -117,7 +115,7 @@
 		<a {href} class="task-card__title" aria-label={summary}>{titleLabel}</a>
 	</span>
 
-	{#if density !== 'micro'}
+	{#if density === 'compact' || density === 'standard'}
 		{#if clientLabel}
 			<span class="task-card__client">{clientLabel}</span>
 		{/if}
@@ -147,10 +145,10 @@
 		width: 100%;
 		height: 100%;
 		min-width: 0;
-		padding: var(--space-smaller) var(--space-small);
+		padding: 7px var(--space-small) var(--space-small) 9px;
 		overflow: hidden;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-small);
+		border-radius: var(--radius-base);
 		background-color: var(--color-surface);
 		color: var(--color-text);
 		transition:
@@ -170,31 +168,19 @@
 		opacity: 0.6;
 	}
 
-	.task-card__accent {
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		left: 0;
-		width: var(--space-smaller);
-		// The Task accent, so a follow-up reads as a different kind of item from a visit at a glance.
-		background-color: var(--color-task);
-	}
-
 	.task-card--done {
-		border-style: dashed;
+		background-color: var(--color-surface--background--subtle);
 		color: var(--color-text--secondary);
 
 		.task-card__title {
 			color: var(--color-text--secondary);
 			text-decoration: line-through;
 		}
-		.task-card__accent {
-			opacity: 0.5;
-		}
 	}
 
 	.task-card--overdue {
 		border-color: var(--color-critical);
+		background-color: var(--color-critical--surface);
 	}
 
 	.task-card__line {
@@ -303,9 +289,10 @@
 		color: var(--color-critical--onSurface);
 	}
 
-	.task-card--micro {
+	.task-card--micro,
+	.task-card--pill {
 		justify-content: center;
-		padding: 0 var(--space-smaller) 0 var(--space-small);
+		padding: 0 var(--space-small) 0 var(--space-slim);
 
 		.task-card__title {
 			color: var(--color-text);

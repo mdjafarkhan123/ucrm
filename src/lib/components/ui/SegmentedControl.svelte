@@ -9,6 +9,10 @@
 		disabled?: boolean;
 		/** Shown on hover, e.g. why an option is closed off. */
 		title?: string;
+		/** A Tabler icon (raw SVG) before the label. */
+		icon?: string;
+		/** The icon's own colour, when it says what kind of thing the option is. Defaults to the text colour. */
+		iconColor?: string;
 	};
 
 	let {
@@ -18,6 +22,7 @@
 		ariaLabel,
 		name,
 		size = 'base',
+		tone = 'accent',
 		fullWidth = false,
 		disabled = false,
 		onchange
@@ -30,6 +35,9 @@
 		ariaLabel?: string;
 		name?: string;
 		size?: 'small' | 'base';
+		/** `accent` outlines the chosen segment in the brand green; `plain` shows it as a white pill, for toolbars
+		 * where the chosen view should not compete with the page's one green action. */
+		tone?: 'accent' | 'plain';
 		fullWidth?: boolean;
 		disabled?: boolean;
 		onchange?: (value: string) => void;
@@ -84,7 +92,7 @@
 
 	<div
 		bind:this={trackEl}
-		class={`segmented__track segmented__track--${size}`}
+		class={`segmented__track segmented__track--${size} segmented__track--${tone}`}
 		class:segmented__track--disabled={disabled}
 		role="radiogroup"
 		aria-labelledby={labelId}
@@ -118,6 +126,13 @@
 						onchange?.(option.value);
 					}}
 				/>
+				{#if option.icon}
+					<!-- A Tabler SVG file imported at build time, not user content. -->
+					<span class="segmented__icon" style:color={option.iconColor} aria-hidden="true">
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html option.icon}
+					</span>
+				{/if}
 				<span class="segmented__text">{option.label}</span>
 			</label>
 		{/each}
@@ -156,6 +171,17 @@
 		&--full-width &__track {
 			display: flex;
 			width: 100%;
+		}
+
+		&__icon {
+			display: inline-flex;
+			flex-shrink: 0;
+			margin-right: 7px;
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
 		}
 
 		&__thumb {
@@ -231,6 +257,14 @@
 			min-height: 28px;
 			padding: 0 var(--space-slim);
 			font-size: var(--typography--fontSize-small);
+		}
+
+		&__track--plain &__thumb {
+			border-color: transparent;
+		}
+
+		&__track--plain &__option--active {
+			color: var(--color-heading);
 		}
 
 		&__track--disabled &__thumb {

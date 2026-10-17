@@ -5,6 +5,8 @@
 	import EventCard from '$lib/components/schedule/EventCard.svelte';
 	import TaskCard from '$lib/components/schedule/TaskCard.svelte';
 	import { bucketVisitsByDay, orderDayVisits } from '$lib/schedule/grouping';
+	import { cardState } from '$lib/schedule/status';
+	import { weekdayOf, type WorkingWeek } from '$lib/schedule/hours';
 	import { eachDayInWindow, type ScheduleWindow } from '$lib/schedule/filters';
 	import { draftAnytime, type NewVisitDraft } from '$lib/schedule/drag';
 	import type { AssessmentItem, EventItem, ScheduleItem } from '$lib/schedule/items';
@@ -19,6 +21,8 @@
 		anchorDate,
 		items,
 		today,
+		nowMinutes = null,
+		workingWeek = null,
 		employeesById,
 		selectedItemId,
 		canCreate = false,
@@ -34,6 +38,10 @@
 		/** Already filtered by the page. Every one of these is drawn or counted -- visits and assessments. */
 		items: ScheduleItem[];
 		today: string;
+		/** Minutes past midnight in the contractor's timezone, so a visit under way today wears "In progress". */
+		nowMinutes?: number | null;
+		/** Null when the business has no confirmed weekly pattern, so no date is shaded as closed. */
+		workingWeek?: WorkingWeek | null;
 		employeesById: Map<string, TeamMember>;
 		selectedItemId: string | null;
 		/** Whether this reader may start a Job from empty space. A month cell only becomes clickable with it. */
@@ -53,6 +61,25 @@
 		const byDay = bucketVisitsByDay(items);
 		return new Map([...byDay].map(([day, dayItems]) => [day, orderDayVisits(dayItems)]));
 	});
+
+	// A date the business has no working hours on is shut, and shaded. With no confirmed pattern nothing is.
+	function isClosed(day: string) {
+		return workingWeek !== null && (workingWeek.get(weekdayOf(day)) ?? []).length === 0;
+	}
+
+	// How many of a date's entries are late or have nobody assigned. Events and tasks have no crew by
+	// design, so they never count as unassigned.
+	function attentionFor(day: string) {
+		let late = 0;
+		let unassigned = 0;
+		for (const item of itemsByDay.get(day) ?? []) {
+			if (item.kind !== 'visit' && item.kind !== 'assessment') continue;
+			const state = cardState(item, today, nowMinutes);
+			if (state === 'late') late += 1;
+			else if (state === 'unassigned') unassigned += 1;
+		}
+		return { late, unassigned };
+	}
 </script>
 
 <CalendarMonthGrid
@@ -61,14 +88,17 @@
 	{itemsByDay}
 	{today}
 	bookable={canCreate}
+	closed={workingWeek ? isClosed : undefined}
+	attention={attentionFor}
 	oncellclick={canCreate ? (day) => oncreate?.(draftAnytime(day)) : undefined}
 >
 	{#snippet card(item, density, relay)}
 		{#if item.kind === 'visit'}
 			<VisitCard
 				visit={item}
-				{density}
+				density={density === 'compact' ? 'row' : density}
 				{today}
+				{nowMinutes}
 				{employeesById}
 				selected={item.id === selectedItemId}
 				onselect={relay(onselect)}
@@ -76,8 +106,9 @@
 		{:else if item.kind === 'assessment'}
 			<AssessmentCard
 				assessment={item}
-				{density}
+				density={density === 'compact' ? 'row' : density}
 				{today}
+				{nowMinutes}
 				{employeesById}
 				selected={item.id === selectedItemId}
 				onselect={relay(onselectassessment)}
