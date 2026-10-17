@@ -341,13 +341,11 @@
 								/>
 							</div>
 						{:else}
-							<button
-								type="button"
-								class="job-form__change-property"
-								onclick={() => (choosingProperty = true)}
-							>
-								Change property
-							</button>
+							<div class="job-form__change-property">
+								<Button variant="quiet" size="small" onclick={() => (choosingProperty = true)}>
+									Change property
+								</Button>
+							</div>
 						{/if}
 					{/if}
 				{/snippet}
@@ -455,23 +453,6 @@
 
 		&__change-property {
 			margin-top: var(--space-smaller);
-			padding: 0;
-			border: 0;
-			color: var(--color-interactive);
-			background: transparent;
-			font: inherit;
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-			cursor: pointer;
-
-			&:hover {
-				color: var(--color-interactive--hover);
-				text-decoration: underline;
-			}
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
 		}
 	}
 </style>

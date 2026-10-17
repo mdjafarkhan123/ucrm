@@ -30,6 +30,7 @@
 	let editingPermissions = $state(false);
 	let adjustmentDraft = $state<Record<string, 'grant' | 'deny'>>({});
 	let savingRole = $state(false);
+	let reloading = $state(false);
 	let savingPermissions = $state(false);
 	let error = $state('');
 	let stale = $state(false);
@@ -150,13 +151,18 @@
 	}
 
 	async function reloadLatest() {
-		await queryClient.fetchQuery({
-			queryKey: teamMemberAccessKey(actorUserId, userId),
-			queryFn: () => fetchTeamMemberAccess(userId),
-			staleTime: 0
-		});
-		cancelRoleEdit();
-		cancelPermissionsEdit();
+		reloading = true;
+		try {
+			await queryClient.fetchQuery({
+				queryKey: teamMemberAccessKey(actorUserId, userId),
+				queryFn: () => fetchTeamMemberAccess(userId),
+				staleTime: 0
+			});
+			cancelRoleEdit();
+			cancelPermissionsEdit();
+		} finally {
+			reloading = false;
+		}
 	}
 
 	async function saveRole() {
@@ -233,7 +239,12 @@
 		{#if stale}
 			<div class="team-access-editor__conflict" role="alert">
 				<p>Someone else changed this person’s access while you were editing.</p>
-				<button type="button" onclick={() => void reloadLatest()}>Reload latest access</button>
+				<Button
+					variant="secondary"
+					size="small"
+					loading={reloading}
+					onclick={() => void reloadLatest()}>Reload latest access</Button
+				>
 			</div>
 		{/if}
 		{#if error}<p class="team-access-editor__error" role="alert">{error}</p>{/if}
@@ -431,14 +442,6 @@
 		margin: 0;
 	}
 
-	.team-access-editor__conflict button {
-		color: inherit;
-		font: inherit;
-		font-weight: 700;
-		text-decoration: underline;
-	}
-
-	.team-access-editor__conflict button:focus-visible,
 	:global(.team-access-editor__help:focus-visible) {
 		outline: none;
 		box-shadow: var(--shadow-focus);

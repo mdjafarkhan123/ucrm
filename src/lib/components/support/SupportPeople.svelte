@@ -79,16 +79,17 @@
 						</small>
 					</span>
 					{#if people.can_manage && !person.started}
-						<button
-							class="support-people__remove"
-							type="button"
+						<Button
+							variant="secondary"
+							size="small"
+							iconOnly
+							label={`Remove ${person.name}`}
 							disabled={busy !== null}
-							aria-label={`Remove ${person.name}`}
-							title={`Remove ${person.name}`}
+							loading={busy === person.user_id}
 							onclick={() => void change(person.user_id, false)}
 						>
-							<span aria-hidden="true">{@html closeIcon}</span>
-						</button>
+							{@html closeIcon}
+						</Button>
 					{/if}
 				</li>
 			{/each}
@@ -174,43 +175,6 @@
 			small {
 				color: var(--color-text--secondary);
 				font-size: var(--typography--fontSize-small);
-			}
-		}
-
-		&__remove {
-			display: grid;
-			flex: none;
-			place-items: center;
-			width: 32px;
-			height: 32px;
-			padding: 0;
-			border: 0;
-			border-radius: var(--radius-base);
-			color: var(--color-icon);
-			background: transparent;
-			cursor: pointer;
-
-			span {
-				display: inline-flex;
-			}
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
-
-			&:hover:not(:disabled) {
-				background: var(--color-surface--hover);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-
-			&:disabled {
-				cursor: default;
-				opacity: 0.5;
 			}
 		}
 

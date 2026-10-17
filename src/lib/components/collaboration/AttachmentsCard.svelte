@@ -551,9 +551,7 @@
 						</div>
 
 						{#if item.status === 'error' && item.retryable && targetId}
-							<button type="button" class="attachments-card__action" onclick={() => retry(item)}>
-								Retry
-							</button>
+							<Button variant="quiet" size="small" onclick={() => retry(item)}>Retry</Button>
 						{/if}
 						{#if item.status !== 'uploading'}
 							<button
@@ -593,13 +591,9 @@
 							</span>
 						</div>
 						{#if removed}
-							<button
-								type="button"
-								class="attachments-card__action"
-								onclick={() => undoRemove(attachment)}
+							<Button variant="quiet" size="small" onclick={() => undoRemove(attachment)}
+								>Undo</Button
 							>
-								Undo
-							</button>
 						{:else}
 							<DropdownMenu triggerLabel="File actions" items={menuFor(attachment)} />
 						{/if}
@@ -903,21 +897,6 @@
 			height: 100%;
 			background: var(--color-interactive);
 			transition: width var(--timing-base) ease-out;
-		}
-
-		&__action {
-			flex: 0 0 auto;
-			border: 0;
-			color: var(--color-interactive);
-			background: transparent;
-			font: inherit;
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-			cursor: pointer;
-
-			&:hover {
-				text-decoration: underline;
-			}
 		}
 
 		&__remove {

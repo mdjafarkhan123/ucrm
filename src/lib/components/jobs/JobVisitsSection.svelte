@@ -1054,21 +1054,17 @@
 						{/each}
 					</ul>
 					{#if upcomingHidden > 0}
-						<button
-							type="button"
-							class="job-visits-section__more"
-							onclick={() => (showAllUpcoming = true)}
-						>
-							Show all {upcoming.length} upcoming visits
-						</button>
+						<div class="job-visits-section__more">
+							<Button variant="quiet" size="small" onclick={() => (showAllUpcoming = true)}>
+								Show all {upcoming.length} upcoming visits
+							</Button>
+						</div>
 					{:else if showAllUpcoming && upcoming.length > 3}
-						<button
-							type="button"
-							class="job-visits-section__more"
-							onclick={() => (showAllUpcoming = false)}
-						>
-							Show fewer
-						</button>
+						<div class="job-visits-section__more">
+							<Button variant="quiet" size="small" onclick={() => (showAllUpcoming = false)}>
+								Show fewer
+							</Button>
+						</div>
 					{/if}
 				</div>
 			{/if}
@@ -1377,22 +1373,6 @@
 
 		&__more {
 			align-self: flex-start;
-			padding: var(--space-smaller) 0;
-			border: 0;
-			background: transparent;
-			color: var(--color-interactive);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-			cursor: pointer;
-
-			&:hover {
-				text-decoration: underline;
-			}
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-				border-radius: var(--radius-small);
-			}
 		}
 
 		&__list {

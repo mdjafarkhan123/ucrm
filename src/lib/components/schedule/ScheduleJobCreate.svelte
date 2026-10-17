@@ -461,13 +461,11 @@
 							label="Property"
 						/>
 					{:else}
-						<button
-							type="button"
-							class="job-create__change-property"
-							onclick={() => (choosingProperty = true)}
-						>
-							Change property
-						</button>
+						<div class="job-create__change-property">
+							<Button variant="quiet" size="small" onclick={() => (choosingProperty = true)}>
+								Change property
+							</Button>
+						</div>
 					{/if}
 				{/if}
 			</div>
@@ -576,23 +574,6 @@
 
 		&__change-property {
 			align-self: flex-start;
-			padding: 0;
-			border: 0;
-			color: var(--color-interactive);
-			background: transparent;
-			font: inherit;
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-			cursor: pointer;
-
-			&:hover {
-				color: var(--color-interactive--hover);
-				text-decoration: underline;
-			}
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
 		}
 
 		// Everything about the first visit, in one tinted group, so the form reads as who it is for, when, and

@@ -896,15 +896,17 @@
 							<li class="builder__row">
 								<div class="builder__row-head">
 									<span class="builder__row-title">{label(condition.key)}</span>
-									<button
-										type="button"
-										class="builder__icon-button"
-										aria-label={`Remove condition: ${label(condition.key)}`}
+									<Button
+										variant="secondary"
+										variation="destructive"
+										size="small"
+										iconOnly
+										label={`Remove condition: ${label(condition.key)}`}
 										onclick={() => removeCondition(index)}
 									>
 										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 										{@html trashIcon}
-									</button>
+									</Button>
 								</div>
 								{#if condition.key === 'quote.current_status'}
 									<fieldset class="builder__statuses">
@@ -973,46 +975,51 @@
 									</span>
 									<span class="builder__step-title">{label(step.key)}</span>
 									<div class="builder__step-controls">
-										<button
-											type="button"
-											class="builder__icon-button"
-											aria-label="Move step up"
+										<Button
+											variant="secondary"
+											size="small"
+											iconOnly
+											label="Move step up"
 											disabled={index === 0}
 											onclick={() => moveStep(index, -1)}
 										>
 											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 											{@html arrowUpIcon}
-										</button>
-										<button
-											type="button"
-											class="builder__icon-button"
-											aria-label="Move step down"
+										</Button>
+										<Button
+											variant="secondary"
+											size="small"
+											iconOnly
+											label="Move step down"
 											disabled={index === definition.steps.length - 1}
 											onclick={() => moveStep(index, 1)}
 										>
 											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 											{@html arrowDownIcon}
-										</button>
+										</Button>
 										{#if step.type === 'action'}
-											<button
-												type="button"
-												class="builder__icon-button"
-												aria-label="Duplicate step"
+											<Button
+												variant="secondary"
+												size="small"
+												iconOnly
+												label="Duplicate step"
 												onclick={() => duplicateStep(index)}
 											>
 												<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 												{@html copyIcon}
-											</button>
+											</Button>
 										{/if}
-										<button
-											type="button"
-											class="builder__icon-button builder__icon-button--danger"
-											aria-label="Remove step"
+										<Button
+											variant="secondary"
+											variation="destructive"
+											size="small"
+											iconOnly
+											label="Remove step"
 											onclick={() => removeStep(index)}
 										>
 											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 											{@html trashIcon}
-										</button>
+										</Button>
 									</div>
 								</div>
 
@@ -1344,43 +1351,6 @@
 			align-items: center;
 			margin-left: auto;
 			gap: var(--space-smallest);
-		}
-
-		&__icon-button {
-			display: grid;
-			place-items: center;
-			width: 32px;
-			height: 32px;
-			padding: 0;
-			border: var(--border-base) solid transparent;
-			border-radius: var(--radius-base);
-			color: var(--color-icon--secondary);
-			background: none;
-			cursor: pointer;
-			transition: all var(--timing-quick) ease-out;
-
-			&:hover:not(:disabled),
-			&:focus-visible:not(:disabled) {
-				border-color: var(--color-border--interactive);
-				color: var(--color-interactive);
-			}
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-			&:disabled {
-				color: var(--color-disabled);
-				cursor: not-allowed;
-			}
-			&--danger:hover:not(:disabled),
-			&--danger:focus-visible:not(:disabled) {
-				border-color: var(--color-critical);
-				color: var(--color-critical);
-			}
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
 		}
 
 		&__statuses {

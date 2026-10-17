@@ -610,7 +610,12 @@
 								Turn off <strong>Taking bookings</strong> instead.
 							</p>
 						{:else}
-							<Button variant="secondary" size="small" onclick={() => (confirmDelete = true)}>
+							<Button
+								variant="secondary"
+								variation="destructive"
+								size="small"
+								onclick={() => (confirmDelete = true)}
+							>
 								<span class="meeting-type__icon" aria-hidden="true">{@html trashIcon}</span>
 								Delete meeting type
 							</Button>

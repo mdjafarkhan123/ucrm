@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	let {
 		title = 'Something went wrong',
@@ -14,7 +15,7 @@
 	<div class="error-state__icon" aria-hidden="true">{@html alertIcon}</div>
 	<h2 id="error-state-title">{title}</h2>
 	<p>{description}</p>
-	{#if retry}<button type="button" onclick={retry}>Try Again</button>{/if}
+	{#if retry}<Button variant="secondary" onclick={retry}>Try Again</Button>{/if}
 	{#if action}<div>{@render action()}</div>{/if}
 </section>
 
@@ -52,22 +53,5 @@
 	p {
 		max-width: 48ch;
 		line-height: var(--typography--lineHeight-large);
-	}
-	button {
-		min-height: 40px;
-		padding: 0 var(--space-base);
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		color: var(--color-interactive--subtle);
-		background: var(--color-surface);
-		font-weight: 600;
-	}
-	button:hover,
-	button:focus-visible {
-		background: var(--color-surface--hover);
-	}
-	button:focus-visible {
-		outline: none;
-		box-shadow: var(--shadow-focus);
 	}
 </style>

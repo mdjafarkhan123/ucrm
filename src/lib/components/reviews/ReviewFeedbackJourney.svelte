@@ -217,10 +217,12 @@
 	{:else if step === 'form'}
 		<section class="review-journey__body review-journey__body--form">
 			{#if googleUrl}
-				<button type="button" class="review-journey__back" onclick={backToChoice}>
-					<span aria-hidden="true">{@html arrowLeftIcon}</span>
-					Go back
-				</button>
+				<div class="review-journey__back">
+					<Button variant="quiet" onclick={backToChoice}>
+						{@html arrowLeftIcon}
+						Go back
+					</Button>
+				</div>
 			{/if}
 			<h1 class="review-journey__title">{form.heading}</h1>
 			{#if form.intro}<p class="review-journey__text review-journey__text--authored">
@@ -509,31 +511,7 @@
 		}
 
 		&__back {
-			display: inline-flex;
-			align-items: center;
 			align-self: flex-start;
-			gap: var(--space-smaller);
-			padding: var(--space-smallest) 0;
-			border: none;
-			background: none;
-			color: var(--color-interactive);
-			font: inherit;
-			font-weight: 600;
-			cursor: pointer;
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
-
-			&:hover {
-				text-decoration: underline;
-			}
-
-			&:focus-visible {
-				outline: 2px solid var(--color-focus);
-				outline-offset: 2px;
-			}
 		}
 
 		&__private {

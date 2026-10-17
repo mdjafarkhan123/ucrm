@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
 	import { describeCatalogEvent, type CatalogEvent } from '$lib/jafar/packages';
 
 	// Package builder P7: what happened to a package in the catalog, newest first. Shows the latest few and
@@ -28,13 +29,15 @@
 		{/each}
 	</ol>
 	{#if events.length > collapsedCount}
-		<button
-			type="button"
-			class="package-history__toggle"
-			aria-expanded={expanded}
-			onclick={() => (expanded = !expanded)}
-			>{expanded ? 'Show less' : `Show all ${events.length}`}</button
-		>
+		<div class="package-history__toggle">
+			<Button
+				variant="quiet"
+				size="small"
+				aria-expanded={expanded}
+				onclick={() => (expanded = !expanded)}
+				>{expanded ? 'Show less' : `Show all ${events.length}`}</Button
+			>
+		</div>
 	{/if}
 {/if}
 
@@ -69,24 +72,6 @@
 
 		&__toggle {
 			justify-self: start;
-			padding: 0;
-			border: 0;
-			color: var(--color-interactive);
-			background: none;
-			font: inherit;
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-			cursor: pointer;
-
-			&:hover {
-				text-decoration: underline;
-			}
-
-			&:focus-visible {
-				outline: none;
-				border-radius: var(--radius-small);
-				box-shadow: var(--shadow-focus);
-			}
 		}
 	}
 </style>

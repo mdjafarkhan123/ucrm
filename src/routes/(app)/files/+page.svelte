@@ -374,17 +374,20 @@
 				<div class="files__rail-heading-row">
 					<p class="files__rail-heading">Folders</p>
 					{#if canManage}
-						<button
-							type="button"
-							class="files__rail-add"
-							aria-label="New folder"
-							onclick={() => {
-								folderError = '';
-								folderDialogOpen = true;
-							}}
-						>
-							{@html plusIcon}
-						</button>
+						<span class="files__rail-add">
+							<Button
+								variant="secondary"
+								size="small"
+								iconOnly
+								label="New folder"
+								onclick={() => {
+									folderError = '';
+									folderDialogOpen = true;
+								}}
+							>
+								{@html plusIcon}
+							</Button>
+						</span>
 					{/if}
 				</div>
 				{#if folders.length === 0}
@@ -410,15 +413,17 @@
 				<div class="files__rail-heading-row">
 					<p class="files__rail-heading">Labels</p>
 					{#if canManage}
-						<button
-							type="button"
-							class="files__rail-add"
-							aria-label="Manage photo labels"
-							title="Manage photo labels"
-							onclick={() => (labelsDialogOpen = true)}
-						>
-							{@html pencilIcon}
-						</button>
+						<span class="files__rail-add">
+							<Button
+								variant="secondary"
+								size="small"
+								iconOnly
+								label="Manage photo labels"
+								onclick={() => (labelsDialogOpen = true)}
+							>
+								{@html pencilIcon}
+							</Button>
+						</span>
 					{/if}
 				</div>
 				{#if labels.length === 0}
@@ -797,32 +802,8 @@
 		gap: var(--space-smaller);
 	}
 	.files__rail-add {
-		display: grid;
-		width: 24px;
-		height: 24px;
 		flex: 0 0 auto;
 		margin-top: var(--space-base);
-		place-items: center;
-		border: none;
-		border-radius: var(--radius-small);
-		color: var(--color-icon--secondary);
-		background: transparent;
-		cursor: pointer;
-
-		&:hover {
-			color: var(--color-interactive);
-			background: var(--color-surface--hover);
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-
-		:global(svg) {
-			display: block;
-			width: 16px;
-			height: 16px;
-		}
 	}
 	.files__rail-heading {
 		margin-top: var(--space-base);

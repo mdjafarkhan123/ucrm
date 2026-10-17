@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
 	import TimePicker from '$lib/components/ui/TimePicker.svelte';
 	import { timeFromString } from '$lib/components/ui/date-time';
@@ -80,25 +81,28 @@
 									onchange={() => onchange?.()}
 								/>
 								{#if !disabled}
-									<button
-										type="button"
-										class="weekly-hours__remove-period"
-										aria-label="Remove this period"
-										onclick={() => removePeriod(weekday, index)}
-										><!-- eslint-disable-next-line svelte/no-at-html-tags -->
-										{@html xIcon}</button
-									>
+									<span class="weekly-hours__remove-period">
+										<Button
+											variant="secondary"
+											size="small"
+											iconOnly
+											label="Remove this period"
+											onclick={() => removePeriod(weekday, index)}
+										>
+											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+											{@html xIcon}
+										</Button>
+									</span>
 								{/if}
 							</div>
 						{/each}
 						{#if !disabled && day.periods.length < 3}
-							<button
-								type="button"
-								class="weekly-hours__add-period"
-								onclick={() => addPeriod(weekday)}
-								><!-- eslint-disable-next-line svelte/no-at-html-tags -->
-								{@html plusIcon} Add another period</button
-							>
+							<div class="weekly-hours__add-period">
+								<Button variant="secondary" size="small" onclick={() => addPeriod(weekday)}>
+									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+									{@html plusIcon} Add another period
+								</Button>
+							</div>
 						{/if}
 					{/if}
 				</div>
@@ -149,43 +153,12 @@
 			gap: var(--space-small);
 		}
 		&__remove-period {
-			display: grid;
-			width: 32px;
-			height: 32px;
+			display: flex;
 			flex: 0 0 auto;
-			place-items: center;
-			border: var(--border-base) solid var(--color-border--interactive);
-			border-radius: var(--radius-base);
-			color: var(--color-icon--secondary);
-			background: var(--color-surface);
 			margin-bottom: 2px;
 		}
-		&__remove-period:hover {
-			background: var(--color-surface--hover);
-		}
-		&__remove-period :global(svg) {
-			width: 16px;
-			height: 16px;
-		}
 		&__add-period {
-			display: inline-flex;
-			align-items: center;
-			gap: var(--space-smaller);
-			width: fit-content;
-			padding: var(--space-smaller) var(--space-small);
-			border: var(--border-base) dashed var(--color-border--interactive);
-			border-radius: var(--radius-base);
-			color: var(--color-interactive);
-			background: transparent;
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-		}
-		&__add-period:hover {
-			background: var(--color-surface--hover);
-		}
-		&__add-period :global(svg) {
-			width: 14px;
-			height: 14px;
+			display: flex;
 		}
 	}
 	@media (max-width: 900px) {

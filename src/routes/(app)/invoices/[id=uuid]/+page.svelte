@@ -1413,18 +1413,18 @@
 								{formatMoney(saved.client_balance.available_credit_minor)} of this client&rsquo;s money
 								is not on any invoice yet.
 							</p>
-							<button
-								type="button"
-								class="invoice-detail__deposit"
-								onmouseenter={prefetchInvoiceCredit}
-								onfocus={prefetchInvoiceCredit}
-								onclick={() => (addDepositOpen = true)}
-							>
-								<span class="invoice-detail__deposit-icon" aria-hidden="true"
-									>{@html depositIcon}</span
+							<!-- The card is dark in the light theme and light in the dark theme, so a white
+							     bordered button stands out against it either way. -->
+							<div class="invoice-detail__deposit">
+								<Button
+									variant="secondary"
+									onhover={prefetchInvoiceCredit}
+									onclick={() => (addDepositOpen = true)}
 								>
-								Add deposit
-							</button>
+									{@html depositIcon}
+									Add deposit
+								</Button>
+							</div>
 						{/if}
 					</MoneyFeatureCard>
 				{/if}
@@ -1696,37 +1696,8 @@
 		margin: 0;
 	}
 
-	// White on the dark balance card, a button of its own because the card's colours flip with the theme.
 	.invoice-detail__deposit {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		min-height: 34px;
-		padding: 0 14px;
-		border: 0;
-		border-radius: var(--radius-base);
-		color: var(--color-surface--reverse);
-		background: var(--color-text--reverse);
-		font: inherit;
-		font-size: 14px;
-		font-weight: 600;
-		cursor: pointer;
-		transition: opacity var(--timing-base) ease-out;
-
-		&:hover {
-			opacity: 0.9;
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow:
-				0 0 0 2px var(--color-surface--reverse),
-				0 0 0 4px var(--color-text--reverse);
-		}
-	}
-	.invoice-detail__deposit-icon :global(svg) {
-		display: block;
-		width: 16px;
-		height: 16px;
+		display: flex;
 	}
 
 	.invoice-detail__online {

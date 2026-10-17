@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Popover } from 'bits-ui';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import Button from '$lib/components/ui/Button.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import { colorForId } from '$lib/collaboration/format';
 	import {
@@ -219,9 +220,13 @@
 
 		{#if canManage}
 			<Popover.Root bind:open>
-				<Popover.Trigger class="tag-picker__trigger">
-					{@html tagPlusIcon}
-					<span>Add tag</span>
+				<Popover.Trigger>
+					{#snippet child({ props })}
+						<Button {...props} variant="secondary" size="small">
+							{@html tagPlusIcon}
+							Add tag
+						</Button>
+					{/snippet}
 				</Popover.Trigger>
 				<Popover.Portal>
 					<Popover.Content
@@ -260,9 +265,15 @@
 								</p>
 							{/each}
 							{#if normalizedSearch && !hasExactMatch}
-								<button type="button" class="tag-picker__create" onclick={createFromSearch}>
+								<Button
+									variant="secondary"
+									size="small"
+									fullWidth
+									loading={assignMutation.isPending}
+									onclick={createFromSearch}
+								>
 									Create tag "{search.trim()}"
-								</button>
+								</Button>
 							{/if}
 						</div>
 					</Popover.Content>
@@ -354,37 +365,6 @@
 		&__chip--yellowGreen {
 			--tag-bg: var(--color-job--surface);
 			--tag-fg: var(--color-job--onSurface);
-		}
-	}
-
-	:global(.tag-picker__trigger) {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-smaller);
-		padding: 5px var(--space-small) 5px 8px;
-		border: var(--border-base) dashed var(--color-border--interactive);
-		border-radius: var(--radius-large);
-		color: var(--color-text--secondary);
-		background: transparent;
-		font-size: var(--typography--fontSize-small);
-		cursor: pointer;
-		transition: all var(--timing-quick);
-
-		&:hover {
-			color: var(--color-heading);
-			border-color: var(--color-interactive);
-			background: var(--color-surface--hover);
-		}
-
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-
-		:global(svg) {
-			display: block;
-			width: 16px;
-			height: 16px;
 		}
 	}
 
@@ -484,30 +464,5 @@
 	.tag-picker__error {
 		color: var(--color-critical);
 		font-size: var(--typography--fontSize-small);
-	}
-
-	.tag-picker__create {
-		padding: var(--space-small);
-		border: var(--border-base) dashed var(--color-border--interactive);
-		border-radius: var(--radius-small);
-		color: var(--color-interactive);
-		background: transparent;
-		font-size: var(--typography--fontSize-small);
-		text-align: left;
-		cursor: pointer;
-
-		&:hover:not(:disabled) {
-			background: var(--color-surface--hover);
-		}
-
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-
-		&:disabled {
-			color: var(--color-disabled);
-			cursor: not-allowed;
-		}
 	}
 </style>

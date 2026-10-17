@@ -463,7 +463,9 @@
 		const date = new Date(value);
 		const now = new Date();
 		if (calendarDay(value) === calendarDay(now.toISOString())) {
-			return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(date);
+			return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(
+				date
+			);
 		}
 		if (calendarDay(value) === calendarDay(new Date(Date.now() - 86_400_000).toISOString())) {
 			return 'Yesterday';
@@ -983,7 +985,8 @@
 							onhover={prefetchClientPicker}
 							onclick={() => (newConversationOpen = true)}
 						>
-							<span class="communications__compose-icon" aria-hidden="true">{@html pencilIcon}</span>
+							<span class="communications__compose-icon" aria-hidden="true">{@html pencilIcon}</span
+							>
 							<span class="communications__new-label">New</span>
 						</Button>
 					</div>
@@ -1204,19 +1207,18 @@
 									assignedToName={group.assignedToName}
 									canManage={inboxQuery.data?.can_manage_assignment ?? false}
 								/>
-								<button
-									type="button"
-									class="communications__icon-button"
-									class:communications__icon-button--on={group.isFollowing}
-									aria-pressed={group.isFollowing}
-									aria-label={group.isFollowing ? 'Following — stop following' : 'Follow'}
-									title={group.isFollowing ? 'Following' : 'Follow this conversation'}
-									disabled={followMutationState.isPending}
+								<Button
+									variant="secondary"
+									size="small"
+									iconOnly
+									pressed={group.isFollowing}
+									label={group.isFollowing ? 'Following — stop following' : 'Follow'}
+									loading={followMutationState.isPending}
 									onclick={() =>
 										followMutationState.mutate({ clientId, following: group.isFollowing })}
 								>
-									<span aria-hidden="true">{@html group.isFollowing ? bellFilledIcon : bellIcon}</span>
-								</button>
+									{@html group.isFollowing ? bellFilledIcon : bellIcon}
+								</Button>
 							{/if}
 						</div>
 					</header>
@@ -1245,7 +1247,10 @@
 								</div>
 							{/if}
 							{#if newDivider && newDivider.key === group.key && newDivider.messageId === message.id}
-								<div class="communications__date-divider communications__date-divider--new" role="separator">
+								<div
+									class="communications__date-divider communications__date-divider--new"
+									role="separator"
+								>
 									<span>New</span>
 								</div>
 							{/if}
@@ -1357,15 +1362,15 @@
 											{#if kind}<Badge status={kind.tone}>{kind.label}</Badge>{/if}
 										{/snippet}
 										{#snippet actions()}
-											<button
-												type="button"
-												class="communications__action"
-												aria-label="Message details"
-												title="Details"
+											<Button
+												variant="secondary"
+												size="small"
+												iconOnly
+												label="Message details"
 												onclick={() => (detailsMessage = message)}
 											>
-												<span aria-hidden="true">{@html infoIcon}</span>
-											</button>
+												{@html infoIcon}
+											</Button>
 										{/snippet}
 										<p class="communications__text">{message.text_content}</p>
 										{#if message.in_reply_to_intent_id}
@@ -1415,7 +1420,10 @@
 										<span aria-hidden="true">{@html emailIcon}</span>{message.subject}
 									</h3>
 									<p class="communications__text">{message.text_content}</p>
-									{#if message.resent_from_intent_id}<p class="communications__notice" role="status">
+									{#if message.resent_from_intent_id}<p
+											class="communications__notice"
+											role="status"
+										>
 											This is a resend of an earlier attempt.
 										</p>{/if}
 									{#if message.resent_into_intent_id}
@@ -1474,25 +1482,25 @@
 										{#if kind}<Badge status={kind.tone}>{kind.label}</Badge>{/if}
 									{/snippet}
 									{#snippet actions()}
-										<button
-											type="button"
-											class="communications__action"
-											aria-label="Message details"
-											title="Details"
+										<Button
+											variant="secondary"
+											size="small"
+											iconOnly
+											label="Message details"
 											onclick={() => (detailsMessage = message)}
 										>
-											<span aria-hidden="true">{@html infoIcon}</span>
-										</button>
+											{@html infoIcon}
+										</Button>
 										{#if inboxQuery.data?.can_forward && message.client_id !== null}
-											<button
-												type="button"
-												class="communications__action"
-												aria-label="Forward this email"
-												title="Forward"
+											<Button
+												variant="secondary"
+												size="small"
+												iconOnly
+												label="Forward this email"
 												onclick={() => (forwardTarget = message)}
 											>
-												<span aria-hidden="true">{@html forwardIcon}</span>
-											</button>
+												{@html forwardIcon}
+											</Button>
 										{/if}
 									{/snippet}
 									{#if message.in_reply_to_intent_id}
@@ -1553,10 +1561,12 @@
 							</ConversationMessage>
 						{/if}
 						{#if showJumpToLatest}
-							<button class="communications__jump-to-latest" type="button" onclick={scrollToLatest}>
-								<span aria-hidden="true">{@html arrowDownIcon}</span>
-								Jump to latest
-							</button>
+							<div class="communications__jump-to-latest">
+								<Button variant="secondary" size="small" onclick={scrollToLatest}>
+									{@html arrowDownIcon}
+									Jump to latest
+								</Button>
+							</div>
 						{/if}
 					</div>
 					{#if group.clientId || group.chatSession}
@@ -2316,42 +2326,6 @@
 		align-items: center;
 		gap: var(--space-small);
 	}
-	.communications__icon-button {
-		display: inline-flex;
-		width: 36px;
-		height: 36px;
-		align-items: center;
-		justify-content: center;
-		padding: 0;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: 10px;
-		color: var(--color-text);
-		background: var(--color-surface);
-		cursor: pointer;
-		transition: background var(--timing-quick) ease-out;
-	}
-	.communications__icon-button :global(svg) {
-		width: 16px;
-		height: 16px;
-	}
-	.communications__icon-button > span {
-		display: inline-flex;
-	}
-	.communications__icon-button:hover:not(:disabled) {
-		background: var(--color-surface--hover);
-	}
-	.communications__icon-button--on {
-		color: var(--color-interactive);
-		border-color: var(--color-interactive);
-	}
-	.communications__icon-button:focus-visible {
-		outline: none;
-		box-shadow: var(--shadow-focus);
-	}
-	.communications__icon-button:disabled {
-		cursor: not-allowed;
-		opacity: 0.6;
-	}
 	/* Only reachable below 1050px, where the inline context rail is hidden -- see the width media query.
 	   Doubled selector for specificity over Button's own base `.button { display: inline-flex }` rule,
 	   which otherwise wins the cascade tie since both are single-class scoped/global selectors. */
@@ -2463,63 +2437,11 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
-	.communications__action {
-		display: inline-flex;
-		width: 24px;
-		height: 24px;
-		align-items: center;
-		justify-content: center;
-		padding: 0;
-		border: 0;
-		border-radius: 7px;
-		color: var(--color-text);
-		background: transparent;
-		cursor: pointer;
-	}
-	.communications__action > span {
-		display: inline-flex;
-	}
-	.communications__action :global(svg) {
-		width: 14px;
-		height: 14px;
-	}
-	.communications__action:hover {
-		background: var(--color-surface--active);
-	}
-	.communications__action:focus-visible {
-		outline: none;
-		box-shadow: var(--shadow-focus);
-	}
 	.communications__jump-to-latest {
 		position: sticky;
 		bottom: var(--space-slim);
-		display: inline-flex;
+		display: flex;
 		align-self: center;
-		align-items: center;
-		gap: var(--space-smaller);
-		min-height: 32px;
-		padding: var(--space-smallest) var(--space-slim);
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: 999px;
-		color: var(--color-heading);
-		font: inherit;
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-		background: var(--color-surface);
-		box-shadow: var(--shadow-base);
-		cursor: pointer;
-	}
-	.communications__jump-to-latest:hover,
-	.communications__jump-to-latest:focus-visible {
-		background: var(--color-surface--hover);
-	}
-	.communications__jump-to-latest:focus-visible {
-		outline: none;
-		box-shadow: var(--shadow-focus);
-	}
-	.communications__jump-to-latest :global(svg) {
-		width: 16px;
-		height: 16px;
 	}
 	.communications__date-divider {
 		display: flex;

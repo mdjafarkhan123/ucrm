@@ -1,5 +1,6 @@
 <script lang="ts">
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
@@ -139,15 +140,17 @@
 				<li class="rule-builder__row">
 					<div class="rule-builder__row-head">
 						<span class="rule-builder__row-title">{conditionLabel(key)}</span>
-						<button
-							type="button"
-							class="rule-builder__icon-button"
-							aria-label={`Remove condition: ${conditionLabel(key)}`}
+						<Button
+							variant="secondary"
+							variation="destructive"
+							size="small"
+							iconOnly
+							label={`Remove condition: ${conditionLabel(key)}`}
 							onclick={() => removeCondition(key)}
 						>
 							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 							{@html trashIcon}
-						</button>
+						</Button>
 					</div>
 
 					{#if key === 'lifecycle'}
@@ -333,31 +336,6 @@
 		flex: 1 1 auto;
 		color: var(--color-heading);
 		font-weight: 600;
-	}
-
-	.rule-builder__icon-button {
-		display: grid;
-		width: 32px;
-		height: 32px;
-		flex: 0 0 auto;
-		place-items: center;
-		border: var(--border-base) solid transparent;
-		border-radius: var(--radius-base);
-		color: var(--color-icon--secondary);
-		background: none;
-		cursor: pointer;
-
-		&:hover {
-			border-color: var(--color-border);
-			color: var(--color-critical);
-			background: var(--color-critical--surface);
-		}
-
-		:global(svg) {
-			display: block;
-			width: 16px;
-			height: 16px;
-		}
 	}
 
 	.rule-builder__checks {

@@ -2,6 +2,7 @@
 	import { uploadAttachmentFile } from '$lib/collaboration/api';
 	import { finishFileUpload, formatFileSize, startFileUpload } from '$lib/files/api';
 	import { MAX_FILE_SIZE_BYTES, allowedTypeFor } from '$lib/files/allowlist';
+	import Button from '$lib/components/ui/Button.svelte';
 	import xIcon from '@tabler/icons/outline/x.svg?raw';
 	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 
@@ -167,7 +168,7 @@
 				{/if}
 			</h2>
 			{#if failed.length > 0 && active.length === 0}
-				<button type="button" class="file-uploader__clear" onclick={clearFailed}>Clear</button>
+				<Button variant="quiet" size="small" onclick={clearFailed}>Clear</Button>
 			{/if}
 		</div>
 
@@ -206,9 +207,7 @@
 						<span class="file-uploader__item-meta">{statusLabel(item)}</span>
 					{/if}
 					{#if item.status === 'error' && item.retryable}
-						<button type="button" class="file-uploader__action" onclick={() => retry(item)}>
-							Try again
-						</button>
+						<Button variant="quiet" size="small" onclick={() => retry(item)}>Try again</Button>
 					{/if}
 					{#if item.status === 'error'}
 						<button
@@ -250,26 +249,6 @@
 		font-size: var(--typography--fontSize-base);
 		font-weight: 700;
 	}
-	.file-uploader__clear,
-	.file-uploader__action {
-		flex: 0 0 auto;
-		border: 0;
-		color: var(--color-interactive);
-		background: transparent;
-		font: inherit;
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-		cursor: pointer;
-
-		&:hover {
-			text-decoration: underline;
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-	}
-
 	.file-uploader__list {
 		display: flex;
 		flex-direction: column;

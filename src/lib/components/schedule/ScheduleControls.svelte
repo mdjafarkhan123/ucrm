@@ -169,9 +169,7 @@
 					<header class="schedule-controls__filters-header">
 						<h2>Filters</h2>
 						{#if activeFilterCount > 0}
-							<button type="button" class="schedule-controls__filters-clear" onclick={clearFilters}>
-								Clear
-							</button>
+							<Button variant="quiet" size="small" onclick={clearFilters}>Clear</Button>
 						{/if}
 					</header>
 
@@ -245,22 +243,6 @@
 			color: var(--color-heading);
 			font-size: var(--typography--fontSize-base);
 			font-weight: 600;
-		}
-	}
-
-	.schedule-controls__filters-clear {
-		border: 0;
-		background: transparent;
-		color: var(--color-interactive);
-		font-size: var(--typography--fontSize-small);
-		cursor: pointer;
-
-		&:hover {
-			text-decoration: underline;
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
 		}
 	}
 

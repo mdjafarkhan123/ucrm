@@ -409,17 +409,19 @@
 		<section class="support-inbox__conversation" aria-label="Open conversation">
 			{#if startingNew && selectedId === null}
 				<header class="support-inbox__conversation-header">
-					<button
-						class="support-inbox__back"
-						type="button"
-						aria-label="Back to conversations"
-						onclick={() => {
-							newParam.set('');
-							clearStartContext();
-						}}
-					>
-						<span aria-hidden="true">{@html arrowLeftIcon}</span>
-					</button>
+					<div class="support-inbox__back">
+						<Button
+							variant="quiet"
+							iconOnly
+							label="Back to conversations"
+							onclick={() => {
+								newParam.set('');
+								clearStartContext();
+							}}
+						>
+							{@html arrowLeftIcon}
+						</Button>
+					</div>
 					<div class="support-inbox__conversation-title"><h2>New chat</h2></div>
 					<Button
 						variant="tertiary"
@@ -452,14 +454,16 @@
 				/>
 			{:else if thread.isError && !thread.data}
 				<header class="support-inbox__conversation-header">
-					<button
-						class="support-inbox__back"
-						type="button"
-						aria-label="Back to conversations"
-						onclick={() => selected.set('')}
-					>
-						<span aria-hidden="true">{@html arrowLeftIcon}</span>
-					</button>
+					<div class="support-inbox__back">
+						<Button
+							variant="quiet"
+							iconOnly
+							label="Back to conversations"
+							onclick={() => selected.set('')}
+						>
+							{@html arrowLeftIcon}
+						</Button>
+					</div>
 				</header>
 				<ErrorState
 					description="This conversation could not be loaded. It may no longer exist."
@@ -467,14 +471,16 @@
 				/>
 			{:else}
 				<header class="support-inbox__conversation-header">
-					<button
-						class="support-inbox__back"
-						type="button"
-						aria-label="Back to conversations"
-						onclick={() => selected.set('')}
-					>
-						<span aria-hidden="true">{@html arrowLeftIcon}</span>
-					</button>
+					<div class="support-inbox__back">
+						<Button
+							variant="quiet"
+							iconOnly
+							label="Back to conversations"
+							onclick={() => selected.set('')}
+						>
+							{@html arrowLeftIcon}
+						</Button>
+					</div>
 					<div class="support-inbox__conversation-title">
 						{#if current}
 							<h2>{current.organization.name}</h2>
@@ -860,33 +866,6 @@
 		&__back {
 			display: none;
 			flex: none;
-			place-items: center;
-			width: 36px;
-			height: 36px;
-			padding: 0;
-			border: 0;
-			border-radius: var(--radius-base);
-			color: var(--color-icon);
-			background: transparent;
-			cursor: pointer;
-
-			span {
-				display: inline-flex;
-			}
-
-			:global(svg) {
-				width: 20px;
-				height: 20px;
-			}
-
-			&:hover {
-				background: var(--color-surface--hover);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
 		}
 	}
 
@@ -914,7 +893,7 @@
 			}
 
 			&__back {
-				display: grid;
+				display: flex;
 			}
 		}
 	}

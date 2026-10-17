@@ -102,27 +102,27 @@
 		</div>
 		{#if current}
 			<nav class="review__stepper" aria-label="Move through the queue">
-				<button
-					type="button"
-					class="review__step"
+				<Button
+					variant="secondary"
+					iconOnly
+					label="Previous Lead"
 					disabled={currentIndex <= 0}
 					onclick={() => step(-1)}
-					aria-label="Previous Lead"
 				>
-					<span class="review__icon" aria-hidden="true">{@html chevronLeftIcon}</span>
-				</button>
+					{@html chevronLeftIcon}
+				</Button>
 				<span class="review__position" aria-live="polite"
 					><strong>{currentIndex + 1}</strong> of {total}</span
 				>
-				<button
-					type="button"
-					class="review__step"
+				<Button
+					variant="secondary"
+					iconOnly
+					label="Next Lead"
 					disabled={currentIndex >= leads.length - 1 && !queue.hasNextPage}
 					onclick={() => step(1)}
-					aria-label="Next Lead"
 				>
-					<span class="review__icon" aria-hidden="true">{@html chevronRightIcon}</span>
-				</button>
+					{@html chevronRightIcon}
+				</Button>
 			</nav>
 		{/if}
 	</header>
@@ -185,7 +185,7 @@
 					<Button
 						variant="tertiary"
 						size="small"
-						disabled={queue.isFetchingNextPage}
+						loading={queue.isFetchingNextPage}
 						onclick={() => queue.fetchNextPage()}
 						>{queue.isFetchingNextPage ? 'Loading more…' : 'Load more'}</Button
 					>
@@ -284,47 +284,6 @@
 
 		strong {
 			color: var(--color-heading);
-		}
-	}
-
-	.review__step {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 36px;
-		height: 36px;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background: var(--color-surface);
-		color: var(--color-heading);
-		cursor: pointer;
-		transition:
-			background-color var(--timing-quick),
-			border-color var(--timing-quick);
-
-		&:hover:not(:disabled) {
-			border-color: var(--color-interactive);
-			background: var(--color-surface--hover);
-		}
-
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-
-		&:disabled {
-			color: var(--color-text--secondary);
-			cursor: not-allowed;
-			opacity: 0.5;
-		}
-	}
-
-	.review__icon {
-		display: inline-flex;
-
-		:global(svg) {
-			width: 18px;
-			height: 18px;
 		}
 	}
 

@@ -5,6 +5,8 @@
 	import ReadinessCard from '$lib/components/dashboard/ReadinessCard.svelte';
 	import DayClockCard from '$lib/components/time-clock/DayClockCard.svelte';
 	import CountryPicker from '$lib/components/ui/CountryPicker.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import xIcon from '@tabler/icons/outline/x.svg?raw';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 
@@ -287,19 +289,13 @@
 								<span class="panel__eyebrow">Relationship record</span>
 								<h2 id="customers-heading">Customers</h2>
 							</div>
-							<button
-								class="button button--small"
-								type="button"
-								onclick={() => openForm('customer')}>Add customer</button
-							>
+							<Button size="small" onclick={() => openForm('customer')}>Add customer</Button>
 						</div>
 						{#if data.clients.length === 0}<div class="empty">
 								<strong>No customers yet</strong><span
 									>Create the first lead and start a complete work history.</span
-								><button
-									class="button button--secondary"
-									type="button"
-									onclick={() => openForm('customer')}>Create first customer</button
+								><Button variant="secondary" onclick={() => openForm('customer')}
+									>Create first customer</Button
 								>
 							</div>{/if}
 						<div class="record-list">
@@ -320,14 +316,16 @@
 											).length} requests</small
 										>
 									</div>
-									<button
-										class="text-button"
-										type="button"
-										onclick={() => {
-											propertyForm.client_id = client.id;
-											openForm('property');
-										}}>Add property</button
-									>
+									<span class="record__action">
+										<Button
+											variant="quiet"
+											size="small"
+											onclick={() => {
+												propertyForm.client_id = client.id;
+												openForm('property');
+											}}>Add property</Button
+										>
+									</span>
 								</article>
 							{/each}
 						</div>
@@ -339,11 +337,10 @@
 								<span class="panel__eyebrow">Incoming work</span>
 								<h2 id="requests-heading">Requests</h2>
 							</div>
-							<button
-								class="button button--small"
-								type="button"
+							<Button
+								size="small"
 								onclick={() => openForm('request')}
-								disabled={data.properties.length === 0}>New request</button
+								disabled={data.properties.length === 0}>New request</Button
 							>
 						</div>
 						{#if data.requests.length === 0}<div class="empty">
@@ -406,9 +403,10 @@
 									: 'New request'}
 						</h2>
 					</div>
-					<button class="close-button" type="button" aria-label="Close form" onclick={closeForm}
-						>×</button
-					>
+					<Button variant="quiet" iconOnly label="Close form" onclick={closeForm}>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html xIcon}
+					</Button>
 				</div>
 				{#if formError}<div class="form-alert" role="alert">{formError}</div>{/if}
 				{#if formMode === 'customer'}
@@ -441,10 +439,8 @@
 							>Notes<textarea rows="3" bind:value={customerForm.initial_note}></textarea></label
 						>
 						<div class="modal__actions">
-							<button class="button button--quiet" type="button" onclick={closeForm}>Cancel</button
-							><button class="button" type="submit" disabled={mutation.isPending}
-								>Save customer</button
-							>
+							<Button variant="secondary" onclick={closeForm}>Cancel</Button>
+							<Button type="submit" loading={mutation.isPending}>Save customer</Button>
 						</div>
 					</form>
 				{:else if formMode === 'property'}
@@ -489,10 +485,8 @@
 							></textarea></label
 						>
 						<div class="modal__actions">
-							<button class="button button--quiet" type="button" onclick={closeForm}>Cancel</button
-							><button class="button" type="submit" disabled={mutation.isPending}
-								>Save property</button
-							>
+							<Button variant="secondary" onclick={closeForm}>Cancel</Button>
+							<Button type="submit" loading={mutation.isPending}>Save property</Button>
 						</div>
 					</form>
 				{:else}
@@ -546,10 +540,8 @@
 							>Description<textarea rows="4" bind:value={requestForm.description}></textarea></label
 						>
 						<div class="modal__actions">
-							<button class="button button--quiet" type="button" onclick={closeForm}>Cancel</button
-							><button class="button" type="submit" disabled={mutation.isPending}
-								>Save request</button
-							>
+							<Button variant="secondary" onclick={closeForm}>Cancel</Button>
+							<Button type="submit" loading={mutation.isPending}>Save request</Button>
 						</div>
 					</form>
 				{/if}
@@ -591,43 +583,6 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 8px;
-	}
-	.button {
-		padding: 11px 16px;
-		border: 0;
-		border-radius: var(--radius-small);
-		color: var(--color-text--reverse);
-		background: var(--color-interactive);
-		font-size: var(--typography--fontSize-base);
-		font-weight: 700;
-		transition:
-			background var(--timing-quick) ease,
-			opacity var(--timing-quick) ease;
-	}
-	.button:hover {
-		background: var(--color-interactive--hover);
-	}
-	.button:disabled {
-		opacity: 0.45;
-		cursor: not-allowed;
-	}
-	.button--secondary {
-		color: var(--color-heading);
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-	}
-	.button--secondary:hover,
-	.button--quiet:hover {
-		color: var(--color-heading);
-		background: var(--color-surface--hover);
-	}
-	.button--quiet {
-		color: var(--color-text);
-		background: transparent;
-	}
-	.button--small {
-		padding: 8px 12px;
-		font-size: var(--typography--fontSize-small);
 	}
 	.stats {
 		display: grid;
@@ -752,16 +707,8 @@
 		color: var(--color-request--onSurface);
 		background: var(--color-request--surface);
 	}
-	.text-button {
+	.record__action {
 		flex: 0 0 auto;
-		border: 0;
-		color: var(--color-interactive);
-		background: transparent;
-		font-size: var(--typography--fontSize-small);
-		font-weight: 700;
-	}
-	.text-button:hover {
-		text-decoration: underline;
 	}
 	.request-record {
 		padding: 18px 24px;
@@ -813,7 +760,7 @@
 	.empty strong {
 		color: var(--color-heading);
 	}
-	.empty .button {
+	.empty :global(.button) {
 		margin-top: 8px;
 	}
 	.notice {
@@ -863,18 +810,6 @@
 	.modal h2 {
 		color: var(--color-heading);
 		font-size: 24px;
-	}
-	.close-button {
-		width: 32px;
-		height: 32px;
-		border: 0;
-		border-radius: 50%;
-		color: var(--color-text);
-		background: transparent;
-		font-size: 24px;
-	}
-	.close-button:hover {
-		background: var(--color-surface--hover);
 	}
 	.modal form {
 		display: grid;
@@ -949,7 +884,7 @@
 			align-items: flex-start;
 			flex-wrap: wrap;
 		}
-		.text-button {
+		.record__action {
 			margin-left: 52px;
 		}
 	}

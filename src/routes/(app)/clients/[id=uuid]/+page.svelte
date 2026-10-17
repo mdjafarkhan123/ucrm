@@ -826,16 +826,12 @@
 									<p class="client-detail__last-communication-subject">
 										{lastCommunication.subject}
 									</p>
-									<button
-										type="button"
-										class="client-detail__read-more"
-										onclick={() => selectTab('communication')}
-									>
-										Read more
-										<span class="client-detail__read-more-icon" aria-hidden="true"
-											>{@html arrowRightIcon}</span
-										>
-									</button>
+									<div class="client-detail__read-more">
+										<Button variant="quiet" size="small" onclick={() => selectTab('communication')}>
+											Read more
+											{@html arrowRightIcon}
+										</Button>
+									</div>
 								</div>
 							{:else}
 								<p class="client-detail__rail-blank">Nothing sent yet.</p>
@@ -1091,36 +1087,7 @@
 		}
 
 		&__read-more {
-			display: inline-flex;
-			align-items: center;
-			gap: 4px;
 			margin-top: 6px;
-			padding: 0;
-			border: 0;
-			border-radius: var(--radius-small);
-			color: var(--color-interactive);
-			background: transparent;
-			font: inherit;
-			font-size: 13px;
-			font-weight: 600;
-			cursor: pointer;
-
-			&:hover {
-				text-decoration: underline;
-			}
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-		}
-
-		&__read-more-icon {
-			display: inline-flex;
-
-			:global(svg) {
-				width: 14px;
-				height: 14px;
-			}
 		}
 	}
 </style>

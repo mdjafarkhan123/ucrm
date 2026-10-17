@@ -3,6 +3,7 @@
 	import { createQuery, useQueryClient, type CreateQueryResult } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import ConversationMessagingStatus from '$lib/components/communications/ConversationMessagingStatus.svelte';
 	import ConversationContextSection from '$lib/components/communications/ConversationContextSection.svelte';
 	import InquiryAutomationCard from '$lib/components/automation/InquiryAutomationCard.svelte';
@@ -186,38 +187,45 @@
 
 			<div class="context-rail__quick" role="group" aria-label="Contact this customer">
 				{#if phone}
-					<a
-						class="context-rail__quick-button context-rail__quick-button--phone"
-						href={`tel:${phone}`}
-					>
-						<span aria-hidden="true">{@html phoneIcon}</span>Call
-					</a>
+					<Button variant="secondary" size="small" fullWidth href={`tel:${phone}`}>
+						<span
+							class="context-rail__quick-icon context-rail__quick-icon--phone"
+							aria-hidden="true">{@html phoneIcon}</span
+						>Call
+					</Button>
 				{:else}
-					<button
-						type="button"
-						class="context-rail__quick-button context-rail__quick-button--phone"
-						disabled
-						title="No phone number on file"
-					>
-						<span aria-hidden="true">{@html phoneIcon}</span>Call
-					</button>
+					<span class="context-rail__quick-wrap" title="No phone number on file">
+						<Button variant="secondary" size="small" fullWidth disabled>
+							<span class="context-rail__quick-icon" aria-hidden="true">{@html phoneIcon}</span>Call
+						</Button>
+					</span>
 				{/if}
-				<button
-					type="button"
-					class="context-rail__quick-button context-rail__quick-button--text"
+				<Button
+					variant="secondary"
+					size="small"
+					fullWidth
 					disabled={!canText}
 					onclick={() => onChooseChannel('sms')}
 				>
-					<span aria-hidden="true">{@html messageIcon}</span>Text
-				</button>
-				<button
-					type="button"
-					class="context-rail__quick-button context-rail__quick-button--email"
+					<span
+						class="context-rail__quick-icon"
+						class:context-rail__quick-icon--phone={canText}
+						aria-hidden="true">{@html messageIcon}</span
+					>Text
+				</Button>
+				<Button
+					variant="secondary"
+					size="small"
+					fullWidth
 					disabled={!canEmail}
 					onclick={() => onChooseChannel('email')}
 				>
-					<span aria-hidden="true">{@html mailIcon}</span>Email
-				</button>
+					<span
+						class="context-rail__quick-icon"
+						class:context-rail__quick-icon--email={canEmail}
+						aria-hidden="true">{@html mailIcon}</span
+					>Email
+				</Button>
 			</div>
 
 			{#each tabs as tab (tab.value)}
@@ -424,62 +432,20 @@
 		gap: var(--space-small);
 	}
 
-	.context-rail__quick-button {
-		display: inline-flex;
-		height: 34px;
-		align-items: center;
-		justify-content: center;
-		gap: 6px;
-		padding: 0;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: 10px;
-		color: var(--color-text);
-		background: var(--color-surface);
-		font: inherit;
-		font-size: 12px;
-		font-weight: 600;
-		text-decoration: none;
-		cursor: pointer;
-		transition:
-			background var(--timing-base) ease-out,
-			border-color var(--timing-base) ease-out;
-
-		span {
-			display: inline-flex;
-		}
-
-		:global(svg) {
-			width: 14px;
-			height: 14px;
-		}
-
-		&:hover:not(:disabled) {
-			background: var(--color-surface--hover);
-			border-color: var(--color-border--interactive);
-		}
-
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-
-		&:disabled {
-			cursor: not-allowed;
-			color: var(--color-disabled);
-		}
+	.context-rail__quick-wrap {
+		display: block;
 	}
 
-	.context-rail__quick-button--phone span,
-	.context-rail__quick-button--text span {
+	.context-rail__quick-icon {
+		display: inline-flex;
+	}
+
+	.context-rail__quick-icon--phone {
 		color: var(--color-interactive);
 	}
 
-	.context-rail__quick-button--email span {
+	.context-rail__quick-icon--email {
 		color: var(--color-informative--onSurface);
-	}
-
-	.context-rail__quick-button:disabled span {
-		color: var(--color-disabled);
 	}
 
 	.context-rail__title {

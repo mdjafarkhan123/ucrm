@@ -84,11 +84,11 @@
 					Download the list, correct {attention === 1 ? 'it' : 'them'} in your spreadsheet, and import
 					again — nothing already added will be duplicated.
 				</p>
-				<button type="button" class="download-btn" onclick={downloadErrors}>
+				<Button variant="secondary" onclick={downloadErrors}>
 					<span class="btn-icon" aria-hidden="true">{@html downloadIcon}</span>
 					Download the {attention}
 					{attention === 1 ? 'row' : 'rows'} to fix
-				</button>
+				</Button>
 			</div>
 		{:else}
 			<div class="callout callout--calm">
@@ -255,30 +255,6 @@
 		}
 		b {
 			font-weight: 600;
-		}
-	}
-
-	.download-btn {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-small);
-		font-family: var(--typography--fontFamily-normal);
-		font-weight: 600;
-		font-size: var(--typography--fontSize-base);
-		color: var(--color-heading);
-		background: var(--color-surface);
-		border: 1px solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		padding: var(--space-small) var(--space-base);
-		cursor: pointer;
-		white-space: nowrap;
-
-		&:hover {
-			background: var(--color-surface--hover);
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
 		}
 	}
 

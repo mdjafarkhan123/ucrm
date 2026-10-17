@@ -267,13 +267,17 @@
 	const canShare = $derived(detail?.can_share ?? false);
 	let shareOpen = $state(false);
 
+	let downloading = $state(false);
 	async function handleDownload() {
-		if (!file) return;
+		if (!file || downloading) return;
 		downloadError = '';
+		downloading = true;
 		try {
 			await downloadFile(file.id);
 		} catch (error) {
 			downloadError = error instanceof Error ? error.message : 'That download did not start.';
+		} finally {
+			downloading = false;
 		}
 	}
 
@@ -361,6 +365,7 @@
 			<Button
 				variant="secondary"
 				size="small"
+				loading={downloading}
 				disabled={file.processing_state !== 'available'}
 				onclick={handleDownload}>Download</Button
 			>
@@ -384,7 +389,7 @@
 				{/if}
 			{/if}
 			{#if inTrash && canTrash}
-				<Button variant="secondary" size="small" disabled={saving} onclick={submitRestore}>
+				<Button variant="secondary" size="small" loading={saving} onclick={submitRestore}>
 					Restore
 				</Button>
 			{/if}

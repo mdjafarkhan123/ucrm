@@ -1,5 +1,6 @@
 <script lang="ts">
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	import Button from '$lib/components/ui/Button.svelte';
 	import PackagePrice from '$lib/components/packages/PackagePrice.svelte';
 	import type { BillingInterval, PublicPackage } from '$lib/packages/public-package';
 
@@ -56,9 +57,9 @@
 			</span>
 		{/if}
 	</label>
-	<button type="button" class="package-card__details" onclick={onviewdetails}>
-		View details
-	</button>
+	<div class="package-card__details">
+		<Button variant="quiet" size="large" onclick={onviewdetails}>View details</Button>
+	</div>
 </div>
 
 <style lang="scss">
@@ -169,26 +170,10 @@
 		}
 
 		&__details {
+			display: flex;
 			margin: 0 var(--space-large) var(--space-large);
 			padding: var(--space-small) 0 0;
-			border: 0;
 			border-top: var(--border-base) solid var(--color-border);
-			color: var(--color-interactive);
-			background: transparent;
-			font: inherit;
-			font-weight: 600;
-			text-align: left;
-			cursor: pointer;
-
-			&:hover {
-				text-decoration: underline;
-			}
-
-			&:focus-visible {
-				border-radius: var(--radius-small);
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
 		}
 	}
 </style>

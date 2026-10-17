@@ -236,12 +236,15 @@
 							</div>
 						{/if}
 					</div>
-					<button
-						type="button"
-						class="reminder-picker__remove"
-						aria-label="Remove reminder {index + 1}"
-						onclick={() => remove(index)}>{@html xIcon}</button
-					>
+					<span class="reminder-picker__remove">
+						<Button
+							variant="secondary"
+							size="small"
+							iconOnly
+							label="Remove reminder {index + 1}"
+							onclick={() => remove(index)}>{@html xIcon}</Button
+						>
+					</span>
 				</li>
 			{/each}
 		</ul>
@@ -252,9 +255,7 @@
 				</Button>
 			{/if}
 			{#if allowDefaults}
-				<button type="button" class="reminder-picker__link" onclick={() => (value = null)}>
-					Use my defaults
-				</button>
+				<Button variant="quiet" size="small" onclick={() => (value = null)}>Use my defaults</Button>
 			{/if}
 		</div>
 	{/if}
@@ -385,31 +386,8 @@
 		}
 
 		&__remove {
-			display: inline-grid;
-			width: 32px;
-			height: 32px;
+			display: inline-flex;
 			margin-left: auto;
-			place-items: center;
-			border: 0;
-			border-radius: var(--radius-base);
-			background: transparent;
-			color: var(--color-text--secondary);
-			cursor: pointer;
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
-
-			&:hover {
-				background: var(--color-surface--hover);
-				color: var(--color-text);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
 		}
 
 		&__actions {

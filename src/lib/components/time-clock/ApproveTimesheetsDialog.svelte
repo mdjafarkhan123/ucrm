@@ -156,10 +156,11 @@
 			{:else if previewQuery.isError}
 				<p class="approve-timesheets__status approve-timesheets__status--error" role="alert">
 					{previewQuery.error.message}
-					<button
-						type="button"
-						class="approve-timesheets__retry"
-						onclick={() => void previewQuery.refetch()}>Try again</button
+					<Button
+						variant="quiet"
+						size="small"
+						loading={previewQuery.isFetching}
+						onclick={() => void previewQuery.refetch()}>Try again</Button
 					>
 				</p>
 			{:else if people.length === 0}

@@ -323,7 +323,8 @@
 		{#if stale}
 			<div class="member-availability__conflict" role="alert">
 				<p>Someone else changed this availability while you were editing.</p>
-				<button type="button" onclick={() => void reloadLatest()}>Reload latest availability</button
+				<Button variant="secondary" size="small" onclick={() => void reloadLatest()}
+					>Reload latest availability</Button
 				>
 			</div>
 		{/if}
@@ -394,7 +395,7 @@
 				</div>
 
 				<div class="member-availability__week-actions">
-					<Button onclick={() => void saveWeek()} disabled={savingWeek}>
+					<Button onclick={() => void saveWeek()} loading={savingWeek}>
 						{savingWeek ? 'Saving…' : 'Save working week'}
 					</Button>
 					<Button variant="secondary" onclick={cancelWeekEdit} disabled={savingWeek}>Cancel</Button>
@@ -422,7 +423,7 @@
 						variant="tertiary"
 						size="small"
 						onclick={() => void clearWeek()}
-						disabled={savingWeek}
+						loading={savingWeek}
 					>
 						Clear working week
 					</Button>
@@ -478,7 +479,7 @@
 						disabled={savingException}
 					/>
 					<div class="member-availability__date-actions">
-						<Button onclick={() => void saveException()} disabled={savingException}>
+						<Button onclick={() => void saveException()} loading={savingException}>
 							{savingException ? 'Saving…' : 'Save date'}
 						</Button>
 						<Button
@@ -507,15 +508,17 @@
 								</span>
 							</div>
 							{#if canEdit}
-								<button
-									type="button"
-									class="member-availability__remove"
-									aria-label={`Remove ${longDate(entry.exception_date)}`}
-									disabled={removingId === entry.id}
+								<Button
+									variant="secondary"
+									variation="destructive"
+									size="small"
+									iconOnly
+									label={`Remove ${longDate(entry.exception_date)}`}
+									loading={removingId === entry.id}
 									onclick={() => void removeException(entry.id)}
 								>
 									{@html trashIcon}
-								</button>
+								</Button>
 							{/if}
 						</li>
 					{/each}
@@ -587,19 +590,6 @@
 				margin: 0;
 				color: var(--warning-text);
 				font-size: var(--typography--fontSize-small);
-			}
-
-			button {
-				border: none;
-				background: none;
-				color: var(--color-brand);
-				font: inherit;
-				font-weight: 600;
-				cursor: pointer;
-
-				&:hover {
-					text-decoration: underline;
-				}
 			}
 		}
 
@@ -721,42 +711,6 @@
 		&__date-detail {
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
-		}
-
-		&__remove {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			flex-shrink: 0;
-			width: 32px;
-			height: 32px;
-			padding: 0;
-			border: var(--border-base) solid transparent;
-			border-radius: var(--radius-base);
-			background: none;
-			color: var(--color-icon--secondary);
-			cursor: pointer;
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
-
-			&:hover:not(:disabled) {
-				border-color: var(--danger-border);
-				background: var(--danger-surface);
-				color: var(--danger-text);
-			}
-
-			&:focus-visible {
-				outline: 2px solid var(--color-brand);
-				outline-offset: 2px;
-			}
-
-			&:disabled {
-				opacity: 0.5;
-				cursor: not-allowed;
-			}
 		}
 	}
 

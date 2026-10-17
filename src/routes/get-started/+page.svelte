@@ -660,34 +660,34 @@
 											: 'yearly'}
 									</p>
 								{/if}
-								<button
-									type="button"
-									class="get-started__review-link"
+								<Button
+									variant="quiet"
+									size="small"
 									onclick={() => (detailsFor = selected.edition_id)}
 								>
 									See everything included
-								</button>
+								</Button>
 							{/if}
-							<button type="button" class="get-started__review-edit" onclick={() => goToStep(2)}
-								>Edit</button
-							>
+							<div class="get-started__review-edit">
+								<Button variant="quiet" size="small" onclick={() => goToStep(2)}>Edit</Button>
+							</div>
 						</div>
 						<div class="get-started__review-card">
 							<span>Business</span>
 							<strong>{form.business_name || 'Not provided'}</strong>
 							<p>{businessLabel} · {form.city_country}</p>
 							<p class="get-started__review-work">{form.described_work}</p>
-							<button type="button" class="get-started__review-edit" onclick={() => goToStep(1)}
-								>Edit</button
-							>
+							<div class="get-started__review-edit">
+								<Button variant="quiet" size="small" onclick={() => goToStep(1)}>Edit</Button>
+							</div>
 						</div>
 						<div class="get-started__review-card">
 							<span>Contact</span>
 							<strong>{form.main_contact_name || 'Not provided'}</strong>
 							<p>{form.main_contact_email} · {form.main_contact_phone}</p>
-							<button type="button" class="get-started__review-edit" onclick={() => goToStep(3)}
-								>Edit</button
-							>
+							<div class="get-started__review-edit">
+								<Button variant="quiet" size="small" onclick={() => goToStep(3)}>Edit</Button>
+							</div>
 						</div>
 						<label class="get-started__label" for="note"
 							>Anything else we should know? <span>(optional)</span></label
@@ -718,16 +718,20 @@
 				{/if}
 				{#if errorMessage}<p class="get-started__error" role="alert">{errorMessage}</p>{/if}
 				<div class="get-started__actions">
-					{#if currentStep > 1}<Button type="button" variant="secondary" onclick={previousStep}
-							>Back</Button
+					{#if currentStep > 1}<Button
+							type="button"
+							size="large"
+							variant="secondary"
+							onclick={previousStep}>Back</Button
 						>{/if}
 					{#if currentStep < 4}
-						<Button type="button" fullWidth={currentStep === 1} onclick={nextStep}
+						<Button type="button" size="large" fullWidth={currentStep === 1} onclick={nextStep}
 							>Continue <span aria-hidden="true">→</span></Button
 						>
 					{:else}
 						<Button
 							type="submit"
+							size="large"
 							fullWidth
 							loading={status === 'submitting'}
 							disabled={status === 'submitting'}
@@ -754,11 +758,17 @@
 			</p>
 			<PackageDetails {pkg} {interval} />
 			<div class="get-started__details-actions">
-				<Button type="button" variant="secondary" onclick={() => (detailsFor = null)}>Close</Button>
+				<Button type="button" size="large" variant="secondary" onclick={() => (detailsFor = null)}
+					>Close</Button
+				>
 				{#if form.package_edition_id === pkg.edition_id}
-					<Button type="button" onclick={() => (detailsFor = null)}>Keep this package</Button>
+					<Button type="button" size="large" onclick={() => (detailsFor = null)}
+						>Keep this package</Button
+					>
 				{:else}
-					<Button type="button" onclick={() => chooseFromDetails(pkg)}>Choose {pkg.name}</Button>
+					<Button type="button" size="large" onclick={() => chooseFromDetails(pkg)}
+						>Choose {pkg.name}</Button
+					>
 				{/if}
 			</div>
 		</div>
@@ -1071,26 +1081,10 @@
 			font-weight: 700;
 		}
 
-		&__review-edit,
-		&__review-link {
-			padding: 0;
-			border: 0;
-			color: var(--color-interactive);
-			background: transparent;
-			font: inherit;
-			cursor: pointer;
-			text-decoration: underline;
-		}
-
 		&__review-edit {
 			position: absolute;
-			top: var(--space-base);
-			right: var(--space-base);
-		}
-
-		&__review-link {
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
+			top: var(--space-small);
+			right: var(--space-small);
 		}
 
 		&__details {

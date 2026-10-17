@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Popover } from 'bits-ui';
+	import Button from '$lib/components/ui/Button.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
 	import { calendarDateFromString, calendarDateToString } from '$lib/components/ui/date-time';
 	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
@@ -91,10 +92,14 @@
 					/>
 				</div>
 				<div class="date-range-chip__panel-foot">
-					<button type="button" class="date-range-chip__reset" disabled={!active} onclick={clear}>
+					<Button variant="secondary" size="small" disabled={!active} onclick={clear}>
 						Clear dates
-					</button>
-					<Popover.Close class="date-range-chip__done">Done</Popover.Close>
+					</Button>
+					<Popover.Close>
+						{#snippet child({ props })}
+							<Button {...props} size="small">Done</Button>
+						{/snippet}
+					</Popover.Close>
 				</div>
 			</Popover.Content>
 		</Popover.Portal>
@@ -236,40 +241,5 @@
 		justify-content: space-between;
 		gap: var(--space-small);
 		margin-top: var(--space-base);
-	}
-	:global(.date-range-chip__reset),
-	:global(.date-range-chip__done) {
-		min-height: 32px;
-		padding: 0 var(--space-slim);
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		color: var(--color-heading);
-		background: var(--color-surface);
-		font: inherit;
-		font-size: 13px;
-		font-weight: 600;
-		cursor: pointer;
-	}
-	:global(.date-range-chip__done) {
-		border-color: var(--color-interactive);
-		color: var(--color-surface);
-		background: var(--color-interactive);
-	}
-	:global(.date-range-chip__reset:hover:not(:disabled)) {
-		background: var(--color-surface--hover);
-	}
-	:global(.date-range-chip__done:hover) {
-		background: var(--color-interactive--hover);
-	}
-	:global(.date-range-chip__reset:disabled) {
-		color: var(--color-disabled);
-		border-color: var(--color-disabled--secondary);
-		background: var(--color-disabled--secondary);
-		cursor: not-allowed;
-	}
-	:global(.date-range-chip__reset:focus-visible),
-	:global(.date-range-chip__done:focus-visible) {
-		outline: none;
-		box-shadow: var(--shadow-focus);
 	}
 </style>

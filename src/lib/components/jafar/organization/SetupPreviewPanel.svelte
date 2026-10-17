@@ -292,35 +292,39 @@
 						<div class="setup-preview__edit-tools">
 							<span class="setup-preview__muted">Card {index + 1} of {editing.length}</span>
 							<span class="setup-preview__tool-buttons">
-								<button
-									type="button"
-									class="setup-preview__tool"
-									aria-label="Move card {index + 1} up"
+								<Button
+									variant="secondary"
+									size="small"
+									iconOnly
+									label="Move card {index + 1} up"
 									disabled={index === 0}
 									onclick={() => move(index, -1)}
 								>
 									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 									{@html arrowUpIcon}
-								</button>
-								<button
-									type="button"
-									class="setup-preview__tool"
-									aria-label="Move card {index + 1} down"
+								</Button>
+								<Button
+									variant="secondary"
+									size="small"
+									iconOnly
+									label="Move card {index + 1} down"
 									disabled={index === editing.length - 1}
 									onclick={() => move(index, 1)}
 								>
 									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 									{@html arrowDownIcon}
-								</button>
-								<button
-									type="button"
-									class="setup-preview__tool setup-preview__tool--remove"
-									aria-label="Remove card {index + 1}"
+								</Button>
+								<Button
+									variant="secondary"
+									variation="destructive"
+									size="small"
+									iconOnly
+									label="Remove card {index + 1}"
 									onclick={() => (editing = editing?.filter((each) => each.id !== card.id) ?? null)}
 								>
 									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 									{@html trashIcon}
-								</button>
+								</Button>
 							</span>
 						</div>
 						<Input
@@ -522,43 +526,6 @@
 		&__tool-buttons {
 			display: inline-flex;
 			gap: var(--space-smallest);
-		}
-
-		&__tool {
-			display: grid;
-			place-items: center;
-			width: 32px;
-			height: 32px;
-			padding: 0;
-			border: var(--border-base) solid var(--color-border);
-			border-radius: var(--radius-base);
-			background: var(--color-surface);
-			color: var(--color-text--secondary);
-			cursor: pointer;
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
-
-			&:hover:not(:disabled) {
-				background: var(--color-surface--hover);
-				color: var(--color-text);
-			}
-
-			&:focus-visible {
-				outline: 2px solid var(--color-interactive);
-				outline-offset: 2px;
-			}
-
-			&:disabled {
-				opacity: 0.4;
-				cursor: not-allowed;
-			}
-
-			&--remove:hover:not(:disabled) {
-				color: var(--color-critical);
-			}
 		}
 
 		&__actions {

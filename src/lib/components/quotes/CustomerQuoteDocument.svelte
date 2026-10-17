@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import SignaturePad from '$lib/components/ui/SignaturePad.svelte';
 	import Lightbox, { type LightboxItem } from '$lib/components/ui/Lightbox.svelte';
 	import { emptySignature, signatureIsGiven, type SignatureValue } from '$lib/signatures/signature';
@@ -560,23 +561,25 @@
 									<p class="customer-quote__decision-note">Signed by {signedName}.</p>
 								{/if}
 							{:else if step === 'idle'}
-								<button
-									class="customer-quote__decision"
-									type="button"
+								<Button
+									size="large"
+									fullWidth
 									disabled={decisions === 'inert'}
-									onclick={() => openStep('approved')}>Approve</button
+									onclick={() => openStep('approved')}>Approve</Button
 								>
-								<button
-									class="customer-quote__decision customer-quote__decision--secondary"
-									type="button"
+								<Button
+									variant="secondary"
+									size="large"
+									fullWidth
 									disabled={decisions === 'inert'}
-									onclick={() => openStep('changes_requested')}>Request changes</button
+									onclick={() => openStep('changes_requested')}>Request changes</Button
 								>
-								<button
-									class="customer-quote__decision customer-quote__decision--quiet"
-									type="button"
+								<Button
+									variant="quiet"
+									size="large"
+									fullWidth
 									disabled={decisions === 'inert'}
-									onclick={() => openStep('declined')}>Decline</button
+									onclick={() => openStep('declined')}>Decline</Button
 								>
 								{#if decisions === 'inert'}
 									<p class="customer-quote__decision-note">
@@ -638,11 +641,11 @@
 								{#if problem}
 									<p class="customer-quote__decision-problem" role="alert">{problem}</p>
 								{/if}
-								<button
-									class="customer-quote__decision"
-									class:customer-quote__decision--decline={step === 'declined'}
-									type="button"
-									disabled={sending}
+								<Button
+									size="large"
+									fullWidth
+									variation={step === 'declined' ? 'destructive' : 'work'}
+									loading={sending}
 									onclick={() => void confirmStep()}
 									>{sending
 										? 'Sending…'
@@ -650,13 +653,14 @@
 											? 'Yes, approve it'
 											: step === 'declined'
 												? 'Decline quote'
-												: 'Send this to them'}</button
+												: 'Send this to them'}</Button
 								>
-								<button
-									class="customer-quote__decision customer-quote__decision--secondary"
-									type="button"
+								<Button
+									variant="secondary"
+									size="large"
+									fullWidth
 									disabled={sending}
-									onclick={cancelStep}>Cancel</button
+									onclick={cancelStep}>Cancel</Button
 								>
 							{/if}
 						</div>
@@ -1106,65 +1110,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-small);
-	}
-
-	.customer-quote__decision {
-		width: 100%;
-		padding: var(--space-base);
-		border-radius: var(--radius-base);
-		border: 1px solid transparent;
-		background: var(--color-interactive);
-		color: var(--color-surface);
-		font-weight: 600;
-		font-size: var(--typography--fontSize-base);
-
-		&:disabled {
-			background: var(--color-disabled--secondary);
-			color: var(--color-disabled);
-			cursor: not-allowed;
-		}
-	}
-
-	.customer-quote__decision--secondary {
-		background: transparent;
-		border-color: var(--color-border);
-		color: var(--color-text);
-
-		&:disabled {
-			background: transparent;
-			color: var(--color-disabled);
-		}
-	}
-
-	// Confirming a "no" is not dressed in the colour of a "yes".
-	.customer-quote__decision--decline {
-		background: transparent;
-		border-color: var(--color-critical);
-		color: var(--color-critical);
-
-		&:disabled {
-			background: transparent;
-			border-color: var(--color-border);
-		}
-	}
-
-	// The third, quieter way out: a "no" is offered, not advertised (Housecall Pro).
-	.customer-quote__decision--quiet {
-		padding: var(--space-small);
-		background: transparent;
-		color: var(--color-text--secondary);
-		font-weight: 500;
-		text-decoration: underline;
-		text-underline-offset: 3px;
-
-		&:hover:not(:disabled) {
-			color: var(--color-text);
-		}
-
-		&:disabled {
-			background: transparent;
-			color: var(--color-disabled);
-		}
 	}
 
 	// On a phone the document keeps its shape and loses its margins: the paper is the screen.

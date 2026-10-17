@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
 	import Lightbox, { type LightboxItem } from '$lib/components/ui/Lightbox.svelte';
 	import FileThumb from '$lib/components/files/FileThumb.svelte';
 	import { formatFileSize, type FileKind, type FileProcessingState } from '$lib/files/api';
@@ -101,14 +102,15 @@
 							</span>
 						</span>
 						{#if ready}
-							<button
-								type="button"
-								class="note-files__download"
-								aria-label={`Download ${file.display_name}`}
+							<Button
+								variant="secondary"
+								size="small"
+								iconOnly
+								label={`Download ${file.display_name}`}
 								onclick={() => onDownload(file)}
 							>
-								<span aria-hidden="true">{@html downloadIcon}</span>
-							</button>
+								{@html downloadIcon}
+							</Button>
 						{/if}
 					</li>
 				{/each}
@@ -211,35 +213,6 @@
 		&__document-meta {
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-smaller);
-		}
-
-		&__download {
-			display: grid;
-			flex: 0 0 auto;
-			width: 32px;
-			height: 32px;
-			place-items: center;
-			padding: 0;
-			border: 0;
-			border-radius: var(--radius-base);
-			color: var(--color-icon--secondary);
-			background: transparent;
-			cursor: pointer;
-
-			&:hover {
-				color: var(--color-interactive);
-				background: var(--color-surface--hover);
-			}
-
-			&:focus-visible {
-				outline: transparent;
-				box-shadow: var(--shadow-focus);
-			}
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
 		}
 	}
 </style>

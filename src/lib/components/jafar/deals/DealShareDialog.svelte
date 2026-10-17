@@ -178,15 +178,19 @@
 								</span>
 							</label>
 							{#if order >= 0}
-								<button
-									type="button"
-									class="deal-share__copy"
-									onclick={() => copy(pkg.slug, pkg.yearly_price_usd_cents !== null)}
-								>
-									<!-- eslint-disable-next-line svelte/no-at-html-tags -- a bundled Tabler icon. -->
-									<span aria-hidden="true">{@html copied === pkg.slug ? checkIcon : copyIcon}</span>
-									{copied === pkg.slug ? 'Copied' : 'Copy link'}
-								</button>
+								<div class="deal-share__copy">
+									<Button
+										variant="secondary"
+										size="small"
+										onclick={() => copy(pkg.slug, pkg.yearly_price_usd_cents !== null)}
+									>
+										<!-- eslint-disable-next-line svelte/no-at-html-tags -- a bundled Tabler icon. -->
+										<span aria-hidden="true"
+											>{@html copied === pkg.slug ? checkIcon : copyIcon}</span
+										>
+										{copied === pkg.slug ? 'Copied' : 'Copy link'}
+									</Button>
+								</div>
 							{/if}
 						</li>
 					{/each}
@@ -321,38 +325,10 @@
 		}
 
 		&__copy {
-			display: inline-flex;
 			flex-shrink: 0;
-			align-items: center;
-			gap: var(--space-smaller);
-			padding: var(--space-smaller) var(--space-slim);
-			border: var(--border-base) solid var(--color-border);
-			border-radius: var(--radius-circle);
-			color: var(--color-text);
-			background: var(--color-surface);
-			font: inherit;
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-			cursor: pointer;
 
 			span {
 				display: inline-flex;
-				width: 16px;
-				height: 16px;
-			}
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
-
-			&:hover {
-				background: var(--color-surface--hover);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
 			}
 		}
 

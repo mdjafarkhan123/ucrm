@@ -248,14 +248,14 @@
 				<li class="notes-panel__item notes-panel__item--draft">
 					<div class="notes-panel__item-header">
 						<Badge size="small" status="warning">Not saved yet</Badge>
-						<button
-							type="button"
-							class="notes-panel__undo"
+						<Button
+							variant="quiet"
+							size="small"
 							onclick={() =>
 								unstage((change) => change.kind === 'create' && change.key === draft.key)}
 						>
 							Remove
-						</button>
+						</Button>
 					</div>
 					<p class="notes-panel__body">{draft.body}</p>
 				</li>
@@ -287,14 +287,14 @@
 								>
 							{/if}
 							{#if removed}
-								<button
-									type="button"
-									class="notes-panel__undo"
+								<Button
+									variant="quiet"
+									size="small"
 									onclick={() =>
 										unstage((change) => change.kind === 'delete' && change.id === note.id)}
 								>
-									<span aria-hidden="true">{@html undoIcon}</span>Undo
-								</button>
+									{@html undoIcon}Undo
+								</Button>
 							{:else if canManageNote(note)}
 								<DropdownMenu
 									triggerLabel="Note actions"
@@ -366,18 +366,10 @@
 				maxlength="4000"
 				bind:value={newBody}
 				onkeydown={sendFromField}
-				oninput={growField}
-			></textarea>
-			<button
-				type="button"
-				class="notes-panel__send"
-				aria-label="Add note"
-				title="Add note"
-				disabled={!newBody.trim()}
-				onclick={addNote}
-			>
+				oninput={growField}></textarea>
+			<Button size="small" iconOnly label="Add note" disabled={!newBody.trim()} onclick={addNote}>
 				{@html arrowUpIcon}
-			</button>
+			</Button>
 		</div>
 	{/if}
 </div>
@@ -461,35 +453,6 @@
 			gap: var(--space-smaller);
 		}
 
-		&__undo {
-			display: inline-flex;
-			align-items: center;
-			gap: var(--space-smaller);
-			padding: 0;
-			border: 0;
-			color: var(--color-interactive);
-			background: transparent;
-			font: inherit;
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-			cursor: pointer;
-
-			&:hover {
-				color: var(--color-interactive--hover);
-			}
-
-			&:focus-visible {
-				outline: transparent;
-				box-shadow: var(--shadow-focus);
-			}
-
-			:global(svg) {
-				display: block;
-				width: 16px;
-				height: 16px;
-			}
-		}
-
 		&__pin-flag {
 			display: grid;
 			width: 20px;
@@ -525,7 +488,6 @@
 			justify-content: flex-end;
 			gap: var(--space-small);
 		}
-
 	}
 
 	// App look: the panel sits flush in its card. Each note is a row under a hairline with the author and
@@ -599,7 +561,7 @@
 		align-items: center;
 		gap: 8px;
 		margin: 12px 20px 16px;
-		padding: 5px 6px 5px 14px;
+		padding: 3px 3px 3px 14px;
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 		background: var(--color-surface--background--subtle);
@@ -633,38 +595,6 @@
 			padding-top: 0;
 			color: var(--color-icon--secondary);
 			font-size: 13px;
-		}
-	}
-
-	.notes-panel__send {
-		display: inline-grid;
-		flex: 0 0 auto;
-		width: 28px;
-		height: 28px;
-		padding: 0;
-		place-items: center;
-		border: 0;
-		border-radius: 8px;
-		color: var(--color-text--reverse);
-		background: var(--color-interactive);
-		cursor: pointer;
-		transition: opacity var(--timing-base) ease-out;
-
-		:global(svg) {
-			display: block;
-			width: 15px;
-			height: 15px;
-		}
-		&:hover:not(:disabled) {
-			background: var(--color-interactive--hover);
-		}
-		&:disabled {
-			cursor: not-allowed;
-			opacity: 0.45;
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
 		}
 	}
 </style>

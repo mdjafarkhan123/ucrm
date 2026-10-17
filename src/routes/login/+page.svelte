@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 
@@ -58,8 +59,8 @@
 			>
 			<a class="auth-card__link" href="/forgot-password">Forgot your password?</a>
 			{#if errorMessage}<p class="form-error" role="alert">{errorMessage}</p>{/if}
-			<button type="submit" disabled={isSubmitting}
-				>{isSubmitting ? 'Signing in…' : 'Sign in'}</button
+			<Button type="submit" size="large" fullWidth loading={isSubmitting}
+				>{isSubmitting ? 'Signing in…' : 'Sign in'}</Button
 			>
 		</form>
 	</section>
@@ -118,20 +119,6 @@
 		border-radius: var(--radius-small);
 		color: var(--color-text);
 		background: var(--color-surface);
-	}
-	button {
-		padding: 12px 16px;
-		border: 0;
-		border-radius: var(--radius-small);
-		color: var(--color-text--reverse);
-		background: var(--color-interactive);
-		font-weight: 700;
-	}
-	button:hover {
-		background: var(--color-interactive--hover);
-	}
-	button:disabled {
-		opacity: 0.6;
 	}
 	.form-error {
 		color: var(--color-critical);

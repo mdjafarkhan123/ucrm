@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import Button from '$lib/components/ui/Button.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
@@ -110,7 +111,8 @@
 					<div class="messaging__head">
 						<div class="messaging__what">
 							<span class="messaging__kind messaging__kind--text"
-								><span class="messaging__kind-icon" aria-hidden="true">{@html messageIcon}</span>Texts</span
+								><span class="messaging__kind-icon" aria-hidden="true">{@html messageIcon}</span
+								>Texts</span
 							>
 							<span class="messaging__value">{phone.value}</span>
 						</div>
@@ -129,26 +131,23 @@
 							<p class="messaging__quote">“{phone.note}”</p>
 						{/if}
 						{#if canManage && phone.can_undo}
-							<button
-								type="button"
-								class="messaging__action messaging__action--undo"
-								onclick={() => ask(phone, 'undo')}
-							>
-								<span aria-hidden="true">{@html messageCheckIcon}</span>Turn texts back on
-							</button>
+							<Button variant="secondary" size="small" onclick={() => ask(phone, 'undo')}>
+								{@html messageCheckIcon}Turn texts back on
+							</Button>
 						{/if}
 					{:else if phone.state === 'unknown'}
 						<p class="messaging__note">
 							Texts cannot be sent until the customer has agreed to them.
 						</p>
 					{:else if canManage}
-						<button
-							type="button"
-							class="messaging__action messaging__action--stop"
+						<Button
+							variant="secondary"
+							variation="destructive"
+							size="small"
 							onclick={() => ask(phone, 'stop')}
 						>
-							<span aria-hidden="true">{@html messageOffIcon}</span>Stop texts
-						</button>
+							{@html messageOffIcon}Stop texts
+						</Button>
 					{/if}
 				</div>
 			{:else}
@@ -156,7 +155,8 @@
 					<div class="messaging__head">
 						<div class="messaging__what">
 							<span class="messaging__kind messaging__kind--text"
-								><span class="messaging__kind-icon" aria-hidden="true">{@html messageIcon}</span>Texts</span
+								><span class="messaging__kind-icon" aria-hidden="true">{@html messageIcon}</span
+								>Texts</span
 							>
 							<span class="messaging__value">No phone number</span>
 						</div>
@@ -169,7 +169,8 @@
 					<div class="messaging__head">
 						<div class="messaging__what">
 							<span class="messaging__kind messaging__kind--email"
-								><span class="messaging__kind-icon" aria-hidden="true">{@html mailIcon}</span>Marketing email</span
+								><span class="messaging__kind-icon" aria-hidden="true">{@html mailIcon}</span
+								>Marketing email</span
 							>
 							<span class="messaging__value">{marketing.email}</span>
 						</div>
@@ -254,6 +255,11 @@
 		& + & {
 			border-top: var(--border-base) solid var(--color-border);
 		}
+
+		// A button in the row keeps its own width instead of stretching across the grid.
+		> :global(.button) {
+			justify-self: start;
+		}
 	}
 
 	/* The kind and its status pill share the top line; the number or address gets the full width below. */
@@ -318,47 +324,6 @@
 		color: var(--color-text);
 		font-size: 12px;
 		overflow-wrap: anywhere;
-	}
-
-	.messaging__action {
-		display: inline-flex;
-		width: fit-content;
-		align-items: center;
-		gap: 6px;
-		padding: var(--space-smaller) 0 0;
-		border: 0;
-		background: transparent;
-		font: inherit;
-		font-size: 12px;
-		font-weight: 600;
-		cursor: pointer;
-
-		span {
-			display: inline-flex;
-		}
-
-		:global(svg) {
-			width: 13px;
-			height: 13px;
-		}
-
-		&:hover {
-			text-decoration: underline;
-		}
-
-		&:focus-visible {
-			outline: none;
-			border-radius: var(--radius-small);
-			box-shadow: var(--shadow-focus);
-		}
-	}
-
-	.messaging__action--stop {
-		color: var(--color-destructive);
-	}
-
-	.messaging__action--undo {
-		color: var(--color-interactive);
 	}
 
 	.messaging__dialog-text {

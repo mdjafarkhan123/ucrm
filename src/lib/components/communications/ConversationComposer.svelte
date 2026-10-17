@@ -339,7 +339,7 @@
 	// the deliver()/onPendingChange bubble entirely: that machinery means "this is going out right now, here
 	// is a live mark for it," which is the wrong story for something that will not go out for hours.
 	let sendLaterOpen = $state(false);
-	let sendLaterAnchor = $state<HTMLButtonElement | null>(null);
+	let sendLaterAnchor = $state<HTMLElement | null>(null);
 	let scheduledAtInput = $state('');
 	let scheduling = $state(false);
 
@@ -446,22 +446,17 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 {#snippet sendButton()}
-	<button
+	<Button
 		type="submit"
 		class="conversation-composer__send"
-		aria-label="Send"
-		title={channel === 'website_chat' ? 'Send' : `Send (${sendChord})`}
+		label={channel === 'website_chat' ? 'Send' : `Send (${sendChord})`}
 		aria-keyshortcuts={channel === 'website_chat' ? undefined : 'Control+Enter Meta+Enter'}
-		aria-busy={sending}
-		disabled={sending || uploading || smsStopped}
+		loading={sending}
+		disabled={uploading || smsStopped}
 	>
-		<span class="conversation-composer__send-label">Send</span>
-		{#if sending}
-			<span class="conversation-composer__send-spinner" aria-hidden="true"></span>
-		{:else}
-			{@html sendIcon}
-		{/if}
-	</button>
+		Send
+		{@html sendIcon}
+	</Button>
 {/snippet}
 
 {#snippet composerForm()}
@@ -624,19 +619,17 @@
 				</p>
 			{/if}
 			{#if channel === 'email'}
-				<div class="conversation-composer__send-group">
+				<div class="conversation-composer__send-group" bind:this={sendLaterAnchor}>
 					{@render sendButton()}
-					<button
-						type="button"
-						bind:this={sendLaterAnchor}
+					<Button
 						class="conversation-composer__send-later-trigger"
-						aria-label="More send options"
-						title="More send options"
+						iconOnly
+						label="More send options"
 						disabled={sending || uploading}
 						onclick={openSendLater}
 					>
 						{@html chevronDownIcon}
-					</button>
+					</Button>
 				</div>
 				<Popover
 					open={sendLaterOpen}
@@ -676,14 +669,9 @@
 				aria-controls="conversation-composer-expanded"
 				onclick={expand}>Type a message</button
 			>
-			<button
-				class="conversation-composer__collapsed-send"
-				type="button"
-				aria-label="Send"
-				disabled
-			>
+			<Button iconOnly label="Send" disabled>
 				{@html sendIcon}
-			</button>
+			</Button>
 		</div>
 	{:else if popped}
 		<DialogPrimitive.Root
@@ -765,29 +753,9 @@
 		cursor: text;
 	}
 
-	.conversation-composer__collapsed-input:focus-visible,
-	.conversation-composer__collapsed-send:focus-visible {
+	.conversation-composer__collapsed-input:focus-visible {
 		outline: none;
 		box-shadow: var(--shadow-focus);
-	}
-
-	.conversation-composer__collapsed-send {
-		display: inline-flex;
-		width: 36px;
-		height: 36px;
-		flex: 0 0 auto;
-		align-items: center;
-		justify-content: center;
-		padding: 0;
-		border: 0;
-		border-radius: 999px;
-		color: var(--color-disabled);
-		background: var(--color-disabled--secondary);
-	}
-
-	.conversation-composer__collapsed-send :global(svg) {
-		width: 17px;
-		height: 17px;
 	}
 
 	.conversation-composer__form {
@@ -992,100 +960,22 @@
 		white-space: nowrap;
 	}
 
-	/* Send is a green pill with its label, the one loud thing in the box. */
-	.conversation-composer__send {
-		display: inline-flex;
-		height: 36px;
-		flex: 0 0 auto;
-		align-items: center;
-		justify-content: center;
-		gap: 7px;
-		padding: 0 14px 0 16px;
-		border: 0;
-		border-radius: 999px;
-		color: #fff;
-		background: var(--color-base-green--700);
-		box-shadow: 0 4px 12px rgb(3 119 65 / 0.2);
-		font: inherit;
-		font-size: 13px;
-		font-weight: 600;
-		cursor: pointer;
-		transition: background var(--timing-base) ease-out;
-
-		&:hover:not(:disabled) {
-			background: var(--color-base-green--800);
-		}
-
-		&:disabled {
-			cursor: not-allowed;
-			opacity: 0.6;
-		}
-
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-
-		:global(svg) {
-			width: 15px;
-			height: 15px;
-		}
-	}
-
-	.conversation-composer__send-spinner {
-		width: 15px;
-		height: 15px;
-		border: 2px solid currentColor;
-		border-right-color: transparent;
-		border-radius: var(--radius-circle);
-		animation: spinning var(--timing-loading) linear infinite;
-	}
-
-	/* The pill and the chevron read as one split button: the chevron sits flush against Send with a
-	   hairline seam, and the two outer ends are rounded to match. */
+	/* Send and its chevron read as one split button: the chevron sits flush against Send with a hairline
+	   seam, and only the two outer ends are rounded. */
 	.conversation-composer__send-group {
 		display: flex;
 		flex: 0 0 auto;
 		align-items: stretch;
 
-		.conversation-composer__send {
-			border-radius: 999px 0 0 999px;
-			padding-right: 12px;
-			box-shadow: none;
-		}
-	}
-
-	.conversation-composer__send-later-trigger {
-		display: inline-flex;
-		width: 30px;
-		flex: 0 0 auto;
-		align-items: center;
-		justify-content: center;
-		padding: 0 4px 0 0;
-		border: 0;
-		border-left: var(--border-base) solid rgb(255 255 255 / 0.3);
-		border-radius: 0 999px 999px 0;
-		color: #fff;
-		background: var(--color-base-green--700);
-		cursor: pointer;
-
-		&:hover:not(:disabled) {
-			background: var(--color-base-green--800);
+		:global(.conversation-composer__send) {
+			border-top-right-radius: 0;
+			border-bottom-right-radius: 0;
 		}
 
-		&:disabled {
-			cursor: not-allowed;
-			opacity: 0.6;
-		}
-
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-
-		:global(svg) {
-			width: 15px;
-			height: 15px;
+		:global(.conversation-composer__send-later-trigger) {
+			border-left-color: rgb(255 255 255 / 0.3);
+			border-top-left-radius: 0;
+			border-bottom-left-radius: 0;
 		}
 	}
 

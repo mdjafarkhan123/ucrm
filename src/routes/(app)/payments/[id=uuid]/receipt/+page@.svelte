@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import CustomerPaymentReceiptDocument from '$lib/components/invoices/CustomerPaymentReceiptDocument.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import printIcon from '@tabler/icons/outline/printer.svg?raw';
 	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
 
@@ -34,10 +35,10 @@
 					This is exactly what your customer sees when they open the receipt you emailed them.
 				</p>
 			</div>
-			<button class="preview-bar__print" type="button" onclick={() => window.print()}>
-				<span aria-hidden="true">{@html printIcon}</span>
+			<Button variant="secondary" onclick={() => window.print()}>
+				{@html printIcon}
 				Print or save PDF
-			</button>
+			</Button>
 		</div>
 	{/snippet}
 </CustomerPaymentReceiptDocument>
@@ -73,34 +74,6 @@
 		margin: 0;
 		font-size: var(--typography--fontSize-small);
 		color: var(--color-informative--onSurface);
-	}
-
-	.preview-bar__print {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-small);
-		padding: var(--space-small) var(--space-base);
-		border-radius: var(--radius-base);
-		border: 1px solid var(--color-border);
-		background: var(--color-surface);
-		color: var(--color-text);
-		font-weight: 600;
-		white-space: nowrap;
-
-		&:hover {
-			border-color: var(--color-interactive);
-			color: var(--color-interactive);
-		}
-
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-	}
-
-	.preview-bar__print :global(svg) {
-		width: 18px;
-		height: 18px;
 	}
 
 	@media (max-width: 640px) {

@@ -385,17 +385,17 @@
 			{#if screen.kind === 'home'}
 				<span class="support-messenger__mark" aria-hidden="true">{@html messageIcon}</span>
 			{:else}
-				<button
-					class="support-messenger__icon-button"
-					type="button"
-					aria-label={screen.kind === 'thread' && screen.from === 'team'
+				<Button
+					variant="secondary"
+					size="small"
+					iconOnly
+					label={screen.kind === 'thread' && screen.from === 'team'
 						? 'Back to team chats'
 						: 'Back to your chats'}
-					title="Back"
 					onclick={back}
 				>
-					<span aria-hidden="true">{@html backIcon}</span>
-				</button>
+					{@html backIcon}
+				</Button>
 			{/if}
 			<div class="support-messenger__heading">
 				<h2 id="support-messenger-title">{title}</h2>
@@ -427,29 +427,27 @@
 				{/if}
 			</div>
 			{#if screen.kind === 'thread' && shownThreadId}
-				<button
-					class="support-messenger__icon-button"
-					class:support-messenger__icon-button--active={showPeople}
-					type="button"
-					aria-label="People in this chat"
-					aria-pressed={showPeople}
-					title="People in this chat"
-					onpointerenter={warmPeople}
-					onfocus={warmPeople}
+				<Button
+					variant="secondary"
+					size="small"
+					iconOnly
+					label="People in this chat"
+					pressed={showPeople}
+					onhover={warmPeople}
 					onclick={() => (showPeople = !showPeople)}
 				>
-					<span aria-hidden="true">{@html usersIcon}</span>
-				</button>
+					{@html usersIcon}
+				</Button>
 			{/if}
-			<button
-				class="support-messenger__icon-button"
-				type="button"
-				aria-label="Close chat"
-				title="Close chat"
+			<Button
+				variant="secondary"
+				size="small"
+				iconOnly
+				label="Close chat"
 				onclick={() => void closePanel()}
 			>
-				<span aria-hidden="true">{@html closeIcon}</span>
-			</button>
+				{@html closeIcon}
+			</Button>
 		</header>
 
 		{#if screen.kind === 'home' && teamCount > 0}
@@ -515,16 +513,16 @@
 									<span>Asking about this setup section</span>
 									<strong>{newContext.title}</strong>
 								</span>
-								<button
-									class="support-messenger__icon-button"
-									type="button"
-									aria-label={`Don’t attach ${newContext.title}`}
-									title="Remove"
+								<Button
+									variant="secondary"
+									size="small"
+									iconOnly
+									label={`Don’t attach ${newContext.title}`}
 									disabled={startingChat}
 									onclick={() => (newContext = null)}
 								>
-									<span aria-hidden="true">{@html closeIcon}</span>
-								</button>
+									{@html closeIcon}
+								</Button>
 							</div>
 						{/if}
 						<SupportTopicPicker bind:value={newTopic} disabled={startingChat} />
@@ -717,43 +715,6 @@
 			margin: var(--space-smallest) 0 0;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
-		}
-	}
-
-	.support-messenger__icon-button {
-		display: grid;
-		flex: none;
-		place-items: center;
-		width: 36px;
-		height: 36px;
-		padding: 0;
-		border: 0;
-		border-radius: var(--radius-base);
-		color: var(--color-icon);
-		background: transparent;
-		cursor: pointer;
-
-		span {
-			display: inline-flex;
-		}
-
-		:global(svg) {
-			width: 20px;
-			height: 20px;
-		}
-
-		&:hover {
-			background: var(--color-surface--hover);
-		}
-
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-
-		&--active {
-			color: var(--color-interactive);
-			background: var(--color-surface--hover);
 		}
 	}
 

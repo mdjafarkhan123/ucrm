@@ -99,16 +99,18 @@
 	</div>
 
 	<div class="visit-preview__links">
-		<a class="visit-preview__link" href={resolve('/(app)/jobs/[id=uuid]', { id: visit.job_id })}>
+		<Button
+			variant="quiet"
+			size="small"
+			href={resolve('/(app)/jobs/[id=uuid]', { id: visit.job_id })}
+		>
 			Open job{visit.job_number ? ` #${visit.job_number}` : ''}
-			<span class="visit-preview__link-icon" aria-hidden="true">{@html arrowUpRightIcon}</span>
-		</a>
+			{@html arrowUpRightIcon}
+		</Button>
 		<!-- Take a placed visit off the calendar and back into the backlog. Absent for an already-unscheduled
 		     visit, which has no date to clear. -->
 		{#if canSchedule && !visit.completed_at && visit.visit_date && onunschedule}
-			<button type="button" class="visit-preview__quiet" onclick={onunschedule}>
-				Move to Unscheduled
-			</button>
+			<Button variant="quiet" size="small" onclick={onunschedule}>Move to Unscheduled</Button>
 		{/if}
 	</div>
 </div>
@@ -146,51 +148,5 @@
 		justify-content: space-between;
 		gap: var(--space-small) var(--space-base);
 		width: 100%;
-	}
-
-	.visit-preview__link {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-smaller);
-		color: var(--color-interactive);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-		text-decoration: none;
-
-		&:hover {
-			text-decoration: underline;
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-	}
-
-	.visit-preview__link-icon {
-		display: inline-flex;
-
-		:global(svg) {
-			width: 14px;
-			height: 14px;
-		}
-	}
-
-	.visit-preview__quiet {
-		padding: 0;
-		border: none;
-		background: none;
-		color: var(--color-text--secondary);
-		font-family: inherit;
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-		cursor: pointer;
-
-		&:hover {
-			color: var(--color-text);
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
 	}
 </style>

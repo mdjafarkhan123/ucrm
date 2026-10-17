@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
 	import { formatFileSize } from '$lib/collaboration/format';
 	import { iconForMimeType } from '$lib/collaboration/file-icons';
 	import FilePicker from '$lib/components/files/FilePicker.svelte';
@@ -70,16 +71,16 @@
 			</button>
 		</span>
 	{/each}
-	<button
-		type="button"
-		class="conversation-library-attachments__trigger"
-		aria-label={triggerLabel}
-		title={triggerLabel}
+	<Button
+		variant="secondary"
+		size="small"
+		iconOnly
+		label={triggerLabel}
 		disabled={disabled || files.length >= maxFiles}
 		onclick={() => (pickerOpen = true)}
 	>
-		<span aria-hidden="true">{@html filesIcon}</span>
-	</button>
+		{@html filesIcon}
+	</Button>
 </div>
 
 <FilePicker
@@ -96,44 +97,6 @@
 <style lang="scss">
 	.conversation-library-attachments {
 		display: contents;
-
-		&__trigger {
-			display: inline-flex;
-			box-sizing: border-box;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-			width: var(--space-larger);
-			height: var(--space-larger);
-			border: var(--border-base) solid transparent;
-			border-radius: var(--radius-base);
-			color: var(--color-interactive--subtle);
-			background: transparent;
-			cursor: pointer;
-			transition: all var(--timing-base) ease-out;
-
-			:global(svg) {
-				display: block;
-				width: 20px;
-				height: 20px;
-			}
-
-			&:hover:not(:disabled),
-			&:focus-visible:not(:disabled) {
-				color: var(--color-interactive--subtle--hover);
-				background: var(--color-surface--hover);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-
-			&:disabled {
-				color: var(--color-disabled);
-				cursor: not-allowed;
-			}
-		}
 
 		&__chip {
 			display: inline-flex;

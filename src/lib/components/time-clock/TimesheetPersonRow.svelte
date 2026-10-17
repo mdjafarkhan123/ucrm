@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import RunningClock from '$lib/components/time-clock/RunningClock.svelte';
 	import TimesheetEntryList from '$lib/components/time-clock/TimesheetEntryList.svelte';
@@ -178,13 +179,14 @@
 			{:else if entriesQuery.isError}
 				<p class="timesheet-person__status timesheet-person__status--error" role="alert">
 					{entriesQuery.error.message}
-					<button
-						type="button"
-						class="timesheet-person__retry"
+					<Button
+						variant="quiet"
+						size="small"
+						loading={entriesQuery.isFetching}
 						onclick={() => void entriesQuery.refetch()}
 					>
 						Try again
-					</button>
+					</Button>
 				</p>
 			{:else}
 				<TimesheetEntryList
@@ -372,26 +374,6 @@
 
 		&--error {
 			color: var(--color-critical--onSurface);
-		}
-	}
-
-	.timesheet-person__retry {
-		padding: 0;
-		border: 0;
-		background: transparent;
-		color: var(--color-interactive);
-		font: inherit;
-		font-weight: 600;
-		cursor: pointer;
-
-		&:hover {
-			text-decoration: underline;
-		}
-
-		&:focus-visible {
-			border-radius: var(--radius-small);
-			outline: none;
-			box-shadow: var(--shadow-focus);
 		}
 	}
 

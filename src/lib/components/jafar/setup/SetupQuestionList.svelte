@@ -233,26 +233,30 @@
 				</button>
 
 				<div class="setup-questions__actions">
-					<button
-						type="button"
-						class="setup-questions__icon-button"
-						aria-label={`Move ${name} earlier`}
+					<Button
+						variant="secondary"
+						size="small"
+						iconOnly
+						label={`Move ${name} earlier`}
 						disabled={index === 0}
-						onclick={() => move(index, -1)}>{@html arrowUpIcon}</button
+						onclick={() => move(index, -1)}>{@html arrowUpIcon}</Button
 					>
-					<button
-						type="button"
-						class="setup-questions__icon-button"
-						aria-label={`Move ${name} later`}
+					<Button
+						variant="secondary"
+						size="small"
+						iconOnly
+						label={`Move ${name} later`}
 						disabled={index === items.length - 1}
-						onclick={() => move(index, 1)}>{@html arrowDownIcon}</button
+						onclick={() => move(index, 1)}>{@html arrowDownIcon}</Button
 					>
 					{#if !item.built_in}
-						<button
-							type="button"
-							class="setup-questions__icon-button setup-questions__icon-button--danger"
-							aria-label={`Remove ${name}`}
-							onclick={() => remove(index)}>{@html trashIcon}</button
+						<Button
+							variant="secondary"
+							variation="destructive"
+							size="small"
+							iconOnly
+							label={`Remove ${name}`}
+							onclick={() => remove(index)}>{@html trashIcon}</Button
 						>
 					{/if}
 				</div>
@@ -333,12 +337,14 @@
 												maxlength={100}
 												bind:value={option.label}
 											/>
-											<button
-												type="button"
-												class="setup-questions__icon-button setup-questions__icon-button--danger"
-												aria-label={`Remove choice ${choiceIndex + 1}`}
+											<Button
+												variant="secondary"
+												variation="destructive"
+												size="small"
+												iconOnly
+												label={`Remove choice ${choiceIndex + 1}`}
 												disabled={item.options.length <= 2}
-												onclick={() => item.options.splice(choiceIndex, 1)}>{@html xIcon}</button
+												onclick={() => item.options.splice(choiceIndex, 1)}>{@html xIcon}</Button
 											>
 										</div>
 									{/each}
@@ -843,47 +849,6 @@
 		&__error {
 			color: var(--color-critical--onSurface);
 			font-weight: 600;
-		}
-
-		&__icon-button {
-			display: grid;
-			place-items: center;
-			width: 32px;
-			height: 32px;
-			padding: 0;
-			border: var(--border-base) solid transparent;
-			border-radius: var(--radius-base);
-			color: var(--color-icon--secondary);
-			background: none;
-			cursor: pointer;
-			transition: all var(--timing-quick) ease-out;
-
-			&:hover:not(:disabled),
-			&:focus-visible:not(:disabled) {
-				border-color: var(--color-border--interactive);
-				color: var(--color-interactive);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-
-			&:disabled {
-				color: var(--color-disabled);
-				cursor: not-allowed;
-			}
-
-			&--danger:hover:not(:disabled),
-			&--danger:focus-visible:not(:disabled) {
-				border-color: var(--color-critical);
-				color: var(--color-critical);
-			}
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
 		}
 
 		&__button-icon {

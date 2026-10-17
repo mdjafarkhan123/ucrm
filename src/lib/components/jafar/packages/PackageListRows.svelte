@@ -51,25 +51,29 @@
 					<span class="package-list-rows__number" aria-hidden="true">{index + 1}</span>
 					<div class="package-list-rows__fields">{@render row(index)}</div>
 					<div class="package-list-rows__actions">
-						<button
-							type="button"
-							class="package-list-rows__icon-button"
-							aria-label={`Move ${itemName} ${index + 1} up`}
+						<Button
+							variant="secondary"
+							size="small"
+							iconOnly
+							label={`Move ${itemName} ${index + 1} up`}
 							disabled={index === 0}
-							onclick={() => move(index, -1)}>{@html arrowUpIcon}</button
+							onclick={() => move(index, -1)}>{@html arrowUpIcon}</Button
 						>
-						<button
-							type="button"
-							class="package-list-rows__icon-button"
-							aria-label={`Move ${itemName} ${index + 1} down`}
+						<Button
+							variant="secondary"
+							size="small"
+							iconOnly
+							label={`Move ${itemName} ${index + 1} down`}
 							disabled={index === items.length - 1}
-							onclick={() => move(index, 1)}>{@html arrowDownIcon}</button
+							onclick={() => move(index, 1)}>{@html arrowDownIcon}</Button
 						>
-						<button
-							type="button"
-							class="package-list-rows__icon-button package-list-rows__icon-button--danger"
-							aria-label={`Remove ${itemName} ${index + 1}`}
-							onclick={() => remove(index)}>{@html trashIcon}</button
+						<Button
+							variant="secondary"
+							variation="destructive"
+							size="small"
+							iconOnly
+							label={`Remove ${itemName} ${index + 1}`}
+							onclick={() => remove(index)}>{@html trashIcon}</Button
 						>
 					</div>
 				</li>
@@ -132,44 +136,6 @@
 			display: flex;
 			gap: var(--space-smallest);
 			padding-top: var(--space-smaller);
-		}
-
-		&__icon-button {
-			display: grid;
-			place-items: center;
-			width: 32px;
-			height: 32px;
-			padding: 0;
-			border: var(--border-base) solid transparent;
-			border-radius: var(--radius-base);
-			color: var(--color-icon--secondary);
-			background: none;
-			cursor: pointer;
-			transition: all var(--timing-quick) ease-out;
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
-
-			&:hover:not(:disabled),
-			&:focus-visible:not(:disabled) {
-				border-color: var(--color-border--interactive);
-				color: var(--color-interactive);
-			}
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-			&:disabled {
-				color: var(--color-disabled);
-				cursor: not-allowed;
-			}
-			&--danger:hover:not(:disabled),
-			&--danger:focus-visible:not(:disabled) {
-				border-color: var(--color-critical);
-				color: var(--color-critical);
-			}
 		}
 
 		&__button-icon {

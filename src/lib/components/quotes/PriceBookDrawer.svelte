@@ -198,14 +198,14 @@
 									<span aria-hidden="true">{@html checkIcon}</span>
 									{added > 1 ? `Added ${added}×` : 'Added'}
 								</span>
-								<button
-									type="button"
-									class="price-book__again"
+								<Button
+									variant="quiet"
+									size="small"
+									label={`Add another ${item.name}`}
 									onclick={() => onAdd(item)}
-									aria-label={`Add another ${item.name}`}
 								>
 									Add again
-								</button>
+								</Button>
 							{:else}
 								<Button size="small" variant="secondary" onclick={() => onAdd(item)}>Add</Button>
 							{/if}
@@ -374,21 +374,6 @@
 				display: block;
 				width: 16px;
 				height: 16px;
-			}
-		}
-
-		&__again {
-			padding: 0;
-			border: 0;
-			color: var(--color-interactive);
-			background: transparent;
-			font: inherit;
-			font-size: var(--typography--fontSize-small);
-			text-decoration: underline;
-			cursor: pointer;
-
-			&:hover {
-				color: var(--color-interactive--hover);
 			}
 		}
 	}

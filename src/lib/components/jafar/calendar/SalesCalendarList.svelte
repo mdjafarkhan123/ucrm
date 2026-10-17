@@ -1,5 +1,6 @@
 <script lang="ts">
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import Button from '$lib/components/ui/Button.svelte';
 	import SalesCalendarCard from './SalesCalendarCard.svelte';
 	import { formatCalendarDay } from '$lib/schedule/labels';
 	import type { CalendarItem } from '$lib/jafar/calendar';
@@ -35,10 +36,11 @@
 					<span class="sales-list__number">{formatCalendarDay(day, { day: 'numeric' })}</span>
 					<span class="sales-list__month">{formatCalendarDay(day, { month: 'short' })}</span>
 				</h2>
-				<button
-					type="button"
-					class="sales-list__book"
-					aria-label="Book a call on {formatCalendarDay(day, {
+				<Button
+					variant="quiet"
+					size="large"
+					iconOnly
+					label="Book a call on {formatCalendarDay(day, {
 						weekday: 'long',
 						month: 'long',
 						day: 'numeric'
@@ -46,7 +48,7 @@
 					onclick={() => onbook(day)}
 				>
 					{@html plusIcon}
-				</button>
+				</Button>
 			</div>
 			{#if items.length}
 				<ul class="sales-list__items">
@@ -124,30 +126,6 @@
 
 	.sales-list__day--today .sales-list__number {
 		color: var(--color-interactive);
-	}
-
-	// 44px: a thumb-sized target.
-	.sales-list__book {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 44px;
-		height: 44px;
-		border: 0;
-		border-radius: var(--radius-circle);
-		background: transparent;
-		color: var(--color-interactive);
-		cursor: pointer;
-
-		&:hover,
-		&:focus-visible {
-			background-color: var(--color-interactive--background--subtle--hover);
-		}
-
-		:global(svg) {
-			width: 20px;
-			height: 20px;
-		}
 	}
 
 	.sales-list__items {

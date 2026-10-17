@@ -208,15 +208,13 @@
 							contact_policy: value as ClientPreferences['contact_policy']
 						})}
 				/>
-				<button
-					type="button"
-					class="client-details-form__configure"
-					onmouseenter={prefetchMessageStatus}
-					onfocus={prefetchMessageStatus}
+				<Button
+					variant="secondary"
+					onhover={prefetchMessageStatus}
 					onclick={() => (settingsOpen = true)}
 				>
-					<span aria-hidden="true">{@html settingsIcon}</span>Configure
-				</button>
+					{@html settingsIcon}Configure
+				</Button>
 			</div>
 		</div>
 	</div>
@@ -277,37 +275,6 @@
 			display: flex;
 			align-items: center;
 			gap: var(--space-small);
-		}
-
-		&__configure {
-			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			gap: var(--space-smaller);
-			padding: var(--space-small) var(--space-slim);
-			border: var(--border-base) solid var(--color-border--interactive);
-			border-radius: var(--radius-base);
-			color: var(--color-heading);
-			background: var(--color-surface);
-			font: inherit;
-			font-weight: 600;
-			white-space: nowrap;
-			cursor: pointer;
-
-			&:hover {
-				background: var(--color-surface--hover);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-
-			:global(svg) {
-				display: block;
-				width: 16px;
-				height: 16px;
-			}
 		}
 
 		&__hint {

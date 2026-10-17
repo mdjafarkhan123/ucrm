@@ -153,26 +153,27 @@
 						/>
 					</div>
 					<div class="setup-list-boxes__actions">
-						<button
-							type="button"
-							class="setup-list-boxes__icon-button"
-							aria-label={`Move ${name} earlier`}
+						<Button
+							variant="secondary"
+							iconOnly
+							label={`Move ${name} earlier`}
 							disabled={index === 0}
-							onclick={() => move(index, -1)}>{@html arrowUpIcon}</button
+							onclick={() => move(index, -1)}>{@html arrowUpIcon}</Button
 						>
-						<button
-							type="button"
-							class="setup-list-boxes__icon-button"
-							aria-label={`Move ${name} later`}
+						<Button
+							variant="secondary"
+							iconOnly
+							label={`Move ${name} later`}
 							disabled={index === fields.length - 1}
-							onclick={() => move(index, 1)}>{@html arrowDownIcon}</button
+							onclick={() => move(index, 1)}>{@html arrowDownIcon}</Button
 						>
-						<button
-							type="button"
-							class="setup-list-boxes__icon-button setup-list-boxes__icon-button--danger"
-							aria-label={`Remove ${name}`}
+						<Button
+							variant="secondary"
+							variation="destructive"
+							iconOnly
+							label={`Remove ${name}`}
 							disabled={locked(field) || fields.length === 1}
-							onclick={() => fields.splice(index, 1)}>{@html trashIcon}</button
+							onclick={() => fields.splice(index, 1)}>{@html trashIcon}</Button
 						>
 					</div>
 				</div>
@@ -201,12 +202,13 @@
 									maxlength={100}
 									bind:value={option.label}
 								/>
-								<button
-									type="button"
-									class="setup-list-boxes__icon-button setup-list-boxes__icon-button--danger"
-									aria-label={`Remove choice ${choiceIndex + 1} of ${name}`}
+								<Button
+									variant="secondary"
+									variation="destructive"
+									iconOnly
+									label={`Remove choice ${choiceIndex + 1} of ${name}`}
 									disabled={field.options.length <= 2}
-									onclick={() => field.options.splice(choiceIndex, 1)}>{@html xIcon}</button
+									onclick={() => field.options.splice(choiceIndex, 1)}>{@html xIcon}</Button
 								>
 							</div>
 						{/each}
@@ -393,44 +395,6 @@
 			:global(svg) {
 				width: 1.6rem;
 				height: 1.6rem;
-			}
-		}
-
-		&__icon-button {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			width: 3.6rem;
-			height: 3.6rem;
-			padding: 0;
-			border: 0;
-			border-radius: var(--radius-base);
-			background: none;
-			color: var(--color-text--secondary);
-			cursor: pointer;
-
-			:global(svg) {
-				width: 1.8rem;
-				height: 1.8rem;
-			}
-
-			&:hover:not(:disabled) {
-				background: var(--color-surface--hover);
-				color: var(--color-heading);
-			}
-
-			&--danger:hover:not(:disabled) {
-				color: var(--color-critical);
-			}
-
-			&:disabled {
-				opacity: 0.4;
-				cursor: not-allowed;
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
 			}
 		}
 

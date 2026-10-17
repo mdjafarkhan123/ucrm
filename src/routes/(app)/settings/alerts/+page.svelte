@@ -62,6 +62,7 @@
 	let endpoint = $state<string | null>(null);
 	let confirming = $state(false);
 	let working = $state(false);
+	let removingId = $state('');
 
 	async function refreshThisBrowser() {
 		support = browserAlertSupport();
@@ -203,6 +204,7 @@
 
 	async function remove(id: string, isThisOne: boolean) {
 		working = true;
+		removingId = id;
 		try {
 			if (isThisOne) await disableBrowserAlerts();
 			else await removeComputer(id);
@@ -213,6 +215,7 @@
 			toast.error(error instanceof Error ? error.message : 'That computer could not be removed.');
 		} finally {
 			working = false;
+			removingId = '';
 		}
 	}
 
@@ -285,6 +288,7 @@
 									variant="secondary"
 									size="small"
 									onclick={() => void turnOff()}
+									loading={working && removingId === ''}
 									disabled={working}>Turn off on this computer</Button
 								>
 							</div>
@@ -310,16 +314,18 @@
 											{#if isThisOne}<Badge size="small">This computer</Badge>{/if}
 											<span>Added {addedOn(computer.created_at)}</span>
 										</div>
-										<button
-											type="button"
-											class="alerts-card__remove"
-											aria-label={`Remove ${computer.label}`}
+										<Button
+											variant="secondary"
+											variation="destructive"
+											size="small"
+											label={`Remove ${computer.label}`}
+											loading={removingId === computer.id}
 											disabled={working}
 											onclick={() => void remove(computer.id, isThisOne)}
 										>
 											<span aria-hidden="true">{@html trashIcon}</span>
 											Remove
-										</button>
+										</Button>
 									</li>
 								{/each}
 							</ul>
@@ -560,39 +566,6 @@
 			span {
 				color: var(--color-text--secondary);
 				font-size: var(--typography--fontSize-small);
-			}
-		}
-
-		&__remove {
-			display: inline-flex;
-			align-items: center;
-			gap: var(--space-smaller);
-			padding: var(--space-smaller) var(--space-small);
-			border: 0;
-			border-radius: var(--radius-base);
-			color: var(--color-critical);
-			background: transparent;
-			font: inherit;
-			cursor: pointer;
-
-			:global(svg) {
-				display: block;
-				width: 16px;
-				height: 16px;
-			}
-
-			&:hover:not(:disabled) {
-				background: var(--color-critical--surface);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-
-			&:disabled {
-				opacity: 0.6;
-				cursor: not-allowed;
 			}
 		}
 	}

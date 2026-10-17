@@ -25,6 +25,7 @@
 </script>
 
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
 	import { uploadAttachmentFile } from '$lib/collaboration/api';
 	import type { PipelineNoteTarget } from '$lib/pipeline/api';
 	import { finishFileUpload, startFileUpload } from '$lib/files/api';
@@ -174,15 +175,16 @@
 			event.currentTarget.value = '';
 		}}
 	/>
-	<button
-		type="button"
-		class="note-attach__add"
-		disabled={disabled || full || !originId}
-		title={full ? `A note can hold up to ${NOTE_FILE_LIMIT} photos and files.` : undefined}
-		onclick={() => input?.click()}
-	>
-		<span aria-hidden="true">{@html paperclipIcon}</span>Attach photos or files
-	</button>
+	<span title={full ? `A note can hold up to ${NOTE_FILE_LIMIT} photos and files.` : undefined}>
+		<Button
+			variant="secondary"
+			size="small"
+			disabled={disabled || full || !originId}
+			onclick={() => input?.click()}
+		>
+			{@html paperclipIcon}Attach photos or files
+		</Button>
+	</span>
 </div>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
@@ -301,40 +303,6 @@
 
 		&__input {
 			display: none;
-		}
-
-		&__add {
-			display: inline-flex;
-			align-items: center;
-			gap: var(--space-smaller);
-			padding: var(--space-smaller) var(--space-small);
-			border: 0;
-			border-radius: var(--radius-base);
-			color: var(--color-interactive);
-			background: transparent;
-			font: inherit;
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-			cursor: pointer;
-
-			&:hover:not(:disabled) {
-				background: var(--color-surface--hover);
-			}
-
-			&:focus-visible {
-				outline: transparent;
-				box-shadow: var(--shadow-focus);
-			}
-
-			&:disabled {
-				color: var(--color-text--secondary);
-				cursor: not-allowed;
-			}
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
 		}
 	}
 </style>

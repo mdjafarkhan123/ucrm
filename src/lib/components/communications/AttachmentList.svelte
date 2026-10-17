@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import { formatFileSize } from '$lib/collaboration/format';
 	import { iconForMimeType } from '$lib/collaboration/file-icons';
@@ -86,15 +87,15 @@
 					</span>
 				</span>
 				{#if available}
-					<button
-						type="button"
-						class="attachment-list__download"
-						disabled={downloadingId === attachment.id}
+					<Button
+						variant="secondary"
+						size="small"
+						loading={downloadingId === attachment.id}
 						onclick={() => download(attachment)}
 					>
-						<span aria-hidden="true">{@html downloadIcon}</span>
+						{@html downloadIcon}
 						{downloadingId === attachment.id ? 'Preparing…' : 'Download'}
-					</button>
+					</Button>
 				{/if}
 			</li>
 		{/each}
@@ -162,41 +163,6 @@
 			gap: var(--space-smaller);
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-smaller);
-		}
-
-		&__download {
-			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			gap: var(--space-smaller);
-			padding: var(--space-smaller) var(--space-small);
-			border: var(--border-base) solid var(--color-border--interactive);
-			border-radius: var(--radius-base);
-			color: var(--color-interactive--subtle);
-			background: transparent;
-			font: inherit;
-			font-size: var(--typography--fontSize-small);
-			cursor: pointer;
-
-			:global(svg) {
-				display: block;
-				width: 14px;
-				height: 14px;
-			}
-
-			&:hover:not(:disabled) {
-				background: var(--color-interactive--background);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-
-			&:disabled {
-				color: var(--color-disabled);
-				cursor: default;
-			}
 		}
 
 		&__error {

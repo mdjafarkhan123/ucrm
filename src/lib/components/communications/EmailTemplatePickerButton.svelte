@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Popover } from 'bits-ui';
 	import { createQuery } from '@tanstack/svelte-query';
+	import Button from '$lib/components/ui/Button.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import {
 		communicationEmailTemplatesKey,
@@ -58,14 +59,20 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <Popover.Root bind:open>
-	<Popover.Trigger
-		class="email-template-picker__trigger"
-		aria-label="Use an email template"
-		title="Use an email template"
-		{disabled}
-		onpointerenter={prefetch}
-	>
-		{@html templateIcon}
+	<Popover.Trigger>
+		{#snippet child({ props })}
+			<Button
+				{...props}
+				variant="secondary"
+				size="small"
+				iconOnly
+				label="Use an email template"
+				{disabled}
+				onhover={prefetch}
+			>
+				{@html templateIcon}
+			</Button>
+		{/snippet}
 	</Popover.Trigger>
 	<Popover.Portal>
 		<Popover.Content
@@ -114,49 +121,6 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
-	:global(.email-template-picker__trigger) {
-		display: inline-flex;
-		box-sizing: border-box;
-		flex: 0 0 auto;
-		align-items: center;
-		justify-content: center;
-		width: var(--space-larger);
-		height: var(--space-larger);
-		border: var(--border-base) solid transparent;
-		border-radius: var(--radius-base);
-		color: var(--color-interactive--subtle);
-		background: transparent;
-		cursor: pointer;
-		transition: all var(--timing-base) ease-out;
-
-		:global(svg) {
-			display: block;
-			width: 20px;
-			height: 20px;
-		}
-
-		&:hover:not(:disabled),
-		&:focus-visible:not(:disabled) {
-			color: var(--color-interactive--subtle--hover);
-			background: var(--color-surface--hover);
-		}
-
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-
-		&:disabled {
-			color: var(--color-disabled);
-			cursor: not-allowed;
-		}
-	}
-
-	:global(.email-template-picker__trigger[data-state='open']) {
-		color: var(--color-interactive--subtle--hover);
-		background: var(--color-surface--active);
-	}
-
 	:global(.email-template-picker__popover) {
 		z-index: var(--elevation-tooltip);
 		display: flex;

@@ -400,13 +400,17 @@
 			{/if}
 			<!-- A Won Deal is the record of a payment: it cannot be removed. -->
 			{#if canRemove && !lastWon}
-				<button
-					type="button"
-					class="deal-panel__remove"
-					onclick={() => (dialog = { kind: 'remove' })}
-				>
-					<span aria-hidden="true">{@html trashIcon}</span>Remove Deal
-				</button>
+				<span class="deal-panel__remove">
+					<Button
+						variant="quiet"
+						variation="destructive"
+						size="small"
+						onclick={() => (dialog = { kind: 'remove' })}
+					>
+						<span class="deal-panel__button-icon" aria-hidden="true">{@html trashIcon}</span>Remove
+						Deal
+					</Button>
+				</span>
 			{/if}
 		</div>
 	{/if}
@@ -696,31 +700,7 @@
 
 		&__remove {
 			display: inline-flex;
-			align-items: center;
-			gap: var(--space-smaller);
 			margin-left: auto;
-			padding: var(--space-smaller);
-			border: 0;
-			border-radius: var(--radius-base);
-			background: transparent;
-			color: var(--color-text--secondary);
-			font: inherit;
-			cursor: pointer;
-
-			&:hover {
-				background: var(--color-surface--hover);
-				color: var(--color-critical);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
 		}
 	}
 </style>

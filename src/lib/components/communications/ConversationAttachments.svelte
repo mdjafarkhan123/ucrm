@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { uploadAttachmentFile } from '$lib/collaboration/api';
 	import { createImageThumbnail } from '$lib/collaboration/image-thumbnail';
 	import { formatFileSize } from '$lib/collaboration/format';
@@ -265,17 +266,17 @@
 		{disabled}
 		onchange={(event) => addFiles((event.currentTarget as HTMLInputElement).files)}
 	/>
-	<button
-		type="button"
-		class="conversation-attachments__trigger"
-		class:conversation-attachments__trigger--first={triggerFirst}
-		aria-label={triggerLabel}
-		title={triggerLabel}
+	<Button
+		variant="secondary"
+		size="small"
+		iconOnly
+		class={triggerFirst ? 'conversation-attachments__trigger--first' : ''}
+		label={triggerLabel}
 		{disabled}
 		onclick={() => fileInputEl?.click()}
 	>
-		<span aria-hidden="true">{@html paperclipIcon}</span>
-	</button>
+		{@html paperclipIcon}
+	</Button>
 	{#if rejectionError}
 		<p class="conversation-attachments__error" role="alert">{rejectionError}</p>
 	{/if}
@@ -296,46 +297,8 @@
 			white-space: nowrap;
 		}
 
-		&__trigger {
-			display: inline-flex;
-			box-sizing: border-box;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-			width: var(--space-larger);
-			height: var(--space-larger);
-			border: var(--border-base) solid transparent;
-			border-radius: var(--radius-base);
-			color: var(--color-interactive--subtle);
-			background: transparent;
-			cursor: pointer;
-			transition: all var(--timing-base) ease-out;
-
-			:global(svg) {
-				display: block;
-				width: 20px;
-				height: 20px;
-			}
-
-			&:hover:not(:disabled),
-			&:focus-visible:not(:disabled) {
-				color: var(--color-interactive--subtle--hover);
-				background: var(--color-surface--hover);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-
-			&:disabled {
-				color: var(--color-disabled);
-				cursor: not-allowed;
-			}
-
-			&--first {
-				order: -1;
-			}
+		:global(.conversation-attachments__trigger--first) {
+			order: -1;
 		}
 
 		&__chip {

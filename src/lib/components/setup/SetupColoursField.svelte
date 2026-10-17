@@ -119,11 +119,12 @@
 					onblur={oncommit}
 				/>
 			</div>
-			<button
-				type="button"
-				class="setup-colours__remove"
-				aria-label={`Remove colour ${index + 1}`}
-				onclick={() => remove(index)}>{@html xIcon}</button
+			<Button
+				variant="secondary"
+				variation="destructive"
+				iconOnly
+				label={`Remove colour ${index + 1}`}
+				onclick={() => remove(index)}>{@html xIcon}</Button
 			>
 		</div>
 	{/each}
@@ -182,36 +183,6 @@
 		&__code {
 			flex: 0 1 20rem;
 			min-width: 0;
-		}
-
-		&__remove {
-			display: inline-flex;
-			flex: none;
-			align-items: center;
-			justify-content: center;
-			width: 3.6rem;
-			height: 3.6rem;
-			padding: 0;
-			border: 0;
-			border-radius: var(--radius-base);
-			background: none;
-			color: var(--color-text--secondary);
-			cursor: pointer;
-
-			:global(svg) {
-				width: 1.8rem;
-				height: 1.8rem;
-			}
-
-			&:hover {
-				background: var(--color-surface--hover);
-				color: var(--color-critical);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
 		}
 
 		&__button-icon {

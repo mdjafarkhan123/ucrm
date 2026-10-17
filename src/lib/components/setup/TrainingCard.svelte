@@ -221,23 +221,29 @@
 									bind:value={attendee.email}
 								/>
 								{#if attendees.length > 1}
-									<button
-										type="button"
-										class="training__remove"
-										aria-label={`Remove ${attendee.name.trim() || `person ${index + 1}`}`}
-										onclick={() => attendees.splice(index, 1)}
-										><span aria-hidden="true">{@html trashIcon}</span></button
-									>
+									<span class="training__remove">
+										<Button
+											variant="secondary"
+											variation="destructive"
+											size="large"
+											iconOnly
+											label={`Remove ${attendee.name.trim() || `person ${index + 1}`}`}
+											onclick={() => attendees.splice(index, 1)}
+											><span aria-hidden="true">{@html trashIcon}</span></Button
+										>
+									</span>
 								{/if}
 							</div>
 						{/each}
 						{#if attendees.length < TRAINING_ATTENDEES_MAX}
-							<button
-								type="button"
-								class="training__add"
-								onclick={() => attendees.push({ name: '', role: '', email: '' })}
-								><span aria-hidden="true">{@html plusIcon}</span>Add another person</button
-							>
+							<span class="training__add">
+								<Button
+									variant="secondary"
+									size="large"
+									onclick={() => attendees.push({ name: '', role: '', email: '' })}
+									><span aria-hidden="true">{@html plusIcon}</span>Add another person</Button
+								>
+							</span>
 						{/if}
 					</fieldset>
 
@@ -285,9 +291,12 @@
 
 					{#if fieldError}<Banner type="error">{fieldError}</Banner>{/if}
 					<div class="training__actions">
-						<Button type="submit" loading={save.isPending}>Send to Uplift</Button>
-						<Button variant="tertiary" disabled={save.isPending} onclick={() => (editing = false)}
-							>Cancel</Button
+						<Button type="submit" size="large" loading={save.isPending}>Send to Uplift</Button>
+						<Button
+							variant="tertiary"
+							size="large"
+							disabled={save.isPending}
+							onclick={() => (editing = false)}>Cancel</Button
 						>
 					</div>
 				</form>
@@ -303,7 +312,7 @@
 						</p>
 					</div>
 					{#if training.meeting_url}
-						<Button href={training.meeting_url} target="_blank">Join the call</Button>
+						<Button size="large" href={training.meeting_url} target="_blank">Join the call</Button>
 					{/if}
 				</div>
 				<p class="training__muted">
@@ -344,9 +353,10 @@
 					until then.
 				</p>
 				<div class="training__actions">
-					<Button variant="secondary" onclick={startEditing}>Change the details</Button>
+					<Button variant="secondary" size="large" onclick={startEditing}>Change the details</Button
+					>
 					{#if query.data?.is_owner}
-						<Button variant="tertiary" onclick={() => (confirmSkip = true)}
+						<Button variant="tertiary" size="large" onclick={() => (confirmSkip = true)}
 							>We don’t need training</Button
 						>
 					{/if}
@@ -357,9 +367,9 @@
 					through the jobs they do every day.
 				</p>
 				<div class="training__actions">
-					<Button onclick={startEditing}>Arrange training</Button>
+					<Button size="large" onclick={startEditing}>Arrange training</Button>
 					{#if query.data?.is_owner}
-						<Button variant="tertiary" onclick={() => (confirmSkip = true)}
+						<Button variant="tertiary" size="large" onclick={() => (confirmSkip = true)}
 							>We don’t need training</Button
 						>
 					{/if}
@@ -476,37 +486,14 @@
 			font-weight: 600;
 		}
 
-		&__remove,
-		&__add {
-			display: inline-flex;
-			align-items: center;
+		&__remove {
+			display: flex;
 			justify-content: center;
-			gap: var(--space-smaller);
-			min-height: 4.4rem;
-			padding: 0 var(--space-small);
-			border: 0;
-			border-radius: var(--radius-base);
-			background: none;
-			color: var(--color-text--secondary);
-			font: inherit;
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-			cursor: pointer;
-
-			:global(svg) {
-				width: 1.6rem;
-				height: 1.6rem;
-			}
-
-			&:hover {
-				background: var(--color-surface--hover);
-				color: var(--color-heading);
-			}
 		}
 
 		&__add {
+			display: flex;
 			justify-self: start;
-			color: var(--color-interactive);
 		}
 
 		&__actions {

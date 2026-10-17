@@ -13,6 +13,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { Popover } from 'bits-ui';
+	import Button from '$lib/components/ui/Button.svelte';
 	import bellIcon from '@tabler/icons/outline/bell.svg?raw';
 
 	// The header bell's look and interaction, shared by the Platform Owner bell and the contractor team bell.
@@ -50,16 +51,22 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <Popover.Root bind:open>
-	<Popover.Trigger
-		class="notification-bell__trigger"
-		aria-label={unreadCount > 0
-			? `Notifications, ${unreadCount} unread`
-			: 'Notifications, all read'}
-	>
-		<span class="notification-bell__icon" aria-hidden="true">{@html bellIcon}</span>
-		{#if unreadCount > 0}
-			<span class="notification-bell__count" aria-hidden="true">{unreadLabel}</span>
-		{/if}
+	<Popover.Trigger>
+		{#snippet child({ props })}
+			<Button
+				{...props}
+				class="notification-bell__trigger"
+				variant="secondary"
+				size="large"
+				iconOnly
+				label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications, all read'}
+			>
+				{@html bellIcon}
+				{#if unreadCount > 0}
+					<span class="notification-bell__count" aria-hidden="true">{unreadLabel}</span>
+				{/if}
+			</Button>
+		{/snippet}
 	</Popover.Trigger>
 	<Popover.Portal>
 		<Popover.Content
@@ -71,14 +78,9 @@
 			<header class="notification-bell__header">
 				<h2>Notifications</h2>
 				{#if unreadCount > 0}
-					<button
-						class="notification-bell__mark-all"
-						type="button"
-						onclick={onMarkAll}
-						disabled={markingAll}
-					>
-						{markingAll ? 'Marking…' : 'Mark all read'}
-					</button>
+					<Button variant="quiet" size="small" onclick={onMarkAll} loading={markingAll}>
+						Mark all read
+					</Button>
 				{/if}
 			</header>
 
@@ -131,39 +133,6 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
-	:global(.notification-bell__trigger) {
-		position: relative;
-		display: inline-grid;
-		flex: 0 0 auto;
-		width: 40px;
-		height: 40px;
-		place-items: center;
-		padding: 0;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		color: var(--color-icon);
-		background: var(--color-surface);
-		cursor: pointer;
-		transition: all var(--timing-base) ease-out;
-
-		&:hover {
-			border-color: var(--color-border--interactive);
-			background: var(--color-surface--hover);
-		}
-
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-	}
-
-	.notification-bell__icon,
-	.notification-bell__icon :global(svg) {
-		display: inline-flex;
-		width: 20px;
-		height: 20px;
-	}
-
 	.notification-bell__count {
 		position: absolute;
 		top: -6px;
@@ -204,23 +173,6 @@
 			color: var(--color-heading);
 			font-size: var(--typography--fontSize-base);
 			font-weight: 600;
-		}
-	}
-
-	.notification-bell__mark-all {
-		border: 0;
-		background: transparent;
-		color: var(--color-interactive);
-		font-size: var(--typography--fontSize-small);
-		cursor: pointer;
-
-		&:hover:not(:disabled) {
-			text-decoration: underline;
-		}
-
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
 		}
 	}
 

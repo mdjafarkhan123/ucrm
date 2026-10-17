@@ -6,6 +6,7 @@
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import {
@@ -102,14 +103,15 @@
 			</p>
 		</div>
 		{#if unreadCount > 0}
-			<button
-				class="notifications__mark-all"
-				type="button"
-				onclick={() => markAllRead.mutate()}
-				disabled={markAllRead.isPending}
-			>
-				{markAllRead.isPending ? 'Marking…' : `Mark all read (${unreadCount})`}
-			</button>
+			<div class="notifications__mark-all">
+				<Button
+					variant="secondary"
+					onclick={() => markAllRead.mutate()}
+					loading={markAllRead.isPending}
+				>
+					{markAllRead.isPending ? 'Marking…' : `Mark all read (${unreadCount})`}
+				</Button>
+			</div>
 		{/if}
 	</header>
 
@@ -186,14 +188,17 @@
 								{relativeTime(notification.created_at)} · {exactTime(notification.created_at)}
 							</span>
 						</button>
-						<button
-							class="notifications__toggle"
-							type="button"
-							disabled={setRead.isPending}
-							onclick={() => setRead.mutate({ id: notification.id, read: !notification.read_at })}
-						>
-							{notification.read_at ? 'Mark unread' : 'Mark read'}
-						</button>
+						<div class="notifications__toggle">
+							<Button
+								variant="secondary"
+								size="small"
+								disabled={setRead.isPending}
+								loading={setRead.isPending && setRead.variables?.id === notification.id}
+								onclick={() => setRead.mutate({ id: notification.id, read: !notification.read_at })}
+							>
+								{notification.read_at ? 'Mark unread' : 'Mark read'}
+							</Button>
+						</div>
 					</li>
 				{/each}
 			</ul>
@@ -233,23 +238,7 @@
 	}
 
 	.notifications__mark-all {
-		min-height: 40px;
 		flex: 0 0 auto;
-		padding: 0 var(--space-base);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		color: var(--color-heading);
-		background: var(--color-surface);
-		cursor: pointer;
-
-		&:hover:not(:disabled) {
-			background: var(--color-surface--hover);
-		}
-
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
 	}
 
 	.notifications__filters {
@@ -352,25 +341,7 @@
 	}
 
 	.notifications__toggle {
-		min-height: 32px;
 		flex: 0 0 auto;
-		padding: 0 var(--space-small);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		color: var(--color-text--secondary);
-		background: var(--color-surface);
-		font-size: var(--typography--fontSize-small);
-		cursor: pointer;
-
-		&:hover:not(:disabled) {
-			color: var(--color-heading);
-			background: var(--color-surface--hover);
-		}
-
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
 	}
 
 	.notifications__error {

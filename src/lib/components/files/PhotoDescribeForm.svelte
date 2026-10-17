@@ -135,13 +135,9 @@
 				<div class="photo-describe__labels-head">
 					<span class="photo-describe__label">Labels</span>
 					{#if canCurate}
-						<button
-							type="button"
-							class="photo-describe__manage"
-							onclick={() => (manageOpen = true)}
-						>
+						<Button variant="quiet" size="small" onclick={() => (manageOpen = true)}>
 							Manage labels
-						</button>
+						</Button>
 					{/if}
 				</div>
 				{#if labelsQuery.isPending && detail.file.labels.length === 0}
@@ -218,24 +214,6 @@
 			color: var(--color-heading);
 			font-size: var(--typography--fontSize-small);
 			font-weight: 600;
-		}
-
-		&__manage {
-			padding: 0;
-			border: 0;
-			color: var(--color-interactive);
-			background: transparent;
-			font-size: var(--typography--fontSize-small);
-			cursor: pointer;
-
-			&:hover {
-				text-decoration: underline;
-			}
-			&:focus-visible {
-				outline: none;
-				border-radius: var(--radius-small);
-				box-shadow: var(--shadow-focus);
-			}
 		}
 
 		&__actions {

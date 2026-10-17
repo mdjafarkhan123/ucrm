@@ -63,6 +63,7 @@
 	let saving = $state(false);
 	let saveError = $state('');
 	let stale = $state(false);
+	let reloading = $state(false);
 
 	let resendOpen = $state(false);
 	let resendSaving = $state(false);
@@ -248,13 +249,18 @@
 	}
 
 	async function reloadLatest() {
-		await queryClient.fetchQuery({
-			queryKey: teamMemberKey(actorUserId, userId),
-			queryFn: () => fetchTeamMember(userId),
-			staleTime: 0
-		});
-		saveError = '';
-		stale = false;
+		reloading = true;
+		try {
+			await queryClient.fetchQuery({
+				queryKey: teamMemberKey(actorUserId, userId),
+				queryFn: () => fetchTeamMember(userId),
+				staleTime: 0
+			});
+			saveError = '';
+			stale = false;
+		} finally {
+			reloading = false;
+		}
 	}
 
 	async function saveDraft() {
@@ -547,8 +553,11 @@
 							{#if stale}
 								<div class="team-member-detail__conflict" role="alert">
 									<p>Someone else changed this person’s details while you were editing.</p>
-									<button type="button" onclick={() => void reloadLatest()}
-										>Reload latest details</button
+									<Button
+										variant="secondary"
+										size="small"
+										loading={reloading}
+										onclick={() => void reloadLatest()}>Reload latest details</Button
 									>
 								</div>
 							{/if}
@@ -987,16 +996,6 @@
 	}
 	.team-member-detail :global(.team-member-detail__conflict p) {
 		margin: 0;
-	}
-	.team-member-detail :global(.team-member-detail__conflict button) {
-		color: inherit;
-		font: inherit;
-		font-weight: 700;
-		text-decoration: underline;
-	}
-	.team-member-detail :global(.team-member-detail__conflict button:focus-visible) {
-		outline: none;
-		box-shadow: var(--shadow-focus);
 	}
 
 	.team-member-detail__change-email {

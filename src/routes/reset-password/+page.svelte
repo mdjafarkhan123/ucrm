@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 
@@ -66,8 +67,8 @@
 					required
 				/>
 				{#if errorMessage}<p class="form-error" role="alert">{errorMessage}</p>{/if}
-				<button type="submit" disabled={isSubmitting}
-					>{isSubmitting ? 'Updating…' : 'Update password'}</button
+				<Button type="submit" size="large" fullWidth loading={isSubmitting}
+					>{isSubmitting ? 'Updating…' : 'Update password'}</Button
 				>
 			</form>
 		{/if}
@@ -128,25 +129,9 @@
 		background: var(--color-surface);
 	}
 	input:focus-visible,
-	button:focus-visible,
 	.auth-card__link:focus-visible {
 		outline: none;
 		box-shadow: var(--shadow-focus);
-	}
-	button {
-		padding: var(--space-small) var(--space-base);
-		border: 0;
-		border-radius: var(--radius-base);
-		color: var(--color-surface);
-		background: var(--color-interactive);
-		font-weight: 700;
-	}
-	button:hover:not(:disabled) {
-		background: var(--color-interactive--hover);
-	}
-	button:disabled {
-		opacity: 0.6;
-		cursor: not-allowed;
 	}
 	.form-error {
 		margin-bottom: var(--space-base);

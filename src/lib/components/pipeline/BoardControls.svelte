@@ -2,6 +2,7 @@
 	import { untrack, type Snippet } from 'svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { CalendarDate } from '@internationalized/date';
+	import Button from '$lib/components/ui/Button.svelte';
 	import FilterChip from '$lib/components/ui/FilterChip.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
@@ -222,15 +223,15 @@
 		/>
 
 		{#if sortHasDirection(filters.sort)}
-			<button
-				type="button"
-				class="board-controls__direction"
-				aria-label={arrowLabel}
-				title={arrowLabel}
+			<Button
+				variant="secondary"
+				size="large"
+				iconOnly
+				label={arrowLabel}
 				onclick={() => update({ direction: filters.direction === 'desc' ? 'asc' : 'desc' })}
 			>
-				<span aria-hidden="true">{@html arrow}</span>
-			</button>
+				{@html arrow}
+			</Button>
 		{/if}
 
 		<FilterChip
@@ -332,31 +333,6 @@
 	.board-controls__lazy {
 		display: inline-flex;
 		min-width: 0;
-	}
-	.board-controls__direction {
-		display: inline-flex;
-		flex: 0 0 auto;
-		align-items: center;
-		justify-content: center;
-		width: 44px;
-		height: 44px;
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		color: var(--color-heading);
-		background: var(--color-surface);
-		cursor: pointer;
-
-		:global(svg) {
-			width: 20px;
-			height: 20px;
-		}
-		&:hover {
-			background: var(--color-surface--hover);
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
 	}
 	.board-controls__count {
 		color: var(--color-text--secondary);

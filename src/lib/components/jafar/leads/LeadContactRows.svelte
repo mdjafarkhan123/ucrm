@@ -119,15 +119,16 @@
 				errorMessage={errorFor(row.key, 'found_at')}
 				autocomplete="off"
 			/>
-			<button
-				type="button"
-				class="lead-contact-rows__remove"
-				aria-label={`Remove contact detail ${index + 1}`}
-				title="Remove"
-				onclick={() => removeRow(row.key)}
-			>
-				<span aria-hidden="true">{@html trashIcon}</span>
-			</button>
+			<div class="lead-contact-rows__remove">
+				<Button
+					variant="secondary"
+					iconOnly
+					label={`Remove contact detail ${index + 1}`}
+					onclick={() => removeRow(row.key)}
+				>
+					<span aria-hidden="true">{@html trashIcon}</span>
+				</Button>
+			</div>
 		</div>
 	{/each}
 
@@ -160,30 +161,9 @@
 		}
 
 		&__remove {
-			display: grid;
-			width: 44px;
-			height: 44px;
-			place-items: center;
-			border: var(--border-base) solid transparent;
-			border-radius: var(--radius-base);
-			color: var(--color-icon--secondary);
-			background: transparent;
-			cursor: pointer;
-
-			&:hover {
-				color: var(--color-critical);
-				background: var(--color-surface--hover);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
+			display: flex;
+			align-items: center;
+			min-height: 44px;
 		}
 
 		&__button-icon {

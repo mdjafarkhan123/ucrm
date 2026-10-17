@@ -89,22 +89,28 @@
 					maxlength={LINK_MAX}
 					bind:value={guide.url}
 				/>
-				<button
-					type="button"
-					class="handover-editor__icon-button"
-					aria-label={`Remove guide ${index + 1}${guide.title.trim() ? `, ${guide.title.trim()}` : ''}`}
-					onclick={() => guides.splice(index, 1)}
-					><span aria-hidden="true">{@html trashIcon}</span></button
-				>
+				<div class="handover-editor__icon-button">
+					<Button
+						variant="secondary"
+						iconOnly
+						label={`Remove guide ${index + 1}${guide.title.trim() ? `, ${guide.title.trim()}` : ''}`}
+						onclick={() => guides.splice(index, 1)}
+					>
+						<span aria-hidden="true">{@html trashIcon}</span>
+					</Button>
+				</div>
 			</div>
 		{/each}
 		{#if guides.length < HANDOVER_GUIDES_MAX}
-			<button
-				type="button"
-				class="handover-editor__add"
-				onclick={() => guides.push({ title: '', url: '' })}
-				><span aria-hidden="true">{@html plusIcon}</span>Add a guide</button
-			>
+			<div class="handover-editor__add">
+				<Button
+					variant="secondary"
+					size="small"
+					onclick={() => guides.push({ title: '', url: '' })}
+				>
+					<span aria-hidden="true">{@html plusIcon}</span>Add a guide
+				</Button>
+			</div>
 		{/if}
 	</div>
 
@@ -151,41 +157,14 @@
 			}
 		}
 
-		&__icon-button,
-		&__add {
-			display: inline-flex;
-			align-items: center;
-			gap: var(--space-smaller);
-			min-height: 4.4rem;
-			padding: 0 var(--space-small);
-			border: 0;
-			border-radius: var(--radius-base);
-			background: none;
-			color: var(--color-text--secondary);
-			font: inherit;
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-			cursor: pointer;
-
-			:global(svg) {
-				width: 1.6rem;
-				height: 1.6rem;
-			}
-
-			&:hover {
-				background: var(--color-surface--hover);
-				color: var(--color-heading);
-			}
-		}
-
 		&__icon-button {
-			justify-content: center;
-			min-width: 4.4rem;
+			display: flex;
+			align-items: center;
+			min-height: 4.4rem;
 		}
 
 		&__add {
 			justify-self: start;
-			color: var(--color-interactive);
 		}
 
 		&__footer {

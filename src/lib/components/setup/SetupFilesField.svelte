@@ -83,6 +83,7 @@
 	let lightboxOpen = $state(false);
 	let lightboxIndex = $state(0);
 	let removeError = $state('');
+	let removingId = $state('');
 
 	const ids = $derived(setupFileIds(value));
 	const inFlight = $derived(uploads.filter((upload) => !upload.error).length);
@@ -148,11 +149,14 @@
 	async function remove(fileId: string) {
 		removeError = '';
 		if (secure && byId.get(fileId)?.state !== 'removed') {
+			removingId = fileId;
 			try {
 				await removeProtectedDocument(fileId);
 			} catch (error) {
 				removeError = error instanceof Error ? error.message : 'That file could not be removed.';
 				return;
+			} finally {
+				removingId = '';
 			}
 		}
 		writeIds(setupFileIds(value).filter((existing) => existing !== fileId));
@@ -334,14 +338,17 @@
 								name={file.name}
 							/>
 						{/if}
-						<button
-							type="button"
-							class="setup-files__remove"
-							aria-label={`${secure ? 'Delete' : 'Remove'} ${file?.name ?? 'this file'}`}
+						<Button
+							variant="secondary"
+							variation="destructive"
+							size="small"
+							iconOnly
+							label={`${secure ? 'Delete' : 'Remove'} ${file?.name ?? 'this file'}`}
+							loading={removingId === fileId}
 							onclick={() => remove(fileId)}
 						>
 							{@html xIcon}
-						</button>
+						</Button>
 					</li>
 				{/each}
 				{#each uploads as upload (upload.key)}
@@ -360,14 +367,15 @@
 							</span>
 						</span>
 						{#if upload.error}
-							<button
-								type="button"
-								class="setup-files__remove"
-								aria-label={`Dismiss ${upload.name}`}
+							<Button
+								variant="secondary"
+								size="small"
+								iconOnly
+								label={`Dismiss ${upload.name}`}
 								onclick={() => dismiss(upload.key)}
 							>
 								{@html xIcon}
-							</button>
+							</Button>
 						{:else}
 							<span
 								class="setup-files__progress"
@@ -573,37 +581,6 @@
 
 		&__item--problem &__meta {
 			color: var(--color-critical--onSurface);
-		}
-
-		&__remove {
-			display: grid;
-			flex: 0 0 auto;
-			place-items: center;
-			width: 32px;
-			height: 32px;
-			padding: 0;
-			border: var(--border-base) solid transparent;
-			border-radius: var(--radius-base);
-			background: none;
-			color: var(--color-icon--secondary);
-			cursor: pointer;
-			transition: all var(--timing-quick) ease-out;
-
-			&:hover,
-			&:focus-visible {
-				border-color: var(--color-critical);
-				color: var(--color-critical);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
 		}
 
 		&__private {

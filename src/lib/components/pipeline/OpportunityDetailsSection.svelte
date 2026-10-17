@@ -5,6 +5,7 @@
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import OpportunityOwnerField from './OpportunityOwnerField.svelte';
@@ -238,24 +239,25 @@
 							onchange={commitExpectedClose}
 						/>
 						{#if opportunity.expected_close_on}
-							<button
-								type="button"
-								class="brief__editor-clear"
-								disabled={expectedCloseMutation.isPending}
+							<Button
+								variant="quiet"
+								size="small"
+								loading={expectedCloseMutation.isPending}
 								onclick={clearExpectedClose}
 							>
 								Clear
-							</button>
+							</Button>
 						{/if}
-						<button
-							type="button"
-							class="brief__editor-cancel"
-							aria-label="Close expected close editor"
+						<Button
+							variant="quiet"
+							size="small"
+							iconOnly
+							label="Close expected close editor"
 							onclick={() => (editingField = null)}
 						>
 							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 							{@html xIcon}
-						</button>
+						</Button>
 					</div>
 				{:else}
 					<span class="brief__value-row">
@@ -353,49 +355,6 @@
 	.brief__editor--date {
 		flex-wrap: wrap;
 		justify-content: flex-end;
-	}
-	.brief__editor-clear {
-		flex: 0 0 auto;
-		padding: 0 var(--space-smallest);
-		border: 0;
-		background: transparent;
-		color: var(--color-interactive);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 400;
-		cursor: pointer;
-
-		&:hover {
-			color: var(--color-interactive--hover);
-			text-decoration: underline;
-		}
-	}
-	.brief__editor-cancel {
-		display: inline-grid;
-		flex: 0 0 auto;
-		width: 28px;
-		height: 28px;
-		place-items: center;
-		border: 0;
-		border-radius: var(--radius-base);
-		color: var(--color-icon--secondary);
-		background: transparent;
-		cursor: pointer;
-		transition: all var(--timing-base) ease-out;
-
-		&:hover {
-			color: var(--color-icon);
-			background: var(--color-surface--hover);
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-
-		:global(svg) {
-			display: block;
-			width: 16px;
-			height: 16px;
-		}
 	}
 	.brief__blank {
 		color: var(--color-text--secondary);

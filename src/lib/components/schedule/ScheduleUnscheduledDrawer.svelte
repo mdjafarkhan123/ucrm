@@ -1,6 +1,7 @@
 <script lang="ts">
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { filterBacklog, backlogAgeLabel } from '$lib/schedule/backlog';
 	import {
@@ -112,14 +113,15 @@
 				<span class="backlog__count">{visits.length}</span>
 			{/if}
 		</div>
-		<button
-			type="button"
-			class="backlog__close"
-			aria-label="Close unscheduled work"
+		<Button
+			variant="secondary"
+			size="small"
+			iconOnly
+			label="Close unscheduled work"
 			onclick={onClose}
 		>
 			{@html closeIcon}
-		</button>
+		</Button>
 	</header>
 
 	<div class="backlog__filters">
@@ -152,10 +154,12 @@
 					{@html cloudOffIcon}
 				</span>
 				<p class="backlog__state-text">{error}</p>
-				<button type="button" class="backlog__retry" onclick={onRetry}>
-					{@html refreshIcon}
-					Try again
-				</button>
+				<div class="backlog__retry">
+					<Button variant="secondary" onclick={onRetry}>
+						{@html refreshIcon}
+						Try again
+					</Button>
+				</div>
 			</div>
 		{:else if visits.length === 0}
 			<div class="backlog__state">
@@ -230,11 +234,10 @@
 									</span>
 								{/if}
 								{#if canSchedule}
-									<button type="button" class="backlog__schedule" onclick={() => onSchedule(visit)}>
-										<span class="backlog__button-icon" aria-hidden="true">{@html calendarIcon}</span
-										>
+									<Button variant="secondary" size="small" onclick={() => onSchedule(visit)}>
+										{@html calendarIcon}
 										Schedule
-									</button>
+									</Button>
 								{/if}
 							</div>
 						</div>
@@ -322,33 +325,6 @@
 		color: var(--color-warning--onSurface);
 		font-size: 11px;
 		font-weight: 700;
-	}
-
-	.backlog__close {
-		display: grid;
-		flex: 0 0 auto;
-		width: 34px;
-		height: 34px;
-		place-items: center;
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		color: var(--color-icon--secondary);
-		background: var(--color-surface);
-		cursor: pointer;
-
-		&:hover {
-			background-color: var(--color-surface--hover);
-			color: var(--color-icon);
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-
-		:global(svg) {
-			width: 16px;
-			height: 16px;
-		}
 	}
 
 	.backlog__filters {
@@ -608,42 +584,6 @@
 		background-color: var(--color-warning);
 	}
 
-	// The one action on a card: neutral, like the toolbar's buttons, so a column of them does not shout.
-	.backlog__schedule {
-		display: inline-flex;
-		flex-shrink: 0;
-		align-items: center;
-		gap: 6px;
-		height: 32px;
-		padding: 0 12px;
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		background-color: var(--color-surface);
-		color: var(--color-text);
-		font-family: inherit;
-		font-size: 12.5px;
-		font-weight: 600;
-		cursor: pointer;
-		transition: background-color var(--timing-quick) ease;
-
-		&:hover {
-			background-color: var(--color-surface--hover);
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-	}
-
-	.backlog__button-icon {
-		display: inline-flex;
-
-		:global(svg) {
-			width: 14px;
-			height: 14px;
-		}
-	}
-
 	.backlog__state {
 		display: flex;
 		flex-direction: column;
@@ -691,32 +631,6 @@
 	}
 
 	.backlog__retry {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		height: 34px;
 		margin-top: var(--space-smaller);
-		padding: 0 14px;
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		background-color: var(--color-surface);
-		color: var(--color-text);
-		font-family: inherit;
-		font-size: 13px;
-		font-weight: 600;
-		cursor: pointer;
-
-		&:hover {
-			background-color: var(--color-surface--hover);
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-
-		:global(svg) {
-			width: 15px;
-			height: 15px;
-		}
 	}
 </style>

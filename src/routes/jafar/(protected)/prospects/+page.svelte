@@ -1291,9 +1291,7 @@
 		<footer class="prospects__table-footer">
 			<span>Possible duplicate is a review warning, not a separate stage.</span>
 			{#if selectedProspectId}
-				<button class="prospects__quiet-button" type="button" onclick={clearSelection}
-					>Close review</button
-				>
+				<Button variant="quiet" size="small" onclick={clearSelection}>Close review</Button>
 			{/if}
 		</footer>
 	</section>
@@ -2537,26 +2535,6 @@
 	.prospects__table-footer {
 		padding: var(--space-base) var(--space-large);
 		border-top: var(--border-base) solid var(--color-border);
-	}
-
-	.prospects__quiet-button {
-		min-height: 32px;
-		padding: 0;
-		border: 0;
-		color: var(--color-interactive);
-		background: transparent;
-		font: inherit;
-		font-weight: 600;
-		cursor: pointer;
-
-		&:hover {
-			color: var(--color-interactive--hover);
-		}
-
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
 	}
 
 	.prospects__state,

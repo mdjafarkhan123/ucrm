@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import type { CalendarDate } from '@internationalized/date';
+	import Button from '$lib/components/ui/Button.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import TimePicker from '$lib/components/ui/TimePicker.svelte';
@@ -113,14 +114,16 @@
 					maxlength={HOURS_EXCEPTION_NAME_MAX}
 					oninput={emit}
 				/>
-				<button
-					type="button"
-					class="setup-exceptions__remove"
-					aria-label={`Remove ${row.name.trim() || 'this date'}`}
+				<Button
+					variant="secondary"
+					variation="destructive"
+					iconOnly
+					label={`Remove ${row.name.trim() || 'this date'}`}
 					onclick={() => removeRow(index)}
-					><!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					{@html trashIcon}</button
 				>
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					{@html trashIcon}
+				</Button>
 			</div>
 			<div class="setup-exceptions__hours">
 				<Toggle
@@ -140,11 +143,13 @@
 	{/each}
 
 	{#if rows.length < HOURS_EXCEPTIONS_MAX}
-		<button type="button" class="setup-exceptions__add" onclick={addRow}
-			><!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html plusIcon}
-			{rows.length === 0 ? 'Add a date' : 'Add another date'}</button
-		>
+		<div class="setup-exceptions__add">
+			<Button variant="secondary" size="small" onclick={addRow}>
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html plusIcon}
+				{rows.length === 0 ? 'Add a date' : 'Add another date'}
+			</Button>
+		</div>
 	{/if}
 </div>
 
@@ -179,58 +184,8 @@
 			gap: var(--space-base);
 		}
 
-		&__remove {
-			display: grid;
-			width: 40px;
-			height: 40px;
-			place-items: center;
-			border: var(--border-base) solid var(--color-border--interactive);
-			border-radius: var(--radius-base);
-			color: var(--color-icon--secondary);
-			background: var(--color-surface);
-
-			&:hover {
-				color: var(--color-critical--onSurface);
-				background: var(--color-surface--hover);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
-		}
-
 		&__add {
-			display: inline-flex;
-			align-items: center;
-			gap: var(--space-smaller);
-			width: fit-content;
-			padding: var(--space-small) var(--space-base);
-			border: var(--border-base) dashed var(--color-border--interactive);
-			border-radius: var(--radius-base);
-			color: var(--color-interactive);
-			background: transparent;
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-
-			&:hover {
-				background: var(--color-surface--hover);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-
-			:global(svg) {
-				width: 14px;
-				height: 14px;
-			}
+			display: flex;
 		}
 	}
 

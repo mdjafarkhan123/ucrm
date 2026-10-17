@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import type { QuoteVisibility } from '$lib/quotes/api';
 	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
@@ -43,9 +44,9 @@
 			Client view
 		</span>
 		{#if editable}
-			<button type="button" class="quote-client-view__change" onclick={onEdit}>
+			<Button variant="quiet" size="small" onclick={onEdit}>
 				{editing ? 'Cancel' : 'Change'}
-			</button>
+			</Button>
 		{/if}
 	</div>
 	{#if editing}
@@ -95,24 +96,6 @@
 			width: 18px;
 			height: 18px;
 			color: var(--color-icon--secondary);
-		}
-
-		&__change {
-			padding: 0;
-			border: 0;
-			color: var(--color-interactive);
-			background: transparent;
-			font: inherit;
-			font-weight: 600;
-			cursor: pointer;
-
-			&:hover {
-				text-decoration: underline;
-			}
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
 		}
 	}
 

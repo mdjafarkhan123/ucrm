@@ -178,12 +178,13 @@
 					<div class="setup-list__row-head">
 						<span class="setup-list__number" aria-hidden="true">{index + 1}</span>
 						<span class="setup-list__title">{title(row) ?? 'New entry'}</span>
-						<button
-							type="button"
-							class="setup-list__remove"
-							aria-label={`Remove entry ${index + 1}${title(row) ? `, ${title(row)}` : ''}`}
+						<Button
+							variant="secondary"
+							variation="destructive"
+							size="small"
 							onclick={() => remove(index)}
-							><span aria-hidden="true">{@html trashIcon}</span>Remove</button
+							label={`Remove entry ${index + 1}${title(row) ? `, ${title(row)}` : ''}`}
+							><span aria-hidden="true">{@html trashIcon}</span>Remove</Button
 						>
 					</div>
 					{@render boxes(row)}
@@ -273,38 +274,6 @@
 			font-weight: 600;
 			text-overflow: ellipsis;
 			white-space: nowrap;
-		}
-
-		&__remove {
-			display: inline-flex;
-			flex: none;
-			align-items: center;
-			gap: var(--space-smaller);
-			min-height: 3.6rem;
-			padding: 0 var(--space-small);
-			border: 0;
-			border-radius: var(--radius-base);
-			background: none;
-			color: var(--color-text--secondary);
-			font: inherit;
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-			cursor: pointer;
-
-			:global(svg) {
-				width: 1.6rem;
-				height: 1.6rem;
-			}
-
-			&:hover {
-				background: var(--color-surface--hover);
-				color: var(--color-critical);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
 		}
 
 		&__boxes {

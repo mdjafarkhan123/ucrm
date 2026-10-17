@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { tick } from 'svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import type { SetupListRow } from '$lib/setup/lists';
 	import {
@@ -115,19 +116,21 @@
 					<li class="setup-pick__rank" data-row={rowId}>
 						<span class="setup-pick__number" aria-hidden="true">{index + 1}</span>
 						<span class="setup-pick__name">{name}</span>
-						<button
-							type="button"
-							class="setup-pick__move"
-							aria-label={`Move ${name} up`}
+						<Button
+							variant="secondary"
+							size="small"
+							iconOnly
+							label={`Move ${name} up`}
 							disabled={index === 0}
-							onclick={() => move(index, -1)}>{@html arrowUpIcon}</button
+							onclick={() => move(index, -1)}>{@html arrowUpIcon}</Button
 						>
-						<button
-							type="button"
-							class="setup-pick__move"
-							aria-label={`Move ${name} down`}
+						<Button
+							variant="secondary"
+							size="small"
+							iconOnly
+							label={`Move ${name} down`}
 							disabled={index === picked.length - 1}
-							onclick={() => move(index, 1)}>{@html arrowDownIcon}</button
+							onclick={() => move(index, 1)}>{@html arrowDownIcon}</Button
 						>
 					</li>
 				{/each}
@@ -221,43 +224,6 @@
 			min-width: 0;
 			overflow-wrap: anywhere;
 			color: var(--color-text);
-		}
-
-		// Thumb-sized: setup is often filled in on a phone.
-		&__move {
-			display: grid;
-			flex: 0 0 auto;
-			place-items: center;
-			width: 40px;
-			height: 40px;
-			padding: 0;
-			border: var(--border-base) solid transparent;
-			border-radius: var(--radius-base);
-			color: var(--color-icon--secondary);
-			background: none;
-			cursor: pointer;
-			transition: all var(--timing-quick) ease-out;
-
-			&:hover:not(:disabled),
-			&:focus-visible:not(:disabled) {
-				border-color: var(--color-border--interactive);
-				color: var(--color-interactive);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-
-			&:disabled {
-				color: var(--color-disabled);
-				cursor: not-allowed;
-			}
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
 		}
 	}
 </style>

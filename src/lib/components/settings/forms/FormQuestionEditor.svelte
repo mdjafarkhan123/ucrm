@@ -100,18 +100,20 @@
 					</Button>
 				</div>
 			{/each}
-			<button
-				type="button"
-				class="question-editor__add-option"
-				disabled={(question.options?.length ?? 0) >= FORM_MAX_OPTIONS}
-				onclick={onAddOption}
-			>
-				<span class="question-editor__button-icon" aria-hidden="true">
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					{@html plusIcon}
-				</span>
-				Add option
-			</button>
+			<div class="question-editor__add-option">
+				<Button
+					variant="secondary"
+					size="small"
+					disabled={(question.options?.length ?? 0) >= FORM_MAX_OPTIONS}
+					onclick={onAddOption}
+				>
+					<span class="question-editor__button-icon" aria-hidden="true">
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html plusIcon}
+					</span>
+					Add option
+				</Button>
+			</div>
 		</div>
 	{/if}
 
@@ -205,26 +207,7 @@
 		}
 
 		&__add-option {
-			display: inline-flex;
-			align-items: center;
-			gap: var(--space-smaller);
 			align-self: flex-start;
-			padding: var(--space-smaller) var(--space-small);
-			border: none;
-			border-radius: var(--radius-base);
-			color: var(--color-interactive);
-			background: none;
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-			cursor: pointer;
-
-			&:hover:not(:disabled) {
-				background: var(--color-interactive--background--subtle--hover);
-			}
-			&:disabled {
-				color: var(--color-disabled);
-				cursor: not-allowed;
-			}
 		}
 
 		&__button-icon {

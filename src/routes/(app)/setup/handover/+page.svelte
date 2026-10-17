@@ -74,9 +74,11 @@
 		>
 			{#snippet actions()}
 				{#if pack}
-					<button type="button" class="handover__print" onclick={() => window.print()}
-						><span aria-hidden="true">{@html printerIcon}</span>Print or save as PDF</button
-					>
+					<span class="handover__print">
+						<Button variant="secondary" size="large" onclick={() => window.print()}
+							><span aria-hidden="true">{@html printerIcon}</span>Print or save as PDF</Button
+						>
+					</span>
 				{/if}
 			{/snippet}
 		</PageHeader>
@@ -101,7 +103,7 @@
 				description="It opens here once Uplift delivers your project. You can follow where things stand on your Setup page."
 			>
 				{#snippet action()}
-					<Button href={resolve('/(app)/setup')}>Go to Setup</Button>
+					<Button size="large" href={resolve('/(app)/setup')}>Go to Setup</Button>
 				{/snippet}
 			</EmptyState>
 		{:else}
@@ -195,7 +197,9 @@
 						corner of every screen. Changes to your website or system go through there too.
 					</p>
 					<div class="handover__no-print">
-						<Button variant="secondary" onclick={() => askUplift(null)}>Chat with Uplift</Button>
+						<Button variant="secondary" size="large" onclick={() => askUplift(null)}
+							>Chat with Uplift</Button
+						>
 					</div>
 				</div>
 			</SectionBlock>
@@ -258,26 +262,6 @@
 
 		&__print {
 			display: inline-flex;
-			align-items: center;
-			gap: var(--space-small);
-			min-height: 4.4rem;
-			padding: 0 var(--space-base);
-			border: 1px solid var(--color-border);
-			border-radius: var(--radius-base);
-			background: var(--color-surface);
-			color: var(--color-heading);
-			font: inherit;
-			font-weight: 600;
-			cursor: pointer;
-
-			:global(svg) {
-				width: 1.8rem;
-				height: 1.8rem;
-			}
-
-			&:hover {
-				background: var(--color-surface--hover);
-			}
 		}
 
 		&__guides {

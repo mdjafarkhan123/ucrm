@@ -457,8 +457,8 @@
 								>{@html alertIcon}</span
 							>
 							<span>{item.error}</span>
-							<button type="button" onclick={() => retry(item)}>Try again</button>
-							<button type="button" onclick={() => discard(item)}>Delete</button>
+							<Button variant="quiet" size="small" onclick={() => retry(item)}>Try again</Button>
+							<Button variant="quiet" size="small" onclick={() => discard(item)}>Delete</Button>
 						</p>
 					{/if}
 				</div>
@@ -500,15 +500,9 @@
 						onReadyChange={(count) => (readyFiles = count)}
 					/>
 				</div>
-				<button
-					class="support-conversation__send"
-					type="submit"
-					disabled={!canSend}
-					aria-label="Send message"
-					title={uploading ? 'Wait for the files to finish uploading' : 'Send message'}
-				>
-					<span aria-hidden="true">{@html sendIcon}</span>
-				</button>
+				<Button type="submit" size="small" iconOnly label="Send message" disabled={!canSend}>
+					{@html sendIcon}
+				</Button>
 			</div>
 		</div>
 		<p
@@ -790,27 +784,6 @@
 
 			&--failed {
 				color: var(--color-critical);
-
-				button {
-					padding: 0;
-					border: 0;
-					color: var(--color-interactive);
-					font: inherit;
-					font-weight: 600;
-					background: none;
-					cursor: pointer;
-
-					&:hover {
-						color: var(--color-interactive--hover);
-						text-decoration: underline;
-					}
-
-					&:focus-visible {
-						border-radius: var(--radius-small);
-						outline: none;
-						box-shadow: var(--shadow-focus);
-					}
-				}
 			}
 		}
 
@@ -914,45 +887,6 @@
 			align-items: center;
 			gap: var(--space-smaller);
 			min-width: 0;
-		}
-
-		&__send {
-			display: grid;
-			flex: none;
-			place-items: center;
-			width: 32px;
-			height: 32px;
-			padding: 0;
-			border: 0;
-			border-radius: var(--radius-circle);
-			color: var(--color-surface);
-			background: var(--color-interactive);
-			cursor: pointer;
-			transition: background var(--timing-quick) ease;
-
-			span {
-				display: inline-flex;
-			}
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
-
-			&:hover:not(:disabled) {
-				background: var(--color-interactive--hover);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-
-			&:disabled {
-				color: var(--color-disabled);
-				background: var(--color-disabled--secondary);
-				cursor: not-allowed;
-			}
 		}
 
 		&__hint {
