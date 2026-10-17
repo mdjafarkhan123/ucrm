@@ -1,16 +1,19 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
+	import DataTable from '$lib/components/data-display/DataTable.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import EmailSetupCard from '$lib/components/settings/EmailSetupCard.svelte';
@@ -30,7 +33,9 @@
 	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import atIcon from '@tabler/icons/outline/at.svg?raw';
 	import gaugeIcon from '@tabler/icons/outline/gauge.svg?raw';
+	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 
@@ -75,10 +80,12 @@
 		return new Intl.NumberFormat().format(value);
 	}
 
-	function usedLabel(state: string | null, limit: number | null, used: number) {
-		if (state === 'unlimited') return `${countLabel(used)} sent · no limit`;
-		if (state !== 'numeric' || limit == null) return countLabel(used);
-		return `${countLabel(used)} of ${countLabel(limit)}`;
+	// The meter head shows the used count large with its context small: "N of M", or
+	// "sent · no limit" after the count when the period has no numeric allowance.
+	function meterTail(state: string | null, limit: number | null) {
+		if (state === 'unlimited') return 'sent · no limit';
+		if (state !== 'numeric' || limit == null) return '';
+		return `of ${countLabel(limit)}`;
 	}
 
 	function meterPercent(limit: number | null, used: number) {
@@ -299,19 +306,15 @@
 
 <svelte:head><title>Email identity · Contractor CRM</title></svelte:head>
 
-<PageContainer variant="fill">
-	<div class="email-identities">
-		<PageHeader
-			eyebrow="Communications"
+<PageContainer variant="open">
+	<div class="email-identities record-detail--cards">
+		<SettingsPageHeader
 			title="Email identity"
 			description="Choose the verified email addresses your team and automations can use."
-		>
-			{#snippet actions()}
-				<Button href={resolve('/settings')} variant="secondary" variation="subtle"
-					>Back to settings</Button
-				>
-			{/snippet}
-		</PageHeader>
+			icon={atIcon}
+			tone="task"
+			presentation="communication"
+		/>
 
 		<SectionBlock
 			title="Email included this period"
@@ -348,13 +351,12 @@
 					<div class="email-usage__meter">
 						<div class="email-usage__meter-head">
 							<strong>Business email</strong>
-							<span
-								>{usedLabel(
-									usage.optional_limit_state,
-									usage.optional_limit_value,
-									usage.optional_used
-								)}</span
-							>
+							<span class="email-usage__meter-value">
+								{countLabel(usage.optional_used)}
+								{#if meterTail(usage.optional_limit_state, usage.optional_limit_value)}
+									<small>{meterTail(usage.optional_limit_state, usage.optional_limit_value)}</small>
+								{/if}
+							</span>
 						</div>
 						{#if usage.optional_limit_state === 'numeric' && usage.optional_limit_value != null}
 							<div
@@ -383,13 +385,14 @@
 					<div class="email-usage__meter">
 						<div class="email-usage__meter-head">
 							<strong>Protected reserve</strong>
-							<span
-								>{usedLabel(
-									usage.essential_limit_state,
-									usage.essential_limit_value,
-									usage.essential_used
-								)}</span
-							>
+							<span class="email-usage__meter-value">
+								{countLabel(usage.essential_used)}
+								{#if meterTail(usage.essential_limit_state, usage.essential_limit_value)}
+									<small
+										>{meterTail(usage.essential_limit_state, usage.essential_limit_value)}</small
+									>
+								{/if}
+							</span>
 						</div>
 						{#if usage.essential_limit_state === 'numeric' && usage.essential_limit_value != null}
 							<div
@@ -420,7 +423,11 @@
 					</div>
 				</div>
 				<p class="email-usage__reset">
-					Resets {resetLabel(usage.period_ends_at, usage.organization_timezone)}.
+					<span class="email-usage__reset-icon" aria-hidden="true">
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+						{@html calendarIcon}
+					</span>
+					<span>Resets {resetLabel(usage.period_ends_at, usage.organization_timezone)}.</span>
 				</p>
 			{/if}
 		</SectionBlock>
@@ -428,14 +435,17 @@
 		<EmailSetupCard />
 
 		<SectionBlock
+			class="section-block--flush"
 			title="Sender identities"
 			hint="Domains are provisioned and verified by UCRM."
 			icon={mailIcon}
 			level={2}
 		>
 			{#snippet actions()}
-				<Button disabled={!canCreate} onhover={() => void prefetchTeam()} onclick={openCreate}
-					>Add sender</Button
+				<Button disabled={!canCreate} onhover={() => void prefetchTeam()} onclick={openCreate}>
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					<span class="email-identities__action-icon" aria-hidden="true">{@html plusIcon}</span>
+					Add sender</Button
 				>
 			{/snippet}
 			{#if sendersQuery.isPending}
@@ -465,49 +475,58 @@
 						>{/snippet}
 				</EmptyState>
 			{:else}
-				<div class="email-identities__table-wrap">
-					<table>
-						<thead
-							><tr
-								><th scope="col">Sender</th><th scope="col">Domain</th><th scope="col">Use</th><th
-									scope="col">Status</th
-								><th scope="col"><span class="email-identities__sr-only">Actions</span></th></tr
-							></thead
+				<DataTable
+					variant="card"
+					caption="Email sender identities"
+					columns={[
+						{ key: 'sender', label: 'Sender' },
+						{ key: 'domain', label: 'Domain' },
+						{ key: 'use', label: 'Use' },
+						{ key: 'status', label: 'Status' }
+					]}
+					items={sendersQuery.data.senders}
+					rowId={(sender) => sender.id}
+				>
+					{#snippet row(sender)}
+						{@const senderStatus = status(sender)}
+						<th scope="row">
+							<div class="email-identities__sender">
+								<Avatar id={sender.id} name={sender.display_name} size="base" />
+								<div class="email-identities__sender-id">
+									<strong>{sender.display_name}</strong>
+									<small>
+										<span>{sender.email_address}</span>
+										{#if sender.is_organization_default}
+											<Badge size="small" class="email-identities__default-chip">Default</Badge>
+										{/if}
+									</small>
+								</div>
+							</div>
+						</th>
+						<td>{displayDomain(sender)}</td>
+						<td
+							>{sender.allows_manual && sender.allows_automated
+								? 'Manual and automated'
+								: sender.allows_manual
+									? 'Manual'
+									: 'Automated'}</td
 						>
-						<tbody>
-							{#each sendersQuery.data.senders as sender (sender.id)}
-								{@const senderStatus = status(sender)}
-								<tr>
-									<th scope="row"
-										><strong>{sender.display_name}</strong><small
-											>{sender.email_address}{sender.is_organization_default
-												? ' · Default'
-												: ''}</small
-										></th
-									>
-									<td>{displayDomain(sender)}</td>
-									<td
-										>{sender.allows_manual && sender.allows_automated
-											? 'Manual and automated'
-											: sender.allows_manual
-												? 'Manual'
-												: 'Automated'}</td
-									>
-									<td><Badge status={senderStatus.tone}>{senderStatus.label}</Badge></td>
-									<td
-										><Button
-											size="small"
-											variant="secondary"
-											variation="subtle"
-											onhover={() => void prefetchTeam()}
-											onclick={() => openEdit(sender)}>Edit</Button
-										></td
-									>
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				</div>
+						<td
+							><StatusBadge status={senderStatus.tone} size="compact"
+								>{senderStatus.label}</StatusBadge
+							></td
+						>
+					{/snippet}
+					{#snippet rowActions(sender)}
+						<Button
+							size="small"
+							variant="secondary"
+							variation="subtle"
+							onhover={() => void prefetchTeam()}
+							onclick={() => openEdit(sender)}>Edit</Button
+						>
+					{/snippet}
+				</DataTable>
 			{/if}
 		</SectionBlock>
 	</div>
@@ -686,8 +705,42 @@
 		flex-direction: column;
 		gap: var(--space-large);
 	}
-	.email-identities :global(.section-block) {
-		--section-block-notch: var(--color-surface);
+	.email-identities {
+		gap: 20px;
+	}
+	/* App-look cards: each block is a white card on the app background. The shared card rules (the
+	   `record-detail--cards` context) put the heading, hint and actions inside the card header; the page
+	   only restores the framed icon tile, which sits beside both header lines as the approved frame shows. */
+	.email-identities.record-detail--cards :global(.section-block > .section-block__title) {
+		padding-left: 72px;
+	}
+	.email-identities.record-detail--cards :global(.section-block:has(> .section-block__hint)) {
+		> :global(.section-block__hint) {
+			margin-left: 72px;
+		}
+	}
+	.email-identities.record-detail--cards :global(.section-block .section-block__icon) {
+		position: absolute;
+		top: 20px;
+		left: 24px;
+		display: grid;
+		place-items: center;
+		width: 36px;
+		height: 36px;
+		border-radius: 11px;
+		background: var(--color-informative--surface);
+	}
+	.email-identities.record-detail--cards :global(.section-block .section-block__icon svg) {
+		width: 18px;
+		height: 18px;
+		color: var(--color-informative--onSurface);
+	}
+	.email-identities__action-icon {
+		display: inline-flex;
+		:global(svg) {
+			width: 18px;
+			height: 18px;
+		}
 	}
 	.email-identities__notice,
 	.email-identities__fixed-address {
@@ -720,22 +773,42 @@
 		width: var(--typography--fontSize-large);
 		height: var(--typography--fontSize-large);
 	}
-	.email-usage__meters {
+	.email-identities .email-usage__meters {
 		display: grid;
-		gap: var(--space-large);
+		margin: 0 24px 14px;
+		gap: 16px;
 		grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
 	}
 	.email-usage__meter {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-small);
+		gap: 10px;
+		padding: 16px 18px;
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background--subtle);
 	}
 	.email-usage__meter-head {
 		display: flex;
+		align-items: baseline;
 		flex-wrap: wrap;
 		justify-content: space-between;
 		gap: var(--space-small);
+	}
+	.email-usage__meter-head > strong {
 		color: var(--color-heading);
+		font-weight: 600;
+	}
+	.email-usage__meter-value {
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-larger);
+		font-weight: 700;
+		line-height: var(--typography--lineHeight-minuscule);
+	}
+	.email-usage__meter-value small {
+		margin-left: var(--space-smaller);
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 400;
 	}
 	.email-usage__meter small {
 		color: var(--color-text--secondary);
@@ -744,7 +817,7 @@
 	.email-usage__track {
 		height: var(--space-small);
 		border-radius: var(--radius-circle);
-		background: var(--color-surface--background--subtle);
+		background: var(--color-surface--active);
 		overflow: hidden;
 	}
 	.email-usage__fill {
@@ -757,46 +830,57 @@
 	.email-usage__fill--reserve {
 		background: var(--color-warning);
 	}
-	.email-usage__reset {
-		margin: 0;
+	.email-identities .email-usage__reset {
+		display: flex;
+		align-items: center;
+		gap: var(--space-smaller);
+		margin: 0 24px 22px;
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 	}
-	.email-identities__table-wrap {
-		overflow-x: auto;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+	.email-usage__reset-icon {
+		display: flex;
+		flex: 0 0 auto;
 	}
-	.email-identities table {
-		width: 100%;
-		min-width: 760px;
-		border-collapse: collapse;
-		color: var(--color-text);
+	.email-usage__reset-icon :global(svg) {
+		width: 14px;
+		height: 14px;
 	}
-	.email-identities th,
-	.email-identities td {
-		padding: var(--space-base) var(--space-large);
-		border-bottom: var(--border-base) solid var(--color-border);
-		text-align: left;
-		vertical-align: middle;
+	/* Sender row: avatar beside the identity block. The Default chip rides inline after the address. */
+	.email-identities__sender {
+		display: flex;
+		align-items: center;
+		gap: var(--space-base);
 	}
-	.email-identities thead th {
-		background: var(--color-surface--background--subtle);
+	.email-identities__sender-id {
+		display: grid;
+		gap: var(--space-smallest);
+		min-width: 0;
+	}
+	.email-identities__sender-id strong {
 		color: var(--color-heading);
 		font-weight: 700;
+		line-height: var(--typography--lineHeight-tight);
 	}
-	.email-identities tbody tr:last-child th,
-	.email-identities tbody tr:last-child td {
-		border-bottom: 0;
-	}
-	.email-identities tbody th strong,
-	.email-identities tbody th small {
-		display: block;
-	}
-	.email-identities tbody th small {
-		margin-top: var(--space-smallest);
+	.email-identities__sender-id small {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-small);
 		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
 		font-weight: 400;
+		line-height: var(--typography--lineHeight-large);
+		overflow-wrap: anywhere;
+	}
+	.email-identities__sender-id :global(.email-identities__default-chip) {
+		color: var(--color-surface);
+		background: var(--color-surface--reverse);
+	}
+	/* The approved settings-table look needs fewer columns than the shared card table's default
+	   width floor, so the horizontal scroll only starts where the old table used to. */
+	.email-identities :global(.data-table--card) {
+		--data-table-min-width: 760px;
 	}
 	.email-identities__form,
 	.email-identities__checks {
@@ -850,14 +934,6 @@
 		margin: var(--space-base) 0 0;
 		padding-left: var(--space-large);
 		color: var(--color-text);
-	}
-	.email-identities__sr-only {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip: rect(0 0 0 0);
-		white-space: nowrap;
 	}
 	@media (max-width: 639px) {
 		.email-identities {

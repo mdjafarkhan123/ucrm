@@ -36,6 +36,7 @@
 		</span>
 	</div>
 {:else}
+	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- callers pass hrefs already built with resolve() -->
 	<a class="settings-card" {href}>
 		<span class="settings-card__icon" aria-hidden="true">{@html icon}</span>
 		<span class="settings-card__body">
@@ -55,8 +56,9 @@
 		align-items: flex-start;
 		gap: var(--space-base);
 		padding: var(--space-base);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border: 0;
+		border-bottom: var(--border-base) solid var(--color-border);
+		border-radius: 0;
 		background: var(--color-surface);
 		text-decoration: none;
 		transition: background-color var(--timing-quick);

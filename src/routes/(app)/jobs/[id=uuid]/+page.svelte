@@ -533,7 +533,11 @@
 						/>
 					{/snippet}
 					{#snippet track()}
-						<RecordTrack kind="job" id={jobId} clientName={saved.job.client?.display_name} />
+						<RecordTrack
+							kind="job"
+							id={jobId}
+							clientName={saved.job.client?.display_name ?? undefined}
+						/>
 					{/snippet}
 					{#snippet facts()}<RecordFactsList facts={headerFacts} />{/snippet}
 					{#snippet badges()}

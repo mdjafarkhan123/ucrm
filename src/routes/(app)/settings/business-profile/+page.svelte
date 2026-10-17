@@ -2,8 +2,7 @@
 	import { untrack } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { beforeNavigate } from '$app/navigation';
-	import { resolve } from '$app/paths';
-	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
+	import BusinessSettingsPresentation from '$lib/components/settings/SettingsPresentation.svelte';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
@@ -27,6 +26,9 @@
 		type SettingsBusiness
 	} from '$lib/settings/api';
 	import { TRADES } from '$lib/settings/trades';
+	import mapPinIcon from '@tabler/icons/outline/map-pin.svg?raw';
+	import globeIcon from '@tabler/icons/outline/world.svg?raw';
+	import BusinessPreview from '../_components/BusinessPreview.svelte';
 	import buildingIcon from '@tabler/icons/outline/building-store.svg?raw';
 
 	const queryClient = useQueryClient();
@@ -263,37 +265,43 @@
 	{@const canEdit = query.data.permissions.edit}
 	{@const editor = query.data.profile.last_editor}
 
-	<Breadcrumbs
-		items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Business profile' }]}
-	/>
-
-	<RecordFormLayout
+	<BusinessSettingsPresentation
 		title="Business profile"
+		description="Your name, contact details, address, timezone, and currency."
 		icon={buildingIcon}
-		bind:this={layout}
-		error={saveError}
 	>
-		{#snippet main()}
-			{@const f = form}
-			{#if f}
-				{#if !canEdit}
-					<p class="business-profile__readonly">
-						Only owners and administrators can change this. {#if editor}Last changed by {editor.name ??
-								'a teammate'}.{/if}
-					</p>
-				{/if}
+		<RecordFormLayout
+			title="Business profile"
+			icon={buildingIcon}
+			bind:this={layout}
+			error={saveError}
+		>
+			{#snippet main()}
+				{@const f = form}
+				{#if f}
+					{#if !canEdit}
+						<p class="business-profile__readonly">
+							Only owners and administrators can change this. {#if editor}Last changed by {editor.name ??
+									'a teammate'}.{/if}
+						</p>
+					{/if}
 
-				<div class="business-profile__columns">
-					<div class="business-profile__column">
-						<SectionBlock title="Identity" form level={3}>
-							<Input
-								id="bp-name"
-								label="Business name"
-								bind:value={f.name}
-								required
-								disabled={!canEdit}
-							/>
+					<div class="business-profile__stack">
+						<SectionBlock
+							title="Identity"
+							icon={buildingIcon}
+							hint="The name and contact details on everything you send."
+							form
+							level={3}
+						>
 							<div class="business-profile__row">
+								<Input
+									id="bp-name"
+									label="Business name"
+									bind:value={f.name}
+									required
+									disabled={!canEdit}
+								/>
 								<Select
 									id="bp-trade"
 									ariaLabel="Trade"
@@ -302,15 +310,15 @@
 									bind:value={f.trade}
 									disabled={!canEdit}
 								/>
-								{#if f.trade === 'Other'}
-									<Input
-										id="bp-trade-other"
-										label="Describe your trade"
-										bind:value={f.tradeOther}
-										disabled={!canEdit}
-									/>
-								{/if}
 							</div>
+							{#if f.trade === 'Other'}
+								<Input
+									id="bp-trade-other"
+									label="Describe your trade"
+									bind:value={f.tradeOther}
+									disabled={!canEdit}
+								/>
+							{/if}
 							<div class="business-profile__row">
 								<Input
 									id="bp-phone"
@@ -334,59 +342,9 @@
 								maxlength={500}
 								disabled={!canEdit}
 							/>
-						</SectionBlock>
-
-						<SectionBlock
-							title="Regional"
-							hint="Used for scheduling, quotes, and every amount your business writes."
-							form
-							level={3}
-						>
-							<div class="business-profile__field-group">
-								<TimezonePicker id="bp-timezone" bind:value={f.timezone} required />
-								{#if !timezoneConfirmed}
-									<p class="business-profile__suggestion">
-										{f.timezone === suggestedTimezone
-											? 'Detected from your browser — confirm it to save.'
-											: 'Not confirmed yet.'}
-										<button type="button" onclick={markTimezoneConfirmed} disabled={!canEdit}
-											>Confirm timezone</button
-										>
-									</p>
-								{/if}
-							</div>
-
-							<div class="business-profile__field-group">
-								<Select
-									id="bp-currency"
-									ariaLabel="Currency"
-									placeholder="Currency"
-									options={COMMON_CURRENCIES.map((c) => ({
-										value: c.code,
-										label: `${c.code} — ${c.label}`
-									}))}
-									bind:value={f.currency_code}
-									disabled={!canEdit || query.data.currency_locked}
-								/>
-								{#if query.data.currency_locked}
-									<p class="business-profile__locked">
-										Currency is locked because a quote has already been sent to a customer.
-									</p>
-								{:else if !currencyConfirmed}
-									<p class="business-profile__suggestion">
-										Not confirmed yet.
-										<button type="button" onclick={markCurrencyConfirmed} disabled={!canEdit}
-											>Confirm currency</button
-										>
-									</p>
-								{/if}
-							</div>
-						</SectionBlock>
-					</div>
-
-					<div class="business-profile__column">
-						<SectionBlock
+						</SectionBlock><SectionBlock
 							title="Address"
+							icon={mapPinIcon}
 							hint="Where your business is based. Optional."
 							form
 							level={3}
@@ -434,49 +392,101 @@
 								disabled={!canEdit}
 							/>
 						</SectionBlock>
+						<div class="business-profile__columns">
+							<SectionBlock
+								title="Regional"
+								icon={globeIcon}
+								hint="Used for scheduling, quotes, and every amount your business writes."
+								form
+								level={3}
+							>
+								<div class="business-profile__field-group">
+									<TimezonePicker id="bp-timezone" bind:value={f.timezone} required />
+									{#if !timezoneConfirmed}
+										<p class="business-profile__suggestion">
+											{f.timezone === suggestedTimezone
+												? 'Detected from your browser — confirm it to save.'
+												: 'Not confirmed yet.'}
+											<button type="button" onclick={markTimezoneConfirmed} disabled={!canEdit}
+												>Confirm timezone</button
+											>
+										</p>
+									{/if}
+								</div>
 
-						<SectionBlock
-							title="Service area"
-							hint="How far you're willing to travel for a booking. Used by assessment and job booking forms that choose to enforce it."
-							form
-							level={3}
-						>
-							{#if query.data.profile.location_ready}
-								<Input
-									id="bp-service-radius"
-									label="Radius (miles)"
-									type="number"
-									min="0.1"
-									max="500"
-									step="0.1"
-									bind:value={f.serviceAreaRadius}
-									disabled={!canEdit}
-									invalid={radiusInvalid}
-									errorMessage={radiusInvalid ? 'Enter a radius between 0.1 and 500 miles.' : ''}
-								/>
-							{:else}
-								<p class="business-profile__suggestion">
-									Save your address above so we can pinpoint your location — then come back here to
-									set how far you travel.
-								</p>
-							{/if}
-						</SectionBlock>
+								<div class="business-profile__field-group">
+									<Select
+										id="bp-currency"
+										ariaLabel="Currency"
+										placeholder="Currency"
+										options={COMMON_CURRENCIES.map((c) => ({
+											value: c.code,
+											label: `${c.code} — ${c.label}`
+										}))}
+										bind:value={f.currency_code}
+										disabled={!canEdit || query.data.currency_locked}
+									/>
+									{#if query.data.currency_locked}
+										<p class="business-profile__locked">
+											Currency is locked because a quote has already been sent to a customer.
+										</p>
+									{:else if !currencyConfirmed}
+										<p class="business-profile__suggestion">
+											Not confirmed yet.
+											<button type="button" onclick={markCurrencyConfirmed} disabled={!canEdit}
+												>Confirm currency</button
+											>
+										</p>
+									{/if}
+								</div>
+							</SectionBlock><SectionBlock
+								title="Service area"
+								icon={mapPinIcon}
+								hint="How far you're willing to travel for a booking. Used by assessment and job booking forms that choose to enforce it."
+								form
+								level={3}
+							>
+								{#if query.data.profile.location_ready}
+									<Input
+										id="bp-service-radius"
+										label="Radius (miles)"
+										type="number"
+										min="0.1"
+										max="500"
+										step="0.1"
+										bind:value={f.serviceAreaRadius}
+										disabled={!canEdit}
+										invalid={radiusInvalid}
+										errorMessage={radiusInvalid ? 'Enter a radius between 0.1 and 500 miles.' : ''}
+									/>
+								{:else}
+									<p class="business-profile__suggestion">
+										Save your address above so we can pinpoint your location — then come back here
+										to set how far you travel.
+									</p>
+								{/if}
+							</SectionBlock>
+						</div>
 					</div>
-				</div>
-			{/if}
-		{/snippet}
+				{/if}
+			{/snippet}
 
-		{#snippet actions()}
-			{#if canEdit}
-				<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
-				<Button
-					onclick={() => void save().finally(() => layout?.revealError())}
-					disabled={!dirty || saving || timezoneBlocked || currencyBlocked || radiusInvalid}
-					loading={saving}>Save</Button
-				>
-			{/if}
-		{/snippet}
-	</RecordFormLayout>
+			{#snippet rail()}
+				{#if form}<BusinessPreview profile={form} />{/if}
+			{/snippet}
+
+			{#snippet actions()}
+				{#if canEdit}
+					<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
+					<Button
+						onclick={() => void save().finally(() => layout?.revealError())}
+						disabled={!dirty || saving || timezoneBlocked || currencyBlocked || radiusInvalid}
+						loading={saving}>Save</Button
+					>
+				{/if}
+			{/snippet}
+		</RecordFormLayout>
+	</BusinessSettingsPresentation>
 {/if}
 
 <style lang="scss">
@@ -489,17 +499,16 @@
 			background: var(--color-surface--background);
 			font-size: var(--typography--fontSize-small);
 		}
+		&__stack {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-large);
+		}
 		&__columns {
 			display: grid;
 			grid-template-columns: 1fr 1fr;
 			align-items: start;
 			gap: var(--space-large);
-		}
-		&__column {
-			display: flex;
-			flex-direction: column;
-			gap: var(--space-large);
-			min-width: 0;
 		}
 		&__row {
 			display: grid;
