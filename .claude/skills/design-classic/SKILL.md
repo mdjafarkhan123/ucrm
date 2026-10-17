@@ -3,53 +3,61 @@ name: design-classic
 description: Classic presentation guidance for existing-app maintenance or explicitly requested Classic screens; reached through the shared design workflow.
 ---
 
-# Classic design
+# Classic Design System — Agent Instructions
 
-Read [shared design](../design/SKILL.md) for the design rules and [screen check](../../../docs/screen-check.md). These modules are
-Classic-only: use the relevant modules together (for example, cards and their buttons). `brand.md`
-owns same-name brand token precedence. Existing screens and verified implementation take precedence
-over stale reference claims; preserve actual appearance rather than restyling to match an old document.
-For new Classic layouts, inspect matching `Design/*.jpg` references and existing components, then follow
-approved product behaviour. Blueprint images do not override working permissions or save behaviour.
+This skill describes the live app's current look ("Classic"). Use it to fix or extend screens that have not moved
+to the new concept. Every component, layout and screen in Classic follows the modules below. They describe what
+the design looks like; you choose how to build it.
 
-## Recovery and reconciliation
+## Style
 
-Recovered from pre-Botanical tree `75d6d48432a4e846941e6b9c88d3ffd7db1f6026` on 2026-10-11.
-Visual modules are retained; Botanical shell additions now live in its own skill. Historical entry-point
-claims about `html { font-size: 62.5% }`, a `_tokens.scss` source and a mirrored `scss/` directory were
-stale. Verified sources are `src/lib/styles/_variables.scss` and `app.scss`: the root is **100%**, normally
-16px per rem at browser defaults, while the body base token is **14px**. Respect user text scaling.
-Use actual CSS tokens/computed styles; never convert using the old 10px-per-rem assumption.
-`token.css` and `token-guide.md` are reference snapshots, not runtime imports; reconcile against live
-sources before changing values. Update affected guidance with approved token changes.
+A clean, Jobber-style work app: warm taupe page, white cards, navy text, green actions, and one colour per record
+type (request, quote, job, invoice, client).
 
-Classic dark colours come from the live variables file's dark-theme mixin and root `data-theme` handling.
-Keep the existing explicit choice/OS preference behaviour and verify affected light/dark states.
+## Before Writing Any Code
+
+1. **Read every module that applies.** Any screen: `brand.md`, `colors.md`, `typography.md`, `layout.md`,
+   `radius.md`, `shadows.md`, `borders.md`, then each component module it uses.
+2. **Look at the live screen and its component** in `src/lib/components`. The live look wins over these modules
+   when they differ; keep the screen as it is.
+3. **For a new Classic layout,** look at the matching image in `Design/` and the closest existing component.
+
+## Critical Rules
+
+- **Tokens come from `src/lib/styles/_variables.scss`.** `token.css` and `token-guide.md` are reference copies;
+  check a value against `_variables.scss` before relying on it.
+- **Sizes:** the root font is the browser default (1rem = 16px); body text is 14px
+  (`--typography--fontSize-base`). Use tokens, not rem maths.
+- **Brand colour precedence:** tokens in `brand.md` override same-name tokens in `colors.md`.
+- **Dark mode comes from the tokens** (`data-theme`); never swap colours by hand. Check light and dark.
+- **Cross-reference modules.** A card with buttons meets `cards.md` and `buttons.md`.
+- **Every interactive part** has hover, focus-visible and disabled states.
+- **Semantic HTML:** headings in order, `<button>` for actions, `<a>` for navigation, labels on fields.
 
 ## Module Index
 
 ### Foundations
 
 - [brand.md](brand.md) — Brand
-- [colors.md](colors.md) — Color
+- [colors.md](colors.md) — Colour
 - [typography.md](typography.md) — Typography
 - [layout.md](layout.md) — Layout
 - [radius.md](radius.md) — Radius
 - [shadows.md](shadows.md) — Shadow
 - [borders.md](borders.md) — Borders
 
-### Core Components
+### Components
 
 - [buttons.md](buttons.md) — Button
-- [button-group.md](button-group.md) — Button Group
+- [button-group.md](button-group.md) — Button group
 - [cards.md](cards.md) — Card
-- [section-block.md](section-block.md) — Section Block
+- [section-block.md](section-block.md) — Section block
 - [inputs.md](inputs.md) — Input
 - [alerts.md](alerts.md) — Alert
 - [badges.md](badges.md) — Badge
 - [lists.md](lists.md) — List
 - [avatars.md](avatars.md) — Avatar
-- [icon-shapes.md](icon-shapes.md) — Icon Shape
+- [icon-shapes.md](icon-shapes.md) — Icon shape
 - [accordion.md](accordion.md) — Accordion
 - [dropdown.md](dropdown.md) — Dropdown
 - [modals.md](modals.md) — Modal
@@ -57,12 +65,12 @@ Keep the existing explicit choice/OS preference behaviour and verify affected li
 - [tables.md](tables.md) — Table
 - [pagination.md](pagination.md) — Pagination
 - [sidebars.md](sidebars.md) — Sidebar
-- [radios-checkboxes-toggle.md](radios-checkboxes-toggle.md) — Radio, Checkbox,
-- [tooltips-popovers.md](tooltips-popovers.md) - Tooltips and popovers
-- [content.md](content.md) - Content grid and layout system
+- [radios-checkboxes-toggle.md](radios-checkboxes-toggle.md) — Radio, checkbox, toggle
+- [tooltips-popovers.md](tooltips-popovers.md) — Tooltip, popover
+- [content.md](content.md) — Content grid
 
-### CRM-Specific Components
+### CRM Components
 
-- [status-indicators.md](status-indicators.md) - Job/project status, pipeline stages, priority |
-- [stats-cards.md](stats-cards.md) - KPI metric cards, trend indicators, featured stats
-- Charts and timelines — inspect existing implementation; no dedicated Classic module exists.
+- [status-indicators.md](status-indicators.md) — Job and project status, pipeline stages, priority
+- [stats-cards.md](stats-cards.md) — KPI cards, trends, featured stats
+- Charts and timelines have no module yet; follow the existing implementation.
