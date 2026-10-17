@@ -2,70 +2,67 @@
 
 ## Summary
 
-Two phases, in this order. **Phase A — finish today's design:** every screen already designed in Pencil
-(`classic.pen`, "App look") is built in the app, and the shared parts are updated so each change reaches every
-page. Screens with no design yet are designed in the same look and built. Then the old code is deleted, so one
-look and no leftovers remain. **Phase B — the new design concept:** a real redesign, researched and designed
-like the best product teams, applied across the whole app. Phase B starts only when Phase A is complete.
+A new design concept for the whole contractor app. It is drawn in Pencil (`concept.pen`) from the app's own
+colours, sizes and spacing, then each screen goes **design → review → approve → build** (Jafar, 2026-10-17).
+New buttons, parts and screens are allowed; the look follows
+[Jafar's design brief](../.claude/skills/design/SKILL.md#jafars-design-brief), which every agent reads before
+designing.
 
 ## Problem and audience
 
-Screens grew one by one and the look was never one system. Contractors and office staff open the app between
-jobs and want to see what needs them right now. Phase A makes today's look consistent and removes old code so
-Phase B has a clean base.
+Screens grew one by one and the look was never one system, and today's look reads plain. Contractors and office
+staff open the app between jobs and want to see what needs them right now, in a product that feels premium.
 
 ## First version
 
-**Phase A**
-- Every designed screen built: Home, Schedule (all states), Inbox, Settings, and the Quote, Request, Invoice,
-  Client and Payment detail pages. Already built on branch `claude/jobs-list-app-look`: shell, Jobs, Clients,
-  Requests, Quotes, Invoices lists, Job details.
-- Screens with no Pencil design (Timesheets, Pipeline, Files, Marketing, Reviews, Reports) designed in the same
-  look, approved by Jafar, then built.
-- Shared parts become the only look (table, filter chips, load more, page header, shell), Control Room
-  included. Old styles and unused options deleted. Docs and design skills updated to match.
-
-**Phase B**
-- Research findings in `docs/research/`: what leading products show and omit per screen.
-- One approved concept in Pencil: colour rules, type, spacing, shell, core parts.
-- Pilot screens approved (Home, Jobs list, Job details), then the whole app rolled out, in the shared parts.
+1. **Foundation — approved 2026-10-17.** Two boards in `concept.pen`: "Colour that means something" (record,
+   section and status colours, the colourful-icon rule) and "The parts every screen is built from" (buttons,
+   status pills, icon tiles, fields, cards, list rows, table, sidebar, top bar, dark preview). Four new colour
+   families were added from shades the app already has: `color-time` (Schedule, Timesheets),
+   `color-conversation` (Inbox), `color-growth` (Pipeline, Marketing, Reports), `color-review` (Reviews), each
+   with `-surface` and `-on-surface`, plus `radius-circle`. The sidebar follows the work order Requests → Quotes →
+   Jobs → Invoices, as Jobber does.
+2. **Pilot screens**, one per session, each approved: Home, Jobs list, Job details.
+3. **Every other screen**, each approved. Once a pattern is approved, several screens may be drawn in parallel
+   by helper agents, each reviewed against the brief before Jafar sees it.
+4. **Build.** Approved screens are built through shared parts. New variables go into
+   `src/lib/styles/_variables.scss` and the design skill in the same commit as Pencil. When every screen uses the
+   concept, the old look and its unused code are deleted.
 
 ## Experience target
 
-- Premium, polished, modern, clear and calm, in the spirit of strong Dribbble product work.
-- Each screen shows what a contractor most needs to see. No vague or useless blocks.
-- Colourful where colour matters: record type, section or status, to add meaning and improve the look. Never
-  decoration, never a rainbow. Brand green stays `#037741`.
-- Desktop web app. No phone-size design work.
-- Research only shows what products show and leave out. It never means copying a design.
-- **Phase B is a new concept, not a polish of today's pages.** Layout, grouping and the content of each screen
-  can differ from the live page, as the Pencil Job details already differs from the live one. The test is what
-  a contractor most needs on that screen, not what the page has today.
+The [design brief](../.claude/skills/design/SKILL.md#jafars-design-brief) is the target. On top of it:
+
+- **A new concept, not a polish of today's pages.** Layout, grouping and content can differ from the live page.
+  The test is what a contractor most needs on that screen.
+- Each screen is researched first: what leading products (Jobber first) show and leave out. Never a copy.
 
 ## Not doing
 
 - Copying any product's design.
-- Phone layouts.
-- Phase A adds no new features or behaviour: it changes the look only.
-- Phase B may rearrange screens and change what each shows. When the concept needs data or behaviour the app
-  lacks, list it for Jafar's decision before building; never build it silently.
-- Phase B work before Phase A is complete (Jafar, 2026-10-16).
+- Phone layouts (the native apps come later).
+- Building a screen before Jafar approves its Pencil design.
+- New data or behaviour built silently: a design that needs it lists it for Jafar's decision first.
+
+## Earlier work (Phase A, before 2026-10-17)
+
+The first plan finished today's "App look" before starting a concept. Built and on main: shell, Jobs, Clients,
+Requests, Quotes and Invoices lists, the six record pages, Home, Inbox, 25 Settings pages, and Schedule. Stopped
+on 2026-10-17: drawing the undesigned screens (Timesheets, Pipeline, Files, Marketing, Reviews, Reports) in the
+App look, and a separate old-code cleanup. Both now happen inside the concept. `classic.pen` keeps the App-look
+designs as the record of the live app.
 
 ## Still unclear
 
-- Whether to merge Phase A to main in steps or all at once.
-- The order of the undesigned screens.
-- Open Phase A questions from the list builds: dark mode of the money card, "Changes requested" colour,
-  whether data-less design pieces (Quotes totals, Client book, Job lifecycle strip) get built or trimmed.
+- How the concept reaches users: the whole app switches at once, or screen by screen. Decide before building.
+- Whether money cards stay light in dark mode (Jafar's App-look decision of 2026-10-16) in the concept.
+- The "Changes requested" colour on Quotes.
 
 ## Sources and design decisions
 
-- Built so far (2026-10-16): branch `claude/jobs-list-app-look`, worktree `.worktrees/jobs-list-app-look`.
-- Decision 2026-10-16 (Jafar): one look everywhere, Control Room included; old styles deleted, not kept.
-- Decision 2026-10-16 (Jafar): Needs attention tiles filter their list.
-- Decision 2026-10-17 (Jafar): "original all approved" — use the original Settings designs,
-  including the Taxes dark featured card (`o1A1w`) and Checklists three-column card grid
-  (`YZ8Wg`), rather than alternative B (`dPdYI`, `N7x4v`). The original Settings direction
-  is approved for continuation and implementation. Unshown sub-pages still follow the
-  project's design approval rule. This records visual approval, not completion of the build
-  or permission to merge the separately held Schedule branch.
+- Colour meanings follow Jobber's own design system (Atlantis), whose record colours the app already uses:
+  `.claude/skills/design-classic/colors.md` § Workflow colors.
+- Coloured icons used sparingly to show meaning: Apple Human Interface Guidelines, Sidebars — "fixed colors can
+  help clarify the meaning of an icon" (https://developer.apple.com/design/human-interface-guidelines/sidebars).
+- Decision 2026-10-17 (Jafar): concept work starts now with the simple flow; Phase A screens already built stay.
+- Decision 2026-10-17 (Jafar): Foundation boards approved.
