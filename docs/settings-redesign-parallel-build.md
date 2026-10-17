@@ -21,10 +21,8 @@ their page-local components. Counts are routes, not independently designed layou
 | Session | Routes | Count | Branch / working folder | Port |
 | --- | --- | --- | --- | --- |
 | Codex business sub-agent | root, business-profile, business-hours, branding, security | 5 | `codex/settings-business-app`, `/tmp/ucrm-settings-business-app` | 5211 |
-| Codex billing sub-agent | taxes, payments, quotes, invoices, invoices/opening-balances/import | 5 | `codex/settings-billing-app`, `/tmp/ucrm-settings-billing-app` | 5212 |
-| Codex team sub-agent | team, team/activity, team/[userId] | 3 | `codex/settings-team-app`, `/tmp/ucrm-settings-team-app` | 5213 |
 | OpenCode | communications/email, communications/sms, communications/website-chat | 3 | `codex/settings-communications-app`, `/tmp/ucrm-settings-communications-app` | 5214 |
-| Claude | price-book, price-book/import, automation, automation/new, automation/[id], automation/[id]/edit, forms, forms/[id], pipeline, checklists | 10 | `codex/settings-workflows-app`, `/tmp/ucrm-settings-workflows-app` | 5215 |
+| Claude | price-book, pipeline, checklists | 3 | `codex/settings-workflows-app`, `/tmp/ucrm-settings-workflows-app` | 5215 |
 
 Jafar narrowed OpenCode's assignment to three pages on 2026-10-17. The other seven
 routes (communications/balance, communications/blocked-addresses,
@@ -32,7 +30,14 @@ communications/templates, communications/snippets, alerts, inquiry-alerts and
 contact-matching) are unassigned for a later batch. This supersedes earlier
 ten-page OpenCode handoffs. EmailSetupCard remains owned by OpenCode for its three pages.
 
-Codex parent reviews the first three groups and owns integration. OpenCode and
+Jafar then narrowed the entire first batch to Codex 5, OpenCode 3 and Claude 3:
+11 routes total. Codex billing and team implementation are paused. Claude's
+price-book/import, automation (all four routes), forms and forms/[id] are deferred.
+These reductions supersede all earlier wider handoffs and component ownership
+applies only to the active routes. Keep any already started deferred work isolated
+and checkpointed; it is outside this batch.
+
+Codex parent reviews the business group and owns integration. OpenCode and
 Claude are separate user-run sessions; they have not started just because this
 brief exists. Each session must claim its group from its working folder before
 editing. Read existing claims; held design, Schedule and Memory claims stay held.
@@ -42,7 +47,9 @@ editing. Read existing claims; held design, Schedule and Memory claims stay held
 1. Read `AGENTS.md`, the campaign contract and this brief. Load campaign-memory,
    proven-development, design → design-classic and Svelte skills. Reuse settled
    product research; load domain-specific skills when touching their subject.
-2. Use the assigned branch and folder. Run the register's `list`, then `claim
+2. Read the latest brief in `/tmp/ucrm-settings-approval/docs/settings-redesign-parallel-build.md`
+   if your worktree contains an older copy. Use the assigned branch and folder.
+   Run the register's `list`, then `claim
    contractor-design-concept settings-<group>-app --owner <session> --mode write
    --area settings-<group>-ui`. Groups: business, billing, team, communications,
    workflows. Reserve `settings-<group>-progress` for the group's progress note.
