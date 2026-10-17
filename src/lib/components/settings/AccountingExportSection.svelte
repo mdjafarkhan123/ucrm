@@ -41,6 +41,7 @@
 
 <SectionBlock
 	title="Accounting export"
+	icon={downloadIcon}
 	hint="One zip with a spreadsheet for each money record — sales, tax, payments, refunds, deposits, balances, job costs, hours, expenses, unbilled work and won deals — plus a totals summary your accountant can check."
 	level={2}
 	form
@@ -86,7 +87,8 @@
 <style lang="scss">
 	.accounting-export {
 		display: flex;
-		flex-direction: column;
+		flex-wrap: wrap;
+		align-items: flex-end;
 		gap: var(--space-base);
 
 		&__dates {
@@ -94,9 +96,11 @@
 			grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 			gap: var(--space-base);
 			max-width: 520px;
+			flex: 1 1 400px;
 		}
 
 		&__action {
+			flex: 1 1 360px;
 			display: flex;
 			flex-wrap: wrap;
 			align-items: center;
@@ -117,6 +121,8 @@
 
 		&__problem,
 		&__note {
+			flex: 1;
+			min-width: 180px;
 			margin: 0;
 			font-size: var(--typography--fontSize-small);
 			color: var(--color-text--secondary);

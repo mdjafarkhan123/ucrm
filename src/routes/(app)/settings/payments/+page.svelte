@@ -2,8 +2,7 @@
 	import { untrack } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { beforeNavigate } from '$app/navigation';
-	import { resolve } from '$app/paths';
-	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
+	import SettingsPresentation from '$lib/components/settings/SettingsPresentation.svelte';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
@@ -342,243 +341,247 @@
 {:else}
 	{@const stripe = query.data.stripe}
 
-	<Breadcrumbs
-		items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Payments' }]}
-	/>
-
-	<RecordFormLayout title="Payments" icon={creditCardIcon} bind:this={layout} error={saveError}>
-		{#snippet main()}
-			<SectionBlock
-				title="Card payments with Stripe"
-				icon={stripeIcon}
-				hint="Customers pay by card, Apple Pay, Google Pay or bank on Stripe’s secure page. Money goes straight to your own Stripe account — UCRM never holds it."
-				level={3}
-			>
-				{#if stripe.connected}
-					<div class="payments__status">
-						<div class="payments__status-main">
-							<span class="payments__status-name">
-								Connected as {stripe.account_name ?? stripe.stripe_account_id}
-							</span>
-							{#if stripe.livemode}
-								<Badge status="success">Live</Badge>
-							{:else}
-								<Badge status="informative">Test mode</Badge>
-							{/if}
+	<SettingsPresentation
+		title="Payments"
+		description="Connect Stripe so customers can pay invoices and deposits online."
+		icon={creditCardIcon}
+	>
+		<RecordFormLayout title="Payments" icon={creditCardIcon} bind:this={layout} error={saveError}>
+			{#snippet main()}
+				<SectionBlock
+					title="Card payments with Stripe"
+					icon={stripeIcon}
+					hint="Customers pay by card, Apple Pay, Google Pay or bank on Stripe’s secure page. Money goes straight to your own Stripe account — UCRM never holds it."
+					level={2}
+				>
+					{#if stripe.connected}
+						<div class="payments__status">
+							<div class="payments__status-main">
+								<span class="payments__status-name">
+									Connected as {stripe.account_name ?? stripe.stripe_account_id}
+								</span>
+								{#if stripe.livemode}
+									<Badge status="success">Live</Badge>
+								{:else}
+									<Badge status="informative">Test mode</Badge>
+								{/if}
+							</div>
+							<p class="payments__status-meta">
+								Key ending {stripe.key_last4} · Last checked
+								<time datetime={stripe.last_checked_at} title={exactTime(stripe.last_checked_at)}
+									>{relativeTime(stripe.last_checked_at)}</time
+								>
+							</p>
 						</div>
-						<p class="payments__status-meta">
-							Key ending {stripe.key_last4} · Last checked
-							<time datetime={stripe.last_checked_at} title={exactTime(stripe.last_checked_at)}
-								>{relativeTime(stripe.last_checked_at)}</time
-							>
-						</p>
-					</div>
 
-					{#if !stripe.livemode}
-						<p class="payments__note payments__note--info" role="status">
-							Test mode is for practice. Invoices will say “Test mode — no real money”, and you can
-							pay with Stripe’s test card 4242 4242 4242 4242. Replace the key with a live key
-							(rk_live_…) when you’re ready to get paid.
-						</p>
-					{/if}
+						{#if !stripe.livemode}
+							<p class="payments__note payments__note--info" role="status">
+								Test mode is for practice. Invoices will say “Test mode — no real money”, and you
+								can pay with Stripe’s test card 4242 4242 4242 4242. Replace the key with a live key
+								(rk_live_…) when you’re ready to get paid.
+							</p>
+						{/if}
 
-					{#if stripe.last_check_status !== 'ok'}
-						<p class="payments__note payments__note--warning" role="alert">
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							<span class="payments__note-icon" aria-hidden="true">{@html alertIcon}</span>
-							{CHECK_PROBLEMS[stripe.last_check_status]}
-						</p>
-					{/if}
+						{#if stripe.last_check_status !== 'ok'}
+							<p class="payments__note payments__note--warning" role="alert">
+								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+								<span class="payments__note-icon" aria-hidden="true">{@html alertIcon}</span>
+								{CHECK_PROBLEMS[stripe.last_check_status]}
+							</p>
+						{/if}
 
-					{#if replacing}
-						{@render keyForm('Replace key')}
+						{#if replacing}
+							{@render keyForm('Replace key')}
+						{:else}
+							<div class="payments__key-actions">
+								<Button variant="secondary" onclick={recheck} loading={checking} disabled={checking}
+									>Check connection</Button
+								>
+								<Button variant="secondary" onclick={() => (replacing = true)}>Replace key</Button>
+								<Button
+									variant="tertiary"
+									variation="destructive"
+									onclick={() => (confirmDisconnect = true)}>Disconnect</Button
+								>
+							</div>
+						{/if}
 					{:else}
-						<div class="payments__key-actions">
-							<Button variant="secondary" onclick={recheck} loading={checking} disabled={checking}
-								>Check connection</Button
-							>
-							<Button variant="secondary" onclick={() => (replacing = true)}>Replace key</Button>
-							<Button
-								variant="tertiary"
-								variation="destructive"
-								onclick={() => (confirmDisconnect = true)}>Disconnect</Button
-							>
-						</div>
+						{@render keyForm('Connect Stripe')}
 					{/if}
-				{:else}
-					{@render keyForm('Connect Stripe')}
-				{/if}
-			</SectionBlock>
+				</SectionBlock>
 
-			{#if toggles}
-				{@const current = toggles}
-				<SectionBlock
-					title="Payment settings"
-					icon={settingsIcon}
-					hint={stripe.connected
-						? 'What customers can do when they pay you online.'
-						: 'These apply once Stripe is connected.'}
-					form
-					level={3}
-				>
-					{#each TOGGLES as toggle (toggle.key)}
-						<Toggle
-							id={`payments-${toggle.key}`}
-							label={toggle.label}
-							description={toggle.description}
-							checked={current[toggle.key]}
-							labelSide="start"
-							onchange={(checked) => (toggles = { ...current, [toggle.key]: checked })}
+				{#if toggles}
+					{@const current = toggles}
+					<SectionBlock
+						title="Payment settings"
+						icon={settingsIcon}
+						hint={stripe.connected
+							? 'What customers can do when they pay you online.'
+							: 'These apply once Stripe is connected.'}
+						form
+						level={2}
+					>
+						{#each TOGGLES as toggle (toggle.key)}
+							<Toggle
+								id={`payments-${toggle.key}`}
+								label={toggle.label}
+								description={toggle.description}
+								checked={current[toggle.key]}
+								labelSide="start"
+								onchange={(checked) => (toggles = { ...current, [toggle.key]: checked })}
+							/>
+						{/each}
+						<p class="payments__fine-print">
+							Which payment types appear (card, Apple Pay, Google Pay, bank) is chosen inside Stripe
+							under Settings → Payment methods.
+						</p>
+					</SectionBlock>
+
+					<SectionBlock
+						title="Other ways to pay"
+						icon={walletIcon}
+						hint="Fill in only what you use. Customers see these on invoices and quote deposits, alongside card payments if Stripe is connected — or on their own if it isn't."
+						form
+						level={2}
+					>
+						<Input
+							id="pay-by-app-venmo"
+							label="Venmo username"
+							placeholder="yourname"
+							bind:value={
+								() => current.pay_by_app_venmo_username ?? '',
+								(v) => (toggles = { ...current, pay_by_app_venmo_username: v || null })
+							}
+							invalid={Boolean(fieldErrors.pay_by_app_venmo_username)}
+							errorMessage={fieldErrors.pay_by_app_venmo_username ?? ''}
 						/>
-					{/each}
-					<p class="payments__fine-print">
-						Which payment types appear (card, Apple Pay, Google Pay, bank) is chosen inside Stripe
-						under Settings → Payment methods.
-					</p>
-				</SectionBlock>
+						<Input
+							id="pay-by-app-cash-app"
+							label="Cash App $Cashtag"
+							placeholder="yourcashtag"
+							bind:value={
+								() => current.pay_by_app_cash_app_cashtag ?? '',
+								(v) => (toggles = { ...current, pay_by_app_cash_app_cashtag: v || null })
+							}
+							invalid={Boolean(fieldErrors.pay_by_app_cash_app_cashtag)}
+							errorMessage={fieldErrors.pay_by_app_cash_app_cashtag ?? ''}
+						/>
+						<Input
+							id="pay-by-app-paypal"
+							label="PayPal.me username"
+							placeholder="yourname"
+							bind:value={
+								() => current.pay_by_app_paypal_me_username ?? '',
+								(v) => (toggles = { ...current, pay_by_app_paypal_me_username: v || null })
+							}
+							invalid={Boolean(fieldErrors.pay_by_app_paypal_me_username)}
+							errorMessage={fieldErrors.pay_by_app_paypal_me_username ?? ''}
+						/>
+						<Input
+							id="pay-by-app-zelle"
+							label="Zelle email or phone"
+							placeholder="you@example.com"
+							bind:value={
+								() => current.pay_by_app_zelle_contact ?? '',
+								(v) => (toggles = { ...current, pay_by_app_zelle_contact: v || null })
+							}
+							invalid={Boolean(fieldErrors.pay_by_app_zelle_contact)}
+							errorMessage={fieldErrors.pay_by_app_zelle_contact ?? ''}
+						/>
+						<Input
+							id="pay-by-app-e-transfer"
+							label="Interac e-Transfer email"
+							type="email"
+							placeholder="you@example.com"
+							bind:value={
+								() => current.pay_by_app_e_transfer_email ?? '',
+								(v) => (toggles = { ...current, pay_by_app_e_transfer_email: v || null })
+							}
+							invalid={Boolean(fieldErrors.pay_by_app_e_transfer_email)}
+							errorMessage={fieldErrors.pay_by_app_e_transfer_email ?? ''}
+						/>
+						<Textarea
+							id="pay-by-app-bank-transfer"
+							label="Bank transfer instructions"
+							rows={3}
+							maxlength={1000}
+							bind:value={
+								() => current.pay_by_app_bank_transfer_instructions ?? '',
+								(v) => (toggles = { ...current, pay_by_app_bank_transfer_instructions: v || null })
+							}
+							invalid={Boolean(fieldErrors.pay_by_app_bank_transfer_instructions)}
+							errorMessage={fieldErrors.pay_by_app_bank_transfer_instructions ?? ''}
+						/>
+						<p class="payments__fine-print">
+							Venmo, Cash App and PayPal.me open the app with the amount already filled in. Zelle
+							and e-Transfer move money bank-to-bank, so customers see a copy button instead.
+						</p>
+					</SectionBlock>
+				{/if}
+			{/snippet}
 
-				<SectionBlock
-					title="Other ways to pay"
-					icon={walletIcon}
-					hint="Fill in only what you use. Customers see these on invoices and quote deposits, alongside card payments if Stripe is connected — or on their own if it isn't."
-					form
-					level={3}
+			{#snippet rail()}
+				<RailCard title="How to connect" icon={keyIcon}>
+					<ol class="payments__steps">
+						<li>
+							<a
+								href="https://dashboard.stripe.com/register"
+								target="_blank"
+								rel="noopener noreferrer">Create a free Stripe account</a
+							>
+							and finish Stripe’s identity and bank checks.
+						</li>
+						<li>
+							In Stripe, open
+							<a
+								href="https://dashboard.stripe.com/apikeys"
+								target="_blank"
+								rel="noopener noreferrer">API keys</a
+							>
+							and click <strong>Create restricted key</strong>.
+						</li>
+						<li>
+							Pick <strong>Powering an integration you built</strong>, click Continue, then click
+							<strong>Choose your own</strong>. Name the key <strong>UCRM</strong>.
+						</li>
+						<li>
+							Set only these permissions. Leave everything else as <strong>None</strong>.
+							<ul class="payments__permissions">
+								{#each KEY_PERMISSIONS as permission (permission.resource)}
+									<li>
+										<span class="payments__permission-name">{permission.resource}</span>
+										<span class="payments__permission-access">{permission.access}</span>
+										<span class="payments__permission-why">{permission.why}</span>
+									</li>
+								{/each}
+							</ul>
+						</li>
+						<li>Click <strong>Create key</strong>, copy the key, and paste it here.</li>
+					</ol>
+					<p class="payments__fine-print">
+						Want to practice first? Switch Stripe to test mode and make the key there (it starts
+						with rk_test_).
+					</p>
+				</RailCard>
+
+				<RailCard title="Stuck? We’ll set it up with you" icon={lifebuoyIcon}>
+					<p class="payments__rail-text">
+						Contact UCRM support for a free screen-share call and we’ll walk through it together.
+						You paste the key yourself — we never ask you to send it.
+					</p>
+				</RailCard>
+			{/snippet}
+
+			{#snippet actions()}
+				<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
+				<Button
+					onclick={() => void save().finally(() => layout?.revealError())}
+					disabled={!dirty || saving}
+					loading={saving}>Save</Button
 				>
-					<Input
-						id="pay-by-app-venmo"
-						label="Venmo username"
-						placeholder="yourname"
-						bind:value={
-							() => current.pay_by_app_venmo_username ?? '',
-							(v) => (toggles = { ...current, pay_by_app_venmo_username: v || null })
-						}
-						invalid={Boolean(fieldErrors.pay_by_app_venmo_username)}
-						errorMessage={fieldErrors.pay_by_app_venmo_username ?? ''}
-					/>
-					<Input
-						id="pay-by-app-cash-app"
-						label="Cash App $Cashtag"
-						placeholder="yourcashtag"
-						bind:value={
-							() => current.pay_by_app_cash_app_cashtag ?? '',
-							(v) => (toggles = { ...current, pay_by_app_cash_app_cashtag: v || null })
-						}
-						invalid={Boolean(fieldErrors.pay_by_app_cash_app_cashtag)}
-						errorMessage={fieldErrors.pay_by_app_cash_app_cashtag ?? ''}
-					/>
-					<Input
-						id="pay-by-app-paypal"
-						label="PayPal.me username"
-						placeholder="yourname"
-						bind:value={
-							() => current.pay_by_app_paypal_me_username ?? '',
-							(v) => (toggles = { ...current, pay_by_app_paypal_me_username: v || null })
-						}
-						invalid={Boolean(fieldErrors.pay_by_app_paypal_me_username)}
-						errorMessage={fieldErrors.pay_by_app_paypal_me_username ?? ''}
-					/>
-					<Input
-						id="pay-by-app-zelle"
-						label="Zelle email or phone"
-						placeholder="you@example.com"
-						bind:value={
-							() => current.pay_by_app_zelle_contact ?? '',
-							(v) => (toggles = { ...current, pay_by_app_zelle_contact: v || null })
-						}
-						invalid={Boolean(fieldErrors.pay_by_app_zelle_contact)}
-						errorMessage={fieldErrors.pay_by_app_zelle_contact ?? ''}
-					/>
-					<Input
-						id="pay-by-app-e-transfer"
-						label="Interac e-Transfer email"
-						type="email"
-						placeholder="you@example.com"
-						bind:value={
-							() => current.pay_by_app_e_transfer_email ?? '',
-							(v) => (toggles = { ...current, pay_by_app_e_transfer_email: v || null })
-						}
-						invalid={Boolean(fieldErrors.pay_by_app_e_transfer_email)}
-						errorMessage={fieldErrors.pay_by_app_e_transfer_email ?? ''}
-					/>
-					<Textarea
-						id="pay-by-app-bank-transfer"
-						label="Bank transfer instructions"
-						rows={3}
-						maxlength={1000}
-						bind:value={
-							() => current.pay_by_app_bank_transfer_instructions ?? '',
-							(v) => (toggles = { ...current, pay_by_app_bank_transfer_instructions: v || null })
-						}
-						invalid={Boolean(fieldErrors.pay_by_app_bank_transfer_instructions)}
-						errorMessage={fieldErrors.pay_by_app_bank_transfer_instructions ?? ''}
-					/>
-					<p class="payments__fine-print">
-						Venmo, Cash App and PayPal.me open the app with the amount already filled in. Zelle and
-						e-Transfer move money bank-to-bank, so customers see a copy button instead.
-					</p>
-				</SectionBlock>
-			{/if}
-		{/snippet}
-
-		{#snippet rail()}
-			<RailCard title="How to connect" icon={keyIcon}>
-				<ol class="payments__steps">
-					<li>
-						<a
-							href="https://dashboard.stripe.com/register"
-							target="_blank"
-							rel="noopener noreferrer">Create a free Stripe account</a
-						>
-						and finish Stripe’s identity and bank checks.
-					</li>
-					<li>
-						In Stripe, open
-						<a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer"
-							>API keys</a
-						>
-						and click <strong>Create restricted key</strong>.
-					</li>
-					<li>
-						Pick <strong>Powering an integration you built</strong>, click Continue, then click
-						<strong>Choose your own</strong>. Name the key <strong>UCRM</strong>.
-					</li>
-					<li>
-						Set only these permissions. Leave everything else as <strong>None</strong>.
-						<ul class="payments__permissions">
-							{#each KEY_PERMISSIONS as permission (permission.resource)}
-								<li>
-									<span class="payments__permission-name">{permission.resource}</span>
-									<span class="payments__permission-access">{permission.access}</span>
-									<span class="payments__permission-why">{permission.why}</span>
-								</li>
-							{/each}
-						</ul>
-					</li>
-					<li>Click <strong>Create key</strong>, copy the key, and paste it here.</li>
-				</ol>
-				<p class="payments__fine-print">
-					Want to practice first? Switch Stripe to test mode and make the key there (it starts with
-					rk_test_).
-				</p>
-			</RailCard>
-
-			<RailCard title="Stuck? We’ll set it up with you" icon={lifebuoyIcon}>
-				<p class="payments__rail-text">
-					Contact UCRM support for a free screen-share call and we’ll walk through it together. You
-					paste the key yourself — we never ask you to send it.
-				</p>
-			</RailCard>
-		{/snippet}
-
-		{#snippet actions()}
-			<Button variant="secondary" onclick={cancel} disabled={!dirty || saving}>Cancel</Button>
-			<Button
-				onclick={() => void save().finally(() => layout?.revealError())}
-				disabled={!dirty || saving}
-				loading={saving}>Save</Button
-			>
-		{/snippet}
-	</RecordFormLayout>
+			{/snippet}
+		</RecordFormLayout>
+	</SettingsPresentation>
 
 	<ConfirmDialog
 		open={confirmDisconnect}
