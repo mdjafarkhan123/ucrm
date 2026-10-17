@@ -463,21 +463,19 @@
 
 <svelte:head><title>Phone & SMS · Contractor CRM</title></svelte:head>
 
-<PageContainer variant="fill">
-	<div class="sms-settings">
+<PageContainer variant="open">
+	<div class="sms-settings record-detail--cards">
 		<header class="sms-settings__header">
-			<Breadcrumbs
-				items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Phone & SMS' }]}
-			/>
-			<div class="sms-settings__header-row">
-				<span class="sms-settings__header-icon" aria-hidden="true">
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-					{@html phoneIcon}
-				</span>
-				<div class="sms-settings__header-copy">
-					<h1>Phone & SMS</h1>
-					<p>Understand what is ready and what needs attention.</p>
-				</div>
+			<span class="sms-settings__header-icon" aria-hidden="true">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+				{@html phoneIcon}
+			</span>
+			<div class="sms-settings__header-copy">
+				<Breadcrumbs
+					items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Phone & SMS' }]}
+				/>
+				<h1>Phone & SMS</h1>
+				<p>Understand what is ready and what needs attention.</p>
 			</div>
 		</header>
 
@@ -489,35 +487,46 @@
 				retry={() => homeQuery.refetch()}
 			/>
 		{:else}
-			<SectionBlock title="Readiness" icon={deviceMobileMessageIcon} level={2}>
-				<div class="sms-settings__facts">
-					<div class="sms-settings__fact">
-						<span>SMS mode</span>
-						<strong>
-							{#if readiness.effective_mode === 'operational'
-								}<span class="sms-settings__dot" aria-hidden="true"></span>{/if}
-							{readiness.effective_mode === 'operational' ? 'On' : 'Off'}
-						</strong>
+			<section class="sms-settings__readiness" aria-labelledby="sms-readiness-title">
+				<div class="sms-settings__readiness-row">
+					<div class="sms-settings__readiness-head">
+						<span class="sms-settings__readiness-icon" aria-hidden="true">
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
+							{@html deviceMobileMessageIcon}
+						</span>
+						<h2 id="sms-readiness-title">Readiness</h2>
 					</div>
-					<div class="sms-settings__fact">
-						<span>Registration</span>
-						<strong>
-							<StatusBadge status={smsRegistrationBadge(readiness.readiness_state).tone}
-								>{registrationStatusLabel(registration?.status)}</StatusBadge
-							>
-						</strong>
-					</div>
-					<div class="sms-settings__fact">
-						<span>Ready numbers</span>
-						<strong>{readiness.live_sender_count}</strong>
-					</div>
-					<div class="sms-settings__fact">
-						<span>Outbound availability</span>
-						<strong>
-							{#if readiness.readiness_state === 'ready'
-								}<span class="sms-settings__dot" aria-hidden="true"></span>{/if}
-							{readiness.readiness_state === 'ready' ? 'Available' : 'Not yet available'}
-						</strong>
+					<div class="sms-settings__facts">
+						<div class="sms-settings__fact">
+							<span>SMS mode</span>
+							<strong>
+								{#if readiness.effective_mode === 'operational'
+									}<span class="sms-settings__dot" aria-hidden="true"></span>{/if}
+								{readiness.effective_mode === 'operational' ? 'On' : 'Off'}
+							</strong>
+						</div>
+						<div class="sms-settings__fact">
+							<span>Registration</span>
+							<strong>
+								<StatusBadge
+									size="compact"
+									status={smsRegistrationBadge(readiness.readiness_state).tone}
+									>{registrationStatusLabel(registration?.status)}</StatusBadge
+								>
+							</strong>
+						</div>
+						<div class="sms-settings__fact">
+							<span>Ready numbers</span>
+							<strong>{readiness.live_sender_count}</strong>
+						</div>
+						<div class="sms-settings__fact">
+							<span>Outbound availability</span>
+							<strong>
+								{#if readiness.readiness_state === 'ready'
+									}<span class="sms-settings__dot" aria-hidden="true"></span>{/if}
+								{readiness.readiness_state === 'ready' ? 'Available' : 'Not yet available'}
+							</strong>
+						</div>
 					</div>
 				</div>
 
@@ -542,7 +551,7 @@
 						Approved. A sending number still needs to be linked to finish setup.
 					</p>
 				{/if}
-			</SectionBlock>
+			</section>
 
 			{#if registration}
 				<SectionBlock
@@ -1119,81 +1128,155 @@
 		flex-direction: column;
 		gap: var(--space-large);
 	}
-	.sms-settings :global(.section-block) {
-		--section-block-notch: var(--color-surface);
+	/* App-look cards: each block is a white card on the app background. The shared card rules (the
+	   `record-detail--cards` context) put the heading and actions inside the card header; the page only
+	   restores the framed icon tile and the spacing the approved frame shows. */
+	.sms-settings.record-detail--cards :global(.section-block) :global(.section-block__title) {
+		gap: var(--space-slim);
+	}
+	.sms-settings.record-detail--cards :global(.section-block) :global(.section-block__icon) {
+		display: grid;
+		place-items: center;
+		flex: 0 0 auto;
+		width: 36px;
+		height: 36px;
+		border-radius: var(--radius-base);
+		background: var(--color-informative--surface);
+	}
+	.sms-settings.record-detail--cards :global(.section-block) :global(.section-block__icon svg) {
+		width: 18px;
+		height: 18px;
+		color: var(--color-informative--onSurface);
 	}
 
-	/* Page header: breadcrumbs, then a colored icon tile beside the title and description. */
-	.sms-settings__header-row {
+	/* Page header: a 60px blue tile beside the breadcrumb, 36px title and sentence, as in the approved frame. */
+	.sms-settings__header {
 		display: flex;
 		align-items: flex-start;
-		gap: var(--space-base);
+		gap: 18px;
+		margin-top: 16px;
 	}
 	.sms-settings__header-icon {
 		display: grid;
-		place-items: center;
-		width: 44px;
-		height: 44px;
 		flex: 0 0 auto;
-		border-radius: var(--radius-base);
-		color: var(--color-informative--onSurface);
-		background: var(--color-informative--surface);
+		place-items: center;
+		width: 60px;
+		height: 60px;
+		margin-top: 4px;
+		border-radius: 18px;
+		color: var(--color-text--reverse);
+		background: var(--color-task);
+		box-shadow: 0 6px 16px color-mix(in srgb, var(--color-task) 35%, transparent);
 	}
 	.sms-settings__header-icon :global(svg) {
 		display: block;
-		width: 22px;
-		height: 22px;
+		width: 28px;
+		height: 28px;
 	}
 	.sms-settings__header-copy {
 		display: grid;
-		gap: 2px;
 		min-width: 0;
 
+		:global(.breadcrumbs) {
+			margin-bottom: 4px;
+			font-size: 13px;
+			font-weight: 600;
+		}
+		:global(.breadcrumbs a svg) {
+			display: none;
+		}
 		h1 {
 			margin: 0;
 			color: var(--color-heading);
-			font-size: var(--typography--fontSize-jumbo);
+			font-size: 36px;
 			font-weight: 900;
 			letter-spacing: -1.2px;
 			line-height: var(--typography--lineHeight-tight);
 		}
 		p {
-			margin: 0;
-			max-width: 65ch;
+			margin: 2px 0 0;
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-base);
+			font-size: 14px;
 			font-weight: 500;
 			line-height: var(--typography--lineHeight-large);
 		}
 	}
 
-	/* Readiness: four facts in one row with thin dividers between them. */
-	.sms-settings__facts {
+	/* Readiness strip: the framed heading and the four facts share one row, with thin dividers between. */
+	.sms-settings__readiness {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-base);
+		padding: 18px var(--space-large);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface);
+	}
+	.sms-settings__readiness-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-large);
+	}
+	.sms-settings__readiness-head {
+		display: flex;
+		flex: 0 0 auto;
+		align-items: center;
+		gap: var(--space-slim);
+	}
+	.sms-settings__readiness-icon {
 		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		column-gap: var(--space-large);
-		row-gap: var(--space-base);
-		margin-bottom: var(--space-base);
+		place-items: center;
+		width: 36px;
+		height: 36px;
+		border-radius: var(--radius-base);
+		color: var(--color-informative--onSurface);
+		background: var(--color-informative--surface);
+	}
+	.sms-settings__readiness-icon :global(svg) {
+		display: block;
+		width: 18px;
+		height: 18px;
+	}
+	.sms-settings__readiness-head h2 {
+		margin: 0;
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-large);
+		font-weight: 700;
+		letter-spacing: -0.2px;
+		line-height: var(--typography--lineHeight-tight);
+	}
+	.sms-settings__facts {
+		display: flex;
+		flex: 1 1 auto;
+		align-items: center;
+		gap: var(--space-large);
+		min-width: 0;
+		padding-left: var(--space-large);
+		border-left: var(--border-base) solid var(--color-border);
 	}
 	.sms-settings__fact {
 		display: grid;
+		flex: 1 1 0;
 		gap: var(--space-smaller);
+		min-width: 0;
 
 		span {
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
 		}
 		strong {
 			display: inline-flex;
 			align-items: center;
 			gap: var(--space-smaller);
 			color: var(--color-heading);
-			font-size: var(--typography--fontSize-large);
+			font-size: 17px;
+			font-weight: 700;
 		}
 	}
-	.sms-settings__fact:nth-child(n + 2) {
-		border-left: var(--border-base) solid var(--color-border);
+	.sms-settings__fact + .sms-settings__fact {
 		padding-left: var(--space-large);
+		border-left: var(--border-base) solid var(--color-border);
 	}
 	.sms-settings__dot {
 		width: 8px;
@@ -1241,8 +1324,11 @@
 		background: var(--color-critical--surface);
 	}
 	.sms-settings__notice--success {
-		color: var(--color-success--onSurface);
-		background: var(--color-success--surface);
+		color: var(--color-text);
+		background: var(--color-surface--background--subtle);
+	}
+	.sms-settings__notice--success .sms-settings__notice-icon {
+		color: var(--color-success);
 	}
 	.sms-settings__notice-icon {
 		display: inline-flex;
@@ -1377,9 +1463,9 @@
 	.sms-settings__number-row {
 		display: flex;
 		flex-wrap: wrap;
-		align-items: center;
-		gap: var(--space-base);
-		padding: var(--space-base);
+		align-items: flex-start;
+		gap: 12px;
+		padding: 14px 16px;
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 	}
@@ -1389,7 +1475,7 @@
 		width: 36px;
 		height: 36px;
 		flex: 0 0 auto;
-		border-radius: var(--radius-circle);
+		border-radius: var(--radius-base);
 		color: var(--color-informative--onSurface);
 		background: var(--color-informative--surface);
 	}
@@ -1399,12 +1485,11 @@
 		height: 18px;
 	}
 	.sms-settings__number-main {
-		display: flex;
+		display: grid;
 		flex: 1 1 0;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: var(--space-base);
-		min-width: 0;
+		align-content: start;
+		gap: 8px;
+		min-width: 12rem;
 
 		:global(.input) {
 			flex: 1 1 10rem;
@@ -1430,8 +1515,8 @@
 		gap: var(--space-small);
 	}
 	.sms-settings__number-badges :global(.sms-settings__chip-default) {
-		color: var(--color-surface);
-		background: var(--color-surface--reverse);
+		color: var(--color-informative--onSurface);
+		background: var(--color-informative--surface);
 	}
 	.sms-settings__number-actions {
 		display: flex;

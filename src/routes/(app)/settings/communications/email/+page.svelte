@@ -33,6 +33,7 @@
 	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import atIcon from '@tabler/icons/outline/at.svg?raw';
 	import gaugeIcon from '@tabler/icons/outline/gauge.svg?raw';
 	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
@@ -305,21 +306,20 @@
 
 <svelte:head><title>Email identity · Contractor CRM</title></svelte:head>
 
-<PageContainer variant="fill">
-	<div class="email-identities">
-		<Breadcrumbs
-			items={[
-				{ label: 'Settings', href: resolve('/(app)/settings') },
-				{ label: 'Email identity' }
-			]}
-		/>
-
+<PageContainer variant="open">
+	<div class="email-identities record-detail--cards">
 		<header class="email-identities__header">
 			<span class="email-identities__header-icon" aria-hidden="true">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-				{@html mailIcon}
+				{@html atIcon}
 			</span>
-			<div>
+			<div class="email-identities__header-copy">
+				<Breadcrumbs
+					items={[
+						{ label: 'Settings', href: resolve('/(app)/settings') },
+						{ label: 'Email identity' }
+					]}
+				/>
 				<h1>Email identity</h1>
 				<p>Choose the verified email addresses your team and automations can use.</p>
 			</div>
@@ -444,6 +444,7 @@
 		<EmailSetupCard />
 
 		<SectionBlock
+			class="section-block--flush"
 			title="Sender identities"
 			hint="Domains are provisioned and verified by UCRM."
 			icon={mailIcon}
@@ -707,43 +708,82 @@
 		flex-direction: column;
 		gap: var(--space-large);
 	}
-	.email-identities > :global(.breadcrumbs) {
-		margin-bottom: 0;
+	.email-identities {
+		gap: 20px;
 	}
-	.email-identities :global(.section-block) {
-		--section-block-notch: var(--color-surface);
+	/* App-look cards: each block is a white card on the app background. The shared card rules (the
+	   `record-detail--cards` context) put the heading, hint and actions inside the card header; the page
+	   only restores the framed icon tile, which sits beside both header lines as the approved frame shows. */
+	.email-identities.record-detail--cards :global(.section-block > .section-block__title) {
+		padding-left: 72px;
+	}
+	.email-identities.record-detail--cards :global(.section-block:has(> .section-block__hint)) {
+		> :global(.section-block__hint) {
+			margin-left: 72px;
+		}
+	}
+	.email-identities.record-detail--cards :global(.section-block .section-block__icon) {
+		position: absolute;
+		top: 20px;
+		left: 24px;
+		display: grid;
+		place-items: center;
+		width: 36px;
+		height: 36px;
+		border-radius: 11px;
+		background: var(--color-informative--surface);
+	}
+	.email-identities.record-detail--cards :global(.section-block .section-block__icon svg) {
+		width: 18px;
+		height: 18px;
+		color: var(--color-informative--onSurface);
 	}
 	.email-identities__header {
 		display: flex;
-		align-items: center;
-		gap: var(--space-base);
+		align-items: flex-start;
+		gap: 18px;
+		margin-top: 16px;
 	}
 	.email-identities__header-icon {
-		display: flex;
+		display: grid;
 		flex: 0 0 auto;
-		align-items: center;
-		justify-content: center;
-		width: 44px;
-		height: 44px;
-		border-radius: var(--radius-base);
-		color: var(--color-informative--onSurface);
-		background: var(--color-informative--surface);
+		place-items: center;
+		width: 60px;
+		height: 60px;
+		margin-top: 4px;
+		border-radius: 18px;
+		color: var(--color-text--reverse);
+		background: var(--color-task);
+		box-shadow: 0 6px 16px color-mix(in srgb, var(--color-task) 35%, transparent);
 	}
 	.email-identities__header-icon :global(svg) {
-		width: 20px;
-		height: 20px;
+		width: 28px;
+		height: 28px;
+	}
+	.email-identities__header-copy {
+		min-width: 0;
+	}
+	.email-identities__header-copy :global(.breadcrumbs) {
+		margin-bottom: 4px;
+		font-size: 13px;
+		font-weight: 600;
+	}
+	.email-identities__header-copy :global(.breadcrumbs a svg) {
+		display: none;
 	}
 	.email-identities__header h1 {
 		margin: 0;
 		color: var(--color-heading);
-		font-size: var(--typography--fontSize-jumbo);
-		font-weight: 700;
+		font-size: 36px;
+		font-weight: 900;
+		letter-spacing: -1.2px;
 		line-height: var(--typography--lineHeight-tight);
 	}
 	.email-identities__header p {
 		margin: var(--space-smaller) 0 0;
 		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-large);
+		font-size: 14px;
+		font-weight: 500;
 		line-height: var(--typography--lineHeight-large);
 	}
 	.email-identities__notice,
@@ -777,15 +817,19 @@
 		width: var(--typography--fontSize-large);
 		height: var(--typography--fontSize-large);
 	}
-	.email-usage__meters {
+	.email-identities .email-usage__meters {
 		display: grid;
-		gap: var(--space-large);
+		margin: 0 24px 14px;
+		gap: 16px;
 		grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
 	}
 	.email-usage__meter {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-small);
+		gap: 10px;
+		padding: 16px 18px;
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background--subtle);
 	}
 	.email-usage__meter-head {
 		display: flex;
@@ -817,7 +861,7 @@
 	.email-usage__track {
 		height: var(--space-small);
 		border-radius: var(--radius-circle);
-		background: var(--color-border);
+		background: var(--color-surface--active);
 		overflow: hidden;
 	}
 	.email-usage__fill {
@@ -830,11 +874,11 @@
 	.email-usage__fill--reserve {
 		background: var(--color-warning);
 	}
-	.email-usage__reset {
+	.email-identities .email-usage__reset {
 		display: flex;
 		align-items: center;
 		gap: var(--space-smaller);
-		margin: 0;
+		margin: 0 24px 22px;
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 	}

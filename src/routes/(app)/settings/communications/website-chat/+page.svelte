@@ -31,6 +31,7 @@
 		type WebsiteChatWidget
 	} from '$lib/communications/website-chat';
 	import messageCircleIcon from '@tabler/icons/outline/message-circle.svg?raw';
+	import refreshIcon from '@tabler/icons/outline/refresh.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -343,16 +344,18 @@
 
 <svelte:head><title>Website Chat · Contractor CRM</title></svelte:head>
 
-<PageContainer variant="fill">
-	<div class="website-chat">
-		<Breadcrumbs
-			items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Website Chat' }]}
-		/>
-
+<PageContainer variant="open">
+	<div class="website-chat record-detail--cards">
 		<header class="website-chat__header">
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			<span class="website-chat__header-icon" aria-hidden="true">{@html messageCircleIcon}</span>
 			<div class="website-chat__header-copy">
+				<Breadcrumbs
+					items={[
+						{ label: 'Settings', href: resolve('/(app)/settings') },
+						{ label: 'Website Chat' }
+					]}
+				/>
 				<h1>Website Chat</h1>
 				<p>The chat widgets your website can show customers.</p>
 			</div>
@@ -381,7 +384,13 @@
 								>{:else if conversationUsage?.state === 'unlimited'}<small>· unlimited</small>{/if}</strong
 						>
 						{#if conversationUsage?.period_ends_at}
-							<small>Resets {formatPeriodEnd(conversationUsage.period_ends_at)}</small>
+							<small class="website-chat__usage-reset">
+								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+								<span class="website-chat__usage-reset-icon" aria-hidden="true"
+									>{@html refreshIcon}</span
+								>
+								Resets {formatPeriodEnd(conversationUsage.period_ends_at)}
+							</small>
 						{/if}
 					</div>
 					{#if conversationUsage?.state === 'numeric'}
@@ -426,6 +435,7 @@
 			</SectionBlock>
 
 			<SectionBlock
+				class="section-block--flush"
 				title="Widgets"
 				hint={limit?.is_unlimited
 					? `${widgetsUsed} widget${widgetsUsed === 1 ? '' : 's'} · unlimited`
@@ -703,12 +713,42 @@
 
 <style lang="scss">
 	.website-chat {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-large);
+		display: grid;
+		gap: 20px;
+		align-content: start;
 	}
-	.website-chat :global(.section-block) {
-		--section-block-notch: var(--color-surface);
+	/* App-look cards: each block is a white card on the app background. The shared card rules (the
+	   `record-detail--cards` context) put the heading, hint and actions inside the card header; the page
+	   only restores the framed icon tile and the spacing the approved frame shows. */
+	.website-chat.record-detail--cards :global(.section-block) :global(.section-block__title) {
+		gap: var(--space-slim);
+	}
+	.website-chat.record-detail--cards :global(.section-block) :global(.section-block__icon) {
+		display: grid;
+		place-items: center;
+		flex: 0 0 auto;
+		width: 36px;
+		height: 36px;
+		border-radius: var(--radius-base);
+		background: var(--color-informative--surface);
+	}
+	.website-chat.record-detail--cards :global(.section-block) :global(.section-block__icon svg) {
+		width: 18px;
+		height: 18px;
+		color: var(--color-informative--onSurface);
+	}
+	.website-chat.record-detail--cards
+		:global(.section-block:has(> .section-block__hint))
+		> :global(.section-block__hint) {
+		margin-left: calc(var(--space-large) + 36px + var(--space-slim));
+	}
+	.website-chat.record-detail--cards
+		:global(.section-block:has(> .section-block__hint) > .section-block__title) {
+		align-self: end;
+	}
+	.website-chat.record-detail--cards
+		:global(.section-block:has(> .section-block__hint) > .section-block__hint) {
+		align-self: start;
 	}
 	.website-chat__notice {
 		margin: 0 0 var(--space-base);
@@ -727,28 +767,40 @@
 	}
 	.website-chat__header {
 		display: flex;
-		align-items: center;
-		gap: var(--space-base);
+		align-items: flex-start;
+		gap: 18px;
+		margin-top: 16px;
 	}
 	.website-chat__header-icon {
 		display: inline-flex;
 		flex: 0 0 auto;
 		align-items: center;
 		justify-content: center;
-		width: 44px;
-		height: 44px;
-		border-radius: var(--radius-base);
-		color: var(--color-informative--onSurface);
-		background: var(--color-informative--surface);
+		width: 60px;
+		height: 60px;
+		margin-top: 4px;
+		border-radius: 18px;
+		color: var(--color-white);
+		background: var(--color-task);
+		box-shadow: 0 6px 16px color-mix(in srgb, var(--color-task) 35%, transparent);
 
 		:global(svg) {
-			width: 22px;
-			height: 22px;
+			width: 28px;
+			height: 28px;
 		}
 	}
 	.website-chat__header-copy {
 		display: grid;
 		gap: var(--space-smaller);
+
+		:global(.breadcrumbs) {
+			margin-bottom: 0;
+			font-size: 13px;
+			font-weight: 600;
+		}
+		:global(.breadcrumbs a svg) {
+			display: none;
+		}
 
 		h1,
 		p {
@@ -757,21 +809,29 @@
 
 		h1 {
 			color: var(--color-heading);
-			font-size: var(--typography--fontSize-jumbo);
-			font-weight: 700;
-			line-height: var(--typography--lineHeight-minuscule);
+			font-size: 36px;
+			font-weight: 900;
+			letter-spacing: -1.2px;
+			line-height: var(--typography--lineHeight-tight);
 		}
 
 		p {
+			max-width: none;
 			color: var(--color-text--secondary);
+			font-size: 14px;
+			font-weight: 500;
 			line-height: var(--typography--lineHeight-large);
 		}
 	}
+	/* The usage row sits in its own quiet tile, as the approved frame draws it. */
 	.website-chat__usage {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) minmax(200px, 40%);
 		align-items: center;
-		gap: var(--space-large);
+		gap: var(--space-larger);
+		padding: 18px 20px;
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background--subtle);
 	}
 	.website-chat__usage-copy {
 		display: grid;
@@ -788,7 +848,11 @@
 		}
 
 		> small {
+			display: flex;
+			align-items: center;
+			gap: var(--space-smaller);
 			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
 		}
 
 		strong {
@@ -796,22 +860,31 @@
 			align-items: baseline;
 			gap: var(--space-smaller);
 			color: var(--color-heading);
-			font-size: var(--typography--fontSize-larger);
+			font-size: var(--typography--fontSize-largest);
 			font-weight: 700;
 
 			small {
 				color: var(--color-text--secondary);
-				font-size: var(--typography--fontSize-base);
+				font-size: 15px;
 				font-weight: 600;
 			}
+		}
+	}
+	.website-chat__usage-reset-icon {
+		display: inline-flex;
+		flex: 0 0 auto;
+
+		:global(svg) {
+			width: 12px;
+			height: 12px;
 		}
 	}
 	.website-chat__meter {
 		overflow: hidden;
 		width: 100%;
-		height: var(--space-small);
+		height: 8px;
 		border-radius: var(--radius-circle);
-		background: var(--color-border);
+		background: var(--color-surface--background--hover);
 	}
 	.website-chat__meter-fill {
 		height: 100%;

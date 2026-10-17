@@ -43,3 +43,34 @@ frames). All deferred until the batch's wider screens are implemented.
 
 Leave the claim held; Codex parent reviews these three files and merges into main with the other
 Settings groups. Deferred checks run after the batch's screens are all implemented.
+
+---
+
+## Claude corrections (2026-10-17, handover from OpenCode)
+
+Branch `codex/settings-communications-claude`, claim `e54334278ed5`, dev server port 5216. Addresses the two P2 findings in
+`communications-review.md`. **Implemented, pending final validation.** Deferred at Jafar's request: type checks,
+svelte-check, lint, automated tests, production builds, autofixer and full-project scans. Phone width and keyboard checks not done.
+
+| Route | Frame | Done |
+| --- | --- | --- |
+| email | QEixl | `PageContainer variant="open"`; body wrapped in `record-detail--cards` (SectionBlock's own App-look card rules: title and actions inside the card, no notch); page-local notch rule removed; 60px tile, breadcrumb in the title column, title 36px/900, description 14px; 36px card-header icon tiles; usage meters on subtle panels; sender table edge to edge (`section-block--flush`) |
+| sms | C70C3 | Same page/card fix; Readiness is the horizontal title-and-facts strip (`QynF6`) with four divided facts; light-blue Default chip; rounded-square number tiles; neutral "No active holds" notice; title 36px/900 |
+| website-chat | fAAvd | Same page/card fix; title 36px/900; "x of y widgets used" under Widgets; usage panel with 8px meter and Resets line; widgets table flush |
+
+Logic, queries, permissions, registration locks, bindings, handlers, dialogs and states untouched.
+
+**Evidence:** Playwright (Chrome extension not connected), 1440px, light and dark, owner login, no console errors on any of the three.
+Screenshots (scratchpad): `shots/comm-email-*.png`, `comm-sms-*.png`, `comm-chat-*.png`.
+
+**Remaining gaps:**
+- Not seen live (test data): Email limit-meter fills, Disabled sender row, EmailSetupCard; SMS approved/locked states and Default/Ready number chips;
+  Website chat empty meter, suspended and plan-cap notices.
+- Pencil draws a plus icon on Email "Add sender"; `Button` has no icon prop, so left off.
+- Pencil Website chat still draws a "Back to settings" button; omitted per Jafar's pick to drop it.
+- Header tile uses `--color-task` (navy); its icon reads dim in dark mode. No dark Pencil frame to compare.
+- Header and card-header icon-tile CSS is page-local on all three pages: consolidate with the Workflows/Business headers (Codex).
+- Parent presentation `a309defa` (`SettingsPresentation`) was not adopted: it hard-codes a 56px green tile and overrides section blocks globally,
+  which conflicts with the approved blue 60px tile and SectionBlock's existing card mode.
+
+Next action: Codex reviews and merges; run the deferred checks after all screens are implemented.
