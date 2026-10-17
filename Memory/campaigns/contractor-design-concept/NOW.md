@@ -6,10 +6,7 @@
 
 **Next:**
 1a. Hand-made buttons → shared `Button` on branch `claude/c1e-buttons-everywhere` (worktree `.worktrees/c1e-buttons`, claim `cacaf65df925`): menu triggers, record-page menus, top bar and the Schedule's switched-on buttons done; Jafar approved the row-menu dots and the switched-on look (2026-10-18). **Next:** move the remaining plain `<button>`s (`grep -rl "<button" src`) in parallel groups by helper agents (Jafar agreed), review, then merge into main. Details: `parts/c1e-buttons-everywhere.md`.
-0c. Concept buttons in the live app: done and merged 2026-10-17 (`parts/c1d-buttons-in-app.md`); menu triggers and other own-made buttons still to move.
-0b. Live sidebar coloured icons: done and merged into main 2026-10-17 (`parts/c1c-sidebar-icons.md`).
-0. Button set (`c1b-button-set`): merged into main 2026-10-17; rules in `buttons.md`. Live `Button` greys out while loading; the concept keeps its colour — change it with the first built screen.
-1. In `concept.pen`, add number variables for text 11, 13, 32; tile corners 6 and 10; card padding 20, and bind the Foundation nodes using them. Name them in the app's style (e.g. `typography--fontSize-label`, `radius-tile--small`, `space-medium`); update the matching modules in the same commit. Code gets them, plus `shadow-button`, `shadow-button--raised` (`shadows.md`) and `color-border--interactive--hover` (base blue 400, both modes; in Pencil already), with the first built screen.
+1. In `concept.pen`, add number variables for text 11, 13, 32; tile corners 6 and 10; card padding 20, and bind the Foundation nodes using them. Name them in the app's style (e.g. `typography--fontSize-label`, `radius-tile--small`, `space-medium`); update the matching modules in the same commit. Code gets them with the first built screen.
 2. C2 Home: research what a contractor needs on Home (Jobber first), draw at 1440 from the Foundation parts, show Jafar.
 
 **Working notes:** Pencil edits only the open file and writes only on Ctrl+S (`docs/pencil-workflow.md`).
