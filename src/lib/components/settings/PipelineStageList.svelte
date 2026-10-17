@@ -191,38 +191,41 @@
 							{/if}
 						</div>
 						<div class="stage-list__actions">
-							<button
-								type="button"
-								class="stage-list__icon-button"
-								aria-label={`Move ${label} earlier`}
+							<Button
+								variant="secondary"
+								size="small"
+								iconOnly
+								label={`Move ${label} earlier`}
 								disabled={!canMoveColumn(columns, index, -1)}
 								onclick={() => onMove(index, -1)}
 							>
 								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 								{@html arrowUpIcon}
-							</button>
-							<button
-								type="button"
-								class="stage-list__icon-button"
-								aria-label={`Move ${label} later`}
+							</Button>
+							<Button
+								variant="secondary"
+								size="small"
+								iconOnly
+								label={`Move ${label} later`}
 								disabled={!canMoveColumn(columns, index, 1)}
 								onclick={() => onMove(index, 1)}
 							>
 								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 								{@html arrowDownIcon}
-							</button>
-							<button
-								type="button"
-								class="stage-list__icon-button stage-list__icon-button--danger"
-								aria-label={`Remove ${label}`}
+							</Button>
+							<Button
+								variant="secondary"
+								size="small"
+								variation="destructive"
+								iconOnly
+								label={`Remove ${label}`}
 								aria-haspopup={stage.id === null ? undefined : 'dialog'}
-								onpointerenter={() => stage.id && onRemoveIntent(stage.id)}
-								onfocus={() => stage.id && onRemoveIntent(stage.id)}
 								onclick={() => onRemove(stage.key)}
+								onhover={() => stage.id && onRemoveIntent(stage.id)}
 							>
 								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 								{@html trashIcon}
-							</button>
+							</Button>
 						</div>
 					{:else}
 						<div class="stage-list__built-in">
@@ -383,45 +386,6 @@
 			// Lines the buttons up with the name box rather than with an error message under it.
 			padding-top: 6px;
 		}
-
-		&__icon-button {
-			display: grid;
-			place-items: center;
-			width: 32px;
-			height: 32px;
-			padding: 0;
-			border: var(--border-base) solid transparent;
-			border-radius: var(--radius-base);
-			color: var(--color-icon--secondary);
-			background: none;
-			cursor: pointer;
-			transition: all var(--timing-quick) ease-out;
-
-			&:hover:not(:disabled),
-			&:focus-visible:not(:disabled) {
-				border-color: var(--color-border--interactive);
-				color: var(--color-interactive);
-			}
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-			&:disabled {
-				color: var(--color-disabled);
-				cursor: not-allowed;
-			}
-			&--danger:hover:not(:disabled),
-			&--danger:focus-visible:not(:disabled) {
-				border-color: var(--color-critical);
-				color: var(--color-critical);
-			}
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
-		}
-
 		&__button-icon {
 			display: inline-grid;
 			place-items: center;

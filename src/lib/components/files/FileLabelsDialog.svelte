@@ -202,25 +202,28 @@
 									readonly
 								/>
 							</span>
-							<button
-								type="button"
-								class="file-labels__icon"
-								aria-label={`Rename ${label.name}`}
+							<Button
+								variant="secondary"
+								size="small"
+								iconOnly
+								label={`Rename ${label.name}`}
 								onclick={() => startEdit(label)}
 							>
 								{@html pencilIcon}
-							</button>
-							<button
-								type="button"
-								class="file-labels__icon file-labels__icon--danger"
-								aria-label={`Remove ${label.name}`}
+							</Button>
+							<Button
+								variant="secondary"
+								size="small"
+								variation="destructive"
+								iconOnly
+								label={`Remove ${label.name}`}
 								onclick={() => {
 									error = '';
 									removing = label;
 								}}
 							>
 								{@html trashIcon}
-							</button>
+							</Button>
 						{/if}
 					</li>
 				{/each}
@@ -302,36 +305,6 @@
 			flex: 1 1 auto;
 			min-width: 0;
 		}
-
-		&__icon {
-			display: grid;
-			width: 32px;
-			height: 32px;
-			place-items: center;
-			border: 0;
-			border-radius: var(--radius-base);
-			color: var(--color-icon--secondary);
-			background: transparent;
-			cursor: pointer;
-
-			&:hover {
-				color: var(--color-heading);
-				background: var(--color-surface--hover);
-			}
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-			&--danger:hover {
-				color: var(--color-critical);
-			}
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
-		}
-
 		&__edit {
 			display: flex;
 			flex: 1 1 auto;

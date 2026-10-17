@@ -136,17 +136,10 @@
 {/snippet}
 
 {#snippet iconButton(label: string, icon: string, onclick: () => void, off = false)}
-	<button
-		type="button"
-		class="report-photo-layout__icon-button"
-		aria-label={label}
-		title={label}
-		disabled={disabled || off}
-		{onclick}
-	>
+	<Button variant="secondary" size="small" iconOnly {label} disabled={disabled || off} {onclick}>
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html icon}
-	</button>
+	</Button>
 {/snippet}
 
 {#snippet itemRow(item: ArrangedItem)}
@@ -572,41 +565,6 @@
 			gap: var(--space-smallest);
 			margin-left: auto;
 		}
-
-		&__icon-button {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			width: 32px;
-			height: 32px;
-			padding: 0;
-			border: var(--border-base) solid transparent;
-			border-radius: var(--radius-base);
-			background: transparent;
-			color: var(--color-text--secondary);
-			cursor: pointer;
-
-			&:hover:not(:disabled) {
-				background: var(--color-surface--background--subtle);
-				color: var(--color-heading);
-			}
-
-			&:focus-visible {
-				outline: var(--border-thick) solid var(--color-interactive);
-				outline-offset: 1px;
-			}
-
-			&:disabled {
-				opacity: 0.35;
-				cursor: not-allowed;
-			}
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
-		}
-
 		&__sections {
 			display: flex;
 			flex-direction: column;

@@ -242,15 +242,15 @@
 	{#snippet actions()}
 		{#if canManage}
 			{#if compact}
-				<button
-					type="button"
-					class="record-files__add"
-					aria-label="Add files"
-					title="Add files"
+				<Button
+					variant="secondary"
+					size="small"
+					iconOnly
+					label="Add files"
 					onclick={() => (pickerOpen = true)}
 				>
 					{@html plusIcon}
-				</button>
+				</Button>
 			{:else}
 				<Button size="small" variant="secondary" onclick={() => (pickerOpen = true)}>
 					<span class="record-files__button-icon" aria-hidden="true">{@html plusIcon}</span>Add
@@ -360,9 +360,7 @@
 						<div class="record-files__item-body">
 							<span class="record-files__item-name">{file.display_name}</span>
 							<span class="record-files__item-meta">
-								{#if compact}{file.mime_type === 'application/pdf'
-										? 'PDF'
-										: file.kind} ·
+								{#if compact}{file.mime_type === 'application/pdf' ? 'PDF' : file.kind} ·
 								{/if}{formatFileSize(file.size_bytes)}
 								{#if compact}
 									· added {addedFormat.format(new Date(file.created_at))}
@@ -633,39 +631,6 @@
 			font-size: var(--typography--fontSize-smaller);
 		}
 	}
-
-	// App look: the card is flush, so each part sets its own side padding. Photos sit in a three-column grid,
-	// documents are rows under a hairline, and the add button is a small square with just a plus.
-	.record-files__add {
-		display: inline-grid;
-		width: 32px;
-		height: 32px;
-		padding: 0;
-		place-items: center;
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		color: var(--color-text--secondary);
-		background: var(--color-surface);
-		cursor: pointer;
-		transition: all var(--timing-base) ease-out;
-
-		:global(svg) {
-			display: block;
-			width: 15px;
-			height: 15px;
-		}
-
-		&:hover {
-			border-color: var(--color-interactive--subtle--hover);
-			color: var(--color-interactive--subtle--hover);
-			background: var(--color-surface--hover);
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-	}
-
 	.record-files__more {
 		position: absolute;
 		inset: 0;

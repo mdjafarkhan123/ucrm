@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
@@ -105,32 +106,36 @@
 	<header class="block-editor__head">
 		<span class="block-editor__type">{MARKETING_BLOCK_TYPE_LABELS[block.type]}</span>
 		<div class="block-editor__actions">
-			<button
-				type="button"
-				class="block-editor__icon-button"
-				aria-label={`Move block ${index + 1} up`}
+			<Button
+				variant="secondary"
+				size="small"
+				iconOnly
+				label={`Move block ${index + 1} up`}
 				disabled={index === 0}
 				onclick={() => onMove(-1)}
 			>
 				{@html arrowUpIcon}
-			</button>
-			<button
-				type="button"
-				class="block-editor__icon-button"
-				aria-label={`Move block ${index + 1} down`}
+			</Button>
+			<Button
+				variant="secondary"
+				size="small"
+				iconOnly
+				label={`Move block ${index + 1} down`}
 				disabled={index === count - 1}
 				onclick={() => onMove(1)}
 			>
 				{@html arrowDownIcon}
-			</button>
-			<button
-				type="button"
-				class="block-editor__icon-button block-editor__icon-button--danger"
-				aria-label={`Remove block ${index + 1}`}
+			</Button>
+			<Button
+				variant="secondary"
+				size="small"
+				variation="destructive"
+				iconOnly
+				label={`Remove block ${index + 1}`}
 				onclick={onRemove}
 			>
 				{@html trashIcon}
-			</button>
+			</Button>
 		</div>
 	</header>
 
@@ -320,44 +325,6 @@
 			margin: 0;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
-		}
-
-		&__icon-button {
-			display: grid;
-			place-items: center;
-			width: 32px;
-			height: 32px;
-			padding: 0;
-			border: var(--border-base) solid transparent;
-			border-radius: var(--radius-base);
-			color: var(--color-icon--secondary);
-			background: none;
-			cursor: pointer;
-			transition: all var(--timing-quick) ease-out;
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
-
-			&:hover:not(:disabled),
-			&:focus-visible:not(:disabled) {
-				border-color: var(--color-border--interactive);
-				color: var(--color-interactive);
-			}
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-			&:disabled {
-				color: var(--color-disabled);
-				cursor: not-allowed;
-			}
-			&--danger:hover:not(:disabled),
-			&--danger:focus-visible:not(:disabled) {
-				border-color: var(--color-critical);
-				color: var(--color-critical);
-			}
 		}
 	}
 

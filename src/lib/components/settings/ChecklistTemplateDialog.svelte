@@ -214,36 +214,40 @@
 							bind:checked={question.required}
 						/>
 						<div class="checklist-builder__row-actions">
-							<button
-								type="button"
-								class="checklist-builder__icon-button"
-								aria-label={`Move question ${index + 1} up`}
+							<Button
+								variant="secondary"
+								size="small"
+								iconOnly
+								label={`Move question ${index + 1} up`}
 								disabled={index === 0}
 								onclick={() => move(index, -1)}
 							>
 								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 								{@html arrowUpIcon}
-							</button>
-							<button
-								type="button"
-								class="checklist-builder__icon-button"
-								aria-label={`Move question ${index + 1} down`}
+							</Button>
+							<Button
+								variant="secondary"
+								size="small"
+								iconOnly
+								label={`Move question ${index + 1} down`}
 								disabled={index === questions.length - 1}
 								onclick={() => move(index, 1)}
 							>
 								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 								{@html arrowDownIcon}
-							</button>
-							<button
-								type="button"
-								class="checklist-builder__icon-button checklist-builder__icon-button--danger"
-								aria-label={`Remove question ${index + 1}`}
+							</Button>
+							<Button
+								variant="secondary"
+								size="small"
+								variation="destructive"
+								iconOnly
+								label={`Remove question ${index + 1}`}
 								disabled={questions.length === 1}
 								onclick={() => removeQuestion(question.key)}
 							>
 								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 								{@html trashIcon}
-							</button>
+							</Button>
 						</div>
 					</div>
 				</li>
@@ -297,40 +301,6 @@
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 		}
-
-		&__icon-button {
-			display: grid;
-			place-items: center;
-			width: 32px;
-			height: 32px;
-			padding: 0;
-			border: var(--border-base) solid transparent;
-			border-radius: var(--radius-base);
-			color: var(--color-icon--secondary);
-			background: none;
-			cursor: pointer;
-			transition: all var(--timing-quick) ease-out;
-
-			&:hover:not(:disabled),
-			&:focus-visible:not(:disabled) {
-				border-color: var(--color-border--interactive);
-				color: var(--color-interactive);
-			}
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-			&:disabled {
-				color: var(--color-disabled);
-				cursor: not-allowed;
-			}
-			&--danger:hover:not(:disabled),
-			&--danger:focus-visible:not(:disabled) {
-				border-color: var(--color-critical);
-				color: var(--color-critical);
-			}
-		}
-
 		&__button-icon {
 			display: inline-grid;
 			place-items: center;

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { SvelteMap } from 'svelte/reactivity';
 	import Card from '$lib/components/ui/Card.svelte';
@@ -94,26 +95,29 @@
 				<li class="booking-services__row">
 					<span class="booking-services__name">{service.name}</span>
 					<span class="booking-services__actions">
-						<button
-							type="button"
-							class="booking-services__icon-btn"
+						<Button
+							variant="secondary"
+							size="small"
+							iconOnly
 							disabled={disabled || index === 0}
 							onclick={() => move(index, -1)}
-							aria-label={`Move ${service.name} up`}>{@html chevronUpIcon}</button
+							label={`Move ${service.name} up`}>{@html chevronUpIcon}</Button
 						>
-						<button
-							type="button"
-							class="booking-services__icon-btn"
+						<Button
+							variant="secondary"
+							size="small"
+							iconOnly
 							disabled={disabled || index === selected.length - 1}
 							onclick={() => move(index, 1)}
-							aria-label={`Move ${service.name} down`}>{@html chevronDownIcon}</button
+							label={`Move ${service.name} down`}>{@html chevronDownIcon}</Button
 						>
-						<button
-							type="button"
-							class="booking-services__icon-btn"
+						<Button
+							variant="secondary"
+							size="small"
+							iconOnly
 							{disabled}
 							onclick={() => remove(service.catalog_item_id)}
-							aria-label={`Remove ${service.name}`}>{@html xIcon}</button
+							label={`Remove ${service.name}`}>{@html xIcon}</Button
 						>
 					</span>
 				</li>
@@ -197,30 +201,6 @@
 			display: flex;
 			flex-shrink: 0;
 			gap: var(--space-smallest);
-		}
-		&__icon-btn {
-			display: grid;
-			width: 28px;
-			height: 28px;
-			place-items: center;
-			border: var(--border-base) solid var(--color-border);
-			border-radius: var(--radius-small);
-			color: var(--color-text--secondary);
-			background: var(--color-surface);
-			cursor: pointer;
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
-			&:hover:not(:disabled) {
-				color: var(--color-heading);
-				background: var(--color-surface--hover);
-			}
-			&:disabled {
-				opacity: 0.4;
-				cursor: not-allowed;
-			}
 		}
 		&__hint {
 			margin: 0 0 var(--space-small);

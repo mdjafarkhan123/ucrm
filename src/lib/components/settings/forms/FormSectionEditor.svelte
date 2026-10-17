@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import FormQuestionEditor from './FormQuestionEditor.svelte';
@@ -65,35 +66,39 @@
 			placeholder="e.g. About the job"
 		/>
 		<div class="section-editor__head-actions">
-			<button
-				type="button"
-				class="section-editor__icon-button"
-				aria-label={`Move section ${index + 1} up`}
+			<Button
+				variant="secondary"
+				size="small"
+				iconOnly
+				label={`Move section ${index + 1} up`}
 				disabled={index === 0}
 				onclick={() => onMove(-1)}
 			>
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html arrowUpIcon}
-			</button>
-			<button
-				type="button"
-				class="section-editor__icon-button"
-				aria-label={`Move section ${index + 1} down`}
+			</Button>
+			<Button
+				variant="secondary"
+				size="small"
+				iconOnly
+				label={`Move section ${index + 1} down`}
 				disabled={index === count - 1}
 				onclick={() => onMove(1)}
 			>
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html arrowDownIcon}
-			</button>
-			<button
-				type="button"
-				class="section-editor__icon-button section-editor__icon-button--danger"
-				aria-label={`Remove section ${index + 1}`}
+			</Button>
+			<Button
+				variant="secondary"
+				size="small"
+				variation="destructive"
+				iconOnly
+				label={`Remove section ${index + 1}`}
 				onclick={onRemove}
 			>
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html trashIcon}
-			</button>
+			</Button>
 		</div>
 	</header>
 
@@ -185,44 +190,6 @@
 			:global(svg) {
 				width: 16px;
 				height: 16px;
-			}
-		}
-
-		&__icon-button {
-			display: grid;
-			place-items: center;
-			width: 36px;
-			height: 36px;
-			padding: 0;
-			border: var(--border-base) solid transparent;
-			border-radius: var(--radius-base);
-			color: var(--color-icon--secondary);
-			background: none;
-			cursor: pointer;
-			transition: all var(--timing-quick) ease-out;
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
-
-			&:hover:not(:disabled),
-			&:focus-visible:not(:disabled) {
-				border-color: var(--color-border--interactive);
-				color: var(--color-interactive);
-			}
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-			&:disabled {
-				color: var(--color-disabled);
-				cursor: not-allowed;
-			}
-			&--danger:hover:not(:disabled),
-			&--danger:focus-visible:not(:disabled) {
-				border-color: var(--color-critical);
-				color: var(--color-critical);
 			}
 		}
 	}

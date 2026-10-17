@@ -481,30 +481,32 @@
 							<EmailSenderLabel kind="manual" />
 						{/if}
 					</span>
-					<span class="conversation-composer__route-arrow" aria-hidden="true">{@html arrowRightIcon}</span>
+					<span class="conversation-composer__route-arrow" aria-hidden="true"
+						>{@html arrowRightIcon}</span
+					>
 					<span class="conversation-composer__route-to">{recipientLabel}</span>
 				</p>
 			{:else}
 				<span class="conversation-composer__route-from">Replying in website chat</span>
 			{/if}
-			<button
-				type="button"
-				class="conversation-composer__collapse"
-				aria-label="Minimize composer"
-				title="Minimize composer"
+			<Button
+				variant="secondary"
+				size="small"
+				iconOnly
+				label="Minimize composer"
 				onclick={collapse}
 			>
 				{@html minusIcon}
-			</button>
-			<button
-				type="button"
-				class="conversation-composer__collapse"
-				aria-label={popped ? 'Exit full screen' : 'Expand to full screen'}
-				title={popped ? 'Exit full screen' : 'Expand to full screen'}
+			</Button>
+			<Button
+				variant="secondary"
+				size="small"
+				iconOnly
+				label={popped ? 'Exit full screen' : 'Expand to full screen'}
 				onclick={() => setPopped(!popped)}
 			>
 				{@html popped ? minimizeIcon : maximizeIcon}
-			</button>
+			</Button>
 		</header>
 		{#if channel === 'email'}
 			<div
@@ -764,7 +766,6 @@
 	}
 
 	.conversation-composer__collapsed-input:focus-visible,
-	.conversation-composer__collapse:focus-visible,
 	.conversation-composer__collapsed-send:focus-visible {
 		outline: none;
 		box-shadow: var(--shadow-focus);
@@ -886,32 +887,6 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
-
-	.conversation-composer__collapse {
-		display: inline-flex;
-		width: 30px;
-		height: 30px;
-		flex: 0 0 auto;
-		align-items: center;
-		justify-content: center;
-		padding: 0;
-		border: 0;
-		border-radius: var(--radius-base);
-		color: var(--color-text--secondary);
-		background: transparent;
-		cursor: pointer;
-	}
-
-	.conversation-composer__collapse:hover {
-		color: var(--color-heading);
-		background: var(--color-surface--hover);
-	}
-
-	.conversation-composer__collapse :global(svg) {
-		width: 15px;
-		height: 15px;
-	}
-
 	.conversation-composer__subject {
 		display: flex;
 		min-height: 36px;
