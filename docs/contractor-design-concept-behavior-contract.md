@@ -72,5 +72,7 @@ designs as the record of the live app.
   Jafar's review.
 - Decision 2026-10-17 (Jafar): Cancel is a white bordered button (as Shopify, GitHub and Stripe do); the borderless
   Quiet button is only for link-like actions such as Clear filters.
+- Decision 2026-10-17 (Jafar): white buttons' grey border darkens one step on hover (Jobber darkens it too; we use a
+  softer mid-grey, as Stripe and Linear do); the Delete button's border turns red on hover.
 - Decision 2026-10-17 (Jafar): keep two sets of styling modules for now — `design` (concept) and
   `design-classic` (live look) — until rollout; revisit then.

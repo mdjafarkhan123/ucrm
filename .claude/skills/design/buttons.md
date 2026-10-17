@@ -53,8 +53,8 @@ Every kind has all six states.
 
 | State | Main / Danger · confirm | White kinds (secondary, danger, menu, icon) | Quiet |
 |---|---|---|---|
-| Hover | `--color-interactive--hover` / `--color-destructive--hover` | `--color-surface--hover`; danger uses `--color-critical-surface` | `--color-surface--hover` |
-| Pressed | Hover colour with a soft inner shadow | `--color-surface--active`, no shadow; danger keeps its pink with a `--color-destructive` border | `--color-surface--active` |
+| Hover | `--color-interactive--hover` / `--color-destructive--hover` | `--color-surface--hover` and border `--color-border--interactive--hover`; danger uses `--color-critical-surface` and a `--color-destructive` border | `--color-surface--hover` |
+| Pressed | Hover colour with a soft inner shadow | `--color-surface--active`, border `--color-border--interactive--hover`, no shadow; danger keeps its hover look without shadow | `--color-surface--active` |
 | Focus | `--shadow-focus`: 2px gap, then a 2px `--color-focus` ring | same | same |
 | Disabled | Background `--color-disabled--secondary`, text and icon `--color-disabled`, no shadow | same, border `--color-disabled--secondary` | text `--color-disabled` |
 | Loading | see below | see below | see below |
