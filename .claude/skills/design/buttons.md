@@ -2,7 +2,7 @@
 
 > Dependencies: `colors.md`, `radius.md`, `borders.md`, `shadows.md`
 
-Pencil: `concept.pen` → Parts board → "Buttons" (kinds, every state of every kind, sizes, loading).
+Pencil: `concept.pen` → Parts board → "Buttons" (kinds, pairs, every state of every kind, sizes, loading).
 
 ## Core Specs
 
@@ -27,9 +27,11 @@ An icon button is square at the size's height.
 
 ### Secondary
 - Background `--color-surface`; 1px `--color-border--interactive`; text and icon `--color-heading`.
+- Cancel is always a secondary button, left of the action it dismisses (save bar, dialog footer).
 
 ### Quiet
-- No background or border; text `--color-text`. For Cancel and low-weight actions.
+- No background or border; text `--color-text`. Only for link-like actions inside a page: Clear filters, Skip for
+  now, Show more.
 
 ### Danger
 - Secondary look with `--color-destructive` text and icon. Opens the confirm step for a destructive action.

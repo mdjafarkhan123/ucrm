@@ -70,5 +70,7 @@ designs as the record of the live app.
   in the app whether or not a screen has a Pencil design. Loading follows GitHub Primer and Shopify Polaris: the
   spinner replaces the icon (or the label, keeping the width) and blocks a second press. The Pencil drawing awaits
   Jafar's review.
+- Decision 2026-10-17 (Jafar): Cancel is a white bordered button (as Shopify, GitHub and Stripe do); the borderless
+  Quiet button is only for link-like actions such as Clear filters.
 - Decision 2026-10-17 (Jafar): keep two sets of styling modules for now — `design` (concept) and
   `design-classic` (live look) — until rollout; revisit then.
