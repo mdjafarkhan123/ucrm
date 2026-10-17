@@ -4,6 +4,8 @@
 	import { resolve } from '$app/paths';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
+	import RecordTrack from '$lib/components/work/RecordTrack.svelte';
+	import { RECORD_CHAIN_KEY_PREFIX } from '$lib/work/record-chain';
 	import RecordDetailLayout from '$lib/components/layout/RecordDetailLayout.svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
@@ -385,6 +387,7 @@
 	async function refreshJob() {
 		await Promise.all([
 			queryClient.invalidateQueries({ queryKey: jobDetailKey(jobId) }),
+			queryClient.invalidateQueries({ queryKey: RECORD_CHAIN_KEY_PREFIX }),
 			queryClient.invalidateQueries({ queryKey: jobEventsKey(jobId) }),
 			queryClient.invalidateQueries({ queryKey: ['jobs', 'list'] }),
 			queryClient.invalidateQueries({ queryKey: jobCountsKey }),
@@ -527,6 +530,13 @@
 							phone={saved.job.client?.phone}
 							email={saved.job.client?.email}
 							menuItems={clientMenuItems}
+						/>
+					{/snippet}
+					{#snippet track()}
+						<RecordTrack
+							kind="job"
+							id={jobId}
+							clientName={saved.job.client?.display_name ?? undefined}
 						/>
 					{/snippet}
 					{#snippet facts()}<RecordFactsList facts={headerFacts} />{/snippet}
@@ -771,8 +781,9 @@
 						canManage={saved.can_record_field_records || saved.can_manage_team_field_records}
 					/>
 
-					<RailCard title="Notes" icon={notesIcon}>
+					<RailCard title="Notes" description="Only your team sees these" icon={notesIcon} flush>
 						<NotesPanel
+							compact
 							entityType="job"
 							entityId={jobId}
 							canManage={saved.can_record_field_records}

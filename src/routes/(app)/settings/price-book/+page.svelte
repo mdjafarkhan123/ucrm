@@ -2,12 +2,11 @@
 	import { createInfiniteQuery, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
-	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
+	import FilterChip from '$lib/components/ui/FilterChip.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
@@ -17,8 +16,7 @@
 	} from '$lib/components/data-display/DataTable.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
-	import FilterBar from '$lib/components/data-display/FilterBar.svelte';
-	import FilterField from '$lib/components/data-display/FilterField.svelte';
+	import RecordListCard from '$lib/components/data-display/RecordListCard.svelte';
 	import ListLoadMore from '$lib/components/data-display/ListLoadMore.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -36,6 +34,11 @@
 		type PricingCategory
 	} from '$lib/quotes/api';
 	import { deletePriceBookItem } from '$lib/settings/api';
+	import bookIcon from '@tabler/icons/outline/book.svg?raw';
+	import dotsIcon from '@tabler/icons/outline/dots.svg?raw';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import boxIcon from '@tabler/icons/outline/box.svg?raw';
+	import receiptTaxIcon from '@tabler/icons/outline/receipt-tax.svg?raw';
 	import listIcon from '@tabler/icons/outline/list-details.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
@@ -188,36 +191,43 @@
 
 	const columns: DataTableColumn[] = [
 		{ key: 'name', label: 'Name', sortable: true },
-		{ key: 'type', label: 'Type' },
-		{ key: 'price', label: 'Price', align: 'end', sortable: true },
-		{ key: 'taxable', label: 'Taxable' },
-		{ key: 'updated', label: 'Updated', sortable: true }
+		{ key: 'type', label: 'Type', width: '150px' },
+		{ key: 'price', label: 'Price', align: 'end', sortable: true, width: '130px' },
+		{ key: 'taxable', label: 'Taxable', width: '120px' },
+		{ key: 'updated', label: 'Updated', sortable: true, width: '150px' }
 	];
 </script>
 
 <svelte:head><title>Price Book · Settings · Contractor CRM</title></svelte:head>
 
 <div class="page-scroller">
-	<PageContainer variant="fill">
-		<Breadcrumbs
-			items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Price Book' }]}
-		/>
-
-		<PageHeader
-			eyebrow="Business"
+	<PageContainer variant="open">
+		<SettingsPageHeader
 			title="Price Book"
 			description="The products and services you sell, ready to add to any quote or request."
+			icon={bookIcon}
 		>
 			{#snippet actions()}
 				{#if canManage}
-					<DropdownMenu triggerLabel="More Price Book actions" items={moreActions} />
-					<Button onclick={() => (dialogState = { mode: 'create' })}>Add item</Button>
+					<DropdownMenu
+						triggerLabel="More Price Book actions"
+						triggerIcon={dotsIcon}
+						triggerClass="price-book-page__more"
+						items={moreActions}
+					/>
+					<Button onclick={() => (dialogState = { mode: 'create' })}>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						<span class="price-book-page__button-icon" aria-hidden="true">{@html plusIcon}</span>
+						Add item
+					</Button>
 				{/if}
 			{/snippet}
-		</PageHeader>
+		</SettingsPageHeader>
 
 		{#if itemsQuery.isPending}
-			<LoadingSkeleton variant="table" label="Loading the Price Book" rows={5} />
+			<RecordListCard title="Price Book items" padBody>
+				<LoadingSkeleton variant="table" label="Loading the Price Book" rows={5} />
+			</RecordListCard>
 		{:else if itemsQuery.isError}
 			<ErrorState
 				description="The Price Book could not be loaded. Refresh and try again."
@@ -230,123 +240,140 @@
 				description="Only owners and administrators can manage it."
 			/>
 		{:else}
-			<FilterBar onClear={hasFilters ? clearFilters : undefined}>
-				<FilterField id="price-book-search" label="Search">
-					<SearchInput
-						id="price-book-search"
-						bind:value={search}
-						placeholder="Search name or description"
-						ariaLabel="Search the Price Book"
-					/>
-				</FilterField>
-				<FilterField id="price-book-category" label="Type">
-					<Select
+			<RecordListCard title="Price Book items" padBody={items.length === 0}>
+				{#snippet toolbar()}
+					<div class="price-book-page__search">
+						<SearchInput
+							id="price-book-search"
+							bind:value={search}
+							placeholder="Search name or description"
+							ariaLabel="Search the Price Book"
+							size="compact"
+						/>
+					</div>
+					<FilterChip
 						id="price-book-category"
+						variant="toolbar"
+						icon={boxIcon}
+						label="Type"
 						value={category}
-						onchange={setCategory}
 						options={[
 							{ value: '', label: 'Products & services' },
 							{ value: 'product', label: 'Products only' },
 							{ value: 'service', label: 'Services only' }
 						]}
+						restValue=""
+						onchange={setCategory}
 					/>
-				</FilterField>
-				<FilterField id="price-book-taxable" label="Taxable">
-					<Select
+					<FilterChip
 						id="price-book-taxable"
+						variant="toolbar"
+						icon={receiptTaxIcon}
+						label="Taxable"
 						value={taxable}
-						onchange={setTaxable}
 						options={[
 							{ value: '', label: 'All items' },
 							{ value: 'only', label: 'Taxable only' },
 							{ value: 'exclude', label: 'Tax exempt only' }
 						]}
+						restValue=""
+						onchange={setTaxable}
 					/>
-				</FilterField>
-			</FilterBar>
+					{#if hasFilters}
+						<Button variant="tertiary" size="small" onclick={clearFilters}>Clear filters</Button>
+					{/if}
+				{/snippet}
 
-			{#if items.length === 0}
-				<EmptyState
-					icon={listIcon}
-					title={hasFilters ? 'Nothing matches that' : 'Your Price Book is empty'}
-					description={hasFilters
-						? 'Try a different search term or clear your filters.'
-						: 'Add the products and services you sell often, and they will be one click away on a quote.'}
-				>
-					{#snippet action()}
-						<Button variant="secondary" onclick={() => (dialogState = { mode: 'create' })}>
-							Add item
-						</Button>
-					{/snippet}
-				</EmptyState>
-			{:else}
-				<div class="price-book-page__table">
-					<DataTable
-						{columns}
-						{items}
-						rowId={(item) => item.id}
-						caption="Price Book items"
-						{sort}
-						{onSortChange}
+				{#if items.length === 0}
+					<EmptyState
+						icon={listIcon}
+						title={hasFilters ? 'Nothing matches that' : 'Your Price Book is empty'}
+						description={hasFilters
+							? 'Try a different search term or clear your filters.'
+							: 'Add the products and services you sell often, and they will be one click away on a quote.'}
 					>
-						{#snippet row(item: CatalogItem)}
-							<th scope="row">
-								<div class="price-book-page__item">
-									{#if item.image_file_id}
-										<FileThumb
-											fileId={item.image_file_id}
-											displayName={item.name}
-											mimeType="image/jpeg"
-											kind="image"
-											processingState="available"
-											hasThumbnail
-											size="row"
-										/>
-									{/if}
-									<div class="price-book-page__name">
-										<strong>{item.name}</strong>
-										{#if item.description}
-											<span class="price-book-page__description">{item.description}</span>
+						{#snippet action()}
+							<Button variant="secondary" onclick={() => (dialogState = { mode: 'create' })}>
+								Add item
+							</Button>
+						{/snippet}
+					</EmptyState>
+				{:else}
+					<div class="price-book-page__table">
+						<DataTable
+							variant="card"
+							{columns}
+							{items}
+							rowId={(item) => item.id}
+							caption="Price Book items"
+							{sort}
+							{onSortChange}
+						>
+							{#snippet row(item: CatalogItem)}
+								<th scope="row">
+									<div class="price-book-page__item">
+										{#if item.image_file_id}
+											<FileThumb
+												fileId={item.image_file_id}
+												displayName={item.name}
+												mimeType="image/jpeg"
+												kind="image"
+												processingState="available"
+												hasThumbnail
+												size="row"
+											/>
 										{/if}
+										<div class="price-book-page__name">
+											<strong>{item.name}</strong>
+											{#if item.description}
+												<span class="price-book-page__description">{item.description}</span>
+											{/if}
+										</div>
 									</div>
-								</div>
-							</th>
-							<td>
-								<div class="price-book-page__type">
-									<span>{item.category === 'product' ? 'Product' : 'Service'}</span>
-									{#if item.is_labor}<span class="price-book-page__labor">Labor</span>{/if}
-									{#if item.unit_label}<span>per {item.unit_label}</span>{/if}
-								</div>
-							</td>
-							<td class="price-book-page__price">
-								{formatMoney(item.unit_price_minor)}
-								{#if canViewCost && item.unit_cost_minor !== undefined}
-									<span class="price-book-page__cost">Cost {formatMoney(item.unit_cost_minor)}</span
-									>
-								{/if}
-							</td>
-							<td>
-								<StatusBadge status={item.is_taxable ? 'success' : 'inactive'}>
-									{item.is_taxable ? 'Taxable' : 'Exempt'}
-								</StatusBadge>
-							</td>
-							<td>
-								<span title={exactTime(item.updated_at)}>{relativeTime(item.updated_at)}</span>
-							</td>
-						{/snippet}
-						{#snippet rowActions(item: CatalogItem)}
-							<DropdownMenu triggerLabel={`Actions for ${item.name}`} items={itemMenuItems(item)} />
-						{/snippet}
-						{#snippet footer()}
-							<ListLoadMore
-								hasNextPage={itemsQuery.hasNextPage}
-								isFetchingNextPage={itemsQuery.isFetchingNextPage}
-								onLoadMore={() => itemsQuery.fetchNextPage()}
-							/>
-						{/snippet}
-					</DataTable>
-				</div>
-			{/if}
+								</th>
+								<td>
+									<div class="price-book-page__type">
+										<span>{item.category === 'product' ? 'Product' : 'Service'}</span>
+										{#if item.is_labor}<span class="price-book-page__labor">Labor</span>{/if}
+										{#if item.unit_label}<span>per {item.unit_label}</span>{/if}
+									</div>
+								</td>
+								<td class="price-book-page__price">
+									<strong>{formatMoney(item.unit_price_minor)}</strong>
+									{#if canViewCost && item.unit_cost_minor !== undefined}
+										<span class="price-book-page__cost"
+											>Cost {formatMoney(item.unit_cost_minor)}</span
+										>
+									{/if}
+								</td>
+								<td>
+									<StatusBadge size="compact" status={item.is_taxable ? 'success' : 'inactive'}>
+										{item.is_taxable ? 'Taxable' : 'Exempt'}
+									</StatusBadge>
+								</td>
+								<td>
+									<span title={exactTime(item.updated_at)}>{relativeTime(item.updated_at)}</span>
+								</td>
+							{/snippet}
+							{#snippet rowActions(item: CatalogItem)}
+								<DropdownMenu
+									triggerLabel={`Actions for ${item.name}`}
+									triggerIcon={dotsIcon}
+									items={itemMenuItems(item)}
+								/>
+							{/snippet}
+							{#snippet footer()}
+								<ListLoadMore
+									variant="card"
+									hasNextPage={itemsQuery.hasNextPage}
+									isFetchingNextPage={itemsQuery.isFetchingNextPage}
+									onLoadMore={() => itemsQuery.fetchNextPage()}
+								/>
+							{/snippet}
+						</DataTable>
+					</div>
+				{/if}
+			</RecordListCard>
 		{/if}
 	</PageContainer>
 </div>
@@ -382,6 +409,34 @@
 </ConfirmDialog>
 
 <style lang="scss">
+	.price-book-page__search {
+		width: 260px;
+		max-width: 100%;
+	}
+
+	.price-book-page__button-icon {
+		display: inline-flex;
+		:global(svg) {
+			width: 18px;
+			height: 18px;
+		}
+	}
+
+	:global(.price-book-page__more) {
+		display: inline-grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface);
+		color: var(--color-icon);
+		cursor: pointer;
+		&:hover {
+			background: var(--color-surface--hover);
+		}
+	}
+
 	.price-book-page__table {
 		:global(td),
 		:global(th) {
@@ -399,6 +454,11 @@
 		display: grid;
 		min-width: 0;
 		gap: 2px;
+		strong {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 700;
+		}
 	}
 
 	.price-book-page__description {
@@ -428,6 +488,10 @@
 	.price-book-page__price {
 		font-variant-numeric: tabular-nums;
 		text-align: end;
+		strong {
+			color: var(--color-heading);
+			font-weight: 700;
+		}
 	}
 
 	.price-book-page__cost {

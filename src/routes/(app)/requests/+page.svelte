@@ -43,6 +43,8 @@
 		REQUEST_STATUS_TONES,
 		type DisplayRequestStatus
 	} from '$lib/requests/statuses';
+	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
+	import userIcon from '@tabler/icons/outline/user.svg?raw';
 	import clipboardIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
 	import dashedCircleIcon from '@tabler/icons/outline/circle-dashed.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
@@ -125,6 +127,26 @@
 		queryKey: requestCountsKey,
 		queryFn: fetchRequestCounts
 	}));
+
+	// Who is going to each assessment comes back as ids; the names come from the team list every page shares.
+	// A member who cannot read the team just sees the assessment without a name.
+	const teamQuery = createQuery(() => ({
+		queryKey: assignableTeamKey,
+		queryFn: fetchAssignableTeam,
+		staleTime: 5 * 60_000
+	}));
+	const teamNames = $derived(
+		new Map(
+			(teamQuery.data ?? []).map((member) => [member.id, member.full_name ?? 'A team member'])
+		)
+	);
+	function assessorLine(request: RequestListItem) {
+		const ids = request.assessment?.assignee_ids ?? [];
+		if (ids.length === 0) return '';
+		const first = teamNames.get(ids[0]);
+		if (!first) return '';
+		return ids.length > 1 ? `${first} +${ids.length - 1}` : first;
+	}
 
 	const requests = $derived(requestsQuery.data?.pages.flatMap((page) => page.requests) ?? []);
 	const hasActiveFilters = $derived(status !== '' || createdFrom !== '' || createdTo !== '');
@@ -223,8 +245,9 @@
 		return [property.city, property.state_region].filter(Boolean).join(', ');
 	}
 
-	// When the assessment is, in the person's own time: the day ("Today", "Fri, Oct 17") with its hours
-	// under it, or "Done Oct 10" once it has happened. A request with nothing booked says so.
+	// When the assessment is, in the person's own time: "Today, 2:00 PM" or "Fri, Oct 17, 10:00 AM" with who is
+	// going under it, "Done Oct 10" once it has happened, or "Asked for Thu, Oct 16" with the window the
+	// customer asked for when a website booking is still waiting for the office to approve it.
 	const dayFormat = new Intl.DateTimeFormat(undefined, {
 		weekday: 'short',
 		month: 'short',
@@ -238,20 +261,40 @@
 	function assessmentText(request: RequestListItem) {
 		const assessment = request.assessment;
 		if (!assessment) return null;
+		const who = assessorLine(request);
 		if (assessment.completed_at) {
-			return { main: `Done ${shortDayFormat.format(new Date(assessment.completed_at))}`, sub: '' };
+			return {
+				main: `Done ${shortDayFormat.format(new Date(assessment.completed_at))}`,
+				sub: '',
+				who
+			};
 		}
 		if (!assessment.starts_at) return null;
 		const start = new Date(assessment.starts_at);
+		if (request.stored_status === 'needs_approval') {
+			const end = assessment.ends_at ? new Date(assessment.ends_at) : null;
+			return {
+				main: `Asked for ${dayFormat.format(start)}`,
+				sub: assessment.all_day
+					? 'All day'
+					: end
+						? `${timeFormat.format(start)} – ${timeFormat.format(end)}`
+						: timeFormat.format(start),
+				who: ''
+			};
+		}
 		const day = isToday(start) ? 'Today' : dayFormat.format(start);
-		if (assessment.all_day) return { main: day, sub: 'All day' };
-		const end = assessment.ends_at ? new Date(assessment.ends_at) : null;
 		return {
-			main: day,
-			sub: end
-				? `${timeFormat.format(start)} – ${timeFormat.format(end)}`
-				: timeFormat.format(start)
+			main: assessment.all_day ? `${day}, all day` : `${day}, ${timeFormat.format(start)}`,
+			sub: '',
+			who
 		};
+	}
+	function convertedHref(request: RequestListItem): string | null {
+		const target = request.converted_to;
+		if (!target) return null;
+		if (target.kind === 'job') return resolve('/(app)/jobs/[id=uuid]', { id: target.id });
+		return resolve('/(app)/quotes/[id=uuid]', { id: target.id });
 	}
 	function clientName(request: RequestListItem) {
 		return request.client?.display_name ?? 'Client removed';
@@ -265,7 +308,7 @@
 		{ key: 'client', label: 'Client', width: '220px' },
 		{ key: 'title', label: 'Request', sortable: true },
 		{ key: 'property', label: 'Property', width: '180px' },
-		{ key: 'assessment', label: 'Assessment', width: '140px' },
+		{ key: 'assessment', label: 'Assessment', width: '176px' },
 		{ key: 'requested', label: 'Requested', sortable: true, width: '108px' },
 		{ key: 'status', label: 'Status', width: '150px' }
 	];
@@ -451,6 +494,14 @@
 								{#if assessment.sub}
 									<div class="requests-table__meta">{assessment.sub}</div>
 								{/if}
+								{#if assessment.who}
+									<div class="requests-table__meta requests-table__who">
+										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+										<span class="requests-table__who-icon" aria-hidden="true">{@html userIcon}</span
+										>
+										{assessment.who}
+									</div>
+								{/if}
 							{:else}
 								<div class="requests-table__text requests-table__text--muted">Not booked</div>
 							{/if}
@@ -467,6 +518,12 @@
 							<StatusBadge size="compact" status={REQUEST_STATUS_TONES[request.status]}>
 								{REQUEST_STATUS_LABELS[request.status]}
 							</StatusBadge>
+							{#if request.converted_to}
+								<a class="requests-table__converted" href={convertedHref(request)}>
+									{request.converted_to.kind === 'job' ? 'Job' : 'Quote'} #{request.converted_to
+										.number}
+								</a>
+							{/if}
 						</td>
 					{/snippet}
 					{#snippet rowActions(request: RequestListItem)}
@@ -636,6 +693,34 @@
 	.requests-table__text--muted {
 		color: var(--color-text--secondary);
 	}
+	.requests-table__who {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+	}
+	.requests-table__who-icon :global(svg) {
+		display: block;
+		width: 12px;
+		height: 12px;
+	}
+	.requests-table__converted {
+		display: block;
+		margin-top: 3px;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		text-decoration: none;
+
+		&:hover {
+			color: var(--color-interactive);
+			text-decoration: underline;
+		}
+		&:focus-visible {
+			outline: none;
+			border-radius: var(--radius-small);
+			box-shadow: var(--shadow-focus);
+		}
+	}
 	.requests-table__waiting {
 		margin-top: 3px;
 		color: var(--color-warning--onSurface);
@@ -643,6 +728,7 @@
 		font-weight: 600;
 	}
 	.requests-table__requested,
+	.requests-table__assessment .requests-table__text,
 	.requests-table__assessment .requests-table__meta {
 		white-space: nowrap;
 	}

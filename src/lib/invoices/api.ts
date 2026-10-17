@@ -624,6 +624,8 @@ export type InvoiceDetail = {
 		display_name: string | null;
 		company_name: string | null;
 		email: string | null;
+		/** The client's main phone number, for the Call and Text buttons. Null when none, or not visible to this member. */
+		phone?: string | null;
 	} | null;
 	money: InvoiceMoney | null;
 	payment_history: InvoicePaymentHistoryEntry[] | null;

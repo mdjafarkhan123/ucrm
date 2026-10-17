@@ -1413,8 +1413,8 @@
 			container-type: inline-size;
 		}
 
-		/* The visit, its badges and its menu on one line; the timer under the visit's text. In a narrow card
-		   (a phone) the badges drop under the text too, so the date is never squeezed into a sliver. */
+		// The visit, its badges and its menu on one line; the timer under the visit's text. In a narrow card
+		// (a phone) the badges drop under the text too, so the date is never squeezed into a sliver.
 		&__item {
 			display: grid;
 			grid-template-columns: auto minmax(0, 1fr) auto auto;

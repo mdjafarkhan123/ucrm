@@ -39,7 +39,11 @@ export type RequestListItem = {
 		ends_at: string | null;
 		all_day: boolean;
 		completed_at: string | null;
+		/** Who is going, as team member ids; the list looks their names up in the team directory. */
+		assignee_ids: string[];
 	} | null;
+	/** Where a converted request went: its job if it has one, otherwise its quote. Null until converted. */
+	converted_to: { kind: 'job' | 'quote'; id: string; number: number } | null;
 	email: string | null;
 	phone: string | null;
 };

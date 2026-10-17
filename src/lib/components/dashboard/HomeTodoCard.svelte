@@ -32,16 +32,21 @@
 		invoices: receiptIcon
 	};
 
+	function listBase(key: TodoColumnKey): string {
+		switch (key) {
+			case 'requests':
+				return resolve('/(app)/requests');
+			case 'quotes':
+				return resolve('/(app)/quotes');
+			case 'jobs':
+				return resolve('/(app)/jobs');
+			default:
+				return resolve('/(app)/invoices');
+		}
+	}
+
 	function listHref(key: TodoColumnKey, status: string) {
-		const base =
-			key === 'requests'
-				? resolve('/(app)/requests')
-				: key === 'quotes'
-					? resolve('/(app)/quotes')
-					: key === 'jobs'
-						? resolve('/(app)/jobs')
-						: resolve('/(app)/invoices');
-		return `${base}?status=${status}`;
+		return `${listBase(key)}?status=${status}`;
 	}
 
 	const uid = $props.id();
@@ -76,7 +81,10 @@
 						{#each column.lines as line (line.key)}
 							<li>
 								<a
-									class={['home-todo__line', line.alert && (line.count ?? 0) > 0 && 'home-todo__line--alert']}
+									class={[
+										'home-todo__line',
+										line.alert && (line.count ?? 0) > 0 && 'home-todo__line--alert'
+									]}
 									href={listHref(column.key, line.key)}
 									aria-label={line.count === null
 										? `${line.label}: ${line.hint}`

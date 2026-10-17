@@ -25,44 +25,46 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags, svelte/no-navigation-without-resolve -->
-<ol class="lifecycle" aria-label={label}>
-	{#each steps as step (step.label)}
-		<li class="lifecycle__step" aria-current={step.state === 'current' ? 'step' : undefined}>
-			<span class="lifecycle__bar" aria-hidden="true">
-				{#if step.state === 'done'}
-					<span class="lifecycle__fill" style:width="100%"></span>
-				{:else if step.state === 'current'}
-					<span class="lifecycle__fill" style:width="{Math.round((step.progress ?? 0.5) * 100)}%"
-					></span>
-				{/if}
-			</span>
-			<span class="lifecycle__title">
-				{#if step.state === 'done'}
-					<span class="lifecycle__check" aria-hidden="true">{@html checkIcon}</span>
-				{:else if step.state === 'current'}
-					<span class="lifecycle__dot" aria-hidden="true"></span>
-				{/if}
-				{#if step.href}
-					<a class="lifecycle__label lifecycle__label--link" href={step.href}>
-						{step.label}
-						<span class="lifecycle__arrow" aria-hidden="true">{@html arrowUpRightIcon}</span>
-					</a>
-				{:else}
-					<span
-						class={[
-							'lifecycle__label',
-							step.state === 'todo' && 'lifecycle__label--todo',
-							step.state === 'current' && 'lifecycle__label--current'
-						]}>{step.label}</span
-					>
-				{/if}
-			</span>
-			<span class={['lifecycle__sub', step.tone === 'critical' && 'lifecycle__sub--critical']}>
-				{step.sub}
-			</span>
-		</li>
-	{/each}
-</ol>
+<div class="lifecycle-frame">
+	<ol class="lifecycle" aria-label={label}>
+		{#each steps as step (step.label)}
+			<li class="lifecycle__step" aria-current={step.state === 'current' ? 'step' : undefined}>
+				<span class="lifecycle__bar" aria-hidden="true">
+					{#if step.state === 'done'}
+						<span class="lifecycle__fill" style:width="100%"></span>
+					{:else if step.state === 'current'}
+						<span class="lifecycle__fill" style:width="{Math.round((step.progress ?? 0.5) * 100)}%"
+						></span>
+					{/if}
+				</span>
+				<span class="lifecycle__title">
+					{#if step.state === 'done'}
+						<span class="lifecycle__check" aria-hidden="true">{@html checkIcon}</span>
+					{:else if step.state === 'current'}
+						<span class="lifecycle__dot" aria-hidden="true"></span>
+					{/if}
+					{#if step.href}
+						<a class="lifecycle__label lifecycle__label--link" href={step.href}>
+							{step.label}
+							<span class="lifecycle__arrow" aria-hidden="true">{@html arrowUpRightIcon}</span>
+						</a>
+					{:else}
+						<span
+							class={[
+								'lifecycle__label',
+								step.state === 'todo' && 'lifecycle__label--todo',
+								step.state === 'current' && 'lifecycle__label--current'
+							]}>{step.label}</span
+						>
+					{/if}
+				</span>
+				<span class={['lifecycle__sub', step.tone === 'critical' && 'lifecycle__sub--critical']}>
+					{step.sub}
+				</span>
+			</li>
+		{/each}
+	</ol>
+</div>
 
 <!-- eslint-enable svelte/no-at-html-tags, svelte/no-navigation-without-resolve -->
 
@@ -169,14 +171,16 @@
 		}
 	}
 
-	@media (max-width: 767px) {
+	// Five steps side by side need about 560px. Narrower than that (a half-width card on a small laptop) they
+	// fall into rows of three, so a step's name is never cut short.
+	.lifecycle-frame {
+		container-type: inline-size;
+	}
+	@container (max-width: 560px) {
 		.lifecycle {
-			flex-wrap: wrap;
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
 			gap: 14px 12px;
-
-			&__step {
-				flex: 1 1 40%;
-			}
 		}
 	}
 </style>

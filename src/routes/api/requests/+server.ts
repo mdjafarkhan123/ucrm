@@ -171,7 +171,8 @@ export const GET: RequestHandler = async (event) => {
 		.eq('organization_id', organizationId);
 	if (clientId) query = query.eq('client_id', clientId.data);
 	// Rides the same (organization_id, created_at) index the default sort scans.
-	if (createdRange.data.created_from) query = query.gte('created_at', createdRange.data.created_from);
+	if (createdRange.data.created_from)
+		query = query.gte('created_at', createdRange.data.created_from);
 	if (createdRange.data.created_to) query = query.lte('created_at', createdRange.data.created_to);
 
 	const statusFilter = displayStatusFilter(statuses, organizationDayRange(timezone, now));
@@ -218,21 +219,75 @@ export const GET: RequestHandler = async (event) => {
 	const page = (rows ?? []).slice(0, limit);
 	const hasMore = (rows ?? []).length > limit;
 
-	// The one lookup that cannot be embedded: contact methods hang off the client, not the request.
-	// Fetched once for the whole page, so the list stays two round trips whatever the page size.
+	// The lookups that cannot be embedded, each asked once for the whole page so the list stays a fixed
+	// number of round trips whatever the page size: contact methods hang off the client, who is going to the
+	// assessment hangs off the assessment, and where a converted request went hangs off the quote or job.
 	const clientIds = [
 		...new Set(page.map((row) => row.client_id).filter((id): id is string => id !== null))
 	];
-	const { data: contactMethods, error: contactMethodsError } =
+	const assessmentIds = page
+		.map((row) => row.assessment_id)
+		.filter((id): id is string => id !== null);
+	const convertedIds = page.filter((row) => row.status === 'converted').map((row) => row.id);
+	const [
+		{ data: contactMethods, error: contactMethodsError },
+		{ data: assignees, error: assigneesError },
+		{ data: convertedJobs },
+		{ data: convertedQuotes }
+	] = await Promise.all([
 		clientIds.length > 0
-			? await supabase
+			? supabase
 					.from('client_contact_methods')
 					.select('client_id, kind, value')
 					.eq('organization_id', organizationId)
 					.eq('is_primary', true)
 					.in('client_id', clientIds)
-			: { data: [], error: null };
-	if (contactMethodsError) return databaseError();
+			: Promise.resolve({ data: [], error: null }),
+		assessmentIds.length > 0
+			? supabase
+					.from('assessment_assignees')
+					.select('assessment_id, user_id')
+					.eq('organization_id', organizationId)
+					.in('assessment_id', assessmentIds)
+			: Promise.resolve({ data: [], error: null }),
+		// Each is read under its own row security: a member who may not see jobs or quotes gets no number.
+		convertedIds.length > 0
+			? supabase
+					.from('jobs')
+					.select('id, job_number, request_id')
+					.eq('organization_id', organizationId)
+					.in('request_id', convertedIds)
+			: Promise.resolve({ data: [] }),
+		convertedIds.length > 0
+			? supabase
+					.from('quotes')
+					.select('id, quote_number, request_id')
+					.eq('organization_id', organizationId)
+					.in('request_id', convertedIds)
+			: Promise.resolve({ data: [] })
+	]);
+	if (contactMethodsError || assigneesError) return databaseError();
+
+	const assigneesByAssessment = new Map<string, string[]>();
+	for (const entry of assignees ?? []) {
+		const list = assigneesByAssessment.get(entry.assessment_id) ?? [];
+		list.push(entry.user_id);
+		assigneesByAssessment.set(entry.assessment_id, list);
+	}
+	// A job outranks a quote, the same rule the request's own page follows.
+	const convertedTo = new Map<string, { kind: 'job' | 'quote'; id: string; number: number }>();
+	for (const quote of convertedQuotes ?? []) {
+		if (quote.request_id)
+			convertedTo.set(quote.request_id, {
+				kind: 'quote',
+				id: quote.id,
+				number: quote.quote_number
+			});
+	}
+	for (const job of convertedJobs ?? []) {
+		if (job.request_id)
+			convertedTo.set(job.request_id, { kind: 'job', id: job.id, number: job.job_number });
+	}
 
 	const contactByClient = new Map<string, { email: string | null; phone: string | null }>();
 	for (const method of contactMethods ?? []) {
@@ -249,7 +304,8 @@ export const GET: RequestHandler = async (event) => {
 					starts_at: row.assessment_starts_at,
 					ends_at: row.assessment_ends_at,
 					all_day: row.assessment_all_day ?? false,
-					completed_at: row.assessment_completed_at
+					completed_at: row.assessment_completed_at,
+					assignee_ids: assigneesByAssessment.get(row.assessment_id) ?? []
 				}
 			: null;
 		const contact = row.client_id ? contactByClient.get(row.client_id) : undefined;
@@ -263,6 +319,7 @@ export const GET: RequestHandler = async (event) => {
 			client: embeddedOne(row.client),
 			property: embeddedOne(row.property),
 			assessment,
+			converted_to: convertedTo.get(row.id) ?? null,
 			email: contact?.email ?? null,
 			phone: contact?.phone ?? null
 		};

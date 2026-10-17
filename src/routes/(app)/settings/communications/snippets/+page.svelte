@@ -1,19 +1,17 @@
 <script lang="ts">
 	import { createInfiniteQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
-	import Select from '$lib/components/ui/Select.svelte';
+	import FilterChip from '$lib/components/ui/FilterChip.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import DataTable, { type DataTableColumn } from '$lib/components/data-display/DataTable.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
-	import FilterBar from '$lib/components/data-display/FilterBar.svelte';
-	import FilterField from '$lib/components/data-display/FilterField.svelte';
+	import RecordListCard from '$lib/components/data-display/RecordListCard.svelte';
 	import ListLoadMore from '$lib/components/data-display/ListLoadMore.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -28,6 +26,8 @@
 		type CommunicationSnippetPage
 	} from '$lib/communications/snippets';
 	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
+	import quoteIcon from '@tabler/icons/outline/quote.svg?raw';
+	import folderIcon from '@tabler/icons/outline/folder.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 
@@ -126,98 +126,113 @@
 	}
 
 	const columns: DataTableColumn[] = [
-		{ key: 'title', label: 'Title' },
+		{ key: 'title', label: 'Title', width: '300px' },
 		{ key: 'text', label: 'Text' },
-		{ key: 'updated', label: 'Updated' }
+		{ key: 'updated', label: 'Updated', width: '170px' }
 	];
 </script>
 
 <svelte:head><title>Snippets · Communications · Contractor CRM</title></svelte:head>
 
-<PageContainer variant="fill">
+<PageContainer variant="open">
 	<div class="snippets-page">
-		<PageHeader
-			eyebrow="Communications"
+		<SettingsPageHeader
 			title="Snippets"
 			description="Reusable text your team can drop into any conversation reply."
+			icon={quoteIcon}
+			tone="task"
+			presentation="communication"
 		>
 			{#snippet actions()}
-				<Button href={resolve('/settings')} variant="secondary" variation="subtle">
-					Back to settings
-				</Button>
 				<Button onclick={() => (dialogState = { mode: 'create' })}>New snippet</Button>
 			{/snippet}
-		</PageHeader>
+		</SettingsPageHeader>
 
 		{#if itemsQuery.isPending}
-			<LoadingSkeleton variant="table" label="Loading Snippets" rows={5} />
+			<RecordListCard title="Snippets" padBody>
+				<LoadingSkeleton variant="table" label="Loading Snippets" rows={5} />
+			</RecordListCard>
 		{:else if itemsQuery.isError}
-			<ErrorState
-				description="Snippets could not be loaded. Refresh and try again."
-				retry={() => itemsQuery.refetch()}
-			/>
+			<RecordListCard title="Snippets" padBody>
+				<ErrorState
+					description="Snippets could not be loaded. Refresh and try again."
+					retry={() => itemsQuery.refetch()}
+				/>
+			</RecordListCard>
 		{:else}
-			<FilterBar onClear={hasFilters ? clearFilters : undefined}>
-				<FilterField id="snippets-search" label="Search">
-					<SearchInput
-						id="snippets-search"
-						bind:value={search}
-						placeholder="Search title or text"
-						ariaLabel="Search Snippets"
-					/>
-				</FilterField>
-				<FilterField id="snippets-folder" label="Folder">
-					<Select
-						id="snippets-folder"
-						value={folder}
-						onchange={(value) => (folder = value)}
-						options={[{ value: '', label: 'All folders' }, ...folderOptions]}
-					/>
-				</FilterField>
-			</FilterBar>
-
-			{#if items.length === 0}
-				<EmptyState
-					icon={fileTextIcon}
-					title={hasFilters ? 'Nothing matches that' : 'No snippets yet'}
-					description={hasFilters
-						? 'Try a different search term or clear your filters.'
-						: 'Save the replies your team sends often, and they will be one click away in the composer.'}
-				>
-					{#snippet action()}
-						<Button variant="secondary" onclick={() => (dialogState = { mode: 'create' })}>
-							New snippet
-						</Button>
-					{/snippet}
-				</EmptyState>
-			{:else}
-				<DataTable {columns} {items} rowId={(item) => item.id} caption="Snippets">
-					{#snippet row(item: CommunicationSnippet)}
-						<th scope="row">
-							<div class="snippets-page__title">
-								<strong>{item.title}</strong>
-								{#if item.folder}<Badge size="small">{item.folder}</Badge>{/if}
-							</div>
-						</th>
-						<td>
-							<span class="snippets-page__text">{item.body}</span>
-						</td>
-						<td>
-							<span title={exactTime(item.updated_at)}>{relativeTime(item.updated_at)}</span>
-						</td>
-					{/snippet}
-					{#snippet rowActions(item: CommunicationSnippet)}
-						<DropdownMenu triggerLabel={`Actions for ${item.title}`} items={itemMenuItems(item)} />
-					{/snippet}
-					{#snippet footer()}
-						<ListLoadMore
-							hasNextPage={itemsQuery.hasNextPage}
-							isFetchingNextPage={itemsQuery.isFetchingNextPage}
-							onLoadMore={() => itemsQuery.fetchNextPage()}
+			<RecordListCard title="Snippets" padBody={items.length === 0}>
+				{#snippet toolbar()}
+					<div class="snippets-page__search">
+						<SearchInput
+							id="snippets-search"
+							bind:value={search}
+							placeholder="Search title or text"
+							ariaLabel="Search Snippets"
+							size="compact"
 						/>
-					{/snippet}
-				</DataTable>
-			{/if}
+					</div>
+					<FilterChip
+						id="snippets-folder"
+						variant="toolbar"
+						icon={folderIcon}
+						label="Folder"
+						value={folder}
+						options={[{ value: '', label: 'All folders' }, ...folderOptions]}
+						restValue=""
+						onchange={(value) => (folder = value)}
+					/>
+					{#if hasFilters}
+						<Button variant="tertiary" size="small" onclick={clearFilters}>Clear filters</Button>
+					{/if}
+				{/snippet}
+
+				{#if items.length === 0}
+					<EmptyState
+						icon={fileTextIcon}
+						title={hasFilters ? 'Nothing matches that' : 'No snippets yet'}
+						description={hasFilters
+							? 'Try a different search term or clear your filters.'
+							: 'Save the replies your team sends often, and they will be one click away in the composer.'}
+					>
+						{#snippet action()}
+							<Button variant="secondary" onclick={() => (dialogState = { mode: 'create' })}>
+								New snippet
+							</Button>
+						{/snippet}
+					</EmptyState>
+				{:else}
+					<DataTable variant="card" {columns} {items} rowId={(item) => item.id} caption="Snippets">
+						{#snippet row(item: CommunicationSnippet)}
+							<th scope="row">
+								<div class="snippets-page__title">
+									<strong>{item.title}</strong>
+									{#if item.folder}<Badge size="small">{item.folder}</Badge>{/if}
+								</div>
+							</th>
+							<td>
+								<span class="snippets-page__text">{item.body}</span>
+							</td>
+							<td>
+								<span title={exactTime(item.updated_at)}>{relativeTime(item.updated_at)}</span>
+							</td>
+						{/snippet}
+						{#snippet rowActions(item: CommunicationSnippet)}
+							<DropdownMenu
+								triggerLabel={`Actions for ${item.title}`}
+								items={itemMenuItems(item)}
+							/>
+						{/snippet}
+						{#snippet footer()}
+							<ListLoadMore
+								variant="card"
+								hasNextPage={itemsQuery.hasNextPage}
+								isFetchingNextPage={itemsQuery.isFetchingNextPage}
+								onLoadMore={() => itemsQuery.fetchNextPage()}
+							/>
+						{/snippet}
+					</DataTable>
+				{/if}
+			</RecordListCard>
 		{/if}
 	</div>
 </PageContainer>
@@ -249,17 +264,34 @@
 </ConfirmDialog>
 
 <style lang="scss">
+	.snippets-page {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+	}
+	.snippets-page__search {
+		width: 300px;
+		max-width: 100%;
+	}
+
 	.snippets-page__title {
 		display: flex;
 		align-items: center;
+		flex-wrap: wrap;
 		gap: var(--space-smaller);
+
+		strong {
+			color: var(--color-heading);
+			font-weight: 600;
+		}
 	}
 
 	.snippets-page__text {
 		display: -webkit-box;
 		overflow: hidden;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
+		color: var(--color-text);
+		font-size: 13px;
+		line-height: 1.55;
 		-webkit-box-orient: vertical;
 		-webkit-line-clamp: 2;
 		line-clamp: 2;

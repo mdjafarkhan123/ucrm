@@ -4,6 +4,8 @@
 	import { resolve } from '$app/paths';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
+	import RecordTrack from '$lib/components/work/RecordTrack.svelte';
+	import { RECORD_CHAIN_KEY_PREFIX } from '$lib/work/record-chain';
 	import RecordDetailLayout from '$lib/components/layout/RecordDetailLayout.svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -411,6 +413,17 @@
 		return parts.length ? parts.join(', ') : null;
 	});
 
+	// Where the work was done, for the header's address and its Directions button; the billing address
+	// stands in for an invoice that carries no property.
+	const siteLine = $derived.by(() => {
+		const site = saved?.invoice.service_properties?.[0] as Record<string, unknown> | undefined;
+		if (!site) return null;
+		const parts = [site.address_line1, site.address_line2, site.city, site.state_region, site.postal_code].filter(
+			(part): part is string => typeof part === 'string' && part.length > 0
+		);
+		return parts.length ? parts.join(', ') : null;
+	});
+
 	const clientMenuItems = $derived(
 		saved?.client
 			? [
@@ -678,6 +691,7 @@
 	async function refreshInvoice() {
 		await Promise.all([
 			queryClient.invalidateQueries({ queryKey: invoiceDetailKey(invoiceId) }),
+			queryClient.invalidateQueries({ queryKey: RECORD_CHAIN_KEY_PREFIX }),
 			queryClient.invalidateQueries({ queryKey: ['invoices', 'list'] }),
 			queryClient.invalidateQueries({ queryKey: invoiceCountsKey }),
 			// Adding a deposit spends the client's spare money, and a payment recorded here may create some.
@@ -1128,12 +1142,22 @@
 				>
 					{#snippet summary()}
 						<ClientSummaryCard
+							quickContact
 							name={saved.client?.company_name || saved.client?.display_name || 'No client'}
 							avatarId={saved.client?.id}
 							href={clientHref}
-							addresses={[{ value: billingLine, empty: 'No billing address on this invoice' }]}
+							addresses={[{ value: siteLine ?? billingLine, empty: 'No address on this invoice' }]}
+							phone={saved.client?.phone}
 							email={saved.client?.email}
 							menuItems={clientMenuItems}
+						/>
+					{/snippet}
+					{#snippet track()}
+						<RecordTrack
+							kind="invoice"
+							id={invoiceId}
+							clientName={saved.client?.company_name || saved.client?.display_name || undefined}
+							clientIsCompany={Boolean(saved.client?.company_name)}
 						/>
 					{/snippet}
 					{#snippet facts()}
@@ -1251,6 +1275,7 @@
 					emptyDescription="Add the products and services this invoice bills for."
 					hint={productsHint}
 					{totalRows}
+					flush
 					onSave={saveLines}
 				/>
 

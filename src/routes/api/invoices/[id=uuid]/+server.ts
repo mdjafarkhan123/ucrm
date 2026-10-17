@@ -53,7 +53,7 @@ export const GET: RequestHandler = async (event) => {
 	// The client's whole-account balance, gated in the same call: a reader without invoices.view_price gets an
 	// empty map and the rail simply shows no balance. Only one client is asked for, so this is a single row.
 	const clientId = document.invoice.client_id;
-	const [balanceResult, formatting, partialResult, onlineOffered] = await Promise.all([
+	const [balanceResult, formatting, partialResult, onlineOffered, phoneResult] = await Promise.all([
 		canSeePrice && clientId
 			? supabase.rpc('client_account_balance', { target_client_ids: [clientId] })
 			: Promise.resolve({ data: {} as Record<string, unknown>, error: null }),
@@ -64,15 +64,32 @@ export const GET: RequestHandler = async (event) => {
 			.eq('organization_id', organizationId)
 			.eq('id', invoiceId)
 			.maybeSingle(),
-		onlineInvoicePaymentsOffered(organizationId)
+		onlineInvoicePaymentsOffered(organizationId),
+		// The Call and Text buttons in the header. Read under the member's own access, so someone who may not
+		// open the client's contact details simply gets no buttons rather than a refusal.
+		clientId
+			? supabase
+					.from('client_contact_methods')
+					.select('value')
+					.eq('organization_id', organizationId)
+					.eq('client_id', clientId)
+					.eq('kind', 'phone')
+					.order('is_primary', { ascending: false })
+					.order('created_at')
+					.limit(1)
+					.maybeSingle()
+			: Promise.resolve({ data: null, error: null })
 	]);
 	if (balanceResult.error || partialResult.error) return databaseError();
 	const balances = (balanceResult.data ?? {}) as Record<string, unknown>;
 	const clientBalance = clientId ? (balances[clientId] ?? null) : null;
 
+	const client = document.client as object | null;
+
 	return json(
 		{
 			...document,
+			client: client ? { ...client, phone: phoneResult.data?.value ?? null } : null,
 			client_balance: clientBalance,
 			online_payments: {
 				offered: onlineOffered,

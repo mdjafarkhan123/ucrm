@@ -9,12 +9,15 @@
 	let {
 		title,
 		subtitle,
+		headingIcon,
 		toolbar,
 		padBody = false,
 		children
 	}: {
 		title: string;
 		subtitle?: string;
+		/** Optional decorative tile before the list heading. */
+		headingIcon?: Snippet;
 		/** Search and filter controls, drawn at the end of the header row. */
 		toolbar?: Snippet;
 		/** Pads the body, for a loading, empty or error state. A table runs edge to edge, so leave it off. */
@@ -28,6 +31,9 @@
 
 <section class="record-list-card" aria-labelledby={titleId}>
 	<header class="record-list-card__header">
+		{#if headingIcon}<div class="record-list-card__heading-icon" aria-hidden="true">
+				{@render headingIcon()}
+			</div>{/if}
 		<div class="record-list-card__heading">
 			<h2 id={titleId}>{title}</h2>
 			{#if subtitle}<p>{subtitle}</p>{/if}
@@ -54,6 +60,12 @@
 			justify-content: space-between;
 			gap: var(--space-base);
 			padding: 18px var(--space-large);
+		}
+		&__heading-icon {
+			flex: 0 0 auto;
+		}
+		&__header:has(.record-list-card__heading-icon) &__heading {
+			flex: 1;
 		}
 		&__heading {
 			display: grid;

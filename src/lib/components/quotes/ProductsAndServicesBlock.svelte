@@ -89,7 +89,6 @@
 		saveLabel = 'Save pricing',
 		lockedMessage = '',
 		hint,
-		totals,
 		clientSees,
 		flush = false,
 		emptyDescription = 'Add the products and services this job needs before it becomes a quote.',
@@ -138,16 +137,6 @@
 		lockedMessage?: string;
 		/** A quiet line under the title in the App look, e.g. "4 items · work done Sep 29 – Oct 3". */
 		hint?: string;
-		/** The saved totals, drawn under the table instead of one Subtotal row: the discount and tax the
-		 *  database worked out, then the grand total. Omit and the card shows only the subtotal. */
-		totals?: {
-			discountMinor: number;
-			discountLabel: string | null;
-			taxMinor: number;
-			taxLabel: string | null;
-			totalMinor: number;
-			totalLabel: string;
-		};
 		/** What the client's copy shows, e.g. "Client sees every figure". Sits at the end of the locked strip. */
 		clientSees?: string;
 		/** App look: the saved table runs edge to edge in the card and the totals and locked note close it
@@ -1285,42 +1274,19 @@
 			</table>
 		</div>
 		{#if showPrices && totalRows && totalRows.length > 0}
-			<dl class="pricing-block__closing">
-				{#each totalRows as row, index (row.label)}
-					<div
-						class={[
-							'pricing-block__closing-row',
-							index === totalRows.length - 1 && index > 0 && 'pricing-block__closing-row--total'
-						]}
-					>
-						<dt>{row.label}</dt>
-						<dd>{row.value}</dd>
-					</div>
-				{/each}
-			</dl>
-		{:else if showPrices && totals}
 			<div class="pricing-block__summary">
 				<dl class="pricing-block__summary-list">
-					<div class="pricing-block__summary-row">
-						<dt>Subtotal</dt>
-						<dd>{formatMoney(savedSubtotal(savedLines))}</dd>
-					</div>
-					{#if totals.discountMinor > 0}
-						<div class="pricing-block__summary-row">
-							<dt>{totals.discountLabel || 'Discount'}</dt>
-							<dd>−{formatMoney(totals.discountMinor)}</dd>
+					{#each totalRows as row, index (row.label)}
+						<div
+							class={[
+								'pricing-block__summary-row',
+								index === totalRows.length - 1 && index > 0 && 'pricing-block__summary-row--total'
+							]}
+						>
+							<dt>{row.label}</dt>
+							<dd>{row.value}</dd>
 						</div>
-					{/if}
-					{#if totals.taxMinor > 0}
-						<div class="pricing-block__summary-row">
-							<dt>{totals.taxLabel || 'Tax'}</dt>
-							<dd>{formatMoney(totals.taxMinor)}</dd>
-						</div>
-					{/if}
-					<div class="pricing-block__summary-row pricing-block__summary-row--total">
-						<dt>{totals.totalLabel}</dt>
-						<dd>{formatMoney(totals.totalMinor)}</dd>
-					</div>
+					{/each}
 				</dl>
 			</div>
 		{:else if showPrices}
@@ -1823,49 +1789,6 @@
 		padding: 12px 24px;
 		border-top: var(--border-base) solid var(--color-border);
 		background: var(--color-surface--background--subtle);
-	}
-
-	// The saved table's closing figures: a right-hand block under the money columns, the grand total set
-	// off by a hairline and a larger figure.
-	:global(.record-detail--cards) .pricing-block__closing {
-		display: flex;
-		flex-direction: column;
-		width: min(300px, 100%);
-		margin: 0 24px 0 auto;
-		padding: 16px 0 20px;
-		gap: 8px;
-	}
-	:global(.record-detail--cards) .pricing-block__closing-row {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: var(--space-base);
-		color: var(--color-text);
-		font-size: 13px;
-		font-variant-numeric: tabular-nums;
-		font-weight: 500;
-
-		dt {
-			color: var(--color-text--secondary);
-		}
-		dd {
-			margin: 0;
-		}
-	}
-	:global(.record-detail--cards) .pricing-block__closing-row--total {
-		padding-top: 10px;
-		border-top: var(--border-base) solid var(--color-border);
-		color: var(--color-heading);
-		font-weight: 700;
-
-		dt {
-			color: var(--color-heading);
-			font-size: var(--typography--fontSize-base);
-		}
-		dd {
-			font-size: 18px;
-			letter-spacing: -0.3px;
-		}
 	}
 
 	@media (max-width: 1359px) {

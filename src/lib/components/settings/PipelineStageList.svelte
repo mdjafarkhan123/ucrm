@@ -167,13 +167,16 @@
 								oninput={(event: Event) =>
 									onRename(stage.key, (event.currentTarget as HTMLInputElement).value)}
 							/>
-							<Toggle
-								id={`pipeline-stage-hold-${stage.key}`}
-								label="On hold stage"
-								description="A card can only be moved here once it has a task due on a later day, so nobody forgets to come back to it."
-								checked={stage.requires_future_task}
-								onchange={(checked) => onRequireTask(stage.key, checked)}
-							/>
+							<div class="stage-list__hold">
+								<Toggle
+									id={`pipeline-stage-hold-${stage.key}`}
+									label="On hold stage"
+									description="A card can only be moved here once it has a task due on a later day, so nobody forgets to come back to it."
+									checked={stage.requires_future_task}
+									labelSide="start"
+									onchange={(checked) => onRequireTask(stage.key, checked)}
+								/>
+							</div>
 							{@render warnAfter(
 								`pipeline-stage-days-${stage.key}`,
 								label,
@@ -263,7 +266,7 @@
 		&__rows {
 			display: flex;
 			flex-direction: column;
-			gap: var(--space-small);
+			gap: 10px;
 			margin: 0;
 			padding: 0;
 			list-style: none;
@@ -273,27 +276,34 @@
 			display: flex;
 			align-items: flex-start;
 			gap: var(--space-small);
-			min-height: 48px;
-			padding: var(--space-small) var(--space-base);
+			min-height: 54px;
+			padding: 14px;
 			border: var(--border-base) solid var(--color-border);
 			border-radius: var(--radius-base);
 			background: var(--color-surface);
 
 			&--locked {
 				align-items: center;
-				background: var(--color-surface--background);
+				padding: 10px 14px;
+				background: var(--color-surface--background--subtle);
 			}
 		}
 
+		// The lock sits in a small white tile so a built-in row reads as fixed, not as a form.
 		&__lock {
 			display: grid;
 			flex: 0 0 auto;
 			place-items: center;
+			width: 28px;
+			height: 28px;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: 8px;
+			background: var(--color-surface);
 			color: var(--color-icon--secondary);
 
 			:global(svg) {
-				width: 18px;
-				height: 18px;
+				width: 14px;
+				height: 14px;
 			}
 		}
 
@@ -310,7 +320,7 @@
 		&__note {
 			flex: 0 0 auto;
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			font-size: 12px;
 		}
 
 		// A locked row: the name on the left, its warning days on the right, wrapping under on a phone.
@@ -330,7 +340,7 @@
 			gap: var(--space-small);
 
 			:global(.stage-list__days-input) {
-				width: 80px;
+				width: 64px;
 			}
 		}
 
@@ -342,6 +352,7 @@
 
 		&__hint {
 			margin: 0;
+			font-size: 12px;
 		}
 
 		&__days-error {
@@ -350,11 +361,18 @@
 			font-size: var(--typography--fontSize-small);
 		}
 
+		// "On hold stage": a quiet panel under the name box, the switch at its far end.
+		&__hold {
+			padding: 12px 14px;
+			border-radius: var(--radius-base);
+			background: var(--color-surface--background--subtle);
+		}
+
 		&__field {
 			display: flex;
 			flex: 1 1 auto;
 			flex-direction: column;
-			gap: var(--space-small);
+			gap: 12px;
 			min-width: 0;
 		}
 
@@ -363,7 +381,7 @@
 			flex: 0 0 auto;
 			gap: var(--space-smallest);
 			// Lines the buttons up with the name box rather than with an error message under it.
-			padding-top: var(--space-smallest);
+			padding-top: 6px;
 		}
 
 		&__icon-button {
