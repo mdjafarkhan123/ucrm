@@ -3,7 +3,7 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { beforeNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
+	import BusinessSettingsPresentation from '../_components/BusinessSettingsPresentation.svelte';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -221,70 +221,73 @@
 	{@const canEdit = query.data.permissions.edit}
 	{@const editor = query.data.hours.last_editor}
 
-	<Breadcrumbs
-		items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Business hours' }]}
-	/>
-
-	<RecordFormLayout title="Business hours" icon={clockIcon} bind:this={layout} error={saveError}>
-		{#snippet main()}
-			{#if !canEdit}
-				<p class="business-hours__readonly">
-					Only owners and administrators can change this. {#if editor}Last changed by {editor.name ??
-							'a teammate'}.{/if}
-				</p>
-			{/if}
-
-			{#if !started}
-				<SectionBlock
-					title="Not set yet"
-					hint="Used for scheduling, online booking, and reminders."
-				>
-					<p class="business-hours__intro">
-						Choose a starting point — you can change any day before saving.
+	<BusinessSettingsPresentation
+		title="Business hours"
+		description="When your business is normally open, for scheduling and booking."
+		icon={clockIcon}
+	>
+		<RecordFormLayout title="Business hours" icon={clockIcon} bind:this={layout} error={saveError}>
+			{#snippet main()}
+				{#if !canEdit}
+					<p class="business-hours__readonly">
+						Only owners and administrators can change this. {#if editor}Last changed by {editor.name ??
+								'a teammate'}.{/if}
 					</p>
-					<div class="business-hours__starters">
-						<Button variant="secondary" onclick={useWeeklySuggestion} disabled={!canEdit}
-							>Use Monday–Friday, 8am–5pm</Button
-						>
-						<Button variant="secondary" onclick={useBlankWeekly} disabled={!canEdit}
-							>Set custom weekly hours</Button
-						>
-						<Button variant="secondary" onclick={useAppointmentOnly} disabled={!canEdit}
-							>By appointment only</Button
-						>
-					</div>
-				</SectionBlock>
-			{:else if mode === 'appointment_only'}
-				<SectionBlock
-					title="By appointment only"
-					hint="No fixed weekly hours — every visit is scheduled individually."
-				>
-					<Button variant="tertiary" onclick={useWeeklySuggestion} disabled={!canEdit}
-						>Switch to weekly hours instead</Button
-					>
-				</SectionBlock>
-			{:else if days}
-				<SectionBlock
-					title="Weekly hours"
-					hint="Up to three periods a day. Mark a day closed, open 24 hours, or by appointment separately for each day."
-					form
-				>
-					<WeeklyHoursEditor bind:days disabled={!canEdit} />
-				</SectionBlock>
-			{/if}
-		{/snippet}
+				{/if}
 
-		{#snippet actions()}
-			{#if canEdit && started}
-				<Button variant="secondary" onclick={cancel} disabled={saving}>Cancel</Button>
-				<Button
-					onclick={() => void save().finally(() => layout?.revealError())}
-					disabled={!dirty || saving}
-					loading={saving}>Save</Button
-				>
-			{/if}
-		{/snippet}
-	</RecordFormLayout>
+				{#if !started}
+					<SectionBlock
+						title="Not set yet"
+						hint="Used for scheduling, online booking, and reminders."
+					>
+						<p class="business-hours__intro">
+							Choose a starting point — you can change any day before saving.
+						</p>
+						<div class="business-hours__starters">
+							<Button variant="secondary" onclick={useWeeklySuggestion} disabled={!canEdit}
+								>Use Monday–Friday, 8am–5pm</Button
+							>
+							<Button variant="secondary" onclick={useBlankWeekly} disabled={!canEdit}
+								>Set custom weekly hours</Button
+							>
+							<Button variant="secondary" onclick={useAppointmentOnly} disabled={!canEdit}
+								>By appointment only</Button
+							>
+						</div>
+					</SectionBlock>
+				{:else if mode === 'appointment_only'}
+					<SectionBlock
+						title="By appointment only"
+						hint="No fixed weekly hours — every visit is scheduled individually."
+					>
+						<Button variant="tertiary" onclick={useWeeklySuggestion} disabled={!canEdit}
+							>Switch to weekly hours instead</Button
+						>
+					</SectionBlock>
+				{:else if days}
+					<SectionBlock
+						title="Weekly hours"
+						icon={clockIcon}
+						hint="Up to three periods a day. Mark a day closed or open 24 hours."
+						form
+					>
+						<WeeklyHoursEditor bind:days disabled={!canEdit} />
+					</SectionBlock>
+				{/if}
+			{/snippet}
+
+			{#snippet actions()}
+				{#if canEdit && started}
+					<Button variant="secondary" onclick={cancel} disabled={saving}>Cancel</Button>
+					<Button
+						onclick={() => void save().finally(() => layout?.revealError())}
+						disabled={!dirty || saving}
+						loading={saving}>Save</Button
+					>
+				{/if}
+			{/snippet}
+		</RecordFormLayout>
+	</BusinessSettingsPresentation>
 {/if}
 
 <style lang="scss">

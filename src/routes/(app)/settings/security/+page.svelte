@@ -1,4 +1,9 @@
 <script lang="ts">
+	import BusinessSettingsPresentation from '../_components/BusinessSettingsPresentation.svelte';
+	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import shieldIcon from '@tabler/icons/outline/shield-lock.svg?raw';
+	import keyIcon from '@tabler/icons/outline/key.svg?raw';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 
 	const toast = getToastManager();
@@ -36,136 +41,105 @@
 
 <svelte:head><title>Password and security · Contractor CRM</title></svelte:head>
 
-<section class="security-page" aria-labelledby="security-title">
-	<div class="security-page__header">
-		<div>
-			<p class="security-page__eyebrow">Account settings</p>
-			<h1 id="security-title">Password and security</h1>
-			<p>Keep your contractor account protected with a unique password.</p>
-		</div>
-	</div>
-	<section class="security-card" aria-labelledby="password-title">
-		<h2 id="password-title">Change password</h2>
-		<p class="security-card__intro">Confirm your current password, then choose a new one.</p>
-		<form
-			onsubmit={(event) => {
-				event.preventDefault();
-				void submit();
-			}}
+<BusinessSettingsPresentation
+	title="Password and security"
+	description="Keep your contractor account protected with a unique password."
+	icon={shieldIcon}
+>
+	<div class="security-page">
+		<SectionBlock
+			title="Change password"
+			icon={keyIcon}
+			hint="Confirm your current password, then choose a new one."
 		>
-			<label for="current-password">Current password</label>
-			<input
-				id="current-password"
-				type="password"
-				bind:value={currentPassword}
-				autocomplete="current-password"
-				required
-			/>
-			<label for="new-password">New password</label>
-			<input
-				id="new-password"
-				type="password"
-				bind:value={password}
-				autocomplete="new-password"
-				minlength="8"
-				required
-			/>
-			<label for="new-password-confirmation">Confirm new password</label>
-			<input
-				id="new-password-confirmation"
-				type="password"
-				bind:value={passwordConfirmation}
-				autocomplete="new-password"
-				minlength="8"
-				required
-			/>
-			{#if errorMessage}<p class="form-error" role="alert">{errorMessage}</p>{/if}
-			<button type="submit" disabled={isSubmitting}
-				>{isSubmitting ? 'Updating…' : 'Update password'}</button
+			<form
+				onsubmit={(event) => {
+					event.preventDefault();
+					void submit();
+				}}
 			>
-		</form>
-	</section>
-</section>
+				<label class="security-page__field" for="current-password"
+					>Current password<input
+						id="current-password"
+						type="password"
+						bind:value={currentPassword}
+						autocomplete="current-password"
+						required
+					/></label
+				>
+				<div class="security-page__row">
+					<label class="security-page__field" for="new-password"
+						>New password<input
+							id="new-password"
+							type="password"
+							bind:value={password}
+							autocomplete="new-password"
+							minlength="8"
+							required
+						/></label
+					>
+					<label class="security-page__field" for="new-password-confirmation"
+						>Confirm new password<input
+							id="new-password-confirmation"
+							type="password"
+							bind:value={passwordConfirmation}
+							autocomplete="new-password"
+							minlength="8"
+							required
+						/></label
+					>
+				</div>
+				{#if errorMessage}<p class="security-page__error" role="alert">{errorMessage}</p>{/if}
+				<div class="security-page__actions">
+					<Button type="submit" loading={isSubmitting} disabled={isSubmitting}
+						>Update password</Button
+					>
+				</div>
+			</form>
+		</SectionBlock>
+	</div>
+</BusinessSettingsPresentation>
 
 <style lang="scss">
 	.security-page {
-		width: min(100%, 720px);
-	}
-	.security-page__header {
-		margin-bottom: var(--space-large);
-	}
-	.security-page__eyebrow {
-		margin-bottom: var(--space-small);
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-	}
-	h1 {
-		margin-bottom: var(--space-small);
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-jumbo);
-		line-height: var(--typography--lineHeight-minuscule);
-	}
-	.security-page__header > div > p:last-child {
-		color: var(--color-text--secondary);
-		line-height: var(--typography--lineHeight-large);
-	}
-	.security-card {
-		width: min(100%, 480px);
-		padding: var(--space-large);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background: var(--color-surface);
-		box-shadow: var(--shadow-low);
-	}
-	h2 {
-		margin-bottom: var(--space-small);
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-larger);
-	}
-	.security-card__intro {
-		margin-bottom: var(--space-large);
-		color: var(--color-text--secondary);
-	}
-	form {
-		display: grid;
-		gap: var(--space-base);
-	}
-	label {
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-base);
-	}
-	input {
-		width: 100%;
-		padding: var(--space-small) var(--space-slim);
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		color: var(--color-text);
-		background: var(--color-surface);
-	}
-	input:focus-visible,
-	button:focus-visible {
-		outline: none;
-		box-shadow: var(--shadow-focus);
-	}
-	button {
-		padding: var(--space-small) var(--space-base);
-		border: 0;
-		border-radius: var(--radius-base);
-		color: var(--color-surface);
-		background: var(--color-interactive);
-		font-weight: 700;
-	}
-	button:hover:not(:disabled) {
-		background: var(--color-interactive--hover);
-	}
-	button:disabled {
-		opacity: 0.6;
-		cursor: not-allowed;
-	}
-	.form-error {
-		color: var(--color-critical);
-		font-size: var(--typography--fontSize-small);
+		max-width: 720px;
+		form {
+			display: grid;
+			gap: 20px;
+		}
+		&__field {
+			display: grid;
+			gap: 8px;
+			font-size: 13px;
+			color: var(--color-heading);
+			input {
+				width: 100%;
+				height: 44px;
+				padding: 10px 12px;
+				border: 1px solid var(--color-border--interactive);
+				border-radius: var(--radius-base);
+				color: var(--color-text);
+				background: var(--color-surface);
+				&:focus-visible {
+					outline: 2px solid var(--color-interactive);
+					outline-offset: 2px;
+				}
+			}
+		}
+		&__row {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 16px;
+		}
+		&__actions {
+			display: flex;
+			justify-content: flex-end;
+			border-top: 1px solid var(--color-border);
+			padding-top: 16px;
+		}
+		&__error {
+			color: var(--color-critical);
+			font-size: var(--typography--fontSize-small);
+		}
 	}
 </style>

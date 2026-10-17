@@ -50,7 +50,7 @@
 <div class="weekly-hours" class:weekly-hours--single={singleColumn}>
 	{#each days as day, weekday (weekday)}
 		<div class="weekly-hours__day">
-			<div class="weekly-hours__day-header">
+			<div class="weekly-hours__day-header" class:weekly-hours__day-header--open={day.isOpen}>
 				<span class="weekly-hours__day-name">{WEEKDAY_LABELS[weekday]}</span>
 				<Toggle
 					id={`${idPrefix}-open-${weekday}`}
@@ -111,6 +111,7 @@
 	.weekly-hours {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
+		align-items: start;
 		gap: var(--space-base);
 
 		&--single {
@@ -128,6 +129,9 @@
 			align-items: center;
 			justify-content: space-between;
 			gap: var(--space-base);
+		}
+		&__day-header--open :global(.toggle__label) {
+			color: var(--color-interactive);
 		}
 		&__day-name {
 			color: var(--color-heading);
