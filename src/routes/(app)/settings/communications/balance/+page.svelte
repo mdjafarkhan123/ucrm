@@ -6,8 +6,7 @@
 		useQueryClient
 	} from '@tanstack/svelte-query';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import { resolve } from '$app/paths';
-	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
+	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
@@ -205,25 +204,13 @@
 
 <PageContainer variant="open">
 	<div class="balance record-detail--cards">
-		<header class="balance__header">
-			<span class="balance__header-icon" aria-hidden="true">
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-				{@html walletBigIcon}
-			</span>
-			<div class="balance__header-copy">
-				<Breadcrumbs
-					items={[
-						{ label: 'Settings', href: resolve('/(app)/settings') },
-						{ label: 'Communication Balance' }
-					]}
-				/>
-				<h1>Communication Balance</h1>
-				<p>
-					One balance for texts and extra email sending beyond your plan, this month's SMS
-					charges, and lean delivery health.
-				</p>
-			</div>
-		</header>
+		<SettingsPageHeader
+			title="Communication Balance"
+			description="One balance for texts and extra email sending beyond your plan, this month's SMS charges, and lean delivery health."
+			icon={walletBigIcon}
+			tone="task"
+			presentation="communication"
+		/>
 
 		{#if usageQuery.isPending}
 			<LoadingSkeleton variant="card" rows={3} />
@@ -544,57 +531,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 20px;
-
-		&__header {
-			display: flex;
-			align-items: flex-start;
-			gap: 18px;
-			margin-top: 16px;
-		}
-		&__header-icon {
-			display: grid;
-			flex: 0 0 auto;
-			place-items: center;
-			width: 60px;
-			height: 60px;
-			margin-top: 4px;
-			border-radius: 18px;
-			color: var(--color-text--reverse);
-			background: var(--color-task);
-			box-shadow: 0 6px 16px color-mix(in srgb, var(--color-task) 35%, transparent);
-
-			:global(svg) {
-				width: 28px;
-				height: 28px;
-			}
-		}
-		&__header-copy {
-			min-width: 0;
-
-			:global(.breadcrumbs) {
-				margin-bottom: 4px;
-				font-size: 13px;
-				font-weight: 600;
-			}
-			:global(.breadcrumbs a svg) {
-				display: none;
-			}
-			h1 {
-				margin: 0;
-				color: var(--color-heading);
-				font-size: 36px;
-				font-weight: 900;
-				letter-spacing: -1.2px;
-				line-height: var(--typography--lineHeight-tight);
-			}
-			p {
-				margin: var(--space-smaller) 0 0;
-				color: var(--color-text--secondary);
-				font-size: 14px;
-				font-weight: 500;
-				line-height: var(--typography--lineHeight-large);
-			}
-		}
 
 		/* One framed icon tile, used wherever the approved frame puts a soft coloured square. */
 		&__tile {

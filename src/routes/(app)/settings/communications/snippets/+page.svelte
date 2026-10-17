@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { createInfiniteQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
+	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import FilterChip from '$lib/components/ui/FilterChip.svelte';
@@ -137,22 +136,17 @@
 
 <PageContainer variant="open">
 	<div class="snippets-page">
-		<header class="snippets-page__header">
-			<span class="snippets-page__header-icon" aria-hidden="true">
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-				{@html quoteIcon}
-			</span>
-			<div class="snippets-page__header-copy">
-				<Breadcrumbs
-					items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Snippets' }]}
-				/>
-				<h1>Snippets</h1>
-				<p>Reusable text your team can drop into any conversation reply.</p>
-			</div>
-			<div class="snippets-page__header-actions">
+		<SettingsPageHeader
+			title="Snippets"
+			description="Reusable text your team can drop into any conversation reply."
+			icon={quoteIcon}
+			tone="task"
+			presentation="communication"
+		>
+			{#snippet actions()}
 				<Button onclick={() => (dialogState = { mode: 'create' })}>New snippet</Button>
-			</div>
-		</header>
+			{/snippet}
+		</SettingsPageHeader>
 
 		{#if itemsQuery.isPending}
 			<RecordListCard title="Snippets" padBody>
@@ -278,62 +272,6 @@
 		flex-direction: column;
 		gap: 20px;
 	}
-	.snippets-page__header {
-		display: flex;
-		align-items: flex-start;
-		gap: 18px;
-		margin-top: 16px;
-	}
-	.snippets-page__header-icon {
-		display: grid;
-		flex: 0 0 auto;
-		place-items: center;
-		width: 60px;
-		height: 60px;
-		margin-top: 4px;
-		border-radius: 18px;
-		color: var(--color-text--reverse);
-		background: var(--color-task);
-		box-shadow: 0 6px 16px color-mix(in srgb, var(--color-task) 35%, transparent);
-	}
-	.snippets-page__header-icon :global(svg) {
-		width: 28px;
-		height: 28px;
-	}
-	.snippets-page__header-copy {
-		flex: 1;
-		min-width: 0;
-	}
-	.snippets-page__header-copy :global(.breadcrumbs) {
-		margin-bottom: 4px;
-		font-size: 13px;
-		font-weight: 600;
-	}
-	.snippets-page__header-copy :global(.breadcrumbs a svg) {
-		display: none;
-	}
-	.snippets-page__header h1 {
-		margin: 0;
-		color: var(--color-heading);
-		font-size: 36px;
-		font-weight: 900;
-		letter-spacing: -1.2px;
-		line-height: var(--typography--lineHeight-tight);
-	}
-	.snippets-page__header p {
-		margin: var(--space-smaller) 0 0;
-		color: var(--color-text--secondary);
-		font-size: 14px;
-		font-weight: 500;
-		line-height: var(--typography--lineHeight-large);
-	}
-	.snippets-page__header-actions {
-		display: flex;
-		flex: 0 0 auto;
-		align-items: center;
-		align-self: flex-end;
-		gap: 10px;
-	}
 	.snippets-page__search {
 		width: 300px;
 		max-width: 100%;
@@ -360,11 +298,5 @@
 		-webkit-box-orient: vertical;
 		-webkit-line-clamp: 2;
 		line-clamp: 2;
-	}
-
-	@media (max-width: 639px) {
-		.snippets-page__header {
-			flex-wrap: wrap;
-		}
 	}
 </style>

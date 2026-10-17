@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { createInfiniteQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
+	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import FilterChip from '$lib/components/ui/FilterChip.svelte';
@@ -184,23 +183,18 @@
 
 <PageContainer variant="open">
 	<div class="templates-page">
-		<header class="templates-page__header">
-			<span class="templates-page__header-icon" aria-hidden="true">
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-				{@html layoutListIcon}
-			</span>
-			<div class="templates-page__header-copy">
-				<Breadcrumbs
-					items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Templates' }]}
-				/>
-				<h1>Templates</h1>
-				<p>Reusable emails your team can send from any conversation.</p>
-			</div>
-			<div class="templates-page__header-actions">
+		<SettingsPageHeader
+			title="Templates"
+			description="Reusable emails your team can send from any conversation."
+			icon={layoutListIcon}
+			tone="task"
+			presentation="communication"
+		>
+			{#snippet actions()}
 				<Button variant="secondary" onclick={() => (libraryOpen = true)}>Copy from library</Button>
 				<Button onclick={() => (dialogState = { mode: 'create' })}>New template</Button>
-			</div>
-		</header>
+			{/snippet}
+		</SettingsPageHeader>
 
 		{#if itemsQuery.isPending}
 			<RecordListCard title="Templates" padBody>
@@ -335,66 +329,6 @@
 		flex-direction: column;
 		gap: 20px;
 
-		&__header {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: flex-start;
-			gap: 18px;
-			margin-top: 16px;
-		}
-		&__header-icon {
-			display: grid;
-			flex: 0 0 auto;
-			place-items: center;
-			width: 60px;
-			height: 60px;
-			margin-top: 4px;
-			border-radius: 18px;
-			color: var(--color-text--reverse);
-			background: var(--color-task);
-			box-shadow: 0 6px 16px color-mix(in srgb, var(--color-task) 35%, transparent);
-
-			:global(svg) {
-				width: 28px;
-				height: 28px;
-			}
-		}
-		&__header-copy {
-			flex: 1;
-			min-width: 0;
-
-			:global(.breadcrumbs) {
-				margin-bottom: 4px;
-				font-size: 13px;
-				font-weight: 600;
-			}
-			:global(.breadcrumbs a svg) {
-				display: none;
-			}
-			h1 {
-				margin: 0;
-				color: var(--color-heading);
-				font-size: 36px;
-				font-weight: 900;
-				letter-spacing: -1.2px;
-				line-height: var(--typography--lineHeight-tight);
-			}
-			p {
-				margin: var(--space-smaller) 0 0;
-				color: var(--color-text--secondary);
-				font-size: 14px;
-				font-weight: 500;
-				line-height: var(--typography--lineHeight-large);
-			}
-		}
-		&__header-actions {
-			display: flex;
-			flex: 0 0 auto;
-			flex-wrap: wrap;
-			align-items: center;
-			align-self: flex-end;
-			gap: 10px;
-		}
 		&__search {
 			width: 300px;
 			max-width: 100%;

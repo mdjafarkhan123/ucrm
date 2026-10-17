@@ -3,8 +3,7 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { beforeNavigate } from '$app/navigation';
-	import { resolve } from '$app/paths';
-	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
+	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -127,26 +126,13 @@
 
 	<PageContainer variant="open">
 		<div class="inquiry-alerts record-detail--cards">
-			<header class="inquiry-alerts__header">
-				<span class="inquiry-alerts__header-icon" aria-hidden="true">
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-					{@html bellIcon}
-				</span>
-				<div class="inquiry-alerts__header-copy">
-					<Breadcrumbs
-						items={[
-							{ label: 'Settings', href: resolve('/(app)/settings') },
-							{ label: 'Inquiry alerts' }
-						]}
-					/>
-					<h1>Inquiry alerts</h1>
-					<p>
-						When someone sends a request form or starts a chat on your website, the people you
-						choose get an alert in the bell at the top of the app and by email, so a new customer
-						hears back fast.
-					</p>
-				</div>
-			</header>
+			<SettingsPageHeader
+				title="Inquiry alerts"
+				description="When someone sends a request form or starts a chat on your website, the people you choose get an alert in the bell at the top of the app and by email, so a new customer hears back fast."
+				icon={bellIcon}
+				tone="task"
+				presentation="communication"
+			/>
 
 			<RecordFormLayout title="Inquiry alerts" bind:this={layout} error={errorMessage}>
 				{#snippet main()}
@@ -241,58 +227,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 20px;
-
-		// ---- Heading: icon tile, breadcrumb above the title, as drawn. ----
-		&__header {
-			display: flex;
-			align-items: flex-start;
-			gap: 18px;
-			margin-top: 16px;
-		}
-		&__header-icon {
-			display: grid;
-			flex: 0 0 auto;
-			place-items: center;
-			width: 60px;
-			height: 60px;
-			margin-top: 4px;
-			border-radius: 18px;
-			color: var(--color-text--reverse);
-			background: var(--color-task);
-			box-shadow: 0 6px 16px color-mix(in srgb, var(--color-task) 35%, transparent);
-
-			:global(svg) {
-				width: 28px;
-				height: 28px;
-			}
-		}
-		&__header-copy {
-			min-width: 0;
-
-			:global(.breadcrumbs) {
-				margin-bottom: 4px;
-				font-size: 13px;
-				font-weight: 600;
-			}
-			:global(.breadcrumbs a svg) {
-				display: none;
-			}
-			h1 {
-				margin: 0;
-				color: var(--color-heading);
-				font-size: 36px;
-				font-weight: 900;
-				letter-spacing: -1.2px;
-				line-height: var(--typography--lineHeight-tight);
-			}
-			p {
-				margin: var(--space-smaller) 0 0;
-				color: var(--color-text--secondary);
-				font-size: 14px;
-				font-weight: 500;
-				line-height: var(--typography--lineHeight-large);
-			}
-		}
 
 		// ---- The shared form frame drops its white sheet and header so the card sits on the page. ----
 		:global(.record-form) {
