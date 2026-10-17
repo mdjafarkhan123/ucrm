@@ -74,5 +74,7 @@ designs as the record of the live app.
   Quiet button is only for link-like actions such as Clear filters.
 - Decision 2026-10-17 (Jafar): white buttons' grey border darkens one step on hover (Jobber darkens it too; we use a
   softer mid-grey, as Stripe and Linear do); the Delete button's border turns red on hover.
+- Decision 2026-10-17 (Jafar): tables are not redesigned — they keep today's app look (`classic.pen` App-look frames,
+  `design-classic/tables.md`). The concept table was removed from the Parts board.
 - Decision 2026-10-17 (Jafar): keep two sets of styling modules for now — `design` (concept) and
   `design-classic` (live look) — until rollout; revisit then.
