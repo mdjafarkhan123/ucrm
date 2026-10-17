@@ -128,8 +128,8 @@
 				/>
 				{#if option.icon}
 					<!-- A Tabler SVG file imported at build time, not user content. -->
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					<span class="segmented__icon" style:color={option.iconColor} aria-hidden="true">
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						{@html option.icon}
 					</span>
 				{/if}

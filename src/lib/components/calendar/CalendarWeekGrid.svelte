@@ -171,7 +171,9 @@
 			{#each HOURS as hour (hour)}
 				<!-- The hour the pill is sitting on is left unlabelled, or the two would be printed over each other. -->
 				{#if nowMinutes === null || Math.abs(nowMinutes - hour * 60) > 14}
-					<span class="calendar-week__hour" style:top="{hour * hourHeight}px">{hourLabel(hour)}</span>
+					<span class="calendar-week__hour" style:top="{hour * hourHeight}px"
+						>{hourLabel(hour)}</span
+					>
 				{/if}
 			{/each}
 			{#if nowMinutes !== null}
