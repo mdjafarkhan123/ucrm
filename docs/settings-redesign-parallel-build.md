@@ -37,6 +37,21 @@ These reductions supersede all earlier wider handoffs and component ownership
 applies only to the active routes. Keep any already started deferred work isolated
 and checkpointed; it is outside this batch.
 
+## Continuation and review queue
+
+Jafar subsequently authorized Codex to continue with another claimed five-page
+batch: Taxes, Payments, Quote settings, Invoice settings and Team (main page only).
+Billing claim `46295b95f941`; Team keeps `d9d3f534a4db`. The first five business
+pages are implemented and pushed on `codex/settings-business-app`, pending integration.
+
+Claude's branch `codex/settings-workflows-app` now contains five implemented pages:
+Price book, Pipeline settings, Checklists, Automation index and Request forms index
+(commits `2b672e3d`, `3a56eb88`). Review all five before integration; see that branch's
+`docs/settings-redesign-progress/workflows.md` for evidence and known gaps. Codex
+owns this review after the current batch. It can resume in this or a new session;
+the review is not complete just because the implementation was pushed. Expensive
+validation remains deferred. The added two pages do not overlap Codex's next batch.
+
 Codex parent reviews the business group and owns integration. OpenCode and
 Claude are separate user-run sessions; they have not started just because this
 brief exists. Each session must claim its group from its working folder before
