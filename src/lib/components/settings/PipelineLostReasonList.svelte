@@ -102,17 +102,19 @@
 				void add();
 			}}
 		>
-			<Input
-				id={`${uid}-new`}
-				label="New reason"
-				maxlength={60}
-				bind:value={newLabel}
-				invalid={Boolean(addError)}
-				errorMessage={addError}
-			/>
-			<Button type="submit" variant="secondary" loading={adding} disabled={!newLabel.trim()}>
-				Add reason
-			</Button>
+			<label class="lost-reasons__label" for={`${uid}-new`}>New reason</label>
+			<div class="lost-reasons__add-row">
+				<Input
+					id={`${uid}-new`}
+					maxlength={60}
+					bind:value={newLabel}
+					invalid={Boolean(addError)}
+					errorMessage={addError}
+				/>
+				<Button type="submit" variant="secondary" loading={adding} disabled={!newLabel.trim()}>
+					Add reason
+				</Button>
+			</div>
 		</form>
 	{/if}
 
@@ -136,12 +138,13 @@
 			rowId={(reason) => reason.key}
 			caption="Lost reasons"
 			rowActions={canEdit ? rowActions : undefined}
+			variant="card"
 		>
 			{#snippet row(reason: LostReasonOption)}
 				<th scope="row" class:lost-reasons__retired={reason.retired_at !== null}>
 					{reason.label}
 				</th>
-				<td>
+				<td class="lost-reasons__status">
 					{#if reason.retired_at !== null}
 						<StatusBadge status="inactive">Retired</StatusBadge>
 					{:else if reason.key === 'other'}
@@ -162,25 +165,29 @@
 	.lost-reasons {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-base);
+		// The card variant of the table is sized for wide pages; this one lives in a narrow card.
+		--data-table-min-width: 0;
 
 		&__add {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			padding: 4px 24px 20px;
+		}
+
+		&__label {
+			color: var(--color-heading);
+			font-size: 13px;
+			font-weight: 600;
+		}
+
+		&__add-row {
 			display: flex;
 			align-items: flex-start;
 			gap: var(--space-small);
 
 			:global(.input) {
 				flex: 1;
-				max-width: 24rem;
-			}
-
-			@media (max-width: 639px) {
-				flex-direction: column;
-				align-items: stretch;
-
-				:global(.input) {
-					max-width: none;
-				}
 			}
 		}
 
@@ -189,9 +196,45 @@
 			font-weight: 400;
 		}
 
+		// Reason names read as the row's main text; the status and menu sit at the far end.
+		:global(.data-table--card tbody th) {
+			font-size: 14px;
+			font-weight: 600;
+		}
+		:global(.data-table--card tbody tr:last-child th),
+		:global(.data-table--card tbody tr:last-child td) {
+			border-bottom: var(--border-base) solid var(--color-border);
+		}
+		:global(.data-table--card tbody th),
+		:global(.data-table--card tbody td) {
+			padding-top: 10px;
+			padding-bottom: 10px;
+		}
+		:global(.data-table--card tbody td.lost-reasons__status) {
+			width: 1%;
+			padding-inline: 8px;
+			text-align: end;
+			white-space: nowrap;
+		}
+
+		:global(.data-table--card tbody td.data-table__actions-cell) {
+			padding-right: 16px;
+			padding-left: 0;
+		}
+
 		&__hint {
+			padding: 16px 24px;
+			background: var(--color-surface--background--subtle);
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			font-size: 12px;
+			line-height: 1.6;
+		}
+
+		@media (max-width: 639px) {
+			&__add-row {
+				flex-direction: column;
+				align-items: stretch;
+			}
 		}
 	}
 </style>
