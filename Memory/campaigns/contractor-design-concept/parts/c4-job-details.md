@@ -45,6 +45,14 @@
 7. Plain icon tiles: **yes, recolour, his review** → Notes conversation teal, Checklists time (filled in on
    visits). Photos and files stays the Files grey (map); Signatures stays success.
 
+## Open: one page or tabs (2026-10-18)
+
+My review list (not yet approved): 1 work-then-money order, 2 neutral avatars, 3 amber "Required · N left"
+checklist pill, 4 receipt photo on expenses, 5 no box-in-box in Signatures, 6 Instructions hint wording,
+7 orphan line count. Jafar asked to see item 1 as tabs: copies "Tabs · Work" (`uStWZ`) and "Tabs · Money"
+(`q1Wx6r`); the original `hdOUv` is untouched. My advice: one page in the new order (Jobber), because staff
+without price rights never see Money, so tabs only split the owner's view. Waiting for his pick.
+
 ## Next
 
 Jafar reviews the changes above (frame `hdOUv`, edit mode `jFBRB`, Home `rKrbu`, Jobs list `t8ULdJ`). On his yes, record approval
