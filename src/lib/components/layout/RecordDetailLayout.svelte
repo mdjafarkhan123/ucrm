@@ -13,6 +13,7 @@
 	// Its sibling is `RecordFormLayout`, the shell for full-page create forms, whose action bar is always
 	// visible because that whole page is one form.
 	let {
+		header,
 		main,
 		rail,
 		editing = false,
@@ -27,6 +28,9 @@
 		cards = false,
 		class: className = ''
 	}: {
+		/** A card that spans both columns above them (the concept Job details header). With it, the page
+		 *  scrolls as one: the columns keep their full height instead of scrolling on their own. */
+		header?: Snippet;
 		main: Snippet;
 		rail?: Snippet;
 		/** True while a block is open for editing, changed or not, so Cancel is always within reach. */
@@ -48,11 +52,20 @@
 	} = $props();
 </script>
 
-<div class={`record-detail ${className} scroll-y-auto`} class:record-detail--cards={cards}>
-	<div class="record-detail__grid scroll-y-auto" class:record-detail__grid--no-rail={!rail}>
-		<div class="record-detail__main scroll-y-auto">{@render main()}</div>
+<div
+	class={`record-detail ${className} scroll-y-auto`}
+	class:record-detail--cards={cards}
+	class:record-detail--headed={header}
+>
+	{#if header}{@render header()}{/if}
+	<div
+		class="record-detail__grid"
+		class:scroll-y-auto={!header}
+		class:record-detail__grid--no-rail={!rail}
+	>
+		<div class="record-detail__main" class:scroll-y-auto={!header}>{@render main()}</div>
 		{#if rail}
-			<aside class="record-detail__rail scroll-y-auto">{@render rail()}</aside>
+			<aside class="record-detail__rail" class:scroll-y-auto={!header}>{@render rail()}</aside>
 		{/if}
 	</div>
 
@@ -144,9 +157,33 @@
 		}
 	}
 
+	// Concept Job details (`tNdkX`): the header card spans the page, 24px above two columns that sit 24px
+	// apart, with a 360px rail whose cards stand 16px apart.
+	.record-detail--cards.record-detail--headed {
+		gap: var(--space-large);
+
+		> :global(*) {
+			flex-shrink: 0;
+		}
+
+		.record-detail__grid {
+			grid-template-columns: minmax(0, 1fr) 360px;
+			gap: var(--space-large);
+
+			&--no-rail {
+				grid-template-columns: minmax(0, 1fr);
+			}
+		}
+
+		.record-detail__main {
+			gap: var(--space-large);
+		}
+	}
+
 	@media (max-width: 1079px) {
 		.record-detail__grid,
-		.record-detail--cards .record-detail__grid {
+		.record-detail--cards .record-detail__grid,
+		.record-detail--cards.record-detail--headed .record-detail__grid {
 			grid-template-columns: 1fr;
 		}
 	}

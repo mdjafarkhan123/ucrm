@@ -159,6 +159,45 @@
 		}))
 	);
 
+	// The totals panel under the products table: Subtotal, then any discount and tax with what they were
+	// set to, then the Total.
+	function percentText(basisPoints: number) {
+		return `${(basisPoints / 100).toFixed(2).replace(/\.?0+$/, '')}%`;
+	}
+	const pricingRows = $derived.by(() => {
+		const money = saved?.money;
+		if (!saved || !money) return [];
+		const format = (minor: number) =>
+			new Intl.NumberFormat(saved.locale, {
+				style: 'currency',
+				currency: saved.job.currency_code
+			}).format(minor / 100);
+		const rows = [{ label: 'Subtotal', value: format(money.subtotal_minor) }];
+		if (money.discount_minor > 0) {
+			const named = [
+				'Discount',
+				[
+					money.discount_name,
+					money.discount_type === 'percentage' ? percentText(money.discount_value ?? 0) : null
+				]
+					.filter(Boolean)
+					.join(' ')
+			].filter(Boolean);
+			rows.push({ label: named.join(' · '), value: `−${format(money.discount_minor)}` });
+		}
+		if (money.tax_minor > 0) {
+			const named = [
+				'Tax',
+				[money.tax_name, money.tax_rate_basis_points > 0 ? percentText(money.tax_rate_basis_points) : null]
+					.filter(Boolean)
+					.join(' ')
+			].filter(Boolean);
+			rows.push({ label: named.join(' · '), value: format(money.tax_minor) });
+		}
+		rows.push({ label: 'Total', value: format(money.total_minor) });
+		return rows;
+	});
+
 	const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
 		day: 'numeric',
 		month: 'short',
@@ -521,7 +560,7 @@
 			onSave={() => void save()}
 			onCancel={discard}
 		>
-			{#snippet main()}
+			{#snippet header()}
 				<WorkRecordHeader
 					icon={toolsIcon}
 					recordType="Job"
@@ -536,6 +575,7 @@
 						: saved.can_invoice && saved.job.client
 							? {
 									label: 'Create invoice',
+									icon: fileInvoiceIcon,
 									href: `${resolve('/(app)/invoices/new')}?client=${saved.job.client.id}&job=${saved.job.id}`
 								}
 							: undefined}
@@ -581,7 +621,9 @@
 						{/if}
 					{/snippet}
 				</WorkRecordHeader>
+			{/snippet}
 
+			{#snippet main()}
 				<JobVisitsSection
 					jobId={saved.job.id}
 					visits={saved.visits}
@@ -655,6 +697,7 @@
 					lines={jobLines}
 					icon={packageIcon}
 					tone="quote"
+					flush
 					hint={`${jobLines.length} ${jobLines.length === 1 ? 'line' : 'lines'}`}
 					revision={saved.job.revision}
 					editable={editable && saved.can_see_price}
@@ -665,24 +708,7 @@
 					editorTotalLabel="Job subtotal"
 					saveLabel="Save job pricing"
 					emptyDescription="Add the products and services this job covers."
-					totalRows={saved.can_see_price
-						? [
-								{
-									label: 'Subtotal',
-									value: new Intl.NumberFormat(saved.locale, {
-										style: 'currency',
-										currency: saved.job.currency_code
-									}).format((saved.money?.subtotal_minor ?? 0) / 100)
-								},
-								{
-									label: 'Total',
-									value: new Intl.NumberFormat(saved.locale, {
-										style: 'currency',
-										currency: saved.job.currency_code
-									}).format((saved.money?.total_minor ?? 0) / 100)
-								}
-							]
-						: undefined}
+					totalRows={saved.can_see_price ? pricingRows : undefined}
 					onEditStart={() => {
 						discountDraft = null;
 						taxDraft = null;

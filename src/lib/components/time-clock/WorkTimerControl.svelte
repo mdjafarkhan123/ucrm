@@ -16,6 +16,7 @@
 		type TimerWriteError
 	} from '$lib/time-clock/api';
 	import { stopMessage } from '$lib/time-clock/messages';
+	import playerPlayIcon from '@tabler/icons/outline/player-play.svg?raw';
 
 	// Start and Stop for the signed-in person's own timer on one visit or one Assessment (plan § Timers,
 	// § Assessment timers). Every copy of this control reads the same shared timer query, so the Schedule
@@ -28,9 +29,13 @@
 
 	let {
 		target,
-		completed = false
+		completed = false,
+		variant = 'primary'
 	}: {
 		target: Target;
+		/** `secondary` is the white Start with a play icon that sits at the end of a visit row (concept Job
+		 *  details), where the page's green button is already taken by the header. */
+		variant?: 'primary' | 'secondary';
 		/** A completed visit or Assessment, or a visit on a closed Job, cannot be timed. Completing it stopped
 		 *  its timers. An Assessment not booked for today counts as completed here: only today's are timed. */
 		completed?: boolean;
@@ -108,11 +113,27 @@
 	{#if running}
 		<TimerRunningElsewhere timer={running} />
 	{:else}
-		<Button size="small" onclick={start} loading={busy}>Start timer</Button>
+		<Button size="small" {variant} onclick={start} loading={busy}>
+			{#if variant === 'secondary'}
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				<span class="work-timer__icon" aria-hidden="true">{@html playerPlayIcon}</span>
+			{/if}
+			Start timer
+		</Button>
 	{/if}
 {/if}
 
 <style lang="scss">
+	.work-timer__icon {
+		display: inline-flex;
+
+		:global(svg) {
+			display: block;
+			width: 16px;
+			height: 16px;
+		}
+	}
+
 	.work-timer {
 		display: inline-flex;
 		flex-wrap: wrap;

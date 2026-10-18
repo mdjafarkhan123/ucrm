@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onDestroy, tick, untrack, type Snippet } from 'svelte';
+	import { getContext, onDestroy, tick, untrack, type Snippet } from 'svelte';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { flip } from 'svelte/animate';
 	import { dragHandleZone, dragHandle } from 'svelte-dnd-action';
@@ -57,6 +57,8 @@
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
 	import circlePlusIcon from '@tabler/icons/outline/circle-plus.svg?raw';
+	import packageIcon from '@tabler/icons/outline/package.svg?raw';
+	import toolIcon from '@tabler/icons/outline/tool.svg?raw';
 
 	// One "Products and services" section, matching the real Jobber quote line-item card
 	// (jobber-03-quotes.md §8.1): name/qty/price/total on top, description + a photo underneath, drag to
@@ -859,7 +861,12 @@
 		);
 	}
 
-	const anyLinePhoto = $derived(savedLines.some((line) => line.image_file_id));
+	// The concept Job details table (`tNdkX`) leads each line with a 40px photo, or a tile for its kind, and
+	// marks it Product or Service; the separate photo column belongs to the older look.
+	const conceptJob = getContext<boolean>('concept-job-details') ?? false;
+	const anyLinePhoto = $derived(
+		!conceptJob && savedLines.some((line) => line.image_file_id)
+	);
 
 	// A priced progress bill drops quantity and unit price. Its lines are a stage's share spread across the
 	// job's items, stored as a single lump priced at that share, so a per-unit reading of them is false: the
@@ -1216,15 +1223,15 @@
 		</EmptyState>
 	{:else}
 		<div class="pricing-table__scroll">
-			<table class="pricing-table">
+			<table class="pricing-table" class:pricing-table--concept={conceptJob}>
 				<thead>
 					<tr>
-						<th scope="col">Line item</th>
+						<th scope="col">{conceptJob ? 'Product or service' : 'Line item'}</th>
 						{#if anyLinePhoto}
 							<th scope="col" class="pricing-table__photo" aria-label="Photo"></th>
 						{/if}
 						{#if !progressMoney}
-							<th scope="col" class="pricing-table__number">Quantity</th>
+							<th scope="col" class="pricing-table__number">{conceptJob ? 'Qty' : 'Quantity'}</th>
 						{/if}
 						{#if showPrices}
 							{#if progressMoney}
@@ -1251,6 +1258,35 @@
 						{:else}
 							<tr>
 								<th scope="row">
+									{#if conceptJob}
+										<span class="pricing-table__line">
+											{#if line.image_file_id}
+												<img
+													class="pricing-table__thumb"
+													src={fileImageUrl(line.image_file_id, 'thumb')}
+													alt=""
+													loading="lazy"
+												/>
+											{:else}
+												<span
+													class="pricing-table__thumb pricing-table__thumb--{line.category}"
+													aria-hidden="true"
+													>{@html line.category === 'service' ? toolIcon : packageIcon}</span
+												>
+											{/if}
+											<span class="pricing-table__item">
+												<span class="pricing-table__title">
+													<span class="pricing-table__name">{line.name}</span>
+													<span class="pricing-table__category pricing-table__category--{line.category}">
+														{line.category === 'service' ? 'Service' : 'Product'}
+													</span>
+												</span>
+												{#if line.description}
+													<span class="pricing-table__description">{line.description}</span>
+												{/if}
+											</span>
+										</span>
+									{:else}
 									<span class="pricing-table__title">
 										<span class="pricing-table__name">{line.name}</span>
 										{#if quoteChoices && line.selection_kind === 'optional'}
@@ -1264,6 +1300,7 @@
 									</span>
 									{#if line.description}
 										<span class="pricing-table__description">{line.description}</span>
+									{/if}
 									{/if}
 								</th>
 								{#if anyLinePhoto}
@@ -1860,27 +1897,140 @@
 	// Job details concept (`tNdkX`): the totals sit in a soft grey panel under the table, with the Total in a
 	// white box of its own.
 	:global(.job-detail) .pricing-block__summary {
-		padding: var(--space-base) var(--space-large) var(--space-large);
+		padding: var(--space-base) var(--space-medium) var(--space-medium);
 	}
 	:global(.job-detail) .pricing-block__summary-list {
-		width: min(360px, 100%);
+		width: min(340px, 100%);
 		gap: var(--space-small);
-		padding: var(--space-slim);
+		padding: var(--space-base) var(--space-small) var(--space-small);
 		border-radius: var(--radius-large);
 		background: var(--color-surface--background--subtle);
 	}
 	:global(.job-detail) .pricing-block__summary-row {
-		padding: 0 var(--space-small);
+		padding: 0 var(--space-slim);
+		font-size: 13px;
 
 		&--total {
-			padding: var(--space-slim) var(--space-small);
+			align-items: center;
+			padding: 10px var(--space-slim);
 			border: var(--border-base) solid var(--color-border);
 			border-radius: var(--radius-base);
 			background: var(--color-surface);
+			font-size: var(--typography--fontSize-base);
 
 			dd {
-				font-size: var(--typography--fontSize-largest);
+				font-size: var(--typography--fontSize-larger);
 			}
 		}
+	}
+
+	// The concept table: edge to edge, 20px in from the card's sides, the line led by its photo or kind tile.
+	:global(.record-detail--cards) .pricing-table.pricing-table--concept {
+		th,
+		td {
+			padding: var(--space-slim) var(--space-small);
+			vertical-align: middle;
+		}
+		th:first-child,
+		td:first-child {
+			padding-left: var(--space-medium);
+		}
+		th:last-child,
+		td:last-child {
+			padding-right: var(--space-medium);
+		}
+		thead th {
+			padding-block: 10px;
+			font-size: var(--typography--fontSize-overline);
+			letter-spacing: 0.8px;
+		}
+		td.pricing-table__number {
+			color: var(--color-text);
+		}
+		td.pricing-table__number:last-child {
+			color: var(--color-heading);
+			font-weight: 600;
+		}
+		.pricing-table__line {
+			display: flex;
+			align-items: center;
+			gap: var(--space-base);
+		}
+		.pricing-table__thumb {
+			display: inline-flex;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			width: 40px;
+			height: 40px;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-tile-large);
+			object-fit: cover;
+
+			:global(svg) {
+				display: block;
+				width: 20px;
+				height: 20px;
+			}
+
+			&--product {
+				border-color: transparent;
+				color: var(--color-quote);
+				background: var(--color-quote--surface);
+			}
+			&--service {
+				border-color: transparent;
+				color: var(--color-job);
+				background: var(--color-job--surface);
+			}
+		}
+		.pricing-table__item {
+			display: flex;
+			min-width: 0;
+			flex-direction: column;
+			gap: var(--space-smallest);
+		}
+		.pricing-table__description {
+			padding-top: 0;
+		}
+		.pricing-table__category {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 3px 10px;
+			border-radius: var(--radius-circle);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+			line-height: 15px;
+
+			&::before {
+				width: 6px;
+				height: 6px;
+				border-radius: var(--radius-circle);
+				background: currentColor;
+				content: '';
+			}
+
+			&--product {
+				color: var(--color-quote--onSurface);
+				background: var(--color-quote--surface);
+
+				&::before {
+					background: var(--color-quote);
+				}
+			}
+			&--service {
+				color: var(--color-job--onSurface);
+				background: var(--color-job--surface);
+
+				&::before {
+					background: var(--color-job);
+				}
+			}
+		}
+	}
+	:global(.record-detail--cards) .pricing-table--concept tbody tr:last-child th,
+	:global(.record-detail--cards) .pricing-table--concept tbody tr:last-child td {
+		border-bottom: 0;
 	}
 </style>

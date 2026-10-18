@@ -7,6 +7,7 @@
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import type { StatusTone } from './types';
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
+	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 
 	// The card at the top of every work record — request, quote, job, invoice. They all draw the same
 	// thing: what kind of record this is and where it stands, the one action that moves it forward, the
@@ -149,6 +150,7 @@
 			{/if}
 			{#if primaryAction}
 				<Button
+					class="work-header__primary"
 					variant="primary"
 					size={roomy ? 'base' : 'small'}
 					href={primaryAction.href}
@@ -191,7 +193,11 @@
 			</div>
 		{:else}
 			<h1>{title}</h1>
-			{#if onEditTitle}
+			{#if onEditTitle && look === 'concept'}
+				<Button variant="quiet" iconOnly size="small" onclick={onEditTitle} label="Edit {title}">
+					{@html pencilIcon}
+				</Button>
+			{:else if onEditTitle}
 				<PencilButton size="base" onclick={onEditTitle} label="Edit {title}" />
 			{/if}
 		{/if}
@@ -437,8 +443,18 @@
 			letter-spacing: 0;
 			text-transform: none;
 		}
+		// The main action closes the row, after History and More.
+		.work-header__actions :global(.work-header__primary) {
+			order: 1;
+		}
+		// The title's pencil is a quiet icon right after the heading, not a boxed button at the far end.
 		.work-header__identity {
+			justify-content: flex-start;
 			padding: var(--space-base) var(--space-large) 0;
+
+			:global(.button--quiet) {
+				color: var(--color-icon--secondary);
+			}
 		}
 		.work-header__body {
 			display: grid;

@@ -32,6 +32,7 @@
 	import NotifyCustomerCheckbox from '$lib/components/schedule/NotifyCustomerCheckbox.svelte';
 	import { customerNoticeToast, type CustomerNoticeKind } from '$lib/schedule/customer-notices';
 	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
+	import { initials } from '$lib/collaboration/format';
 	import type { JobType } from '$lib/jobs/statuses';
 	import {
 		addJobVisits,
@@ -56,7 +57,7 @@
 	} from '$lib/jobs/api';
 	import type { RequestPricingLineInput } from '$lib/quotes/api';
 	import calendarIcon from '@tabler/icons/outline/calendar-event.svg?raw';
-	import usersIcon from '@tabler/icons/outline/users.svg?raw';
+	import clipboardListIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import copyIcon from '@tabler/icons/outline/copy.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
@@ -270,6 +271,28 @@
 	function isOverdue(visit: JobVisit) {
 		return !visit.completed_at && visit.visit_date !== null && visit.visit_date < todayStr;
 	}
+
+	function isToday(visit: JobVisit) {
+		return !visit.completed_at && visit.visit_date === todayStr;
+	}
+
+	// Each row names its crew by initials, the way the Client schedule does: the shared team list loads with
+	// the page, but only when a visit actually has someone on it.
+	const teamQuery = createQuery(() => ({
+		queryKey: assignableTeamKey,
+		queryFn: fetchAssignableTeam,
+		enabled: visits.some((visit) => visit.assignee_ids.length > 0),
+		staleTime: 5 * 60 * 1000
+	}));
+	const teamNames = $derived(
+		new Map((teamQuery.data ?? []).map((member) => [member.id, member.full_name]))
+	);
+	function assigneeNames(visit: JobVisit) {
+		return visit.assignee_ids.map((id) => teamNames.get(id) ?? null);
+	}
+
+	// While Past is folded away, its line says what the latest finished visit was.
+	const latestPast = $derived(past.at(-1) ?? null);
 
 	// --- Recurrence summary -------------------------------------------------------------------------------
 
@@ -910,6 +933,7 @@
 {#snippet visitRow(visit: JobVisit)}
 	<li
 		class="job-visits-section__item"
+		class:job-visits-section__item--today={isToday(visit)}
 		onpointerenter={() => warmVisit(visit)}
 		onfocusin={() => warmVisit(visit)}
 	>
@@ -923,8 +947,9 @@
 
 		<div class="job-visits-section__body">
 			<p class="job-visits-section__when">
-				{visit.title ? `${visit.title} · ` : ''}{visitWhen(visit)}
+				{isToday(visit) ? visitWhen(visit).replace(/^[^·]+/, 'Today ') : visitWhen(visit)}
 			</p>
+			{#if visit.title}<p class="job-visits-section__what">{visit.title}</p>{/if}
 			{#if visit.completed_at}
 				<p class="job-visits-section__sub">{completedWhen(visit)}</p>
 			{/if}
@@ -940,7 +965,12 @@
 				</p>
 			{/if}
 			{#if visit.instructions}
-				<p class="job-visits-section__note">{visit.instructions}</p>
+				<p class="job-visits-section__note">
+					<span class="job-visits-section__note-icon" aria-hidden="true"
+						>{@html clipboardListIcon}</span
+					>
+					<span>{visit.instructions}</span>
+				</p>
 			{/if}
 		</div>
 
@@ -952,26 +982,37 @@
 					<Badge size="small" status="warning">Overdue</Badge>
 				{/if}
 				{#if visit.assignee_ids.length > 0}
-					<span class="job-visits-section__assignees">
-						<span aria-hidden="true">{@html usersIcon}</span>
-						{visit.assignee_ids.length}
+					{@const names = assigneeNames(visit)}
+					<span
+						class="job-visits-section__assignees"
+						role="img"
+						aria-label={names.every(Boolean)
+							? `Assigned to ${names.join(', ')}`
+							: `${visit.assignee_ids.length} assigned`}
+					>
+						{#each names as name, index (visit.assignee_ids[index])}
+							<span class="job-visits-section__assignee" title={name ?? undefined}
+								>{name ? initials(name) : ''}</span
+							>
+						{/each}
 					</span>
 				{/if}
 			</div>
 		{/if}
-
-		<div class="job-visits-section__menu">
-			<DropdownMenu items={rowMenuItems(visit)} triggerLabel="Actions for this visit" />
-		</div>
 
 		{#if showsVisitTimer(visit)}
 			<div class="job-visits-section__timer">
 				<WorkTimerControl
 					target={{ kind: 'visit', jobId, visitId: visit.id }}
 					completed={Boolean(visit.completed_at) || jobStatus !== 'active'}
+					variant="secondary"
 				/>
 			</div>
 		{/if}
+
+		<div class="job-visits-section__menu">
+			<DropdownMenu items={rowMenuItems(visit)} triggerLabel="Actions for this visit" />
+		</div>
 	</li>
 {/snippet}
 
@@ -1096,6 +1137,17 @@
 						>
 						Past <span class="job-visits-section__group-count">{past.length}</span>
 					</button>
+					{#if !showPast && latestPast}
+						<p class="job-visits-section__group-hint">
+							{[
+								latestPast.visit_date ? formatDay(latestPast.visit_date) : null,
+								latestPast.title,
+								'Completed'
+							]
+								.filter(Boolean)
+								.join(' · ')}
+						</p>
+					{/if}
 					{#if showPast}
 						<ul class="job-visits-section__list">
 							{#each past as visit (visit.id)}
@@ -1520,39 +1572,93 @@
 		}
 	}
 
-	// App look: the section is a card whose visits run edge to edge, one hairline apart. Each row leads with
-	// its day in a small tile and drops the calendar icon.
+	// Concept look (Job details `tNdkX`): the visits sit in a 12px-padded list as soft rows 4px apart, each
+	// led by its day tile. Today's visit is tinted in the Schedule colour; the timer and menu end the row.
 	:global(.record-detail--cards) {
 		.job-visits-section__error,
 		.job-visits-section__recurrence,
 		.job-visits-section__timer-elsewhere {
-			margin: 0 24px 16px;
+			margin: var(--space-slim) var(--space-large) 0;
 		}
-		.job-visits-section__groups,
-		.job-visits-section__group,
+		.job-visits-section__groups {
+			gap: var(--space-smaller);
+			padding: var(--space-slim);
+		}
+		.job-visits-section__group {
+			display: grid;
+			grid-template-columns: auto minmax(0, 1fr);
+			align-items: center;
+			gap: var(--space-smaller) var(--space-small);
+
+			> :global(*) {
+				grid-column: 1 / -1;
+			}
+		}
 		.job-visits-section__list {
-			gap: 0;
+			gap: var(--space-smaller);
 		}
 		.job-visits-section__group-title,
 		.job-visits-section__group-toggle {
-			width: auto;
-			padding: 10px 24px;
-			border-top: var(--border-base) solid var(--color-border);
-			background: var(--color-surface--background--subtle);
+			gap: 6px;
+			padding: var(--space-smaller);
+			font-size: var(--typography--fontSize-overline);
+			letter-spacing: 0.06em;
+		}
+		.job-visits-section__group-toggle {
+			grid-column: 1;
+			padding-top: var(--space-small);
+		}
+		.job-visits-section__group-caret :global(svg) {
+			width: 14px;
+			height: 14px;
+		}
+		.job-visits-section__group-count {
+			min-width: 0;
+			height: auto;
+			padding: 1px 7px;
+			border-radius: var(--radius-circle);
+			font-size: var(--typography--fontSize-overline);
+			font-weight: 700;
+			line-height: 13px;
+		}
+		.job-visits-section__group-hint {
+			grid-column: 2;
+			margin: 0;
+			padding: var(--space-small) var(--space-smaller) var(--space-smaller);
+			overflow: hidden;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			text-align: right;
+			text-overflow: ellipsis;
+			white-space: nowrap;
 		}
 		.job-visits-section__more {
-			align-self: stretch;
-			padding: 12px 24px;
-			border-top: var(--border-base) solid var(--color-border);
-			text-align: left;
+			align-self: start;
 		}
 		.job-visits-section__item {
+			grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+			grid-template-areas: 'icon body meta timer menu';
 			align-items: center;
-			padding: 16px 24px;
+			column-gap: 14px;
+			padding: 10px var(--space-slim);
 			border: 0;
-			border-top: var(--border-base) solid var(--color-border);
-			border-radius: 0;
-			column-gap: 16px;
+			border-radius: var(--radius-base);
+
+			@container (max-width: 560px) {
+				grid-template-columns: auto minmax(0, 1fr) auto;
+				grid-template-areas:
+					'icon body menu'
+					'. meta .'
+					'. timer .';
+				row-gap: var(--space-small);
+			}
+
+			&--today {
+				background: var(--color-time--surface);
+			}
+		}
+		.job-visits-section__timer {
+			margin-top: 0;
 		}
 		.job-visits-section__icon {
 			display: none;
@@ -1563,32 +1669,89 @@
 			flex-direction: column;
 			align-items: center;
 			justify-content: center;
-			width: 52px;
-			height: 56px;
+			width: 44px;
+			height: 44px;
 			border: var(--border-base) solid var(--color-border);
-			border-radius: var(--radius-base);
+			border-radius: var(--radius-tile-large);
 			background: var(--color-surface);
 		}
 		.job-visits-section__date-weekday {
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-smaller);
-			font-weight: 700;
-			letter-spacing: 0.6px;
-			line-height: 12px;
+			font-size: var(--typography--fontSize-overline);
+			font-weight: 600;
+			line-height: 13px;
 		}
 		.job-visits-section__date-day {
 			color: var(--color-heading);
-			font-size: var(--typography--fontSize-larger);
+			font-size: 17px;
 			font-weight: 700;
-			line-height: 22px;
+			line-height: 19px;
+		}
+		.job-visits-section__item--today .job-visits-section__date {
+			border-color: var(--color-time);
+			background: var(--color-time);
+		}
+		.job-visits-section__item--today .job-visits-section__date-weekday,
+		.job-visits-section__item--today .job-visits-section__date-day {
+			color: var(--color-surface);
+		}
+		.job-visits-section__body {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smallest);
 		}
 		.job-visits-section__when {
-			font-size: 15px;
+			font-size: var(--typography--fontSize-base);
 		}
+		.job-visits-section__item--today .job-visits-section__when {
+			color: var(--color-time--onSurface);
+		}
+		.job-visits-section__what,
 		.job-visits-section__sub,
-		.job-visits-section__note,
 		.job-visits-section__off-series {
-			font-size: 13px;
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+		.job-visits-section__note {
+			display: flex;
+			align-items: flex-start;
+			gap: 6px;
+			margin: 0;
+			padding-top: var(--space-smaller);
+			color: var(--color-time--onSurface);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+		}
+		.job-visits-section__note-icon {
+			flex: 0 0 auto;
+			color: var(--color-time);
+
+			:global(svg) {
+				display: block;
+				width: 14px;
+				height: 14px;
+			}
+		}
+		.job-visits-section__assignees {
+			gap: 0;
+		}
+		.job-visits-section__assignee {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 26px;
+			height: 26px;
+			border: var(--border-base) solid var(--color-surface);
+			border-radius: var(--radius-circle);
+			color: var(--color-inactive--onSurface);
+			background: var(--color-inactive--surface);
+			font-size: 10px;
+			font-weight: 700;
+
+			& + & {
+				margin-left: -6px;
+			}
 		}
 	}
 

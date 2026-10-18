@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
-	import type { Snippet } from 'svelte';
+	import { getContext, type Snippet } from 'svelte';
 	import dotsIcon from '@tabler/icons/outline/dots-vertical.svg?raw';
+	import dotsHorizontalIcon from '@tabler/icons/outline/dots.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 	import Button from './Button.svelte';
 
@@ -28,7 +29,8 @@
 		footer = [],
 		wide = false,
 		triggerLabel,
-		triggerIcon = dotsIcon,
+		// The concept (Job details first) draws its "more" trigger as horizontal dots.
+		triggerIcon = getContext<boolean>('concept-job-details') ? dotsHorizontalIcon : dotsIcon,
 		triggerText,
 		triggerLeadingIcon,
 		triggerChevron = true,
