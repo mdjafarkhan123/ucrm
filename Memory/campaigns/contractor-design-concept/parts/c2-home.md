@@ -18,4 +18,10 @@ up/down change).
 the approved plan has it; "Changes requested" drawn in Waiting yellow (colour still open); Business performance
 moved beside Money owed instead of a row of its own; down-trend shown in Waiting yellow, not red.
 
-**Next:** Jafar reviews → fix → record approval here (date, frame name) → C3 Jobs list. Dark mode not drawn.
+**Green feature card (2026-10-18, Jafar asked):** the live Home's schedule card is dark (`--color-surface--reverse`).
+Two options drawn below the Home frame: A "green Today card" (`rKrbu`, greeting + day clock on a deep-green
+gradient) and B "green schedule card" (`jZMZ9`). New Pencil-only colours `color-feature-start` #02532d,
+`-end` #037741, `-text`, `-text-secondary`, `-subtle`, `-border` (same in light and dark); they go into code and
+the design skill only once Jafar picks an option.
+
+**Next:** Jafar picks A or B and reviews → fix → record approval here (date, frame name) → C3 Jobs list. Dark mode not drawn.
