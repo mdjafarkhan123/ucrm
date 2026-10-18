@@ -50,11 +50,30 @@ squeeze their cards (`RecordDetailLayout`).
 
 **Left out, need data the app lacks:** "Client since 2024 · 3 jobs" under the client name, "Started Oct 14" in
 the header line, "next today 9:00 AM" in the Visits hint, "From quote #318" (live says "From a quote").
-**Not done yet:** dark mode, edit frame `jFBRB` compared side by side, Visits rows' assignee chips and
-"Today" highlight, Labor/Expenses rows with real data, the pop-ups, the Pencil tidy-up
-(`docs/pencil-workflow.md` step 6). No lint or format run (Jafar: slow checks wait until the campaign ends);
-one `svelte-check` run found only 3 errors in untouched `AttentionCard.svelte`.
+**Review 2026-10-18 (second session, branch `claude/job-details-review`):** the first build did not match `tNdkX`
+side by side. Fixed to match on job #20 (visits, labor, expense) at 1440 light and dark: header spans both
+columns (History · More · green Create invoice with icon; quiet title pencil; long track lines), Visits rows
+(day tile, title under the time, grey crew initials, white Start timer, today tint, Past hint), Money divider,
+Products table (40 thumb or kind tile, Product/Service pill, bold totals, discount and tax rows), Billing
+(flush sections, card-tiled stages, bell-tiled reminders), Labor and Expenses rows with grey footer totals,
+"•••" row menus, rail button overflow. Expense rows show a receipt tile, not the receipt photo (photo needs
+data the list lacks).
+
+**Still not matching / not done:** edit mode `jFBRB` (live is the old editor: floating labels, discount and
+tax as pencil rows, no in-card Save bar) — its own session; empty states (Instructions, Checklists, Work
+report) are big dashed boxes not drawn in Pencil; Notes shows the live inline composer, the drawing a "+"
+button; the pop-ups; Pencil tidy-up (`docs/pencil-workflow.md` step 6).
+
+**Jafar 2026-10-18: "fix all", then pause; the next session does the rest and pushes to main.** Branch
+`claude/job-details-review` (worktree `.worktrees/job-details-review`, pushed) holds 2 commits not yet on main.
+Its quick test run found 2 failures in `JobVisitsSection.svelte.spec.ts` ("recurrence summary with count",
+"running timer with Stop … no Start on the others") — likely the new team-names query / row layout; unconfirmed.
+Jafar: no long tests (no svelte-check, no browser-mode spec runs) until the campaign ends.
 
 ## Next
 
-Finish the "not done yet" list above, then build New job (`parts/c5-new-job.md`).
+In the worktree: (1) fix the 2 failing visit checks (read the spec; don't run long suites); (2) rebuild the
+Products edit mode to `jFBRB`; (3) "fix all" covers the open points too — draw compact empty states in Pencil for
+Instructions, Checklists and Work report for Jafar's yes, and match Notes to the drawing's "+" (confirm with
+Jafar if keeping the inline composer seems better); (4) screen check against `tNdkX`/`jFBRB`; (5) merge to main
+and push. Then build New job (`parts/c5-new-job.md`).
