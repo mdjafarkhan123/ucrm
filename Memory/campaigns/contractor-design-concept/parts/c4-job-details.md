@@ -53,6 +53,10 @@ Expenses. Still waiting for his pick: 2 neutral avatars, 3 amber "Required · N 
 photo on expenses, 5 no box-in-box in Signatures, 6 Instructions hint wording, 7 orphan line count; and the
 right column staying in view on scroll (behaviour).
 
+Section titles bigger (Jafar): every section card title is now 20/600 (`font-size-larger`, -0.2) with a 40
+tile (20 icon), also in the edit drawing. Asked whether Home and Jobs list follow; then update `typography.md`.
+Note: code `--typography--fontSize-large` is 15px but Pencil `font-size-large` is 16.
+
 ## Next
 
 Jafar reviews the changes above (frame `hdOUv`, edit mode `jFBRB`, Home `rKrbu`, Jobs list `t8ULdJ`). On his yes, record approval
