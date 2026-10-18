@@ -17,12 +17,12 @@ Key, tick rule and coverage command: `list-index.md`.
 | `layout/PageContainer` |  | ⬜ | ⬜ |
 | `layout/PageHeader` |  | ✅ | ✅ |
 | `ui/Badge` |  | ✅ | ⬜ |
-| `ui/Dialog` |  | ⬜ | ⬜ |
+| `ui/Dialog` |  | 🟡 Pop-ups board `v2Y89` | ⬜ |
 | `ui/Textarea` |  | ✅ | ⬜ |
 | `ui/SearchInput` |  | ⬜ | ⬜ |
 | `ui/DropdownMenu` |  | ✅ | ✅ |
 | `layout/Breadcrumbs` |  | ⬜ | ⬜ |
-| `ui/ConfirmDialog` |  | ⬜ | ⬜ |
+| `ui/ConfirmDialog` |  | 🟡 Pop-ups board `v2Y89` | ⬜ |
 | `ui/SegmentedControl` |  | ✅ | ✅ |
 | `ui/StatusBadge` |  | ✅ | ⬜ |
 | `layout/StickyActionBar` |  | ✅ | ✅ |
@@ -45,7 +45,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `forms/MoneyInput` |  | ⬜ | ⬜ |
 | `ui/FilterChip` |  | ⬜ | ⬜ |
 | `data-display/KpiCard` |  | ⬜ | ⬜ |
-| `layout/SidePanel` |  | ⬜ | ⬜ |
+| `layout/SidePanel` |  | 🟡 Pop-ups board `v2Y89` | ⬜ |
 | `ui/DateTimePicker` |  | ⬜ | ⬜ |
 | `ui/CountryPicker` |  | ⬜ | ⬜ |
 | `ui/TagSelect` |  | ⬜ | ⬜ |
