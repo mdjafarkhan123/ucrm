@@ -57,6 +57,11 @@ client and invoice pages). The same in light and dark mode.
 | `--color-feature--subtle` | white 10% | Panels and tiles inside the card |
 | `--color-feature--border` | white 18% | Edges of those panels |
 | `--color-feature--alert` | red 400 `#e9a29b` | Overdue part of a bar on the card (status reds vanish on green) |
+| `--color-feature--items` | pink 400 `#d5aab2` | Item cost on a profit bar (items were priced on the quote) |
+| `--color-feature--labor` | indigo light `#8897db` | Labour cost on a profit bar (time colour) |
+| `--color-feature--expenses` | light blue 400 `#73bcf7` | Expenses on a profit bar (money paid out) |
+
+A profit bar on the card shows each cost in its colour and the profit in white, 10px tall, 3px between parts.
 
 ## Status Colours
 

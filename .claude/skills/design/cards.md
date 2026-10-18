@@ -4,7 +4,10 @@
 
 ## Core Specs
 
-- Background `--color-surface`; 1px `--color-border`; radius 16; padding 20 (`--space-medium`); gap 16; no shadow.
+- Background `--color-surface`; 1px `--color-border`; radius 16; no shadow.
+- **Title area:** every white card with a title starts with a header (padding 16 20, `--space-base`
+  `--space-medium`) that ends in a full-width 1px `--color-border` line (Jafar, 2026-10-18). The body below has
+  padding 20 (`--space-medium`) and gap 16. A table head right under the header supplies that line itself.
 
 ## Anatomy (stat card)
 

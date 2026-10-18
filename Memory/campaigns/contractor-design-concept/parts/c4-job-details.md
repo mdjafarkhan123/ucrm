@@ -16,23 +16,28 @@
 
 ## What is drawn (every live block kept; layout new)
 
-- Header card: job tile, status, meta, history, More, green "Create invoice"; title + pencil; client box (call,
+- Header card: job tile, status, meta, history, More, green main button; title + pencil; client box (call,
   text, email, menu) beside the facts; Request → Quote → Job → Invoice → Paid strip at its foot.
-- Main column: Visits (today's row in the Schedule colour with Start timer; Past folded) → Instructions →
-  Products and services with subtotal, discount, tax and total at its foot → Labor → Expenses → Checklists.
-- Rail: green Job total card with the profit bar (team only) → Billing with payment schedule and invoice
-  reminders → Notes → Photos and files → Signatures → Work report. History still swaps the rail (not drawn).
+- Main column: Visits (today's row in the Schedule colour with Start timer and the visit's own instructions, as
+  live shows them; Past folded) → Instructions (job-wide) → Products and services (pink tile: priced on the quote)
+  with subtotal, discount, tax and total → **Billing** (facts, payment schedule, invoice reminders list) → Labor →
+  Expenses → Checklists.
+- Rail: green Job total card with the profit bar (team only) → Notes → Photos and files → Signatures → Work
+  report. History still swaps the rail (not drawn).
 
-**Section titles (Jafar, 2026-10-18):** every section card's title area ends in a 1px `--color-border` line (option A,
-not a tinted band). Drawn on Job details only; Home, Jobs list and `cards.md` follow once he confirms the scope.
+## Jafar's answers (2026-10-18 review)
 
-## Asked with the drawing (default: keep as drawn)
-
-1. Green main button changing with status (live has none; "Create invoice" sits in More).
-2. Job total and costing in one green card; discount and tax in the products card's foot.
-3. Billing and invoice reminders in one card. 4. Instructions moved beside Visits.
+1. Green main button that changes with status: **keep**.
+2. Job total card: **keep**, but the bar looked plain → now meaningful colours (items pink, labour time,
+   expenses light blue, profit white; tokens `color-feature-items/-labor/-expenses`, in `colors.md`).
+3. Billing: Jobber keeps it in the main area and reminders can grow → **moved to the main column** after
+   Products. Instructions: the app already has job-wide and per-visit instructions (like Jobber); visit rows now
+   show their own line.
+4. Section title line: **everywhere** → added to Home and Jobs list cards; rule in `cards.md`.
+5. Plain icon tiles: **yes, recolour, his review** → Notes conversation teal, Checklists time (filled in on
+   visits). Photos and files stays the Files grey (map); Signatures stays success.
 
 ## Next
 
-Saved and committed 2026-10-18. Jafar wants more review in a later session: open frame `hdOUv`, go through it with
-him, answer the four questions and the section-line scope, then record his approval here.
+Jafar reviews the changes above (frame `hdOUv`, Home `rKrbu`, Jobs list `t8ULdJ`). On his yes, record approval
+and date here, set C4 approved in NOW and the roadmap.
