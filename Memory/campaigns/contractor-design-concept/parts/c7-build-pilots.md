@@ -34,24 +34,20 @@ Matches `rKrbu` at 1440 light, dark and 1100; Clock in/out proven live. New shar
 "In progress" and money on schedule rows, money on Quotes/Jobs To do lines, "Upcoming work"; Money owed shows
 not-due/overdue only.
 
-## Job details — view page built 2026-10-18
+## Job details — built 2026-10-18
 
-Matches `tNdkX` side by side at 1440 light and dark (commits `783458bc`, `0988d05f`; checked on Raad LTD jobs
-#20, #1, #25, #29, browser clock set to a visit day for the "today" row). Pricing save proven live ($150 → $300
-and back). Shared parts given the concept look: `WorkRecordHeader`, `ClientSummaryCard`, `RecordFactsList`,
-`LifecycleTrack`, `RecordDetailLayout` (`header` + `concept`), `SectionBlock` flush body, `WorkTimerControl`
-`concept`, `ProductsAndServicesBlock` `concept`. No checks run (Jafar: none until the campaign ends).
-
-**Jafar 2026-10-18:** the header card stays inside the scrolling main column with the rail beside it (as the
-live app always had), not full width as in `tNdkX`; the rail stays 336px so the step strip fits. Update `tNdkX`
-to match at the Pencil tidy-up.
+View page matches `tNdkX` at 1440 light and dark (`783458bc`, `0988d05f`); concept look on `WorkRecordHeader`,
+`ClientSummaryCard`, `RecordFactsList`, `LifecycleTrack`, `RecordDetailLayout`, `SectionBlock`, `WorkTimerControl`.
+Edit mode `jFBRB` (`19f01585`): fields inside a `.concept-fields` area put labels above; discount and tax edit in
+place (`work/PricingAdjustmentsPanel`, `$lib/work/pricing-adjustments.ts`). Proven live on Raad LTD job #29:
+line + 10% discount + tax saved ($346.50), then restored ($250; tax now "No tax", was "Not configured").
+**For Jafar:** once something changes, discount, tax and total wait for Save ("Worked out when you save") —
+only the database works out money; live figures need a new server preview.
 **Left out, need data the app lacks:** "Client since · jobs", "Started Oct 14", "next today 9:00 AM",
-"From quote #318", the line under each payment stage, the expense receipt photo (a receipt tile shows).
-**Not done yet:** edit mode `jFBRB` (labels above fields, no box per line, kind pill, discount/tax panel in the
-totals, card footer Cancel / Save changes; the line editor is shared with Quotes and Requests, so concept-only),
-then the Pencil tidy-up. **Decided (Jafar left it to Claude):** row menus switch to "…" app-wide
-(`DropdownMenu`); `Avatar` darkens in dark mode.
+"From quote #318", the line under each payment stage, the expense receipt photo.
+Pencil tidy-up done: `tNdkX` header in the main column (Jafar), rail 336, contact
+line in two; `jFBRB` shows "Price book" (jobs have no text lines).
 
 ## Next
 
-Build Job details edit mode (`jFBRB`), do the Pencil tidy-up, then build New job (`parts/c5-new-job.md`).
+Build New job (`parts/c5-new-job.md`); it reuses the edit block above.
