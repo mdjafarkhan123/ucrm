@@ -49,8 +49,8 @@ to match at the Pencil tidy-up.
 "From quote #318", the line under each payment stage, the expense receipt photo (a receipt tile shows).
 **Not done yet:** edit mode `jFBRB` (labels above fields, no box per line, kind pill, discount/tax panel in the
 totals, card footer Cancel / Save changes; the line editor is shared with Quotes and Requests, so concept-only),
-then the Pencil tidy-up. **Asked Jafar:** "⋮" row menus vs the Foundation's "…" (`DropdownMenu`, app-wide);
-labor avatars stay light in dark mode (`Avatar` colours).
+then the Pencil tidy-up. **Decided (Jafar left it to Claude):** row menus switch to "…" app-wide
+(`DropdownMenu`); `Avatar` darkens in dark mode.
 
 ## Next
 
