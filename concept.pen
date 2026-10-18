@@ -22172,7 +22172,7 @@
       "name": "Concept · Job details · Owner · 1440",
       "clip": true,
       "width": 1440,
-      "height": 2667,
+      "height": 2702,
       "fill": "$color-surface-background",
       "padding": [
         12,
@@ -23208,10 +23208,10 @@
                                   "type": "frame",
                                   "id": "Ji0DO",
                                   "name": "Tile",
-                                  "width": 32,
-                                  "height": 32,
+                                  "width": 40,
+                                  "height": 40,
                                   "fill": "$color-time-surface",
-                                  "cornerRadius": "$radius-base",
+                                  "cornerRadius": "$radius-tile-large",
                                   "justifyContent": "center",
                                   "alignItems": "center",
                                   "children": [
@@ -23219,8 +23219,8 @@
                                       "type": "icon",
                                       "id": "se6Wo",
                                       "name": "Icon",
-                                      "width": 16,
-                                      "height": 16,
+                                      "width": 20,
+                                      "height": 20,
                                       "icon": "calendar-days",
                                       "library": "lucide",
                                       "fill": "$color-time"
@@ -23242,8 +23242,9 @@
                                       "fill": "$color-heading",
                                       "content": "Visits",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-large",
-                                      "fontWeight": "600"
+                                      "fontSize": "$font-size-larger",
+                                      "fontWeight": "600",
+                                      "letterSpacing": -0.2
                                     },
                                     {
                                       "type": "text",
@@ -23780,10 +23781,10 @@
                                   "type": "frame",
                                   "id": "Ceg07",
                                   "name": "Tile",
-                                  "width": 32,
-                                  "height": 32,
+                                  "width": 40,
+                                  "height": 40,
                                   "fill": "$color-job-surface",
-                                  "cornerRadius": "$radius-base",
+                                  "cornerRadius": "$radius-tile-large",
                                   "justifyContent": "center",
                                   "alignItems": "center",
                                   "children": [
@@ -23791,8 +23792,8 @@
                                       "type": "icon",
                                       "id": "K6BEG",
                                       "name": "Icon",
-                                      "width": 16,
-                                      "height": 16,
+                                      "width": 20,
+                                      "height": 20,
                                       "icon": "clipboard-list",
                                       "library": "lucide",
                                       "fill": "$color-job"
@@ -23814,8 +23815,9 @@
                                       "fill": "$color-heading",
                                       "content": "Instructions",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-large",
-                                      "fontWeight": "600"
+                                      "fontSize": "$font-size-larger",
+                                      "fontWeight": "600",
+                                      "letterSpacing": -0.2
                                     },
                                     {
                                       "type": "text",
@@ -23916,10 +23918,10 @@
                                   "type": "frame",
                                   "id": "RLPXn",
                                   "name": "Tile",
-                                  "width": 32,
-                                  "height": 32,
+                                  "width": 40,
+                                  "height": 40,
                                   "fill": "$color-time-surface",
-                                  "cornerRadius": "$radius-base",
+                                  "cornerRadius": "$radius-tile-large",
                                   "justifyContent": "center",
                                   "alignItems": "center",
                                   "children": [
@@ -23927,8 +23929,8 @@
                                       "type": "icon",
                                       "id": "qlImE",
                                       "name": "Icon",
-                                      "width": 16,
-                                      "height": 16,
+                                      "width": 20,
+                                      "height": 20,
                                       "icon": "list-checks",
                                       "library": "lucide",
                                       "fill": "$color-time"
@@ -23950,8 +23952,9 @@
                                       "fill": "$color-heading",
                                       "content": "Checklists",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-large",
-                                      "fontWeight": "600"
+                                      "fontSize": "$font-size-larger",
+                                      "fontWeight": "600",
+                                      "letterSpacing": -0.2
                                     },
                                     {
                                       "type": "text",
@@ -24296,10 +24299,10 @@
                                   "type": "frame",
                                   "id": "NKVYH",
                                   "name": "Tile",
-                                  "width": 32,
-                                  "height": 32,
+                                  "width": 40,
+                                  "height": 40,
                                   "fill": "$color-quote-surface",
-                                  "cornerRadius": "$radius-base",
+                                  "cornerRadius": "$radius-tile-large",
                                   "justifyContent": "center",
                                   "alignItems": "center",
                                   "children": [
@@ -24307,8 +24310,8 @@
                                       "type": "icon",
                                       "id": "TOxQN",
                                       "name": "Icon",
-                                      "width": 16,
-                                      "height": 16,
+                                      "width": 20,
+                                      "height": 20,
                                       "icon": "package",
                                       "library": "lucide",
                                       "fill": "$color-quote"
@@ -24330,8 +24333,9 @@
                                       "fill": "$color-heading",
                                       "content": "Products and services",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-large",
-                                      "fontWeight": "600"
+                                      "fontSize": "$font-size-larger",
+                                      "fontWeight": "600",
+                                      "letterSpacing": -0.2
                                     },
                                     {
                                       "type": "text",
@@ -25167,10 +25171,10 @@
                                   "type": "frame",
                                   "id": "yBLYC",
                                   "name": "Tile",
-                                  "width": 32,
-                                  "height": 32,
+                                  "width": 40,
+                                  "height": 40,
                                   "fill": "$color-invoice-surface",
-                                  "cornerRadius": "$radius-base",
+                                  "cornerRadius": "$radius-tile-large",
                                   "justifyContent": "center",
                                   "alignItems": "center",
                                   "children": [
@@ -25178,8 +25182,8 @@
                                       "type": "icon",
                                       "id": "C9NxB",
                                       "name": "Icon",
-                                      "width": 16,
-                                      "height": 16,
+                                      "width": 20,
+                                      "height": 20,
                                       "icon": "receipt",
                                       "library": "lucide",
                                       "fill": "$color-invoice"
@@ -25201,8 +25205,9 @@
                                       "fill": "$color-heading",
                                       "content": "Billing",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-large",
-                                      "fontWeight": "600"
+                                      "fontSize": "$font-size-larger",
+                                      "fontWeight": "600",
+                                      "letterSpacing": -0.2
                                     },
                                     {
                                       "type": "text",
@@ -25809,10 +25814,10 @@
                                   "type": "frame",
                                   "id": "lmojM",
                                   "name": "Tile",
-                                  "width": 32,
-                                  "height": 32,
+                                  "width": 40,
+                                  "height": 40,
                                   "fill": "$color-time-surface",
-                                  "cornerRadius": "$radius-base",
+                                  "cornerRadius": "$radius-tile-large",
                                   "justifyContent": "center",
                                   "alignItems": "center",
                                   "children": [
@@ -25820,8 +25825,8 @@
                                       "type": "icon",
                                       "id": "uU0dv",
                                       "name": "Icon",
-                                      "width": 16,
-                                      "height": 16,
+                                      "width": 20,
+                                      "height": 20,
                                       "icon": "clock-3",
                                       "library": "lucide",
                                       "fill": "$color-time"
@@ -25843,8 +25848,9 @@
                                       "fill": "$color-heading",
                                       "content": "Labor",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-large",
-                                      "fontWeight": "600"
+                                      "fontSize": "$font-size-larger",
+                                      "fontWeight": "600",
+                                      "letterSpacing": -0.2
                                     },
                                     {
                                       "type": "text",
@@ -26183,10 +26189,10 @@
                                   "type": "frame",
                                   "id": "x7m3U",
                                   "name": "Tile",
-                                  "width": 32,
-                                  "height": 32,
+                                  "width": 40,
+                                  "height": 40,
                                   "fill": "$color-invoice-surface",
-                                  "cornerRadius": "$radius-base",
+                                  "cornerRadius": "$radius-tile-large",
                                   "justifyContent": "center",
                                   "alignItems": "center",
                                   "children": [
@@ -26194,8 +26200,8 @@
                                       "type": "icon",
                                       "id": "Qb9ad",
                                       "name": "Icon",
-                                      "width": 16,
-                                      "height": 16,
+                                      "width": 20,
+                                      "height": 20,
                                       "icon": "receipt",
                                       "library": "lucide",
                                       "fill": "$color-invoice"
@@ -26217,8 +26223,9 @@
                                       "fill": "$color-heading",
                                       "content": "Expenses",
                                       "fontFamily": "$font-family",
-                                      "fontSize": "$font-size-large",
-                                      "fontWeight": "600"
+                                      "fontSize": "$font-size-larger",
+                                      "fontWeight": "600",
+                                      "letterSpacing": -0.2
                                     },
                                     {
                                       "type": "text",
@@ -26499,10 +26506,10 @@
                                   "type": "frame",
                                   "id": "GJzYr",
                                   "name": "Icon tile",
-                                  "width": 32,
-                                  "height": 32,
+                                  "width": 40,
+                                  "height": 40,
                                   "fill": "$color-feature-subtle",
-                                  "cornerRadius": "$radius-base",
+                                  "cornerRadius": "$radius-tile-large",
                                   "stroke": "$color-feature-border",
                                   "strokeWidth": 1,
                                   "justifyContent": "center",
@@ -26512,8 +26519,8 @@
                                       "type": "icon",
                                       "id": "QFjIB",
                                       "name": "Icon",
-                                      "width": 16,
-                                      "height": 16,
+                                      "width": 20,
+                                      "height": 20,
                                       "icon": "banknote",
                                       "library": "lucide",
                                       "fill": "$color-feature-text"
@@ -26949,10 +26956,10 @@
                                   "type": "frame",
                                   "id": "L9BRPD",
                                   "name": "Tile",
-                                  "width": 32,
-                                  "height": 32,
+                                  "width": 40,
+                                  "height": 40,
                                   "fill": "$color-conversation-surface",
-                                  "cornerRadius": "$radius-base",
+                                  "cornerRadius": "$radius-tile-large",
                                   "justifyContent": "center",
                                   "alignItems": "center",
                                   "children": [
@@ -26960,8 +26967,8 @@
                                       "type": "icon",
                                       "id": "vEMAu",
                                       "name": "Icon",
-                                      "width": 16,
-                                      "height": 16,
+                                      "width": 20,
+                                      "height": 20,
                                       "icon": "notebook-pen",
                                       "library": "lucide",
                                       "fill": "$color-conversation"
@@ -26983,8 +26990,9 @@
                                       "fill": "$color-heading",
                                       "content": "Notes",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
-                                      "fontWeight": "600"
+                                      "fontSize": "$font-size-larger",
+                                      "fontWeight": "600",
+                                      "letterSpacing": -0.2
                                     },
                                     {
                                       "type": "text",
@@ -27159,10 +27167,10 @@
                                   "type": "frame",
                                   "id": "rKnFt",
                                   "name": "Tile",
-                                  "width": 32,
-                                  "height": 32,
+                                  "width": 40,
+                                  "height": 40,
                                   "fill": "$color-inactive-surface",
-                                  "cornerRadius": "$radius-base",
+                                  "cornerRadius": "$radius-tile-large",
                                   "justifyContent": "center",
                                   "alignItems": "center",
                                   "children": [
@@ -27170,8 +27178,8 @@
                                       "type": "icon",
                                       "id": "xt90n",
                                       "name": "Icon",
-                                      "width": 16,
-                                      "height": 16,
+                                      "width": 20,
+                                      "height": 20,
                                       "icon": "images",
                                       "library": "lucide",
                                       "fill": "$color-inactive"
@@ -27193,8 +27201,9 @@
                                       "fill": "$color-heading",
                                       "content": "Photos and files",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
-                                      "fontWeight": "600"
+                                      "fontSize": "$font-size-larger",
+                                      "fontWeight": "600",
+                                      "letterSpacing": -0.2
                                     },
                                     {
                                       "type": "text",
@@ -27394,10 +27403,10 @@
                                   "type": "frame",
                                   "id": "unlOc",
                                   "name": "Tile",
-                                  "width": 32,
-                                  "height": 32,
+                                  "width": 40,
+                                  "height": 40,
                                   "fill": "$color-success-surface",
-                                  "cornerRadius": "$radius-base",
+                                  "cornerRadius": "$radius-tile-large",
                                   "justifyContent": "center",
                                   "alignItems": "center",
                                   "children": [
@@ -27405,8 +27414,8 @@
                                       "type": "icon",
                                       "id": "nP2gp",
                                       "name": "Icon",
-                                      "width": 16,
-                                      "height": 16,
+                                      "width": 20,
+                                      "height": 20,
                                       "icon": "signature",
                                       "library": "lucide",
                                       "fill": "$color-success"
@@ -27428,8 +27437,9 @@
                                       "fill": "$color-heading",
                                       "content": "Signatures",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
-                                      "fontWeight": "600"
+                                      "fontSize": "$font-size-larger",
+                                      "fontWeight": "600",
+                                      "letterSpacing": -0.2
                                     },
                                     {
                                       "type": "text",
@@ -27542,10 +27552,10 @@
                                   "type": "frame",
                                   "id": "I8Tgq",
                                   "name": "Tile",
-                                  "width": 32,
-                                  "height": 32,
+                                  "width": 40,
+                                  "height": 40,
                                   "fill": "$color-job-surface",
-                                  "cornerRadius": "$radius-base",
+                                  "cornerRadius": "$radius-tile-large",
                                   "justifyContent": "center",
                                   "alignItems": "center",
                                   "children": [
@@ -27553,8 +27563,8 @@
                                       "type": "icon",
                                       "id": "TInTC",
                                       "name": "Icon",
-                                      "width": 16,
-                                      "height": 16,
+                                      "width": 20,
+                                      "height": 20,
                                       "icon": "file-check",
                                       "library": "lucide",
                                       "fill": "$color-job"
@@ -27576,8 +27586,9 @@
                                       "fill": "$color-heading",
                                       "content": "Work report",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
-                                      "fontWeight": "600"
+                                      "fontSize": "$font-size-larger",
+                                      "fontWeight": "600",
+                                      "letterSpacing": -0.2
                                     },
                                     {
                                       "type": "text",
@@ -27856,10 +27867,10 @@
                   "type": "frame",
                   "id": "V2Fm9Q",
                   "name": "Tile",
-                  "width": 32,
-                  "height": 32,
+                  "width": 40,
+                  "height": 40,
                   "fill": "$color-quote-surface",
-                  "cornerRadius": "$radius-base",
+                  "cornerRadius": "$radius-tile-large",
                   "justifyContent": "center",
                   "alignItems": "center",
                   "children": [
@@ -27867,8 +27878,8 @@
                       "type": "icon",
                       "id": "uiyxC",
                       "name": "Icon",
-                      "width": 16,
-                      "height": 16,
+                      "width": 20,
+                      "height": 20,
                       "icon": "package",
                       "library": "lucide",
                       "fill": "$color-quote"
@@ -27890,8 +27901,9 @@
                       "fill": "$color-heading",
                       "content": "Products and services",
                       "fontFamily": "$font-family",
-                      "fontSize": "$font-size-large",
-                      "fontWeight": "600"
+                      "fontSize": "$font-size-larger",
+                      "fontWeight": "600",
+                      "letterSpacing": -0.2
                     },
                     {
                       "type": "text",
