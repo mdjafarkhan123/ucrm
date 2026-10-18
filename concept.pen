@@ -7066,19 +7066,25 @@
                           "ref": "XkmDa",
                           "name": "Nav · Jobs",
                           "width": "fill_container",
-                          "fill": "$color-surface-active",
+                          "fill": "$color-interactive",
                           "descendants": {
                             "MEiCb": {
-                              "fill": "$color-job"
+                              "fill": "$color-surface"
                             },
                             "BUZYd": {
                               "icon": "hammer",
-                              "fill": "$color-text-reverse"
+                              "fill": "$color-interactive"
                             },
                             "NP4Lb": {
                               "content": "Jobs",
                               "fontWeight": "600",
-                              "fill": "$color-heading"
+                              "fill": "$color-text-reverse"
+                            },
+                            "NCKtF": {
+                              "fill": "$color-surface"
+                            },
+                            "ooxST": {
+                              "fill": "$color-interactive"
                             }
                           }
                         },
@@ -13576,17 +13582,17 @@
           "height": "fill_container",
           "descendants": {
             "JjyQ6": {
-              "fill": "$color-surface-active"
+              "fill": "$color-interactive"
             },
             "JjyQ6/MEiCb": {
-              "fill": "$color-inactive"
+              "fill": "$color-surface"
             },
             "JjyQ6/BUZYd": {
-              "fill": "$color-text-reverse"
+              "fill": "$color-interactive"
             },
             "JjyQ6/NP4Lb": {
               "fontWeight": "600",
-              "fill": "$color-heading"
+              "fill": "$color-text-reverse"
             },
             "V74yP": {
               "fill": "#00000000"
