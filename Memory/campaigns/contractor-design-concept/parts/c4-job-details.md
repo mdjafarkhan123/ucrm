@@ -37,10 +37,15 @@
 5. Products and services "looked plain" → each line has a 40 thumb (the line's photo; a service gets a job
    tile), a Product (quote pink) or Service (job green) pill from the line's category, a tinted table head, a
    line count, and totals in a subtle panel with a white Total box. Jafar: "now looks better".
-6. Plain icon tiles: **yes, recolour, his review** → Notes conversation teal, Checklists time (filled in on
+6. Discount and tax editing: Jafar chose "what is better" → Jobber's way. The read view shows the numbers
+   only (small pencils removed); the card's Edit opens one edit mode for lines, discount and tax with one
+   Cancel / Save (frame `jFBRB`). **Behaviour change for the build:** today discount and tax save on their own
+   from rail cards (`RecordDiscountCard`, `RecordTaxCard`); they move into the products edit mode. Every live
+   field is kept (client-facing name, % or $, tax source incl. custom rate and "save as reusable rate").
+7. Plain icon tiles: **yes, recolour, his review** → Notes conversation teal, Checklists time (filled in on
    visits). Photos and files stays the Files grey (map); Signatures stays success.
 
 ## Next
 
-Jafar reviews the changes above (frame `hdOUv`, Home `rKrbu`, Jobs list `t8ULdJ`). On his yes, record approval
+Jafar reviews the changes above (frame `hdOUv`, edit mode `jFBRB`, Home `rKrbu`, Jobs list `t8ULdJ`). On his yes, record approval
 and date here, set C4 approved in NOW and the roadmap.
