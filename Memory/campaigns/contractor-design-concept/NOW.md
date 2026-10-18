@@ -2,10 +2,10 @@
 
 **Goal:** A new design concept for the whole app, drawn in `concept.pen` from the app's own variables: design → review → approve → build.
 **Core agreement — read on every resume:** `docs/contractor-design-concept-behavior-contract.md` (Summary, First version, Not doing, decisions) and the design skill `.claude/skills/design/SKILL.md` with its modules.
-**Stage:** Building, screen by screen (Jafar 2026-10-18). Approved: C1 Foundation, C2 Home, C3 Jobs list, C4 Job details, C5 New job. Built: buttons, Jobs list, Home, Job details page (leftovers in `parts/c7-build-pilots.md`).
+**Stage:** Building, screen by screen (Jafar 2026-10-18). Approved: C1 Foundation, C2 Home, C3 Jobs list, C4 Job details, C5 New job. Built: buttons, Jobs list, Home; Job details partly (`parts/c7b-job-details-build.md`).
 
 **Next:**
-1. Job details: read view and edit mode `jFBRB` built; empty-state drawing `wgrYP` and Notes question wait for
+1. Job details: not fully matching yet; the difference list is in `parts/c7b-job-details-build.md` (Jafar: fix next session). Empty-state drawing `wgrYP` and Notes question wait for
    Jafar, then merge to main. Then **build New job**: `parts/c7-build-pilots.md`.
 2. Then draw Schedule (`stages/list-2a-daily.md`).
 3. Jafar reads the redesign checklist (`stages/list-index.md`) and confirms the order and pop-up marks: `parts/c5a-redesign-checklist.md`.

@@ -38,49 +38,10 @@ press). New shared part `ui/CardHeader`; `ui/StatusBadge` gained `size="small"` 
 lines and their card hints, "Upcoming work" in Business performance. Also: Money owed shows not-due/overdue
 only (the 1–30… buckets stay in the bar's spoken label); the setup strip keeps today's delivery line.
 
-## Job details — built 2026-10-18 (claude, taking over Codex's branch `codex/concept-job-details`)
+## Job details — in progress
 
-Page matches `tNdkX` side by side at desktop width on Raad LTD jobs #25 and #29: header (job tile, status,
-"Job #· Type", boxed client with call/text/email, facts column, step strip), Visits → Instructions →
-Checklists → Products → Billing (with invoice reminders inside) → Labor → Expenses, and the rail (Job total
-card with profit bar, Notes, Photos and files, Signatures, Work report). Main journey proven live: edit the
-quantity, one "Save job pricing", total went $150 → $300 and back. New shared parts: concept look on
-`WorkRecordHeader`, `ClientSummaryCard`, `RecordFactsList`, `LifecycleTrack`; rail and main columns no longer
-squeeze their cards (`RecordDetailLayout`).
-
-**Left out, need data the app lacks:** "Client since 2024 · 3 jobs" under the client name, "Started Oct 14" in
-the header line, "next today 9:00 AM" in the Visits hint, "From quote #318" (live says "From a quote").
-**Review 2026-10-18 (second session, branch `claude/job-details-review`):** the first build did not match `tNdkX`
-side by side. Fixed to match on job #20 (visits, labor, expense) at 1440 light and dark: header spans both
-columns (History · More · green Create invoice with icon; quiet title pencil; long track lines), Visits rows
-(day tile, title under the time, grey crew initials, white Start timer, today tint, Past hint), Money divider,
-Products table (40 thumb or kind tile, Product/Service pill, bold totals, discount and tax rows), Billing
-(flush sections, card-tiled stages, bell-tiled reminders), Labor and Expenses rows with grey footer totals,
-"•••" row menus, rail button overflow. Expense rows show a receipt tile, not the receipt photo (photo needs
-data the list lacks).
-
-**Still not matching / not done:** edit mode `jFBRB` (live is the old editor: floating labels, discount and
-tax as pencil rows, no in-card Save bar) — its own session; empty states (Instructions, Checklists, Work
-report) are big dashed boxes not drawn in Pencil; Notes shows the live inline composer, the drawing a "+"
-button; the pop-ups; Pencil tidy-up (`docs/pencil-workflow.md` step 6).
-
-**Jafar 2026-10-18: "fix all", then pause; the next session does the rest and pushes to main.** Branch
-`claude/job-details-review` (worktree `.worktrees/job-details-review`, pushed) holds 2 commits not yet on main.
-Its quick test run found 2 failures in `JobVisitsSection.svelte.spec.ts` ("recurrence summary with count",
-"running timer with Stop … no Start on the others") — likely the new team-names query / row layout; unconfirmed.
-Jafar: no long tests (no svelte-check, no browser-mode spec runs) until the campaign ends.
-
-**Session 3 (2026-10-18):** visit spec fixed (2 checks were already failing on main: subtitle now also says
-"2 visits"; timer test read server time at file load). Products edit mode built to `jFBRB` (`f72d0951`): labels
-above 40px fields, hairline lines, Product/Service pill + "Taxed · from the price book", "Add photo" box, bordered
-••• menu, inline Discount / Tax / Total panel (`work/PricingAdjustmentsEditor`, live preview via
-`work/money-preview` = the database's arithmetic), Save bar inside the card, green edge while editing. Proven live
-on job #25: 5% discount saved, total $150 → $142.50, then removed. Kept live instead of the drawing: "Price book"
-button where the drawing shows "Add text" (jobs have no text lines).
-Empty states drawn on board `wgrYP` ("Concept · Job details · Empty sections"), **waiting for Jafar's yes**; Notes
-"+" vs inline composer asked.
+Built and partly reviewed; the open differences and the next steps are in `parts/c7b-job-details-build.md`.
 
 ## Next
 
-After Jafar answers: build the empty states (and Notes if he picks "+"), screen check against `tNdkX`, Pencil
-tidy-up (step 6), merge `claude/job-details-review` to main and push. Then build New job (`parts/c5-new-job.md`).
+Finish Job details (`parts/c7b-job-details-build.md`), merge to main, then build New job (`parts/c5-new-job.md`).
