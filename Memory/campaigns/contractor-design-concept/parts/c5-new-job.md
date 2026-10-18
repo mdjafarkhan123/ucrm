@@ -33,5 +33,5 @@ skill modules.
 
 ## Next
 
-1. Add the four new parts to the Parts board and the design skill modules; point `zUFDO`/`TVQzs` at them.
-2. Then the next daily page, `(app)/schedule` in `stages/list-2a-daily.md`.
+Built third in `parts/c7-build-pilots.md`; its four new parts go onto the Parts board, the design modules and
+code during that build.

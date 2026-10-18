@@ -41,7 +41,8 @@ staff open the app between jobs and want to see what needs them right now, in a 
    side drawer). Pop-ups that carry money, sending or scheduling decisions get their own drawing, and Jafar may
    move any pop-up between the two. Once a pattern is approved, several screens may be drawn in parallel by
    helper agents, each reviewed against the brief before Jafar sees it.
-4. **Build.** Approved screens are built through shared parts. New variables go into
+4. **Build.** Screen by screen (Jafar, 2026-10-18): an approved screen is built soon after its approval, so the
+   app mixes old and new looks until every screen is done. Approved screens are built through shared parts. New variables go into
    `src/lib/styles/_variables.scss` and the design skill in the same commit as Pencil. When every screen uses the
    concept, the old look and its unused code are deleted.
 
@@ -66,7 +67,6 @@ designs as the record of the live app.
 
 ## Still unclear
 
-- How the concept reaches users: the whole app switches at once, or screen by screen. Decide before building.
 - Whether money cards stay light in dark mode (Jafar's App-look decision of 2026-10-16) in the concept.
 - The "Changes requested" colour on Quotes.
 

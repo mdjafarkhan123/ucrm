@@ -2,14 +2,15 @@
 
 **Goal:** A new design concept for the whole app, drawn in `concept.pen` from the app's own variables: design → review → approve → build.
 **Core agreement — read on every resume:** `docs/contractor-design-concept-behavior-contract.md` (Summary, First version, Not doing, decisions) and the design skill `.claude/skills/design/SKILL.md` with its modules.
-**Stage:** Designing. C1 Foundation, C2 Home, C3 Jobs list and C4 Job details and C5 New job approved; buttons and the Jobs list built.
+**Stage:** Building, screen by screen (Jafar 2026-10-18). Approved: C1 Foundation, C2 Home, C3 Jobs list, C4 Job details, C5 New job. Built: buttons, Jobs list.
 
 **Next:**
-1. **New job approved** 2026-10-18 (`zUFDO`, `TVQzs`). Next: its four new parts onto the Parts board, then Schedule: `parts/c5-new-job.md` § Next.
-2. Jafar reads the redesign checklist (`stages/list-index.md`) and confirms the order and pop-up marks: `parts/c5a-redesign-checklist.md`.
+1. **Build Home**, then Job details, then New job, one session each: `parts/c7-build-pilots.md`.
+2. Then draw Schedule (`stages/list-2a-daily.md`).
+3. Jafar reads the redesign checklist (`stages/list-index.md`) and confirms the order and pop-up marks: `parts/c5a-redesign-checklist.md`.
 
-**Done 2026-10-18:** buttons everywhere (`parts/c1e-buttons-everywhere.md` lists what is left), Foundation sizes named, C2 Home (`parts/c2-home.md`), C3 Jobs list (`parts/c3-jobs-list.md`), C4 Job details and the shared Card header (`parts/c4-job-details.md`).
+**Done 2026-10-18:** buttons everywhere (`parts/c1e-buttons-everywhere.md` lists what is left), Foundation sizes named, C2 Home (`parts/c2-home.md`), C3 Jobs list (`parts/c3-jobs-list.md`), C4 Job details and the shared Card header (`parts/c4-job-details.md`), C5 New job (`parts/c5-new-job.md`).
 
 **Working notes:** Pencil edits only the open file and writes only on Ctrl+S (`docs/pencil-workflow.md`).
 
-**Still open:** rollout (all at once or screen by screen); money cards in dark mode; "Changes requested" colour; whether to keep two styling-module sets after rollout.
+**Still open:** money cards in dark mode; "Changes requested" colour; whether to keep two styling-module sets after rollout.
