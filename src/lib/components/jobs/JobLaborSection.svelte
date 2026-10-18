@@ -179,7 +179,7 @@
 	}
 </script>
 
-<SectionBlock title="Labor" icon={clockIcon} level={2}>
+<SectionBlock title="Labor" icon={clockIcon} tone="time" level={2}>
 	{#snippet actions()}
 		{#if labor?.can_add}
 			<Button variant="tertiary" size="small" onclick={openAdd}>Add time entry</Button>

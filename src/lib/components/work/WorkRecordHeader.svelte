@@ -397,6 +397,23 @@
 		margin-top: 0;
 	}
 
+	:global(.job-detail) .work-header {
+		border-radius: var(--radius-large);
+	}
+	:global(.job-detail) .work-header__type {
+		display: inline-flex;
+		width: 40px;
+		height: 40px;
+		border: 0;
+		border-radius: var(--radius-tile-large);
+		color: var(--color-job);
+		background: var(--color-job--surface);
+	}
+	:global(.job-detail) .work-header__type :global(svg) {
+		width: 20px;
+		height: 20px;
+	}
+
 	@media (max-width: 767px) {
 		.work-header {
 			padding: var(--space-base);

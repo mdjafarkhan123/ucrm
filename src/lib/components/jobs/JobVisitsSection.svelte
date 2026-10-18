@@ -967,6 +967,7 @@
 
 <SectionBlock
 	title="Visits"
+	tone="time"
 	icon={calendarIcon}
 	level={2}
 	class="section-block--flush job-visits-card"

@@ -40,4 +40,10 @@ only (the 1–30… buckets stay in the bar's spoken label); the setup strip kee
 
 ## Next
 
-Build Job details: read `parts/c4-job-details.md`, screenshot `tNdkX` and `jFBRB`, reuse `ui/CardHeader`.
+Job details implementation is on branch `codex/concept-job-details` in `/tmp/ucrm-concept-job-details`
+(claim `19e1e53c27fa`). The main sections follow the approved order and use the shared CardHeader; pricing
+stages lines, discount and tax under one Save. Migration `20261018095200_atomic_job_pricing` was applied
+and its function and authenticated execute grant verified. The checklist Built tick is 🟡.
+
+Next: finish the side-by-side screen check against `tNdkX` and `jFBRB`, prove the live edit journey,
+then mark Built ✅, merge and push main. Pencil was disconnected during this implementation.

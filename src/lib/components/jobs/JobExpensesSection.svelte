@@ -155,7 +155,7 @@
 	}
 </script>
 
-<SectionBlock title="Expenses" icon={receiptIcon} level={2}>
+<SectionBlock title="Expenses" icon={receiptIcon} tone="invoice" level={2}>
 	{#snippet actions()}
 		{#if data?.can_add}
 			<Button variant="tertiary" size="small" onclick={openAdd}>Add expense</Button>

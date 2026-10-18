@@ -95,6 +95,9 @@
 		totalRows,
 		onSave,
 		onDraftChange,
+		onEditStart,
+		onEditCancel,
+		pricingControls,
 		clientView
 	}: {
 		lines?: RequestPricingLine[];
@@ -146,8 +149,15 @@
 		/** App look: the saved table closes with these rows (subtotal, tax, total) in place of the single
 		 *  subtotal line. The last row reads as the grand total. Formatted by the page, which owns the money. */
 		totalRows?: { label: string; value: string }[];
-		onSave?: (expectedRevision: number, lines: RequestPricingLineInput[]) => Promise<void>;
+		onSave?: (
+			expectedRevision: number,
+			lines: RequestPricingLineInput[],
+			linesChanged: boolean
+		) => Promise<void>;
 		onDraftChange?: (lines: RequestPricingLineInput[], subtotalMinor: number) => void;
+		onEditStart?: () => void;
+		onEditCancel?: () => void;
+		pricingControls?: Snippet;
 		/** Quote-only controls rendered where Jobber puts them: below the line editor actions. */
 		clientView?: Snippet;
 	} = $props();
@@ -245,6 +255,7 @@
 	const isEditing = $derived(alwaysEditing || editing);
 
 	function openEdit() {
+		onEditStart?.();
 		draftLines = savedLines.map(toDraft);
 		entrySavedFileIds = new Set(
 			savedLines
@@ -300,6 +311,7 @@
 	}
 
 	function closeEdit() {
+		onEditCancel?.();
 		for (const line of draftLines) releaseLocalPreview(line);
 		for (const fileId of [...uploadedThisSession]) void discardIfOrphaned(fileId);
 		priceBookOpen = false;
@@ -929,14 +941,14 @@
 					.map((line) => line.image_file_id)
 					.filter((fileId): fileId is string => Boolean(fileId))
 			);
-			await onSave(revision, toInputs(draftLines));
+			await onSave(revision, toInputs(draftLines), dirty);
 			for (const fileId of entrySavedFileIds) {
 				if (!finalFileIds.has(fileId)) void releaseDroppedSavedPhoto(fileId);
 			}
 			uploadedThisSession.clear();
 			editing = false;
 			draftLines = [];
-			toast.success('Pricing saved');
+			toast.success(saveLabel === 'Save job pricing' ? 'Job pricing saved' : 'Pricing saved');
 		} catch (caught) {
 			const writeError = caught as QuoteWriteError;
 			if (writeError.reason === 'stale') {
@@ -1179,6 +1191,9 @@
 				<span>{formatMoney(draftSubtotal(draftLines))}</span>
 			</div>
 		</div>
+		{#if pricingControls}
+			<div class="pricing-block__pricing-controls">{@render pricingControls()}</div>
+		{/if}
 	{:else if savedLines.length === 0}
 		<EmptyState
 			icon={listIcon}
@@ -1380,6 +1395,14 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	.pricing-block__pricing-controls {
+		display: grid;
+		gap: var(--space-small);
+		padding: var(--space-base);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background);
+	}
 	.pricing-block {
 		&__hint {
 			margin: 0;
