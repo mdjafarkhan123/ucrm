@@ -11,6 +11,7 @@
 	import CatalogItemDialog from './CatalogItemDialog.svelte';
 	import FileThumb from '$lib/components/files/FileThumb.svelte';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 
 	// A line's name field with a catalog search riding underneath it — pick a reusable default, or just
 	// keep typing to make a one-off line. Nothing here decides whether typing without a pick is valid: a
@@ -22,6 +23,7 @@
 		labor,
 		disabled = false,
 		placeholder = '',
+		chevron = false,
 		invalid = false,
 		errorMessage = '',
 		currencyCode,
@@ -40,6 +42,8 @@
 		currencyCode?: string;
 		locale?: string;
 		placeholder?: string;
+		/** Concept fields: a chevron at the right says the field also opens a list (the price book). */
+		chevron?: boolean;
 		invalid?: boolean;
 		errorMessage?: string;
 		/** Fires when the field is left for good — not while the person is reaching for the list. */
@@ -141,6 +145,7 @@
 	class="catalog-picker"
 	class:catalog-picker--has-value={hasValue}
 	class:catalog-picker--invalid={invalid}
+	class:catalog-picker--labeled={Boolean(label)}
 >
 	<Combobox.Root
 		type="single"
@@ -175,6 +180,9 @@
 					}, 0);
 				}}
 			/>
+			{#if chevron}
+				<span class="catalog-picker__chevron" aria-hidden="true">{@html chevronDownIcon}</span>
+			{/if}
 		</div>
 		<Combobox.Portal>
 			<Combobox.Content
@@ -290,6 +298,18 @@
 		border-radius: var(--radius-base);
 		background: var(--color-surface);
 	}
+	.catalog-picker__chevron {
+		display: inline-flex;
+		flex: 0 0 auto;
+		padding-right: var(--space-slim);
+		color: var(--color-icon--secondary);
+		pointer-events: none;
+
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
+	}
 	.catalog-picker__control:focus-within {
 		box-shadow: var(--shadow-focus);
 	}
@@ -312,8 +332,9 @@
 		font: inherit;
 		line-height: 20px;
 	}
-	.catalog-picker:focus-within .catalog-picker__control :global(input),
-	.catalog-picker--has-value .catalog-picker__control :global(input) {
+	// Room for the lifted label only where a label is shown; a field labelled from outside keeps its height.
+	.catalog-picker--labeled:focus-within .catalog-picker__control :global(input),
+	.catalog-picker--labeled.catalog-picker--has-value .catalog-picker__control :global(input) {
 		padding-top: calc(var(--space-base) + var(--space-smaller));
 		padding-bottom: var(--space-small);
 	}

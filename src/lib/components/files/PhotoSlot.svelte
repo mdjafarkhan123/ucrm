@@ -2,6 +2,7 @@
 	import FileThumb from '$lib/components/files/FileThumb.svelte';
 	import type { FileProcessingState } from '$lib/files/api';
 	import uploadIcon from '@tabler/icons/outline/upload.svg?raw';
+	import photoPlusIcon from '@tabler/icons/outline/photo-plus.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 
@@ -15,6 +16,7 @@
 		uploading = false,
 		disabled = false,
 		label = 'Photo',
+		addText = '',
 		onChoose,
 		onRemove
 	}: {
@@ -27,6 +29,8 @@
 		disabled?: boolean;
 		/** What the photo is of, for its alt text and the buttons' names. */
 		label?: string;
+		/** Words under the add icon, e.g. "Add photo" (concept look). Empty shows the icon alone. */
+		addText?: string;
 		onChoose: (file: File) => void;
 		onRemove: () => void;
 	} = $props();
@@ -104,7 +108,8 @@
 			{disabled}
 			onclick={openPicker}
 		>
-			{@html uploadIcon}
+			{@html addText ? photoPlusIcon : uploadIcon}
+			{#if addText}<span class="photo-slot__add-text">{addText}</span>{/if}
 		</button>
 	{/if}
 </div>
@@ -153,8 +158,14 @@
 			object-fit: cover;
 		}
 
+		&__add-text {
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+		}
 		&__add {
 			display: grid;
+			align-content: center;
+			gap: var(--space-smaller);
 			width: 100%;
 			height: 100%;
 			place-items: center;

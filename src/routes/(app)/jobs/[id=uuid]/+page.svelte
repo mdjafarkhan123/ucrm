@@ -20,8 +20,8 @@
 	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
 	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
-	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
-	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
+	import PricingAdjustmentsEditor from '$lib/components/work/PricingAdjustmentsEditor.svelte';
+	import { fetchTaxPicker, taxPickerKey } from '$lib/settings/api';
 	import JobBillingCard from '$lib/components/jobs/JobBillingCard.svelte';
 	import JobRemindersCard from '$lib/components/jobs/JobRemindersCard.svelte';
 	import JobVisitsToBillCard from '$lib/components/jobs/JobVisitsToBillCard.svelte';
@@ -123,6 +123,8 @@
 	let reportHasContent = $state(false);
 	let discountDraft = $state<JobDiscountInput | null>(null);
 	let taxDraft = $state<JobTaxInput | null>(null);
+	// A discount or tax field the editor cannot send yet, e.g. an empty percentage. Save says what to fix.
+	let adjustmentsProblem = $state<string | null>(null);
 
 	const editable = $derived(Boolean(saved?.can_edit));
 	// Google review Part 3: closed jobs where work was done, and ongoing recurring jobs once a visit is done.
@@ -415,6 +417,7 @@
 				image_file_id: line.image_file_id ?? null
 			}));
 
+		if (adjustmentsProblem) throw new Error(adjustmentsProblem);
 		if (!linesChanged && !discountDraft && !taxDraft) return;
 		await saveJobPricing(jobId, expectedRevision, {
 			...(linesChanged ? { lines: scope } : {}),
@@ -717,64 +720,52 @@
 					saveLabel="Save job pricing"
 					emptyDescription="Add the products and services this job covers."
 					totalRows={saved.can_see_price ? pricingRows : undefined}
+					adjustmentsDirty={Boolean(discountDraft || taxDraft)}
+					onEditHover={() => {
+						const propertyId = saved.job.property?.id;
+						if (propertyId)
+							void queryClient.prefetchQuery({
+								queryKey: taxPickerKey(propertyId),
+								queryFn: () => fetchTaxPicker(propertyId),
+								staleTime: 30_000
+							});
+					}}
 					onEditStart={() => {
 						discountDraft = null;
 						taxDraft = null;
+						adjustmentsProblem = null;
 					}}
 					onEditCancel={() => {
 						discountDraft = null;
 						taxDraft = null;
+						adjustmentsProblem = null;
 					}}
 					onSave={saveScope}
 				>
-					{#snippet pricingControls()}
-						<RecordDiscountCard
-							revision={saved.job.revision}
-							name={discountDraft?.name ?? saved.money?.discount_name ?? null}
-							type={discountDraft ? discountDraft.type : (saved.money?.discount_type ?? null)}
-							value={discountDraft ? discountDraft.value : (saved.money?.discount_value ?? null)}
-									currencyCode={saved.job.currency_code}
-							locale={saved.locale}
-							{editable}
-							canSeePrice={saved.can_see_price}
-							recordNoun="job"
-							staged
-							embedded
-							onSave={async (_revision, payload) => {
-								discountDraft = payload;
+					{#snippet pricingControls(previewLines)}
+						<PricingAdjustmentsEditor
+							lines={previewLines}
+							discount={{
+								name: saved.money?.discount_name ?? null,
+								type: saved.money?.discount_type ?? null,
+								value: saved.money?.discount_value ?? null
 							}}
-							onSaved={() => {}}
+							tax={{
+								source: (saved.money?.tax_source ?? 'not_configured') as QuoteTaxSource,
+								rateId: saved.money?.tax_rate_id ?? null,
+								name: saved.money?.tax_name ?? null,
+								rateBasisPoints: saved.money?.tax_rate_basis_points ?? 0
+							}}
+							propertyId={saved.job.property?.id ?? null}
+							canManageTaxes={saved.can_manage_taxes}
+							currencyCode={saved.job.currency_code}
+							locale={saved.locale}
+							onChange={(staged) => {
+								discountDraft = staged.discount ?? null;
+								taxDraft = staged.tax ?? null;
+								adjustmentsProblem = staged.problem;
+							}}
 						/>
-						{#if saved.job.property}
-							<RecordTaxCard
-								revision={saved.job.revision}
-								propertyId={saved.job.property.id}
-								taxSource={(taxDraft?.source ??
-									saved.money?.tax_source ??
-									'not_configured') as QuoteTaxSource}
-								rateId={taxDraft ? (taxDraft.rate_id ?? null) : (saved.money?.tax_rate_id ?? null)}
-								name={taxDraft
-									? (taxDraft.custom_name ?? saved.money?.tax_name ?? null)
-									: (saved.money?.tax_name ?? null)}
-								rateBasisPoints={taxDraft?.custom_rate_basis_points ??
-									saved.money?.tax_rate_basis_points ??
-									0}
-								taxMinor={saved.money?.tax_minor ?? 0}
-								currencyCode={saved.job.currency_code}
-								locale={saved.locale}
-								{editable}
-								canSeePrice={saved.can_see_price}
-								canManageTaxes={saved.can_manage_taxes}
-								recordNoun="job"
-								staged
-								embedded
-								unsetHint="This job is not taxed yet."
-								onSave={async (_revision, payload) => {
-									taxDraft = payload;
-								}}
-								onSaved={() => {}}
-							/>
-						{/if}
 					{/snippet}
 				</ProductsAndServicesBlock>
 
