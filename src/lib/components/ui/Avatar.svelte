@@ -87,24 +87,24 @@
 		--avatar-fg: var(--color-critical--onSurface);
 	}
 	:global(.avatar--orange) {
-		--avatar-bg: var(--color-base-orange--200);
-		--avatar-fg: var(--color-base-orange--600);
+		--avatar-bg: var(--color-request--surface);
+		--avatar-fg: var(--color-request--onSurface);
 	}
 	:global(.avatar--green) {
 		--avatar-bg: var(--color-success--surface);
 		--avatar-fg: var(--color-success--onSurface);
 	}
 	:global(.avatar--teal) {
-		--avatar-bg: var(--color-base-teal--200);
-		--avatar-fg: var(--color-base-teal--700);
+		--avatar-bg: var(--color-conversation--surface);
+		--avatar-fg: var(--color-conversation--onSurface);
 	}
 	:global(.avatar--blue) {
 		--avatar-bg: var(--color-inactive--surface);
 		--avatar-fg: var(--color-inactive--onSurface);
 	}
 	:global(.avatar--purple) {
-		--avatar-bg: var(--color-dataViz--categorical--1--subtle);
-		--avatar-fg: var(--color-surface);
+		--avatar-bg: var(--color-growth--surface);
+		--avatar-fg: var(--color-growth--onSurface);
 	}
 	:global(.avatar--pink) {
 		--avatar-bg: var(--color-quote--surface);
