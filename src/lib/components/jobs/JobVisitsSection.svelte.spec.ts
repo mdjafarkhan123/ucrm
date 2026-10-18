@@ -167,7 +167,8 @@ describe('JobVisitsSection grouped card', () => {
 		});
 
 		await expect.element(page.getByText('Weekly on Monday')).toBeVisible();
-		await expect.element(page.getByText('2 visits', { exact: false })).toBeVisible();
+		// The count shows twice: in the card header's subtitle and under the recurrence summary.
+		expect(page.getByText('2 visits', { exact: false }).elements()).toHaveLength(2);
 	});
 
 	it('distinguishes an as-needed job from an accidentally empty one', async () => {
@@ -259,7 +260,9 @@ describe('JobVisitsSection visit timers', () => {
 			},
 			clocked_in: false,
 			can_time: true,
-			server_now: serverNow
+			// Read at render time: a server time taken when the file loaded would set the clock back by however
+			// long the earlier tests ran.
+			server_now: new Date().toISOString()
 		};
 	}
 
