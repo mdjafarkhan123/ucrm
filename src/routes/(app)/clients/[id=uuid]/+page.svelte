@@ -78,6 +78,7 @@
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
+	import cashIcon from '@tabler/icons/outline/cash-banknote.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -737,6 +738,7 @@
 				{:else}
 					{#if showLifetime}
 						<MoneyFeatureCard
+							icon={cashIcon}
 							eyebrow="Lifetime"
 							value={lifetimeValue}
 							note={lifetimeNote}

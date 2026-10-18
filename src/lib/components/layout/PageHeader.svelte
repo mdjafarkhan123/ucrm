@@ -4,6 +4,8 @@
 		title,
 		description,
 		eyebrow,
+		icon,
+		tone = 'job',
 		actions,
 		class: className = ''
 	}: {
@@ -11,12 +13,26 @@
 		description?: string;
 		/** A small label above the title that names the area the page belongs to, e.g. "Work & money". */
 		eyebrow?: string;
+		/** A Tabler icon (raw SVG) on a 40 tile in the page's record or section colour, before the title. With
+		 *  it the header takes the concept look: a 24 title beside the tile, the description under it. */
+		icon?: string;
+		/** The colour family of the icon tile, e.g. `job`, `quote`, `time`. */
+		tone?: string;
 		actions?: Snippet;
 		class?: string;
 	} = $props();
 </script>
 
-<header class={`page-header ${className}`}>
+<!-- eslint-disable svelte/no-at-html-tags -->
+<header class={['page-header', icon && 'page-header--tiled', className]}>
+	{#if icon}
+		<span
+			class="page-header__tile"
+			style:--page-header-tone={`var(--color-${tone})`}
+			style:--page-header-tone-surface={`var(--color-${tone}--surface)`}
+			aria-hidden="true">{@html icon}</span
+		>
+	{/if}
 	<div class="page-header__copy">
 		{#if eyebrow}
 			<p class="page-header__eyebrow">
@@ -28,6 +44,8 @@
 	</div>
 	{#if actions}<div class="page-header__actions">{@render actions()}</div>{/if}
 </header>
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.page-header {
@@ -82,6 +100,46 @@
 		justify-content: flex-end;
 		gap: 10px;
 		padding-bottom: var(--space-smaller);
+	}
+	/* The concept header: tile, then a quieter 24 title with the description under it, actions centred. */
+	.page-header--tiled {
+		align-items: center;
+		justify-content: flex-start;
+		gap: var(--space-base);
+
+		.page-header__copy {
+			gap: 2px;
+		}
+		h1 {
+			font-size: var(--typography--fontSize-largest);
+			font-weight: 700;
+			letter-spacing: -0.5px;
+		}
+		.page-header__description {
+			font-size: var(--typography--fontSize-base);
+			font-weight: 400;
+		}
+		.page-header__actions {
+			gap: var(--space-small);
+			padding-bottom: 0;
+		}
+	}
+	.page-header__tile {
+		display: inline-flex;
+		flex: 0 0 auto;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		border-radius: var(--radius-tile-large);
+		color: var(--page-header-tone);
+		background: var(--page-header-tone-surface);
+
+		:global(svg) {
+			display: block;
+			width: 20px;
+			height: 20px;
+		}
 	}
 	@media (max-width: 639px) {
 		.page-header {

@@ -68,6 +68,7 @@
 	import sendIcon from '@tabler/icons/outline/send.svg?raw';
 	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
 	import thumbUpIcon from '@tabler/icons/outline/thumb-up.svg?raw';
+	import trendingUpIcon from '@tabler/icons/outline/trending-up.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -428,6 +429,7 @@
 				loading={countsQuery.isPending || overviewLoading}
 			/>
 			<MoneyFeatureCard
+				icon={trendingUpIcon}
 				eyebrow="Conversion rate · past 30 days"
 				value={conversionValue}
 				change={overview

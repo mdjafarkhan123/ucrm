@@ -1375,6 +1375,7 @@
 				{#if canSeePrice && saved.money}
 					<MoneyFeatureCard
 						record
+						icon={receiptIcon}
 						eyebrow="Balance due"
 						value={formatMoney(remainingMinor)}
 						badge={dueChip}

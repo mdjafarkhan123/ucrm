@@ -403,6 +403,7 @@
 				loading={countsQuery.isPending}
 			/>
 			<MoneyFeatureCard
+				icon={receiptIcon}
 				eyebrow={moneyEyebrow}
 				value={formatWhole(outstandingMinor)}
 				note={moneyNote}
