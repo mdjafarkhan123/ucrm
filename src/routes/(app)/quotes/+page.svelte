@@ -64,6 +64,10 @@
 	import hourglassIcon from '@tabler/icons/outline/hourglass.svg?raw';
 	import eyeOffIcon from '@tabler/icons/outline/eye-off.svg?raw';
 	import mailCheckIcon from '@tabler/icons/outline/mail-check.svg?raw';
+	import filePencilIcon from '@tabler/icons/outline/file-pencil.svg?raw';
+	import sendIcon from '@tabler/icons/outline/send.svg?raw';
+	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
+	import thumbUpIcon from '@tabler/icons/outline/thumb-up.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -213,6 +217,12 @@
 		changes_requested: 'client asked for edits',
 		approved: 'ready for a job'
 	};
+	const attentionIcons: Record<(typeof QUOTE_OVERVIEW_STATUSES)[number], string> = {
+		draft: filePencilIcon,
+		awaiting_response: sendIcon,
+		changes_requested: messageIcon,
+		approved: thumbUpIcon
+	};
 	const statusMoney = $derived(overview?.status_minor ?? null);
 	function sentence(text: string) {
 		return text.charAt(0).toUpperCase() + text.slice(1);
@@ -224,7 +234,8 @@
 			amount: statusMoney ? formatWhole(statusMoney[key]) : undefined,
 			hint: statusMoney ? attentionHints[key] : sentence(attentionHints[key]),
 			count: countsQuery.data?.counts[key] ?? 0,
-			tone: QUOTE_STATUS_TONES[key]
+			tone: QUOTE_STATUS_TONES[key],
+			icon: attentionIcons[key]
 		}))
 	);
 	// The headline: what the open quotes are worth, or a dash for someone who may not see prices.

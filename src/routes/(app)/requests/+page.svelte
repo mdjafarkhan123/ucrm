@@ -51,6 +51,11 @@
 	import dotsIcon from '@tabler/icons/outline/dots.svg?raw';
 	import calendarTodayIcon from '@tabler/icons/outline/calendar-event.svg?raw';
 	import calendarUpcomingIcon from '@tabler/icons/outline/calendar-time.svg?raw';
+	import alarmIcon from '@tabler/icons/outline/alarm.svg?raw';
+	import calendarQuestionIcon from '@tabler/icons/outline/calendar-question.svg?raw';
+	import sparklesIcon from '@tabler/icons/outline/sparkles.svg?raw';
+	import calendarOffIcon from '@tabler/icons/outline/calendar-x.svg?raw';
+	import clipboardCheckIcon from '@tabler/icons/outline/clipboard-check.svg?raw';
 
 	let search = $state('');
 	let debouncedSearch = $state('');
@@ -155,16 +160,21 @@
 	// sets the Status filter beside the search to it; picking it again, or choosing another status there,
 	// clears it.
 	const attentionOrder = [
-		{ key: 'overdue', hint: 'Assessment date passed, not done' },
-		{ key: 'needs_approval', hint: 'Website bookings asking for a time' },
-		{ key: 'new', hint: 'No assessment or quote yet' },
-		{ key: 'unscheduled', hint: 'Assessment needed, no time set' },
-		{ key: 'assessment_completed', hint: 'Assessed, no quote yet' }
+		{ key: 'overdue', hint: 'Assessment date passed, not done', icon: alarmIcon },
+		{
+			key: 'needs_approval',
+			hint: 'Website bookings asking for a time',
+			icon: calendarQuestionIcon
+		},
+		{ key: 'new', hint: 'No assessment or quote yet', icon: sparklesIcon },
+		{ key: 'unscheduled', hint: 'Assessment needed, no time set', icon: calendarOffIcon },
+		{ key: 'assessment_completed', hint: 'Assessed, no quote yet', icon: clipboardCheckIcon }
 	] as const;
 
 	const attentionTiles = $derived<AttentionTile[]>(
-		attentionOrder.map(({ key, hint }) => ({
+		attentionOrder.map(({ key, hint, icon }) => ({
 			key,
+			icon,
 			label: REQUEST_STATUS_LABELS[key],
 			hint,
 			count: countsQuery.data?.counts[key] ?? 0,

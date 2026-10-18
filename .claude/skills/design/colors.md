@@ -45,7 +45,8 @@ They are in `concept.pen`; add them to `_variables.scss` with the first screen t
 
 ## Feature Card Colours
 
-One deep-green card per screen at most (Home's Today card). The same in light and dark mode.
+One deep-green card per screen at most (Home's Today card; the money card beside a list's overview and on
+client and invoice pages). The same in light and dark mode.
 
 | Token | Value | Use |
 |---|---|---|
@@ -55,6 +56,7 @@ One deep-green card per screen at most (Home's Today card). The same in light an
 | `--color-feature--text--secondary` | white 72% | Date, summary, hints |
 | `--color-feature--subtle` | white 10% | Panels and tiles inside the card |
 | `--color-feature--border` | white 18% | Edges of those panels |
+| `--color-feature--alert` | red 400 `#e9a29b` | Overdue part of a bar on the card (status reds vanish on green) |
 
 ## Status Colours
 

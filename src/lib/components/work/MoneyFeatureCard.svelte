@@ -26,9 +26,9 @@
 	import trendingDownIcon from '@tabler/icons/outline/trending-down.svg?raw';
 	import equalIcon from '@tabler/icons/outline/equal.svg?raw';
 
-	// The dark money card beside a work list's overview: one big figure with a line under it, and a
-	// second figure below a hairline. It reads from the reverse tokens, so it is dark in the light theme
-	// and light in the dark theme.
+	// The green money card beside a work list's overview: one big figure with a line under it, and a
+	// second figure below a hairline. It is the screen's one feature card, so it reads from the feature
+	// tokens and stays the same deep green in light and dark themes.
 	let {
 		eyebrow,
 		value,
@@ -105,24 +105,26 @@
 		<p class="money-card__eyebrow">{eyebrow}</p>
 	{/if}
 	{#if value !== undefined || note}
-	<div class="money-card__figure">
-		<div class="money-card__figure-row">
-			{#if value !== undefined}<p class="money-card__value">{value}</p>{/if}
-			{#if pill}
-				<span class="money-card__pill">
-					<span class="money-card__pill-icon" aria-hidden="true">{@html checkIcon}</span>
-					{pill}
-				</span>
-			{/if}
-			{#if change}
-				<p class="money-card__change">
-					<span class="money-card__change-icon" aria-hidden="true">{@html changeIcons[change.direction]}</span>
-					{change.text}
-				</p>
-			{/if}
+		<div class="money-card__figure">
+			<div class="money-card__figure-row">
+				{#if value !== undefined}<p class="money-card__value">{value}</p>{/if}
+				{#if pill}
+					<span class="money-card__pill">
+						<span class="money-card__pill-icon" aria-hidden="true">{@html checkIcon}</span>
+						{pill}
+					</span>
+				{/if}
+				{#if change}
+					<p class="money-card__change">
+						<span class="money-card__change-icon" aria-hidden="true"
+							>{@html changeIcons[change.direction]}</span
+						>
+						{change.text}
+					</p>
+				{/if}
+			</div>
+			{#if note}<p class="money-card__note">{note}</p>{/if}
 		</div>
-		{#if note}<p class="money-card__note">{note}</p>{/if}
-	</div>
 	{/if}
 	{#if breakdown && breakdown.length > 0}
 		<div class="money-card__breakdown">
@@ -204,11 +206,17 @@
 		gap: var(--space-large);
 		padding: var(--space-large);
 		border-radius: var(--radius-base);
-		color: var(--color-text--reverse);
-		background: var(--color-surface--reverse);
+		color: var(--color-feature--text);
+		background:
+			radial-gradient(
+				90% 220% at 85% 0%,
+				var(--color-feature--glow),
+				var(--color-feature--glow-end)
+			),
+			linear-gradient(200deg, var(--color-feature--start), var(--color-feature--end));
 
 		&__eyebrow {
-			color: var(--color-icon--secondary);
+			color: var(--color-feature--text--secondary);
 			font-size: 11px;
 			font-weight: 700;
 			letter-spacing: 1px;
@@ -231,8 +239,8 @@
 			margin-bottom: 2px;
 			padding: 4px 9px;
 			border-radius: 999px;
-			color: var(--color-text--reverse);
-			background: color-mix(in srgb, var(--color-text--reverse) 8%, transparent);
+			color: var(--color-feature--text);
+			background: var(--color-feature--subtle);
 			font-size: var(--typography--fontSize-small);
 			font-weight: 600;
 			line-height: 1.2;
@@ -250,21 +258,20 @@
 			display: grid;
 			gap: 10px;
 			padding-top: 14px;
-			border-top: var(--border-base) solid
-				color-mix(in srgb, var(--color-text--reverse) 8%, transparent);
+			border-top: var(--border-base) solid var(--color-feature--border);
 		}
 		&__progress {
 			overflow: hidden;
 			height: 6px;
 			margin-bottom: 2px;
 			border-radius: 3px;
-			background: color-mix(in srgb, var(--color-text--reverse) 8%, transparent);
+			background: var(--color-feature--border);
 
 			span {
 				display: block;
 				height: 100%;
 				border-radius: 3px;
-				background: var(--color-text--reverse);
+				background: var(--color-feature--text);
 			}
 		}
 		&__figures {
@@ -276,7 +283,7 @@
 			font-weight: 500;
 		}
 		&__value {
-			color: var(--color-text--reverse);
+			color: var(--color-feature--text);
 			font-size: 32px;
 			font-variant-numeric: tabular-nums;
 			font-weight: 700;
@@ -285,7 +292,7 @@
 			overflow-wrap: anywhere;
 		}
 		&__note {
-			color: var(--color-icon--secondary);
+			color: var(--color-feature--text--secondary);
 			font-size: 13px;
 			font-weight: 500;
 		}
@@ -293,29 +300,30 @@
 			display: grid;
 			gap: var(--space-slim);
 			padding-top: var(--space-base);
-			border-top: var(--border-base) solid
-				color-mix(in srgb, var(--color-text--reverse) 14%, transparent);
+			border-top: var(--border-base) solid var(--color-feature--border);
 		}
 		&__bar {
 			display: flex;
 			gap: 3px;
 			height: 8px;
 		}
+		/* On green, money in is solid white and money still to come a softer white; the status greens
+		   would vanish into the card. */
 		&__segment {
 			flex: 1 1 0;
 			border-radius: 999px;
 
 			&--success {
-				background: var(--color-success);
+				background: var(--color-feature--text);
 			}
 			&--muted {
-				background: var(--color-icon--secondary);
+				background: var(--color-feature--border);
 			}
 			&--critical {
-				background: var(--color-critical);
+				background: var(--color-feature--alert);
 			}
 			&--neutral {
-				background: var(--color-text--reverse);
+				background: var(--color-feature--text--secondary);
 			}
 		}
 		&__legend {
@@ -344,7 +352,7 @@
 		}
 		&__percent {
 			margin-right: var(--space-small);
-			color: var(--color-icon--secondary);
+			color: var(--color-feature--text--secondary);
 			font-weight: 500;
 		}
 		&__top {
@@ -359,7 +367,7 @@
 			gap: 5px;
 			padding: 4px 9px;
 			border-radius: 999px;
-			background: color-mix(in srgb, var(--color-text--reverse) 8%, transparent);
+			background: var(--color-feature--subtle);
 			font-size: 12px;
 			font-weight: 600;
 		}
@@ -374,7 +382,7 @@
 			}
 		}
 		&__badge-icon {
-			color: var(--color-icon--secondary);
+			color: var(--color-feature--text--secondary);
 		}
 		&__pill {
 			display: inline-flex;
@@ -383,8 +391,8 @@
 			margin-bottom: 2px;
 			padding: 4px 9px;
 			border-radius: 999px;
-			color: var(--color-surface);
-			background: var(--color-interactive);
+			color: var(--color-feature--start);
+			background: var(--color-feature--text);
 			font-size: 13px;
 			font-weight: 700;
 		}
@@ -392,8 +400,7 @@
 			display: grid;
 			gap: 12px;
 			padding-top: 14px;
-			border-top: var(--border-base) solid
-				color-mix(in srgb, var(--color-text--reverse) 14%, transparent);
+			border-top: var(--border-base) solid var(--color-feature--border);
 		}
 		&__foot-rows {
 			display: grid;
@@ -411,7 +418,7 @@
 			gap: 10px;
 			padding: 12px;
 			border-radius: var(--radius-base);
-			background: color-mix(in srgb, var(--color-text--reverse) 8%, transparent);
+			background: var(--color-feature--subtle);
 			font-size: 13px;
 			font-weight: 500;
 
@@ -442,8 +449,7 @@
 			gap: var(--space-base);
 			margin: 0;
 			padding-top: 14px;
-			border-top: var(--border-base) solid
-				color-mix(in srgb, var(--color-text--reverse) 14%, transparent);
+			border-top: var(--border-base) solid var(--color-feature--border);
 			font-size: 13px;
 
 			dt {

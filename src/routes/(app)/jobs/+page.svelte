@@ -52,6 +52,11 @@
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import dotsIcon from '@tabler/icons/outline/dots.svg?raw';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
+	import alarmIcon from '@tabler/icons/outline/alarm.svg?raw';
+	import calendarOffIcon from '@tabler/icons/outline/calendar-x.svg?raw';
+	import alertIcon from '@tabler/icons/outline/alert-circle.svg?raw';
+	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
+	import hourglassIcon from '@tabler/icons/outline/hourglass.svg?raw';
 
 	let search = $state('');
 	let debouncedSearch = $state('');
@@ -130,16 +135,17 @@
 	// The five the office acts on, most urgent first, each with a line saying what it means. Picking one
 	// sets the Status filter below to it; picking it again, or choosing another status there, clears it.
 	const attentionOrder = [
-		{ key: 'late', hint: 'A visit date passed, not done' },
-		{ key: 'unscheduled', hint: 'Visits not booked yet' },
-		{ key: 'action_required', hint: 'No upcoming visit booked' },
-		{ key: 'requires_invoicing', hint: 'Work done, not billed yet' },
-		{ key: 'ending_soon', hint: 'Recurring, ends within 30 days' }
+		{ key: 'late', hint: 'A visit date passed, not done', icon: alarmIcon },
+		{ key: 'unscheduled', hint: 'Visits not booked yet', icon: calendarOffIcon },
+		{ key: 'action_required', hint: 'No upcoming visit booked', icon: alertIcon },
+		{ key: 'requires_invoicing', hint: 'Work done, not billed yet', icon: receiptIcon },
+		{ key: 'ending_soon', hint: 'Recurring, ends within 30 days', icon: hourglassIcon }
 	] as const;
 
 	const attentionTiles = $derived<AttentionTile[]>(
-		attentionOrder.map(({ key, hint }) => ({
+		attentionOrder.map(({ key, hint, icon }) => ({
 			key,
+			icon,
 			label: JOB_STATUS_LABELS[key],
 			hint,
 			count: countsQuery.data?.counts[key] ?? 0,
