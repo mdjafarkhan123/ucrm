@@ -9,13 +9,12 @@ edit mode `jFBRB`.
 
 Jobber job page: one green action that changes with status; client card left, facts right; one scrolling page;
 job costing profit bar for staff with costing rights (`.claude/skills/jobber/jobber-08-screen-patterns.md`,
-https://help.getjobber.com/en/articles/job-costing/). Line items end in Subtotal, Discount, Tax, Total; edit is
-section-scoped (`jobber-03-quotes.md` § Edit state).
+https://help.getjobber.com/en/articles/job-costing/). Edit is section-scoped (`jobber-03-quotes.md` § Edit state).
 
 ## What is drawn (decided with Jafar 2026-10-18)
 
 - Header card with the changing green main button, client box, facts, Request → Paid strip.
-- One page, no tabs (he found tabs not premium): Visits (visit rows show their own instructions) →
+- One page, no tabs: Visits →
   Instructions → Checklists → "Money" divider → Products and services → Billing (main column: facts,
   payment schedule, reminders list) → Labor → Expenses.
 - Rail: Job total card with a coloured profit bar (`color-feature-items/-labor/-expenses`, profit white) →
