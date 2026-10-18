@@ -117,12 +117,14 @@
 							value={subject(condition)}
 							onchange={(value: string) => setSubject(index, value)}
 						/>
-						<button
-							type="button"
-							class="setup-show-if__remove"
-							aria-label={`Remove rule ${index + 1}`}
-							onclick={() => conditions.splice(index, 1)}>{@html xIcon}</button
-						>
+						<span class="setup-show-if__remove">
+							<Button
+								variant="secondary"
+								iconOnly
+								label={`Remove rule ${index + 1}`}
+								onclick={() => conditions.splice(index, 1)}>{@html xIcon}</Button
+							>
+						</span>
 					</div>
 
 					{#if condition.type === 'service'}
@@ -293,35 +295,10 @@
 			}
 		}
 
+		// Holds the shared icon Button; it only places it beside the select.
 		&__remove {
-			display: grid;
+			display: inline-flex;
 			flex: 0 0 auto;
-			place-items: center;
-			width: 40px;
-			height: 40px;
-			padding: 0;
-			border: var(--border-base) solid transparent;
-			border-radius: var(--radius-base);
-			color: var(--color-icon--secondary);
-			background: none;
-			cursor: pointer;
-			transition: all var(--timing-quick) ease-out;
-
-			&:hover,
-			&:focus-visible {
-				border-color: var(--color-critical);
-				color: var(--color-critical);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
 		}
 	}
 </style>

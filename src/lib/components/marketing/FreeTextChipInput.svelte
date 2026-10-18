@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Popover } from 'bits-ui';
+	import Button from '$lib/components/ui/Button.svelte';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import xIcon from '@tabler/icons/outline/x.svg?raw';
 
@@ -79,9 +80,13 @@
 
 	{#if !atMax}
 		<Popover.Root bind:open>
-			<Popover.Trigger class="free-text-chips__trigger">
-				{@html plusIcon}
-				<span>Add</span>
+			<Popover.Trigger>
+				{#snippet child({ props })}
+					<Button {...props} variant="secondary" size="small">
+						{@html plusIcon}
+						Add
+					</Button>
+				{/snippet}
 			</Popover.Trigger>
 			<Popover.Portal>
 				<Popover.Content
@@ -204,37 +209,6 @@
 				outline: none;
 				box-shadow: var(--shadow-focus);
 			}
-		}
-	}
-
-	:global(.free-text-chips__trigger) {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-smaller);
-		padding: 5px var(--space-small) 5px 8px;
-		border: var(--border-base) dashed var(--color-border--interactive);
-		border-radius: var(--radius-large);
-		color: var(--color-text--secondary);
-		background: transparent;
-		font-size: var(--typography--fontSize-small);
-		cursor: pointer;
-		transition: all var(--timing-quick);
-
-		&:hover {
-			border-color: var(--color-interactive);
-			color: var(--color-heading);
-			background: var(--color-surface--hover);
-		}
-
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-
-		:global(svg) {
-			display: block;
-			width: 16px;
-			height: 16px;
 		}
 	}
 

@@ -407,8 +407,11 @@
 											{f.timezone === suggestedTimezone
 												? 'Detected from your browser — confirm it to save.'
 												: 'Not confirmed yet.'}
-											<button type="button" onclick={markTimezoneConfirmed} disabled={!canEdit}
-												>Confirm timezone</button
+											<Button
+												variant="secondary"
+												size="small"
+												onclick={markTimezoneConfirmed}
+												disabled={!canEdit}>Confirm timezone</Button
 											>
 										</p>
 									{/if}
@@ -433,8 +436,11 @@
 									{:else if !currencyConfirmed}
 										<p class="business-profile__suggestion">
 											Not confirmed yet.
-											<button type="button" onclick={markCurrencyConfirmed} disabled={!canEdit}
-												>Confirm currency</button
+											<Button
+												variant="secondary"
+												size="small"
+												onclick={markCurrencyConfirmed}
+												disabled={!canEdit}>Confirm currency</Button
 											>
 										</p>
 									{/if}
@@ -531,18 +537,6 @@
 			gap: var(--space-small);
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
-		}
-		&__suggestion button {
-			padding: var(--space-smaller) var(--space-small);
-			border: var(--border-base) solid var(--color-border--interactive);
-			border-radius: var(--radius-large);
-			color: var(--color-interactive);
-			background: var(--color-surface);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-		}
-		&__suggestion button:hover {
-			background: var(--color-surface--hover);
 		}
 	}
 	@media (max-width: 1079px) {

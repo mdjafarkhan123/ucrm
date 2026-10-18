@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { tick } from 'svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import { AUTOMATION_SMS_VARIABLES } from '$lib/automation/email-variables';
@@ -139,14 +140,14 @@
 		<span class="sms-editor__variables-label">Insert a value</span>
 		<div class="sms-editor__variable-list">
 			{#each variables as variable (variable.token)}
-				<button
-					type="button"
-					class="sms-editor__variable"
-					onmousedown={(event) => event.preventDefault()}
+				<Button
+					variant="secondary"
+					size="small"
+					onmousedown={(event: MouseEvent) => event.preventDefault()}
 					onclick={() => insertVariable(variable.token)}
 				>
 					{variable.label}
-				</button>
+				</Button>
 			{/each}
 		</div>
 		<p class="sms-editor__hint">These get replaced with the real details when the text is sent.</p>
@@ -212,32 +213,6 @@
 			display: flex;
 			flex-wrap: wrap;
 			gap: var(--space-small);
-		}
-
-		&__variable {
-			display: inline-flex;
-			align-items: center;
-			min-height: 32px;
-			padding: var(--space-smaller) var(--space-slim);
-			border: var(--border-base) solid var(--color-border--interactive);
-			border-radius: var(--radius-base);
-			color: var(--color-interactive);
-			background: var(--color-surface);
-			font: inherit;
-			font-weight: 600;
-			cursor: pointer;
-			transition: all var(--timing-base) ease-out;
-
-			&:hover,
-			&:focus-visible {
-				border-color: var(--color-interactive--hover);
-				color: var(--color-interactive--hover);
-				background: var(--color-surface--hover);
-			}
-			&:focus-visible {
-				outline: transparent;
-				box-shadow: var(--shadow-focus);
-			}
 		}
 
 		&__hint {

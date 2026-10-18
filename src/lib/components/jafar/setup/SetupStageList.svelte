@@ -2,6 +2,7 @@
 	import { tick } from 'svelte';
 	import { resolve } from '$app/paths';
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
@@ -149,29 +150,32 @@
 
 			{#if canEdit}
 				<div class="setup-stages__actions">
-					<button
-						type="button"
-						class="setup-stages__icon-button"
-						aria-label={`Move ${name} earlier`}
+					<Button
+						variant="secondary"
+						size="small"
+						iconOnly
+						label={`Move ${name} earlier`}
 						disabled={index === 0}
-						onclick={() => move(index, -1)}>{@html arrowUpIcon}</button
+						onclick={() => move(index, -1)}>{@html arrowUpIcon}</Button
 					>
-					<button
-						type="button"
-						class="setup-stages__icon-button"
-						aria-label={`Move ${name} later`}
+					<Button
+						variant="secondary"
+						size="small"
+						iconOnly
+						label={`Move ${name} later`}
 						disabled={index === stages.length - 1}
-						onclick={() => move(index, 1)}>{@html arrowDownIcon}</button
+						onclick={() => move(index, 1)}>{@html arrowDownIcon}</Button
 					>
-					<button
-						type="button"
-						class="setup-stages__icon-button setup-stages__icon-button--danger"
-						aria-label={stage.builtIn
+					<Button
+						variant="secondary"
+						variation="destructive"
+						size="small"
+						iconOnly
+						label={stage.builtIn
 							? `${name} holds built-in questions and cannot be removed`
 							: `Remove ${name}`}
-						title={stage.builtIn ? 'Holds built-in questions, so it cannot be removed' : undefined}
 						disabled={stage.builtIn || stages.length === 1}
-						onclick={() => remove(index)}>{@html trashIcon}</button
+						onclick={() => remove(index)}>{@html trashIcon}</Button
 					>
 				</div>
 			{/if}
@@ -306,48 +310,7 @@
 		&__actions {
 			display: flex;
 			flex: 0 0 auto;
-			gap: var(--space-smallest);
-		}
-
-		&__icon-button {
-			display: grid;
-			place-items: center;
-			width: 32px;
-			height: 32px;
-			padding: 0;
-			border: var(--border-base) solid transparent;
-			border-radius: var(--radius-base);
-			color: var(--color-icon--secondary);
-			background: none;
-			cursor: pointer;
-			transition: all var(--timing-quick) ease-out;
-
-			&:hover:not(:disabled),
-			&:focus-visible:not(:disabled) {
-				border-color: var(--color-border--interactive);
-				color: var(--color-interactive);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-
-			&:disabled {
-				color: var(--color-disabled);
-				cursor: not-allowed;
-			}
-
-			&--danger:hover:not(:disabled),
-			&--danger:focus-visible:not(:disabled) {
-				border-color: var(--color-critical);
-				color: var(--color-critical);
-			}
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
+			gap: var(--space-smaller);
 		}
 	}
 

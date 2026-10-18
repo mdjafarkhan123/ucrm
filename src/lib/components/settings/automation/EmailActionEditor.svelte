@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { tick } from 'svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import { AUTOMATION_EMAIL_VARIABLES } from '$lib/automation/email-variables';
@@ -96,14 +97,14 @@
 		<span class="email-editor__variables-label">Insert a value</span>
 		<div class="email-editor__variable-list">
 			{#each variables as variable (variable.token)}
-				<button
-					type="button"
-					class="email-editor__variable"
-					onmousedown={(event) => event.preventDefault()}
+				<Button
+					variant="secondary"
+					size="small"
+					onmousedown={(event: MouseEvent) => event.preventDefault()}
 					onclick={() => insertVariable(variable.token)}
 				>
 					{variable.label}
-				</button>
+				</Button>
 			{/each}
 		</div>
 		<p class="email-editor__hint">
@@ -138,32 +139,6 @@
 			display: flex;
 			flex-wrap: wrap;
 			gap: var(--space-small);
-		}
-
-		&__variable {
-			display: inline-flex;
-			align-items: center;
-			min-height: 32px;
-			padding: var(--space-smaller) var(--space-slim);
-			border: var(--border-base) solid var(--color-border--interactive);
-			border-radius: var(--radius-base);
-			color: var(--color-interactive);
-			background: var(--color-surface);
-			font: inherit;
-			font-weight: 600;
-			cursor: pointer;
-			transition: all var(--timing-base) ease-out;
-
-			&:hover,
-			&:focus-visible {
-				border-color: var(--color-interactive--hover);
-				color: var(--color-interactive--hover);
-				background: var(--color-surface--hover);
-			}
-			&:focus-visible {
-				outline: transparent;
-				box-shadow: var(--shadow-focus);
-			}
 		}
 
 		&__hint {

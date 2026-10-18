@@ -2,6 +2,7 @@
 	import { Time } from '@internationalized/date';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import Button from '$lib/components/ui/Button.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import TimePickerField from '$lib/components/ui/TimePickerField.svelte';
 	import { MAX_RANGES_PER_DAY, WEEKDAYS, type BookingHours } from '$lib/jafar/booking';
@@ -99,14 +100,16 @@
 									onchange={(time) => setTime(index, 'end', time)}
 								/>
 							</div>
-							<button
-								type="button"
-								class="weekly-hours__icon"
-								aria-label={`Remove ${day.name} ${range.start} to ${range.end}`}
-								onclick={() => removeRange(index)}
-							>
-								{@html trashIcon}
-							</button>
+							<span class="weekly-hours__icon">
+								<Button
+									variant="secondary"
+									iconOnly
+									label={`Remove ${day.name} ${range.start} to ${range.end}`}
+									onclick={() => removeRange(index)}
+								>
+									{@html trashIcon}
+								</Button>
+							</span>
 							{#if errors[index]}
 								<p class="weekly-hours__error" role="alert">{errors[index]}</p>
 							{/if}
@@ -114,14 +117,16 @@
 					{/each}
 				</div>
 				{#if ranges.length < MAX_RANGES_PER_DAY}
-					<button
-						type="button"
-						class="weekly-hours__icon weekly-hours__add"
-						aria-label={`Add another range on ${day.name}`}
-						onclick={() => addRange(day.value)}
-					>
-						{@html plusIcon}
-					</button>
+					<span class="weekly-hours__icon weekly-hours__add">
+						<Button
+							variant="secondary"
+							iconOnly
+							label={`Add another range on ${day.name}`}
+							onclick={() => addRange(day.value)}
+						>
+							{@html plusIcon}
+						</Button>
+					</span>
 				{/if}
 			{/if}
 		</li>
@@ -164,7 +169,7 @@
 	// The add button sits right after the ranges on wide screens, and beside the day's name on phones.
 	.weekly-hours__add {
 		justify-self: start;
-		margin-top: calc(var(--space-small) + (var(--space-largest) - 2.5rem) / 2);
+		margin-top: calc(var(--space-small) * 2 + var(--space-minuscule));
 
 		@media (max-width: 640px) {
 			justify-self: end;
@@ -246,31 +251,9 @@
 		color: var(--color-text--secondary);
 	}
 
+	// Holds the shared icon Button; it only places it.
 	.weekly-hours__icon {
-		display: inline-grid;
-		place-items: center;
-		width: 2.5rem;
-		height: 2.5rem;
-		padding: 0;
-		border: 0;
-		border-radius: var(--radius-base);
-		background: transparent;
-		color: var(--color-interactive--subtle);
-		cursor: pointer;
-
-		:global(svg) {
-			width: 1.25rem;
-			height: 1.25rem;
-		}
-
-		&:hover {
-			background: var(--color-interactive--background);
-		}
-
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
+		display: inline-flex;
 	}
 
 	.weekly-hours__error {

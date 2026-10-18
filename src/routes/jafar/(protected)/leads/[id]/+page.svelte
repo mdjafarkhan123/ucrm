@@ -815,12 +815,12 @@
 												>{APPLICATION_STAGE_LABELS[application.stage] ?? application.stage}</Badge
 											>
 										</div>
-										<button
-											type="button"
-											class="lead-page__icon-button"
-											aria-label={`Unlink ${application.business_name}'s Application`}
-											title="Unlink"
-											onclick={() => (unlinking = application)}>{@html unlinkIcon}</button
+										<Button
+											variant="secondary"
+											size="small"
+											iconOnly
+											label={`Unlink ${application.business_name}'s Application`}
+											onclick={() => (unlinking = application)}>{@html unlinkIcon}</Button
 										>
 									</li>
 								{/each}
@@ -1408,35 +1408,6 @@
 			span {
 				color: var(--color-text--secondary);
 				font-size: var(--typography--fontSize-small);
-			}
-		}
-
-		&__icon-button {
-			display: grid;
-			width: 32px;
-			height: 32px;
-			flex: none;
-			place-items: center;
-			padding: 0;
-			border: 0;
-			border-radius: var(--radius-base);
-			background: transparent;
-			color: var(--color-icon--secondary);
-			cursor: pointer;
-
-			&:hover {
-				background: var(--color-surface--hover);
-				color: var(--color-critical);
-			}
-
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
 			}
 		}
 

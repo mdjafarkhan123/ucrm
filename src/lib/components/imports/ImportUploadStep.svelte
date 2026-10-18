@@ -103,14 +103,15 @@
 						<b>{file.name}</b>
 						<span>{fileSize(file.size)}</span>
 					</span>
-					<button
-						type="button"
-						class="file-row__remove"
-						aria-label="Remove file"
+					<Button
+						variant="secondary"
+						size="small"
+						iconOnly
+						label="Remove file"
 						onclick={() => onFile(null)}
 					>
 						{@html xIcon}
-					</button>
+					</Button>
 				</div>
 			{:else}
 				<button
@@ -306,27 +307,6 @@
 			span {
 				font-size: var(--typography--fontSize-small);
 				color: var(--color-text--secondary);
-			}
-		}
-
-		&__remove {
-			flex: none;
-			border: none;
-			background: transparent;
-			color: var(--color-icon--secondary);
-			cursor: pointer;
-			padding: var(--space-smaller);
-			border-radius: var(--radius-small);
-			display: grid;
-			place-items: center;
-
-			&:hover {
-				background: var(--color-surface--hover);
-				color: var(--color-destructive);
-			}
-			:global(svg) {
-				width: 18px;
-				height: 18px;
 			}
 		}
 	}
