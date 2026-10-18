@@ -21,8 +21,8 @@ documents; Jafar logs in, uploads and confirms submits while Claude drives Chrom
 
 **Paused 2026-10-18:** Part 2 research and plan done and waiting on Jafar's three answers (replies after 24h, reconnect history, customer matching). Part 1b blocked by his main account's ad restriction; second account plan in `parts/1b-business-verification.md`. Random News admin confirmed.
 
-**Part 1b 2026-10-18 later:** portfolio exists on Jafar's 2nd account (details in the part note); verification SUBMITTED 2026-10-18, status In review (~2 business days). Next: admin access for the 2nd account on app Ucrm Messaging, link app to portfolio.
+**Part 1b 2026-10-18 later:** portfolio exists on Jafar's 2nd account (details in the part note); Business verification **VERIFIED** (seen in Business settings → Business info, dated Oct 18, 2026, checked live 2026-10-18). Not started: separate "Access verification" (Tech Provider), likely needed for Part 10 — confirm then.
 
 **Open 2026-10-18:** `META_APP_SECRET` in `.env` is still the OLD app's; Jafar must paste the new secret. Test Page needs to belong to / be accessible by the 2nd account.
 
-**Blockers:** Part 1b needs from Jafar: the exact business name, address and phone printed on the license. Merged into `main` 2026-10-18.
+**Blockers:** none for Part 1b verification. Still open: `META_APP_SECRET` (new app), test Page reachable from 2nd account. Part 2 waits for Jafar's three answers (he said "follow GHL"; GHL docs confirm only the 24h rule, reconnect and name-matching undocumented; awaiting his yes to the recommendations).

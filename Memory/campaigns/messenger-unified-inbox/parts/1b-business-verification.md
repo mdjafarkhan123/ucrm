@@ -63,6 +63,10 @@ the Chrome permission check blocks Claude from it, so Jafar presses Add himself.
 
 Business Verification for portfolio 855656587107152 (Jafar's 2nd account) submitted by Jafar on 2026-10-18: use case "App requires access to permissions on Meta for Developers", Sole Proprietorship, name UPLIFT CONTRACTOR, address as on the license (State Dhaka, 1344), phone +8801902316940, https://upliftcontractor.com/, Trade-License.pdf uploaded, email confirmed by code to info@upliftcontractor.com. Security Center shows **In review**, "about 2 business days". Never resubmit while In review. Remaining 1b steps: check status in Security Center around 2026-10-21; add 2nd account as admin of Ucrm Messaging (Jafar presses Add) and connect the app to the portfolio.
 
+## Verified 2026-10-18
+
+Checked live in Chrome (Business settings → Business info, portfolio 855656587107152): Business verification status **Verified**, Oct 18, 2026. The same page shows a separate **Access verification** (Tech Provider) with "Start verification", not started; it likely gates Part 10 (Advanced Access) — confirm then. "WhatsApp needs more information" is out of scope. `info@upliftcontractor.com` still shows "Pending confirmation" on the profile.
+
 ## Decision 2026-10-18: new app on the 2nd account
 
 Jafar dropped the first (restricted) account entirely. New app **Ucrm Messaging**, App ID **1709471683925717**, created by Jafar on the 2nd account
