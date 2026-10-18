@@ -32934,6 +32934,379 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "wgrYP",
+      "x": 7289,
+      "y": 4293,
+      "name": "Concept · Job details · Empty sections",
+      "width": 812,
+      "fill": "$color-surface-background",
+      "layout": "vertical",
+      "gap": 24,
+      "padding": 40,
+      "children": [
+        {
+          "type": "frame",
+          "id": "IjkH9",
+          "name": "Caption",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 4,
+          "children": [
+            {
+              "type": "text",
+              "id": "g3JxRH",
+              "name": "Title",
+              "fill": "$color-heading",
+              "content": "Empty sections",
+              "fontFamily": "$font-family",
+              "fontSize": 20,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "OTm7T",
+              "name": "Note",
+              "fill": "$color-text-secondary",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Same as Signatures: one quiet line where the content would be. The section's own button stays where it is today.",
+              "fontFamily": "$font-family",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "bai3a",
+          "name": "Instructions · empty",
+          "clip": true,
+          "width": "fill_container",
+          "fill": "$color-surface",
+          "cornerRadius": "$radius-large",
+          "stroke": "$color-border",
+          "strokeWidth": 1,
+          "layout": "vertical",
+          "children": [
+            {
+              "id": "UI3R4",
+              "type": "ref",
+              "ref": "hHVVU",
+              "name": "Header",
+              "width": "fill_container",
+              "descendants": {
+                "S2bkqw": {
+                  "fill": "$color-job-surface"
+                },
+                "M4w5I": {
+                  "icon": "clipboard-list",
+                  "fill": "$color-job"
+                },
+                "rdm2s": {
+                  "content": "Instructions"
+                },
+                "qXDmB": {
+                  "content": "The crew sees these on every visit"
+                },
+                "I1guOa": {
+                  "type": "frame",
+                  "id": "L04Yu",
+                  "name": "Actions",
+                  "gap": "$space-small",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "fFh8w",
+                      "name": "Actions",
+                      "gap": 6,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "h3zdU8",
+                          "type": "ref",
+                          "ref": "nIDZt",
+                          "name": "Edit instructions",
+                          "width": 32,
+                          "height": 32,
+                          "descendants": {
+                            "IW9bL": {
+                              "icon": "pencil"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "n4JZp",
+              "name": "Body",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": "$space-slim",
+              "padding": [
+                "$space-base",
+                "$space-medium",
+                "$space-medium",
+                "$space-medium"
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "ecXp8",
+                  "name": "Text",
+                  "fill": "$color-text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "No instructions yet. Use the pencil to add what the crew should read before this work.",
+                  "fontFamily": "$font-family",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "GV0aL",
+          "name": "Checklists · empty",
+          "clip": true,
+          "width": "fill_container",
+          "fill": "$color-surface",
+          "cornerRadius": "$radius-large",
+          "stroke": "$color-border",
+          "strokeWidth": 1,
+          "layout": "vertical",
+          "children": [
+            {
+              "id": "VhGQh",
+              "type": "ref",
+              "ref": "hHVVU",
+              "name": "Header",
+              "width": "fill_container",
+              "descendants": {
+                "S2bkqw": {
+                  "fill": "$color-time-surface"
+                },
+                "M4w5I": {
+                  "icon": "list-checks",
+                  "fill": "$color-time"
+                },
+                "rdm2s": {
+                  "content": "Checklists"
+                },
+                "qXDmB": {
+                  "content": "Filled in by the crew on each visit"
+                },
+                "I1guOa": {
+                  "type": "frame",
+                  "id": "AQYPA",
+                  "name": "Actions",
+                  "gap": "$space-small",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Ij8Hu",
+                      "name": "Actions",
+                      "gap": "$space-small",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "EjiS4",
+                          "type": "ref",
+                          "ref": "qpjlj",
+                          "name": "Add checklist",
+                          "height": 32,
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "gap": 6,
+                          "descendants": {
+                            "lDuWW": {
+                              "icon": "plus"
+                            },
+                            "Dpmda": {
+                              "content": "Add checklist",
+                              "fontSize": 13
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "HOX8c",
+              "name": "Body",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": "$space-slim",
+              "padding": [
+                "$space-base",
+                "$space-medium",
+                "$space-medium",
+                "$space-medium"
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "wH0yO",
+                  "name": "Text",
+                  "fill": "$color-text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "No checklists attached. Add one so every visit has the same questions to fill in.",
+                  "fontFamily": "$font-family",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "gEYp1",
+          "name": "Work report · empty",
+          "clip": true,
+          "width": 360,
+          "fill": "$color-surface",
+          "cornerRadius": "$radius-large",
+          "stroke": "$color-border",
+          "strokeWidth": 1,
+          "layout": "vertical",
+          "children": [
+            {
+              "id": "QYUV5",
+              "type": "ref",
+              "ref": "hHVVU",
+              "name": "Header",
+              "width": "fill_container",
+              "padding": [
+                14,
+                "$space-base"
+              ],
+              "descendants": {
+                "S2bkqw": {
+                  "fill": "$color-job-surface"
+                },
+                "M4w5I": {
+                  "icon": "file-check",
+                  "fill": "$color-job"
+                },
+                "rdm2s": {
+                  "content": "Work report"
+                },
+                "qXDmB": {
+                  "content": "What the customer sees"
+                },
+                "I1guOa": {
+                  "type": "frame",
+                  "id": "KfBLC",
+                  "name": "Actions",
+                  "width": "fit_content(119)",
+                  "height": "fit_content(21)",
+                  "gap": "$space-small",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "VqGe6",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Actions",
+                      "enabled": false,
+                      "gap": 6,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "YARAf",
+                          "type": "ref",
+                          "ref": "z1I4U",
+                          "name": "Pill",
+                          "fill": "$color-success-surface",
+                          "descendants": {
+                            "rMF3l": {
+                              "fill": "$color-success"
+                            },
+                            "MPxz7": {
+                              "content": "Ready to share",
+                              "fill": "$color-success-on-surface"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "YP6JB",
+              "name": "Body",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": "$space-slim",
+              "padding": [
+                14,
+                "$space-base",
+                "$space-base",
+                "$space-base"
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "JGA1g",
+                  "name": "Text",
+                  "fill": "$color-text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "No work report yet. Choose photos, checklist answers or the work list to share.",
+                  "fontFamily": "$font-family",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "id": "TBlrt",
+                  "type": "ref",
+                  "ref": "qpjlj",
+                  "name": "Edit report",
+                  "width": "fill_container",
+                  "height": 32,
+                  "padding": [
+                    0,
+                    12
+                  ],
+                  "gap": 6,
+                  "descendants": {
+                    "lDuWW": {
+                      "icon": "pencil"
+                    },
+                    "Dpmda": {
+                      "content": "Edit report",
+                      "fontSize": 13
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "themes": {
