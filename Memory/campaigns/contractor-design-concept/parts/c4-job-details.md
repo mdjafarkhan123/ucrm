@@ -59,5 +59,12 @@ Note: code `--typography--fontSize-large` is 15px but Pencil `font-size-large` i
 
 ## Next
 
-Jafar reviews the changes above (frame `hdOUv`, edit mode `jFBRB`, Home `rKrbu`, Jobs list `t8ULdJ`). On his yes, record approval
-and date here, set C4 approved in NOW and the roadmap.
+Session paused 2026-10-18 by Jafar ("this session ends here").
+1. If `git status` shows `concept.pen` modified, commit it first (the 13:00 save was committed; later edits —
+   one-page order, Money divider, bigger titles/tiles — land only once Jafar saves again in Pencil).
+2. Ask Jafar, word for word as left: "Should Home and the Jobs list get the same bigger titles and icons?" and
+   which of review points 2–7 to do, and whether the right column stays in view on scroll.
+3. On his yes, record C4 approval here (with date) and in NOW/ROADMAP.
+4. Then the next screen: **New job** (one form: title, client + property, Products edit block = `jFBRB`, Visits
+   edit with one-off/recurring, Billing reminder, Job total; Cancel / Save job). Live: `src/routes/(app)/jobs/new/
+   +page.svelte` → `src/lib/components/jobs/JobForm.svelte`. Research Jobber's New job first.

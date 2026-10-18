@@ -5,7 +5,7 @@
 **Stage:** Designing. C1 Foundation, C2 Home and C3 Jobs list approved; buttons and the Jobs list built.
 
 **Next:**
-1. **C4 Job details** — Jafar answered the review 2026-10-18; changes drawn, waiting for his yes (`parts/c4-job-details.md`, frame `hdOUv`).
+1. **C4 Job details** — reviewed with Jafar 2026-10-18; all his changes drawn (`parts/c4-job-details.md` § Next has the open questions). Approval next, then **New job**.
 2. Jafar reads the redesign checklist (`stages/list-index.md`) and confirms the order and pop-up marks: `parts/c5a-redesign-checklist.md`.
 
 **Done 2026-10-18:** buttons everywhere (`parts/c1e-buttons-everywhere.md` lists what is left), Foundation sizes named, C2 Home (`parts/c2-home.md`), C3 Jobs list (`parts/c3-jobs-list.md`).
