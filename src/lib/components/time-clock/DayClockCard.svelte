@@ -47,7 +47,10 @@
 		<LoadingSkeleton variant="heading" label="Loading your day clock" />
 	</div>
 {:else if timerQuery.isError}
-	<section class={['day-clock', feature && 'day-clock--feature']} aria-labelledby="day-clock-heading">
+	<section
+		class={['day-clock', feature && 'day-clock--feature']}
+		aria-labelledby="day-clock-heading"
+	>
 		{#if feature}
 			<span class="day-clock__tile" aria-hidden="true">{@html clockIcon}</span>
 		{:else}
@@ -61,7 +64,10 @@
 		</div>
 	</section>
 {:else if mine && (mine.can_time || timer)}
-	<section class={['day-clock', feature && 'day-clock--feature']} aria-labelledby="day-clock-heading">
+	<section
+		class={['day-clock', feature && 'day-clock--feature']}
+		aria-labelledby="day-clock-heading"
+	>
 		{#if feature}
 			<span class="day-clock__tile" aria-hidden="true">{@html clockIcon}</span>
 		{:else}
@@ -313,6 +319,9 @@
 			}
 			:global(.running-clock__pulse) {
 				display: none;
+			}
+			:global(.running-clock *) {
+				color: inherit;
 			}
 		}
 		.day-clock__on {

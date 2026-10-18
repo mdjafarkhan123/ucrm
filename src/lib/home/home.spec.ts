@@ -132,7 +132,13 @@ describe('buildHomeSchedule', () => {
 		expect(result.today[1].length).toBe('1.5 hr');
 		expect(result.today[2].timeTop).toBe('Anytime');
 		expect(result.today[1].work).toBe('Decking install');
-		expect(result.counts).toMatchObject({ total: 3, completed: 1, todo: 2, late: 1, unassigned: 0 });
+		expect(result.counts).toMatchObject({
+			total: 3,
+			completed: 1,
+			todo: 2,
+			late: 1,
+			unassigned: 0
+		});
 		expect(result.lastEndMinutes).toBe(13.5 * 60);
 	});
 

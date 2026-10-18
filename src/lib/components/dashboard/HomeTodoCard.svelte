@@ -231,7 +231,7 @@
 			align-items: center;
 			gap: var(--space-slim);
 			min-height: 52px;
-			padding: 0 10px 0 12px;
+			padding: var(--space-small) 10px var(--space-small) 12px;
 			border-radius: var(--radius-base);
 			color: inherit;
 			text-decoration: none;
@@ -276,12 +276,9 @@
 			}
 		}
 		&__meta {
-			overflow: hidden;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 			font-variant-numeric: tabular-nums;
-			text-overflow: ellipsis;
-			white-space: nowrap;
 		}
 
 		&__count {

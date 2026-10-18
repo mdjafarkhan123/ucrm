@@ -4,7 +4,7 @@ Key, tick rule and coverage command: `list-index.md`.
 
 | Piece | Inside it | Pencil | Built |
 | --- | --- | --- | --- |
-| `(app)/dashboard` | `dashboard/FieldWorkerHome`, `dashboard/HomeCardState`, `dashboard/HomeMoneyOwedCard`, `dashboard/HomePerformanceCard`, `dashboard/HomeScheduleCard`, `dashboard/HomeTodoCard`, `dashboard/ReadinessCard`, `dashboard/SetupCard`, `time-clock/DayClockCard` · loading, field-worker view, owner view | ✅ | ⬜ |
+| `(app)/dashboard` | `dashboard/FieldWorkerHome`, `dashboard/HomeCardState`, `dashboard/HomeMoneyOwedCard`, `dashboard/HomePerformanceCard`, `dashboard/HomeScheduleCard`, `dashboard/HomeTodayCard`, `dashboard/HomeTodoCard`, `dashboard/ReadinessCard`, `dashboard/SetupCard`, `time-clock/DayClockCard` · loading, field-worker view, owner view | ✅ | ✅ owner view (2026-10-18); field-worker view not drawn |
 | `(app)/schedule` | `schedule/AssessmentCard`, `schedule/AssessmentPreview`, `schedule/EventCard`, `schedule/EventPreview`, `schedule/MoveConfirm`, `schedule/RouteMap`, `schedule/RouteStopCard`, `schedule/ScheduleControls`, `schedule/ScheduleDay`, `schedule/ScheduleItemCard`, `schedule/ScheduleJobCreate`, `schedule/ScheduleLegend`, `schedule/ScheduleMonth`, `schedule/SchedulePreviewFacts`, `schedule/ScheduleRoute`, `schedule/ScheduleUnscheduledDrawer`, `schedule/ScheduleWeek`, `schedule/TaskCard`, `schedule/VisitCard`, `schedule/VisitPreview` · pop-ups: "Delete this event?" 🔁C, "Move to Unscheduled?" 🔁C, "Whose route?" 🔁C, "form" ◆ · menus ×2 · loading | ⬜ | ⬜ |
 | ↳ `schedule/ScheduleEventDialog` | ◆ pop-up | ⬜ | ⬜ |
 | ↳ "form" pop-up in ScheduleJobCreate | | ⬜ | ⬜ |

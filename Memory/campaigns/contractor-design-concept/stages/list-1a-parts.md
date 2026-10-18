@@ -39,6 +39,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/Toggle` |  | ⬜ | ⬜ |
 | `files/FileThumb` |  | ⬜ | ⬜ |
 | `ui/Card` |  | ✅ | ⬜ |
+| `ui/CardHeader` | Pencil "Card header"; on every Home card so far | ✅ | ✅ |
 | `ui/TimePicker` |  | ⬜ | ⬜ |
 | `ui/PencilButton` |  | ⬜ | ⬜ |
 | `forms/MoneyInput` |  | ⬜ | ⬜ |

@@ -94,7 +94,8 @@
 				{:else if summary.delivery.state === 'sent'}
 					Sent to Uplift on {new Date(summary.delivery.submitted_at).toLocaleDateString(undefined, {
 						dateStyle: 'long'
-					})}. Uplift is checking it; your 7–10 business-day build starts once Uplift has accepted it.
+					})}. Uplift is checking it; your 7–10 business-day build starts once Uplift has accepted
+					it.
 				{:else}
 					Not sent to Uplift yet. Your 7–10 business-day build starts once Uplift has accepted your
 					setup.
@@ -108,7 +109,7 @@
 				role="img"
 				aria-label="{summary.progress.done} of {summary.progress.total} setup tasks done"
 			>
-				{#each Array(summary.progress.total) as _, index (index)}
+				{#each Array.from({ length: summary.progress.total }, (_, step) => step) as index (index)}
 					<span
 						class={['setup-card__step', index < summary.progress.done && 'setup-card__step--done']}
 					></span>

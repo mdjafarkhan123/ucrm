@@ -12,9 +12,7 @@ export const LATE_LOOKBACK_DAYS = 14;
 
 export type HomeScheduleStatus = 'completed' | 'todo' | 'late';
 export type HomeScheduleRoute =
-	| { page: 'job'; id: string }
-	| { page: 'request'; id: string }
-	| { page: 'pipeline' };
+	{ page: 'job'; id: string } | { page: 'request'; id: string } | { page: 'pipeline' };
 
 export type HomeScheduleRow = {
 	key: string;
@@ -88,9 +86,11 @@ function lateTile(day: string): { top: string; bottom: string } {
 	const date = new Date(`${day}T00:00:00Z`);
 	return {
 		top: new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'UTC' }).format(date),
-		bottom: new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(
-			date
-		)
+		bottom: new Intl.DateTimeFormat('en-GB', {
+			day: 'numeric',
+			month: 'short',
+			timeZone: 'UTC'
+		}).format(date)
 	};
 }
 

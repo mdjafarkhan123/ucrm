@@ -35,23 +35,58 @@ export type TodoColumn = {
 type LineSpec = { key: string; label: string; hint: string; tone: TodoTone };
 
 const REQUEST_LINES: LineSpec[] = [
-	{ key: 'needs_approval', label: 'Needs approval', hint: 'Website bookings to confirm', tone: 'warning' },
+	{
+		key: 'needs_approval',
+		label: 'Needs approval',
+		hint: 'Website bookings to confirm',
+		tone: 'warning'
+	},
 	{ key: 'new', label: 'New', hint: 'Not looked at yet', tone: 'neutral' },
-	{ key: 'assessment_completed', label: 'Assessment complete', hint: 'Ready to quote', tone: 'neutral' }
+	{
+		key: 'assessment_completed',
+		label: 'Assessment complete',
+		hint: 'Ready to quote',
+		tone: 'neutral'
+	}
 ];
 const QUOTE_LINES: LineSpec[] = [
 	{ key: 'approved', label: 'Approved', hint: 'Ready to become a job', tone: 'success' },
-	{ key: 'changes_requested', label: 'Changes requested', hint: 'Customer asked for edits', tone: 'warning' },
+	{
+		key: 'changes_requested',
+		label: 'Changes requested',
+		hint: 'Customer asked for edits',
+		tone: 'warning'
+	},
 	{ key: 'draft', label: 'Draft', hint: 'Not sent yet', tone: 'neutral' }
 ];
 const JOB_LINES: LineSpec[] = [
-	{ key: 'requires_invoicing', label: 'Requires invoicing', hint: 'Work done, not billed yet', tone: 'warning' },
-	{ key: 'action_required', label: 'Action required', hint: 'No upcoming visit booked', tone: 'critical' },
-	{ key: 'ending_soon', label: 'Ending soon', hint: 'Recurring, ends within 30 days', tone: 'neutral' }
+	{
+		key: 'requires_invoicing',
+		label: 'Requires invoicing',
+		hint: 'Work done, not billed yet',
+		tone: 'warning'
+	},
+	{
+		key: 'action_required',
+		label: 'Action required',
+		hint: 'No upcoming visit booked',
+		tone: 'critical'
+	},
+	{
+		key: 'ending_soon',
+		label: 'Ending soon',
+		hint: 'Recurring, ends within 30 days',
+		tone: 'neutral'
+	}
 ];
 const INVOICE_LINES: LineSpec[] = [
 	{ key: 'draft', label: 'Draft', hint: 'Not sent yet', tone: 'neutral' },
-	{ key: 'awaiting_payment', label: 'Awaiting payment', hint: 'Sent, not due yet', tone: 'informative' },
+	{
+		key: 'awaiting_payment',
+		label: 'Awaiting payment',
+		hint: 'Sent, not due yet',
+		tone: 'informative'
+	},
 	{ key: 'past_due', label: 'Past due', hint: 'Past the due date', tone: 'critical' }
 ];
 
@@ -103,7 +138,11 @@ export function buildTodoColumns(
 		const money = invoiceTodoMoney(data.invoices);
 		columns.push(
 			column('invoices', 'Invoices', INVOICE_LINES, data.invoices?.counts, (spec) =>
-				spec.key === 'awaiting_payment' ? money.awaiting : spec.key === 'past_due' ? money.pastDue : null
+				spec.key === 'awaiting_payment'
+					? money.awaiting
+					: spec.key === 'past_due'
+						? money.pastDue
+						: null
 			)
 		);
 	}

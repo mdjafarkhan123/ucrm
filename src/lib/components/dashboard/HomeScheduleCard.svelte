@@ -291,10 +291,6 @@
 			&--late {
 				border: var(--border-base) solid var(--color-critical--surface);
 				border-radius: var(--radius-base);
-
-				> li + li {
-					border-top-color: var(--color-critical--surface);
-				}
 			}
 		}
 
@@ -412,6 +408,16 @@
 			border-radius: var(--radius-circle);
 			box-shadow: 0 0 0 2px var(--color-surface);
 
+			/* People wear the one person colour here, not a colour each. */
+			:global(.avatar) {
+				width: 28px;
+				height: 28px;
+				color: var(--color-client--onSurface);
+				background: var(--color-client--surface);
+				font-size: var(--typography--fontSize-overline);
+				font-weight: 700;
+			}
+
 			& + & {
 				margin-left: -6px;
 			}
@@ -441,7 +447,8 @@
 
 		&__status {
 			display: flex;
-			flex: 0 0 120px;
+			flex: 0 0 104px;
+			justify-content: flex-end;
 		}
 	}
 

@@ -111,7 +111,11 @@
 				</p>
 			</div>
 			<div class="home-owed__ageing">
-				<div class="home-owed__bar" role="img" aria-label="Money owed by how late it is: {barLabel}">
+				<div
+					class="home-owed__bar"
+					role="img"
+					aria-label="Money owed by how late it is: {barLabel}"
+				>
 					{#if owed.not_due_minor > 0}
 						<span
 							class="home-owed__segment home-owed__segment--current"
@@ -126,14 +130,15 @@
 				<dl class="home-owed__key">
 					<div>
 						<dt>
-							<span class="home-owed__dot home-owed__segment--current" aria-hidden="true"></span>Not yet
-							due
+							<span class="home-owed__dot home-owed__segment--current" aria-hidden="true"></span>Not
+							yet due
 						</dt>
 						<dd>{money(owed.not_due_minor)}</dd>
 					</div>
 					<div>
 						<dt>
-							<span class="home-owed__dot home-owed__segment--overdue" aria-hidden="true"></span>Overdue
+							<span class="home-owed__dot home-owed__segment--overdue" aria-hidden="true"
+							></span>Overdue
 						</dt>
 						<dd>{money(overdue)}</dd>
 					</div>
@@ -152,8 +157,9 @@
 									<span class="home-owed__who">
 										<strong>{clientName(invoice)}</strong>
 										<span
-											><span class="home-owed__late">{days} {days === 1 ? 'day' : 'days'} late</span> ·
-											Invoice #{invoice.invoice_number}</span
+											><span class="home-owed__late">{days} {days === 1 ? 'day' : 'days'} late</span
+											>
+											· Invoice #{invoice.invoice_number}</span
 										>
 									</span>
 									<span class="home-owed__amount">{money(invoice.remaining_minor ?? 0)}</span>

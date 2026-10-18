@@ -304,12 +304,7 @@
 {:else}
 	<div class="page-scroller">
 		<PageContainer variant="open">
-			<HomeTodayCard
-				date={dateLine}
-				{greeting}
-				summary={daySummary}
-				showClock={hasOrganization}
-			/>
+			<HomeTodayCard date={dateLine} {greeting} summary={daySummary} showClock={hasOrganization} />
 
 			{#if hasOrganization}
 				<div class="home">

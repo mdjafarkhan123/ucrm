@@ -48,12 +48,7 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <section class="home-performance" aria-labelledby="{uid}-title">
-	<CardHeader
-		id="{uid}-title"
-		title="Business performance"
-		icon={trendingUpIcon}
-		tone="growth"
-	/>
+	<CardHeader id="{uid}-title" title="Business performance" icon={trendingUpIcon} tone="growth" />
 	<div class="home-performance__body">
 		{#each metrics as metric (metric.key)}
 			{@const delta = change(metric)}

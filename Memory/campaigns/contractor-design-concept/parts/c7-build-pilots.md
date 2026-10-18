@@ -27,6 +27,17 @@ the Pencil tidy-up in `docs/pencil-workflow.md` step 6 is done.
 - New tokens go into `_variables.scss`, Pencil and the design skill in one commit.
 - Work in a temporary branch and worktree, claimed (`docs/agent-concurrency.md`); type check once at the end.
 
+## Home — built 2026-10-18
+
+Matches `rKrbu` side by side at 1440 light, dark and 1100; Clock in/out pressed live (loading, no double
+press). New shared part `ui/CardHeader`; `ui/StatusBadge` gained `size="small"` (the concept pill);
+`--radius-circle` is 999px like Pencil. Field-worker Home keeps today's look (not drawn).
+
+**Left out, need data the app lacks** (all in the approved Home plan; Jafar to decide when to build):
+"In progress" on the schedule, money per schedule row and in the schedule hint, money on Quotes and Jobs To do
+lines and their card hints, "Upcoming work" in Business performance. Also: Money owed shows not-due/overdue
+only (the 1–30… buckets stay in the bar's spoken label); the setup strip keeps today's delivery line.
+
 ## Next
 
-Start Home: read `parts/c2-home.md`, screenshot `rKrbu`, read the live dashboard components, build, compare.
+Build Job details: read `parts/c4-job-details.md`, screenshot `tNdkX` and `jFBRB`, reuse `ui/CardHeader`.
