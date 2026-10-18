@@ -13,7 +13,6 @@
 	// Its sibling is `RecordFormLayout`, the shell for full-page create forms, whose action bar is always
 	// visible because that whole page is one form.
 	let {
-		header,
 		main,
 		rail,
 		editing = false,
@@ -29,8 +28,6 @@
 		concept = false,
 		class: className = ''
 	}: {
-		/** The record's header card, full width above both columns (the concept look). */
-		header?: Snippet;
 		main: Snippet;
 		rail?: Snippet;
 		/** True while a block is open for editing, changed or not, so Cancel is always within reach. */
@@ -48,7 +45,7 @@
 		 *  rail beside them, instead of one white sheet holding bordered blocks. Other record pages keep
 		 *  the sheet until they are converted. */
 		cards?: boolean;
-		/** The concept look (Job details `tNdkX`): a 360px rail and 24px between every card. Needs `cards`. */
+		/** The concept look (Job details `tNdkX`): 24px between every card. Needs `cards`. */
 		concept?: boolean;
 		class?: string;
 	} = $props();
@@ -59,9 +56,6 @@
 	class:record-detail--cards={cards}
 	class:record-detail--concept={concept}
 >
-	{#if header}
-		<div class="record-detail__header">{@render header()}</div>
-	{/if}
 	<div class="record-detail__grid scroll-y-auto" class:record-detail__grid--no-rail={!rail}>
 		<div class="record-detail__main scroll-y-auto">{@render main()}</div>
 		{#if rail}
@@ -157,21 +151,10 @@
 		}
 	}
 
-	// Concept look: the header card spans both columns, then a 24px gap, then the columns.
-	.record-detail--concept {
+	// Concept look: 24px between every card in the main column. The rail keeps the App look's 336px, so
+	// the header card at the top of the main column has room for its Request → Paid strip.
+	.record-detail--concept .record-detail__main {
 		gap: var(--space-large);
-
-		.record-detail__grid {
-			grid-template-columns: minmax(0, 1fr) 360px;
-
-			&--no-rail {
-				grid-template-columns: minmax(0, 1fr);
-			}
-		}
-
-		.record-detail__main {
-			gap: var(--space-large);
-		}
 	}
 
 	@media (max-width: 1079px) {
