@@ -421,4 +421,32 @@
 		font-size: var(--typography--fontSize-small);
 		text-align: center;
 	}
+
+	// Concept look (design skill `inputs.md`): inside a `.concept-fields` area the label sits above a 40px box.
+	:global(.concept-fields) .catalog-picker {
+		.catalog-picker__label,
+		&:focus-within .catalog-picker__label,
+		&.catalog-picker--has-value .catalog-picker__label {
+			position: static;
+			display: block;
+			max-width: none;
+			margin-bottom: 6px;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 600;
+			transform: none;
+			transition: none;
+		}
+		.catalog-picker__control {
+			min-height: 40px;
+		}
+		.catalog-picker__control :global(input),
+		&:focus-within .catalog-picker__control :global(input),
+		&.catalog-picker--has-value .catalog-picker__control :global(input) {
+			padding: calc(var(--space-small) + 1px) var(--space-slim);
+		}
+		.catalog-picker__control:hover:not(:focus-within) {
+			border-color: var(--color-border--section);
+		}
+	}
 </style>

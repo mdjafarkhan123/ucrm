@@ -2,10 +2,11 @@
 
 **Goal:** A new design concept for the whole app, drawn in `concept.pen` from the app's own variables: design → review → approve → build.
 **Core agreement — read on every resume:** `docs/contractor-design-concept-behavior-contract.md` (Summary, First version, Not doing, decisions) and the design skill `.claude/skills/design/SKILL.md` with its modules.
-**Stage:** Building, screen by screen (Jafar 2026-10-18). Approved: C1 Foundation, C2 Home, C3 Jobs list, C4 Job details, C5 New job. Built: buttons, Jobs list, Home, Job details page (leftovers in `parts/c7-build-pilots.md`).
+**Stage:** Building, screen by screen (Jafar 2026-10-18). Approved: C1 Foundation, C2 Home, C3 Jobs list, C4 Job details, C5 New job. Built: buttons, Jobs list, Home, Job details page and its edit mode (leftovers in `parts/c7-build-pilots.md`).
 
 **Next:**
-1. Start with Claude's decisions (Jafar left them to Claude, 2026-10-18): `DropdownMenu` default icon "…" app-wide; darken `Avatar` colours in dark mode; commit `concept.pen` alone once saved. Then build the Products edit mode `jFBRB` (New job reuses it), then **build New job**, one session each: `parts/c7-build-pilots.md` (Home's left-out data listed there).
+1. **Build New job**, one session: `parts/c7-build-pilots.md`; it reuses the Job details edit block.
+   If `concept.pen` is unsaved, ask Jafar for Ctrl+S.
 2. Then draw Schedule (`stages/list-2a-daily.md`).
 3. Jafar reads the redesign checklist (`stages/list-index.md`) and confirms the order and pop-up marks: `parts/c5a-redesign-checklist.md`.
 

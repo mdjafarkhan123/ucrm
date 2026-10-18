@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
 	import type { Snippet } from 'svelte';
-	import dotsIcon from '@tabler/icons/outline/dots-vertical.svg?raw';
+	import dotsIcon from '@tabler/icons/outline/dots.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 	import Button from './Button.svelte';
 

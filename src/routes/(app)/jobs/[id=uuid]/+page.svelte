@@ -20,8 +20,7 @@
 	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
 	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
-	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
-	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
+	import PricingAdjustmentsPanel from '$lib/components/work/PricingAdjustmentsPanel.svelte';
 	import JobBillingCard from '$lib/components/jobs/JobBillingCard.svelte';
 	import JobRemindersCard from '$lib/components/jobs/JobRemindersCard.svelte';
 	import JobVisitsToBillCard from '$lib/components/jobs/JobVisitsToBillCard.svelte';
@@ -124,6 +123,10 @@
 	let reportHasContent = $state(false);
 	let discountDraft = $state<JobDiscountInput | null>(null);
 	let taxDraft = $state<JobTaxInput | null>(null);
+	// A discount or tax typed in the edit panel that would be refused, so the one Save waits for a fix.
+	let discountInvalid = $state(false);
+	let taxInvalid = $state(false);
+	let showPricingErrors = $state(false);
 
 	const editable = $derived(Boolean(saved?.can_edit));
 	// Google review Part 3: closed jobs where work was done, and ongoing recurring jobs once a visit is done.
@@ -362,11 +365,23 @@
 	// The block speaks the quote's dialect — `catalog_item_id`, optional add-on fields — so the job's own
 	// column name is put back here. A job carries no headings or notes, so anything that is not a priced
 	// line is dropped rather than sent to a command that would refuse it.
+	function resetPricingDrafts() {
+		discountDraft = null;
+		taxDraft = null;
+		discountInvalid = false;
+		taxInvalid = false;
+		showPricingErrors = false;
+	}
+
 	async function saveScope(
 		expectedRevision: number,
 		lines: RequestPricingLineInput[],
 		linesChanged: boolean
 	) {
+		if (discountInvalid || taxInvalid) {
+			showPricingErrors = true;
+			throw { message: `Fix the ${discountInvalid ? 'discount' : 'tax'} before saving.` };
+		}
 		const scope: JobScopeLineInput[] = lines
 			.filter((line) => (line.line_kind ?? 'priced') === 'priced')
 			.map((line, index) => ({
@@ -390,8 +405,7 @@
 			...(discountDraft ? { discount: discountDraft } : {}),
 			...(taxDraft ? { tax: taxDraft } : {})
 		});
-		discountDraft = null;
-		taxDraft = null;
+		resetPricingDrafts();
 		await refreshJob();
 	}
 
@@ -714,62 +728,42 @@
 					concept
 					flush
 					totalRows={saved.can_see_price && saved.money ? pricingTotalRows(saved.money) : undefined}
-					onEditStart={() => {
-						discountDraft = null;
-						taxDraft = null;
-					}}
-					onEditCancel={() => {
-						discountDraft = null;
-						taxDraft = null;
-					}}
+					pendingChanges={Boolean(discountDraft || taxDraft) || discountInvalid || taxInvalid}
+					onEditStart={resetPricingDrafts}
+					onEditCancel={resetPricingDrafts}
 					onSave={saveScope}
 				>
-					{#snippet pricingControls()}
-						<RecordDiscountCard
-							revision={saved.job.revision}
-							name={discountDraft?.name ?? saved.money?.discount_name ?? null}
-							type={discountDraft ? discountDraft.type : (saved.money?.discount_type ?? null)}
-							value={discountDraft ? discountDraft.value : (saved.money?.discount_value ?? null)}
-							currencyCode={saved.job.currency_code}
-							locale={saved.locale}
-							{editable}
-							canSeePrice={saved.can_see_price}
-							recordNoun="job"
-							staged
-							embedded
-							onSave={async (_revision, payload) => {
-								discountDraft = payload;
-							}}
-							onSaved={() => {}}
-						/>
-						{#if saved.job.property}
-							<RecordTaxCard
-								revision={saved.job.revision}
-								propertyId={saved.job.property.id}
-								taxSource={(taxDraft?.source ??
-									saved.money?.tax_source ??
-									'not_configured') as QuoteTaxSource}
-								rateId={taxDraft ? (taxDraft.rate_id ?? null) : (saved.money?.tax_rate_id ?? null)}
-								name={taxDraft
-									? (taxDraft.custom_name ?? saved.money?.tax_name ?? null)
-									: (saved.money?.tax_name ?? null)}
-								rateBasisPoints={taxDraft?.custom_rate_basis_points ??
-									saved.money?.tax_rate_basis_points ??
-									0}
-								taxMinor={saved.money?.tax_minor ?? 0}
+					{#snippet conceptTotals({ linesChanged })}
+						{#if saved.money}
+							<PricingAdjustmentsPanel
+								discount={{
+									name: saved.money.discount_name,
+									type: saved.money.discount_type,
+									value: saved.money.discount_value
+								}}
+								tax={{
+									source: saved.money.tax_source as QuoteTaxSource,
+									rateId: saved.money.tax_rate_id,
+									name: saved.money.tax_name,
+									rateBasisPoints: saved.money.tax_rate_basis_points
+								}}
+								propertyId={saved.job.property?.id ?? null}
+								canManageTaxes={saved.can_manage_taxes}
+								discountMinor={saved.money.discount_minor}
+								taxMinor={saved.money.tax_minor}
+								totalMinor={saved.money.total_minor}
+								{linesChanged}
+								showErrors={showPricingErrors}
 								currencyCode={saved.job.currency_code}
 								locale={saved.locale}
-								{editable}
-								canSeePrice={saved.can_see_price}
-								canManageTaxes={saved.can_manage_taxes}
-								recordNoun="job"
-								staged
-								embedded
-								unsetHint="This job is not taxed yet."
-								onSave={async (_revision, payload) => {
-									taxDraft = payload;
+								onDiscountChange={(result) => {
+									discountInvalid = Boolean(result?.fieldErrors);
+									discountDraft = result?.payload ?? null;
 								}}
-								onSaved={() => {}}
+								onTaxChange={(result) => {
+									taxInvalid = Boolean(result?.fieldErrors);
+									taxDraft = result?.payload ?? null;
+								}}
 							/>
 						{/if}
 					{/snippet}

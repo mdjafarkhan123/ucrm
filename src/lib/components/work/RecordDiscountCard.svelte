@@ -10,6 +10,11 @@
 	import MoneyInput from '$lib/components/forms/MoneyInput.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import type { QuoteDiscountType, QuoteWriteError } from '$lib/quotes/api';
+	import {
+		checkDiscount,
+		discountDraftFrom,
+		type DiscountPayload
+	} from '$lib/work/pricing-adjustments';
 	import discountIcon from '@tabler/icons/outline/discount.svg?raw';
 	import tagIcon from '@tabler/icons/outline/tag.svg?raw';
 
@@ -58,10 +63,7 @@
 		/** App look: draw one row to sit inside a shared "Discount and tax" card instead of a card. */
 		embedded?: boolean;
 		/** Writes the discount against the revision it is handed. */
-		onSave: (
-			revision: number,
-			payload: { name: string | null; type: QuoteDiscountType | null; value: number | null }
-		) => Promise<unknown>;
+		onSave: (revision: number, payload: DiscountPayload) => Promise<unknown>;
 		onSaved: (result: unknown) => Promise<void> | void;
 	} = $props();
 
@@ -88,10 +90,11 @@
 	let fieldErrors = $state<Record<string, string>>({});
 
 	function openDialog() {
-		draftName = name ?? 'Discount';
-		draftType = type ?? 'percentage';
-		draftFixed = type === 'fixed' ? (value ?? 0) : 0;
-		draftPercent = type === 'percentage' ? ((value ?? 0) / 100).toString() : '';
+		const draft = discountDraftFrom(name, type, value);
+		draftName = draft.name;
+		draftType = draft.type;
+		draftFixed = draft.fixed;
+		draftPercent = draft.percent;
 		error = '';
 		fieldErrors = {};
 		open = true;
@@ -102,11 +105,7 @@
 		open = false;
 	}
 
-	async function write(payload: {
-		name: string | null;
-		type: QuoteDiscountType | null;
-		value: number | null;
-	}) {
+	async function write(payload: DiscountPayload) {
 		if (saving) return;
 		saving = true;
 		error = '';
@@ -133,24 +132,17 @@
 	}
 
 	function save() {
-		if (draftType === 'percentage') {
-			const parsed = Number(draftPercent);
-			if (!Number.isFinite(parsed) || parsed <= 0 || parsed > 100) {
-				fieldErrors = { value: 'Enter a percentage between 0 and 100.' };
-				return;
-			}
-			void write({
-				name: draftName.trim() || null,
-				type: 'percentage',
-				value: Math.round(parsed * 100)
-			});
+		const checked = checkDiscount({
+			name: draftName,
+			type: draftType,
+			percent: draftPercent,
+			fixed: draftFixed
+		});
+		if (checked.fieldErrors) {
+			fieldErrors = checked.fieldErrors;
 			return;
 		}
-		if (draftFixed <= 0) {
-			fieldErrors = { value: 'Enter an amount above zero.' };
-			return;
-		}
-		void write({ name: draftName.trim() || null, type: 'fixed', value: draftFixed });
+		void write(checked.payload);
 	}
 </script>
 

@@ -13,6 +13,13 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import type { QuoteTaxSource, QuoteWriteError } from '$lib/quotes/api';
 	import { fetchTaxPicker, taxPickerKey } from '$lib/settings/api';
+	import {
+		checkTax,
+		percentText,
+		taxDraftFrom,
+		taxSourceOptions,
+		type TaxPayload
+	} from '$lib/work/pricing-adjustments';
 	import taxIcon from '@tabler/icons/outline/receipt-tax.svg?raw';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 
@@ -71,19 +78,11 @@
 		onSaved: (result: unknown) => Promise<void> | void;
 	} = $props();
 
-	type TaxPayload = {
-		source: Exclude<QuoteTaxSource, 'not_configured'>;
-		rate_id: string | null;
-		custom_name: string | null;
-		custom_rate_basis_points: number | null;
-		save_as_reusable: boolean;
-	};
-
 	const money = $derived(
 		new Intl.NumberFormat(locale, { style: 'currency', currency: currencyCode })
 	);
 	const configured = $derived(taxSource !== 'not_configured');
-	const rateText = $derived(`${(rateBasisPoints / 100).toFixed(2).replace(/\.?0+$/, '')}%`);
+	const rateText = $derived(`${percentText(rateBasisPoints)}%`);
 
 	const SOURCE_LABEL: Record<QuoteTaxSource, string> = {
 		not_configured: 'Not configured',
@@ -113,32 +112,7 @@
 	}));
 	const picker = $derived(pickerQuery.data);
 
-	function previewLabel(
-		resolved: { name: string | null; rate_basis_points: number } | null | undefined
-	) {
-		if (!resolved) return '…';
-		if (resolved.rate_basis_points > 0)
-			return `${resolved.name} — ${(resolved.rate_basis_points / 100).toFixed(2).replace(/\.?0+$/, '')}%`;
-		return 'No tax';
-	}
-
-	// Encodes the schema's `source` (plus, for a saved rate, which one) as one Select value.
-	const sourceOptions = $derived([
-		{
-			value: 'business_default',
-			label: `Business default — ${previewLabel(picker?.business_default)}`
-		},
-		{
-			value: 'property_default',
-			label: `Property default — ${previewLabel(picker?.property_default)}`
-		},
-		...(picker?.rates ?? []).map((rate) => ({
-			value: `rate:${rate.id}`,
-			label: `${rate.name} — ${(rate.rate_basis_points / 100).toFixed(2).replace(/\.?0+$/, '')}%`
-		})),
-		{ value: 'custom', label: 'Custom rate…' },
-		{ value: 'no_tax', label: 'No tax' }
-	]);
+	const sourceOptions = $derived(taxSourceOptions(picker));
 
 	let draftValue = $state('business_default');
 	let draftCustomName = $state('');
@@ -150,15 +124,11 @@
 	let fieldErrors = $state<Record<string, string>>({});
 
 	function openDialog() {
-		draftValue =
-			taxSource === 'saved_rate' && rateId
-				? `rate:${rateId}`
-				: taxSource === 'not_configured'
-					? 'business_default'
-					: taxSource;
-		draftCustomName = taxSource === 'custom' ? (name ?? '') : '';
-		draftCustomRate = taxSource === 'custom' ? (rateBasisPoints / 100).toString() : '';
-		draftSaveReusable = false;
+		const draft = taxDraftFrom(taxSource, rateId, name, rateBasisPoints);
+		draftValue = draft.value;
+		draftCustomName = draft.customName;
+		draftCustomRate = draft.customRate;
+		draftSaveReusable = draft.saveReusable;
 		error = '';
 		fieldErrors = {};
 		open = true;
@@ -196,46 +166,20 @@
 	}
 
 	function save() {
-		if (draftValue.startsWith('rate:')) {
-			void write({
-				source: 'saved_rate',
-				rate_id: draftValue.slice(5),
-				custom_name: null,
-				custom_rate_basis_points: null,
-				save_as_reusable: false
-			});
+		const checked = checkTax(
+			{
+				value: draftValue,
+				customName: draftCustomName,
+				customRate: draftCustomRate,
+				saveReusable: draftSaveReusable
+			},
+			canManageTaxes
+		);
+		if (checked.fieldErrors) {
+			fieldErrors = checked.fieldErrors;
 			return;
 		}
-
-		if (draftValue === 'custom') {
-			const parsed = Number(draftCustomRate);
-			const cleanName = draftCustomName.trim();
-			const nextFieldErrors: Record<string, string> = {};
-			if (!cleanName)
-				nextFieldErrors.custom_name = 'Give this tax a name the customer will recognize.';
-			if (!Number.isFinite(parsed) || parsed <= 0 || parsed > 100)
-				nextFieldErrors.custom_rate_basis_points = 'Enter a rate between 0 and 100.';
-			if (Object.keys(nextFieldErrors).length) {
-				fieldErrors = nextFieldErrors;
-				return;
-			}
-			void write({
-				source: 'custom',
-				rate_id: null,
-				custom_name: cleanName,
-				custom_rate_basis_points: Math.round(parsed * 100),
-				save_as_reusable: canManageTaxes && draftSaveReusable
-			});
-			return;
-		}
-
-		void write({
-			source: draftValue as 'business_default' | 'property_default' | 'no_tax',
-			rate_id: null,
-			custom_name: null,
-			custom_rate_basis_points: null,
-			save_as_reusable: false
-		});
+		void write(checked.payload);
 	}
 </script>
 
