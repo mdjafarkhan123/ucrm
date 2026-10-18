@@ -14,7 +14,7 @@ early and runs while we build. Development-mode testing does not need it.
 ## Steps
 
 - [x] Jafar has his Bangladesh trade license in hand (2026-10-18)
-- [ ] Ask Jafar for the exact business name, address and phone as printed on the license (a mismatch is the usual rejection)
+- [x] License read 2026-10-18 from `Extra Storage/Documents/Trade-License.pdf` (Dhamsona Union Parishad, Savar). Business name **UPLIFT CONTRACTOR**; address **Dendabor, Polashbari, Savar Cantonment-1344 Ashulia, Savar, Dhaka**; type Online Business; issued 19-09-2026, valid to 30-06-2027. Phone is printed on the license (Jafar types it). Use these exact spellings; never store the national ID or parents' names.
 - [ ] Jafar creates the business portfolio at business.facebook.com with those exact details (check none exists first, no duplicates)
 - [ ] Open Security Center → Business verification; Meta's screen shows the documents accepted for Bangladesh — read it before uploading
 - [ ] Prove the business website: upliftcontractor.com (domain verification; method shown by Meta — likely a DNS TXT record or a meta tag; check where DNS lives before choosing) and use `info@upliftcontractor.com`
