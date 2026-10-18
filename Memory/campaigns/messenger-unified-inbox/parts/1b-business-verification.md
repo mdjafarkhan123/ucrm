@@ -46,6 +46,19 @@ Jafar will use a **second Facebook account he owns** to create the portfolio (hi
 5. Add the new account as admin of app 1419027217062214 and link the portfolio. The app was created by the restricted
    account, so Meta may force an ownership move — report it to Jafar if so.
 
+## Update 2026-10-18 (later): portfolio already exists on the SECOND account
+
+Jafar's second Facebook account (profile id 61590265614105, name "Jafar Khan") already owns portfolio **Uplift Contractor**,
+ID **855656587107152**, created by JAFAR AHMMED on 2026-06-05 (legal name on his NID/license is Jafar Ahmmed). Unverified; details empty;
+`info@upliftcontractor.com` "Pending confirmation"; a trusted domain exists. That account also owns apps "Unified Inbox"
+(2051753769098702, linked to the portfolio, made with the legacy "Other" use case) and "jk" (1679372116637045). Do NOT create a second portfolio.
+Our app "Ucrm Messaging" (1419027217062214) is owned by the restricted first account (Md Jafar Khan, only admin).
+Phone on license: 01902316940 (Jafar gave it). Plan Jafar approved: (1) Jafar confirms the email link; (2) business details filled
+(name UPLIFT CONTRACTOR, Bangladesh, Dendabor, Polashbari / Ashulia / Savar / Dhaka / 1344, phone, https://upliftcontractor.com) and
+saved after Jafar checks; (3) Jafar uploads the license and submits; (4) add 2nd account as Administrator of Ucrm Messaging (first try failed
+before the 2nd account was a registered developer; retry), then connect the app to the portfolio. Adding app roles is a permission grant:
+the Chrome permission check blocks Claude from it, so Jafar presses Add himself.
+
 ## Outside actions
 
 - Business portfolio created — check: it appears in business.facebook.com business list under the exact legal name — pending
