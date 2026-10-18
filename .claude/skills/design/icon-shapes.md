@@ -11,11 +11,10 @@
 
 | Tile | Icon | Radius | Use |
 |---|---|---|---|
-| 24 | 12–14 | 6 | Sidebar items, small lists, table cells |
+| 24 | 12–14 | 6 | Small lists, table cells |
 | 32 | 16 | 8 | List rows, card headers |
 | 40 | 20 | 10 | Large cards, page headers |
 
 ## States
 
-- **Current page (sidebar):** the row turns brand green; the tile turns white (`--color-surface`) with the icon in
-  `--color-interactive` (`sidebars.md`).
+- The sidebar has no tiles: its icons stand alone in their meaning colour (`sidebars.md`).
