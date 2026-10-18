@@ -39,6 +39,7 @@
 		rows,
 		progress,
 		change,
+		icon,
 		badge,
 		badgeIcon,
 		pill,
@@ -61,6 +62,8 @@
 		progress?: number | null;
 		/** A pill beside the big figure comparing it with the period before. */
 		change?: { direction: 'up' | 'down' | 'same'; text: string } | null;
+		/** A Tabler icon (raw SVG) on a soft tile before the eyebrow, naming what the money is. */
+		icon?: string;
 		/** A small chip at the end of the eyebrow row, e.g. "Due in 7 days". */
 		badge?: string;
 		/** A Tabler icon (raw SVG) drawn in the chip. */
@@ -91,41 +94,44 @@
 	aria-label={eyebrow}
 	aria-busy={loading}
 >
-	{#if badge}
+	<div class="money-card__head">
 		<div class="money-card__top">
-			<p class="money-card__eyebrow">{eyebrow}</p>
-			<span class="money-card__badge">
-				{#if badgeIcon}<span class="money-card__badge-icon" aria-hidden="true"
-						>{@html badgeIcon}</span
-					>{/if}
-				{badge}
-			</span>
-		</div>
-	{:else}
-		<p class="money-card__eyebrow">{eyebrow}</p>
-	{/if}
-	{#if value !== undefined || note}
-		<div class="money-card__figure">
-			<div class="money-card__figure-row">
-				{#if value !== undefined}<p class="money-card__value">{value}</p>{/if}
-				{#if pill}
-					<span class="money-card__pill">
-						<span class="money-card__pill-icon" aria-hidden="true">{@html checkIcon}</span>
-						{pill}
-					</span>
-				{/if}
-				{#if change}
-					<p class="money-card__change">
-						<span class="money-card__change-icon" aria-hidden="true"
-							>{@html changeIcons[change.direction]}</span
-						>
-						{change.text}
-					</p>
-				{/if}
+			<div class="money-card__title">
+				{#if icon}<span class="money-card__icon" aria-hidden="true">{@html icon}</span>{/if}
+				<p class="money-card__eyebrow">{eyebrow}</p>
 			</div>
-			{#if note}<p class="money-card__note">{note}</p>{/if}
+			{#if badge}
+				<span class="money-card__badge">
+					{#if badgeIcon}<span class="money-card__badge-icon" aria-hidden="true"
+							>{@html badgeIcon}</span
+						>{/if}
+					{badge}
+				</span>
+			{/if}
 		</div>
-	{/if}
+		{#if value !== undefined || note}
+			<div class="money-card__figure">
+				<div class="money-card__figure-row">
+					{#if value !== undefined}<p class="money-card__value">{value}</p>{/if}
+					{#if pill}
+						<span class="money-card__pill">
+							<span class="money-card__pill-icon" aria-hidden="true">{@html checkIcon}</span>
+							{pill}
+						</span>
+					{/if}
+					{#if change}
+						<p class="money-card__change">
+							<span class="money-card__change-icon" aria-hidden="true"
+								>{@html changeIcons[change.direction]}</span
+							>
+							{change.text}
+						</p>
+					{/if}
+				</div>
+				{#if note}<p class="money-card__note">{note}</p>{/if}
+			</div>
+		{/if}
+	</div>
 	{#if breakdown && breakdown.length > 0}
 		<div class="money-card__breakdown">
 			<div class="money-card__bar" aria-hidden="true">
@@ -202,10 +208,9 @@
 		display: flex;
 		min-width: 0;
 		flex-direction: column;
-		justify-content: space-between;
 		gap: var(--space-large);
 		padding: var(--space-large);
-		border-radius: var(--radius-base);
+		border-radius: var(--radius-large);
 		color: var(--color-feature--text);
 		background:
 			radial-gradient(
@@ -215,11 +220,44 @@
 			),
 			linear-gradient(200deg, var(--color-feature--start), var(--color-feature--end));
 
+		/* The eyebrow and the big figure sit together at the top; whatever follows is pushed to the foot,
+		   so a card stretched to its neighbour's height keeps its figure up where the eye starts. */
+		&__head {
+			display: grid;
+			gap: var(--space-base);
+		}
+		& > &__head + * {
+			margin-top: auto;
+		}
+		&__title {
+			display: flex;
+			min-width: 0;
+			align-items: center;
+			gap: var(--space-slim);
+		}
+		&__icon {
+			display: inline-flex;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			width: 32px;
+			height: 32px;
+			border: var(--border-base) solid var(--color-feature--border);
+			border-radius: var(--radius-base);
+			color: var(--color-feature--text);
+			background: var(--color-feature--subtle);
+
+			:global(svg) {
+				display: block;
+				width: 16px;
+				height: 16px;
+			}
+		}
 		&__eyebrow {
 			color: var(--color-feature--text--secondary);
-			font-size: 11px;
-			font-weight: 700;
-			letter-spacing: 1px;
+			font-size: var(--typography--fontSize-overline);
+			font-weight: 600;
+			letter-spacing: 0.8px;
 			text-transform: uppercase;
 		}
 		&__figure {
@@ -257,8 +295,10 @@
 		&__rows {
 			display: grid;
 			gap: 10px;
-			padding-top: 14px;
-			border-top: var(--border-base) solid var(--color-feature--border);
+			padding: var(--space-slim) var(--space-base);
+			border: var(--border-base) solid var(--color-feature--border);
+			border-radius: var(--radius-base);
+			background: var(--color-feature--subtle);
 		}
 		&__progress {
 			overflow: hidden;
@@ -284,10 +324,10 @@
 		}
 		&__value {
 			color: var(--color-feature--text);
-			font-size: 32px;
+			font-size: var(--typography--fontSize-display);
 			font-variant-numeric: tabular-nums;
 			font-weight: 700;
-			letter-spacing: -1.2px;
+			letter-spacing: -0.6px;
 			line-height: 1;
 			overflow-wrap: anywhere;
 		}
@@ -299,8 +339,10 @@
 		&__breakdown {
 			display: grid;
 			gap: var(--space-slim);
-			padding-top: var(--space-base);
-			border-top: var(--border-base) solid var(--color-feature--border);
+			padding: var(--space-slim) var(--space-base);
+			border: var(--border-base) solid var(--color-feature--border);
+			border-radius: var(--radius-base);
+			background: var(--color-feature--subtle);
 		}
 		&__bar {
 			display: flex;
@@ -429,8 +471,9 @@
 		// The record-page rail version: the split bar sits straight under the figure, with no hairline
 		// above it, and the card's rows carry the hairline instead.
 		&--record &__breakdown {
-			padding-top: 0;
-			border-top: 0;
+			padding: 0;
+			border: 0;
+			background: none;
 		}
 		&--record {
 			gap: 20px;
@@ -442,23 +485,26 @@
 			height: 8px;
 			border-radius: 999px;
 		}
+		/* One more figure, in a soft panel: its label above, the amount under it. */
 		&__detail {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			gap: var(--space-base);
+			display: grid;
+			gap: 2px;
 			margin: 0;
-			padding-top: 14px;
-			border-top: var(--border-base) solid var(--color-feature--border);
+			padding: var(--space-slim) var(--space-base);
+			border: var(--border-base) solid var(--color-feature--border);
+			border-radius: var(--radius-base);
+			background: var(--color-feature--subtle);
 			font-size: 13px;
 
 			dt {
+				color: var(--color-feature--text--secondary);
 				font-weight: 500;
 			}
 			dd {
 				margin: 0;
+				font-size: var(--typography--fontSize-larger);
 				font-variant-numeric: tabular-nums;
-				font-weight: 600;
+				font-weight: 700;
 			}
 		}
 	}

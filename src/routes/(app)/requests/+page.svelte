@@ -56,6 +56,7 @@
 	import sparklesIcon from '@tabler/icons/outline/sparkles.svg?raw';
 	import calendarOffIcon from '@tabler/icons/outline/calendar-x.svg?raw';
 	import clipboardCheckIcon from '@tabler/icons/outline/clipboard-check.svg?raw';
+	import trendingUpIcon from '@tabler/icons/outline/trending-up.svg?raw';
 
 	let search = $state('');
 	let debouncedSearch = $state('');
@@ -374,6 +375,7 @@
 				loading={countsQuery.isPending}
 			/>
 			<MoneyFeatureCard
+				icon={trendingUpIcon}
 				eyebrow="Conversion · past 30 days"
 				value={conversionValue}
 				change={conversionPill}

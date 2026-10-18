@@ -29,6 +29,11 @@ beside them (Pencil draws 16); the money card keeps its live layout, without the
 **Checked:** Playwright, owner, port 5180: the five lists at 1440 light, Jobs and Invoices dark, Jobs at 390,
 client and invoice record pages, picked and hovered tiles (picking Unscheduled filtered to 4 jobs).
 
+**Matched to Pencil (2026-10-18, Jafar: "without the table, match the design Pencil has"):** money card gets an
+icon tile, figure at the top, panel at the foot, 16 corners (all seven pages); `PageHeader` takes `icon`/`tone`
+for the tiled concept header (Jobs only so far); overview and list cards 16 corners; Jobs facts on time/success
+tiles; More menu button (still disabled, nothing behind it). Rechecked lists, record pages, dark, 390.
+
 **For the campaign-end checks:** ESLint already flags three older lines in touched files (AttentionCard 150
 useless mustache, clients 378 `{@html}`, requests 532 href without resolve).
 

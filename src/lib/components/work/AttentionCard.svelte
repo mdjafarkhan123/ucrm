@@ -24,8 +24,9 @@
 		label: string;
 		/** Push this fact to the far end of the strip, away from the counted facts. */
 		align?: 'end';
-		/** Colour the icon, for a fact about something switched on. */
-		tone?: 'warning';
+		/** Colour the icon, for a fact about something switched on. `time` and `success` put the icon on a
+		 *  small tile in that colour (visits booked, work done). */
+		tone?: 'warning' | 'time' | 'success';
 	};
 	/** One slice of the proportion bar under the header; only the shares between slices matter. */
 	export type AttentionBarPart = {
@@ -181,8 +182,14 @@
 		min-width: 0;
 		overflow: hidden;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border-radius: var(--radius-large);
 		background: var(--color-surface);
+
+		/* Bordered icon tiles carry their own edges, so the header drops its rule and sits close above them. */
+		&:has(.attention-card__icon) .attention-card__header:not(.attention-card__header--barred) {
+			padding: var(--space-medium) var(--space-medium) 0;
+			border-bottom: 0;
+		}
 
 		&__header {
 			display: flex;
@@ -516,6 +523,27 @@
 		}
 		&__fact--end {
 			margin-inline-start: auto;
+		}
+		&__fact--time &__fact-icon,
+		&__fact--success &__fact-icon {
+			align-items: center;
+			justify-content: center;
+			width: 24px;
+			height: 24px;
+			border-radius: var(--radius-tile-small);
+
+			:global(svg) {
+				width: 13px;
+				height: 13px;
+			}
+		}
+		&__fact--time &__fact-icon {
+			color: var(--color-time);
+			background: var(--color-time--surface);
+		}
+		&__fact--success &__fact-icon {
+			color: var(--color-success);
+			background: var(--color-success--surface);
 		}
 		&__fact--warning &__fact-icon {
 			color: var(--color-warning--onSurface);

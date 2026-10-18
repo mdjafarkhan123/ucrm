@@ -431,6 +431,7 @@
 					{/snippet}
 				</AttentionCard>
 				<MoneyFeatureCard
+					icon={userPlusIcon}
 					eyebrow="New clients · past 30 days"
 					value={overview ? String(overview.new_clients.current) : '—'}
 					change={newClientsTrend}

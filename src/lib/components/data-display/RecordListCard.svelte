@@ -50,7 +50,7 @@
 		min-width: 0;
 		overflow: hidden;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border-radius: var(--radius-large);
 		background: var(--color-surface);
 
 		&__header {

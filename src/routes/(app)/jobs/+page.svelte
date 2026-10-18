@@ -50,13 +50,15 @@
 	import dashedCircleIcon from '@tabler/icons/outline/circle-dashed.svg?raw';
 	import repeatIcon from '@tabler/icons/outline/repeat.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
-	import dotsIcon from '@tabler/icons/outline/dots.svg?raw';
+	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
+	import hammerIcon from '@tabler/icons/outline/hammer.svg?raw';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
 	import alarmIcon from '@tabler/icons/outline/alarm.svg?raw';
 	import calendarOffIcon from '@tabler/icons/outline/calendar-x.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-circle.svg?raw';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 	import hourglassIcon from '@tabler/icons/outline/hourglass.svg?raw';
+	import cashIcon from '@tabler/icons/outline/cash-banknote.svg?raw';
 
 	let search = $state('');
 	let debouncedSearch = $state('');
@@ -164,11 +166,13 @@
 	const attentionFacts = $derived<AttentionFact[]>([
 		{
 			icon: calendarIcon,
+			tone: 'time',
 			value: overviewNumber(countsQuery.data?.visits_today),
 			label: `${plural(countsQuery.data?.visits_today, 'visit', 'visits')} scheduled today`
 		},
 		{
 			icon: checkIcon,
+			tone: 'success',
 			value: overviewNumber(countsQuery.data?.completed_past_30_days),
 			label: `${plural(countsQuery.data?.completed_past_30_days, 'visit', 'visits')} completed in the past 30 days`
 		}
@@ -276,16 +280,21 @@
 	<PageContainer variant="open">
 		<PageHeader
 			class="jobs-page__header"
-			eyebrow="Work & money"
+			icon={hammerIcon}
+			tone="job"
 			title="Jobs"
 			description="The work you have agreed to do, from first visit to final invoice."
 		>
 			{#snippet actions()}
 				<span class="jobs-header__action" title={moreActionsReason}>
-					<Button variant="secondary" class="jobs-header__button" disabled>
+					<Button
+						variant="secondary"
+						class="jobs-header__button jobs-header__button--menu"
+						disabled
+					>
+						More
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						<span class="jobs-header__icon" aria-hidden="true">{@html dotsIcon}</span>
-						More actions
+						<span class="jobs-header__icon" aria-hidden="true">{@html chevronDownIcon}</span>
 					</Button>
 					<span class="jobs-header__reason">{moreActionsReason}</span>
 				</span>
@@ -311,6 +320,7 @@
 				loading={countsQuery.isPending}
 			/>
 			<MoneyFeatureCard
+				icon={cashIcon}
 				eyebrow="Collected this month"
 				value={collectedValue}
 				note={collectedNote}
@@ -464,6 +474,15 @@
 		border-color: var(--color-border--interactive);
 		background: var(--color-surface);
 	}
+	/* The More menu: label first, its chevron after in the quieter icon colour. */
+	:global(.button.jobs-header__button--menu) {
+		gap: 6px;
+		padding-inline: 14px 10px;
+	}
+	.jobs-header__button--menu .jobs-header__icon,
+	:global(.jobs-header__button--menu) .jobs-header__icon {
+		color: var(--color-icon);
+	}
 	.jobs-header__icon {
 		display: inline-flex;
 
@@ -478,7 +497,7 @@
 	.jobs-overview {
 		display: grid;
 		gap: var(--space-large);
-		grid-template-columns: minmax(0, 1fr) 336px;
+		grid-template-columns: minmax(0, 1fr) 312px;
 		margin-bottom: var(--space-large);
 	}
 

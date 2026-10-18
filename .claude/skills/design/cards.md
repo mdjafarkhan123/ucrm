@@ -31,6 +31,9 @@
 - Hover: `--color-surface--hover`, border `--color-border--interactive--hover`. Picked: 2px inner
   `--color-interactive` ring. An act-now tile with a count is filled `--color-critical--surface`, its icon tile
   white and its text `--color-critical--onSurface`.
+- The feature card beside it: a 32 tile (`--color-feature--subtle`, 1px `--color-feature--border`, white
+  icon) before an 11/600 uppercase eyebrow; the figure 28/700 under it; the second figure or the legend rows in a
+  `--color-feature--subtle` panel (1px `--color-feature--border`, radius 8, padding 12 16) at the card's foot.
 - Money on the feature card beside it: money in is white, money still to come white 72%, overdue
   `--color-feature--alert`; a figure pill is white with `--color-feature--start` text.
 
