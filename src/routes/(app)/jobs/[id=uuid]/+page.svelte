@@ -137,7 +137,6 @@
 	const instructionsChanged = $derived(
 		editingInstructions && instructionsDraft.trim() !== (saved?.job.instructions?.trim() ?? '')
 	);
-	const showInstructions = $derived(editingInstructions || Boolean(saved?.job.instructions));
 
 	const isEditing = $derived(editingTitle || editingInstructions || notePending.length > 0);
 	const isDirty = $derived(titleChanged || instructionsChanged || notePending.length > 0);
@@ -600,41 +599,39 @@
 					currencyCode={saved.job.currency_code}
 				/>
 
-				{#if showInstructions}
-					<RailCard title="Instructions">
-						{#snippet actions()}
-							{#if editable && !editingInstructions}
-								<PencilButton
-									onclick={() => {
-										instructionsDraft = saved.job.instructions ?? '';
-										editingInstructions = true;
-									}}
-									label="Edit the instructions"
-								/>
-							{:else if instructionsChanged}
-								<Badge size="small" status="warning">Unsaved</Badge>
-							{/if}
-						{/snippet}
-
-						{#if editingInstructions}
-							<Textarea
-								id="job-instructions"
-								label="Notes for the crew doing this work"
-								rows={5}
-								maxlength={4000}
-								bind:value={instructionsDraft}
+				<RailCard title="Instructions" description="The crew sees these on every visit">
+					{#snippet actions()}
+						{#if editable && !editingInstructions}
+							<PencilButton
+								onclick={() => {
+									instructionsDraft = saved.job.instructions ?? '';
+									editingInstructions = true;
+								}}
+								label="Edit the instructions"
 							/>
-						{:else if saved.job.instructions}
-							<p class="job-detail__copy">{saved.job.instructions}</p>
-						{:else}
-							<EmptyState
-								icon={notesIcon}
-								title="No instructions"
-								description="Add notes the crew should read before this work."
-							/>
+						{:else if instructionsChanged}
+							<Badge size="small" status="warning">Unsaved</Badge>
 						{/if}
-					</RailCard>
-				{/if}
+					{/snippet}
+
+					{#if editingInstructions}
+						<Textarea
+							id="job-instructions"
+							label="Notes for the crew doing this work"
+							rows={5}
+							maxlength={4000}
+							bind:value={instructionsDraft}
+						/>
+					{:else if saved.job.instructions}
+						<p class="job-detail__copy">{saved.job.instructions}</p>
+					{:else}
+						<EmptyState
+							icon={notesIcon}
+							title="No instructions"
+							description="Add notes the crew should read before this work."
+						/>
+					{/if}
+				</RailCard>
 
 				<JobChecklistsCard jobId={saved.job.id} active={saved.job.status === 'active'} />
 

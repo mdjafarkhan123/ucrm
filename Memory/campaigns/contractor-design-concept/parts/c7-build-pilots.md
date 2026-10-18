@@ -45,5 +45,9 @@ Job details implementation is on branch `codex/concept-job-details` in `/tmp/ucr
 stages lines, discount and tax under one Save. Migration `20261018095200_atomic_job_pricing` was applied
 and its function and authenticated execute grant verified. The checklist Built tick is 🟡.
 
+Pencil reconnected and showed `tNdkX` and `jFBRB`. The local job page opened in Pencil's browser; its
+section order was inspected in the DOM. An empty job had hidden Instructions, so the implementation now
+keeps that card visible. The browser screenshot service then stalled with “A capture is already running.”
+
 Next: finish the side-by-side screen check against `tNdkX` and `jFBRB`, prove the live edit journey,
-then mark Built ✅, merge and push main. Pencil was disconnected during this implementation.
+then mark Built ✅, merge and push main.
