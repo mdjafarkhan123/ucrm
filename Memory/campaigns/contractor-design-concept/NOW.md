@@ -5,8 +5,8 @@
 **Stage:** Designing. C1 Foundation, C2 Home and C3 Jobs list approved; buttons and the Jobs list built.
 
 **Next:**
-1. **Jafar reads the redesign checklist** (`stages/list-index.md` → list files) and confirms the order and the pop-up marks; he also compares the Pencil ticks with `concept.pen`. Details: `parts/c5a-redesign-checklist.md`.
-2. Then **C4 Job details**: research, draw at 1440, show Jafar.
+1. **C4 Job details is drawn** (`parts/c4-job-details.md`, frame `hdOUv`): Jafar saves `concept.pen`, reviews it and answers the four questions there.
+2. Jafar reads the redesign checklist (`stages/list-index.md`) and confirms the order and pop-up marks: `parts/c5a-redesign-checklist.md`.
 
 **Done 2026-10-18:** buttons everywhere (`parts/c1e-buttons-everywhere.md` lists what is left), Foundation sizes named, C2 Home (`parts/c2-home.md`), C3 Jobs list (`parts/c3-jobs-list.md`).
 
