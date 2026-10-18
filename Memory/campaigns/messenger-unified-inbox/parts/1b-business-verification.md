@@ -22,6 +22,17 @@ early and runs while we build. Development-mode testing does not need it.
 - [ ] Link the portfolio to the app "Ucrm Messaging" (App settings → Basic → business portfolio, or Meta's connect flow)
 - [ ] Record the submission date and status below; check status in Security Center every few days
 
+## Finding 2026-10-18 (blocked)
+
+Meta refused to create the portfolio: "Unable to Create Account — Your Advertising Access is Restricted". Cause (Business
+Support Home → My accounts → Md Jafar Khan): the Facebook account is **restricted from advertising** (restriction dated
+September; personal ad account marked restricted since about Sept 2021). Meta's wording: Advertising Standards not
+followed (rejected ads, circumventing review, fraud, or untrustworthy accounts). It also showed no portfolio exists on this account, and
+that Meta found other accounts using an `@upliftcontractor.com` email domain (owner unknown). Facebook account manages
+Page **Random News** (ID 1387298701130366), so Part 1's admin check is satisfied. This blocks only Part 1b and Part 10
+(going live); development testing and Parts 3–9 do not need a portfolio. Options for Jafar: ask Meta to review the
+restriction, or have an unrestricted adult-owned account create the portfolio (ownership choice is Jafar's).
+
 ## Next
 
 Ask Jafar for the license details. Then open `https://business.facebook.com/` in a new Chrome tab (Claude in Chrome tab
