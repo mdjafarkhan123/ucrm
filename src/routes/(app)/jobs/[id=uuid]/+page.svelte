@@ -562,7 +562,7 @@
 			onSave={() => void save()}
 			onCancel={discard}
 		>
-			{#snippet header()}
+			{#snippet main()}
 				<WorkRecordHeader
 					icon={toolsIcon}
 					recordType="Job"
@@ -622,9 +622,6 @@
 						{/if}
 					{/snippet}
 				</WorkRecordHeader>
-			{/snippet}
-
-			{#snippet main()}
 				<JobVisitsSection
 					jobId={saved.job.id}
 					visits={saved.visits}

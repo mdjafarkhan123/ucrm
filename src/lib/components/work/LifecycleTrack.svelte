@@ -139,10 +139,11 @@
 		padding: 0;
 		list-style: none;
 
+		// A step gives up width before the strip overflows: its words end in "…" rather than running off.
 		&__step {
 			display: flex;
 			min-width: 0;
-			flex: 0 0 auto;
+			flex: 0 1 auto;
 			align-items: center;
 			gap: var(--space-small);
 		}
@@ -181,7 +182,9 @@
 			color: var(--color-heading);
 			font-size: var(--typography--fontSize-small);
 			font-weight: 600;
+			overflow: hidden;
 			text-decoration: none;
+			text-overflow: ellipsis;
 			white-space: nowrap;
 
 			&--todo {
@@ -195,7 +198,9 @@
 
 		&__sub {
 			color: var(--color-text--secondary);
+			overflow: hidden;
 			font-size: var(--typography--fontSize-overline);
+			text-overflow: ellipsis;
 			white-space: nowrap;
 
 			&--critical {
@@ -204,7 +209,7 @@
 		}
 
 		&__line {
-			min-width: 16px;
+			min-width: 12px;
 			height: 2px;
 			flex: 1 1 0;
 			border-radius: 1px;
