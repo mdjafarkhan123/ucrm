@@ -28,6 +28,15 @@
 {/snippet}
 
 <!-- eslint-disable svelte/no-at-html-tags -->
+<!-- While Stop or Clock out waits on the server, a spinner takes the stop icon's place, as on the shared Button. -->
+{#snippet stopGlyph(busy: boolean)}
+	{#if busy}
+		<span class="header-timer__spinner" aria-hidden="true"></span>
+	{:else}
+		<span class="header-timer__icon" aria-hidden="true">{@html stopIcon}</span>
+	{/if}
+{/snippet}
+
 {#if timer}
 	<div class="header-timer" role="group" aria-label="Your running timer">
 		{#if timer.kind === 'visit'}
@@ -60,7 +69,7 @@
 				disabled={actions.busy !== null}
 				aria-busy={actions.busy === 'clock-out'}
 			>
-				<span class="header-timer__icon" aria-hidden="true">{@html stopIcon}</span>
+				{@render stopGlyph(actions.busy === 'clock-out')}
 				<span class="header-timer__stop-text"
 					>{actions.busy === 'clock-out' ? 'Clocking out…' : 'Clock out'}</span
 				>
@@ -75,7 +84,7 @@
 				aria-busy={actions.busy === 'stop'}
 				aria-label={`Stop timer on ${label}`}
 			>
-				<span class="header-timer__icon" aria-hidden="true">{@html stopIcon}</span>
+				{@render stopGlyph(actions.busy === 'stop')}
 				<span class="header-timer__stop-text">{actions.busy === 'stop' ? 'Stopping…' : 'Stop'}</span
 				>
 			</button>
@@ -177,6 +186,16 @@
 		.header-timer__stop:disabled & {
 			color: inherit;
 		}
+	}
+
+	.header-timer__spinner {
+		flex: 0 0 auto;
+		width: 18px;
+		height: 18px;
+		border: 2px solid color-mix(in srgb, currentColor 25%, transparent);
+		border-top-color: currentColor;
+		border-radius: var(--radius-circle);
+		animation: spinning var(--timing-loading) linear infinite;
 	}
 
 	// On a phone the header's icons fill its first row, so the running timer takes a full row of its own
