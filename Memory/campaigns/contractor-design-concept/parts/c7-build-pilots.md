@@ -29,32 +29,26 @@ the Pencil tidy-up in `docs/pencil-workflow.md` step 6 is done.
 
 ## Home — built 2026-10-18
 
-Matches `rKrbu` side by side at 1440 light, dark and 1100; Clock in/out pressed live (loading, no double
-press). New shared part `ui/CardHeader`; `ui/StatusBadge` gained `size="small"` (the concept pill);
-`--radius-circle` is 999px like Pencil. Field-worker Home keeps today's look (not drawn).
+Matches `rKrbu` at 1440 light, dark and 1100; Clock in/out proven live. New shared `ui/CardHeader`, `StatusBadge`
+`size="small"`. Field-worker Home keeps today's look. **Left out, need data the app lacks** (Jafar decides when):
+"In progress" and money on schedule rows, money on Quotes/Jobs To do lines, "Upcoming work"; Money owed shows
+not-due/overdue only.
 
-**Left out, need data the app lacks** (all in the approved Home plan; Jafar to decide when to build):
-"In progress" on the schedule, money per schedule row and in the schedule hint, money on Quotes and Jobs To do
-lines and their card hints, "Upcoming work" in Business performance. Also: Money owed shows not-due/overdue
-only (the 1–30… buckets stay in the bar's spoken label); the setup strip keeps today's delivery line.
+## Job details — view page built 2026-10-18
 
-## Job details — built 2026-10-18 (claude, taking over Codex's branch `codex/concept-job-details`)
+Matches `tNdkX` side by side at 1440 light and dark (commits `783458bc`, `0988d05f`; checked on Raad LTD jobs
+#20, #1, #25, #29, browser clock set to a visit day for the "today" row). Pricing save proven live ($150 → $300
+and back). Shared parts given the concept look: `WorkRecordHeader`, `ClientSummaryCard`, `RecordFactsList`,
+`LifecycleTrack`, `RecordDetailLayout` (`header` + `concept`), `SectionBlock` flush body, `WorkTimerControl`
+`concept`, `ProductsAndServicesBlock` `concept`. No checks run (Jafar: none until the campaign ends).
 
-Page matches `tNdkX` side by side at desktop width on Raad LTD jobs #25 and #29: header (job tile, status,
-"Job #· Type", boxed client with call/text/email, facts column, step strip), Visits → Instructions →
-Checklists → Products → Billing (with invoice reminders inside) → Labor → Expenses, and the rail (Job total
-card with profit bar, Notes, Photos and files, Signatures, Work report). Main journey proven live: edit the
-quantity, one "Save job pricing", total went $150 → $300 and back. New shared parts: concept look on
-`WorkRecordHeader`, `ClientSummaryCard`, `RecordFactsList`, `LifecycleTrack`; rail and main columns no longer
-squeeze their cards (`RecordDetailLayout`).
-
-**Left out, need data the app lacks:** "Client since 2024 · 3 jobs" under the client name, "Started Oct 14" in
-the header line, "next today 9:00 AM" in the Visits hint, "From quote #318" (live says "From a quote").
-**Not done yet:** dark mode, edit frame `jFBRB` compared side by side, Visits rows' assignee chips and
-"Today" highlight, Labor/Expenses rows with real data, the pop-ups, the Pencil tidy-up
-(`docs/pencil-workflow.md` step 6). No lint or format run (Jafar: slow checks wait until the campaign ends);
-one `svelte-check` run found only 3 errors in untouched `AttentionCard.svelte`.
+**Left out, need data the app lacks:** "Client since · jobs", "Started Oct 14", "next today 9:00 AM",
+"From quote #318", the line under each payment stage, the expense receipt photo (a receipt tile shows).
+**Not done yet:** edit mode `jFBRB` (labels above fields, no box per line, kind pill, discount/tax panel in the
+totals, card footer Cancel / Save changes; the line editor is shared with Quotes and Requests, so concept-only),
+then the Pencil tidy-up. **Asked Jafar:** "⋮" row menus vs the Foundation's "…" (`DropdownMenu`, app-wide);
+labor avatars stay light in dark mode (`Avatar` colours).
 
 ## Next
 
-Finish the "not done yet" list above, then build New job (`parts/c5-new-job.md`).
+Build Job details edit mode (`jFBRB`), do the Pencil tidy-up, then build New job (`parts/c5-new-job.md`).
