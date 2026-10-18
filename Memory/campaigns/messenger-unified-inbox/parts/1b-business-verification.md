@@ -63,6 +63,14 @@ the Chrome permission check blocks Claude from it, so Jafar presses Add himself.
 
 Business Verification for portfolio 855656587107152 (Jafar's 2nd account) submitted by Jafar on 2026-10-18: use case "App requires access to permissions on Meta for Developers", Sole Proprietorship, name UPLIFT CONTRACTOR, address as on the license (State Dhaka, 1344), phone +8801902316940, https://upliftcontractor.com/, Trade-License.pdf uploaded, email confirmed by code to info@upliftcontractor.com. Security Center shows **In review**, "about 2 business days". Never resubmit while In review. Remaining 1b steps: check status in Security Center around 2026-10-21; add 2nd account as admin of Ucrm Messaging (Jafar presses Add) and connect the app to the portfolio.
 
+## Decision 2026-10-18: new app on the 2nd account
+
+Jafar dropped the first (restricted) account entirely. New app **Ucrm Messaging**, App ID **1709471683925717**, created by Jafar on the 2nd account
+(use case "Engage with customers on Messenger from Meta" only; contact email info@upliftcontractor.com; connected to portfolio Uplift Contractor
+855656587107152; unpublished, development mode). The old app 1419027217062214 (first account) is abandoned; "Unified Inbox" and "jk" on the 2nd account are untouched.
+`.env` META_APP_ID and PUBLIC_META_APP_ID now hold the new ID. **META_APP_SECRET still holds the OLD app's secret: Jafar must re-enter his password in
+App settings > Basic and paste the new secret into `.env`.** Test Page "Random News" belongs to the first account; the 2nd account needs a Page of its own or a role on it.
+
 ## Outside actions
 
 - Business portfolio exists (created 2026-06-05 on 2nd account, ID 855656587107152) — done
