@@ -21,4 +21,4 @@
 | State | Look |
 |---|---|
 | Hover | Background `--color-surface--hover` |
-| Current page | Background `--color-surface--active`; solid tile with a white icon; label 600 `--color-heading` |
+| Current page | Background `--color-interactive` (`--color-interactive--hover` on hover); white tile (`--color-surface`) with the icon in `--color-interactive`; label 600 `--color-text--reverse`; count chip flips to `--color-surface` with `--color-interactive` text |

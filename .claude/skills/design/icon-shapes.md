@@ -17,4 +17,5 @@
 
 ## States
 
-- **Current page (sidebar):** solid tile in `--color-<meaning>`, icon `--color-text--reverse`.
+- **Current page (sidebar):** the row turns brand green; the tile turns white (`--color-surface`) with the icon in
+  `--color-interactive` (`sidebars.md`).

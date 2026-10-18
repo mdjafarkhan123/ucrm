@@ -83,5 +83,7 @@ designs as the record of the live app.
 - Decision 2026-10-18 (Jafar): Home approved with option A — a deep-green gradient "Today" card (greeting, day
   summary, day clock) leads the page, replacing the live Home's dark schedule card; the schedule card stays white
   because its green job tiles and pills would blend into green. One feature card per screen at most.
+- Decision 2026-10-18 (Jafar): the concept sidebar keeps soft coloured tiles behind every icon, and the current
+  page is a solid brand-green row (as the live app already shows) with a white tile and green icon.
 - Decision 2026-10-17 (Jafar): keep two sets of styling modules for now — `design` (concept) and
   `design-classic` (live look) — until rollout; revisit then.
