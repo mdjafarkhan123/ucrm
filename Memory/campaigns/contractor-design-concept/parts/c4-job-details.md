@@ -34,4 +34,5 @@ not a tinted band). Drawn on Job details only; Home, Jobs list and `cards.md` fo
 
 ## Next
 
-Jafar saves `concept.pen` (Ctrl+S), reviews; then commit the `.pen` alone and record approval.
+Saved and committed 2026-10-18. Jafar wants more review in a later session: open frame `hdOUv`, go through it with
+him, answer the four questions and the section-line scope, then record his approval here.
