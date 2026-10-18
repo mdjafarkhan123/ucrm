@@ -20,8 +20,8 @@ staff open the app between jobs and want to see what needs them right now, in a 
    status pills, icon tiles, fields, cards, list rows, table, sidebar, top bar, dark preview). Four new colour
    families were added from shades the app already has: `color-time` (Schedule, Timesheets),
    `color-conversation` (Inbox), `color-growth` (Pipeline, Marketing, Reports), `color-review` (Reviews), each
-   with `-surface` and `-on-surface`, plus `radius-circle`. The sidebar follows the work order Requests → Quotes →
-   Jobs → Invoices, as Jobber does.
+   with `-surface` and `-on-surface`, plus `radius-circle`. The sidebar keeps the live app's groups (Overview, Customers,
+   Work & Money, Growth; Jafar 2026-10-18).
 2. **Pilot screens**, one per session, each approved: Home, Jobs list, Job details.
 3. **Every other screen**, each approved. Once a pattern is approved, several screens may be drawn in parallel
    by helper agents, each reviewed against the brief before Jafar sees it.
@@ -83,6 +83,8 @@ designs as the record of the live app.
 - Decision 2026-10-18 (Jafar): Home approved with option A — a deep-green gradient "Today" card (greeting, day
   summary, day clock) leads the page, replacing the live Home's dark schedule card; the schedule card stays white
   because its green job tiles and pills would blend into green. One feature card per screen at most.
+- Decision 2026-10-18 (Jafar): the concept sidebar uses the live app's groups and order instead of the Jobber work
+  order, and the live app's sidebar gets the soft coloured tiles now.
 - Decision 2026-10-18 (Jafar): the concept sidebar keeps soft coloured tiles behind every icon, and the current
   page is a solid brand-green row (as the live app already shows) with a white tile and green icon.
 - Decision 2026-10-17 (Jafar): keep two sets of styling modules for now — `design` (concept) and

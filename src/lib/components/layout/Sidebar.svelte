@@ -91,14 +91,19 @@
 									class="sidebar__item"
 									class:sidebar__item--active={isActive(item.href)}
 									style:--sidebar-item-tone={item.tone ? `var(--color-${item.tone})` : undefined}
+									style:--sidebar-item-tone-surface={item.tone
+										? `var(--color-${item.tone}--surface)`
+										: undefined}
 									href={item.href}
 									onclick={onnavigate}
 									aria-current={isActive(item.href) ? 'page' : undefined}
 									aria-label={item.count ? `${item.label}, ${item.count} unread` : item.label}
 									title={collapsed ? item.label : undefined}
 								>
-									<span class="sidebar__item-icon" aria-hidden="true"
-										>{@html iconMap[item.icon] ?? iconMap.dashboard}</span
+									<span
+										class="sidebar__item-icon"
+										class:sidebar__item-icon--tile={!!item.tone}
+										aria-hidden="true">{@html iconMap[item.icon] ?? iconMap.dashboard}</span
 									><span class="sidebar__item-label">{item.label}</span>
 									{#if item.count}
 										<span class="sidebar__count" aria-hidden="true"
@@ -303,6 +308,24 @@
 			width: 18px;
 			height: 18px;
 		}
+		// A page with a meaning colour sits on a soft tile of that colour.
+		&__item-icon--tile {
+			flex-basis: 24px;
+			width: 24px;
+			height: 24px;
+			align-items: center;
+			justify-content: center;
+			border-radius: var(--radius-tile-small);
+			background: var(--sidebar-item-tone-surface);
+		}
+		// The hover row is grey, so the tile turns white to stay visible.
+		&__item:hover &__item-icon--tile {
+			background: var(--color-surface);
+		}
+		&__item-icon--tile :global(svg) {
+			width: 14px;
+			height: 14px;
+		}
 		&__item-label {
 			overflow: hidden;
 			text-overflow: ellipsis;
@@ -328,6 +351,12 @@
 		&__item--active .sidebar__item-icon,
 		&__item--active:hover .sidebar__item-icon {
 			color: var(--color-surface);
+		}
+		// On the green current page the tile turns white and the icon green, like the count pill.
+		&__item--active .sidebar__item-icon--tile,
+		&__item--active:hover .sidebar__item-icon--tile {
+			color: var(--color-interactive);
+			background: var(--color-surface);
 		}
 		&__item--unavailable {
 			color: var(--color-disabled);

@@ -9,3 +9,8 @@
 **Checked:** Live screenshots at 1440 (light, dark, collapsed) and 390 (phone menu), owner login; computed icon colours match the map. Type check and slow suites deferred to campaign end (Jafar, 2026-10-17).
 
 **Next:** Nothing. Type check runs with the campaign's final checks.
+
+**Tiles (2026-10-18):** Jafar kept the live groups and asked for the soft coloured tile behind each icon. Built:
+24 tile in `--color-<tone>--surface`, 14 icon, `--radius-tile-small`; white tile on hover; current page = white
+tile with a green icon on the green row. `concept.pen` Sidebar part now uses the live groups. Checked with
+Playwright (owner): 1440 light/dark, hover, collapsed, 390 phone menu.
