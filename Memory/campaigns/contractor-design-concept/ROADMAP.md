@@ -8,7 +8,7 @@
 | C2 Home | First version 2 | Home in the concept | C1 | Jafar approves | Approved 2026-10-18 (`parts/c2-home.md`) |
 | C3 Jobs list | First version 2 | Jobs list in the concept | C1 | Jafar approves | Approved and built 2026-10-18 (`parts/c3-jobs-list.md`) |
 | C4 Job details | First version 2 | Job details in the concept | C1 | Jafar approves | Not started |
-| C5 Other screens | First version 3 | Clients, Requests, Quotes, Invoices lists and records; Payment; Schedule; Inbox; Settings; Timesheets; Pipeline; Files; Marketing; Reviews; Reports | C2–C4 pattern | Jafar approves each | Not started |
+| C5 Everything else | First version 3 | Every page and component on the redesign checklist, most necessary first, Jafar's admin panel last | C5a checklist; C2–C4 pattern | Jafar approves each; coverage check clean | C5a checklist approved 2026-10-18, not made yet (`parts/c5a-redesign-checklist.md`) |
 | C6 Rollout decision | Still unclear | All at once or screen by screen | C2–C4 | Jafar decides | Not started |
 | C7 Build | First version 4 | Approved screens built; variables in code and skill | C6 | Each screen matches its frame; full screen check | Not started |
 | C8 Old look removed | First version 4 | Old styles and unused code deleted | C7 | Every page on the concept; lint and unused-code scan clean | Not started |

@@ -2,7 +2,8 @@
 
 ## Summary
 
-A new design concept for the whole contractor app. It is drawn in Pencil (`concept.pen`) from the app's own
+A new design concept for the whole app: every staff page, every customer page and email, login and sign-up,
+and Jafar's admin panel last. It is drawn in Pencil (`concept.pen`) from the app's own
 colours, sizes and spacing, then each screen goes **design → review → approve → build** (Jafar, 2026-10-17).
 New buttons, parts and screens are allowed; the look follows
 the [design skill](../.claude/skills/design/SKILL.md) (Style, Critical Rules, Pencil Design Requirements and its
@@ -23,8 +24,23 @@ staff open the app between jobs and want to see what needs them right now, in a 
    with `-surface` and `-on-surface`, plus `radius-circle`. The sidebar keeps the live app's groups (Overview, Customers,
    Work & Money, Growth; Jafar 2026-10-18).
 2. **Pilot screens**, one per session, each approved: Home, Jobs list, Job details.
-3. **Every other screen**, each approved. Once a pattern is approved, several screens may be drawn in parallel
-   by helper agents, each reviewed against the brief before Jafar sees it.
+3. **Everything else, most necessary first**, each approved. A **redesign checklist** holds every piece of the
+   app, built from the code rather than from memory: every page file (`src/routes/**/+page.svelte`) and every
+   component file (`src/lib/components/**/*.svelte`), plus customer emails and error pages. Each piece carries
+   two ticks, Pencil and Built, and each tick has a "waiting" step. A coverage check proves nothing is missing.
+   The order, by tier:
+   1. Shared parts and pop-up patterns: every part used on more than one page.
+   2. Daily pages: the app's daily list in `src/routes/(app)/+layout.svelte`, with their record and "new" pages.
+   3. What customers and new businesses see: customer pages, customer emails, login and sign-up.
+   4. Weekly tools: the remaining staff work pages.
+   5. Growth.
+   6. Set up once: Settings and Setup.
+   7. Jafar's admin panel.
+
+   Every pop-up is on the checklist. Simple ones follow a drawn pattern (form pop-up, "are you sure?" pop-up,
+   side drawer). Pop-ups that carry money, sending or scheduling decisions get their own drawing, and Jafar may
+   move any pop-up between the two. Once a pattern is approved, several screens may be drawn in parallel by
+   helper agents, each reviewed against the brief before Jafar sees it.
 4. **Build.** Approved screens are built through shared parts. New variables go into
    `src/lib/styles/_variables.scss` and the design skill in the same commit as Pencil. When every screen uses the
    concept, the old look and its unused code are deleted.
@@ -88,5 +104,13 @@ designs as the record of the live app.
   icons only; the tiles stay in the concept.
 - Decision 2026-10-18 (Jafar, final): the concept uses the live app's sidebar exactly — coloured icons with no
   tiles, the live groups, a solid brand-green current page. `concept.pen`'s Sidebar part was redrawn to match.
+- Decision 2026-10-18 (Jafar): the redesign covers the whole app, tracked on the redesign checklist in First
+  version 3, most necessary first, with his admin panel last. The checklist's scope is a general rule from the
+  code; parts anyone happens to name are only examples of it. This follows Brad Frost's interface inventory
+  (https://bradfrost.com/blog/post/interface-inventory/), with design and code tracked separately as IBM's
+  Carbon component checklist does (https://carbondesignsystem.com/contributing/component-checklist).
+- Decision 2026-10-18 (Jafar): once a piece is built and matches Pencil, its drafts, rejected options and
+  comparison boards are deleted from `concept.pen`. The parts boards and one final drawing per screen stay as
+  the blueprint for later changes. `classic.pen`'s old-look drawings are deleted at C8.
 - Decision 2026-10-17 (Jafar): keep two sets of styling modules for now — `design` (concept) and
   `design-classic` (live look) — until rollout; revisit then.

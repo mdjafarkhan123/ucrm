@@ -14,3 +14,6 @@ How to work in the Pencil app. What a design must look like is in the
    commit, under a claim.
 5. **Share the file safely.** Jafar or another agent may be editing it: read a part again just before changing
    it, and leave changes you did not make as they are.
+6. **Tidy up after building.** When a piece is built and matches its drawing (Built ✅ on the redesign
+   checklist), delete its drafts, rejected options and comparison boards. Keep the parts boards and one final
+   drawing per screen; they are the blueprint for later changes (Jafar, 2026-10-18).
