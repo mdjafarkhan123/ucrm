@@ -4,7 +4,7 @@ A directory of unresolved work. Priority ranks an item once its reactivation tri
 
 | Priority | Deferred task |
 | --- | --- |
-| P0 | [Schedule's Employee lists show no names, so the Map route cannot open (emergency, Jafar 2026-10-18)](schedule-employee-lists-are-empty.md) |
+| P2 | [Other screens may show an empty list when a query's data is first read after it arrives](query-data-read-late-can-miss-its-update.md) |
 | P1 | [Background jobs have no production scheduler decision](background-jobs-have-no-production-scheduler-decision.md) |
 | P1 | [Full GHL Conversations surface gap list (inbox.jpg)](ghl-conversations-surface-gaps.md) |
 | P1 | [Production AWS account needs the one-time SES branded-click-links setup](production-aws-ses-branded-click-links-setup.md) |

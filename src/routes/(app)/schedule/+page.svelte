@@ -120,7 +120,10 @@
 	const teamQuery = createQuery(() => ({
 		queryKey: assignableTeamKey,
 		queryFn: fetchAssignableTeam,
-		staleTime: 5 * 60 * 1000
+		staleTime: 5 * 60 * 1000,
+		// The names are only read once a popup opens, after they have arrived. Without this the query reports
+		// changes to the few fields read earlier, so this page never hears that the team loaded.
+		notifyOnChangeProps: 'all' as const
 	}));
 
 	// Every day the calendar names is the contractor's own day, not the browser's. Until the timezone has
