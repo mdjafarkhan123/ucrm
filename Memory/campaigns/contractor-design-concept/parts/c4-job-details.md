@@ -34,7 +34,10 @@
    Products. Instructions: the app already has job-wide and per-visit instructions (like Jobber); visit rows now
    show their own line.
 4. Section title line: **everywhere** → added to Home and Jobs list cards; rule in `cards.md`.
-5. Plain icon tiles: **yes, recolour, his review** → Notes conversation teal, Checklists time (filled in on
+5. Products and services "looked plain" → each line has a 40 thumb (the line's photo; a service gets a job
+   tile), a Product (quote pink) or Service (job green) pill from the line's category, a tinted table head, a
+   line count, and totals in a subtle panel with a white Total box. Jafar: "now looks better".
+6. Plain icon tiles: **yes, recolour, his review** → Notes conversation teal, Checklists time (filled in on
    visits). Photos and files stays the Files grey (map); Signatures stays success.
 
 ## Next
