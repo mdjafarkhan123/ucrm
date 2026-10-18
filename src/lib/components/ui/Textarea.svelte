@@ -150,4 +150,29 @@
 			}
 		}
 	}
+
+	// Concept look (design skill `inputs.md`): inside a `.concept-fields` area the label sits above the box.
+	:global(.concept-fields) .textarea {
+		.textarea__label,
+		&:focus-within .textarea__label,
+		&.textarea--has-value .textarea__label {
+			position: static;
+			display: block;
+			max-width: none;
+			margin-bottom: 6px;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 600;
+			transform: none;
+			transition: none;
+		}
+		textarea,
+		&:focus-within textarea,
+		&.textarea--has-value textarea {
+			padding: 10px var(--space-slim);
+		}
+		textarea:hover:not(:focus) {
+			border-color: var(--color-border--section);
+		}
+	}
 </style>

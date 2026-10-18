@@ -4,6 +4,7 @@
 	import uploadIcon from '@tabler/icons/outline/upload.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import photoPlusIcon from '@tabler/icons/outline/photo-plus.svg?raw';
 
 	// One optional photo box: a dashed "add" target when empty, the photo with replace and remove buttons
 	// when filled. A quote line and a price list item both hold exactly one photo this way. The box fills
@@ -15,6 +16,7 @@
 		uploading = false,
 		disabled = false,
 		label = 'Photo',
+		addText,
 		onChoose,
 		onRemove
 	}: {
@@ -27,6 +29,8 @@
 		disabled?: boolean;
 		/** What the photo is of, for its alt text and the buttons' names. */
 		label?: string;
+		/** Concept look: the empty box says what it does under a photo icon, on a soft fill. */
+		addText?: string;
 		onChoose: (file: File) => void;
 		onRemove: () => void;
 	} = $props();
@@ -49,7 +53,11 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div class="photo-slot" class:photo-slot--filled={filled}>
+<div
+	class="photo-slot"
+	class:photo-slot--filled={filled}
+	class:photo-slot--concept={Boolean(addText)}
+>
 	<input
 		bind:this={input}
 		type="file"
@@ -104,7 +112,11 @@
 			{disabled}
 			onclick={openPicker}
 		>
-			{@html uploadIcon}
+			{#if addText}
+				{@html photoPlusIcon}<span class="photo-slot__add-text">{addText}</span>
+			{:else}
+				{@html uploadIcon}
+			{/if}
 		</button>
 	{/if}
 </div>
@@ -235,6 +247,26 @@
 			border-radius: var(--radius-circle);
 			animation: photo-slot-spin 0.8s linear infinite;
 		}
+	}
+
+	.photo-slot--concept:not(.photo-slot--filled) {
+		border-style: solid;
+		background: var(--color-surface--background--subtle);
+
+		.photo-slot__add {
+			align-content: center;
+			gap: 2px;
+
+			:global(svg) {
+				width: 18px;
+				height: 18px;
+			}
+		}
+	}
+
+	.photo-slot__add-text {
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
 	}
 
 	@keyframes photo-slot-spin {

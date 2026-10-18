@@ -304,4 +304,30 @@
 		place-items: center;
 		color: var(--color-interactive);
 	}
+
+	// Concept look (design skill `inputs.md`): inside a `.concept-fields` area the label sits above a 40px box.
+	:global(.concept-fields) .select {
+		&.select--labelled {
+			padding-top: 0;
+		}
+		.select__label {
+			position: static;
+			display: block;
+			max-width: none;
+			margin-bottom: 6px;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 600;
+			transform: none;
+			transition: none;
+			padding: 0;
+			background: none;
+			line-height: inherit;
+		}
+		:global(.select__trigger) {
+			min-height: 40px;
+			padding: 0 var(--space-slim);
+			font-size: var(--typography--fontSize-base);
+		}
+	}
 </style>

@@ -59,6 +59,8 @@
 	import circlePlusIcon from '@tabler/icons/outline/circle-plus.svg?raw';
 	import packageIcon from '@tabler/icons/outline/package.svg?raw';
 	import toolIcon from '@tabler/icons/outline/tool.svg?raw';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 
 	// One "Products and services" section, matching the real Jobber quote line-item card
 	// (jobber-03-quotes.md §8.1): name/qty/price/total on top, description + a photo underneath, drag to
@@ -103,6 +105,8 @@
 		onEditCancel,
 		pricingControls,
 		clientView,
+		conceptTotals,
+		pendingChanges = false,
 		concept = false
 	}: {
 		/** The concept look (Job details `tNdkX`): each saved line leads with its photo, or a Product /
@@ -171,6 +175,11 @@
 		pricingControls?: Snippet;
 		/** Quote-only controls rendered where Jobber puts them: below the line editor actions. */
 		clientView?: Snippet;
+		/** Concept edit mode: what follows the subtotal in the totals panel (discount, tax, total). Told
+		 *  whether the lines' money has moved since the save, so saved figures are not shown as current. */
+		conceptTotals?: Snippet<[{ linesChanged: boolean }]>;
+		/** The page holds unsaved changes of its own in this edit (discount, tax), so closing asks first. */
+		pendingChanges?: boolean;
 	} = $props();
 
 	const queryClient = useQueryClient();
@@ -391,8 +400,25 @@
 	const draftComparable = $derived(comparable(draftLines.filter((line) => !isUntouchedLine(line))));
 	const dirty = $derived(isEditing && draftComparable !== savedComparable);
 
+	// Only quantity, price and taxability move the money; a new description or photo leaves it alone.
+	const moneyKey = (
+		rows: {
+			quantity: number | null;
+			unit_price_minor: number | null;
+			is_taxable?: boolean | null;
+		}[]
+	) =>
+		rows
+			.map((row) => `${row.quantity ?? 0}:${row.unit_price_minor ?? 0}:${row.is_taxable ?? true}`)
+			.sort()
+			.join('|');
+	const linesMoneyChanged = $derived(
+		isEditing &&
+			moneyKey(draftLines.filter((line) => !isUntouchedLine(line))) !== moneyKey(savedLines)
+	);
+
 	function requestClose() {
-		if (dirty) {
+		if (dirty || pendingChanges) {
 			confirmingDiscard = true;
 			return;
 		}
@@ -982,10 +1008,21 @@
 	{icon}
 	{tone}
 	level={2}
-	{hint}
-	class={flush && !isEditing && !loading && !loadFailed && savedLines.length > 0
-		? 'section-block--flush'
-		: ''}
+	hint={concept && isEditing && !alwaysEditing
+		? draftLines.length > 1
+			? 'Editing · drag ⠿ to reorder'
+			: 'Editing'
+		: hint}
+	class={[
+		flush &&
+			(concept
+				? !loading && !loadFailed && (isEditing || savedLines.length > 0)
+				: !isEditing && !loading && !loadFailed && savedLines.length > 0) &&
+			'section-block--flush',
+		concept && isEditing && !alwaysEditing && 'pricing-block--editing'
+	]
+		.filter(Boolean)
+		.join(' ')}
 >
 	{#snippet actions()}
 		{#if editable && !isEditing && savedLines.length > 0}
@@ -1000,214 +1037,275 @@
 	{:else if loadFailed}
 		<p class="pricing-block__error" role="alert">That pricing could not be loaded.</p>
 	{:else if isEditing}
-		{#if draftLines.length === 0}
-			<p class="pricing-block__hint">
-				Nothing priced yet. Add a line item, or pick one out of the price book.
-			</p>
-		{/if}
-		<div
-			class="pricing-card-list"
-			use:dragHandleZone={{
-				items: draftLines,
-				flipDurationMs: 150,
-				dragDisabled: saving || draftLines.length < 2
-			}}
-			onconsider={handleReorder}
-			onfinalize={handleReorder}
-		>
-			{#each draftLines as line (line.id)}
-				<div class="pricing-card" animate:flip={{ duration: 150 }}>
-					{#if draftLines.length > 1}
-						<div class="pricing-card__handle" use:dragHandle aria-label="Reorder this line">
-							{@html gripIcon}
-						</div>
-					{/if}
-					<div class="pricing-card__body">
-						{#if quoteChoices && line.line_kind !== 'priced'}
-							<div class="pricing-card__copy">
-								<Input
-									id={`pricing-copy-${line.id}`}
-									label={line.line_kind === 'heading' ? 'Heading' : 'Text title'}
-									disabled={saving}
-									bind:value={() => line.name, (value) => updateLine(line.id, { name: value })}
-								/>
-								{#if line.line_kind === 'text'}
-									<Textarea
-										id={`pricing-copy-description-${line.id}`}
-										label="Text"
-										rows={3}
-										maxlength={2000}
-										showCount={false}
-										disabled={saving}
-										bind:value={
-											() => line.description ?? '',
-											(value) => updateLine(line.id, { description: value || null })
-										}
-									/>
-								{/if}
+		<div class={['pricing-edit', concept && 'pricing-edit--concept concept-fields']}>
+			{#if draftLines.length === 0}
+				<p class="pricing-block__hint">
+					Nothing priced yet. Add a line item, or pick one out of the price book.
+				</p>
+			{/if}
+			<div
+				class="pricing-card-list"
+				use:dragHandleZone={{
+					items: draftLines,
+					flipDurationMs: 150,
+					dragDisabled: saving || draftLines.length < 2
+				}}
+				onconsider={handleReorder}
+				onfinalize={handleReorder}
+			>
+				{#each draftLines as line (line.id)}
+					<div
+						class={['pricing-card', concept && 'pricing-card--concept']}
+						animate:flip={{ duration: 150 }}
+					>
+						{#if draftLines.length > 1}
+							<div class="pricing-card__handle" use:dragHandle aria-label="Reorder this line">
+								{@html gripIcon}
 							</div>
-						{:else}
-							{#if lineBadges(line).length > 0}
-								<div class="pricing-card__marks">
-									{#each lineBadges(line) as mark (mark)}
-										<Badge size="small">{mark}</Badge>
-									{/each}
-								</div>
-							{/if}
-							<div class="pricing-card__row1">
-								<div class="pricing-card__name">
-									<CatalogItemPicker
-										id={`pricing-name-${line.id}`}
-										label="Name"
+						{/if}
+						<div class="pricing-card__body">
+							{#if quoteChoices && line.line_kind !== 'priced'}
+								<div class="pricing-card__copy">
+									<Input
+										id={`pricing-copy-${line.id}`}
+										label={line.line_kind === 'heading' ? 'Heading' : 'Text title'}
 										disabled={saving}
-										{currencyCode}
-										{locale}
-										invalid={Boolean(nameTouched[line.id]) && !line.name.trim()}
-										errorMessage={nameTouched[line.id] && !line.name.trim()
-											? 'Give this line a name.'
-											: ''}
-										onBlur={() => (nameTouched = { ...nameTouched, [line.id]: true })}
 										bind:value={() => line.name, (value) => updateLine(line.id, { name: value })}
-										onSelect={(item) => applyCatalogItem(line.id, item)}
 									/>
-								</div>
-								<QuantityInput
-									id={`pricing-qty-${line.id}`}
-									label="Quantity"
-									disabled={saving}
-									bind:value={
-										() => line.quantity, (value) => updateLine(line.id, { quantity: value })
-									}
-								/>
-								<MoneyInput
-									id={`pricing-price-${line.id}`}
-									label="Unit price"
-									disabled={saving}
-									bind:value={
-										() => line.unit_price_minor,
-										(value) => updateLine(line.id, { unit_price_minor: value })
-									}
-								/>
-								<Input
-									id={`pricing-total-${line.id}`}
-									label="Total"
-									readonly
-									tabindex={-1}
-									value={formatMoney(previewTotal(line))}
-								/>
-							</div>
-							<div class="pricing-card__row2">
-								<div class="pricing-card__description">
-									<Textarea
-										id={`pricing-description-${line.id}`}
-										label="Description"
-										rows={4}
-										maxlength={2000}
-										showCount={false}
-										disabled={saving}
-										bind:value={
-											() => line.description ?? '',
-											(value) => updateLine(line.id, { description: value || null })
-										}
-									/>
-								</div>
-								<div class="pricing-card__image">
-									<PhotoSlot
-										previewUrl={line.imagePreviewUrl}
-										fileId={line.image_file_id}
-										processingState={line.imageProcessingState}
-										uploading={line.imageUploading}
-										disabled={saving}
-										label={line.name || 'Line photo'}
-										onChoose={(file) => void handleFileChosen(line.id, file)}
-										onRemove={() => removeImage(line.id)}
-									/>
-								</div>
-							</div>
-							{#if showServiceDate}
-								<div class="pricing-card__service-date">
-									<CalendarPicker
-										id={`pricing-service-date-${line.id}`}
-										label="Service date"
-										{locale}
-										disabled={saving}
-										bind:value={
-											() => calendarDateFromString(line.service_date),
-											(value) => updateLine(line.id, { service_date: calendarDateToString(value) })
-										}
-									/>
-									{#if line.service_date}
-										<Button
-											size="small"
-											variant="tertiary"
+									{#if line.line_kind === 'text'}
+										<Textarea
+											id={`pricing-copy-description-${line.id}`}
+											label="Text"
+											rows={3}
+											maxlength={2000}
+											showCount={false}
 											disabled={saving}
-											onclick={() => updateLine(line.id, { service_date: null })}
-										>
-											Clear
-										</Button>
+											bind:value={
+												() => line.description ?? '',
+												(value) => updateLine(line.id, { description: value || null })
+											}
+										/>
 									{/if}
 								</div>
+							{:else}
+								{#if lineBadges(line).length > 0}
+									<div class="pricing-card__marks">
+										{#each lineBadges(line) as mark (mark)}
+											<Badge size="small">{mark}</Badge>
+										{/each}
+									</div>
+								{/if}
+								<div class="pricing-card__row1">
+									<div class="pricing-card__name">
+										<CatalogItemPicker
+											id={`pricing-name-${line.id}`}
+											label={concept ? 'Name · from your price book' : 'Name'}
+											disabled={saving}
+											{currencyCode}
+											{locale}
+											invalid={Boolean(nameTouched[line.id]) && !line.name.trim()}
+											errorMessage={nameTouched[line.id] && !line.name.trim()
+												? 'Give this line a name.'
+												: ''}
+											onBlur={() => (nameTouched = { ...nameTouched, [line.id]: true })}
+											bind:value={() => line.name, (value) => updateLine(line.id, { name: value })}
+											onSelect={(item) => applyCatalogItem(line.id, item)}
+										/>
+									</div>
+									<QuantityInput
+										id={`pricing-qty-${line.id}`}
+										label="Quantity"
+										disabled={saving}
+										bind:value={
+											() => line.quantity, (value) => updateLine(line.id, { quantity: value })
+										}
+									/>
+									<MoneyInput
+										id={`pricing-price-${line.id}`}
+										label="Unit price"
+										disabled={saving}
+										bind:value={
+											() => line.unit_price_minor,
+											(value) => updateLine(line.id, { unit_price_minor: value })
+										}
+									/>
+									<Input
+										id={`pricing-total-${line.id}`}
+										label="Total"
+										readonly
+										tabindex={-1}
+										value={formatMoney(previewTotal(line))}
+									/>
+								</div>
+								<div class="pricing-card__row2">
+									<div class="pricing-card__description">
+										<Textarea
+											id={`pricing-description-${line.id}`}
+											label="Description"
+											rows={4}
+											maxlength={2000}
+											showCount={false}
+											disabled={saving}
+											bind:value={
+												() => line.description ?? '',
+												(value) => updateLine(line.id, { description: value || null })
+											}
+										/>
+									</div>
+									<div class="pricing-card__image">
+										{#if concept}<span class="pricing-card__photo-label">Photo</span>{/if}
+										<PhotoSlot
+											addText={concept ? 'Add photo' : undefined}
+											previewUrl={line.imagePreviewUrl}
+											fileId={line.image_file_id}
+											processingState={line.imageProcessingState}
+											uploading={line.imageUploading}
+											disabled={saving}
+											label={line.name || 'Line photo'}
+											onChoose={(file) => void handleFileChosen(line.id, file)}
+											onRemove={() => removeImage(line.id)}
+										/>
+									</div>
+								</div>
+								{#if showServiceDate}
+									<div class="pricing-card__service-date">
+										<CalendarPicker
+											id={`pricing-service-date-${line.id}`}
+											label="Service date"
+											{locale}
+											disabled={saving}
+											bind:value={
+												() => calendarDateFromString(line.service_date),
+												(value) =>
+													updateLine(line.id, { service_date: calendarDateToString(value) })
+											}
+										/>
+										{#if line.service_date}
+											<Button
+												size="small"
+												variant="tertiary"
+												disabled={saving}
+												onclick={() => updateLine(line.id, { service_date: null })}
+											>
+												Clear
+											</Button>
+										{/if}
+									</div>
+								{/if}
+								{#if concept}
+									<div class="pricing-card__kind-row">
+										<span
+											class={[
+												'pricing-card__kind',
+												line.category === 'service' && 'pricing-card__kind--service'
+											]}>{line.category === 'service' ? 'Service' : 'Product'}</span
+										>
+										<span class="pricing-card__kind-note"
+											>{line.is_taxable ? 'Taxed' : 'Not taxed'}{line.catalog_item_id
+												? ' · from the price book'
+												: ''}</span
+										>
+									</div>
+								{/if}
 							{/if}
-						{/if}
+						</div>
+						<div class="pricing-card__actions">
+							<DropdownMenu
+								triggerLabel="Line actions"
+								triggerClass={concept
+									? undefined
+									: 'dropdown-menu__trigger pricing-card__menu-trigger'}
+								disabled={saving}
+								items={lineMenuItems(line)}
+							/>
+						</div>
 					</div>
-					<div class="pricing-card__actions">
-						<DropdownMenu
-							triggerLabel="Line actions"
-							triggerClass="dropdown-menu__trigger pricing-card__menu-trigger"
-							disabled={saving}
-							items={lineMenuItems(line)}
-						/>
+				{/each}
+			</div>
+			<div class="pricing-block__footer">
+				<Button
+					size="small"
+					variant={concept ? 'secondary' : 'tertiary'}
+					disabled={saving}
+					onclick={addLine}
+				>
+					{#if concept}<span class="pricing-block__price-book-icon" aria-hidden="true"
+							>{@html plusIcon}</span
+						>{/if}
+					Add line item
+				</Button>
+				<span bind:this={priceBookButton} class="pricing-block__price-book">
+					<Button
+						size="small"
+						variant="secondary"
+						disabled={saving}
+						onhover={warmPriceBook}
+						onclick={openPriceBook}
+					>
+						<span class="pricing-block__price-book-icon" aria-hidden="true">{@html bookIcon}</span>
+						Price book
+					</Button>
+				</span>
+				{#if quoteChoices}
+					<Button
+						size="small"
+						variant="tertiary"
+						disabled={saving}
+						onclick={() => addCopyLine('text')}
+					>
+						Add text
+					</Button>
+					<Button
+						size="small"
+						variant="tertiary"
+						disabled={saving}
+						onclick={() => addCopyLine('heading')}
+					>
+						Add heading
+					</Button>
+				{/if}
+			</div>
+			{#if quoteChoices && clientView}
+				{@render clientView()}
+			{/if}
+			{#if concept && showPrices}
+				<div class="pricing-block__concept-totals">
+					<div class="pricing-block__concept-panel">
+						<div class="pricing-block__concept-subtotal">
+							<span>Subtotal</span>
+							<span>{formatMoney(draftSubtotal(draftLines))}</span>
+						</div>
+						{@render conceptTotals?.({ linesChanged: linesMoneyChanged })}
 					</div>
 				</div>
-			{/each}
-		</div>
-		<div class="pricing-block__footer">
-			<Button size="small" variant="tertiary" disabled={saving} onclick={addLine}>
-				Add line item
-			</Button>
-			<span bind:this={priceBookButton} class="pricing-block__price-book">
-				<Button
-					size="small"
-					variant="secondary"
-					disabled={saving}
-					onhover={warmPriceBook}
-					onclick={openPriceBook}
-				>
-					<span class="pricing-block__price-book-icon" aria-hidden="true">{@html bookIcon}</span>
-					Price book
-				</Button>
-			</span>
-			{#if quoteChoices}
-				<Button
-					size="small"
-					variant="tertiary"
-					disabled={saving}
-					onclick={() => addCopyLine('text')}
-				>
-					Add text
-				</Button>
-				<Button
-					size="small"
-					variant="tertiary"
-					disabled={saving}
-					onclick={() => addCopyLine('heading')}
-				>
-					Add heading
-				</Button>
+			{:else if !concept}
+				<div class="pricing-block__totals">
+					<div class="pricing-block__totals-row">
+						<span>Subtotal</span>
+						<span>{formatMoney(draftSubtotal(draftLines))}</span>
+					</div>
+				</div>
+			{/if}
+			{#if pricingControls}
+				<div class="pricing-block__pricing-controls">{@render pricingControls()}</div>
+			{/if}
+			{#if concept && editing && onSave}
+				<div class="pricing-block__save-bar">
+					{#if error}
+						<p class="pricing-block__error" role="alert">{error}</p>
+					{:else}
+						<span class="pricing-block__save-status"
+							>{dirty || pendingChanges ? 'Unsaved changes' : 'No changes yet'}</span
+						>
+					{/if}
+					<Button variant="secondary" onclick={requestClose} disabled={saving}>Cancel</Button>
+					<Button variant="primary" onclick={() => void save()} loading={saving}>
+						<span class="pricing-block__price-book-icon" aria-hidden="true">{@html checkIcon}</span
+						>Save changes
+					</Button>
+				</div>
 			{/if}
 		</div>
-		{#if quoteChoices && clientView}
-			{@render clientView()}
-		{/if}
-		<div class="pricing-block__totals">
-			<div class="pricing-block__totals-row">
-				<span>Subtotal</span>
-				<span>{formatMoney(draftSubtotal(draftLines))}</span>
-			</div>
-		</div>
-		{#if pricingControls}
-			<div class="pricing-block__pricing-controls">{@render pricingControls()}</div>
-		{/if}
 	{:else if savedLines.length === 0}
 		<EmptyState
 			icon={listIcon}
@@ -1260,52 +1358,52 @@
 							<tr>
 								<th scope="row">
 									<span class="pricing-table__cell">
-									{#if concept}
-										<span class="pricing-table__lead">
-											{#if line.image_file_id}
-												<img
-													class="pricing-table__thumb"
-													src={fileImageUrl(line.image_file_id, 'thumb')}
-													alt=""
-													loading="lazy"
-												/>
-											{:else}
-												<span
-													class={[
-														'pricing-table__thumb',
-														'pricing-table__thumb--tile',
-														line.category === 'service' && 'pricing-table__thumb--service'
-													]}
-													aria-hidden="true"
-													>{@html line.category === 'service' ? toolIcon : packageIcon}</span
-												>
-											{/if}
-										</span>
-									{/if}
-									<span class="pricing-table__text">
-									<span class="pricing-table__title">
-										<span class="pricing-table__name">{line.name}</span>
-										{#if concept && line.category}
-											<span
-												class={[
-													'pricing-table__kind',
-													line.category === 'service' && 'pricing-table__kind--service'
-												]}>{line.category === 'service' ? 'Service' : 'Product'}</span
-											>
-										{/if}
-										{#if quoteChoices && line.selection_kind === 'optional'}
-											<span class="pricing-table__choice">
-												<span class="pricing-table__choice-icon" aria-hidden="true"
-													>{@html circlePlusIcon}</span
-												>
-												{line.is_recommended ? 'Recommended add-on' : 'Optional add-on'}
+										{#if concept}
+											<span class="pricing-table__lead">
+												{#if line.image_file_id}
+													<img
+														class="pricing-table__thumb"
+														src={fileImageUrl(line.image_file_id, 'thumb')}
+														alt=""
+														loading="lazy"
+													/>
+												{:else}
+													<span
+														class={[
+															'pricing-table__thumb',
+															'pricing-table__thumb--tile',
+															line.category === 'service' && 'pricing-table__thumb--service'
+														]}
+														aria-hidden="true"
+														>{@html line.category === 'service' ? toolIcon : packageIcon}</span
+													>
+												{/if}
 											</span>
 										{/if}
-									</span>
-									{#if line.description}
-										<span class="pricing-table__description">{line.description}</span>
-									{/if}
-									</span>
+										<span class="pricing-table__text">
+											<span class="pricing-table__title">
+												<span class="pricing-table__name">{line.name}</span>
+												{#if concept && line.category}
+													<span
+														class={[
+															'pricing-table__kind',
+															line.category === 'service' && 'pricing-table__kind--service'
+														]}>{line.category === 'service' ? 'Service' : 'Product'}</span
+													>
+												{/if}
+												{#if quoteChoices && line.selection_kind === 'optional'}
+													<span class="pricing-table__choice">
+														<span class="pricing-table__choice-icon" aria-hidden="true"
+															>{@html circlePlusIcon}</span
+														>
+														{line.is_recommended ? 'Recommended add-on' : 'Optional add-on'}
+													</span>
+												{/if}
+											</span>
+											{#if line.description}
+												<span class="pricing-table__description">{line.description}</span>
+											{/if}
+										</span>
 									</span>
 								</th>
 								{#if photoColumn}
@@ -1382,7 +1480,7 @@
 	{/if}
 </SectionBlock>
 
-{#if editing && onSave}
+{#if editing && onSave && !concept}
 	<div class="pricing-block__actions">
 		{#if error}<p class="pricing-block__error" role="alert">{error}</p>{/if}
 		<div class="pricing-block__actions-row">
@@ -1395,7 +1493,7 @@
 			<Button variant="primary" onclick={() => void save()} loading={saving}>{saveLabel}</Button>
 		</div>
 	</div>
-{:else if error}
+{:else if error && !(concept && editing)}
 	<p class="pricing-block__error pricing-block__error--standalone" role="alert">{error}</p>
 {/if}
 
@@ -2028,5 +2126,170 @@
 				font-size: var(--typography--fontSize-largest);
 			}
 		}
+	}
+
+	// Job details edit mode (`jFBRB`): the lines open up edge to edge with labels above their fields, each
+	// line closes with its kind and tax note, the totals panel holds discount and tax in place, and the card
+	// saves from its own foot. The card's border turns brand green while it is being edited.
+	.pricing-edit {
+		display: contents;
+
+		&--concept {
+			display: block;
+		}
+	}
+	:global(.record-detail--cards .section-block--concept.pricing-block--editing),
+	:global(.section-block--concept.pricing-block--editing) {
+		border-color: var(--color-interactive);
+	}
+	.pricing-edit--concept {
+		.pricing-block__hint {
+			padding: var(--space-base) var(--space-medium);
+		}
+		.pricing-card-list {
+			gap: 0;
+		}
+		.pricing-block__footer {
+			gap: var(--space-small);
+			padding: var(--space-base) var(--space-medium);
+			border-bottom: var(--border-base) solid var(--color-border);
+		}
+	}
+	.pricing-card--concept {
+		gap: var(--space-small);
+		padding: var(--space-base) var(--space-slim) var(--space-base) var(--space-small);
+		border: 0;
+		border-bottom: var(--border-base) solid var(--color-border);
+		border-radius: 0;
+		background: none;
+
+		// The handle and the menu line up with the first row's boxes, below their labels.
+		.pricing-card__handle {
+			align-self: flex-start;
+			width: 24px;
+			height: 40px;
+			margin-top: 25px;
+		}
+		.pricing-card__actions {
+			min-width: 0;
+			padding-top: 25px;
+		}
+		&:not(:has(.pricing-card__handle)) {
+			padding-left: var(--space-medium);
+		}
+		.pricing-card__body {
+			gap: var(--space-slim);
+		}
+		.pricing-card__row1,
+		.pricing-card__row2 {
+			grid-template-columns: minmax(0, 1fr) 80px 110px 110px;
+			gap: var(--space-small);
+		}
+		.pricing-card__image {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+			min-height: 0;
+
+			:global(.photo-slot) {
+				height: 72px;
+				min-height: 72px;
+			}
+		}
+		.pricing-card__description :global(textarea) {
+			height: 72px;
+			min-height: 72px;
+		}
+		.pricing-card__description :global(.textarea__footer) {
+			display: none;
+		}
+	}
+	.pricing-card__photo-label {
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-label);
+		font-weight: 600;
+	}
+	.pricing-card__kind-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+	}
+	.pricing-card__kind {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 3px 10px;
+		border-radius: var(--radius-circle);
+		color: var(--color-quote--onSurface);
+		background: var(--color-quote--surface);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+
+		&::before {
+			content: '';
+			width: 6px;
+			height: 6px;
+			border-radius: var(--radius-circle);
+			background: var(--color-quote);
+		}
+
+		&--service {
+			color: var(--color-job--onSurface);
+			background: var(--color-job--surface);
+
+			&::before {
+				background: var(--color-job);
+			}
+		}
+	}
+	.pricing-card__kind-note {
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+	}
+	.pricing-block__concept-totals {
+		display: flex;
+		justify-content: flex-end;
+		padding: var(--space-base) var(--space-medium) var(--space-medium);
+	}
+	.pricing-block__concept-panel {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-slim);
+		width: min(480px, 100%);
+		padding: var(--space-base) var(--space-base) var(--space-small);
+		border-radius: var(--radius-large);
+		background: var(--color-surface--background--subtle);
+	}
+	.pricing-block__concept-subtotal {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-small);
+		color: var(--color-text--secondary);
+
+		span:last-child {
+			color: var(--color-heading);
+			font-weight: 600;
+			font-variant-numeric: tabular-nums;
+		}
+	}
+	.pricing-block__save-bar {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+		padding: var(--space-slim) var(--space-medium);
+		border-top: var(--border-base) solid var(--color-border);
+		background: var(--color-surface--background--subtle);
+
+		.pricing-block__error {
+			flex: 1 1 auto;
+			margin: 0;
+			color: var(--color-critical);
+		}
+	}
+	.pricing-block__save-status {
+		flex: 1 1 auto;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
 	}
 </style>

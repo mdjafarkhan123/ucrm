@@ -171,4 +171,39 @@
 			height: 16px;
 		}
 	}
+
+	// Concept look (design skill `inputs.md`): inside a `.concept-fields` area the label sits above a 40px
+	// box instead of resting inside it.
+	:global(.concept-fields) .input {
+		.input__label,
+		&:focus-within .input__label,
+		&.input--has-value .input__label {
+			position: static;
+			display: block;
+			max-width: none;
+			margin-bottom: 6px;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 600;
+			transform: none;
+			transition: none;
+		}
+		.input__control {
+			min-height: 40px;
+		}
+		&.input--labeled input,
+		&.input--labeled:focus-within input,
+		&.input--labeled.input--has-value input {
+			padding: calc(var(--space-small) + 1px) var(--space-slim);
+		}
+		input {
+			padding: calc(var(--space-small) + 1px) var(--space-slim);
+		}
+		.input__control:has(input[readonly]) {
+			background: var(--color-surface--background--subtle);
+		}
+		.input__control:hover:not(:focus-within) {
+			border-color: var(--color-border--section);
+		}
+	}
 </style>
