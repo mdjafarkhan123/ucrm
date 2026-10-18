@@ -70,10 +70,17 @@ Its quick test run found 2 failures in `JobVisitsSection.svelte.spec.ts` ("recur
 "running timer with Stop … no Start on the others") — likely the new team-names query / row layout; unconfirmed.
 Jafar: no long tests (no svelte-check, no browser-mode spec runs) until the campaign ends.
 
+**Session 3 (2026-10-18):** visit spec fixed (2 checks were already failing on main: subtitle now also says
+"2 visits"; timer test read server time at file load). Products edit mode built to `jFBRB` (`f72d0951`): labels
+above 40px fields, hairline lines, Product/Service pill + "Taxed · from the price book", "Add photo" box, bordered
+••• menu, inline Discount / Tax / Total panel (`work/PricingAdjustmentsEditor`, live preview via
+`work/money-preview` = the database's arithmetic), Save bar inside the card, green edge while editing. Proven live
+on job #25: 5% discount saved, total $150 → $142.50, then removed. Kept live instead of the drawing: "Price book"
+button where the drawing shows "Add text" (jobs have no text lines).
+Empty states drawn on board `wgrYP` ("Concept · Job details · Empty sections"), **waiting for Jafar's yes**; Notes
+"+" vs inline composer asked.
+
 ## Next
 
-In the worktree: (1) fix the 2 failing visit checks (read the spec; don't run long suites); (2) rebuild the
-Products edit mode to `jFBRB`; (3) "fix all" covers the open points too — draw compact empty states in Pencil for
-Instructions, Checklists and Work report for Jafar's yes, and match Notes to the drawing's "+" (confirm with
-Jafar if keeping the inline composer seems better); (4) screen check against `tNdkX`/`jFBRB`; (5) merge to main
-and push. Then build New job (`parts/c5-new-job.md`).
+After Jafar answers: build the empty states (and Notes if he picks "+"), screen check against `tNdkX`, Pencil
+tidy-up (step 6), merge `claude/job-details-review` to main and push. Then build New job (`parts/c5-new-job.md`).
