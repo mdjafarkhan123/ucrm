@@ -112,6 +112,7 @@
 		<Button
 			variant={triggerVariant}
 			size={triggerSize ?? (triggerText ? 'base' : 'small')}
+			class={triggerText === 'More' ? 'dropdown-menu__more-button' : ''}
 			iconOnly={!triggerText}
 			label={triggerLabel ?? (triggerText ? undefined : 'Open menu')}
 			disabled
@@ -141,6 +142,7 @@
 						{...props}
 						variant={triggerVariant}
 						size={triggerSize ?? (triggerText ? 'base' : 'small')}
+						class={triggerText === 'More' ? 'dropdown-menu__more-button' : ''}
 						iconOnly={!triggerText}
 						label={triggerLabel ?? (triggerText ? undefined : 'Open menu')}
 						{disabled}
@@ -186,6 +188,17 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	:global(.button.dropdown-menu__more-button) {
+		gap: 6px;
+		padding-inline: 14px 10px;
+	}
+	:global(.button.dropdown-menu__more-button svg) {
+		color: var(--color-icon);
+	}
+	:global(.button.button--secondary.dropdown-menu__more-button:disabled:not([aria-busy='true'])) {
+		border-color: var(--color-border--interactive);
+		background: var(--color-surface);
+	}
 	.dropdown-menu__unavailable {
 		position: relative;
 		display: inline-flex;
@@ -314,7 +327,7 @@
 		overflow-wrap: anywhere;
 	}
 
-	// Read out, never drawn: the trailing icon says the same thing to the eye.
+	/* Read out, never drawn: the trailing icon says the same thing to the eye. */
 	.dropdown-menu__item-note {
 		position: absolute;
 		width: 1px;

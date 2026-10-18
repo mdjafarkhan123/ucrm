@@ -10,9 +10,8 @@
 		amount?: string;
 		count: number;
 		tone: StatusTone;
-		/** A Tabler icon (raw SVG) drawn on a soft tile in the status colour, above the count. Leave out to
-		 *  lead with the status dot and label instead. */
-		icon?: string;
+		/** A Tabler icon (raw SVG) drawn on a soft tile in the status colour, above the count. */
+		icon: string;
 		/** Make the tile a link to another page instead of a list filter. Leave out to filter in place. */
 		href?: string;
 	};
@@ -86,9 +85,7 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <section class="attention-card" aria-labelledby={titleId}>
-	<header
-		class={['attention-card__header', barParts.length > 0 && 'attention-card__header--barred']}
-	>
+	<header class="attention-card__header">
 		<div class="attention-card__heading">
 			<h2 id={titleId}>{title}</h2>
 			<p>{description}</p>
@@ -131,24 +128,14 @@
 						: `${tile.label}: ${tile.count}. ${tile.amount ? `${tile.amount} ` : ''}${tile.hint}`}
 					onclick={tile.href ? undefined : () => onSelect?.(selected ? '' : tile.key)}
 				>
-					{#if tile.icon}
-						<span class="attention-card__top">
-							<span class="attention-card__icon" aria-hidden="true">{@html tile.icon}</span>
-							<span class="attention-card__arrow" aria-hidden="true">{@html arrowRightIcon}</span>
-						</span>
-						<span class="attention-card__count">{loading ? '—' : tile.count}</span>
-						<span class="attention-card__label">{tile.label}</span>
-					{:else}
-						<span class="attention-card__label">
-							<span class="attention-card__dot" aria-hidden="true"></span>{tile.label}
-						</span>
-						<span class="attention-card__count-row">
-							<span class="attention-card__count">{loading ? '—' : tile.count}</span>
-							<span class="attention-card__arrow" aria-hidden="true">{@html arrowRightIcon}</span>
-						</span>
-					{/if}
+					<span class="attention-card__top">
+						<span class="attention-card__icon" aria-hidden="true">{@html tile.icon}</span>
+						<span class="attention-card__arrow" aria-hidden="true">{@html arrowRightIcon}</span>
+					</span>
+					<span class="attention-card__count">{loading ? '—' : tile.count}</span>
+					<span class="attention-card__label">{tile.label}</span>
 					<span class="attention-card__hint"
-						>{#if tile.amount && !loading}<strong>{tile.amount}</strong>{' '}{/if}{tile.hint}</span
+						>{#if tile.amount && !loading}<strong>{tile.amount}</strong>&#32;{/if}{tile.hint}</span
 					>
 				</svelte:element>
 			</li>
@@ -185,23 +172,12 @@
 		border-radius: var(--radius-large);
 		background: var(--color-surface);
 
-		/* Bordered icon tiles carry their own edges, so the header drops its rule and sits close above them. */
-		&:has(.attention-card__icon) .attention-card__header:not(.attention-card__header--barred) {
-			padding: var(--space-medium) var(--space-medium) 0;
-			border-bottom: 0;
-		}
-
 		&__header {
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
 			gap: var(--space-base);
-			padding: var(--space-large) var(--space-large) var(--space-base);
-			border-bottom: var(--border-base) solid var(--color-border);
-
-			&--barred {
-				border-bottom: 0;
-			}
+			padding: var(--space-medium) var(--space-medium) 0;
 		}
 		&__heading {
 			display: grid;
@@ -272,16 +248,10 @@
 			display: grid;
 			/* One column per tile (five when nothing says otherwise), so four tiles fill the row too. */
 			grid-template-columns: repeat(var(--attention-columns, 5), minmax(0, 1fr));
-			gap: 0;
+			gap: var(--space-small);
 			margin: 0;
-			padding: var(--space-small) 6px;
+			padding: var(--space-base);
 			list-style: none;
-
-			/* Icon tiles stand as their own bordered boxes, a small gap apart. */
-			&:has(.attention-card__icon) {
-				gap: var(--space-small);
-				padding: var(--space-base);
-			}
 
 			@container (max-width: 700px) {
 				grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -294,15 +264,15 @@
 		&__tile {
 			display: grid;
 			align-content: start;
-			gap: 10px;
+			gap: var(--space-slim);
 			width: 100%;
 			height: 100%;
 			padding: 14px var(--space-slim);
-			border: 0;
+			border: var(--border-base) solid var(--color-border);
 			border-radius: var(--radius-large);
 			color: inherit;
 			text-decoration: none;
-			background: transparent;
+			background: var(--color-surface);
 			font: inherit;
 			text-align: start;
 			cursor: pointer;
@@ -311,25 +281,14 @@
 				box-shadow var(--timing-quick);
 
 			&:hover {
+				border-color: var(--color-border--interactive--hover);
 				background: var(--color-surface--hover);
 			}
 			&:focus-visible {
 				outline: none;
 				box-shadow: var(--shadow-focus);
 			}
-			&:has(.attention-card__icon) {
-				gap: var(--space-slim);
-				padding: 14px var(--space-slim);
-				border: var(--border-base) solid var(--color-border);
-				background: var(--color-surface);
-
-				&:hover {
-					border-color: var(--color-border--interactive--hover);
-					background: var(--color-surface--hover);
-				}
-			}
-			&--alert,
-			&--alert:has(.attention-card__icon) {
+			&--alert {
 				border-color: var(--color-critical--surface);
 
 				background: var(--color-critical--surface);
@@ -358,25 +317,6 @@
 			font-size: 13px;
 			font-weight: 600;
 			letter-spacing: -0.1px;
-		}
-		&__dot {
-			flex: 0 0 auto;
-			width: 7px;
-			height: 7px;
-			border-radius: var(--radius-circle);
-			background: var(--color-inactive);
-		}
-		&__tile--warning &__dot {
-			background: var(--color-warning);
-		}
-		&__tile--success &__dot {
-			background: var(--color-success);
-		}
-		&__tile--critical &__dot {
-			background: var(--color-critical);
-		}
-		&__tile--informative &__dot {
-			background: var(--color-informative);
 		}
 		&__tile--critical &__label,
 		&__tile--critical &__count {
@@ -444,12 +384,6 @@
 			color: var(--color-critical--onSurface);
 		}
 
-		&__count-row {
-			display: flex;
-			align-items: flex-end;
-			justify-content: space-between;
-			gap: var(--space-small);
-		}
 		&__count {
 			color: var(--color-heading);
 			font-size: 30px;

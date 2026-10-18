@@ -63,7 +63,7 @@
 		/** A pill beside the big figure comparing it with the period before. */
 		change?: { direction: 'up' | 'down' | 'same'; text: string } | null;
 		/** A Tabler icon (raw SVG) on a soft tile before the eyebrow, naming what the money is. */
-		icon?: string;
+		icon: string;
 		/** A small chip at the end of the eyebrow row, e.g. "Due in 7 days". */
 		badge?: string;
 		/** A Tabler icon (raw SVG) drawn in the chip. */
@@ -97,7 +97,7 @@
 	<div class="money-card__head">
 		<div class="money-card__top">
 			<div class="money-card__title">
-				{#if icon}<span class="money-card__icon" aria-hidden="true">{@html icon}</span>{/if}
+				<span class="money-card__icon" aria-hidden="true">{@html icon}</span>
 				<p class="money-card__eyebrow">{eyebrow}</p>
 			</div>
 			{#if badge}
