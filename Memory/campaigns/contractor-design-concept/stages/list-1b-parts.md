@@ -10,7 +10,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `files/PhotoDescribeDialog` | 🔁F pop-up · loading | ⬜ | ⬜ |
 | `files/RecordFilesCard` | pop-ups: "confirm" 🔁C · menus ×1 · loading, permission-limited | ⬜ | ⬜ |
 | `forms/FormNotesCard` |  | ⬜ | ⬜ |
-| `schedule/NotifyCustomerCheckbox` |  | ⬜ | ⬜ |
+| `schedule/NotifyCustomerCheckbox` |  | ✅ | ✅ |
 | `settings/automation/EmailActionEditor` |  | ⬜ | ⬜ |
 | `settings/automation/SmsActionEditor` |  | ⬜ | ⬜ |
 | `ui/Popover` |  | ⬜ | ⬜ |
@@ -66,10 +66,12 @@ Key, tick rule and coverage command: `list-index.md`.
 | `jobs/ApplyToFutureDialog` | ◆ pop-up | ⬜ | ⬜ |
 | `jobs/FinalVisitDialog` | ◆ pop-up | ⬜ | ⬜ |
 | `jobs/JobVisitDialog` | ◆ pop-up · loading, permission-limited | ⬜ | ⬜ |
-| `jobs/RecurrenceFields` | loading | ⬜ | ⬜ |
+| `jobs/RecurrenceFields` | loading | ✅ | ✅ |
 | `layout/MobileNav` |  | ⬜ | ⬜ |
 | `layout/NotificationBell` |  | ⬜ | ⬜ |
 | `layout/RouteSkeleton` | loading | ⬜ | ⬜ |
 | `layout/SharedAppShell` | permission-limited, owner view | ⬜ | ⬜ |
 | `layout/Sidebar` |  | ✅ | ✅ |
 | `layout/Topbar` | menus ×9 · owner view | ✅ | ⬜ |
+| `ui/PersonPickChip` |  | ✅ | ✅ |
+| `work/PickedClient` |  | ✅ | ✅ |

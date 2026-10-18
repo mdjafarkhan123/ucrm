@@ -6,6 +6,7 @@
 		icon,
 		tone = 'inactive',
 		actions,
+		titleId,
 		class: className = ''
 	}: {
 		title: string;
@@ -15,6 +16,8 @@
 		/** The colour family of the icon tile, the same as the page's sidebar item: `job`, `quote`, `time`… */
 		tone?: string;
 		actions?: Snippet;
+		/** The title's id, for a page section labelled by it. */
+		titleId?: string;
 		class?: string;
 	} = $props();
 </script>
@@ -32,7 +35,7 @@
 		>
 	{/if}
 	<div class="page-header__copy">
-		<h1>{title}</h1>
+		<h1 id={titleId}>{title}</h1>
 		{#if description}<p class="page-header__description">{description}</p>{/if}
 	</div>
 	{#if actions}<div class="page-header__actions">{@render actions()}</div>{/if}

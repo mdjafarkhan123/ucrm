@@ -46,6 +46,7 @@
 		details,
 		children,
 		record = false,
+		footnote,
 		loading = false
 	}: {
 		eyebrow: string;
@@ -77,6 +78,8 @@
 		/** The record-page rail version: the breakdown sits straight under the figure and the hairline moves
 		 *  above the extra rows. */
 		record?: boolean;
+		/** A quiet line at the very foot, e.g. "Updates as you add or change lines." */
+		footnote?: string;
 		loading?: boolean;
 	} = $props();
 
@@ -199,6 +202,7 @@
 			{#if children}<div class="money-card__inset">{@render children()}</div>{/if}
 		</div>
 	{/if}
+	{#if footnote}<p class="money-card__footnote">{footnote}</p>{/if}
 </section>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
@@ -478,6 +482,10 @@
 		&--record {
 			gap: 20px;
 			padding: 24px;
+		}
+		&__footnote {
+			color: var(--color-feature--text--secondary);
+			font-size: var(--typography--fontSize-small);
 		}
 		&__swatch {
 			flex: 0 0 8px;

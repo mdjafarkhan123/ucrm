@@ -28,7 +28,9 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <div class={`rail-row ${className}`}>
 	{#if icon}
-		<span class={['rail-row__icon', `rail-row__icon--${tone}`]} aria-hidden="true">{@html icon}</span>
+		<span class={['rail-row__icon', `rail-row__icon--${tone}`]} aria-hidden="true"
+			>{@html icon}</span
+		>
 	{/if}
 	<div class="rail-row__text">
 		<span class="rail-row__label">{label}</span>

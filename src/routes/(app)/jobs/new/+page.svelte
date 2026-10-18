@@ -129,7 +129,7 @@
 
 <svelte:head><title>New job · Contractor CRM</title></svelte:head>
 
-<PageContainer variant="fill">
+<PageContainer variant="open">
 	{#if formOpen}
 		<JobForm
 			{seed}

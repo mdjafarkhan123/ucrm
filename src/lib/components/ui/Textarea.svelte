@@ -174,5 +174,9 @@
 		textarea:hover:not(:focus) {
 			border-color: var(--color-border--section);
 		}
+		// The label is above the box, so the placeholder starts on the first line.
+		textarea::placeholder {
+			padding-top: 0;
+		}
 	}
 </style>
