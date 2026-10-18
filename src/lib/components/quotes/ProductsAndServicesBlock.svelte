@@ -57,6 +57,8 @@
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
 	import circlePlusIcon from '@tabler/icons/outline/circle-plus.svg?raw';
+	import packageIcon from '@tabler/icons/outline/package.svg?raw';
+	import toolIcon from '@tabler/icons/outline/tool.svg?raw';
 
 	// One "Products and services" section, matching the real Jobber quote line-item card
 	// (jobber-03-quotes.md §8.1): name/qty/price/total on top, description + a photo underneath, drag to
@@ -100,8 +102,12 @@
 		onEditStart,
 		onEditCancel,
 		pricingControls,
-		clientView
+		clientView,
+		concept = false
 	}: {
+		/** The concept look (Job details `tNdkX`): each saved line leads with its photo, or a Product /
+		 *  Service tile, and carries a Product / Service pill after its name. */
+		concept?: boolean;
 		lines?: RequestPricingLine[];
 		/** Enables Quote-only add-ons, text/headings and tax exemption controls. */
 		quoteChoices?: boolean;
@@ -860,6 +866,8 @@
 	}
 
 	const anyLinePhoto = $derived(savedLines.some((line) => line.image_file_id));
+	// The concept look puts the photo inside the line's own cell, so it needs no column of its own.
+	const photoColumn = $derived(anyLinePhoto && !concept);
 
 	// A priced progress bill drops quantity and unit price. Its lines are a stage's share spread across the
 	// job's items, stored as a single lump priced at that share, so a per-unit reading of them is false: the
@@ -870,7 +878,7 @@
 	// How wide the saved table is, so a heading row's single cell spans all of it: line item, optional photo,
 	// quantity unless the progress pair replaced it, and — with prices — two money columns either way.
 	const savedColumnCount = $derived(
-		1 + (anyLinePhoto ? 1 : 0) + (progressMoney ? 0 : 1) + (showPrices ? 2 : 0)
+		1 + (photoColumn ? 1 : 0) + (progressMoney ? 0 : 1) + (showPrices ? 2 : 0)
 	);
 
 	function savedSubtotal(lines: RequestPricingLine[]) {
@@ -1219,12 +1227,12 @@
 			<table class="pricing-table">
 				<thead>
 					<tr>
-						<th scope="col">Line item</th>
-						{#if anyLinePhoto}
+						<th scope="col">{concept ? 'Product or service' : 'Line item'}</th>
+						{#if photoColumn}
 							<th scope="col" class="pricing-table__photo" aria-label="Photo"></th>
 						{/if}
 						{#if !progressMoney}
-							<th scope="col" class="pricing-table__number">Quantity</th>
+							<th scope="col" class="pricing-table__number">{concept ? 'Qty' : 'Quantity'}</th>
 						{/if}
 						{#if showPrices}
 							{#if progressMoney}
@@ -1251,8 +1259,40 @@
 						{:else}
 							<tr>
 								<th scope="row">
+									<span class="pricing-table__cell">
+									{#if concept}
+										<span class="pricing-table__lead">
+											{#if line.image_file_id}
+												<img
+													class="pricing-table__thumb"
+													src={fileImageUrl(line.image_file_id, 'thumb')}
+													alt=""
+													loading="lazy"
+												/>
+											{:else}
+												<span
+													class={[
+														'pricing-table__thumb',
+														'pricing-table__thumb--tile',
+														line.category === 'service' && 'pricing-table__thumb--service'
+													]}
+													aria-hidden="true"
+													>{@html line.category === 'service' ? toolIcon : packageIcon}</span
+												>
+											{/if}
+										</span>
+									{/if}
+									<span class="pricing-table__text">
 									<span class="pricing-table__title">
 										<span class="pricing-table__name">{line.name}</span>
+										{#if concept && line.category}
+											<span
+												class={[
+													'pricing-table__kind',
+													line.category === 'service' && 'pricing-table__kind--service'
+												]}>{line.category === 'service' ? 'Service' : 'Product'}</span
+											>
+										{/if}
 										{#if quoteChoices && line.selection_kind === 'optional'}
 											<span class="pricing-table__choice">
 												<span class="pricing-table__choice-icon" aria-hidden="true"
@@ -1265,8 +1305,10 @@
 									{#if line.description}
 										<span class="pricing-table__description">{line.description}</span>
 									{/if}
+									</span>
+									</span>
 								</th>
-								{#if anyLinePhoto}
+								{#if photoColumn}
 									<td class="pricing-table__photo">
 										{#if line.image_file_id}
 											<img src={fileImageUrl(line.image_file_id, 'thumb')} alt="" loading="lazy" />
@@ -1286,7 +1328,9 @@
 									{:else}
 										<td class="pricing-table__number">{formatMoney(line.unit_price_minor)}</td>
 									{/if}
-									<td class="pricing-table__number">{formatMoney(line.line_total_minor)}</td>
+									<td class="pricing-table__number pricing-table__line-total">
+										{formatMoney(line.line_total_minor)}
+									</td>
 								{/if}
 							</tr>
 						{/if}
@@ -1721,7 +1765,8 @@
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 		}
-		&__title {
+		&__title,
+		&__cell {
 			display: block;
 		}
 		&__choice {
@@ -1855,6 +1900,107 @@
 		.pricing-card__image {
 			min-height: 120px;
 		}
+	}
+
+	// Job details concept (`tNdkX`): each line leads with a 40px photo, or a tile in its kind's colour
+	// (Product in the quote colour, Service in the job colour), and names its kind in a pill.
+	:global(.job-detail) .pricing-table {
+		th,
+		td {
+			padding-block: var(--space-slim);
+			vertical-align: middle;
+		}
+		th:first-child,
+		td:first-child {
+			padding-left: var(--space-medium);
+		}
+		th:last-child,
+		td:last-child {
+			padding-right: var(--space-medium);
+		}
+		thead th {
+			padding-block: 10px;
+			letter-spacing: 0.8px;
+		}
+		tbody tr:last-child th,
+		tbody tr:last-child td {
+			border-bottom: 0;
+		}
+		&__cell {
+			display: flex;
+			align-items: center;
+			gap: var(--space-base);
+		}
+		&__text {
+			display: block;
+			min-width: 0;
+		}
+		&__lead {
+			display: inline-flex;
+			flex: 0 0 auto;
+		}
+		&__thumb {
+			display: block;
+			width: 40px;
+			height: 40px;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-tile-large);
+			object-fit: cover;
+
+			&--tile {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				border: 0;
+				color: var(--color-quote);
+				background: var(--color-quote--surface);
+
+				:global(svg) {
+					width: 20px;
+					height: 20px;
+				}
+			}
+
+			&--service {
+				color: var(--color-job);
+				background: var(--color-job--surface);
+			}
+		}
+		&__kind {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 3px 10px;
+			border-radius: var(--radius-circle);
+			color: var(--color-quote--onSurface);
+			background: var(--color-quote--surface);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+
+			&::before {
+				content: '';
+				width: 6px;
+				height: 6px;
+				border-radius: var(--radius-circle);
+				background: var(--color-quote);
+			}
+
+			&--service {
+				color: var(--color-job--onSurface);
+				background: var(--color-job--surface);
+
+				&::before {
+					background: var(--color-job);
+				}
+			}
+		}
+		&__line-total {
+			color: var(--color-heading);
+			font-weight: 600;
+		}
+	}
+	:global(.job-detail) .pricing-block__summary {
+		border-top: var(--border-base) solid var(--color-border);
 	}
 
 	// Job details concept (`tNdkX`): the totals sit in a soft grey panel under the table, with the Total in a

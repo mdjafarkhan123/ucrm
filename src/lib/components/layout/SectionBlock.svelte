@@ -320,4 +320,8 @@
 	:global(.record-detail--cards) .section-block--concept > .section-block__concept-body {
 		padding: var(--space-medium);
 	}
+	// A flush card draws its own edge-to-edge rows or table, so its body adds no padding.
+	:global(.record-detail--cards) .section-block--concept.section-block--flush > .section-block__concept-body {
+		padding: 0;
+	}
 </style>

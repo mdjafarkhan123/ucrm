@@ -31,7 +31,8 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import NotifyCustomerCheckbox from '$lib/components/schedule/NotifyCustomerCheckbox.svelte';
 	import { customerNoticeToast, type CustomerNoticeKind } from '$lib/schedule/customer-notices';
-	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
+	import { assignableTeamKey, fetchAssignableTeam, type TeamMember } from '$lib/team/api';
+	import { initials } from '$lib/collaboration/format';
 	import type { JobType } from '$lib/jobs/statuses';
 	import {
 		addJobVisits,
@@ -68,6 +69,7 @@
 	import repeatOffIcon from '@tabler/icons/outline/repeat-off.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 	import folderIcon from '@tabler/icons/outline/folder.svg?raw';
+	import clipboardIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
 
 	// The persisted visits manager for a job's detail page — the same "child record with its own save" shape
 	// as a client's property: every action here writes for itself and reports its own toast, so the page's
@@ -177,6 +179,28 @@
 		});
 	}
 
+	// The crew's initials on each row. The same cached team list the edit dialog uses, read only when some
+	// visit has people on it. Someone who has left the team is counted, not named.
+	const teamQuery = createQuery(() => ({
+		queryKey: assignableTeamKey,
+		queryFn: fetchAssignableTeam,
+		staleTime: 5 * 60 * 1000,
+		enabled: visits.some((visit) => visit.assignee_ids.length > 0)
+	}));
+	const teamById = $derived(new Map((teamQuery.data ?? []).map((member) => [member.id, member])));
+
+	function crewOf(visit: JobVisit) {
+		const members = visit.assignee_ids
+			.map((id) => teamById.get(id))
+			.filter((member): member is TeamMember => Boolean(member));
+		const named = members.slice(0, 3);
+		const others = visit.assignee_ids.length - named.length;
+		const unknown = visit.assignee_ids.length - members.length;
+		const names = members.map((member) => member.full_name ?? 'A teammate');
+		const label = `Assigned: ${[...names, ...(unknown > 0 ? [`${unknown} more`] : [])].join(', ')}`;
+		return { named, others, label };
+	}
+
 	// Invoices 5c-5: only a recurring job billed per visit charges each visit for what that visit did. Every
 	// other job bills its own lines, so its visits have no pricing of their own to edit.
 	const perVisitPricing = $derived(jobType === 'recurring' && priceBasis === 'per_visit');
@@ -249,6 +273,20 @@
 		visits
 			.filter((v) => v.completed_at !== null)
 			.sort((a, b) => ((b.visit_date ?? '') < (a.visit_date ?? '') ? 1 : -1))
+	);
+
+	// While Past is folded, its row names the most recent finished visit.
+	const lastPast = $derived(past[past.length - 1] ?? null);
+	const lastPastHint = $derived(
+		lastPast
+			? [
+					lastPast.visit_date ? rowWhen(lastPast).split(' · ')[0] : null,
+					lastPast.title,
+					'Completed'
+				]
+					.filter(Boolean)
+					.join(' · ')
+			: ''
 	);
 
 	const visitsSummary = $derived(
@@ -377,6 +415,30 @@
 		const start = formatTime(visit.start_time);
 		if (visit.end_time) return `${day} · ${start}–${formatTime(visit.end_time)}`;
 		return `${day} · ${start}`;
+	}
+
+	// The concept row's first line: "Today" or "Thu, Oct 23", then the time. The year shows only when it
+	// is not this year's, since the day tile beside it already carries the weekday and date.
+	function rowWhen(visit: JobVisit) {
+		if (!visit.visit_date) return 'No date yet';
+		const [year, month, date] = visit.visit_date.split('-').map(Number);
+		const day = isToday(visit)
+			? 'Today'
+			: new Intl.DateTimeFormat(locale, {
+					weekday: 'short',
+					month: 'short',
+					day: 'numeric',
+					year: String(year) === todayStr.slice(0, 4) ? undefined : 'numeric'
+				}).format(new Date(year, month - 1, date));
+		if (!visit.start_time) return `${day} · Anytime`;
+		const start = formatTime(visit.start_time);
+		return visit.end_time
+			? `${day} · ${start} – ${formatTime(visit.end_time)}`
+			: `${day} · ${start}`;
+	}
+
+	function isToday(visit: JobVisit) {
+		return !visit.completed_at && visit.visit_date === todayStr;
 	}
 
 	function completedWhen(visit: JobVisit) {
@@ -908,8 +970,11 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 {#snippet visitRow(visit: JobVisit)}
+	{@const today = isToday(visit)}
+	{@const crew = crewOf(visit)}
 	<li
 		class="job-visits-section__item"
+		class:job-visits-section__item--today={today}
 		onpointerenter={() => warmVisit(visit)}
 		onfocusin={() => warmVisit(visit)}
 	>
@@ -922,9 +987,10 @@
 		{/if}
 
 		<div class="job-visits-section__body">
-			<p class="job-visits-section__when">
-				{visit.title ? `${visit.title} · ` : ''}{visitWhen(visit)}
-			</p>
+			<p class="job-visits-section__when">{rowWhen(visit)}</p>
+			{#if visit.title}
+				<p class="job-visits-section__what">{visit.title}</p>
+			{/if}
 			{#if visit.completed_at}
 				<p class="job-visits-section__sub">{completedWhen(visit)}</p>
 			{/if}
@@ -940,7 +1006,11 @@
 				</p>
 			{/if}
 			{#if visit.instructions}
-				<p class="job-visits-section__note">{visit.instructions}</p>
+				<p class="job-visits-section__note">
+					<span class="job-visits-section__note-icon" aria-hidden="true">{@html clipboardIcon}</span
+					>
+					<span>{visit.instructions}</span>
+				</p>
 			{/if}
 		</div>
 
@@ -951,7 +1021,18 @@
 				{:else if isOverdue(visit)}
 					<Badge size="small" status="warning">Overdue</Badge>
 				{/if}
-				{#if visit.assignee_ids.length > 0}
+				{#if crew.named.length > 0}
+					<span class="job-visits-section__crew" role="img" aria-label={crew.label}>
+						{#each crew.named as member (member.id)}
+							<span class="job-visits-section__crew-chip" title={member.full_name ?? ''}
+								>{initials(member.full_name)}</span
+							>
+						{/each}
+						{#if crew.others > 0}
+							<span class="job-visits-section__crew-chip">+{crew.others}</span>
+						{/if}
+					</span>
+				{:else if visit.assignee_ids.length > 0}
 					<span class="job-visits-section__assignees">
 						<span aria-hidden="true">{@html usersIcon}</span>
 						{visit.assignee_ids.length}
@@ -960,18 +1041,19 @@
 			</div>
 		{/if}
 
-		<div class="job-visits-section__menu">
-			<DropdownMenu items={rowMenuItems(visit)} triggerLabel="Actions for this visit" />
-		</div>
-
 		{#if showsVisitTimer(visit)}
 			<div class="job-visits-section__timer">
 				<WorkTimerControl
 					target={{ kind: 'visit', jobId, visitId: visit.id }}
 					completed={Boolean(visit.completed_at) || jobStatus !== 'active'}
+					concept
 				/>
 			</div>
 		{/if}
+
+		<div class="job-visits-section__menu">
+			<DropdownMenu items={rowMenuItems(visit)} triggerLabel="Actions for this visit" />
+		</div>
 	</li>
 {/snippet}
 
@@ -1083,19 +1165,24 @@
 
 			{#if past.length > 0}
 				<div class="job-visits-section__group">
-					<button
-						type="button"
-						class="job-visits-section__group-toggle"
-						aria-expanded={showPast}
-						onclick={() => (showPast = !showPast)}
-					>
-						<span
-							class="job-visits-section__group-caret"
-							class:job-visits-section__group-caret--open={showPast}
-							aria-hidden="true">{@html chevronDownIcon}</span
+					<div class="job-visits-section__group-row">
+						<button
+							type="button"
+							class="job-visits-section__group-toggle"
+							aria-expanded={showPast}
+							onclick={() => (showPast = !showPast)}
 						>
-						Past <span class="job-visits-section__group-count">{past.length}</span>
-					</button>
+							<span
+								class="job-visits-section__group-caret"
+								class:job-visits-section__group-caret--open={showPast}
+								aria-hidden="true">{@html chevronDownIcon}</span
+							>
+							Past <span class="job-visits-section__group-count">{past.length}</span>
+						</button>
+						{#if !showPast && lastPast}
+							<span class="job-visits-section__group-hint">{lastPastHint}</span>
+						{/if}
+					</div>
 					{#if showPast}
 						<ul class="job-visits-section__list">
 							{#each past as visit (visit.id)}
@@ -1520,39 +1607,72 @@
 		}
 	}
 
-	// App look: the section is a card whose visits run edge to edge, one hairline apart. Each row leads with
-	// its day in a small tile and drops the calendar icon.
+	// Concept look (Job details `tNdkX`): rows sit inside a 12px inset with no rules between them. Each leads
+	// with its day tile; today's row and tile take the schedule colour. Badges, crew, timer and menu line up
+	// on the right.
 	:global(.record-detail--cards) {
 		.job-visits-section__error,
 		.job-visits-section__recurrence,
 		.job-visits-section__timer-elsewhere {
-			margin: 0 24px 16px;
+			margin: 0 0 var(--space-small);
 		}
-		.job-visits-section__groups,
+		.job-visits-section__groups {
+			gap: var(--space-smaller);
+			padding: var(--space-slim);
+		}
 		.job-visits-section__group,
 		.job-visits-section__list {
-			gap: 0;
+			gap: var(--space-smaller);
+		}
+		.job-visits-section__group + .job-visits-section__group {
+			padding-top: var(--space-small);
 		}
 		.job-visits-section__group-title,
+		.job-visits-section__group-row {
+			gap: 6px;
+			padding: var(--space-smaller);
+		}
+		.job-visits-section__group-title {
+			font-size: var(--typography--fontSize-overline);
+			letter-spacing: 0.8px;
+		}
 		.job-visits-section__group-toggle {
-			width: auto;
-			padding: 10px 24px;
-			border-top: var(--border-base) solid var(--color-border);
-			background: var(--color-surface--background--subtle);
+			gap: 6px;
+			font-size: var(--typography--fontSize-overline);
+			letter-spacing: 0.8px;
+		}
+		.job-visits-section__group-count {
+			min-width: 0;
+			height: auto;
+			padding: 1px 7px;
+			border-radius: var(--radius-circle);
+			font-size: var(--typography--fontSize-overline);
+			font-weight: 700;
 		}
 		.job-visits-section__more {
-			align-self: stretch;
-			padding: 12px 24px;
-			border-top: var(--border-base) solid var(--color-border);
-			text-align: left;
+			padding: var(--space-smaller);
 		}
 		.job-visits-section__item {
+			grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+			grid-template-areas: 'icon body meta timer menu';
 			align-items: center;
-			padding: 16px 24px;
+			column-gap: 14px;
+			padding: 10px var(--space-slim);
 			border: 0;
-			border-top: var(--border-base) solid var(--color-border);
-			border-radius: 0;
-			column-gap: 16px;
+			border-radius: var(--radius-base);
+
+			@container (max-width: 520px) {
+				grid-template-columns: auto minmax(0, 1fr) auto;
+				grid-template-areas:
+					'icon body menu'
+					'. meta .'
+					'. timer .';
+				row-gap: var(--space-small);
+			}
+
+			&--today {
+				background: var(--color-time--surface);
+			}
 		}
 		.job-visits-section__icon {
 			display: none;
@@ -1563,36 +1683,133 @@
 			flex-direction: column;
 			align-items: center;
 			justify-content: center;
-			width: 52px;
-			height: 56px;
+			width: 44px;
+			height: 44px;
 			border: var(--border-base) solid var(--color-border);
-			border-radius: var(--radius-base);
+			border-radius: var(--radius-tile-large);
 			background: var(--color-surface);
+		}
+		.job-visits-section__item--today .job-visits-section__date {
+			border-color: var(--color-time);
+			background: var(--color-time);
 		}
 		.job-visits-section__date-weekday {
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-smaller);
-			font-weight: 700;
+			font-size: var(--typography--fontSize-overline);
+			font-weight: 600;
 			letter-spacing: 0.6px;
-			line-height: 12px;
+			line-height: 1.2;
 		}
 		.job-visits-section__date-day {
 			color: var(--color-heading);
-			font-size: var(--typography--fontSize-larger);
+			font-size: 17px;
 			font-weight: 700;
-			line-height: 22px;
+			line-height: 1.1;
+		}
+		.job-visits-section__item--today .job-visits-section__date-weekday,
+		.job-visits-section__item--today .job-visits-section__date-day {
+			color: var(--color-surface);
+		}
+		.job-visits-section__body {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smallest);
 		}
 		.job-visits-section__when {
-			font-size: 15px;
+			font-size: var(--typography--fontSize-base);
 		}
+		.job-visits-section__item--today .job-visits-section__when {
+			color: var(--color-time--onSurface);
+		}
+		.job-visits-section__what,
 		.job-visits-section__sub,
-		.job-visits-section__note,
 		.job-visits-section__off-series {
-			font-size: 13px;
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+		.job-visits-section__note {
+			display: flex;
+			align-items: flex-start;
+			gap: 6px;
+			margin: 0;
+			padding-top: var(--space-smaller);
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+		}
+		.job-visits-section__item--today .job-visits-section__note {
+			color: var(--color-time--onSurface);
+		}
+		.job-visits-section__note-icon {
+			display: inline-flex;
+			flex: 0 0 auto;
+			padding-top: 1px;
+			color: var(--color-time);
+
+			:global(svg) {
+				display: block;
+				width: 14px;
+				height: 14px;
+			}
+		}
+		.job-visits-section__timer {
+			margin-top: 0;
 		}
 	}
 
 	.job-visits-section__date {
 		display: none;
+	}
+
+	.job-visits-section__note-icon {
+		display: none;
+	}
+
+	.job-visits-section__what {
+		margin: var(--space-smallest) 0 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+	}
+
+	.job-visits-section__group-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+	}
+
+	.job-visits-section__group-hint {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		text-align: right;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	// The crew's initials, overlapping like a stack of cards, each ringed in the row's own colour.
+	.job-visits-section__crew {
+		display: inline-flex;
+		align-items: center;
+	}
+
+	.job-visits-section__crew-chip {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 26px;
+		height: 26px;
+		border: 2px solid var(--color-surface);
+		border-radius: var(--radius-circle);
+		color: var(--color-inactive--onSurface);
+		background: var(--color-inactive--surface);
+		font-size: var(--typography--fontSize-smaller);
+		font-weight: 700;
+
+		& + & {
+			margin-left: -6px;
+		}
 	}
 </style>

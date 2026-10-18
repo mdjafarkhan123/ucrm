@@ -15,6 +15,7 @@
 	import type { InvoiceDerivedStatus } from '$lib/invoices/statuses';
 	import type { JobType } from '$lib/jobs/statuses';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
+	import cardIcon from '@tabler/icons/outline/credit-card.svg?raw';
 
 	// The job's billing setup, which the contract insists is *three* separate decisions and never one
 	// selector: how the work is priced, when we invoice, and how the money is collected. This card owns the
@@ -204,6 +205,7 @@
 	description="How and when this job is invoiced"
 	icon={receiptIcon}
 	compact={false}
+	class="job-billing-card"
 >
 	{#snippet actions()}
 		{#if editable}
@@ -239,6 +241,8 @@
 				<ul class="job-billing__stages">
 					{#each stages as stage (stage.installment_id)}
 						<li class="job-billing__stage">
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							<span class="job-billing__stage-tile" aria-hidden="true">{@html cardIcon}</span>
 							<span class="job-billing__stage-name">{stage.description}</span>
 							{#if stage.amount_minor !== null}
 								<span class="job-billing__stage-amount">
@@ -469,6 +473,67 @@
 		&__stage-link {
 			color: var(--color-interactive);
 			font-size: var(--typography--fontSize-small);
+		}
+	}
+
+	// Concept look (Job details `tNdkX`): the card's parts run edge to edge, each with 20px sides and a
+	// full-width rule above it; a payment stage reads on one line, led by a card tile.
+	:global(.record-detail--cards .rail-card--concept.job-billing-card) {
+		padding-bottom: 0;
+	}
+	:global(.record-detail--cards .rail-card--concept.job-billing-card > :not(.card-header)) {
+		margin: 0;
+		padding: var(--space-base) var(--space-medium);
+		border-top: var(--border-base) solid var(--color-border);
+	}
+	:global(.record-detail--cards .rail-card--concept.job-billing-card > .job-billing__note:last-child) {
+		padding-top: 0;
+		border-top: 0;
+	}
+	:global(.record-detail--cards .rail-card--concept.job-billing-card > :nth-child(2)) {
+		border-top: 0;
+	}
+	:global(.record-detail--cards) .job-billing {
+		&__stage {
+			flex-wrap: nowrap;
+			gap: var(--space-slim);
+			padding: var(--space-small) 0;
+
+			& + & {
+				padding-top: var(--space-small);
+			}
+		}
+
+		&__stage-tile {
+			display: inline-flex;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			width: 32px;
+			height: 32px;
+			border-radius: var(--radius-base);
+			color: var(--color-invoice);
+			background: var(--color-invoice--surface);
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+		}
+
+		&__stage-name,
+		&__stage-amount {
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
+		}
+
+		&__stage-amount {
+			color: var(--color-heading);
+		}
+
+		&__stage-meta {
+			flex-basis: auto;
+			justify-content: flex-end;
 		}
 	}
 

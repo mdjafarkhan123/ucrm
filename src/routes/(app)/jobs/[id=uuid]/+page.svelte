@@ -50,7 +50,8 @@
 		jobCountsKey,
 		reopenJob,
 		type JobWriteError,
-		type JobScopeLineInput
+		type JobScopeLineInput,
+		type JobMoney
 	} from '$lib/jobs/api';
 	import type {
 		RequestPricingLine,
@@ -64,6 +65,7 @@
 	import toolsIcon from '@tabler/icons/outline/tools.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
+	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 	import fileInvoiceIcon from '@tabler/icons/outline/file-invoice.svg?raw';
 	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
 	import printIcon from '@tabler/icons/outline/printer.svg?raw';
@@ -186,7 +188,14 @@
 			kind: 'time' as const
 		},
 		...(saved?.job.from_quote
-			? [{ label: 'Source', value: 'From a quote', icon: fileDescriptionIcon, kind: 'quote' as const }]
+			? [
+					{
+						label: 'Source',
+						value: 'From a quote',
+						icon: fileDescriptionIcon,
+						kind: 'quote' as const
+					}
+				]
 			: [])
 	]);
 
@@ -500,6 +509,37 @@
 			saving = false;
 		}
 	}
+
+	// The totals panel under the job's lines: subtotal, then discount and tax only when the job has them,
+	// then the total (Job details `tNdkX`).
+	function pricingTotalRows(money: JobMoney) {
+		const format = (minor: number) =>
+			new Intl.NumberFormat(saved?.locale, {
+				style: 'currency',
+				currency: saved?.job.currency_code ?? 'USD'
+			}).format(minor / 100);
+		const rows = [{ label: 'Subtotal', value: format(money.subtotal_minor) }];
+		if (money.discount_minor > 0) {
+			const amount =
+				money.discount_type === 'percentage' && money.discount_value !== null
+					? `${money.discount_value}%`
+					: null;
+			const detail = [money.discount_name, amount].filter(Boolean).join(' ');
+			rows.push({
+				label: detail ? `Discount · ${detail}` : 'Discount',
+				value: `−${format(money.discount_minor)}`
+			});
+		}
+		if (money.tax_minor > 0) {
+			const rate = `${money.tax_rate_basis_points / 100}%`;
+			rows.push({
+				label: `Tax · ${money.tax_name ? `${money.tax_name} ${rate}` : rate}`,
+				value: format(money.tax_minor)
+			});
+		}
+		rows.push({ label: 'Total', value: format(money.total_minor) });
+		return rows;
+	}
 </script>
 
 <svelte:head><title>{title || 'Job'} · Contractor CRM</title></svelte:head>
@@ -514,6 +554,7 @@
 		<RecordDetailLayout
 			class="job-detail"
 			cards
+			concept
 			editing={isEditing}
 			dirty={isDirty}
 			{saving}
@@ -521,7 +562,7 @@
 			onSave={() => void save()}
 			onCancel={discard}
 		>
-			{#snippet main()}
+			{#snippet header()}
 				<WorkRecordHeader
 					icon={toolsIcon}
 					recordType="Job"
@@ -581,7 +622,9 @@
 						{/if}
 					{/snippet}
 				</WorkRecordHeader>
+			{/snippet}
 
+			{#snippet main()}
 				<JobVisitsSection
 					jobId={saved.job.id}
 					visits={saved.visits}
@@ -651,6 +694,12 @@
 
 				<JobChecklistsCard jobId={saved.job.id} active={saved.job.status === 'active'} />
 
+				<!-- The money half of the job starts here: what it sells, how it bills, what it cost. -->
+				<div class="job-detail__divider">
+					<span class="job-detail__divider-tile" aria-hidden="true">{@html receiptIcon}</span>
+					<span class="job-detail__divider-label">Money</span>
+				</div>
+
 				<ProductsAndServicesBlock
 					lines={jobLines}
 					icon={packageIcon}
@@ -665,24 +714,9 @@
 					editorTotalLabel="Job subtotal"
 					saveLabel="Save job pricing"
 					emptyDescription="Add the products and services this job covers."
-					totalRows={saved.can_see_price
-						? [
-								{
-									label: 'Subtotal',
-									value: new Intl.NumberFormat(saved.locale, {
-										style: 'currency',
-										currency: saved.job.currency_code
-									}).format((saved.money?.subtotal_minor ?? 0) / 100)
-								},
-								{
-									label: 'Total',
-									value: new Intl.NumberFormat(saved.locale, {
-										style: 'currency',
-										currency: saved.job.currency_code
-									}).format((saved.money?.total_minor ?? 0) / 100)
-								}
-							]
-						: undefined}
+					concept
+					flush
+					totalRows={saved.can_see_price && saved.money ? pricingTotalRows(saved.money) : undefined}
 					onEditStart={() => {
 						discountDraft = null;
 						taxDraft = null;
@@ -699,7 +733,7 @@
 							name={discountDraft?.name ?? saved.money?.discount_name ?? null}
 							type={discountDraft ? discountDraft.type : (saved.money?.discount_type ?? null)}
 							value={discountDraft ? discountDraft.value : (saved.money?.discount_value ?? null)}
-									currencyCode={saved.job.currency_code}
+							currencyCode={saved.job.currency_code}
 							locale={saved.locale}
 							{editable}
 							canSeePrice={saved.can_see_price}
@@ -761,8 +795,8 @@
 					onSaved={refreshJob}
 				>
 					{#snippet extra()}
-				<JobRemindersCard
-									embedded
+						<JobRemindersCard
+							embedded
 							jobId={saved.job.id}
 							reminders={saved.reminders}
 							billingTiming={saved.job.billing_timing}
@@ -973,6 +1007,44 @@
 			margin: 0;
 			color: var(--color-text--secondary);
 		}
+	}
+
+	.job-detail__divider {
+		display: flex;
+		align-items: center;
+		gap: var(--space-slim);
+		padding: var(--space-smaller) var(--space-smaller) 0;
+
+		&::after {
+			content: '';
+			flex: 1;
+			height: var(--border-base);
+			background: var(--color-border);
+		}
+	}
+
+	.job-detail__divider-tile {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 24px;
+		height: 24px;
+		border-radius: var(--radius-tile-small);
+		color: var(--color-invoice);
+		background: var(--color-invoice--surface);
+
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+		}
+	}
+
+	.job-detail__divider-label {
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-overline);
+		font-weight: 600;
+		letter-spacing: 0.8px;
+		text-transform: uppercase;
 	}
 
 	.job-detail__copy {
