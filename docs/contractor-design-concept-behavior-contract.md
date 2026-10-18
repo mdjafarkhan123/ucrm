@@ -47,7 +47,7 @@ staff open the app between jobs and want to see what needs them right now, in a 
 
 ## Experience target
 
-The target is "Jafar's Design Preferences" in the [design skill](../.claude/skills/design/SKILL.md).
+The target is "Jafar's Design Preferences" in the [design skill](../.claude/skills/design/SKILL.md). Must read before you start designing in pencil.
 
 ## Not doing
 
@@ -71,46 +71,3 @@ designs as the record of the live app.
 - The "Changes requested" colour on Quotes.
 
 ## Sources and design decisions
-
-- Colour meanings follow Jobber's own design system (Atlantis), whose record colours the app already uses:
-  `.claude/skills/design-classic/colors.md` § Workflow colors.
-- Coloured icons used sparingly to show meaning: Apple Human Interface Guidelines, Sidebars — "fixed colors can
-  help clarify the meaning of an icon" (https://developer.apple.com/design/human-interface-guidelines/sidebars).
-- Decision 2026-10-17 (Jafar): concept work starts now with the simple flow; Phase A screens already built stay.
-- Decision 2026-10-17 (Jafar): Foundation boards approved.
-- Decision 2026-10-17 (Jafar): the Foundation's off-scale sizes become new tokens — text 11, 13, 32; tile
-  corners 6 and 10; card padding 20 — added to `concept.pen` and the design skill, and to `_variables.scss`
-  with the first screen that uses them.
-- Decision 2026-10-17 (Jafar): complete the button set — every state for every kind, three sizes, a confirm-red
-  button, a More menu button and a faint raised look — and every button that waits on the server shows loading,
-  in the app whether or not a screen has a Pencil design. Loading follows GitHub Primer and Shopify Polaris: the
-  spinner replaces the icon (or the label, keeping the width) and blocks a second press. The Pencil drawing awaits
-  Jafar's review.
-- Decision 2026-10-17 (Jafar): Cancel is a white bordered button (as Shopify, GitHub and Stripe do); the borderless
-  Quiet button is only for link-like actions such as Clear filters.
-- Decision 2026-10-17 (Jafar): white buttons' grey border darkens one step on hover (Jobber darkens it too; we use a
-  softer mid-grey, as Stripe and Linear do); the Delete button's border turns red on hover.
-- Decision 2026-10-17 (Jafar): tables are not redesigned — they keep today's app look (`classic.pen` App-look frames,
-  `design-classic/tables.md`). The concept table was removed from the Parts board.
-- Decision 2026-10-18 (Jafar): a switched-on button (Schedule Unscheduled, Map, Filters) is white with a
-  brand-green border, label and icon, and a solid green number bubble (`concept.pen` board "Switched-on buttons",
-  option A). Dark fill (Atlassian, Linear, Notion) was too heavy beside the main button; the pressed-in grey
-  (Shopify's press button) blended into the page. Jafar also approved the small bordered row-menu dots.
-- Decision 2026-10-18 (Jafar): Home approved with option A — a deep-green gradient "Today" card (greeting, day
-  summary, day clock) leads the page, replacing the live Home's dark schedule card; the schedule card stays white
-  because its green job tiles and pills would blend into green. One feature card per screen at most.
-- Decision 2026-10-18 (Jafar): the concept sidebar uses the live app's groups and order instead of the Jobber work
-  order. The live app's sidebar tried the soft coloured tiles the same day and Jafar rolled it back to coloured
-  icons only; the tiles stay in the concept.
-- Decision 2026-10-18 (Jafar, final): the concept uses the live app's sidebar exactly — coloured icons with no
-  tiles, the live groups, a solid brand-green current page. `concept.pen`'s Sidebar part was redrawn to match.
-- Decision 2026-10-18 (Jafar): the redesign covers the whole app, tracked on the redesign checklist in First
-  version 3, most necessary first, with his admin panel last. The checklist's scope is a general rule from the
-  code; parts anyone happens to name are only examples of it. This follows Brad Frost's interface inventory
-  (https://bradfrost.com/blog/post/interface-inventory/), with design and code tracked separately as IBM's
-  Carbon component checklist does (https://carbondesignsystem.com/contributing/component-checklist).
-- Decision 2026-10-18 (Jafar): once a piece is built and matches Pencil, its drafts, rejected options and
-  comparison boards are deleted from `concept.pen`. The parts boards and one final drawing per screen stay as
-  the blueprint for later changes. `classic.pen`'s old-look drawings are deleted at C8.
-- Decision 2026-10-17 (Jafar): keep two sets of styling modules for now — `design` (concept) and
-  `design-classic` (live look) — until rollout; revisit then.
