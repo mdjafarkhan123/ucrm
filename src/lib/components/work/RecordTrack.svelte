@@ -17,12 +17,15 @@
 		kind,
 		id,
 		clientName,
-		clientIsCompany = false
+		clientIsCompany = false,
+		look = 'bars'
 	}: {
 		kind: RecordKind;
 		id: string;
 		clientName?: string;
 		clientIsCompany?: boolean;
+		/** Passed to `LifecycleTrack`: `steps` draws the new concept's strip. */
+		look?: 'bars' | 'steps';
 	} = $props();
 
 	const chain = createQuery(() => ({
@@ -55,5 +58,5 @@
 </script>
 
 {#if !chain.isError}
-	<LifecycleTrack {steps} label="Progress from request to paid" />
+	<LifecycleTrack {steps} {look} label="Progress from request to paid" />
 {/if}

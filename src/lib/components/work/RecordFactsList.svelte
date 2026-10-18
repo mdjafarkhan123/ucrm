@@ -9,16 +9,44 @@
 	let {
 		facts,
 		neutralIcons = false,
+		concept = false,
 		class: className = ''
 	}: {
 		facts: RecordFact[];
 		/** App look: every icon tile is the same quiet colour, instead of the first one being green. */
 		neutralIcons?: boolean;
+		/** The new concept's column: one row per fact, the icon on a small tile in the fact's own colour
+		 *  (set with `tone`), label then value on one line. */
+		concept?: boolean;
 		class?: string;
 	} = $props();
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
+{#if concept}
+	<dl class={`fact-column ${className}`}>
+		{#each facts as fact (fact.label)}
+			<div class="fact-column__row">
+				{#if fact.icon}
+					<span
+						class="fact-column__tile"
+						style:--fact-tone={`var(--color-${fact.kind ?? 'client'})`}
+						style:--fact-surface={`var(--color-${fact.kind ?? 'client'}--surface)`}
+						aria-hidden="true">{@html fact.icon}</span
+					>
+				{/if}
+				<dt>{fact.label}</dt>
+				<dd class:fact-column__empty={!fact.value}>
+					{#if !fact.value}{fact.empty ?? '—'}{:else if fact.href}
+						<!-- The caller builds the link (tel:, mailto:); nothing here is an app route. -->
+						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+						<a href={fact.href}>{fact.value}</a>
+					{:else}{fact.value}{/if}
+				</dd>
+			</div>
+		{/each}
+	</dl>
+{:else}
 <dl class={`record-facts ${className}`} class:record-facts--neutral={neutralIcons}>
 	{#each facts as fact (fact.label)}
 		<div class="record-facts__row" class:record-facts__row--fixed={fact.fixed}>
@@ -41,10 +69,69 @@
 		</div>
 	{/each}
 </dl>
+{/if}
 
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	// Concept look: facts stacked, each with its coloured tile, as drawn on the Job details frame.
+	.fact-column {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-small);
+		margin: 0;
+
+		&__row {
+			display: flex;
+			min-width: 0;
+			align-items: center;
+			gap: var(--space-small);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__tile {
+			display: inline-grid;
+			flex: 0 0 auto;
+			width: 24px;
+			height: 24px;
+			place-items: center;
+			border-radius: var(--radius-tile-small);
+			color: var(--fact-tone);
+			background: var(--fact-surface);
+
+			:global(svg) {
+				display: block;
+				width: 14px;
+				height: 14px;
+			}
+		}
+
+		dt {
+			flex: 0 0 72px;
+			color: var(--color-text--secondary);
+		}
+
+		dd {
+			overflow: hidden;
+			min-width: 0;
+			margin: 0;
+			color: var(--color-heading);
+			font-weight: 600;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+
+			a {
+				color: inherit;
+				text-decoration: none;
+			}
+		}
+
+		&__empty {
+			color: var(--color-text--secondary);
+			font-weight: 400;
+		}
+	}
+
 	.record-facts {
 		display: flex;
 		flex-direction: column;

@@ -16,6 +16,7 @@
 		type JobWriteError
 	} from '$lib/jobs/api';
 	import bellIcon from '@tabler/icons/outline/bell.svg?raw';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 
@@ -32,6 +33,7 @@
 		editable = false,
 		billingTiming,
 		jobClosed = false,
+		embedded = false,
 		onChanged
 	}: {
 		jobId: string;
@@ -43,6 +45,8 @@
 		today: string;
 		locale?: string;
 		editable?: boolean;
+		/** Drawn inside the Billing card, under its payment schedule, instead of as a card of its own. */
+		embedded?: boolean;
 		onChanged: () => Promise<void> | void;
 	} = $props();
 
@@ -184,13 +188,8 @@
 	}
 </script>
 
-<RailCard title="Invoice reminders" icon={bellIcon} count={reminders.length}>
-	{#snippet actions()}
-		{#if editable}
-			<Button variant="tertiary" size="small" onclick={openAdd}>Add</Button>
-		{/if}
-	{/snippet}
-
+<!-- eslint-disable svelte/no-at-html-tags -->
+{#snippet content()}
 	{#if reminders.length === 0 && !jobClosed && billingTiming === 'custom_dates'}
 		<div class="job-reminders__warning" role="status">
 			<p>No dates picked yet. This job will not be flagged for invoicing until you add one.</p>
@@ -224,11 +223,34 @@
 			{/each}
 		</ul>
 	{/if}
+{/snippet}
+
+{#if embedded}
+	<!-- Inside the Billing card: a small heading and an Add button, then the same list. -->
+	<div class="job-reminders-embedded">
+		<div class="job-reminders-embedded__head">
+			<p class="job-reminders-embedded__title">Invoice reminders</p>
+			{#if editable}
+				<Button variant="secondary" size="small" onclick={openAdd}>{@html plusIcon}Add reminder</Button>
+			{/if}
+		</div>
+		{@render content()}
+	</div>
+{:else}
+	<RailCard title="Invoice reminders" icon={bellIcon} count={reminders.length}>
+		{#snippet actions()}
+			{#if editable}
+				<Button variant="tertiary" size="small" onclick={openAdd}>Add</Button>
+			{/if}
+		{/snippet}
+
+		{@render content()}
 
 	<p class="job-reminders__hint">
-		Reminders are prompts for your own team, not messages to the client.
-	</p>
-</RailCard>
+			Reminders are prompts for your own team, not messages to the client.
+		</p>
+	</RailCard>
+{/if}
 
 {#if addOpen}
 	<Dialog open={addOpen} title="Add an invoice reminder" size="small" onClose={closeAdd}>
@@ -284,6 +306,30 @@
 </ConfirmDialog>
 
 <style lang="scss">
+	.job-reminders-embedded {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-slim);
+		padding-top: var(--space-base);
+		border-top: var(--border-base) solid var(--color-border);
+
+		&__head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: var(--space-small);
+		}
+
+		&__title {
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-overline);
+			font-weight: 600;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+		}
+	}
+
 	.job-reminders {
 		display: flex;
 		flex-direction: column;

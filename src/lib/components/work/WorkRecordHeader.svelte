@@ -92,14 +92,18 @@
 		 * nothing extra is drawn — the shared header stays ignorant of what any one record type means. */
 		badges?: Snippet;
 		/** `app` draws the App look header from the approved design: the record's identifiers beside the
-		 *  status, a bordered "More" button, an icon on the main action, and room for a lifecycle track. */
-		look?: 'default' | 'app';
+		 *  status, a bordered "More" button, an icon on the main action, and room for a lifecycle track.
+		 *  `concept` is the new concept's header (Job details): the client in its own box beside the facts
+		 *  column, and the lifecycle track as a strip along the bottom edge. */
+		look?: 'default' | 'app' | 'concept';
 		/** Short identifiers shown after the status in the App look, e.g. ["QUOTE #326", "Version 2"]. */
 		meta?: string[];
 		/** The record's place in the Request → Quote → Job → Invoice → Paid line. Normally `LifecycleTrack`. */
 		track?: Snippet;
 		class?: string;
 	} = $props();
+
+	const roomy = $derived(look !== 'default');
 
 	const titleFieldId = $derived(`${recordType.toLowerCase().replace(/\s+/g, '-')}-title`);
 
@@ -113,7 +117,8 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <section
 	class={`work-header ${className}`}
-	class:work-header--app={look === 'app'}
+	class:work-header--app={roomy}
+	class:work-header--concept={look === 'concept'}
 	aria-label="{recordType} summary"
 >
 	<div class="work-header__top">
@@ -133,7 +138,7 @@
 			{#if onHistory}
 				<Button
 					variant="secondary"
-					size={look === 'app' ? 'base' : 'small'}
+					size={roomy ? 'base' : 'small'}
 					iconOnly
 					label="{recordType} history"
 					onclick={onHistory}
@@ -145,7 +150,7 @@
 			{#if primaryAction}
 				<Button
 					variant="primary"
-					size={look === 'app' ? 'base' : 'small'}
+					size={roomy ? 'base' : 'small'}
 					href={primaryAction.href}
 					onclick={primaryAction.onclick}
 					disabled={primaryAction.disabled}
@@ -161,7 +166,7 @@
 				</Button>
 			{/if}
 			{#if menuItems.length > 0}
-				{#if look === 'app'}
+				{#if roomy}
 					<DropdownMenu
 						items={menuItems}
 						triggerText="More"
@@ -197,11 +202,14 @@
 			<div class="work-header__summary">
 				{#if summary}{@render summary()}{/if}
 			</div>
-			{#if track}<div class="work-header__track">{@render track()}</div>{/if}
+			{#if track && look !== 'concept'}<div class="work-header__track">{@render track()}</div>{/if}
 			<div class="work-header__facts">
 				{#if facts}{@render facts()}{/if}
 			</div>
 		</div>
+	{/if}
+	{#if track && look === 'concept'}
+		<div class="work-header__strip">{@render track()}</div>
 	{/if}
 </section>
 
@@ -397,17 +405,61 @@
 		margin-top: 0;
 	}
 
-	:global(.job-detail) .work-header {
+
+	// Concept look (Job details, `tNdkX`). A white card with the status row and title on top, the client box
+	// beside the facts column, and the lifecycle strip closing the card on a tinted ground.
+	:global(.record-detail--cards) .work-header.work-header--concept {
+		overflow: hidden;
+		padding: 0;
 		border-radius: var(--radius-large);
-	}
-	:global(.job-detail) .work-header__type {
-		display: inline-flex;
-		width: 40px;
-		height: 40px;
-		border: 0;
-		border-radius: var(--radius-tile-large);
-		color: var(--color-job);
-		background: var(--color-job--surface);
+
+		.work-header__top {
+			flex-wrap: nowrap;
+			gap: var(--space-slim);
+			padding: var(--space-large) var(--space-large) 0;
+		}
+		.work-header__type {
+			display: inline-flex;
+			width: 40px;
+			height: 40px;
+			border: 0;
+			border-radius: var(--radius-tile-large);
+			color: var(--color-job);
+			background: var(--color-job--surface);
+		}
+		.work-header__meta {
+			flex: 0 1 auto;
+			font-size: var(--typography--fontSize-small);
+			font-weight: 400;
+		}
+		.work-header__meta-first {
+			font-weight: 400;
+			letter-spacing: 0;
+			text-transform: none;
+		}
+		.work-header__identity {
+			padding: var(--space-base) var(--space-large) 0;
+		}
+		.work-header__body {
+			display: grid;
+			align-items: start;
+			gap: var(--space-large);
+			padding: var(--space-medium) var(--space-large) var(--space-large);
+			grid-template-columns: minmax(0, 1fr) 300px;
+		}
+		.work-header__summary {
+			padding-top: 0;
+		}
+		.work-header__facts {
+			margin: 0;
+			padding: var(--space-smaller) 0;
+			border-top: 0;
+		}
+		.work-header__strip {
+			padding: var(--space-slim) var(--space-large);
+			border-top: var(--border-base) solid var(--color-border);
+			background: var(--color-surface--background--subtle);
+		}
 	}
 	:global(.job-detail) .work-header__type :global(svg) {
 		width: 20px;

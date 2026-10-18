@@ -38,16 +38,23 @@ press). New shared part `ui/CardHeader`; `ui/StatusBadge` gained `size="small"` 
 lines and their card hints, "Upcoming work" in Business performance. Also: Money owed shows not-due/overdue
 only (the 1–30… buckets stay in the bar's spoken label); the setup strip keeps today's delivery line.
 
+## Job details — built 2026-10-18 (claude, taking over Codex's branch `codex/concept-job-details`)
+
+Page matches `tNdkX` side by side at desktop width on Raad LTD jobs #25 and #29: header (job tile, status,
+"Job #· Type", boxed client with call/text/email, facts column, step strip), Visits → Instructions →
+Checklists → Products → Billing (with invoice reminders inside) → Labor → Expenses, and the rail (Job total
+card with profit bar, Notes, Photos and files, Signatures, Work report). Main journey proven live: edit the
+quantity, one "Save job pricing", total went $150 → $300 and back. New shared parts: concept look on
+`WorkRecordHeader`, `ClientSummaryCard`, `RecordFactsList`, `LifecycleTrack`; rail and main columns no longer
+squeeze their cards (`RecordDetailLayout`).
+
+**Left out, need data the app lacks:** "Client since 2024 · 3 jobs" under the client name, "Started Oct 14" in
+the header line, "next today 9:00 AM" in the Visits hint, "From quote #318" (live says "From a quote").
+**Not done yet:** dark mode, edit frame `jFBRB` compared side by side, Visits rows' assignee chips and
+"Today" highlight, Labor/Expenses rows with real data, the pop-ups, the Pencil tidy-up
+(`docs/pencil-workflow.md` step 6). No lint or format run (Jafar: slow checks wait until the campaign ends);
+one `svelte-check` run found only 3 errors in untouched `AttentionCard.svelte`.
+
 ## Next
 
-Job details implementation is on branch `codex/concept-job-details` in `/tmp/ucrm-concept-job-details`
-(claim `19e1e53c27fa`). The main sections follow the approved order and use the shared CardHeader; pricing
-stages lines, discount and tax under one Save. Migration `20261018095200_atomic_job_pricing` was applied
-and its function and authenticated execute grant verified. The checklist Built tick is 🟡.
-
-Pencil reconnected and showed `tNdkX` and `jFBRB`. The local job page opened in Pencil's browser; its
-section order was inspected in the DOM. An empty job had hidden Instructions, so the implementation now
-keeps that card visible. The browser screenshot service then stalled with “A capture is already running.”
-
-Next: finish the side-by-side screen check against `tNdkX` and `jFBRB`, prove the live edit journey,
-then mark Built ✅, merge and push main.
+Finish the "not done yet" list above, then build New job (`parts/c5-new-job.md`).

@@ -11,6 +11,7 @@
 		count,
 		description,
 		flush = false,
+		compact = true,
 		actions,
 		children,
 		class: className = ''
@@ -23,6 +24,8 @@
 		/** App look: the body runs edge to edge under the header, for rows that draw their own padding and
 		 *  hairlines. Only the header keeps the card's side padding. */
 		flush?: boolean;
+		/** The tighter header of a narrow right-hand column. A card in the wide main column turns it off. */
+		compact?: boolean;
 		actions?: Snippet;
 		children: Snippet;
 		class?: string;
@@ -46,7 +49,7 @@
 				: title === 'Notes'
 					? 'conversation'
 					: 'job'}
-			compact
+			{compact}
 			{actions}
 		/>
 	{:else}

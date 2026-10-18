@@ -1,4 +1,5 @@
 <script lang="ts">
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
@@ -102,14 +103,20 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<SectionBlock title="Checklists" icon={checklistIcon} level={2}>
+<SectionBlock
+	title="Checklists"
+	icon={checklistIcon}
+	tone="time"
+	subtitle="Filled in by the crew on each visit"
+	level={2}
+>
 	{#snippet actions()}
 		{#if jobQuery.data?.can_edit && active && !adding}
 			<Button
 				size="small"
 				variant="tertiary"
 				onhover={warmTemplates}
-				onclick={() => (adding = true)}>Add checklist</Button
+				onclick={() => (adding = true)}>{@html plusIcon}Add checklist</Button
 			>
 		{/if}
 	{/snippet}

@@ -59,7 +59,9 @@
 	} from '$lib/quotes/api';
 	import { JOB_STATUS_LABELS, JOB_STATUS_TONES, JOB_TYPE_LABELS } from '$lib/jobs/statuses';
 	import { createNote, deleteNote, updateNote, type NoteChange } from '$lib/collaboration/api';
-	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
+	import clipboardListIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
+	import packageIcon from '@tabler/icons/outline/package.svg?raw';
+	import toolsIcon from '@tabler/icons/outline/tools.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 	import fileInvoiceIcon from '@tabler/icons/outline/file-invoice.svg?raw';
@@ -157,11 +159,6 @@
 		}))
 	);
 
-	const dateFormat = new Intl.DateTimeFormat(undefined, {
-		day: 'numeric',
-		month: 'short',
-		year: 'numeric'
-	});
 	const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
 		day: 'numeric',
 		month: 'short',
@@ -170,21 +167,32 @@
 		minute: '2-digit'
 	});
 	const headerFacts = $derived([
-		{ label: 'Job #', value: saved ? String(saved.job.job_number) : null, icon: hashIcon },
+		{
+			label: 'Job #',
+			value: saved ? String(saved.job.job_number) : null,
+			icon: hashIcon,
+			kind: 'job' as const
+		},
 		{
 			label: 'Type',
 			value: saved ? JOB_TYPE_LABELS[saved.job.job_type] : null,
-			icon: repeatIcon
+			icon: repeatIcon,
+			kind: 'time' as const
 		},
 		{
 			label: 'Created',
 			value: saved ? dateTimeFormat.format(new Date(saved.job.created_at)) : null,
-			icon: calendarPlusIcon
+			icon: calendarPlusIcon,
+			kind: 'time' as const
 		},
 		...(saved?.job.from_quote
-			? [{ label: 'Source', value: 'From a quote', icon: fileDescriptionIcon }]
+			? [{ label: 'Source', value: 'From a quote', icon: fileDescriptionIcon, kind: 'quote' as const }]
 			: [])
 	]);
+
+	const headerMeta = $derived(
+		saved ? [`Job #${saved.job.job_number}`, JOB_TYPE_LABELS[saved.job.job_type]] : []
+	);
 
 	const propertyLine = $derived.by(() => {
 		const property = saved?.job.property;
@@ -515,9 +523,10 @@
 		>
 			{#snippet main()}
 				<WorkRecordHeader
-					icon={briefcaseIcon}
+					icon={toolsIcon}
 					recordType="Job"
-					look="app"
+					look="concept"
+					meta={headerMeta}
 					primaryAction={saved.job.status === 'closed' && saved.can_close
 						? {
 								label: 'Reopen job',
@@ -554,6 +563,7 @@
 							phone={saved.job.client?.phone}
 							email={saved.job.client?.email}
 							menuItems={clientMenuItems}
+							concept
 						/>
 					{/snippet}
 					{#snippet track()}
@@ -561,9 +571,10 @@
 							kind="job"
 							id={jobId}
 							clientName={saved.job.client?.display_name ?? undefined}
+							look="steps"
 						/>
 					{/snippet}
-					{#snippet facts()}<RecordFactsList facts={headerFacts} />{/snippet}
+					{#snippet facts()}<RecordFactsList facts={headerFacts} concept />{/snippet}
 					{#snippet badges()}
 						{#if canRequestReview}
 							<RequestReviewButton target={{ jobId: saved.job.id }} variant="tertiary" />
@@ -599,7 +610,12 @@
 					currencyCode={saved.job.currency_code}
 				/>
 
-				<RailCard title="Instructions" description="The crew sees these on every visit">
+				<RailCard
+					title="Instructions"
+					description="The crew sees these on every visit"
+					icon={clipboardListIcon}
+					compact={false}
+				>
 					{#snippet actions()}
 						{#if editable && !editingInstructions}
 							<PencilButton
@@ -637,6 +653,9 @@
 
 				<ProductsAndServicesBlock
 					lines={jobLines}
+					icon={packageIcon}
+					tone="quote"
+					hint={`${jobLines.length} ${jobLines.length === 1 ? 'line' : 'lines'}`}
 					revision={saved.job.revision}
 					editable={editable && saved.can_see_price}
 					showPrices={saved.can_see_price}
@@ -680,8 +699,7 @@
 							name={discountDraft?.name ?? saved.money?.discount_name ?? null}
 							type={discountDraft ? discountDraft.type : (saved.money?.discount_type ?? null)}
 							value={discountDraft ? discountDraft.value : (saved.money?.discount_value ?? null)}
-							discountMinor={saved.money?.discount_minor ?? 0}
-							currencyCode={saved.job.currency_code}
+									currencyCode={saved.job.currency_code}
 							locale={saved.locale}
 							{editable}
 							canSeePrice={saved.can_see_price}
@@ -741,19 +759,21 @@
 					canInvoice={saved.can_invoice}
 					clientId={saved.job.client?.id ?? null}
 					onSaved={refreshJob}
-				/>
-
+				>
+					{#snippet extra()}
 				<JobRemindersCard
-					jobId={saved.job.id}
-					reminders={saved.reminders}
-					billingTiming={saved.job.billing_timing}
-					jobClosed={saved.job.status === 'closed'}
-					today={saved.organization_today}
-					locale={saved.locale}
-					{editable}
-					onChanged={refreshJob}
-				/>
-
+									embedded
+							jobId={saved.job.id}
+							reminders={saved.reminders}
+							billingTiming={saved.job.billing_timing}
+							jobClosed={saved.job.status === 'closed'}
+							today={saved.organization_today}
+							locale={saved.locale}
+							{editable}
+							onChanged={refreshJob}
+						/>
+					{/snippet}
+				</JobBillingCard>
 				{#if saved.can_invoice_visits && saved.job.price_basis === 'per_visit' && saved.job.client}
 					<JobVisitsToBillCard
 						jobId={saved.job.id}
@@ -843,11 +863,8 @@
 				<JobCostingCard
 					costing={saved.costing}
 					subtotalMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? 0) : null}
-					discountMinor={saved.money?.discount_minor ?? 0}
 					taxMinor={saved.money?.tax_minor ?? 0}
 					totalMinor={saved.money?.total_minor ?? null}
-					discountLabel={saved.money?.discount_name ?? null}
-					taxLabel={saved.money?.tax_name ?? null}
 					currencyCode={saved.job.currency_code}
 					locale={saved.locale}
 				/>
@@ -872,6 +889,7 @@
 						recordLabel="this job"
 						pickerLabel="On this job"
 						title="Photos and files"
+						compact
 						clientId={saved.job.client?.id ?? null}
 						clientLabel={saved.job.client?.display_name ?? null}
 						canManage={saved.can_record_field_records || saved.can_manage_team_field_records}

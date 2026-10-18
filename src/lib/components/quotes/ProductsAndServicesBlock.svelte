@@ -89,6 +89,8 @@
 		saveLabel = 'Save pricing',
 		lockedMessage = '',
 		hint,
+		icon = listIcon,
+		tone,
 		clientSees,
 		flush = false,
 		emptyDescription = 'Add the products and services this job needs before it becomes a quote.',
@@ -140,6 +142,9 @@
 		lockedMessage?: string;
 		/** A quiet line under the title in the App look, e.g. "4 items · work done Sep 29 – Oct 3". */
 		hint?: string;
+		/** The title tile's icon (a Tabler SVG) and colour family, for a page that gives the block its own. */
+		icon?: string;
+		tone?: string;
 		/** What the client's copy shows, e.g. "Client sees every figure". Sits at the end of the locked strip. */
 		clientSees?: string;
 		/** App look: the saved table runs edge to edge in the card and the totals and locked note close it
@@ -966,7 +971,8 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <SectionBlock
 	title="Products and services"
-	icon={listIcon}
+	{icon}
+	{tone}
 	level={2}
 	{hint}
 	class={flush && !isEditing && !loading && !loadFailed && savedLines.length > 0
@@ -1848,6 +1854,33 @@
 		}
 		.pricing-card__image {
 			min-height: 120px;
+		}
+	}
+
+	// Job details concept (`tNdkX`): the totals sit in a soft grey panel under the table, with the Total in a
+	// white box of its own.
+	:global(.job-detail) .pricing-block__summary {
+		padding: var(--space-base) var(--space-large) var(--space-large);
+	}
+	:global(.job-detail) .pricing-block__summary-list {
+		width: min(360px, 100%);
+		gap: var(--space-small);
+		padding: var(--space-slim);
+		border-radius: var(--radius-large);
+		background: var(--color-surface--background--subtle);
+	}
+	:global(.job-detail) .pricing-block__summary-row {
+		padding: 0 var(--space-small);
+
+		&--total {
+			padding: var(--space-slim) var(--space-small);
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-base);
+			background: var(--color-surface);
+
+			dd {
+				font-size: var(--typography--fontSize-largest);
+			}
 		}
 	}
 </style>

@@ -1,8 +1,9 @@
 <script lang="ts">
-	import RailCard from '$lib/components/layout/RailCard.svelte';
+	import cashIcon from '@tabler/icons/outline/cash.svg?raw';
+	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import type { JobCosting } from '$lib/jobs/api';
 
-	// The approved Job total card combines the saved selling total with the permission-gated costing
+	// The Job total card (concept `tNdkX`) combines the saved selling total with the permission-gated costing
 	// breakdown. Every figure is returned by the server; this card only formats money.
 	//
 	// While a one-off job is open the numbers are costs *so far*: a running tally, not a settled result, so
@@ -15,21 +16,15 @@
 	let {
 		costing,
 		subtotalMinor,
-		discountMinor = 0,
 		taxMinor = 0,
 		totalMinor = null,
-		discountLabel = null,
-		taxLabel = null,
 		currencyCode = 'USD',
 		locale = 'en-US'
 	}: {
 		costing: JobCosting | null;
 		subtotalMinor: number | null;
-		discountMinor?: number;
 		taxMinor?: number;
 		totalMinor?: number | null;
-		discountLabel?: string | null;
-		taxLabel?: string | null;
 		currencyCode?: string;
 		locale?: string;
 	} = $props();
@@ -55,6 +50,9 @@
 		costing ? Math.max(costing.total_cost_minor, costing.revenue_minor ?? 0, 1) : 1
 	);
 	const barProfit = $derived(Math.max(costing?.profit_minor ?? 0, 0));
+
+	const grandTotal = $derived(subtotalMinor === null ? null : (totalMinor ?? subtotalMinor));
+	const beforeTax = $derived(grandTotal === null ? null : grandTotal - taxMinor);
 
 	// A 'YYYY-MM-DD' from Postgres is a calendar day, not an instant. `new Date(text)` would read it as UTC
 	// midnight and render the day before for anyone west of Greenwich, so the parts are placed by hand.
@@ -85,125 +83,113 @@
 	});
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
 {#if costing || subtotalMinor !== null}
-	<RailCard title="Job total" class="job-costing-card">
-		{#if subtotalMinor === null}
-			<p class="job-costing__note">You do not have access to job prices.</p>
-		{:else}
-			<dl class="job-costing job-costing--price">
-				<div class="job-costing__row">
-					<dt>Subtotal</dt>
-					<dd>{format(subtotalMinor)}</dd>
-				</div>
-				{#if discountMinor > 0}
-					<div class="job-costing__row">
-						<dt>{discountLabel || 'Discount'}</dt>
-						<dd>−{format(discountMinor)}</dd>
-					</div>
-				{/if}
-				{#if taxMinor > 0}
-					<div class="job-costing__row">
-						<dt>{taxLabel || 'Tax'}</dt>
-						<dd>{format(taxMinor)}</dd>
-					</div>
-				{/if}
-				<div class="job-costing__row job-costing__row--sum">
-					<dt>Total</dt>
-					<dd>{format(totalMinor ?? subtotalMinor)}</dd>
-				</div>
-			</dl>
-		{/if}
-		{#if costing}
-			<p class="job-costing__eyebrow">Only your team sees this</p>
-
-			{#if recurring}
-				<p class="job-costing__window">
-					Last 30 days <span>{windowText}</span>
-				</p>
+	<section class="job-total" aria-label="Job total">
+		<header class="job-total__head">
+			<span class="job-total__tile" aria-hidden="true">{@html cashIcon}</span>
+			<h2 class="job-total__title">Job total</h2>
+			{#if costing}
+				<span class="job-total__team"><span aria-hidden="true">{@html lockIcon}</span>Team only</span>
 			{/if}
+		</header>
 
-			<dl class="job-costing">
+		{#if grandTotal === null}
+			<p class="job-total__note">You do not have access to job prices.</p>
+		{:else}
+			<div class="job-total__sum">
+				<p class="job-total__amount">{format(grandTotal)}</p>
+				{#if beforeTax !== null && taxMinor > 0}
+					<p class="job-total__sub">{format(beforeTax)} before tax</p>
+				{/if}
+			</div>
+		{/if}
+
+		{#if costing}
+			<div class="job-total__panel">
 				{#if recurring}
-					<div class="job-costing__row">
-						<dt>{recurring.unit_kind === 'visits' ? 'Visits' : 'Periods'}</dt>
-						<dd>{unitText}</dd>
-					</div>
+					<p class="job-total__window">
+						Last 30 days <span>{windowText}</span> · {unitText}
+					</p>
 				{/if}
 
-				<!-- A dash, not a zero: manual billing sets no period, so nothing in the window says what the
-			     work sold for. Zero would read as "we earned nothing", which is a different claim. -->
-				<div class="job-costing__row">
-					<dt>Revenue <span>before tax</span></dt>
-					<dd>{costing.revenue_minor === null ? '—' : format(costing.revenue_minor)}</dd>
-				</div>
-
-				<div class="job-costing__group">
-					<div class="job-costing__row">
-						<dt>Item cost</dt>
-						<dd>{format(costing.item_cost_minor)}</dd>
+				<div class="job-total__figures">
+					<div>
+						<p class="job-total__label">{open ? 'Profit so far' : 'Profit'}</p>
+						<p class="job-total__figure" class:job-total__loss={(costing.profit_minor ?? 0) < 0}>
+							{costing.profit_minor === null ? '—' : format(costing.profit_minor)}
+						</p>
 					</div>
-					<div class="job-costing__row">
-						<dt>Labor</dt>
-						<dd>{format(costing.labor_cost_minor)}</dd>
-					</div>
-					<div class="job-costing__row">
-						<dt>Expenses</dt>
-						<dd>{format(costing.expense_cost_minor)}</dd>
+					<div class="job-total__figures-end">
+						<p class="job-total__label">{open ? 'Costs so far' : 'Total cost'}</p>
+						<p class="job-total__figure job-total__figure--small">
+							{format(costing.total_cost_minor)}
+						</p>
 					</div>
 				</div>
 
-				<div class="job-costing__row job-costing__row--sum">
-					<dt>{open ? 'Costs so far' : 'Total cost'}</dt>
-					<dd>{format(costing.total_cost_minor)}</dd>
-				</div>
-
-				<div class="job-costing__row job-costing__row--profit">
-					<dt>{open ? 'Profit so far' : 'Profit'}</dt>
-					<dd class:job-costing__loss={(costing.profit_minor ?? 0) < 0}>
-						{costing.profit_minor === null ? '—' : format(costing.profit_minor)}
-					</dd>
-				</div>
-
-				{#if !open}
-					<div class="job-costing__row">
-						<dt>Margin</dt>
-						<dd>{marginText}</dd>
-					</div>
-				{/if}
-			</dl>
-
-			<div class="job-costing__bar-wrap">
 				<div
-					class="job-costing__profit-bar"
+					class="job-total__bar"
 					role="img"
 					aria-label={`Item cost ${format(costing.item_cost_minor)}, labor ${format(costing.labor_cost_minor)}, expenses ${format(costing.expense_cost_minor)}, ${open ? 'profit so far' : 'profit'} ${costing.profit_minor === null ? 'not available' : format(costing.profit_minor)}`}
 				>
 					<span
-						class="job-costing__bar-items"
+						class="job-total__bar-items"
 						style:width={`${(costing.item_cost_minor / barTotal) * 100}%`}
 					></span>
 					<span
-						class="job-costing__bar-labor"
+						class="job-total__bar-labor"
 						style:width={`${(costing.labor_cost_minor / barTotal) * 100}%`}
 					></span>
 					<span
-						class="job-costing__bar-expenses"
+						class="job-total__bar-expenses"
 						style:width={`${(costing.expense_cost_minor / barTotal) * 100}%`}
 					></span>
-					<span class="job-costing__bar-profit" style:width={`${(barProfit / barTotal) * 100}%`}
+					<span class="job-total__bar-profit" style:width={`${(barProfit / barTotal) * 100}%`}
 					></span>
 				</div>
+
+				<dl class="job-total__legend">
+					<div class="job-total__legend-row">
+						<span class="job-total__dot job-total__bar-items" aria-hidden="true"></span>
+						<dt>Item cost</dt>
+						<dd>{format(costing.item_cost_minor)}</dd>
+					</div>
+					<div class="job-total__legend-row">
+						<span class="job-total__dot job-total__bar-labor" aria-hidden="true"></span>
+						<dt>Labor</dt>
+						<dd>{format(costing.labor_cost_minor)}</dd>
+					</div>
+					<div class="job-total__legend-row">
+						<span class="job-total__dot job-total__bar-expenses" aria-hidden="true"></span>
+						<dt>Expenses</dt>
+						<dd>{format(costing.expense_cost_minor)}</dd>
+					</div>
+					<div class="job-total__legend-row">
+						<span class="job-total__dot job-total__bar-profit" aria-hidden="true"></span>
+						<dt>{open ? 'Profit so far' : 'Profit'}</dt>
+						<dd>{costing.profit_minor === null ? '—' : format(costing.profit_minor)}</dd>
+					</div>
+				</dl>
 			</div>
 
+			<p class="job-total__note">
+				{#if open}
+					Margin shows once the job is closed.
+				{:else}
+					Margin {marginText}
+				{/if}
+			</p>
+
 			{#if recurring && recurring.revenue_minor === null}
-				<p class="job-costing__note">
+				<p class="job-total__note">
 					This job is billed manually, so these 30 days have no billing period to price. The costs
 					above are real; there is no revenue to set them against until the work is billed.
 				</p>
 			{/if}
 
 			{#if costing.unrated_labor_count > 0}
-				<p class="job-costing__note">
+				<p class="job-total__note">
 					{costing.unrated_labor_count === 1
 						? 'One time entry has'
 						: `${costing.unrated_labor_count} time entries have`}
@@ -212,161 +198,224 @@
 			{/if}
 
 			{#if costing.labor_line_and_time}
-				<p class="job-costing__note job-costing__note--warn">
+				<p class="job-total__note job-total__note--warn">
 					This job has a labor line item and tracked time. Both are counted here — remove one if it
 					is double counting.
 				</p>
 			{/if}
 		{/if}
-	</RailCard>
+	</section>
 {/if}
 
+<!-- eslint-enable svelte/no-at-html-tags -->
+
 <style lang="scss">
-	// App look: the profit card is the dark one in the rail. Re-pointing the text tokens inside it keeps
-	// every row below readable in light and dark without a second set of colours.
-	:global(.record-detail--cards) :global(.job-costing-card) {
-		--color-heading: var(--color-white);
-		--color-text: var(--color-white);
-		--color-text--secondary: var(--color-feature--text--secondary);
-		--color-border: color-mix(in srgb, var(--color-white) 16%, transparent);
-
-		padding: 24px;
-		border-color: transparent;
-		background: linear-gradient(135deg, var(--color-feature--start), var(--color-feature--end));
-	}
-	:global(.record-detail--cards) :global(.job-costing-card .card-header) {
-		border-color: var(--color-feature--border);
-		background: transparent;
-	}
-	:global(.record-detail--cards) :global(.job-costing-card .card-header__title) {
-		color: var(--color-feature--text);
-	}
-	:global(.record-detail--cards) :global(.job-costing-card .card-header__tile) {
-		color: var(--color-feature--text);
-		background: var(--color-feature--subtle);
-	}
-	.job-costing__bar-wrap {
-		padding-top: var(--space-slim);
-		border-top: 1px solid var(--color-feature--border);
-	}
-	.job-costing__profit-bar {
-		display: flex;
-		gap: 3px;
-		width: 100%;
-		height: 10px;
-		overflow: hidden;
-		border-radius: var(--radius-circle);
-		background: var(--color-feature--subtle);
-		span {
-			display: block;
-			height: 100%;
-		}
-	}
-	.job-costing__bar-items {
-		background: var(--color-feature--items);
-	}
-	.job-costing__bar-labor {
-		background: var(--color-feature--labor);
-	}
-	.job-costing__bar-expenses {
-		background: var(--color-feature--expenses);
-	}
-	.job-costing__bar-profit {
-		background: var(--color-feature--text);
-	}
-
-	.job-costing {
+	// The dark green card at the head of the rail. Its colours come from the `--color-feature--*` tokens,
+	// so it reads the same in light and dark mode.
+	.job-total {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-small);
-		margin: 0;
+		gap: var(--space-base);
+		padding: var(--space-large);
+		border-radius: var(--radius-large);
+		color: var(--color-feature--text);
+		background: linear-gradient(135deg, var(--color-feature--start), var(--color-feature--end));
 
-		&__row {
+		&__head {
 			display: flex;
-			align-items: baseline;
-			justify-content: space-between;
-			gap: var(--space-base);
+			align-items: center;
+			gap: var(--space-slim);
+		}
 
-			dt {
-				color: var(--color-text--secondary);
+		&__tile {
+			display: inline-grid;
+			flex: 0 0 auto;
+			width: 40px;
+			height: 40px;
+			place-items: center;
+			border: var(--border-base) solid var(--color-feature--border);
+			border-radius: var(--radius-tile-large);
+			background: var(--color-feature--subtle);
 
-				span {
-					font-size: var(--typography--fontSize-small);
-				}
+			:global(svg) {
+				display: block;
+				width: 20px;
+				height: 20px;
 			}
+		}
 
-			dd {
-				margin: 0;
-				color: var(--color-heading);
+		&__title {
+			flex: 1;
+			margin: 0;
+			color: var(--color-feature--text--secondary);
+			font-size: var(--typography--fontSize-overline);
+			font-weight: 600;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+		}
+
+		&__team {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+			padding: 3px 10px 3px 8px;
+			border: var(--border-base) solid var(--color-feature--border);
+			border-radius: var(--radius-circle);
+			color: var(--color-feature--text--secondary);
+			background: var(--color-feature--subtle);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+
+			:global(svg) {
+				display: block;
+				width: 12px;
+				height: 12px;
+			}
+		}
+
+		&__sum {
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
+		}
+
+		&__amount {
+			margin: 0;
+			font-size: 34px;
+			font-weight: 700;
+			font-variant-numeric: tabular-nums;
+			letter-spacing: -0.8px;
+			line-height: 1.1;
+		}
+
+		&__sub {
+			margin: 0;
+			color: var(--color-feature--text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__panel {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-slim);
+			padding: var(--space-base);
+			border: var(--border-base) solid var(--color-feature--border);
+			border-radius: var(--radius-base);
+			background: var(--color-feature--subtle);
+		}
+
+		&__window {
+			margin: 0;
+			color: var(--color-feature--text--secondary);
+			font-size: var(--typography--fontSize-small);
+
+			span {
+				color: var(--color-feature--text);
 				font-weight: 600;
 				font-variant-numeric: tabular-nums;
 			}
 		}
 
-		/* Item, labor and expenses read as one indented group under revenue. */
-		&__group {
+		&__figures {
+			display: flex;
+			align-items: flex-end;
+			justify-content: space-between;
+			gap: var(--space-base);
+		}
+
+		&__figures-end {
+			text-align: right;
+		}
+
+		&__label {
+			margin: 0;
+			color: var(--color-feature--text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__figure {
+			margin: 0;
+			font-size: var(--typography--fontSize-largest);
+			font-weight: 700;
+			font-variant-numeric: tabular-nums;
+
+			&--small {
+				font-size: var(--typography--fontSize-larger);
+			}
+		}
+
+		&__loss {
+			color: var(--color-feature--alert);
+		}
+
+		&__bar {
+			display: flex;
+			gap: 3px;
+			width: 100%;
+			height: 10px;
+			overflow: hidden;
+			border-radius: var(--radius-circle);
+			background: var(--color-feature--subtle);
+
+			span {
+				display: block;
+				height: 100%;
+			}
+		}
+
+		&__bar-items {
+			background: var(--color-feature--items);
+		}
+		&__bar-labor {
+			background: var(--color-feature--labor);
+		}
+		&__bar-expenses {
+			background: var(--color-feature--expenses);
+		}
+		&__bar-profit {
+			background: var(--color-feature--text);
+		}
+
+		&__legend {
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-small);
-			padding-left: var(--space-base);
+			margin: 0;
 		}
 
-		/* The cost line the profit is drawn from, set off by a rule the way a printed statement does. */
-		&__row--sum {
-			padding-top: var(--space-small);
-			border-top: var(--border-base) solid var(--color-border);
+		&__legend-row {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
+			font-size: var(--typography--fontSize-small);
 
 			dt {
-				color: var(--color-heading);
-				font-weight: 700;
+				flex: 1;
+				color: var(--color-feature--text--secondary);
 			}
+
 			dd {
-				font-weight: 700;
+				margin: 0;
+				font-weight: 600;
+				font-variant-numeric: tabular-nums;
 			}
 		}
 
-		&__row--profit dt {
-			color: var(--color-heading);
-			font-weight: 700;
+		&__dot {
+			flex: 0 0 auto;
+			width: 10px;
+			height: 10px;
+			border-radius: var(--radius-circle);
 		}
-		&__row--profit dd {
-			font-weight: 700;
-		}
-	}
 
-	.job-costing__loss {
-		color: var(--color-critical);
-	}
+		&__note {
+			margin: 0;
+			color: var(--color-feature--text--secondary);
+			font-size: var(--typography--fontSize-small);
 
-	.job-costing__eyebrow {
-		margin: 0;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-	}
-
-	/* The window the recurring figures below are measured over. The dates carry the weight, so they get the
-	   heading colour and the label stays quiet. */
-	.job-costing__window {
-		margin: 0;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-
-		span {
-			color: var(--color-heading);
-			font-weight: 600;
-			font-variant-numeric: tabular-nums;
-		}
-	}
-
-	.job-costing__note {
-		margin: 0;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-
-		&--warn {
-			color: var(--color-warning--onSurface);
+			&--warn {
+				color: var(--color-feature--text);
+			}
 		}
 	}
 </style>

@@ -16,15 +16,75 @@
 <script lang="ts">
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import arrowUpRightIcon from '@tabler/icons/outline/arrow-up-right.svg?raw';
+	import clipboardTextIcon from '@tabler/icons/outline/clipboard-text.svg?raw';
+	import fileDescriptionIcon from '@tabler/icons/outline/file-description.svg?raw';
+	import toolsIcon from '@tabler/icons/outline/tools.svg?raw';
+	import fileDollarIcon from '@tabler/icons/outline/file-dollar.svg?raw';
+	import creditCardIcon from '@tabler/icons/outline/credit-card.svg?raw';
 
 	// A work record's place on the line from Request to Paid: one bar per step, filled for what is done,
 	// part-filled for where the record is now, and a line of words under each. It only reports; the page
 	// says which step is which and what to write under it.
 
-	let { steps, label = 'Progress' }: { steps: TrackStep[]; label?: string } = $props();
+	let {
+		steps,
+		label = 'Progress',
+		look = 'bars'
+	}: {
+		steps: TrackStep[];
+		label?: string;
+		/** `steps` is the new concept's strip: a coloured tile per step joined by a line. */
+		look?: 'bars' | 'steps';
+	} = $props();
+
+	// The concept strip tells the five steps apart by colour: each takes its record's colour once reached.
+	const stepKinds: Record<string, { kind: string; icon: string }> = {
+		Request: { kind: 'request', icon: clipboardTextIcon },
+		Quote: { kind: 'quote', icon: fileDescriptionIcon },
+		Job: { kind: 'job', icon: toolsIcon },
+		Invoice: { kind: 'invoice', icon: fileDollarIcon },
+		Paid: { kind: 'invoice', icon: creditCardIcon }
+	};
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags, svelte/no-navigation-without-resolve -->
+{#if look === 'steps'}
+	<ol class="track" aria-label={label}>
+		{#each steps as step, index (step.label)}
+			{@const known = stepKinds[step.label]}
+			{#if index > 0}
+				<li
+					class="track__line"
+					class:track__line--reached={steps[index - 1].state === 'done'}
+					aria-hidden="true"
+				></li>
+			{/if}
+			<li class="track__step" aria-current={step.state === 'current' ? 'step' : undefined}>
+				<span
+					class="track__tile"
+					class:track__tile--reached={step.state !== 'todo'}
+					style:--step-tone={known ? `var(--color-${known.kind})` : undefined}
+					style:--step-surface={known ? `var(--color-${known.kind}--surface)` : undefined}
+					aria-hidden="true"
+				>
+					{#if step.state === 'done'}{@html checkIcon}{:else if known}{@html known.icon}{/if}
+				</span>
+				<span class="track__text">
+					{#if step.href}
+						<a class="track__label" href={step.href}>{step.label}</a>
+					{:else}
+						<span class={['track__label', step.state === 'todo' && 'track__label--todo']}
+							>{step.label}</span
+						>
+					{/if}
+					<span class={['track__sub', step.tone === 'critical' && 'track__sub--critical']}>
+						{step.sub}
+					</span>
+				</span>
+			</li>
+		{/each}
+	</ol>
+{:else}
 <div class="lifecycle-frame">
 	<ol class="lifecycle" aria-label={label}>
 		{#each steps as step (step.label)}
@@ -65,10 +125,97 @@
 		{/each}
 	</ol>
 </div>
+{/if}
 
 <!-- eslint-enable svelte/no-at-html-tags, svelte/no-navigation-without-resolve -->
 
 <style lang="scss">
+	// Concept strip: tile, label and one line of words per step, with a rule joining one step to the next.
+	.track {
+		display: flex;
+		align-items: center;
+		gap: var(--space-slim);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+
+		&__step {
+			display: flex;
+			min-width: 0;
+			flex: 0 0 auto;
+			align-items: center;
+			gap: var(--space-small);
+		}
+
+		&__tile {
+			display: inline-grid;
+			flex: 0 0 auto;
+			width: 32px;
+			height: 32px;
+			place-items: center;
+			border: var(--border-base) solid var(--color-border--interactive);
+			border-radius: var(--radius-base);
+			color: var(--color-icon--secondary);
+			background: var(--color-surface);
+
+			&--reached {
+				border-color: transparent;
+				color: var(--step-tone);
+				background: var(--step-surface);
+			}
+
+			:global(svg) {
+				display: block;
+				width: 16px;
+				height: 16px;
+			}
+		}
+
+		&__text {
+			display: flex;
+			min-width: 0;
+			flex-direction: column;
+		}
+
+		&__label {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+			text-decoration: none;
+			white-space: nowrap;
+
+			&--todo {
+				color: var(--color-text--secondary);
+			}
+
+			&:is(a):hover {
+				text-decoration: underline;
+			}
+		}
+
+		&__sub {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-overline);
+			white-space: nowrap;
+
+			&--critical {
+				color: var(--color-critical);
+			}
+		}
+
+		&__line {
+			min-width: 16px;
+			height: 2px;
+			flex: 1 1 0;
+			border-radius: 1px;
+			background: var(--color-border);
+
+			&--reached {
+				background: var(--color-icon--secondary);
+			}
+		}
+	}
+
 	.lifecycle {
 		display: flex;
 		gap: 14px;

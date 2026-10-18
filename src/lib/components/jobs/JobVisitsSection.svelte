@@ -251,6 +251,16 @@
 			.sort((a, b) => ((b.visit_date ?? '') < (a.visit_date ?? '') ? 1 : -1))
 	);
 
+	const visitsSummary = $derived(
+		[
+			`${visits.length} ${visits.length === 1 ? 'visit' : 'visits'}`,
+			past.length > 0 ? `${past.length} completed` : null,
+			toBeScheduled.length > 0 ? `${toBeScheduled.length} to be scheduled` : null
+		]
+			.filter(Boolean)
+			.join(' · ')
+	);
+
 	// Only the next three Upcoming show until the user asks for the rest; Past is collapsed until opened.
 	let showAllUpcoming = $state(false);
 	let showPast = $state(false);
@@ -967,6 +977,7 @@
 
 <SectionBlock
 	title="Visits"
+	subtitle={visitsSummary}
 	tone="time"
 	icon={calendarIcon}
 	level={2}
