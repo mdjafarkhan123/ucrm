@@ -1,49 +1,11 @@
 # C3 — Jobs list in the concept
 
-**State:** Approved by Jafar 2026-10-18 and built the same day. `concept.pen` frame "Concept · Jobs list · Owner · 1440"
-(`t8ULdJ`, right of Home).
+**State:** Approved by Jafar and built on 2026-10-18. The Pencil frame is "Concept · Jobs list · Owner · 1440" (`t8ULdJ`) in `concept.pen`. Code and the saved drawing are on `main`.
 
-**Content source:** the live page `src/routes/(app)/jobs/+page.svelte` and Jobber's Jobs list
-(help article "Jobs List Page and Key Metrics": overview by status, Status and Type filters, sortable columns,
-New Job and More Actions). No new data or behaviour; demo figures match the Home design.
+**Agreement:** Keep the live Jobs list's data and behaviour, and keep its table look. The concept changes its presentation: status-coloured icon tiles, a green money card, a tiled header, and a "More" button with a trailing chevron. There is no action behind the Jobs menu yet. Its unavailable reason is "Bulk actions and exporting arrive later." Jafar approved applying shared component changes to every page that uses them. He also approved the concept header and More button throughout the app, with old presentation code removed.
 
-**What it shows, top to bottom:** header (40 job tile, Jobs, description, More menu, New job) · Needs attention
-card: five tiles Late / Unscheduled / Action required / Requires invoicing / Ending soon, each a 32 status-coloured
-icon tile, count, label and hint (Late has the act-now red fill, as the live alert tile does), then a strip with
-visits today and visits completed in the past 30 days · green feature card "Collected this month" with "Left to
-collect on open invoices" · All jobs card: search, Status, Type and Created filters, the table in today's look
-(tables are not redesigned), Load more.
+**Built:** `AttentionCard` uses the status icon tiles on Jobs, Requests, Quotes, Invoices and Clients. `MoneyFeatureCard` uses the green feature look on those lists and the client and invoice record pages. `PageHeader` uses the concept's icon tile and record colour across its callers. `DropdownMenu` supplies the shared "More" style, including the white disabled Jobs, Requests and Quotes triggers. Clients uses the same menu style with working actions. The older page-specific More buttons and styles were removed. New token: `--color-feature--alert`.
 
-**Changes from the live look, for Jafar to confirm:** dark money card becomes the green feature card; status tiles
-get coloured icon tiles; client avatars use the client colour instead of one colour per client; "More actions"
-becomes the More menu button (still nothing behind it); the "Work & money" eyebrow is dropped.
+**Evidence:** Earlier Jobs and related-list checks are recorded in commits `90270308` and `2824659d`. On this integration, the local browser produced 1440px captures of Jobs, Requests, Clients, Quotes and Invoices, plus a 390px Jobs capture. Jafar asked to defer any further checks until the whole campaign is complete. The campaign-end pass must cover the remaining screen, dark-mode, interaction, lint and type checks; no result should be inferred from the interrupted broad check.
 
-**Jafar's decision (2026-10-18):** the live list already matched; build only the two improvements, and the
-shared parts may change every page that uses them.
-
-**Built:** `AttentionCard` tiles take an optional `icon` (32 status-coloured tile, bordered white tile, 32 count)
-on Jobs, Requests, Quotes, Invoices and Clients; `MoneyFeatureCard` is the green feature card on those lists and
-the client and invoice pages; new token `--color-feature--alert`. Card corners stay 8 to match the live cards
-beside them (Pencil draws 16); the money card keeps its live layout, without the Pencil icon tile.
-
-**Checked:** Playwright, owner, port 5180: the five lists at 1440 light, Jobs and Invoices dark, Jobs at 390,
-client and invoice record pages, picked and hovered tiles (picking Unscheduled filtered to 4 jobs).
-
-**Matched to Pencil (2026-10-18, Jafar: "without the table, match the design Pencil has"):** money card gets an
-icon tile, figure at the top, panel at the foot, 16 corners (all seven pages); `PageHeader` takes `icon`/`tone`
-for the tiled concept header (Jobs only so far); overview and list cards 16 corners; Jobs facts on time/success
-tiles; More menu button (still disabled, nothing behind it). Rechecked lists, record pages, dark, 390.
-
-**For the campaign-end checks:** ESLint already flags three older lines in touched files (AttentionCard 150
-useless mustache, clients 378 `{@html}`, requests 532 href without resolve).
-
-**Paused 2026-10-18 — waiting to merge.** Branch `claude/c3-page-headers`, folder `.worktrees/c3-headers`, claim
-`d6ec0192176f`. Jafar: the header and More button are components, so every page gets them; delete unused code.
-Done on the branch, not yet screen-checked: `PageHeader` always uses the concept look (eyebrow removed from the
-component and every caller; each page passes `icon` and `tone`, the sidebar's colour); `DropdownMenu` gains
-`unavailableReason`, and Jobs, Quotes and Requests use it for "More" (Clients uses "More" too); the old per-page
-More markup, styles and imports are deleted.
-**Next:** (1) delete leftovers: `AttentionCard` fallback branch (dot, count-row; make `icon` required and the
-`:has(.attention-card__icon)` rules the base), make `MoneyFeatureCard` `icon` required; (2) screen-check all
-header pages at 1440 (one run failed on a stale dev server: restart it); (3) merge, push, release the claim, remove
-the worktree; then Jafar saves `concept.pen` (Ctrl+S) and C4 Job details.
+**Next:** C4 Job details: research its content, draw it at 1440px in Pencil, and show Jafar for review before building.
