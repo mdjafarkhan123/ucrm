@@ -1,22 +1,24 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import arrowUpRightIcon from '@tabler/icons/outline/arrow-up-right.svg?raw';
 	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
-	import calendarEventIcon from '@tabler/icons/outline/calendar-event.svg?raw';
-	import checkIcon from '@tabler/icons/outline/check.svg?raw';
-	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
-	import mapPinIcon from '@tabler/icons/outline/map-pin.svg?raw';
+	import clipboardListIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
+	import hammerIcon from '@tabler/icons/outline/hammer.svg?raw';
+	import squareCheckIcon from '@tabler/icons/outline/square-check.svg?raw';
 	import userPlusIcon from '@tabler/icons/outline/user-plus.svg?raw';
 	import HomeCardState from '$lib/components/dashboard/HomeCardState.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import CardHeader from '$lib/components/ui/CardHeader.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
+	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import { clockSentence, type HomeSchedule, type HomeScheduleRow } from '$lib/home/schedule';
 	import type { TeamMember } from '$lib/team/api';
 
-	// Today's schedule: a dark summary of the day (how much is on, how much is done, what needs a look) above
-	// the day's work, late items first. "By visit" lists the work in time order; "By person" shows each
-	// teammate's share of it. Statuses are the Schedule's own; see `$lib/home/schedule`.
+	// Today's schedule: how the day stands (completed, still to do, late) above the day's work in time order,
+	// anytime work last, and the work left over from earlier days at the foot. "By visit" lists the work;
+	// "By person" shows each teammate's share of it. Statuses are the Schedule's own; see `$lib/home/schedule`.
 	let {
 		schedule,
 		team = [],
@@ -36,24 +38,31 @@
 
 	const membersById = $derived(new Map(team.map((member) => [member.id, member])));
 	const counts = $derived(schedule?.counts);
-	const share = (value: number) => (counts && counts.total > 0 ? (value / counts.total) * 100 : 0);
 
-	const headline = $derived(
-		counts === undefined
-			? 'Today'
-			: counts.total === 0
-				? 'Nothing on the schedule today'
-				: `${counts.total} on the schedule`
-	);
-	const meta = $derived.by(() => {
-		if (!schedule || schedule.counts.total === 0) return null;
-		const parts: string[] = [];
+	// The quiet line under the title: how much is on, then who is out, when the day ends and what has no one.
+	const hint = $derived.by(() => {
+		if (!schedule) return null;
+		const { total, unassigned } = schedule.counts;
+		const parts = [
+			total === 0 ? 'Nothing booked today' : `${total} ${total === 1 ? 'item' : 'items'}`
+		];
 		if (schedule.peopleOut > 0)
 			parts.push(`${schedule.peopleOut} ${schedule.peopleOut === 1 ? 'person' : 'people'} out`);
 		if (schedule.lastEndMinutes !== null)
 			parts.push(`last one ends ${clockSentence(schedule.lastEndMinutes)}`);
-		return parts.length > 0 ? parts.join(' · ') : null;
+		if (unassigned > 0) parts.push(`${unassigned} unassigned`);
+		return parts.join(' · ');
 	});
+
+	const tiles = $derived(
+		counts
+			? [
+					{ key: 'completed', label: 'Completed', count: counts.completed },
+					{ key: 'todo', label: 'Still to do', count: counts.todo },
+					{ key: 'late', label: 'Late', count: counts.late }
+				]
+			: []
+	);
 
 	function nameOf(id: string | null) {
 		if (id === null) return 'Unassigned';
@@ -67,32 +76,35 @@
 		return resolve('/(app)/pipeline');
 	}
 
+	const kindLook = {
+		visit: { tone: 'job', icon: hammerIcon },
+		assessment: { tone: 'request', icon: clipboardListIcon },
+		task: { tone: 'task', icon: squareCheckIcon }
+	} as const;
 	const statusLabel = { completed: 'Completed', todo: 'Still to do', late: 'Late' } as const;
+	const statusTone = { completed: 'success', todo: 'inactive', late: 'critical' } as const;
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags, svelte/no-navigation-without-resolve -->
 {#snippet row(item: HomeScheduleRow)}
 	<li>
 		<a
-			class={['home-row', `home-row--${item.status}`]}
+			class="home-row"
 			href={rowHref(item)}
 			aria-label={`${item.timeTop} ${item.timeBottom}, ${item.title}, ${statusLabel[item.status]}`}
 		>
-			<span
-				class={[
-					'home-row__time',
-					item.status === 'late' && 'home-row__time--late',
-					item.status === 'todo' && item.assigneeIds.length === 0 && 'home-row__time--open'
-				]}
-			>
+			<span class="home-row__time">
 				<span class="home-row__time-top">{item.timeTop}</span>
-				<span class="home-row__time-bottom">{item.timeBottom}</span>
+				{#if item.timeBottom}<span class="home-row__time-bottom">{item.timeBottom}</span>{/if}
 			</span>
+			<span class="home-row__tile home-row__tile--{kindLook[item.kind].tone}" aria-hidden="true"
+				>{@html kindLook[item.kind].icon}</span
+			>
 			<span class="home-row__main">
-				<span class="home-row__title">{item.title}</span>
-				<span class="home-row__place">
-					<span class="home-row__place-icon" aria-hidden="true">{@html mapPinIcon}</span>
-					{[item.place, item.length].filter(Boolean).join(' · ') || 'No address to show'}
+				<span class="home-row__title">{item.work}</span>
+				<span class="home-row__meta">
+					{[item.client, item.place, item.length].filter(Boolean).join(' · ') ||
+						'No address to show'}
 				</span>
 			</span>
 			<span class="home-row__people">
@@ -111,103 +123,33 @@
 					{/if}
 				{/if}
 			</span>
-			<span class={['home-row__status', `home-row__status--${item.status}`]}>
-				{#if item.status === 'completed'}
-					<span class="home-row__status-icon" aria-hidden="true">{@html checkIcon}</span>
-				{:else}
-					<span class="home-row__status-dot" aria-hidden="true"></span>
-				{/if}
-				{statusLabel[item.status]}
+			<span class="home-row__status">
+				<StatusBadge status={statusTone[item.status]} size="small"
+					>{statusLabel[item.status]}</StatusBadge
+				>
 			</span>
-			<span class="home-row__chevron" aria-hidden="true">{@html chevronRightIcon}</span>
 		</a>
 	</li>
 {/snippet}
 
 <section class="home-schedule" aria-labelledby="{uid}-title" aria-busy={loading}>
-	<div class="home-schedule__hero">
-		<span class="home-schedule__ring home-schedule__ring--one" aria-hidden="true"></span>
-		<span class="home-schedule__ring home-schedule__ring--two" aria-hidden="true"></span>
-		<div class="home-schedule__hero-top">
-			<div class="home-schedule__headline">
-				<p class="home-schedule__eyebrow">
-					<span class="home-schedule__eyebrow-icon" aria-hidden="true"
-						>{@html calendarEventIcon}</span
-					>
-					Today
-				</p>
-				<h2 id="{uid}-title">{loading ? 'Today’s schedule' : headline}</h2>
-				{#if meta}<p class="home-schedule__meta">{meta}</p>{/if}
-			</div>
-			<Button variant="secondary" href={resolve('/(app)/schedule')} class="home-schedule__open">
-				<span class="home-schedule__open-icon" aria-hidden="true">{@html calendarIcon}</span>
-				Open schedule
+	<CardHeader id="{uid}-title" title="Today’s schedule" {hint} icon={calendarIcon} tone="time">
+		{#snippet actions()}
+			<SegmentedControl
+				ariaLabel="Group today's schedule"
+				size="small"
+				tone="plain"
+				bind:value={view}
+				options={[
+					{ value: 'visit', label: 'By visit' },
+					{ value: 'person', label: 'By person' }
+				]}
+			/>
+			<Button variant="secondary" iconOnly label="Open schedule" href={resolve('/(app)/schedule')}>
+				{@html arrowUpRightIcon}
 			</Button>
-		</div>
-		{#if counts && counts.total > 0}
-			<div
-				class="home-schedule__bar"
-				role="img"
-				aria-label={`${counts.completed} completed, ${counts.todo} still to do`}
-			>
-				{#if counts.completed > 0}
-					<span class="home-schedule__bar-done" style:flex-grow={share(counts.completed)}></span>
-				{/if}
-				{#if counts.todo > 0}
-					<span class="home-schedule__bar-todo" style:flex-grow={share(counts.todo)}></span>
-				{/if}
-			</div>
-		{/if}
-		{#if counts}
-			<div class="home-schedule__legend">
-				<ul class="home-schedule__statuses">
-					<li>
-						<span class="home-schedule__swatch home-schedule__swatch--done" aria-hidden="true"
-						></span>
-						Completed <strong>{counts.completed}</strong>
-					</li>
-					<li>
-						<span class="home-schedule__swatch home-schedule__swatch--todo" aria-hidden="true"
-						></span>
-						Still to do <strong>{counts.todo}</strong>
-					</li>
-				</ul>
-				{#if counts.late > 0 || counts.unassigned > 0}
-					<ul class="home-schedule__flags">
-						{#if counts.late > 0}
-							<li class="home-schedule__flag">
-								<span
-									class="home-schedule__flag-dot home-schedule__flag-dot--late"
-									aria-hidden="true"
-								></span>{counts.late} late
-							</li>
-						{/if}
-						{#if counts.unassigned > 0}
-							<li class="home-schedule__flag">
-								<span
-									class="home-schedule__flag-dot home-schedule__flag-dot--open"
-									aria-hidden="true"
-								></span>{counts.unassigned} unassigned
-							</li>
-						{/if}
-					</ul>
-				{/if}
-			</div>
-		{/if}
-	</div>
-
-	<div class="home-schedule__toolbar">
-		<p>Visits, assessments and tasks · late ones first, anytime ones last</p>
-		<SegmentedControl
-			ariaLabel="Group today's schedule"
-			size="small"
-			bind:value={view}
-			options={[
-				{ value: 'visit', label: 'By visit' },
-				{ value: 'person', label: 'By person' }
-			]}
-		/>
-	</div>
+		{/snippet}
+	</CardHeader>
 
 	{#if loading}
 		<HomeCardState state="loading" label="today’s schedule" rows={4} />
@@ -221,55 +163,67 @@
 			description="Visits, assessments and tasks dated today will show here."
 			icon={calendarIcon}
 		/>
-	{:else if view === 'visit'}
-		{#if schedule.late.length > 0}
-			<p class="home-schedule__band home-schedule__band--late">
-				<span class="home-schedule__band-icon" aria-hidden="true">{@html alertTriangleIcon}</span>
-				LATE FROM EARLIER DAYS
-			</p>
-			<ul class="home-schedule__rows">
-				{#each schedule.late as item (item.key)}{@render row(item)}{/each}
-			</ul>
-		{/if}
-		<p class="home-schedule__band">
-			<span class="home-schedule__band-icon" aria-hidden="true">{@html calendarIcon}</span>
-			TODAY
-		</p>
-		{#if schedule.today.length === 0}
-			<p class="home-schedule__quiet">Nothing else is booked for today.</p>
-		{:else}
-			<ul class="home-schedule__rows">
-				{#each schedule.today as item (item.key)}{@render row(item)}{/each}
-			</ul>
-		{/if}
 	{:else}
-		<ul class="home-people">
-			{#each schedule.byPerson as person (person.id ?? 'none')}
-				<li class="home-people__row">
-					{#if person.id}
-						<Avatar
-							id={person.id}
-							name={nameOf(person.id)}
-							src={membersById.get(person.id)?.avatar_url}
-							size="medium"
-						/>
-					{:else}
-						<span class="home-people__open" aria-hidden="true">{@html userPlusIcon}</span>
-					{/if}
-					<div class="home-people__text">
-						<strong>{nameOf(person.id)}</strong>
-						<div
-							class="home-people__track"
-							role="img"
-							aria-label={`${person.done} of ${person.total} done`}
+		<div class="home-schedule__body">
+			<ul class="home-schedule__tiles" aria-label="How today stands">
+				{#each tiles as tile (tile.key)}
+					<li class="home-schedule__tile home-schedule__tile--{tile.key}">
+						<strong>{tile.count}</strong>{tile.label}
+					</li>
+				{/each}
+			</ul>
+
+			{#if view === 'visit'}
+				{#if schedule.today.length === 0}
+					<p class="home-schedule__quiet">Nothing else is booked for today.</p>
+				{:else}
+					<ul class="home-schedule__rows">
+						{#each schedule.today as item (item.key)}{@render row(item)}{/each}
+					</ul>
+				{/if}
+				{#if schedule.late.length > 0}
+					<p class="home-schedule__band">
+						<span class="home-schedule__band-icon" aria-hidden="true"
+							>{@html alertTriangleIcon}</span
 						>
-							<span style:width={`${(person.done / person.total) * 100}%`}></span>
-						</div>
-					</div>
-					<span class="home-people__count">{person.done} of {person.total} done</span>
-				</li>
-			{/each}
-		</ul>
+						Late from earlier days
+					</p>
+					<ul class="home-schedule__rows home-schedule__rows--late">
+						{#each schedule.late as item (item.key)}{@render row(item)}{/each}
+					</ul>
+				{/if}
+			{:else if schedule.byPerson.length === 0}
+				<p class="home-schedule__quiet">Nobody has work booked for today.</p>
+			{:else}
+				<ul class="home-people">
+					{#each schedule.byPerson as person (person.id ?? 'none')}
+						<li class="home-people__row">
+							{#if person.id}
+								<Avatar
+									id={person.id}
+									name={nameOf(person.id)}
+									src={membersById.get(person.id)?.avatar_url}
+									size="medium"
+								/>
+							{:else}
+								<span class="home-people__open" aria-hidden="true">{@html userPlusIcon}</span>
+							{/if}
+							<div class="home-people__text">
+								<strong>{nameOf(person.id)}</strong>
+								<div
+									class="home-people__track"
+									role="img"
+									aria-label={`${person.done} of ${person.total} done`}
+								>
+									<span style:width={`${(person.done / person.total) * 100}%`}></span>
+								</div>
+							</div>
+							<span class="home-people__count">{person.done} of {person.total} done</span>
+						</li>
+					{/each}
+				</ul>
+			{/if}
+		</div>
 	{/if}
 </section>
 
@@ -280,333 +234,178 @@
 		min-width: 0;
 		overflow: hidden;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border-radius: var(--radius-large);
 		background: var(--color-surface);
 
-		&__hero {
-			position: relative;
+		&__body {
 			display: grid;
-			gap: 18px;
-			overflow: hidden;
-			padding: 24px 28px 22px;
-			color: var(--color-text--reverse);
-			background: var(--color-surface--reverse);
-		}
-		&__ring {
-			position: absolute;
-			border: 1px solid color-mix(in srgb, var(--color-text--reverse) 8%, transparent);
-			border-radius: var(--radius-circle);
-			pointer-events: none;
-
-			&--one {
-				top: -100px;
-				right: 40px;
-				width: 260px;
-				height: 260px;
-			}
-			&--two {
-				top: -150px;
-				right: -10px;
-				width: 360px;
-				height: 360px;
-			}
-		}
-		&__hero-top {
-			position: relative;
-			display: flex;
-			flex-wrap: wrap;
-			align-items: flex-start;
-			justify-content: space-between;
 			gap: var(--space-base);
+			padding: var(--space-medium);
 		}
-		&__headline {
+
+		&__tiles {
 			display: grid;
-			gap: 8px;
-
-			h2 {
-				color: var(--color-text--reverse);
-				font-size: 30px;
-				font-weight: 800;
-				letter-spacing: -0.9px;
-				line-height: 1.1;
-			}
-		}
-		&__eyebrow {
-			display: flex;
-			align-items: center;
-			gap: 8px;
-			color: var(--color-icon--secondary);
-			font-size: 11px;
-			font-weight: 700;
-			letter-spacing: 1px;
-			text-transform: uppercase;
-		}
-		&__eyebrow-icon {
-			display: inline-flex;
-
-			:global(svg) {
-				width: 14px;
-				height: 14px;
-			}
-		}
-		&__meta {
-			color: var(--color-text--reverse);
-			font-size: 14px;
-			font-weight: 500;
-			opacity: 0.88;
-		}
-		&__open-icon {
-			display: inline-flex;
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
-		}
-
-		&__bar {
-			position: relative;
-			display: flex;
-			gap: 4px;
-			height: 8px;
-		}
-		&__bar-done,
-		&__bar-todo {
-			flex-basis: 0;
-			min-width: 8px;
-			border-radius: 4px;
-		}
-		&__bar-done {
-			background: var(--color-text--reverse);
-		}
-		&__bar-todo {
-			border: 1px solid color-mix(in srgb, var(--color-text--reverse) 10%, transparent);
-			background: color-mix(in srgb, var(--color-text--reverse) 8%, transparent);
-		}
-
-		&__legend {
-			position: relative;
-			display: flex;
-			flex-wrap: wrap;
-			align-items: center;
-			justify-content: space-between;
-			gap: var(--space-small) var(--space-base);
-		}
-		&__statuses,
-		&__flags {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: center;
-			gap: 8px 18px;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: var(--space-small);
 			margin: 0;
 			padding: 0;
 			list-style: none;
 		}
-		&__statuses li {
+		&__tile {
 			display: flex;
 			align-items: center;
-			gap: 7px;
-			font-size: 12px;
+			gap: var(--space-small);
+			padding: 10px var(--space-slim);
+			border-radius: var(--radius-base);
+			font-size: var(--typography--fontSize-label);
 			font-weight: 600;
 
 			strong {
-				font-size: 13px;
+				font-size: var(--typography--fontSize-larger);
 				font-weight: 700;
+				font-variant-numeric: tabular-nums;
 			}
-		}
-		&__swatch {
-			width: 8px;
-			height: 8px;
-			border-radius: var(--radius-circle);
-
-			&--done {
-				background: var(--color-text--reverse);
+			&--completed {
+				color: var(--color-success--onSurface);
+				background: var(--color-success--surface);
 			}
 			&--todo {
-				border: 1.5px solid color-mix(in srgb, var(--color-text--reverse) 70%, transparent);
+				color: var(--color-inactive--onSurface);
+				background: var(--color-inactive--surface);
 			}
-		}
-		&__flags {
-			gap: 8px;
-		}
-		&__flag {
-			display: flex;
-			align-items: center;
-			gap: 7px;
-			height: 28px;
-			padding: 0 11px;
-			border: 1px solid color-mix(in srgb, var(--color-text--reverse) 10%, transparent);
-			border-radius: 999px;
-			background: color-mix(in srgb, var(--color-text--reverse) 8%, transparent);
-			font-size: 12px;
-			font-weight: 600;
-		}
-		&__flag-dot {
-			width: 7px;
-			height: 7px;
-			border-radius: var(--radius-circle);
-
 			&--late {
-				background: var(--color-critical);
-			}
-			&--open {
-				background: var(--color-warning);
+				color: var(--color-critical--onSurface);
+				background: var(--color-critical--surface);
 			}
 		}
 
-		&__toolbar {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: center;
-			justify-content: space-between;
-			gap: var(--space-small) var(--space-base);
-			padding: 12px var(--space-large);
+		&__rows {
+			display: grid;
+			margin: 0;
+			padding: 0;
+			list-style: none;
 
-			p {
-				color: var(--color-text--secondary);
-				font-size: 13px;
-				font-weight: 500;
+			> li + li {
+				border-top: var(--border-base) solid var(--color-border);
+			}
+			&--late {
+				border: var(--border-base) solid var(--color-critical--surface);
+				border-radius: var(--radius-base);
+
+				> li + li {
+					border-top-color: var(--color-critical--surface);
+				}
 			}
 		}
 
 		&__band {
 			display: flex;
 			align-items: center;
-			gap: 8px;
-			padding: 9px var(--space-large);
-			border-top: var(--border-base) solid var(--color-border);
-			color: var(--color-text--secondary);
-			background: var(--color-surface--background--subtle);
-			font-size: 11px;
-			font-weight: 700;
-			letter-spacing: 0.8px;
-
-			&--late {
-				color: var(--color-critical);
-			}
+			gap: 6px;
+			padding: var(--space-smaller) var(--space-small) 0;
+			color: var(--color-critical--onSurface);
+			font-size: var(--typography--fontSize-overline);
+			font-weight: 600;
+			letter-spacing: 0.6px;
+			text-transform: uppercase;
 		}
 		&__band-icon {
 			display: inline-flex;
-
-			:global(svg) {
-				width: 13px;
-				height: 13px;
-			}
-		}
-		&__rows {
-			margin: 0;
-			padding: 0;
-			list-style: none;
-		}
-		&__quiet {
-			padding: var(--space-base) var(--space-large);
-			border-top: var(--border-base) solid var(--color-border);
-			color: var(--color-text--secondary);
-			font-size: 13px;
-		}
-	}
-
-	.home-row {
-		display: flex;
-		align-items: center;
-		gap: 16px;
-		padding: 10px var(--space-large);
-		border-top: var(--border-base) solid var(--color-border);
-		color: inherit;
-		text-decoration: none;
-		transition: background var(--timing-quick, 0.15s) ease;
-
-		&:hover {
-			background: var(--color-surface--hover);
-		}
-		&:focus-visible {
-			outline: 2px solid var(--color-focus);
-			outline-offset: -2px;
-		}
-
-		&__time {
-			display: flex;
-			flex: 0 0 48px;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-			gap: 1px;
-			height: 48px;
-			border: 1px solid var(--color-border--interactive);
-			border-radius: var(--radius-base);
-			color: var(--color-heading);
-			background: var(--color-surface);
-
-			&--late {
-				border-color: var(--color-critical--surface);
-				color: var(--color-critical);
-				background: var(--color-critical--surface);
-			}
-			&--open {
-				border-color: var(--color-warning--surface);
-				color: var(--color-warning--onSurface);
-				background: var(--color-warning--surface);
-			}
-		}
-		&__time-top {
-			font-size: 14px;
-			font-weight: 700;
-			letter-spacing: -0.3px;
-			font-variant-numeric: tabular-nums;
-		}
-		&__time-bottom {
-			color: var(--color-text--secondary);
-			font-size: 10px;
-			font-weight: 700;
-			letter-spacing: 0.4px;
-		}
-		&__time--late .home-row__time-bottom {
-			color: inherit;
-		}
-
-		&__main {
-			display: grid;
-			min-width: 0;
-			flex: 1;
-			gap: 4px;
-		}
-		&__title {
-			overflow: hidden;
-			color: var(--color-heading);
-			font-size: 14px;
-			font-weight: 600;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-		}
-		&--completed &__title {
-			color: var(--color-text--secondary);
-		}
-		&__place {
-			display: flex;
-			align-items: center;
-			gap: 6px;
-			overflow: hidden;
-			color: var(--color-text--secondary);
-			font-size: 12px;
-			font-weight: 500;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-		}
-		&__place-icon {
-			display: inline-flex;
-			flex: 0 0 auto;
-			color: var(--color-icon--secondary);
+			color: var(--color-critical);
 
 			:global(svg) {
 				width: 14px;
 				height: 14px;
 			}
 		}
+		&__quiet {
+			padding: var(--space-slim) var(--space-small);
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-label);
+		}
+	}
+
+	.home-row {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		padding: var(--space-slim) var(--space-small);
+		border-radius: var(--radius-base);
+		color: inherit;
+		text-decoration: none;
+		transition: background var(--timing-quick) ease;
+
+		&:hover {
+			background: var(--color-surface--hover);
+		}
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
+
+		&__time {
+			display: grid;
+			flex: 0 0 64px;
+		}
+		&__time-top {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
+			font-variant-numeric: tabular-nums;
+		}
+		&__time-bottom {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__tile {
+			display: inline-flex;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			width: 32px;
+			height: 32px;
+			border-radius: var(--radius-base);
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+			@each $tone in job, request, task {
+				&--#{$tone} {
+					color: var(--color-#{$tone});
+					background: var(--color-#{$tone}--surface);
+				}
+			}
+		}
+
+		&__main {
+			display: grid;
+			min-width: 0;
+			flex: 1;
+			gap: 2px;
+		}
+		&__title {
+			overflow: hidden;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+		&__meta {
+			overflow: hidden;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
 
 		&__people {
 			display: flex;
-			flex: 0 0 76px;
+			flex: 0 0 72px;
 			align-items: center;
+			justify-content: flex-start;
 		}
 		&__avatar {
 			display: inline-flex;
@@ -616,81 +415,22 @@
 			& + & {
 				margin-left: -6px;
 			}
-			:global(.avatar--small) {
-				width: 30px;
-				height: 30px;
-				font-size: 10px;
-				font-weight: 700;
-			}
 		}
 		&__more {
-			margin-left: 4px;
+			margin-left: var(--space-smaller);
 			color: var(--color-text--secondary);
-			font-size: 12px;
-			font-weight: 700;
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
 		}
 		&__assign {
 			display: inline-flex;
 			align-items: center;
-			gap: 4px;
-			height: 28px;
-			padding: 0 10px;
-			border-radius: 999px;
+			gap: var(--space-smaller);
 			color: var(--color-warning--onSurface);
-			background: var(--color-warning--surface);
-			font-size: 11px;
-			font-weight: 700;
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
 		}
 		&__assign-icon {
-			display: inline-flex;
-
-			:global(svg) {
-				width: 12px;
-				height: 12px;
-			}
-		}
-
-		&__status {
-			display: inline-flex;
-			flex: 0 0 116px;
-			align-items: center;
-			gap: 5px;
-			font-size: 11px;
-			font-weight: 700;
-
-			&--completed {
-				color: var(--color-text--secondary);
-			}
-			&--todo {
-				color: var(--color-text--secondary);
-			}
-			&--late {
-				color: var(--color-critical);
-			}
-		}
-		&__status--late,
-		&__status--todo {
-			width: fit-content;
-			flex: 0 0 auto;
-			padding: 3px 8px;
-			border-radius: var(--radius-base);
-		}
-		&__status--late {
-			background: var(--color-critical--surface);
-		}
-		&__status--todo {
-			background: var(--color-surface--background--subtle);
-		}
-		&__status-dot {
-			width: 6px;
-			height: 6px;
-			border-radius: var(--radius-circle);
-			background: currentColor;
-		}
-		&__status--todo &__status-dot {
-			background: var(--color-icon--secondary);
-		}
-		&__status-icon {
 			display: inline-flex;
 
 			:global(svg) {
@@ -698,19 +438,15 @@
 				height: 14px;
 			}
 		}
-		&__chevron {
-			display: inline-flex;
-			flex: 0 0 auto;
-			color: var(--color-icon--secondary);
 
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
+		&__status {
+			display: flex;
+			flex: 0 0 120px;
 		}
 	}
 
 	.home-people {
+		display: grid;
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -719,38 +455,41 @@
 			display: flex;
 			align-items: center;
 			gap: var(--space-base);
-			padding: 12px var(--space-large);
-			border-top: var(--border-base) solid var(--color-border);
+			padding: var(--space-slim) var(--space-small);
+
+			& + & {
+				border-top: var(--border-base) solid var(--color-border);
+			}
 		}
 		&__text {
 			display: grid;
 			min-width: 0;
 			flex: 1;
-			gap: 8px;
+			gap: var(--space-small);
 
 			strong {
 				color: var(--color-heading);
-				font-size: 14px;
+				font-size: var(--typography--fontSize-base);
 				font-weight: 600;
 			}
 		}
 		&__track {
 			height: 6px;
 			overflow: hidden;
-			border-radius: 3px;
+			border-radius: var(--radius-circle);
 			background: var(--color-surface--background--subtle);
 
 			span {
 				display: block;
 				height: 100%;
-				border-radius: 3px;
+				border-radius: var(--radius-circle);
 				background: var(--color-success);
 			}
 		}
 		&__count {
 			flex: 0 0 auto;
 			color: var(--color-heading);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-label);
 			font-weight: 600;
 		}
 		&__open {
@@ -778,6 +517,9 @@
 			&__status {
 				flex-basis: auto;
 			}
+		}
+		.home-schedule__tiles {
+			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 </style>

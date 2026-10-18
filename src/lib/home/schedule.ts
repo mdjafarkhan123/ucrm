@@ -21,9 +21,13 @@ export type HomeScheduleRow = {
 	kind: 'visit' | 'assessment' | 'task';
 	group: 'late' | 'today';
 	status: HomeScheduleStatus;
-	/** The tile beside the row: `7:30` over `AM`, `ANY` over `TIME`, or a late day's number over its weekday. */
+	/** The time column: `7:30` over `AM`, `Anytime` alone, or a late day's weekday over its date (`Fri` over
+	 * `16 Oct`). */
 	timeTop: string;
 	timeBottom: string;
+	/** The work itself (`Decking install`); `title` adds the client in front, for one-line uses. */
+	work: string;
+	client: string | null;
 	title: string;
 	/** Address and length, e.g. `5120 Imperial St, Burnaby`; null when this reader may not see either. */
 	place: string | null;
@@ -80,10 +84,14 @@ function lengthLabel(start: number | null, end: number | null): string | null {
 	return `${Number.isInteger(hours) ? hours : Math.round(hours * 10) / 10} hr`;
 }
 
-function weekdayOf(day: string): string {
-	return new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'UTC' })
-		.format(new Date(`${day}T00:00:00Z`))
-		.toUpperCase();
+function lateTile(day: string): { top: string; bottom: string } {
+	const date = new Date(`${day}T00:00:00Z`);
+	return {
+		top: new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'UTC' }).format(date),
+		bottom: new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(
+			date
+		)
+	};
 }
 
 function clientOf(item: ScheduleItem): string | null {
@@ -96,18 +104,17 @@ function placeOf(item: ScheduleItem): string | null {
 	return [item.property_address_line1, item.property_city].filter(Boolean).join(', ') || null;
 }
 
+function workOf(item: ScheduleItem): string {
+	if (item.kind === 'event' || item.kind === 'task') return item.title;
+	return item.kind === 'visit'
+		? (item.title ?? item.job_title ?? `Job #${item.job_number ?? ''}`.trim())
+		: (item.request_title ?? 'Assessment');
+}
+
 function titleOf(item: ScheduleItem): string {
 	if (item.kind === 'event') return item.title;
-	if (item.kind === 'task') {
-		const client = clientOf(item);
-		return client ? `${client} · ${item.title}` : item.title;
-	}
-	const client = clientOf(item) ?? 'Client hidden';
-	const work =
-		item.kind === 'visit'
-			? (item.title ?? item.job_title ?? `Job #${item.job_number ?? ''}`.trim())
-			: (item.request_title ?? 'Assessment');
-	return `${client} · ${work}`;
+	const client = clientOf(item) ?? (item.kind === 'task' ? null : 'Client hidden');
+	return client ? `${client} · ${workOf(item)}` : workOf(item);
 }
 
 function routeOf(item: ScheduleItem): HomeScheduleRoute | null {
@@ -128,8 +135,8 @@ function rowFor(item: ScheduleItem, today: string): HomeScheduleRow | null {
 	const start = minutesOf(item.start_time);
 	const end = minutesOf(item.end_time);
 	let tile: { top: string; bottom: string };
-	if (isLate) tile = { top: String(Number(date.slice(8))), bottom: weekdayOf(date) };
-	else if (start === null) tile = { top: 'ANY', bottom: 'TIME' };
+	if (isLate) tile = lateTile(date);
+	else if (start === null) tile = { top: 'Anytime', bottom: '' };
 	else tile = clockTile(start);
 	const length = lengthLabel(start, end);
 	return {
@@ -139,6 +146,8 @@ function rowFor(item: ScheduleItem, today: string): HomeScheduleRow | null {
 		status: completed ? 'completed' : isLate ? 'late' : 'todo',
 		timeTop: tile.top,
 		timeBottom: tile.bottom,
+		work: workOf(item),
+		client: clientOf(item) ?? (item.kind === 'task' ? null : 'Client hidden'),
 		title: titleOf(item),
 		place: placeOf(item) ?? (item.kind === 'task' ? 'Pipeline task' : null),
 		length: isLate && length === null ? null : length,

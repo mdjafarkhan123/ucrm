@@ -126,11 +126,12 @@ describe('buildHomeSchedule', () => {
 			'2026-10-14'
 		);
 		expect(result.late.map((row) => row.key)).toEqual(['visit:late']);
-		expect(result.late[0].timeTop).toBe('12');
-		expect(result.late[0].timeBottom).toBe('MON');
+		expect(result.late[0].timeTop).toBe('Mon');
+		expect(result.late[0].timeBottom).toBe('12 Oct');
 		expect(result.today.map((row) => row.key)).toEqual(['visit:early', 'visit:noon', 'visit:any']);
 		expect(result.today[1].length).toBe('1.5 hr');
-		expect(result.today[2].timeTop).toBe('ANY');
+		expect(result.today[2].timeTop).toBe('Anytime');
+		expect(result.today[1].work).toBe('Decking install');
 		expect(result.counts).toMatchObject({ total: 3, completed: 1, todo: 2, late: 1, unassigned: 0 });
 		expect(result.lastEndMinutes).toBe(13.5 * 60);
 	});

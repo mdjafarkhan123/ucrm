@@ -8,8 +8,8 @@
 	}: {
 		children: Snippet;
 		status: 'success' | 'warning' | 'critical' | 'inactive' | 'informative';
-		/** `compact` is the smaller pill a dense table row carries. */
-		size?: 'base' | 'compact';
+		/** `compact` is the smaller pill a dense table row carries; `small` is the concept's status pill. */
+		size?: 'base' | 'compact' | 'small';
 	} = $props();
 </script>
 
@@ -39,6 +39,19 @@
 		font-weight: 700;
 	}
 	.status-badge--compact .status-badge__dot {
+		width: 6px;
+		height: 6px;
+	}
+
+	.status-badge--small {
+		gap: 6px;
+		padding: 3px 10px;
+		border-radius: var(--radius-circle);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		line-height: 18px;
+	}
+	.status-badge--small .status-badge__dot {
 		width: 6px;
 		height: 6px;
 	}

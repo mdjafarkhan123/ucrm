@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
-	import coinsIcon from '@tabler/icons/outline/coins.svg?raw';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
+	import { initials } from '$lib/collaboration/format';
 	import HomeCardState from '$lib/components/dashboard/HomeCardState.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import CardHeader from '$lib/components/ui/CardHeader.svelte';
 	import type { MoneyOwed } from '$lib/home/api';
 	import { formatWhole } from '$lib/home/format';
 	import type { InvoiceListItem } from '$lib/invoices/api';
 
-	// Money owed: what clients owe today, how late it is, and the three clients furthest behind. Left out
-	// entirely for anyone without invoice prices (the page decides), never shown as zero.
+	// Money owed: what clients owe today, how much of it is overdue, and the three clients furthest behind.
+	// Left out entirely for anyone without invoice prices (the page decides), never shown as zero.
 	let {
 		owed,
 		overdueInvoices = [],
@@ -54,6 +54,14 @@
 			: []
 	);
 
+	// The bar shows not-yet-due against overdue; how late the overdue part is stays in its spoken label.
+	const barLabel = $derived(
+		buckets
+			.filter((bucket) => bucket.minor > 0)
+			.map((bucket) => `${bucket.label} ${money(bucket.minor)}`)
+			.join(', ')
+	);
+
 	function daysLate(dueDate: string) {
 		return Math.round((Date.parse(today) - Date.parse(dueDate)) / 86_400_000);
 	}
@@ -74,80 +82,87 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <section class="home-owed" aria-labelledby="{uid}-title" aria-busy={loading}>
-	<div class="home-owed__top">
-		<header class="home-owed__header">
-			<h2 id="{uid}-title">
-				<span class="home-owed__icon" aria-hidden="true">{@html coinsIcon}</span>Money owed
-			</h2>
+	<CardHeader id="{uid}-title" title="Money owed" icon={receiptIcon} tone="invoice">
+		{#snippet actions()}
 			<a class="home-owed__link" href={resolve('/(app)/invoices')}
 				>View all<span class="home-owed__arrow" aria-hidden="true">{@html arrowRightIcon}</span></a
 			>
-		</header>
-		{#if loading}
-			<HomeCardState state="loading" label="money owed" rows={4} />
-		{:else if failed || !owed}
-			<HomeCardState state="error" label="money owed" {onretry} />
-		{:else if owed.open_invoice_count === 0}
-			<HomeCardState
-				state="empty"
-				label="money owed"
-				title="Nothing owed right now"
-				description="Invoices waiting to be paid will show here, split by how late they are."
-				icon={receiptIcon}
-			/>
-		{:else}
+		{/snippet}
+	</CardHeader>
+	{#if loading}
+		<HomeCardState state="loading" label="money owed" rows={4} />
+	{:else if failed || !owed}
+		<HomeCardState state="error" label="money owed" {onretry} />
+	{:else if owed.open_invoice_count === 0}
+		<HomeCardState
+			state="empty"
+			label="money owed"
+			title="Nothing owed right now"
+			description="Invoices waiting to be paid will show here, split by how late they are."
+			icon={receiptIcon}
+		/>
+	{:else}
+		<div class="home-owed__body">
 			<div class="home-owed__figure">
 				<p class="home-owed__value">{money(owed.outstanding_minor)}</p>
 				<p class="home-owed__line">
-					{owed.client_count}
-					{owed.client_count === 1 ? 'client owes' : 'clients owe'} you
-					{#if overdue > 0}· <strong>{money(overdue)} overdue</strong>{/if}
+					Owed by {owed.client_count}
+					{owed.client_count === 1 ? 'client' : 'clients'} today
 				</p>
 			</div>
-			<div class="home-owed__bar" role="img" aria-label="Money owed by how late it is">
-				{#each buckets as bucket (bucket.key)}
-					{#if bucket.minor > 0}
+			<div class="home-owed__ageing">
+				<div class="home-owed__bar" role="img" aria-label="Money owed by how late it is: {barLabel}">
+					{#if owed.not_due_minor > 0}
 						<span
-							class={['home-owed__segment', `home-owed__segment--${bucket.key}`]}
-							style:flex-grow={bucket.minor}
+							class="home-owed__segment home-owed__segment--current"
+							style:flex-grow={owed.not_due_minor}
 						></span>
 					{/if}
-				{/each}
-			</div>
-			<dl class="home-owed__key">
-				{#each buckets as bucket (bucket.key)}
-					{#if bucket.key === 'current' || bucket.key !== 'late4' || bucket.minor > 0}
-						<div>
-							<dt>
-								<span
-									class={['home-owed__dot', `home-owed__segment--${bucket.key}`]}
-									aria-hidden="true"
-								></span>{bucket.label}
-							</dt>
-							<dd>{money(bucket.minor)}</dd>
-						</div>
+					{#if overdue > 0}
+						<span class="home-owed__segment home-owed__segment--overdue" style:flex-grow={overdue}
+						></span>
 					{/if}
-				{/each}
-			</dl>
-		{/if}
-	</div>
-	{#if owed && mostOverdue.length > 0}
-		<div class="home-owed__clients">
-			<h3>Most overdue</h3>
-			<ul>
-				{#each mostOverdue as { invoice, days } (invoice.id)}
-					<li>
-						<a href={resolve('/(app)/invoices/[id=uuid]', { id: invoice.id })}>
-							<Avatar id={invoice.client?.id ?? invoice.id} name={clientName(invoice)} size="base" />
-							<span class="home-owed__who">
-								<strong>{clientName(invoice)}</strong>
-								<span>Invoice #{invoice.invoice_number} · {days} {days === 1 ? 'day' : 'days'} late</span>
-							</span>
-							<span class="home-owed__amount">{money(invoice.remaining_minor ?? 0)}</span>
-						</a>
-					</li>
-				{/each}
-			</ul>
+				</div>
+				<dl class="home-owed__key">
+					<div>
+						<dt>
+							<span class="home-owed__dot home-owed__segment--current" aria-hidden="true"></span>Not yet
+							due
+						</dt>
+						<dd>{money(owed.not_due_minor)}</dd>
+					</div>
+					<div>
+						<dt>
+							<span class="home-owed__dot home-owed__segment--overdue" aria-hidden="true"></span>Overdue
+						</dt>
+						<dd>{money(overdue)}</dd>
+					</div>
+				</dl>
+			</div>
+			{#if mostOverdue.length > 0}
+				<div class="home-owed__clients">
+					<h3>Most overdue</h3>
+					<ul>
+						{#each mostOverdue as { invoice, days } (invoice.id)}
+							<li>
+								<a href={resolve('/(app)/invoices/[id=uuid]', { id: invoice.id })}>
+									<span class="home-owed__initials" aria-hidden="true"
+										>{initials(clientName(invoice))}</span
+									>
+									<span class="home-owed__who">
+										<strong>{clientName(invoice)}</strong>
+										<span
+											><span class="home-owed__late">{days} {days === 1 ? 'day' : 'days'} late</span> ·
+											Invoice #{invoice.invoice_number}</span
+										>
+									</span>
+									<span class="home-owed__amount">{money(invoice.remaining_minor ?? 0)}</span>
+								</a>
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
 		</div>
 	{/if}
 </section>
@@ -159,62 +174,25 @@
 		min-width: 0;
 		overflow: hidden;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border-radius: var(--radius-large);
 		background: var(--color-surface);
 
-		&__top {
-			display: grid;
-			gap: 14px;
-			padding: 20px 20px 18px;
-		}
-		&__header {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			gap: var(--space-base);
-
-			h2 {
-				display: flex;
-				align-items: center;
-				gap: 10px;
-				color: var(--color-text--secondary);
-				font-size: 11px;
-				font-weight: 700;
-				letter-spacing: 0.8px;
-				text-transform: uppercase;
-			}
-		}
-		&__icon {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			width: 28px;
-			height: 28px;
-			border-radius: 8px;
-			color: var(--color-informative--onSurface);
-			background: var(--color-informative--surface);
-
-			:global(svg) {
-				width: 15px;
-				height: 15px;
-			}
-		}
 		&__link {
 			display: inline-flex;
 			align-items: center;
-			gap: 4px;
+			gap: var(--space-smaller);
 			border-radius: var(--radius-small);
 			color: var(--color-interactive);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-label);
 			font-weight: 600;
 			text-decoration: none;
 
 			&:hover {
-				text-decoration: underline;
+				color: var(--color-interactive--hover);
 			}
 			&:focus-visible {
-				outline: 2px solid var(--color-focus);
-				outline-offset: 2px;
+				outline: none;
+				box-shadow: var(--shadow-focus);
 			}
 		}
 		&__arrow {
@@ -226,79 +204,73 @@
 			}
 		}
 
+		&__body {
+			display: grid;
+			gap: var(--space-medium);
+			padding: var(--space-medium);
+		}
+
 		&__figure {
 			display: grid;
-			gap: 4px;
+			gap: 2px;
 		}
 		&__value {
 			color: var(--color-heading);
-			font-size: 32px;
-			font-weight: 800;
-			letter-spacing: -1px;
-			line-height: 1.15;
+			font-size: var(--typography--fontSize-stat);
+			font-weight: 700;
+			letter-spacing: -0.8px;
+			line-height: 1.2;
 			font-variant-numeric: tabular-nums;
 		}
 		&__line {
 			color: var(--color-text--secondary);
-			font-size: 13px;
-			font-weight: 500;
-
-			strong {
-				color: var(--color-critical);
-				font-weight: 600;
-			}
+			font-size: var(--typography--fontSize-label);
 		}
 
+		&__ageing {
+			display: grid;
+			gap: var(--space-small);
+		}
 		&__bar {
 			display: flex;
 			gap: 3px;
-			height: 8px;
+			height: 10px;
+			overflow: hidden;
+			border-radius: var(--radius-circle);
 		}
 		&__segment {
-			flex-basis: 0;
 			min-width: 6px;
-			border-radius: 4px;
+			flex-basis: 0;
 
 			&--current {
-				background: var(--color-icon--secondary);
+				background: var(--color-informative);
 			}
-			&--late1 {
-				background: var(--color-warning);
-			}
-			&--late2 {
-				background: var(--color-warning--onSurface);
-			}
-			&--late3 {
+			&--overdue {
 				background: var(--color-critical);
 			}
-			&--late4 {
-				background: var(--color-critical--onSurface);
-			}
 		}
-
 		&__key {
-			display: grid;
-			gap: 8px;
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-between;
+			gap: var(--space-small) var(--space-base);
 			margin: 0;
 
 			div {
 				display: flex;
 				align-items: center;
-				justify-content: space-between;
-				gap: var(--space-base);
+				gap: 6px;
+				font-size: var(--typography--fontSize-label);
 			}
 			dt {
-				display: flex;
+				display: inline-flex;
 				align-items: center;
-				gap: 8px;
+				gap: 6px;
 				color: var(--color-text--secondary);
-				font-size: 13px;
-				font-weight: 500;
 			}
 			dd {
 				margin: 0;
 				color: var(--color-heading);
-				font-size: 13px;
 				font-weight: 600;
 				font-variant-numeric: tabular-nums;
 			}
@@ -306,25 +278,24 @@
 		&__dot {
 			width: 8px;
 			height: 8px;
-			flex: 0 0 auto;
-			min-width: 0;
 			border-radius: var(--radius-circle);
 		}
 
 		&__clients {
 			display: grid;
-			gap: 2px;
-			padding: 14px 20px 8px;
+			gap: var(--space-small);
+			padding-top: var(--space-medium);
 			border-top: var(--border-base) solid var(--color-border);
 
 			h3 {
 				color: var(--color-text--secondary);
-				font-size: 11px;
-				font-weight: 700;
-				letter-spacing: 0.8px;
+				font-size: var(--typography--fontSize-overline);
+				font-weight: 600;
+				letter-spacing: 0.6px;
 				text-transform: uppercase;
 			}
 			ul {
+				display: grid;
 				margin: 0;
 				padding: 0;
 				list-style: none;
@@ -332,19 +303,34 @@
 			a {
 				display: flex;
 				align-items: center;
-				gap: 12px;
-				padding: 10px 0;
+				gap: var(--space-slim);
+				margin: 0 calc(-1 * var(--space-small));
+				padding: var(--space-small);
+				border-radius: var(--radius-base);
 				color: inherit;
 				text-decoration: none;
 
-				&:hover .home-owed__who strong {
-					text-decoration: underline;
+				&:hover {
+					background: var(--color-surface--hover);
 				}
 				&:focus-visible {
-					outline: 2px solid var(--color-focus);
-					outline-offset: 2px;
+					outline: none;
+					box-shadow: var(--shadow-focus);
 				}
 			}
+		}
+		&__initials {
+			display: inline-flex;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			width: 32px;
+			height: 32px;
+			border-radius: var(--radius-base);
+			color: var(--color-client--onSurface);
+			background: var(--color-client--surface);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 700;
 		}
 		&__who {
 			display: grid;
@@ -355,24 +341,28 @@
 			strong {
 				overflow: hidden;
 				color: var(--color-heading);
-				font-size: 13px;
+				font-size: var(--typography--fontSize-base);
 				font-weight: 600;
 				text-overflow: ellipsis;
 				white-space: nowrap;
 			}
-			span {
+			> span {
 				overflow: hidden;
 				color: var(--color-text--secondary);
-				font-size: 12px;
-				font-weight: 500;
+				font-size: var(--typography--fontSize-small);
 				text-overflow: ellipsis;
 				white-space: nowrap;
 			}
 		}
+		&__late {
+			color: var(--color-critical);
+			font-weight: 500;
+		}
 		&__amount {
+			flex: 0 0 auto;
 			color: var(--color-heading);
-			font-size: 13px;
-			font-weight: 700;
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
 			font-variant-numeric: tabular-nums;
 		}
 	}

@@ -1,19 +1,16 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
-	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
-	import coinsIcon from '@tabler/icons/outline/coins.svg?raw';
 	import FieldWorkerHome from '$lib/components/dashboard/FieldWorkerHome.svelte';
 	import HomeMoneyOwedCard from '$lib/components/dashboard/HomeMoneyOwedCard.svelte';
 	import HomePerformanceCard, {
 		type PerformanceMetric
 	} from '$lib/components/dashboard/HomePerformanceCard.svelte';
 	import HomeScheduleCard from '$lib/components/dashboard/HomeScheduleCard.svelte';
+	import HomeTodayCard from '$lib/components/dashboard/HomeTodayCard.svelte';
 	import HomeTodoCard from '$lib/components/dashboard/HomeTodoCard.svelte';
 	import ReadinessCard from '$lib/components/dashboard/ReadinessCard.svelte';
 	import SetupCard from '$lib/components/dashboard/SetupCard.svelte';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
-	import DayClockCard from '$lib/components/time-clock/DayClockCard.svelte';
 	import {
 		collectedKey,
 		fetchCollected,
@@ -41,7 +38,6 @@
 	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
 	import { calendarDay, clockMinutesInZone } from '$lib/time/calendar-day';
 	import type { PageProps } from './$types';
-	import homePageIcon from '@tabler/icons/outline/home.svg?raw';
 
 	// Home. The owner, office and finance see the day at a glance (what is waiting, today's schedule, money
 	// owed, how the month is going), each card only if the person may see its area. A field worker keeps the
@@ -228,9 +224,7 @@
 	const metrics = $derived<PerformanceMetric[]>([
 		{
 			key: 'invoiced',
-			label: 'Invoiced · this month',
-			icon: receiptIcon,
-			tone: 'informative',
+			label: 'Invoiced this month',
 			current: invoicedNow.data ?? null,
 			previous: invoicedBefore.data ?? null,
 			loading: !moneyReady || invoicedNow.isPending || invoicedBefore.isPending,
@@ -238,9 +232,7 @@
 		},
 		{
 			key: 'collected',
-			label: 'Collected · this month',
-			icon: coinsIcon,
-			tone: 'success',
+			label: 'Collected this month',
 			current: collectedNow.data ?? null,
 			previous: collectedBefore.data ?? null,
 			loading: !moneyReady || collectedNow.isPending || collectedBefore.isPending,
@@ -265,15 +257,40 @@
 		const part = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 		return firstName ? `${part}, ${firstName}` : part;
 	});
-	const dateLine = $derived.by(() => {
-		const day = new Intl.DateTimeFormat('en-US', {
+	const dateLine = $derived(
+		new Intl.DateTimeFormat('en-US', {
 			weekday: 'long',
 			month: 'long',
 			day: 'numeric',
 			timeZone: timezone
-		}).format(clock);
+		}).format(clock)
+	);
+	// One line about the day: what is booked today and what waits in To do, once both are known.
+	const daySummary = $derived.by(() => {
 		const business = shell.organization?.name;
-		return business ? `${day} · Here’s your day at ${business}.` : `${day}.`;
+		const fallback = business ? `Here’s your day at ${business}.` : 'Here’s your day.';
+		const onToday = schedule?.counts.total;
+		const waiting = todoColumns.every((column) => column.total !== null)
+			? todoColumns.reduce((sum, column) => sum + (column.total ?? 0), 0)
+			: undefined;
+		const things = (count: number) => `${count} ${count === 1 ? 'thing' : 'things'}`;
+		const todayPart = !showSchedule
+			? null
+			: onToday === undefined
+				? undefined
+				: onToday === 0
+					? 'Nothing booked today'
+					: `${things(onToday)} on today`;
+		const waitingPart =
+			todoColumns.length === 0
+				? null
+				: waiting === undefined
+					? undefined
+					: `${waiting === 0 ? 'nothing' : waiting} waiting on you`;
+		if (todayPart === undefined || waitingPart === undefined) return fallback;
+		if (todayPart && waitingPart) return `${todayPart} and ${waitingPart}.`;
+		const only = todayPart ?? waitingPart;
+		return only ? `${only.charAt(0).toUpperCase()}${only.slice(1)}.` : fallback;
 	});
 
 	const showSchedule = $derived(nav.schedule);
@@ -287,17 +304,12 @@
 {:else}
 	<div class="page-scroller">
 		<PageContainer variant="open">
-			<PageHeader
-				icon={homePageIcon}
-				tone="inactive"
-				class="home-page__header"
-				title={greeting}
-				description={dateLine}
-			>
-				{#snippet actions()}
-					{#if hasOrganization}<DayClockCard />{/if}
-				{/snippet}
-			</PageHeader>
+			<HomeTodayCard
+				date={dateLine}
+				{greeting}
+				summary={daySummary}
+				showClock={hasOrganization}
+			/>
 
 			{#if hasOrganization}
 				<div class="home">
@@ -346,7 +358,6 @@
 									/>
 									<HomePerformanceCard
 										{metrics}
-										currentLabel={months.currentLabel}
 										previousLabel={months.previousLabel}
 										{currency}
 										{locale}
@@ -370,15 +381,12 @@
 {/if}
 
 <style lang="scss">
-	:global(.home-page__header) {
-		margin-bottom: var(--space-large);
-	}
-
 	.home {
 		container-type: inline-size;
 		display: grid;
 		gap: var(--space-large);
 		min-width: 0;
+		margin-top: var(--space-large);
 
 		&__setup {
 			display: grid;
@@ -393,9 +401,9 @@
 		/* The schedule takes the room it needs; the rail keeps a steady width beside it. */
 		&__grid {
 			display: grid;
-			grid-template-columns: minmax(0, 1fr) 336px;
+			grid-template-columns: minmax(0, 1fr) 380px;
 			align-items: start;
-			gap: 20px;
+			gap: var(--space-large);
 
 			&--rail-only {
 				grid-template-columns: minmax(0, 1fr);
@@ -403,7 +411,7 @@
 		}
 		&__rail {
 			display: grid;
-			gap: 16px;
+			gap: var(--space-large);
 			min-width: 0;
 		}
 	}
