@@ -10,6 +10,9 @@
 		amount?: string;
 		count: number;
 		tone: StatusTone;
+		/** A Tabler icon (raw SVG) drawn on a soft tile in the status colour, above the count. Leave out to
+		 *  lead with the status dot and label instead. */
+		icon?: string;
 		/** Make the tile a link to another page instead of a list filter. Leave out to filter in place. */
 		href?: string;
 	};
@@ -82,7 +85,9 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <section class="attention-card" aria-labelledby={titleId}>
-	<header class={['attention-card__header', barParts.length > 0 && 'attention-card__header--barred']}>
+	<header
+		class={['attention-card__header', barParts.length > 0 && 'attention-card__header--barred']}
+	>
 		<div class="attention-card__heading">
 			<h2 id={titleId}>{title}</h2>
 			<p>{description}</p>
@@ -125,13 +130,22 @@
 						: `${tile.label}: ${tile.count}. ${tile.amount ? `${tile.amount} ` : ''}${tile.hint}`}
 					onclick={tile.href ? undefined : () => onSelect?.(selected ? '' : tile.key)}
 				>
-					<span class="attention-card__label">
-						<span class="attention-card__dot" aria-hidden="true"></span>{tile.label}
-					</span>
-					<span class="attention-card__count-row">
+					{#if tile.icon}
+						<span class="attention-card__top">
+							<span class="attention-card__icon" aria-hidden="true">{@html tile.icon}</span>
+							<span class="attention-card__arrow" aria-hidden="true">{@html arrowRightIcon}</span>
+						</span>
 						<span class="attention-card__count">{loading ? '—' : tile.count}</span>
-						<span class="attention-card__arrow" aria-hidden="true">{@html arrowRightIcon}</span>
-					</span>
+						<span class="attention-card__label">{tile.label}</span>
+					{:else}
+						<span class="attention-card__label">
+							<span class="attention-card__dot" aria-hidden="true"></span>{tile.label}
+						</span>
+						<span class="attention-card__count-row">
+							<span class="attention-card__count">{loading ? '—' : tile.count}</span>
+							<span class="attention-card__arrow" aria-hidden="true">{@html arrowRightIcon}</span>
+						</span>
+					{/if}
 					<span class="attention-card__hint"
 						>{#if tile.amount && !loading}<strong>{tile.amount}</strong>{' '}{/if}{tile.hint}</span
 					>
@@ -256,6 +270,12 @@
 			padding: var(--space-small) 6px;
 			list-style: none;
 
+			/* Icon tiles stand as their own bordered boxes, a small gap apart. */
+			&:has(.attention-card__icon) {
+				gap: var(--space-small);
+				padding: var(--space-base);
+			}
+
 			@container (max-width: 700px) {
 				grid-template-columns: repeat(3, minmax(0, 1fr));
 			}
@@ -290,10 +310,25 @@
 				outline: none;
 				box-shadow: var(--shadow-focus);
 			}
-			&--alert {
+			&:has(.attention-card__icon) {
+				gap: var(--space-slim);
+				padding: 14px var(--space-slim);
+				border: var(--border-base) solid var(--color-border);
+				background: var(--color-surface);
+
+				&:hover {
+					border-color: var(--color-border--interactive--hover);
+					background: var(--color-surface--hover);
+				}
+			}
+			&--alert,
+			&--alert:has(.attention-card__icon) {
+				border-color: var(--color-critical--surface);
+
 				background: var(--color-critical--surface);
 
 				&:hover {
+					border-color: var(--color-critical);
 					background: var(--color-critical--surface);
 				}
 			}
@@ -339,6 +374,67 @@
 		&__tile--critical &__label,
 		&__tile--critical &__count {
 			color: var(--color-critical);
+		}
+
+		&__top {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: var(--space-small);
+		}
+		/* The status's own colour on a soft tile of the same family; the yellow family uses its darker text
+		   shade so the icon does not fade into the tile. */
+		&__icon {
+			display: inline-flex;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			width: 32px;
+			height: 32px;
+			border-radius: var(--radius-base);
+			color: var(--color-inactive);
+			background: var(--color-inactive--surface);
+
+			:global(svg) {
+				display: block;
+				width: 16px;
+				height: 16px;
+			}
+		}
+		&__tile--warning &__icon {
+			color: var(--color-warning--onSurface);
+			background: var(--color-warning--surface);
+		}
+		&__tile--success &__icon {
+			color: var(--color-success);
+			background: var(--color-success--surface);
+		}
+		&__tile--informative &__icon {
+			color: var(--color-informative);
+			background: var(--color-informative--surface);
+		}
+		&__tile--critical &__icon {
+			color: var(--color-critical);
+			background: var(--color-critical--surface);
+		}
+		&__tile--alert &__icon {
+			background: var(--color-surface);
+		}
+		&__top &__arrow {
+			margin-bottom: 0;
+		}
+		&__top ~ &__count {
+			font-size: var(--typography--fontSize-stat);
+			letter-spacing: -0.8px;
+			line-height: 1;
+		}
+		&__top ~ &__label {
+			color: var(--color-heading);
+		}
+		&__tile--alert &__top ~ &__label,
+		&__tile--alert &__top ~ &__count,
+		&__tile--alert &__top ~ &__hint {
+			color: var(--color-critical--onSurface);
 		}
 
 		&__count-row {

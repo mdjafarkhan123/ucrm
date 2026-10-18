@@ -1,6 +1,6 @@
 # C3 — Jobs list in the concept
 
-**State:** Drawn 2026-10-18, waiting for Jafar's review. `concept.pen` frame "Concept · Jobs list · Owner · 1440"
+**State:** Approved by Jafar 2026-10-18 and built the same day. `concept.pen` frame "Concept · Jobs list · Owner · 1440"
 (`t8ULdJ`, right of Home).
 
 **Content source:** the live page `src/routes/(app)/jobs/+page.svelte` and Jobber's Jobs list
@@ -18,5 +18,18 @@ collect on open invoices" · All jobs card: search, Status, Type and Created fil
 get coloured icon tiles; client avatars use the client colour instead of one colour per client; "More actions"
 becomes the More menu button (still nothing behind it); the "Work & money" eyebrow is dropped.
 
-**Next:** Jafar reviews. On yes: record the date here, ask him to save (Ctrl+S), commit `concept.pen`, then C4 Job
-details.
+**Jafar's decision (2026-10-18):** the live list already matched; build only the two improvements, and the
+shared parts may change every page that uses them.
+
+**Built:** `AttentionCard` tiles take an optional `icon` (32 status-coloured tile, bordered white tile, 32 count)
+on Jobs, Requests, Quotes, Invoices and Clients; `MoneyFeatureCard` is the green feature card on those lists and
+the client and invoice pages; new token `--color-feature--alert`. Card corners stay 8 to match the live cards
+beside them (Pencil draws 16); the money card keeps its live layout, without the Pencil icon tile.
+
+**Checked:** Playwright, owner, port 5180: the five lists at 1440 light, Jobs and Invoices dark, Jobs at 390,
+client and invoice record pages, picked and hovered tiles (picking Unscheduled filtered to 4 jobs).
+
+**For the campaign-end checks:** ESLint already flags three older lines in touched files (AttentionCard 150
+useless mustache, clients 378 `{@html}`, requests 532 href without resolve).
+
+**Next:** Jafar saves `concept.pen` (Ctrl+S), commit it; then C4 Job details.

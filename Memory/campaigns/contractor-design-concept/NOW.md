@@ -9,7 +9,8 @@
 1. Done 2026-10-18: Foundation sizes named (`font-size-overline/label/stat`, `radius-tile-small/large`,
    `space-medium`) in Pencil, `_variables.scss` and the modules.
 2. C2 Home approved 2026-10-18 (green Today card, option A) — `parts/c2-home.md`.
-3. **C3 Jobs list drawn 2026-10-18, waiting for Jafar's review** — `parts/c3-jobs-list.md`. Then C4 Job details.
+3. C3 Jobs list approved and its two improvements built 2026-10-18 (coloured status tiles, green money card) — `parts/c3-jobs-list.md`.
+4. **Next: C4 Job details** — research, draw at 1440, show Jafar.
 
 **Working notes:** Pencil edits only the open file and writes only on Ctrl+S (`docs/pencil-workflow.md`).
 

@@ -55,6 +55,10 @@
 	import sendIcon from '@tabler/icons/outline/send.svg?raw';
 	import clipboardCheckIcon from '@tabler/icons/outline/clipboard-check.svg?raw';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
+	import alarmIcon from '@tabler/icons/outline/alarm.svg?raw';
+	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
+	import filePencilIcon from '@tabler/icons/outline/file-pencil.svg?raw';
+	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
 
 	let search = $state('');
 	let debouncedSearch = $state('');
@@ -165,6 +169,12 @@
 
 	// The four the office watches, each with a line saying what it means. Picking one sets the Status filter
 	// below to it; picking it again, or choosing another status there, clears it.
+	const attentionIcons: Record<(typeof INVOICE_OVERVIEW_STATUSES)[number], string> = {
+		past_due: alarmIcon,
+		awaiting_payment: clockIcon,
+		draft: filePencilIcon,
+		paid: circleCheckIcon
+	};
 	const attentionTiles = $derived<AttentionTile[]>(
 		INVOICE_OVERVIEW_STATUSES.map((key) => {
 			// With money the amount is drawn in bold before the words ("$8,940 still owed").
@@ -187,7 +197,8 @@
 				hint,
 				amount,
 				count: countsQuery.data?.counts[key] ?? 0,
-				tone: INVOICE_STATUS_TONES[key]
+				tone: INVOICE_STATUS_TONES[key],
+				icon: attentionIcons[key]
 			};
 		})
 	);

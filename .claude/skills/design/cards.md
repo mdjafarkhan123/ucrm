@@ -22,6 +22,18 @@
   `--color-feature--text--secondary`. Panels inside: `--color-feature--subtle` with 1px `--color-feature--border`,
   radius 16; their icons white. A white secondary button sits on it unchanged.
 
+## Status tiles (overview card)
+
+- The clickable tiles in a list's overview card (Jobs "Needs attention"): white, 1px `--color-border`, radius 16,
+  padding 14 12, gap 12, 8 apart inside 16 card padding.
+- Top row: a 32 icon tile in the status colour (`icon-shapes.md`; the yellow family uses its `--onSurface` icon)
+  and a 16 arrow-right at the right. Then the count 32/700, the label 13/600 heading, the hint 12 quiet.
+- Hover: `--color-surface--hover`, border `--color-border--interactive--hover`. Picked: 2px inner
+  `--color-interactive` ring. An act-now tile with a count is filled `--color-critical--surface`, its icon tile
+  white and its text `--color-critical--onSurface`.
+- Money on the feature card beside it: money in is white, money still to come white 72%, overdue
+  `--color-feature--alert`; a figure pill is white with `--color-feature--start` text.
+
 ## States
 
 - Static: no hover.

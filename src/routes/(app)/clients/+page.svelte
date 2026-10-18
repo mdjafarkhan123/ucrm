@@ -56,6 +56,8 @@
 	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
 	import restoreIcon from '@tabler/icons/outline/archive-off.svg?raw';
 	import mergeIcon from '@tabler/icons/outline/arrow-merge.svg?raw';
+	import userPlusIcon from '@tabler/icons/outline/user-plus.svg?raw';
+	import userCheckIcon from '@tabler/icons/outline/user-check.svg?raw';
 	import ClientMergeDialog from '$lib/components/clients/ClientMergeDialog.svelte';
 
 	const toast = getToastManager();
@@ -131,21 +133,24 @@
 			label: 'Leads',
 			hint: 'Interested, not a customer yet',
 			count: overview?.counts.lead ?? 0,
-			tone: 'warning'
+			tone: 'warning',
+			icon: userPlusIcon
 		},
 		{
 			key: 'customer',
 			label: 'Customers',
 			hint: 'People and companies you work for',
 			count: overview?.counts.customer ?? 0,
-			tone: 'success'
+			tone: 'success',
+			icon: userCheckIcon
 		},
 		{
 			key: 'archived',
 			label: 'Archived',
 			hint: 'Kept for history, off your working list',
 			count: overview?.counts.archived ?? 0,
-			tone: 'inactive'
+			tone: 'inactive',
+			icon: archiveIcon
 		}
 	]);
 	const newClientsTrend = $derived(
