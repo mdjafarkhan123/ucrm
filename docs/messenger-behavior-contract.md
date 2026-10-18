@@ -58,6 +58,8 @@ current Pencil concept and the design skill; Jafar approves designs before the i
   (App Review) and Business Verification.
 - Unverified: Human Agent 7-day tag for manual replies, exact Send API shape, Page token lifetime, whether
   Facebook Login for Business needs extra app configuration for the Page picker.
+- Going live needs Meta Business Verification of the business that owns the app (Uplift). Jafar has a Bangladesh trade
+  license (2026-10-18); Meta's own accepted-document list for Bangladesh is unverified, so Part 1b tries it.
 - Webhook host `https://app.upliftcontractor.com` (Jafar confirmed); Meta app "Ucrm Messaging", App ID
   `1419027217062214`; the three Meta values are set in `.env`.
 
@@ -65,6 +67,7 @@ current Pencil concept and the design skill; Jafar approves designs before the i
 
 - Manual replies after 24 hours (use Meta's Human Agent tag or block) — recommendation needed in Part 2.
 - What happens to old conversations when a Page is disconnected and reconnected — GHL does not document it.
+- Whether contractors who connect their own Page must also be verified by Meta — settle in Part 2.
 - Duplicate-contact rule when a Messenger customer matches an existing client by name only.
 
 ## Not doing
