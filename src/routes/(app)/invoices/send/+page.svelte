@@ -26,6 +26,7 @@
 	} from '$lib/invoices/api';
 	import { INVOICE_STATUS_LABELS, INVOICE_STATUS_TONES } from '$lib/invoices/statuses';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
+	import sendPageIcon from '@tabler/icons/outline/send.svg?raw';
 
 	// The "Send invoices" picker: pick several unsent (or unpaid) bills and email them in one action, the same
 	// batch-send Jobber's invoice list offers. It reuses the ready-to-bill screen's shape — a selectable table
@@ -238,7 +239,12 @@
 
 <div class="page-scroller">
 	<PageContainer variant="fill">
-		<PageHeader title="Send invoices" description="Email several bills to your customers at once.">
+		<PageHeader
+			icon={sendPageIcon}
+			tone="invoice"
+			title="Send invoices"
+			description="Email several bills to your customers at once."
+		>
 			{#snippet actions()}
 				<Button href={resolve('/(app)/invoices')}>All invoices</Button>
 			{/snippet}

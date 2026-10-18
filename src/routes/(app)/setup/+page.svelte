@@ -41,6 +41,7 @@
 	import lifebuoyIcon from '@tabler/icons/outline/lifebuoy.svg?raw';
 	import packageIcon from '@tabler/icons/outline/package.svg?raw';
 	import type { PageProps } from './$types';
+	import listCheckPageIcon from '@tabler/icons/outline/list-check.svg?raw';
 
 	let { data: shell }: PageProps = $props();
 	const userId = $derived(shell.user?.id ?? null);
@@ -204,7 +205,8 @@
 <PageContainer variant="fill">
 	<div class="setup">
 		<PageHeader
-			eyebrow="Setup"
+			icon={listCheckPageIcon}
+			tone="inactive"
 			title="Set up your Uplift system"
 			description="Tell Uplift about your business once. We use your answers to build everything in your package."
 		/>

@@ -9,6 +9,7 @@
 	import FilterChip from '$lib/components/ui/FilterChip.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import DateRangeChip from '$lib/components/data-display/DateRangeChip.svelte';
 	import DataTable, {
@@ -59,7 +60,6 @@
 	import fileInvoiceIcon from '@tabler/icons/outline/file-invoice.svg?raw';
 	import dashedCircleIcon from '@tabler/icons/outline/circle-dashed.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
-	import dotsIcon from '@tabler/icons/outline/dots.svg?raw';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
 	import hourglassIcon from '@tabler/icons/outline/hourglass.svg?raw';
 	import eyeOffIcon from '@tabler/icons/outline/eye-off.svg?raw';
@@ -69,6 +69,7 @@
 	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
 	import thumbUpIcon from '@tabler/icons/outline/thumb-up.svg?raw';
 	import trendingUpIcon from '@tabler/icons/outline/trending-up.svg?raw';
+	import fileTextPageIcon from '@tabler/icons/outline/file-text.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -388,24 +389,17 @@
 			<p class="quotes__saved" role="status">Quote #{savedNumber} was saved.</p>
 		{/if}
 		<PageHeader
+			icon={fileTextPageIcon}
+			tone="quote"
 			class="quotes-page__header"
-			eyebrow="Work & money"
 			title="Quotes"
 			description="Every price you have put in front of a client, from draft to approved."
 		>
 			{#snippet actions()}
 				{#if quotesActionsAllowed}
-					<span class="quotes-header__action" title={moreActionsReason}>
-						<Button variant="secondary" class="quotes-header__button" disabled>
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							<span class="quotes-header__icon" aria-hidden="true">{@html dotsIcon}</span>
-							More actions
-						</Button>
-						<span class="quotes-header__reason">{moreActionsReason}</span>
-					</span>
+					<DropdownMenu triggerText="More" unavailableReason={moreActionsReason} />
 					<Button
 						variant="primary"
-						class="quotes-header__button quotes-header__button--primary"
 						href={resolve('/(app)/quotes/new')}
 					>
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -604,25 +598,6 @@
 		margin-bottom: var(--space-large);
 	}
 
-	.quotes-header__action {
-		position: relative;
-		display: inline-flex;
-	}
-
-	.quotes-header__reason {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip-path: inset(50%);
-		white-space: nowrap;
-	}
-
-	/* Unavailable, but still drawn as a white button so it does not blend into the page. */
-	:global(.button.button--secondary.quotes-header__button:disabled:not([aria-busy='true'])) {
-		border-color: var(--color-border--interactive);
-		background: var(--color-surface);
-	}
 	.quotes-header__icon {
 		display: inline-flex;
 

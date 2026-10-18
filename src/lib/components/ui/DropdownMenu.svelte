@@ -38,6 +38,7 @@
 		trigger,
 		align = 'end',
 		disabled = false,
+		unavailableReason,
 		open = $bindable(false)
 	}: {
 		items?: MenuItem[];
@@ -65,6 +66,9 @@
 		trigger?: Snippet;
 		align?: 'start' | 'center' | 'end';
 		disabled?: boolean;
+		/** Nothing is behind this menu yet: the trigger shows disabled and says why, on hover and to a screen
+		 *  reader, instead of sitting there dead. */
+		unavailableReason?: string;
 		open?: boolean;
 	} = $props();
 
@@ -72,6 +76,16 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
+{#snippet triggerBody()}
+	{#if triggerText}
+		{#if triggerLeadingIcon}{@html triggerLeadingIcon}{/if}
+		{triggerText}
+		{#if triggerChevron}{@html chevronDownIcon}{/if}
+	{:else}
+		{@html triggerIcon}
+	{/if}
+{/snippet}
+
 {#snippet menuItem(item: MenuItem)}
 	<DropdownMenuPrimitive.Item
 		class={`dropdown-menu__item ${item.destructive ? 'dropdown-menu__item--destructive' : ''} ${item.muted ? 'dropdown-menu__item--muted' : ''}`}
@@ -93,76 +107,97 @@
 	</DropdownMenuPrimitive.Item>
 {/snippet}
 
-<DropdownMenuPrimitive.Root bind:open>
-	{#if customTrigger}
-		<DropdownMenuPrimitive.Trigger
-			class={triggerClass ?? 'dropdown-menu__trigger'}
-			aria-label={triggerLabel ?? 'Open menu'}
-			{disabled}
+{#if unavailableReason}
+	<span class="dropdown-menu__unavailable" title={unavailableReason}>
+		<Button
+			variant={triggerVariant}
+			size={triggerSize ?? (triggerText ? 'base' : 'small')}
+			iconOnly={!triggerText}
+			label={triggerLabel ?? (triggerText ? undefined : 'Open menu')}
+			disabled
 		>
-			{#if trigger}
-				{@render trigger()}
-			{:else}
-				{@html triggerIcon}
-			{/if}
-		</DropdownMenuPrimitive.Trigger>
-	{:else}
-		<DropdownMenuPrimitive.Trigger {disabled}>
-			{#snippet child({ props })}
-				<Button
-					{...props}
-					variant={triggerVariant}
-					size={triggerSize ?? (triggerText ? 'base' : 'small')}
-					iconOnly={!triggerText}
-					label={triggerLabel ?? (triggerText ? undefined : 'Open menu')}
-					{disabled}
-				>
-					{#if triggerText}
-						{#if triggerLeadingIcon}{@html triggerLeadingIcon}{/if}
-						{triggerText}
-						{#if triggerChevron}{@html chevronDownIcon}{/if}
-					{:else}
-						{@html triggerIcon}
-					{/if}
-				</Button>
-			{/snippet}
-		</DropdownMenuPrimitive.Trigger>
-	{/if}
-	<DropdownMenuPrimitive.Portal>
-		<DropdownMenuPrimitive.Content
-			class={`dropdown-menu__content ${wide ? 'dropdown-menu__content--wide' : ''}`}
-			data-elevation="elevated"
-			{align}
-			sideOffset={4}
-			collisionPadding={8}
-		>
-			{#each items as item (item.key ?? item.label)}
-				{@render menuItem(item)}
-			{/each}
-			{#each groups as group (group.heading)}
-				<DropdownMenuPrimitive.Group class="dropdown-menu__group">
-					<DropdownMenuPrimitive.GroupHeading class="dropdown-menu__heading">
-						{group.heading}
-					</DropdownMenuPrimitive.GroupHeading>
-					{#each group.items as item (item.key ?? item.label)}
-						{@render menuItem(item)}
-					{/each}
-				</DropdownMenuPrimitive.Group>
-			{/each}
-			{#if footer.length > 0}
-				<DropdownMenuPrimitive.Group class="dropdown-menu__group">
-					{#each footer as item (item.key ?? item.label)}
-						{@render menuItem(item)}
-					{/each}
-				</DropdownMenuPrimitive.Group>
-			{/if}
-		</DropdownMenuPrimitive.Content>
-	</DropdownMenuPrimitive.Portal>
-</DropdownMenuPrimitive.Root>
+			{@render triggerBody()}
+		</Button>
+		<span class="dropdown-menu__unavailable-reason">{unavailableReason}</span>
+	</span>
+{:else}
+	<DropdownMenuPrimitive.Root bind:open>
+		{#if customTrigger}
+			<DropdownMenuPrimitive.Trigger
+				class={triggerClass ?? 'dropdown-menu__trigger'}
+				aria-label={triggerLabel ?? 'Open menu'}
+				{disabled}
+			>
+				{#if trigger}
+					{@render trigger()}
+				{:else}
+					{@html triggerIcon}
+				{/if}
+			</DropdownMenuPrimitive.Trigger>
+		{:else}
+			<DropdownMenuPrimitive.Trigger {disabled}>
+				{#snippet child({ props })}
+					<Button
+						{...props}
+						variant={triggerVariant}
+						size={triggerSize ?? (triggerText ? 'base' : 'small')}
+						iconOnly={!triggerText}
+						label={triggerLabel ?? (triggerText ? undefined : 'Open menu')}
+						{disabled}
+					>
+						{@render triggerBody()}
+					</Button>
+				{/snippet}
+			</DropdownMenuPrimitive.Trigger>
+		{/if}
+		<DropdownMenuPrimitive.Portal>
+			<DropdownMenuPrimitive.Content
+				class={`dropdown-menu__content ${wide ? 'dropdown-menu__content--wide' : ''}`}
+				data-elevation="elevated"
+				{align}
+				sideOffset={4}
+				collisionPadding={8}
+			>
+				{#each items as item (item.key ?? item.label)}
+					{@render menuItem(item)}
+				{/each}
+				{#each groups as group (group.heading)}
+					<DropdownMenuPrimitive.Group class="dropdown-menu__group">
+						<DropdownMenuPrimitive.GroupHeading class="dropdown-menu__heading">
+							{group.heading}
+						</DropdownMenuPrimitive.GroupHeading>
+						{#each group.items as item (item.key ?? item.label)}
+							{@render menuItem(item)}
+						{/each}
+					</DropdownMenuPrimitive.Group>
+				{/each}
+				{#if footer.length > 0}
+					<DropdownMenuPrimitive.Group class="dropdown-menu__group">
+						{#each footer as item (item.key ?? item.label)}
+							{@render menuItem(item)}
+						{/each}
+					</DropdownMenuPrimitive.Group>
+				{/if}
+			</DropdownMenuPrimitive.Content>
+		</DropdownMenuPrimitive.Portal>
+	</DropdownMenuPrimitive.Root>
+{/if}
 
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	.dropdown-menu__unavailable {
+		position: relative;
+		display: inline-flex;
+	}
+	.dropdown-menu__unavailable-reason {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
 	:global(.dropdown-menu__trigger) {
 		display: inline-grid;
 		width: 32px;

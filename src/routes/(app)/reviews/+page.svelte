@@ -58,6 +58,7 @@
 	import userIcon from '@tabler/icons/outline/user.svg?raw';
 	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
 	import cancelIcon from '@tabler/icons/outline/circle-x.svg?raw';
+	import starPageIcon from '@tabler/icons/outline/star.svg?raw';
 
 	// Google review campaign Part 5A: the Reviews workspace. One glance answers "who did I ask, and what did
 	// they do?"; the table below is the full trail. A Google click is shown as exactly that -- UCRM never
@@ -323,7 +324,8 @@
 	<!-- eslint-disable svelte/no-navigation-without-resolve -->
 	<PageContainer variant="fill">
 		<PageHeader
-			eyebrow="Reputation"
+			icon={starPageIcon}
+			tone="review"
 			title="Reviews"
 			description="See who you have asked, what each customer did, and what needs your attention."
 		>

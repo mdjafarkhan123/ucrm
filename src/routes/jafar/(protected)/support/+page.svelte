@@ -47,6 +47,7 @@
 	import arrowLeftIcon from '@tabler/icons/outline/arrow-left.svg?raw';
 	import settingsIcon from '@tabler/icons/outline/settings.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import lifebuoyPageIcon from '@tabler/icons/outline/lifebuoy.svg?raw';
 
 	// The Support Inbox: every contractor team member's conversation with Uplift (plan §7). It is the
 	// platform's own inbox and never shows, or shows in, a contractor's customer inbox.
@@ -255,7 +256,8 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <main class="support-inbox">
 	<PageHeader
-		eyebrow="Platform owner"
+		icon={lifebuoyPageIcon}
+		tone="inactive"
 		title="Support Inbox"
 		description="Messages contractors send from Chat with Uplift. Their customers never see these."
 	>

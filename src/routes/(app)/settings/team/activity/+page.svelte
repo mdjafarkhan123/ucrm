@@ -9,6 +9,7 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { fetchTeamActivity, teamActivityKey, type TeamActivityEntry } from '$lib/team/api';
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
+	import activityPageIcon from '@tabler/icons/outline/activity.svg?raw';
 
 	const actorUserId = $derived(page.data.user?.id ?? '');
 
@@ -163,7 +164,8 @@
 <div class="page-scroller">
 	<PageContainer variant="fill">
 		<PageHeader
-			eyebrow="Team & access"
+			icon={activityPageIcon}
+			tone="inactive"
 			title="Activity log"
 			description="Every access and team change made in your business, newest first."
 		/>

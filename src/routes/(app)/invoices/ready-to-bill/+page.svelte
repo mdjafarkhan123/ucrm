@@ -26,6 +26,7 @@
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
+	import receiptPageIcon from '@tabler/icons/outline/receipt.svg?raw';
 
 	// The ready-to-bill queue: every job that owes an invoice today, across every client, oldest first. It has
 	// one order and one filter on purpose — a billing queue is only ever asked "what has been waiting longest",
@@ -267,6 +268,8 @@
 <div class="page-scroller">
 	<PageContainer variant="fill">
 		<PageHeader
+			icon={receiptPageIcon}
+			tone="invoice"
 			title="Ready to bill"
 			description="Finished work that still needs an invoice, oldest first."
 		>

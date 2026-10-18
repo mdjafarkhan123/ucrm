@@ -54,6 +54,7 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
 	import fileInvoiceIcon from '@tabler/icons/outline/file-invoice.svg?raw';
+	import layoutKanbanPageIcon from '@tabler/icons/outline/layout-kanban.svg?raw';
 
 	// The board. Part 1 draws the Requests group only: the Quotes group and the money it carries arrive
 	// with Part 5, and the Won and Lost tiles with outcomes in Part 4, so there is room left for both
@@ -422,6 +423,8 @@
 	<PageContainer>
 		<div class="pipeline">
 			<PageHeader
+				icon={layoutKanbanPageIcon}
+				tone="growth"
 				title="Pipeline"
 				description="Every open request, in the order it moves through your sales work."
 			>

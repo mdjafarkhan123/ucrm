@@ -38,6 +38,7 @@
 	import robotIcon from '@tabler/icons/outline/robot.svg?raw';
 	import starIcon from '@tabler/icons/outline/star.svg?raw';
 	import packageIcon from '@tabler/icons/outline/package.svg?raw';
+	import settingsPageIcon from '@tabler/icons/outline/settings.svg?raw';
 
 	const query = createQuery(() => ({
 		queryKey: settingsHomeKey,
@@ -70,7 +71,8 @@
 <PageContainer variant="open">
 	<div class="settings-page">
 		<PageHeader
-			eyebrow="Control room"
+			icon={settingsPageIcon}
+			tone="inactive"
 			title="Settings"
 			description="Everything that shapes how your business looks and runs, in one place."
 		/>

@@ -20,6 +20,7 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
 	import { jafarOnboardingListKey } from '$lib/jafar/query-keys';
+	import userPlusPageIcon from '@tabler/icons/outline/user-plus.svg?raw';
 	import {
 		onboardingNextActionLabel,
 		onboardingStage,
@@ -140,7 +141,8 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <main class="onboarding-list">
 	<PageHeader
-		eyebrow="Platform owner"
+		icon={userPlusPageIcon}
+		tone="inactive"
 		title="Onboarding"
 		description="Every paid client on their way through setup: how far they are, and whose move it is next."
 	/>

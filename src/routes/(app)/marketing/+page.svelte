@@ -30,6 +30,7 @@
 	import { describeMarketingWarmup } from '$lib/marketing/warmup';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import speakerphonePageIcon from '@tabler/icons/outline/speakerphone.svg?raw';
 
 	// Marketing home. Overview answers "can I send Marketing email yet, and if not, what is the one thing to
 	// fix?" Customer groups and Templates are saved building blocks; Campaigns is where a draft is built and
@@ -101,7 +102,8 @@
 <PageContainer variant="fill">
 	<div class="marketing">
 		<PageHeader
-			eyebrow="Growth"
+			icon={speakerphonePageIcon}
+			tone="growth"
 			title="Marketing"
 			description="Email the customers who have said yes, using the customers and jobs you already have."
 		/>

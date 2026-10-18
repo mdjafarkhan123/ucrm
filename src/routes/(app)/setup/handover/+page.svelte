@@ -24,6 +24,7 @@
 	import { getSupportAsk } from '$lib/support/ask';
 	import type { HttpError } from '$lib/http-error';
 	import type { PageProps } from './$types';
+	import circleCheckPageIcon from '@tabler/icons/outline/circle-check.svg?raw';
 
 	// Client onboarding E6 (plan §6): the handover pack. Once Uplift delivers the project, the client's owners and
 	// administrators read here who owns which account, guides for their team, their launch approval, training and
@@ -68,7 +69,8 @@
 			/>
 		</div>
 		<PageHeader
-			eyebrow={pack ? 'Project delivered' : 'Setup'}
+			icon={circleCheckPageIcon}
+			tone="inactive"
 			title="Your handover pack"
 			description="Everything you need to run your Uplift system yourself. Once delivered, you can open it any time from Settings."
 		>

@@ -41,6 +41,7 @@
 	import { assignableTeamKey, fetchAssignableTeam } from '$lib/team/api';
 	import { calendarDay, clockMinutesInZone } from '$lib/time/calendar-day';
 	import type { PageProps } from './$types';
+	import homePageIcon from '@tabler/icons/outline/home.svg?raw';
 
 	// Home. The owner, office and finance see the day at a glance (what is waiting, today's schedule, money
 	// owed, how the month is going), each card only if the person may see its area. A field worker keeps the
@@ -132,9 +133,12 @@
 		...(invoiceOverview.isError ? (['invoices'] as const) : [])
 	]);
 	function retryColumn(key: TodoColumnKey) {
-		void { requests: requestCounts, quotes: quoteOverview, jobs: jobOverview, invoices: invoiceOverview }[
-			key
-		].refetch();
+		void {
+			requests: requestCounts,
+			quotes: quoteOverview,
+			jobs: jobOverview,
+			invoices: invoiceOverview
+		}[key].refetch();
 	}
 	const currency = $derived(
 		invoiceOverview.data?.currency_code ??
@@ -283,7 +287,13 @@
 {:else}
 	<div class="page-scroller">
 		<PageContainer variant="open">
-			<PageHeader class="home-page__header" eyebrow="Home" title={greeting} description={dateLine}>
+			<PageHeader
+				icon={homePageIcon}
+				tone="inactive"
+				class="home-page__header"
+				title={greeting}
+				description={dateLine}
+			>
 				{#snippet actions()}
 					{#if hasOrganization}<DayClockCard />{/if}
 				{/snippet}

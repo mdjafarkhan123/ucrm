@@ -47,6 +47,7 @@
 		type FileView
 	} from '$lib/files/api';
 	import { FILE_PICKER_ACCEPT } from '$lib/files/allowlist';
+	import folderOpenPageIcon from '@tabler/icons/outline/folder-open.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -329,6 +330,8 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <PageContainer variant="fill">
 	<PageHeader
+		icon={folderOpenPageIcon}
+		tone="inactive"
 		title="Files"
 		description="Every photo and document your business has, in one place."
 	/>

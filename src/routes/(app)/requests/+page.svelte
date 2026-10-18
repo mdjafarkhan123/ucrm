@@ -48,7 +48,6 @@
 	import clipboardIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
 	import dashedCircleIcon from '@tabler/icons/outline/circle-dashed.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
-	import dotsIcon from '@tabler/icons/outline/dots.svg?raw';
 	import calendarTodayIcon from '@tabler/icons/outline/calendar-event.svg?raw';
 	import calendarUpcomingIcon from '@tabler/icons/outline/calendar-time.svg?raw';
 	import alarmIcon from '@tabler/icons/outline/alarm.svg?raw';
@@ -57,6 +56,7 @@
 	import calendarOffIcon from '@tabler/icons/outline/calendar-x.svg?raw';
 	import clipboardCheckIcon from '@tabler/icons/outline/clipboard-check.svg?raw';
 	import trendingUpIcon from '@tabler/icons/outline/trending-up.svg?raw';
+	import inboxPageIcon from '@tabler/icons/outline/inbox.svg?raw';
 
 	let search = $state('');
 	let debouncedSearch = $state('');
@@ -338,23 +338,16 @@
 <div class="page-scroller">
 	<PageContainer variant="open">
 		<PageHeader
+			icon={inboxPageIcon}
+			tone="request"
 			class="requests-page__header"
-			eyebrow="Customers"
 			title="Requests"
 			description="Every job someone has asked you to look at."
 		>
 			{#snippet actions()}
-				<span class="requests-header__action" title={moreActionsReason}>
-					<Button variant="secondary" class="requests-header__button" disabled>
-						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						<span class="requests-header__icon" aria-hidden="true">{@html dotsIcon}</span>
-						More actions
-					</Button>
-					<span class="requests-header__reason">{moreActionsReason}</span>
-				</span>
+				<DropdownMenu triggerText="More" unavailableReason={moreActionsReason} />
 				<Button
 					variant="primary"
-					class="requests-header__button requests-header__button--primary"
 					href={resolve('/(app)/requests/new')}
 				>
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -570,13 +563,11 @@
 		margin-bottom: var(--space-large);
 	}
 
-	.requests-header__action,
 	.requests-bulk-bar__action {
 		position: relative;
 		display: inline-flex;
 	}
 
-	.requests-header__reason,
 	.requests-bulk-bar__reason {
 		position: absolute;
 		width: 1px;
@@ -586,11 +577,6 @@
 		white-space: nowrap;
 	}
 
-	/* Unavailable, but still drawn as a white button so it does not blend into the page. */
-	:global(.button.button--secondary.requests-header__button:disabled:not([aria-busy='true'])) {
-		border-color: var(--color-border--interactive);
-		background: var(--color-surface);
-	}
 	.requests-header__icon {
 		display: inline-flex;
 

@@ -55,6 +55,7 @@
 	import pencilCheckIcon from '@tabler/icons/outline/pencil-check.svg?raw';
 	import { messageAutomationStatusKey } from '$lib/clients/api';
 	import { customerNoticeStatusKey } from '$lib/schedule/customer-notices';
+	import boltPageIcon from '@tabler/icons/outline/bolt.svg?raw';
 
 	let { recipeId }: { recipeId: string } = $props();
 
@@ -422,7 +423,7 @@
 	{@const disabled = access?.authority_state === 'operationally_disabled'}
 
 	<div class="recipe-detail">
-		<PageHeader eyebrow="Automation" title={detail.name}>
+		<PageHeader icon={boltPageIcon} title={detail.name}>
 			{#snippet actions()}
 				<div class="recipe-detail__actions">
 					{#if headerAction}

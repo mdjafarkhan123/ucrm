@@ -8,6 +8,7 @@
 	import FilterChip from '$lib/components/ui/FilterChip.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import DateRangeChip from '$lib/components/data-display/DateRangeChip.svelte';
 	import DataTable, {
@@ -50,7 +51,6 @@
 	import dashedCircleIcon from '@tabler/icons/outline/circle-dashed.svg?raw';
 	import repeatIcon from '@tabler/icons/outline/repeat.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
-	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 	import hammerIcon from '@tabler/icons/outline/hammer.svg?raw';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
 	import alarmIcon from '@tabler/icons/outline/alarm.svg?raw';
@@ -286,21 +286,9 @@
 			description="The work you have agreed to do, from first visit to final invoice."
 		>
 			{#snippet actions()}
-				<span class="jobs-header__action" title={moreActionsReason}>
-					<Button
-						variant="secondary"
-						class="jobs-header__button jobs-header__button--menu"
-						disabled
-					>
-						More
-						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						<span class="jobs-header__icon" aria-hidden="true">{@html chevronDownIcon}</span>
-					</Button>
-					<span class="jobs-header__reason">{moreActionsReason}</span>
-				</span>
+				<DropdownMenu triggerText="More" unavailableReason={moreActionsReason} />
 				<Button
 					variant="primary"
-					class="jobs-header__button jobs-header__button--primary"
 					href={resolve('/(app)/jobs/new')}
 				>
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -455,34 +443,6 @@
 		margin-bottom: var(--space-large);
 	}
 
-	.jobs-header__action {
-		position: relative;
-		display: inline-flex;
-	}
-
-	.jobs-header__reason {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip-path: inset(50%);
-		white-space: nowrap;
-	}
-
-	/* Unavailable, but still drawn as a white button so it does not blend into the page. */
-	:global(.button.button--secondary.jobs-header__button:disabled:not([aria-busy='true'])) {
-		border-color: var(--color-border--interactive);
-		background: var(--color-surface);
-	}
-	/* The More menu: label first, its chevron after in the quieter icon colour. */
-	:global(.button.jobs-header__button--menu) {
-		gap: 6px;
-		padding-inline: 14px 10px;
-	}
-	.jobs-header__button--menu .jobs-header__icon,
-	:global(.jobs-header__button--menu) .jobs-header__icon {
-		color: var(--color-icon);
-	}
 	.jobs-header__icon {
 		display: inline-flex;
 

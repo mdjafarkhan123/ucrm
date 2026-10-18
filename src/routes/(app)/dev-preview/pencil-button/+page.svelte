@@ -15,7 +15,6 @@
 
 <PageContainer variant="standard">
 	<PageHeader
-		eyebrow="QA harness"
 		title="Pencil button preview"
 		description="The square edit affordance, in both sizes and every state."
 	/>

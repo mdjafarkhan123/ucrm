@@ -20,7 +20,6 @@
 
 <PageContainer variant="standard">
 	<PageHeader
-		eyebrow="QA harness"
 		title="Section block preview"
 		description="The same titled block in every combination: on the page background, inside a card, with and without form controls."
 	/>

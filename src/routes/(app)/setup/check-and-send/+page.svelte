@@ -26,6 +26,7 @@
 	import { SETUP_CHECK_STATUS, SETUP_CHECK_TITLE } from '$lib/setup/check';
 	import type { HttpError } from '$lib/http-error';
 	import type { PageProps } from './$types';
+	import sendPageIcon from '@tabler/icons/outline/send.svg?raw';
 
 	// Client onboarding B13: Check and send to Uplift (plan §3.10, blueprint stage 12). Every task read back with
 	// an Edit link, what still stops the send, what Uplift will follow up, and the confirmations. GOV.UK "Check
@@ -133,6 +134,8 @@
 			<LoadingSkeleton variant="card" rows={4} />
 		{:else}
 			<PageHeader
+				icon={sendPageIcon}
+				tone="inactive"
 				title={SETUP_CHECK_TITLE}
 				description="Look over your answers. Change anything that isn’t right, then confirm and send. Uplift builds from what you send."
 			/>

@@ -32,6 +32,7 @@
 	import PackageOffersSection from '$lib/components/jafar/packages/PackageOffersSection.svelte';
 	import { jafarPackageKey, jafarPackageOffersKey, jafarPackagesKey } from '$lib/jafar/query-keys';
 	import { fetchPackageOffers } from '$lib/jafar/package-offers';
+	import packagePageIcon from '@tabler/icons/outline/package.svg?raw';
 	import {
 		changePackage,
 		deletePackage,
@@ -269,7 +270,8 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <main class="packages-page">
 	<PageHeader
-		eyebrow="Platform owner"
+		icon={packagePageIcon}
+		tone="inactive"
 		title="Packages"
 		description="What contractors can buy: the packages, and the introductory offers that discount them."
 	>

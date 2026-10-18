@@ -59,6 +59,7 @@
 	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
 	import filePencilIcon from '@tabler/icons/outline/file-pencil.svg?raw';
 	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
+	import receiptPageIcon from '@tabler/icons/outline/receipt.svg?raw';
 
 	let search = $state('');
 	let debouncedSearch = $state('');
@@ -345,8 +346,9 @@
 <div class="page-scroller">
 	<PageContainer variant="open">
 		<PageHeader
+			icon={receiptPageIcon}
+			tone="invoice"
 			class="invoices-page__header"
-			eyebrow="Work & money"
 			title="Invoices"
 			description="The bills you have sent your customers, and what is still owed on them."
 		>

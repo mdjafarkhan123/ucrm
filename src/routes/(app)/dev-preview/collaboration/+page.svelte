@@ -29,7 +29,6 @@
 
 <PageContainer variant="standard">
 	<PageHeader
-		eyebrow="QA harness"
 		title="Collaboration components preview"
 		description="Notes, tags, attachments, and activity wired to a real demo Client (Riverbend Family Diner) and its Property. Temporary -- not part of the app navigation."
 	/>

@@ -57,6 +57,7 @@
 	} from '$lib/pipeline/outcomes';
 	import { CUSTOMER_DECLINE_REASON_LABELS } from '$lib/quotes/customer-decline';
 	import trophyIcon from '@tabler/icons/outline/trophy.svg?raw';
+	import chartBarPageIcon from '@tabler/icons/outline/chart-bar.svg?raw';
 
 	const queryClient = useQueryClient();
 
@@ -268,6 +269,8 @@
 
 <PageContainer variant="fill">
 	<PageHeader
+		icon={chartBarPageIcon}
+		tone="growth"
 		title="Sales Outcomes"
 		description="Every Opportunity that has closed, won or lost, and every Job booked without one."
 	>

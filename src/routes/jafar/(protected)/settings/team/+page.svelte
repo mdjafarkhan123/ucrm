@@ -25,6 +25,7 @@
 	import TeamMemberAccessPanel from '$lib/components/jafar/team/TeamMemberAccessPanel.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import { jafarTeamKey, jafarTeamMemberAccessKey } from '$lib/jafar/query-keys';
+	import usersGroupPageIcon from '@tabler/icons/outline/users-group.svg?raw';
 	import {
 		JAFAR_AREA_LABELS,
 		TEAM_ROLES,
@@ -193,7 +194,8 @@
 
 <div class="jafar-team">
 	<PageHeader
-		eyebrow="Team & access"
+		icon={usersGroupPageIcon}
+		tone="inactive"
 		title="Team"
 		description="The people who work in this panel with you. Each one signs in at the same address with their own email and password."
 	>

@@ -42,6 +42,7 @@
 	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import banIcon from '@tabler/icons/outline/ban.svg?raw';
+	import speakerphonePageIcon from '@tabler/icons/outline/speakerphone.svg?raw';
 
 	// The read-first campaign detail page (blueprint §12): a launched campaign has nothing left to edit here,
 	// only to review -- unlike the draft editor at .../edit, this page never stages a change.
@@ -147,7 +148,8 @@
 	{:else}
 		{@const campaign = overviewQuery.data}
 		<PageHeader
-			eyebrow="Campaign"
+			icon={speakerphonePageIcon}
+			tone="growth"
 			title={campaign.name}
 			description={marketingGoalLabels[campaign.goal]}
 		>

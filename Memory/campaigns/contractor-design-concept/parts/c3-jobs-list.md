@@ -37,4 +37,13 @@ tiles; More menu button (still disabled, nothing behind it). Rechecked lists, re
 **For the campaign-end checks:** ESLint already flags three older lines in touched files (AttentionCard 150
 useless mustache, clients 378 `{@html}`, requests 532 href without resolve).
 
-**Next:** Jafar saves `concept.pen` (Ctrl+S), commit it; then C4 Job details.
+**Paused 2026-10-18 — waiting to merge.** Branch `claude/c3-page-headers`, folder `.worktrees/c3-headers`, claim
+`d6ec0192176f`. Jafar: the header and More button are components, so every page gets them; delete unused code.
+Done on the branch, not yet screen-checked: `PageHeader` always uses the concept look (eyebrow removed from the
+component and every caller; each page passes `icon` and `tone`, the sidebar's colour); `DropdownMenu` gains
+`unavailableReason`, and Jobs, Quotes and Requests use it for "More" (Clients uses "More" too); the old per-page
+More markup, styles and imports are deleted.
+**Next:** (1) delete leftovers: `AttentionCard` fallback branch (dot, count-row; make `icon` required and the
+`:has(.attention-card__icon)` rules the base), make `MoneyFeatureCard` `icon` required; (2) screen-check all
+header pages at 1440 (one run failed on a stale dev server: restart it); (3) merge, push, release the claim, remove
+the worktree; then Jafar saves `concept.pen` (Ctrl+S) and C4 Job details.

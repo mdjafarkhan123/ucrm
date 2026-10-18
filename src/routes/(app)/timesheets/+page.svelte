@@ -67,6 +67,7 @@
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
+	import clockPageIcon from '@tabler/icons/outline/clock.svg?raw';
 
 	// Timesheets (docs/time-clock-behavior-contract.md § Timesheets page): who worked how long, for a day or a
 	// Sunday-to-Saturday week. One row per person; opening a row lists their entries. People limited to their
@@ -297,6 +298,8 @@
 
 <PageContainer variant="fill">
 	<PageHeader
+		icon={clockPageIcon}
+		tone="time"
 		title="Timesheets"
 		description={summary && !teamView
 			? 'Your hours, from your timers and hours added on Jobs.'

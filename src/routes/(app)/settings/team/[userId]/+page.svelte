@@ -46,6 +46,7 @@
 	} from '$lib/team/api';
 	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
 	import userIcon from '@tabler/icons/outline/user.svg?raw';
+	import userPageIcon from '@tabler/icons/outline/user.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -516,7 +517,8 @@
 			<LoadingSkeleton variant="card" label="Loading team member" />
 		{:else if viewingOwnRecordWithoutAdminAccess}
 			<PageHeader
-				eyebrow="Team & access"
+				icon={userPageIcon}
+				tone="inactive"
 				title="Your availability"
 				description="When you work, and time off you've booked."
 			/>
@@ -528,7 +530,8 @@
 			/>
 		{:else if member}
 			<PageHeader
-				eyebrow="Team & access"
+				icon={userPageIcon}
+				tone="inactive"
 				title={displayName(member)}
 				description="Business details and the access this person has in your CRM."
 			/>

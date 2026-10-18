@@ -9,6 +9,7 @@
 	import xIcon from '@tabler/icons/outline/x.svg?raw';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import homePageIcon from '@tabler/icons/outline/home.svg?raw';
 
 	// The field worker's Home: the workspace summary, customers and requests, with the add forms. It keeps the
 	// content it always had; the owner's Home is drawn by the dashboard page itself. The page passes what the
@@ -234,7 +235,7 @@
 <div class="page-scroller">
 	<div class="workspace">
 		<main class="content">
-			<PageHeader title="Dashboard" description="Your workspace at a glance." />
+			<PageHeader icon={homePageIcon} title="Dashboard" description="Your workspace at a glance." />
 			{#if hasOrganization}
 				<div class="day-clock-slot"><DayClockCard /></div>
 				{#if runsSetup}

@@ -23,6 +23,7 @@
 	import { sendLeadWrite } from '$lib/jafar/lead-page-api';
 	import { browserTimeZone } from '$lib/jafar/calendar';
 	import { jafarBookingKey, jafarSettingsKey } from '$lib/jafar/query-keys';
+	import calendarPageIcon from '@tabler/icons/outline/calendar.svg?raw';
 	import {
 		LOCATION_WORDS,
 		bookingPath,
@@ -105,6 +106,8 @@
 />
 
 <PageHeader
+	icon={calendarPageIcon}
+	tone="inactive"
 	title="Booking"
 	description="Your booking links, the meetings they offer, and when each host takes calls."
 />

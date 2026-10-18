@@ -36,6 +36,7 @@
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
 	import userPlusIcon from '@tabler/icons/outline/user-plus.svg?raw';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
+	import usersGroupPageIcon from '@tabler/icons/outline/users-group.svg?raw';
 
 	const queryClient = useQueryClient();
 	const actorUserId = $derived(page.data.user?.id ?? '');
@@ -186,6 +187,8 @@
 					items={[{ label: 'Settings', href: resolve('/(app)/settings') }, { label: 'Team' }]}
 				/>
 				<PageHeader
+					icon={usersGroupPageIcon}
+					tone="inactive"
 					title="Team"
 					description="The people who work in your business and their current access."
 				>

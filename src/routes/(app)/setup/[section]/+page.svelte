@@ -48,6 +48,7 @@
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import type { HttpError } from '$lib/http-error';
 	import type { PageProps } from './$types';
+	import listCheckPageIcon from '@tabler/icons/outline/list-check.svg?raw';
 
 	let { data: shell }: PageProps = $props();
 	const userId = $derived(shell.user?.id ?? null);
@@ -562,7 +563,12 @@
 			<LoadingSkeleton variant="card" rows={4} />
 		{:else}
 			{@const form = fields}
-			<PageHeader title={section.title} description={section.description}>
+			<PageHeader
+				icon={listCheckPageIcon}
+				tone="inactive"
+				title={section.title}
+				description={section.description}
+			>
 				{#snippet actions()}
 					<span
 						class="setup-section__save"

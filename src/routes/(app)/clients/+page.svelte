@@ -59,6 +59,7 @@
 	import userPlusIcon from '@tabler/icons/outline/user-plus.svg?raw';
 	import userCheckIcon from '@tabler/icons/outline/user-check.svg?raw';
 	import ClientMergeDialog from '$lib/components/clients/ClientMergeDialog.svelte';
+	import usersPageIcon from '@tabler/icons/outline/users.svg?raw';
 
 	const toast = getToastManager();
 	const queryClient = useQueryClient();
@@ -359,8 +360,9 @@
 <div class="page-scroller">
 	<PageContainer variant="open">
 		<PageHeader
+			icon={usersPageIcon}
+			tone="client"
 			class="clients-page__header"
-			eyebrow="Customers"
 			title="Clients"
 			description="Every lead and customer relationship in one place."
 		>
@@ -369,9 +371,7 @@
 					<div class="clients-header-actions">
 						<DropdownMenu
 							triggerLabel="More client actions"
-							triggerText="More actions"
-							triggerLeadingIcon={dotsIcon}
-							triggerChevron={false}
+							triggerText="More"
 							items={moreClientActions}
 						/>
 						<Button variant="primary" href={resolve('/clients/new')}>

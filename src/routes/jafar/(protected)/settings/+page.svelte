@@ -11,6 +11,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import { jafarSettingsKey } from '$lib/jafar/query-keys';
+	import settingsPageIcon from '@tabler/icons/outline/settings.svg?raw';
 	import {
 		fetchOwnerSettings,
 		searchSettings,
@@ -50,7 +51,8 @@
 
 <main class="jafar-settings">
 	<PageHeader
-		eyebrow="Control Room"
+		icon={settingsPageIcon}
+		tone="inactive"
 		title="Settings"
 		description="How Uplift and the platform are set up — find a setting by what it does."
 	/>

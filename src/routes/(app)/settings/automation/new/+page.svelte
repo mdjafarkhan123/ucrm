@@ -9,6 +9,7 @@
 	import RecipeBuilder from '$lib/components/settings/automation/RecipeBuilder.svelte';
 	import { emptyAuthoredDefinition } from '$lib/automation/authoring';
 	import { getAutomationPreset } from '$lib/automation/presets';
+	import boltPageIcon from '@tabler/icons/outline/bolt.svg?raw';
 
 	// /settings/automation/new is the library by default and the builder when a build mode is chosen in the
 	// URL (?preset=<key> for a preset starting point, ?mode=scratch for an empty one). Both open a LOCAL draft
@@ -50,7 +51,8 @@
 			/>
 		{:else}
 			<PageHeader
-				eyebrow="Automations"
+				icon={boltPageIcon}
+				tone="inactive"
 				title="New automation"
 				description="Start from a ready-made automation or build your own from scratch."
 			/>

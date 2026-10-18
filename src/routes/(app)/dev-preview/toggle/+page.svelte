@@ -30,7 +30,6 @@
 
 <PageContainer variant="standard">
 	<PageHeader
-		eyebrow="QA harness"
 		title="Toggle preview"
 		description="The segmented picker and the on/off switch, in every state."
 	/>
