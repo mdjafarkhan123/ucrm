@@ -128,7 +128,11 @@
 				/>
 				{#if option.icon}
 					<!-- A Tabler SVG file imported at build time, not user content. -->
-					<span class="segmented__icon" style:color={option.iconColor} aria-hidden="true">
+					<span
+						class="segmented__icon"
+						style:--segmented-icon-color={option.iconColor}
+						aria-hidden="true"
+					>
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						{@html option.icon}
 					</span>
@@ -177,6 +181,7 @@
 			display: inline-flex;
 			flex-shrink: 0;
 			margin-right: 7px;
+			color: var(--segmented-icon-color, inherit);
 
 			:global(svg) {
 				width: 16px;
@@ -273,6 +278,47 @@
 
 		&__track--disabled {
 			background: var(--color-disabled--secondary);
+		}
+	}
+
+	// Concept look (design skill `inputs.md`, Segmented switch): inside a `.concept-fields` area the caption is
+	// a field label, and the chosen option is a raised white button in a soft grey track. The option icons
+	// stay quiet until chosen, then take the colour the option gives them.
+	:global(.concept-fields) .segmented {
+		gap: 6px;
+
+		.segmented__caption {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 600;
+			letter-spacing: 0;
+			text-transform: none;
+		}
+		.segmented__track {
+			gap: 2px;
+			padding: 3px;
+		}
+		.segmented__thumb {
+			top: 3px;
+			bottom: 3px;
+			border-color: var(--color-border--interactive);
+			border-radius: 6px;
+			box-shadow: var(--shadow-button);
+		}
+		.segmented__track--base .segmented__option {
+			min-height: 32px;
+			padding: 0 14px;
+			border-radius: 6px;
+			font-size: var(--typography--fontSize-label);
+		}
+		.segmented__icon {
+			margin-right: 6px;
+		}
+		.segmented__option:not(.segmented__option--active) .segmented__icon {
+			color: var(--color-icon--secondary);
+		}
+		.segmented__option--active {
+			color: var(--color-heading);
 		}
 	}
 

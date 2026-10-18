@@ -358,4 +358,28 @@
 		color: var(--color-critical);
 		font-size: var(--typography--fontSize-small);
 	}
+
+	// Concept look (design skill `inputs.md`): inside a `.concept-fields` area the label sits above a 40px
+	// search box.
+	:global(.concept-fields) .client-picker {
+		> label {
+			margin-bottom: 6px;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 600;
+		}
+		.client-picker__control {
+			min-height: 40px;
+		}
+		.client-picker__control:hover:not(:focus-within) {
+			border-color: var(--color-border--section);
+		}
+		.client-picker__control :global(input) {
+			min-height: 38px;
+			padding: var(--space-small) 40px var(--space-small) 36px;
+		}
+		.client-picker__search {
+			left: var(--space-slim);
+		}
+	}
 </style>

@@ -492,4 +492,12 @@
 			}
 		}
 	}
+
+	// Concept look (design skill `inputs.md`): inside a `.concept-fields` area the label is a field label.
+	:global(.concept-fields .calendar-picker__label) {
+		margin-bottom: 6px;
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-label);
+		font-weight: 600;
+	}
 </style>

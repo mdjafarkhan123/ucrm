@@ -1271,10 +1271,18 @@
 			{#if concept && showPrices}
 				<div class="pricing-block__concept-totals">
 					<div class="pricing-block__concept-panel">
-						<div class="pricing-block__concept-subtotal">
-							<span>Subtotal</span>
-							<span>{formatMoney(draftSubtotal(draftLines))}</span>
-						</div>
+						{#if alwaysEditing}
+							<!-- A record not saved yet has no discount or tax, so its subtotal is the figure. -->
+							<div class="pricing-block__concept-figure">
+								<span>{editorTotalLabel}</span>
+								<span>{formatMoney(draftSubtotal(draftLines))}</span>
+							</div>
+						{:else}
+							<div class="pricing-block__concept-subtotal">
+								<span>Subtotal</span>
+								<span>{formatMoney(draftSubtotal(draftLines))}</span>
+							</div>
+						{/if}
 						{@render conceptTotals?.({ linesChanged: linesMoneyChanged })}
 					</div>
 				</div>
@@ -2270,6 +2278,27 @@
 		span:last-child {
 			color: var(--color-heading);
 			font-weight: 600;
+			font-variant-numeric: tabular-nums;
+		}
+	}
+	.pricing-block__concept-figure {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+		padding: 10px var(--space-slim);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface);
+
+		span:first-child {
+			flex: 1 1 auto;
+			color: var(--color-heading);
+			font-weight: 700;
+		}
+		span:last-child {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-larger);
+			font-weight: 700;
 			font-variant-numeric: tabular-nums;
 		}
 	}

@@ -102,7 +102,8 @@
 
 <style lang="scss">
 	.section-block--concept,
-	:global(.record-detail--cards) .section-block--concept {
+	:global(.record-detail--cards) .section-block--concept,
+	:global(.record-form--concept) .section-block--concept {
 		display: block;
 		overflow: hidden;
 		margin: 0;
@@ -321,7 +322,9 @@
 		padding: var(--space-medium);
 	}
 	// A flush card draws its own edge-to-edge rows or table, so its body adds no padding.
-	:global(.record-detail--cards) .section-block--concept.section-block--flush > .section-block__concept-body {
+	:global(.record-detail--cards)
+		.section-block--concept.section-block--flush
+		> .section-block__concept-body {
 		padding: 0;
 	}
 </style>

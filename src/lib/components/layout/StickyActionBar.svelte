@@ -9,7 +9,17 @@
 	// room below it to float through — it just sat at the very bottom of the page where nobody scrolled to.
 	// `AppShell` publishes where the content column starts and ends, so the pinned bar lines up with the
 	// page underneath it and follows the sidebar when it collapses.
-	let { children, class: className = '' }: { children: Snippet; class?: string } = $props();
+	let {
+		children,
+		concept = false,
+		class: className = ''
+	}: {
+		children: Snippet;
+		/** The concept's floating save bar (New job `zUFDO`): large corners and a high shadow, with room on
+		 *  the left for a line saying where the form stands. */
+		concept?: boolean;
+		class?: string;
+	} = $props();
 
 	// The bar floats over the page, so the page has to end this much earlier or the bar covers its last
 	// block. Measured rather than guessed, because the buttons stack on a narrow screen.
@@ -33,7 +43,10 @@
 	aria-hidden="true"
 ></div>
 
-<footer class={`sticky-action-bar ${className}`} bind:clientHeight={barHeight}>
+<footer
+	class={['sticky-action-bar', concept && 'sticky-action-bar--concept', className]}
+	bind:clientHeight={barHeight}
+>
 	{@render children()}
 </footer>
 
@@ -56,6 +69,13 @@
 		transition:
 			left var(--timing-base) ease-out,
 			right var(--timing-base) ease-out;
+	}
+
+	.sticky-action-bar--concept {
+		gap: var(--space-slim);
+		padding: var(--space-slim) var(--space-slim) var(--space-slim) var(--space-medium);
+		border-radius: var(--radius-large);
+		box-shadow: var(--shadow-high);
 	}
 
 	// Holds the bar's place in the flow so the last block on the page is never hidden behind it.

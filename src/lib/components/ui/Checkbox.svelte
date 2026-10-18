@@ -169,4 +169,31 @@
 			background: var(--color-disabled);
 		}
 	}
+
+	// Concept look (design skill `inputs.md`, Checkbox): inside a `.concept-fields` area the box is 18 with
+	// small corners, and the label reads as a title with its description under it.
+	:global(.concept-fields) .checkbox {
+		gap: 10px;
+
+		.checkbox__box {
+			flex-basis: 18px;
+			width: 18px;
+			height: 18px;
+			border-width: var(--border-base);
+			border-radius: var(--radius-small);
+
+			:global(svg) {
+				width: 12px;
+				height: 12px;
+				stroke-width: 3;
+			}
+		}
+		.checkbox__content {
+			gap: 2px;
+		}
+		.checkbox__label {
+			color: var(--color-heading);
+			font-weight: 600;
+		}
+	}
 </style>

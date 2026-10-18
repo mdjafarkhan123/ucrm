@@ -33,12 +33,16 @@
 		rule = $bindable(),
 		asNeeded = $bindable(false),
 		locale = 'en-US',
-		disabled = false
+		disabled = false,
+		concept = false
 	}: {
 		rule: JobRecurrenceInput;
 		asNeeded?: boolean;
 		locale?: string;
 		disabled?: boolean;
+		/** The New job concept (`TVQzs`): how it ends sits on one row, and the visit count closes the fields
+		 *  as a Schedule-coloured panel. */
+		concept?: boolean;
 	} = $props();
 
 	const WEEKDAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -252,6 +256,35 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
+{#snippet visitCount()}
+	<div class="recurrence__count" aria-live="polite">
+		{#if previewQuery.isError}
+			<span class="recurrence__count-note">
+				{(previewQuery.error as Error).message}
+			</span>
+		{:else if !askable || previewQuery.isPending}
+			<span class="recurrence__count-note"
+				>Finish the schedule to see how many visits it makes.</span
+			>
+		{:else if preview?.over_limit}
+			<span class="recurrence__count-note recurrence__count-note--warn">
+				That schedule makes {preview.visit_count} visits. The most we create at once is {preview.limit}.
+				Try a nearer end date.
+			</span>
+		{:else if preview}
+			<span class="recurrence__count-number">{preview.visit_count}</span>
+			<span class="recurrence__count-word">
+				{preview.visit_count === 1 ? 'visit' : 'visits'}
+			</span>
+			{#if preview.first_date}
+				<span class="recurrence__count-range">
+					{readableDate(preview.first_date)} – {readableDate(preview.last_date)}
+				</span>
+			{/if}
+		{/if}
+	</div>
+{/snippet}
+
 <div class="recurrence">
 	<DateTimePicker
 		id="job-schedule-start"
@@ -395,79 +428,59 @@
 			</div>
 		{/if}
 
-		<div class="recurrence__count" aria-live="polite">
-			{#if previewQuery.isError}
-				<span class="recurrence__count-note">
-					{(previewQuery.error as Error).message}
-				</span>
-			{:else if !askable || previewQuery.isPending}
-				<span class="recurrence__count-note"
-					>Finish the schedule to see how many visits it makes.</span
-				>
-			{:else if preview?.over_limit}
-				<span class="recurrence__count-note recurrence__count-note--warn">
-					That schedule makes {preview.visit_count} visits. The most we create at once is {preview.limit}.
-					Try a nearer end date.
-				</span>
-			{:else if preview}
-				<span class="recurrence__count-number">{preview.visit_count}</span>
-				<span class="recurrence__count-word">
-					{preview.visit_count === 1 ? 'visit' : 'visits'}
-				</span>
-				{#if preview.first_date}
-					<span class="recurrence__count-range">
-						{readableDate(preview.first_date)} – {readableDate(preview.last_date)}
-					</span>
-				{/if}
+		{#if !concept}{@render visitCount()}{/if}
+
+		<div class={['recurrence__ends', concept && 'recurrence__ends--row']}>
+			<SegmentedControl
+				label="Ends"
+				value={rule.end_mode}
+				options={[
+					{ value: 'after', label: 'Ends after' },
+					{ value: 'on', label: 'Ends on' }
+				]}
+				{disabled}
+				onchange={(value) =>
+					(rule = { ...rule, end_mode: value as JobRecurrenceInput['end_mode'] })}
+			/>
+
+			{#if rule.end_mode === 'after'}
+				<div class="recurrence__interval">
+					<Input
+						id="job-schedule-duration"
+						label={concept ? 'For' : 'Ends after'}
+						type="number"
+						min={1}
+						max={520}
+						{disabled}
+						bind:value={rule.duration_count}
+					/>
+					<Select
+						id="job-schedule-duration-unit"
+						ariaLabel="Length"
+						value={rule.duration_unit ?? 'month'}
+						options={[
+							{ value: 'day', label: rule.duration_count === 1 ? 'day' : 'days' },
+							{ value: 'week', label: rule.duration_count === 1 ? 'week' : 'weeks' },
+							{ value: 'month', label: rule.duration_count === 1 ? 'month' : 'months' },
+							{ value: 'year', label: rule.duration_count === 1 ? 'year' : 'years' }
+						]}
+						{disabled}
+						onchange={(value) =>
+							(rule = { ...rule, duration_unit: value as JobRecurrenceInput['duration_unit'] })}
+					/>
+				</div>
+			{:else}
+				<DateTimePicker
+					id="job-schedule-end"
+					dateLabel="Ends on"
+					{locale}
+					{disabled}
+					bind:value={endValue}
+				/>
 			{/if}
 		</div>
 
-		<SegmentedControl
-			label="Ends"
-			value={rule.end_mode}
-			options={[
-				{ value: 'after', label: 'Ends after' },
-				{ value: 'on', label: 'Ends on' }
-			]}
-			{disabled}
-			onchange={(value) => (rule = { ...rule, end_mode: value as JobRecurrenceInput['end_mode'] })}
-		/>
-
-		{#if rule.end_mode === 'after'}
-			<div class="recurrence__interval">
-				<Input
-					id="job-schedule-duration"
-					label="Ends after"
-					type="number"
-					min={1}
-					max={520}
-					{disabled}
-					bind:value={rule.duration_count}
-				/>
-				<Select
-					id="job-schedule-duration-unit"
-					ariaLabel="Length"
-					value={rule.duration_unit ?? 'month'}
-					options={[
-						{ value: 'day', label: rule.duration_count === 1 ? 'day' : 'days' },
-						{ value: 'week', label: rule.duration_count === 1 ? 'week' : 'weeks' },
-						{ value: 'month', label: rule.duration_count === 1 ? 'month' : 'months' },
-						{ value: 'year', label: rule.duration_count === 1 ? 'year' : 'years' }
-					]}
-					{disabled}
-					onchange={(value) =>
-						(rule = { ...rule, duration_unit: value as JobRecurrenceInput['duration_unit'] })}
-				/>
-			</div>
-		{:else}
-			<DateTimePicker
-				id="job-schedule-end"
-				dateLabel="Ends on"
-				{locale}
-				{disabled}
-				bind:value={endValue}
-			/>
-		{/if}
+		{#if concept}{@render visitCount()}{/if}
 	{/if}
 </div>
 
@@ -615,6 +628,54 @@
 			&__ordinal {
 				grid-template-columns: 1fr;
 			}
+		}
+	}
+
+	.recurrence__ends {
+		display: contents;
+	}
+
+	// Concept: "Ends" and its length on one row, and the count as a Schedule-coloured panel under them.
+	.recurrence__ends--row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		gap: var(--space-base);
+
+		.recurrence__interval {
+			grid-template-columns: 80px 140px;
+			gap: var(--space-small);
+			align-items: end;
+		}
+	}
+
+	:global(.concept-fields) .recurrence {
+		gap: var(--space-medium);
+
+		.recurrence__count {
+			align-items: center;
+			gap: var(--space-small);
+			min-height: 48px;
+			padding: var(--space-slim) var(--space-base);
+			border-radius: var(--radius-base);
+			color: var(--color-time--onSurface);
+			background: var(--color-time--surface);
+		}
+		.recurrence__count-number {
+			color: var(--color-time--onSurface);
+			font-size: var(--typography--fontSize-larger);
+		}
+		.recurrence__count-word {
+			color: var(--color-time--onSurface);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
+		}
+		.recurrence__count-range {
+			margin-left: auto;
+			font-size: var(--typography--fontSize-small);
+		}
+		.recurrence__count-range::before {
+			content: none;
 		}
 	}
 </style>
