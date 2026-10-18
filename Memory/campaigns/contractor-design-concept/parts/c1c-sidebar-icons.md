@@ -14,3 +14,5 @@
 24 tile in `--color-<tone>--surface`, 14 icon, `--radius-tile-small`; white tile on hover; current page = white
 tile with a green icon on the green row. `concept.pen` Sidebar part now uses the live groups. Checked with
 Playwright (owner): 1440 light/dark, hover, collapsed, 390 phone menu.
+**Rolled back the same day (Jafar):** the live sidebar is back to coloured icons only (`Sidebar.svelte` as before
+`0f7d6e94`). The concept sidebar in `concept.pen` keeps its tiles and the live groups.

@@ -84,7 +84,8 @@ designs as the record of the live app.
   summary, day clock) leads the page, replacing the live Home's dark schedule card; the schedule card stays white
   because its green job tiles and pills would blend into green. One feature card per screen at most.
 - Decision 2026-10-18 (Jafar): the concept sidebar uses the live app's groups and order instead of the Jobber work
-  order, and the live app's sidebar gets the soft coloured tiles now.
+  order. The live app's sidebar tried the soft coloured tiles the same day and Jafar rolled it back to coloured
+  icons only; the tiles stay in the concept.
 - Decision 2026-10-18 (Jafar): the concept sidebar keeps soft coloured tiles behind every icon, and the current
   page is a solid brand-green row (as the live app already shows) with a white tile and green icon.
 - Decision 2026-10-17 (Jafar): keep two sets of styling modules for now — `design` (concept) and
