@@ -17,6 +17,8 @@ export type RecordFact = {
 	icon?: string;
 	/** Colour of the icon tile in the App look. Left out, the first fact is green and the rest are quiet. */
 	tone?: 'neutral' | 'success' | 'warning';
+	/** Concept look: the record or part of the app this fact belongs to; its colour tints the icon tile. */
+	kind?: 'job' | 'time' | 'quote' | 'client' | 'conversation' | 'request' | 'invoice';
 	/** Draw the value in the quiet colour, for a fact still waiting on something (e.g. "No answer yet"). */
 	quiet?: boolean;
 	/** Makes the value a link, e.g. `tel:` or `mailto:`. */

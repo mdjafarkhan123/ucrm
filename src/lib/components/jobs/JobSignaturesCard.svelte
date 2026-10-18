@@ -3,7 +3,6 @@
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import CollectJobSignatureDialog from '$lib/components/jobs/CollectJobSignatureDialog.svelte';
@@ -18,6 +17,7 @@
 	import type { JobSignatureType } from '$lib/signatures/types';
 	import type { JobLineItem, JobVisit } from '$lib/jobs/api';
 	import { jobEventsKey } from '$lib/jobs/api';
+	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import signatureIcon from '@tabler/icons/outline/signature.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 
@@ -122,27 +122,25 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<RailCard title="Signatures" icon={signatureIcon} count={signatures.length || undefined}>
-	{#snippet actions()}
-		{#if canCollect}
-			<Button size="small" variant="tertiary" onclick={() => (collecting = true)}>
-				Collect signature
-			</Button>
-		{/if}
-	{/snippet}
-
+<RailCard
+	title="Signatures"
+	description="The customer's sign-off on the work"
+	icon={signatureIcon}
+	count={signatures.length || undefined}
+>
 	{#if signaturesQuery.isPending}
 		<LoadingSkeleton variant="text" rows={2} label="Loading signatures" />
 	{:else if signaturesQuery.isError}
 		<p class="job-signatures__error" role="alert">Signatures could not be loaded.</p>
 	{:else if signatures.length === 0}
-		<EmptyState
-			icon={signatureIcon}
-			title="No signatures yet"
-			description={canCollect
-				? 'Have the customer sign to authorize the work, or to confirm it is finished.'
-				: 'Nobody has signed off on this job.'}
-		/>
+		<div class="job-signatures__empty">
+			<p class="job-signatures__none">No signatures yet</p>
+			{#if canCollect}
+				<Button size="small" variant="secondary" onclick={() => (collecting = true)}>
+					{@html pencilIcon}Collect signature
+				</Button>
+			{/if}
+		</div>
 	{:else}
 		<ul class="job-signatures__list">
 			{#each signatures as signature (signature.id)}
@@ -175,9 +173,11 @@
 			{/each}
 		</ul>
 
-		{#if canCollect && signatures.some((signature) => signature.is_stale)}
+		{#if canCollect}
 			<Button size="small" variant="secondary" onclick={() => (collecting = true)}>
-				Collect a new signature
+				{@html pencilIcon}{signatures.some((signature) => signature.is_stale)
+					? 'Collect a new signature'
+					: 'Collect signature'}
 			</Button>
 		{/if}
 	{/if}
@@ -300,6 +300,19 @@
 
 <style lang="scss">
 	.job-signatures {
+		&__empty {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: var(--space-small);
+		}
+
+		&__none {
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
 		&__list {
 			display: grid;
 			gap: var(--space-small);

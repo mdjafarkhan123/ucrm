@@ -262,14 +262,16 @@
 						disabled={saving}
 						onclick={() => void write({ name: null, type: null, value: null })}
 					>
-						Remove discount
+						{staged ? 'Remove from draft' : 'Remove discount'}
 					</Button>
 				{/if}
 				<div class="record-discount-dialog__confirm">
 					<Button variant="secondary" variation="subtle" disabled={saving} onclick={close}>
 						Cancel
 					</Button>
-					<Button variant="primary" loading={saving} onclick={save}>Save discount</Button>
+					<Button variant="primary" loading={saving} onclick={save}
+						>{staged ? 'Apply to draft' : 'Save discount'}</Button
+					>
 				</div>
 			</div>
 		</div>

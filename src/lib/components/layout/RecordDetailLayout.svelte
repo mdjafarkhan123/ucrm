@@ -96,6 +96,11 @@
 			border-radius: var(--radius-base);
 			background: var(--color-surface);
 			box-shadow: var(--shadow-low);
+
+			// Like the rail, the column scrolls: its blocks keep their full height.
+			> :global(*) {
+				flex-shrink: 0;
+			}
 		}
 
 		&__rail {
@@ -103,6 +108,11 @@
 			flex-direction: column;
 			gap: var(--space-base);
 			padding-bottom: var(--space-base);
+
+			// The rail scrolls; its cards keep their full height instead of squeezing to fit the window.
+			> :global(*) {
+				flex-shrink: 0;
+			}
 		}
 	}
 

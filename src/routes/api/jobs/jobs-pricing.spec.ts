@@ -3,6 +3,7 @@ import { PATCH as LINES } from './[id=uuid]/lines/+server';
 import { PATCH as BILLING } from './[id=uuid]/billing/+server';
 import { PATCH as DISCOUNT } from './[id=uuid]/discount/+server';
 import { PATCH as TAX } from './[id=uuid]/tax/+server';
+import { PATCH as PRICING } from './[id=uuid]/pricing/+server';
 import { requireOrganizationPermission } from '$lib/server/access/permission';
 
 vi.mock('$lib/server/access/permission', async () => {
@@ -51,6 +52,44 @@ const line = {
 beforeEach(() => {
 	vi.clearAllMocks();
 	mockedRequire.mockResolvedValue(context({ 'jobs.view': true, 'jobs.edit': true }));
+});
+
+describe('combined job pricing API', () => {
+	it('sends lines, discount and tax in one database call', async () => {
+		const rpc = vi.fn().mockResolvedValue({ data: { revision: 6 }, error: null });
+		const response = await PRICING(
+			patchEvent(
+				'/pricing',
+				{
+					expected_revision: 3,
+					lines: [line],
+					discount: { type: 'fixed', name: 'Autumn offer', value: 500 },
+					tax: { source: 'no_tax' }
+				},
+				rpc
+			)
+		);
+		expect(response.status).toBe(200);
+		expect(rpc).toHaveBeenCalledTimes(1);
+		expect(rpc).toHaveBeenCalledWith(
+			'save_job_pricing',
+			expect.objectContaining({
+				expected_revision: 3,
+				new_lines: [expect.objectContaining({ name: 'Gutter clearing' })],
+				new_discount: expect.objectContaining({ type: 'fixed', value: 500 }),
+				new_tax: expect.objectContaining({ source: 'no_tax' })
+			})
+		);
+	});
+
+	it('rejects malformed staged tax before touching the database', async () => {
+		const rpc = vi.fn();
+		const response = await PRICING(
+			patchEvent('/pricing', { expected_revision: 3, tax: { source: 'custom' } }, rpc)
+		);
+		expect(response.status).toBe(422);
+		expect(rpc).not.toHaveBeenCalled();
+	});
 });
 
 describe('job scope API', () => {

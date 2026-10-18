@@ -359,7 +359,9 @@
 				<Button variant="secondary" variation="subtle" disabled={saving} onclick={close}>
 					Cancel
 				</Button>
-				<Button variant="primary" loading={saving} onclick={save}>Save tax</Button>
+				<Button variant="primary" loading={saving} onclick={save}
+					>{staged ? 'Apply to draft' : 'Save tax'}</Button
+				>
 			</div>
 		</div>
 	</Dialog>

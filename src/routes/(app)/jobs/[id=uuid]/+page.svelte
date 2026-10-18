@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { setContext } from 'svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -19,7 +20,6 @@
 	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
 	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
-	import QuoteSummaryCard from '$lib/components/quotes/QuoteSummaryCard.svelte';
 	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
 	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
 	import JobBillingCard from '$lib/components/jobs/JobBillingCard.svelte';
@@ -42,9 +42,9 @@
 		fetchJob,
 		jobDetailKey,
 		saveJobDetails,
-		saveJobLines,
-		saveJobDiscount,
-		saveJobTax,
+		saveJobPricing,
+		type JobDiscountInput,
+		type JobTaxInput,
 		fetchJobEvents,
 		jobEventsKey,
 		jobCountsKey,
@@ -59,7 +59,9 @@
 	} from '$lib/quotes/api';
 	import { JOB_STATUS_LABELS, JOB_STATUS_TONES, JOB_TYPE_LABELS } from '$lib/jobs/statuses';
 	import { createNote, deleteNote, updateNote, type NoteChange } from '$lib/collaboration/api';
-	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
+	import clipboardListIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
+	import packageIcon from '@tabler/icons/outline/package.svg?raw';
+	import toolsIcon from '@tabler/icons/outline/tools.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 	import fileInvoiceIcon from '@tabler/icons/outline/file-invoice.svg?raw';
@@ -72,6 +74,7 @@
 	import fileDescriptionIcon from '@tabler/icons/outline/file-description.svg?raw';
 
 	const queryClient = useQueryClient();
+	setContext('concept-job-details', true);
 	const toast = getToastManager();
 	const jobId = $derived(page.params.id ?? '');
 
@@ -117,6 +120,8 @@
 	let notePending = $state<NoteChange[]>([]);
 	let workReportCard = $state<JobWorkReportCard>();
 	let reportHasContent = $state(false);
+	let discountDraft = $state<JobDiscountInput | null>(null);
+	let taxDraft = $state<JobTaxInput | null>(null);
 
 	const editable = $derived(Boolean(saved?.can_edit));
 	// Google review Part 3: closed jobs where work was done, and ongoing recurring jobs once a visit is done.
@@ -134,7 +139,6 @@
 	const instructionsChanged = $derived(
 		editingInstructions && instructionsDraft.trim() !== (saved?.job.instructions?.trim() ?? '')
 	);
-	const showInstructions = $derived(editingInstructions || Boolean(saved?.job.instructions));
 
 	const isEditing = $derived(editingTitle || editingInstructions || notePending.length > 0);
 	const isDirty = $derived(titleChanged || instructionsChanged || notePending.length > 0);
@@ -155,11 +159,6 @@
 		}))
 	);
 
-	const dateFormat = new Intl.DateTimeFormat(undefined, {
-		day: 'numeric',
-		month: 'short',
-		year: 'numeric'
-	});
 	const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
 		day: 'numeric',
 		month: 'short',
@@ -168,21 +167,32 @@
 		minute: '2-digit'
 	});
 	const headerFacts = $derived([
-		{ label: 'Job #', value: saved ? String(saved.job.job_number) : null, icon: hashIcon },
+		{
+			label: 'Job #',
+			value: saved ? String(saved.job.job_number) : null,
+			icon: hashIcon,
+			kind: 'job' as const
+		},
 		{
 			label: 'Type',
 			value: saved ? JOB_TYPE_LABELS[saved.job.job_type] : null,
-			icon: repeatIcon
+			icon: repeatIcon,
+			kind: 'time' as const
 		},
 		{
 			label: 'Created',
 			value: saved ? dateTimeFormat.format(new Date(saved.job.created_at)) : null,
-			icon: calendarPlusIcon
+			icon: calendarPlusIcon,
+			kind: 'time' as const
 		},
 		...(saved?.job.from_quote
-			? [{ label: 'Source', value: 'From a quote', icon: fileDescriptionIcon }]
+			? [{ label: 'Source', value: 'From a quote', icon: fileDescriptionIcon, kind: 'quote' as const }]
 			: [])
 	]);
+
+	const headerMeta = $derived(
+		saved ? [`Job #${saved.job.job_number}`, JOB_TYPE_LABELS[saved.job.job_type]] : []
+	);
 
 	const propertyLine = $derived.by(() => {
 		const property = saved?.job.property;
@@ -337,14 +347,17 @@
 	}
 
 	// --- Pricing ----------------------------------------------------------------------------------------
-	// The scope block, the discount card and the tax card each own a piece of the job's money and each write
-	// on their own button, the way they already do on a quote. They are not part of the page's staged title
-	// and instructions draft, so the bottom save bar never appears for them.
+	// The approved job editor stages lines, discount and tax together under one visible Save.
+	// The server checks all three and applies them in one database transaction.
 	//
 	// The block speaks the quote's dialect — `catalog_item_id`, optional add-on fields — so the job's own
 	// column name is put back here. A job carries no headings or notes, so anything that is not a priced
 	// line is dropped rather than sent to a command that would refuse it.
-	async function saveScope(expectedRevision: number, lines: RequestPricingLineInput[]) {
+	async function saveScope(
+		expectedRevision: number,
+		lines: RequestPricingLineInput[],
+		linesChanged: boolean
+	) {
 		const scope: JobScopeLineInput[] = lines
 			.filter((line) => (line.line_kind ?? 'priced') === 'priced')
 			.map((line, index) => ({
@@ -362,9 +375,15 @@
 				image_file_id: line.image_file_id ?? null
 			}));
 
-		await saveJobLines(jobId, expectedRevision, scope);
+		if (!linesChanged && !discountDraft && !taxDraft) return;
+		await saveJobPricing(jobId, expectedRevision, {
+			...(linesChanged ? { lines: scope } : {}),
+			...(discountDraft ? { discount: discountDraft } : {}),
+			...(taxDraft ? { tax: taxDraft } : {})
+		});
+		discountDraft = null;
+		taxDraft = null;
 		await refreshJob();
-		toast.success('Scope saved');
 	}
 
 	// --- Saving -----------------------------------------------------------------------------------------
@@ -504,8 +523,22 @@
 		>
 			{#snippet main()}
 				<WorkRecordHeader
-					icon={briefcaseIcon}
+					icon={toolsIcon}
 					recordType="Job"
+					look="concept"
+					meta={headerMeta}
+					primaryAction={saved.job.status === 'closed' && saved.can_close
+						? {
+								label: 'Reopen job',
+								onclick: () => void reopen(),
+								loading: reopening
+							}
+						: saved.can_invoice && saved.job.client
+							? {
+									label: 'Create invoice',
+									href: `${resolve('/(app)/invoices/new')}?client=${saved.job.client.id}&job=${saved.job.id}`
+								}
+							: undefined}
 					{title}
 					statusLabel={JOB_STATUS_LABELS[saved.job.derived_status]}
 					statusTone={JOB_STATUS_TONES[saved.job.derived_status]}
@@ -530,6 +563,7 @@
 							phone={saved.job.client?.phone}
 							email={saved.job.client?.email}
 							menuItems={clientMenuItems}
+							concept
 						/>
 					{/snippet}
 					{#snippet track()}
@@ -537,22 +571,13 @@
 							kind="job"
 							id={jobId}
 							clientName={saved.job.client?.display_name ?? undefined}
+							look="steps"
 						/>
 					{/snippet}
-					{#snippet facts()}<RecordFactsList facts={headerFacts} />{/snippet}
+					{#snippet facts()}<RecordFactsList facts={headerFacts} concept />{/snippet}
 					{#snippet badges()}
 						{#if canRequestReview}
 							<RequestReviewButton target={{ jobId: saved.job.id }} variant="tertiary" />
-						{/if}
-						{#if saved.job.status === 'closed' && saved.can_close}
-							<Button
-								size="small"
-								variant="tertiary"
-								onclick={() => void reopen()}
-								loading={reopening}
-							>
-								Reopen job
-							</Button>
 						{/if}
 					{/snippet}
 				</WorkRecordHeader>
@@ -585,8 +610,52 @@
 					currencyCode={saved.job.currency_code}
 				/>
 
+				<RailCard
+					title="Instructions"
+					description="The crew sees these on every visit"
+					icon={clipboardListIcon}
+					compact={false}
+				>
+					{#snippet actions()}
+						{#if editable && !editingInstructions}
+							<PencilButton
+								onclick={() => {
+									instructionsDraft = saved.job.instructions ?? '';
+									editingInstructions = true;
+								}}
+								label="Edit the instructions"
+							/>
+						{:else if instructionsChanged}
+							<Badge size="small" status="warning">Unsaved</Badge>
+						{/if}
+					{/snippet}
+
+					{#if editingInstructions}
+						<Textarea
+							id="job-instructions"
+							label="Notes for the crew doing this work"
+							rows={5}
+							maxlength={4000}
+							bind:value={instructionsDraft}
+						/>
+					{:else if saved.job.instructions}
+						<p class="job-detail__copy">{saved.job.instructions}</p>
+					{:else}
+						<EmptyState
+							icon={notesIcon}
+							title="No instructions"
+							description="Add notes the crew should read before this work."
+						/>
+					{/if}
+				</RailCard>
+
+				<JobChecklistsCard jobId={saved.job.id} active={saved.job.status === 'active'} />
+
 				<ProductsAndServicesBlock
 					lines={jobLines}
+					icon={packageIcon}
+					tone="quote"
+					hint={`${jobLines.length} ${jobLines.length === 1 ? 'line' : 'lines'}`}
 					revision={saved.job.revision}
 					editable={editable && saved.can_see_price}
 					showPrices={saved.can_see_price}
@@ -594,10 +663,139 @@
 					currencyCode={saved.job.currency_code}
 					locale={saved.locale}
 					editorTotalLabel="Job subtotal"
-					saveLabel="Save scope"
+					saveLabel="Save job pricing"
 					emptyDescription="Add the products and services this job covers."
+					totalRows={saved.can_see_price
+						? [
+								{
+									label: 'Subtotal',
+									value: new Intl.NumberFormat(saved.locale, {
+										style: 'currency',
+										currency: saved.job.currency_code
+									}).format((saved.money?.subtotal_minor ?? 0) / 100)
+								},
+								{
+									label: 'Total',
+									value: new Intl.NumberFormat(saved.locale, {
+										style: 'currency',
+										currency: saved.job.currency_code
+									}).format((saved.money?.total_minor ?? 0) / 100)
+								}
+							]
+						: undefined}
+					onEditStart={() => {
+						discountDraft = null;
+						taxDraft = null;
+					}}
+					onEditCancel={() => {
+						discountDraft = null;
+						taxDraft = null;
+					}}
 					onSave={saveScope}
-				/>
+				>
+					{#snippet pricingControls()}
+						<RecordDiscountCard
+							revision={saved.job.revision}
+							name={discountDraft?.name ?? saved.money?.discount_name ?? null}
+							type={discountDraft ? discountDraft.type : (saved.money?.discount_type ?? null)}
+							value={discountDraft ? discountDraft.value : (saved.money?.discount_value ?? null)}
+									currencyCode={saved.job.currency_code}
+							locale={saved.locale}
+							{editable}
+							canSeePrice={saved.can_see_price}
+							recordNoun="job"
+							staged
+							embedded
+							onSave={async (_revision, payload) => {
+								discountDraft = payload;
+							}}
+							onSaved={() => {}}
+						/>
+						{#if saved.job.property}
+							<RecordTaxCard
+								revision={saved.job.revision}
+								propertyId={saved.job.property.id}
+								taxSource={(taxDraft?.source ??
+									saved.money?.tax_source ??
+									'not_configured') as QuoteTaxSource}
+								rateId={taxDraft ? (taxDraft.rate_id ?? null) : (saved.money?.tax_rate_id ?? null)}
+								name={taxDraft
+									? (taxDraft.custom_name ?? saved.money?.tax_name ?? null)
+									: (saved.money?.tax_name ?? null)}
+								rateBasisPoints={taxDraft?.custom_rate_basis_points ??
+									saved.money?.tax_rate_basis_points ??
+									0}
+								taxMinor={saved.money?.tax_minor ?? 0}
+								currencyCode={saved.job.currency_code}
+								locale={saved.locale}
+								{editable}
+								canSeePrice={saved.can_see_price}
+								canManageTaxes={saved.can_manage_taxes}
+								recordNoun="job"
+								staged
+								embedded
+								unsetHint="This job is not taxed yet."
+								onSave={async (_revision, payload) => {
+									taxDraft = payload;
+								}}
+								onSaved={() => {}}
+							/>
+						{/if}
+					{/snippet}
+				</ProductsAndServicesBlock>
+
+				<JobBillingCard
+					jobId={saved.job.id}
+					revision={saved.job.revision}
+					jobType={saved.job.job_type}
+					priceBasis={saved.job.price_basis}
+					billingTiming={saved.job.billing_timing}
+					totalMinor={saved.can_see_price ? (saved.money?.total_minor ?? null) : null}
+					schedule={saved.schedule}
+					currencyCode={saved.job.currency_code}
+					locale={saved.locale}
+					{editable}
+					canSeePrice={saved.can_see_price}
+					canInvoice={saved.can_invoice}
+					clientId={saved.job.client?.id ?? null}
+					onSaved={refreshJob}
+				>
+					{#snippet extra()}
+				<JobRemindersCard
+									embedded
+							jobId={saved.job.id}
+							reminders={saved.reminders}
+							billingTiming={saved.job.billing_timing}
+							jobClosed={saved.job.status === 'closed'}
+							today={saved.organization_today}
+							locale={saved.locale}
+							{editable}
+							onChanged={refreshJob}
+						/>
+					{/snippet}
+				</JobBillingCard>
+				{#if saved.can_invoice_visits && saved.job.price_basis === 'per_visit' && saved.job.client}
+					<JobVisitsToBillCard
+						jobId={saved.job.id}
+						clientId={saved.job.client.id}
+						visits={saved.visits}
+						canSeePrice={saved.can_see_price}
+						currencyCode={saved.job.currency_code}
+						locale={saved.locale}
+					/>
+				{/if}
+
+				{#if saved.can_invoice && saved.job.price_basis === 'fixed_per_period' && saved.job.client}
+					<JobPeriodsToBillCard
+						jobId={saved.job.id}
+						clientId={saved.job.client.id}
+						reminders={saved.reminders}
+						today={saved.organization_today}
+						subtotalMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? null) : null}
+						currencyCode={saved.job.currency_code}
+						locale={saved.locale}
+					/>
+				{/if}
 
 				<!--
 					Labor sits under the job's scope and above its visits, the order Jobber uses: what the job
@@ -622,8 +820,6 @@
 					currencyCode={saved.job.currency_code}
 					onChange={refreshCosting}
 				/>
-
-				<JobChecklistsCard jobId={saved.job.id} active={saved.job.status === 'active'} />
 			{/snippet}
 
 			{#snippet rail()}
@@ -666,121 +862,14 @@
 				-->
 				<JobCostingCard
 					costing={saved.costing}
-					currencyCode={saved.job.currency_code}
-					locale={saved.locale}
-				/>
-
-				<QuoteSummaryCard
-					title="Job total"
 					subtotalMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? 0) : null}
-					discountMinor={saved.money?.discount_minor ?? 0}
 					taxMinor={saved.money?.tax_minor ?? 0}
 					totalMinor={saved.money?.total_minor ?? null}
-					discountLabel={saved.money?.discount_name ?? null}
-					taxLabel={saved.money?.tax_name ?? null}
 					currencyCode={saved.job.currency_code}
 					locale={saved.locale}
 				/>
-
-				<JobBillingCard
-					jobId={saved.job.id}
-					revision={saved.job.revision}
-					jobType={saved.job.job_type}
-					priceBasis={saved.job.price_basis}
-					billingTiming={saved.job.billing_timing}
-					totalMinor={saved.can_see_price ? (saved.money?.total_minor ?? null) : null}
-					schedule={saved.schedule}
-					currencyCode={saved.job.currency_code}
-					locale={saved.locale}
-					{editable}
-					canSeePrice={saved.can_see_price}
-					canInvoice={saved.can_invoice}
-					clientId={saved.job.client?.id ?? null}
-					onSaved={refreshJob}
-				/>
-
-				<JobRemindersCard
-					jobId={saved.job.id}
-					reminders={saved.reminders}
-					billingTiming={saved.job.billing_timing}
-					jobClosed={saved.job.status === 'closed'}
-					today={saved.organization_today}
-					locale={saved.locale}
-					{editable}
-					onChanged={refreshJob}
-				/>
-
-				{#if saved.can_invoice_visits && saved.job.price_basis === 'per_visit' && saved.job.client}
-					<JobVisitsToBillCard
-						jobId={saved.job.id}
-						clientId={saved.job.client.id}
-						visits={saved.visits}
-						canSeePrice={saved.can_see_price}
-						currencyCode={saved.job.currency_code}
-						locale={saved.locale}
-					/>
-				{/if}
-
-				{#if saved.can_invoice && saved.job.price_basis === 'fixed_per_period' && saved.job.client}
-					<JobPeriodsToBillCard
-						jobId={saved.job.id}
-						clientId={saved.job.client.id}
-						reminders={saved.reminders}
-						today={saved.organization_today}
-						subtotalMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? null) : null}
-						currencyCode={saved.job.currency_code}
-						locale={saved.locale}
-					/>
-				{/if}
-
-				{#if showInstructions}
-					<RailCard title="Instructions">
-						{#snippet actions()}
-							{#if editable && !editingInstructions}
-								<PencilButton
-									onclick={() => {
-										instructionsDraft = saved.job.instructions ?? '';
-										editingInstructions = true;
-									}}
-									label="Edit the instructions"
-								/>
-							{:else if instructionsChanged}
-								<Badge size="small" status="warning">Unsaved</Badge>
-							{/if}
-						{/snippet}
-
-						{#if editingInstructions}
-							<Textarea
-								id="job-instructions"
-								label="Notes for the crew doing this work"
-								rows={5}
-								maxlength={4000}
-								bind:value={instructionsDraft}
-							/>
-						{:else if saved.job.instructions}
-							<p class="job-detail__copy">{saved.job.instructions}</p>
-						{:else}
-							<EmptyState
-								icon={notesIcon}
-								title="No instructions"
-								description="Add notes the crew should read before this work."
-							/>
-						{/if}
-					</RailCard>
-				{/if}
 
 				{#if !showHistory}
-					<RecordFilesCard
-						entityType="job"
-						entityId={jobId}
-						recordLabel="this job"
-						pickerLabel="On this job"
-						title="Photos and files"
-						clientId={saved.job.client?.id ?? null}
-						clientLabel={saved.job.client?.display_name ?? null}
-						canManage={saved.can_record_field_records || saved.can_manage_team_field_records}
-					/>
-
 					<RailCard title="Notes" description="Only your team sees these" icon={notesIcon} flush>
 						<NotesPanel
 							compact
@@ -793,6 +882,18 @@
 							onChange={(next) => (notePending = next)}
 						/>
 					</RailCard>
+
+					<RecordFilesCard
+						entityType="job"
+						entityId={jobId}
+						recordLabel="this job"
+						pickerLabel="On this job"
+						title="Photos and files"
+						compact
+						clientId={saved.job.client?.id ?? null}
+						clientLabel={saved.job.client?.display_name ?? null}
+						canManage={saved.can_record_field_records || saved.can_manage_team_field_records}
+					/>
 				{/if}
 
 				<!--
@@ -822,42 +923,6 @@
 						bind:this={workReportCard}
 						jobId={saved.job.id}
 						onStateChange={(next) => (reportHasContent = next)}
-					/>
-				{/if}
-
-				<RecordDiscountCard
-					revision={saved.job.revision}
-					name={saved.money?.discount_name ?? null}
-					type={saved.money?.discount_type ?? null}
-					value={saved.money?.discount_value ?? null}
-					discountMinor={saved.can_see_price ? (saved.money?.discount_minor ?? 0) : null}
-					currencyCode={saved.job.currency_code}
-					locale={saved.locale}
-					{editable}
-					canSeePrice={saved.can_see_price}
-					recordNoun="job"
-					onSave={(revision, payload) => saveJobDiscount(jobId, revision, payload)}
-					onSaved={refreshJob}
-				/>
-
-				{#if saved.job.property}
-					<RecordTaxCard
-						revision={saved.job.revision}
-						propertyId={saved.job.property.id}
-						taxSource={(saved.money?.tax_source ?? 'not_configured') as QuoteTaxSource}
-						rateId={saved.money?.tax_rate_id ?? null}
-						name={saved.money?.tax_name ?? null}
-						rateBasisPoints={saved.money?.tax_rate_basis_points ?? 0}
-						taxMinor={saved.can_see_price ? (saved.money?.tax_minor ?? 0) : null}
-						currencyCode={saved.job.currency_code}
-						locale={saved.locale}
-						{editable}
-						canSeePrice={saved.can_see_price}
-						canManageTaxes={saved.can_manage_taxes}
-						recordNoun="job"
-						unsetHint="This job is not taxed yet."
-						onSave={(revision, payload) => saveJobTax(jobId, revision, payload)}
-						onSaved={refreshJob}
 					/>
 				{/if}
 			{/snippet}

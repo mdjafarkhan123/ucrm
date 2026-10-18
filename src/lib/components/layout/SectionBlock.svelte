@@ -1,5 +1,7 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import { getContext, type Snippet } from 'svelte';
+	import CardHeader from '$lib/components/ui/CardHeader.svelte';
+	import sectionIcon from '@tabler/icons/outline/layout-list.svg?raw';
 
 	// One bordered block with its title sitting on the border line. Form blocks render as a real
 	// fieldset/legend so grouped inputs are announced as a group; everything else renders as a section
@@ -15,6 +17,7 @@
 		id,
 		actions,
 		children,
+		tone = 'job',
 		class: className = ''
 	}: {
 		title: string;
@@ -28,6 +31,8 @@
 		id?: string;
 		actions?: Snippet;
 		children: Snippet;
+		/** Colour of the title tile in the approved job concept. */
+		tone?: string;
 		class?: string;
 	} = $props();
 
@@ -35,6 +40,7 @@
 		`section-block section-block--${variant} ${form ? '' : 'section-block--standalone'} ${subtitle ? 'section-block--has-subtitle' : ''} ${className}`
 	);
 	const titleId = $derived(id ? `${id}-title` : undefined);
+	const conceptJob = getContext<boolean>('concept-job-details') ?? false;
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -59,25 +65,55 @@
 		{@render body()}
 	</fieldset>
 {:else}
-	<section class={blockClass} {id} aria-labelledby={titleId}>
-		{#if level === 2}
-			<h2 class="section-block__title" id={titleId}>{@render titleContent()}</h2>
-			{@render subtitleLine()}
-		{:else if level === 3}
-			<h3 class="section-block__title" id={titleId}>{@render titleContent()}</h3>
-			{@render subtitleLine()}
+	<section
+		class={[blockClass, conceptJob && 'section-block--concept']}
+		{id}
+		aria-labelledby={titleId}
+	>
+		{#if conceptJob}
+			<CardHeader
+				{title}
+				hint={subtitle ?? hint}
+				icon={icon ?? sectionIcon}
+				{tone}
+				{level}
+				id={titleId}
+				{actions}
+			/>
+			<div class="section-block__concept-body">{@render children()}</div>
 		{:else}
-			<h4 class="section-block__title" id={titleId}>{@render titleContent()}</h4>
-			{@render subtitleLine()}
+			{#if level === 2}
+				<h2 class="section-block__title" id={titleId}>{@render titleContent()}</h2>
+				{@render subtitleLine()}
+			{:else if level === 3}
+				<h3 class="section-block__title" id={titleId}>{@render titleContent()}</h3>
+				{@render subtitleLine()}
+			{:else}
+				<h4 class="section-block__title" id={titleId}>{@render titleContent()}</h4>
+				{@render subtitleLine()}
+			{/if}
+			{#if actions}<div class="section-block__actions">{@render actions()}</div>{/if}
+			{@render body()}
 		{/if}
-		{#if actions}<div class="section-block__actions">{@render actions()}</div>{/if}
-		{@render body()}
 	</section>
 {/if}
 
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	.section-block--concept,
+	:global(.record-detail--cards) .section-block--concept {
+		display: block;
+		overflow: hidden;
+		margin: 0;
+		padding: 0;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-large);
+		background: var(--color-surface);
+	}
+	.section-block__concept-body {
+		padding: var(--space-medium);
+	}
 	.section-block {
 		position: relative;
 		display: flex;
@@ -271,5 +307,17 @@
 		.section-block {
 			padding: var(--space-base);
 		}
+	}
+	:global(.record-detail--cards) .section-block--concept {
+		display: block;
+		border-radius: var(--radius-large);
+	}
+	:global(.record-detail--cards) .section-block--concept > :global(.card-header),
+	:global(.record-detail--cards) .section-block--concept > .section-block__concept-body {
+		width: 100%;
+		margin: 0;
+	}
+	:global(.record-detail--cards) .section-block--concept > .section-block__concept-body {
+		padding: var(--space-medium);
 	}
 </style>

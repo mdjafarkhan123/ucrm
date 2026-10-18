@@ -542,6 +542,24 @@ export async function saveJobLines(
 	return readOrThrow(response, 'That scope could not be saved.');
 }
 
+/** Saves the selected pricing parts in one database transaction. Omit parts left untouched. */
+export async function saveJobPricing(
+	id: string,
+	expectedRevision: number,
+	change: {
+		lines?: JobScopeLineInput[];
+		discount?: JobDiscountInput;
+		tax?: JobTaxInput;
+	}
+): Promise<JobRevisionResult> {
+	const response = await fetch(`/api/jobs/${id}/pricing`, {
+		method: 'PATCH',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ expected_revision: expectedRevision, ...change })
+	});
+	return readOrThrow(response, 'That job pricing could not be saved.');
+}
+
 export type JobBillingInput = { price_basis: string; billing_timing: string };
 
 export async function saveJobBilling(

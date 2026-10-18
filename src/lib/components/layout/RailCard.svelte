@@ -1,5 +1,7 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import { getContext, type Snippet } from 'svelte';
+	import CardHeader from '$lib/components/ui/CardHeader.svelte';
+	import sectionIcon from '@tabler/icons/outline/layout-list.svg?raw';
 
 	// A card in a page's right rail. The title sits inside the card, not on its border — that border-notch
 	// treatment belongs to the main column. See `.claude/skills/design/section-block.md`.
@@ -9,6 +11,7 @@
 		count,
 		description,
 		flush = false,
+		compact = true,
 		actions,
 		children,
 		class: className = ''
@@ -21,30 +24,60 @@
 		/** App look: the body runs edge to edge under the header, for rows that draw their own padding and
 		 *  hairlines. Only the header keeps the card's side padding. */
 		flush?: boolean;
+		/** The tighter header of a narrow right-hand column. A card in the wide main column turns it off. */
+		compact?: boolean;
 		actions?: Snippet;
 		children: Snippet;
 		class?: string;
 	} = $props();
+	const conceptJob = getContext<boolean>('concept-job-details') ?? false;
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<section class={`rail-card ${className}`} class:rail-card--flush={flush}>
-	<header class="rail-card__header">
-		<div class="rail-card__heading">
-			<h2 class="rail-card__title">
-				{#if icon}<span class="rail-card__icon" aria-hidden="true">{@html icon}</span>{/if}
-				{title}{#if count !== undefined}<span class="rail-card__count">{count}</span>{/if}
-			</h2>
-			{#if description}<p class="rail-card__description">{description}</p>{/if}
-		</div>
-		{#if actions}<div class="rail-card__actions">{@render actions()}</div>{/if}
-	</header>
+<section
+	class={`rail-card ${className}`}
+	class:rail-card--flush={flush}
+	class:rail-card--concept={conceptJob}
+>
+	{#if conceptJob}
+		<CardHeader
+			{title}
+			hint={description}
+			icon={icon ?? sectionIcon}
+			tone={title === 'Billing' || title === 'Invoice reminders'
+				? 'invoice'
+				: title === 'Notes'
+					? 'conversation'
+					: 'job'}
+			{compact}
+			{actions}
+		/>
+	{:else}
+		<header class="rail-card__header">
+			<div class="rail-card__heading">
+				<h2 class="rail-card__title">
+					{#if icon}<span class="rail-card__icon" aria-hidden="true">{@html icon}</span>{/if}
+					{title}{#if count !== undefined}<span class="rail-card__count">{count}</span>{/if}
+				</h2>
+				{#if description}<p class="rail-card__description">{description}</p>{/if}
+			</div>
+			{#if actions}<div class="rail-card__actions">{@render actions()}</div>{/if}
+		</header>
+	{/if}
 	{@render children()}
 </section>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	:global(.record-detail--cards) .rail-card--concept {
+		gap: 0;
+		padding: 0 0 var(--space-medium);
+		border-radius: var(--radius-large);
+	}
+	:global(.record-detail--cards) .rail-card--concept > :global(:not(.card-header)) {
+		margin: var(--space-medium) var(--space-base) 0;
+	}
 	.rail-card {
 		display: flex;
 		flex-direction: column;
@@ -157,5 +190,15 @@
 				padding: 18px 20px 14px;
 			}
 		}
+	}
+	:global(.record-detail--cards) .rail-card--concept,
+	:global(.record-detail--cards) .rail-card--concept.rail-card--flush {
+		gap: 0;
+		padding: 0 0 var(--space-medium);
+		border-radius: var(--radius-large);
+		overflow: hidden;
+	}
+	:global(.record-detail--cards) .rail-card--concept > :global(.card-header) {
+		margin: 0;
 	}
 </style>

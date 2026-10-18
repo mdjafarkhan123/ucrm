@@ -89,12 +89,17 @@
 		saveLabel = 'Save pricing',
 		lockedMessage = '',
 		hint,
+		icon = listIcon,
+		tone,
 		clientSees,
 		flush = false,
 		emptyDescription = 'Add the products and services this job needs before it becomes a quote.',
 		totalRows,
 		onSave,
 		onDraftChange,
+		onEditStart,
+		onEditCancel,
+		pricingControls,
 		clientView
 	}: {
 		lines?: RequestPricingLine[];
@@ -137,6 +142,9 @@
 		lockedMessage?: string;
 		/** A quiet line under the title in the App look, e.g. "4 items · work done Sep 29 – Oct 3". */
 		hint?: string;
+		/** The title tile's icon (a Tabler SVG) and colour family, for a page that gives the block its own. */
+		icon?: string;
+		tone?: string;
 		/** What the client's copy shows, e.g. "Client sees every figure". Sits at the end of the locked strip. */
 		clientSees?: string;
 		/** App look: the saved table runs edge to edge in the card and the totals and locked note close it
@@ -146,8 +154,15 @@
 		/** App look: the saved table closes with these rows (subtotal, tax, total) in place of the single
 		 *  subtotal line. The last row reads as the grand total. Formatted by the page, which owns the money. */
 		totalRows?: { label: string; value: string }[];
-		onSave?: (expectedRevision: number, lines: RequestPricingLineInput[]) => Promise<void>;
+		onSave?: (
+			expectedRevision: number,
+			lines: RequestPricingLineInput[],
+			linesChanged: boolean
+		) => Promise<void>;
 		onDraftChange?: (lines: RequestPricingLineInput[], subtotalMinor: number) => void;
+		onEditStart?: () => void;
+		onEditCancel?: () => void;
+		pricingControls?: Snippet;
 		/** Quote-only controls rendered where Jobber puts them: below the line editor actions. */
 		clientView?: Snippet;
 	} = $props();
@@ -245,6 +260,7 @@
 	const isEditing = $derived(alwaysEditing || editing);
 
 	function openEdit() {
+		onEditStart?.();
 		draftLines = savedLines.map(toDraft);
 		entrySavedFileIds = new Set(
 			savedLines
@@ -300,6 +316,7 @@
 	}
 
 	function closeEdit() {
+		onEditCancel?.();
 		for (const line of draftLines) releaseLocalPreview(line);
 		for (const fileId of [...uploadedThisSession]) void discardIfOrphaned(fileId);
 		priceBookOpen = false;
@@ -929,14 +946,14 @@
 					.map((line) => line.image_file_id)
 					.filter((fileId): fileId is string => Boolean(fileId))
 			);
-			await onSave(revision, toInputs(draftLines));
+			await onSave(revision, toInputs(draftLines), dirty);
 			for (const fileId of entrySavedFileIds) {
 				if (!finalFileIds.has(fileId)) void releaseDroppedSavedPhoto(fileId);
 			}
 			uploadedThisSession.clear();
 			editing = false;
 			draftLines = [];
-			toast.success('Pricing saved');
+			toast.success(saveLabel === 'Save job pricing' ? 'Job pricing saved' : 'Pricing saved');
 		} catch (caught) {
 			const writeError = caught as QuoteWriteError;
 			if (writeError.reason === 'stale') {
@@ -954,7 +971,8 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <SectionBlock
 	title="Products and services"
-	icon={listIcon}
+	{icon}
+	{tone}
 	level={2}
 	{hint}
 	class={flush && !isEditing && !loading && !loadFailed && savedLines.length > 0
@@ -1179,6 +1197,9 @@
 				<span>{formatMoney(draftSubtotal(draftLines))}</span>
 			</div>
 		</div>
+		{#if pricingControls}
+			<div class="pricing-block__pricing-controls">{@render pricingControls()}</div>
+		{/if}
 	{:else if savedLines.length === 0}
 		<EmptyState
 			icon={listIcon}
@@ -1380,6 +1401,14 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	.pricing-block__pricing-controls {
+		display: grid;
+		gap: var(--space-small);
+		padding: var(--space-base);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background);
+	}
 	.pricing-block {
 		&__hint {
 			margin: 0;
@@ -1825,6 +1854,33 @@
 		}
 		.pricing-card__image {
 			min-height: 120px;
+		}
+	}
+
+	// Job details concept (`tNdkX`): the totals sit in a soft grey panel under the table, with the Total in a
+	// white box of its own.
+	:global(.job-detail) .pricing-block__summary {
+		padding: var(--space-base) var(--space-large) var(--space-large);
+	}
+	:global(.job-detail) .pricing-block__summary-list {
+		width: min(360px, 100%);
+		gap: var(--space-small);
+		padding: var(--space-slim);
+		border-radius: var(--radius-large);
+		background: var(--color-surface--background--subtle);
+	}
+	:global(.job-detail) .pricing-block__summary-row {
+		padding: 0 var(--space-small);
+
+		&--total {
+			padding: var(--space-slim) var(--space-small);
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-base);
+			background: var(--color-surface);
+
+			dd {
+				font-size: var(--typography--fontSize-largest);
+			}
 		}
 	}
 </style>

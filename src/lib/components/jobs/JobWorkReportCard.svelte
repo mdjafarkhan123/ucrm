@@ -17,6 +17,7 @@
 	} from '$lib/jobs/report-api';
 	import { resolve } from '$app/paths';
 	import fileReportIcon from '@tabler/icons/outline/file-report.svg?raw';
+	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 
 	// The picture handed to a customer of what was done: photos, checklist answers and the work list, chosen
 	// from what already exists on the job rather than anything typed fresh here. Editing here only changes
@@ -106,9 +107,12 @@
 	});
 </script>
 
-<RailCard title="Work report" icon={fileReportIcon}>
+<!-- eslint-disable svelte/no-at-html-tags -->
+<RailCard title="Work report" description="What the customer sees" icon={fileReportIcon}>
 	{#snippet actions()}
-		<Button size="small" variant="tertiary" onclick={() => (editing = true)}>Edit report</Button>
+		{#if !stateQuery.isPending && !stateQuery.isError && hasContent}
+			<Badge size="small" status="success">Ready to share</Badge>
+		{/if}
 	{/snippet}
 
 	{#if stateQuery.isPending}
@@ -122,10 +126,13 @@
 			description="Choose photos, checklist answers or the work list to share with the customer."
 		/>
 	{:else}
-		<div class="job-work-report__summary">
-			<Badge size="small" status="success">Ready to share</Badge>
-			{#if summaryText}<p class="job-work-report__detail">{summaryText}</p>{/if}
-		</div>
+		{#if summaryText}
+			<ul class="job-work-report__chips">
+				{#each summaryText.split(' · ') as chip (chip)}
+					<li>{chip}</li>
+				{/each}
+			</ul>
+		{/if}
 		<!-- The customer's link is frozen as sent. When the report has moved on, say so and offer the new
 		     link -- which turns the old one off, so the customer never reads an out-of-date copy. -->
 		{#if saved?.live_link && !saved.live_link.up_to_date}
@@ -141,6 +148,10 @@
 			</div>
 		{/if}
 	{/if}
+
+	<Button size="small" variant="secondary" fullWidth onclick={() => (editing = true)}>
+		{@html pencilIcon}Edit report
+	</Button>
 </RailCard>
 
 {#if editing && saved}
@@ -158,6 +169,24 @@
 
 <style lang="scss">
 	.job-work-report {
+		&__chips {
+			display: flex;
+			flex-wrap: wrap;
+			gap: var(--space-small);
+			margin: 0;
+			padding: 0;
+			list-style: none;
+
+			li {
+				padding: 3px 10px;
+				border-radius: var(--radius-circle);
+				color: var(--color-text);
+				background: var(--color-surface--background--subtle);
+				font-size: var(--typography--fontSize-small);
+				font-weight: 500;
+			}
+		}
+
 		&__summary {
 			display: flex;
 			flex-direction: column;

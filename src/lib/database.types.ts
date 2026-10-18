@@ -28529,6 +28529,17 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			save_job_pricing: {
+				Args: {
+					expected_revision: number;
+					new_discount: Json | null;
+					new_lines: Json | null;
+					new_tax: Json | null;
+					target_job_id: string;
+					target_organization_id: string;
+				};
+				Returns: Json;
+			};
 			save_job_report: {
 				Args: {
 					checklist_selections?: Json;

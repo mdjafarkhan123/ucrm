@@ -38,6 +38,23 @@ press). New shared part `ui/CardHeader`; `ui/StatusBadge` gained `size="small"` 
 lines and their card hints, "Upcoming work" in Business performance. Also: Money owed shows not-due/overdue
 only (the 1–30… buckets stay in the bar's spoken label); the setup strip keeps today's delivery line.
 
+## Job details — built 2026-10-18 (claude, taking over Codex's branch `codex/concept-job-details`)
+
+Page matches `tNdkX` side by side at desktop width on Raad LTD jobs #25 and #29: header (job tile, status,
+"Job #· Type", boxed client with call/text/email, facts column, step strip), Visits → Instructions →
+Checklists → Products → Billing (with invoice reminders inside) → Labor → Expenses, and the rail (Job total
+card with profit bar, Notes, Photos and files, Signatures, Work report). Main journey proven live: edit the
+quantity, one "Save job pricing", total went $150 → $300 and back. New shared parts: concept look on
+`WorkRecordHeader`, `ClientSummaryCard`, `RecordFactsList`, `LifecycleTrack`; rail and main columns no longer
+squeeze their cards (`RecordDetailLayout`).
+
+**Left out, need data the app lacks:** "Client since 2024 · 3 jobs" under the client name, "Started Oct 14" in
+the header line, "next today 9:00 AM" in the Visits hint, "From quote #318" (live says "From a quote").
+**Not done yet:** dark mode, edit frame `jFBRB` compared side by side, Visits rows' assignee chips and
+"Today" highlight, Labor/Expenses rows with real data, the pop-ups, the Pencil tidy-up
+(`docs/pencil-workflow.md` step 6). No lint or format run (Jafar: slow checks wait until the campaign ends);
+one `svelte-check` run found only 3 errors in untouched `AttentionCard.svelte`.
+
 ## Next
 
-Build Job details: read `parts/c4-job-details.md`, screenshot `tNdkX` and `jFBRB`, reuse `ui/CardHeader`.
+Finish the "not done yet" list above, then build New job (`parts/c5-new-job.md`).

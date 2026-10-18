@@ -1,8 +1,10 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
+	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
@@ -35,6 +37,7 @@
 		canSeePrice = true,
 		canInvoice = false,
 		clientId = null,
+		extra,
 		onSaved
 	}: {
 		jobId: string;
@@ -56,6 +59,8 @@
 		canInvoice?: boolean;
 		/** The job's client, which the invoice composer needs. Null on a job that somehow has none. */
 		clientId?: string | null;
+		/** More to draw inside the card, after the payment schedule (the job's invoice reminders). */
+		extra?: Snippet;
 		onSaved: () => Promise<void> | void;
 	} = $props();
 
@@ -194,10 +199,15 @@
 	}
 </script>
 
-<RailCard title="Billing" icon={receiptIcon}>
+<RailCard
+	title="Billing"
+	description="How and when this job is invoiced"
+	icon={receiptIcon}
+	compact={false}
+>
 	{#snippet actions()}
 		{#if editable}
-			<Button variant="tertiary" size="small" onclick={openDialog}>Edit</Button>
+			<PencilButton onclick={openDialog} label="Edit billing setup" />
 		{/if}
 	{/snippet}
 
@@ -287,6 +297,8 @@
 		</div>
 	{/if}
 
+	{#if extra}{@render extra()}{/if}
+
 	<p class="job-billing__note">
 		Reminders are prompts for your own team, not messages to the client. Payment is collected by
 		hand for now.
@@ -350,10 +362,10 @@
 
 <style lang="scss">
 	.job-billing {
-		display: flex;
-		flex-direction: column;
+		display: grid;
 		gap: var(--space-base);
 		margin: 0;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 
 		&__row {
 			display: flex;
@@ -364,6 +376,13 @@
 		&__label {
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
+		}
+
+		&__schedule > &__label {
+			font-size: var(--typography--fontSize-overline);
+			font-weight: 600;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
 		}
 
 		&__value {

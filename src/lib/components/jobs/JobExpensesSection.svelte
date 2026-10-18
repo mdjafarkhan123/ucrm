@@ -1,4 +1,5 @@
 <script lang="ts">
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -155,10 +156,18 @@
 	}
 </script>
 
-<SectionBlock title="Expenses" icon={receiptIcon} level={2}>
+<SectionBlock
+	title="Expenses"
+	icon={receiptIcon}
+	tone="invoice"
+	subtitle="Materials and costs paid for this job"
+	level={2}
+>
 	{#snippet actions()}
 		{#if data?.can_add}
-			<Button variant="tertiary" size="small" onclick={openAdd}>Add expense</Button>
+			<Button variant="tertiary" size="small" onclick={openAdd}>
+				{@html plusIcon}Add expense
+			</Button>
 		{/if}
 	{/snippet}
 
