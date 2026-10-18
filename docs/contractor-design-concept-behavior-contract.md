@@ -80,5 +80,8 @@ designs as the record of the live app.
   brand-green border, label and icon, and a solid green number bubble (`concept.pen` board "Switched-on buttons",
   option A). Dark fill (Atlassian, Linear, Notion) was too heavy beside the main button; the pressed-in grey
   (Shopify's press button) blended into the page. Jafar also approved the small bordered row-menu dots.
+- Decision 2026-10-18 (Jafar): Home approved with option A — a deep-green gradient "Today" card (greeting, day
+  summary, day clock) leads the page, replacing the live Home's dark schedule card; the schedule card stays white
+  because its green job tiles and pills would blend into green. One feature card per screen at most.
 - Decision 2026-10-17 (Jafar): keep two sets of styling modules for now — `design` (concept) and
   `design-classic` (live look) — until rollout; revisit then.

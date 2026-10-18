@@ -8,7 +8,8 @@
 1a. **Buttons everywhere: built and merged into main 2026-10-18** (`parts/c1e-buttons-everywhere.md`). Still to do: format, lint and type check on the ~130 changed files (deferred to campaign end by Jafar); the time-clock Stop/Clock out buttons show text instead of the spinner; a compact on/off look for editor toolbars (QuoteTermsEditor) is not designed.
 1. Done 2026-10-18: Foundation sizes named (`font-size-overline/label/stat`, `radius-tile-small/large`,
    `space-medium`) in Pencil, `_variables.scss` and the modules.
-2. **C2 Home: drawn, waiting for Jafar's review** — `parts/c2-home.md`.
+2. C2 Home approved 2026-10-18 (green Today card, option A) — `parts/c2-home.md`.
+3. **Next: C3 Jobs list** — research, draw at 1440 from the Foundation parts, show Jafar.
 
 **Working notes:** Pencil edits only the open file and writes only on Ctrl+S (`docs/pencil-workflow.md`).
 

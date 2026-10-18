@@ -12,6 +12,7 @@
 
 | Role | Size | Weight | Letter-spacing |
 |---|---|---|---|
+| Greeting on a feature card | 28 (`-display`) | 700 | -0.6 |
 | Page title | 24 (`--typography--fontSize-largest`) | 700 | -0.5 |
 | Section title | 20 (`-larger`) | 700 | 0 |
 | Big number on a card | 32 (`-stat`) | 700 | -0.8 |

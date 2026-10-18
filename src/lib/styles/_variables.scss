@@ -310,6 +310,14 @@
 	--color-review: var(--color-base-yellow--600);
 	--color-review--surface: var(--color-base-yellow--200);
 	--color-review--onSurface: var(--color-base-yellow--800);
+	--color-feature--start: var(--color-base-green--800);
+	--color-feature--end: var(--color-base-green--700);
+	--color-feature--text: var(--color-white);
+	--color-feature--text--secondary: rgba(var(--color-white--rgb), 0.72);
+	--color-feature--subtle: rgba(var(--color-white--rgb), 0.1);
+	--color-feature--border: rgba(var(--color-white--rgb), 0.18);
+	--color-feature--glow: rgba(var(--color-white--rgb), 0.12);
+	--color-feature--glow-end: rgba(var(--color-white--rgb), 0);
 	--radius-base: 8px;
 	--radius-small: 4px;
 	--radius-large: 16px;
@@ -372,6 +380,7 @@
 	--typography--lineHeight-minuscule: 1.08;
 	--typography--fontSize-extravagant: 48px;
 	--typography--fontSize-jumbo: 36px;
+	--typography--fontSize-display: 28px;
 	--typography--fontSize-stat: 32px;
 	--typography--fontSize-largest: 24px;
 	--typography--fontSize-larger: 20px;

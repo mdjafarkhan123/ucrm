@@ -43,6 +43,19 @@
 
 They are in `concept.pen`; add them to `_variables.scss` with the first screen that uses them.
 
+## Feature Card Colours
+
+One deep-green card per screen at most (Home's Today card). The same in light and dark mode.
+
+| Token | Value | Use |
+|---|---|---|
+| `--color-feature--start` / `--end` | green 800 `#02532d` → green 700 `#037741` | Card gradient |
+| `--color-feature--glow` / `--glow-end` | white 12% → 0% | Soft light in the top-right corner |
+| `--color-feature--text` | white | Titles and figures |
+| `--color-feature--text--secondary` | white 72% | Date, summary, hints |
+| `--color-feature--subtle` | white 10% | Panels and tiles inside the card |
+| `--color-feature--border` | white 18% | Edges of those panels |
+
 ## Status Colours
 
 | Meaning | Token family | Examples |

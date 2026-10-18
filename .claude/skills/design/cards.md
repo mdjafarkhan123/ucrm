@@ -12,6 +12,16 @@
 2. One big number, 32 (`--typography--fontSize-stat`)/700 `--color-heading`.
 3. Footer: a status pill and a 13px quiet line ("across 9 invoices").
 
+## Feature card
+
+- The one card a screen leads with (Home: greeting, day summary and day clock). At most one per screen; never on a
+  card full of record tiles or status pills.
+- Linear gradient `--color-feature--start` → `--color-feature--end`, plus a radial `--color-feature--glow` at the
+  top right; no border; radius 16; padding 24 32.
+- Text `--color-feature--text` (title 28/700 `--typography--fontSize-display`, -0.6) and
+  `--color-feature--text--secondary`. Panels inside: `--color-feature--subtle` with 1px `--color-feature--border`,
+  radius 16; their icons white. A white secondary button sits on it unchanged.
+
 ## States
 
 - Static: no hover.
