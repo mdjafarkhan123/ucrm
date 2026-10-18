@@ -5,7 +5,7 @@
 **Stage:** Designing. C1 Foundation approved 2026-10-17 (`concept.pen` boards "Colour that means something" and "The parts every screen is built from").
 
 **Next:**
-1a. Hand-made buttons → shared `Button` on branch `claude/c1e-buttons-everywhere` (worktree `.worktrees/c1e-buttons`, claim `cacaf65df925`): menu triggers, record-page menus, top bar and the Schedule's switched-on buttons done; Jafar approved the row-menu dots and the switched-on look (2026-10-18). **Next:** move the remaining plain `<button>`s (`grep -rl "<button" src`) in parallel groups by helper agents (Jafar agreed), review, then merge into main. Details: `parts/c1e-buttons-everywhere.md`.
+1a. **Buttons everywhere: built and merged into main 2026-10-18** (`parts/c1e-buttons-everywhere.md`). Still to do: format, lint and type check on the ~130 changed files (deferred to campaign end by Jafar); the time-clock Stop/Clock out buttons show text instead of the spinner; a compact on/off look for editor toolbars (QuoteTermsEditor) is not designed.
 1. In `concept.pen`, add number variables for text 11, 13, 32; tile corners 6 and 10; card padding 20, and bind the Foundation nodes using them. Name them in the app's style (e.g. `typography--fontSize-label`, `radius-tile--small`, `space-medium`); update the matching modules in the same commit. Code gets them with the first built screen.
 2. C2 Home: research what a contractor needs on Home (Jobber first), draw at 1440 from the Foundation parts, show Jafar.
 
