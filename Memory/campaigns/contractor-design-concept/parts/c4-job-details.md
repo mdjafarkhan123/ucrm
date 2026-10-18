@@ -34,10 +34,9 @@ https://help.getjobber.com/en/articles/job-costing/). Edit is section-scoped (`j
 - Small fixes on a compare copy **`tNdkX`** beside `hdOUv` (edit frame `jFBRB` moved below): grey avatars, amber "Required · 3 left" pill, receipt photo on
   expenses, no box in Signatures, Instructions hint "The crew sees these on every visit", line count moved
   into the Products hint. Jafar: "looks good" (keep all six).
-- Header improved on `tNdkX` too (Jafar asked, 2026-10-18): "Job #1042" only in the top line; client box has a
-  48 avatar, a client-coloured "Job address" panel with a Directions button (opens Google Maps; no map picture,
-  it needs a maps service) and a quiet phone/email row; facts box 2×2: Type, Created, Started, From (pink
-  "Quote #318 ↗" link pill).
+- Header on `tNdkX`: the 2×2 redesign was too boxy ("every info has its own area"); Jafar: keep the old layout,
+  update only icons. Contact and fact icons now sit on 24 tiles (address client, phone/email conversation,
+  Job # job, Type/Created time, Source quote); Request → Paid step tiles 24 → 32.
 
 ## Next
 
