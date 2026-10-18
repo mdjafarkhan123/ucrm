@@ -4,12 +4,12 @@
 
 ## Core Specs
 
-- Background `--color-surface`; 1px `--color-border`; radius 16; padding 20; gap 16; no shadow.
+- Background `--color-surface`; 1px `--color-border`; radius 16; padding 20 (`--space-medium`); gap 16; no shadow.
 
 ## Anatomy (stat card)
 
 1. Header: 32 tile + title 14/600 + quiet open icon (arrow-up-right) at the right.
-2. One big number, 32/700 `--color-heading`.
+2. One big number, 32 (`--typography--fontSize-stat`)/700 `--color-heading`.
 3. Footer: a status pill and a 13px quiet line ("across 9 invoices").
 
 ## States

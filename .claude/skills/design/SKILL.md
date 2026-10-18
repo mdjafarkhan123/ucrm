@@ -47,7 +47,7 @@ Agreed with Jafar on 2026-10-17. Every design, in Pencil or in code, follows all
 ## Critical Rules
 
 - **Tokens only.** Every value maps to a token in `src/lib/styles/_variables.scss` (Pencil uses the same names
-  without `--`). A new token goes into Pencil, code and these modules in the same commit.
+  without `--`, except text sizes: Pencil `font-size-label` is `--typography--fontSize-label`). A new token goes into Pencil, code and these modules in the same commit.
 - **Cross-reference modules.** A card with buttons meets `cards.md` and `buttons.md`.
 - **Dark mode comes from the tokens;** never swap colours by hand.
 - **Every interactive part** has hover, focus-visible, active and disabled states.
