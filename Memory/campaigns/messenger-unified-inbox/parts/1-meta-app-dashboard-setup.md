@@ -2,7 +2,7 @@
 
 **Campaign:** messenger-unified-inbox · **Plan:** `docs/messenger-behavior-contract.md` § Assumptions
 **Stage:** Planning
-**Code:** worktree `.worktrees/messenger-campaign`, branch `claude/messenger-campaign`
+**Code:** `main`
 **Done when:** Jafar's Facebook account has a role on the app and can pick a test Page; Facebook Login for Business is configured.
 
 ## Steps

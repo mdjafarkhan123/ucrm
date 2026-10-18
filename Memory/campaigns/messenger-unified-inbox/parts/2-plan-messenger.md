@@ -2,7 +2,7 @@
 
 **Campaign:** messenger-unified-inbox · **Plan:** `docs/messenger-behavior-contract.md` § Still unclear
 **Stage:** Planning
-**Code:** worktree `.worktrees/messenger-campaign`, branch `claude/messenger-campaign`
+**Code:** `main`
 **Done when:** unverified Meta facts closed; Jafar approved the plan and the open choices; Part 3 can start.
 **Read next:** `.claude/skills/proven-development/SKILL.md`, `.claude/skills/research/SKILL.md`; model the research on `docs/research/communications-a2-stage3-transport-webhooks.md` and the stages on `docs/communications-a2-implementation-plan.md`.
 

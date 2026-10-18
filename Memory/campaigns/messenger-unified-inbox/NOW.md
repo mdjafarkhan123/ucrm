@@ -18,4 +18,4 @@ passwords; Jafar logs in and Claude drives Chrome. Use a stronger model (Opus) f
 
 **Next part:** 3 Database foundation — waits for Part 2 approval.
 
-**Blockers:** none. Branch `claude/messenger-campaign`, worktree `.worktrees/messenger-campaign` — Waiting to merge.
+**Blockers:** none. Merged into `main` 2026-10-18.
