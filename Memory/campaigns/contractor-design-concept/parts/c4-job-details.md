@@ -23,6 +23,9 @@
 - Rail: green Job total card with the profit bar (team only) → Billing with payment schedule and invoice
   reminders → Notes → Photos and files → Signatures → Work report. History still swaps the rail (not drawn).
 
+**Section titles (Jafar, 2026-10-18):** every section card's title area ends in a 1px `--color-border` line (option A,
+not a tinted band). Drawn on Job details only; Home, Jobs list and `cards.md` follow once he confirms the scope.
+
 ## Asked with the drawing (default: keep as drawn)
 
 1. Green main button changing with status (live has none; "Create invoice" sits in More).
