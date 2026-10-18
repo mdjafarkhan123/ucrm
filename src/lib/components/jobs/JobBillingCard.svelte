@@ -15,6 +15,7 @@
 	import type { InvoiceDerivedStatus } from '$lib/invoices/statuses';
 	import type { JobType } from '$lib/jobs/statuses';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
+	import creditCardIcon from '@tabler/icons/outline/credit-card.svg?raw';
 
 	// The job's billing setup, which the contract insists is *three* separate decisions and never one
 	// selector: how the work is priced, when we invoice, and how the money is collected. This card owns the
@@ -204,6 +205,8 @@
 	description="How and when this job is invoiced"
 	icon={receiptIcon}
 	compact={false}
+	flush
+	class="job-billing-card"
 >
 	{#snippet actions()}
 		{#if editable}
@@ -239,6 +242,7 @@
 				<ul class="job-billing__stages">
 					{#each stages as stage (stage.installment_id)}
 						<li class="job-billing__stage">
+							<span class="job-billing__stage-tile" aria-hidden="true">{@html creditCardIcon}</span>
 							<span class="job-billing__stage-name">{stage.description}</span>
 							{#if stage.amount_minor !== null}
 								<span class="job-billing__stage-amount">
@@ -299,7 +303,7 @@
 
 	{#if extra}{@render extra()}{/if}
 
-	<p class="job-billing__note">
+	<p class="job-billing__note job-billing__footnote">
 		Reminders are prompts for your own team, not messages to the client. Payment is collected by
 		hand for now.
 	</p>
@@ -361,10 +365,17 @@
 {/if}
 
 <style lang="scss">
+	// The card's sections draw their own padding and edge-to-edge hairlines.
+	:global(.record-detail--cards .rail-card.rail-card--concept.job-billing-card) > :global(:not(.card-header)) {
+		margin: 0;
+	}
+
 	.job-billing {
 		display: grid;
 		gap: var(--space-base);
 		margin: 0;
+		padding: var(--space-base) var(--space-medium);
+		border-bottom: var(--border-base) solid var(--color-border);
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 
 		&__row {
@@ -391,12 +402,19 @@
 			gap: var(--space-smallest);
 			margin: 0;
 			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
 			font-weight: 600;
 		}
 
 		&__summary {
 			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
 			font-weight: 400;
+		}
+
+		&__footnote {
+			padding: var(--space-slim) var(--space-medium) 0;
+			border-top: var(--border-base) solid var(--color-border);
 		}
 
 		&__note {
@@ -409,8 +427,7 @@
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-small);
-			padding-top: var(--space-base);
-			border-top: var(--border-base) solid var(--color-border);
+			padding: var(--space-slim) var(--space-medium) var(--space-base);
 		}
 
 		&__warning {
@@ -425,21 +442,38 @@
 		&__stages {
 			display: flex;
 			flex-direction: column;
-			gap: var(--space-small);
 			margin: 0;
 			padding: 0;
 			list-style: none;
 		}
 
+		// One line per stage in the main column: card tile, name, amount, then its status and one action.
 		&__stage {
 			display: flex;
-			flex-wrap: wrap;
 			align-items: center;
-			gap: var(--space-small);
+			gap: var(--space-slim);
+			padding: var(--space-slim) 0;
 
 			& + & {
 				border-top: var(--border-base) solid var(--color-border);
-				padding-top: var(--space-small);
+			}
+		}
+
+		&__stage-tile {
+			display: inline-flex;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			width: 32px;
+			height: 32px;
+			border-radius: var(--radius-base);
+			color: var(--color-invoice);
+			background: var(--color-invoice--surface);
+
+			:global(svg) {
+				display: block;
+				width: 16px;
+				height: 16px;
 			}
 		}
 
@@ -448,20 +482,19 @@
 			min-width: 0;
 			overflow-wrap: anywhere;
 			color: var(--color-heading);
+			font-weight: 600;
 		}
 
-		// Status and its one action share a line of their own under the stage's name and amount: the rail is
-		// too narrow to hold all four side by side without the name running over the money.
 		&__stage-meta {
 			display: flex;
-			flex-basis: 100%;
 			align-items: center;
-			justify-content: space-between;
+			justify-content: flex-end;
 			gap: var(--space-small);
 		}
 
 		&__stage-amount {
-			color: var(--color-text--secondary);
+			color: var(--color-heading);
+			font-weight: 600;
 			font-variant-numeric: tabular-nums;
 			white-space: nowrap;
 		}

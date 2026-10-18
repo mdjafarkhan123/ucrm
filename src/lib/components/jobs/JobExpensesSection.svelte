@@ -162,6 +162,7 @@
 	tone="invoice"
 	subtitle="Materials and costs paid for this job"
 	level={2}
+	class="section-block--flush"
 >
 	{#snippet actions()}
 		{#if data?.can_add}
@@ -172,21 +173,31 @@
 	{/snippet}
 
 	{#if expensesQuery.isPending}
-		<LoadingSkeleton variant="text" label="Loading expenses" rows={3} />
+		<div class="job-expenses__state">
+			<LoadingSkeleton variant="text" label="Loading expenses" rows={3} />
+		</div>
 	{:else if expensesQuery.isError}
-		<p class="job-expenses__note">The expenses on this job could not be loaded.</p>
+		<p class="job-expenses__state job-expenses__note">
+			The expenses on this job could not be loaded.
+		</p>
 	{:else if expenses.length === 0}
-		<EmptyState
-			icon={receiptIcon}
-			title="No expenses recorded"
-			description={data?.can_manage_team
-				? 'Materials, dump fees and subcontractors show up here, with what they cost.'
-				: 'Expenses you record on this job show up here.'}
-		/>
+		<div class="job-expenses__state">
+			<EmptyState
+				icon={receiptIcon}
+				title="No expenses recorded"
+				description={data?.can_manage_team
+					? 'Materials, dump fees and subcontractors show up here, with what they cost.'
+					: 'Expenses you record on this job show up here.'}
+			/>
+		</div>
 	{:else}
 		<ul class="job-expenses">
 			{#each expenses as expense (expense.id)}
 				<li class="job-expenses__item" class:job-expenses__item--busy={busyId === expense.id}>
+					<span class="job-expenses__tile" aria-hidden="true">
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html receiptIcon}
+					</span>
 					<div class="job-expenses__body">
 						<p class="job-expenses__name">
 							{expense.name}
@@ -202,12 +213,12 @@
 						</p>
 						<p class="job-expenses__meta">
 							{dateFormat.format(new Date(`${expense.expense_date}T12:00:00`))}
-							{#if expense.accounting_code}· {expense.accounting_code}{/if}
 							{#if reimburseLabel(expense)}· {reimburseLabel(expense)}{/if}
 						</p>
 						{#if expense.description}<p class="job-expenses__desc">{expense.description}</p>{/if}
 					</div>
 
+					<span class="job-expenses__code">{expense.accounting_code ?? ''}</span>
 					<div class="job-expenses__side">
 						{#if data?.can_see_cost}
 							<span class="job-expenses__cost"
@@ -226,24 +237,24 @@
 			{/each}
 		</ul>
 
-		<div class="job-expenses__totals">
+		<div class="job-expenses__footer">
 			<p class="job-expenses__total">
-				<span>{data?.can_manage_team ? 'Expenses' : 'Your expenses'}</span>
-				<strong>{data?.totals.expense_count ?? 0}</strong>
-			</p>
-			{#if data?.can_see_cost}
-				<p class="job-expenses__total">
-					<span>Expense cost</span>
+				<span>
+					{data?.can_see_cost ? 'Expense cost' : data?.can_manage_team ? 'Expenses' : 'Your expenses'}
+					· {data?.totals.expense_count ?? 0}
+					{(data?.totals.expense_count ?? 0) === 1 ? 'expense' : 'expenses'}
+				</span>
+				{#if data?.can_see_cost}
 					<strong>{money.format((data.totals.total_minor ?? 0) / 100)}</strong>
+				{/if}
+			</p>
+
+			{#if data?.has_more}
+				<p class="job-expenses__note">
+					Showing the 200 most recent expenses. The total above counts every one.
 				</p>
 			{/if}
 		</div>
-
-		{#if data?.has_more}
-			<p class="job-expenses__note">
-				Showing the 200 most recent expenses. The total above counts every one.
-			</p>
-		{/if}
 	{/if}
 </SectionBlock>
 
@@ -277,23 +288,27 @@
 </ConfirmDialog>
 
 <style lang="scss">
+	// Concept Job details (`tNdkX`): like Labor — rows 20px in from the card's sides, led by a receipt tile,
+	// the accounting code in its own column, and the total in a grey footer band.
 	.job-expenses {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-base);
 		margin: 0;
-		padding: 0;
+		padding: var(--space-smaller) var(--space-medium);
 		list-style: none;
+
+		&__state {
+			padding: var(--space-medium);
+		}
 
 		&__item {
 			display: flex;
-			align-items: flex-start;
-			justify-content: space-between;
-			gap: var(--space-base);
+			align-items: center;
+			gap: var(--space-slim);
+			padding: var(--space-slim) 0;
 
 			& + & {
 				border-top: var(--border-base) solid var(--color-border);
-				padding-top: var(--space-base);
 			}
 
 			&--busy {
@@ -301,8 +316,27 @@
 			}
 		}
 
+		&__tile {
+			display: inline-flex;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			width: 40px;
+			height: 40px;
+			border-radius: var(--radius-base);
+			color: var(--color-invoice);
+			background: var(--color-invoice--surface);
+
+			:global(svg) {
+				display: block;
+				width: 20px;
+				height: 20px;
+			}
+		}
+
 		&__body {
 			display: flex;
+			flex: 1 1 0;
 			flex-direction: column;
 			gap: var(--space-smallest);
 			min-width: 0;
@@ -315,6 +349,7 @@
 			gap: var(--space-small);
 			margin: 0;
 			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
 			font-weight: 600;
 		}
 
@@ -343,40 +378,53 @@
 			color: var(--color-text);
 		}
 
+		&__code {
+			flex: 0 0 90px;
+			color: var(--color-text);
+			font-size: 13px;
+		}
+
 		&__side {
 			display: flex;
-			align-items: center;
-			gap: var(--space-small);
 			flex-shrink: 0;
+			align-items: center;
+			justify-content: flex-end;
+			gap: var(--space-slim);
+			min-width: 134px;
 		}
 
 		&__cost {
+			min-width: 90px;
+			text-align: right;
 			color: var(--color-heading);
 			font-weight: 600;
 			font-variant-numeric: tabular-nums;
 		}
 
-		&__totals {
+		&__footer {
 			display: flex;
-			flex-wrap: wrap;
-			gap: var(--space-large);
+			flex-direction: column;
+			gap: var(--space-smaller);
+			padding: var(--space-slim) var(--space-medium);
 			border-top: var(--border-base) solid var(--color-border);
-			padding-top: var(--space-base);
+			background: var(--color-surface--background--subtle);
 		}
 
 		&__total {
 			display: flex;
 			align-items: baseline;
+			justify-content: space-between;
 			gap: var(--space-small);
 			margin: 0;
 
 			span {
 				color: var(--color-text--secondary);
-				font-size: var(--typography--fontSize-small);
+				font-size: 13px;
 			}
 
 			strong {
 				color: var(--color-heading);
+				font-weight: 700;
 				font-variant-numeric: tabular-nums;
 			}
 		}

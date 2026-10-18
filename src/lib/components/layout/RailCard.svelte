@@ -75,7 +75,10 @@
 		padding: 0 0 var(--space-medium);
 		border-radius: var(--radius-large);
 	}
+	// The body sits 16px in from the card's sides. Width follows the column rather than 100%, so a
+	// full-width button never pokes past the card edge by its own margins.
 	:global(.record-detail--cards) .rail-card--concept > :global(:not(.card-header)) {
+		width: auto;
 		margin: var(--space-medium) var(--space-base) 0;
 	}
 	.rail-card {

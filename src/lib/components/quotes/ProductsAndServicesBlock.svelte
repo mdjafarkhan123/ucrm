@@ -1794,6 +1794,10 @@
 		margin: 0;
 		border-top: var(--border-base) solid var(--color-border);
 	}
+	// The concept card header already draws the line above the table.
+	:global(.record-detail--cards .section-block--concept) .pricing-table__scroll.pricing-table__scroll {
+		border-top: 0;
+	}
 	:global(.record-detail--cards) .pricing-table {
 		th,
 		td {

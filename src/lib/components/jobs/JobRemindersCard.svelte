@@ -204,6 +204,9 @@
 			{#each reminders as reminder (reminder.id)}
 				{@const due = dueState(reminder.due_on)}
 				<li class="job-reminders__item" class:job-reminders__item--busy={busyId === reminder.id}>
+					{#if embedded}
+						<span class="job-reminders__tile" aria-hidden="true">{@html bellIcon}</span>
+					{/if}
 					<div class="job-reminders__body">
 						<p class="job-reminders__date">
 							{formatDue(reminder.due_on)}
@@ -306,12 +309,37 @@
 </ConfirmDialog>
 
 <style lang="scss">
+	// Inside the concept Billing card (`tNdkX`): its own section under an edge-to-edge hairline, rows led by
+	// a bell tile.
 	.job-reminders-embedded {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-slim);
-		padding-top: var(--space-base);
+		gap: var(--space-smaller);
+		padding: var(--space-slim) var(--space-medium);
 		border-top: var(--border-base) solid var(--color-border);
+
+		.job-reminders {
+			gap: 0;
+		}
+		.job-reminders__item {
+			align-items: center;
+			gap: var(--space-slim);
+			padding: var(--space-slim) 0;
+
+			& + .job-reminders__item {
+				padding-top: var(--space-slim);
+			}
+		}
+		.job-reminders__body {
+			flex: 1 1 auto;
+		}
+		.job-reminders__empty {
+			padding: var(--space-small) 0;
+			font-size: 13px;
+		}
+		.job-reminders__date {
+			font-size: var(--typography--fontSize-base);
+		}
 
 		&__head {
 			display: flex;
@@ -397,6 +425,24 @@
 			margin: 0;
 			color: var(--color-text);
 			font-size: var(--typography--fontSize-small);
+		}
+
+		&__tile {
+			display: inline-flex;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			width: 32px;
+			height: 32px;
+			border-radius: var(--radius-base);
+			color: var(--color-informative);
+			background: var(--color-informative--surface);
+
+			:global(svg) {
+				display: block;
+				width: 16px;
+				height: 16px;
+			}
 		}
 	}
 

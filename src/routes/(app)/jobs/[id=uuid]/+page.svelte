@@ -72,6 +72,7 @@
 	import repeatIcon from '@tabler/icons/outline/repeat.svg?raw';
 	import calendarPlusIcon from '@tabler/icons/outline/calendar-plus.svg?raw';
 	import fileDescriptionIcon from '@tabler/icons/outline/file-description.svg?raw';
+	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 
 	const queryClient = useQueryClient();
 	setContext('concept-job-details', true);
@@ -693,6 +694,13 @@
 
 				<JobChecklistsCard jobId={saved.job.id} active={saved.job.status === 'active'} />
 
+				<!-- Everything below is what the job sells and costs. -->
+				<div class="job-detail__divider" role="separator" aria-label="Money">
+					<span class="job-detail__divider-tile" aria-hidden="true">{@html receiptIcon}</span>
+					<span class="job-detail__divider-label" aria-hidden="true">Money</span>
+					<span class="job-detail__divider-line" aria-hidden="true"></span>
+				</div>
+
 				<ProductsAndServicesBlock
 					lines={jobLines}
 					icon={packageIcon}
@@ -998,6 +1006,46 @@
 		&__empty {
 			margin: 0;
 			color: var(--color-text--secondary);
+		}
+	}
+
+	// The "Money" divider (`tNdkX`): a small invoice-blue tile, an overline label and a hairline.
+	.job-detail__divider {
+		display: flex;
+		align-items: center;
+		gap: var(--space-slim);
+		padding: var(--space-smaller) var(--space-smaller) 0;
+
+		&-tile {
+			display: inline-flex;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			width: 24px;
+			height: 24px;
+			border-radius: var(--radius-tile-small);
+			color: var(--color-invoice);
+			background: var(--color-invoice--surface);
+
+			:global(svg) {
+				display: block;
+				width: 14px;
+				height: 14px;
+			}
+		}
+
+		&-label {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-overline);
+			font-weight: 600;
+			letter-spacing: 0.8px;
+			text-transform: uppercase;
+		}
+
+		&-line {
+			flex: 1 1 auto;
+			height: 1px;
+			background: var(--color-border);
 		}
 	}
 
