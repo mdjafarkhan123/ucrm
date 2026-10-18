@@ -22,6 +22,6 @@ documents; Jafar logs in, uploads and confirms submits while Claude drives Chrom
 
 **Paused 2026-10-18:** Part 2 research and plan done and waiting on Jafar's three answers (replies after 24h, reconnect history, customer matching). Part 1b blocked by his main account's ad restriction; second account plan in `parts/1b-business-verification.md`. Random News admin confirmed.
 
-**Part 1b 2026-10-18 later:** portfolio exists on Jafar's 2nd account (details in the part note); business details typed but not saved.
+**Part 1b 2026-10-18 later:** portfolio exists on Jafar's 2nd account (details in the part note); verification SUBMITTED 2026-10-18, status In review (~2 business days). Next: admin access for the 2nd account on app Ucrm Messaging, link app to portfolio.
 
 **Blockers:** Part 1b needs from Jafar: the exact business name, address and phone printed on the license. Merged into `main` 2026-10-18.

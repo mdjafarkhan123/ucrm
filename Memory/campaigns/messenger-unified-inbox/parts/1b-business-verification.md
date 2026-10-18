@@ -59,10 +59,14 @@ saved after Jafar checks; (3) Jafar uploads the license and submits; (4) add 2nd
 before the 2nd account was a registered developer; retry), then connect the app to the portfolio. Adding app roles is a permission grant:
 the Chrome permission check blocks Claude from it, so Jafar presses Add himself.
 
+## Submitted 2026-10-18
+
+Business Verification for portfolio 855656587107152 (Jafar's 2nd account) submitted by Jafar on 2026-10-18: use case "App requires access to permissions on Meta for Developers", Sole Proprietorship, name UPLIFT CONTRACTOR, address as on the license (State Dhaka, 1344), phone +8801902316940, https://upliftcontractor.com/, Trade-License.pdf uploaded, email confirmed by code to info@upliftcontractor.com. Security Center shows **In review**, "about 2 business days". Never resubmit while In review. Remaining 1b steps: check status in Security Center around 2026-10-21; add 2nd account as admin of Ucrm Messaging (Jafar presses Add) and connect the app to the portfolio.
+
 ## Outside actions
 
-- Business portfolio created — check: it appears in business.facebook.com business list under the exact legal name — pending
-- Business Verification submitted — check: Security Center shows "In review" with the submission date — pending. Never resubmit while "In review".
+- Business portfolio exists (created 2026-06-05 on 2nd account, ID 855656587107152) — done
+- Business Verification submitted — check: Security Center shows "In review" — done 2026-10-18. Never resubmit while "In review".
 
 ## Notes
 
