@@ -65,10 +65,18 @@ current Pencil concept and the design skill; Jafar approves designs before the i
 
 ## Still unclear
 
-- Manual replies after 24 hours (use Meta's Human Agent tag or block) — recommendation needed in Part 2.
-- What happens to old conversations when a Page is disconnected and reconnected — GHL does not document it.
-- Whether contractors who connect their own Page must also be verified by Meta — settle in Part 2.
-- Duplicate-contact rule when a Messenger customer matches an existing client by name only.
+Research on 2026-10-18 (`docs/research/messenger-transport-webhooks.md`) answered the Meta questions. Three product
+choices wait for Jafar; recommendations are in `docs/messenger-implementation-plan.md`:
+
+- Manual replies after 24 hours — recommended: blocked with a plain reason now; Meta's 7-day Human Agent option added
+  after Meta approves it (it needs App Review).
+- Old conversations when a Page is disconnected and reconnected — recommended: history stays, same thread resumes.
+- Customer matching — recommended: unknown customers become a new lead, never merged by name alone; staff can link a
+  thread to an existing client. Customer names also need Meta's profile-access approval, so until then a new
+  customer shows as "Facebook user".
+
+Answered by research: contractors who connect their own Page do not need their own Meta verification (Uplift, as the
+app owner and Tech Provider, does; re-check at submission in Part 10).
 
 ## Not doing
 
