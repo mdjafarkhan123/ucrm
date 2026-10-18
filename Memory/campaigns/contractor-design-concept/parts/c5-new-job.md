@@ -1,7 +1,7 @@
 # C5 — New job in the concept
 
 **Campaign:** contractor-design-concept · **Plan:** `docs/contractor-design-concept-behavior-contract.md` § First version 3
-**Stage:** Drawn 2026-10-18, **waiting for Jafar's review**. Frames in `concept.pen`: New job `zUFDO`, Other states
+**Stage:** **Approved by Jafar 2026-10-18** ("approved"), including the four new parts below. Frames in `concept.pen`: New job `zUFDO`, Other states
 `TVQzs` (from a request, recurring). **Done when:** Jafar approves; record his yes and date here.
 **Live page:** `src/routes/(app)/jobs/new/+page.svelte` → `src/lib/components/jobs/JobForm.svelte`,
 `JobVisitsBlock.svelte`, `RecurrenceFields.svelte`.
@@ -26,12 +26,12 @@ one-off work (`.claude/skills/jobber/jobber-04-jobs-visits-scheduling.md` §2, �
 - Other states: request banner + locked client ("From the request"); recurring schedule with visit count and the
   billing note.
 
-## Open for Jafar
+## New parts (approved with the screen)
 
-- New parts drawn here that the Parts board lacks: segmented switch, checkbox, people pick chips, floating save
-  bar. If he approves, add them to the Parts board and the design skill modules.
+Segmented switch, checkbox, people pick chips, floating save bar. Not yet on the Parts board or in the design
+skill modules.
 
 ## Next
 
-1. Ask Jafar to review `zUFDO` and `TVQzs`, then Ctrl+S; commit `concept.pen`.
-2. After approval: next daily page in `stages/list-2a-daily.md`.
+1. Add the four new parts to the Parts board and the design skill modules; point `zUFDO`/`TVQzs` at them.
+2. Then the next daily page, `(app)/schedule` in `stages/list-2a-daily.md`.
