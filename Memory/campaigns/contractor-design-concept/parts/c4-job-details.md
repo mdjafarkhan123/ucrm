@@ -25,20 +25,26 @@ section-scoped (`jobber-03-quotes.md` § Edit state).
 - **Behaviour change for the build:** the card's Edit opens one edit mode for lines, discount and tax with one
   Save (`jFBRB`); today discount and tax save alone from `RecordDiscountCard` / `RecordTaxCard`. All live
   fields kept.
-- Section titles 20/600 (`font-size-larger`, -0.2) with 40 tiles; title line under every card header
-  (also on Home `rKrbu` and Jobs list `t8ULdJ`; rule in `cards.md`).
 - Tiles: Notes conversation, Checklists time, Products quote. Code `--typography--fontSize-large` is 15px vs
   Pencil 16.
 
+## Answers 2026-10-18 (second review)
+
+- Right column: same as the live app, it scrolls with the page (`RecordDetailLayout` has no sticky rail).
+- Titles everywhere through one shared part: Pencil component **Card header** `hHVVU` (Parts board, "Card header
+  row") now drives every card header on Job details, the edit frame, Home `rKrbu` and Jobs list `t8ULdJ`
+  (Jobs list headers gained tiles). Rule in `cards.md`, `typography.md`.
+  **Build:** one shared CardHeader in code replaces the separate Card / RailCard / SectionBlock headers.
+- Small fixes drawn on a separate copy for comparison: **`tNdkX` "Small fixes (compare)"** beside `hdOUv`
+  (edit frame `jFBRB` moved under `hdOUv`): grey avatars, amber "Required · 3 left" pill, receipt photo on
+  expenses, no box in Signatures, Instructions hint "The crew sees these on every visit", line count moved
+  into the Products hint.
+
 ## Next
 
-Paused 2026-10-18 by Jafar.
-1. If `git status` shows `concept.pen` modified, commit it (later edits land once Jafar saves in Pencil).
-2. Ask, as left: "Should Home and the Jobs list get the same bigger titles and icons?"; which review points to
-   do (2 neutral avatars, 3 amber "Required · N left" checklist pill, 4 receipt photo on expenses, 5 no
-   box-in-box in Signatures, 6 Instructions hint "The crew sees these on every visit", 7 orphan line count);
-   and whether the right column stays in view on scroll.
-3. On his yes, record approval here and in NOW/ROADMAP; update `typography.md` if titles go app-wide.
-4. Next screen **New job**: one form (title, client + property, Products edit block `jFBRB`, Visits edit with
+1. Jafar compares `hdOUv` with `tNdkX` and says which fixes to keep. Keep the chosen ones in `hdOUv`, delete
+   `tNdkX`, ask him to save (Ctrl+S), commit `concept.pen`.
+2. On his yes for Job details, record approval here and in NOW/ROADMAP.
+3. Next screen **New job**: one form (title, client + property, Products edit block `jFBRB`, Visits edit with
    one-off/recurring, Billing reminder, Job total, Cancel / Save job). Live: `src/routes/(app)/jobs/new/
    +page.svelte` → `src/lib/components/jobs/JobForm.svelte`. Research Jobber's New job first.

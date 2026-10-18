@@ -5,9 +5,12 @@
 ## Core Specs
 
 - Background `--color-surface`; 1px `--color-border`; radius 16; no shadow.
-- **Title area:** every white card with a title starts with a header (padding 16 20, `--space-base`
-  `--space-medium`) that ends in a full-width 1px `--color-border` line (Jafar, 2026-10-18). The body below has
-  padding 20 (`--space-medium`) and gap 16. A table head right under the header supplies that line itself.
+- **Title area:** every white card with a title starts with the one shared **Card header** part (Pencil:
+  "Card header" on the Parts board), so a change to it reaches every card (Jafar, 2026-10-18): a 40 icon tile in
+  the card's meaning colour, the title 20/600 (`--typography--fontSize-larger`, -0.2), an optional 12 quiet hint
+  under it, the card's actions at the right, padding 16 20 (`--space-base` `--space-medium`; 14 16 in a narrow
+  right column), and a full-width 1px `--color-border` line underneath. The body below has padding 20
+  (`--space-medium`) and gap 16. A table head right under the header supplies that line itself.
 
 ## Anatomy (stat card)
 
