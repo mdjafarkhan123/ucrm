@@ -48,6 +48,19 @@ only the database works out money; live figures need a new server preview.
 Pencil tidy-up done: `tNdkX` header in the main column (Jafar), rail 336, contact
 line in two; `jFBRB` shows "Price book" (jobs have no text lines).
 
+## New job — built 2026-10-19
+
+Matches `zUFDO` and `TVQzs` at 1440 light and dark (branch `claude/new-job-build`). Concept mode on
+`layout/RecordFormLayout` (page header, cards on the page, sticky 360 rail, floating save bar via
+`StickyActionBar concept`); new `work/PickedClient` and `ui/PersonPickChip`; concept looks for `ui/Checkbox`,
+`ui/SegmentedControl`, `work/ClientPicker`, date/time labels, and `RecurrenceFields concept`. Parts board has a new
+"Form choices and the save bar" section; design modules `inputs.md` and `layout.md` updated.
+Proven live on Raad LTD: Job #30 "Kitchen remodel — cabinets and countertops" saved (one line $2,160, one visit
+with two people, instructions; Notify customer off). Recurring and "From a request" states checked, not saved.
+**Left out, need data the app lacks:** "Client since · jobs" under the client name; the Visits header for a
+recurring job says "Repeats on a schedule", not the rule in words. **Kept live behaviour:** the visit time is two
+boxes (start and end), not one.
+
 ## Next
 
-Build New job (`parts/c5-new-job.md`); it reuses the edit block above.
+All three pilots built. Back to drawing: Schedule (`stages/list-2a-daily.md`).

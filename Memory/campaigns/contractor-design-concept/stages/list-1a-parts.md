@@ -11,7 +11,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `data-display/ErrorState` |  | ⬜ | ⬜ |
 | `ui/Input` |  | ✅ | ⬜ |
 | `ui/Select` |  | ✅ | ⬜ |
-| `ui/Checkbox` |  | ⬜ | ⬜ |
+| `ui/Checkbox` |  | ✅ | ✅ |
 | `data-display/EmptyState` |  | ⬜ | ⬜ |
 | `layout/SectionBlock` |  | ⬜ | ⬜ |
 | `layout/PageContainer` |  | ⬜ | ⬜ |
@@ -23,15 +23,15 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/DropdownMenu` |  | ✅ | ✅ |
 | `layout/Breadcrumbs` |  | ⬜ | ⬜ |
 | `ui/ConfirmDialog` |  | ⬜ | ⬜ |
-| `ui/SegmentedControl` |  | ⬜ | ⬜ |
+| `ui/SegmentedControl` |  | ✅ | ✅ |
 | `ui/StatusBadge` |  | ✅ | ⬜ |
-| `layout/StickyActionBar` |  | ⬜ | ⬜ |
+| `layout/StickyActionBar` |  | ✅ | ✅ |
 | `ui/Avatar` |  | ⬜ | ⬜ |
 | `data-display/ListLoadMore` |  | ⬜ | ⬜ |
 | `ui/CalendarPicker` |  | ⬜ | ⬜ |
 | `data-display/DataTable` |  | ⬜ | ⬜ |
 | `forms/FormErrorSummary` |  | ⬜ | ⬜ |
-| `layout/RecordFormLayout` |  | ⬜ | ⬜ |
+| `layout/RecordFormLayout` |  | ✅ | ✅ |
 | `layout/RailCard` |  | ⬜ | ⬜ |
 | `ui/Banner` |  | ⬜ | ⬜ |
 | `ui/Lightbox` |  | ⬜ | ⬜ |
@@ -61,7 +61,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `quotes/ProductsAndServicesBlock` | pop-ups: "Throw away these changes?" 🔁C · menus ×1 · empty, permission-limited, field-worker view | ⬜ | ⬜ |
 | `ui/RadioGroup` |  | ⬜ | ⬜ |
 | `ui/TimezonePicker` |  | ⬜ | ⬜ |
-| `work/ClientPicker` | loading | ⬜ | ⬜ |
+| `work/ClientPicker` | loading | ✅ | ✅ |
 | `time-clock/RunningClock` |  | ⬜ | ⬜ |
 | `time-clock/TimerElapsed` |  | ⬜ | ⬜ |
 | `files/FileUploader` |  | ⬜ | ⬜ |

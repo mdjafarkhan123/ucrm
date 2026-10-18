@@ -74,7 +74,7 @@ Agreed with Jafar on 2026-10-17. Every design, in Pencil or in code, follows all
 ### Components
 - [buttons.md](buttons.md) — Button
 - [badges.md](badges.md) — Status pill
-- [inputs.md](inputs.md) — Field
+- [inputs.md](inputs.md) — Field, checkbox, segmented switch, people pick chips
 - [cards.md](cards.md) — Card
 - [lists.md](lists.md) — List row
 - [tables.md](tables.md) — Table
@@ -82,4 +82,4 @@ Agreed with Jafar on 2026-10-17. Every design, in Pencil or in code, follows all
 - [top-bar.md](top-bar.md) — Top bar
 
 Not yet designed in the concept — use the Classic module until it is: accordion, alerts, avatars, button group,
-dropdown, modals, pagination, radios/checkboxes/toggle, tabs, tooltips/popovers.
+dropdown, modals, pagination, radios/toggle, tabs, tooltips/popovers.
