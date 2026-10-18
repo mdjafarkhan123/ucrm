@@ -1,8 +1,8 @@
 # C4 — Job details in the concept
 
 **Campaign:** contractor-design-concept · **Plan:** `docs/contractor-design-concept-behavior-contract.md` § First version 2
-**Stage:** Reviewed twice 2026-10-18; waiting for approval. Frames: `hdOUv` (original), `tNdkX` (proposal),
-edit mode `jFBRB`.
+**Stage:** **Approved by Jafar 2026-10-18** ("all approved"): Job details `tNdkX`, edit mode `jFBRB`,
+Card header `hHVVU`, Home and Jobs list title changes. Old frame `hdOUv` deleted.
 **Live page:** `src/routes/(app)/jobs/[id=uuid]/+page.svelte`. **Done when:** Jafar approves; record his yes and date here.
 
 ## Research
@@ -40,9 +40,7 @@ https://help.getjobber.com/en/articles/job-costing/). Edit is section-scoped (`j
 
 ## Next
 
-1. Jafar compares the header on `tNdkX` with `hdOUv`. On his yes, `tNdkX` becomes the Job details drawing:
-   delete `hdOUv`, drop "(compare)" from the name, ask him to save (Ctrl+S), commit `concept.pen`.
-2. On his yes for Job details, record approval here and in NOW/ROADMAP.
-3. Next screen **New job**: one form (title, client + property, Products edit block `jFBRB`, Visits edit with
+1. If `concept.pen` is not saved since 2026-10-18 14:19, ask Jafar for Ctrl+S, then commit it.
+2. Next screen **New job**: one form (title, client + property, Products edit block `jFBRB`, Visits edit with
    one-off/recurring, Billing reminder, Job total, Cancel / Save job). Live: `src/routes/(app)/jobs/new/
    +page.svelte` → `src/lib/components/jobs/JobForm.svelte`. Research Jobber's New job first.

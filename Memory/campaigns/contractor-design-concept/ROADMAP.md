@@ -7,7 +7,7 @@
 | C1 Foundation | First version 1 | Colour map, icon rule, core parts, sidebar, top bar | — | Jafar approves | Approved 2026-10-17 |
 | C2 Home | First version 2 | Home in the concept | C1 | Jafar approves | Approved 2026-10-18 (`parts/c2-home.md`) |
 | C3 Jobs list | First version 2 | Jobs list in the concept | C1 | Jafar approves | Approved and built 2026-10-18 (`parts/c3-jobs-list.md`) |
-| C4 Job details | First version 2 | Job details in the concept | C1 | Jafar approves | Drawn, waiting for Jafar |
+| C4 Job details | First version 2 | Job details in the concept | C1 | Jafar approves | Approved 2026-10-18 (`parts/c4-job-details.md`) |
 | C5 Everything else | First version 3 | Every page and component on the redesign checklist, most necessary first, Jafar's admin panel last | C5a checklist; C2–C4 pattern | Jafar approves each; coverage check clean | Checklist made 2026-10-18 from the code (`stages/list-index.md`); waits for Jafar to read it and confirm the order |
 | C6 Rollout decision | Still unclear | All at once or screen by screen | C2–C4 | Jafar decides | Not started |
 | C7 Build | First version 4 | Approved screens built; variables in code and skill | C6 | Each screen matches its frame; full screen check | Not started |
