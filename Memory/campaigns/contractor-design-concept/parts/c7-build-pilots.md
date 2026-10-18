@@ -42,6 +42,9 @@ and back). Shared parts given the concept look: `WorkRecordHeader`, `ClientSumma
 `LifecycleTrack`, `RecordDetailLayout` (`header` + `concept`), `SectionBlock` flush body, `WorkTimerControl`
 `concept`, `ProductsAndServicesBlock` `concept`. No checks run (Jafar: none until the campaign ends).
 
+**Jafar 2026-10-18:** the header card stays inside the scrolling main column with the rail beside it (as the
+live app always had), not full width as in `tNdkX`; the rail stays 336px so the step strip fits. Update `tNdkX`
+to match at the Pencil tidy-up.
 **Left out, need data the app lacks:** "Client since · jobs", "Started Oct 14", "next today 9:00 AM",
 "From quote #318", the line under each payment stage, the expense receipt photo (a receipt tile shows).
 **Not done yet:** edit mode `jFBRB` (labels above fields, no box per line, kind pill, discount/tax panel in the
