@@ -5,10 +5,11 @@ app is on a list file below, most necessary first. Each piece carries a Pencil t
 
 ## Key
 
-`| Piece | File | Inside it (pop-ups, tabs, menus, states, role views) | Pencil | Built |`
+`| Piece | Inside it (parts, pop-ups, tabs, menus, states, role views) | Pencil | Built |`
 
 - Pencil: ⬜ not drawn · 🟡 drawn, waiting for Jafar · ✅ approved · 🔁 *pattern* (follows that pattern's approval)
 - Built: ⬜ not built · 🟡 built, being checked · ✅ built and matches Pencil
+- Pop-up marks: ◆ own drawing · 🔁F form pop-up · 🔁C "are you sure?" · 🔁D side drawer
 - ➖ not redesigned, with the reason (tables keep today's look: Jafar 2026-10-17)
 
 **Write each piece in backticks, exactly as the coverage command prints it:**
@@ -21,18 +22,40 @@ Pencil tidy-up in `docs/pencil-workflow.md` step 6.
 
 ## List files
 
-| Tier | File | Covers | Pieces | Pencil ✅ | Built ✅ |
-| --- | --- | --- | --- | --- | --- |
-| 1 | `list-1-parts.md` | Shared parts and pop-up patterns; left-out pieces with reasons | — | — | — |
-| 2 | `list-2-daily.md` | Daily pages, with their record and "new" pages | — | — | — |
-| 3 | `list-3-customers-see.md` | Customer pages, customer emails, login and sign-up | — | — | — |
-| 4 | `list-4-weekly.md` | The remaining staff work pages | — | — | — |
-| 5 | `list-5-growth.md` | Marketing, Reviews, Reports | — | — | — |
-| 6 | `list-6-setup-once.md` | Settings and Setup | — | — | — |
-| 7 | `list-7-jafar-panel.md` | Jafar's admin panel | — | — | — |
+Counts are rows and ✅ ticks only (🔁 and 🟡 are not counted).
 
-Not made yet: `parts/c5a-redesign-checklist.md` makes them. Split a file that passes 800 words (`list-2a`,
-`list-2b`) and give each split its own row.
+| Tier | File | Covers | Rows | Pencil ✅ | Built ✅ |
+| --- | --- | --- | --- | --- | --- |
+| 1 | `list-1a-parts.md` | Shared parts used on more than one page, most used first (1) | 72 | 10 | 4 |
+| 1 | `list-1b-parts.md` | Shared parts (2) | 70 | 3 | 2 |
+| 1 | `list-1c-parts.md` | Shared parts (3) | 54 | 0 | 0 |
+| 1 | `list-1d-left-out.md` | Pieces left out, with the reason | 32 | — | — |
+| 2 | `list-2a-daily.md` | Home, Schedule, Inbox, Clients, Requests, Quotes, Jobs (and record, new pages) | 26 | 2 | 1 |
+| 2 | `list-2b-daily.md` | Invoices and Payment | 11 | 0 | 0 |
+| 3 | `list-3-customers-see.md` | Customer pages, customer emails, error pages, login and sign-up | 30 | 0 | 0 |
+| 4 | `list-4-weekly.md` | Files, Pipeline, Timesheets | 8 | 0 | 0 |
+| 5 | `list-5-growth.md` | Marketing, Reviews (Reports has no page yet) | 7 | 0 | 0 |
+| 6 | `list-6a-setup-once.md`, `list-6b-setup-once.md` | Settings and Setup | 54 | 0 | 0 |
+| 7 | `list-7a-jafar-panel.md`, `list-7b-…`, `list-7c-…` | Jafar's admin panel | 54 | 0 | 0 |
+
+Plus 30 pop-up rows (a pop-up marked ◆ inside a page or part, listed under it as `↳ "Title" pop-up`).
+
+## How the pieces were sorted (2026-10-18, from the code)
+
+- A page is on its tier by its route. Tier 2 is the daily list in `(app)/+layout.svelte` and their record and
+  "new" pages (payments hang off invoices). Customer pages, login and sign-up are tier 3.
+- A component used by more than one page, directly or through another component, has its own row in tier 1,
+  unless every page that uses it is Settings/Setup (tier 6) or the admin panel (tier 7): then it sits first in
+  that tier, because those come last.
+- A component used by a single page sits in that page's "Inside it" cell. A pop-up component marked ◆ gets its own
+  `↳` row under that page.
+- Pop-up marks are a first guess by title and file name: ◆ own drawing (money, sending or scheduling decisions) ·
+  🔁F form pop-up · 🔁C "are you sure?" · 🔁D side drawer. Jafar may move any of them.
+- "Inside it" also lists tabs, menus, and states found in the code: loading, empty, permission-limited, field-worker
+  view, owner view. A pop-up shown as "form" or "confirm" has a title built in code.
+- Left out (`list-1d-left-out.md`): developer pages (`demo/*`, `(app)/dev-preview/*`) and the parts only they use,
+  the Botanical look, parts no page uses (candidates for deletion at C8), test harnesses, and the root page that
+  only forwards to Home.
 
 ## Coverage command
 

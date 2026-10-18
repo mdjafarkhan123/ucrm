@@ -1,0 +1,79 @@
+# Redesign checklist — tier 1 (a)
+
+Key, tick rule and coverage command: `list-index.md`.
+
+## Shared parts, most used first
+
+| Piece | Inside it | Pencil | Built |
+| --- | --- | --- | --- |
+| `ui/Button` |  | ✅ | ✅ |
+| `data-display/LoadingSkeleton` |  | ⬜ | ⬜ |
+| `data-display/ErrorState` |  | ⬜ | ⬜ |
+| `ui/Input` |  | ✅ | ⬜ |
+| `ui/Select` |  | ✅ | ⬜ |
+| `ui/Checkbox` |  | ⬜ | ⬜ |
+| `data-display/EmptyState` |  | ⬜ | ⬜ |
+| `layout/SectionBlock` |  | ⬜ | ⬜ |
+| `layout/PageContainer` |  | ⬜ | ⬜ |
+| `layout/PageHeader` |  | ✅ | ✅ |
+| `ui/Badge` |  | ✅ | ⬜ |
+| `ui/Dialog` |  | ⬜ | ⬜ |
+| `ui/Textarea` |  | ✅ | ⬜ |
+| `ui/SearchInput` |  | ⬜ | ⬜ |
+| `ui/DropdownMenu` |  | ✅ | ✅ |
+| `layout/Breadcrumbs` |  | ⬜ | ⬜ |
+| `ui/ConfirmDialog` |  | ⬜ | ⬜ |
+| `ui/SegmentedControl` |  | ⬜ | ⬜ |
+| `ui/StatusBadge` |  | ✅ | ⬜ |
+| `layout/StickyActionBar` |  | ⬜ | ⬜ |
+| `ui/Avatar` |  | ⬜ | ⬜ |
+| `data-display/ListLoadMore` |  | ⬜ | ⬜ |
+| `ui/CalendarPicker` |  | ⬜ | ⬜ |
+| `data-display/DataTable` |  | ⬜ | ⬜ |
+| `forms/FormErrorSummary` |  | ⬜ | ⬜ |
+| `layout/RecordFormLayout` |  | ⬜ | ⬜ |
+| `layout/RailCard` |  | ⬜ | ⬜ |
+| `ui/Banner` |  | ⬜ | ⬜ |
+| `ui/Lightbox` |  | ⬜ | ⬜ |
+| `ui/TimePickerField` |  | ⬜ | ⬜ |
+| `ui/Toggle` |  | ⬜ | ⬜ |
+| `files/FileThumb` |  | ⬜ | ⬜ |
+| `ui/Card` |  | ✅ | ⬜ |
+| `ui/TimePicker` |  | ⬜ | ⬜ |
+| `ui/PencilButton` |  | ⬜ | ⬜ |
+| `forms/MoneyInput` |  | ⬜ | ⬜ |
+| `ui/FilterChip` |  | ⬜ | ⬜ |
+| `data-display/KpiCard` |  | ⬜ | ⬜ |
+| `layout/SidePanel` |  | ⬜ | ⬜ |
+| `ui/DateTimePicker` |  | ⬜ | ⬜ |
+| `ui/CountryPicker` |  | ⬜ | ⬜ |
+| `ui/TagSelect` |  | ⬜ | ⬜ |
+| `collaboration/AttachmentSurface` |  | ⬜ | ⬜ |
+| `data-display/RecordListCard` |  | ⬜ | ⬜ |
+| `files/PhotoSlot` |  | ⬜ | ⬜ |
+| `quotes/CatalogItemDialog` | 🔁F pop-up · loading, permission-limited, field-worker view | ⬜ | ⬜ |
+| `ui/TabPanel` |  | ⬜ | ⬜ |
+| `ui/Tabs` | tabs ×2 | ⬜ | ⬜ |
+| `forms/QuantityInput` |  | ⬜ | ⬜ |
+| `quotes/CatalogItemPicker` | loading | ⬜ | ⬜ |
+| `quotes/PriceBookDrawer` | 🔁D pop-up · loading, empty, permission-limited, field-worker view | ⬜ | ⬜ |
+| `quotes/ProductsAndServicesBlock` | pop-ups: "Throw away these changes?" 🔁C · menus ×1 · empty, permission-limited, field-worker view | ⬜ | ⬜ |
+| `ui/RadioGroup` |  | ⬜ | ⬜ |
+| `ui/TimezonePicker` |  | ⬜ | ⬜ |
+| `work/ClientPicker` | loading | ⬜ | ⬜ |
+| `time-clock/RunningClock` |  | ⬜ | ⬜ |
+| `time-clock/TimerElapsed` |  | ⬜ | ⬜ |
+| `files/FileUploader` |  | ⬜ | ⬜ |
+| `layout/DetailEditBar` |  | ⬜ | ⬜ |
+| `layout/RecordDetailLayout` |  | ⬜ | ⬜ |
+| `work/MoneyFeatureCard` |  | ✅ | ✅ |
+| `work/QuickContactButtons` |  | ⬜ | ⬜ |
+| `clients/ClientTagSelect` |  | ⬜ | ⬜ |
+| `collaboration/AuthorMeta` |  | ⬜ | ⬜ |
+| `collaboration/NoteBody` |  | ⬜ | ⬜ |
+| `collaboration/NoteFiles` |  | ⬜ | ⬜ |
+| `files/FileLabelsDialog` | 🔁F pop-up · pop-ups: "confirm" 🔁C · loading | ⬜ | ⬜ |
+| `files/FilePicker` | pop-ups: "You do not have access to the file library" 🔁F · loading, empty, permission-limited | ⬜ | ⬜ |
+| `files/PendingFilesCard` |  | ⬜ | ⬜ |
+| `files/PhotoDescribeForm` | loading, permission-limited | ⬜ | ⬜ |
+| `work/ClientSummaryCard` | menus ×1 | ⬜ | ⬜ |
