@@ -6920,6 +6920,30 @@
                       "gap": 2,
                       "children": [
                         {
+                          "type": "frame",
+                          "id": "GZPJb",
+                          "name": "Group label",
+                          "padding": [
+                            0,
+                            8,
+                            6,
+                            8
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "x0ZK5",
+                              "name": "Label text",
+                              "fill": "$color-text-secondary",
+                              "content": "OVERVIEW",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-overline",
+                              "fontWeight": "600",
+                              "letterSpacing": 0.8
+                            }
+                          ]
+                        },
+                        {
                           "id": "JjyQ6",
                           "type": "ref",
                           "ref": "XkmDa",
@@ -6958,152 +6982,21 @@
                           }
                         },
                         {
-                          "id": "JtHcN",
+                          "id": "SG8NV",
                           "type": "ref",
                           "ref": "XkmDa",
-                          "name": "Nav · Inbox",
+                          "name": "Nav · Timesheets",
                           "width": "fill_container",
                           "descendants": {
                             "MEiCb": {
-                              "fill": "$color-conversation-surface"
+                              "fill": "$color-time-surface"
                             },
                             "BUZYd": {
-                              "icon": "messages-square",
-                              "fill": "$color-conversation"
+                              "icon": "clock",
+                              "fill": "$color-time"
                             },
                             "NP4Lb": {
-                              "content": "Inbox"
-                            },
-                            "NCKtF": {
-                              "enabled": true
-                            },
-                            "ooxST": {
-                              "content": "5"
-                            }
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "uy1wd",
-                      "name": "Group Work",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 2,
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "qfX9s",
-                          "name": "Group label",
-                          "padding": [
-                            0,
-                            8,
-                            6,
-                            8
-                          ],
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "BGaUL",
-                              "name": "Label text",
-                              "fill": "$color-text-secondary",
-                              "content": "WORK",
-                              "fontFamily": "$font-family",
-                              "fontSize": "$font-size-overline",
-                              "fontWeight": "600",
-                              "letterSpacing": 0.8
-                            }
-                          ]
-                        },
-                        {
-                          "id": "uvJy0",
-                          "type": "ref",
-                          "ref": "XkmDa",
-                          "name": "Nav · Requests",
-                          "width": "fill_container",
-                          "descendants": {
-                            "MEiCb": {
-                              "fill": "$color-request-surface"
-                            },
-                            "BUZYd": {
-                              "icon": "inbox",
-                              "fill": "$color-request"
-                            },
-                            "NP4Lb": {
-                              "content": "Requests"
-                            },
-                            "NCKtF": {
-                              "enabled": true
-                            },
-                            "ooxST": {
-                              "content": "2"
-                            }
-                          }
-                        },
-                        {
-                          "id": "cF1Et",
-                          "type": "ref",
-                          "ref": "XkmDa",
-                          "name": "Nav · Quotes",
-                          "width": "fill_container",
-                          "descendants": {
-                            "MEiCb": {
-                              "fill": "$color-quote-surface"
-                            },
-                            "BUZYd": {
-                              "icon": "file-text",
-                              "fill": "$color-quote"
-                            },
-                            "NP4Lb": {
-                              "content": "Quotes"
-                            }
-                          }
-                        },
-                        {
-                          "id": "V74yP",
-                          "type": "ref",
-                          "ref": "XkmDa",
-                          "name": "Nav · Jobs",
-                          "width": "fill_container",
-                          "fill": "$color-interactive",
-                          "descendants": {
-                            "MEiCb": {
-                              "fill": "$color-surface"
-                            },
-                            "BUZYd": {
-                              "icon": "hammer",
-                              "fill": "$color-interactive"
-                            },
-                            "NP4Lb": {
-                              "content": "Jobs",
-                              "fontWeight": "600",
-                              "fill": "$color-text-reverse"
-                            },
-                            "NCKtF": {
-                              "fill": "$color-surface"
-                            },
-                            "ooxST": {
-                              "fill": "$color-interactive"
-                            }
-                          }
-                        },
-                        {
-                          "id": "jCV1D",
-                          "type": "ref",
-                          "ref": "XkmDa",
-                          "name": "Nav · Invoices",
-                          "width": "fill_container",
-                          "descendants": {
-                            "MEiCb": {
-                              "fill": "$color-invoice-surface"
-                            },
-                            "BUZYd": {
-                              "icon": "receipt",
-                              "fill": "$color-invoice"
-                            },
-                            "NP4Lb": {
-                              "content": "Invoices"
+                              "content": "Timesheets"
                             }
                           }
                         }
@@ -7142,6 +7035,31 @@
                           ]
                         },
                         {
+                          "id": "JtHcN",
+                          "type": "ref",
+                          "ref": "XkmDa",
+                          "name": "Nav · Inbox",
+                          "width": "fill_container",
+                          "descendants": {
+                            "MEiCb": {
+                              "fill": "$color-conversation-surface"
+                            },
+                            "BUZYd": {
+                              "icon": "messages-square",
+                              "fill": "$color-conversation"
+                            },
+                            "NP4Lb": {
+                              "content": "Inbox"
+                            },
+                            "NCKtF": {
+                              "enabled": true
+                            },
+                            "ooxST": {
+                              "content": "5"
+                            }
+                          }
+                        },
+                        {
                           "id": "w4ENW",
                           "type": "ref",
                           "ref": "XkmDa",
@@ -7157,6 +7075,31 @@
                             },
                             "NP4Lb": {
                               "content": "Clients"
+                            }
+                          }
+                        },
+                        {
+                          "id": "uvJy0",
+                          "type": "ref",
+                          "ref": "XkmDa",
+                          "name": "Nav · Requests",
+                          "width": "fill_container",
+                          "descendants": {
+                            "MEiCb": {
+                              "fill": "$color-request-surface"
+                            },
+                            "BUZYd": {
+                              "icon": "inbox",
+                              "fill": "$color-request"
+                            },
+                            "NP4Lb": {
+                              "content": "Requests"
+                            },
+                            "NCKtF": {
+                              "enabled": true
+                            },
+                            "ooxST": {
+                              "content": "2"
                             }
                           }
                         },
@@ -7183,8 +7126,127 @@
                     },
                     {
                       "type": "frame",
+                      "id": "uy1wd",
+                      "name": "Group Work & Money",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "qfX9s",
+                          "name": "Group label",
+                          "padding": [
+                            0,
+                            8,
+                            6,
+                            8
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "BGaUL",
+                              "name": "Label text",
+                              "fill": "$color-text-secondary",
+                              "content": "WORK & MONEY",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-overline",
+                              "fontWeight": "600",
+                              "letterSpacing": 0.8
+                            }
+                          ]
+                        },
+                        {
+                          "id": "V74yP",
+                          "type": "ref",
+                          "ref": "XkmDa",
+                          "name": "Nav · Jobs",
+                          "width": "fill_container",
+                          "fill": "$color-interactive",
+                          "descendants": {
+                            "MEiCb": {
+                              "fill": "$color-surface"
+                            },
+                            "BUZYd": {
+                              "icon": "hammer",
+                              "fill": "$color-interactive"
+                            },
+                            "NP4Lb": {
+                              "content": "Jobs",
+                              "fontWeight": "600",
+                              "fill": "$color-text-reverse"
+                            },
+                            "NCKtF": {
+                              "fill": "$color-surface"
+                            },
+                            "ooxST": {
+                              "fill": "$color-interactive"
+                            }
+                          }
+                        },
+                        {
+                          "id": "cF1Et",
+                          "type": "ref",
+                          "ref": "XkmDa",
+                          "name": "Nav · Quotes",
+                          "width": "fill_container",
+                          "descendants": {
+                            "MEiCb": {
+                              "fill": "$color-quote-surface"
+                            },
+                            "BUZYd": {
+                              "icon": "file-text",
+                              "fill": "$color-quote"
+                            },
+                            "NP4Lb": {
+                              "content": "Quotes"
+                            }
+                          }
+                        },
+                        {
+                          "id": "jCV1D",
+                          "type": "ref",
+                          "ref": "XkmDa",
+                          "name": "Nav · Invoices",
+                          "width": "fill_container",
+                          "descendants": {
+                            "MEiCb": {
+                              "fill": "$color-invoice-surface"
+                            },
+                            "BUZYd": {
+                              "icon": "receipt",
+                              "fill": "$color-invoice"
+                            },
+                            "NP4Lb": {
+                              "content": "Invoices"
+                            }
+                          }
+                        },
+                        {
+                          "id": "S1yfgV",
+                          "type": "ref",
+                          "ref": "XkmDa",
+                          "name": "Nav · Files",
+                          "width": "fill_container",
+                          "descendants": {
+                            "MEiCb": {
+                              "fill": "$color-inactive-surface"
+                            },
+                            "BUZYd": {
+                              "icon": "folder",
+                              "fill": "$color-inactive"
+                            },
+                            "NP4Lb": {
+                              "content": "Files"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
                       "id": "hrmN5",
-                      "name": "Group Grow",
+                      "name": "Group Growth",
                       "width": "fill_container",
                       "layout": "vertical",
                       "gap": 2,
@@ -7205,7 +7267,7 @@
                               "id": "E37CJr",
                               "name": "Label text",
                               "fill": "$color-text-secondary",
-                              "content": "GROW",
+                              "content": "GROWTH",
                               "fontFamily": "$font-family",
                               "fontSize": "$font-size-overline",
                               "fontWeight": "600",
@@ -7248,97 +7310,6 @@
                             },
                             "NP4Lb": {
                               "content": "Reviews"
-                            }
-                          }
-                        },
-                        {
-                          "id": "gWIPK",
-                          "type": "ref",
-                          "ref": "XkmDa",
-                          "name": "Nav · Reports",
-                          "width": "fill_container",
-                          "descendants": {
-                            "MEiCb": {
-                              "fill": "$color-growth-surface"
-                            },
-                            "BUZYd": {
-                              "icon": "chart-column",
-                              "fill": "$color-growth"
-                            },
-                            "NP4Lb": {
-                              "content": "Reports"
-                            }
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "u2th9K",
-                      "name": "Group Team",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 2,
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "X7MNJi",
-                          "name": "Group label",
-                          "padding": [
-                            0,
-                            8,
-                            6,
-                            8
-                          ],
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "HtK4j",
-                              "name": "Label text",
-                              "fill": "$color-text-secondary",
-                              "content": "TEAM",
-                              "fontFamily": "$font-family",
-                              "fontSize": "$font-size-overline",
-                              "fontWeight": "600",
-                              "letterSpacing": 0.8
-                            }
-                          ]
-                        },
-                        {
-                          "id": "SG8NV",
-                          "type": "ref",
-                          "ref": "XkmDa",
-                          "name": "Nav · Timesheets",
-                          "width": "fill_container",
-                          "descendants": {
-                            "MEiCb": {
-                              "fill": "$color-time-surface"
-                            },
-                            "BUZYd": {
-                              "icon": "clock",
-                              "fill": "$color-time"
-                            },
-                            "NP4Lb": {
-                              "content": "Timesheets"
-                            }
-                          }
-                        },
-                        {
-                          "id": "S1yfgV",
-                          "type": "ref",
-                          "ref": "XkmDa",
-                          "name": "Nav · Files",
-                          "width": "fill_container",
-                          "descendants": {
-                            "MEiCb": {
-                              "fill": "$color-inactive-surface"
-                            },
-                            "BUZYd": {
-                              "icon": "folder",
-                              "fill": "$color-inactive"
-                            },
-                            "NP4Lb": {
-                              "content": "Files"
                             }
                           }
                         }
