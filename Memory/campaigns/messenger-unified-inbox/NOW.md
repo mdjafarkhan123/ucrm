@@ -8,7 +8,7 @@ like GoHighLevel does; staff reply from there; Meta's rules are respected. Messe
 
 **Facts a new session needs:** Meta app "Ucrm Messaging", App ID `1419027217062214`, development mode, no business
 portfolio yet. `META_APP_ID`, `PUBLIC_META_APP_ID`, `META_APP_SECRET` are set in `.env`; `MESSENGER_VERIFY_TOKEN` is not.
-Webhook host `https://app.upliftcontractor.com`. Jafar tests with his own Facebook Page (name not yet recorded — ask).
+Webhook host `https://app.upliftcontractor.com`. Jafar tests with his own Facebook Page "Random News".
 Jafar has his Bangladesh **trade license in hand** (2026-10-18). Claude cannot type passwords or upload his legal
 documents; Jafar logs in, uploads and confirms submits while Claude drives Chrome. Use Opus for Parts 2–3.
 

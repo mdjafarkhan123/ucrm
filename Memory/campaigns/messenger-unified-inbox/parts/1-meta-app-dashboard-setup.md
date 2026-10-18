@@ -11,7 +11,7 @@
 - [x] App "Ucrm Messaging" created, App ID `1419027217062214`, Messenger + Instagram messaging use cases
 - [x] `META_APP_ID`, `PUBLIC_META_APP_ID`, `META_APP_SECRET` saved in `.env` (secret never printed)
 - [x] Jafar will test with a Facebook Page he already has (2026-10-18)
-- [ ] Record the Page's name here and confirm Jafar's Facebook profile is an admin of it
+- [x] Test Page name: **Random News** (2026-10-18). [ ] Still confirm Jafar's Facebook profile is an admin of it
 - [ ] Add Jafar and any tester under App roles
 - [ ] In the app's Messenger use case, configure Facebook Login for Business so a Page admin can grant `pages_show_list`, `pages_manage_metadata`, `pages_messaging`, `pages_read_engagement`, `business_management`
 
