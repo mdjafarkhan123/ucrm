@@ -24,4 +24,6 @@ gradient) and B "green schedule card" (`jZMZ9`). New Pencil-only colours `color-
 `-end` #037741, `-text`, `-text-secondary`, `-subtle`, `-border` (same in light and dark); they go into code and
 the design skill only once Jafar picks an option.
 
-**Next:** Jafar picks A or B and reviews → fix → record approval here (date, frame name) → C3 Jobs list. Dark mode not drawn.
+Jafar deleted option B the same day; A remains (not yet confirmed as approved).
+
+**Next:** Jafar confirms A and reviews → fix → record approval here (date, frame name) → C3 Jobs list. Dark mode not drawn.
