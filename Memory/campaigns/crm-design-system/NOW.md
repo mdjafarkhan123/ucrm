@@ -3,7 +3,7 @@
 **Goal:** Finish the theme foundation, then deliver complete Botanical across the Business Workspace.
 **Plan:** `docs/crm-design-system-behavior-contract.md`; Stage A and initial Stage B sequence/coverage approved 2026-10-12.
 **Stage:** Foundation implementation; A1 complete and integrated 2026-10-12.
-
+**Note:** Dont run any type check or any check on each session that takes longer time and that can be done later before finishing the whole campaign. Run only before closing the whole camapign
 **Done:** Planning Parts 1/2 approved. A1 checks pass: current real shells, private SSR/CSR/overlay isolation, repeated-switch styles and failure recovery. All 73 page routes inventoried; A4 safety batches bounded. Proof: `docs/research/crm-theme-foundation-a1-2026-10-12.md`.
 
 **Next:** A2a's chooser, fictional preview, notice and recovery demo. Read `parts/theme-foundation-a2a.md`. Planning approvals need no repetition; new visuals need scoped review.

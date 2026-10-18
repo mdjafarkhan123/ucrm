@@ -72,7 +72,7 @@ Skills live under `.claude/skills/`.Load every skill relevant to the current tas
 | Work / Subject / Topic / Stage                                                                         | Skill                                                      |
 | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
 | Planning or building any feature, workflow, or component; a product question that comes up mid-work    | `.claude/skills/proven-development/SKILL.md`               |
-| Any design, styling, UI, or frontend task                                                              | `.claude/skills/design/SKILL.md`                           |
+| Design, Pencil design, styling, UI, or frontend task                                                   | `.claude/skills/design/SKILL.md`                           |
 | Complex interactive controls                                                                           | `.claude/skills/bits-ui/SKILL.md`                          |
 | Contractor CRM behavior/workflow/model/research                                                        | `.claude/skills/jobber/SKILL.md`                           |
 | Supabase, Auth, Storage, Edge Functions, or Realtime                                                   | `.claude/skills/supabase/SKILL.md`                         |
@@ -90,10 +90,6 @@ Skills live under `.claude/skills/`.Load every skill relevant to the current tas
 | Scale-sensitive paths (design before, verify after), reported slowness, or a release performance audit | `.claude/skills/performance-review/SKILL.md`               |
 
 ---
-
-Design guidance: always enter through `.claude/skills/design/SKILL.md`. It holds the brand, colour, type and
-component styling rules and what a Pencil design must meet; screens not yet moved to the new concept use
-`design-classic`. Classic remains live until approved rollout. Load both for work affecting both.
 
 ## Campaign
 
@@ -125,13 +121,10 @@ before changing files (`--mode read` for research). Release after safe integrati
   a country picker — find how mature products and established engineering solve it, including their features,
   edge cases, and the tools they use, and follow that. `.claude/skills/proven-development/SKILL.md` has the full
   process. Jafar decides what users see and do: when the proven answer does not fit what he wants, or there is a
-  real choice, bring researched options with a recommendation and wait for his answer. The same holds for
-  questions that come up mid-way or in later sessions. Choose technical details yourself using proven methods.
+  real choice, bring researched options with a recommendation and wait for his answer. Choose technical details yourself using proven methods.
   Tell Jafar which product or method you followed.
-- **Frontend design.** Screens follow "Jafar's Design Preferences" in `.claude/skills/design/SKILL.md`.
-- Desing in pencil first before building in app follwing design skill. If Jafar tell to change any design that does not match with current design skill then update the design skill to match with pencil approved look. Design skill should only talks about the look. Nothing else. Follow `entriprise` folder where all reference design skill contains to follow how to write design skill
+- Design in the Pencil app first before building in the app, following the design skill. If Jafar tells you to change any design that does not match the current design skill, then update the design skill to match the approved look in Pencil. Before updating the skill, keep in mind: the design skill should only talk about the look and feel, nothing else. Follow the enterprise folder, which contains all the reference design skills, to see how to write a design skill.
 - **Svelte 5 only.** No Svelte 4 syntax anywhere.
-- Record detail pages, their save bar and attachments follow `docs/record-page-behaviour.md`.
 - SCSS + BEM for all styling. Tabler icons for all icons.
 - Component styles live inside the component's own `<style lang="scss">` block. `app.scss` holds only the global
   baseline, so component styles are never imported through it. SCSS variables and mixins reach every component
