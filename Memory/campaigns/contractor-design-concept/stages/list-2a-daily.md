@@ -32,5 +32,5 @@ Key, tick rule and coverage command: `list-index.md`.
 | ↳ `jobs/VisitRecordsDialog` | ◆ pop-up · loading, empty, permission-limited | ⬜ | ⬜ |
 | ↳ "Billing setup" pop-up in JobBillingCard | | ⬜ | ⬜ |
 | ↳ "Add an invoice reminder" pop-up in JobRemindersCard | | ⬜ | ⬜ |
-| `(app)/jobs/new` | `jobs/JobForm`, `jobs/JobVisitsBlock` · loading, empty | ⬜ | ⬜ |
+| `(app)/jobs/new` | `jobs/JobForm`, `jobs/JobVisitsBlock` · loading, empty | 🟡 | ⬜ |
 | `(app)/invoices` | loading, empty | 🔁 | 🟡 |

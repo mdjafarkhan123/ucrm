@@ -2,10 +2,10 @@
 
 **Goal:** A new design concept for the whole app, drawn in `concept.pen` from the app's own variables: design → review → approve → build.
 **Core agreement — read on every resume:** `docs/contractor-design-concept-behavior-contract.md` (Summary, First version, Not doing, decisions) and the design skill `.claude/skills/design/SKILL.md` with its modules.
-**Stage:** Designing. C1 Foundation, C2 Home, C3 Jobs list and C4 Job details approved; buttons and the Jobs list built.
+**Stage:** Designing. C1 Foundation, C2 Home, C3 Jobs list and C4 Job details approved; C5 New job drawn; buttons and the Jobs list built.
 
 **Next:**
-1. **New job** (`(app)/jobs/new`, `stages/list-2a-daily.md`): research Jobber's New job, then draw it. Brief in `parts/c4-job-details.md` § Next.
+1. **New job** drawn 2026-10-18 (`zUFDO`, states `TVQzs`), waiting for Jafar's review: `parts/c5-new-job.md`.
 2. Jafar reads the redesign checklist (`stages/list-index.md`) and confirms the order and pop-up marks: `parts/c5a-redesign-checklist.md`.
 
 **Done 2026-10-18:** buttons everywhere (`parts/c1e-buttons-everywhere.md` lists what is left), Foundation sizes named, C2 Home (`parts/c2-home.md`), C3 Jobs list (`parts/c3-jobs-list.md`), C4 Job details and the shared Card header (`parts/c4-job-details.md`).
