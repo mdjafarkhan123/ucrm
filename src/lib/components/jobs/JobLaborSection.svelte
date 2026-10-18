@@ -7,6 +7,7 @@
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import JobTimeEntryDialog from '$lib/components/jobs/JobTimeEntryDialog.svelte';
 	import RunningClock from '$lib/components/time-clock/RunningClock.svelte';
@@ -186,6 +187,7 @@
 	tone="time"
 	subtitle="Hours your team recorded on this job"
 	level={2}
+	class="section-block--flush"
 >
 	{#snippet actions()}
 		{#if labor?.can_add}
@@ -196,22 +198,27 @@
 	{/snippet}
 
 	{#if laborQuery.isPending}
-		<LoadingSkeleton variant="text" label="Loading recorded hours" rows={3} />
+		<div class="job-labor__pad">
+			<LoadingSkeleton variant="text" label="Loading recorded hours" rows={3} />
+		</div>
 	{:else if laborQuery.isError}
-		<p class="job-labor__note">The hours on this job could not be loaded.</p>
+		<p class="job-labor__note job-labor__pad">The hours on this job could not be loaded.</p>
 	{:else if entries.length === 0 && running.length === 0}
-		<EmptyState
-			icon={clockIcon}
-			title="No hours recorded"
-			description={labor?.can_track_team
-				? 'Time worked on this job shows up here, with what it cost.'
-				: 'Time you record on this job shows up here.'}
-		/>
+		<div class="job-labor__pad">
+			<EmptyState
+				icon={clockIcon}
+				title="No hours recorded"
+				description={labor?.can_track_team
+					? 'Time worked on this job shows up here, with what it cost.'
+					: 'Time you record on this job shows up here.'}
+			/>
+		</div>
 	{:else}
 		{#if running.length > 0}
 			<ul class="job-labor job-labor--running" aria-label="Timers running now">
 				{#each running as timer (timer.user_id)}
 					<li class="job-labor__item">
+						<Avatar id={timer.user_id} name={timer.user_name} />
 						<div class="job-labor__body">
 							<p class="job-labor__who">{timer.user_name ?? 'A team member'}</p>
 							<p class="job-labor__when">
@@ -230,18 +237,16 @@
 		{/if}
 
 		{#if entries.length === 0}
-			<p class="job-labor__note">
+			<p class="job-labor__note job-labor__pad">
 				No hours recorded yet. A timer’s hours are added here when it stops.
 			</p>
 		{:else}
 			<ul class="job-labor">
 				{#each entries as entry (entry.id)}
 					<li class="job-labor__item" class:job-labor__item--busy={busyId === entry.id}>
+						<Avatar id={entry.user_id} name={entry.user_name} />
 						<div class="job-labor__body">
-							<p class="job-labor__who">
-								{entry.user_name ?? 'A team member'}
-								<span class="job-labor__duration">{duration(entry.minutes)}</span>
-							</p>
+							<p class="job-labor__who">{entry.user_name ?? 'A team member'}</p>
 							<p class="job-labor__when">
 								{dateTimeFormat.format(new Date(entry.started_at))}
 								{#if entry.visit_date}
@@ -253,16 +258,17 @@
 							{#if entry.notes}<p class="job-labor__notes">{entry.notes}</p>{/if}
 						</div>
 
-						<div class="job-labor__side">
-							{#if labor?.can_see_cost}
-								{#if entry.is_unrated}
-									<span class="job-labor__unrated">No hourly cost set</span>
-								{:else}
-									<span class="job-labor__cost"
-										>{money.format((entry.cost_total_minor ?? 0) / 100)}</span
-									>
-								{/if}
+						<span class="job-labor__duration">{duration(entry.minutes)}</span>
+						{#if labor?.can_see_cost}
+							{#if entry.is_unrated}
+								<span class="job-labor__unrated">No hourly cost set</span>
+							{:else}
+								<span class="job-labor__cost"
+									>{money.format((entry.cost_total_minor ?? 0) / 100)}</span
+								>
 							{/if}
+						{/if}
+						<span class="job-labor__menu">
 							{#if entry.can_edit}
 								<DropdownMenu
 									items={menuItems(entry)}
@@ -270,39 +276,38 @@
 									disabled={busyId === entry.id}
 								/>
 							{/if}
-						</div>
+						</span>
 					</li>
 				{/each}
 			</ul>
 
 			<div class="job-labor__totals">
 				<p class="job-labor__total">
-					<span>{labor?.can_track_team ? 'Total hours' : 'Your hours'}</span>
-					<strong>{duration(labor?.totals.minutes ?? 0)}</strong>
-				</p>
-				{#if labor?.can_see_cost}
-					<p class="job-labor__total">
-						<span>Labor cost</span>
+					{#if labor?.can_see_cost}
+						<span>Labor cost · {duration(labor.totals.minutes ?? 0)}</span>
 						<strong>{money.format((labor.totals.cost_total_minor ?? 0) / 100)}</strong>
+					{:else}
+						<span>{labor?.can_track_team ? 'Total hours' : 'Your hours'}</span>
+						<strong>{duration(labor?.totals.minutes ?? 0)}</strong>
+					{/if}
+				</p>
+
+				{#if labor?.can_see_cost && (labor?.totals.unrated_count ?? 0) > 0}
+					<p class="job-labor__note">
+						{labor.totals.unrated_count === 1
+							? 'One entry has'
+							: `${labor.totals.unrated_count} entries have`}
+						no hourly cost, so those hours are not in the total. Set an hourly cost on the person's team
+						profile — it applies to hours recorded from then on.
+					</p>
+				{/if}
+
+				{#if labor?.has_more}
+					<p class="job-labor__note">
+						Showing the 200 most recent entries. The totals above count every one.
 					</p>
 				{/if}
 			</div>
-
-			{#if labor?.can_see_cost && (labor?.totals.unrated_count ?? 0) > 0}
-				<p class="job-labor__note">
-					{labor.totals.unrated_count === 1
-						? 'One entry has'
-						: `${labor.totals.unrated_count} entries have`}
-					no hourly cost, so those hours are not in the total. Set an hourly cost on the person's team
-					profile — it applies to hours recorded from then on.
-				</p>
-			{/if}
-
-			{#if labor?.has_more}
-				<p class="job-labor__note">
-					Showing the 200 most recent entries. The totals above count every one.
-				</p>
-			{/if}
 		{/if}
 	{/if}
 </SectionBlock>
@@ -336,25 +341,23 @@
 </ConfirmDialog>
 
 <style lang="scss">
+	// Concept look (Job details `tNdkX`): each row leads with the person's avatar, then hours and cost in
+	// their own right-hand columns; the total sits in a tinted strip along the card's foot.
 	.job-labor {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-base);
 		margin: 0;
-		padding: 0;
+		padding: var(--space-smaller) var(--space-medium);
 		list-style: none;
 
-		/* On a phone the cost and menu drop below the entry rather than squeezing it into a narrow column. */
 		&__item {
 			display: flex;
-			flex-wrap: wrap;
-			align-items: flex-start;
-			justify-content: space-between;
-			gap: var(--space-small) var(--space-base);
+			align-items: center;
+			gap: var(--space-slim);
+			padding: var(--space-slim) 0;
 
 			& + & {
 				border-top: var(--border-base) solid var(--color-border);
-				padding-top: var(--space-base);
 			}
 
 			&--busy {
@@ -364,32 +367,21 @@
 
 		/* Running timers sit above the recorded hours, ruled off from them. */
 		&--running {
-			margin-bottom: var(--space-base);
-			padding-bottom: var(--space-base);
 			border-bottom: var(--border-base) solid var(--color-border);
 		}
 
 		&__body {
 			display: flex;
-			flex: 1 1 16rem;
+			flex: 1 1 auto;
 			flex-direction: column;
 			gap: var(--space-smallest);
 			min-width: 0;
 		}
 
 		&__who {
-			display: flex;
-			align-items: center;
-			flex-wrap: wrap;
-			gap: var(--space-small);
 			margin: 0;
 			color: var(--color-heading);
-			font-weight: 600;
-		}
-
-		&__duration {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			font-size: var(--typography--fontSize-base);
 			font-weight: 600;
 		}
 
@@ -404,48 +396,77 @@
 			color: var(--color-text);
 		}
 
-		&__side {
-			display: flex;
-			align-items: center;
-			gap: var(--space-small);
-			flex-shrink: 0;
-			margin-left: auto;
+		&__duration {
+			flex: 0 0 90px;
+			color: var(--color-text);
+			font-size: 13px;
+			text-align: right;
+			font-variant-numeric: tabular-nums;
+		}
+
+		&__cost,
+		&__unrated {
+			flex: 0 0 auto;
+			min-width: 90px;
+			text-align: right;
+			white-space: nowrap;
 		}
 
 		&__cost {
 			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
 			font-weight: 600;
 			font-variant-numeric: tabular-nums;
 		}
 
 		&__unrated {
-			color: var(--color-warning);
+			color: var(--color-warning--onSurface);
 			font-size: var(--typography--fontSize-small);
+		}
+
+		&__menu {
+			display: inline-flex;
+			flex: 0 0 32px;
+			justify-content: flex-end;
+		}
+
+		&__side {
+			display: flex;
+			align-items: center;
+			flex-shrink: 0;
 		}
 
 		&__totals {
 			display: flex;
-			flex-wrap: wrap;
-			gap: var(--space-large);
+			flex-direction: column;
+			gap: var(--space-small);
+			padding: var(--space-slim) var(--space-medium);
 			border-top: var(--border-base) solid var(--color-border);
-			padding-top: var(--space-base);
+			background: var(--color-surface--background--subtle);
 		}
 
 		&__total {
 			display: flex;
-			align-items: baseline;
-			gap: var(--space-small);
+			align-items: center;
+			justify-content: space-between;
+			gap: var(--space-base);
 			margin: 0;
 
 			span {
 				color: var(--color-text--secondary);
-				font-size: var(--typography--fontSize-small);
+				font-size: 13px;
 			}
 
 			strong {
 				color: var(--color-heading);
+				font-size: var(--typography--fontSize-base);
+				font-weight: 700;
 				font-variant-numeric: tabular-nums;
 			}
+		}
+
+		&__pad {
+			padding: var(--space-medium);
 		}
 	}
 

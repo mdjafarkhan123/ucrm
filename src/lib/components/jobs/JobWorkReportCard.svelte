@@ -149,9 +149,12 @@
 		{/if}
 	{/if}
 
-	<Button size="small" variant="secondary" fullWidth onclick={() => (editing = true)}>
-		{@html pencilIcon}Edit report
-	</Button>
+	<!-- Wrapped so the card's side margins apply to the box, not to a full-width button inside it. -->
+	<div>
+		<Button size="small" variant="secondary" fullWidth onclick={() => (editing = true)}>
+			{@html pencilIcon}Edit report
+		</Button>
+	</div>
 </RailCard>
 
 {#if editing && saved}

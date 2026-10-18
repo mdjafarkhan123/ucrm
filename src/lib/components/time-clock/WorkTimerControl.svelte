@@ -16,6 +16,7 @@
 		type TimerWriteError
 	} from '$lib/time-clock/api';
 	import { stopMessage } from '$lib/time-clock/messages';
+	import playIcon from '@tabler/icons/outline/player-play.svg?raw';
 
 	// Start and Stop for the signed-in person's own timer on one visit or one Assessment (plan § Timers,
 	// § Assessment timers). Every copy of this control reads the same shared timer query, so the Schedule
@@ -28,9 +29,13 @@
 
 	let {
 		target,
-		completed = false
+		completed = false,
+		concept = false
 	}: {
 		target: Target;
+		/** The concept look (Job details `tNdkX`): a small white "Start timer" with a play icon, so the row's
+		 *  green stays with the page's one main action. */
+		concept?: boolean;
 		/** A completed visit or Assessment, or a visit on a closed Job, cannot be timed. Completing it stopped
 		 *  its timers. An Assessment not booked for today counts as completed here: only today's are timed. */
 		completed?: boolean;
@@ -93,6 +98,7 @@
 	}
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
 {#if onThis && running}
 	<div
 		class="work-timer work-timer--running"
@@ -107,10 +113,16 @@
 {:else if mine?.can_time && !completed}
 	{#if running}
 		<TimerRunningElsewhere timer={running} />
+	{:else if concept}
+		<Button size="small" variant="secondary" onclick={start} loading={busy}>
+			{@html playIcon}Start timer
+		</Button>
 	{:else}
 		<Button size="small" onclick={start} loading={busy}>Start timer</Button>
 	{/if}
 {/if}
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.work-timer {

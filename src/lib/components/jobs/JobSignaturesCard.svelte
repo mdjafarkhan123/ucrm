@@ -313,28 +313,37 @@
 			font-size: var(--typography--fontSize-small);
 		}
 
+		// Concept look: signatures read as plain rows ruled off from each other, no box around each.
 		&__list {
 			display: grid;
-			gap: var(--space-small);
-			margin: 0;
+			margin: 0 0 var(--space-slim);
 			padding: 0;
 			list-style: none;
+
+			li + li {
+				border-top: var(--border-base) solid var(--color-border);
+			}
 		}
 
 		&__row {
 			display: grid;
-			gap: var(--space-smaller);
-			width: 100%;
-			padding: var(--space-small) var(--space-base);
-			border: var(--border-base) solid var(--color-border);
+			gap: var(--space-smallest);
+			width: calc(100% + 2 * var(--space-small));
+			margin: 0 calc(-1 * var(--space-small));
+			padding: var(--space-small);
+			border: 0;
 			border-radius: var(--radius-base);
-			background: var(--color-surface--background--subtle);
+			background: transparent;
 			text-align: left;
 			cursor: pointer;
 
-			&:hover,
+			&:hover {
+				background: var(--color-surface--hover);
+			}
+
 			&:focus-visible {
-				border-color: var(--color-border--interactive);
+				outline: none;
+				box-shadow: var(--shadow-focus);
 			}
 		}
 
@@ -345,6 +354,7 @@
 
 		&__signer {
 			color: var(--color-text);
+			font-size: 13px;
 		}
 
 		&__meta {
