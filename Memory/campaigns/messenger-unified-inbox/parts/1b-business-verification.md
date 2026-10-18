@@ -33,10 +33,18 @@ Page **Random News** (ID 1387298701130366), so Part 1's admin check is satisfied
 (going live); development testing and Parts 3–9 do not need a portfolio. Options for Jafar: ask Meta to review the
 restriction, or have an unrestricted adult-owned account create the portfolio (ownership choice is Jafar's).
 
-## Next
+## Next (paused 2026-10-18 by Jafar)
 
-Ask Jafar for the license details. Then open `https://business.facebook.com/` in a new Chrome tab (Claude in Chrome tab
-group) and guide him screen by screen. Passwords, document upload and the final submit are Jafar's.
+Jafar will use a **second Facebook account he owns** to create the portfolio (his main account is ad-restricted). Resume:
+1. Jafar logs out of Facebook in Chrome and logs in with the other account (he types the password). Ask him first that it is in his
+   own name and under his control.
+2. Read-only check: `https://www.facebook.com/business-support-home/` → My accounts (no restriction, no portfolio yet).
+3. Open `https://business.facebook.com/business/loginpage/?create_business_portfolio_for_bm=1`, fill name **Uplift Contractor**,
+   email `info@upliftcontractor.com` (Jafar can open that inbox); Jafar presses submit and types the emailed code.
+4. Security Center → Business verification: read Meta's Bangladesh document list before Jafar uploads the license
+   (`Extra Storage/Documents/Trade-License.pdf`); Jafar uploads and submits.
+5. Add the new account as admin of app 1419027217062214 and link the portfolio. The app was created by the restricted
+   account, so Meta may force an ownership move — report it to Jafar if so.
 
 ## Outside actions
 

@@ -20,4 +20,6 @@ documents; Jafar logs in, uploads and confirms submits while Claude drives Chrom
 
 **Next part:** 3 Database foundation — waits for Part 2 approval.
 
+**Paused 2026-10-18:** Part 2 research and plan done and waiting on Jafar's three answers (replies after 24h, reconnect history, customer matching). Part 1b blocked by his main account's ad restriction; second account plan in `parts/1b-business-verification.md`. Random News admin confirmed.
+
 **Blockers:** Part 1b needs from Jafar: the exact business name, address and phone printed on the license. Merged into `main` 2026-10-18.
