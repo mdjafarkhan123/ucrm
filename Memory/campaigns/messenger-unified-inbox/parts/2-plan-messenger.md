@@ -9,16 +9,16 @@
 ## Steps
 
 - [x] Official Meta docs read for webhooks and Messenger overview (2026-10-18); GHL setup behaviour captured in the plan
-- [ ] Verify: Send API shape, Page token lifetime and refresh, Human Agent 7-day tag, subscribed_apps call, Facebook Login for Business Page picker, Graph API version to pin
-- [ ] Write `docs/research/messenger-transport-webhooks.md` (verified fact / inference / proposal kept apart)
-- [ ] Write the Messenger stage plan (database, connect, webhook, inbox, reply, health) with a performance design verdict
-- [ ] Bring Jafar the three open choices with a recommendation each, in everyday English
-- [ ] Record approval date in the roadmap and NOW.md
+- [x] Verified from Meta docs 2026-10-18: Send API shape, Page token lifetime, Human Agent tag, `subscribed_apps`, Facebook Login for Business, Graph version (pin v25.0)
+- [x] `docs/research/messenger-transport-webhooks.md` written (verified / inference / proposal kept apart)
+- [x] `docs/messenger-implementation-plan.md` written with performance design verdict
+- [ ] Bring Jafar the three open choices (replies after 24h, reconnect history, customer matching), each with its recommendation, in everyday English
+- [ ] Record approval date in the roadmap and NOW.md (then Part 3 may start)
 
 ## Next
 
-Fetch the missing Meta pages (developers.facebook.com/documentation/business-messaging/messenger-platform: send
-messages, Page access tokens, human agent, message tags) and write the research file. Use a stronger model.
+Ask Jafar the three choices and for approval of the plan. Still unverified until a real call (Part 7): exact `tag` field
+for Human Agent. Do not set `MESSENGER_GRAPH_VERSION` until Part 5 (value will be `v25.0`).
 
 ## Notes
 

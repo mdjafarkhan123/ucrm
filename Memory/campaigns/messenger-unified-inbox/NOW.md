@@ -16,7 +16,7 @@ documents; Jafar logs in, uploads and confirms submits while Claude drives Chrom
 
 - 1b Business portfolio + Meta Business Verification — `parts/1b-business-verification.md` (start first: review takes days)
 - 1 Meta app dashboard setup — `parts/1-meta-app-dashboard-setup.md`
-- 2 Plan: research and approval — `parts/2-plan-messenger.md`
+- 2 Plan: research done 2026-10-18, plan written; waits for Jafar's answers to three choices — `parts/2-plan-messenger.md`
 
 **Next part:** 3 Database foundation — waits for Part 2 approval.
 
