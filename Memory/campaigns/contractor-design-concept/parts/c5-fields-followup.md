@@ -18,6 +18,6 @@ Preserved component bindings, callbacks, existing native validation behavior, an
 - Temporary browser proof using actual components: errors linked with aria-describedby; disabled fields and search clear disabled; selected dropdown option; cleared search and confirmed input focus. Light/dark screenshots and narrow layout inspection. Proof route removed after checks.
 - Local screenshots: `docs/evidence/2026-10-19-fields/` (light, dark, narrow and live clients search).
 
-No full-project typecheck, build, or test suite run, per Jafar's campaign instruction. No server write path changed. Page-specific layouts and controls outside this batch keep their existing appearance until their own redesign.
+No full-project typecheck, build, or test suite run, per Jafar's campaign instruction. No server write path changed. Page-specific layouts and unbuilt controls keep their existing appearance. Approved built shared components apply everywhere under Jafar’s 2026-10-19 rollout rule.
 
 **Next:** remaining shared parts in `stages/list-1a-parts.md`, then Schedule. This batch is complete.

@@ -28,4 +28,4 @@ About 96 form pop-ups keep buttons inside the body, around 120 have no icon, and
 
 Continue remaining rows in `stages/list-1a-parts.md`, then Schedule. Build only approved designs; page-level journeys retain their existing behavior.
 
-**Rollout rule (Jafar, 2026-10-19):** an approved built shared part applies at every call site. SegmentedControl, Checkbox and ClientPicker had their concept appearance gated by a page wrapper; removing that restriction is the current corrective slice.
+**Rollout rule (Jafar, 2026-10-19):** an approved built shared part applies at every call site. SegmentedControl, Checkbox and ClientPicker had their concept appearance gated by a page wrapper; restriction removed and verified live on New client and New job. Light/dark switch screenshots: `docs/evidence/2026-10-19-fields/client-switches-*.jpg`. Focused ESLint and Svelte compilation passed; autofixer had no issues (existing measurement/debounce advisories retained). No lengthy checks run.
