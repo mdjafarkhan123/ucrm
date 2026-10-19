@@ -20,6 +20,7 @@
 		assessment,
 		today,
 		dayLabel,
+		headerStatus = false,
 		employeesById,
 		timer
 	}: {
@@ -27,6 +28,7 @@
 		today: string;
 		/** The assessment's date already in words, so every surface says the date the same way. */
 		dayLabel: string;
+		headerStatus?: boolean;
 		employeesById: Map<string, TeamMember>;
 		/** The reader's own Start/Stop timer for this assessment, supplied by the page that owns the timer
 		 *  query. */
@@ -57,7 +59,7 @@
 </script>
 
 <div class="assessment-preview">
-	{#if status}
+	{#if status && !headerStatus}
 		<StatusBadge status={VISIT_STATUS_TONES[status]}>{VISIT_STATUS_LABELS[status]}</StatusBadge>
 	{/if}
 
@@ -68,6 +70,9 @@
 			{
 				kind: 'team',
 				label: 'Team',
+				people: assessment.assignee_ids
+					.slice(0, 3)
+					.map((id) => employeesById.get(id)?.full_name ?? 'One employee'),
 				value: assignmentLabel(assessment.assignee_ids, employeesById),
 				warn: assessment.assignee_ids.length === 0
 			},

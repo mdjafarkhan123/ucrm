@@ -177,6 +177,7 @@
 	}
 
 	.event-card__title {
+		max-width: 100%;
 		min-width: 0;
 		overflow: hidden;
 		color: var(--color-heading);

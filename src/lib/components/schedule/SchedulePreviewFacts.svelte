@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { initials } from '$lib/collaboration/format';
 	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import calendarTimeIcon from '@tabler/icons/outline/calendar-time.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
@@ -18,6 +19,7 @@
 			kind: Kind;
 			label: string;
 			value: string;
+			people?: string[];
 			/** Nobody is assigned, so the value is a warning rather than a plain answer. */
 			warn?: boolean;
 		}[];
@@ -48,7 +50,13 @@
 			/>
 			<div class="preview-facts__text" class:preview-facts__text--details={fact.kind === 'details'}>
 				<dt>{fact.label}</dt>
-				<dd class:preview-facts__warn={fact.warn}>{fact.value}</dd>
+				<dd class:preview-facts__warn={fact.warn}>
+					{#if fact.people?.length}<span class="preview-facts__people" aria-hidden="true"
+							>{#each fact.people as person, index (`${person}-${index}`)}<span
+									>{initials(person)}</span
+								>{/each}</span
+						>{/if}{fact.value}
+				</dd>
 			</div>
 		</div>
 	{/each}
@@ -84,6 +92,24 @@
 		line-height: 1.3;
 	}
 
+	.preview-facts__people {
+		display: inline-flex;
+		vertical-align: middle;
+		margin-right: var(--space-smaller);
+		gap: var(--space-smallest);
+		> span {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 24px;
+			height: 24px;
+			border-radius: var(--radius-circle);
+			background: var(--color-heading);
+			color: var(--color-surface);
+			font-size: var(--typography--fontSize-overline);
+			font-weight: 700;
+		}
+	}
 	dd {
 		margin: 0;
 		color: var(--color-heading);

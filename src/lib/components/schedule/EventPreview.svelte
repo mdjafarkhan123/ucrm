@@ -17,6 +17,7 @@
 	let {
 		event,
 		dayLabel,
+		headerStatus = false,
 		canSchedule = false,
 		completing = false,
 		completionError = '',
@@ -27,6 +28,7 @@
 		event: EventItem;
 		/** The event's date already in words, so every surface says the date the same way. */
 		dayLabel: string;
+		headerStatus?: boolean;
 		canSchedule?: boolean;
 		completing?: boolean;
 		completionError?: string;
@@ -46,7 +48,9 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <div class="event-preview">
-	{#if event.completed_at}<StatusBadge status="success" size="small">Completed</StatusBadge>{/if}
+	{#if event.completed_at && !headerStatus}<StatusBadge status="success" size="small"
+			>Completed</StatusBadge
+		>{/if}
 	{#if completionError}<p class="event-preview__error" role="alert">{completionError}</p>{/if}
 	<SchedulePreviewFacts
 		facts={[
@@ -59,12 +63,26 @@
 
 	{#if canSchedule}
 		<div class="event-preview__actions">
-			{#if !event.completed_at}<Button size="small" fullWidth loading={completing} onclick={oncomplete}>{@html checkIcon}Mark complete</Button>{/if}
-			<Button variant="secondary" size="small" onclick={onedit} disabled={completing}>{@html pencilIcon}Edit</Button>
-			<Button variant="secondary" variation="destructive" size="small" onclick={ondelete} disabled={completing}>{@html trashIcon}Delete</Button>
+			{#if !event.completed_at}<Button
+					size="small"
+					fullWidth
+					loading={completing}
+					onclick={oncomplete}>{@html checkIcon}Mark complete</Button
+				>{/if}
+			<Button variant="secondary" size="small" onclick={onedit} disabled={completing}
+				>{@html pencilIcon}Edit</Button
+			>
+			<Button
+				variant="secondary"
+				variation="destructive"
+				size="small"
+				onclick={ondelete}
+				disabled={completing}>{@html trashIcon}Delete</Button
+			>
 		</div>
 	{/if}
 </div>
+
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
@@ -81,7 +99,9 @@
 		flex-wrap: wrap;
 		gap: var(--space-small);
 		width: 100%;
-		
 	}
-	.event-preview__error {color: var(--color-critical--onSurface); font-size: var(--typography--fontSize-label);}
+	.event-preview__error {
+		color: var(--color-critical--onSurface);
+		font-size: var(--typography--fontSize-label);
+	}
 </style>

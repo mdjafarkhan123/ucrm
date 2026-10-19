@@ -15,6 +15,7 @@
 	import { routeDirections } from '$lib/schedule/directions';
 	import { startPointerDrag } from '$lib/schedule/pointer-drag';
 	import { initials } from '$lib/collaboration/format';
+	import externalIcon from '@tabler/icons/outline/external-link.svg?raw';
 	import directionIcon from '@tabler/icons/outline/directions.svg?raw';
 	import saveIcon from '@tabler/icons/outline/device-floppy.svg?raw';
 	import closeIcon from '@tabler/icons/outline/x.svg?raw';
@@ -134,10 +135,11 @@
 	function routeItemLabel(
 		base: string,
 		link: ReturnType<typeof routeDirections>
-	): { label: string; disabled: boolean; onSelect: () => void } {
+	): { label: string; icon: string; disabled: boolean; onSelect: () => void } {
 		if (link.ok) {
 			return {
 				label: base,
+				icon: externalIcon,
 				disabled: false,
 				onSelect: () => window.open(link.url, '_blank', 'noopener')
 			};
@@ -146,7 +148,7 @@
 			link.reason === 'too-many-stops'
 				? ` — too many stops (max ${link.limit})`
 				: ' — no mappable stops';
-		return { label: `${base}${why}`, disabled: true, onSelect: () => {} };
+		return { label: `${base}${why}`, icon: externalIcon, disabled: true, onSelect: () => {} };
 	}
 
 	const routeItems = $derived([

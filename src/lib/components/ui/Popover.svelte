@@ -17,6 +17,7 @@
 		anchor,
 		title,
 		subtitle,
+		badge,
 		concept = false,
 		icon,
 		iconTone = 'time',
@@ -29,6 +30,7 @@
 		title: string;
 		/** A line under the title, for what the title is about -- the work, or what a date holds. */
 		subtitle?: Snippet;
+		badge?: Snippet;
 		concept?: boolean;
 		icon?: string;
 		iconTone?: string;
@@ -61,7 +63,10 @@
 			<header class="popover__header">
 				{#if icon}<IconTile {icon} tone={iconTone} />{/if}
 				<div class="popover__heading">
-					<h2 class="popover__title">{title}</h2>
+					<div class="popover__heading-line">
+						<h2 class="popover__title">{title}</h2>
+						{@render badge?.()}
+					</div>
 					{#if subtitle}<p class="popover__subtitle">{@render subtitle()}</p>{/if}
 				</div>
 				<PopoverPrimitive.Close class="popover__close" aria-label="Close">
@@ -137,6 +142,12 @@
 		padding: var(--space-base) var(--space-base) 0;
 	}
 
+	.popover__heading-line {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: var(--space-small);
+	}
 	.popover__heading {
 		display: flex;
 		flex-direction: column;

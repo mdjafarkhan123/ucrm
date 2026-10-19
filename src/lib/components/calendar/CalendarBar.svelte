@@ -73,6 +73,8 @@
 
 	.calendar-bar__date {
 		display: flex;
+		flex-wrap: wrap;
+		min-width: 0;
 		align-items: center;
 		gap: 10px;
 	}

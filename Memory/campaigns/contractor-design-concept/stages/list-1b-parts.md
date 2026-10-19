@@ -30,7 +30,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `work/RecordDiscountCard` | pop-ups: "form" 🔁F | ⬜ | ⬜ |
 | `work/RecordTaxCard` | pop-ups: "form" 🔁F · permission-limited | ⬜ | ⬜ |
 | `work/RecordTrack` |  | ⬜ | ⬜ |
-| `calendar/CalendarBar` |  | ⬜ | ⬜ |
+| `calendar/CalendarBar` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Branch verified; Claude review/merge pending |
 | `clients/CommunicationSettingsDialog` | 🔁F pop-up | ⬜ | ⬜ |
 | `communications/ComposerChannelMenu` | menus ×1 | ⬜ | ⬜ |
 | `forms/PublicFormQuestion` |  | ⬜ | ⬜ |
@@ -52,9 +52,9 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/FilterChipMulti` |  | ⬜ | ⬜ |
 | `ui/SignaturePad` |  | ⬜ | ⬜ |
 | `automation/InquiryAutomationCard` | pop-ups: "Stop this follow-up?" 🔁C · menus ×1 · loading, empty | ⬜ | ⬜ |
-| `calendar/CalendarCard` |  | ⬜ | ⬜ |
-| `calendar/CalendarMonthGrid` |  | ⬜ | ⬜ |
-| `calendar/CalendarWeekGrid` |  | ⬜ | ⬜ |
+| `calendar/CalendarCard` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Branch verified; Claude review/merge pending |
+| `calendar/CalendarMonthGrid` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Branch verified; Claude review/merge pending |
+| `calendar/CalendarWeekGrid` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Branch verified; Claude review/merge pending |
 | `clients/ClientForm` |  | ⬜ | ⬜ |
 | `clients/ClientMergeDialog` | 🔁F pop-up · loading | ⬜ | ⬜ |
 | `invoices/CollectPaymentDialog` | 🔁F pop-up · loading | ⬜ | ⬜ |

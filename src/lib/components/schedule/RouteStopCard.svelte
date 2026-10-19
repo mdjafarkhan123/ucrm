@@ -14,6 +14,7 @@
 	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
 	import gripIcon from '@tabler/icons/outline/grip-vertical.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
+	import externalIcon from '@tabler/icons/outline/external-link.svg?raw';
 	import directionIcon from '@tabler/icons/outline/directions.svg?raw';
 
 	// One row in the Map's stop list: a place the crew has to be, drawn with its route number, when it is, whose
@@ -75,11 +76,13 @@
 	const directionItems = $derived([
 		{
 			label: 'Google Maps',
+			icon: externalIcon,
 			onSelect: () => googleLink.ok && window.open(googleLink.url, '_blank', 'noopener'),
 			disabled: !googleLink.ok
 		},
 		{
 			label: 'Apple Maps',
+			icon: externalIcon,
 			onSelect: () => appleLink.ok && window.open(appleLink.url, '_blank', 'noopener'),
 			disabled: !appleLink.ok
 		}

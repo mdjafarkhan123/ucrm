@@ -20,6 +20,7 @@
 		visit,
 		today,
 		dayLabel,
+		headerStatus = false,
 		employeesById,
 		canSchedule = false,
 		canComplete = false,
@@ -34,6 +35,7 @@
 		today: string;
 		/** The visit's date already in words, so every surface says the date the same way. */
 		dayLabel: string;
+		headerStatus?: boolean;
 		employeesById: Map<string, TeamMember>;
 		/** Whether this reader may change the schedule. A completed visit is never rescheduled. */
 		canSchedule?: boolean;
@@ -59,7 +61,7 @@
 <!-- The arrow is a Tabler SVG file imported at build time, not user content. -->
 <!-- eslint-disable svelte/no-at-html-tags -->
 <div class="visit-preview">
-	{#if status}
+	{#if status && !headerStatus}
 		<StatusBadge status={VISIT_STATUS_TONES[status]}>{VISIT_STATUS_LABELS[status]}</StatusBadge>
 	{/if}
 
@@ -69,6 +71,9 @@
 			{
 				kind: 'team',
 				label: 'Team',
+				people: visit.assignee_ids
+					.slice(0, 3)
+					.map((id) => employeesById.get(id)?.full_name ?? 'One employee'),
 				value: visitAssignmentLabel(visit, employeesById),
 				warn: visit.assignee_ids.length === 0
 			},

@@ -351,11 +351,23 @@
 	}
 	.calendar-month__cell--today {
 		position: relative;
-		border-radius: 10px;
-		box-shadow:
-			inset 0 0 0 1px var(--color-interactive),
-			0 4px 12px color-mix(in srgb, var(--color-heading) 12%, transparent);
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 4px;
+			pointer-events: none;
+			border: var(--border-base) solid var(--color-interactive);
+			border-radius: 10px;
+			background: var(--color-surface);
+			box-shadow:
+				0 6px 16px color-mix(in srgb, var(--color-interactive) 14%, transparent),
+				0 1px 2px color-mix(in srgb, var(--color-heading) 8%, transparent);
+		}
+		> * {
+			position: relative;
+		}
 	}
+
 	.calendar-month__cell--today .calendar-month__number {
 		background-color: var(--color-interactive);
 		color: var(--color-text--reverse);
@@ -377,13 +389,18 @@
 		display: inline-flex;
 		align-items: center;
 		gap: var(--space-smaller);
+		padding: 3px 7px;
+		border-radius: var(--radius-circle);
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 600;
 
 		&--late {
-			color: var(--color-critical);
+			color: var(--color-critical--onSurface);
+			background: var(--color-critical--surface);
 		}
 		&--unassigned {
 			color: var(--color-warning--onSurface);
+			background: var(--color-warning--surface);
 		}
 	}
 

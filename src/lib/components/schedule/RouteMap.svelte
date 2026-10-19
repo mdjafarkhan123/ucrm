@@ -265,7 +265,7 @@
 			layout: { 'line-join': 'round', 'line-cap': 'round' },
 			paint: {
 				'line-color': container
-					? getComputedStyle(container).getPropertyValue('--color-surface').trim()
+					? getComputedStyle(container).getPropertyValue('--color-white').trim()
 					: 'transparent',
 				'line-width': 7
 			}
@@ -396,10 +396,10 @@
 		width: 32px;
 		height: 32px;
 		padding: 0;
-		border: 3px solid var(--color-surface);
+		border: 3px solid var(--color-white);
 		border-radius: var(--radius-circle);
 		background-color: var(--color-time);
-		color: var(--color-text--reverse);
+		color: var(--color-white);
 		font-size: 12px;
 		font-weight: 700;
 		line-height: 1;

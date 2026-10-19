@@ -9,6 +9,8 @@
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import DateTimePicker from '$lib/components/ui/DateTimePicker.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
+	import PickedClient from '$lib/components/work/PickedClient.svelte';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import ClientPicker from '$lib/components/work/ClientPicker.svelte';
 	import TeamPicker from '$lib/components/team/TeamPicker.svelte';
 	import {
@@ -115,6 +117,7 @@
 	let selectedClient = $state<ClientListItem | null>(null);
 	let propertyId = $state('');
 	let choosingProperty = $state(false);
+	let changingClient = $state(false);
 	let scheduleLater = $state(false);
 	let anytime = $state(false);
 	let when = $state<DateTimePickerValue>(emptyDateTimePickerValue());
@@ -131,6 +134,7 @@
 			title = '';
 			clientId = '';
 			selectedClient = null;
+			changingClient = false;
 			propertyId = '';
 			choosingProperty = false;
 			scheduleLater = draft === null;
@@ -149,6 +153,7 @@
 	});
 
 	function chooseClient(client: ClientListItem | null) {
+		changingClient = false;
 		selectedClient = client;
 		propertyId = client?.primary_property?.id ?? '';
 		choosingProperty = false;
@@ -168,6 +173,22 @@
 		}))
 	);
 
+	const chosenProperty = $derived(
+		clientPropertiesQuery.data?.properties.find((p) => p.id === propertyId) ??
+			(selectedClient?.primary_property?.id === propertyId ? selectedClient.primary_property : null)
+	);
+	const chosenAddress = $derived(
+		chosenProperty
+			? [
+					chosenProperty.address_line1,
+					chosenProperty.city,
+					chosenProperty.state_region,
+					chosenProperty.postal_code
+				]
+					.filter(Boolean)
+					.join(', ')
+			: 'No property yet'
+	);
 	// The first visit's schedule as the form currently holds it. This never rejects a half-filled schedule --
 	// More Options carries whatever is there to the full form, where it can be finished -- so validation for
 	// Save is a separate step below.
@@ -377,6 +398,19 @@
 	{/if}
 {/snippet}
 
+{#snippet propertyPicker()}
+	<Select
+		id="job-create-property"
+		value={propertyId}
+		options={propertyOptions}
+		placeholder="Loading properties…"
+		label="Property"
+		onchange={(id) => {
+			propertyId = id;
+			choosingProperty = false;
+		}}
+	/>
+{/snippet}
 <Dialog
 	{open}
 	title={createType === 'request'
@@ -447,28 +481,31 @@
 			/>
 
 			<div class="job-create__client">
-				<ClientPicker
-					id="job-create-client"
-					required
-					bind:value={clientId}
-					onSelect={chooseClient}
-				/>
-				{#if selectedClient && (selectedClient.additional_property_count > 0 || choosingProperty)}
-					{#if choosingProperty}
-						<Select
-							id="job-create-property"
-							bind:value={propertyId}
-							options={propertyOptions}
-							placeholder="Loading properties…"
-							label="Property"
-						/>
-					{:else}
-						<div class="job-create__change-property">
-							<Button variant="quiet" size="small" onclick={() => (choosingProperty = true)}>
-								Change property
-							</Button>
-						</div>
-					{/if}
+				{#if selectedClient && !changingClient}
+					<span class="job-create__field-label">Client <span aria-hidden="true">*</span></span>
+					<PickedClient
+						id={selectedClient.id}
+						name={selectedClient.display_name}
+						subtitle={selectedClient.company_name !== selectedClient.display_name
+							? selectedClient.company_name
+							: null}
+						phone={selectedClient.phone}
+						email={selectedClient.email}
+						property={chosenAddress}
+						propertyHint={chosenProperty?.label || undefined}
+						onChangeClient={() => (changingClient = true)}
+						onChangeProperty={selectedClient.additional_property_count > 0
+							? () => (choosingProperty = true)
+							: undefined}
+						propertyPicker={choosingProperty ? propertyPicker : undefined}
+					/>
+				{:else}
+					<ClientPicker
+						id="job-create-client"
+						required
+						bind:value={clientId}
+						onSelect={chooseClient}
+					/>
 				{/if}
 			</div>
 
@@ -532,7 +569,7 @@
 				<span class="job-create__button-icon" aria-hidden="true">{@html adjustmentsIcon}</span>
 				More options
 			</Button>
-			<Button onclick={save} loading={saving}>Save job</Button>
+			<Button onclick={save} loading={saving}>{@html checkIcon}Save job</Button>
 		{/if}
 	{/snippet}
 </Dialog>
@@ -574,23 +611,29 @@
 			gap: var(--space-small);
 		}
 
-		&__change-property {
-			align-self: flex-start;
-		}
-
 		// Everything about the first visit, in one tinted group, so the form reads as who it is for, when, and
 		// who is going.
 		&__group {
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-base);
-			padding: var(--space-base);
-			border: var(--border-base) solid var(--color-border);
-			border-radius: var(--radius-base);
-			background: var(--color-surface--background--subtle);
+			padding: 0;
+			border: 0;
+			background: transparent;
 		}
 
+		&__field-label {
+			font-size: var(--typography--fontSize-label);
+			font-weight: 600;
+			color: var(--color-heading);
+			> span {
+				color: var(--color-critical);
+			}
+		}
 		&__group-head {
+			padding: var(--space-small) var(--space-slim);
+			border-radius: var(--radius-base);
+			background: var(--color-surface--background--subtle);
 			display: flex;
 			align-items: center;
 			gap: 10px;
@@ -598,13 +641,13 @@
 
 		&__group-icon {
 			display: grid;
-			width: 28px;
-			height: 28px;
+			width: 24px;
+			height: 24px;
 			place-items: center;
-			border: var(--border-base) solid var(--color-border--interactive);
-			border-radius: var(--radius-small);
-			background: var(--color-surface);
-			color: var(--color-icon--secondary);
+			border: 0;
+			border-radius: var(--radius-tile-small);
+			background: var(--color-time--surface);
+			color: var(--color-time);
 
 			:global(svg) {
 				width: 15px;

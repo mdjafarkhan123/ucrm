@@ -4,6 +4,9 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import type { ResolvedPathname } from '$app/types';
+	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
+	import { visitDerivedStatus } from '$lib/schedule/status';
+	import { VISIT_STATUS_LABELS, VISIT_STATUS_TONES } from '$lib/schedule/statuses';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
@@ -1550,7 +1553,14 @@
 	</div>
 </PageContainer>
 
+{#snippet previewBadge(item: ScheduleVisit | AssessmentItem)}
+	{@const status = today ? visitDerivedStatus(item, today) : null}
+	{#if status}<StatusBadge status={VISIT_STATUS_TONES[status]} size="small"
+			>{VISIT_STATUS_LABELS[status]}</StatusBadge
+		>{/if}
+{/snippet}
 {#if selectedVisit && today}
+	{#snippet visitBadge()}{@render previewBadge(selectedVisit!)}{/snippet}
 	{#snippet visitSubtitle()}{visitWorkLabel(selectedVisit!)}{/snippet}
 	<Popover
 		open
@@ -1560,9 +1570,11 @@
 		iconTone="job"
 		title={visitClientLabel(selectedVisit)}
 		subtitle={visitSubtitle}
+		badge={visitBadge}
 		onClose={closePreview}
 	>
 		<VisitPreview
+			headerStatus
 			visit={selectedVisit}
 			{today}
 			dayLabel={selectedVisit.visit_date
@@ -1583,26 +1595,49 @@
 
 {#snippet visitTimer()}
 	{#if selectedVisit}
-		<WorkTimerControl
-			target={{ kind: 'visit', jobId: selectedVisit.job_id, visitId: selectedVisit.id }}
-			completed={Boolean(selectedVisit.completed_at)}
-		/>
+		<div class="schedule-page__timer-row">
+			<div class="schedule-page__timer-label">
+				<strong>Your timer</strong><span
+					>{myTimerQuery.data?.timer?.kind === 'visit' &&
+					myTimerQuery.data.timer.visit_id === selectedVisit.id
+						? 'Running'
+						: 'Not running on this visit'}</span
+				>
+			</div>
+			<WorkTimerControl
+				concept
+				target={{ kind: 'visit', jobId: selectedVisit.job_id, visitId: selectedVisit.id }}
+				completed={Boolean(selectedVisit.completed_at)}
+			/>
+		</div>
 	{/if}
 {/snippet}
 
 {#snippet assessmentTimer()}
 	{#if selectedAssessment}
-		<WorkTimerControl
-			target={{ kind: 'assessment', assessmentId: selectedAssessment.id }}
-			completed={Boolean(selectedAssessment.completed_at) ||
-				selectedAssessment.visit_date !== today}
-		/>
+		<div class="schedule-page__timer-row">
+			<div class="schedule-page__timer-label">
+				<strong>Your timer</strong><span
+					>{myTimerQuery.data?.timer?.kind === 'assessment' &&
+					myTimerQuery.data.timer.assessment_id === selectedAssessment.id
+						? 'Running'
+						: 'Not running on this assessment'}</span
+				>
+			</div>
+			<WorkTimerControl
+				concept
+				target={{ kind: 'assessment', assessmentId: selectedAssessment.id }}
+				completed={Boolean(selectedAssessment.completed_at) ||
+					selectedAssessment.visit_date !== today}
+			/>
+		</div>
 	{/if}
 {/snippet}
 
 <!-- An assessment's own preview. It is Request-owned, so this only reads it and opens the Request; there is no
      reschedule, complete or unschedule here. -->
 {#if selectedAssessment && today}
+	{#snippet assessmentBadge()}{@render previewBadge(selectedAssessment!)}{/snippet}
 	{#snippet assessmentSubtitle()}{selectedAssessment!.request_title?.trim() ||
 			'On-site assessment'}{/snippet}
 	<Popover
@@ -1615,9 +1650,11 @@
 			selectedAssessment.client_company_name ??
 			'Client hidden'}
 		subtitle={assessmentSubtitle}
+		badge={assessmentBadge}
 		onClose={closePreview}
 	>
 		<AssessmentPreview
+			headerStatus
 			assessment={selectedAssessment}
 			{today}
 			dayLabel={selectedAssessment.visit_date
@@ -1632,6 +1669,9 @@
 <!-- An event's own preview. Schedule owns it outright, so this offers Edit and Delete in place -- both behind
      the schedule authority, and Delete confirmed because it is permanent. -->
 {#if selectedEvent}
+	{#snippet eventBadge()}{#if selectedEvent?.completed_at}<StatusBadge status="success" size="small"
+				>Completed</StatusBadge
+			>{/if}{/snippet}
 	{#snippet eventSubtitle()}Event{/snippet}
 	<Popover
 		open
@@ -1641,9 +1681,11 @@
 		iconTone="event"
 		title={selectedEvent.title.trim() || 'Event'}
 		subtitle={eventSubtitle}
+		badge={eventBadge}
 		onClose={closePreview}
 	>
 		<EventPreview
+			headerStatus
 			event={selectedEvent}
 			dayLabel={selectedEvent.visit_date
 				? formatCalendarDay(selectedEvent.visit_date, dayHeadingFormat)
@@ -1874,6 +1916,28 @@
 {/if}
 
 <style lang="scss">
+	.schedule-page__timer-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-small);
+	}
+	.schedule-page__timer-label {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-smallest);
+		strong {
+			font-size: var(--typography--fontSize-label);
+			font-weight: 600;
+			color: var(--color-heading);
+		}
+		span {
+			font-size: var(--typography--fontSize-small);
+			color: var(--color-text--secondary);
+		}
+	}
+
 	// The page is one card that fills the height the shell gives it: the toolbar on top, the grid scrolling
 	// inside, the colour key underneath. The backlog docks beside it as a card of its own.
 	.schedule-page {
