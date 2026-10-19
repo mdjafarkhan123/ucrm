@@ -25,6 +25,8 @@ Schedule already behaves the same, so the drawing needs no new data except event
   event `QqZfs`, Move visit `Xdknw` (new client · work line; radio tiles). Each keeps its live component's
   content. Customer notice is email only; a channel choice would be new behaviour.
 - New event form `abdXu` approved by Jafar 2026-10-19 (live `ScheduleEventDialog`, New job's fields).
+- Waiting: book-work form, two sections on `GsICu`: Job `OemVt` and Request / Event hand-offs `GTfk2`, `CejfJ`
+  (live `ScheduleJobCreate`; same content; Job / Request / Event switch; More options at left, no Cancel as live).
 
 ## Decisions
 
