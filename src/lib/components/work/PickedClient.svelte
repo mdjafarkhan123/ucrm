@@ -91,7 +91,9 @@
 			{#if propertyHint}<p class="picked-client__hint">{propertyHint}</p>{/if}
 		</div>
 		{#if onChangeProperty && !propertyPicker}
-			<Button variant="quiet" size="small" onclick={onChangeProperty}>Change property</Button>
+			<Button variant="secondary" size="small" onclick={onChangeProperty}>
+				{@html mapPinIcon}Change property</Button
+			>
 		{/if}
 	</div>
 	{#if propertyPicker}

@@ -40,7 +40,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `imports/ImportUploadStep` |  | ⬜ | ⬜ |
 | `jafar/booking/BookingMonth` |  | ⬜ | ⬜ |
 | `jafar/booking/BookingTimePicker` | loading | ⬜ | ⬜ |
-| `jobs/CreateVisitsDialog` | 🔁F pop-up | ✅ Schedule pop-ups `S5TPc` | ⬜ |
+| `jobs/CreateVisitsDialog` | 🔁F pop-up | ✅ Schedule pop-ups `S5TPc` | ✅ Branch verified; Claude review/merge pending |
 | `marketing/AsyncMultiPicker` | loading | ⬜ | ⬜ |
 | `marketing/CustomerGroupDialog` | 🔁F pop-up | ⬜ | ⬜ |
 | `marketing/CustomerGroupPreview` | loading | ⬜ | ⬜ |
@@ -63,8 +63,8 @@ Key, tick rule and coverage command: `list-index.md`.
 | `jafar/booking/BookingFacts` |  | ⬜ | ⬜ |
 | `jafar/booking/BookingFrame` |  | ⬜ | ⬜ |
 | `jafar/booking/BookingStatus` |  | ⬜ | ⬜ |
-| `jobs/ApplyToFutureDialog` | ◆ pop-up | ✅ Schedule pop-ups `a03Qm` | ⬜ |
-| `jobs/FinalVisitDialog` | ◆ pop-up | ✅ Schedule pop-ups `WbpEc` | ⬜ |
+| `jobs/ApplyToFutureDialog` | ◆ pop-up | ✅ Schedule pop-ups `a03Qm` | ✅ Branch verified; Claude review/merge pending |
+| `jobs/FinalVisitDialog` | ◆ pop-up | ✅ Schedule pop-ups `WbpEc` | ✅ Branch verified; Claude review/merge pending |
 | `jobs/JobVisitDialog` | ◆ pop-up · loading, permission-limited | ⬜ | ⬜ |
 | `jobs/RecurrenceFields` | loading | ✅ | ✅ |
 | `layout/MobileNav` |  | ⬜ | ⬜ |

@@ -15,7 +15,7 @@
 		type ScheduleItem
 	} from '$lib/schedule/items';
 	import { earliestWorkingMinute, weekdayOf, type WorkingWeek } from '$lib/schedule/hours';
-	import { cardDensityForWidth, MINUTES_IN_DAY } from '$lib/schedule/layout';
+	import { MINUTES_IN_DAY } from '$lib/schedule/layout';
 	import { buildDayRows, UNASSIGNED_ROW_KEY } from '$lib/schedule/rows';
 	import {
 		canDragVisit,
@@ -37,6 +37,8 @@
 	import { DAY_HOUR_PX, type ScheduleZoom } from '$lib/schedule/density';
 	import type { ScheduleVisit } from '$lib/schedule/api';
 	import type { TeamMember } from '$lib/team/api';
+	import { availabilityOn, type TeamAvailability } from '$lib/schedule/member-availability';
+	import moonIcon from '@tabler/icons/outline/moon.svg?raw';
 	import userOffIcon from '@tabler/icons/outline/user-off.svg?raw';
 
 	// The day, as rows of people over one shared time axis running left to right.
@@ -56,6 +58,7 @@
 		today,
 		nowMinutes,
 		workingWeek,
+		teamHours = null,
 		employeeFilter,
 		employeesById,
 		selectedItemId,
@@ -82,6 +85,7 @@
 		nowMinutes: number | null;
 		/** Null when the business has no confirmed weekly pattern, so nothing is shaded. */
 		workingWeek: WorkingWeek | null;
+		teamHours?: TeamAvailability | null;
 		employeeFilter: ScheduleEmployeeFilter;
 		employeesById: Map<string, TeamMember>;
 		selectedItemId: string | null;
@@ -114,11 +118,30 @@
 	/** One hour of the axis, in pixels, from the reader's zoom, and one lane of a row. Everything else is
 	 *  worked out from these. Zoom stretches the time axis only; a lane keeps its height. */
 	const HOUR_WIDTH = $derived(DAY_HOUR_PX[zoom]);
-	const LANE_HEIGHT = 122;
+	const LANE_HEIGHT = 96;
 	const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
 	const rows = $derived(buildDayRows(items, team, employeeFilter));
-	const workingBands = $derived(workingWeek?.get(weekdayOf(day)) ?? []);
+	const workingBands = $derived(
+		workingWeek ? (workingWeek.get(weekdayOf(day)) ?? []) : [{ start: 0, end: MINUTES_IN_DAY }]
+	);
+	function bandsFor(row: (typeof rows)[number]) {
+		const own = row.employee ? availabilityOn(teamHours?.get(row.employee.id), day) : undefined;
+		return own === undefined ? workingBands : own === null ? [] : [own];
+	}
+	function dayOff(row: (typeof rows)[number]) {
+		return Boolean(row.employee && availabilityOn(teamHours?.get(row.employee.id), day) === null);
+	}
+	function workingMinutes(row: (typeof rows)[number]) {
+		return bandsFor(row).reduce((total, band) => total + band.end - band.start, 0);
+	}
+
+	function bookedMinutes(row: (typeof rows)[number]) {
+		return row.blocks.reduce((total, block) => total + block.end - block.start, 0);
+	}
+	function bookedLabel(minutes: number) {
+		return `${Number((minutes / 60).toFixed(1))}h`;
+	}
 
 	// The corner of the board says what the day holds and how much of it needs a look: late work, and work
 	// nobody is assigned to. An event or a task has no crew by design, so it never counts as unassigned.
@@ -628,7 +651,7 @@
 					</span>
 				{/if}
 			</div>
-			<div class="day__head day__head--anytime">Anytime</div>
+			<div class="day__head day__head--anytime">ANYTIME</div>
 			<div class="day__head day__head--ruler">
 				{#each HOURS as hour (hour)}
 					<span class="day__hour" style:left="{hour * HOUR_WIDTH}px">{hourLabel(hour)}</span>
@@ -661,7 +684,21 @@
 					{/if}
 					<span class="day__who-text">
 						<span class="day__name">{row.name}</span>
-						<span class="day__count">{itemCountLabel(row.count)}</span>
+						<span class="day__workload"
+							>{#if dayOff(row)}<span class="day__off"
+									><span aria-hidden="true">{@html moonIcon}</span>Day off</span
+								>{:else}<span class="day__count">{itemCountLabel(row.count)}</span>{/if}<span
+								class="day__booked">{bookedLabel(bookedMinutes(row))}</span
+							></span
+						>
+						{#if row.kind === 'employee' && workingMinutes(row) > 0}<span
+								class="day__capacity"
+								role="img"
+								aria-label={`${bookedLabel(bookedMinutes(row))} booked of ${bookedLabel(workingMinutes(row))} working hours`}
+								><span
+									style:width={`${Math.min(100, (bookedMinutes(row) / workingMinutes(row)) * 100)}%`}
+								></span></span
+							>{/if}
 					</span>
 				</div>
 
@@ -670,6 +707,7 @@
 				     button in the page header. -->
 				<div
 					class="day__anytime"
+					class:day__anytime--off={dayOff(row)}
 					class:day__anytime--target={(drag !== null && drag.rowIndex === rowIndex) ||
 						(externalStart === null && externalRow === rowIndex)}
 					class:day__anytime--bookable={canCreate}
@@ -735,7 +773,7 @@
 					bind:this={trackEls[rowIndex]}
 					onpointerdown={(event) => beginCreate(event, rowIndex)}
 				>
-					{#each workingBands as band (band.start)}
+					{#each bandsFor(row) as band (band.start)}
 						<div
 							class="day__working"
 							style:left={percent(band.start)}
@@ -761,7 +799,8 @@
 								<VisitCard
 									{visit}
 									sharedWith={sharedNames(visit, row.employee?.id ?? null)}
-									density={cardDensityForWidth(((block.end - block.start) / 60) * HOUR_WIDTH)}
+									density="standard"
+									shortTime={block.end - block.start < 120}
 									{today}
 									{nowMinutes}
 									{employeesById}
@@ -795,7 +834,8 @@
 							>
 								<AssessmentCard
 									assessment={block.item}
-									density={cardDensityForWidth(((block.end - block.start) / 60) * HOUR_WIDTH)}
+									density="standard"
+									shortTime={block.end - block.start < 120}
 									{today}
 									{nowMinutes}
 									{employeesById}
@@ -816,7 +856,8 @@
 							>
 								<EventCard
 									event={block.item}
-									density={cardDensityForWidth(((block.end - block.start) / 60) * HOUR_WIDTH)}
+									density="standard"
+									shortTime={block.end - block.start < 120}
 									selected={block.item.id === selectedItemId}
 									onselect={onselectevent}
 								/>
@@ -876,7 +917,7 @@
 	// whatever height the card gives it and scrolls inside.
 	.day {
 		--day-who: 208px;
-		--day-anytime: 156px;
+		--day-anytime: 140px;
 
 		display: flex;
 		flex: 1 1 auto;
@@ -934,7 +975,7 @@
 		top: 0;
 		z-index: 2;
 		box-sizing: border-box;
-		height: 64px;
+		height: 76px;
 		border-bottom: var(--border-base) solid var(--color-border);
 		background-color: var(--color-surface);
 	}
@@ -947,21 +988,21 @@
 		flex-direction: column;
 		justify-content: center;
 		gap: var(--space-smallest);
-		padding: 0 18px;
+		padding: 14px var(--space-base);
 	}
 
 	.day__date-row {
 		display: flex;
 		align-items: center;
 		gap: 7px;
-		height: 24px;
+		height: 30px;
 	}
 
 	.day__weekday {
 		color: var(--color-text--secondary);
 		font-size: 11px;
-		font-weight: 700;
-		letter-spacing: 0.8px;
+		font-weight: 600;
+		letter-spacing: 0.6px;
 		text-transform: uppercase;
 
 		&--today {
@@ -973,18 +1014,19 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		height: 24px;
+		height: 30px;
 		padding: 0 var(--space-smaller);
 		border-radius: 999px;
 		color: var(--color-heading);
-		font-size: 15px;
+		font-size: var(--typography--fontSize-larger);
 		font-weight: 700;
 
 		&--today {
-			padding: 0 7px;
+			padding: 0;
+			width: 30px;
 			background-color: var(--color-interactive);
 			color: var(--color-text--reverse);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-large);
 		}
 	}
 
@@ -1003,13 +1045,18 @@
 		display: inline-flex;
 		align-items: center;
 		gap: var(--space-smaller);
+		padding: 3px 7px;
+		border-radius: var(--radius-circle);
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 600;
 
 		&--late {
-			color: var(--color-critical);
+			color: var(--color-critical--onSurface);
+			background: var(--color-critical--surface);
 		}
 		&--unassigned {
 			color: var(--color-warning--onSurface);
+			background: var(--color-warning--surface);
 		}
 	}
 
@@ -1076,7 +1123,7 @@
 		align-items: center;
 		gap: 12px;
 		box-sizing: border-box;
-		padding: 0 18px;
+		padding: 14px var(--space-base);
 		border-bottom: var(--border-base) solid var(--color-border);
 		background-color: var(--color-surface);
 	}
@@ -1088,7 +1135,51 @@
 		font-weight: 600;
 	}
 
+	.day__off {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-smaller);
+		font-size: var(--typography--fontSize-small);
+		color: var(--color-text--secondary);
+		:global(svg) {
+			width: 12px;
+			height: 12px;
+		}
+	}
+	.day__anytime--off {
+		background: repeating-linear-gradient(
+			135deg,
+			var(--color-surface) 0 11px,
+			var(--color-border) 11px 12px
+		);
+	}
+	.day__workload {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-smaller);
+	}
+	.day__booked {
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		color: var(--color-heading);
+	}
+	.day__capacity {
+		display: block;
+		height: 4px;
+		width: 100%;
+		margin-top: var(--space-smaller);
+		border-radius: var(--radius-circle);
+		background: var(--color-border);
+		overflow: hidden;
+		> span {
+			display: block;
+			height: 100%;
+			background: var(--color-time);
+		}
+	}
 	.day__who-text {
+		flex: 1;
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
@@ -1116,11 +1207,11 @@
 		flex: 0 0 auto;
 		align-items: center;
 		justify-content: center;
-		width: 36px;
-		height: 36px;
+		width: 32px;
+		height: 32px;
 		border-radius: var(--radius-circle);
-		background-color: var(--color-surface--background--subtle);
-		color: var(--color-text--secondary);
+		background-color: var(--color-heading);
+		color: var(--color-surface);
 		font-size: 12px;
 		font-weight: 700;
 
@@ -1142,9 +1233,9 @@
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
-		gap: 6px;
+		gap: var(--space-smaller);
 		box-sizing: border-box;
-		padding: var(--space-small);
+		padding: 6px;
 		overflow-y: auto;
 		border-left: var(--border-base) solid var(--color-border);
 		border-bottom: var(--border-base) solid var(--color-border);
@@ -1154,7 +1245,7 @@
 	// An Anytime pill is the height the design draws; whatever it holds stays on one line.
 	.day__anytime > :global(*) {
 		flex: 0 0 auto;
-		height: 28px;
+		height: 24px;
 	}
 
 	.day__track {
@@ -1165,7 +1256,11 @@
 		// Outside working hours the row recedes; the working band below paints itself back to the ordinary
 		// surface. With no confirmed weekly pattern nothing is painted and the whole day recedes equally,
 		// which is honest -- the calendar does not know the hours.
-		background-color: var(--color-surface--background);
+		background: repeating-linear-gradient(
+			135deg,
+			var(--color-surface) 0 11px,
+			var(--color-border) 11px 12px
+		);
 	}
 
 	.day__working {
@@ -1191,9 +1286,13 @@
 	}
 
 	.day__block {
+		:global(.item-card),
+		:global(.event-card) {
+			padding: 6px;
+		}
 		position: absolute;
 		box-sizing: border-box;
-		padding: 12px 6px 12px 0;
+		padding: 6px 2px;
 	}
 
 	// A card that can be picked up gets out of the way while it is being moved: during a drag the ghost is

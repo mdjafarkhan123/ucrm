@@ -84,7 +84,7 @@
 	     its Request, where it is scheduled, reassigned or marked done. -->
 	<div class="assessment-preview__actions">
 		<Button
-			variant="secondary"
+			variant="quiet"
 			size="small"
 			href={resolve('/(app)/requests/[id=uuid]', { id: assessment.request_id })}
 		>
@@ -104,16 +104,22 @@
 
 	.assessment-preview__timer {
 		width: 100%;
-		padding-top: var(--space-small);
-		border-top: var(--border-base) solid var(--color-border);
+		box-sizing: border-box;
+		padding: var(--space-slim) var(--space-slim) var(--space-slim) 14px;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background--subtle);
 	}
 
 	.assessment-preview__actions {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-small);
-		width: 100%;
-		padding-top: var(--space-base);
+		box-sizing: border-box;
+		width: calc(100% + var(--space-medium) * 2);
+		margin: 0 calc(-1 * var(--space-medium)) calc(-1 * var(--space-medium));
+		padding: var(--space-small) var(--space-slim);
+		background: var(--color-surface--background--subtle);
 		border-top: var(--border-base) solid var(--color-border);
 	}
 </style>

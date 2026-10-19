@@ -142,8 +142,10 @@
 	title={editing ? 'Edit event' : 'New event'}
 	initialFocusId="event-title"
 	icon={calendarEventIcon}
-	iconTone="critical"
-	{onClose}
+	iconTone="event"
+	onClose={() => {
+		if (!saving) onClose();
+	}}
 >
 	<div class="event-form">
 		{#each [error, fieldError].filter(Boolean) as message (message)}

@@ -129,7 +129,10 @@
 				blocks: layoutTimedVisits(split.timed),
 				count: dayItems.length,
 				attention: attentionFor(dayItems),
-				working: workingWeek?.get(weekdayOf(day)) ?? []
+				working: workingWeek
+					? (workingWeek.get(weekdayOf(day)) ?? [])
+					: [{ start: 0, end: MINUTES_IN_DAY }],
+				closed: workingWeek !== null && (workingWeek.get(weekdayOf(day))?.length ?? 0) === 0
 			};
 		})
 	);

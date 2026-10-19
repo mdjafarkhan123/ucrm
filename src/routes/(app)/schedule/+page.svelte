@@ -7,6 +7,13 @@
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import unscheduledIcon from '@tabler/icons/outline/calendar-off.svg?raw';
+	import mapIcon from '@tabler/icons/outline/map-2.svg?raw';
+	import visitIcon from '@tabler/icons/outline/hammer.svg?raw';
+	import assessmentIcon from '@tabler/icons/outline/inbox.svg?raw';
+	import eventIcon from '@tabler/icons/outline/calendar-event.svg?raw';
+	import moveIcon from '@tabler/icons/outline/calendar-time.svg?raw';
 	import Popover from '$lib/components/ui/Popover.svelte';
 	import type { PopoverAnchor } from '$lib/components/ui/popover-anchor';
 	import ScheduleControls from '$lib/components/schedule/ScheduleControls.svelte';
@@ -990,11 +997,8 @@
 	}
 
 	async function handleReturnCreate(result: { dates: string[]; scheduleLater: boolean }) {
-		// The dialog closes at once and the add runs behind it, the same way the Job page's Add-visits does, so
-		// the picker never lingers over a network call. The job id is captured first because closing clears it.
 		const jobId = returnVisitJobId;
-		if (!jobId) return;
-		closeReturnVisit();
+		if (!jobId) return false;
 		try {
 			const items: AddVisitInput[] = result.scheduleLater
 				? [
@@ -1022,8 +1026,10 @@
 			await addJobVisits(jobId, items, crypto.randomUUID(), fingerprint(items));
 			await refreshAfterWrite(jobId);
 			toast.success(items.length === 1 ? 'Return visit added' : `${items.length} visits added`);
+			closeReturnVisit();
+			return true;
 		} catch (caught) {
-			toast.error((caught as JobWriteError).message ?? 'Those visits could not be added.');
+			throw new Error((caught as JobWriteError).message ?? 'Those visits could not be added.');
 		}
 	}
 
@@ -1206,7 +1212,9 @@
 			toast.success('Event completed');
 		} catch (caught) {
 			eventCompletionError = (caught as Error).message ?? 'The event could not be completed.';
-		} finally { eventCompleting = false; }
+		} finally {
+			eventCompleting = false;
+		}
 	}
 
 	async function saveEvent(payload: ScheduleEventWrite) {
@@ -1315,13 +1323,6 @@
 		month: 'this month'
 	};
 
-	// What the shaded part of the grid means differs by view, so the key says it once, in the right words.
-	const LEGEND_NOTES = {
-		day: 'Shaded hours are outside your business hours',
-		week: 'Shaded hours are outside your business hours',
-		month: 'Shaded days are closed'
-	} as const;
-
 	const dayHeadingFormat: Intl.DateTimeFormatOptions = {
 		weekday: 'long',
 		month: 'short',
@@ -1399,7 +1400,7 @@
 
 			{#snippet legendKey()}
 				{#if !mapOpen}
-					<ScheduleLegend note={LEGEND_NOTES[filters.view]} shared={filters.view === 'day'} />
+					<ScheduleLegend showNow={filters.view !== 'month'} />
 				{/if}
 			{/snippet}
 
@@ -1473,6 +1474,7 @@
 								/>
 							{:else if filters.view === 'day'}
 								<ScheduleDay
+									{teamHours}
 									bind:this={dayGrid}
 									day={activeWindow!.from}
 									items={visibleItems}
@@ -1553,6 +1555,9 @@
 	<Popover
 		open
 		anchor={previewAnchor}
+		concept
+		icon={visitIcon}
+		iconTone="job"
 		title={visitClientLabel(selectedVisit)}
 		subtitle={visitSubtitle}
 		onClose={closePreview}
@@ -1603,6 +1608,9 @@
 	<Popover
 		open
 		anchor={previewAnchor}
+		concept
+		icon={assessmentIcon}
+		iconTone="request"
 		title={selectedAssessment.client_name ??
 			selectedAssessment.client_company_name ??
 			'Client hidden'}
@@ -1628,6 +1636,9 @@
 	<Popover
 		open
 		anchor={previewAnchor}
+		concept
+		icon={eventIcon}
+		iconTone="event"
 		title={selectedEvent.title.trim() || 'Event'}
 		subtitle={eventSubtitle}
 		onClose={closePreview}
@@ -1650,7 +1661,14 @@
 <!-- A drag has landed. Nothing is written until this is saved, so the proposal, its consequences and its
      scope all sit in front of the person first. -->
 {#if pending && pendingChange}
-	<Popover open anchor={pending.anchor} title="Move visit" onClose={cancelMove}>
+	<Popover
+		concept
+		icon={moveIcon}
+		open
+		anchor={pending.anchor}
+		title="Move visit"
+		onClose={cancelMove}
+	>
 		<MoveConfirm
 			visit={pending.visit}
 			proposal={pending.proposal}
@@ -1744,6 +1762,9 @@
 <ConfirmDialog
 	open={deleteEventTarget !== null}
 	title="Delete this event?"
+	icon={trashIcon}
+	tone="critical"
+	destructive
 	confirmLabel="Delete event"
 	cancelLabel="Keep event"
 	loading={eventDeleting}
@@ -1796,6 +1817,8 @@
 <ConfirmDialog
 	open={unscheduleVisitId !== null}
 	title="Move to Unscheduled?"
+	icon={unscheduledIcon}
+	tone="warning"
 	confirmLabel="Move to Unscheduled"
 	cancelLabel="Keep on calendar"
 	loading={unscheduleSaving}
@@ -1817,6 +1840,8 @@
 <ConfirmDialog
 	open={mapPickOpen}
 	title="Whose route?"
+	icon={mapIcon}
+	tone="time"
 	confirmLabel="Show route"
 	cancelLabel="Cancel"
 	confirmDisabled={!pendingMapEmployee}

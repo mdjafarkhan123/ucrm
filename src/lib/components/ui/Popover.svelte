@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Popover as PopoverPrimitive } from 'bits-ui';
 	import type { Snippet } from 'svelte';
+	import IconTile from './IconTile.svelte';
 	import closeIcon from '@tabler/icons/outline/x.svg?raw';
 	import type { PopoverAnchor } from './popover-anchor';
 
@@ -16,6 +17,9 @@
 		anchor,
 		title,
 		subtitle,
+		concept = false,
+		icon,
+		iconTone = 'time',
 		onClose,
 		children
 	}: {
@@ -25,6 +29,9 @@
 		title: string;
 		/** A line under the title, for what the title is about -- the work, or what a date holds. */
 		subtitle?: Snippet;
+		concept?: boolean;
+		icon?: string;
+		iconTone?: string;
 		onClose: () => void;
 		children: Snippet;
 	} = $props();
@@ -39,7 +46,7 @@
 >
 	<PopoverPrimitive.Portal>
 		<PopoverPrimitive.Content
-			class="popover"
+			class={['popover', concept && 'popover--concept']}
 			customAnchor={anchor}
 			sideOffset={10}
 			collisionPadding={16}
@@ -52,6 +59,7 @@
 			}}
 		>
 			<header class="popover__header">
+				{#if icon}<IconTile {icon} tone={iconTone} />{/if}
 				<div class="popover__heading">
 					<h2 class="popover__title">{title}</h2>
 					{#if subtitle}<p class="popover__subtitle">{@render subtitle()}</p>{/if}
@@ -63,7 +71,7 @@
 			<div class="popover__body">
 				{@render children()}
 			</div>
-			<PopoverPrimitive.Arrow class="popover__arrow" />
+			{#if !concept}<PopoverPrimitive.Arrow class="popover__arrow" />{/if}
 		</PopoverPrimitive.Content>
 	</PopoverPrimitive.Portal>
 </PopoverPrimitive.Root>
@@ -71,6 +79,35 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	:global(.popover--concept) {
+		width: 368px;
+		max-width: calc(100vw - var(--space-larger));
+		border-radius: var(--radius-large);
+		overflow: hidden;
+	}
+	:global(.popover--concept) .popover__header {
+		align-items: center;
+		padding: var(--space-medium);
+		border-bottom: var(--border-base) solid var(--color-border);
+	}
+	:global(.popover--concept) .popover__heading {
+		flex: 1;
+	}
+	:global(.popover--concept) .popover__title {
+		font-size: var(--typography--fontSize-larger);
+		font-weight: 600;
+		letter-spacing: -0.2px;
+		line-height: 1.2;
+		overflow-wrap: anywhere;
+	}
+	:global(.popover--concept) .popover__body {
+		padding: var(--space-medium);
+	}
+	:global(.popover--concept .popover__close) {
+		width: 32px;
+		height: 32px;
+	}
+
 	:global(.popover) {
 		z-index: var(--elevation-tooltip);
 		box-sizing: border-box;

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import calendarSyncIcon from '@tabler/icons/outline/calendar-repeat.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
@@ -43,7 +45,17 @@
 	const canApply = $derived((timeOfDay || assignedTeam) && laterCount > 0 && !saving);
 </script>
 
-<Dialog {open} title="Apply to later visits" {onClose}>
+<!-- eslint-disable svelte/no-at-html-tags -->
+<Dialog
+	{open}
+	title="Apply to later visits"
+	size="small"
+	icon={calendarSyncIcon}
+	iconTone="time"
+	onClose={() => {
+		if (!saving) onClose();
+	}}
+>
 	<div class="apply-future">
 		{#if error}<p class="apply-future__alert" role="alert">{error}</p>{/if}
 
@@ -60,6 +72,7 @@
 			id="apply-future-time"
 			label="Time of day"
 			description="The start and end time this visit now has."
+			disabled={saving}
 			checked={timeOfDay}
 			onchange={(checked) => (timeOfDay = checked)}
 		/>
@@ -67,21 +80,21 @@
 			id="apply-future-team"
 			label="Assigned team"
 			description="The crew on this visit replaces the crew on the later ones."
+			disabled={saving}
 			checked={assignedTeam}
 			onchange={(checked) => (assignedTeam = checked)}
 		/>
-
+	</div>
+	{#snippet footer()}
 		<div class="apply-future__actions">
-			<Button variant="tertiary" onclick={onClose} disabled={saving}>Cancel</Button>
+			<Button variant="secondary" onclick={onClose} disabled={saving}>Cancel</Button>
 			<Button
 				onclick={() => onApply({ time_of_day: timeOfDay, assigned_team: assignedTeam })}
 				loading={saving}
-				disabled={!canApply}
+				disabled={!canApply}>{@html checkIcon}Apply</Button
 			>
-				Apply
-			</Button>
 		</div>
-	</div>
+	{/snippet}
 </Dialog>
 
 <style lang="scss">
@@ -101,15 +114,16 @@
 
 		&__intro {
 			margin: 0;
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			color: var(--color-text);
+			font-size: var(--typography--fontSize-base);
+			line-height: 1.5;
 		}
 
 		&__actions {
 			display: flex;
 			justify-content: flex-end;
 			gap: var(--space-small);
-			margin-top: var(--space-small);
+			width: 100%;
 		}
 	}
 </style>

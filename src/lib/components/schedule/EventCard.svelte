@@ -1,4 +1,5 @@
 <script lang="ts">
+	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import { visitShape } from '$lib/schedule/status';
 	import { clockLabel } from '$lib/schedule/labels';
@@ -15,11 +16,13 @@
 	let {
 		event,
 		density,
+		shortTime = false,
 		selected = false,
 		onselect
 	}: {
 		event: EventItem;
 		density: CardDensity;
+		shortTime?: boolean;
 		selected?: boolean;
 		/** The element is handed back so the page can anchor the preview to this exact card. */
 		onselect: (event: EventItem, element: HTMLElement) => void;
@@ -37,7 +40,11 @@
 
 	const titleLabel = $derived(event.title.trim() || 'Event');
 
-	const summary = $derived(['Event', timeLabel, titleLabel, event.completed_at ? 'Completed' : null].filter(Boolean).join(', '));
+	const summary = $derived(
+		['Event', timeLabel, titleLabel, event.completed_at ? 'Completed' : null]
+			.filter(Boolean)
+			.join(', ')
+	);
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -51,10 +58,10 @@
 	title={summary}
 	onclick={(domEvent) => onselect(event, domEvent.currentTarget)}
 >
-	{#if density === 'standard'}
+	{#if density === 'standard' || density === 'compact'}
 		<span class="event-card__time">
 			<span class="event-card__marker" aria-hidden="true">{@html calendarEventIcon}</span>
-			{timeLabel}
+			{shortTime ? startLabel : timeLabel}
 		</span>
 		<span class="event-card__title event-card__title--block">{titleLabel}</span>
 	{:else}
@@ -62,7 +69,14 @@
 		{#if timed}<span class="event-card__time">{startLabel}</span>{/if}
 		<span class="event-card__title">{titleLabel}</span>
 	{/if}
-	{#if event.completed_at && density === 'standard'}<StatusBadge status="success" size="small">Completed</StatusBadge>{/if}
+	{#if event.completed_at && (density === 'standard' || density === 'compact')}<StatusBadge
+			status="success"
+			size="small">Completed</StatusBadge
+		>{/if}
+	{#if event.completed_at && (density === 'micro' || density === 'pill')}<span
+			class="event-card__check"
+			aria-hidden="true">{@html circleCheckIcon}</span
+		>{/if}
 </button>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
@@ -80,7 +94,7 @@
 		min-width: 0;
 		padding: 0 var(--space-small);
 		overflow: hidden;
-		border: var(--border-base) solid var(--color-surface--background--subtle);
+		border: var(--border-base) solid transparent;
 		border-radius: var(--radius-base);
 		background-color: var(--color-event--surface);
 		color: var(--color-text);
@@ -92,7 +106,8 @@
 			box-shadow var(--timing-quick) ease;
 
 		&:hover {
-			background-color: var(--color-surface--background--subtle--hover);
+			border-color: var(--color-event--onSurface);
+			box-shadow: 0 4px 12px color-mix(in srgb, var(--color-heading) 12%, transparent);
 		}
 		&:focus-visible {
 			outline: none;
@@ -100,14 +115,40 @@
 		}
 	}
 
-	.event-card--standard {
+	.event-card--standard,
+	.event-card--compact {
 		flex-direction: column;
 		align-items: flex-start;
 		justify-content: flex-start;
 		gap: var(--space-smallest);
-		padding: 7px var(--space-small) var(--space-small) 9px;
+		padding: 5px var(--space-small);
 	}
 
+	.event-card--compact {
+		padding: 3px var(--space-small);
+		gap: 0;
+	}
+	.event-card__check {
+		display: inline-flex;
+		margin-left: auto;
+		color: var(--color-icon--secondary);
+		:global(svg) {
+			width: 12px;
+			height: 12px;
+		}
+	}
+	.event-card--micro,
+	.event-card--pill {
+		border-radius: var(--radius-tile-small);
+		.event-card__title,
+		.event-card__time {
+			font-size: var(--typography--fontSize-overline);
+		}
+		.event-card__marker :global(svg) {
+			width: 12px;
+			height: 12px;
+		}
+	}
 	.event-card--selected {
 		box-shadow: var(--shadow-focus);
 	}
@@ -118,8 +159,8 @@
 		color: var(--color-event--onSurface);
 
 		:global(svg) {
-			width: 12px;
-			height: 12px;
+			width: 14px;
+			height: 14px;
 		}
 	}
 
@@ -129,7 +170,7 @@
 		align-items: center;
 		gap: var(--space-smaller);
 		color: var(--color-event--onSurface);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 600;
 		line-height: 1.3;
 		white-space: nowrap;
@@ -139,7 +180,7 @@
 		min-width: 0;
 		overflow: hidden;
 		color: var(--color-heading);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-label);
 		font-weight: 600;
 		line-height: 1.25;
 		text-overflow: ellipsis;
@@ -147,13 +188,19 @@
 	}
 
 	.event-card__title--block {
-		white-space: normal;
+		white-space: nowrap;
 	}
 
 	.event-card--completed {
 		border-color: var(--color-border--interactive);
 		background: var(--color-surface--active);
-		.event-card__time, .event-card__title { color: var(--color-text--secondary); text-decoration: line-through; }
-		.event-card__marker { color: var(--color-icon--secondary); }
+		.event-card__time,
+		.event-card__title {
+			color: var(--color-text--secondary);
+			text-decoration: line-through;
+		}
+		.event-card__marker {
+			color: var(--color-icon--secondary);
+		}
 	}
 </style>

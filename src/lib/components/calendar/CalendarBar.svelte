@@ -18,7 +18,7 @@
 		extras
 	}: {
 		view: V;
-		views: { value: V; label: string }[];
+		views: { value: V; label: string; icon?: string; iconColor?: string }[];
 		/** The window in words, e.g. "Aug 30 – Sep 5, 2026". The page owns the wording. */
 		rangeLabel: string;
 		/** Move one whole window back or forward. */
@@ -35,26 +35,14 @@
 <div class="calendar-bar">
 	<div class="calendar-bar__date">
 		<div class="calendar-bar__stepper">
-			<button
-				type="button"
-				class="calendar-bar__step"
-				aria-label="Previous {view}"
-				onclick={() => onstep(-1)}
+			<Button variant="secondary" iconOnly label={`Previous ${view}`} onclick={() => onstep(-1)}
+				>{@html chevronLeftIcon}</Button
 			>
-				{@html chevronLeftIcon}
-			</button>
-			<span class="calendar-bar__split" aria-hidden="true"></span>
-			<button
-				type="button"
-				class="calendar-bar__step"
-				aria-label="Next {view}"
-				onclick={() => onstep(1)}
+			<Button variant="secondary" onclick={ontoday}>Today</Button>
+			<Button variant="secondary" iconOnly label={`Next ${view}`} onclick={() => onstep(1)}
+				>{@html chevronRightIcon}</Button
 			>
-				{@html chevronRightIcon}
-			</button>
 		</div>
-
-		<Button variant="secondary" onclick={ontoday}>Today</Button>
 
 		<p class="calendar-bar__range" aria-live="polite">{rangeLabel}</p>
 	</div>
@@ -89,58 +77,32 @@
 		gap: 10px;
 	}
 
-	// The two arrows are one joined control, so they read as "move the window" rather than two buttons.
 	.calendar-bar__stepper {
-		display: flex;
-		align-items: center;
-		box-sizing: border-box;
-		height: 36px;
-		border: var(--border-base) solid var(--color-border--interactive);
-		border-radius: var(--radius-base);
-		background-color: var(--color-surface);
-	}
-
-	.calendar-bar__split {
-		width: 1px;
-		height: 20px;
-		background-color: var(--color-border--interactive);
-	}
-
-	.calendar-bar__step {
 		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 36px;
-		height: 36px;
-		padding: 0;
-		border: none;
-		border-radius: var(--radius-base);
-		background: none;
-		color: var(--color-text);
-		cursor: pointer;
-		transition: background-color var(--timing-quick) ease;
-
-		&:hover {
-			background-color: var(--color-surface--hover);
+		:global(.button) {
+			border-radius: 0;
 		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
+		:global(.button:first-child) {
+			border-radius: var(--radius-base) 0 0 var(--radius-base);
 		}
-
-		:global(svg) {
-			width: 16px;
-			height: 16px;
+		:global(.button:last-child) {
+			border-radius: 0 var(--radius-base) var(--radius-base) 0;
+		}
+		:global(.button + .button) {
+			margin-left: -1px;
+		}
+		:global(.button:focus-visible) {
+			z-index: 1;
 		}
 	}
 
 	.calendar-bar__range {
 		padding-left: 6px;
 		color: var(--color-heading);
-		font-size: var(--typography--fontSize-large);
+		font-size: var(--typography--fontSize-larger);
 		font-weight: 700;
 		letter-spacing: -0.3px;
-		line-height: var(--typography--lineHeight-large);
+		line-height: 1.25;
 	}
 
 	.calendar-bar__tools {

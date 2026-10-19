@@ -11,6 +11,9 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import { calendarDateToString } from '$lib/components/ui/date-time';
+	import calendarPlusIcon from '@tabler/icons/outline/calendar-plus.svg?raw';
+	import calendarCheckIcon from '@tabler/icons/outline/calendar-check.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import chevronLeftIcon from '@tabler/icons/outline/chevron-left.svg?raw';
 	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
 
@@ -28,13 +31,18 @@
 		open: boolean;
 		onClose: () => void;
 		/** `dates` is empty when "Schedule later" is chosen — that means one dateless visit. */
-		onCreate: (result: { dates: string[]; scheduleLater: boolean }) => void;
+		onCreate: (result: {
+			dates: string[];
+			scheduleLater: boolean;
+		}) => void | boolean | Promise<void | boolean>;
 		/** `single` picks exactly one day (Add one visit); `multiple` picks many (Add multiple visits). */
 		mode?: 'single' | 'multiple';
 		/** Client reminders Part 4: the "Notify customer" box, shown above the buttons. */
 		notice?: Snippet;
 	} = $props();
 
+	let saving = $state(false);
+	let createError = $state('');
 	let picked = $state<DateValue[]>([]);
 	let scheduleLater = $state(false);
 	// Past days cannot be booked; the calendar opens on this month.
@@ -56,28 +64,42 @@
 	}
 
 	function cancel() {
+		if (saving) return;
 		reset();
 		onClose();
 	}
 
-	function create() {
-		if (!canCreate) return;
-		if (scheduleLater) {
-			onCreate({ dates: [], scheduleLater: true });
-		} else {
-			const dates = picked
-				.map((value) => calendarDateToString(value as CalendarDate))
-				.filter((value): value is string => Boolean(value))
-				.sort();
-			onCreate({ dates, scheduleLater: false });
+	async function create() {
+		if (!canCreate || saving) return;
+		saving = true;
+		createError = '';
+		const dates = scheduleLater
+			? []
+			: picked
+					.map((value) => calendarDateToString(value as CalendarDate))
+					.filter((value): value is string => Boolean(value))
+					.sort();
+		try {
+			const result = await onCreate({ dates, scheduleLater });
+			if (result !== false) reset();
+		} catch (caught) {
+			createError = caught instanceof Error ? caught.message : 'Those visits could not be added.';
+		} finally {
+			saving = false;
 		}
-		reset();
 	}
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 {#if open}
-	<Dialog {open} title={heading} size="small" onClose={cancel}>
+	<Dialog
+		{open}
+		title={heading}
+		size="small"
+		icon={calendarPlusIcon}
+		iconTone="job"
+		onClose={cancel}
+	>
 		<div class="create-visits">
 			<p class="create-visits__hint">
 				{#if mode === 'single'}
@@ -94,7 +116,7 @@
 				bind:value={picked}
 				{minValue}
 				weekdayFormat="short"
-				disabled={scheduleLater}
+				disabled={scheduleLater || saving}
 			>
 				{#snippet children({ months, weekdays })}
 					<Calendar.Header class="create-visits__cal-header">
@@ -140,11 +162,13 @@
 				id="create-visits-schedule-later"
 				label="Schedule later"
 				description="Add one visit now and pick the day once you know it."
+				disabled={saving}
 				bind:checked={scheduleLater}
 			/>
 
 			{#if !scheduleLater && picked.length > 0}
 				<p class="create-visits__count">
+					<span aria-hidden="true">{@html calendarCheckIcon}</span>
 					{picked.length}
 					{picked.length === 1 ? 'visit' : 'visits'} will be added.
 				</p>
@@ -152,11 +176,16 @@
 
 			{@render notice?.()}
 
-			<div class="create-visits__actions">
-				<Button variant="tertiary" onclick={cancel}>Cancel</Button>
-				<Button variant="primary" onclick={create} disabled={!canCreate}>Create</Button>
-			</div>
+			{#if createError}<p class="create-visits__error" role="alert">{createError}</p>{/if}
 		</div>
+		{#snippet footer()}
+			<div class="create-visits__actions">
+				<Button variant="secondary" onclick={cancel} disabled={saving}>Cancel</Button>
+				<Button onclick={create} disabled={!canCreate} loading={saving}
+					>{@html checkIcon}Create</Button
+				>
+			</div>
+		{/snippet}
 	</Dialog>
 {/if}
 
@@ -170,14 +199,23 @@
 
 		&__hint {
 			margin: 0;
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			color: var(--color-text);
+			font-size: var(--typography--fontSize-base);
+			line-height: 1.5;
 		}
 
 		&__count {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+				color: var(--color-job);
+			}
 			margin: 0;
 			color: var(--color-heading);
-			font-size: var(--typography--fontSize-small);
+			font-size: var(--typography--fontSize-label);
 			font-weight: 600;
 		}
 
@@ -185,31 +223,34 @@
 			display: flex;
 			justify-content: flex-end;
 			gap: var(--space-small);
-			padding-top: var(--space-small);
-			border-top: var(--border-base) solid var(--color-border);
+			width: 100%;
 		}
 
 		:global(.create-visits__calendar) {
 			width: 100%;
+			box-sizing: border-box;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-tile-large);
+			padding: var(--space-slim);
 		}
 
 		:global(.create-visits__cal-header) {
 			display: grid;
-			grid-template-columns: 36px 1fr 36px;
+			grid-template-columns: 32px 1fr 32px;
 			align-items: center;
 			gap: var(--space-small);
-			margin-bottom: var(--space-base);
+			margin-bottom: var(--space-small);
 			padding: var(--space-smaller);
 			border-radius: var(--radius-small);
-			background: var(--color-surface--background--subtle);
+			background: var(--color-surface);
 		}
 
 		:global(.create-visits__nav) {
 			display: grid;
-			width: 36px;
-			height: 36px;
+			width: 32px;
+			height: 32px;
 			place-items: center;
-			border: 0;
+			border: var(--border-base) solid var(--color-border--interactive);
 			border-radius: var(--radius-base);
 			color: var(--color-interactive--subtle);
 			background: transparent;
@@ -236,18 +277,20 @@
 		:global(.create-visits__heading) {
 			color: var(--color-heading);
 			font-size: var(--typography--fontSize-base);
-			font-weight: 700;
+			font-weight: 600;
 			text-align: center;
 		}
 
 		:global(.create-visits__grid) {
 			width: 100%;
 			border-collapse: separate;
-			border-spacing: 0 var(--space-smaller);
+			border-spacing: 0 6px;
 		}
 
 		:global(.create-visits__weekday) {
 			padding-bottom: var(--space-small);
+			text-transform: uppercase;
+			letter-spacing: 0.6px;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 			font-weight: 600;
@@ -285,11 +328,18 @@
 			font-weight: 700;
 		}
 
-		:global([data-highlighted] .create-visits__day),
-		:global([data-focused] .create-visits__day) {
+		:global([data-highlighted]:not([data-selected]) .create-visits__day),
+		:global([data-focused]:not([data-selected]) .create-visits__day) {
 			background: var(--color-surface--hover);
 		}
 
+		:global([data-outside-month] .create-visits__day) {
+			visibility: hidden;
+		}
+		&__error {
+			color: var(--color-critical--onSurface);
+			font-size: var(--typography--fontSize-label);
+		}
 		:global([data-disabled] .create-visits__day),
 		:global([data-outside-month] .create-visits__day),
 		:global([data-unavailable] .create-visits__day) {

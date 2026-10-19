@@ -19,7 +19,7 @@
 <style lang="scss">
 	.page-container {
 		width: 100%;
-		max-width: 1280px;
+		max-width: none;
 		margin-inline: auto;
 		background-color: var(--color-surface);
 		padding: var(--space-large);
@@ -29,7 +29,7 @@
 		/* `open` lets the page sit straight on the app background — no white sheet, no padding — for screens
 		   built from their own cards, like Jobs. */
 		&--open {
-			max-width: 1280px;
+			max-width: none;
 			margin-inline: auto;
 			border: 0;
 			padding: 0;
@@ -37,7 +37,7 @@
 			background-color: transparent;
 		}
 		&--standard {
-			max-width: 1280px;
+			max-width: none;
 			margin-inline: auto;
 		}
 		&--narrow {

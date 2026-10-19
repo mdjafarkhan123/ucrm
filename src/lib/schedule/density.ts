@@ -23,9 +23,9 @@ export const WEEK_HOUR_PX: Record<ScheduleZoom, number> = {
 
 /** Pixels per hour across a Day board row. Compact is the board's original width. */
 export const DAY_HOUR_PX: Record<ScheduleZoom, number> = {
-	compact: 120,
-	comfortable: 168,
-	spacious: 216
+	compact: 64,
+	comfortable: 84,
+	spacious: 108
 };
 
 const STORAGE_KEY = 'ucrm.schedule.zoom';

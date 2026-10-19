@@ -259,12 +259,26 @@
 		}
 		map.addSource('route', { type: 'geojson', data: line });
 		map.addLayer({
+			id: 'route-casing',
+			type: 'line',
+			source: 'route',
+			layout: { 'line-join': 'round', 'line-cap': 'round' },
+			paint: {
+				'line-color': container
+					? getComputedStyle(container).getPropertyValue('--color-surface').trim()
+					: 'transparent',
+				'line-width': 7
+			}
+		});
+		map.addLayer({
 			id: 'route-line',
 			type: 'line',
 			source: 'route',
 			layout: { 'line-join': 'round', 'line-cap': 'round' },
 			paint: {
-				'line-color': '#2f8f5b',
+				'line-color': container
+					? getComputedStyle(container).getPropertyValue('--color-time').trim()
+					: 'transparent',
 				'line-width': 3,
 				'line-opacity': 0.85
 			}
@@ -329,8 +343,8 @@
 		top: var(--space-small);
 		left: var(--space-small);
 		z-index: 2;
-		padding: var(--space-smaller) var(--space-small);
-		border-radius: var(--radius-base);
+		padding: 6px var(--space-slim);
+		border-radius: var(--radius-circle);
 		background-color: var(--color-surface);
 		border: var(--border-base) solid var(--color-border);
 		box-shadow: var(--shadow-low);
@@ -379,13 +393,13 @@
 	:global(.route-map__pin) {
 		display: grid;
 		place-items: center;
-		width: 26px;
-		height: 26px;
+		width: 32px;
+		height: 32px;
 		padding: 0;
-		border: 2px solid #fff;
-		border-radius: 50%;
-		background-color: #2f8f5b;
-		color: #fff;
+		border: 3px solid var(--color-surface);
+		border-radius: var(--radius-circle);
+		background-color: var(--color-time);
+		color: var(--color-text--reverse);
 		font-size: 12px;
 		font-weight: 700;
 		line-height: 1;
@@ -397,23 +411,24 @@
 	}
 
 	:global(.route-map__pin:hover) {
-		background-color: #276f48;
+		background-color: var(--color-time);
 		transform: scale(1.1);
 	}
 
 	:global(.route-map__pin:focus-visible) {
 		outline: none;
-		box-shadow: 0 0 0 3px color-mix(in srgb, #2f8f5b 45%, transparent);
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-time) 45%, transparent);
 	}
 
 	:global(.route-map__pin--selected) {
-		background-color: #1f6fd6;
-		transform: scale(1.2);
+		background-color: var(--color-interactive);
+		width: 40px;
+		height: 40px;
 		z-index: 3;
 	}
 
 	:global(.route-map__pin--selected:hover) {
-		background-color: #1a5fbb;
-		transform: scale(1.25);
+		background-color: var(--color-interactive--hover);
+		transform: scale(1.05);
 	}
 </style>

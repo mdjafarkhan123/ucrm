@@ -24,7 +24,7 @@
 	import type { AssessmentCreateSeed } from '$lib/requests/assessmentSeed';
 	import type { NewVisitDraft } from '$lib/schedule/drag';
 	import hammerIcon from '@tabler/icons/outline/hammer.svg?raw';
-	import clipboardListIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
+	import clipboardListIcon from '@tabler/icons/outline/inbox.svg?raw';
 	import calendarEventIcon from '@tabler/icons/outline/calendar-event.svg?raw';
 	import calendarTimeIcon from '@tabler/icons/outline/calendar-time.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
@@ -88,26 +88,26 @@
 	let createType = $state<CreateType>('job');
 	// Each kind wears its own colour, the same ones the rest of the app gives a job, a request and an event.
 	const typeOptions = [
-		{ value: 'job', label: 'Job', icon: hammerIcon, iconColor: 'var(--color-success--onSurface)' },
+		{ value: 'job', label: 'Job', icon: hammerIcon, iconColor: 'var(--color-job)' },
 		{
 			value: 'request',
 			label: 'Request',
 			icon: clipboardListIcon,
-			iconColor: 'var(--color-warning--onSurface)'
+			iconColor: 'var(--color-request)'
 		},
 		{
 			value: 'event',
 			label: 'Event',
 			icon: calendarEventIcon,
-			iconColor: 'var(--color-critical--onSurface)'
+			iconColor: 'var(--color-event--onSurface)'
 		}
 	];
 	const dialogLook = $derived(
 		createType === 'request'
-			? { icon: clipboardListIcon, tone: 'warning' as const }
+			? { icon: clipboardListIcon, tone: 'request' as const }
 			: createType === 'event'
-				? { icon: calendarEventIcon, tone: 'critical' as const }
-				: { icon: hammerIcon, tone: 'success' as const }
+				? { icon: calendarEventIcon, tone: 'event' as const }
+				: { icon: hammerIcon, tone: 'job' as const }
 	);
 
 	let title = $state('');
@@ -388,7 +388,9 @@
 	initialFocusId="job-create-title"
 	icon={dialogLook.icon}
 	iconTone={dialogLook.tone}
-	{onClose}
+	onClose={() => {
+		if (!saving) onClose();
+	}}
 >
 	<div class="job-create">
 		<SegmentedControl

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import calendarTimeIcon from '@tabler/icons/outline/calendar-time.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 	import mapPinIcon from '@tabler/icons/outline/map-pin.svg?raw';
@@ -36,8 +37,16 @@
 <dl class="preview-facts">
 	{#each facts as fact (fact.kind)}
 		<div class="preview-facts__row">
-			<span class="preview-facts__icon" aria-hidden="true">{@html icons[fact.kind]}</span>
-			<div class="preview-facts__text">
+			<IconTile
+				icon={icons[fact.kind]}
+				tone={fact.kind === 'where' || fact.kind === 'client'
+					? 'client'
+					: fact.kind === 'details'
+						? 'event'
+						: 'time'}
+				size={32}
+			/>
+			<div class="preview-facts__text" class:preview-facts__text--details={fact.kind === 'details'}>
 				<dt>{fact.label}</dt>
 				<dd class:preview-facts__warn={fact.warn}>{fact.value}</dd>
 			</div>
@@ -51,7 +60,7 @@
 	.preview-facts {
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
+		gap: 14px;
 		width: 100%;
 		margin: 0;
 	}
@@ -60,18 +69,6 @@
 		display: flex;
 		align-items: flex-start;
 		gap: 10px;
-	}
-
-	.preview-facts__icon {
-		display: inline-flex;
-		flex-shrink: 0;
-		margin-top: 1px;
-		color: var(--color-icon--secondary);
-
-		:global(svg) {
-			width: 16px;
-			height: 16px;
-		}
 	}
 
 	.preview-facts__text {
@@ -83,20 +80,25 @@
 
 	dt {
 		color: var(--color-text--secondary);
-		font-size: 11.5px;
+		font-size: var(--typography--fontSize-small);
 		line-height: 1.3;
 	}
 
 	dd {
 		margin: 0;
 		color: var(--color-heading);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 500;
+		font-size: var(--typography--fontSize-label);
+		font-weight: 600;
 		line-height: 1.35;
 		overflow-wrap: anywhere;
 		white-space: pre-wrap;
 	}
 
+	.preview-facts__text--details dd {
+		color: var(--color-text);
+		font-weight: 400;
+		line-height: 1.45;
+	}
 	.preview-facts__warn {
 		color: var(--color-warning--onSurface);
 		font-weight: 700;

@@ -4,6 +4,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import SchedulePreviewFacts from '$lib/components/schedule/SchedulePreviewFacts.svelte';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import arrowUpRightIcon from '@tabler/icons/outline/arrow-up-right.svg?raw';
 	import { visitDerivedStatus } from '$lib/schedule/status';
 	import { VISIT_STATUS_LABELS, VISIT_STATUS_TONES } from '$lib/schedule/statuses';
@@ -84,7 +85,9 @@
 		<!-- Completion is the Jobs-owned command, presented here and written through /api/jobs. Marking done is
 		     the headline dispatch action, so it leads; reopening is an undo, so it is quiet. -->
 		{#if canComplete && !visit.completed_at && oncomplete}
-			<Button size="small" onclick={oncomplete} loading={completing}>Mark complete</Button>
+			<Button size="small" onclick={oncomplete} loading={completing}
+				>{@html checkIcon}Mark complete</Button
+			>
 		{/if}
 		{#if canComplete && visit.completed_at && onuncomplete}
 			<Button variant="tertiary" size="small" onclick={onuncomplete} loading={completing}>
@@ -94,7 +97,9 @@
 		<!-- Every change a drag can make is reachable here too, with the keyboard, through the same Jobs
 		     form the Job page uses. -->
 		{#if canSchedule && !visit.completed_at}
-			<Button variant="secondary" size="small" onclick={onreschedule}>Reschedule</Button>
+			<Button variant="secondary" size="small" onclick={onreschedule} disabled={completing}
+				>Reschedule</Button
+			>
 		{/if}
 	</div>
 
@@ -110,7 +115,9 @@
 		<!-- Take a placed visit off the calendar and back into the backlog. Absent for an already-unscheduled
 		     visit, which has no date to clear. -->
 		{#if canSchedule && !visit.completed_at && visit.visit_date && onunschedule}
-			<Button variant="quiet" size="small" onclick={onunschedule}>Move to Unscheduled</Button>
+			<Button variant="quiet" size="small" onclick={onunschedule} disabled={completing}
+				>Move to Unscheduled</Button
+			>
 		{/if}
 	</div>
 </div>
@@ -128,8 +135,11 @@
 
 	.visit-preview__timer {
 		width: 100%;
-		padding-top: var(--space-small);
-		border-top: var(--border-base) solid var(--color-border);
+		box-sizing: border-box;
+		padding: var(--space-slim) var(--space-slim) var(--space-slim) 14px;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background--subtle);
 	}
 
 	.visit-preview__actions {
@@ -137,8 +147,10 @@
 		flex-wrap: wrap;
 		gap: var(--space-small);
 		width: 100%;
-		padding-top: var(--space-base);
-		border-top: var(--border-base) solid var(--color-border);
+
+		:global(.button) {
+			flex: 1;
+		}
 	}
 
 	.visit-preview__links {
@@ -147,6 +159,11 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-small) var(--space-base);
-		width: 100%;
+		box-sizing: border-box;
+		width: calc(100% + var(--space-medium) * 2);
+		margin: 0 calc(-1 * var(--space-medium)) calc(-1 * var(--space-medium));
+		padding: var(--space-small) var(--space-slim);
+		background: var(--color-surface--background--subtle);
+		border-top: var(--border-base) solid var(--color-border);
 	}
 </style>

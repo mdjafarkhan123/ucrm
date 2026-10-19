@@ -21,6 +21,7 @@
 	let {
 		visit,
 		density,
+		shortTime = false,
 		today,
 		nowMinutes = null,
 		employeesById,
@@ -36,6 +37,7 @@
 	}: {
 		visit: ScheduleVisit;
 		density: CardDensity;
+		shortTime?: boolean;
 		today: string;
 		/** Minutes past midnight in the contractor's timezone; a visit under way today wears "In progress". */
 		nowMinutes?: number | null;
@@ -84,7 +86,6 @@
 			visitWorkLabel(visit),
 			visitAssignmentLabel(visit, employeesById),
 			status ? VISIT_STATUS_LABELS[status] : null,
-			state === 'in-progress' ? 'In progress' : null,
 			keyboardMovable ? 'Arrow keys reschedule, Enter confirms, Escape cancels' : null
 		]
 			.filter(Boolean)
@@ -95,7 +96,7 @@
 <ScheduleItemCard
 	{density}
 	{state}
-	time={visitTimeLabel(visit)}
+	time={shortTime ? visitStartLabel(visit) : visitTimeLabel(visit)}
 	startTime={visitStartLabel(visit)}
 	client={visitClientLabel(visit)}
 	work={visitWorkLabel(visit)}
