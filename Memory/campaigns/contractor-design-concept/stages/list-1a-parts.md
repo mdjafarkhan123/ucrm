@@ -27,10 +27,10 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/StatusBadge` |  | ✅ | ✅ Merged 2026-10-19 |
 | `layout/StickyActionBar` |  | ✅ | ✅ |
 | `ui/Avatar` |  | ✅ Small controls `GbgcY` | ⬜ |
-| `data-display/ListLoadMore` |  | ⬜ | ⬜ |
+| `data-display/ListLoadMore` |  | ✅ Batch 7 `eJ0QQ` | ⬜ |
 | `ui/CalendarPicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `data-display/DataTable` |  | ⬜ | ⬜ |
-| `forms/FormErrorSummary` |  | ⬜ | ⬜ |
+| `forms/FormErrorSummary` |  | ✅ Batch 7 `eJ0QQ` | ⬜ |
 | `layout/RecordFormLayout` |  | ✅ | ✅ |
 | `layout/RailCard` |  | ✅ Page parts board `j3jDI` | ✅ Merged 2026-10-19 |
 | `ui/Banner` |  | ✅ Page parts board `j3jDI` | ✅ Merged 2026-10-19 |
@@ -41,10 +41,10 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/Card` |  | ✅ | ✅ Merged 2026-10-19 |
 | `ui/CardHeader` | Pencil "Card header"; on every Home card so far | ✅ | ✅ |
 | `ui/TimePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
-| `ui/PencilButton` |  | ⬜ | ⬜ |
+| `ui/PencilButton` |  | ✅ Batch 7 `eJ0QQ` | ⬜ |
 | `forms/MoneyInput` |  | ✅ Inputs and chips `Fma1f` | ⬜ |
 | `ui/FilterChip` |  | ✅ Inputs and chips `Fma1f` | ⬜ |
-| `data-display/KpiCard` |  | ⬜ | ⬜ |
+| `data-display/KpiCard` |  | ✅ Batch 7 `eJ0QQ` | ⬜ |
 | `layout/SidePanel` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `ui/DateTimePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `ui/CountryPicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
