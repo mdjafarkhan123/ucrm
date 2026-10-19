@@ -71,10 +71,14 @@ choice, "Notify customer", Cancel + Save move. Jafar approved the new line under
 radio option tiles, now the concept's radio look (`inputs.md`). The customer notice is email only (checked
 2026-10-19); a channel choice would be new behaviour.
 
+## New event form (drawn 2026-10-19, waiting for Jafar)
+
+On the board: `abdXu`, live `ScheduleEventDialog` as a 600 form pop-up over the dimmed page: Event title, Day +
+Time, Anytime checkbox, Details (optional), Cancel + Create event. Built from New job's approved field blocks.
+
 ## Next
 
 1. Draw the rest onto the board, one at a time (from `(app)/schedule/+page.svelte` and `components/schedule`):
-   event form (`ScheduleEventDialog`),
    new-job form (`ScheduleJobCreate`), Filters, the two menus, "are you sure?" pop-ups (Delete this event?,
    Move to Unscheduled?, Whose route?) on the shared pattern, Unscheduled drawer. Then Map (a screen).
 2. Jafar saves Pencil (Ctrl+S); commit `concept.pen` from the main folder under this claim.
