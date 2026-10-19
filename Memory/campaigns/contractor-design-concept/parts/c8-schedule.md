@@ -20,7 +20,7 @@ Our live Schedule already has the same behaviour, so the drawing needs no new da
 - Items (revised 2026-10-19 from Jafar's final recommendation): normal cards are the soft type tint (visit
   green, assessment orange, event yellow, task grey) with the 14px type icon in the record colour (grey once completed) and **no** thick line. Late: 4px red left
   line + "Late" pill. Unassigned: 4px amber left line + "Unassigned" pill. Both: red line wins, both pills stay.
-  Completed: warm silver `color-surface-active` card, 1px `color-border-interactive`, grey text and icon, green "Completed" pill with a check (Jafar 2026-10-19: white looked see-through; not `color-inactive-surface`,
+  Completed: warm silver `color-surface-active` card, 1px `color-border-interactive`, crossed-out title (Google Calendar / Tasks convention, so it never looks like a grey task card; Pencil has no strikethrough, so the drawing uses a 1px line per title line; code uses text-decoration), grey text and icon, green "Completed" pill with a check (Jafar 2026-10-19: white looked see-through; not `color-inactive-surface`,
   because the task tint and the inactive grey are the same colour). No fading, no animation, no "In progress".
 - Today: green weekday, number in a green circle, 3px green line under its heading, column and Anytime cell on
   `color-surface-background-subtle`. Closed days moved to `color-surface-active` so they differ from today.
