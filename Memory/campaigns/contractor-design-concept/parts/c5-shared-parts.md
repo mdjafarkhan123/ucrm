@@ -14,7 +14,7 @@
 | 4 Page parts | PageContainer, SectionBlock, RailCard, Breadcrumbs, Banner | Approved `j3jDI` 2026-10-19 (breadcrumb option C); for Codex to build |
 | 5 Pickers | CalendarPicker, TimePickerField, TimePicker, DateTimePicker, TimezonePicker, CountryPicker | Approved `uSXlT` "Pickers v2" 2026-10-19 (old `J3g7hi` deleted); for Codex to build |
 | 6a Small controls | Avatar, Toggle, RadioGroup, Tabs | Approved `GbgcY` 2026-10-19: Avatar A, Switch A, Radio A (improved live), Tabs B (soft capsules); looks in `avatars.md`, `tabs.md`, `inputs.md`; for Codex to build |
-| 6b Inputs and chips | FilterChip, MoneyInput, QuantityInput, TagSelect | Board `Fma1f`. Picked 2026-10-19: Filter A + a divider between name and value; Money B (currency block, figures right); Quantity B (− / + stepper, new behaviour approved); Tags A with the tag icon in the tag's colour. Waiting: Jafar's yes on choosing a tag colour (10 app colours, uses the existing unused `tags.color` column) |
+| 6b Inputs and chips | FilterChip, MoneyInput, QuantityInput, TagSelect | Board `Fma1f`. Picked 2026-10-19: Filter A + a divider between name and value; Money B (currency block, figures right); Quantity B (− / + stepper, new behaviour approved); Tags A as soft pills tinted in the tag's own colour (Notion/Gmail/Pipedrive convention), coloured tag icon. Waiting: Jafar's yes on choosing a tag colour (10 app colours, uses the existing unused `tags.color` column) |
 
 ## Batch 5 redraw decisions (Jafar, 2026-10-19)
 
@@ -43,6 +43,6 @@ Claude draws, reviews and merges (Jafar 2026-10-19).
 
 ## Next
 
-Continue remaining rows in `stages/list-1a-parts.md`, then Schedule. Build only approved designs; page-level journeys retain their existing behavior.
+Continue remaining approved rows in `stages/list-1a-parts.md`. Batch 4 and Schedule are integrated; build only approved designs and retain existing page-level journeys.
 
 **Rollout rule (Jafar, 2026-10-19):** an approved built shared part applies at every call site. SegmentedControl, Checkbox and ClientPicker had their concept appearance gated by a page wrapper; restriction removed and verified live on New client and New job. Light/dark switch screenshots: `docs/evidence/2026-10-19-fields/client-switches-*.jpg`. Focused ESLint, Svelte compile and autofixer passed.
