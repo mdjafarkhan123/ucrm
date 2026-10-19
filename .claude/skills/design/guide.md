@@ -1,9 +1,9 @@
 
 # Jafar's Design Preferences
 
-## Before starting design in pencil choose any 1 option from below after seeign apps current desing and then create at least 2 variant in pencil app of each
+## Before starting design in pencil choose any 1 option from below after seeign apps current desing and then create at least 2 variant in pencil app of any one option from below
 
-1. New Design: If you think a complete redesign from scratch with/witout new concept would look better.
+1. Completely New Design: If you think a complete redesign from scratch with new concept would look better, in this case forget old design what the app has.
 2. Refine Existing Design: If you think the current look is good, but need tweaks or customizations.
 
 ## Design prefernces
