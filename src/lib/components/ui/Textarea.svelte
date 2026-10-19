@@ -48,7 +48,6 @@
 		{maxlength}
 		bind:value
 		{disabled}
-		{required}
 		aria-invalid={isInvalid}
 		aria-required={required || undefined}
 		aria-describedby={describedBy}></textarea>

@@ -25,11 +25,11 @@
 		onkeydown?: (event: KeyboardEvent) => void;
 	} = $props();
 
-	let inputElement: HTMLInputElement;
+	let inputElement: HTMLInputElement | undefined;
 
 	function clear() {
 		value = '';
-		inputElement.focus();
+		inputElement?.focus();
 	}
 </script>
 
@@ -181,7 +181,7 @@
 			background: var(--color-surface--hover);
 			cursor: pointer;
 
-			&:hover {
+			&:hover:not(:disabled) {
 				color: var(--color-heading);
 				background: var(--color-surface--active);
 			}
@@ -202,6 +202,14 @@
 				width: 14px;
 				height: 14px;
 			}
+		}
+
+		&--disabled .search-input__icon,
+		&--disabled .search-input__clear {
+			color: var(--color-disabled);
+		}
+		&--disabled .search-input__clear {
+			cursor: not-allowed;
 		}
 
 		&--disabled {
