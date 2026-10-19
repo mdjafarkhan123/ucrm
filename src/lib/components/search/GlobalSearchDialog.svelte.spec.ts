@@ -136,7 +136,7 @@ describe('GlobalSearchDialog', () => {
 		await expect
 			.element(page.getByRole('heading', { name: 'Search is unavailable' }))
 			.toBeVisible();
-		await expect.element(page.getByRole('button', { name: 'Try Again' })).toBeVisible();
+		await expect.element(page.getByRole('button', { name: 'Try again' })).toBeVisible();
 	});
 
 	it('shows a useful empty state when no permitted record matches', async () => {

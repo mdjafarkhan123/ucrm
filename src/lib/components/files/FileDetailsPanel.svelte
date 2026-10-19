@@ -2,6 +2,8 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
 	import SidePanel from '$lib/components/layout/SidePanel.svelte';
+	import photoIcon from '@tabler/icons/outline/photo.svg?raw';
+	import fileIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
@@ -330,6 +332,7 @@
 <SidePanel
 	{open}
 	title={file?.display_name ?? 'File'}
+	icon={file?.mime_type.startsWith('image/') ? photoIcon : fileIcon}
 	subtitle={file
 		? `${formatFileType(file.mime_type, file.display_name)} · ${formatFileSize(file.size_bytes)}`
 		: undefined}

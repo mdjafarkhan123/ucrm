@@ -9,9 +9,9 @@ screens reuse them.
 
 | Batch | Parts | State |
 | --- | --- | --- |
-| 1 Pop-ups | `ui/Dialog` (form pop-up), `ui/ConfirmDialog` ("are you sure?"), `layout/SidePanel` (side drawer) | Drawn 2026-10-19 on `concept.pen` board "Concept · Foundation · Pop-ups · 1440" (`v2Y89`); **approved by Jafar 2026-10-19**; build next |
-| 2 Page states | `data-display/LoadingSkeleton`, `EmptyState`, `ErrorState` | Drawn 2026-10-19, section "Loading, empty and couldn't load" on `v2Y89`; **approved by Jafar 2026-10-19** |
-| 3 Fields in code | `ui/Input`, `ui/Select`, `ui/Textarea`, `ui/Badge`, `ui/SearchInput` | Drawn 2026-10-19 on `concept.pen` board "Concept · Foundation · Fields · 1440" (`khuNF`); **approved by Jafar 2026-10-19**; build next |
+| 1 Pop-ups | `ui/Dialog` (form pop-up), `ui/ConfirmDialog` ("are you sure?"), `layout/SidePanel` (side drawer) | Approved 2026-10-19 (`v2Y89`); **built 2026-10-19** |
+| 2 Page states | `data-display/LoadingSkeleton`, `EmptyState`, `ErrorState` | Approved 2026-10-19 (`v2Y89`); **built 2026-10-19** |
+| 3 Fields in code | `ui/Input`, `ui/Select`, `ui/Textarea`, `ui/Badge` (drawn ✅, not built), `ui/SearchInput` | Approved 2026-10-19 on Fields board `khuNF`; building |
 | Then | the remaining `list-1a-parts.md` rows in order | — |
 
 ## Batch 1 — what the board shows
@@ -36,9 +36,19 @@ A Clients card in three states. Loading: row-shaped grey shapes (`--color-border
 page's colour, title 20/600, one line, the one main action. Couldn't load: red tile, live wording, Try again
 (secondary, refresh icon). An empty section inside a card keeps the approved one quiet line.
 
+## Built 2026-10-19
+
+Shared `ui/IconTile` and `ui/DialogHeader` (form pop-up and drawer share it); design modules `modals.md`,
+`page-states.md`. Checked live, light and dark: New expense, Delete visit (focus starts on Cancel), file
+drawer, Test Folder empty, Reviews loading, Marketing couldn't load.
+
+**Left for later screens (not done here):** ~96 form pop-ups keep their buttons inside the body instead of the
+grey footer bar; ~120 pop-ups have no icon so show no tile; empty states default to the blue tile until each
+screen sets its own colour (`tone`). Each screen's redesign fixes its own: the "Built means the whole piece" rule in `stages/list-index.md`.
+
 ## Next
 
-Build batches 1 and 2 in their shared components (`ui/Dialog`, `ui/ConfirmDialog`, `layout/SidePanel`, `data-display/*`), add a modals module to the design skill, compare live with `v2Y89`. Jafar re-approved batch 1 after the preference check (drawer 480 kept).
+Batch 3 (fields in code), then Schedule.
 
 ## Batch 3 — what the board shows (`khuNF`, approved 2026-10-19)
 
@@ -56,7 +66,5 @@ in light and dark.
 `--color-border--section` in `inputs.md` (quieter than the typing ring); the count reads "408 left" /
 "12 too many" instead of a bare number. Live behaviour only; nothing new added. Rules written into `inputs.md` and `badges.md`.
 
-**Next session:** build batch 3 in `ui/Input`, `ui/Select`, `ui/Textarea`, `ui/SearchInput`, `ui/Badge` from
-`inputs.md`/`badges.md`; compare live with `khuNF`, light and dark. Live Input/Textarea use a floating label
-inside the box today; the concept puts the label above (as already approved in the Foundation). `concept.pen` in
-main's folder is modified by Pencil and matches this branch's copy; restore it before merging.
+
+**Follow-up states:** approved 2026-10-19; see `c5-fields-followup.md`. Build batch 3 next.

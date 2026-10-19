@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Dialog as DialogPrimitive } from 'bits-ui';
 	import type { Snippet } from 'svelte';
-	import closeIcon from '@tabler/icons/outline/x.svg?raw';
+	import DialogHeader from '$lib/components/ui/DialogHeader.svelte';
 
 	// A panel that slides in from the right and leaves the page behind it visible. Use it when the user
 	// has to look at one record without losing their place in a list or a board — `Dialog` is the
@@ -13,6 +13,8 @@
 		open,
 		title,
 		subtitle,
+		icon,
+		iconTone = 'inactive',
 		onClose,
 		children,
 		footer
@@ -21,13 +23,16 @@
 		title: string;
 		/** One line under the title, for an amount, a reference, or a status summary. */
 		subtitle?: string;
+		/** A Tabler icon (raw SVG) on a tile before the title. */
+		icon?: string;
+		/** The tile's colour family: the record or part of the app the panel shows. */
+		iconTone?: string;
 		onClose: () => void;
 		children: Snippet;
 		footer?: Snippet;
 	} = $props();
 </script>
 
-<!-- eslint-disable svelte/no-at-html-tags -->
 <DialogPrimitive.Root
 	{open}
 	onOpenChange={(next) => {
@@ -37,15 +42,7 @@
 	<DialogPrimitive.Portal>
 		<DialogPrimitive.Overlay class="side-panel__overlay" />
 		<DialogPrimitive.Content class="side-panel__content">
-			<header class="side-panel__header">
-				<div class="side-panel__heading">
-					<DialogPrimitive.Title level={2}>{title}</DialogPrimitive.Title>
-					{#if subtitle}<p class="side-panel__subtitle">{subtitle}</p>{/if}
-				</div>
-				<DialogPrimitive.Close class="side-panel__close" aria-label="Close">
-					{@html closeIcon}
-				</DialogPrimitive.Close>
-			</header>
+			<DialogHeader {title} {subtitle} {icon} tone={iconTone} />
 			<div class="side-panel__body">
 				{@render children()}
 			</div>
@@ -53,8 +50,6 @@
 		</DialogPrimitive.Content>
 	</DialogPrimitive.Portal>
 </DialogPrimitive.Root>
-
-<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	:global(.side-panel__overlay) {
@@ -64,74 +59,36 @@
 		background: var(--color-overlay);
 	}
 
+	// Floats 12 from the window's edges, so it reads as a card laid over the page.
 	:global(.side-panel__content) {
 		position: fixed;
-		top: 0;
-		right: 0;
-		bottom: 0;
+		top: var(--space-slim);
+		right: var(--space-slim);
+		bottom: var(--space-slim);
 		z-index: var(--elevation-modal);
 		display: flex;
 		flex-direction: column;
 		box-sizing: border-box;
-		width: min(100vw, var(--side-panel--width, 440px));
+		width: min(calc(100vw - var(--space-slim) * 2), var(--side-panel--width, 480px));
 		overflow: hidden;
-		border-left: var(--border-base) solid var(--color-border);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-large);
 		background: var(--color-surface);
-		box-shadow: var(--shadow-high);
+		box-shadow: var(--shadow-base);
 	}
 
-	.side-panel__header {
-		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
-		gap: var(--space-base);
-		padding: var(--space-large);
-		border-bottom: var(--border-base) solid var(--color-border);
-	}
-	.side-panel__heading :global(h2) {
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-larger);
-		font-weight: 700;
-		line-height: var(--typography--lineHeight-tight);
-	}
-	.side-panel__subtitle {
-		margin-top: var(--space-smallest);
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-	}
-	:global(.side-panel__close) {
-		display: grid;
-		flex: 0 0 auto;
-		place-items: center;
-		width: var(--space-large);
-		height: var(--space-large);
-		border: none;
-		border-radius: var(--radius-base);
-		color: var(--color-icon--secondary);
-		background: transparent;
-		cursor: pointer;
-	}
-	:global(.side-panel__close:hover) {
-		background: var(--color-surface--hover);
-	}
-	:global(.side-panel__close:focus-visible) {
-		outline: none;
-		box-shadow: var(--shadow-focus);
-	}
-	:global(.side-panel__close svg) {
-		width: 20px;
-		height: 20px;
-	}
 	.side-panel__body {
 		display: flex;
 		flex: 1 1 auto;
 		flex-direction: column;
-		gap: var(--space-large);
+		gap: var(--space-medium);
 		overflow-y: auto;
-		padding: var(--space-large);
+		padding: var(--space-medium);
 	}
 	.side-panel__footer {
-		padding: var(--space-base) var(--space-large);
+		flex: 0 0 auto;
+		padding: var(--space-base) var(--space-medium);
 		border-top: var(--border-base) solid var(--color-border);
+		background: var(--color-surface--background--subtle);
 	}
 </style>

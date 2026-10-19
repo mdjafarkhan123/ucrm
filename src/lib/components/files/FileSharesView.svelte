@@ -224,6 +224,7 @@
 
 <SidePanel
 	open={panelOpen}
+	icon={linkIcon}
 	title={openRow ? `Link for ${clientLabel(openRow.client_name)}` : 'Shared link'}
 	subtitle={openRow
 		? `${openRow.file_count} ${openRow.file_count === 1 ? 'file' : 'files'} · sent ${formatDate(openRow.issued_at)}`

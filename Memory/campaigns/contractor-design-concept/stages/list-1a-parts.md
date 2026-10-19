@@ -7,22 +7,22 @@ Key, tick rule and coverage command: `list-index.md`.
 | Piece | Inside it | Pencil | Built |
 | --- | --- | --- | --- |
 | `ui/Button` |  | ✅ | ✅ |
-| `data-display/LoadingSkeleton` |  | ✅ Pop-ups board `v2Y89` | ⬜ |
-| `data-display/ErrorState` |  | ✅ Pop-ups board `v2Y89` | ⬜ |
+| `data-display/LoadingSkeleton` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
+| `data-display/ErrorState` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `ui/Input` |  | ✅ | ⬜ |
 | `ui/Select` |  | ✅ | ⬜ |
 | `ui/Checkbox` |  | ✅ | ✅ |
-| `data-display/EmptyState` |  | ✅ Pop-ups board `v2Y89` | ⬜ |
+| `data-display/EmptyState` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `layout/SectionBlock` |  | ⬜ | ⬜ |
 | `layout/PageContainer` |  | ⬜ | ⬜ |
 | `layout/PageHeader` |  | ✅ | ✅ |
 | `ui/Badge` |  | ✅ | ⬜ |
-| `ui/Dialog` |  | ✅ Pop-ups board `v2Y89` | ⬜ |
+| `ui/Dialog` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `ui/Textarea` |  | ✅ | ⬜ |
 | `ui/SearchInput` |  | ⬜ | ⬜ |
 | `ui/DropdownMenu` |  | ✅ | ✅ |
 | `layout/Breadcrumbs` |  | ⬜ | ⬜ |
-| `ui/ConfirmDialog` |  | ✅ Pop-ups board `v2Y89` | ⬜ |
+| `ui/ConfirmDialog` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `ui/SegmentedControl` |  | ✅ | ✅ |
 | `ui/StatusBadge` |  | ✅ | ⬜ |
 | `layout/StickyActionBar` |  | ✅ | ✅ |
@@ -45,7 +45,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `forms/MoneyInput` |  | ⬜ | ⬜ |
 | `ui/FilterChip` |  | ⬜ | ⬜ |
 | `data-display/KpiCard` |  | ⬜ | ⬜ |
-| `layout/SidePanel` |  | ✅ Pop-ups board `v2Y89` | ⬜ |
+| `layout/SidePanel` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `ui/DateTimePicker` |  | ⬜ | ⬜ |
 | `ui/CountryPicker` |  | ⬜ | ⬜ |
 | `ui/TagSelect` |  | ⬜ | ⬜ |
