@@ -16,7 +16,7 @@ Preserved component bindings, callbacks, existing native validation behavior, an
 - Live owner journey on `/clients/new`: typed names, changed communication setting by keyboard, typed notes; counter changed from 500 to 478 left. Checked light and dark; cancelled without saving a client.
 - Live `/clients`: searched Sarah, saw No matching clients, cleared search and saw the list return.
 - Temporary browser proof using actual components: errors linked with aria-describedby; disabled fields and search clear disabled; selected dropdown option; cleared search and confirmed input focus. Light/dark screenshots and narrow layout inspection. Proof route removed after checks.
-- Local screenshots: `tmp/field-proof/fields-light.jpg`, `fields-dark.jpg`, `fields-narrow.jpg`, `clients-search-dark.jpg`.
+- Local screenshots: `docs/evidence/2026-10-19-fields/` (light, dark, narrow and live clients search).
 
 No full-project typecheck, build, or test suite run, per Jafar's campaign instruction. No server write path changed. Page-specific layouts and controls outside this batch keep their existing appearance until their own redesign.
 

@@ -12,6 +12,6 @@
 
 **Done 2026-10-18:** buttons everywhere (`parts/c1e-buttons-everywhere.md` lists what is left), Foundation sizes named, C2 Home (`parts/c2-home.md`), C3 Jobs list (`parts/c3-jobs-list.md`), C4 Job details and the shared Card header (`parts/c4-job-details.md`), C5 New job (`parts/c5-new-job.md`).
 
-**Working notes:** Pencil edits only the open file and writes only on Ctrl+S (`docs/pencil-workflow.md`).
+**Pencil:** open file only; Ctrl+S saves (`docs/pencil-workflow.md`).
 
 **Still open:** money cards in dark mode; "Changes requested" colour; whether to keep two styling-module sets after rollout.
