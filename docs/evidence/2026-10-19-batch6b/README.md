@@ -29,7 +29,7 @@ Migration `20261019132605_tag_colour_editing.sql` was applied to the remote deve
 
 ## Integrated main check
 
-After merging into main, opened the real tunnel app, selected the saved proof tag on New client and opened its colour menu. Teal remained selected and the persisted colour was reflected in the chip (`tags-main.png`). Left the client unsaved and returned the app to Home.
+The same six focused tests passed on integrated main (4 files, 24.14 seconds including cold dependency preparation). After merging into main, opened the real tunnel app, selected the saved proof tag on New client and opened its colour menu. Teal remained selected and the persisted colour was reflected in the chip (`tags-main.png`). Left the client unsaved and returned the app to Home.
 
 ## Engineering references
 
