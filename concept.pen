@@ -29923,17 +29923,21 @@
                                               ]
                                             },
                                             {
-                                              "id": "iTNxb",
+                                              "id": "g4vkN5",
                                               "type": "ref",
-                                              "ref": "A8ydV",
+                                              "ref": "qpjlj",
                                               "name": "Change property",
                                               "height": 32,
                                               "padding": [
                                                 0,
                                                 12
                                               ],
+                                              "gap": 6,
                                               "descendants": {
-                                                "cQzG0": {
+                                                "lDuWW": {
+                                                  "icon": "map-pin"
+                                                },
+                                                "Dpmda": {
                                                   "content": "Change property",
                                                   "fontSize": 13
                                                 }
@@ -32903,18 +32907,21 @@
                                   ]
                                 },
                                 {
-                                  "id": "trNoF",
+                                  "id": "IIfo1",
                                   "type": "ref",
-                                  "ref": "A8ydV",
+                                  "ref": "qpjlj",
                                   "name": "Change property",
                                   "height": 32,
                                   "padding": [
                                     0,
                                     12
                                   ],
-                                  "enabled": false,
+                                  "gap": 6,
                                   "descendants": {
-                                    "cQzG0": {
+                                    "lDuWW": {
+                                      "icon": "map-pin"
+                                    },
+                                    "Dpmda": {
                                       "content": "Change property",
                                       "fontSize": 13
                                     }
@@ -68519,17 +68526,21 @@
                                       ]
                                     },
                                     {
-                                      "id": "a0OGT",
+                                      "id": "ml0ke",
                                       "type": "ref",
-                                      "ref": "A8ydV",
+                                      "ref": "qpjlj",
                                       "name": "Change property",
                                       "height": 32,
                                       "padding": [
                                         0,
                                         12
                                       ],
+                                      "gap": 6,
                                       "descendants": {
-                                        "cQzG0": {
+                                        "lDuWW": {
+                                          "icon": "map-pin"
+                                        },
+                                        "Dpmda": {
                                           "content": "Change property",
                                           "fontSize": 13
                                         }
@@ -72238,449 +72249,227 @@
                 },
                 {
                   "type": "frame",
-                  "id": "se5NW",
-                  "name": "Unscheduled panel",
-                  "clip": true,
+                  "id": "SDU0d",
+                  "name": "Option A · amber then red",
                   "width": 360,
                   "height": "fill_container",
-                  "fill": "$color-surface",
-                  "cornerRadius": "$radius-large",
-                  "stroke": "$color-border",
-                  "strokeWidth": 1,
                   "layout": "vertical",
+                  "gap": 8,
                   "children": [
                     {
+                      "type": "text",
+                      "id": "Lxk2l",
+                      "name": "Caption",
+                      "fill": "$color-text-secondary",
+                      "content": "Option A · amber, red from 7 days (recommended)",
+                      "fontFamily": "$font-family",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
                       "type": "frame",
-                      "id": "V6svo",
-                      "name": "Header",
-                      "width": "fill_container",
+                      "id": "se5NW",
+                      "name": "Unscheduled panel",
+                      "clip": true,
+                      "width": 360,
+                      "height": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-large",
                       "stroke": "$color-border",
-                      "strokeWidth": {
-                        "bottom": 1
-                      },
-                      "gap": 10,
-                      "padding": [
-                        14,
-                        14,
-                        14,
-                        16
-                      ],
-                      "alignItems": "center",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
                       "children": [
                         {
-                          "id": "pNVGI",
-                          "type": "ref",
-                          "ref": "GrSlk",
-                          "name": "Tile",
-                          "fill": "$color-time-surface",
-                          "descendants": {
-                            "XsJUX": {
-                              "icon": "calendar-off",
-                              "fill": "$color-time"
-                            }
-                          }
-                        },
-                        {
-                          "type": "text",
-                          "id": "Jrqxx",
-                          "name": "Title",
-                          "fill": "$color-heading",
-                          "content": "Unscheduled",
-                          "fontFamily": "$font-family",
-                          "fontSize": 16,
-                          "fontWeight": "600"
-                        },
-                        {
                           "type": "frame",
-                          "id": "BrmxW",
-                          "name": "Count",
-                          "height": 20,
-                          "fill": "$color-inactive-surface",
-                          "cornerRadius": 999,
+                          "id": "V6svo",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "stroke": "$color-border",
+                          "strokeWidth": {
+                            "bottom": 1
+                          },
+                          "gap": 10,
                           "padding": [
-                            0,
-                            7
+                            14,
+                            14,
+                            14,
+                            16
                           ],
                           "alignItems": "center",
                           "children": [
                             {
+                              "id": "pNVGI",
+                              "type": "ref",
+                              "ref": "GrSlk",
+                              "name": "Tile",
+                              "fill": "$color-time-surface",
+                              "descendants": {
+                                "XsJUX": {
+                                  "icon": "calendar-off",
+                                  "fill": "$color-time"
+                                }
+                              }
+                            },
+                            {
                               "type": "text",
-                              "id": "gkiki",
-                              "name": "Number",
+                              "id": "Jrqxx",
+                              "name": "Title",
                               "fill": "$color-heading",
-                              "content": "4",
+                              "content": "Unscheduled",
                               "fontFamily": "$font-family",
-                              "fontSize": 12,
+                              "fontSize": 16,
                               "fontWeight": "600"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "ol65q",
-                          "name": "Spacer",
-                          "width": "fill_container",
-                          "height": 1
-                        },
-                        {
-                          "id": "pOhkp",
-                          "type": "ref",
-                          "ref": "nIDZt",
-                          "name": "Close",
-                          "descendants": {
-                            "IW9bL": {
-                              "icon": "x"
-                            }
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "YxM9N",
-                      "name": "Search and employee",
-                      "width": "fill_container",
-                      "stroke": "$color-border",
-                      "strokeWidth": {
-                        "bottom": 1
-                      },
-                      "layout": "vertical",
-                      "gap": 8,
-                      "padding": [
-                        12,
-                        16
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "wycHm",
-                          "name": "Box",
-                          "width": "fill_container",
-                          "height": 40,
-                          "fill": "$color-surface",
-                          "cornerRadius": "$radius-base",
-                          "stroke": "$color-border-interactive",
-                          "strokeWidth": 1,
-                          "gap": 8,
-                          "padding": [
-                            0,
-                            12
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "dklWN",
-                              "name": "Icon",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "search",
-                              "library": "lucide",
-                              "fill": "$color-icon-secondary"
-                            },
-                            {
-                              "type": "text",
-                              "id": "D5BO4",
-                              "name": "Value",
-                              "fill": "$color-text-secondary",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "Search client, work or place",
-                              "fontFamily": "$font-family",
-                              "fontSize": "$font-size-base",
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "bsSHn",
-                          "name": "Box",
-                          "width": "fill_container",
-                          "height": 40,
-                          "fill": "$color-surface",
-                          "cornerRadius": "$radius-base",
-                          "stroke": "$color-border-interactive",
-                          "strokeWidth": 1,
-                          "gap": 8,
-                          "padding": [
-                            0,
-                            12
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "lSive",
-                              "name": "Icon",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "users",
-                              "library": "lucide",
-                              "fill": "$color-icon-secondary"
-                            },
-                            {
-                              "type": "text",
-                              "id": "mJyE7",
-                              "name": "Value",
-                              "fill": "$color-heading",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "All employees",
-                              "fontFamily": "$font-family",
-                              "fontSize": "$font-size-base",
-                              "fontWeight": "500"
-                            },
-                            {
-                              "type": "icon",
-                              "id": "GaLzh",
-                              "name": "Chevron",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "chevron-down",
-                              "library": "lucide",
-                              "fill": "$color-icon-secondary"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "Gxhfh",
-                      "name": "List",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 10,
-                      "padding": [
-                        12,
-                        16,
-                        12,
-                        8
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "rxsjM",
-                          "name": "Item · Sarah Lee",
-                          "width": "fill_container",
-                          "gap": 4,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "q0U0rE",
-                              "name": "Grip",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "grip-vertical",
-                              "library": "lucide",
-                              "fill": "$color-icon-secondary"
                             },
                             {
                               "type": "frame",
-                              "id": "tPtsL",
-                              "name": "Card",
-                              "width": "fill_container",
-                              "fill": "$color-surface",
-                              "cornerRadius": 12,
-                              "stroke": "$color-border",
-                              "strokeWidth": 1,
-                              "layout": "vertical",
-                              "gap": 4,
-                              "padding": 12,
+                              "id": "BrmxW",
+                              "name": "Count",
+                              "height": 20,
+                              "fill": "$color-inactive-surface",
+                              "cornerRadius": 999,
+                              "padding": [
+                                0,
+                                7
+                              ],
+                              "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "frame",
-                                  "id": "fB2UK",
-                                  "name": "Top",
+                                  "type": "text",
+                                  "id": "gkiki",
+                                  "name": "Number",
+                                  "fill": "$color-heading",
+                                  "content": "4",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ol65q",
+                              "name": "Spacer",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "id": "pOhkp",
+                              "type": "ref",
+                              "ref": "nIDZt",
+                              "name": "Close",
+                              "descendants": {
+                                "IW9bL": {
+                                  "icon": "x"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "YxM9N",
+                          "name": "Search and employee",
+                          "width": "fill_container",
+                          "stroke": "$color-border",
+                          "strokeWidth": {
+                            "bottom": 1
+                          },
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "wycHm",
+                              "name": "Box",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-base",
+                              "stroke": "$color-border-interactive",
+                              "strokeWidth": 1,
+                              "gap": 8,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "dklWN",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "search",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "D5BO4",
+                                  "name": "Value",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
                                   "width": "fill_container",
-                                  "gap": 8,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "MZZxC",
-                                      "name": "Client",
-                                      "fill": "$color-heading",
-                                      "textGrowth": "fixed-width",
-                                      "width": "fill_container",
-                                      "content": "Sarah Lee",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 14,
-                                      "fontWeight": "600"
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "BKNqo",
-                                      "name": "Age",
-                                      "gap": 4,
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "icon",
-                                          "id": "YeMNI",
-                                          "name": "Clock",
-                                          "width": 12,
-                                          "height": 12,
-                                          "icon": "clock-3",
-                                          "library": "lucide",
-                                          "fill": "$color-icon-secondary"
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "PACLK",
-                                          "name": "Text",
-                                          "fill": "$color-text-secondary",
-                                          "content": "Waiting 3 days",
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 12,
-                                          "fontWeight": "500"
-                                        }
-                                      ]
-                                    }
-                                  ]
+                                  "content": "Search client, work or place",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "bsSHn",
+                              "name": "Box",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-base",
+                              "stroke": "$color-border-interactive",
+                              "strokeWidth": 1,
+                              "gap": 8,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "lSive",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "users",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
                                 },
                                 {
-                                  "type": "frame",
-                                  "id": "PTsxL",
-                                  "name": "Work row",
-                                  "gap": 6,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "A74YG",
-                                      "name": "Kind",
-                                      "width": 14,
-                                      "height": 14,
-                                      "icon": "hammer",
-                                      "library": "lucide",
-                                      "fill": "$color-job"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "vxbW4",
-                                      "name": "Work",
-                                      "fill": "$color-text",
-                                      "content": "Kitchen cabinet install",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 13,
-                                      "fontWeight": "500"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "V9L3b",
-                                  "name": "Place",
-                                  "gap": 4,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "iAfcQ",
-                                      "name": "Pin",
-                                      "width": 12,
-                                      "height": 12,
-                                      "icon": "map-pin",
-                                      "library": "lucide",
-                                      "fill": "$color-client"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "YeNSW",
-                                      "name": "Text",
-                                      "fill": "$color-text-secondary",
-                                      "content": "14 Elm Street, Springfield",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "YXYCs",
-                                  "name": "Foot",
+                                  "type": "text",
+                                  "id": "mJyE7",
+                                  "name": "Value",
+                                  "fill": "$color-heading",
+                                  "textGrowth": "fixed-width",
                                   "width": "fill_container",
-                                  "gap": 8,
-                                  "padding": [
-                                    6,
-                                    0,
-                                    0,
-                                    0
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "A3AXLy",
-                                      "name": "Who",
-                                      "width": "fill_container",
-                                      "gap": 6,
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "H4TSr",
-                                          "name": "People",
-                                          "gap": 2,
-                                          "children": [
-                                            {
-                                              "type": "frame",
-                                              "id": "T0p2u",
-                                              "name": "Avatar MD",
-                                              "width": 24,
-                                              "height": 24,
-                                              "fill": "$color-heading",
-                                              "cornerRadius": 999,
-                                              "justifyContent": "center",
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "DWLjq",
-                                                  "name": "Initials",
-                                                  "fill": "$color-surface",
-                                                  "content": "MD",
-                                                  "fontFamily": "$font-family",
-                                                  "fontSize": 10,
-                                                  "fontWeight": "700"
-                                                }
-                                              ]
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "OF4A3",
-                                          "name": "Names",
-                                          "fill": "$color-text",
-                                          "content": "Mike Davis",
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 12,
-                                          "fontWeight": "500"
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "id": "H5JhUF",
-                                      "type": "ref",
-                                      "ref": "qpjlj",
-                                      "name": "Schedule",
-                                      "height": 32,
-                                      "descendants": {
-                                        "lDuWW": {
-                                          "icon": "calendar-plus"
-                                        },
-                                        "Dpmda": {
-                                          "content": "Schedule",
-                                          "fontSize": 13
-                                        }
-                                      }
-                                    }
-                                  ]
+                                  "content": "All employees",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "GaLzh",
+                                  "name": "Chevron",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "chevron-down",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
                                 }
                               ]
                             }
@@ -72688,195 +72477,100 @@
                         },
                         {
                           "type": "frame",
-                          "id": "PFTwE",
-                          "name": "Item · Tom Becker",
+                          "id": "Gxhfh",
+                          "name": "List",
                           "width": "fill_container",
-                          "gap": 4,
-                          "alignItems": "center",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "padding": [
+                            12,
+                            16,
+                            12,
+                            8
+                          ],
                           "children": [
                             {
-                              "type": "icon",
-                              "id": "lj8lA",
-                              "name": "Grip",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "grip-vertical",
-                              "library": "lucide",
-                              "fill": "$color-icon-secondary"
-                            },
-                            {
                               "type": "frame",
-                              "id": "a50dSf",
-                              "name": "Card",
+                              "id": "rxsjM",
+                              "name": "Item · Sarah Lee",
                               "width": "fill_container",
-                              "fill": "$color-surface",
-                              "cornerRadius": 12,
-                              "stroke": "$color-border",
-                              "strokeWidth": 1,
-                              "layout": "vertical",
                               "gap": 4,
-                              "padding": 12,
+                              "alignItems": "center",
                               "children": [
                                 {
+                                  "type": "icon",
+                                  "id": "q0U0rE",
+                                  "name": "Grip",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "grip-vertical",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
                                   "type": "frame",
-                                  "id": "WMuk1",
-                                  "name": "Top",
+                                  "id": "tPtsL",
+                                  "name": "Card",
                                   "width": "fill_container",
-                                  "gap": 8,
-                                  "alignItems": "center",
+                                  "fill": "$color-surface",
+                                  "cornerRadius": 12,
+                                  "stroke": "$color-border",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "gap": 4,
+                                  "padding": 12,
                                   "children": [
                                     {
-                                      "type": "text",
-                                      "id": "K6odLt",
-                                      "name": "Client",
-                                      "fill": "$color-heading",
-                                      "textGrowth": "fixed-width",
-                                      "width": "fill_container",
-                                      "content": "Tom Becker",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 14,
-                                      "fontWeight": "600"
-                                    },
-                                    {
                                       "type": "frame",
-                                      "id": "L6fgj",
-                                      "name": "Age",
-                                      "gap": 4,
+                                      "id": "fB2UK",
+                                      "name": "Top",
+                                      "width": "fill_container",
+                                      "gap": 8,
                                       "alignItems": "center",
                                       "children": [
-                                        {
-                                          "type": "icon",
-                                          "id": "F8fNez",
-                                          "name": "Clock",
-                                          "width": 12,
-                                          "height": 12,
-                                          "icon": "clock-3",
-                                          "library": "lucide",
-                                          "fill": "$color-icon-secondary"
-                                        },
                                         {
                                           "type": "text",
-                                          "id": "TDvZY",
-                                          "name": "Text",
-                                          "fill": "$color-text-secondary",
-                                          "content": "Added today",
+                                          "id": "MZZxC",
+                                          "name": "Client",
+                                          "fill": "$color-heading",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "Sarah Lee",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 12,
-                                          "fontWeight": "500"
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "y3ezo",
-                                  "name": "Work row",
-                                  "gap": 6,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "gdQWz",
-                                      "name": "Kind",
-                                      "width": 14,
-                                      "height": 14,
-                                      "icon": "hammer",
-                                      "library": "lucide",
-                                      "fill": "$color-job"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "RmD4K",
-                                      "name": "Work",
-                                      "fill": "$color-text",
-                                      "content": "Gutter cleaning",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 13,
-                                      "fontWeight": "500"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "ovVj7",
-                                  "name": "Place",
-                                  "gap": 4,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "YmSCV",
-                                      "name": "Pin",
-                                      "width": 12,
-                                      "height": 12,
-                                      "icon": "map-pin",
-                                      "library": "lucide",
-                                      "fill": "$color-client"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "UReL2",
-                                      "name": "Text",
-                                      "fill": "$color-text-secondary",
-                                      "content": "88 Oak Avenue, Springfield",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "w7gdM2",
-                                  "name": "Foot",
-                                  "width": "fill_container",
-                                  "gap": 8,
-                                  "padding": [
-                                    6,
-                                    0,
-                                    0,
-                                    0
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "VEqUH",
-                                      "name": "Who",
-                                      "width": "fill_container",
-                                      "gap": 6,
-                                      "alignItems": "center",
-                                      "children": [
+                                          "fontSize": 14,
+                                          "fontWeight": "600"
+                                        },
                                         {
                                           "type": "frame",
-                                          "id": "x62j3K",
-                                          "name": "Unassigned",
-                                          "fill": "$color-surface",
+                                          "id": "BKNqo",
+                                          "name": "Age",
+                                          "fill": "$color-warning-surface",
                                           "cornerRadius": 999,
-                                          "stroke": "$color-warning",
-                                          "strokeWidth": 1,
                                           "gap": 5,
                                           "padding": [
                                             3,
-                                            8
+                                            9,
+                                            3,
+                                            7
                                           ],
                                           "alignItems": "center",
                                           "children": [
                                             {
-                                              "type": "ellipse",
-                                              "id": "u9v3c",
-                                              "name": "Dot",
-                                              "fill": "$color-warning",
-                                              "width": 5,
-                                              "height": 5
+                                              "type": "icon",
+                                              "id": "YeMNI",
+                                              "name": "Clock",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "clock-3",
+                                              "library": "lucide",
+                                              "fill": "$color-warning"
                                             },
                                             {
                                               "type": "text",
-                                              "id": "Q3AJ8",
+                                              "id": "PACLK",
                                               "name": "Text",
                                               "fill": "$color-warning-on-surface",
-                                              "content": "Unassigned",
+                                              "content": "Waiting 3 days",
                                               "fontFamily": "$font-family",
                                               "fontSize": 11,
                                               "fontWeight": "600"
@@ -72886,272 +72580,1101 @@
                                       ]
                                     },
                                     {
-                                      "id": "r0ehCG",
-                                      "type": "ref",
-                                      "ref": "qpjlj",
-                                      "name": "Schedule",
-                                      "height": 32,
-                                      "descendants": {
-                                        "lDuWW": {
-                                          "icon": "calendar-plus"
+                                      "type": "frame",
+                                      "id": "PTsxL",
+                                      "name": "Work row",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "A74YG",
+                                          "name": "Kind",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "hammer",
+                                          "library": "lucide",
+                                          "fill": "$color-job"
                                         },
-                                        "Dpmda": {
-                                          "content": "Schedule",
-                                          "fontSize": 13
+                                        {
+                                          "type": "text",
+                                          "id": "vxbW4",
+                                          "name": "Work",
+                                          "fill": "$color-text",
+                                          "content": "Kitchen cabinet install",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
                                         }
-                                      }
-                                    }
-                                  ]
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "n6xMzx",
-                          "name": "Item · Linda Park",
-                          "width": "fill_container",
-                          "gap": 4,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "F5HhD",
-                              "name": "Grip",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "grip-vertical",
-                              "library": "lucide",
-                              "fill": "$color-icon-secondary"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "LlEMa",
-                              "name": "Card",
-                              "width": "fill_container",
-                              "fill": "$color-surface",
-                              "cornerRadius": 12,
-                              "stroke": "$color-border",
-                              "strokeWidth": 1,
-                              "layout": "vertical",
-                              "gap": 4,
-                              "padding": 12,
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "oT0Ea",
-                                  "name": "Top",
-                                  "width": "fill_container",
-                                  "gap": 8,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "AbpKo",
-                                      "name": "Client",
-                                      "fill": "$color-heading",
-                                      "textGrowth": "fixed-width",
-                                      "width": "fill_container",
-                                      "content": "Linda Park",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 14,
-                                      "fontWeight": "600"
+                                      ]
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "HvLkc",
-                                      "name": "Age",
+                                      "id": "V9L3b",
+                                      "name": "Place",
                                       "gap": 4,
                                       "alignItems": "center",
                                       "children": [
                                         {
                                           "type": "icon",
-                                          "id": "HlTWP",
-                                          "name": "Clock",
-                                          "width": 12,
-                                          "height": 12,
-                                          "icon": "clock-3",
+                                          "id": "iAfcQ",
+                                          "name": "Pin",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "map-pin",
                                           "library": "lucide",
-                                          "fill": "$color-icon-secondary"
+                                          "fill": "$color-client"
                                         },
                                         {
                                           "type": "text",
-                                          "id": "rESt7",
+                                          "id": "YeNSW",
                                           "name": "Text",
                                           "fill": "$color-text-secondary",
-                                          "content": "Waiting 1 day",
+                                          "content": "14 Elm Street, Springfield",
                                           "fontFamily": "$font-family",
                                           "fontSize": 12,
-                                          "fontWeight": "500"
+                                          "fontWeight": "normal"
                                         }
                                       ]
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "S015J",
-                                  "name": "Work row",
-                                  "gap": 6,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "SS0iH",
-                                      "name": "Kind",
-                                      "width": 14,
-                                      "height": 14,
-                                      "icon": "hammer",
-                                      "library": "lucide",
-                                      "fill": "$color-job"
                                     },
-                                    {
-                                      "type": "text",
-                                      "id": "C2QKfS",
-                                      "name": "Work",
-                                      "fill": "$color-text",
-                                      "content": "Deck staining",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 13,
-                                      "fontWeight": "500"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "c3VZy7",
-                                  "name": "Place",
-                                  "gap": 4,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "dviFZ",
-                                      "name": "Pin",
-                                      "width": 12,
-                                      "height": 12,
-                                      "icon": "map-pin",
-                                      "library": "lucide",
-                                      "fill": "$color-client"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "ky7Cr",
-                                      "name": "Text",
-                                      "fill": "$color-text-secondary",
-                                      "content": "41 Birch Lane, Shelbyville",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "O2jxvM",
-                                  "name": "Foot",
-                                  "width": "fill_container",
-                                  "gap": 8,
-                                  "padding": [
-                                    6,
-                                    0,
-                                    0,
-                                    0
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
                                     {
                                       "type": "frame",
-                                      "id": "Lc0vH",
-                                      "name": "Who",
+                                      "id": "YXYCs",
+                                      "name": "Foot",
                                       "width": "fill_container",
-                                      "gap": 6,
+                                      "gap": 8,
+                                      "padding": [
+                                        6,
+                                        0,
+                                        0,
+                                        0
+                                      ],
                                       "alignItems": "center",
                                       "children": [
                                         {
                                           "type": "frame",
-                                          "id": "ARzzm",
-                                          "name": "People",
-                                          "gap": 2,
+                                          "id": "A3AXLy",
+                                          "name": "Who",
+                                          "width": "fill_container",
+                                          "gap": 6,
+                                          "alignItems": "center",
                                           "children": [
                                             {
                                               "type": "frame",
-                                              "id": "fsbTP",
-                                              "name": "Avatar MD",
-                                              "width": 24,
-                                              "height": 24,
-                                              "fill": "$color-heading",
-                                              "cornerRadius": 999,
-                                              "justifyContent": "center",
-                                              "alignItems": "center",
+                                              "id": "H4TSr",
+                                              "name": "People",
+                                              "gap": 2,
                                               "children": [
                                                 {
-                                                  "type": "text",
-                                                  "id": "oGAYw",
-                                                  "name": "Initials",
-                                                  "fill": "$color-surface",
-                                                  "content": "MD",
-                                                  "fontFamily": "$font-family",
-                                                  "fontSize": 10,
-                                                  "fontWeight": "700"
+                                                  "type": "frame",
+                                                  "id": "T0p2u",
+                                                  "name": "Avatar MD",
+                                                  "width": 24,
+                                                  "height": 24,
+                                                  "fill": "$color-heading",
+                                                  "cornerRadius": 999,
+                                                  "justifyContent": "center",
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "DWLjq",
+                                                      "name": "Initials",
+                                                      "fill": "$color-surface",
+                                                      "content": "MD",
+                                                      "fontFamily": "$font-family",
+                                                      "fontSize": 10,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
                                                 }
                                               ]
                                             },
                                             {
+                                              "type": "text",
+                                              "id": "OF4A3",
+                                              "name": "Names",
+                                              "fill": "$color-text",
+                                              "content": "Mike Davis",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "H5JhUF",
+                                          "type": "ref",
+                                          "ref": "qpjlj",
+                                          "name": "Schedule",
+                                          "height": 32,
+                                          "descendants": {
+                                            "lDuWW": {
+                                              "icon": "calendar-plus"
+                                            },
+                                            "Dpmda": {
+                                              "content": "Schedule",
+                                              "fontSize": 13
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "PFTwE",
+                              "name": "Item · Tom Becker",
+                              "width": "fill_container",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "lj8lA",
+                                  "name": "Grip",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "grip-vertical",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "a50dSf",
+                                  "name": "Card",
+                                  "width": "fill_container",
+                                  "fill": "$color-surface",
+                                  "cornerRadius": 12,
+                                  "stroke": "$color-border",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "gap": 4,
+                                  "padding": 12,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "WMuk1",
+                                      "name": "Top",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "K6odLt",
+                                          "name": "Client",
+                                          "fill": "$color-heading",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "Tom Becker",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 14,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "L6fgj",
+                                          "name": "Age",
+                                          "fill": "$color-informative-surface",
+                                          "cornerRadius": 999,
+                                          "gap": 5,
+                                          "padding": [
+                                            3,
+                                            9,
+                                            3,
+                                            7
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "F8fNez",
+                                              "name": "Clock",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "clock-3",
+                                              "library": "lucide",
+                                              "fill": "$color-informative"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "TDvZY",
+                                              "name": "Text",
+                                              "fill": "$color-informative-on-surface",
+                                              "content": "Added today",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 11,
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "y3ezo",
+                                      "name": "Work row",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "gdQWz",
+                                          "name": "Kind",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "hammer",
+                                          "library": "lucide",
+                                          "fill": "$color-job"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "RmD4K",
+                                          "name": "Work",
+                                          "fill": "$color-text",
+                                          "content": "Gutter cleaning",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "ovVj7",
+                                      "name": "Place",
+                                      "gap": 4,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "YmSCV",
+                                          "name": "Pin",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "map-pin",
+                                          "library": "lucide",
+                                          "fill": "$color-client"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "UReL2",
+                                          "name": "Text",
+                                          "fill": "$color-text-secondary",
+                                          "content": "88 Oak Avenue, Springfield",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "w7gdM2",
+                                      "name": "Foot",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "padding": [
+                                        6,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "VEqUH",
+                                          "name": "Who",
+                                          "width": "fill_container",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
                                               "type": "frame",
-                                              "id": "Em6lm",
-                                              "name": "Avatar JR",
-                                              "width": 24,
-                                              "height": 24,
-                                              "fill": "$color-heading",
+                                              "id": "x62j3K",
+                                              "name": "Unassigned",
+                                              "fill": "$color-surface",
                                               "cornerRadius": 999,
-                                              "justifyContent": "center",
+                                              "stroke": "$color-warning",
+                                              "strokeWidth": 1,
+                                              "gap": 5,
+                                              "padding": [
+                                                3,
+                                                8
+                                              ],
                                               "alignItems": "center",
                                               "children": [
                                                 {
+                                                  "type": "ellipse",
+                                                  "id": "u9v3c",
+                                                  "name": "Dot",
+                                                  "fill": "$color-warning",
+                                                  "width": 5,
+                                                  "height": 5
+                                                },
+                                                {
                                                   "type": "text",
-                                                  "id": "SKtDO",
-                                                  "name": "Initials",
-                                                  "fill": "$color-surface",
-                                                  "content": "JR",
+                                                  "id": "Q3AJ8",
+                                                  "name": "Text",
+                                                  "fill": "$color-warning-on-surface",
+                                                  "content": "Unassigned",
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 10,
-                                                  "fontWeight": "700"
+                                                  "fontSize": 11,
+                                                  "fontWeight": "600"
                                                 }
                                               ]
                                             }
                                           ]
                                         },
                                         {
+                                          "id": "r0ehCG",
+                                          "type": "ref",
+                                          "ref": "qpjlj",
+                                          "name": "Schedule",
+                                          "height": 32,
+                                          "descendants": {
+                                            "lDuWW": {
+                                              "icon": "calendar-plus"
+                                            },
+                                            "Dpmda": {
+                                              "content": "Schedule",
+                                              "fontSize": 13
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "n6xMzx",
+                              "name": "Item · Linda Park",
+                              "width": "fill_container",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "F5HhD",
+                                  "name": "Grip",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "grip-vertical",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "LlEMa",
+                                  "name": "Card",
+                                  "width": "fill_container",
+                                  "fill": "$color-surface",
+                                  "cornerRadius": 12,
+                                  "stroke": "$color-border",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "gap": 4,
+                                  "padding": 12,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "oT0Ea",
+                                      "name": "Top",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
                                           "type": "text",
-                                          "id": "LErT5",
-                                          "name": "Names",
-                                          "fill": "$color-text",
-                                          "content": "Mike Davis +1",
+                                          "id": "AbpKo",
+                                          "name": "Client",
+                                          "fill": "$color-heading",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "Linda Park",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 12,
+                                          "fontSize": 14,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "HvLkc",
+                                          "name": "Age",
+                                          "fill": "$color-warning-surface",
+                                          "cornerRadius": 999,
+                                          "gap": 5,
+                                          "padding": [
+                                            3,
+                                            9,
+                                            3,
+                                            7
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "HlTWP",
+                                              "name": "Clock",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "clock-3",
+                                              "library": "lucide",
+                                              "fill": "$color-warning"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "rESt7",
+                                              "name": "Text",
+                                              "fill": "$color-warning-on-surface",
+                                              "content": "Waiting 1 day",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 11,
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "S015J",
+                                      "name": "Work row",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "SS0iH",
+                                          "name": "Kind",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "hammer",
+                                          "library": "lucide",
+                                          "fill": "$color-job"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "C2QKfS",
+                                          "name": "Work",
+                                          "fill": "$color-text",
+                                          "content": "Deck staining",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
                                           "fontWeight": "500"
                                         }
                                       ]
                                     },
                                     {
-                                      "id": "q6yL45",
-                                      "type": "ref",
-                                      "ref": "qpjlj",
-                                      "name": "Schedule",
-                                      "height": 32,
-                                      "descendants": {
-                                        "lDuWW": {
-                                          "icon": "calendar-plus"
+                                      "type": "frame",
+                                      "id": "c3VZy7",
+                                      "name": "Place",
+                                      "gap": 4,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "dviFZ",
+                                          "name": "Pin",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "map-pin",
+                                          "library": "lucide",
+                                          "fill": "$color-client"
                                         },
-                                        "Dpmda": {
-                                          "content": "Schedule",
-                                          "fontSize": 13
+                                        {
+                                          "type": "text",
+                                          "id": "ky7Cr",
+                                          "name": "Text",
+                                          "fill": "$color-text-secondary",
+                                          "content": "41 Birch Lane, Shelbyville",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
                                         }
-                                      }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "O2jxvM",
+                                      "name": "Foot",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "padding": [
+                                        6,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "Lc0vH",
+                                          "name": "Who",
+                                          "width": "fill_container",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "ARzzm",
+                                              "name": "People",
+                                              "gap": 2,
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "fsbTP",
+                                                  "name": "Avatar MD",
+                                                  "width": 24,
+                                                  "height": 24,
+                                                  "fill": "$color-heading",
+                                                  "cornerRadius": 999,
+                                                  "justifyContent": "center",
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "oGAYw",
+                                                      "name": "Initials",
+                                                      "fill": "$color-surface",
+                                                      "content": "MD",
+                                                      "fontFamily": "$font-family",
+                                                      "fontSize": 10,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "type": "frame",
+                                                  "id": "Em6lm",
+                                                  "name": "Avatar JR",
+                                                  "width": 24,
+                                                  "height": 24,
+                                                  "fill": "$color-heading",
+                                                  "cornerRadius": 999,
+                                                  "justifyContent": "center",
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "SKtDO",
+                                                      "name": "Initials",
+                                                      "fill": "$color-surface",
+                                                      "content": "JR",
+                                                      "fontFamily": "$font-family",
+                                                      "fontSize": 10,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "LErT5",
+                                              "name": "Names",
+                                              "fill": "$color-text",
+                                              "content": "Mike Davis +1",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "q6yL45",
+                                          "type": "ref",
+                                          "ref": "qpjlj",
+                                          "name": "Schedule",
+                                          "height": 32,
+                                          "descendants": {
+                                            "lDuWW": {
+                                              "icon": "calendar-plus"
+                                            },
+                                            "Dpmda": {
+                                              "content": "Schedule",
+                                              "fontSize": 13
+                                            }
+                                          }
+                                        }
+                                      ]
                                     }
                                   ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "i6xNDL",
+                              "name": "Item · Carlos Ruiz",
+                              "width": "fill_container",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "k24cHJ",
+                                  "name": "Grip",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "grip-vertical",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "i4WAz",
+                                  "name": "Card",
+                                  "width": "fill_container",
+                                  "fill": "$color-surface",
+                                  "cornerRadius": 12,
+                                  "stroke": "$color-border",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "gap": 4,
+                                  "padding": 12,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "MZpN9",
+                                      "name": "Top",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Y8mgV",
+                                          "name": "Client",
+                                          "fill": "$color-heading",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "Carlos Ruiz",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 14,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "hRIyX",
+                                          "name": "Age",
+                                          "fill": "$color-critical-surface",
+                                          "cornerRadius": 999,
+                                          "gap": 5,
+                                          "padding": [
+                                            3,
+                                            9,
+                                            3,
+                                            7
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "MyL5o",
+                                              "name": "Clock",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "clock-3",
+                                              "library": "lucide",
+                                              "fill": "$color-critical"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "dCZBc",
+                                              "name": "Text",
+                                              "fill": "$color-critical-on-surface",
+                                              "content": "Waiting 12 days",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 11,
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "UFpmc",
+                                      "name": "Work row",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "GrvVs",
+                                          "name": "Kind",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "hammer",
+                                          "library": "lucide",
+                                          "fill": "$color-job"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "QgbcS",
+                                          "name": "Work",
+                                          "fill": "$color-text",
+                                          "content": "Furnace check",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "vIzlK",
+                                      "name": "Place",
+                                      "gap": 4,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "vaYiJ",
+                                          "name": "Pin",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "map-pin",
+                                          "library": "lucide",
+                                          "fill": "$color-client"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "K7f6aQ",
+                                          "name": "Text",
+                                          "fill": "$color-text-secondary",
+                                          "content": "5 Pine Road, Springfield",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "VMCAP",
+                                      "name": "Foot",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "padding": [
+                                        6,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "k4aKTp",
+                                          "name": "Who",
+                                          "width": "fill_container",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "zTW7V",
+                                              "name": "People",
+                                              "gap": 2,
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "QO7mY",
+                                                  "name": "Avatar PS",
+                                                  "width": 24,
+                                                  "height": 24,
+                                                  "fill": "$color-heading",
+                                                  "cornerRadius": 999,
+                                                  "justifyContent": "center",
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "QtzEK",
+                                                      "name": "Initials",
+                                                      "fill": "$color-surface",
+                                                      "content": "PS",
+                                                      "fontFamily": "$font-family",
+                                                      "fontSize": 10,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "VlMT6",
+                                              "name": "Names",
+                                              "fill": "$color-text",
+                                              "content": "Priya Shah",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "M1ylg",
+                                          "type": "ref",
+                                          "ref": "qpjlj",
+                                          "name": "Schedule",
+                                          "height": 32,
+                                          "descendants": {
+                                            "lDuWW": {
+                                              "icon": "calendar-plus"
+                                            },
+                                            "Dpmda": {
+                                              "content": "Schedule",
+                                              "fontSize": 13
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "cSo7L",
+                  "name": "Option B · amber only",
+                  "width": 360,
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Jtceb",
+                      "name": "Caption",
+                      "fill": "$color-text-secondary",
+                      "content": "Option B · amber only (never red)",
+                      "fontFamily": "$font-family",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "tVxD0",
+                      "name": "Unscheduled panel · option B",
+                      "clip": true,
+                      "width": 360,
+                      "height": "fill_container",
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "QZDPG",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "stroke": "$color-border",
+                          "strokeWidth": {
+                            "bottom": 1
+                          },
+                          "gap": 10,
+                          "padding": [
+                            14,
+                            14,
+                            14,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "yTKH8",
+                              "type": "ref",
+                              "ref": "GrSlk",
+                              "name": "Tile",
+                              "fill": "$color-time-surface",
+                              "descendants": {
+                                "XsJUX": {
+                                  "icon": "calendar-off",
+                                  "fill": "$color-time"
+                                }
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "id": "L8Iv1j",
+                              "name": "Title",
+                              "fill": "$color-heading",
+                              "content": "Unscheduled",
+                              "fontFamily": "$font-family",
+                              "fontSize": 16,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "pOiIG",
+                              "name": "Count",
+                              "height": 20,
+                              "fill": "$color-inactive-surface",
+                              "cornerRadius": 999,
+                              "padding": [
+                                0,
+                                7
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "w8m6e",
+                                  "name": "Number",
+                                  "fill": "$color-heading",
+                                  "content": "4",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "EEjc5",
+                              "name": "Spacer",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "id": "W2sEXM",
+                              "type": "ref",
+                              "ref": "nIDZt",
+                              "name": "Close",
+                              "descendants": {
+                                "IW9bL": {
+                                  "icon": "x"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "AI1s7",
+                          "name": "Search and employee",
+                          "width": "fill_container",
+                          "stroke": "$color-border",
+                          "strokeWidth": {
+                            "bottom": 1
+                          },
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "s8PEl8",
+                              "name": "Box",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-base",
+                              "stroke": "$color-border-interactive",
+                              "strokeWidth": 1,
+                              "gap": 8,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "L5WuqQ",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "search",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "EYpm2",
+                                  "name": "Value",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Search client, work or place",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "zIRDe",
+                              "name": "Box",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-base",
+                              "stroke": "$color-border-interactive",
+                              "strokeWidth": 1,
+                              "gap": 8,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "MZSuH",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "users",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "k9Suv",
+                                  "name": "Value",
+                                  "fill": "$color-heading",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "All employees",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "U1FC5",
+                                  "name": "Chevron",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "chevron-down",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
                                 }
                               ]
                             }
@@ -73159,224 +73682,970 @@
                         },
                         {
                           "type": "frame",
-                          "id": "i6xNDL",
-                          "name": "Item · Carlos Ruiz",
+                          "id": "D9IEtU",
+                          "name": "List",
                           "width": "fill_container",
-                          "gap": 4,
-                          "alignItems": "center",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "padding": [
+                            12,
+                            16,
+                            12,
+                            8
+                          ],
                           "children": [
                             {
-                              "type": "icon",
-                              "id": "k24cHJ",
-                              "name": "Grip",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "grip-vertical",
-                              "library": "lucide",
-                              "fill": "$color-icon-secondary"
-                            },
-                            {
                               "type": "frame",
-                              "id": "i4WAz",
-                              "name": "Card",
+                              "id": "wpo1V",
+                              "name": "Item · Sarah Lee",
                               "width": "fill_container",
-                              "fill": "$color-surface",
-                              "cornerRadius": 12,
-                              "stroke": "$color-border",
-                              "strokeWidth": 1,
-                              "layout": "vertical",
                               "gap": 4,
-                              "padding": 12,
+                              "alignItems": "center",
                               "children": [
                                 {
+                                  "type": "icon",
+                                  "id": "x7sWP7",
+                                  "name": "Grip",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "grip-vertical",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
                                   "type": "frame",
-                                  "id": "MZpN9",
-                                  "name": "Top",
+                                  "id": "fHrA9",
+                                  "name": "Card",
                                   "width": "fill_container",
-                                  "gap": 8,
-                                  "alignItems": "center",
+                                  "fill": "$color-surface",
+                                  "cornerRadius": 12,
+                                  "stroke": "$color-border",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "gap": 4,
+                                  "padding": 12,
                                   "children": [
                                     {
-                                      "type": "text",
-                                      "id": "Y8mgV",
-                                      "name": "Client",
-                                      "fill": "$color-heading",
-                                      "textGrowth": "fixed-width",
+                                      "type": "frame",
+                                      "id": "DdIEb",
+                                      "name": "Top",
                                       "width": "fill_container",
-                                      "content": "Carlos Ruiz",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 14,
-                                      "fontWeight": "600"
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "wrvF8",
+                                          "name": "Client",
+                                          "fill": "$color-heading",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "Sarah Lee",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 14,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "dsym0",
+                                          "name": "Age",
+                                          "fill": "$color-warning-surface",
+                                          "cornerRadius": 999,
+                                          "gap": 5,
+                                          "padding": [
+                                            3,
+                                            9,
+                                            3,
+                                            7
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "T39Zw",
+                                              "name": "Clock",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "clock-3",
+                                              "library": "lucide",
+                                              "fill": "$color-warning"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "jIDd5",
+                                              "name": "Text",
+                                              "fill": "$color-warning-on-surface",
+                                              "content": "Waiting 3 days",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 11,
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        }
+                                      ]
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "hRIyX",
-                                      "name": "Age",
+                                      "id": "PlBnY",
+                                      "name": "Work row",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "x4Go4",
+                                          "name": "Kind",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "hammer",
+                                          "library": "lucide",
+                                          "fill": "$color-job"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Yq7A3",
+                                          "name": "Work",
+                                          "fill": "$color-text",
+                                          "content": "Kitchen cabinet install",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "KOOgw",
+                                      "name": "Place",
                                       "gap": 4,
                                       "alignItems": "center",
                                       "children": [
                                         {
                                           "type": "icon",
-                                          "id": "MyL5o",
-                                          "name": "Clock",
-                                          "width": 12,
-                                          "height": 12,
-                                          "icon": "clock-3",
+                                          "id": "N5IDR9",
+                                          "name": "Pin",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "map-pin",
                                           "library": "lucide",
-                                          "fill": "$color-icon-secondary"
+                                          "fill": "$color-client"
                                         },
                                         {
                                           "type": "text",
-                                          "id": "dCZBc",
+                                          "id": "kvx5R",
                                           "name": "Text",
                                           "fill": "$color-text-secondary",
-                                          "content": "Waiting 12 days",
+                                          "content": "14 Elm Street, Springfield",
                                           "fontFamily": "$font-family",
                                           "fontSize": 12,
-                                          "fontWeight": "500"
+                                          "fontWeight": "normal"
                                         }
                                       ]
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "UFpmc",
-                                  "name": "Work row",
-                                  "gap": 6,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "GrvVs",
-                                      "name": "Kind",
-                                      "width": 14,
-                                      "height": 14,
-                                      "icon": "hammer",
-                                      "library": "lucide",
-                                      "fill": "$color-job"
                                     },
-                                    {
-                                      "type": "text",
-                                      "id": "QgbcS",
-                                      "name": "Work",
-                                      "fill": "$color-text",
-                                      "content": "Furnace check",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 13,
-                                      "fontWeight": "500"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "vIzlK",
-                                  "name": "Place",
-                                  "gap": 4,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "vaYiJ",
-                                      "name": "Pin",
-                                      "width": 12,
-                                      "height": 12,
-                                      "icon": "map-pin",
-                                      "library": "lucide",
-                                      "fill": "$color-client"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "K7f6aQ",
-                                      "name": "Text",
-                                      "fill": "$color-text-secondary",
-                                      "content": "5 Pine Road, Springfield",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "VMCAP",
-                                  "name": "Foot",
-                                  "width": "fill_container",
-                                  "gap": 8,
-                                  "padding": [
-                                    6,
-                                    0,
-                                    0,
-                                    0
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
                                     {
                                       "type": "frame",
-                                      "id": "k4aKTp",
-                                      "name": "Who",
+                                      "id": "Qn3dz",
+                                      "name": "Foot",
                                       "width": "fill_container",
-                                      "gap": 6,
+                                      "gap": 8,
+                                      "padding": [
+                                        6,
+                                        0,
+                                        0,
+                                        0
+                                      ],
                                       "alignItems": "center",
                                       "children": [
                                         {
                                           "type": "frame",
-                                          "id": "zTW7V",
-                                          "name": "People",
-                                          "gap": 2,
+                                          "id": "sBcDN",
+                                          "name": "Who",
+                                          "width": "fill_container",
+                                          "gap": 6,
+                                          "alignItems": "center",
                                           "children": [
                                             {
                                               "type": "frame",
-                                              "id": "QO7mY",
-                                              "name": "Avatar PS",
-                                              "width": 24,
-                                              "height": 24,
-                                              "fill": "$color-heading",
+                                              "id": "dE6mL",
+                                              "name": "People",
+                                              "gap": 2,
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "tkluq",
+                                                  "name": "Avatar MD",
+                                                  "width": 24,
+                                                  "height": 24,
+                                                  "fill": "$color-heading",
+                                                  "cornerRadius": 999,
+                                                  "justifyContent": "center",
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "qwBjC",
+                                                      "name": "Initials",
+                                                      "fill": "$color-surface",
+                                                      "content": "MD",
+                                                      "fontFamily": "$font-family",
+                                                      "fontSize": 10,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "bi6jR",
+                                              "name": "Names",
+                                              "fill": "$color-text",
+                                              "content": "Mike Davis",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "bYzNB",
+                                          "type": "ref",
+                                          "ref": "qpjlj",
+                                          "name": "Schedule",
+                                          "height": 32,
+                                          "descendants": {
+                                            "lDuWW": {
+                                              "icon": "calendar-plus"
+                                            },
+                                            "Dpmda": {
+                                              "content": "Schedule",
+                                              "fontSize": 13
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "flKVE",
+                              "name": "Item · Tom Becker",
+                              "width": "fill_container",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "ZSOIw",
+                                  "name": "Grip",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "grip-vertical",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "crOgg",
+                                  "name": "Card",
+                                  "width": "fill_container",
+                                  "fill": "$color-surface",
+                                  "cornerRadius": 12,
+                                  "stroke": "$color-border",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "gap": 4,
+                                  "padding": 12,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "hkxjk",
+                                      "name": "Top",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "GhRx0",
+                                          "name": "Client",
+                                          "fill": "$color-heading",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "Tom Becker",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 14,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "PivrY",
+                                          "name": "Age",
+                                          "fill": "$color-warning-surface",
+                                          "cornerRadius": 999,
+                                          "gap": 5,
+                                          "padding": [
+                                            3,
+                                            9,
+                                            3,
+                                            7
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "PjCSg",
+                                              "name": "Clock",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "clock-3",
+                                              "library": "lucide",
+                                              "fill": "$color-warning"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "Z5Y8l",
+                                              "name": "Text",
+                                              "fill": "$color-warning-on-surface",
+                                              "content": "Added today",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 11,
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "K8J5g",
+                                      "name": "Work row",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "BvZO9",
+                                          "name": "Kind",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "hammer",
+                                          "library": "lucide",
+                                          "fill": "$color-job"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "bJWfO",
+                                          "name": "Work",
+                                          "fill": "$color-text",
+                                          "content": "Gutter cleaning",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "N68Z0i",
+                                      "name": "Place",
+                                      "gap": 4,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "L1fMKs",
+                                          "name": "Pin",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "map-pin",
+                                          "library": "lucide",
+                                          "fill": "$color-client"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "blj9x",
+                                          "name": "Text",
+                                          "fill": "$color-text-secondary",
+                                          "content": "88 Oak Avenue, Springfield",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "KdrDB",
+                                      "name": "Foot",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "padding": [
+                                        6,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "ThnqQ",
+                                          "name": "Who",
+                                          "width": "fill_container",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "mzoqd",
+                                              "name": "Unassigned",
+                                              "fill": "$color-surface",
                                               "cornerRadius": 999,
-                                              "justifyContent": "center",
+                                              "stroke": "$color-warning",
+                                              "strokeWidth": 1,
+                                              "gap": 5,
+                                              "padding": [
+                                                3,
+                                                8
+                                              ],
                                               "alignItems": "center",
                                               "children": [
                                                 {
+                                                  "type": "ellipse",
+                                                  "id": "Q5e8Ji",
+                                                  "name": "Dot",
+                                                  "fill": "$color-warning",
+                                                  "width": 5,
+                                                  "height": 5
+                                                },
+                                                {
                                                   "type": "text",
-                                                  "id": "QtzEK",
-                                                  "name": "Initials",
-                                                  "fill": "$color-surface",
-                                                  "content": "PS",
+                                                  "id": "Zwdbo",
+                                                  "name": "Text",
+                                                  "fill": "$color-warning-on-surface",
+                                                  "content": "Unassigned",
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 10,
-                                                  "fontWeight": "700"
+                                                  "fontSize": 11,
+                                                  "fontWeight": "600"
                                                 }
                                               ]
                                             }
                                           ]
                                         },
                                         {
+                                          "id": "u9V8jU",
+                                          "type": "ref",
+                                          "ref": "qpjlj",
+                                          "name": "Schedule",
+                                          "height": 32,
+                                          "descendants": {
+                                            "lDuWW": {
+                                              "icon": "calendar-plus"
+                                            },
+                                            "Dpmda": {
+                                              "content": "Schedule",
+                                              "fontSize": 13
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ZLfTC",
+                              "name": "Item · Linda Park",
+                              "width": "fill_container",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "sx3MN",
+                                  "name": "Grip",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "grip-vertical",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "tvdkM",
+                                  "name": "Card",
+                                  "width": "fill_container",
+                                  "fill": "$color-surface",
+                                  "cornerRadius": 12,
+                                  "stroke": "$color-border",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "gap": 4,
+                                  "padding": 12,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "QiIaJ",
+                                      "name": "Top",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
                                           "type": "text",
-                                          "id": "VlMT6",
-                                          "name": "Names",
-                                          "fill": "$color-text",
-                                          "content": "Priya Shah",
+                                          "id": "M6NClq",
+                                          "name": "Client",
+                                          "fill": "$color-heading",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "Linda Park",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 12,
+                                          "fontSize": 14,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "Q68jPi",
+                                          "name": "Age",
+                                          "fill": "$color-warning-surface",
+                                          "cornerRadius": 999,
+                                          "gap": 5,
+                                          "padding": [
+                                            3,
+                                            9,
+                                            3,
+                                            7
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "QShr5",
+                                              "name": "Clock",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "clock-3",
+                                              "library": "lucide",
+                                              "fill": "$color-warning"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "mFgJs",
+                                              "name": "Text",
+                                              "fill": "$color-warning-on-surface",
+                                              "content": "Waiting 1 day",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 11,
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "kWDYq",
+                                      "name": "Work row",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "MV1yR",
+                                          "name": "Kind",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "hammer",
+                                          "library": "lucide",
+                                          "fill": "$color-job"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "TFf2C",
+                                          "name": "Work",
+                                          "fill": "$color-text",
+                                          "content": "Deck staining",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
                                           "fontWeight": "500"
                                         }
                                       ]
                                     },
                                     {
-                                      "id": "M1ylg",
-                                      "type": "ref",
-                                      "ref": "qpjlj",
-                                      "name": "Schedule",
-                                      "height": 32,
-                                      "descendants": {
-                                        "lDuWW": {
-                                          "icon": "calendar-plus"
+                                      "type": "frame",
+                                      "id": "XvZPf",
+                                      "name": "Place",
+                                      "gap": 4,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "CCfhM",
+                                          "name": "Pin",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "map-pin",
+                                          "library": "lucide",
+                                          "fill": "$color-client"
                                         },
-                                        "Dpmda": {
-                                          "content": "Schedule",
-                                          "fontSize": 13
+                                        {
+                                          "type": "text",
+                                          "id": "fr3EP",
+                                          "name": "Text",
+                                          "fill": "$color-text-secondary",
+                                          "content": "41 Birch Lane, Shelbyville",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
                                         }
-                                      }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "xfAb0",
+                                      "name": "Foot",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "padding": [
+                                        6,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "u1igYJ",
+                                          "name": "Who",
+                                          "width": "fill_container",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "IYiiE",
+                                              "name": "People",
+                                              "gap": 2,
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "d8wCp",
+                                                  "name": "Avatar MD",
+                                                  "width": 24,
+                                                  "height": 24,
+                                                  "fill": "$color-heading",
+                                                  "cornerRadius": 999,
+                                                  "justifyContent": "center",
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "o80pQ",
+                                                      "name": "Initials",
+                                                      "fill": "$color-surface",
+                                                      "content": "MD",
+                                                      "fontFamily": "$font-family",
+                                                      "fontSize": 10,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "type": "frame",
+                                                  "id": "DGvRt",
+                                                  "name": "Avatar JR",
+                                                  "width": 24,
+                                                  "height": 24,
+                                                  "fill": "$color-heading",
+                                                  "cornerRadius": 999,
+                                                  "justifyContent": "center",
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "FUXuu",
+                                                      "name": "Initials",
+                                                      "fill": "$color-surface",
+                                                      "content": "JR",
+                                                      "fontFamily": "$font-family",
+                                                      "fontSize": 10,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "Y3SX3",
+                                              "name": "Names",
+                                              "fill": "$color-text",
+                                              "content": "Mike Davis +1",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "gsygK",
+                                          "type": "ref",
+                                          "ref": "qpjlj",
+                                          "name": "Schedule",
+                                          "height": 32,
+                                          "descendants": {
+                                            "lDuWW": {
+                                              "icon": "calendar-plus"
+                                            },
+                                            "Dpmda": {
+                                              "content": "Schedule",
+                                              "fontSize": 13
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "A8Cq2b",
+                              "name": "Item · Carlos Ruiz",
+                              "width": "fill_container",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "lYrMC",
+                                  "name": "Grip",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "grip-vertical",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "kvitF",
+                                  "name": "Card",
+                                  "width": "fill_container",
+                                  "fill": "$color-surface",
+                                  "cornerRadius": 12,
+                                  "stroke": "$color-border",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "gap": 4,
+                                  "padding": 12,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "JXCfG",
+                                      "name": "Top",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "vriTe",
+                                          "name": "Client",
+                                          "fill": "$color-heading",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "Carlos Ruiz",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 14,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "qPA3A",
+                                          "name": "Age",
+                                          "fill": "$color-warning-surface",
+                                          "cornerRadius": 999,
+                                          "gap": 5,
+                                          "padding": [
+                                            3,
+                                            9,
+                                            3,
+                                            7
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "TCbAZ",
+                                              "name": "Clock",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "clock-3",
+                                              "library": "lucide",
+                                              "fill": "$color-warning"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "pOliX",
+                                              "name": "Text",
+                                              "fill": "$color-warning-on-surface",
+                                              "content": "Waiting 12 days",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 11,
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "X3LZb3",
+                                      "name": "Work row",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "COu4x",
+                                          "name": "Kind",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "hammer",
+                                          "library": "lucide",
+                                          "fill": "$color-job"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "mE6Yw",
+                                          "name": "Work",
+                                          "fill": "$color-text",
+                                          "content": "Furnace check",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "HNmmS",
+                                      "name": "Place",
+                                      "gap": 4,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "f6n3vc",
+                                          "name": "Pin",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "map-pin",
+                                          "library": "lucide",
+                                          "fill": "$color-client"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "BFTgU",
+                                          "name": "Text",
+                                          "fill": "$color-text-secondary",
+                                          "content": "5 Pine Road, Springfield",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "n5gLE",
+                                      "name": "Foot",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "padding": [
+                                        6,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "pSiQH",
+                                          "name": "Who",
+                                          "width": "fill_container",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "XpZ5U",
+                                              "name": "People",
+                                              "gap": 2,
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "NMKh1",
+                                                  "name": "Avatar PS",
+                                                  "width": 24,
+                                                  "height": 24,
+                                                  "fill": "$color-heading",
+                                                  "cornerRadius": 999,
+                                                  "justifyContent": "center",
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "pnJrt",
+                                                      "name": "Initials",
+                                                      "fill": "$color-surface",
+                                                      "content": "PS",
+                                                      "fontFamily": "$font-family",
+                                                      "fontSize": 10,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "KWTbD",
+                                              "name": "Names",
+                                              "fill": "$color-text",
+                                              "content": "Priya Shah",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "AqR1Z",
+                                          "type": "ref",
+                                          "ref": "qpjlj",
+                                          "name": "Schedule",
+                                          "height": 32,
+                                          "descendants": {
+                                            "lDuWW": {
+                                              "icon": "calendar-plus"
+                                            },
+                                            "Dpmda": {
+                                              "content": "Schedule",
+                                              "fontSize": 13
+                                            }
+                                          }
+                                        }
+                                      ]
                                     }
                                   ]
                                 }
