@@ -5,7 +5,8 @@
 **State (2026-10-19):** Week approved by Jafar, then the improved variant approved the same day. The final
 drawing is `a7LTbd` "Concept · Schedule · Week · Owner · 1440"; the first version `JpHqG` was deleted. Its look is
 written in the design skill: `calendar.md` (new), joined group in `buttons.md`, outlined pill in `badges.md`.
-Day view drawn 2026-10-19, waiting for Jafar's review: `ziaXI` "Concept · Schedule · Day · Owner · 1440".
+Day approved by Jafar 2026-10-19 with booked hours and Day off: `ziaXI` "Concept · Schedule · Day · Owner ·
+1440"; its look is in `calendar.md` → Day view. Next: Month.
 
 ## Research
 
@@ -18,7 +19,7 @@ Schedule already behaves the same, so the drawing needs no new data except event
 Everything is in `.claude/skills/design/calendar.md`. Late follows `src/lib/schedule/status.ts`
 (past day, not done). Events are drawn completable (below).
 
-## Day as drawn (waiting for review)
+## Day as drawn (approved 2026-10-19)
 
 Research: Jobber (`06-day-schedule.png`, `21-…`), ServiceTitan (technician rows, unassigned tray, capacity),
 Housecall Pro (shared job highlighted in each person's lane), Workiz (timeline colours by technician — not
@@ -27,8 +28,8 @@ Keeps live `ScheduleDay.svelte`: Unassigned row first, one row per person, Anyti
 both rows ("With Jake"), overlap stacks a second lane, late/unassigned counts in the corner.
 Drawn: 7 AM–7 PM at 64 per hour (whole working day, no scroll), 208 people column, 140 Anytime column,
 lanes 88. Cards follow `calendar.md`; under 2 hours show the start time only; no people circles (the row
-says who). **Needs Jafar's yes (display only, no new data):** booked hours + a `--color-time` bar per
-person; "Day off" row hatched (from member availability).
+says who). Jafar approved the additions (display only, no new data): booked hours + a `--color-time` bar per person;
+"Day off" row hatched (from member availability).
 
 ## Decisions (2026-10-19)
 
@@ -40,5 +41,5 @@ person; "Day off" row hatched (from member availability).
 
 ## Next
 
-1. Jafar reviews Day (`ziaXI`); then one at a time: Month, visit pop-up, Unscheduled drawer, Map.
+1. One at a time: Month, visit pop-up, Unscheduled drawer, Map.
 2. Jafar saves Pencil (Ctrl+S); commit `concept.pen` from the main folder under this claim.

@@ -2,7 +2,8 @@
 
 > Dependencies: `colors.md`, `badges.md`, `buttons.md`, `typography.md`
 
-Pencil: `concept.pen` → "Concept · Schedule · Week · Owner · 1440" (approved by Jafar 2026-10-19).
+Pencil: `concept.pen` → "Concept · Schedule · Week · Owner · 1440" and "Concept · Schedule · Day · Owner · 1440"
+(both approved by Jafar 2026-10-19).
 
 ## Page
 
@@ -58,3 +59,25 @@ Pencil: `concept.pen` → "Concept · Schedule · Week · Owner · 1440" (approv
 
 - At the card's foot, padding 12 20, 1px `--color-border` above: kind tiles (18) with labels 12/500, a divider, the
   Late / Unassigned / Completed pills, and a short `--color-interactive` line labelled "Now".
+
+## Day view
+
+- Same page, card, toolbar (Day chosen; the range reads "Wednesday, Oct 21, 2026") and colour key as Week.
+- Columns: people 208 and Anytime 140, each with a 1px `--color-border` right edge; then the hours, 64 wide each,
+  7 AM–7 PM, so the whole working day shows without sideways scrolling.
+- Head row 76 high: the day summary at the left (weekday, today circle, item count, "late" and "unassigned"
+  pills as in a Week day heading), "ANYTIME" 11/600 uppercase, then hour labels 11/500 quiet, 6 right of each
+  hour line, with a short tick between hours. The now pill sits above the labels with a 2px stem.
+- One row per person, Unassigned first; rows 96 high (lanes 88 plus 8), 1px `--color-border` underneath.
+  Work that overlaps opens a second lane and the row grows. Hour lines run down every row.
+- People cell, padding 14 16, gap 12: a 32 `--color-heading` circle with white initials 12/700 (Unassigned: a 32
+  `--color-warning` icon tile with user-x), the name 14/600, then the item count 12/500 quiet with the booked
+  hours 12/600 heading at the right, and a 4 high bar (`--color-border` track, `--color-time` fill) for hours
+  booked against the working day.
+- Day off: a plain "Day off" pill (moon icon) in place of the count, and the Anytime cell and hours hatched like
+  a closed day.
+- Cards sit 6 from the row edges and 2 from the hour lines, 84 high. No people circles: the row says who. A visit
+  shared with others shows in each person's row with a 20 circle and "With Jake" 11/600 in the record
+  `--onSurface`. Cards under two hours wide show the start time only.
+- The now line is 2px `--color-interactive`, down every row behind the cards.
+- Anytime cell: padding 6, pills 4 apart as in the Week Anytime row.
