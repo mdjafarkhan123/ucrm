@@ -13,15 +13,15 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/Select` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
 | `ui/Checkbox` |  | ✅ | ✅ |
 | `data-display/EmptyState` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
-| `layout/SectionBlock` |  | ⬜ | ⬜ |
-| `layout/PageContainer` |  | ⬜ | ⬜ |
+| `layout/SectionBlock` |  | 🟡 Page parts board `j3jDI` | ⬜ |
+| `layout/PageContainer` |  | 🟡 Page parts board `j3jDI` | ⬜ |
 | `layout/PageHeader` |  | ✅ | ✅ |
 | `ui/Badge` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
 | `ui/Dialog` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `ui/Textarea` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
 | `ui/SearchInput` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
 | `ui/DropdownMenu` |  | ✅ | ✅ |
-| `layout/Breadcrumbs` |  | ⬜ | ⬜ |
+| `layout/Breadcrumbs` |  | 🟡 Page parts board `j3jDI` | ⬜ |
 | `ui/ConfirmDialog` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `ui/SegmentedControl` |  | ✅ | ✅ |
 | `ui/StatusBadge` |  | ✅ | ⬜ |
@@ -32,8 +32,8 @@ Key, tick rule and coverage command: `list-index.md`.
 | `data-display/DataTable` |  | ⬜ | ⬜ |
 | `forms/FormErrorSummary` |  | ⬜ | ⬜ |
 | `layout/RecordFormLayout` |  | ✅ | ✅ |
-| `layout/RailCard` |  | ⬜ | ⬜ |
-| `ui/Banner` |  | ⬜ | ⬜ |
+| `layout/RailCard` |  | 🟡 Page parts board `j3jDI` | ⬜ |
+| `ui/Banner` |  | 🟡 Page parts board `j3jDI` | ⬜ |
 | `ui/Lightbox` |  | ⬜ | ⬜ |
 | `ui/TimePickerField` |  | ⬜ | ⬜ |
 | `ui/Toggle` |  | ⬜ | ⬜ |
