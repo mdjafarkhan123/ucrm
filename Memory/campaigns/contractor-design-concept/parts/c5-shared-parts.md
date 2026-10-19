@@ -15,6 +15,7 @@
 | 5 Pickers | CalendarPicker, TimePickerField, TimePicker, DateTimePicker, TimezonePicker, CountryPicker | Approved `uSXlT` "Pickers v2" 2026-10-19 (old `J3g7hi` deleted); for Codex to build |
 | 6a Small controls | Avatar, Toggle, RadioGroup, Tabs | Approved `GbgcY` 2026-10-19: Avatar A, Switch A, Radio A (improved live), Tabs B (soft capsules); looks in `avatars.md`, `tabs.md`, `inputs.md`; for Codex to build |
 | 6b Inputs and chips | FilterChip, MoneyInput, QuantityInput, TagSelect | Approved `Fma1f` 2026-10-19: Filter A + name/value divider, Money B, Quantity B, Tags A tinted in their own colour; looks in `chips.md`, `inputs.md`; to build |
+| 7 Small helpers | ListLoadMore, FormErrorSummary, PencilButton, KpiCard | Drawn 2026-10-19 on board `eJ0QQ` (A improved live / B new for each, plus dark mode); waiting for Jafar's picks |
 
 ## Batch 5 redraw decisions (Jafar, 2026-10-19)
 
