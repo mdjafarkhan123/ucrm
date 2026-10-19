@@ -2,7 +2,8 @@
 
 ## Summary
 
-<A short explanation Jafar can read in a minute: who this serves, what they gain, why, and the scope. This is
+<A short explanation Jafar can read in a minute: what the user actually wants, who this serves, what they
+gain, why, and the scope. This is
 part of the core agreement agents read on every resume. Keep it current; put approval dates and progress in
 Memory, not here.>
 

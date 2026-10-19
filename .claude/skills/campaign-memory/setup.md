@@ -8,9 +8,9 @@ Read this once, when a project has no `Memory/` folder.
    `INDEX.md` header.
 3. Add this rule to the project's agent instructions (`CLAUDE.md`, `AGENTS.md`, or both):
 
-   > **Campaigns.** Load `campaign-memory` to guide multi-session work from planning through design, building,
-   > verification, and handover, including `read memory and continue`. It selects relevant specialist guidance
-   > and keeps the current position in `Memory/`. Clear single-session tasks take its short path.
+   > **Campaigns.** Load `campaign-memory` for work that needs more than one session, and when the owner says
+   > `read memory and continue`. It keeps the current position in `Memory/`; small single-session tasks take its
+   > short path.
 
 4. If several sessions may work at once and the instructions have no rule for claiming work, set one up with
    the `agent-coordination` skill before the first parallel session.

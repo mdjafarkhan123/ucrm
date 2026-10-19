@@ -8,7 +8,9 @@
 | 2 <name> | § <topic> | <a thin, complete result> | 1 | <observable acceptance checks> | Not started |
 | 3 <name> | § <topic> | <…> | 2 | <…> | Not started |
 
-<!-- Planning, design, and proof can be parts. Built-but-unverified parts stay unfinished. -->
+<!-- Each part fits one focused session, delivers a complete result that can be shown or checked, names its
+plan section and what it waits for, and has a done-check anyone can observe. Put the riskiest unknowns first.
+Planning, design, and proof can be parts; built but unchecked parts stay unfinished. -->
 
 <!-- A long roadmap lists groups here instead, one line each, and keeps each group's parts in its file:
 | Group    | Delivers | State       | Parts                 |

@@ -1,10 +1,10 @@
 # Campaign Memory as the parent workflow
 
-**Status:** First-version workflow and build order approved by Jafar on 2026-10-11. First-version guidance and templates built and verified on 2026-10-11; follow-on migration remains outside this delivery. Design skills are outside this upgrade; visual planning remains supported without them.
+**Status:** First-version workflow and build order approved by Jafar on 2026-10-11. First-version guidance and templates built and verified on 2026-10-11; follow-on migration remains outside this delivery. Design skills are outside this upgrade; visual planning remains supported without them. Changed by Jafar on 2026-10-19: Campaign Memory keeps the position and no longer routes planning; CLAUDE.md's skills table picks the skill for each kind of work, and To Spec, To Tickets, and Wayfinder have no campaign mode.
 
 ## Summary
 
-Jafar should be able to say “start a campaign for Unified Inbox” and receive guided planning, design, building, and checking without remembering separate skill commands. Later, “read memory and continue Unified Inbox” should let a fresh AI continue the right unfinished work. Campaign Memory explains the current stage, necessary documents, relevant skills, and what to save. The product plan explains what Jafar wants; the handover explains where work stopped. Simple tasks take a short path. This is a written guide followed by each session, rather than a background service.
+Jafar should be able to say “start a campaign for Unified Inbox” and receive guided planning, design, building, and checking without remembering separate skill commands. Later, “read memory and continue Unified Inbox” should let a fresh AI continue the right unfinished work. Campaign Memory explains the current stage, necessary documents, and what to save; CLAUDE.md names the skill for each kind of work. The product plan explains what Jafar wants; the handover explains where work stopped. Simple tasks take a short path. This is a written guide followed by each session, rather than a background service.
 
 ## The problem and first version
 
@@ -20,14 +20,14 @@ The AI finds the relevant campaign and approved decisions, then chooses the stag
 | --- | --- | --- |
 | The idea needs facts or product examples | Proven Development and Research where needed | Relevant evidence, its limitations, and a recommendation |
 | Product choices remain unclear | Grilling; Grill with Docs when terminology or lasting decisions need recording | Jafar's answers saved in the product plan; remaining questions visible |
-| Planning exceeds one session | Wayfinder's decision-mapping approach | A small map of unresolved decisions and their dependencies, linked from the campaign |
-| The behavior is understood | To Spec's writing approach | One readable product plan, with approval distinguished from proposals |
+| Planning exceeds one session | Several planning parts on the campaign roadmap | A small map of unresolved decisions and their dependencies, linked from the campaign |
+| The behavior is understood | The plan template and a fresh-reader check | One readable product plan, with approval distinguished from proposals |
 | Screens or interactions need agreement | Available project guidance or tools; Prototype when trying something helps | Reviewable designs, recorded feedback, and the applicable approval |
-| The plan is ready to divide | To Tickets' approach | Small complete deliveries, dependencies, and observable completion checks |
+| The plan is ready to divide | The roadmap template's part rules | Small complete deliveries, dependencies, and observable completion checks |
 | A part is ready to build | Relevant development skills from the project's rules | The approved behavior implemented and checked, or its unfinished position saved |
 | A session starts or ends | Campaign Memory's resume and checkpoint guidance | A verified starting position or a useful handover |
 
-Campaign Memory routes to specialist instructions instead of copying them. A campaign request authorizes routine skill selection. Selected planning skills must become usable through the parent where invocation settings currently prevent it; their direct use and host permissions remain supported. Unrelated skills are outside this change.
+CLAUDE.md's skills table routes each kind of work to its specialist skill, and Campaign Memory records the results instead of copying the skills' instructions. A campaign request authorizes routine skill selection. Unrelated skills are outside this change.
 
 Reuse approved work. New discoveries return only affected work to planning. Small clear tasks take a shorter path without unnecessary campaigns, interviews, or research.
 
@@ -82,9 +82,10 @@ The [existing roadmap](../Memory/campaigns/memory-skill-upgrade/ROADMAP.md) reta
 
 ## Research and existing sources
 
-- [Existing planning guidance](../.claude/skills/campaign-memory/planning.md), [To Spec](../.claude/skills/to-spec/SKILL.md), [To Tickets](../.claude/skills/to-tickets/SKILL.md), and [Wayfinder](../.claude/skills/wayfinder/SKILL.md) supply the starting workflow. This plan adapts their outputs to the existing campaign homes.
+- The earlier planning guidance, [To Spec](../.claude/skills/to-spec/SKILL.md), [To Tickets](../.claude/skills/to-tickets/SKILL.md), and [Wayfinder](../.claude/skills/wayfinder/SKILL.md) supplied the starting workflow. Since 2026-10-19 the parts Campaign Memory needs live in its templates, and these skills stay for standalone use.
 - [Matt Pocock's published To Spec](https://github.com/mattpocock/skills/blob/main/skills/engineering/to-spec/SKILL.md) separates the user's problem, solution, stories, testing decisions, and exclusions; [To Tickets](https://github.com/mattpocock/skills/blob/main/skills/engineering/to-tickets/SKILL.md) supplies complete slices and acceptance checks.
 - [Superpowers' builder check](https://github.com/obra/superpowers/blob/main/skills/brainstorming/builder-check-prompt.md) tests whether a new builder still needs important answers. We adapt it to a fresh campaign session.
 - [GitHub Spec Kit's specification template](https://github.com/github/spec-kit/blob/main/templates/spec-template.md) provides prioritized journeys, concrete acceptance scenarios, and success outcomes. Its [analysis guidance](https://github.com/github/spec-kit/blob/main/templates/commands/analyze.md) checks missing coverage and contradictions; applying that principle at campaign checkpoints is our adaptation.
 
 - [Verification and reading measurements](research/campaign-memory-parent-proof-2026-10-11.md) — six isolated scenarios, one actual campaign resume, and mechanical checks.
+- [Trim verification](research/campaign-memory-trim-proof-2026-10-19.md) — the 2026-10-19 restructure: old and new skill on the same fresh-session scenarios, reading size, and the Memory checker.
