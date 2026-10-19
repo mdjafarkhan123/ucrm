@@ -27,6 +27,10 @@ Checked the running branch app at localhost:5174 using the existing Raad LTD Own
 
 Migration `20261019132605_tag_colour_editing.sql` was applied to the remote development database and recorded in the same transaction. **Do not reapply it.** Supabase MCP verified the policy and saved tag colours. No infrastructure changes.
 
+## Integrated main check
+
+After merging into main, opened the real tunnel app, selected the saved proof tag on New client and opened its colour menu. Teal remained selected and the persisted colour was reflected in the chip (`tags-main.png`). Left the client unsaved and returned the app to Home.
+
 ## Engineering references
 
 Preserved the existing free-text draft/blur-commit input pattern; used native Intl formatting, existing Bits UI popovers and shared Button loading behavior. Kept colour in `tags.color` and reused the existing Supabase permission helpers. Filtered updates follow [Supabase's update API](https://supabase.com/docs/reference/javascript/update). The approved product behaviour is the campaign's source of truth; no new competitor decision was needed.
