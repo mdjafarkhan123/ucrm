@@ -17,10 +17,13 @@ Our live Schedule already has the same behaviour, so the drawing needs no new da
   time-colour calendar tile, one calendar card: approved option-A toolbar (Today, arrows, range, Month/Week/Day
   switch, Unscheduled 4 switched on, Map, Filters), day headings with item count and a Late / Unassigned pill,
   Anytime row, 7 AM–6 PM grid (56 per hour), closed Sunday shaded, green now line, colour key.
-- Items: record colour tint with a 3px record-colour left line (visit green, assessment orange, event yellow,
-  task grey); type icon top left. Status in words: a small white pill (dot + word) at the card foot, or in the top
-  row on one-hour cards. Late: red outline + "Late". Unassigned: amber outline + "Unassigned". Done: card faded +
-  "Done". Planned cards carry no pill.
+- Items (revised 2026-10-19 from Jafar's final recommendation): normal cards are the soft type tint (visit
+  green, assessment orange, event yellow, task grey) with the type icon and **no** thick line. Late: 4px red left
+  line + "Late" pill. Unassigned: 4px amber left line + "Unassigned" pill. Both: red line wins, both pills stay.
+  Completed: white card, 1px border, grey text and icon, green "Completed" pill with a check (white, not grey,
+  because the task tint and the inactive grey are the same colour). No fading, no animation, no "In progress".
+- Today: green weekday, number in a green circle, 3px green line under its heading, column and Anytime cell on
+  `color-surface-background-subtle`. Closed days moved to `color-surface-active` so they differ from today.
 
 ## Card colour decision (Jafar delegated to Claude, 2026-10-19)
 
