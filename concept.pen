@@ -67978,6 +67978,2290 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "FTWqY",
+          "name": "Book work · Job",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "Jg2mP",
+              "name": "Book work heading",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "WnkqP",
+                  "name": "Section title",
+                  "fill": "$color-heading",
+                  "content": "Book work form · Job",
+                  "fontFamily": "$font-family",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "YZSgt",
+                  "name": "Section sub",
+                  "fill": "$color-text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Opens over the dimmed calendar when you click or drag across empty time. The switch picks what you are booking; Job books a light job with its first visit. More options opens the full New job page with everything filled in.",
+                  "fontFamily": "$font-family",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "CGik0",
+              "name": "Stage",
+              "width": "fill_container",
+              "fill": [
+                "$color-surface-background",
+                "$color-overlay"
+              ],
+              "cornerRadius": "$radius-large",
+              "padding": 48,
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "OemVt",
+                  "name": "Book work pop-up · Job",
+                  "clip": true,
+                  "width": 640,
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-large",
+                  "stroke": "$color-border",
+                  "strokeWidth": 1,
+                  "effect": [
+                    {
+                      "type": "shadow",
+                      "shadowType": "outer",
+                      "color": "#0000001a",
+                      "offset": {
+                        "x": 0,
+                        "y": 1
+                      },
+                      "blur": 4
+                    },
+                    {
+                      "type": "shadow",
+                      "shadowType": "outer",
+                      "color": "#0000000d",
+                      "offset": {
+                        "x": 0,
+                        "y": 4
+                      },
+                      "blur": 12
+                    }
+                  ],
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "rBARV",
+                      "name": "Header",
+                      "width": "fill_container",
+                      "stroke": "$color-border",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "gap": 12,
+                      "padding": [
+                        16,
+                        16,
+                        16,
+                        20
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "V3lrFN",
+                          "type": "ref",
+                          "ref": "BfB4y",
+                          "name": "Tile",
+                          "fill": "$color-job-surface",
+                          "descendants": {
+                            "IAbCu": {
+                              "icon": "hammer",
+                              "fill": "$color-job-on-surface"
+                            }
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "UrWzi",
+                          "name": "Title",
+                          "fill": "$color-heading",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "New job",
+                          "fontFamily": "$font-family",
+                          "fontSize": 20,
+                          "fontWeight": "600",
+                          "letterSpacing": -0.2
+                        },
+                        {
+                          "id": "RkL13",
+                          "type": "ref",
+                          "ref": "nIDZt",
+                          "name": "Close",
+                          "descendants": {
+                            "IW9bL": {
+                              "icon": "x"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ni5Yv",
+                      "name": "Body",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "CvYZv",
+                          "name": "Switch · What are you booking?",
+                          "width": "fill_container",
+                          "fill": "$color-surface-background-subtle",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "gap": 2,
+                          "padding": 3,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "JYCbK",
+                              "name": "Option · Job",
+                              "width": "fill_container",
+                              "height": 32,
+                              "fill": "$color-surface",
+                              "cornerRadius": 6,
+                              "stroke": "$color-border-interactive",
+                              "strokeWidth": 1,
+                              "effect": {
+                                "type": "shadow",
+                                "shadowType": "outer",
+                                "color": "#1f2a2414",
+                                "offset": {
+                                  "x": 0,
+                                  "y": 1
+                                },
+                                "blur": 2
+                              },
+                              "gap": 6,
+                              "padding": [
+                                0,
+                                14
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "ndSNJ",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "hammer",
+                                  "library": "lucide",
+                                  "fill": "$color-job"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "c0Zex",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "content": "Job",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "jU1vI",
+                              "name": "Option · Request",
+                              "width": "fill_container",
+                              "height": 32,
+                              "cornerRadius": 6,
+                              "gap": 6,
+                              "padding": [
+                                0,
+                                14
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "lM5Mz",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "inbox",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "F54TPF",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Request",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "wIsDw",
+                              "name": "Option · Event",
+                              "width": "fill_container",
+                              "height": 32,
+                              "cornerRadius": 6,
+                              "gap": 6,
+                              "padding": [
+                                0,
+                                14
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "mC2UG",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "calendar-days",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Geflr",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Event",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "nWpPO",
+                          "name": "Job title",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "m5KhmO",
+                              "name": "Label row",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "TGFne",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "content": "Job title",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "twHqd",
+                                  "name": "Required",
+                                  "fill": "$color-critical",
+                                  "content": "*",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "z0vV7m",
+                              "name": "Box",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-base",
+                              "stroke": "$color-border-interactive",
+                              "strokeWidth": 1,
+                              "gap": 8,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "fpQH8",
+                                  "name": "Value",
+                                  "fill": "$color-heading",
+                                  "content": "Kitchen cabinet install",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "oOEjn",
+                          "name": "Client",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "YIolB",
+                              "name": "Label row",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "dJiX1",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "content": "Client",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "sItMa",
+                                  "name": "Required",
+                                  "fill": "$color-critical",
+                                  "content": "*",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "YfW2w",
+                              "name": "Picked client",
+                              "width": "fill_container",
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-large",
+                              "stroke": "$color-border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": "$space-slim",
+                              "padding": "$space-base",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Lz4mm",
+                                  "name": "Client top",
+                                  "width": "fill_container",
+                                  "gap": "$space-slim",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "ODzNk",
+                                      "name": "Avatar",
+                                      "width": 40,
+                                      "height": 40,
+                                      "fill": "$color-client-surface",
+                                      "cornerRadius": "$radius-circle",
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "KP1UY",
+                                          "name": "Initials",
+                                          "fill": "$color-client-on-surface",
+                                          "content": "SL",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 14,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "vuiSX",
+                                      "name": "Name",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "ktv7J",
+                                          "name": "Name",
+                                          "fill": "$color-heading",
+                                          "content": "Sarah Lee",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 15,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "WLL1S",
+                                          "name": "Hint",
+                                          "fill": "$color-text-secondary",
+                                          "content": "Client since 2024 · 3 jobs",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-small",
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "i6vJ9S",
+                                      "name": "Change",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "id": "O8J2Q",
+                                          "type": "ref",
+                                          "ref": "qpjlj",
+                                          "name": "Change client",
+                                          "height": 32,
+                                          "padding": [
+                                            0,
+                                            12
+                                          ],
+                                          "gap": 6,
+                                          "descendants": {
+                                            "lDuWW": {
+                                              "icon": "repeat"
+                                            },
+                                            "Dpmda": {
+                                              "content": "Change client",
+                                              "fontSize": 13
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "MmLAQ",
+                                  "name": "Contact lines",
+                                  "width": "fill_container",
+                                  "gap": "$space-large",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "vFYmE",
+                                      "name": "Phone",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "RFckw",
+                                          "name": "Tile",
+                                          "width": 24,
+                                          "height": 24,
+                                          "fill": "$color-conversation-surface",
+                                          "cornerRadius": "$radius-tile-small",
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "O5JbxD",
+                                              "name": "Icon",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "phone",
+                                              "library": "lucide",
+                                              "fill": "$color-conversation"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "rFv7e",
+                                          "name": "Text",
+                                          "fill": "$color-text",
+                                          "content": "(217) 555-0142",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "RrNk5",
+                                      "name": "Email",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "FBK0q",
+                                          "name": "Tile",
+                                          "width": 24,
+                                          "height": 24,
+                                          "fill": "$color-conversation-surface",
+                                          "cornerRadius": "$radius-tile-small",
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "hMfMa",
+                                              "name": "Icon",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "mail",
+                                              "library": "lucide",
+                                              "fill": "$color-conversation"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "H6YqXA",
+                                          "name": "Text",
+                                          "fill": "$color-text",
+                                          "content": "sarah.lee@email.com",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "D30xNf",
+                                  "name": "Job property",
+                                  "width": "fill_container",
+                                  "stroke": "$color-border",
+                                  "strokeWidth": {
+                                    "top": 1
+                                  },
+                                  "gap": "$space-slim",
+                                  "padding": [
+                                    12,
+                                    0,
+                                    0,
+                                    0
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "id": "iE1Nz",
+                                      "type": "ref",
+                                      "ref": "GrSlk",
+                                      "name": "Tile",
+                                      "fill": "$color-client-surface",
+                                      "descendants": {
+                                        "XsJUX": {
+                                          "icon": "map-pin",
+                                          "fill": "$color-client"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "DKKkh",
+                                      "name": "Text",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "w1yrA",
+                                          "name": "Address",
+                                          "fill": "$color-heading",
+                                          "content": "14 Elm Street, Springfield, IL 62704",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-base",
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "PPWEh",
+                                          "name": "Hint",
+                                          "fill": "$color-text-secondary",
+                                          "content": "Home · Sarah has 2 properties",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-small",
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "id": "a0OGT",
+                                      "type": "ref",
+                                      "ref": "A8ydV",
+                                      "name": "Change property",
+                                      "height": 32,
+                                      "padding": [
+                                        0,
+                                        12
+                                      ],
+                                      "descendants": {
+                                        "cQzG0": {
+                                          "content": "Change property",
+                                          "fontSize": 13
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "nfITJ",
+                          "name": "First visit",
+                          "clip": true,
+                          "width": "fill_container",
+                          "cornerRadius": "$radius-large",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "k4Sbp",
+                              "name": "Group head",
+                              "width": "fill_container",
+                              "fill": "$color-surface-background-subtle",
+                              "stroke": "$color-border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 10,
+                              "padding": [
+                                10,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "Z2nfrI",
+                                  "type": "ref",
+                                  "ref": "t06N6v",
+                                  "name": "Tile",
+                                  "fill": "$color-time-surface",
+                                  "descendants": {
+                                    "QAnaV": {
+                                      "icon": "calendar-clock",
+                                      "fill": "$color-time"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "i6HWIp",
+                                  "name": "Title",
+                                  "fill": "$color-heading",
+                                  "content": "First visit",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "b5TCp",
+                              "name": "Group body",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 16,
+                              "padding": 16,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "LqVap",
+                                  "name": "Checkbox · Schedule later",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "pwgJC",
+                                      "name": "Box",
+                                      "width": 18,
+                                      "height": 18,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": "$radius-small",
+                                      "stroke": "$color-border-interactive",
+                                      "strokeWidth": 1,
+                                      "justifyContent": "center",
+                                      "alignItems": "center"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "r0SaT",
+                                      "name": "Text",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Gd5sJ",
+                                          "name": "Label",
+                                          "fill": "$color-heading",
+                                          "content": "Schedule later",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-base",
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "ppGvD",
+                                          "name": "Description",
+                                          "fill": "$color-text-secondary",
+                                          "content": "Book the job now and give its first visit a date when you know it.",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-small",
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "dHl9F",
+                                  "name": "When",
+                                  "width": "fill_container",
+                                  "gap": "$space-slim",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "MVAFE",
+                                      "name": "Day",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 6,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "CwEzY",
+                                          "name": "Label",
+                                          "fill": "$color-heading",
+                                          "content": "Day of the first visit",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-label",
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "KGX4b",
+                                          "name": "Box",
+                                          "width": "fill_container",
+                                          "height": 40,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": "$radius-base",
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "gap": 8,
+                                          "padding": [
+                                            0,
+                                            12
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "ygEQb",
+                                              "name": "Icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "calendar",
+                                              "library": "lucide",
+                                              "fill": "$color-icon-secondary"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "IdER1",
+                                              "name": "Value",
+                                              "fill": "$color-heading",
+                                              "content": "Tue, Oct 21, 2026",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-base",
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "S7jZIh",
+                                      "name": "Time",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 6,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "GJQ7p",
+                                          "name": "Label",
+                                          "fill": "$color-heading",
+                                          "content": "Time",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-label",
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "ZxEvV",
+                                          "name": "Box",
+                                          "width": "fill_container",
+                                          "height": 40,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": "$radius-base",
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "gap": 8,
+                                          "padding": [
+                                            0,
+                                            12
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "v9PZ0G",
+                                              "name": "Icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "clock-3",
+                                              "library": "lucide",
+                                              "fill": "$color-icon-secondary"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "QmOsB",
+                                              "name": "Value",
+                                              "fill": "$color-heading",
+                                              "content": "9:00 AM – 1:00 PM",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-base",
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "blRb6",
+                                  "name": "Checkbox · Anytime",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "K33bYl",
+                                      "name": "Box",
+                                      "width": 18,
+                                      "height": 18,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": "$radius-small",
+                                      "stroke": "$color-border-interactive",
+                                      "strokeWidth": 1,
+                                      "justifyContent": "center",
+                                      "alignItems": "center"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "QTK6G",
+                                      "name": "Text",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "WJEZf",
+                                          "name": "Label",
+                                          "fill": "$color-heading",
+                                          "content": "Anytime",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-base",
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "F8i2Y",
+                                          "name": "Description",
+                                          "fill": "$color-text-secondary",
+                                          "content": "Promise the day without promising an hour.",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-small",
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "N89vn",
+                                  "name": "Notes for the first visit",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "pXpOj",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "content": "Notes for the first visit",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "yu5rO",
+                                      "name": "Box",
+                                      "width": "fill_container",
+                                      "height": 64,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": "$radius-base",
+                                      "stroke": "$color-border-interactive",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        10,
+                                        12
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "buUtR",
+                                          "name": "Value",
+                                          "fill": "$color-heading",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "Cabinets are in the garage. Bring the long level and shims.",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-base",
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "UIdFw",
+                          "name": "Who is going",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "PzJqH",
+                              "name": "Label",
+                              "fill": "$color-heading",
+                              "content": "Who is going",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-label",
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "WCNrt",
+                              "name": "People",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "rtPTQ",
+                                  "name": "Person · Mike Davis",
+                                  "height": 36,
+                                  "fill": "$color-surface",
+                                  "cornerRadius": "$radius-circle",
+                                  "stroke": "$color-interactive",
+                                  "strokeWidth": 1.5,
+                                  "gap": 8,
+                                  "padding": [
+                                    0,
+                                    12,
+                                    0,
+                                    6
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "hIacY",
+                                      "name": "Avatar MD",
+                                      "width": 26,
+                                      "height": 26,
+                                      "fill": "$color-inactive-surface",
+                                      "cornerRadius": "$radius-circle",
+                                      "stroke": "$color-surface",
+                                      "strokeWidth": 2,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "V35PJ",
+                                          "name": "I",
+                                          "fill": "$color-inactive-on-surface",
+                                          "content": "MD",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 10,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "CQPjX",
+                                      "name": "Name",
+                                      "fill": "$color-interactive",
+                                      "content": "Mike Davis",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "Q2irXr",
+                                      "name": "State",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "circle-check",
+                                      "library": "lucide",
+                                      "fill": "$color-interactive"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "gOVOj",
+                                  "name": "Person · Jamal Reed",
+                                  "height": 36,
+                                  "fill": "$color-surface",
+                                  "cornerRadius": "$radius-circle",
+                                  "stroke": "$color-interactive",
+                                  "strokeWidth": 1.5,
+                                  "gap": 8,
+                                  "padding": [
+                                    0,
+                                    12,
+                                    0,
+                                    6
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "l23Zu",
+                                      "name": "Avatar JR",
+                                      "width": 26,
+                                      "height": 26,
+                                      "fill": "$color-inactive-surface",
+                                      "cornerRadius": "$radius-circle",
+                                      "stroke": "$color-surface",
+                                      "strokeWidth": 2,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "AN4we",
+                                          "name": "I",
+                                          "fill": "$color-inactive-on-surface",
+                                          "content": "JR",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 10,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "f3aqcv",
+                                      "name": "Name",
+                                      "fill": "$color-interactive",
+                                      "content": "Jamal Reed",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "E4v97",
+                                      "name": "State",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "circle-check",
+                                      "library": "lucide",
+                                      "fill": "$color-interactive"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "LH1Hw",
+                                  "name": "Person · Priya Shah",
+                                  "height": 36,
+                                  "fill": "$color-surface",
+                                  "cornerRadius": "$radius-circle",
+                                  "stroke": "$color-border-interactive",
+                                  "strokeWidth": 1,
+                                  "gap": 8,
+                                  "padding": [
+                                    0,
+                                    12,
+                                    0,
+                                    6
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "tBRTb",
+                                      "name": "Avatar PS",
+                                      "width": 26,
+                                      "height": 26,
+                                      "fill": "$color-inactive-surface",
+                                      "cornerRadius": "$radius-circle",
+                                      "stroke": "$color-surface",
+                                      "strokeWidth": 2,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "thD35",
+                                          "name": "I",
+                                          "fill": "$color-inactive-on-surface",
+                                          "content": "PS",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 10,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "lqHgM",
+                                      "name": "Name",
+                                      "fill": "$color-heading",
+                                      "content": "Priya Shah",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "ukFIo",
+                                      "name": "State",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "circle-plus",
+                                      "library": "lucide",
+                                      "fill": "$color-icon-secondary"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "h2ciH",
+                          "name": "Notify",
+                          "width": "fill_container",
+                          "stroke": "$color-border",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "padding": [
+                            16,
+                            0,
+                            0,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "YPXAf",
+                              "name": "Checkbox · Notify customer",
+                              "width": "fill_container",
+                              "gap": 10,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "M4akf0",
+                                  "name": "Box",
+                                  "width": 18,
+                                  "height": 18,
+                                  "fill": "$color-interactive",
+                                  "cornerRadius": "$radius-small",
+                                  "stroke": "$color-interactive",
+                                  "strokeWidth": 1,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "OBFS7",
+                                      "name": "Check",
+                                      "width": 12,
+                                      "height": 12,
+                                      "icon": "check",
+                                      "library": "lucide",
+                                      "fill": "$color-surface"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "H9acn",
+                                  "name": "Text",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "dHGwu",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "content": "Notify customer",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-base",
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "QbgMR",
+                                      "name": "Description",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Email them a booking confirmation.",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-small",
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "FNqPR",
+                      "name": "Footer",
+                      "width": "fill_container",
+                      "fill": "$color-surface-background-subtle",
+                      "stroke": "$color-border",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "gap": 8,
+                      "padding": [
+                        16,
+                        20
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "z9ZB57",
+                          "type": "ref",
+                          "ref": "qpjlj",
+                          "name": "More options",
+                          "descendants": {
+                            "lDuWW": {
+                              "icon": "sliders-horizontal"
+                            },
+                            "Dpmda": {
+                              "content": "More options"
+                            }
+                          }
+                        },
+                        {
+                          "id": "K10U85",
+                          "type": "ref",
+                          "ref": "Qo6GL",
+                          "name": "Save job",
+                          "descendants": {
+                            "P99oLT": {
+                              "icon": "check"
+                            },
+                            "vaRXs": {
+                              "content": "Save job"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "E568E5",
+          "name": "Book work · Request and Event",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "u3vq7q",
+              "name": "Book work hand-off heading",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "alAiO",
+                  "name": "Section title",
+                  "fill": "$color-heading",
+                  "content": "Book work form · Request and Event",
+                  "fontFamily": "$font-family",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "V4IB7",
+                  "name": "Section sub",
+                  "fill": "$color-text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "The same pop-up with Request or Event chosen. It keeps the chosen slot and hands it on: Request opens the full New request page, Event opens the New event form.",
+                  "fontFamily": "$font-family",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "d8yl7M",
+              "name": "Stage",
+              "width": "fill_container",
+              "fill": [
+                "$color-surface-background",
+                "$color-overlay"
+              ],
+              "cornerRadius": "$radius-large",
+              "layout": "vertical",
+              "gap": 32,
+              "padding": 48,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "GTfk2",
+                  "name": "Book work pop-up · Request",
+                  "clip": true,
+                  "width": 640,
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-large",
+                  "stroke": "$color-border",
+                  "strokeWidth": 1,
+                  "effect": [
+                    {
+                      "type": "shadow",
+                      "shadowType": "outer",
+                      "color": "#0000001a",
+                      "offset": {
+                        "x": 0,
+                        "y": 1
+                      },
+                      "blur": 4
+                    },
+                    {
+                      "type": "shadow",
+                      "shadowType": "outer",
+                      "color": "#0000000d",
+                      "offset": {
+                        "x": 0,
+                        "y": 4
+                      },
+                      "blur": 12
+                    }
+                  ],
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "G9Wli2",
+                      "name": "Header",
+                      "width": "fill_container",
+                      "stroke": "$color-border",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "gap": 12,
+                      "padding": [
+                        16,
+                        16,
+                        16,
+                        20
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "jU8B2",
+                          "type": "ref",
+                          "ref": "BfB4y",
+                          "name": "Tile",
+                          "fill": "$color-request-surface",
+                          "descendants": {
+                            "IAbCu": {
+                              "icon": "inbox",
+                              "fill": "$color-request-on-surface"
+                            }
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "D7iga",
+                          "name": "Title",
+                          "fill": "$color-heading",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "New request",
+                          "fontFamily": "$font-family",
+                          "fontSize": 20,
+                          "fontWeight": "600",
+                          "letterSpacing": -0.2
+                        },
+                        {
+                          "id": "P5kOUa",
+                          "type": "ref",
+                          "ref": "nIDZt",
+                          "name": "Close",
+                          "descendants": {
+                            "IW9bL": {
+                              "icon": "x"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "y8MbI",
+                      "name": "Body",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "UZCpA",
+                          "name": "Switch · What are you booking?",
+                          "width": "fill_container",
+                          "fill": "$color-surface-background-subtle",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "gap": 2,
+                          "padding": 3,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "XK55y",
+                              "name": "Option · Job",
+                              "width": "fill_container",
+                              "height": 32,
+                              "cornerRadius": 6,
+                              "gap": 6,
+                              "padding": [
+                                0,
+                                14
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "BEZlr",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "hammer",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "D8EYE8",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Job",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "G6MgXe",
+                              "name": "Option · Request",
+                              "width": "fill_container",
+                              "height": 32,
+                              "fill": "$color-surface",
+                              "cornerRadius": 6,
+                              "stroke": "$color-border-interactive",
+                              "strokeWidth": 1,
+                              "effect": {
+                                "type": "shadow",
+                                "shadowType": "outer",
+                                "color": "#1f2a2414",
+                                "offset": {
+                                  "x": 0,
+                                  "y": 1
+                                },
+                                "blur": 2
+                              },
+                              "gap": 6,
+                              "padding": [
+                                0,
+                                14
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "vQYP1",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "inbox",
+                                  "library": "lucide",
+                                  "fill": "$color-request"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "pa37T",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "content": "Request",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "FY5go",
+                              "name": "Option · Event",
+                              "width": "fill_container",
+                              "height": 32,
+                              "cornerRadius": 6,
+                              "gap": 6,
+                              "padding": [
+                                0,
+                                14
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "B38SB",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "calendar-days",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "IzeiH",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Event",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "ZQikd",
+                          "name": "Lead",
+                          "fill": "$color-text",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "A request opens the full New request form, with the on-site visit booked onto this slot:",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-base",
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "iMaVU",
+                          "name": "Slot",
+                          "width": "fill_container",
+                          "fill": "$color-surface-background-subtle",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 12,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "xDSfy",
+                              "name": "Date",
+                              "width": 44,
+                              "height": 44,
+                              "fill": "$color-time",
+                              "cornerRadius": "$radius-tile-large",
+                              "layout": "vertical",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "F89P5",
+                                  "name": "Month",
+                                  "fill": "$color-surface",
+                                  "content": "OCT",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-overline",
+                                  "fontWeight": "600",
+                                  "letterSpacing": 0.6
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Ox5s2",
+                                  "name": "Day",
+                                  "fill": "$color-surface",
+                                  "content": "21",
+                                  "lineHeight": 1.1,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 17,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "cycUi",
+                              "name": "Text",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "bNjjt",
+                                  "name": "Day label",
+                                  "fill": "$color-heading",
+                                  "content": "Tue, Oct 21",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "mOIMN",
+                                  "name": "Time",
+                                  "gap": 6,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "YWkiD",
+                                      "name": "Clock",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "clock-3",
+                                      "library": "lucide",
+                                      "fill": "$color-time"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "r5Zp0",
+                                      "name": "Value",
+                                      "fill": "$color-text-secondary",
+                                      "content": "9:00 AM – 1:00 PM",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Plc1S",
+                          "name": "Note",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "iCrpv",
+                              "name": "Arrow",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "arrow-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "IMDxe",
+                              "name": "Text",
+                              "fill": "$color-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "You will add the client and what they are asking for there.",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-label",
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "t53xEC",
+                      "name": "Footer",
+                      "width": "fill_container",
+                      "fill": "$color-surface-background-subtle",
+                      "stroke": "$color-border",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "gap": 8,
+                      "padding": [
+                        16,
+                        20
+                      ],
+                      "justifyContent": "end",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "IaqPV",
+                          "type": "ref",
+                          "ref": "Qo6GL",
+                          "name": "Continue to new request",
+                          "descendants": {
+                            "P99oLT": {
+                              "icon": "arrow-right",
+                              "enabled": false
+                            },
+                            "vaRXs": {
+                              "content": "Continue to new request"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "CejfJ",
+                  "name": "Book work pop-up · Event",
+                  "clip": true,
+                  "width": 640,
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-large",
+                  "stroke": "$color-border",
+                  "strokeWidth": 1,
+                  "effect": [
+                    {
+                      "type": "shadow",
+                      "shadowType": "outer",
+                      "color": "#0000001a",
+                      "offset": {
+                        "x": 0,
+                        "y": 1
+                      },
+                      "blur": 4
+                    },
+                    {
+                      "type": "shadow",
+                      "shadowType": "outer",
+                      "color": "#0000000d",
+                      "offset": {
+                        "x": 0,
+                        "y": 4
+                      },
+                      "blur": 12
+                    }
+                  ],
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Y9392A",
+                      "name": "Header",
+                      "width": "fill_container",
+                      "stroke": "$color-border",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "gap": 12,
+                      "padding": [
+                        16,
+                        16,
+                        16,
+                        20
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "oVivH",
+                          "type": "ref",
+                          "ref": "BfB4y",
+                          "name": "Tile",
+                          "fill": "$color-event-surface",
+                          "descendants": {
+                            "IAbCu": {
+                              "icon": "calendar-days",
+                              "fill": "$color-event-on-surface"
+                            }
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "SxbYf",
+                          "name": "Title",
+                          "fill": "$color-heading",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "New event",
+                          "fontFamily": "$font-family",
+                          "fontSize": 20,
+                          "fontWeight": "600",
+                          "letterSpacing": -0.2
+                        },
+                        {
+                          "id": "Hr6wD",
+                          "type": "ref",
+                          "ref": "nIDZt",
+                          "name": "Close",
+                          "descendants": {
+                            "IW9bL": {
+                              "icon": "x"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "S43DcP",
+                      "name": "Body",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "zhIk3",
+                          "name": "Switch · What are you booking?",
+                          "width": "fill_container",
+                          "fill": "$color-surface-background-subtle",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "gap": 2,
+                          "padding": 3,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "P2PIdJ",
+                              "name": "Option · Job",
+                              "width": "fill_container",
+                              "height": 32,
+                              "cornerRadius": 6,
+                              "gap": 6,
+                              "padding": [
+                                0,
+                                14
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "b7YAzv",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "hammer",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "o5pR1E",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Job",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ogCpL",
+                              "name": "Option · Request",
+                              "width": "fill_container",
+                              "height": 32,
+                              "cornerRadius": 6,
+                              "gap": 6,
+                              "padding": [
+                                0,
+                                14
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "k6kFU",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "inbox",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "cERS1",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Request",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "L9QGt",
+                              "name": "Option · Event",
+                              "width": "fill_container",
+                              "height": 32,
+                              "fill": "$color-surface",
+                              "cornerRadius": 6,
+                              "stroke": "$color-border-interactive",
+                              "strokeWidth": 1,
+                              "effect": {
+                                "type": "shadow",
+                                "shadowType": "outer",
+                                "color": "#1f2a2414",
+                                "offset": {
+                                  "x": 0,
+                                  "y": 1
+                                },
+                                "blur": 2
+                              },
+                              "gap": 6,
+                              "padding": [
+                                0,
+                                14
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "clE7E",
+                                  "name": "Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "calendar-days",
+                                  "library": "lucide",
+                                  "fill": "$color-event"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "ram8Y",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "content": "Event",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "o5fA0O",
+                          "name": "Lead",
+                          "fill": "$color-text",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "An event blocks this slot for the whole team — a meeting, training or holiday:",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-base",
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "QSIbP",
+                          "name": "Slot",
+                          "width": "fill_container",
+                          "fill": "$color-surface-background-subtle",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "gap": 12,
+                          "padding": 12,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "C4Wuy",
+                              "name": "Date",
+                              "width": 44,
+                              "height": 44,
+                              "fill": "$color-time",
+                              "cornerRadius": "$radius-tile-large",
+                              "layout": "vertical",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "p9rYAW",
+                                  "name": "Month",
+                                  "fill": "$color-surface",
+                                  "content": "OCT",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-overline",
+                                  "fontWeight": "600",
+                                  "letterSpacing": 0.6
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "YIUeV",
+                                  "name": "Day",
+                                  "fill": "$color-surface",
+                                  "content": "21",
+                                  "lineHeight": 1.1,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 17,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "gby6y",
+                              "name": "Text",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "NWrZv",
+                                  "name": "Day label",
+                                  "fill": "$color-heading",
+                                  "content": "Tue, Oct 21",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "agP21",
+                                  "name": "Time",
+                                  "gap": 6,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "qACbw",
+                                      "name": "Clock",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "clock-3",
+                                      "library": "lucide",
+                                      "fill": "$color-time"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "d46dd2",
+                                      "name": "Value",
+                                      "fill": "$color-text-secondary",
+                                      "content": "9:00 AM – 1:00 PM",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "doaNQ",
+                          "name": "Note",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "Z6YeOt",
+                              "name": "Arrow",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "arrow-right",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "D4r8si",
+                              "name": "Text",
+                              "fill": "$color-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "You will give it a title and any details next. It has no client or crew.",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-label",
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "psDcF",
+                      "name": "Footer",
+                      "width": "fill_container",
+                      "fill": "$color-surface-background-subtle",
+                      "stroke": "$color-border",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "gap": 8,
+                      "padding": [
+                        16,
+                        20
+                      ],
+                      "justifyContent": "end",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "fncfE",
+                          "type": "ref",
+                          "ref": "Qo6GL",
+                          "name": "Continue to new event",
+                          "descendants": {
+                            "P99oLT": {
+                              "icon": "arrow-right",
+                              "enabled": false
+                            },
+                            "vaRXs": {
+                              "content": "Continue to new event"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     }
