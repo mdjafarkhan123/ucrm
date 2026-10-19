@@ -30,8 +30,10 @@ Agreed with Jafar on 2026-10-17. Every design, in Pencil or in code, follows all
 7. **Nothing blends in.** Every element's fill differs from the colour behind it, in light and dark mode.
 8. **Built from the app's own colours and sizes** (`src/lib/styles/_variables.scss`). Add a new one only when
    nothing fits.
-9. **A new concept, not a touch-up.** New buttons, parts and screens are welcome; a screen's layout and content
-   may differ from today's page.
+9. **The better of new or tweaked.** For each part or screen, judge whether a new look or an improved version of
+   today's look serves the contractor better, draw that, and name the choice and its reason when showing Jafar.
+   A copy of today's look is neither. New buttons, parts and screens are welcome; layout and content may differ
+   from today's page.
 10. **Researched, never copied.** Check what Jobber and other leading products show and leave out on a screen,
     then draw our own look. This research is for just what they show and what not. Not to copy their design
 11. **Desktop web app.** Design at 1440px wide; phone layouts wait for the native apps.

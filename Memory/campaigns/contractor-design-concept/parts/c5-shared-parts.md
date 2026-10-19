@@ -16,9 +16,10 @@
 
 ## Batch 5 redraw decisions (Jafar, 2026-10-19)
 
-New behaviour approved: quick dates (Today, Tomorrow, Next week = next week-start day) above the month; time
-pop-up is one 15-minute list (typing any time still works; replaces hour/minute/AM-PM columns); end-time list
-shows each line's length from the start ("2 hr"). Declined: current local time in time-zone rows. Look: indigo
+New behaviour approved: quick dates (Today, Tomorrow, Next week = next week-start day) above the month; end
+times show their length from the start ("2 hr after start" chip). Declined: current local time in time-zone
+rows; a 15-minute time list (Jafar: the live hour / minute-in-5s / AM-PM picker is more flexible — keep it,
+improved look). Rule: per part, a new look or an improved live look, never a copy (design skill pref 9). Look: indigo
 `color-time` tile at the front of date/time/time-zone boxes, weekday beside the date, raised green picked day,
 today = green date + dot, round flags, grey code/offset pills, typed letters in green. After approval, delete
 `J3g7hi`.
