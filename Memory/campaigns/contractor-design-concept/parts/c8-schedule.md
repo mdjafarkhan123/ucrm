@@ -2,18 +2,10 @@
 
 **Campaign:** contractor-design-concept · **Checklist row:** `stages/list-2a-daily.md` → `(app)/schedule`
 **Branch/worktree:** `codex/concept-schedule`, `.worktrees/concept-schedule` · **Claim:** `e4d47ceb5e70`
-**State (2026-10-19):** Week `JpHqG` **approved by Jafar 2026-10-19**. He then asked for an improved variant
-`a7LTbd` ("Improved (variant)", below `JpHqG`), waiting for his pick. Then write the card rules into the design
-skill (from the chosen frame), delete the other, then Day view.
-
-## Variant `a7LTbd` (differs from `JpHqG` only here)
-
-- Card text in two levels: client 13/600 `color-heading`, job 12/500 `color-text`; time stays 12/600 in the record
-  on-surface colour. One-hour cards put client and job on one line. Task/event titles 13/600 heading.
-- Completed cards: no people circles (done work goes quiet), pill at the foot, client and job crossed out in
-  `color-text-secondary` (Pencil cannot draw strikethrough: 1px lines).
-- Toolbar groups: one bordered group ‹ | Today | ›, one group Map | Filters | ••• (1px dividers).
-- Hover look drawn on Thu "Ken Patel": 1px `color-job` edge, soft shadow (#032b3a1f, y4, blur 12), pointer.
+**State (2026-10-19):** Week approved by Jafar, then the improved variant approved the same day. The final
+drawing is `a7LTbd` "Concept · Schedule · Week · Owner · 1440"; the first version `JpHqG` was deleted. Its look is
+written in the design skill: `calendar.md` (new), joined group in `buttons.md`, outlined pill in `badges.md`.
+Next: Day view.
 
 ## Research
 
@@ -21,22 +13,10 @@ Jobber screenshots in `Design/schedule-visits-research/jobber/`. Jobber: Month /
 and arrows, Type / Team / Status filters, unscheduled count, Map, More; a visit opens a small pop-up. Our live
 Schedule already behaves the same, so the drawing needs no new data except event completion (below).
 
-## Week `JpHqG` as drawn
+## Week as drawn
 
-- **No page header** (Jafar 2026-10-19: Jobber and our app have none). The calendar card takes the full height.
-  Toolbar: Today, arrows, range, Month/Week/Day switch, Unscheduled (off), Map, Filters, More (36 icon button,
-  ellipsis). The top bar's New is the only green New.
-- Day headings: weekday, date, item count, small Late / Unassigned pills. Anytime row. Grid 7 AM–7 PM, 64 per hour.
-- Today: green weekday, date in a green circle, 3px green line under it, column on `color-surface-background-subtle`.
-  Closed day: white with light diagonal stripes in `color-border`.
-- Now line behind cards: 1px green across the open days, 3px on today, dot at today's edge, green "10:40" label
-  in the hours column (a line through a title would read as "crossed out").
-- Cards: soft tint of the kind of work (visit green, assessment orange, event yellow, task grey), 14px type icon,
-  time 12/600 always shown, title 12/600, people circles 24 (11/700 initials, 2 apart). Late: 4px red left edge
-  plus outlined "Late" pill. Unassigned: outlined pill only, no edge (event yellow = warning yellow).
-  Completed: `color-surface-active`, 1px `color-border-interactive`, grey icon and text, crossed-out title, green
-  "Completed" pill under the title, people on the bottom row. Late follows `src/lib/schedule/status.ts`.
-- Overlap (Sat): half-width cards side by side, start time only.
+Everything is in `.claude/skills/design/calendar.md`. Late follows `src/lib/schedule/status.ts`
+(past day, not done). Events are drawn completable (below).
 
 ## Decisions (2026-10-19)
 
@@ -48,5 +28,5 @@ Schedule already behaves the same, so the drawing needs no new data except event
 
 ## Next
 
-1. Jafar picks `JpHqG` or `a7LTbd`. Then one at a time: Day (people rows), Month, visit pop-up, Unscheduled drawer, Map.
+1. One at a time: Day (people rows), Month, visit pop-up, Unscheduled drawer, Map.
 2. Jafar saves Pencil (Ctrl+S); commit `concept.pen` from the main folder under this claim.

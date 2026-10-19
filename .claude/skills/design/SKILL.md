@@ -82,6 +82,7 @@ Agreed with Jafar on 2026-10-17. Every design, in Pencil or in code, follows all
 - [top-bar.md](top-bar.md) — Top bar
 - [modals.md](modals.md) — Form pop-up, "are you sure?" pop-up, side drawer
 - [page-states.md](page-states.md) — Loading, empty, couldn't load
+- [calendar.md](calendar.md) — Schedule calendar: toolbar, grid, cards, now line
 
-Not yet designed in the concept — use the Classic module until it is: accordion, alerts, avatars, button group,
+Not yet designed in the concept — use the Classic module until it is: accordion, alerts, avatars,
 dropdown, pagination, radios/toggle, tabs, tooltips/popovers.
