@@ -64,10 +64,16 @@ Where, today's timer, only "Open request" in the footer) and `QqZfs` (live `Even
 When, Details, Edit, Delete as a danger button; plus "Mark complete", the approved event completion). Approved as
 drawn, so the quote visit keeps the client fact under the title (as live).
 
+## Move visit (drawn 2026-10-19, waiting for Jafar)
+
+On the board: `Xdknw`, live `MoveConfirm` with every part: Now / Move to, a double-booking warning, the repeat
+choice, "Notify customer", Cancel + Save move. Ask Jafar: the new line under the title (client · work), and the
+radio option tiles (radios are not yet a concept part; this drawing would set their look).
+
 ## Next
 
 1. Draw the rest onto the board, one at a time (from `(app)/schedule/+page.svelte` and `components/schedule`):
-   Move visit (`MoveConfirm`), event form (`ScheduleEventDialog`),
+   event form (`ScheduleEventDialog`),
    new-job form (`ScheduleJobCreate`), Filters, the two menus, "are you sure?" pop-ups (Delete this event?,
    Move to Unscheduled?, Whose route?) on the shared pattern, Unscheduled drawer. Then Map (a screen).
 2. Jafar saves Pencil (Ctrl+S); commit `concept.pen` from the main folder under this claim.
