@@ -35,6 +35,15 @@ status always in words; only late and unassigned get a coloured edge; done goes 
 look**, because the app only infers it from the clock (no real "started" record), and the now line already shows
 the present; no looping animation. The live app today colours cards by status; building this changes that.
 
+## Completed rule and events (Jafar 2026-10-19)
+
+Any completed card turns silver, whatever its kind; the grey type icon still names the kind. Events too:
+Jafar chose option A, follow Jobber (its `Event` has `isComplete`). Monday's "Team meeting" is drawn completed.
+
+**New behaviour to build with the Schedule build (not a look-only change):** events can be marked complete and
+reopened, like tasks: a `completed_at` on events (migration), a write through `/api/*` with Zod, a tick in the
+event pop-up, and the card's completed look. Today the app has no event completion.
+
 ## Next
 
 1. Jafar reviews Week. Then, one at a time: Day (people rows), Month, visit pop-up, Unscheduled drawer, Map.
