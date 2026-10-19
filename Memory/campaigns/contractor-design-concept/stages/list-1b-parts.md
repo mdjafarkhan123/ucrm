@@ -40,7 +40,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `imports/ImportUploadStep` |  | ⬜ | ⬜ |
 | `jafar/booking/BookingMonth` |  | ⬜ | ⬜ |
 | `jafar/booking/BookingTimePicker` | loading | ⬜ | ⬜ |
-| `jobs/CreateVisitsDialog` | 🔁F pop-up | ⬜ | ⬜ |
+| `jobs/CreateVisitsDialog` | 🔁F pop-up | 🟡 | ⬜ |
 | `marketing/AsyncMultiPicker` | loading | ⬜ | ⬜ |
 | `marketing/CustomerGroupDialog` | 🔁F pop-up | ⬜ | ⬜ |
 | `marketing/CustomerGroupPreview` | loading | ⬜ | ⬜ |
@@ -63,8 +63,8 @@ Key, tick rule and coverage command: `list-index.md`.
 | `jafar/booking/BookingFacts` |  | ⬜ | ⬜ |
 | `jafar/booking/BookingFrame` |  | ⬜ | ⬜ |
 | `jafar/booking/BookingStatus` |  | ⬜ | ⬜ |
-| `jobs/ApplyToFutureDialog` | ◆ pop-up | ⬜ | ⬜ |
-| `jobs/FinalVisitDialog` | ◆ pop-up | ⬜ | ⬜ |
+| `jobs/ApplyToFutureDialog` | ◆ pop-up | 🟡 | ⬜ |
+| `jobs/FinalVisitDialog` | ◆ pop-up | 🟡 | ⬜ |
 | `jobs/JobVisitDialog` | ◆ pop-up · loading, permission-limited | ⬜ | ⬜ |
 | `jobs/RecurrenceFields` | loading | ✅ | ✅ |
 | `layout/MobileNav` |  | ⬜ | ⬜ |

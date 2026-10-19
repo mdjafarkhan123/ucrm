@@ -29,12 +29,13 @@ pill in `badges.md`). Week start is a business setting: drawings use Monday, liv
 
 ## Open
 
-- Schedule opens three undrawn Jobs pop-ups: `jobs/FinalVisitDialog`, `jobs/CreateVisitsDialog`,
-  `jobs/ApplyToFutureDialog` (shared-parts checklist). Ask Jafar: draw them before the build (Claude
-  recommends) or later.
+- Jafar chose to draw the three Jobs pop-ups Schedule opens before the build (2026-10-19). Drawn 2026-10-19 on
+  `GsICu`, section "Jobs pop-ups opened from Schedule" `hWDBL`: Final visit completed `WbpEc`, Create visits
+  `S5TPc` (new day picker, `inputs.md`), Apply to later visits `a03Qm`. Same content as live; **waiting for
+  Jafar's review** (checklist 🟡). Looks provisionally in `calendar.md`.
 
 ## Next
 
-1. Jafar's answer on the three pop-ups.
+1. Jafar's yes on the three Jobs pop-ups (then tick them ✅).
 2. Build Schedule in one go (C7), with event completion. Then compare live with each Pencil frame.
 3. After Built ✅, tidy Pencil drafts per `docs/pencil-workflow.md`.

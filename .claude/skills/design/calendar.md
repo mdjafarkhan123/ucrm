@@ -212,3 +212,20 @@ board, "Concept · Schedule · Pop-ups · 1440".
   `--color-interactive`. Route line `--color-time` over a white casing. A white pill at the top left (radius
   full, padding 6 12, 1px `--color-border`): 14 map-pin `--color-warning` and "4 of 5 placed · 1 in the list
   only" 12/600 heading.
+
+## Jobs pop-ups opened from Schedule
+
+Shared with Job details; on the Pop-ups board, section "Jobs pop-ups opened from Schedule".
+
+- Final visit completed: the form pop-up at 400, a `--color-success` tile (circle-check-big), no footer. Body
+  padding 20, choices 8 apart, each a row: white, 1px `--color-border`, radius 12, padding 12, gap 12; a 32 tile,
+  the label 14/600 heading, a 16 chevron-right `--color-icon--secondary` at the right. Finish job
+  `--color-success` (briefcase-business), Add a return visit `--color-job` (calendar-plus), Keep open
+  `--color-warning` (flag) with a small "Action required" pill beside its label. Hover as a white button. While
+  finishing, the row reads "Finishing…" and the spinner takes the chevron's place.
+- Create visits: the form pop-up at 400, a `--color-job` tile (calendar-plus). Body: the hint 14 `--color-text`
+  (1.5), the day picker (`inputs.md`), the Schedule later checkbox, then "3 visits will be added" 13/600 heading
+  after a 16 calendar-check `--color-job`. Footer: Cancel, main "Create" (check).
+- Apply to later visits: the form pop-up at 400, a `--color-time` tile (calendar-sync). Body: the question 14
+  `--color-text` (1.5), then the Time of day and Assigned team checkboxes with their hints. Footer: Cancel, main
+  "Apply" (check), disabled until a box is ticked.

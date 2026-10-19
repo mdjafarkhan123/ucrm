@@ -75,3 +75,12 @@ Dropdown errors use the shared error border and a corrective message below the b
 - Not picked: 1px `--color-border--interactive`, name `--color-heading`, `circle-plus` in `--color-icon--secondary`.
 - Picked: 1.5px `--color-interactive` edge, name and `circle-check` in `--color-interactive`.
 - Hover: `--color-surface--hover`. Focus: `--shadow-focus`. Each chip is a checkbox to assistive technology.
+
+## Day picker
+
+- Picks one or many days on a month (Create visits). In a box: 1px `--color-border`, radius 12, padding 12, rows
+  6 apart. Header: 32 icon buttons ‹ › either side of the month 15/600 heading, centred.
+- Weekday names 11/600 uppercase (0.6 spacing) `--color-text--secondary`; the week starts on the business's
+  week-start day. Day cells share the width, 40 high, 4 apart, each a 36 circle with the date 13/500 heading.
+- Today: 1.5px `--color-interactive` ring, date 13/700 `--color-interactive`. Picked: `--color-interactive` fill,
+  date 13/700 white. Past days that cannot be picked: date `--color-disabled`. Days outside the month are blank.
