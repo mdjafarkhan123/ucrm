@@ -43173,7 +43173,7 @@
                               "name": "Icon",
                               "width": 16,
                               "height": 16,
-                              "icon": "inbox",
+                              "icon": "calendar-off",
                               "library": "lucide",
                               "fill": "$color-icon"
                             },
@@ -43327,44 +43327,6 @@
                                   "fontFamily": "$font-family",
                                   "fontSize": 14,
                                   "fontWeight": "600"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "rectangle",
-                              "id": "F94Eqq",
-                              "name": "Divider",
-                              "fill": "$color-border-interactive",
-                              "width": 1,
-                              "height": "fill_container"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "RYxHC",
-                              "name": "More",
-                              "width": 36,
-                              "height": "fill_container",
-                              "fill": "$color-surface",
-                              "stroke": "#FFFFFF00",
-                              "effect": {
-                                "type": "shadow",
-                                "shadowType": "outer",
-                                "enabled": false,
-                                "color": "#000000"
-                              },
-                              "gap": 8,
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "fiIA7",
-                                  "name": "Icon",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "ellipsis",
-                                  "library": "lucide",
-                                  "fill": "$color-icon"
                                 }
                               ]
                             }
@@ -49246,7 +49208,7 @@
                               "name": "Icon",
                               "width": 16,
                               "height": 16,
-                              "icon": "inbox",
+                              "icon": "calendar-off",
                               "library": "lucide",
                               "fill": "$color-icon"
                             },
@@ -49400,44 +49362,6 @@
                                   "fontFamily": "$font-family",
                                   "fontSize": 14,
                                   "fontWeight": "600"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "rectangle",
-                              "id": "p4UdAN",
-                              "name": "Divider",
-                              "fill": "$color-border-interactive",
-                              "width": 1,
-                              "height": "fill_container"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "K4ZBt",
-                              "name": "More",
-                              "width": 36,
-                              "height": "fill_container",
-                              "fill": "$color-surface",
-                              "stroke": "#FFFFFF00",
-                              "effect": {
-                                "type": "shadow",
-                                "shadowType": "outer",
-                                "enabled": false,
-                                "color": "#000000"
-                              },
-                              "gap": 8,
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "pcTxo",
-                                  "name": "Icon",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "ellipsis",
-                                  "library": "lucide",
-                                  "fill": "$color-icon"
                                 }
                               ]
                             }
@@ -54676,7 +54600,7 @@
                               "name": "Icon",
                               "width": 16,
                               "height": 16,
-                              "icon": "inbox",
+                              "icon": "calendar-off",
                               "library": "lucide",
                               "fill": "$color-icon"
                             },
@@ -54830,44 +54754,6 @@
                                   "fontFamily": "$font-family",
                                   "fontSize": 14,
                                   "fontWeight": "600"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "rectangle",
-                              "id": "m9Kw1",
-                              "name": "Divider",
-                              "fill": "$color-border-interactive",
-                              "width": 1,
-                              "height": "fill_container"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "a6TsP",
-                              "name": "More",
-                              "width": 36,
-                              "height": "fill_container",
-                              "fill": "$color-surface",
-                              "stroke": "#FFFFFF00",
-                              "effect": {
-                                "type": "shadow",
-                                "shadowType": "outer",
-                                "enabled": false,
-                                "color": "#000000"
-                              },
-                              "gap": 8,
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "Y48rG",
-                                  "name": "Icon",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "ellipsis",
-                                  "library": "lucide",
-                                  "fill": "$color-icon"
                                 }
                               ]
                             }
@@ -71002,44 +70888,6 @@
                               ]
                             }
                           ]
-                        },
-                        {
-                          "type": "rectangle",
-                          "id": "KkKip",
-                          "name": "Divider",
-                          "fill": "$color-border-interactive",
-                          "width": 1,
-                          "height": "fill_container"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "XDO9Q",
-                          "name": "More",
-                          "width": 36,
-                          "height": "fill_container",
-                          "fill": "$color-surface",
-                          "stroke": "#FFFFFF00",
-                          "effect": {
-                            "type": "shadow",
-                            "shadowType": "outer",
-                            "enabled": false,
-                            "color": "#000000"
-                          },
-                          "gap": 8,
-                          "justifyContent": "center",
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "tNgvq",
-                              "name": "Icon",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "ellipsis",
-                              "library": "lucide",
-                              "fill": "$color-icon"
-                            }
-                          ]
                         }
                       ]
                     },
@@ -72427,7 +72275,7 @@
                           "fill": "$color-time-surface",
                           "descendants": {
                             "XsJUX": {
-                              "icon": "inbox",
+                              "icon": "calendar-off",
                               "fill": "$color-time"
                             }
                           }
@@ -72694,14 +72542,33 @@
                                   ]
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "vxbW4",
-                                  "name": "Work",
-                                  "fill": "$color-text",
-                                  "content": "Kitchen cabinet install",
-                                  "fontFamily": "$font-family",
-                                  "fontSize": 13,
-                                  "fontWeight": "500"
+                                  "type": "frame",
+                                  "id": "PTsxL",
+                                  "name": "Work row",
+                                  "gap": 6,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "A74YG",
+                                      "name": "Kind",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "hammer",
+                                      "library": "lucide",
+                                      "fill": "$color-job"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "vxbW4",
+                                      "name": "Work",
+                                      "fill": "$color-text",
+                                      "content": "Kitchen cabinet install",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "frame",
@@ -72902,14 +72769,33 @@
                                   ]
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "RmD4K",
-                                  "name": "Work",
-                                  "fill": "$color-text",
-                                  "content": "Gutter cleaning",
-                                  "fontFamily": "$font-family",
-                                  "fontSize": 13,
-                                  "fontWeight": "500"
+                                  "type": "frame",
+                                  "id": "y3ezo",
+                                  "name": "Work row",
+                                  "gap": 6,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "gdQWz",
+                                      "name": "Kind",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "hammer",
+                                      "library": "lucide",
+                                      "fill": "$color-job"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "RmD4K",
+                                      "name": "Work",
+                                      "fill": "$color-text",
+                                      "content": "Gutter cleaning",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "frame",
@@ -73104,14 +72990,33 @@
                                   ]
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "C2QKfS",
-                                  "name": "Work",
-                                  "fill": "$color-text",
-                                  "content": "Deck staining",
-                                  "fontFamily": "$font-family",
-                                  "fontSize": 13,
-                                  "fontWeight": "500"
+                                  "type": "frame",
+                                  "id": "S015J",
+                                  "name": "Work row",
+                                  "gap": 6,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "SS0iH",
+                                      "name": "Kind",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "hammer",
+                                      "library": "lucide",
+                                      "fill": "$color-job"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "C2QKfS",
+                                      "name": "Work",
+                                      "fill": "$color-text",
+                                      "content": "Deck staining",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "frame",
@@ -73335,14 +73240,33 @@
                                   ]
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "QgbcS",
-                                  "name": "Work",
-                                  "fill": "$color-text",
-                                  "content": "Furnace check",
-                                  "fontFamily": "$font-family",
-                                  "fontSize": 13,
-                                  "fontWeight": "500"
+                                  "type": "frame",
+                                  "id": "UFpmc",
+                                  "name": "Work row",
+                                  "gap": 6,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "GrvVs",
+                                      "name": "Kind",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "hammer",
+                                      "library": "lucide",
+                                      "fill": "$color-job"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "QgbcS",
+                                      "name": "Work",
+                                      "fill": "$color-text",
+                                      "content": "Furnace check",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "frame",
@@ -73930,7 +73854,7 @@
                               "name": "Icon",
                               "width": 16,
                               "height": 16,
-                              "icon": "inbox",
+                              "icon": "calendar-off",
                               "library": "lucide",
                               "fill": "$color-icon"
                             },
@@ -74086,44 +74010,6 @@
                                   "fontWeight": "600"
                                 }
                               ]
-                            },
-                            {
-                              "type": "rectangle",
-                              "id": "dW5rm",
-                              "name": "Divider",
-                              "fill": "$color-border-interactive",
-                              "width": 1,
-                              "height": "fill_container"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "wFqSF",
-                              "name": "More",
-                              "width": 36,
-                              "height": "fill_container",
-                              "fill": "$color-surface",
-                              "stroke": "#FFFFFF00",
-                              "effect": {
-                                "type": "shadow",
-                                "shadowType": "outer",
-                                "enabled": false,
-                                "color": "#000000"
-                              },
-                              "gap": 8,
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "VESZA",
-                                  "name": "Icon",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "ellipsis",
-                                  "library": "lucide",
-                                  "fill": "$color-icon"
-                                }
-                              ]
                             }
                           ]
                         }
@@ -74134,7 +74020,7 @@
                       "id": "aDu6q",
                       "name": "Route",
                       "width": "fill_container",
-                      "height": 908,
+                      "height": "fill_container",
                       "layout": "vertical",
                       "children": [
                         {
@@ -74223,14 +74109,14 @@
                               "id": "GOUp4",
                               "type": "ref",
                               "ref": "Qo6GL",
-                              "name": "Save Route Order",
+                              "name": "Save route order",
                               "height": 32,
                               "descendants": {
                                 "P99oLT": {
                                   "icon": "save"
                                 },
                                 "vaRXs": {
-                                  "content": "Save Route Order",
+                                  "content": "Save route order",
                                   "fontSize": 13
                                 }
                               }
@@ -74349,14 +74235,24 @@
                                           "type": "frame",
                                           "id": "z9VkPV",
                                           "name": "Line",
-                                          "gap": 8,
+                                          "gap": 6,
                                           "alignItems": "center",
                                           "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "x1zWz",
+                                              "name": "Kind",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "hammer",
+                                              "library": "lucide",
+                                              "fill": "$color-job"
+                                            },
                                             {
                                               "type": "text",
                                               "id": "gWtw9",
                                               "name": "Time",
-                                              "fill": "$color-time-on-surface",
+                                              "fill": "$color-job-on-surface",
                                               "content": "8:00 AM",
                                               "fontFamily": "$font-family",
                                               "fontSize": 12,
@@ -74472,14 +74368,24 @@
                                           "type": "frame",
                                           "id": "B3hYe",
                                           "name": "Line",
-                                          "gap": 8,
+                                          "gap": 6,
                                           "alignItems": "center",
                                           "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "T15t5",
+                                              "name": "Kind",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "hammer",
+                                              "library": "lucide",
+                                              "fill": "$color-job"
+                                            },
                                             {
                                               "type": "text",
                                               "id": "cUtbu",
                                               "name": "Time",
-                                              "fill": "$color-time-on-surface",
+                                              "fill": "$color-job-on-surface",
                                               "content": "10:00 AM – 12:30 PM",
                                               "fontFamily": "$font-family",
                                               "fontSize": 12,
@@ -74595,14 +74501,24 @@
                                           "type": "frame",
                                           "id": "Ngpsr",
                                           "name": "Line",
-                                          "gap": 8,
+                                          "gap": 6,
                                           "alignItems": "center",
                                           "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "y8zRYM",
+                                              "name": "Kind",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "hammer",
+                                              "library": "lucide",
+                                              "fill": "$color-job"
+                                            },
                                             {
                                               "type": "text",
                                               "id": "SFSgH",
                                               "name": "Time",
-                                              "fill": "$color-time-on-surface",
+                                              "fill": "$color-job-on-surface",
                                               "content": "Anytime",
                                               "fontFamily": "$font-family",
                                               "fontSize": 12,
@@ -74718,14 +74634,24 @@
                                           "type": "frame",
                                           "id": "WY6So",
                                           "name": "Line",
-                                          "gap": 8,
+                                          "gap": 6,
                                           "alignItems": "center",
                                           "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "QvnBR",
+                                              "name": "Kind",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "inbox",
+                                              "library": "lucide",
+                                              "fill": "$color-request"
+                                            },
                                             {
                                               "type": "text",
                                               "id": "eVDPO",
                                               "name": "Time",
-                                              "fill": "$color-time-on-surface",
+                                              "fill": "$color-request-on-surface",
                                               "content": "1:00 PM",
                                               "fontFamily": "$font-family",
                                               "fontSize": 12,
@@ -74841,14 +74767,24 @@
                                           "type": "frame",
                                           "id": "PSHJf",
                                           "name": "Line",
-                                          "gap": 8,
+                                          "gap": 6,
                                           "alignItems": "center",
                                           "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "W9XmI",
+                                              "name": "Kind",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "hammer",
+                                              "library": "lucide",
+                                              "fill": "$color-job"
+                                            },
                                             {
                                               "type": "text",
                                               "id": "Rpk98",
                                               "name": "Time",
-                                              "fill": "$color-time-on-surface",
+                                              "fill": "$color-job-on-surface",
                                               "content": "Anytime",
                                               "fontFamily": "$font-family",
                                               "fontSize": 12,
@@ -75181,353 +75117,6 @@
                               ]
                             }
                           ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "SqzLp",
-                      "name": "Key",
-                      "width": "fill_container",
-                      "stroke": "$color-border",
-                      "strokeWidth": {
-                        "top": 1
-                      },
-                      "gap": 16,
-                      "padding": [
-                        12,
-                        20
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "w0EI2",
-                          "name": "Key · Visit",
-                          "gap": 6,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "wUCEg",
-                              "name": "Swatch",
-                              "width": 18,
-                              "height": 18,
-                              "fill": "$color-job-surface",
-                              "cornerRadius": 5,
-                              "stroke": "$color-job",
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "VMfNz",
-                                  "name": "Icon",
-                                  "width": 10,
-                                  "height": 10,
-                                  "icon": "hammer",
-                                  "library": "lucide",
-                                  "fill": "$color-job"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "UunIN",
-                              "name": "Label",
-                              "fill": "$color-text-secondary",
-                              "content": "Visit",
-                              "fontFamily": "$font-family",
-                              "fontSize": 12,
-                              "fontWeight": "500"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "oOHPM",
-                          "name": "Key · Assessment",
-                          "gap": 6,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "WqDT3",
-                              "name": "Swatch",
-                              "width": 18,
-                              "height": 18,
-                              "fill": "$color-request-surface",
-                              "cornerRadius": 5,
-                              "stroke": "$color-request",
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "n05nP",
-                                  "name": "Icon",
-                                  "width": 10,
-                                  "height": 10,
-                                  "icon": "inbox",
-                                  "library": "lucide",
-                                  "fill": "$color-request"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "M18Ct",
-                              "name": "Label",
-                              "fill": "$color-text-secondary",
-                              "content": "Assessment",
-                              "fontFamily": "$font-family",
-                              "fontSize": 12,
-                              "fontWeight": "500"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "Us0OE",
-                          "name": "Key · Event",
-                          "gap": 6,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "AUAcu",
-                              "name": "Swatch",
-                              "width": 18,
-                              "height": 18,
-                              "fill": "$color-event-surface",
-                              "cornerRadius": 5,
-                              "stroke": "$color-event",
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "v4tJpB",
-                                  "name": "Icon",
-                                  "width": 10,
-                                  "height": 10,
-                                  "icon": "calendar-days",
-                                  "library": "lucide",
-                                  "fill": "$color-event-on-surface"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "STlyT",
-                              "name": "Label",
-                              "fill": "$color-text-secondary",
-                              "content": "Event",
-                              "fontFamily": "$font-family",
-                              "fontSize": 12,
-                              "fontWeight": "500"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "Qahf9",
-                          "name": "Key · Task",
-                          "gap": 6,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "rH7f9",
-                              "name": "Swatch",
-                              "width": 18,
-                              "height": 18,
-                              "fill": "$color-task-surface",
-                              "cornerRadius": 5,
-                              "stroke": "$color-task",
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "yKKT8",
-                                  "name": "Icon",
-                                  "width": 10,
-                                  "height": 10,
-                                  "icon": "square-check",
-                                  "library": "lucide",
-                                  "fill": "$color-task"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "ATbFz",
-                              "name": "Label",
-                              "fill": "$color-text-secondary",
-                              "content": "Task",
-                              "fontFamily": "$font-family",
-                              "fontSize": 12,
-                              "fontWeight": "500"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "rectangle",
-                          "id": "gbMkN",
-                          "name": "Divider",
-                          "fill": "$color-border",
-                          "width": 1,
-                          "height": 16
-                        },
-                        {
-                          "type": "frame",
-                          "id": "CaLfL",
-                          "name": "Key · Status",
-                          "gap": 8,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "Y6ZE7",
-                              "name": "Status pill · Late",
-                              "fill": "$color-surface",
-                              "cornerRadius": "$radius-circle",
-                              "stroke": "$color-critical",
-                              "strokeWidth": 1,
-                              "gap": 5,
-                              "padding": [
-                                3,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "ellipse",
-                                  "id": "i68sS",
-                                  "name": "Dot",
-                                  "fill": "$color-critical",
-                                  "width": 5,
-                                  "height": 5
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "Qgrjc",
-                                  "name": "Text",
-                                  "fill": "$color-critical-on-surface",
-                                  "content": "Late",
-                                  "fontFamily": "$font-family",
-                                  "fontSize": 11,
-                                  "fontWeight": "600"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "Q4hk0D",
-                              "name": "Status pill · Unassigned",
-                              "fill": "$color-surface",
-                              "cornerRadius": "$radius-circle",
-                              "stroke": "$color-warning",
-                              "strokeWidth": 1,
-                              "gap": 5,
-                              "padding": [
-                                3,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "ellipse",
-                                  "id": "TvcEy",
-                                  "name": "Dot",
-                                  "fill": "$color-warning",
-                                  "width": 5,
-                                  "height": 5
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "m8LPTD",
-                                  "name": "Text",
-                                  "fill": "$color-warning-on-surface",
-                                  "content": "Unassigned",
-                                  "fontFamily": "$font-family",
-                                  "fontSize": 11,
-                                  "fontWeight": "600"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "uuYRB",
-                              "name": "Status pill · Done",
-                              "fill": "$color-success-surface",
-                              "cornerRadius": "$radius-circle",
-                              "stroke": "$color-success",
-                              "gap": 5,
-                              "padding": [
-                                3,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "j0J11",
-                                  "name": "Check",
-                                  "width": 11,
-                                  "height": 11,
-                                  "icon": "check",
-                                  "library": "lucide",
-                                  "fill": "$color-success"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "ZbeVq",
-                                  "name": "Text",
-                                  "fill": "$color-success-on-surface",
-                                  "content": "Completed",
-                                  "fontFamily": "$font-family",
-                                  "fontSize": 11,
-                                  "fontWeight": "600"
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "fo9RL",
-                          "name": "Key · Now",
-                          "gap": 6,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "rectangle",
-                              "id": "RjeCO",
-                              "name": "Line",
-                              "fill": "$color-interactive",
-                              "width": 16,
-                              "height": 2
-                            },
-                            {
-                              "type": "text",
-                              "id": "HYuXQ",
-                              "name": "Label",
-                              "fill": "$color-text-secondary",
-                              "content": "Now",
-                              "fontFamily": "$font-family",
-                              "fontSize": 12,
-                              "fontWeight": "500"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "hkN55",
-                          "name": "Spacer",
-                          "width": "fill_container",
-                          "height": 1
                         }
                       ]
                     }
