@@ -20,7 +20,7 @@ Pop-ups: header with record-coloured tile, body, grey footer; radius 16. Confirm
 
 Page states: row-shaped loading placeholders, empty state with meaning-coloured tile and main action, error with red tile and Try again. Styling rules: design modules `modals.md`, `page-states.md`.
 
-Fields: labels above boxes; quiet hover edge; dropdown chosen tick and disabled/hover/pressed options; textarea remaining/over-limit wording; search clear feedback; roomier status and record pills. Light/dark form example remains on the Fields board. Rules: `inputs.md`, `badges.md`. Build details, checks and screenshot pointers: `c5-fields-followup.md`.
+Fields: labels above boxes; quiet hover edge; dropdown chosen tick and disabled/hover/pressed options; textarea remaining/over-limit wording; search clear feedback; roomier status and record pills. Rules: `inputs.md`, `badges.md`. Build details, checks and screenshot pointers: `c5-fields-followup.md`.
 
 ## Screen-by-screen leftovers
 
@@ -40,4 +40,4 @@ Codex builds approved parts and Schedule on its own branch; Claude draws, review
 
 Continue remaining rows in `stages/list-1a-parts.md`, then Schedule. Build only approved designs; page-level journeys retain their existing behavior.
 
-**Rollout rule (Jafar, 2026-10-19):** an approved built shared part applies at every call site. SegmentedControl, Checkbox and ClientPicker had their concept appearance gated by a page wrapper; restriction removed and verified live on New client and New job. Light/dark switch screenshots: `docs/evidence/2026-10-19-fields/client-switches-*.jpg`. Focused ESLint and Svelte compilation passed; autofixer had no issues (existing measurement/debounce advisories retained). No lengthy checks run.
+**Rollout rule (Jafar, 2026-10-19):** an approved built shared part applies at every call site. SegmentedControl, Checkbox and ClientPicker had their concept appearance gated by a page wrapper; restriction removed and verified live on New client and New job. Light/dark switch screenshots: `docs/evidence/2026-10-19-fields/client-switches-*.jpg`. Focused ESLint, Svelte compile and autofixer passed.
