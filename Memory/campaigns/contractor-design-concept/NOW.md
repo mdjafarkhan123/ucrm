@@ -6,13 +6,11 @@
 
 **Next:**
 1. **Shared parts first** (Jafar 2026-10-19): `parts/c5-shared-parts.md`. Pop-ups and page states built
-   2026-10-19; batch 3 fields approved; building next.
-2. Schedule (`parts/c8-schedule.md`, branch `codex/concept-schedule`): Week, Day, Month and five pop-ups approved
-   2026-10-19 (pop-ups on one board `GsICu`; rules in design `calendar.md`). Finish the remaining Schedule
-   drawings, then build Schedule in one go (Jafar 2026-10-19).
+   2026-10-19; batch 3 fields built and checked in the live app 2026-10-19. Continue remaining shared parts in `stages/list-1a-parts.md`.
+2. Schedule (`parts/c8-schedule.md`): **every drawing is drawn** (2026-10-19). Approved: Week, Day, Month, the
+   pop-ups up to the book-work form. **Waiting for Jafar's review**: the "are you sure?" pop-ups, Filters and Directions menus, Unscheduled panel, Map screen, and his answer on the
+   toolbar's ••• button. Then build Schedule in one go (Jafar 2026-10-19).
 3. Jafar reads the redesign checklist (`stages/list-index.md`) and confirms the order and pop-up marks: `parts/c5a-redesign-checklist.md`.
-
-**Done 2026-10-18:** buttons everywhere, Foundation sizes, C2–C5 (part notes `c1e`, `c2`–`c5`).
 
 **Pencil:** open file only; Ctrl+S saves (`docs/pencil-workflow.md`).
 

@@ -1,8 +1,8 @@
 # Schedule — concept drawing
 
 **Campaign:** contractor-design-concept · **Checklist row:** `stages/list-2a-daily.md` → `(app)/schedule`
-**Branch/worktree:** `codex/concept-schedule`, `.worktrees/concept-schedule` · **Claim:** `3e5fd3980784`
-(`claude-schedule-opus-2`, took over 2026-10-19). `concept.pen` commits go on main.
+**Branch/worktree:** `codex/concept-schedule`, `.worktrees/concept-schedule` · **Claim:** none (released
+2026-10-19 at Jafar's pause); the next session claims it. Notes merged to main 2026-10-19. `concept.pen` commits go on main.
 **State (2026-10-19):** Week `a7LTbd` and Day `ziaXI` approved by Jafar (look in `calendar.md`, joined group in
 `buttons.md`, outlined pill in `badges.md`). Month `Ar5jR` "Concept · Schedule · Month · Owner · 1440" approved by
 Jafar 2026-10-19 with a floating today tile, today's weekday line and bolder day names (Jafar delegated the
@@ -11,9 +11,8 @@ is a business setting (Jafar): drawings use Monday, live default is Sunday.
 
 ## Research
 
-Jobber screenshots in `Design/schedule-visits-research/jobber/`. Jobber: Month / Week / Day, Anytime lane, Today
-and arrows, Type / Team / Status filters, unscheduled count, Map, More; a visit opens a small pop-up. Our live
-Schedule already behaves the same, so the drawing needs no new data except event completion (below).
+Jobber screenshots in `Design/schedule-visits-research/jobber/`. Our live Schedule already behaves like Jobber's,
+so the drawings need no new data except event completion (below).
 
 ## Approved drawings (2026-10-19; every look is in design `calendar.md`, radio in `inputs.md`)
 
@@ -45,4 +44,4 @@ Schedule already behaves the same, so the drawing needs no new data except event
 1. **Order (Jafar 2026-10-19): finish every Schedule drawing first, then build Schedule in one go.** Every
    drawing is now drawn; get Jafar's yes on the waiting ones and his answer on •••.
 2. Then build Schedule (C7), including event completion (migration + `/api/*` + Zod).
-3. Jafar saves Pencil (Ctrl+S) after each drawing; commit `concept.pen` from the main folder.
+3. Jafar saves Pencil (Ctrl+S); commit `concept.pen` from the main folder.
