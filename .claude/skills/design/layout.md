@@ -13,6 +13,28 @@
   (14, `--color-text--secondary`) under it; no eyebrow. Actions sit at the right, centred: a More menu, then
   the main button.
 
+## Page frame
+
+- No white sheet: the page sits on `--color-surface--background` and each block on it is its own card
+  (`cards.md`). Padding 32, 8 under the top bar; cards 24 apart.
+- Widths: full (lists, calendars; capped at 1280), two columns (main column plus a 360 side column, 24 apart;
+  record and create pages), narrow (one 640 column, centred; short forms and setup steps).
+- A page whose content is not in cards yet keeps one white card around it (radius 16, 1px `--color-border`)
+  until its own screen is redesigned.
+
+## Breadcrumb trail
+
+- Above the page header, 14 apart. One white capsule: `--color-surface`, 1px `--color-border`, pill corners,
+  padding 4, steps 2 apart.
+- Step: pill corners, padding 6 12, 14 icon `--color-icon-secondary` then the label 13/500
+  `--color-text-secondary`. The first step starts with a 24 round `--color-heading` circle holding a white
+  14 arrow-left (padding 4 12 4 4).
+- Between steps a 16 chevron-right `--color-icon-secondary`.
+- The page you are on: `--color-surface--background` fill, icon and label `--color-heading`, label 600; not a
+  link.
+- Hover: the step fills `--color-surface--hover`, label `--color-heading`. Focus: 2px `--color-focus` ring
+  around the step.
+
 ## Create pages
 
 - A create page (New job) has the page header, the form's blocks as separate cards 24 apart in the main column,

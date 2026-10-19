@@ -6,7 +6,9 @@
 
 **Next:**
 1. **Shared parts first** (Jafar 2026-10-19): `parts/c5-shared-parts.md`. Pop-ups and page states built
-   2026-10-19; batch 3 fields built and checked in the live app 2026-10-19. Card/StatusBadge branch build: `parts/c5-card-status-build.md` (Pencil comparison pending). Claude designs remaining parts.
+   2026-10-19; batch 3 fields built; batch 4 page parts approved; Claude designs batch 5 pickers.
+   Codex builds approved parts on `codex/approved-shared-schedule-build`; Card/StatusBadge checkpoint:
+   `parts/c5-card-status-build.md`.
 2. Schedule (`parts/c8-schedule.md`): **every drawing approved** (2026-10-19). Next: build Schedule in one go
    (Jafar 2026-10-19). The three Jobs pop-ups it opens were approved 2026-10-19.
 3. Jafar confirms the redesign checklist order and pop-up marks (`stages/list-index.md`, `parts/c5a-redesign-checklist.md`).
