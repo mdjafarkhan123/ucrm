@@ -1,6 +1,6 @@
 # Fields — interaction-state follow-up
 
-**Stage:** Pencil additions drawn, awaiting save and review (2026-10-19).
+**Stage:** Pencil additions saved, awaiting review (2026-10-19).
 **Owner:** codex-fields-followup; reservation `8bdf23eb565a`. Jafar confirmed the previous session finished and authorized takeover.
 **Workspace:** `.worktrees/concept-fields`, branch `codex/concept-fields`.
 
@@ -18,4 +18,6 @@ Correction to the initial audit: dropdown hover and unavailable options already 
 
 Pencil screenshots checked for Dropdown, Big text box and Search sections and each added row. Structural inspection found no clipping except existing focus-ring rectangles extending intentionally outside their own field containers. No app code changed; no lengthy checks run.
 
-**Next:** Jafar presses Ctrl+S in Pencil (the tool cannot save). Verify source file timestamp advances, copy saved concept.pen into this worktree preserving the full current canvas, then commit/push drawings. Ask Jafar to review the additions before changing design rules or building them. This note alone is a checkpoint; drawings are not yet saved or backed up to GitHub. Existing field board approval in the prior commit does not approve these additions.
+**Save confirmed:** Jafar saved the canvas; source timestamp advanced to 2026-10-19 06:31:52 +0600, size 2,006,115 bytes. Copied the saved canvas into this worktree for backup.
+
+**Next:** Jafar reviews the additions before design rules change or implementation begins. Waiting to merge after review. Existing field board approval in the prior commit does not approve these additions.

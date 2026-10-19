@@ -38794,6 +38794,380 @@
                       "height": 1
                     }
                   ]
+                },
+                {
+                  "type": "frame",
+                  "id": "eewJk",
+                  "name": "More dropdown states",
+                  "width": "fill_container",
+                  "gap": 24,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Q7qBhz",
+                      "name": "Dropdown · mouse over",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "s8Gye",
+                          "name": "Caption",
+                          "fill": "$color-text-secondary",
+                          "content": "MOUSE OVER",
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-overline",
+                          "fontWeight": "600",
+                          "letterSpacing": 0.6
+                        },
+                        {
+                          "type": "frame",
+                          "id": "JVhIk",
+                          "name": "Field",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "G7cml",
+                              "name": "Label",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "A8tNz5",
+                                  "name": "Label text",
+                                  "fill": "$color-heading",
+                                  "content": "Job type",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "cfQwo",
+                              "name": "Box",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-base",
+                              "stroke": "$color-border-interactive-hover",
+                              "strokeWidth": 1,
+                              "gap": 8,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "MnZBh",
+                                  "name": "Value",
+                                  "fill": "$color-heading",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Lawn care",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "T1ACPv",
+                                  "name": "Chevron",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "chevron-down",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KfS1a",
+                      "name": "Dropdown · problem",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "CezJh",
+                          "name": "Caption",
+                          "fill": "$color-text-secondary",
+                          "content": "PROBLEM",
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-overline",
+                          "fontWeight": "600",
+                          "letterSpacing": 0.6
+                        },
+                        {
+                          "type": "frame",
+                          "id": "O2Fpd",
+                          "name": "Field",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "kzCYC",
+                              "name": "Label",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "caw3c",
+                                  "name": "Label text",
+                                  "fill": "$color-heading",
+                                  "content": "Job type",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "O2cAqO",
+                              "name": "Box",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-base",
+                              "stroke": "$color-critical",
+                              "strokeWidth": 1.5,
+                              "gap": 8,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "uDy0f",
+                                  "name": "Placeholder",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Choose a type",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "L0GHC",
+                                  "name": "Chevron",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "chevron-down",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "pINbt",
+                              "name": "Error",
+                              "width": "fill_container",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "MaisV",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "circle-alert",
+                                  "library": "lucide",
+                                  "fill": "$color-critical"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "g4dCUY",
+                                  "name": "Error text",
+                                  "fill": "$color-critical",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Choose a job type before continuing",
+                                  "lineHeight": 1.4,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KXY7L",
+                      "name": "Dropdown · pressed",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ZNiiY",
+                          "name": "Caption",
+                          "fill": "$color-text-secondary",
+                          "content": "PRESSED · THEN OPENS",
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-overline",
+                          "fontWeight": "600",
+                          "letterSpacing": 0.6
+                        },
+                        {
+                          "type": "frame",
+                          "id": "WQRp8",
+                          "name": "Field",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "XkFWf",
+                              "name": "Label",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "wdqCK",
+                                  "name": "Label text",
+                                  "fill": "$color-heading",
+                                  "content": "Job type",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "UBx4I",
+                              "name": "Box",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$color-surface-active",
+                              "cornerRadius": "$radius-base",
+                              "stroke": "$color-border-interactive-hover",
+                              "strokeWidth": 1,
+                              "gap": 8,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Pb4tE",
+                                  "name": "Value",
+                                  "fill": "$color-heading",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Lawn care",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "sKPAK",
+                                  "name": "Chevron",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "chevron-down",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "RAYA6",
+                  "name": "Dropdown · option pressed",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "CbWeS",
+                      "name": "Caption",
+                      "fill": "$color-text-secondary",
+                      "content": "OPTION · PRESSED",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-overline",
+                      "fontWeight": "600",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "vIimg",
+                      "name": "Snow removal · pressed",
+                      "width": 280,
+                      "height": 36,
+                      "fill": "$color-surface-active",
+                      "cornerRadius": "$radius-base",
+                      "gap": 8,
+                      "padding": [
+                        0,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "w37yL",
+                          "name": "Option text",
+                          "fill": "$color-heading",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Snow removal",
+                          "fontFamily": "$font-family",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "uvTSx",
+                      "name": "Pressed feedback note",
+                      "fill": "$color-text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Text boxes keep their typing focus while pressed. Search clear and dropdown options darken while held. Status pills are labels and have no pressed state.",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$font-family",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
                 }
               ]
             }
@@ -39485,6 +39859,102 @@
                       ]
                     }
                   ]
+                },
+                {
+                  "type": "frame",
+                  "id": "jEmvT",
+                  "name": "Big text box · hover",
+                  "width": "fill_container",
+                  "gap": 24,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "DW7MN",
+                      "name": "Big text box · mouse over",
+                      "width": 402,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "lluqX",
+                          "name": "Caption",
+                          "fill": "$color-text-secondary",
+                          "content": "MOUSE OVER",
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-overline",
+                          "fontWeight": "600",
+                          "letterSpacing": 0.6
+                        },
+                        {
+                          "type": "frame",
+                          "id": "tisQb",
+                          "name": "Big text field",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "b6A91",
+                              "name": "Label",
+                              "fill": "$color-heading",
+                              "content": "Instructions",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-label",
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "XYASe",
+                              "name": "Box",
+                              "width": "fill_container",
+                              "height": 96,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-base",
+                              "stroke": "$color-border-interactive-hover",
+                              "strokeWidth": 1,
+                              "padding": [
+                                10,
+                                12
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "VvgsS",
+                                  "name": "Placeholder",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "What should the crew know before they arrive?",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "o6e8J",
+                              "name": "Footer",
+                              "width": "fill_container",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "CcPLW",
+                                  "name": "Spacer",
+                                  "width": "fill_container",
+                                  "height": 1
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             }
@@ -39895,6 +40365,277 @@
                               ]
                             }
                           ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "q95AIq",
+                  "name": "Search · hover and clear interaction",
+                  "width": "fill_container",
+                  "gap": 24,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "UPIRK",
+                      "name": "Search · mouse over",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "oVkT6",
+                          "name": "Caption",
+                          "fill": "$color-text-secondary",
+                          "content": "MOUSE OVER",
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-overline",
+                          "fontWeight": "600",
+                          "letterSpacing": 0.6
+                        },
+                        {
+                          "type": "frame",
+                          "id": "yMwVS",
+                          "name": "Search box",
+                          "width": "fill_container",
+                          "height": 40,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-border-interactive-hover",
+                          "strokeWidth": 1,
+                          "gap": 8,
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "suawK",
+                              "name": "Search icon",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "search",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "D8r5Pj",
+                              "name": "Placeholder",
+                              "fill": "$color-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Search clients",
+                              "fontFamily": "$font-family",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "m2l0qA",
+                      "name": "Search · clear hover",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "q4Q7Jm",
+                          "name": "Caption",
+                          "fill": "$color-text-secondary",
+                          "content": "CLEAR · MOUSE OVER",
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-overline",
+                          "fontWeight": "600",
+                          "letterSpacing": 0.6
+                        },
+                        {
+                          "type": "frame",
+                          "id": "XUtOb",
+                          "name": "Search box",
+                          "width": "fill_container",
+                          "height": 40,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-border-interactive",
+                          "strokeWidth": 1,
+                          "gap": 8,
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "K3v7p",
+                              "name": "Search icon",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "search",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "b33Vn",
+                              "name": "Value",
+                              "fill": "$color-heading",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Sarah",
+                              "fontFamily": "$font-family",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "A8B8X",
+                              "name": "Clear",
+                              "width": 24,
+                              "height": 24,
+                              "fill": "$color-surface-active",
+                              "cornerRadius": "$radius-tile-small",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "pgs94",
+                                  "name": "Clear icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "x",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ortMb",
+                          "layoutPosition": "absolute",
+                          "x": -4,
+                          "y": 19,
+                          "name": "Focus ring",
+                          "width": 410.66666666666674,
+                          "height": 48,
+                          "cornerRadius": 12,
+                          "stroke": "$color-focus",
+                          "strokeWidth": 2,
+                          "strokeAlignment": "inner"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "EGayt",
+                      "name": "Search · clear pressed",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "k4kmC",
+                          "name": "Caption",
+                          "fill": "$color-text-secondary",
+                          "content": "CLEAR · PRESSED",
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-overline",
+                          "fontWeight": "600",
+                          "letterSpacing": 0.6
+                        },
+                        {
+                          "type": "frame",
+                          "id": "d80Lrh",
+                          "name": "Search box",
+                          "width": "fill_container",
+                          "height": 40,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-border-interactive",
+                          "strokeWidth": 1,
+                          "gap": 8,
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "ilhB2",
+                              "name": "Search icon",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "search",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "rJVe1",
+                              "name": "Value",
+                              "fill": "$color-heading",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Sarah",
+                              "fontFamily": "$font-family",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "GyrA8",
+                              "name": "Clear",
+                              "width": 24,
+                              "height": 24,
+                              "fill": "$color-surface-active",
+                              "cornerRadius": "$radius-tile-small",
+                              "stroke": "$color-border-interactive-hover",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "Xda2h",
+                                  "name": "Clear icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "x",
+                                  "library": "lucide",
+                                  "fill": "$color-icon"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "y9HrK",
+                          "layoutPosition": "absolute",
+                          "x": -4,
+                          "y": 19,
+                          "name": "Focus ring",
+                          "width": 410.66666666666674,
+                          "height": 48,
+                          "cornerRadius": 12,
+                          "stroke": "$color-focus",
+                          "strokeWidth": 2,
+                          "strokeAlignment": "inner"
                         }
                       ]
                     }
