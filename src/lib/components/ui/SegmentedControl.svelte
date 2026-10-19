@@ -281,10 +281,8 @@
 		}
 	}
 
-	// Concept look (design skill `inputs.md`, Segmented switch): inside a `.concept-fields` area the caption is
-	// a field label, and the chosen option is a raised white button in a soft grey track. The option icons
-	// stay quiet until chosen, then take the colour the option gives them.
-	:global(.concept-fields) .segmented {
+	// Approved shared appearance applies at every call site.
+	.segmented {
 		gap: 6px;
 
 		.segmented__caption {
@@ -320,6 +318,10 @@
 		.segmented__option--active {
 			color: var(--color-heading);
 		}
+	}
+
+	.segmented .segmented__option--active.segmented__option--disabled {
+		color: var(--color-disabled);
 	}
 
 	@media (prefers-reduced-motion: reduce) {

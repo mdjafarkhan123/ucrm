@@ -42,7 +42,7 @@ staff open the app between jobs and want to see what needs them right now, in a 
    move any pop-up between the two. Once a pattern is approved, several screens may be drawn in parallel by
    helper agents, each reviewed against the brief before Jafar sees it.
 4. **Build.** Screen by screen (Jafar, 2026-10-18): an approved screen is built soon after its approval, so the
-   app mixes old and new looks until every screen is done. Approved screens are built through shared parts. New variables go into
+   app mixes old and new looks until every screen is done. Approved screens are built through shared parts. Once an approved shared part is built, its new appearance applies everywhere that component is used, including pages awaiting their own redesign (Jafar, 2026-10-19). New variables go into
    `src/lib/styles/_variables.scss` and the design skill in the same commit as Pencil. When every screen uses the
    concept, the old look and its unused code are deleted.
 

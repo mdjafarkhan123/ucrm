@@ -139,6 +139,9 @@ before changing files (`--mode read` for research). Release after safe integrati
   automatically via Vite `additionalData`, with no import.
 - **No duplicated UI.** Before designing or creating any part, check `src/lib/components`. Reuse or extend an
   existing component when its structure and behavior are the same.
+- **Shared component rollout.** Once an approved shared component is built, its new appearance applies
+  everywhere that component is used. Enable it in the shared component itself; page redesigns do not gate
+  its appearance. Verify existing call sites before marking the component built (Jafar, 2026-10-19).
 - **TanStack Query owns server state** and is the only cache. The `src/routes/(app)/+layout.svelte` shell is SSR;
   all page content under `src/routes/(app)/` is CSR only, so navigation never waits on data: pages show cached
   data or skeletons while they load.

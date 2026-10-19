@@ -27,3 +27,5 @@ About 96 form pop-ups keep buttons inside the body, around 120 have no icon, and
 ## Next
 
 Continue remaining rows in `stages/list-1a-parts.md`, then Schedule. Build only approved designs; page-level journeys retain their existing behavior.
+
+**Rollout rule (Jafar, 2026-10-19):** an approved built shared part applies at every call site. SegmentedControl, Checkbox and ClientPicker had their concept appearance gated by a page wrapper; removing that restriction is the current corrective slice.
