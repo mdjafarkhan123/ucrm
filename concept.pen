@@ -6203,6 +6203,781 @@
         },
         {
           "type": "frame",
+          "id": "MeoZO",
+          "name": "Form choices",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "P6Ros",
+              "name": "Form choices heading",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "cbvqZ",
+                  "name": "Section title",
+                  "fill": "$color-heading",
+                  "content": "Form choices and the save bar",
+                  "fontFamily": "$font-family",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "rGcow",
+                  "name": "Section sub",
+                  "fill": "$color-text-secondary",
+                  "content": "From New job: segmented switch, checkboxes, people pick chips, the Job # pill and the floating save bar.",
+                  "fontFamily": "$font-family",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "W5tDOQ",
+              "name": "Form choices panel",
+              "width": "fill_container",
+              "fill": "$color-surface",
+              "cornerRadius": "$radius-large",
+              "stroke": "$color-border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 24,
+              "padding": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "y9hhrb",
+                  "name": "Row 1",
+                  "width": "fill_container",
+                  "gap": 32,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "bTgd0",
+                      "name": "Segmented switch",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "xbq1i",
+                          "name": "Part label",
+                          "fill": "$color-text-secondary",
+                          "content": "SEGMENTED SWITCH",
+                          "fontFamily": "$font-family",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.6
+                        },
+                        {
+                          "type": "frame",
+                          "id": "fjfiC",
+                          "name": "Schedule",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "xDWhn",
+                              "name": "Label",
+                              "fill": "$color-heading",
+                              "content": "Schedule",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-label",
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "PDimR",
+                              "name": "Segmented",
+                              "fill": "$color-surface-background-subtle",
+                              "cornerRadius": "$radius-base",
+                              "stroke": "$color-border",
+                              "strokeWidth": 1,
+                              "gap": 2,
+                              "padding": 3,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "opc0U",
+                                  "name": "Option · One-off",
+                                  "height": 32,
+                                  "fill": "$color-surface",
+                                  "cornerRadius": 6,
+                                  "stroke": "$color-border-interactive",
+                                  "strokeWidth": 1,
+                                  "effect": {
+                                    "type": "shadow",
+                                    "shadowType": "outer",
+                                    "color": "#1f2a2414",
+                                    "offset": {
+                                      "x": 0,
+                                      "y": 1
+                                    },
+                                    "blur": 2
+                                  },
+                                  "gap": 6,
+                                  "padding": [
+                                    0,
+                                    14
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "AIK7E",
+                                      "name": "Icon",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "calendar-check",
+                                      "library": "lucide",
+                                      "fill": "$color-time"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "ax9QD",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "content": "One-off",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "v4Lso",
+                                  "name": "Option · Recurring",
+                                  "height": 32,
+                                  "cornerRadius": 6,
+                                  "gap": 6,
+                                  "padding": [
+                                    0,
+                                    14
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "rPG8O",
+                                      "name": "Icon",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "repeat",
+                                      "library": "lucide",
+                                      "fill": "$color-icon-secondary"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "o31EGD",
+                                      "name": "Label",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Recurring",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "llB3A",
+                              "name": "Hint",
+                              "fill": "$color-text-secondary",
+                              "content": "One visit, or a few, until the work is done.",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-small",
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "C6TN6",
+                      "name": "Checkbox",
+                      "width": 420,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "dp3k8",
+                          "name": "Part label",
+                          "fill": "$color-text-secondary",
+                          "content": "CHECKBOX",
+                          "fontFamily": "$font-family",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.6
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ikdmb",
+                          "name": "Checkbox · Anytime",
+                          "width": "fill_container",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "VXLgH",
+                              "name": "Box",
+                              "width": 18,
+                              "height": 18,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-small",
+                              "stroke": "$color-border-interactive",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "DGb0L",
+                              "name": "Text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "G4jaa7",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "content": "Anytime",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Qy1pF",
+                                  "name": "Description",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Tell the client the day without promising an hour.",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "WnsZL",
+                          "name": "Checkbox · Notify customer",
+                          "width": "fill_container",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "fEkKW",
+                              "name": "Box",
+                              "width": 18,
+                              "height": 18,
+                              "fill": "$color-interactive",
+                              "cornerRadius": "$radius-small",
+                              "stroke": "$color-interactive",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "kf071",
+                                  "name": "Check",
+                                  "width": 12,
+                                  "height": 12,
+                                  "icon": "check",
+                                  "library": "lucide",
+                                  "fill": "$color-surface"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "PdY7K",
+                              "name": "Text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Xqlae",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "content": "Notify customer",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "NPZC1",
+                                  "name": "Description",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Email them a booking confirmation.",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "VvQxv",
+                      "name": "Job # pill",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Lx8Pi",
+                          "name": "Part label",
+                          "fill": "$color-text-secondary",
+                          "content": "JOB # PILL",
+                          "fontFamily": "$font-family",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.6
+                        },
+                        {
+                          "type": "frame",
+                          "id": "eBsly",
+                          "name": "Job number",
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-circle",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "gap": "$space-small",
+                          "padding": [
+                            6,
+                            12,
+                            6,
+                            6
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "lbtaU",
+                              "type": "ref",
+                              "ref": "t06N6v",
+                              "name": "Tile",
+                              "cornerRadius": "$radius-circle",
+                              "descendants": {
+                                "QAnaV": {
+                                  "icon": "hash"
+                                }
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "id": "GrgiZ",
+                              "name": "Label",
+                              "fill": "$color-heading",
+                              "content": "Job #",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-small",
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "zGwto",
+                              "name": "Value",
+                              "fill": "$color-text-secondary",
+                              "content": "Given when you save",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-small",
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "yZtgW",
+                  "name": "Row 2",
+                  "width": "fill_container",
+                  "gap": 32,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "z3z8W8",
+                      "name": "People pick chips",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "h5Bhk",
+                          "name": "Part label",
+                          "fill": "$color-text-secondary",
+                          "content": "PEOPLE PICK CHIPS",
+                          "fontFamily": "$font-family",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.6
+                        },
+                        {
+                          "type": "frame",
+                          "id": "H5wNj6",
+                          "name": "People",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "rAyBO",
+                              "name": "Person · Mike Davis",
+                              "height": 36,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-circle",
+                              "stroke": "$color-interactive",
+                              "strokeWidth": 1.5,
+                              "gap": 8,
+                              "padding": [
+                                0,
+                                12,
+                                0,
+                                6
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "tXaK6",
+                                  "name": "Avatar MD",
+                                  "width": 26,
+                                  "height": 26,
+                                  "fill": "$color-inactive-surface",
+                                  "cornerRadius": "$radius-circle",
+                                  "stroke": "$color-surface",
+                                  "strokeWidth": 2,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "uJMWB",
+                                      "name": "I",
+                                      "fill": "$color-inactive-on-surface",
+                                      "content": "MD",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 10,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "AKy1O",
+                                  "name": "Name",
+                                  "fill": "$color-interactive",
+                                  "content": "Mike Davis",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "ZIRLZ",
+                                  "name": "State",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "circle-check",
+                                  "library": "lucide",
+                                  "fill": "$color-interactive"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "h7cfF",
+                              "name": "Person · Jamal Reed",
+                              "height": 36,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-circle",
+                              "stroke": "$color-interactive",
+                              "strokeWidth": 1.5,
+                              "gap": 8,
+                              "padding": [
+                                0,
+                                12,
+                                0,
+                                6
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "m3Jrh",
+                                  "name": "Avatar JR",
+                                  "width": 26,
+                                  "height": 26,
+                                  "fill": "$color-inactive-surface",
+                                  "cornerRadius": "$radius-circle",
+                                  "stroke": "$color-surface",
+                                  "strokeWidth": 2,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "jqUT7",
+                                      "name": "I",
+                                      "fill": "$color-inactive-on-surface",
+                                      "content": "JR",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 10,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "vmNYM",
+                                  "name": "Name",
+                                  "fill": "$color-interactive",
+                                  "content": "Jamal Reed",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "uETt5",
+                                  "name": "State",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "circle-check",
+                                  "library": "lucide",
+                                  "fill": "$color-interactive"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "TmZ6w",
+                              "name": "Person · Priya Shah",
+                              "height": 36,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-circle",
+                              "stroke": "$color-border-interactive",
+                              "strokeWidth": 1,
+                              "gap": 8,
+                              "padding": [
+                                0,
+                                12,
+                                0,
+                                6
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Hj5oB",
+                                  "name": "Avatar PS",
+                                  "width": 26,
+                                  "height": 26,
+                                  "fill": "$color-inactive-surface",
+                                  "cornerRadius": "$radius-circle",
+                                  "stroke": "$color-surface",
+                                  "strokeWidth": 2,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "kKgvQ",
+                                      "name": "I",
+                                      "fill": "$color-inactive-on-surface",
+                                      "content": "PS",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 10,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "FDnZE",
+                                  "name": "Name",
+                                  "fill": "$color-heading",
+                                  "content": "Priya Shah",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "R8xksx",
+                                  "name": "State",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "circle-plus",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Q9PiLM",
+                  "name": "Row 3",
+                  "width": "fill_container",
+                  "gap": 32,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ClAFV",
+                      "name": "Floating save bar",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "HOkcE",
+                          "name": "Part label",
+                          "fill": "$color-text-secondary",
+                          "content": "FLOATING SAVE BAR",
+                          "fontFamily": "$font-family",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.6
+                        },
+                        {
+                          "type": "frame",
+                          "id": "u4tXT",
+                          "name": "Save bar",
+                          "width": "fill_container",
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-large",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "#1f2a241f",
+                            "offset": {
+                              "x": 0,
+                              "y": 8
+                            },
+                            "blur": 24
+                          },
+                          "gap": "$space-slim",
+                          "padding": [
+                            12,
+                            12,
+                            12,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "sLeP6",
+                              "name": "Status",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "ellipse",
+                                  "id": "AbIlA",
+                                  "name": "Dot",
+                                  "fill": "$color-warning",
+                                  "width": 8,
+                                  "height": 8
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "mzLjy",
+                                  "name": "Text",
+                                  "fill": "$color-heading",
+                                  "content": "New job · not saved yet",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "mE9LW",
+                                  "name": "Hint",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Sarah gets the booking email when you save",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "NEtXj",
+                              "type": "ref",
+                              "ref": "qpjlj",
+                              "name": "Cancel",
+                              "descendants": {
+                                "lDuWW": {
+                                  "enabled": false
+                                },
+                                "Dpmda": {
+                                  "content": "Cancel"
+                                }
+                              }
+                            },
+                            {
+                              "id": "x4PsN9",
+                              "type": "ref",
+                              "ref": "Qo6GL",
+                              "name": "Save job",
+                              "descendants": {
+                                "P99oLT": {
+                                  "icon": "check"
+                                },
+                                "vaRXs": {
+                                  "content": "Save job"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
           "id": "mq66u",
           "name": "Cards and rows",
           "width": "fill_container",
@@ -31658,8 +32433,8 @@
     {
       "type": "frame",
       "id": "TVQzs",
-      "x": 8849,
-      "y": 2670,
+      "x": 8120,
+      "y": 2860,
       "name": "Concept · New job · Other states",
       "width": 812,
       "fill": "$color-surface-background",
@@ -33312,6 +34087,1965 @@
                       "fontSize": 13
                     }
                   }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "v2Y89",
+      "x": 1540,
+      "y": 4490,
+      "name": "Concept · Foundation · Pop-ups · 1440",
+      "theme": {
+        "mode": "light"
+      },
+      "clip": true,
+      "width": 1440,
+      "fill": "$color-surface-background",
+      "layout": "vertical",
+      "gap": 48,
+      "padding": 64,
+      "children": [
+        {
+          "type": "frame",
+          "id": "XFY7p",
+          "name": "Intro",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 8,
+          "children": [
+            {
+              "type": "text",
+              "id": "R09J5",
+              "name": "Eyebrow",
+              "fill": "$color-interactive",
+              "content": "NEW CONCEPT · FOUNDATION",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "600",
+              "letterSpacing": 1
+            },
+            {
+              "type": "text",
+              "id": "akk26",
+              "name": "Title",
+              "fill": "$color-heading",
+              "content": "Pop-ups every screen uses",
+              "fontFamily": "Inter",
+              "fontSize": 36,
+              "fontWeight": "700",
+              "letterSpacing": -0.8
+            },
+            {
+              "type": "text",
+              "id": "ry5cU",
+              "name": "Lead",
+              "fill": "$color-text-secondary",
+              "textGrowth": "fixed-width",
+              "width": 900,
+              "content": "Three patterns cover the app's pop-ups: a form pop-up, an \"are you sure?\" pop-up and a side drawer. A simple pop-up follows its pattern; pop-ups that decide money, sending or scheduling get their own drawing.",
+              "lineHeight": 1.5,
+              "fontFamily": "Inter",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "nkXwU",
+          "name": "Form pop-up",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "vo94M",
+              "name": "Form pop-up heading",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Fzb4K",
+                  "name": "Section title",
+                  "fill": "$color-heading",
+                  "content": "Form pop-up",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "tS5Yd",
+                  "name": "Section sub",
+                  "fill": "$color-text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "For a short form that belongs to the page behind it: New expense, Add property, Record time. Used in about 130 places.",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "TmHbU",
+              "name": "Stage",
+              "width": "fill_container",
+              "fill": [
+                "$color-surface-background",
+                "$color-overlay"
+              ],
+              "cornerRadius": "$radius-large",
+              "gap": 40,
+              "padding": 48,
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "I2kSB",
+                  "name": "Column",
+                  "layout": "vertical",
+                  "gap": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "eV4U7",
+                      "name": "Form pop-up · ready",
+                      "clip": true,
+                      "width": 480,
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#1f2a2429",
+                        "offset": {
+                          "x": 0,
+                          "y": 16
+                        },
+                        "blur": 40
+                      },
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "z3IId",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "stroke": "$color-border",
+                          "strokeWidth": {
+                            "bottom": 1
+                          },
+                          "gap": 12,
+                          "padding": [
+                            16,
+                            16,
+                            16,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "XRXPK",
+                              "type": "ref",
+                              "ref": "BfB4y",
+                              "name": "Tile",
+                              "descendants": {
+                                "IAbCu": {
+                                  "icon": "receipt"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "TGAJW",
+                              "name": "Heading",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "nXApH",
+                                  "name": "Title",
+                                  "fill": "$color-heading",
+                                  "content": "New expense",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 20,
+                                  "fontWeight": "600",
+                                  "letterSpacing": -0.2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "w6rmne",
+                                  "name": "Hint",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Job #29 · Gutter cleaning",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "rT7Hc",
+                              "type": "ref",
+                              "ref": "nIDZt",
+                              "name": "Close",
+                              "descendants": {
+                                "IW9bL": {
+                                  "icon": "x"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "i5X3VU",
+                          "name": "Body",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 16,
+                          "padding": 20,
+                          "children": [
+                            {
+                              "id": "utzeo",
+                              "type": "ref",
+                              "ref": "WQADE",
+                              "name": "Item name",
+                              "width": "fill_container",
+                              "descendants": {
+                                "lAbk4": {
+                                  "content": "Item name"
+                                },
+                                "X0Di91": {
+                                  "content": "Downspout brackets"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "xjdSs",
+                              "name": "Row",
+                              "width": "fill_container",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "id": "Z66uBS",
+                                  "type": "ref",
+                                  "ref": "WQADE",
+                                  "name": "Date",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "lAbk4": {
+                                      "content": "Date"
+                                    },
+                                    "X0Di91": {
+                                      "content": "Oct 19, 2026"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "QvVtr",
+                                  "type": "ref",
+                                  "ref": "WQADE",
+                                  "name": "Total",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "lAbk4": {
+                                      "content": "Total (USD)"
+                                    },
+                                    "X0Di91": {
+                                      "content": "$48.60"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "id": "THCBM",
+                              "type": "ref",
+                              "ref": "nRzG7",
+                              "name": "Reimburse to",
+                              "width": "fill_container",
+                              "descendants": {
+                                "a1HN7": {
+                                  "content": "Reimburse to"
+                                },
+                                "HdlPY": {
+                                  "content": "Mike Davis",
+                                  "fill": "$color-heading"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "fbd4n",
+                          "name": "Footer",
+                          "width": "fill_container",
+                          "fill": "$color-surface-background-subtle",
+                          "stroke": "$color-border",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "gap": 8,
+                          "padding": [
+                            16,
+                            20
+                          ],
+                          "justifyContent": "end",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "xQZLr",
+                              "type": "ref",
+                              "ref": "qpjlj",
+                              "name": "Cancel",
+                              "descendants": {
+                                "lDuWW": {
+                                  "enabled": false
+                                },
+                                "Dpmda": {
+                                  "content": "Cancel"
+                                }
+                              }
+                            },
+                            {
+                              "id": "WEtlE",
+                              "type": "ref",
+                              "ref": "Qo6GL",
+                              "name": "Save",
+                              "descendants": {
+                                "P99oLT": {
+                                  "icon": "check"
+                                },
+                                "vaRXs": {
+                                  "content": "Save expense"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "PXVEJ",
+                      "name": "Caption",
+                      "fill": "$color-heading",
+                      "textGrowth": "fixed-width",
+                      "width": 480,
+                      "content": "Ready. Title says what you are adding; the hint names the record it belongs to. Cancel left of the green save; the footer stays in view while the body scrolls.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "P8kAK",
+                  "name": "Column",
+                  "layout": "vertical",
+                  "gap": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "jWOf6",
+                      "name": "Form pop-up · saving",
+                      "clip": true,
+                      "width": 480,
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#1f2a2429",
+                        "offset": {
+                          "x": 0,
+                          "y": 16
+                        },
+                        "blur": 40
+                      },
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "BcjTF",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "stroke": "$color-border",
+                          "strokeWidth": {
+                            "bottom": 1
+                          },
+                          "gap": 12,
+                          "padding": [
+                            16,
+                            16,
+                            16,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "YiTz9",
+                              "type": "ref",
+                              "ref": "BfB4y",
+                              "name": "Tile",
+                              "descendants": {
+                                "IAbCu": {
+                                  "icon": "receipt"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "faogd",
+                              "name": "Heading",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "NfXS9",
+                                  "name": "Title",
+                                  "fill": "$color-heading",
+                                  "content": "New expense",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 20,
+                                  "fontWeight": "600",
+                                  "letterSpacing": -0.2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Bvxjc",
+                                  "name": "Hint",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Job #29 · Gutter cleaning",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "Hwmw4",
+                              "type": "ref",
+                              "ref": "nIDZt",
+                              "name": "Close",
+                              "descendants": {
+                                "IW9bL": {
+                                  "icon": "x"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "J5Fe3O",
+                          "name": "Body",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 16,
+                          "padding": 20,
+                          "children": [
+                            {
+                              "id": "Skioe",
+                              "type": "ref",
+                              "ref": "WQADE",
+                              "name": "Item name",
+                              "width": "fill_container",
+                              "descendants": {
+                                "lAbk4": {
+                                  "content": "Item name"
+                                },
+                                "X0Di91": {
+                                  "content": "Downspout brackets"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "mKHJj",
+                              "name": "Row",
+                              "width": "fill_container",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "id": "zxPpv",
+                                  "type": "ref",
+                                  "ref": "WQADE",
+                                  "name": "Date",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "lAbk4": {
+                                      "content": "Date"
+                                    },
+                                    "X0Di91": {
+                                      "content": "Oct 19, 2026"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "n6cmGm",
+                                  "type": "ref",
+                                  "ref": "WQADE",
+                                  "name": "Total",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "lAbk4": {
+                                      "content": "Total (USD)"
+                                    },
+                                    "X0Di91": {
+                                      "content": "$48.60"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "id": "I9YkCh",
+                              "type": "ref",
+                              "ref": "nRzG7",
+                              "name": "Reimburse to",
+                              "width": "fill_container",
+                              "descendants": {
+                                "a1HN7": {
+                                  "content": "Reimburse to"
+                                },
+                                "HdlPY": {
+                                  "content": "Mike Davis",
+                                  "fill": "$color-heading"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "u4YHCk",
+                          "name": "Footer",
+                          "width": "fill_container",
+                          "fill": "$color-surface-background-subtle",
+                          "stroke": "$color-border",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "gap": 8,
+                          "padding": [
+                            16,
+                            20
+                          ],
+                          "justifyContent": "end",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "Rf2qe",
+                              "type": "ref",
+                              "ref": "qpjlj",
+                              "name": "Cancel",
+                              "fill": "$color-disabled-secondary",
+                              "stroke": "$color-disabled-secondary",
+                              "effect": [],
+                              "descendants": {
+                                "lDuWW": {
+                                  "enabled": false
+                                },
+                                "Dpmda": {
+                                  "content": "Cancel",
+                                  "fill": "$color-disabled"
+                                }
+                              }
+                            },
+                            {
+                              "id": "SHzAI",
+                              "type": "ref",
+                              "ref": "Qo6GL",
+                              "name": "Save",
+                              "descendants": {
+                                "P99oLT": {
+                                  "id": "XkuLf",
+                                  "type": "ref",
+                                  "ref": "NQIwV",
+                                  "name": "Spinner",
+                                  "descendants": {
+                                    "jps81": {
+                                      "fill": "#ffffff40"
+                                    },
+                                    "o6sBbg": {
+                                      "fill": "$color-surface"
+                                    }
+                                  }
+                                },
+                                "vaRXs": {
+                                  "content": "Save expense"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "gNk9E",
+                      "name": "Caption",
+                      "fill": "$color-heading",
+                      "textGrowth": "fixed-width",
+                      "width": 480,
+                      "content": "Saving. The spinner takes the check's place, the label stays, Cancel waits. Escape and the × close it only when nothing is saving.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "so66U",
+          "name": "Are you sure",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "Rvewg",
+              "name": "Are you sure heading",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "coon9",
+                  "name": "Section title",
+                  "fill": "$color-heading",
+                  "content": "\"Are you sure?\" pop-up",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "M4nNKr",
+                  "name": "Section sub",
+                  "fill": "$color-text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "For one decision before something happens: delete, convert, send, stop. No ×; Cancel or Escape backs out. Used in about 77 places.",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "sAGCH",
+              "name": "Stage",
+              "width": "fill_container",
+              "fill": [
+                "$color-surface-background",
+                "$color-overlay"
+              ],
+              "cornerRadius": "$radius-large",
+              "layout": "vertical",
+              "gap": 32,
+              "padding": 48,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "UK35a",
+                  "name": "Row 1",
+                  "gap": 40,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "qBdzX",
+                      "name": "Column",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "fIDOK",
+                          "name": "Confirm · danger",
+                          "width": 440,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-large",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "#1f2a2429",
+                            "offset": {
+                              "x": 0,
+                              "y": 16
+                            },
+                            "blur": 40
+                          },
+                          "layout": "vertical",
+                          "gap": 16,
+                          "padding": 24,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "qEkfM",
+                              "name": "Heading",
+                              "width": "fill_container",
+                              "gap": 14,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "F3Ac81",
+                                  "type": "ref",
+                                  "ref": "BfB4y",
+                                  "name": "Tile",
+                                  "fill": "$color-critical-surface",
+                                  "descendants": {
+                                    "IAbCu": {
+                                      "icon": "trash-2",
+                                      "fill": "$color-critical"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "FigFR",
+                                  "name": "Title",
+                                  "fill": "$color-heading",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Delete this visit?",
+                                  "lineHeight": 1.3,
+                                  "fontFamily": "Inter",
+                                  "fontSize": 20,
+                                  "fontWeight": "600",
+                                  "letterSpacing": -0.2
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "ucrKw",
+                              "name": "Message",
+                              "fill": "$color-text",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "The visit on Oct 21 at 9:00 AM comes off the schedule. This can't be undone.",
+                              "lineHeight": 1.5,
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "zpqtu",
+                              "name": "Actions",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "padding": [
+                                8,
+                                0,
+                                0,
+                                0
+                              ],
+                              "justifyContent": "end",
+                              "children": [
+                                {
+                                  "id": "BWKud",
+                                  "type": "ref",
+                                  "ref": "qpjlj",
+                                  "name": "Cancel",
+                                  "descendants": {
+                                    "lDuWW": {
+                                      "enabled": false
+                                    },
+                                    "Dpmda": {
+                                      "content": "Cancel"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "UUG3E",
+                                  "type": "ref",
+                                  "ref": "OuNfE",
+                                  "name": "Confirm",
+                                  "descendants": {
+                                    "EiIHF": {
+                                      "content": "Delete visit"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "THYss",
+                          "name": "Caption",
+                          "fill": "$color-heading",
+                          "textGrowth": "fixed-width",
+                          "width": 440,
+                          "content": "Danger. Red tile; the red button names the action. Focus starts on Cancel, so Enter never deletes by accident.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "xkESa",
+                      "name": "Column",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "nO5Ui",
+                          "name": "Confirm · go ahead",
+                          "width": 440,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-large",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "#1f2a2429",
+                            "offset": {
+                              "x": 0,
+                              "y": 16
+                            },
+                            "blur": 40
+                          },
+                          "layout": "vertical",
+                          "gap": 16,
+                          "padding": 24,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "y1XQEh",
+                              "name": "Heading",
+                              "width": "fill_container",
+                              "gap": 14,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "zOum7",
+                                  "type": "ref",
+                                  "ref": "BfB4y",
+                                  "name": "Tile",
+                                  "fill": "$color-job-surface",
+                                  "descendants": {
+                                    "IAbCu": {
+                                      "icon": "hammer",
+                                      "fill": "$color-job"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "ZjUWG",
+                                  "name": "Title",
+                                  "fill": "$color-heading",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Convert this quote to a job?",
+                                  "lineHeight": 1.3,
+                                  "fontFamily": "Inter",
+                                  "fontSize": 20,
+                                  "fontWeight": "600",
+                                  "letterSpacing": -0.2
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "SvozD",
+                              "name": "Message",
+                              "fill": "$color-text",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Quote #318 becomes a job with its line items, and the quote is marked converted.",
+                              "lineHeight": 1.5,
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "GzTEY",
+                              "name": "Actions",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "padding": [
+                                8,
+                                0,
+                                0,
+                                0
+                              ],
+                              "justifyContent": "end",
+                              "children": [
+                                {
+                                  "id": "BP4kN",
+                                  "type": "ref",
+                                  "ref": "qpjlj",
+                                  "name": "Cancel",
+                                  "descendants": {
+                                    "lDuWW": {
+                                      "enabled": false
+                                    },
+                                    "Dpmda": {
+                                      "content": "Cancel"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "Cb3Dk",
+                                  "type": "ref",
+                                  "ref": "Qo6GL",
+                                  "name": "Confirm",
+                                  "descendants": {
+                                    "P99oLT": {
+                                      "enabled": true,
+                                      "icon": "arrow-right"
+                                    },
+                                    "vaRXs": {
+                                      "content": "Convert to job"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "qBWxH",
+                          "name": "Caption",
+                          "fill": "$color-heading",
+                          "textGrowth": "fixed-width",
+                          "width": 440,
+                          "content": "Go ahead. The tile shows what you'll end up with, in its record colour; the green button names the action.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "sIKCh",
+                  "name": "Row 2",
+                  "gap": 40,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "VFMSU",
+                      "name": "Column",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "lhE04",
+                          "name": "Confirm · warning",
+                          "width": 440,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-large",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "#1f2a2429",
+                            "offset": {
+                              "x": 0,
+                              "y": 16
+                            },
+                            "blur": 40
+                          },
+                          "layout": "vertical",
+                          "gap": 16,
+                          "padding": 24,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "EEaNp",
+                              "name": "Heading",
+                              "width": "fill_container",
+                              "gap": 14,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "y0QRG4",
+                                  "type": "ref",
+                                  "ref": "BfB4y",
+                                  "name": "Tile",
+                                  "fill": "$color-warning-surface",
+                                  "descendants": {
+                                    "IAbCu": {
+                                      "icon": "triangle-alert",
+                                      "fill": "$color-warning"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "R4g0B",
+                                  "name": "Title",
+                                  "fill": "$color-heading",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Required checklist answers are blank",
+                                  "lineHeight": 1.3,
+                                  "fontFamily": "Inter",
+                                  "fontSize": 20,
+                                  "fontWeight": "600",
+                                  "letterSpacing": -0.2
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "KhJ3I",
+                              "name": "Message",
+                              "fill": "$color-text",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "2 required questions on \"Roof safety\" have no answer. You can go back and fill them in, or complete the visit anyway.",
+                              "lineHeight": 1.5,
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "H0SYj5",
+                              "name": "Actions",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "padding": [
+                                8,
+                                0,
+                                0,
+                                0
+                              ],
+                              "justifyContent": "end",
+                              "children": [
+                                {
+                                  "id": "nut8Z",
+                                  "type": "ref",
+                                  "ref": "qpjlj",
+                                  "name": "Cancel",
+                                  "descendants": {
+                                    "lDuWW": {
+                                      "enabled": false
+                                    },
+                                    "Dpmda": {
+                                      "content": "Go back"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "PyAeM",
+                                  "type": "ref",
+                                  "ref": "Qo6GL",
+                                  "name": "Confirm",
+                                  "descendants": {
+                                    "P99oLT": {
+                                      "enabled": false,
+                                      "icon": "check"
+                                    },
+                                    "vaRXs": {
+                                      "content": "Complete anyway"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "sR2ES",
+                          "name": "Caption",
+                          "fill": "$color-heading",
+                          "textGrowth": "fixed-width",
+                          "width": 440,
+                          "content": "Warning. Yellow tile when something is missing but you may carry on. Both buttons say what happens.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "wgmZ8",
+                      "name": "Column",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "n9kwup",
+                          "name": "Confirm · notice",
+                          "width": 440,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-large",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "#1f2a2429",
+                            "offset": {
+                              "x": 0,
+                              "y": 16
+                            },
+                            "blur": 40
+                          },
+                          "layout": "vertical",
+                          "gap": 16,
+                          "padding": 24,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "BtBVN",
+                              "name": "Heading",
+                              "width": "fill_container",
+                              "gap": 14,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "lTjGp",
+                                  "type": "ref",
+                                  "ref": "BfB4y",
+                                  "name": "Tile",
+                                  "fill": "$color-informative-surface",
+                                  "descendants": {
+                                    "IAbCu": {
+                                      "icon": "info",
+                                      "fill": "$color-informative-on-surface"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Eonp7",
+                                  "name": "Title",
+                                  "fill": "$color-heading",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "This client has no email",
+                                  "lineHeight": 1.3,
+                                  "fontFamily": "Inter",
+                                  "fontSize": 20,
+                                  "fontWeight": "600",
+                                  "letterSpacing": -0.2
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "qrPsN",
+                              "name": "Message",
+                              "fill": "$color-text",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Add an email address on the client's page before sending the quote.",
+                              "lineHeight": 1.5,
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "k1L4Q",
+                              "name": "Actions",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "padding": [
+                                8,
+                                0,
+                                0,
+                                0
+                              ],
+                              "justifyContent": "end",
+                              "children": [
+                                {
+                                  "id": "fy148",
+                                  "type": "ref",
+                                  "ref": "Qo6GL",
+                                  "name": "Confirm",
+                                  "descendants": {
+                                    "P99oLT": {
+                                      "enabled": false,
+                                      "icon": "check"
+                                    },
+                                    "vaRXs": {
+                                      "content": "Got it"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "wk9cB",
+                          "name": "Caption",
+                          "fill": "$color-heading",
+                          "textGrowth": "fixed-width",
+                          "width": 440,
+                          "content": "Notice. Only something to acknowledge, so one button and no second choice.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "aIpZk",
+          "name": "Side drawer",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "a3inR",
+              "name": "Side drawer heading",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "i1YgSc",
+                  "name": "Section title",
+                  "fill": "$color-heading",
+                  "content": "Side drawer",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "Qb9iZ",
+                  "name": "Section sub",
+                  "fill": "$color-text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "For looking at one thing without losing your place in a list or board: file details, Price book, customer context in Inbox, an opportunity brief. Slides in from the right; the page stays visible behind it.",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "A4T2Dt",
+              "name": "Stage",
+              "clip": true,
+              "width": "fill_container",
+              "height": 720,
+              "fill": [
+                "$color-surface-background",
+                "$color-overlay"
+              ],
+              "cornerRadius": "$radius-large",
+              "padding": 12,
+              "justifyContent": "end",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "NxWWf",
+                  "layoutPosition": "absolute",
+                  "x": 40,
+                  "y": 40,
+                  "name": "Page behind",
+                  "opacity": 0.55,
+                  "width": 760,
+                  "height": 640,
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-large",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 24,
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 4,
+                      "id": "kQub6",
+                      "name": "Bar",
+                      "fill": "$color-border",
+                      "width": 220,
+                      "height": 16
+                    },
+                    {
+                      "type": "frame",
+                      "id": "LHZgY",
+                      "name": "Row",
+                      "width": "fill_container",
+                      "height": 56,
+                      "fill": "$color-surface-background-subtle",
+                      "cornerRadius": "$radius-base",
+                      "gap": 12,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 8,
+                          "id": "TobFo",
+                          "name": "Thumb",
+                          "fill": "$color-border",
+                          "width": 32,
+                          "height": 32
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 4,
+                          "id": "C8OVei",
+                          "name": "Line",
+                          "fill": "$color-border",
+                          "width": 260,
+                          "height": 10
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KtNHP",
+                      "name": "Row",
+                      "width": "fill_container",
+                      "height": 56,
+                      "fill": "$color-surface-background-subtle",
+                      "cornerRadius": "$radius-base",
+                      "gap": 12,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 8,
+                          "id": "hUJ8X",
+                          "name": "Thumb",
+                          "fill": "$color-border",
+                          "width": 32,
+                          "height": 32
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 4,
+                          "id": "tpN5r",
+                          "name": "Line",
+                          "fill": "$color-border",
+                          "width": 260,
+                          "height": 10
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "fLD1n",
+                      "name": "Row",
+                      "width": "fill_container",
+                      "height": 56,
+                      "fill": "$color-surface-active",
+                      "cornerRadius": "$radius-base",
+                      "gap": 12,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 8,
+                          "id": "jhaY4",
+                          "name": "Thumb",
+                          "fill": "$color-border",
+                          "width": 32,
+                          "height": 32
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 4,
+                          "id": "c0VGI",
+                          "name": "Line",
+                          "fill": "$color-border",
+                          "width": 260,
+                          "height": 10
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "X2sMHy",
+                      "name": "Row",
+                      "width": "fill_container",
+                      "height": 56,
+                      "fill": "$color-surface-background-subtle",
+                      "cornerRadius": "$radius-base",
+                      "gap": 12,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 8,
+                          "id": "et74s",
+                          "name": "Thumb",
+                          "fill": "$color-border",
+                          "width": 32,
+                          "height": 32
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 4,
+                          "id": "r5y0Db",
+                          "name": "Line",
+                          "fill": "$color-border",
+                          "width": 260,
+                          "height": 10
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "u0c2Fu",
+                      "name": "Row",
+                      "width": "fill_container",
+                      "height": 56,
+                      "fill": "$color-surface-background-subtle",
+                      "cornerRadius": "$radius-base",
+                      "gap": 12,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 8,
+                          "id": "i1DsNS",
+                          "name": "Thumb",
+                          "fill": "$color-border",
+                          "width": 32,
+                          "height": 32
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 4,
+                          "id": "x4I6m",
+                          "name": "Line",
+                          "fill": "$color-border",
+                          "width": 260,
+                          "height": 10
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "WNSBC",
+                      "name": "Row",
+                      "width": "fill_container",
+                      "height": 56,
+                      "fill": "$color-surface-background-subtle",
+                      "cornerRadius": "$radius-base",
+                      "gap": 12,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 8,
+                          "id": "vm9ak",
+                          "name": "Thumb",
+                          "fill": "$color-border",
+                          "width": 32,
+                          "height": 32
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 4,
+                          "id": "Z8ZG8H",
+                          "name": "Line",
+                          "fill": "$color-border",
+                          "width": 260,
+                          "height": 10
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "kTH3t",
+                      "name": "Row",
+                      "width": "fill_container",
+                      "height": 56,
+                      "fill": "$color-surface-background-subtle",
+                      "cornerRadius": "$radius-base",
+                      "gap": 12,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 8,
+                          "id": "QCZYI",
+                          "name": "Thumb",
+                          "fill": "$color-border",
+                          "width": 32,
+                          "height": 32
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 4,
+                          "id": "i5xUK",
+                          "name": "Line",
+                          "fill": "$color-border",
+                          "width": 260,
+                          "height": 10
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Mgym0",
+                  "name": "Drawer",
+                  "clip": true,
+                  "width": 480,
+                  "height": "fill_container",
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-large",
+                  "stroke": "$color-border",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#1f2a2429",
+                    "offset": {
+                      "x": 0,
+                      "y": 16
+                    },
+                    "blur": 40
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "hax3W",
+                      "name": "Header",
+                      "width": "fill_container",
+                      "stroke": "$color-border",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "gap": 12,
+                      "padding": [
+                        16,
+                        16,
+                        16,
+                        20
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "DpYEG",
+                          "type": "ref",
+                          "ref": "BfB4y",
+                          "name": "Tile",
+                          "fill": "$color-inactive-surface",
+                          "descendants": {
+                            "IAbCu": {
+                              "icon": "image",
+                              "fill": "$color-inactive"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "pIwOw",
+                          "name": "Heading",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "snn3F",
+                              "name": "Title",
+                              "fill": "$color-heading",
+                              "content": "roof-before.jpg",
+                              "fontFamily": "Inter",
+                              "fontSize": 20,
+                              "fontWeight": "600",
+                              "letterSpacing": -0.2
+                            },
+                            {
+                              "type": "text",
+                              "id": "y7j5n1",
+                              "name": "Subtitle",
+                              "fill": "$color-text-secondary",
+                              "content": "Photo · 2.4 MB",
+                              "fontFamily": "Inter",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "ZFkNN",
+                          "type": "ref",
+                          "ref": "nIDZt",
+                          "name": "Close",
+                          "descendants": {
+                            "IW9bL": {
+                              "icon": "x"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ims77",
+                      "name": "Body",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "gap": 20,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": "$radius-base",
+                          "id": "vo71m",
+                          "name": "Preview",
+                          "metadata": {
+                            "type": "unsplash",
+                            "username": "markuswinkler",
+                            "link": "https://unsplash.com/@markuswinkler",
+                            "author": "Markus Winkler"
+                          },
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "https://images.unsplash.com/photo-1637000706319-a8db9d75f546?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NDM0ODN8MHwxfHJhbmRvbXx8fHx8fHx8fDE3OTIzNjc4MzR8&ixlib=rb-4.1.0&q=80&w=1080",
+                            "mode": "cover"
+                          },
+                          "width": "fill_container",
+                          "height": 180,
+                          "stroke": "$color-border",
+                          "strokeWidth": 1
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Hs3WQ",
+                          "name": "Actions",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "id": "COjxz",
+                              "type": "ref",
+                              "ref": "qpjlj",
+                              "name": "Download",
+                              "height": 32,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "gap": 6,
+                              "descendants": {
+                                "lDuWW": {
+                                  "icon": "download"
+                                },
+                                "Dpmda": {
+                                  "content": "Download",
+                                  "fontSize": 13
+                                }
+                              }
+                            },
+                            {
+                              "id": "LlSM0",
+                              "type": "ref",
+                              "ref": "qpjlj",
+                              "name": "Share",
+                              "height": 32,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "gap": 6,
+                              "descendants": {
+                                "lDuWW": {
+                                  "icon": "share-2"
+                                },
+                                "Dpmda": {
+                                  "content": "Share with customer",
+                                  "fontSize": 13
+                                }
+                              }
+                            },
+                            {
+                              "id": "KvetX",
+                              "type": "ref",
+                              "ref": "qpjlj",
+                              "name": "Attach",
+                              "height": 32,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "gap": 6,
+                              "descendants": {
+                                "lDuWW": {
+                                  "icon": "paperclip"
+                                },
+                                "Dpmda": {
+                                  "content": "Attach to…",
+                                  "fontSize": 13
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "WynTT",
+                          "name": "Facts",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "n3j7D",
+                              "name": "Type",
+                              "width": "fill_container",
+                              "stroke": "$color-border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 12,
+                              "padding": [
+                                10,
+                                0
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "vJYbK",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 110,
+                                  "content": "Type",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "n5Gtmw",
+                                  "name": "Value",
+                                  "fill": "$color-heading",
+                                  "content": "JPEG photo",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "UIUPq",
+                              "name": "Uploaded",
+                              "width": "fill_container",
+                              "stroke": "$color-border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 12,
+                              "padding": [
+                                10,
+                                0
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "P8kN0",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 110,
+                                  "content": "Uploaded",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "NOWAl",
+                                  "name": "Value",
+                                  "fill": "$color-heading",
+                                  "content": "Oct 18 by Mike Davis",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "F4maR",
+                              "name": "Came from",
+                              "width": "fill_container",
+                              "stroke": "$color-border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 12,
+                              "padding": [
+                                10,
+                                0
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Vn6g8",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 110,
+                                  "content": "Came from",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "m7aUs",
+                                  "name": "Value",
+                                  "fill": "$color-heading",
+                                  "content": "Job #29 · Gutter cleaning",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "g9uHG4",
+                              "name": "Folder",
+                              "width": "fill_container",
+                              "stroke": "$color-border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 12,
+                              "padding": [
+                                10,
+                                0
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ReyWT",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 110,
+                                  "content": "Folder",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "npxhw",
+                                  "name": "Value",
+                                  "fill": "$color-heading",
+                                  "content": "Before and after",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             }

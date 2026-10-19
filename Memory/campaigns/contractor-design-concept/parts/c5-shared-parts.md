@@ -9,7 +9,7 @@ screens reuse them.
 
 | Batch | Parts | State |
 | --- | --- | --- |
-| 1 Pop-ups | `ui/Dialog` (form pop-up), `ui/ConfirmDialog` ("are you sure?"), `layout/SidePanel` (side drawer) | Drawn 2026-10-19 on `concept.pen` board "Concept · Foundation · Pop-ups · 1440" (`v2Y89`); waits for Jafar |
+| 1 Pop-ups | `ui/Dialog` (form pop-up), `ui/ConfirmDialog` ("are you sure?"), `layout/SidePanel` (side drawer) | Drawn 2026-10-19 on `concept.pen` board "Concept · Foundation · Pop-ups · 1440" (`v2Y89`); **approved by Jafar 2026-10-19**; build next |
 | 2 Page states | `data-display/LoadingSkeleton`, `EmptyState`, `ErrorState` | Not started |
 | 3 Fields in code | `ui/Input`, `ui/Select`, `ui/Textarea`, `ui/Badge` (drawn ✅, not built), `ui/SearchInput` | Not started |
 | Then | the remaining `list-1a-parts.md` rows in order | — |
@@ -30,4 +30,4 @@ hint line under a form pop-up's title is optional. Example wording is illustrati
 
 ## Next
 
-Show Jafar the board; on approval record it here, then draw batch 2 on the same board.
+Draw batch 2 (page states) on the same board, show Jafar; then build batches 1 and 2 in their shared components.
