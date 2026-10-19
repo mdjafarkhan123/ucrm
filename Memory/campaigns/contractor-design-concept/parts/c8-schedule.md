@@ -40,7 +40,16 @@ without "Now". Card is 1067 tall (frame 1163), so on shorter screens the month s
   **New behaviour for the build:** `completed_at` on events (migration), `/api/*` write with Zod, a tick in the
   event pop-up. The live app colours cards by status today; the build changes that.
 
+## Visit pop-up (drawn 2026-10-19, waiting for Jafar)
+
+`EGuw7` "Concept · Schedule · Visit pop-up · Owner · 1440": Week with Tom Baker's visit selected (hover edge)
+and its pop-up 10 to the right. Keeps live `VisitPreview.svelte` content and order: client title, work line,
+status, When / Team / Where, the reader's timer, Mark complete + Reschedule, Open job # and Move to Unscheduled.
+Look: 368 wide, form pop-up header (40 job tile, ×), small status pill beside the name, 32 fact tiles (time,
+time, client), timer in a subtle panel ("Your timer · Not started on this visit" — a new label, ask Jafar),
+links in a subtle footer. No arrow (live has one; ask Jafar). Research: Jobber `02-visit-popover.png`.
+
 ## Next
 
-1. One at a time: visit pop-up (with the "+ N more" date list), Unscheduled drawer, Map.
+1. Jafar reviews the visit pop-up; then the "+ N more" date list, Unscheduled drawer, Map, one at a time.
 2. Jafar saves Pencil (Ctrl+S); commit `concept.pen` from the main folder under this claim.
