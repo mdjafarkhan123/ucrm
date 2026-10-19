@@ -23,7 +23,7 @@
 	} = $props();
 </script>
 
-<RailCard {title} {icon}>
+<RailCard tone="conversation" {title} {icon}>
 	<Textarea
 		{id}
 		{label}

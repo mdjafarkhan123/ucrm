@@ -1283,7 +1283,7 @@
 				/>
 
 				{#if editingTerms}
-					<SectionBlock title="Terms & dates" icon={calendarIcon} level={2}>
+					<SectionBlock tone="invoice" title="Terms & dates" icon={calendarIcon} level={2}>
 						{#snippet actions()}
 							{#if termsChanged}
 								<Badge size="small" status="warning">Unsaved</Badge>
@@ -1330,6 +1330,7 @@
 				{/if}
 
 				<SectionBlock
+					tone="invoice"
 					title="Contract disclaimer"
 					hint="What the client agrees to by paying this bill"
 					level={2}
@@ -1432,6 +1433,7 @@
 
 				{#if showOnlinePayments}
 					<RailCard
+						tone="invoice"
 						title="Online payment"
 						description="Your client can pay from their invoice link"
 					>
@@ -1449,7 +1451,7 @@
 					</RailCard>
 				{/if}
 
-				<RailCard title="Discount and tax" flush>
+				<RailCard tone="invoice" title="Discount and tax" flush>
 					<RecordDiscountCard
 						embedded
 						revision={saved.invoice.revision}

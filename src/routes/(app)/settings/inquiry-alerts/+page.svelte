@@ -149,6 +149,7 @@
 					{/if}
 
 					<SectionBlock
+						tone="inactive"
 						title="Who gets alerted"
 						hint="Only people who can see every request can be chosen."
 						icon={usersIcon}

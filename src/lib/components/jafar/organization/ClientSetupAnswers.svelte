@@ -306,6 +306,7 @@
 	/>
 {:else if view}
 	<SectionBlock
+		tone="inactive"
 		title="Sent to Uplift"
 		icon={clipboardIcon}
 		hint="What the client sent with Send to Uplift. Each send is kept as it was sent."
@@ -388,6 +389,7 @@
 
 	{#if help.length > 0}
 		<SectionBlock
+			tone="inactive"
 			title="Uplift’s to-do"
 			icon={lifebuoyIcon}
 			hint="Questions the client asked Uplift’s help with. Each one closes when you add the answer Uplift found. You can accept a task while its items are still open."
@@ -434,6 +436,7 @@
 
 	{#if view.settings_copies.length > 0 || anyAccepted}
 		<SectionBlock
+			tone="inactive"
 			title="CRM settings"
 			icon={settingsIcon}
 			hint="Accepting a task fills the client’s matching CRM settings with its answers. A setting the client changed in Settings after sending their answer is kept."
@@ -474,6 +477,7 @@
 
 	{#if view.reminders}
 		<SectionBlock
+			tone="inactive"
 			title="Setup reminders"
 			icon={bellIcon}
 			hint="Emails after about 24 hours, 3 days and 7 days without setup activity, each linking to the next task."
@@ -505,7 +509,7 @@
 			{@const entry = view.reviews?.[section.key] ?? null}
 			{@const returned = entry?.state === 'returned' ? entry.decision : null}
 			{@const deciding = review.isPending && review.variables?.section_key === section.key}
-			<SectionBlock title={section.title}>
+			<SectionBlock tone="inactive" title={section.title}>
 				<div class="client-setup__status">
 					<Badge status={status.badge} size="small">{status.label}</Badge>
 					{#if entry}
@@ -619,6 +623,7 @@
 		{/each}
 
 		<SectionBlock
+			tone="inactive"
 			title="What they confirmed"
 			hint={`Ticked by ${send.submitted_by_name} when sending · wording of ${send.confirmations_version}`}
 		>

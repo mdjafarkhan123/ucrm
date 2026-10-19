@@ -620,7 +620,7 @@
 					canRemove={canRemoveDeal}
 				/>
 
-				<RailCard title="Next action" icon={calendarIcon} class="lead-page__next">
+				<RailCard tone="inactive" title="Next action" icon={calendarIcon} class="lead-page__next">
 					{#if details.next_action}
 						<div class="lead-page__next-body">
 							<p class="lead-page__next-text">{details.next_action}</p>
@@ -679,7 +679,7 @@
 				</RailCard>
 
 				{#if canBookCalls || data.calls.length}
-					<RailCard title="Calls" icon={phoneIcon} count={data.calls.length}>
+					<RailCard tone="inactive" title="Calls" icon={phoneIcon} count={data.calls.length}>
 						{#snippet actions()}
 							{#if canBookCalls}
 								<Button
@@ -733,6 +733,7 @@
 				{/if}
 
 				<RailCard
+					tone="inactive"
 					title="Contact details"
 					icon={addressBookIcon}
 					count={data.contact_methods.length}
@@ -788,7 +789,12 @@
 				</RailCard>
 
 				{#if canSeeApplications}
-					<RailCard title="Applications" icon={fileTextIcon} count={data.applications.length}>
+					<RailCard
+						tone="inactive"
+						title="Applications"
+						icon={fileTextIcon}
+						count={data.applications.length}
+					>
 						{#snippet actions()}
 							<Button
 								variant="tertiary"
@@ -834,7 +840,7 @@
 				{/if}
 
 				{#if canEditDetails || details.fit_notes || details.source_detail}
-					<RailCard title="About" icon={infoIcon}>
+					<RailCard tone="inactive" title="About" icon={infoIcon}>
 						{#snippet actions()}
 							{#if canEditDetails && editingBlock !== 'about'}
 								<PencilButton label="Edit about this Lead" onclick={() => openBlock('about')} />
@@ -874,7 +880,7 @@
 			</aside>
 
 			<div class="lead-page__main">
-				<SectionBlock title="History" icon={historyIcon} id="lead-history">
+				<SectionBlock tone="inactive" title="History" icon={historyIcon} id="lead-history">
 					<div class="lead-page__composer">
 						<HistoryEntryForm
 							{leadId}

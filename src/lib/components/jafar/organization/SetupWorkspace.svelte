@@ -159,6 +159,7 @@
 		<ClientSetupAnswers {organizationId} />
 	{/if}
 	<SectionBlock
+		tone="inactive"
 		title="Protected documents"
 		icon={shieldLockIcon}
 		hint="Papers the client uploaded for a provider step. Only the business owner and you can open them, and every opening is recorded."

@@ -108,6 +108,7 @@
 
 <div class="templates">
 	<SectionBlock
+		tone="growth"
 		title="Starter templates"
 		hint="Branded starting points. Use one to copy it into your own library."
 		level={2}
@@ -138,6 +139,7 @@
 	</SectionBlock>
 
 	<SectionBlock
+		tone="growth"
 		title="Your templates"
 		hint="Starter templates you have copied into this organization."
 		level={2}

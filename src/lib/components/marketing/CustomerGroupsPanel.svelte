@@ -82,6 +82,7 @@
 </script>
 
 <SectionBlock
+	tone="growth"
 	title="Customer groups"
 	hint="Saved recipient rules. Counts follow your customers and jobs."
 	level={2}

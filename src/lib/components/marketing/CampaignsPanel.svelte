@@ -133,6 +133,7 @@
 </script>
 
 <SectionBlock
+	tone="growth"
 	title="Campaigns"
 	hint="Draft, save, and send one-off marketing email to the customers you choose."
 	level={2}

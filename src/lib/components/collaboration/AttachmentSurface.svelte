@@ -27,11 +27,19 @@
 </script>
 
 {#if surface === 'section'}
-	<SectionBlock {title} {icon} level={2} actions={actionSnippet}>
+	<SectionBlock tone="inactive" {title} {icon} level={2} actions={actionSnippet}>
 		{@render children()}
 	</SectionBlock>
 {:else}
-	<RailCard {title} {icon} {count} {description} {flush} actions={actionSnippet}>
+	<RailCard
+		tone="inactive"
+		{title}
+		{icon}
+		{count}
+		{description}
+		{flush}
+		actions={actionSnippet}
+	>
 		{@render children()}
 	</RailCard>
 {/if}

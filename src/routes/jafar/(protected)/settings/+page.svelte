@@ -114,6 +114,7 @@
 		<div class="jafar-settings__groups">
 			{#each groups as group (group.id)}
 				<SectionBlock
+					tone="inactive"
 					title={group.title}
 					hint={group.destinations.length > 0 ? group.hint : undefined}
 					icon={group.icon}

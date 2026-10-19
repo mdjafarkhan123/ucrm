@@ -13,18 +13,18 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/Select` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
 | `ui/Checkbox` |  | ✅ | ✅ |
 | `data-display/EmptyState` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
-| `layout/SectionBlock` |  | ✅ Page parts board `j3jDI` | ⬜ |
-| `layout/PageContainer` |  | ✅ Page parts board `j3jDI` | ⬜ |
+| `layout/SectionBlock` |  | ✅ Page parts board `j3jDI` | ✅ Branch verified; waiting for Claude to merge |
+| `layout/PageContainer` |  | ✅ Page parts board `j3jDI` | ✅ Branch verified; waiting for Claude to merge |
 | `layout/PageHeader` |  | ✅ | ✅ |
 | `ui/Badge` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
 | `ui/Dialog` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `ui/Textarea` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
 | `ui/SearchInput` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
 | `ui/DropdownMenu` |  | ✅ | ✅ |
-| `layout/Breadcrumbs` |  | ✅ Page parts board `j3jDI` | ⬜ |
+| `layout/Breadcrumbs` |  | ✅ Page parts board `j3jDI` | ✅ Branch verified; waiting for Claude to merge |
 | `ui/ConfirmDialog` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `ui/SegmentedControl` |  | ✅ | ✅ |
-| `ui/StatusBadge` |  | ✅ | 🟡 Branch build; Pencil comparison pending |
+| `ui/StatusBadge` |  | ✅ | ✅ Branch verified; waiting for Claude to merge |
 | `layout/StickyActionBar` |  | ✅ | ✅ |
 | `ui/Avatar` |  | ⬜ | ⬜ |
 | `data-display/ListLoadMore` |  | ⬜ | ⬜ |
@@ -32,13 +32,13 @@ Key, tick rule and coverage command: `list-index.md`.
 | `data-display/DataTable` |  | ⬜ | ⬜ |
 | `forms/FormErrorSummary` |  | ⬜ | ⬜ |
 | `layout/RecordFormLayout` |  | ✅ | ✅ |
-| `layout/RailCard` |  | ✅ Page parts board `j3jDI` | ⬜ |
-| `ui/Banner` |  | ✅ Page parts board `j3jDI` | ⬜ |
+| `layout/RailCard` |  | ✅ Page parts board `j3jDI` | ✅ Branch verified; waiting for Claude to merge |
+| `ui/Banner` |  | ✅ Page parts board `j3jDI` | ✅ Branch verified; waiting for Claude to merge |
 | `ui/Lightbox` |  | ⬜ | ⬜ |
 | `ui/TimePickerField` |  | ⬜ | ⬜ |
 | `ui/Toggle` |  | ⬜ | ⬜ |
 | `files/FileThumb` |  | ⬜ | ⬜ |
-| `ui/Card` |  | ✅ | 🟡 Branch build; Pencil comparison pending |
+| `ui/Card` |  | ✅ | ✅ Branch verified; waiting for Claude to merge |
 | `ui/CardHeader` | Pencil "Card header"; on every Home card so far | ✅ | ✅ |
 | `ui/TimePicker` |  | ⬜ | ⬜ |
 | `ui/PencilButton` |  | ⬜ | ⬜ |

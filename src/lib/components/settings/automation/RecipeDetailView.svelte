@@ -531,11 +531,11 @@
 				{#if detail.display_definition}
 					<SummaryRail name={detail.name} definition={detail.display_definition} />
 				{:else}
-					<SectionBlock title="Overview" level={2}>
+					<SectionBlock tone="inactive" title="Overview" level={2}>
 						<p class="recipe-detail__muted">This automation has nothing set up yet.</p>
 					</SectionBlock>
 				{/if}
-				<SectionBlock title="Right now" level={2}>
+				<SectionBlock tone="inactive" title="Right now" level={2}>
 					<p class="recipe-detail__muted">
 						No customers are in this automation right now, and there’s nothing to review.
 					</p>
@@ -557,7 +557,7 @@
 						description="Once this automation is live and starts following up with customers, every step it takes will show up here."
 					/>
 				{:else}
-					<SectionBlock title="History" level={2}>
+					<SectionBlock tone="inactive" title="History" level={2}>
 						<ol class="recipe-detail__history">
 							{#each historyEntries as entry (entry.id)}
 								<li class="recipe-detail__event">
@@ -626,7 +626,7 @@
 						description="A version is saved every time you turn this automation on. None have been saved yet."
 					/>
 				{:else}
-					<SectionBlock title="Versions" level={2}>
+					<SectionBlock tone="inactive" title="Versions" level={2}>
 						<ol class="recipe-detail__versions">
 							{#each versionsQuery.data as version, index (version.id)}
 								{@const isCurrent =

@@ -109,6 +109,7 @@
 </script>
 
 <SectionBlock
+	tone="growth"
 	title="Recipients"
 	icon={usersIcon}
 	hint="Updates as you add or remove conditions above."

@@ -120,6 +120,7 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <SectionBlock
+	tone="inactive"
 	title="Ready for Uplift"
 	icon={rocketIcon}
 	hint={`Starts the client’s ${SETUP_READY_DAYS.from}–${SETUP_READY_DAYS.to} business-day build (Monday to Friday). Needs every task accepted and every required help question answered.`}

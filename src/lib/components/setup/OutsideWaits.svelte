@@ -19,6 +19,7 @@
 </script>
 
 <SectionBlock
+	tone="inactive"
 	id="outside-waits"
 	class="outside-waits-block"
 	title="Waiting on others"

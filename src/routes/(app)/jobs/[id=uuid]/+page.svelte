@@ -665,6 +665,7 @@
 				/>
 
 				<RailCard
+					tone="job"
 					title="Instructions"
 					description="The crew sees these on every visit"
 					icon={clipboardListIcon}
@@ -849,7 +850,7 @@
 
 			{#snippet rail()}
 				{#if showHistory}
-					<RailCard title="Job history" icon={clockIcon}>
+					<RailCard tone="job" title="Job history" icon={clockIcon}>
 						{#snippet actions()}
 							<Button size="small" variant="tertiary" onclick={() => (showHistory = false)}>
 								Close
@@ -895,7 +896,13 @@
 				/>
 
 				{#if !showHistory}
-					<RailCard title="Notes" description="Only your team sees these" icon={notesIcon} flush>
+					<RailCard
+						tone="conversation"
+						title="Notes"
+						description="Only your team sees these"
+						icon={notesIcon}
+						flush
+					>
 						<NotesPanel
 							compact
 							entityType="job"

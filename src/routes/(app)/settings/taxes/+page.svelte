@@ -192,7 +192,7 @@
 				</div>
 			</section>
 
-			<SectionBlock title="Saved tax rates" icon={receiptTaxIcon} level={2}>
+			<SectionBlock tone="inactive" title="Saved tax rates" icon={receiptTaxIcon} level={2}>
 				{#snippet actions()}
 					<Button size="small" onclick={() => (rateDialog = { rate: null })}>Add rate</Button>
 				{/snippet}

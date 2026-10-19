@@ -300,7 +300,7 @@
 		{/snippet}
 
 		{#snippet rail()}
-			<RailCard title="Your customer's page">
+			<RailCard tone="review" title="Your customer's page">
 				<p class="review-settings__check-note">
 					See exactly what a customer sees when they open a review link, including changes you have
 					not saved yet. Nothing is recorded.
@@ -311,7 +311,7 @@
 				</Button>
 			</RailCard>
 
-			<RailCard title="Setup checklist">
+			<RailCard tone="review" title="Setup checklist">
 				<ul class="review-settings__checklist">
 					<li class="review-settings__check">
 						<span

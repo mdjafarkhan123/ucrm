@@ -57,6 +57,7 @@
 </script>
 
 <SectionBlock
+	tone="inactive"
 	title="Package"
 	icon={packageIcon}
 	hint="The edition, price, and billing this customer agreed to. A new package normally starts at the next renewal."

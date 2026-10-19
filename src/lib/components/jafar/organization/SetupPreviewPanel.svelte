@@ -274,6 +274,7 @@
 {:else if query.data.ready}
 	{@const data = query.data}
 	<SectionBlock
+		tone="inactive"
 		title="Preview"
 		icon={presentationIcon}
 		hint="What Uplift built, one card per part of their package. The client marks each card and sends their notes once; their package includes one round of corrections, and Uplift’s mistakes are always fixed."

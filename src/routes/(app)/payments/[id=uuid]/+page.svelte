@@ -467,6 +467,7 @@
 				{/if}
 
 				<SectionBlock
+					tone="invoice"
 					title="Applied to"
 					hint="The invoices this money paid"
 					level={2}
@@ -529,6 +530,7 @@
 				</SectionBlock>
 
 				<SectionBlock
+					tone="invoice"
 					title="Details"
 					hint="Noted when this payment was recorded"
 					level={2}

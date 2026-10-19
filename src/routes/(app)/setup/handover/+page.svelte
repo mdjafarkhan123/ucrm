@@ -115,11 +115,12 @@
 					: ''}
 			</p>
 
-			<SectionBlock title="Who owns what" icon={keyIcon}>
+			<SectionBlock tone="inactive" title="Who owns what" icon={keyIcon}>
 				<p class="handover__summary">{pack.handover.access_summary}</p>
 			</SectionBlock>
 
 			<SectionBlock
+				tone="inactive"
 				title="Guides for your team"
 				icon={bookIcon}
 				hint="Share any of these links with the people who need them."
@@ -139,7 +140,7 @@
 				</ul>
 			</SectionBlock>
 
-			<SectionBlock title="Training" icon={schoolIcon}>
+			<SectionBlock tone="inactive" title="Training" icon={schoolIcon}>
 				<div class="handover__stack">
 					{#if pack.training?.meeting_at}
 						<p>
@@ -171,7 +172,7 @@
 			</SectionBlock>
 
 			{#if pack.approvals.length}
-				<SectionBlock title="Launch approval" icon={rocketIcon}>
+				<SectionBlock tone="inactive" title="Launch approval" icon={rocketIcon}>
 					<div class="handover__stack">
 						{#each pack.approvals as approval (approval.id)}
 							<p>
@@ -192,7 +193,7 @@
 				<OutsideWaits waits={pack.open_waits} />
 			{/if}
 
-			<SectionBlock title="Getting help" icon={lifebuoyIcon}>
+			<SectionBlock tone="inactive" title="Getting help" icon={lifebuoyIcon}>
 				<div class="handover__stack">
 					<p>
 						Uplift is still here. Write to us in <strong>Chat with Uplift</strong>, in the bottom

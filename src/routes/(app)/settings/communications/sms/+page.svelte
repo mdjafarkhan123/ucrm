@@ -553,6 +553,7 @@
 
 			{#if registration}
 				<SectionBlock
+					tone="inactive"
 					title="Registration"
 					id="registration"
 					icon={deviceMobileMessageIcon}
@@ -869,7 +870,7 @@
 
 			<div class="sms-settings__lower">
 				<div class="sms-settings__lower-left">
-					<SectionBlock title="Phone numbers" icon={phoneIcon} level={2}>
+					<SectionBlock tone="inactive" title="Phone numbers" icon={phoneIcon} level={2}>
 						{#if numbersQuery.isPending}
 							<LoadingSkeleton variant="table" rows={2} />
 						{:else if numbersQuery.isError}
@@ -980,7 +981,7 @@
 						{/if}
 					</SectionBlock>
 
-					<SectionBlock title="Holds & opt-outs" icon={banIcon} level={2}>
+					<SectionBlock tone="inactive" title="Holds & opt-outs" icon={banIcon} level={2}>
 						{#if holdsQuery.isPending}
 							<LoadingSkeleton variant="card" rows={2} />
 						{:else if holdsQuery.isError}
@@ -1041,7 +1042,12 @@
 					</SectionBlock>
 				</div>
 
-				<SectionBlock title="Compliance & sender info" icon={shieldCheckIcon} level={2}>
+				<SectionBlock
+					tone="inactive"
+					title="Compliance & sender info"
+					icon={shieldCheckIcon}
+					level={2}
+				>
 					{#if complianceQuery.isPending}
 						<LoadingSkeleton variant="card" rows={2} />
 					{:else if complianceQuery.isError}

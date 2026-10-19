@@ -164,6 +164,7 @@
 	/>
 {:else}
 	<SectionBlock
+		tone="inactive"
 		id="training"
 		class="training-card-block"
 		title="Training"

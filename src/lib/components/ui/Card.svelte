@@ -31,6 +31,8 @@
 
 <style lang="scss">
 	.card {
+		color: var(--color-text);
+		font-size: var(--typography--fontSize-base);
 		min-width: 0;
 		padding: var(--space-medium);
 		border: var(--border-base) solid var(--color-border);

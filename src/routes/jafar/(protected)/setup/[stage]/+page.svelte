@@ -224,7 +224,7 @@
 		</ErrorState>
 	{:else if editor && stage}
 		{#snippet rail()}
-			<RailCard title="This stage">
+			<RailCard tone="inactive" title="This stage">
 				<dl class="setup-stage__facts">
 					<div>
 						<dt>Who sees it</dt>

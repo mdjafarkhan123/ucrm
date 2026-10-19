@@ -303,7 +303,7 @@
 		{/snippet}
 
 		{#snippet rail()}
-			<RailCard title="Status">
+			<RailCard tone="inactive" title="Status">
 				<Select
 					id="lead-status"
 					ariaLabel="Status"
@@ -312,7 +312,7 @@
 				/>
 			</RailCard>
 
-			<RailCard title="How you found them">
+			<RailCard tone="inactive" title="How you found them">
 				<div class="lead-form__rail-fields">
 					<Select
 						id="lead-source"

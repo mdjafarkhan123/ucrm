@@ -207,7 +207,7 @@
 		{/snippet}
 	</RailRow>
 {:else}
-	<RailCard title="Tax" icon={taxIcon}>
+	<RailCard tone="invoice" title="Tax" icon={taxIcon}>
 		{#snippet actions()}
 			{#if editable && canSeePrice && configured}
 				<Button variant="tertiary" size="small" onclick={openDialog} onhover={warm}>Edit</Button>

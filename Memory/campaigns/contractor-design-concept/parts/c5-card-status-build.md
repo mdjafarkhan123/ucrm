@@ -1,6 +1,6 @@
 # Card and StatusBadge — branch build
 
-**Stage:** Implemented; final Pencil comparison pending. Not ready to merge.
+**Stage:** Verified against Pencil; waiting for Claude to review and merge.
 **Branch:** `codex/approved-shared-schedule-build`
 **Workspace:** `/home/jafar/.codex/worktrees/approved-shared-build/Ucrm`
 **Claim:** `fff612924b43`, owner `codex-approved-build`; retained until integration.
@@ -18,10 +18,10 @@
 - Svelte compiler after SCSS preprocessing: both files, zero warnings. Svelte MCP autofixer on preprocessed components: zero issues/suggestions. Raw SCSS nesting produced false unused-selector warnings, resolved by checking preprocessed code.
 - Running branch app at `http://127.0.0.1:5181`: signed in with existing contractor owner. Form editor Card and Jobs compact status labels checked at 1440 and 390 widths, light/dark; narrow table uses its existing horizontal scroll. No records changed. Screenshots: `docs/evidence/2026-10-19-card-status/`.
 
-## Blocker and next
+## Pencil comparison and next
 
-Pencil app is running, but its socket file `/home/jafar/.pencil/socket/pencil-desktop.sock` is missing; Claude retains an existing connection. Both the provided Pencil tool and a fresh bridge returned transport-not-connected. Do not restart Pencil while Claude has unsaved work. Jafar asked to reconnect; asked him to have Claude save and reopen Pencil with concept.pen. No Pencil files or app state changed.
+Pencil reconnected after Jafar restarted it. Read-only comparison 2026-10-19: Foundation `z1I4U` (Status pill), `hHVVU` (Card header), `BFOzz` (parts); the pill’s full radius, 5×11 padding, 6px dot, 12/600 text and header anatomy match. Compared light/dark live proof with Foundation and its theme tokens; no Pencil edits, save, file switch or skill edits.
 
-1. Once Pencil reconnects, read approved Card/StatusBadge frames, compare light/dark screenshots, fix differences and tick Built ✅ only then. Drawing cleanup belongs to Claude.
-2. Commit/push any corrections; Claude reviews and merges.
-3. Continue Schedule in the same branch after reviewing `c8-schedule.md`, actual frame references and relevant database/permission tests. Schedule and its three Jobs pop-ups are approved; no Schedule code or remote database changed yet.
+Also completed page-parts batch 4; see `c5-page-parts-build.md`. Card body now explicitly uses the base text size. All unmerged work stays on this branch. Claude owns review, merge and any Pencil draft cleanup.
+
+Next: Schedule in `c8-schedule.md`; no Schedule code or remote database changes yet.

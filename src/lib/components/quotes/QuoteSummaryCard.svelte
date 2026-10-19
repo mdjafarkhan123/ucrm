@@ -49,7 +49,7 @@
 	);
 </script>
 
-<RailCard {title} icon={receiptIcon}>
+<RailCard tone="quote" {title} icon={receiptIcon}>
 	{#if subtotalMinor === null}
 		<p class="quote-summary__hidden">You do not have access to quote prices.</p>
 	{:else}

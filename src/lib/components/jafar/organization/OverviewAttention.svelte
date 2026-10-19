@@ -84,7 +84,7 @@
 	);
 </script>
 
-<SectionBlock title="Health and open issues">
+<SectionBlock tone="inactive" title="Health and open issues">
 	<div class="overview-attention" aria-live="polite">
 		<div class="overview-attention__row">
 			<div>

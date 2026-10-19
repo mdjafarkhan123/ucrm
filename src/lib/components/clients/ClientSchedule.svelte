@@ -144,6 +144,7 @@
 
 {#if !denied}
 	<SectionBlock
+		tone="client"
 		title="Client schedule"
 		subtitle={`Visits and assessments booked for ${clientName}`}
 		icon={calendarIcon}

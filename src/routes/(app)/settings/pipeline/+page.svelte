@@ -447,6 +447,7 @@
 					     otherwise wipe anything typed in the meantime. -->
 					<fieldset class="pipeline-settings__fields" disabled={saving}>
 						<SectionBlock
+							tone="growth"
 							class="pipeline-card pipeline-card--assessment"
 							title="Assessment column"
 							icon={layoutColumnsIcon}
@@ -470,6 +471,7 @@
 
 						{#each BOARD_SECTIONS as section (section)}
 							<SectionBlock
+								tone="growth"
 								class={`pipeline-card pipeline-card--${section}`}
 								title={section === 'request' ? 'Request stages' : 'Quote stages'}
 								icon={section === 'request' ? inboxIcon : fileDescriptionIcon}
@@ -523,6 +525,7 @@
 				{#if detailed !== null}
 					<fieldset class="pipeline-settings__fields" disabled={saving}>
 						<SectionBlock
+							tone="growth"
 							class="pipeline-card pipeline-card--lost pipeline-card--flush"
 							title="Lost reasons"
 							icon={thumbDownIcon}

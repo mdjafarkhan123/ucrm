@@ -103,7 +103,7 @@
 	const STATUS_LABELS = { ready: 'Opened', not_ready: 'Not ready', held: 'On hold' } as const;
 </script>
 
-<SectionBlock title="Ready for customers" icon={shieldCheckIcon}>
+<SectionBlock tone="inactive" title="Ready for customers" icon={shieldCheckIcon}>
 	{#if readinessQuery.isPending}
 		<LoadingSkeleton variant="card" label="Loading readiness" />
 	{:else if readinessQuery.isError && !readinessQuery.data}

@@ -173,9 +173,12 @@
 {#if !accessDenied}
 	<div role="presentation" onmouseenter={() => (warm = true)} onfocusin={() => (warm = true)}>
 		<RailCard
+			tone="inactive"
 			title="Automatic follow-up"
 			icon={robotIcon}
-			class={enrollments.length > 0 && warm && !query.isPending ? 'inquiry-automation__feature' : ''}
+			class={enrollments.length > 0 && warm && !query.isPending
+				? 'inquiry-automation__feature'
+				: ''}
 		>
 			{#if !warm || query.isPending}
 				<LoadingSkeleton variant="table" rows={2} label="Loading automatic follow-up" />

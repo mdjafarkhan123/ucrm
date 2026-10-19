@@ -213,7 +213,7 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<RailCard title="Deal" icon={briefcaseIcon} class="deal-panel">
+<RailCard tone="inactive" title="Deal" icon={briefcaseIcon} class="deal-panel">
 	{#if open}
 		<div class="deal-panel__stage">
 			<Badge status="informative" dot={false}>{DEAL_STAGE_LABELS[open.stage]}</Badge>

@@ -168,7 +168,7 @@
 		{/snippet}
 	</RailRow>
 {:else}
-	<RailCard title="Discount" icon={discountIcon}>
+	<RailCard tone="invoice" title="Discount" icon={discountIcon}>
 		{#snippet actions()}
 			{#if editable && canSeePrice && configured}
 				<Button variant="tertiary" size="small" onclick={openDialog}>Edit</Button>

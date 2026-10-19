@@ -134,6 +134,7 @@
 </script>
 
 <SectionBlock
+	tone="inactive"
 	title="Migration check"
 	icon={arrowsExchangeIcon}
 	hint="Take an inventory before and after moving a business, compare them, and switch back if anything is missing. Nothing here deletes a record."

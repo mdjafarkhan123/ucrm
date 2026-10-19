@@ -16,7 +16,7 @@
 	} = $props();
 </script>
 
-<SectionBlock {title}>
+<SectionBlock tone="inactive" {title}>
 	<ul class="status-overview__list">
 		{#each rows as row (row.label)}
 			<li class={`status-overview__row status-overview__row--${row.tone}`}>

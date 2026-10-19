@@ -96,6 +96,7 @@
 	/>
 {:else if checklist}
 	<SectionBlock
+		tone="inactive"
 		title="Launch checks"
 		icon={listCheckIcon}
 		hint="Test each line on preview version {checklist.version} before asking for launch approval. A line waiting on an outside company is named to the approver, never ticked."

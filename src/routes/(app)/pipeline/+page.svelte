@@ -551,7 +551,7 @@
 				     wrapping its own columns onto a second row -- Requests and Quotes keep a useful fixed column
 				     width and the board grows sideways instead of compressing five (or seven) columns to fit. -->
 					<div class="pipeline__board" bind:this={boardViewport} onscroll={handleBoardScroll}>
-						<SectionBlock title="Requests" icon={inboxIcon} class="pipeline__group">
+						<SectionBlock tone="growth" title="Requests" icon={inboxIcon} class="pipeline__group">
 							{#snippet actions()}
 								<span class="pipeline__total">
 									{requestsTotal ?? '—'}
@@ -583,7 +583,12 @@
 
 						<!-- The subtle boundary the contract calls for: two bordered, titled groups sitting side by
 					     side already read as separate journeys without a second decorative element. -->
-						<SectionBlock title="Quotes" icon={fileInvoiceIcon} class="pipeline__group">
+						<SectionBlock
+							tone="growth"
+							title="Quotes"
+							icon={fileInvoiceIcon}
+							class="pipeline__group"
+						>
 							{#snippet actions()}
 								<span class="pipeline__total">
 									{quotesTotal ?? '—'}

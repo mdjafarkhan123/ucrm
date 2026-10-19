@@ -48,6 +48,7 @@
 >
 	<div class="security-page">
 		<SectionBlock
+			tone="inactive"
 			title="Change password"
 			icon={keyIcon}
 			hint="Confirm your current password, then choose a new one."

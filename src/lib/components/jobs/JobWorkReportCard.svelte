@@ -108,7 +108,7 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<RailCard title="Work report" description="What the customer sees" icon={fileReportIcon}>
+<RailCard tone="job" title="Work report" description="What the customer sees" icon={fileReportIcon}>
 	{#snippet actions()}
 		{#if !stateQuery.isPending && !stateQuery.isError && hasContent}
 			<Badge size="small" status="success">Ready to share</Badge>

@@ -113,7 +113,7 @@
 {#if query.isPending}
 	<LoadingSkeleton variant="card" label="Loading your launch approval" />
 {:else if request?.status === 'approved' && request.approved_at}
-	<SectionBlock id="approval" title="Approved for launch" icon={circleCheckIcon}>
+	<SectionBlock tone="inactive" id="approval" title="Approved for launch" icon={circleCheckIcon}>
 		<div class="launch-approval launch-approval--done">
 			<p class="launch-approval__lead">
 				<strong>{request.approved_by_name}</strong> approved preview version {request.version} on
@@ -130,6 +130,7 @@
 	</SectionBlock>
 {:else if request?.status === 'open'}
 	<SectionBlock
+		tone="inactive"
 		id="approval"
 		title="Approve your launch"
 		icon={rocketIcon}

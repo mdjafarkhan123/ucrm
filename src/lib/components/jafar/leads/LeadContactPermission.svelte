@@ -62,7 +62,7 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<RailCard title="Who may contact them" icon={shieldCheckIcon}>
+<RailCard tone="inactive" title="Who may contact them" icon={shieldCheckIcon}>
 	{#if details.do_not_contact}
 		<div class="permission permission--blocked">
 			<span class="permission__icon" aria-hidden="true">{@html bellOffIcon}</span>

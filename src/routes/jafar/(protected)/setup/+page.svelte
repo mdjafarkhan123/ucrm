@@ -249,7 +249,7 @@
 		/>
 	{:else if editor}
 		{#snippet rail()}
-			<RailCard title="Status">
+			<RailCard tone="inactive" title="Status">
 				<dl class="setup-editor__status">
 					<div>
 						<dt>New clients get</dt>
@@ -287,7 +287,7 @@
 			</RailCard>
 
 			{#if editor.draft}
-				<RailCard title="Publish">
+				<RailCard tone="inactive" title="Publish">
 					<p class="setup-editor__muted">
 						{#if dirty}
 							Save your changes first. Publishing uses the saved draft, exactly as saved.
@@ -310,7 +310,7 @@
 			{/if}
 
 			{#if editor.history.length}
-				<RailCard title="History">
+				<RailCard tone="inactive" title="History">
 					<ol class="setup-editor__history">
 						{#each editor.history as version (version.version_number)}
 							<li>
@@ -331,7 +331,7 @@
 			{/if}
 
 			{#if editor.draft}
-				<RailCard title="Discard draft">
+				<RailCard tone="inactive" title="Discard draft">
 					<p class="setup-editor__muted">
 						Throw away this draft. Clients keep the published setup.
 					</p>
@@ -364,7 +364,7 @@
 							>
 						</div>
 					</div>
-					<SectionBlock title="Stages clients see">
+					<SectionBlock tone="inactive" title="Stages clients see">
 						<SetupStageList stages={publishedStages} services={editor.services} canEdit={false} />
 					</SectionBlock>
 				{/snippet}

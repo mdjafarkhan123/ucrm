@@ -146,7 +146,7 @@
 		retry={() => Promise.all([previews.refetch(), approvals.refetch()])}
 	/>
 {:else if newest || current}
-	<SectionBlock title="Launch approval" icon={rocketIcon}>
+	<SectionBlock tone="inactive" title="Launch approval" icon={rocketIcon}>
 		<div class="launch-panel">
 			{#if notice}<Banner type="success">{notice}</Banner>{/if}
 			{#if error}<Banner type="error">{error}</Banner>{/if}

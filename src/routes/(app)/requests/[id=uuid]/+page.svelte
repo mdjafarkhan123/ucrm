@@ -503,6 +503,7 @@
 				</WorkRecordHeader>
 
 				<SectionBlock
+					tone="request"
 					title="Service overview"
 					icon={clipboardIcon}
 					level={2}
@@ -565,7 +566,7 @@
 
 			{#snippet rail()}
 				{#if showHistory}
-					<RailCard title="Request history" icon={clockIcon}>
+					<RailCard tone="request" title="Request history" icon={clockIcon}>
 						{#snippet actions()}
 							<Button size="small" variant="tertiary" onclick={() => (showHistory = false)}>
 								Close
@@ -579,6 +580,7 @@
 					{/if}
 
 					<RailCard
+						tone="conversation"
 						title="Notes"
 						icon={notesIcon}
 						count={notesQuery.data?.length}

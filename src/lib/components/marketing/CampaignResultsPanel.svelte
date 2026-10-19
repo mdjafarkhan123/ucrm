@@ -149,6 +149,7 @@
 		</div>
 
 		<SectionBlock
+			tone="growth"
 			title="What followed"
 			hint="Matched {results.matched_count} · eligible {results.eligible_count} · submitted {results.submitted_count} · delivered {results.delivered_count} · bounced {results.bounced_count} · complained {results.complained_count}."
 		>
@@ -181,6 +182,7 @@
 		</SectionBlock>
 
 		<SectionBlock
+			tone="growth"
 			title="Possible matches"
 			hint="Customers this campaign delivered to who created a Request, or booked a Job with no Request, within 30 days -- not yet credited to any campaign."
 		>

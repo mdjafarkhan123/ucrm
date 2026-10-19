@@ -19,13 +19,19 @@
 <style lang="scss">
 	.page-container {
 		width: 100%;
+		max-width: 1280px;
+		margin-inline: auto;
 		background-color: var(--color-surface);
 		padding: var(--space-large);
-		border-radius: var(--radius-base);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-large);
 
 		/* `open` lets the page sit straight on the app background — no white sheet, no padding — for screens
 		   built from their own cards, like Jobs. */
 		&--open {
+			max-width: 1280px;
+			margin-inline: auto;
+			border: 0;
 			padding: 0;
 			border-radius: 0;
 			background-color: transparent;
@@ -40,7 +46,7 @@
 		}
 		&--two-panel {
 			display: grid;
-			grid-template-columns: minmax(0, 1.35fr) minmax(320px, 1fr);
+			grid-template-columns: minmax(0, 1fr) 360px;
 			align-items: start;
 			gap: var(--space-large);
 		}

@@ -85,7 +85,7 @@
 </script>
 
 {#if billable.length > 0}
-	<RailCard title="Visits ready to bill" count={billable.length}>
+	<RailCard tone="job" title="Visits ready to bill" count={billable.length}>
 		<ul class="visits-to-bill">
 			{#each billable as visit (visit.id)}
 				<li class="visits-to-bill__item">

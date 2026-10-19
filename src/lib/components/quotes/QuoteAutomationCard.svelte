@@ -190,7 +190,13 @@
 
 {#if !accessDenied}
 	<div role="presentation" onmouseenter={() => (warm = true)} onfocusin={() => (warm = true)}>
-		<RailCard title="Automation" description="Follow-ups sent for you" icon={robotIcon} flush>
+		<RailCard
+			tone="quote"
+			title="Automation"
+			description="Follow-ups sent for you"
+			icon={robotIcon}
+			flush
+		>
 			{#snippet actions()}
 				{#if canControl && (data?.enrollable_recipes.length ?? 0) > 0}
 					<Button

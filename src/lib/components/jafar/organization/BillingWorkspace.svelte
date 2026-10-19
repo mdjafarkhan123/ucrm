@@ -452,6 +452,7 @@
 			/>
 
 			<SectionBlock
+				tone="inactive"
 				title="Free access"
 				icon={giftIcon}
 				hint="Covered days without payment, always with an end date. While free access covers today, the organization is never paused for payment."
@@ -510,6 +511,7 @@
 			</SectionBlock>
 
 			<SectionBlock
+				tone="inactive"
 				title="Charges"
 				icon={receiptIcon}
 				hint="What is owed for each service period. Paid-through moves only when you confirm a paid charge's dates."
@@ -621,6 +623,7 @@
 			</SectionBlock>
 
 			<SectionBlock
+				tone="inactive"
 				title="Payments"
 				icon={cashIcon}
 				hint="Money you confirmed arrived offsite. Money not applied to a charge stays as credit."
@@ -727,6 +730,7 @@
 
 			{#if billing.credit_notes.length}
 				<SectionBlock
+					tone="inactive"
 					title="Change credit"
 					icon={walletIcon}
 					hint="Unused paid days returned when the package changed. Credit, not money received: use it on a charge; it cannot be refunded."

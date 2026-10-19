@@ -653,7 +653,7 @@
 			margin: 0 20px 14px;
 		}
 		.record-files__empty {
-			margin: 0 20px 18px;
+			margin: var(--space-base) var(--space-base);
 		}
 		.record-files__photos {
 			grid-template-columns: repeat(3, minmax(0, 1fr));

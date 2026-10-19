@@ -207,7 +207,7 @@
 					/>
 				</div>
 
-				<SectionBlock title="Details">
+				<SectionBlock tone="growth" title="Details">
 					<dl class="campaign-detail__facts">
 						<div>
 							<dt>Customer group</dt>
