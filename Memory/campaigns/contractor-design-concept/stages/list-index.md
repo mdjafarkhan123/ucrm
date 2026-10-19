@@ -20,6 +20,12 @@ app is on a list file below, most necessary first. Each piece carries a Pencil t
 **Tick rule:** every part that draws or builds a piece updates its tick in the same commit. Built ✅ comes with the
 Pencil tidy-up in `docs/pencil-workflow.md` step 6.
 
+**Built means the whole piece.** A piece is Built ✅ only when everything listed in its row and "Inside it"
+cell uses the concept parts (design skill `modals.md`, `page-states.md`):
+- each pop-up's actions sit in the pop-up's shared footer bar, not in its body;
+- each pop-up has a tile in the colour of the record or part of the app it is about;
+- each empty state carries its page's or card's colour, not the default.
+
 ## List files
 
 Counts are rows and ✅ ticks only (🔁 and 🟡 are not counted).
