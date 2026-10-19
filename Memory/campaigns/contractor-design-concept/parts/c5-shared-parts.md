@@ -13,6 +13,7 @@
 | 3 Fields | Input, Select, Textarea, Badge, SearchInput | Approved `khuNF`, including added interaction states; built and checked 2026-10-19 |
 | 4 Page parts | PageContainer, SectionBlock, RailCard, Breadcrumbs, Banner | Approved `j3jDI` 2026-10-19 (breadcrumb option C); for Codex to build |
 | 5 Pickers | CalendarPicker, TimePickerField, TimePicker, DateTimePicker, TimezonePicker, CountryPicker | Approved `uSXlT` "Pickers v2" 2026-10-19 (old `J3g7hi` deleted); for Codex to build |
+| 6a Small controls | Avatar, Toggle, RadioGroup, Tabs | Drawn 2026-10-19 on `GbgcY` "Small controls", A (improved live) and B (new) per part plus dark mode; waiting for Jafar to pick |
 
 ## Batch 5 redraw decisions (Jafar, 2026-10-19)
 
