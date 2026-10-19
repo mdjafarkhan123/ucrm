@@ -21,7 +21,7 @@ times show their length from the start ("2 hr after start" chip). Declined: curr
 rows; a 15-minute time list (Jafar: the live hour / minute-in-5s / AM-PM picker is more flexible — keep it,
 improved look; Jafar picked the "indigo dial": hour : minute columns fading from a soft `color-time-surface` band, AM/PM segmented switch, green only on Done; A/C options deleted). Rule: per part, a new look or an improved live look, never a copy (design skill pref 9). Look: indigo
 `color-time` tile at the front of date/time/time-zone boxes, weekday beside the date, raised green picked day,
-today = green date + dot, round flags, grey code/offset pills, typed letters in green.
+today = bold date + green dot, slim quick-date pills (Jafar compared indigo and chose brand green for the picked day), round flags, grey code/offset pills, typed letters in green.
 
 ## Approved reference and proof
 
