@@ -7,12 +7,12 @@ Key, tick rule and coverage command: `list-index.md`.
 | Piece | Inside it | Pencil | Built |
 | --- | --- | --- | --- |
 | `ui/Button` |  | ✅ | ✅ |
-| `data-display/LoadingSkeleton` |  | ⬜ | ⬜ |
-| `data-display/ErrorState` |  | ⬜ | ⬜ |
+| `data-display/LoadingSkeleton` |  | 🟡 Pop-ups board `v2Y89` | ⬜ |
+| `data-display/ErrorState` |  | 🟡 Pop-ups board `v2Y89` | ⬜ |
 | `ui/Input` |  | ✅ | ⬜ |
 | `ui/Select` |  | ✅ | ⬜ |
 | `ui/Checkbox` |  | ✅ | ✅ |
-| `data-display/EmptyState` |  | ⬜ | ⬜ |
+| `data-display/EmptyState` |  | 🟡 Pop-ups board `v2Y89` | ⬜ |
 | `layout/SectionBlock` |  | ⬜ | ⬜ |
 | `layout/PageContainer` |  | ⬜ | ⬜ |
 | `layout/PageHeader` |  | ✅ | ✅ |

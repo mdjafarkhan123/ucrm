@@ -10,7 +10,7 @@ screens reuse them.
 | Batch | Parts | State |
 | --- | --- | --- |
 | 1 Pop-ups | `ui/Dialog` (form pop-up), `ui/ConfirmDialog` ("are you sure?"), `layout/SidePanel` (side drawer) | Drawn 2026-10-19 on `concept.pen` board "Concept · Foundation · Pop-ups · 1440" (`v2Y89`); **approved by Jafar 2026-10-19**; build next |
-| 2 Page states | `data-display/LoadingSkeleton`, `EmptyState`, `ErrorState` | Not started |
+| 2 Page states | `data-display/LoadingSkeleton`, `EmptyState`, `ErrorState` | Drawn 2026-10-19, section "Loading, empty and couldn't load" on `v2Y89`; waits for Jafar |
 | 3 Fields in code | `ui/Input`, `ui/Select`, `ui/Textarea`, `ui/Badge` (drawn ✅, not built), `ui/SearchInput` | Not started |
 | Then | the remaining `list-1a-parts.md` rows in order | — |
 
@@ -28,6 +28,12 @@ screens reuse them.
 **Behaviour kept:** live props only (title, icon, tone, loading, cancel-less notice, subtitle, footer). The
 hint line under a form pop-up's title is optional. Example wording is illustrative.
 
+## Batch 2 — what the board shows
+
+A Clients card in three states. Loading: row-shaped grey shapes (`--color-border`). Empty: 40 tile in the
+page's colour, title 20/600, one line, the one main action. Couldn't load: red tile, live wording, Try again
+(secondary, refresh icon). An empty section inside a card keeps the approved one quiet line.
+
 ## Next
 
-Draw batch 2 (page states) on the same board, show Jafar; then build batches 1 and 2 in their shared components.
+Jafar approves batch 2; then build batches 1 and 2 in their shared components.
