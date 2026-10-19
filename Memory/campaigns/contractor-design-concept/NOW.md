@@ -6,7 +6,7 @@
 
 **Next:**
 1. **Shared parts first** (Jafar 2026-10-19): `parts/c5-shared-parts.md`. Pop-ups and page states built
-   2026-10-19; batch 3 fields approved; building next.
+   2026-10-19; batch 3 fields built and checked in the live app 2026-10-19. Continue remaining shared parts in `stages/list-1a-parts.md`.
 2. Then draw Schedule (`stages/list-2a-daily.md`).
 3. Jafar reads the redesign checklist (`stages/list-index.md`) and confirms the order and pop-up marks: `parts/c5a-redesign-checklist.md`.
 

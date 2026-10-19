@@ -1,29 +1,23 @@
-# Fields — interaction-state follow-up
+# Fields — approved and built
 
-**Stage:** Approved 2026-10-19; implementation ready for browser proof (2026-10-19).
-**Owner:** codex-fields-followup; reservation `8bdf23eb565a`. Jafar confirmed the previous session finished and authorized takeover.
-**Workspace:** `.worktrees/concept-fields`, branch `codex/concept-fields`.
+**Stage:** Integrated on main, 2026-10-19. Jafar approved Fields board `khuNF` and the added interaction states.
+**Implementation:** `src/lib/components/ui/{Input,Select,Textarea,SearchInput,Badge}.svelte`.
 
-## Drawn
+## Delivered
 
-In the open `/home/jafar/Ucrm/concept.pen`, Fields board `khuNF`:
-- Dropdown hover, error with corrective message, and pressed closed control: row `eewJk`.
-- Pressed dropdown option and interaction note: `RAYA6`.
-- Textarea hover: row `jEmvT`.
-- Search hover and clear-button hover/pressed: row `q95AIq`.
+Labels above text boxes and dropdowns; 40px base and 36px small inputs; hover/focus/error/disabled states. Textareas use the approved count wording and error icon. Dropdown menus retain Bits UI interaction, show chosen ticks, wrap long choices, and support corrective errors. Search has clear hover/pressed feedback, respects disabled state, and restores focus after clearing. Badges use roomier pill sizes, 6px dots, and status/record tones.
 
-Correction to the initial audit: dropdown hover and unavailable options already existed (`nyqKr`, `fh31i`); preserved them. Text controls retain typing focus while held; status pills are noninteractive labels.
+Preserved component bindings, callbacks, existing native validation behavior, and Select props. New optional Select invalid/errorMessage and Badge record tones implement the approved presentation. Shared parts apply wherever these components are used; separate controls (CountryPicker, MoneyInput, StatusBadge, etc.) remain on the checklist.
 
-## Evidence and remaining work
+## Evidence
 
-Pencil screenshots checked for Dropdown, Big text box and Search sections and each added row. Structural inspection found no clipping except existing focus-ring rectangles extending intentionally outside their own field containers. No app code changed; no lengthy checks run.
+- Focused ESLint on the five changed components: pass.
+- Svelte preprocessing and client compilation on all five: zero warnings. Svelte MCP autofixer: zero issues; retained SearchInput element binding because clear returns focus to that input (advisory attachment suggestion only).
+- Live owner journey on `/clients/new`: typed names, changed communication setting by keyboard, typed notes; counter changed from 500 to 478 left. Checked light and dark; cancelled without saving a client.
+- Live `/clients`: searched Sarah, saw No matching clients, cleared search and saw the list return.
+- Temporary browser proof using actual components: errors linked with aria-describedby; disabled fields and search clear disabled; selected dropdown option; cleared search and confirmed input focus. Light/dark screenshots and narrow layout inspection. Proof route removed after checks.
+- Local screenshots: `tmp/field-proof/fields-light.jpg`, `fields-dark.jpg`, `fields-narrow.jpg`, `clients-search-dark.jpg`.
 
-**Save confirmed:** Jafar saved the canvas; source timestamp advanced to 2026-10-19 06:31:52 +0600, size 2,006,115 bytes. Copied the saved canvas into this worktree for backup.
+No full-project typecheck, build, or test suite run, per Jafar's campaign instruction. No server write path changed. Page-specific layouts and controls outside this batch keep their existing appearance until their own redesign.
 
-**Approval:** Jafar approved the added interaction states on 2026-10-19 (“approved..”). Applies to dropdown hover/error/pressed, pressed option, textarea hover, search hover and clear hover/pressed on board `khuNF`. Updated `inputs.md` to match.
-
-**Next:** Integrate this branch with current main, preserving newer pop-up/page-state progress. Then build the approved batch 3 shared fields and verify the changed controls in light and dark. Drawings backed up in `db967eae`; no application code changed in this follow-up.
-
-## Build slice
-
-Input, Select, Textarea, SearchInput and Badge updated in shared components. Preserved binding and Bits UI keyboard/focus behavior. Existing props retained; Select adds invalid/errorMessage for approved error presentation, Badge supports record tones. Focused ESLint and preprocessed Svelte autofixer pass (SearchInput retains a direct element reference to restore focus after clear). No broad typecheck/build run. Next: merge and live light/dark screen check, then update checklist.
+**Next:** remaining shared parts in `stages/list-1a-parts.md`, then Schedule. This batch is complete.

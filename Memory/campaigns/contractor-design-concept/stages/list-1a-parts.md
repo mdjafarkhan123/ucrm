@@ -9,17 +9,17 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/Button` |  | ✅ | ✅ |
 | `data-display/LoadingSkeleton` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `data-display/ErrorState` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
-| `ui/Input` |  | ✅ | ⬜ |
-| `ui/Select` |  | ✅ | ⬜ |
+| `ui/Input` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
+| `ui/Select` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
 | `ui/Checkbox` |  | ✅ | ✅ |
 | `data-display/EmptyState` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `layout/SectionBlock` |  | ⬜ | ⬜ |
 | `layout/PageContainer` |  | ⬜ | ⬜ |
 | `layout/PageHeader` |  | ✅ | ✅ |
-| `ui/Badge` |  | ✅ | ⬜ |
+| `ui/Badge` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
 | `ui/Dialog` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
-| `ui/Textarea` |  | ✅ | ⬜ |
-| `ui/SearchInput` |  | ⬜ | ⬜ |
+| `ui/Textarea` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
+| `ui/SearchInput` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
 | `ui/DropdownMenu` |  | ✅ | ✅ |
 | `layout/Breadcrumbs` |  | ⬜ | ⬜ |
 | `ui/ConfirmDialog` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |

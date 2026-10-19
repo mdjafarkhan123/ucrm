@@ -11,7 +11,7 @@ screens reuse them.
 | --- | --- | --- |
 | 1 Pop-ups | `ui/Dialog` (form pop-up), `ui/ConfirmDialog` ("are you sure?"), `layout/SidePanel` (side drawer) | Approved 2026-10-19 (`v2Y89`); **built 2026-10-19** |
 | 2 Page states | `data-display/LoadingSkeleton`, `EmptyState`, `ErrorState` | Approved 2026-10-19 (`v2Y89`); **built 2026-10-19** |
-| 3 Fields in code | `ui/Input`, `ui/Select`, `ui/Textarea`, `ui/Badge` (drawn ✅, not built), `ui/SearchInput` | Approved 2026-10-19 on Fields board `khuNF`; building |
+| 3 Fields in code | `ui/Input`, `ui/Select`, `ui/Textarea`, `ui/Badge` (drawn ✅, not built), `ui/SearchInput` | Approved on Fields board `khuNF`; built and browser-checked 2026-10-19 |
 | Then | the remaining `list-1a-parts.md` rows in order | — |
 
 ## Batch 1 — what the board shows
@@ -48,7 +48,7 @@ screen sets its own colour (`tone`). Each screen's redesign fixes its own: the "
 
 ## Next
 
-Batch 3 (fields in code), then Schedule.
+Continue remaining shared parts in `stages/list-1a-parts.md`, then Schedule.
 
 ## Batch 3 — what the board shows (`khuNF`, approved 2026-10-19)
 
@@ -67,4 +67,4 @@ in light and dark.
 "12 too many" instead of a bare number. Live behaviour only; nothing new added. Rules written into `inputs.md` and `badges.md`.
 
 
-**Follow-up states:** approved 2026-10-19; see `c5-fields-followup.md`. Build batch 3 next.
+**Follow-up states:** approved and built 2026-10-19; proof and limits in `c5-fields-followup.md`.
