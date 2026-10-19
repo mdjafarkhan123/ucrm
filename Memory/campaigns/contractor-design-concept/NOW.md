@@ -2,7 +2,7 @@
 
 - **Goal:** A new design concept for the whole app, drawn in `concept.pen` from the app's own variables: design → review → approve → build.
 - **Core agreement:** `docs/contractor-design-concept-behavior-contract.md`. 
-- **Must read the design preference before designing in pencil app:** `.claude/skills/design/SKILL.md` with its modules.
+- **Must read the design preference before designing in pencil app:** `.claude/skills/design` 
 - **Stage:** Building, screen by screen (Jafar 2026-10-18). Approved: C1 Foundation, C2 Home, C3 Jobs list, C4 Job details, C5 New job. Built: buttons, Jobs list, Home, Job details and its edit mode, New job 2026-10-19 (leftovers in `parts/c7-build-pilots.md`).
 
 **Next:**

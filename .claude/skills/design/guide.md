@@ -1,10 +1,10 @@
 
 # Jafar's Design Preferences
 
-## Before starting design in pencil choose any 1 option from below wisely and then create at least 2 variant in pencil app of each
+## Before starting design in pencil choose any 1 option from below after seeign apps current desing and then create at least 2 variant in pencil app of each
 
-1. New Design: If you think a complete redesign would look better than the current one.
-2. Refine Existing Design: If you think the current look is good, but just needs a few tweaks or customizations.
+1. New Design: If you think a complete redesign from scratch with/witout new concept would look better.
+2. Refine Existing Design: If you think the current look is good, but need tweaks or customizations.
 
 ## Design prefernces
 1. **Premium & modern.** It looks like the work of a top Dribbble product designer: polished, never plain.

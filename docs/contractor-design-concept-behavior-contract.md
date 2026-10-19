@@ -48,26 +48,17 @@ staff open the app between jobs and want to see what needs them right now, in a 
 
 ## Experience target
 
-The target is "Jafar's Design Preferences" in the [design skill](../.claude/skills/design/SKILL.md). Must read before you start designing in pencil.
+The target is "Jafar's Design Preferences" in the [design skill](../.claude/skills/design). Must read before you start designing in pencil.
 
 ## Not doing
 
-- Copying any product's design.
 - Phone layouts (the native apps come later).
 - Building a screen before Jafar approves its Pencil design.
 - New data or behaviour built silently: a design that needs it lists it for Jafar's decision first.
 
-## Earlier work (Phase A, before 2026-10-17)
-
-The first plan finished today's "App look" before starting a concept. Built and on main: shell, Jobs, Clients,
-Requests, Quotes and Invoices lists, the six record pages, Home, Inbox, 25 Settings pages, and Schedule. Stopped
-on 2026-10-17: drawing the undesigned screens (Timesheets, Pipeline, Files, Marketing, Reviews, Reports) in the
-App look, and a separate old-code cleanup. Both now happen inside the concept. `classic.pen` keeps the App-look
-designs as the record of the live app.
 
 ## Still unclear
 
 - Whether money cards stay light in dark mode (Jafar's App-look decision of 2026-10-16) in the concept.
 - The "Changes requested" colour on Quotes.
 
-## Sources and design decisions
