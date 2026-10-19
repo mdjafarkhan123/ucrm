@@ -54902,11 +54902,11 @@
                               "type": "text",
                               "id": "WpA2K",
                               "name": "Weekday",
-                              "fill": "$color-text-secondary",
+                              "fill": "$color-text",
                               "content": "MON",
                               "fontFamily": "$font-family",
-                              "fontSize": 11,
-                              "fontWeight": "600",
+                              "fontSize": 12,
+                              "fontWeight": "700",
                               "letterSpacing": 0.6
                             }
                           ]
@@ -54931,11 +54931,11 @@
                               "type": "text",
                               "id": "Bh3yo",
                               "name": "Weekday",
-                              "fill": "$color-text-secondary",
+                              "fill": "$color-text",
                               "content": "TUE",
                               "fontFamily": "$font-family",
-                              "fontSize": 11,
-                              "fontWeight": "600",
+                              "fontSize": 12,
+                              "fontWeight": "700",
                               "letterSpacing": 0.6
                             }
                           ]
@@ -54963,9 +54963,20 @@
                               "fill": "$color-interactive",
                               "content": "WED",
                               "fontFamily": "$font-family",
-                              "fontSize": 11,
-                              "fontWeight": "600",
+                              "fontSize": 12,
+                              "fontWeight": "700",
                               "letterSpacing": 0.6
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "e1ChiN",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": 33,
+                              "name": "Today mark",
+                              "fill": "$color-interactive",
+                              "width": 159,
+                              "height": 3
                             }
                           ]
                         },
@@ -54989,11 +55000,11 @@
                               "type": "text",
                               "id": "qEojy",
                               "name": "Weekday",
-                              "fill": "$color-text-secondary",
+                              "fill": "$color-text",
                               "content": "THU",
                               "fontFamily": "$font-family",
-                              "fontSize": 11,
-                              "fontWeight": "600",
+                              "fontSize": 12,
+                              "fontWeight": "700",
                               "letterSpacing": 0.6
                             }
                           ]
@@ -55018,11 +55029,11 @@
                               "type": "text",
                               "id": "t9YWu",
                               "name": "Weekday",
-                              "fill": "$color-text-secondary",
+                              "fill": "$color-text",
                               "content": "FRI",
                               "fontFamily": "$font-family",
-                              "fontSize": 11,
-                              "fontWeight": "600",
+                              "fontSize": 12,
+                              "fontWeight": "700",
                               "letterSpacing": 0.6
                             }
                           ]
@@ -55047,11 +55058,11 @@
                               "type": "text",
                               "id": "aZ9yU",
                               "name": "Weekday",
-                              "fill": "$color-text-secondary",
+                              "fill": "$color-text",
                               "content": "SAT",
                               "fontFamily": "$font-family",
-                              "fontSize": 11,
-                              "fontWeight": "600",
+                              "fontSize": 12,
+                              "fontWeight": "700",
                               "letterSpacing": 0.6
                             }
                           ]
@@ -55076,11 +55087,11 @@
                               "type": "text",
                               "id": "F8B05",
                               "name": "Weekday",
-                              "fill": "$color-text-secondary",
+                              "fill": "$color-text",
                               "content": "SUN",
                               "fontFamily": "$font-family",
-                              "fontSize": 11,
-                              "fontWeight": "600",
+                              "fontSize": 12,
+                              "fontWeight": "700",
                               "letterSpacing": 0.6
                             }
                           ]
@@ -60359,235 +60370,143 @@
                               "type": "frame",
                               "id": "l4WcR5",
                               "name": "Day · 21",
-                              "clip": true,
                               "width": "fill_container",
                               "height": "fill_container",
-                              "fill": "$color-surface-background-subtle",
+                              "fill": "#FFFFFF00",
                               "stroke": "$color-border",
                               "strokeWidth": {
                                 "left": 1
                               },
+                              "strokeAlignment": "inner",
                               "layout": "vertical",
                               "gap": 4,
-                              "padding": 8,
+                              "padding": 4,
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "oyWm3",
-                                  "name": "Date row",
+                                  "id": "E0ef8",
+                                  "name": "Today tile",
                                   "width": "fill_container",
-                                  "height": 24,
-                                  "gap": 6,
-                                  "alignItems": "center",
-                                  "children": [
+                                  "height": "fill_container",
+                                  "fill": "$color-surface",
+                                  "cornerRadius": 10,
+                                  "stroke": "$color-interactive",
+                                  "strokeWidth": 1,
+                                  "effect": [
                                     {
-                                      "type": "frame",
-                                      "id": "FvVb1",
-                                      "name": "Today number",
-                                      "width": 24,
-                                      "height": 24,
-                                      "fill": "$color-interactive",
-                                      "cornerRadius": "$radius-circle",
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "text",
-                                          "id": "qRUsv",
-                                          "name": "Number",
-                                          "fill": "$color-surface",
-                                          "content": "21",
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 12,
-                                          "fontWeight": "700"
-                                        }
-                                      ]
+                                      "type": "shadow",
+                                      "shadowType": "outer",
+                                      "color": "#03774124",
+                                      "offset": {
+                                        "x": 0,
+                                        "y": 6
+                                      },
+                                      "blur": 16
                                     },
                                     {
-                                      "type": "frame",
-                                      "id": "MLG8s",
-                                      "name": "Spacer",
-                                      "width": "fill_container",
-                                      "height": 1
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "N50cJp",
-                                      "name": "Count",
-                                      "fill": "$color-text-secondary",
-                                      "content": "5 items",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 11,
-                                      "fontWeight": "500"
+                                      "type": "shadow",
+                                      "shadowType": "outer",
+                                      "color": "#1f2a2414",
+                                      "offset": {
+                                        "x": 0,
+                                        "y": 1
+                                      },
+                                      "blur": 2
                                     }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "i9WaT7",
-                                  "name": "Attention row",
-                                  "width": "fill_container",
-                                  "gap": 4,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "kdl8r",
-                                      "name": "Attention",
-                                      "fill": "$color-warning-surface",
-                                      "cornerRadius": "$radius-circle",
-                                      "gap": 4,
-                                      "padding": [
-                                        2,
-                                        7
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "ellipse",
-                                          "id": "b7qts8",
-                                          "name": "Dot",
-                                          "fill": "$color-warning",
-                                          "width": 5,
-                                          "height": 5
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "li7iK",
-                                          "name": "Text",
-                                          "fill": "$color-warning-on-surface",
-                                          "content": "1 unassigned",
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 11,
-                                          "fontWeight": "600"
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "FVhOB",
-                                  "name": "Items",
-                                  "width": "fill_container",
+                                  ],
                                   "layout": "vertical",
-                                  "gap": 3,
+                                  "gap": 4,
+                                  "padding": 4,
                                   "children": [
                                     {
                                       "type": "frame",
-                                      "id": "RxIFu",
-                                      "name": "Item · Drop off keys",
-                                      "clip": true,
+                                      "id": "oyWm3",
+                                      "name": "Date row",
                                       "width": "fill_container",
-                                      "height": 22,
-                                      "fill": "$color-task-surface",
-                                      "cornerRadius": 6,
-                                      "gap": 5,
-                                      "padding": [
-                                        0,
-                                        6
-                                      ],
+                                      "height": 24,
+                                      "gap": 6,
                                       "alignItems": "center",
                                       "children": [
                                         {
-                                          "type": "icon",
-                                          "id": "nPFDe",
-                                          "name": "Type icon",
-                                          "width": 12,
-                                          "height": 12,
-                                          "icon": "square-check",
-                                          "library": "lucide",
-                                          "fill": "$color-task"
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "N1uI6E",
-                                          "name": "Title",
-                                          "fill": "$color-heading",
-                                          "content": "Drop off keys",
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 11,
-                                          "fontWeight": "600"
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "vxg3I",
-                                      "name": "Item · Dan Wu",
-                                      "clip": true,
-                                      "width": "fill_container",
-                                      "height": 22,
-                                      "fill": "$color-surface-active",
-                                      "cornerRadius": 6,
-                                      "stroke": "$color-border-interactive",
-                                      "strokeWidth": 1,
-                                      "gap": 5,
-                                      "padding": [
-                                        0,
-                                        6
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "icon",
-                                          "id": "bUAHo",
-                                          "name": "Type icon",
-                                          "width": 12,
-                                          "height": 12,
-                                          "icon": "hammer",
-                                          "library": "lucide",
-                                          "fill": "$color-icon-secondary"
+                                          "type": "frame",
+                                          "id": "FvVb1",
+                                          "name": "Today number",
+                                          "width": 24,
+                                          "height": 24,
+                                          "fill": "$color-interactive",
+                                          "cornerRadius": "$radius-circle",
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "qRUsv",
+                                              "name": "Number",
+                                              "fill": "$color-surface",
+                                              "content": "21",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "T0Dow",
-                                          "name": "Strike wrap",
-                                          "layout": "vertical",
-                                          "gap": -7,
+                                          "id": "MLG8s",
+                                          "name": "Spacer",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "N50cJp",
+                                          "name": "Count",
+                                          "fill": "$color-text-secondary",
+                                          "content": "5 items",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 11,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "i9WaT7",
+                                      "name": "Attention row",
+                                      "width": "fill_container",
+                                      "gap": 4,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "kdl8r",
+                                          "name": "Attention",
+                                          "fill": "$color-warning-surface",
+                                          "cornerRadius": "$radius-circle",
+                                          "gap": 4,
                                           "padding": [
-                                            0,
-                                            0,
-                                            6,
-                                            0
+                                            2,
+                                            7
                                           ],
+                                          "alignItems": "center",
                                           "children": [
                                             {
-                                              "type": "frame",
-                                              "id": "Z3lKJ",
-                                              "name": "Text",
-                                              "gap": 5,
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "N2qoh",
-                                                  "name": "Time",
-                                                  "fill": "$color-text-secondary",
-                                                  "content": "8 AM",
-                                                  "fontFamily": "$font-family",
-                                                  "fontSize": 11,
-                                                  "fontWeight": "600"
-                                                },
-                                                {
-                                                  "type": "text",
-                                                  "id": "YCroK",
-                                                  "name": "Title",
-                                                  "fill": "$color-text-secondary",
-                                                  "content": "Dan Wu",
-                                                  "fontFamily": "$font-family",
-                                                  "fontSize": 11,
-                                                  "fontWeight": "600"
-                                                }
-                                              ]
+                                              "type": "ellipse",
+                                              "id": "b7qts8",
+                                              "name": "Dot",
+                                              "fill": "$color-warning",
+                                              "width": 5,
+                                              "height": 5
                                             },
                                             {
-                                              "type": "rectangle",
-                                              "id": "LmmfF",
-                                              "name": "Strike",
-                                              "fill": "$color-text-secondary",
-                                              "width": 75,
-                                              "height": 1
+                                              "type": "text",
+                                              "id": "li7iK",
+                                              "name": "Text",
+                                              "fill": "$color-warning-on-surface",
+                                              "content": "1 unassigned",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 11,
+                                              "fontWeight": "600"
                                             }
                                           ]
                                         }
@@ -60595,63 +60514,193 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "DRxm8",
-                                      "name": "Item · Tom Baker",
-                                      "clip": true,
+                                      "id": "FVhOB",
+                                      "name": "Items",
                                       "width": "fill_container",
-                                      "height": 22,
-                                      "fill": "$color-job-surface",
-                                      "cornerRadius": 6,
-                                      "gap": 5,
-                                      "padding": [
-                                        0,
-                                        6
-                                      ],
-                                      "alignItems": "center",
+                                      "layout": "vertical",
+                                      "gap": 3,
                                       "children": [
                                         {
-                                          "type": "icon",
-                                          "id": "kXDWA",
-                                          "name": "Type icon",
-                                          "width": 12,
-                                          "height": 12,
-                                          "icon": "hammer",
-                                          "library": "lucide",
-                                          "fill": "$color-job"
+                                          "type": "frame",
+                                          "id": "RxIFu",
+                                          "name": "Item · Drop off keys",
+                                          "clip": true,
+                                          "width": "fill_container",
+                                          "height": 22,
+                                          "fill": "$color-task-surface",
+                                          "cornerRadius": 6,
+                                          "gap": 5,
+                                          "padding": [
+                                            0,
+                                            6
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "nPFDe",
+                                              "name": "Type icon",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "square-check",
+                                              "library": "lucide",
+                                              "fill": "$color-task"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "N1uI6E",
+                                              "name": "Title",
+                                              "fill": "$color-heading",
+                                              "content": "Drop off keys",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 11,
+                                              "fontWeight": "600"
+                                            }
+                                          ]
                                         },
                                         {
-                                          "type": "text",
-                                          "id": "VvXal",
-                                          "name": "Time",
-                                          "fill": "$color-job-on-surface",
-                                          "content": "10 AM",
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 11,
-                                          "fontWeight": "600"
+                                          "type": "frame",
+                                          "id": "vxg3I",
+                                          "name": "Item · Dan Wu",
+                                          "clip": true,
+                                          "width": "fill_container",
+                                          "height": 22,
+                                          "fill": "$color-surface-active",
+                                          "cornerRadius": 6,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "gap": 5,
+                                          "padding": [
+                                            0,
+                                            6
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "bUAHo",
+                                              "name": "Type icon",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "hammer",
+                                              "library": "lucide",
+                                              "fill": "$color-icon-secondary"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "T0Dow",
+                                              "name": "Strike wrap",
+                                              "layout": "vertical",
+                                              "gap": -7,
+                                              "padding": [
+                                                0,
+                                                0,
+                                                6,
+                                                0
+                                              ],
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "Z3lKJ",
+                                                  "name": "Text",
+                                                  "gap": 5,
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "N2qoh",
+                                                      "name": "Time",
+                                                      "fill": "$color-text-secondary",
+                                                      "content": "8 AM",
+                                                      "fontFamily": "$font-family",
+                                                      "fontSize": 11,
+                                                      "fontWeight": "600"
+                                                    },
+                                                    {
+                                                      "type": "text",
+                                                      "id": "YCroK",
+                                                      "name": "Title",
+                                                      "fill": "$color-text-secondary",
+                                                      "content": "Dan Wu",
+                                                      "fontFamily": "$font-family",
+                                                      "fontSize": 11,
+                                                      "fontWeight": "600"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "type": "rectangle",
+                                                  "id": "LmmfF",
+                                                  "name": "Strike",
+                                                  "fill": "$color-text-secondary",
+                                                  "width": 75,
+                                                  "height": 1
+                                                }
+                                              ]
+                                            }
+                                          ]
                                         },
                                         {
-                                          "type": "text",
-                                          "id": "BpCsp",
-                                          "name": "Title",
-                                          "fill": "$color-heading",
-                                          "content": "Tom Baker",
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 11,
-                                          "fontWeight": "600"
+                                          "type": "frame",
+                                          "id": "DRxm8",
+                                          "name": "Item · Tom Baker",
+                                          "clip": true,
+                                          "width": "fill_container",
+                                          "height": 22,
+                                          "fill": "$color-job-surface",
+                                          "cornerRadius": 6,
+                                          "gap": 5,
+                                          "padding": [
+                                            0,
+                                            6
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "kXDWA",
+                                              "name": "Type icon",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "hammer",
+                                              "library": "lucide",
+                                              "fill": "$color-job"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "VvXal",
+                                              "name": "Time",
+                                              "fill": "$color-job-on-surface",
+                                              "content": "10 AM",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 11,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "BpCsp",
+                                              "name": "Title",
+                                              "fill": "$color-heading",
+                                              "content": "Tom Baker",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 11,
+                                              "fontWeight": "600"
+                                            }
+                                          ]
                                         }
                                       ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "K2Fag",
+                                      "name": "More",
+                                      "fill": "$color-interactive",
+                                      "content": "+ 2 more",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "600"
                                     }
                                   ]
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "K2Fag",
-                                  "name": "More",
-                                  "fill": "$color-interactive",
-                                  "content": "+ 2 more",
-                                  "fontFamily": "$font-family",
-                                  "fontSize": 11,
-                                  "fontWeight": "600"
                                 }
                               ]
                             },
