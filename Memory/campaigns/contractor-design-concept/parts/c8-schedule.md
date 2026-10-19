@@ -2,7 +2,7 @@
 
 **Campaign:** contractor-design-concept · **Checklist row:** `stages/list-2a-daily.md` → `(app)/schedule`
 **Branch/worktree:** `codex/concept-schedule`, `.worktrees/concept-schedule` · **Claim:** `e4d47ceb5e70`
-**State:** Week view drawn 2026-10-19, waiting for Jafar's review. Not approved yet.
+**State (paused 2026-10-19):** Week view `JpHqG` drawn and revised with Jafar (card colours, status pills, completed silver + crossed-out title, events completable, 14px icons, no thick line on completed). **Not approved yet**: Jafar reviews it in a new session. Then write the card rules into the design skill, then Day view.
 
 ## Research
 
