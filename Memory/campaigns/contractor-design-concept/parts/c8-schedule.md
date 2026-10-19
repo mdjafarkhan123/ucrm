@@ -2,8 +2,18 @@
 
 **Campaign:** contractor-design-concept · **Checklist row:** `stages/list-2a-daily.md` → `(app)/schedule`
 **Branch/worktree:** `codex/concept-schedule`, `.worktrees/concept-schedule` · **Claim:** `e4d47ceb5e70`
-**State (2026-10-19):** Week `JpHqG` revised after Jafar's review; **not approved yet**. After approval: write
-the card rules into the design skill, then Day view.
+**State (2026-10-19):** Week `JpHqG` **approved by Jafar 2026-10-19**. He then asked for an improved variant
+`a7LTbd` ("Improved (variant)", below `JpHqG`), waiting for his pick. Then write the card rules into the design
+skill (from the chosen frame), delete the other, then Day view.
+
+## Variant `a7LTbd` (differs from `JpHqG` only here)
+
+- Card text in two levels: client 13/600 `color-heading`, job 12/500 `color-text`; time stays 12/600 in the record
+  on-surface colour. One-hour cards put client and job on one line. Task/event titles 13/600 heading.
+- Completed cards: no people circles (done work goes quiet), pill at the foot, client and job crossed out in
+  `color-text-secondary` (Pencil cannot draw strikethrough: 1px lines).
+- Toolbar groups: one bordered group ‹ | Today | ›, one group Map | Filters | ••• (1px dividers).
+- Hover look drawn on Thu "Ken Patel": 1px `color-job` edge, soft shadow (#032b3a1f, y4, blur 12), pointer.
 
 ## Research
 
@@ -38,5 +48,5 @@ Schedule already behaves the same, so the drawing needs no new data except event
 
 ## Next
 
-1. Jafar approves Week. Then one at a time: Day (people rows), Month, visit pop-up, Unscheduled drawer, Map.
+1. Jafar picks `JpHqG` or `a7LTbd`. Then one at a time: Day (people rows), Month, visit pop-up, Unscheduled drawer, Map.
 2. Jafar saves Pencil (Ctrl+S); commit `concept.pen` from the main folder under this claim.
