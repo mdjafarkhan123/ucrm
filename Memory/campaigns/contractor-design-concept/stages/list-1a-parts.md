@@ -42,20 +42,20 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/CardHeader` | Pencil "Card header"; on every Home card so far | ✅ | ✅ |
 | `ui/TimePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `ui/PencilButton` |  | ✅ Batch 7 `eJ0QQ` | ⬜ |
-| `forms/MoneyInput` |  | ✅ Inputs and chips `Fma1f` | ⬜ |
-| `ui/FilterChip` |  | ✅ Inputs and chips `Fma1f` | ⬜ |
+| `forms/MoneyInput` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
+| `ui/FilterChip` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
 | `data-display/KpiCard` |  | ✅ Batch 7 `eJ0QQ` | ⬜ |
 | `layout/SidePanel` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `ui/DateTimePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `ui/CountryPicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
-| `ui/TagSelect` |  | ✅ Inputs and chips `Fma1f` | ⬜ |
+| `ui/TagSelect` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
 | `collaboration/AttachmentSurface` |  | ⬜ | ⬜ |
 | `data-display/RecordListCard` |  | ⬜ | ⬜ |
 | `files/PhotoSlot` |  | ⬜ | ⬜ |
 | `quotes/CatalogItemDialog` | 🔁F pop-up · loading, permission-limited, field-worker view | ⬜ | ⬜ |
 | `ui/TabPanel` |  | ⬜ | ⬜ |
 | `ui/Tabs` | tabs ×2 | ✅ Small controls `GbgcY` | ⬜ |
-| `forms/QuantityInput` |  | ✅ Inputs and chips `Fma1f` | ⬜ |
+| `forms/QuantityInput` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
 | `quotes/CatalogItemPicker` | loading | ⬜ | ⬜ |
 | `quotes/PriceBookDrawer` | 🔁D pop-up · loading, empty, permission-limited, field-worker view | ⬜ | ⬜ |
 | `quotes/ProductsAndServicesBlock` | pop-ups: "Throw away these changes?" 🔁C · menus ×1 · empty, permission-limited, field-worker view | ⬜ | ⬜ |
