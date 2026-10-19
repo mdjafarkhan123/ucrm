@@ -23,6 +23,13 @@
 - **Big text box:** 96 high (three lines), padding 10 12, line height 1.45, grows when dragged. With a letter
   limit, a 12/500 `--color-text--secondary` count under the right corner ("408 left"); over the limit it turns
   12/600 `--color-critical` ("12 too many").
+- **Money:** the currency sign in its own block at the front: 40 wide (36 small), the field's full height,
+  `--color-surface--background--subtle`, the sign 14/600 heading, a 1px `--color-border--interactive` line
+  after it. The amount sits at the right, 14/600 heading (placeholder `0.00` regular `--color-text--secondary`),
+  with thousands commas once the box is left ("1,250.00"). The sign follows the business's currency.
+- **Quantity stepper:** 36 high, padding 3, gap 2. A 28 square − button and + button, radius 6,
+  `--color-surface--hover` with a 14 icon `--color-icon` (hover `--color-surface--active`); the number centred
+  between them, 13/600 heading. − is greyed (`--color-disabled` icon) at 1.
 - **Error:** 1.5px `--color-critical` border; under it a 14px circle-alert icon and a 12px message in
   `--color-critical` that says what to fix.
 
