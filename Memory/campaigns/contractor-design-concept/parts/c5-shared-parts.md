@@ -14,7 +14,7 @@
 | 4 Page parts | PageContainer, SectionBlock, RailCard, Breadcrumbs, Banner | Approved `j3jDI` 2026-10-19 (breadcrumb option C); for Codex to build |
 | 5 Pickers | CalendarPicker, TimePickerField, TimePicker, DateTimePicker, TimezonePicker, CountryPicker | Approved `uSXlT` "Pickers v2" 2026-10-19 (old `J3g7hi` deleted); for Codex to build |
 | 6a Small controls | Avatar, Toggle, RadioGroup, Tabs | Approved `GbgcY` 2026-10-19: Avatar A, Switch A, Radio A (improved live), Tabs B (soft capsules); looks in `avatars.md`, `tabs.md`, `inputs.md`; for Codex to build |
-| 6b Inputs and chips | FilterChip, MoneyInput, QuantityInput, TagSelect | Board `Fma1f`. Picked 2026-10-19: Filter A + a divider between name and value; Money B (currency block, figures right); Quantity B (− / + stepper, new behaviour approved); Tags A with the tag icon in the tag's colour. Waiting: Jafar's yes on choosing a tag colour (10 app colours, uses the existing unused `tags.color` column) |
+| 6b Inputs and chips | FilterChip, MoneyInput, QuantityInput, TagSelect | Board `Fma1f`. Picked 2026-10-19: Filter A + a divider between name and value; Money B (currency block, figures right); Quantity B (− / + stepper, new behaviour approved); Tags A as soft pills tinted in the tag's own colour (Notion/Gmail/Pipedrive convention), coloured tag icon. Waiting: Jafar's yes on choosing a tag colour (10 app colours, uses the existing unused `tags.color` column) |
 
 ## Batch 5 redraw decisions (Jafar, 2026-10-19)
 
