@@ -77,6 +77,9 @@
 	}
 	:global(.record-detail--cards) .rail-card--concept > :global(:not(.card-header)) {
 		margin: var(--space-medium) var(--space-base) 0;
+		// Full-width fields must leave room for the body's side margins.
+		max-width: calc(100% - 2 * var(--space-base));
+		min-width: 0;
 	}
 	.rail-card {
 		display: flex;

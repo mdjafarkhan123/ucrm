@@ -55,6 +55,7 @@
 	class={`record-detail ${className} scroll-y-auto`}
 	class:record-detail--cards={cards}
 	class:record-detail--concept={concept}
+	class:record-detail--editing={Boolean(onSave && onCancel && (editing || dirty))}
 >
 	<div class="record-detail__grid scroll-y-auto" class:record-detail__grid--no-rail={!rail}>
 		<div class="record-detail__main scroll-y-auto">{@render main()}</div>
@@ -83,6 +84,11 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-large);
+
+		// The floating bar must not shrink the independently scrolling columns.
+		> :global(.sticky-action-bar__spacer) {
+			display: none;
+		}
 
 		&__grid {
 			display: grid;
@@ -121,6 +127,13 @@
 				flex-shrink: 0;
 			}
 		}
+	}
+
+	// Clearance belongs at the end of each scrollable column, not beside the grid in the flex layout.
+	.record-detail--editing .record-detail__main::after,
+	.record-detail--editing .record-detail__rail::after {
+		content: '';
+		flex: 0 0 calc(var(--support-launcher-clearance, 0px) + var(--space-large));
 	}
 
 	// App look. Each block is its own white card on the grey page; nothing wraps the column. The rail is a
