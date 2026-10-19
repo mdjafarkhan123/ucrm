@@ -66751,6 +66751,1233 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "iYZAE",
+          "name": "Move visit",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "Bsa4j",
+              "name": "Move visit heading",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Z71oK0",
+                  "name": "Section title",
+                  "fill": "$color-heading",
+                  "content": "Move visit",
+                  "fontFamily": "$font-family",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "vcrZj",
+                  "name": "Section sub",
+                  "fill": "$color-text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Opens where a dragged visit lands. Nothing is saved until Save move. Shown with every part it can hold: a warning, the repeat choice and the customer email.",
+                  "fontFamily": "$font-family",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "NR7b6",
+              "name": "Stage",
+              "width": "fill_container",
+              "fill": "$color-surface",
+              "cornerRadius": "$radius-large",
+              "stroke": "$color-border",
+              "strokeWidth": 1,
+              "gap": 10,
+              "padding": 48,
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "He1v4",
+                  "name": "From · Week card (dropped)",
+                  "width": 150,
+                  "fill": "$color-surface",
+                  "stroke": "$color-border",
+                  "strokeWidth": {
+                    "right": 1,
+                    "left": 1
+                  },
+                  "layout": "vertical",
+                  "padding": 4,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "s1vvrv",
+                      "name": "Item · Kitchen remodel (dropped)",
+                      "clip": true,
+                      "width": "fill_container",
+                      "height": 156,
+                      "fill": "$color-job-surface",
+                      "cornerRadius": 8,
+                      "stroke": "$color-job",
+                      "strokeWidth": 1,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#032b3a1f",
+                        "offset": {
+                          "x": 0,
+                          "y": 4
+                        },
+                        "blur": 12
+                      },
+                      "layout": "vertical",
+                      "gap": 2,
+                      "padding": [
+                        6,
+                        8
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "exMZQ",
+                          "name": "Top",
+                          "width": "fill_container",
+                          "gap": 4,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "QmVx8",
+                              "name": "Type icon",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "hammer",
+                              "library": "lucide",
+                              "fill": "$color-job"
+                            },
+                            {
+                              "type": "text",
+                              "id": "bjHCR",
+                              "name": "Time",
+                              "fill": "$color-job-on-surface",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "1 – 3:30 PM",
+                              "fontFamily": "$font-family",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "WTQPl",
+                          "name": "Title",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 1,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "uMpuc",
+                              "name": "Client",
+                              "fill": "$color-heading",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Tom Baker",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$font-family",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "p45PZ",
+                              "name": "Job",
+                              "fill": "$color-text",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Kitchen remodel",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$font-family",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "T5nSJ8",
+                          "name": "Gap",
+                          "width": "fill_container",
+                          "height": "fill_container"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "z3yW2X",
+                          "name": "People",
+                          "gap": 2,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "x1Ybj",
+                              "name": "Avatar",
+                              "width": 24,
+                              "height": 24,
+                              "fill": "$color-heading",
+                              "cornerRadius": "$radius-circle",
+                              "stroke": "$color-job-surface",
+                              "strokeWidth": 2,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "JNFYN",
+                                  "name": "Initials",
+                                  "fill": "$color-surface",
+                                  "content": "JS",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 11,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Y3NVZQ",
+                              "name": "Avatar",
+                              "width": 24,
+                              "height": 24,
+                              "fill": "$color-heading",
+                              "cornerRadius": "$radius-circle",
+                              "stroke": "$color-job-surface",
+                              "strokeWidth": 2,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "tChOj",
+                                  "name": "Initials",
+                                  "fill": "$color-surface",
+                                  "content": "AK",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 11,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Xdknw",
+                  "name": "Move visit pop-up",
+                  "clip": true,
+                  "width": 368,
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-large",
+                  "stroke": "$color-border",
+                  "strokeWidth": 1,
+                  "effect": [
+                    {
+                      "type": "shadow",
+                      "shadowType": "outer",
+                      "color": "#0000001a",
+                      "offset": {
+                        "x": 0,
+                        "y": 1
+                      },
+                      "blur": 4
+                    },
+                    {
+                      "type": "shadow",
+                      "shadowType": "outer",
+                      "color": "#0000000d",
+                      "offset": {
+                        "x": 0,
+                        "y": 4
+                      },
+                      "blur": 12
+                    }
+                  ],
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "k93so",
+                      "name": "Header",
+                      "width": "fill_container",
+                      "stroke": "$color-border",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "gap": 12,
+                      "padding": [
+                        16,
+                        16,
+                        16,
+                        20
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "dYqEz",
+                          "type": "ref",
+                          "ref": "BfB4y",
+                          "name": "Tile",
+                          "fill": "$color-time-surface",
+                          "descendants": {
+                            "IAbCu": {
+                              "icon": "calendar-sync",
+                              "fill": "$color-time"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Hot8Z",
+                          "name": "Heading",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "qOUIu",
+                              "name": "Title",
+                              "fill": "$color-heading",
+                              "content": "Move visit",
+                              "fontFamily": "$font-family",
+                              "fontSize": 20,
+                              "fontWeight": "600",
+                              "letterSpacing": -0.2
+                            },
+                            {
+                              "type": "text",
+                              "id": "mlKQi",
+                              "name": "Hint",
+                              "fill": "$color-text-secondary",
+                              "content": "Tom Baker · Kitchen remodel",
+                              "fontFamily": "$font-family",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "X5y2m8",
+                          "type": "ref",
+                          "ref": "nIDZt",
+                          "name": "Close",
+                          "width": 32,
+                          "height": 32,
+                          "descendants": {
+                            "IW9bL": {
+                              "icon": "x"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "QEsjo",
+                      "name": "Body",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "l6wFdQ",
+                          "name": "Change",
+                          "width": "fill_container",
+                          "fill": "$color-surface-background-subtle",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "NtiME",
+                              "name": "Now",
+                              "width": "fill_container",
+                              "gap": 12,
+                              "padding": [
+                                10,
+                                14
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "S2wedu",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 56,
+                                  "content": "Now",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "V6jLRL",
+                                  "name": "Value",
+                                  "fill": "$color-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Wed, Oct 21 · 10:00 AM – 12:30 PM",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "x2SQvF",
+                              "name": "Move to",
+                              "width": "fill_container",
+                              "stroke": "$color-border",
+                              "strokeWidth": {
+                                "top": 1
+                              },
+                              "gap": 12,
+                              "padding": [
+                                10,
+                                14
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "tC49S",
+                                  "name": "Label",
+                                  "fill": "$color-text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 56,
+                                  "content": "Move to",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "U2Fv71",
+                                  "name": "Value",
+                                  "fill": "$color-heading",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Thu, Oct 22 · 1:00 – 3:30 PM",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "qhuaW",
+                          "name": "Warning",
+                          "width": "fill_container",
+                          "fill": "$color-warning-surface",
+                          "cornerRadius": "$radius-base",
+                          "gap": 10,
+                          "padding": [
+                            10,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "uQNOg",
+                              "name": "Icon",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "triangle-alert",
+                              "library": "lucide",
+                              "fill": "$color-warning"
+                            },
+                            {
+                              "type": "text",
+                              "id": "r4sCeg",
+                              "name": "Text",
+                              "fill": "$color-warning-on-surface",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Jake Smith is already booked then.",
+                              "fontFamily": "$font-family",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "xK86p",
+                          "name": "Repeat choice",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "upmHs",
+                              "name": "Legend",
+                              "fill": "$color-heading",
+                              "content": "This job repeats. Apply to:",
+                              "fontFamily": "$font-family",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Z0DDy",
+                              "name": "Option · Only",
+                              "width": "fill_container",
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-base",
+                              "stroke": "$color-interactive",
+                              "strokeWidth": 1.5,
+                              "gap": 10,
+                              "padding": [
+                                10,
+                                12
+                              ],
+                              "children": [
+                                {
+                                  "type": "ellipse",
+                                  "id": "c5oDt",
+                                  "name": "Radio",
+                                  "fill": "$color-surface",
+                                  "width": 18,
+                                  "height": 18,
+                                  "stroke": "$color-interactive",
+                                  "strokeWidth": 5
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "L6sym",
+                                  "name": "Text",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "S27YBV",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "content": "This visit only",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "eURkf",
+                              "name": "Option · Later",
+                              "width": "fill_container",
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-base",
+                              "stroke": "$color-border",
+                              "strokeWidth": 1,
+                              "gap": 10,
+                              "padding": [
+                                10,
+                                12
+                              ],
+                              "children": [
+                                {
+                                  "type": "ellipse",
+                                  "id": "Aatxt",
+                                  "name": "Radio",
+                                  "fill": "$color-surface",
+                                  "width": 18,
+                                  "height": 18,
+                                  "stroke": "$color-border-interactive",
+                                  "strokeWidth": 1
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "jC5ru",
+                                  "name": "Text",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "SNb8S",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "content": "This and later visits",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "LA2EK",
+                                      "name": "Hint",
+                                      "fill": "$color-text-secondary",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Copies the new time onto the later visits. Completed ones never change.",
+                                      "lineHeight": 1.4,
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "wjSuO",
+                          "name": "Notify customer",
+                          "width": "fill_container",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "eOnKT",
+                              "name": "Box",
+                              "width": 18,
+                              "height": 18,
+                              "fill": "$color-interactive",
+                              "cornerRadius": "$radius-small",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "ddo0y",
+                                  "name": "Check",
+                                  "width": 12,
+                                  "height": 12,
+                                  "icon": "check",
+                                  "library": "lucide",
+                                  "fill": "$color-surface"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "TpMuS",
+                              "name": "Text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "pNcCd",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "content": "Notify customer",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "O0Bj2C",
+                                  "name": "Description",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Email them the new date and time.",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Rg97S",
+                      "name": "Footer",
+                      "width": "fill_container",
+                      "fill": "$color-surface-background-subtle",
+                      "stroke": "$color-border",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "gap": 8,
+                      "padding": [
+                        12,
+                        16
+                      ],
+                      "justifyContent": "end",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "GLD7R",
+                          "type": "ref",
+                          "ref": "qpjlj",
+                          "name": "Cancel",
+                          "height": 32,
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "descendants": {
+                            "lDuWW": {
+                              "enabled": false
+                            },
+                            "Dpmda": {
+                              "content": "Cancel",
+                              "fontSize": 13
+                            }
+                          }
+                        },
+                        {
+                          "id": "jWGlm",
+                          "type": "ref",
+                          "ref": "Qo6GL",
+                          "name": "Save move",
+                          "height": 32,
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "gap": 6,
+                          "descendants": {
+                            "P99oLT": {
+                              "icon": "check"
+                            },
+                            "vaRXs": {
+                              "content": "Save move",
+                              "fontSize": 13
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "sU8eH",
+          "name": "New event",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "Oqtm6",
+              "name": "New event heading",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "YoNSe",
+                  "name": "Section title",
+                  "fill": "$color-heading",
+                  "content": "New event form",
+                  "fontFamily": "$font-family",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "yBCT7",
+                  "name": "Section sub",
+                  "fill": "$color-text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "A form pop-up over the dimmed calendar. The same form edits an event: the title reads “Edit event” and the button “Save event”.",
+                  "fontFamily": "$font-family",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "EXSZP",
+              "name": "Stage",
+              "width": "fill_container",
+              "fill": [
+                "$color-surface-background",
+                "$color-overlay"
+              ],
+              "cornerRadius": "$radius-large",
+              "padding": 48,
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "abdXu",
+                  "name": "New event pop-up",
+                  "clip": true,
+                  "width": 600,
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-large",
+                  "stroke": "$color-border",
+                  "strokeWidth": 1,
+                  "effect": [
+                    {
+                      "type": "shadow",
+                      "shadowType": "outer",
+                      "color": "#0000001a",
+                      "offset": {
+                        "x": 0,
+                        "y": 1
+                      },
+                      "blur": 4
+                    },
+                    {
+                      "type": "shadow",
+                      "shadowType": "outer",
+                      "color": "#0000000d",
+                      "offset": {
+                        "x": 0,
+                        "y": 4
+                      },
+                      "blur": 12
+                    }
+                  ],
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "x2kEPn",
+                      "name": "Header",
+                      "width": "fill_container",
+                      "stroke": "$color-border",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "gap": 12,
+                      "padding": [
+                        16,
+                        16,
+                        16,
+                        20
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "ceMTe",
+                          "type": "ref",
+                          "ref": "BfB4y",
+                          "name": "Tile",
+                          "fill": "$color-event-surface",
+                          "descendants": {
+                            "IAbCu": {
+                              "icon": "calendar-days",
+                              "fill": "$color-event-on-surface"
+                            }
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "XE7ma",
+                          "name": "Title",
+                          "fill": "$color-heading",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "New event",
+                          "fontFamily": "$font-family",
+                          "fontSize": 20,
+                          "fontWeight": "600",
+                          "letterSpacing": -0.2
+                        },
+                        {
+                          "id": "WbFtN",
+                          "type": "ref",
+                          "ref": "nIDZt",
+                          "name": "Close",
+                          "descendants": {
+                            "IW9bL": {
+                              "icon": "x"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "DivgK",
+                      "name": "Body",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Ge3u4",
+                          "name": "Event title",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "GYVdM",
+                              "name": "Label",
+                              "fill": "$color-heading",
+                              "content": "Event title",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-label",
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "dws8N",
+                              "name": "Box",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-base",
+                              "stroke": "$color-border-interactive",
+                              "strokeWidth": 1,
+                              "gap": 8,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Hhdac",
+                                  "name": "Value",
+                                  "fill": "$color-heading",
+                                  "content": "Supplier meeting",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Hv23F",
+                          "name": "When",
+                          "width": "fill_container",
+                          "gap": "$space-slim",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "qjcZX",
+                              "name": "Day",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "T52i81",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "content": "Day",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "SN3yH",
+                                  "name": "Box",
+                                  "width": "fill_container",
+                                  "height": 40,
+                                  "fill": "$color-surface",
+                                  "cornerRadius": "$radius-base",
+                                  "stroke": "$color-border-interactive",
+                                  "strokeWidth": 1,
+                                  "gap": 8,
+                                  "padding": [
+                                    0,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "IBQNJ",
+                                      "name": "Icon",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "calendar",
+                                      "library": "lucide",
+                                      "fill": "$color-icon-secondary"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "pWRTG",
+                                      "name": "Value",
+                                      "fill": "$color-heading",
+                                      "content": "Thu, Oct 22, 2026",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-base",
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "jNuYY",
+                              "name": "Time",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "VYN7P",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "content": "Time",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "zrSVZ",
+                                  "name": "Box",
+                                  "width": "fill_container",
+                                  "height": 40,
+                                  "fill": "$color-surface",
+                                  "cornerRadius": "$radius-base",
+                                  "stroke": "$color-border-interactive",
+                                  "strokeWidth": 1,
+                                  "gap": 8,
+                                  "padding": [
+                                    0,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "rUf1c",
+                                      "name": "Icon",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "clock-3",
+                                      "library": "lucide",
+                                      "fill": "$color-icon-secondary"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "Zym8X",
+                                      "name": "Value",
+                                      "fill": "$color-heading",
+                                      "content": "4:00 PM – 5:00 PM",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-base",
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "fPRAu",
+                          "name": "Checkbox · Anytime",
+                          "width": "fill_container",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "aDM9U",
+                              "name": "Box",
+                              "width": 18,
+                              "height": 18,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-small",
+                              "stroke": "$color-border-interactive",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "l7j1K",
+                              "name": "Text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "cLmob",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "content": "Anytime",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "kfVqs",
+                                  "name": "Description",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Block the day for the whole team without promising an hour.",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-small",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "udAB0",
+                          "name": "Details",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "tIzsr",
+                              "name": "Label",
+                              "fill": "$color-heading",
+                              "content": "Details (optional)",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-label",
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Q0y58",
+                              "name": "Box",
+                              "width": "fill_container",
+                              "height": 64,
+                              "fill": "$color-surface",
+                              "cornerRadius": "$radius-base",
+                              "stroke": "$color-border-interactive",
+                              "strokeWidth": 1,
+                              "padding": [
+                                10,
+                                12
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Tbine",
+                                  "name": "Value",
+                                  "fill": "$color-heading",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Pick up the tile order and confirm delivery dates for the Baker kitchen.",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qPMi8",
+                      "name": "Footer",
+                      "width": "fill_container",
+                      "fill": "$color-surface-background-subtle",
+                      "stroke": "$color-border",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "gap": 8,
+                      "padding": [
+                        16,
+                        20
+                      ],
+                      "justifyContent": "end",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "uTsiA",
+                          "type": "ref",
+                          "ref": "qpjlj",
+                          "name": "Cancel",
+                          "descendants": {
+                            "lDuWW": {
+                              "enabled": false
+                            },
+                            "Dpmda": {
+                              "content": "Cancel"
+                            }
+                          }
+                        },
+                        {
+                          "id": "EF45Q",
+                          "type": "ref",
+                          "ref": "Qo6GL",
+                          "name": "Create event",
+                          "descendants": {
+                            "P99oLT": {
+                              "icon": "check"
+                            },
+                            "vaRXs": {
+                              "content": "Create event"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     }
