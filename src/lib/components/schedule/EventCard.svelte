@@ -1,4 +1,5 @@
 <script lang="ts">
+	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import { visitShape } from '$lib/schedule/status';
 	import { clockLabel } from '$lib/schedule/labels';
 	import type { CardDensity } from '$lib/schedule/layout';
@@ -36,7 +37,7 @@
 
 	const titleLabel = $derived(event.title.trim() || 'Event');
 
-	const summary = $derived(['Event', timeLabel, titleLabel].filter(Boolean).join(', '));
+	const summary = $derived(['Event', timeLabel, titleLabel, event.completed_at ? 'Completed' : null].filter(Boolean).join(', '));
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -44,6 +45,7 @@
 	type="button"
 	class="event-card event-card--{density}"
 	class:event-card--selected={selected}
+	class:event-card--completed={Boolean(event.completed_at)}
 	aria-label={summary}
 	aria-pressed={selected}
 	title={summary}
@@ -60,6 +62,7 @@
 		{#if timed}<span class="event-card__time">{startLabel}</span>{/if}
 		<span class="event-card__title">{titleLabel}</span>
 	{/if}
+	{#if event.completed_at && density === 'standard'}<StatusBadge status="success" size="small">Completed</StatusBadge>{/if}
 </button>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
@@ -79,7 +82,7 @@
 		overflow: hidden;
 		border: var(--border-base) solid var(--color-surface--background--subtle);
 		border-radius: var(--radius-base);
-		background-color: var(--color-surface--background--subtle);
+		background-color: var(--color-event--surface);
 		color: var(--color-text);
 		font-family: inherit;
 		text-align: left;
@@ -112,7 +115,7 @@
 	.event-card__marker {
 		display: inline-flex;
 		flex-shrink: 0;
-		color: var(--color-text--secondary);
+		color: var(--color-event--onSurface);
 
 		:global(svg) {
 			width: 12px;
@@ -125,7 +128,7 @@
 		flex-shrink: 0;
 		align-items: center;
 		gap: var(--space-smaller);
-		color: var(--color-text--secondary);
+		color: var(--color-event--onSurface);
 		font-size: 11px;
 		font-weight: 600;
 		line-height: 1.3;
@@ -145,5 +148,12 @@
 
 	.event-card__title--block {
 		white-space: normal;
+	}
+
+	.event-card--completed {
+		border-color: var(--color-border--interactive);
+		background: var(--color-surface--active);
+		.event-card__time, .event-card__title { color: var(--color-text--secondary); text-decoration: line-through; }
+		.event-card__marker { color: var(--color-icon--secondary); }
 	}
 </style>

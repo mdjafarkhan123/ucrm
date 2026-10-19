@@ -67,6 +67,7 @@
 	import { stageAssessmentSeed, type AssessmentCreateSeed } from '$lib/requests/assessmentSeed';
 	import ScheduleJobCreate from '$lib/components/schedule/ScheduleJobCreate.svelte';
 	import {
+		completeScheduleEvent,
 		createScheduleEvent,
 		deleteScheduleEvent,
 		fetchScheduleContext,
@@ -449,6 +450,7 @@
 	}
 
 	function openEventPreview(event: EventItem, element: HTMLElement) {
+		eventCompletionError = '';
 		selectedVisitId = null;
 		selectedAssessmentId = null;
 		selectedEventId = event.id;
@@ -1190,6 +1192,23 @@
 		await queryClient.invalidateQueries({ queryKey: ['schedule', 'window'] });
 	}
 
+	let eventCompleting = $state(false);
+	let eventCompletionError = $state('');
+	async function markEventComplete() {
+		const target = selectedEvent;
+		if (!target || target.completed_at || !canSchedule || eventCompleting) return;
+		eventCompleting = true;
+		eventCompletionError = '';
+		try {
+			await completeScheduleEvent(target.id);
+			await refreshEvents();
+			if (selectedEvent?.id === target.id) closePreview();
+			toast.success('Event completed');
+		} catch (caught) {
+			eventCompletionError = (caught as Error).message ?? 'The event could not be completed.';
+		} finally { eventCompleting = false; }
+	}
+
 	async function saveEvent(payload: ScheduleEventWrite) {
 		const editing = editingEvent;
 		eventSaving = true;
@@ -1619,6 +1638,9 @@
 				? formatCalendarDay(selectedEvent.visit_date, dayHeadingFormat)
 				: 'No date'}
 			{canSchedule}
+			completing={eventCompleting}
+			completionError={eventCompletionError}
+			oncomplete={() => void markEventComplete()}
 			onedit={() => openEventEdit(selectedEvent)}
 			ondelete={() => askDeleteEvent(selectedEvent)}
 		/>

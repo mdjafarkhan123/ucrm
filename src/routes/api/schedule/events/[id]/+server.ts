@@ -30,7 +30,7 @@ export const PATCH: RequestHandler = async (event) => {
 		.update(parsed.data)
 		.eq('organization_id', check.auth.organization.id)
 		.eq('id', event.params.id)
-		.select('id, title, description, event_date, start_time, end_time, all_day')
+		.select('id, title, description, event_date, start_time, end_time, all_day, completed_at')
 		.maybeSingle();
 
 	if (error) return databaseError();

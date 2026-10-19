@@ -136,6 +136,7 @@ export type ScheduleEvent = {
 	start_time: string | null;
 	end_time: string | null;
 	all_day: boolean;
+	completed_at: string | null;
 };
 
 // A Pipeline Task with a due day (Pipeline E1). The Pipeline owns it; the Schedule shows it on its assignee's
@@ -219,6 +220,16 @@ export async function updateScheduleEvent(
 		response,
 		'The event could not be saved.'
 	);
+	return result.event;
+}
+
+export async function completeScheduleEvent(id: string): Promise<ScheduleEvent> {
+	const response = await fetch(`/api/schedule/events/${id}/complete`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({})
+	});
+	const result = await readOrThrow<{ event: ScheduleEvent }>(response, 'The event could not be completed.');
 	return result.event;
 }
 
