@@ -4,7 +4,7 @@
 
 A new design concept for the whole app: every staff page, every customer page and email, login and sign-up,
 and Jafar's admin panel last. It is drawn in Pencil (`concept.pen`) from the app's own
-colours, sizes and spacing, then each screen goes **design → review → approve → build** (Jafar, 2026-10-17).
+colours, sizes and spacing, then each screen goes **design → review → approve → build**.
 New buttons, parts and screens are allowed; the look follows
 the [design skill](../.claude/skills/design/SKILL.md) (Style, Critical Rules, Pencil Design Requirements and its
 modules), which every agent reads before designing.

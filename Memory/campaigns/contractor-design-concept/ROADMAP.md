@@ -1,7 +1,8 @@
 # Contractor design concept — roadmap
 
 **Plan:** `docs/contractor-design-concept-behavior-contract.md`. Every screen: research → Pencil (`concept.pen`, 1440) → Jafar approves → build.
-**Note:** Read the SKILL.md file of design skill to know design preferences before designing in pencil app. Research jobber and other top products in related industries to know what works and not, research is not for copying the ui.
+
+**Note:** Read `.claude/skills/design/guide.md` to know design preferences before designing in pencil app. Research jobber and other top products in related industries to know what works and not, research is not for copying the ui.
 
 | Part | Plan section | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- | --- |

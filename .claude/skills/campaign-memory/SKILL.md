@@ -17,10 +17,9 @@ session. Its product plan records the agreement; `Memory/` records the current p
 2. Select the campaign Jafar named, or an existing one covering his goal. For an unnamed continuation, take
    the only campaign with unclaimed work that can move now; if several qualify, ask which and mention those
    waiting on Jafar. Never select from file order, recency, or another chat.
-3. For a new campaign, read [planning.md](planning.md). Otherwise read its `NOW.md` **and the plan's core
-   agreement named there**: goal, scope, audience, experience or design target, and rules that govern every
-   part. This is required on every resume, before choosing work; it cannot be left behind a pointer reached
-   only for a specific task. Then read the named part's note or roadmap line. Without a named part, prefer a
+3. For a new campaign, read [planning.md](planning.md). Otherwise read its `NOW.md`. To get the context read Plan's core
+   agreement named there: goal, scope, audience, experience or design target, and rules that govern every
+   part. Then read the named part's note or roadmap line. Without a named part, prefer a
    started, unclaimed part that is waiting on nothing, then the next part in `NOW.md`. Consult the roadmap
    only to choose or change parts. If these are claimed, or Jafar asks for any available part, choose a
    dependency-ready part whose code and services do not overlap claimed work. If none can move, explain what
