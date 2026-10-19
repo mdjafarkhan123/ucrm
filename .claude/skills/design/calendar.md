@@ -3,7 +3,8 @@
 > Dependencies: `colors.md`, `badges.md`, `buttons.md`, `typography.md`
 
 Pencil: `concept.pen` → "Concept · Schedule · Week · Owner · 1440", "Concept · Schedule · Day · Owner · 1440" and
-"Concept · Schedule · Month · Owner · 1440" (all approved by Jafar 2026-10-19).
+"Concept · Schedule · Month · Owner · 1440" and "Concept · Schedule · Visit pop-up · Owner · 1440" (all approved by Jafar
+2026-10-19).
 
 ## Page
 
@@ -106,3 +107,18 @@ Pencil: `concept.pen` → "Concept · Schedule · Week · Owner · 1440", "Conce
   Completed item: `--color-surface--active`, 1px `--color-border--interactive`, icon `--color-icon-secondary`,
   time and name `--color-text--secondary` and crossed out.
 - More than three: "+ N more" 11/600 `--color-interactive` under the items.
+
+## Visit pop-up
+
+- Opens 10 beside the chosen card, which keeps its hover look while open. No arrow; the page is not dimmed.
+- 368 wide, white, 1px `--color-border`, radius 16, `--shadow-base`, clip.
+- Header as the form pop-up (`modals.md`): 40 tile in the record colour, the client 20/600 (-0.2) with the small
+  status pill beside it, the work 12 quiet under it, and a 32 × icon button.
+- Body, padding 20, gap 16. Facts 14 apart: a 32 tile (When and Team `--color-time`, Where `--color-client`), the
+  label 12 quiet over the value 13/600 heading. Team shows the people circles (24, 2 apart) before the names; nobody
+  assigned shows the value in `--color-warning--onSurface`.
+- Timer panel: `--color-surface--background--subtle`, 1px `--color-border`, radius 8, padding 12 12 12 14; "Your
+  timer" 13/600 with a 12 quiet state line, and a small secondary "Start timer" (play icon) at the right.
+- Actions: small main "Mark complete" (check) and small secondary "Reschedule", sharing the width, 8 apart.
+- Footer: `--color-surface--background--subtle` with a top line, padding 8 12: "Open job #" with an arrow-up-right
+  at the left and "Move to Unscheduled" at the right, both small quiet buttons.
