@@ -25,7 +25,7 @@ Schedule already behaves the same, so the drawing needs no new data except event
   event `QqZfs`, Move visit `Xdknw` (new client · work line; radio tiles). Each keeps its live component's
   content. Customer notice is email only; a channel choice would be new behaviour.
 - New event form `abdXu` approved by Jafar 2026-10-19 (live `ScheduleEventDialog`, New job's fields).
-- Waiting: book-work form, two sections on `GsICu`: Job `OemVt` and Request / Event hand-offs `GTfk2`, `CejfJ`
+- Book-work form approved by Jafar 2026-10-19, two sections on `GsICu`: Job `OemVt` and Request / Event hand-offs `GTfk2`, `CejfJ`
   (live `ScheduleJobCreate`; same content; Job / Request / Event switch; More options at left, no Cancel as live).
 
 ## Decisions
@@ -39,8 +39,7 @@ Schedule already behaves the same, so the drawing needs no new data except event
 
 1. **Order (Jafar 2026-10-19): finish every Schedule drawing first, then build Schedule in one go.** Draw onto
    the pop-ups board `GsICu`, one at a time (from `(app)/schedule/+page.svelte` and `components/schedule`):
-   the book-work form (`ScheduleJobCreate`: Job / Request / Event switch, light job form, More options, Save
-   job), Filters, the two menus, "are you sure?" pop-ups (Delete this event?, Move to Unscheduled?, Whose
+   Filters, the two menus, "are you sure?" pop-ups (Delete this event?, Move to Unscheduled?, Whose
    route?) on the shared pattern, Unscheduled drawer. Then Map (its own screen).
 2. Then build Schedule (C7), including event completion (migration + `/api/*` + Zod).
 3. Jafar saves Pencil (Ctrl+S) after each drawing; commit `concept.pen` from the main folder.

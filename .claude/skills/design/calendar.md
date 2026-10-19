@@ -140,6 +140,17 @@ board, "Concept · Schedule · Pop-ups · 1440".
   (calendar-days). Fields: Event title; Day and Time side by side; the Anytime checkbox with its hint; Details as
   a text area. Footer: Cancel then the main "Create event" (check); editing reads "Edit event" / "Save event".
 
+- Book work (from empty time): the form pop-up at 640, the header tile in the chosen kind's colour (job hammer,
+  request inbox, event calendar-days). Body starts with a full-width segmented switch Job / Request / Event (each
+  chosen icon in its record colour). Job: Job title, the picked-client card, a "First visit" group (radius 16,
+  1px `--color-border`, a subtle head row with a 24 `--color-time` tile and 14/600 title; body padding 16), Who is
+  going chips, Notify customer under a top line. Footer: secondary "More options" (sliders) at the far left,
+  main "Save job" (check) at the right.
+- Request / Event hand-off: lead 14 `--color-text` (1.5); the slot card (`--color-surface--background--subtle`,
+  1px `--color-border`, radius 8, padding 12) with a 44 `--color-time` date tile (month overline, day 17/700) and
+  the day 14/600 over a 14 clock and time 13/500 quiet; a 13 quiet note behind an arrow-right; one main
+  "Continue to new …" button at the right, no icon.
+
 ## Day list
 
 - Opens from "+ N more" beside the Month date; picking an item opens its pop-up in the same place.
