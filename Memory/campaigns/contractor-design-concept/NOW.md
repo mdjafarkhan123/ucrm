@@ -12,7 +12,7 @@
    drawings, then build Schedule in one go (Jafar 2026-10-19).
 3. Jafar reads the redesign checklist (`stages/list-index.md`) and confirms the order and pop-up marks: `parts/c5a-redesign-checklist.md`.
 
-**Done 2026-10-18:** buttons everywhere (`parts/c1e-buttons-everywhere.md` lists what is left), Foundation sizes named, C2 Home (`parts/c2-home.md`), C3 Jobs list (`parts/c3-jobs-list.md`), C4 Job details and the shared Card header (`parts/c4-job-details.md`), C5 New job (`parts/c5-new-job.md`).
+**Done 2026-10-18:** buttons everywhere, Foundation sizes, C2–C5 (part notes `c1e`, `c2`–`c5`).
 
 **Pencil:** open file only; Ctrl+S saves (`docs/pencil-workflow.md`).
 
