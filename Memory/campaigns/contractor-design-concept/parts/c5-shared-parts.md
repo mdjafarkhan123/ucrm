@@ -11,7 +11,7 @@
 | 1 Pop-ups | Dialog, ConfirmDialog, SidePanel | Approved `v2Y89`; built 2026-10-19 |
 | 2 Page states | LoadingSkeleton, EmptyState, ErrorState | Approved `v2Y89`; built 2026-10-19 |
 | 3 Fields | Input, Select, Textarea, Badge, SearchInput | Approved `khuNF`, including added interaction states; built and checked 2026-10-19 |
-| 4 Page parts | PageContainer, SectionBlock, RailCard, Breadcrumbs, Banner | Drawn on `j3jDI` 2026-10-19, **waiting for Jafar** |
+| 4 Page parts | PageContainer, SectionBlock, RailCard, Breadcrumbs, Banner | Approved `j3jDI` 2026-10-19 (breadcrumb option C); for Codex to build |
 
 ## Approved reference and proof
 
@@ -25,13 +25,13 @@ Fields: labels above boxes; quiet hover edge; dropdown chosen tick and disabled/
 
 About 96 form pop-ups keep buttons inside the body, around 120 have no icon, and empty states default to a blue tile. Fix each during its screen redesign. Separate controls such as CountryPicker, MoneyInput and StatusBadge remain on the checklist; completing the five field components does not complete those controls.
 
-## Batch 4 drawing (waiting for review)
+## Batch 4 (approved 2026-10-19)
 
 Board `j3jDI` "Page parts every screen sits on". Page frame: no white sheet, cards on the warm page, widths full
 (cap 1280) / two columns (360 side) / narrow 640; an unredesigned page keeps one white card. Section card and
 side card = Card + Card header (already the gated Job details look), tile colour per subject (live default
-`job` tone must become a per-caller tone); group inside a card = 16 title over a hairline. Breadcrumbs: quiet
-13 links, chevrons, current page dark. Banner: tinted strip radius 16, white 32 tile, one secondary action, no
+`job` tone must become a per-caller tone); group inside a card = 16 title over a hairline. Breadcrumbs: white
+capsule, dark back circle, chevrons, current step shaded. Banner: tinted strip radius 16, white 32 tile, one secondary action, no
 close (live has none). Next batches: pickers, then small controls, then files and lists.
 Codex builds approved parts and Schedule on its own branch; Claude draws, reviews and merges (Jafar 2026-10-19).
 

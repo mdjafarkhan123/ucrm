@@ -12,6 +12,18 @@
   right column), and a full-width 1px `--color-border` line underneath. The body below has padding 20
   (`--space-medium`) and gap 16. A table head right under the header supplies that line itself.
 
+## Section card and side card
+
+- **Section card** (a block of a page): the Card header, then a body with padding 20 and gap 16.
+  - Facts: rows of label (13/500 `--color-text-secondary`, 140 wide) and value (14/500 `--color-heading`),
+    padding 10 0, a 1px `--color-border` line between rows.
+  - List: rows run edge to edge, padding 14 20, a 1px line between rows, no body padding.
+  - A group inside a card is never a second card: a 1px `--color-border` line above, 16 space, a 16/600 title
+    and a 12/500 quiet hint, then its fields 12 below.
+- **Side card** (in the 360 side column): the same, with the header padding 14 16 and body padding 16. A count
+  goes in the hint line ("3 tags · used to filter clients").
+- The header tile's colour is what the card is about: a record, or a part of the app (`colors.md`).
+
 ## Anatomy (stat card)
 
 1. Header: 32 tile + title 14/600 + quiet open icon (arrow-up-right) at the right.
