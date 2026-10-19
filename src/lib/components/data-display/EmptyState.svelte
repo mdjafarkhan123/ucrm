@@ -1,10 +1,12 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	let {
 		title,
 		description,
 		icon = inboxIcon,
+		tone = 'informative',
 		iconLabel,
 		onIconClick,
 		action
@@ -12,6 +14,8 @@
 		title: string;
 		description?: string;
 		icon?: string;
+		/** The tile's colour family: the page's record or section colour (`client`, `job`, `time`…). */
+		tone?: string;
 		/** Accessible name for the icon button. Required when `onIconClick` is set. */
 		iconLabel?: string;
 		/** Turns the icon into a real button, for empty states whose icon starts the work. */
@@ -29,15 +33,15 @@
 	{#if onIconClick}
 		<button
 			type="button"
-			class="empty-state__icon empty-state__icon--button"
+			class="empty-state__icon-button"
 			aria-label={iconLabel}
 			title={iconLabel}
 			onclick={onIconClick}
 		>
-			{@html icon}
+			<IconTile {icon} {tone} />
 		</button>
 	{:else}
-		<div class="empty-state__icon" aria-hidden="true">{@html icon}</div>
+		<IconTile {icon} {tone} />
 	{/if}
 	<h2 id={titleId}>{title}</h2>
 	{#if description}<p>{description}</p>{/if}
@@ -47,43 +51,29 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	// Sits inside the card or page area that would hold the content (`concept.pen` → Pop-ups → Page states).
 	.empty-state {
 		display: grid;
 		justify-items: center;
 		// Stretched to fill a tall page, the rows stay together in the middle instead of spreading apart.
 		align-content: center;
-		gap: var(--space-base);
-		padding: var(--space-extravagant) var(--space-large);
-		border: var(--border-base) dashed var(--color-border);
-		border-radius: var(--radius-base);
+		gap: var(--space-slim);
+		padding: var(--space-larger) 40px;
 		color: var(--color-text--secondary);
 		text-align: center;
 	}
-	.empty-state__icon {
-		display: grid;
-		place-items: center;
-		width: var(--space-largest);
-		height: var(--space-largest);
-		border-radius: var(--radius-circle);
-		color: var(--color-informative--onSurface);
-		background: var(--color-informative--surface);
-	}
-	.empty-state__icon :global(svg) {
-		width: 24px;
-		height: 24px;
-	}
-	.empty-state__icon--button {
+	.empty-state__icon-button {
+		display: inline-flex;
 		padding: 0;
-		border: var(--border-base) solid transparent;
+		border: 0;
+		border-radius: var(--radius-tile-large);
+		background: none;
 		cursor: pointer;
-		transition: all var(--timing-base) ease-out;
+		transition: box-shadow var(--timing-base) ease-out;
 
-		&:hover,
-		&:focus-visible {
-			border-color: var(--color-border--interactive);
-			color: var(--color-interactive--hover);
+		&:hover {
+			box-shadow: 0 0 0 var(--border-base) var(--color-border--interactive--hover);
 		}
-
 		&:focus-visible,
 		&:active {
 			outline: transparent;
@@ -93,10 +83,16 @@
 	h2 {
 		color: var(--color-heading);
 		font-size: var(--typography--fontSize-larger);
+		font-weight: 600;
+		letter-spacing: -0.2px;
 		line-height: var(--typography--lineHeight-tight);
 	}
 	p {
-		max-width: 48ch;
+		max-width: 320px;
+		font-size: var(--typography--fontSize-base);
 		line-height: var(--typography--lineHeight-large);
+	}
+	.empty-state__action {
+		padding-top: var(--space-smaller);
 	}
 </style>

@@ -80,6 +80,8 @@ Agreed with Jafar on 2026-10-17. Every design, in Pencil or in code, follows all
 - [tables.md](tables.md) — Table
 - [sidebars.md](sidebars.md) — Sidebar
 - [top-bar.md](top-bar.md) — Top bar
+- [modals.md](modals.md) — Form pop-up, "are you sure?" pop-up, side drawer
+- [page-states.md](page-states.md) — Loading, empty, couldn't load
 
 Not yet designed in the concept — use the Classic module until it is: accordion, alerts, avatars, button group,
-dropdown, modals, pagination, radios/toggle, tabs, tooltips/popovers.
+dropdown, pagination, radios/toggle, tabs, tooltips/popovers.

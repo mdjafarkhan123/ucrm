@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createInfiniteQuery, useQueryClient } from '@tanstack/svelte-query';
 	import SidePanel from '$lib/components/layout/SidePanel.svelte';
+	import bookIcon from '@tabler/icons/outline/book.svg?raw';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -115,7 +116,7 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<SidePanel {open} title="Price book" subtitle="Add what you already sell" {onClose}>
+<SidePanel {open} icon={bookIcon} title="Price book" subtitle="Add what you already sell" {onClose}>
 	<div class="price-book">
 		<div class="price-book__controls">
 			<SearchInput

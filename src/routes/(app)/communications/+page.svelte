@@ -11,6 +11,7 @@
 	import { supabase } from '$lib/supabase.client';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import SidePanel from '$lib/components/layout/SidePanel.svelte';
+	import userIcon from '@tabler/icons/outline/user.svg?raw';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
@@ -1658,6 +1659,8 @@
 		open={contextPanelOpen}
 		title={selectedGroup.name}
 		subtitle="Customer context"
+		icon={userIcon}
+		iconTone="client"
 		onClose={() => (contextPanelOpen = false)}
 	>
 		{@render contextPanel(selectedGroup)}
