@@ -1,6 +1,6 @@
 # Fields — interaction-state follow-up
 
-**Stage:** Pencil additions saved, awaiting review (2026-10-19).
+**Stage:** Approved 2026-10-19; waiting to merge (2026-10-19).
 **Owner:** codex-fields-followup; reservation `8bdf23eb565a`. Jafar confirmed the previous session finished and authorized takeover.
 **Workspace:** `.worktrees/concept-fields`, branch `codex/concept-fields`.
 
@@ -20,4 +20,6 @@ Pencil screenshots checked for Dropdown, Big text box and Search sections and ea
 
 **Save confirmed:** Jafar saved the canvas; source timestamp advanced to 2026-10-19 06:31:52 +0600, size 2,006,115 bytes. Copied the saved canvas into this worktree for backup.
 
-**Next:** Jafar reviews the additions before design rules change or implementation begins. Waiting to merge after review. Existing field board approval in the prior commit does not approve these additions.
+**Approval:** Jafar approved the added interaction states on 2026-10-19 (“approved..”). Applies to dropdown hover/error/pressed, pressed option, textarea hover, search hover and clear hover/pressed on board `khuNF`. Updated `inputs.md` to match.
+
+**Next:** Integrate this branch with current main, preserving newer pop-up/page-state progress. Then build the approved batch 3 shared fields and verify the changed controls in light and dark. Drawings backed up in `db967eae`; no application code changed in this follow-up.

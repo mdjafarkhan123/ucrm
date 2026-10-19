@@ -30,13 +30,18 @@
 
 Hover: border `--color-border--interactive--hover`. Focus (typing, or a dropdown open): `--shadow-focus`.
 Disabled: `--color-disabled--secondary` background, value and icons `--color-disabled`.
+Text boxes, big text boxes and search share the hover edge and retain their typing focus while pressed.
+A closed dropdown pressed state uses `--color-surface--active` and the hover edge, then opens the list.
+Search clear: hover uses `--color-surface--active`; pressed adds a 1px hover edge.
+Dropdown errors use the shared error border and a corrective message below the box.
 
 ## Dropdown list
 
 - Opens 4 under the box, as wide as it: `--color-surface`, 1px `--color-border`, radius 16, padding 8, 2
   between lines, `--shadow-base`. The box's chevron turns up.
 - Line: 36 high, padding 0 10, radius 8, 14 `--color-heading`. Mouse over: `--color-surface--hover`. Chosen:
-  600 with a 16 check in `--color-interactive` at the right. Can't be picked: `--color-disabled`.
+  600 with a 16 check in `--color-interactive` at the right. Pressed: `--color-surface--active`.
+  Can't be picked: `--color-disabled`.
 
 ## Checkbox
 
