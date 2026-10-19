@@ -16,8 +16,8 @@ board, "Concept · Schedule · Pop-ups · 1440".
 
 - Padding 14 20, gap 8, 1px `--color-border` underneath.
 - Left: a joined group ‹ | Today | › (`buttons.md`), then the range 20/700 heading with a 16 chevron-down.
-- Right: Month / Week / Day segmented switch (chosen icon `--color-time`), a 1×24 divider, Unscheduled
-  (switched-on look only while its drawer is open, `buttons.md`), then a joined group Map | Filters | •••.
+- Right: Month / Week / Day segmented switch (chosen icon `--color-time`), a 1×24 divider, Unscheduled with a
+  calendar-off icon (switched-on look only while its drawer is open, `buttons.md`), then a joined group Map | Filters.
 
 ## Grid
 

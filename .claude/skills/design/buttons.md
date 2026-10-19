@@ -57,7 +57,7 @@ An icon button is square at the size's height.
   on hover).
 
 ### Joined group
-- Two to four white buttons that belong together (‹ Today ›; Map | Filters | •••) share one box: height 36,
+- Two to four white buttons that belong together (‹ Today ›; Map | Filters) share one box: height 36,
   `--color-surface`, 1px `--color-border--interactive`, radius 8, `--shadow-button`, clip. Inside, each button has
   no border, shadow or radius, and a 1px `--color-border--interactive` line separates them. Pencil: Schedule
   toolbar.

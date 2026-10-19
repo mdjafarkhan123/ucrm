@@ -30,7 +30,13 @@ so the drawings need no new data except event completion (below).
   event? `rHBtY`, Move to Unscheduled? `t6PZW`, Whose route? `R76KaR`), Filters panel and the two Directions menus
   (section `S6RecI`), Unscheduled panel `se5NW` (docked beside the calendar as live, 360 wide). Map screen `FiSuX`
   "Concept · Schedule · Map · Owner · 1440" (Day toolbar with Map on; route list + map, AI map image).
-- Open question for Jafar: the approved Week/Day toolbar has a ••• button, but live Schedule has no More menu.
+- Review 2026-10-19 (Claude, Jafar said go ahead with the improvements): the ••• button removed from every
+  Schedule toolbar (live has no More menu; nothing to put in it). Map: colour key removed (live hides it there);
+  each stop shows its kind icon and the time in the record colour (Chris Hall's quote visit reads orange);
+  "Save route order" in normal capitals (the build changes the live label). Unscheduled: calendar-off icon in
+  the toolbar and panel (inbox means Request), each card a green hammer before the work line.
+- Not drawn yet, opened from Schedule: `jobs/FinalVisitDialog`, `jobs/CreateVisitsDialog`,
+  `jobs/ApplyToFutureDialog` (shared-parts checklist). Jafar to say: draw before the Schedule build, or later.
 
 ## Decisions
 
@@ -42,6 +48,6 @@ so the drawings need no new data except event completion (below).
 ## Next
 
 1. **Order (Jafar 2026-10-19): finish every Schedule drawing first, then build Schedule in one go.** Every
-   drawing is now drawn; get Jafar's yes on the waiting ones and his answer on •••.
+   drawing is now drawn; get Jafar's yes on the waiting ones (review fixes above).
 2. Then build Schedule (C7), including event completion (migration + `/api/*` + Zod).
 3. Jafar saves Pencil (Ctrl+S); commit `concept.pen` from the main folder.
