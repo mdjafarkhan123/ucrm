@@ -122,3 +122,13 @@ board, "Concept · Schedule · Pop-ups · 1440".
 - Actions: small main "Mark complete" (check) and small secondary "Reschedule", sharing the width, 8 apart.
 - Footer: `--color-surface--background--subtle` with a top line, padding 8 12: "Open job #" with an arrow-up-right
   at the left and "Move to Unscheduled" at the right, both small quiet buttons.
+
+## Day list
+
+- Opens from "+ N more" beside the Month date; picking an item opens its pop-up in the same place.
+- 368 wide, the visit pop-up's frame. Header: 40 `--color-time` tile (calendar-days), the date 20/600 (-0.2)
+  ("Wednesday, October 21"), under it the item count 12 quiet and the small filled "late" / "unassigned" pills.
+- List padding 12, rows 6 apart, every item in reading order. A row is a compact Week card: the kind's surface,
+  radius 8, padding 8 10; top row (20 high) the 14 type icon, time 12/600 `--onSurface` ("Anytime" when none) and
+  the status pill at the right (outlined Late / Unassigned, filled Completed); then the client 13/600 heading with
+  the work 12/500 `--color-text` beside it. Completed rows take the Week card's completed look.

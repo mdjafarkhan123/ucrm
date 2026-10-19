@@ -49,7 +49,7 @@ Look: 368 wide, form pop-up header (40 job tile, ×), small status pill beside t
 time, client), timer in a subtle panel ("Your timer · Not started on this visit", a new label Jafar approved),
 links in a subtle footer. No arrow (Jafar approved dropping it). Look in `calendar.md` → Visit pop-up. Research: Jobber `02-visit-popover.png`.
 
-## "+ N more" day list (drawn 2026-10-19, waiting for Jafar)
+## "+ N more" day list (approved by Jafar 2026-10-19)
 
 Same board, node `gDpeK` beside the Oct 21 Month date.
 Keeps live `CalendarMonthGrid.svelte`: date title (weekday, month, day), item count with late/unassigned
@@ -59,8 +59,7 @@ surface, radius 8, padding 8 10, 6 apart: icon + time + status pill, then client
 
 ## Next
 
-1. Jafar reviews the day list.
-2. Draw the rest onto the board, one at a time (from `(app)/schedule/+page.svelte` and `components/schedule`):
+1. Draw the rest onto the board, one at a time (from `(app)/schedule/+page.svelte` and `components/schedule`):
    assessment and event pop-ups (visit pattern), Move visit (`MoveConfirm`), event form (`ScheduleEventDialog`),
    new-job form (`ScheduleJobCreate`), Filters, the two menus, "are you sure?" pop-ups (Delete this event?,
    Move to Unscheduled?, Whose route?) on the shared pattern, Unscheduled drawer. Then Map (a screen).
