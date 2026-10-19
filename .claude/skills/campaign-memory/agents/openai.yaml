@@ -1,4 +1,4 @@
 interface:
   display_name: 'Campaign Memory'
   short_description: 'Continue, save, and finish multi-session campaigns'
-  default_prompt: 'Use $campaign-memory to guide a named campaign, choose the relevant skills, and save enough context for a fresh session to continue.'
+  default_prompt: 'Use $campaign-memory to continue a named campaign and save enough context for a fresh session to carry on.'

@@ -1,14 +1,19 @@
 # Memory skill upgrade — now
 
 **Goal:** Campaign Memory guides the whole journey and lets a fresh AI continue without old chats.
-**Plan:** `docs/memory-campaign-workflow-behavior-contract.md` — first version and build order approved by
-Jafar on 2026-10-11; Parts 6–10 built and verified. Design skills are outside this upgrade.
-**Stage:** Parent upgrade complete; older follow-on work blocked.
-**Proof:** `docs/research/campaign-memory-parent-proof-2026-10-11.md`.
+**Core agreement — read on every resume:** `docs/memory-campaign-workflow-behavior-contract.md` § Summary,
+§ Documents and efficient reading, § Resume, checking, and completion, § Not doing
+**Plan:** same file — first version and build order approved 2026-10-11; Part 11 (shorter skill and Memory
+checker) approved by Jafar 2026-10-19.
+**Stage:** Verifying (Part 11) — paused by Jafar 2026-10-19
 
-**In progress:** none.
+**In progress:**
 
-**Next part:** Resolve Part 2's unreported owner-window result with Jafar; see `parts/part-2.md`. Only after
-that check passes can Part 3 Checker start. Parts 4–5 remain later work.
+- 11 Trim and clarify — `parts/part-11-trim.md`; Waiting to merge: branch `claude/campaign-memory-trim`, worktree
+  `.worktrees/campaign-memory-trim`
 
-**Blockers:** Jafar's report for the older pilot. The new parent upgrade needs no further product decision.
+**Next part:** 4 Move the other campaigns — trim notes the checker flags and close finished campaigns, only
+where no session holds a claim; Jafar names which waiting campaigns to close.
+
+**Blockers:** none. Part 11 waits for Jafar's answers on final trials and merging; Part 2 still waits for his
+own-window test report.

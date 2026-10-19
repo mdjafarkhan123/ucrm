@@ -5,7 +5,7 @@
 | Part | Plan section | Delivers | Waits for | Done when | State |
 | --- | --- | --- | --- | --- | --- |
 | 1 Plan: <topic> | § <topic> | <the questions it settles> | — | first-version questions settled; Jafar approved | In progress |
-| 2 <name> | § <topic> | <a thin, complete result> | 1 | <observable acceptance checks> | Not started |
+| 2 <name> | § <topic> | <a thin, complete result> | 1 | <an observable done-check> | Not started |
 | 3 <name> | § <topic> | <…> | 2 | <…> | Not started |
 
 <!-- Each part fits one focused session, delivers a complete result that can be shown or checked, names its
