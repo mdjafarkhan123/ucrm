@@ -57,12 +57,12 @@ marks, every item in reading order, a picked item opens its visit pop-up in the 
 (same as the visit pop-up), header with a 40 `--color-time` calendar tile, rows as compact Week cards (kind's
 surface, radius 8, padding 8 10, 6 apart: icon + time + status pill, then client + work).
 
-## Quote visit and event pop-ups (drawn 2026-10-19, waiting for Jafar)
+## Quote visit and event pop-ups (approved by Jafar 2026-10-19)
 
 On the board: `UVzdh` (live `AssessmentPreview`: client title, request title, status, Client / When / Team /
 Where, today's timer, only "Open request" in the footer) and `QqZfs` (live `EventPreview`: title, "Event",
-When, Details, Edit, Delete as a danger button; plus "Mark complete", the approved event completion). Ask Jafar:
-the quote visit repeats the client as a fact under the title (live does); keep or drop?
+When, Details, Edit, Delete as a danger button; plus "Mark complete", the approved event completion). Approved as
+drawn, so the quote visit keeps the client fact under the title (as live).
 
 ## Next
 

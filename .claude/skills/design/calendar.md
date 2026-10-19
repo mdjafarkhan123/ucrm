@@ -123,6 +123,12 @@ board, "Concept · Schedule · Pop-ups · 1440".
 - Footer: `--color-surface--background--subtle` with a top line, padding 8 12: "Open job #" with an arrow-up-right
   at the left and "Move to Unscheduled" at the right, both small quiet buttons.
 
+- Quote visit pop-up: the same frame with a `--color-request` tile (inbox); facts Client (`--color-client`), When,
+  Team, Where; the timer panel; no actions; the footer holds only "Open request".
+- Event pop-up: a `--color-event` tile (calendar-days, icon `--onSurface`), no status pill unless completed; facts
+  When and Details (text-align-start, `--color-event` tile; value 13/400 `--color-text`, line height 1.45); actions
+  Mark complete (fills the row), Edit (secondary, pencil) and Delete (danger, trash); no footer.
+
 ## Day list
 
 - Opens from "+ N more" beside the Month date; picking an item opens its pop-up in the same place.
