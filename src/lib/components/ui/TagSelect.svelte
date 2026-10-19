@@ -7,6 +7,9 @@
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import { tagColor, tagColors, nextTagColor } from '$lib/collaboration/tag-colors';
 	import tagIcon from '@tabler/icons/outline/tag.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	import circlePlusIcon from '@tabler/icons/outline/circle-plus.svg?raw';
+	import alertIcon from '@tabler/icons/outline/alert-circle.svg?raw';
 	import dotsIcon from '@tabler/icons/outline/dots.svg?raw';
 	import Button from '$lib/components/ui/Button.svelte';
 	import tagPlusIcon from '@tabler/icons/outline/tag-plus.svg?raw';
@@ -40,7 +43,6 @@
 		/** Chips only: no remove buttons and no popover, for someone who may see the entries but not change them. */
 		disabled?: boolean;
 		readonly?: boolean;
-		/** App look: every chip is the same quiet grey instead of a colour of its own. */
 	} = $props();
 
 	function setTags(next: string[]) {
@@ -56,18 +58,18 @@
 	let actionError = $state('');
 	let creating = $state(false);
 	let selectedColor = $state<string | null>(null);
-	let changingColor = $state(false);
+	let changingColor = $state<string | null>(null);
 	const newColor = $derived(selectedColor ?? nextTagColor(catalog).hex);
 	async function recolor(id: string, color: string) {
 		if (!onColorChange || changingColor) return;
-		changingColor = true;
+		changingColor = `${id}:${color}`;
 		actionError = '';
 		try {
 			await onColorChange(id, color);
 		} catch (error) {
 			actionError = error instanceof Error ? error.message : 'Colour could not be saved.';
 		} finally {
-			changingColor = false;
+			changingColor = null;
 		}
 	}
 
@@ -90,7 +92,7 @@
 	// record. Only the assignment waits for the caller's save.
 	async function createFromSearch() {
 		const name = search.trim();
-		if (!onCreate || !name || creating) return;
+		if (!onCreate || !name || creating || disabled) return;
 		creating = true;
 		actionError = '';
 		try {
@@ -161,7 +163,9 @@
 						placeholder={onCreate ? `Find or create a ${noun}` : `Find a ${noun}`}
 						onkeydown={onSearchKeydown}
 					/>
-					{#if actionError}<p class="tag-select__error" role="alert">{actionError}</p>{/if}
+					{#if actionError}<p class="tag-select__error" role="alert">
+							<span aria-hidden="true">{@html alertIcon}</span>{actionError}
+						</p>{/if}
 					<div class="tag-select__options">
 						{#each filteredTags as tag (tag.id)}
 							<!-- Checkbox inside the label with no `for`: pairing both makes Chrome
@@ -177,8 +181,8 @@
 									/>
 									<span
 										class="tag-select__dot tag-select__dot--{tagColor(tag.color).token}"
-										aria-hidden="true"
-									></span>
+										aria-hidden="true">{@html tagIcon}</span
+									>
 									<span class="tag-select__option-label">{tag.name}</span>
 								</label>
 								{#if onColorChange}
@@ -194,14 +198,16 @@
 													<Button
 														variant="quiet"
 														size="small"
-														loading={changingColor}
+														loading={changingColor === `${tag.id}:${color.hex}`}
+														disabled={Boolean(changingColor)}
 														onclick={() => recolor(tag.id, color.hex)}
 														><span
 															class="tag-select__swatch"
 															style:background={`var(--color-${color.token})`}
-														></span>{color.name}{tagColor(tag.color).hex === color.hex
-															? ' ✓'
-															: ''}</Button
+														></span>{color.name}{#if tagColor(tag.color).hex === color.hex}<span
+																class="tag-select__check"
+																aria-label="Current colour">{@html checkIcon}</span
+															>{/if}</Button
 													>
 												{/each}
 											</Popover.Content></Popover.Portal
@@ -215,8 +221,12 @@
 							</p>
 						{/each}
 						{#if onCreate && normalizedSearch && !hasExactMatch}
-							<Button variant="quiet" loading={creating} onclick={createFromSearch}
-								>Create {noun} “{search.trim()}”</Button
+							<Button
+								variant="quiet"
+								loading={creating}
+								{disabled}
+								icon={circlePlusIcon}
+								onclick={createFromSearch}>Create {noun} “{search.trim()}”</Button
 							>
 							<div class="tag-select__palette" aria-label="New tag colour">
 								{#each tagColors as color (color.hex)}
@@ -405,7 +415,12 @@
 			height: 14px;
 			flex: 0 0 14px;
 			border-radius: var(--radius-circle);
-			background: var(--tag-color);
+			color: var(--tag-color);
+			background: transparent;
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
 		}
 		&__palette {
 			display: flex;
@@ -530,5 +545,24 @@
 	}
 	.tag-select__chip--readonly {
 		padding: 0 10px;
+	}
+	.tag-select__option:has(input:checked) .tag-select__option-label {
+		font-weight: 600;
+	}
+	.tag-select__check {
+		display: inline-flex;
+		color: var(--color-interactive);
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
+	}
+	.tag-select__error {
+		display: flex;
+		gap: 6px;
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+		}
 	}
 </style>

@@ -48,16 +48,20 @@ export const GET: RequestHandler = async (event) => {
 	if (!auth)
 		return json({ error: 'Authentication or organization membership required.' }, { status: 401 });
 
+	if (event.url.searchParams.get('permissions') === '1') {
+		const access = await resolveOrganizationAccess(
+			event.locals.supabase,
+			auth.organization.id,
+			auth.user.id
+		);
+		return json({ canManage: hasPermission(access, 'customers.edit') });
+	}
+
 	const { data, error } = await event.locals.supabase
 		.from('tags')
 		.select('*')
 		.order('name', { ascending: true });
 	if (error) return databaseError();
 
-	const access = await resolveOrganizationAccess(
-		event.locals.supabase,
-		auth.organization.id,
-		auth.user.id
-	);
-	return json({ tags: data ?? [], canManage: hasPermission(access, 'customers.edit') });
+	return json({ tags: data ?? [] });
 };

@@ -1792,7 +1792,10 @@
 		&__row1,
 		&__row2 {
 			display: grid;
-			grid-template-columns: 3fr 1fr 1fr 1fr;
+			grid-template-columns: minmax(0, 3fr) minmax(108px, 1fr) minmax(140px, 1fr) minmax(
+					110px,
+					1fr
+				);
 			gap: var(--space-small);
 		}
 		&__row1 {
@@ -2191,7 +2194,7 @@
 		}
 		.pricing-card__row1,
 		.pricing-card__row2 {
-			grid-template-columns: minmax(0, 1fr) 80px 110px 110px;
+			grid-template-columns: minmax(0, 1fr) 108px 140px 110px;
 			gap: var(--space-small);
 		}
 		.pricing-card__image {
@@ -2321,5 +2324,35 @@
 		flex: 1 1 auto;
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
+	}
+
+	.pricing-card__body {
+		container-type: inline-size;
+	}
+	@container (max-width: 600px) {
+		.pricing-card__row1,
+		.pricing-card--concept .pricing-card__row1 {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+		.pricing-card__name {
+			grid-column: 1 / -1;
+		}
+	}
+	@container (max-width: 480px) {
+		.pricing-card__row1,
+		.pricing-card--concept .pricing-card__row1 {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+		.pricing-card__name {
+			grid-column: 1 / -1;
+		}
+		.pricing-card__row2,
+		.pricing-card--concept .pricing-card__row2 {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		.pricing-card__description,
+		.pricing-card__image {
+			grid-column: 1 / -1;
+		}
 	}
 </style>

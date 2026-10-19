@@ -77,6 +77,7 @@
 		{disabled}
 		type="text"
 		inputmode="decimal"
+		aria-describedby={`${id}-currency`}
 		{placeholder}
 		bind:value={draft}
 		onfocus={() => {
@@ -88,7 +89,7 @@
 			if (event.key === 'Enter') (event.currentTarget as HTMLInputElement).blur();
 		}}
 	>
-		<span class="money-input__currency" aria-hidden="true">{symbol}</span>
+		<span class="money-input__currency" id={`${id}-currency`}>{symbol}</span>
 	</Input>
 </div>
 

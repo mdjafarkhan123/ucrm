@@ -315,8 +315,8 @@ export async function fetchProfiles(ids: string[]) {
 	return profiles;
 }
 
-export async function fetchTagCatalog() {
-	return requestJson<{ tags: Tag[]; canManage: boolean }>('/api/tags');
+export async function fetchTagPermissions() {
+	return requestJson<{ canManage: boolean }>('/api/tags?permissions=1');
 }
 export async function updateTagColor(id: string, color: string) {
 	const { tag } = await requestJson<{ tag: Tag }>(`/api/tags/${id}`, {

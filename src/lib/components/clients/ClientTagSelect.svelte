@@ -4,7 +4,7 @@
 	import {
 		createTag,
 		fetchTags,
-		fetchTagCatalog,
+		fetchTagPermissions,
 		updateTagColor,
 		tagsKey,
 		type Tag
@@ -22,7 +22,7 @@
 
 	const catalogQuery = createQuery(() => ({
 		queryKey: [...tagsKey, 'permissions'],
-		queryFn: fetchTagCatalog
+		queryFn: fetchTagPermissions
 	}));
 	async function recolor(id: string, color: string) {
 		await updateTagColor(id, color);

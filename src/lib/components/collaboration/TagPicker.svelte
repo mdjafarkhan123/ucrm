@@ -6,7 +6,7 @@
 		unassignTag,
 		createTag,
 		updateTagColor,
-		fetchTagCatalog,
+		fetchTagPermissions,
 		fetchTags,
 		fetchTagAssignments,
 		tagsKey,
@@ -23,7 +23,7 @@
 	const tags = createQuery(() => ({ queryKey: tagsKey, queryFn: fetchTags }));
 	const catalog = createQuery(() => ({
 		queryKey: [...tagsKey, 'permissions'],
-		queryFn: fetchTagCatalog
+		queryFn: fetchTagPermissions
 	}));
 	const assignments = createQuery(() => ({
 		queryKey: tagAssignmentsKey(entityType, entityId),
