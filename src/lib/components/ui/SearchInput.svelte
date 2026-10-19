@@ -25,8 +25,11 @@
 		onkeydown?: (event: KeyboardEvent) => void;
 	} = $props();
 
+	let inputElement: HTMLInputElement;
+
 	function clear() {
 		value = '';
+		inputElement.focus();
 	}
 </script>
 
@@ -42,6 +45,7 @@
 	{/if}
 	<span class="search-input__icon" aria-hidden="true">{@html searchIcon}</span>
 	<input
+		bind:this={inputElement}
 		{id}
 		type="search"
 		bind:value
@@ -52,7 +56,13 @@
 		autocomplete="off"
 	/>
 	{#if value}
-		<button class="search-input__clear" type="button" aria-label="Clear search" onclick={clear}>
+		<button
+			class="search-input__clear"
+			type="button"
+			{disabled}
+			aria-label="Clear search"
+			onclick={clear}
+		>
 			<span aria-hidden="true">{@html xIcon}</span>
 		</button>
 	{/if}
@@ -68,7 +78,7 @@
 		min-height: 40px;
 		align-items: center;
 		gap: var(--space-small);
-		padding: 0 var(--space-small);
+		padding: 0 var(--space-slim);
 		border: var(--border-base) solid var(--color-border--interactive);
 		border-radius: var(--radius-base);
 		color: var(--color-text--secondary);
@@ -91,24 +101,28 @@
 		}
 
 		&.search-input--labelled {
-			margin-top: var(--space-small);
+			margin-top: 25px;
 		}
 
 		.search-input__label {
 			position: absolute;
 			z-index: var(--elevation-base);
-			top: calc(var(--space-small) * -1);
-			left: var(--space-slim);
+			top: -25px;
+			left: 0;
 			max-width: calc(100% - var(--space-large));
-			padding: 0 var(--space-smaller);
+			padding: 0;
 			overflow: hidden;
-			color: var(--color-text--secondary);
-			background: var(--color-surface);
-			font-size: var(--typography--fontSize-small);
+			color: var(--color-heading);
+			background: transparent;
+			font-size: var(--typography--fontSize-label);
 			font-weight: 600;
 			line-height: var(--space-base);
 			text-overflow: ellipsis;
 			white-space: nowrap;
+		}
+
+		&:hover:not(.search-input--disabled) {
+			border-color: var(--color-border--interactive--hover);
 		}
 
 		&:focus-within {
@@ -125,8 +139,8 @@
 		}
 
 		&__icon :global(svg) {
-			width: 18px;
-			height: 18px;
+			width: 16px;
+			height: 16px;
 		}
 
 		input {
@@ -158,18 +172,23 @@
 		}
 
 		&__clear {
-			width: 28px;
-			height: 28px;
+			width: 24px;
+			height: 24px;
 			padding: 0;
-			border: 0;
-			border-radius: var(--radius-small);
+			border: 1px solid transparent;
+			border-radius: var(--radius-tile-small);
 			color: var(--color-text--secondary);
-			background: transparent;
+			background: var(--color-surface--hover);
 			cursor: pointer;
 
 			&:hover {
 				color: var(--color-heading);
-				background: var(--color-surface--hover);
+				background: var(--color-surface--active);
+			}
+
+			&:active:not(:disabled) {
+				border-color: var(--color-border--interactive--hover);
+				background: var(--color-surface--active);
 			}
 
 			&:focus-visible {
@@ -180,8 +199,8 @@
 			span,
 			span :global(svg) {
 				display: block;
-				width: 16px;
-				height: 16px;
+				width: 14px;
+				height: 14px;
 			}
 		}
 

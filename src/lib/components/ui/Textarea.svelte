@@ -1,4 +1,5 @@
 <script lang="ts">
+	import alertIcon from '@tabler/icons/outline/exclamation-circle.svg?raw';
 	let {
 		value = $bindable(''),
 		id,
@@ -28,14 +29,13 @@
 	} = $props();
 
 	let describedBy = $derived(errorMessage ? `${id}-error` : undefined);
-	let hasValue = $derived(Boolean(value));
-	let remaining = $derived(maxlength && showCount ? maxlength - value.length : null);
+	let isInvalid = $derived(invalid || Boolean(errorMessage));
+	let remaining = $derived(maxlength !== undefined && showCount ? maxlength - value.length : null);
 </script>
 
 <div
 	class={`textarea ${className}`}
-	class:textarea--has-value={hasValue}
-	class:textarea--invalid={invalid}
+	class:textarea--invalid={isInvalid}
 	class:textarea--disabled={disabled}
 >
 	{#if label}<label class="textarea__label" for={id}
@@ -48,135 +48,110 @@
 		{maxlength}
 		bind:value
 		{disabled}
-		aria-invalid={invalid}
+		{required}
+		aria-invalid={isInvalid}
 		aria-required={required || undefined}
 		aria-describedby={describedBy}></textarea>
 	<div class="textarea__footer">
 		{#if errorMessage}
-			<p class="textarea__error" id={`${id}-error`} role="alert">{errorMessage}</p>
+			<p class="textarea__error" id={`${id}-error`} role="alert">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				<span aria-hidden="true">{@html alertIcon}</span>{errorMessage}
+			</p>
 		{:else}
 			<span></span>
 		{/if}
 		{#if remaining !== null}
-			<span class="textarea__count" class:textarea__count--low={remaining < 0}>{remaining}</span>
+			<span class="textarea__count" class:textarea__count--low={remaining < 0}
+				>{remaining < 0 ? `${Math.abs(remaining)} too many` : `${remaining} left`}</span
+			>
 		{/if}
 	</div>
 </div>
 
 <style lang="scss">
 	.textarea {
-		position: relative;
 		width: 100%;
+		min-width: 0;
 		font-size: var(--typography--fontSize-base);
 
 		&__label {
-			position: absolute;
-			z-index: var(--elevation-base);
-			top: var(--space-base);
-			left: var(--space-base);
-			max-width: calc(100% - var(--space-largest));
-			overflow: hidden;
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-base);
-			text-overflow: ellipsis;
-			white-space: nowrap;
-			transition: all var(--timing-quick);
-			pointer-events: none;
+			display: block;
+			margin-bottom: 6px;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 600;
+		}
+		&__error {
+			display: flex;
+			align-items: flex-start;
+			gap: 6px;
+			margin: 0;
+			padding-top: var(--space-smaller);
+			color: var(--color-critical);
+			font-size: var(--typography--fontSize-small);
+			line-height: 1.4;
+		}
+		&__error span {
+			display: inline-flex;
+			flex: 0 0 auto;
+		}
+		&__error span :global(svg) {
+			width: 14px;
+			height: 14px;
 		}
 
 		textarea {
 			display: block;
 			width: 100%;
-			min-height: var(--space-largest);
-			padding: calc(var(--space-base) - var(--space-smallest)) var(--space-base);
+			min-height: 96px;
+			padding: 10px var(--space-slim);
 			border: var(--border-base) solid var(--color-border--interactive);
 			border-radius: var(--radius-base);
 			outline: 0;
 			color: var(--color-heading);
 			background: var(--color-surface);
 			font: inherit;
-			line-height: 20px;
+			line-height: 1.45;
 			resize: vertical;
+			&::placeholder {
+				color: var(--color-text--secondary);
+				opacity: 1;
+			}
+			&:hover {
+				border-color: var(--color-border--interactive--hover);
+			}
+			&:focus {
+				box-shadow: var(--shadow-focus);
+			}
 		}
-
-		textarea:focus {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-
-		&:focus-within .textarea__label,
-		&--has-value .textarea__label {
-			top: var(--space-smallest);
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-		}
-
-		&:focus-within textarea,
-		&--has-value textarea {
-			padding-top: calc(var(--space-base) + var(--space-smaller));
-		}
-
 		&--invalid textarea {
-			border-color: var(--color-critical);
+			border: 1.5px solid var(--color-critical);
 		}
-
 		&--disabled textarea {
 			color: var(--color-disabled);
 			border-color: var(--color-border);
 			background: var(--color-disabled--secondary);
 		}
-
 		&__footer {
 			display: flex;
 			align-items: flex-start;
-			justify-content: space-between;
 			gap: var(--space-small);
-			min-height: 18px;
 			padding-top: var(--space-smaller);
 		}
-
 		&__error {
-			color: var(--color-critical);
-			font-size: var(--typography--fontSize-small);
+			padding-top: 0;
 		}
-
 		&__count {
 			margin-left: auto;
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-smaller);
-
-			&--low {
-				color: var(--color-critical);
-			}
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+			white-space: nowrap;
 		}
-	}
-
-	// Concept look (design skill `inputs.md`): inside a `.concept-fields` area the label sits above the box.
-	:global(.concept-fields) .textarea {
-		.textarea__label,
-		&:focus-within .textarea__label,
-		&.textarea--has-value .textarea__label {
-			position: static;
-			display: block;
-			max-width: none;
-			margin-bottom: 6px;
-			color: var(--color-heading);
-			font-size: var(--typography--fontSize-label);
+		&__count--low {
+			color: var(--color-critical);
 			font-weight: 600;
-			transform: none;
-			transition: none;
-		}
-		textarea,
-		&:focus-within textarea,
-		&.textarea--has-value textarea {
-			padding: 10px var(--space-slim);
-		}
-		textarea:hover:not(:focus) {
-			border-color: var(--color-border--section);
-		}
-		// The label is above the box, so the placeholder starts on the first line.
-		textarea::placeholder {
-			padding-top: 0;
 		}
 	}
 </style>

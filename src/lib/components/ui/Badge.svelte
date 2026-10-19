@@ -8,7 +8,17 @@
 		class: className = ''
 	}: {
 		children: Snippet;
-		status?: 'success' | 'warning' | 'critical' | 'inactive' | 'informative';
+		status?:
+			| 'success'
+			| 'warning'
+			| 'critical'
+			| 'inactive'
+			| 'informative'
+			| 'request'
+			| 'quote'
+			| 'job'
+			| 'invoice'
+			| 'client';
 		size?: 'small' | 'base' | 'large' | 'larger';
 		/** Colored badges show a leading dot by default; set false for a plain tinted pill. */
 		dot?: boolean;
@@ -28,73 +38,46 @@
 	.badge {
 		display: inline-flex;
 		align-items: center;
-		gap: var(--space-small);
+		gap: 6px;
 		width: fit-content;
+		padding: 5px 11px;
+		border-radius: var(--radius-circle);
 		color: var(--color-heading);
 		background: var(--color-inactive--surface);
-		border-radius: var(--radius-large);
-		font-weight: 600;
-		line-height: 1;
-		text-transform: capitalize;
-	}
-	.badge--small {
-		padding: var(--space-smallest) var(--space-small);
-		font-size: var(--typography--fontSize-smaller);
-	}
-	.badge--base {
-		padding: 6px 10px;
 		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		line-height: 1.2;
+		&--small {
+			padding: 3px 9px;
+			font-size: var(--typography--fontSize-overline);
+		}
+		&--large {
+			padding: 10px var(--space-slim);
+			font-size: var(--typography--fontSize-large);
+		}
+		&--larger {
+			padding: var(--space-slim) var(--space-base);
+			font-size: var(--typography--fontSize-large);
+		}
+		&--status {
+			color: var(--badge-text);
+			background: var(--badge-background);
+		}
+		&__dot {
+			width: 6px;
+			height: 6px;
+			flex: 0 0 auto;
+			border-radius: var(--radius-circle);
+			background: var(--badge-dot);
+		}
 	}
-	.badge--large {
-		padding: 10px var(--space-slim);
-		border-radius: var(--radius-larger);
-		font-size: var(--typography--fontSize-large);
-	}
-	.badge--larger {
-		padding: var(--space-slim) var(--space-base);
-		border-radius: var(--radius-larger);
-		font-size: var(--typography--fontSize-large);
-	}
-	.badge--status {
-		padding: 6px 10px 6px var(--space-small);
-		border-radius: 12px;
-		color: var(--badge-text);
-		background: var(--badge-background);
-	}
-	/* Without the dot the asymmetric status padding reads off-center. */
-	.badge--no-dot {
-		padding: 6px 10px;
-	}
-	.badge__dot {
-		width: var(--space-small);
-		height: var(--space-small);
-		flex: 0 0 auto;
-		border-radius: var(--radius-circle);
-		background: var(--badge-dot);
-	}
-	.badge--success {
-		--badge-background: var(--color-success--surface);
-		--badge-text: var(--color-success--onSurface);
-		--badge-dot: var(--color-success);
-	}
-	.badge--warning {
-		--badge-background: var(--color-warning--surface);
-		--badge-text: var(--color-warning--onSurface);
-		--badge-dot: var(--color-warning);
-	}
-	.badge--critical {
-		--badge-background: var(--color-critical--surface);
-		--badge-text: var(--color-critical--onSurface);
-		--badge-dot: var(--color-critical);
-	}
-	.badge--inactive {
-		--badge-background: var(--color-inactive--surface);
-		--badge-text: var(--color-inactive--onSurface);
-		--badge-dot: var(--color-inactive);
-	}
-	.badge--informative {
-		--badge-background: var(--color-informative--surface);
-		--badge-text: var(--color-informative--onSurface);
-		--badge-dot: var(--color-informative);
+	@each $tone in success, warning, critical, inactive, informative, request, quote, job, invoice,
+		client
+	{
+		.badge--#{$tone} {
+			--badge-background: var(--color-#{$tone}--surface);
+			--badge-text: var(--color-#{$tone}--onSurface);
+			--badge-dot: var(--color-#{$tone});
+		}
 	}
 </style>

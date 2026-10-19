@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Select as SelectPrimitive } from 'bits-ui';
+	import alertIcon from '@tabler/icons/outline/exclamation-circle.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 
@@ -19,6 +20,8 @@
 		placeholder = 'Select an option',
 		disabled = false,
 		required = false,
+		invalid = false,
+		errorMessage = '',
 		name,
 		class: className = '',
 		contentClass = '',
@@ -37,6 +40,8 @@
 		placeholder?: string;
 		disabled?: boolean;
 		required?: boolean;
+		invalid?: boolean;
+		errorMessage?: string;
 		name?: string;
 		class?: string;
 		/** Extra class for the floating options list, e.g. to out-rank a popover this Select is nested in. */
@@ -53,6 +58,7 @@
 	let selectedLabel = $derived(
 		options.find((option) => option.value === value)?.label ?? placeholder
 	);
+	let isInvalid = $derived(invalid || Boolean(errorMessage));
 	let labelId = $derived(label ? `${id}-label` : undefined);
 
 	function handleValueChange(nextValue: string) {
@@ -63,7 +69,7 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <div
-	class={['select', label && 'select--labelled', className]}
+	class={['select', label && 'select--labelled', isInvalid && 'select--invalid', className]}
 	data-disabled={disabled || undefined}
 >
 	{#if label}
@@ -83,6 +89,9 @@
 		<SelectPrimitive.Trigger
 			{id}
 			class="select__trigger"
+			aria-invalid={isInvalid}
+			aria-describedby={errorMessage ? `${id}-error` : undefined}
+			data-placeholder={!value || undefined}
 			aria-label={label ? undefined : ariaLabel}
 			aria-labelledby={labelId ?? ariaLabelledby}
 		>
@@ -120,6 +129,9 @@
 			</SelectPrimitive.Content>
 		</SelectPrimitive.Portal>
 	</SelectPrimitive.Root>
+	{#if errorMessage}<p class="select__error" id={`${id}-error`} role="alert">
+			<span aria-hidden="true">{@html alertIcon}</span>{errorMessage}
+		</p>{/if}
 </div>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
@@ -130,26 +142,28 @@
 		width: 100%;
 		color: var(--color-heading);
 
-		&.select--labelled {
-			padding-top: var(--space-small);
-		}
-
 		.select__label {
-			position: absolute;
-			// One above the focused trigger, which lifts itself to show its focus ring and would otherwise cover this.
-			z-index: calc(var(--elevation-base) + 1);
-			top: 0;
-			left: var(--space-slim);
-			max-width: calc(100% - var(--space-large));
-			padding: 0 var(--space-smaller);
-			overflow: hidden;
-			color: var(--color-text--secondary);
-			background: var(--color-surface);
-			font-size: var(--typography--fontSize-small);
+			display: block;
+			margin-bottom: 6px;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-label);
 			font-weight: 600;
-			line-height: var(--space-base);
-			text-overflow: ellipsis;
-			white-space: nowrap;
+		}
+		.select__error {
+			display: flex;
+			align-items: flex-start;
+			gap: 6px;
+			padding-top: var(--space-smaller);
+			color: var(--color-critical);
+			font-size: var(--typography--fontSize-small);
+		}
+		.select__error span {
+			display: inline-flex;
+			flex: 0 0 auto;
+		}
+		.select__error :global(svg) {
+			width: 14px;
+			height: 14px;
 		}
 
 		:global(.select__trigger) {
@@ -159,7 +173,7 @@
 			align-items: center;
 			justify-content: space-between;
 			gap: var(--space-small);
-			padding: 0 var(--space-small);
+			padding: 0 var(--space-slim);
 			border: var(--border-base) solid var(--color-border--interactive);
 			border-radius: var(--radius-base);
 			outline: none;
@@ -169,6 +183,27 @@
 			line-height: var(--typography--lineHeight-base);
 			text-align: left;
 			cursor: pointer;
+		}
+
+		:global(.select__trigger:hover:not(:disabled)) {
+			border-color: var(--color-border--interactive--hover);
+		}
+		:global(.select__trigger:active:not(:disabled)) {
+			background: var(--color-surface--active);
+		}
+		:global(.select__trigger[data-state='open']) {
+			box-shadow: var(--shadow-focus);
+		}
+		&.select--invalid :global(.select__trigger) {
+			border: 1.5px solid var(--color-critical);
+		}
+		:global(.select__trigger[data-placeholder]) {
+			color: var(--color-text--secondary);
+		}
+		:global(.select__trigger:disabled) :global(.select__chevron),
+		:global(.select__trigger:disabled) :global(.select__icon),
+		:global(.select__trigger:disabled) :global(.select__prefix) {
+			color: var(--color-disabled);
 		}
 
 		:global(.select__trigger:focus-visible) {
@@ -237,7 +272,7 @@
 		max-height: min(calc(var(--space-extravagant) * 3), var(--bits-floating-available-height));
 		overflow: hidden;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border-radius: var(--radius-large);
 		background: var(--color-surface);
 		box-shadow: var(--shadow-base);
 	}
@@ -261,12 +296,14 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-small);
-		padding: var(--space-small);
-		border-radius: var(--radius-small);
+		min-height: 36px;
+		margin-bottom: 2px;
+		padding: 0 10px;
+		border-radius: var(--radius-base);
 		outline: none;
-		color: var(--color-text);
+		color: var(--color-heading);
 		font-size: var(--typography--fontSize-base);
-		font-weight: 500;
+		font-weight: 400;
 		line-height: var(--typography--lineHeight-base);
 		cursor: pointer;
 		transition:
@@ -281,6 +318,10 @@
 
 	:global(.select__option[data-selected]) {
 		color: var(--color-heading);
+		font-weight: 600;
+	}
+
+	:global(.select__option:active:not([data-disabled])) {
 		background: var(--color-surface--active);
 	}
 
@@ -303,31 +344,5 @@
 		flex: 0 0 auto;
 		place-items: center;
 		color: var(--color-interactive);
-	}
-
-	// Concept look (design skill `inputs.md`): inside a `.concept-fields` area the label sits above a 40px box.
-	:global(.concept-fields) .select {
-		&.select--labelled {
-			padding-top: 0;
-		}
-		.select__label {
-			position: static;
-			display: block;
-			max-width: none;
-			margin-bottom: 6px;
-			color: var(--color-heading);
-			font-size: var(--typography--fontSize-label);
-			font-weight: 600;
-			transform: none;
-			transition: none;
-			padding: 0;
-			background: none;
-			line-height: inherit;
-		}
-		:global(.select__trigger) {
-			min-height: 40px;
-			padding: 0 var(--space-slim);
-			font-size: var(--typography--fontSize-base);
-		}
 	}
 </style>

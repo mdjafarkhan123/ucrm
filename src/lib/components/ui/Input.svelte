@@ -32,21 +32,18 @@
 		[key: string]: unknown;
 	} = $props();
 
-	const ALWAYS_FLOATED_LABEL_TYPES = new Set(['date', 'time', 'datetime-local', 'month', 'week']);
-
-	let describedBy = $derived(errorMessage ? `${id}-error` : undefined);
-	// The label rests over the field until there is something to lift it clear. A placeholder counts: it
-	// shows while the field is still empty, so without this the two sit on top of each other.
-	let hasValue = $derived(
-		Boolean(value) || ALWAYS_FLOATED_LABEL_TYPES.has(type) || Boolean(rest.placeholder)
+	let describedBy = $derived(
+		[rest['aria-describedby'], errorMessage ? `${id}-error` : undefined]
+			.filter(Boolean)
+			.join(' ') || undefined
 	);
+	let isInvalid = $derived(invalid || Boolean(errorMessage));
 </script>
 
 <div
 	class={`input input--${size} ${className}`}
-	class:input--has-value={hasValue}
 	class:input--labeled={Boolean(label) && size !== 'small'}
-	class:input--invalid={invalid}
+	class:input--invalid={isInvalid}
 	class:input--disabled={disabled}
 >
 	{#if label}<label class="input__label" for={id}
@@ -60,7 +57,8 @@
 			{type}
 			bind:value
 			{disabled}
-			aria-invalid={invalid}
+			{required}
+			aria-invalid={isInvalid}
 			aria-required={required || undefined}
 			aria-describedby={describedBy}
 		/>
@@ -73,84 +71,93 @@
 
 <style lang="scss">
 	.input {
-		position: relative;
 		width: 100%;
+		min-width: 0;
 		font-size: var(--typography--fontSize-base);
+
+		&__label {
+			display: block;
+			margin-bottom: 6px;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 600;
+		}
+		&__error {
+			display: flex;
+			align-items: flex-start;
+			gap: 6px;
+			margin: 0;
+			padding-top: var(--space-smaller);
+			color: var(--color-critical);
+			font-size: var(--typography--fontSize-small);
+			line-height: 1.4;
+		}
+		&__error span {
+			display: inline-flex;
+			flex: 0 0 auto;
+		}
+		&__error span :global(svg) {
+			width: 14px;
+			height: 14px;
+		}
 
 		&__control {
 			display: flex;
 			align-items: center;
-			min-height: var(--space-largest);
+			gap: var(--space-small);
+			min-height: 40px;
+			padding: 0 var(--space-slim);
 			border: var(--border-base) solid var(--color-border--interactive);
 			border-radius: var(--radius-base);
 			background: var(--color-surface);
-			overflow: hidden;
-		}
-		&__label {
-			position: absolute;
-			z-index: var(--elevation-base);
-			top: 50%;
-			left: var(--space-base);
-			max-width: calc(100% - var(--space-largest));
-			overflow: hidden;
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-base);
-			text-overflow: ellipsis;
-			white-space: nowrap;
-			transform: translateY(-50%);
-			transition: all var(--timing-quick);
-			pointer-events: none;
+			&:hover {
+				border-color: var(--color-border--interactive--hover);
+			}
+			&:focus-within {
+				box-shadow: var(--shadow-focus);
+			}
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+				color: var(--color-icon--secondary);
+			}
 		}
 		input {
 			width: 100%;
 			min-width: 0;
-			padding: calc(var(--space-base) - var(--space-smallest)) var(--space-base);
+			padding: 9px 0;
 			border: 0;
 			outline: 0;
-			color: var(--color-heading);
 			background: transparent;
+			color: var(--color-heading);
+			font: inherit;
 			line-height: 20px;
+			&::placeholder {
+				color: var(--color-text--secondary);
+				opacity: 1;
+			}
+			&:focus-visible {
+				outline: none;
+				box-shadow: none;
+			}
 		}
-		input:focus {
-			outline: none;
-		}
-		&:focus-within .input__label,
-		&--has-value .input__label {
-			top: var(--space-smallest);
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-			transform: none;
-		}
-		// Room for the lifted label only exists where a label is shown; a field without one keeps its height.
-		&--labeled:focus-within input,
-		&--labeled.input--has-value input {
-			padding-top: calc(var(--space-base) + var(--space-smaller));
-			padding-bottom: var(--space-small);
-		}
-		&:focus-within .input__control {
-			box-shadow: var(--shadow-focus);
-			z-index: var(--elevation-base);
-		}
-		&--small .input__control {
+		&--small &__control {
 			min-height: 36px;
 		}
 		&--small input {
-			padding: var(--space-small);
+			padding: 7px 0;
+			font-size: var(--typography--fontSize-label);
 		}
-		&--small .input__label {
-			display: none;
-		}
-		&--large .input__control {
-			min-height: var(--space-extravagant);
+		&--large &__control {
+			min-height: var(--space-largest);
 		}
 		&--large input {
-			padding: 14px 20px;
 			font-size: var(--typography--fontSize-large);
 		}
-		&--invalid .input__control {
-			border-color: var(--color-critical);
+		&--invalid &__control {
+			border: 1.5px solid var(--color-critical);
 		}
-		&--disabled .input__control {
+		&--disabled &__control {
 			border-color: var(--color-border);
 			background: var(--color-disabled--secondary);
 		}
@@ -158,52 +165,8 @@
 			color: var(--color-disabled);
 			-webkit-text-fill-color: var(--color-disabled);
 		}
-		&__error {
-			display: flex;
-			align-items: center;
-			gap: var(--space-smaller);
-			padding-top: var(--space-smaller);
-			color: var(--color-critical);
-			font-size: var(--typography--fontSize-small);
-		}
-		&__error span :global(svg) {
-			width: 16px;
-			height: 16px;
-		}
-	}
-
-	// Concept look (design skill `inputs.md`): inside a `.concept-fields` area the label sits above a 40px
-	// box instead of resting inside it.
-	:global(.concept-fields) .input {
-		.input__label,
-		&:focus-within .input__label,
-		&.input--has-value .input__label {
-			position: static;
-			display: block;
-			max-width: none;
-			margin-bottom: 6px;
-			color: var(--color-heading);
-			font-size: var(--typography--fontSize-label);
-			font-weight: 600;
-			transform: none;
-			transition: none;
-		}
-		.input__control {
-			min-height: 40px;
-		}
-		&.input--labeled input,
-		&.input--labeled:focus-within input,
-		&.input--labeled.input--has-value input {
-			padding: calc(var(--space-small) + 1px) var(--space-slim);
-		}
-		input {
-			padding: calc(var(--space-small) + 1px) var(--space-slim);
-		}
-		.input__control:has(input[readonly]) {
+		&__control:has(input[readonly]) {
 			background: var(--color-surface--background--subtle);
-		}
-		.input__control:hover:not(:focus-within) {
-			border-color: var(--color-border--section);
 		}
 	}
 </style>

@@ -1,6 +1,6 @@
 # Fields — interaction-state follow-up
 
-**Stage:** Approved 2026-10-19; waiting to merge (2026-10-19).
+**Stage:** Approved 2026-10-19; implementation ready for browser proof (2026-10-19).
 **Owner:** codex-fields-followup; reservation `8bdf23eb565a`. Jafar confirmed the previous session finished and authorized takeover.
 **Workspace:** `.worktrees/concept-fields`, branch `codex/concept-fields`.
 
@@ -23,3 +23,7 @@ Pencil screenshots checked for Dropdown, Big text box and Search sections and ea
 **Approval:** Jafar approved the added interaction states on 2026-10-19 (“approved..”). Applies to dropdown hover/error/pressed, pressed option, textarea hover, search hover and clear hover/pressed on board `khuNF`. Updated `inputs.md` to match.
 
 **Next:** Integrate this branch with current main, preserving newer pop-up/page-state progress. Then build the approved batch 3 shared fields and verify the changed controls in light and dark. Drawings backed up in `db967eae`; no application code changed in this follow-up.
+
+## Build slice
+
+Input, Select, Textarea, SearchInput and Badge updated in shared components. Preserved binding and Bits UI keyboard/focus behavior. Existing props retained; Select adds invalid/errorMessage for approved error presentation, Badge supports record tones. Focused ESLint and preprocessed Svelte autofixer pass (SearchInput retains a direct element reference to restore focus after clear). No broad typecheck/build run. Next: merge and live light/dark screen check, then update checklist.
