@@ -18,8 +18,19 @@ Our live Schedule already has the same behaviour, so the drawing needs no new da
   switch, Unscheduled 4 switched on, Map, Filters), day headings with item count and a Late / Unassigned pill,
   Anytime row, 7 AM–6 PM grid (56 per hour), closed Sunday shaded, green now line, colour key.
 - Items: record colour tint with a 3px record-colour left line (visit green, assessment orange, event yellow,
-  task); status by icon at the top right (late red alarm + red outline, no one assigned yellow + "No one yet" tag,
-  done green check and faded).
+  task grey); type icon top left. Status in words: a small white pill (dot + word) at the card foot, or in the top
+  row on one-hour cards. Late: red outline + "Late". Unassigned: amber outline + "Unassigned". Done: card faded +
+  "Done". Planned cards carry no pill.
+
+## Card colour decision (Jafar delegated to Claude, 2026-10-19)
+
+Jafar proposed colour = status (blue in progress, green done, red late). Compared with Jobber (colour by item
+type, completed faded with a check; https://help.getjobber.com/en/articles/calendar-colors/), Housecall Pro
+(employee colour plus status changes) and dispatch boards (status colour), plus a second opinion from GPT.
+Decided: card colour = kind of work (Jobber default; the colour map's "a record keeps its colour everywhere");
+status always in words; only late and unassigned get a coloured edge; done goes quiet; **no "In progress"
+look**, because the app only infers it from the clock (no real "started" record), and the now line already shows
+the present; no looping animation. The live app today colours cards by status; building this changes that.
 
 ## Next
 
