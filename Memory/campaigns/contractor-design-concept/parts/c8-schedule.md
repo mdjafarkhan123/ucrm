@@ -57,10 +57,17 @@ marks, every item in reading order, a picked item opens its visit pop-up in the 
 (same as the visit pop-up), header with a 40 `--color-time` calendar tile, rows as compact Week cards (kind's
 surface, radius 8, padding 8 10, 6 apart: icon + time + status pill, then client + work).
 
+## Quote visit and event pop-ups (drawn 2026-10-19, waiting for Jafar)
+
+On the board: `UVzdh` (live `AssessmentPreview`: client title, request title, status, Client / When / Team /
+Where, today's timer, only "Open request" in the footer) and `QqZfs` (live `EventPreview`: title, "Event",
+When, Details, Edit, Delete as a danger button; plus "Mark complete", the approved event completion). Ask Jafar:
+the quote visit repeats the client as a fact under the title (live does); keep or drop?
+
 ## Next
 
 1. Draw the rest onto the board, one at a time (from `(app)/schedule/+page.svelte` and `components/schedule`):
-   assessment and event pop-ups (visit pattern), Move visit (`MoveConfirm`), event form (`ScheduleEventDialog`),
+   Move visit (`MoveConfirm`), event form (`ScheduleEventDialog`),
    new-job form (`ScheduleJobCreate`), Filters, the two menus, "are you sure?" pop-ups (Delete this event?,
    Move to Unscheduled?, Whose route?) on the shared pattern, Unscheduled drawer. Then Map (a screen).
 2. Jafar saves Pencil (Ctrl+S); commit `concept.pen` from the main folder under this claim.
