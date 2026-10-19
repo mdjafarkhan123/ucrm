@@ -175,6 +175,7 @@
 	</section>
 
 	<SectionBlock
+		tone="inactive"
 		title="By where they were found"
 		hint="Each business counts once per step. The smaller number shows the messages or calls behind them."
 	>

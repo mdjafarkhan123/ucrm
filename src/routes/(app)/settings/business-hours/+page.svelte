@@ -236,6 +236,7 @@
 
 				{#if !started}
 					<SectionBlock
+						tone="inactive"
 						title="Not set yet"
 						hint="Used for scheduling, online booking, and reminders."
 					>
@@ -256,6 +257,7 @@
 					</SectionBlock>
 				{:else if mode === 'appointment_only'}
 					<SectionBlock
+						tone="inactive"
 						title="By appointment only"
 						hint="No fixed weekly hours — every visit is scheduled individually."
 					>

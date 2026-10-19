@@ -291,6 +291,7 @@
 	/>
 {:else if current}
 	<SectionBlock
+		tone="inactive"
 		id="preview"
 		title="Your preview"
 		icon={presentationIcon}

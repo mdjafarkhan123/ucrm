@@ -349,6 +349,7 @@
 		<RecordFormLayout title="Payments" icon={creditCardIcon} bind:this={layout} error={saveError}>
 			{#snippet main()}
 				<SectionBlock
+					tone="invoice"
 					title="Card payments with Stripe"
 					icon={stripeIcon}
 					hint="Customers pay by card, Apple Pay, Google Pay or bank on Stripe’s secure page. Money goes straight to your own Stripe account — UCRM never holds it."
@@ -521,7 +522,7 @@
 			{/snippet}
 
 			{#snippet rail()}
-				<RailCard title="How to connect" icon={keyIcon}>
+				<RailCard tone="invoice" title="How to connect" icon={keyIcon}>
 					<ol class="payments__steps">
 						<li>
 							<a
@@ -564,7 +565,7 @@
 					</p>
 				</RailCard>
 
-				<RailCard title="Stuck? We’ll set it up with you" icon={lifebuoyIcon}>
+				<RailCard tone="invoice" title="Stuck? We’ll set it up with you" icon={lifebuoyIcon}>
 					<p class="payments__rail-text">
 						Contact UCRM support for a free screen-share call and we’ll walk through it together.
 						You paste the key yourself — we never ask you to send it.

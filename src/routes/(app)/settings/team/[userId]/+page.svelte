@@ -642,7 +642,7 @@
 					{/snippet}
 
 					{#snippet rail()}
-						<RailCard title="Current status" icon={briefcaseIcon}>
+						<RailCard tone="inactive" title="Current status" icon={briefcaseIcon}>
 							<StatusBadge status={statusTone(member.status)}
 								>{statusLabel(member.status)}</StatusBadge
 							>

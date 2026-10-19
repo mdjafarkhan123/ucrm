@@ -209,7 +209,7 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<SectionBlock title="Role & access" icon={shieldLockIcon} level={2}>
+<SectionBlock tone="inactive" title="Role & access" icon={shieldLockIcon} level={2}>
 	{#snippet actions()}
 		{#if !revealed}
 			<Button

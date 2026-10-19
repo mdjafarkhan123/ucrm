@@ -130,7 +130,7 @@
 				retry={() => experienceQuery.refetch()}
 			/>
 		{:else if data}
-			<SectionBlock title="Profile" icon={compassIcon}>
+			<SectionBlock tone="inactive" title="Profile" icon={compassIcon}>
 				<div class="experience__actions">
 					{#if canDecide && data.profile.state !== 'unresolved' && data.profile.state !== 'unrecognized'}
 						<Button
@@ -212,7 +212,7 @@
 				<MigrationPanel {organizationId} hasProfile={data.profile.state === 'confirmed'} />
 			{/if}
 
-			<SectionBlock title="Decision history" icon={historyIcon}>
+			<SectionBlock tone="inactive" title="Decision history" icon={historyIcon}>
 				{#if data.history.length === 0}
 					<p class="experience__muted">No decisions recorded yet.</p>
 				{:else}

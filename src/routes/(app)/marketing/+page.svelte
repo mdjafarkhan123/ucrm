@@ -135,6 +135,7 @@
 							? describeMarketingWarmup(readiness.warmup)
 							: null}
 						<SectionBlock
+							tone="growth"
 							title="Email readiness"
 							hint={readiness.ready
 								? 'Everything needed to send Marketing email is in place.'

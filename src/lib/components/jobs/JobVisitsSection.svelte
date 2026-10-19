@@ -501,10 +501,8 @@
 		}
 	}
 
-	function handleCreate(result: { dates: string[]; scheduleLater: boolean }) {
-		creating = false;
+	async function handleCreate(result: { dates: string[]; scheduleLater: boolean }) {
 		const source = createSource;
-		createSource = 'manual';
 		const items: AddVisitInput[] = result.scheduleLater
 			? [
 					{
@@ -528,7 +526,14 @@
 					assignee_ids: [],
 					source
 				}));
-		void runAdd(items, items.length === 1 ? 'Visit added' : `${items.length} visits added`, notify);
+		await runAdd(
+			items,
+			items.length === 1 ? 'Visit added' : `${items.length} visits added`,
+			notify
+		);
+		if (addError) throw new Error(addError);
+		creating = false;
+		createSource = 'manual';
 	}
 
 	function duplicateVisit(visit: JobVisit) {

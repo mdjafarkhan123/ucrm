@@ -174,6 +174,7 @@
 
 			{#if followUps.length > 0}
 				<SectionBlock
+					tone="inactive"
 					title="Uplift will follow up on these"
 					hint="They don’t stop you sending. Uplift carries on with everything else and gets back to you about each one."
 					variant="filled"
@@ -196,7 +197,7 @@
 
 			{#each check.sections as section (section.key)}
 				{@const status = SETUP_CHECK_STATUS[section.status]}
-				<SectionBlock title={section.title}>
+				<SectionBlock tone="inactive" title={section.title}>
 					{#snippet actions()}
 						<Button
 							variant="tertiary"

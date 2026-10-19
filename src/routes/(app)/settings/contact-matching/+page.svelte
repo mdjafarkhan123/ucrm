@@ -155,6 +155,7 @@
 
 				{#if priority !== null}
 					<SectionBlock
+						tone="inactive"
 						title="When contact details point to two clients"
 						hint="Sometimes a website chat or request form arrives with a phone number that belongs to one of your clients and an email that belongs to another. Choose which one wins."
 						icon={usersGroupIcon}

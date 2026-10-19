@@ -70,7 +70,7 @@
 </script>
 
 {#if billable.length > 0}
-	<RailCard title="Periods ready to bill" count={billable.length}>
+	<RailCard tone="job" title="Periods ready to bill" count={billable.length}>
 		<ul class="periods-to-bill">
 			{#each billable as reminder (reminder.id)}
 				<li class="periods-to-bill__item">

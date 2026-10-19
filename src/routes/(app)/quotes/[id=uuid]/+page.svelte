@@ -258,7 +258,9 @@
 	const totalRows = $derived.by(() => {
 		const version = saved?.version;
 		if (!saved?.can_see_price || !version) return undefined;
-		const rows = [{ label: 'Subtotal', value: moneyFormat.format((version.subtotal_minor ?? 0) / 100) }];
+		const rows = [
+			{ label: 'Subtotal', value: moneyFormat.format((version.subtotal_minor ?? 0) / 100) }
+		];
 		if ((version.discount_minor ?? 0) > 0)
 			rows.push({
 				label: version.discount_name || 'Discount',
@@ -1081,14 +1083,15 @@
 							kind="quote"
 							id={quoteId}
 							clientName={saved.quote.client?.display_name}
-							clientIsCompany={saved.quote.client?.company_name === saved.quote.client?.display_name}
+							clientIsCompany={saved.quote.client?.company_name ===
+								saved.quote.client?.display_name}
 						/>
 					{/snippet}
 					{#snippet facts()}<RecordFactsList facts={headerFacts} />{/snippet}
 				</WorkRecordHeader>
 
 				{#if saved.signature}
-					<SectionBlock title="Signature" icon={signatureIcon} level={2}>
+					<SectionBlock tone="quote" title="Signature" icon={signatureIcon} level={2}>
 						<div class="quote-signature">
 							{#if saved.signature.has_image}
 								<img
@@ -1119,6 +1122,7 @@
 				{/if}
 
 				{#if showIntroduction}<SectionBlock
+						tone="quote"
 						title="Introduction"
 						hint={editingIntroduction ? undefined : 'How this quote opens, above the pricing'}
 						icon={speakerphoneIcon}
@@ -1216,6 +1220,7 @@
 				{/if}
 
 				<SectionBlock
+					tone="quote"
 					title="Client message and disclaimer"
 					hint="Shown to the client below the pricing"
 					icon={messageIcon}
@@ -1302,7 +1307,7 @@
 
 			{#snippet rail()}
 				{#if showHistory}
-					<RailCard title="Quote history" icon={clockIcon}>
+					<RailCard tone="quote" title="Quote history" icon={clockIcon}>
 						{#snippet actions()}
 							<Button size="small" variant="tertiary" onclick={() => (showHistory = false)}>
 								Close
@@ -1341,9 +1346,9 @@
 					onSaved={refreshQuote}
 				/>
 
-				<RailCard title="Discount and tax" flush>
+				<RailCard tone="quote" title="Discount and tax" flush>
 					<RecordDiscountCard
-							embedded
+						embedded
 						revision={saved.version?.revision ?? 0}
 						name={saved.version?.discount_name ?? null}
 						type={saved.version?.discount_type ?? null}
@@ -1357,7 +1362,7 @@
 					/>
 
 					<RecordTaxCard
-							embedded
+						embedded
 						revision={saved.version?.revision ?? 0}
 						propertyId={saved.quote.property_id}
 						taxSource={saved.version?.tax_source ?? 'not_configured'}
@@ -1395,7 +1400,13 @@
 					}}
 				/>
 
-				<RailCard title="Notes" description="Only your team sees these" icon={notesIcon} flush>
+				<RailCard
+					tone="conversation"
+					title="Notes"
+					description="Only your team sees these"
+					icon={notesIcon}
+					flush
+				>
 					<NotesPanel
 						compact
 						entityType="quote"

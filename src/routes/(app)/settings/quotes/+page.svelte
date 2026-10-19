@@ -402,6 +402,7 @@
 
 		<div class="quote-settings">
 			<SectionBlock
+				tone="quote"
 				title="Terms & conditions"
 				hint="Copied into every new quote draft. Changing this never rewrites an existing draft or a quote already sent."
 				icon={fileTextIcon}
@@ -432,6 +433,7 @@
 			</SectionBlock>
 
 			<SectionBlock
+				tone="quote"
 				title="Representative"
 				hint="Who a quote is from. Presentation only — this never becomes an approval workflow. Copied into every new quote draft."
 				icon={signatureIcon}
@@ -492,6 +494,7 @@
 
 			{#if quotes.permissions.view_cost}
 				<SectionBlock
+					tone="quote"
 					title="Target margin"
 					hint="Private guidance only, never shown to a customer and never enforced automatically."
 					icon={percentageIcon}
@@ -530,6 +533,7 @@
 			{/if}
 
 			<SectionBlock
+				tone="quote"
 				title="Signature policy"
 				hint="Copied into each new quote and frozen at publish. Changing this never changes a link already sent — republish to apply a newer policy."
 				icon={writingSignIcon}

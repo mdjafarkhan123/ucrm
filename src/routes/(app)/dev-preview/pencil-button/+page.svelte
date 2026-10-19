@@ -21,7 +21,7 @@
 
 	<Card>
 		<div class="preview-stack">
-			<SectionBlock title="Sizes" icon={pencilIcon} level={3}>
+			<SectionBlock tone="inactive" title="Sizes" icon={pencilIcon} level={3}>
 				<div class="preview-row">
 					<span class="preview-row__label">Small, the default</span>
 					<PencilButton label="Edit this thing" onclick={() => clicks++} />
@@ -30,7 +30,7 @@
 				</div>
 			</SectionBlock>
 
-			<SectionBlock title="Disabled" level={3}>
+			<SectionBlock tone="inactive" title="Disabled" level={3}>
 				<div class="preview-row">
 					<span class="preview-row__label">Secondary keeps its border</span>
 					<PencilButton label="Edit on a busy surface" />
@@ -39,14 +39,14 @@
 				</div>
 			</SectionBlock>
 
-			<SectionBlock title="Beside a heading" level={3}>
+			<SectionBlock tone="inactive" title="Beside a heading" level={3}>
 				<div class="preview-heading">
 					<h4>Riverbend Family Diner</h4>
 					<PencilButton label="Edit Riverbend Family Diner" onclick={() => clicks++} />
 				</div>
 			</SectionBlock>
 
-			<SectionBlock title="At the end of a row" level={3}>
+			<SectionBlock tone="inactive" title="At the end of a row" level={3}>
 				<ul class="preview-rows">
 					{#each ['12 Harbour Road, Savar', '48 Mill Lane, Savar'] as address (address)}
 						<li>

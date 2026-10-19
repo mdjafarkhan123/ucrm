@@ -123,6 +123,7 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <RailCard
+	tone="job"
 	title="Signatures"
 	description="The customer's sign-off on the work"
 	icon={signatureIcon}

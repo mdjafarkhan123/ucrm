@@ -127,6 +127,7 @@
 
 					<div class="settings-page__groups">
 						<SectionBlock
+							tone="inactive"
 							title="Business"
 							hint="The identity, look, and hours customers and staff both rely on."
 							id="business"
@@ -183,6 +184,7 @@
 							</div></SectionBlock
 						>
 						<SectionBlock
+							tone="inactive"
 							id="sales-work"
 							title="Sales & work"
 							hint="The defaults behind every quote, job and invoice."
@@ -258,6 +260,7 @@
 
 						{#if home.permissions.communications_manage || home.permissions.snippets_manage}
 							<SectionBlock
+								tone="conversation"
 								title="Communications"
 								hint="The verified email identities your team can use with customers."
 								id="communications"
@@ -333,6 +336,7 @@
 
 						{#if showAutomation}
 							<SectionBlock
+								tone="inactive"
 								title="Automations, notifications & connections"
 								hint="Work that happens on its own, so your team doesn’t have to remember it."
 								id="automations"
@@ -352,6 +356,7 @@
 
 						{#if home.permissions.team_manage}
 							<SectionBlock
+								tone="inactive"
 								title="Team & access"
 								hint="The people who work in your business and what they can do."
 								id="team-access"

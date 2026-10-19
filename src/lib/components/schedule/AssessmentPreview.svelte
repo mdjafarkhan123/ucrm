@@ -20,6 +20,7 @@
 		assessment,
 		today,
 		dayLabel,
+		headerStatus = false,
 		employeesById,
 		timer
 	}: {
@@ -27,6 +28,7 @@
 		today: string;
 		/** The assessment's date already in words, so every surface says the date the same way. */
 		dayLabel: string;
+		headerStatus?: boolean;
 		employeesById: Map<string, TeamMember>;
 		/** The reader's own Start/Stop timer for this assessment, supplied by the page that owns the timer
 		 *  query. */
@@ -57,7 +59,7 @@
 </script>
 
 <div class="assessment-preview">
-	{#if status}
+	{#if status && !headerStatus}
 		<StatusBadge status={VISIT_STATUS_TONES[status]}>{VISIT_STATUS_LABELS[status]}</StatusBadge>
 	{/if}
 
@@ -68,6 +70,9 @@
 			{
 				kind: 'team',
 				label: 'Team',
+				people: assessment.assignee_ids
+					.slice(0, 3)
+					.map((id) => employeesById.get(id)?.full_name ?? 'One employee'),
 				value: assignmentLabel(assessment.assignee_ids, employeesById),
 				warn: assessment.assignee_ids.length === 0
 			},
@@ -84,7 +89,7 @@
 	     its Request, where it is scheduled, reassigned or marked done. -->
 	<div class="assessment-preview__actions">
 		<Button
-			variant="secondary"
+			variant="quiet"
 			size="small"
 			href={resolve('/(app)/requests/[id=uuid]', { id: assessment.request_id })}
 		>
@@ -104,16 +109,22 @@
 
 	.assessment-preview__timer {
 		width: 100%;
-		padding-top: var(--space-small);
-		border-top: var(--border-base) solid var(--color-border);
+		box-sizing: border-box;
+		padding: var(--space-slim) var(--space-slim) var(--space-slim) 14px;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background--subtle);
 	}
 
 	.assessment-preview__actions {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-small);
-		width: 100%;
-		padding-top: var(--space-base);
+		box-sizing: border-box;
+		width: calc(100% + var(--space-medium) * 2);
+		margin: 0 calc(-1 * var(--space-medium)) calc(-1 * var(--space-medium));
+		padding: var(--space-small) var(--space-slim);
+		background: var(--color-surface--background--subtle);
 		border-top: var(--border-base) solid var(--color-border);
 	}
 </style>

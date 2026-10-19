@@ -148,7 +148,7 @@ export const GET: RequestHandler = async (event) => {
 	// it walks the same (organization_id, event_date) index the visit read uses and needs no instant padding.
 	const { data: eventData, error: eventError } = await event.locals.supabase
 		.from('schedule_events')
-		.select('id, title, description, event_date, start_time, end_time, all_day')
+		.select('id, title, description, event_date, start_time, end_time, all_day, completed_at')
 		.eq('organization_id', organizationId)
 		.gte('event_date', from)
 		.lte('event_date', to)

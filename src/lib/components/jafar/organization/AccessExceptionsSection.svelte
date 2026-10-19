@@ -287,6 +287,7 @@
 	</Banner>
 {:else}
 	<SectionBlock
+		tone="inactive"
 		title="Features"
 		icon={toggleIcon}
 		hint="What the package includes, and what an exception switches on or off for now. Features in every package cannot be excepted."
@@ -334,6 +335,7 @@
 	</SectionBlock>
 
 	<SectionBlock
+		tone="inactive"
 		title="Limits"
 		icon={gaugeIcon}
 		hint="The package's limits, any exception running now, and what the customer uses. Email and chat counts reset every month."
@@ -363,6 +365,7 @@
 	</SectionBlock>
 
 	<SectionBlock
+		tone="inactive"
 		title="Exceptions"
 		icon={adjustmentsIcon}
 		hint="Temporary changes on top of the package. Each has a reason and an end date, and stays listed after it ends."

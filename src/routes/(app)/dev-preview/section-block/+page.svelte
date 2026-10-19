@@ -26,7 +26,7 @@
 
 	<h2 class="preview-label">On the page background</h2>
 	<div class="preview-stack preview-stack--on-background">
-		<SectionBlock title="Work summary" icon={chartBarIcon} level={3}>
+		<SectionBlock tone="inactive" title="Work summary" icon={chartBarIcon} level={3}>
 			<p>
 				A plain block sitting straight on the page. No form controls, so it renders as a section.
 			</p>
@@ -37,6 +37,7 @@
 		</SectionBlock>
 
 		<SectionBlock
+			tone="inactive"
 			title="Attachments"
 			icon={paperclipIcon}
 			level={3}

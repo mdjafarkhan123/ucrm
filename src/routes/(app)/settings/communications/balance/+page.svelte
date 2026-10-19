@@ -313,6 +313,7 @@
 			</div>
 
 			<SectionBlock
+				tone="inactive"
 				title="SMS messaging health"
 				subtitle={`The last ${usage.messaging_health.period_days} days. For message-by-message detail, use Conversations once it supports SMS.`}
 				icon={activityIcon}
@@ -332,6 +333,7 @@
 			</SectionBlock>
 
 			<SectionBlock
+				tone="inactive"
 				title="Top-up requests"
 				icon={receiptIcon}
 				level={2}
@@ -404,6 +406,7 @@
 			</SectionBlock>
 
 			<SectionBlock
+				tone="inactive"
 				title="Ledger"
 				icon={historyIcon}
 				level={2}

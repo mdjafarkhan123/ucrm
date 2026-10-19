@@ -373,7 +373,7 @@
 	}
 </script>
 
-<RailCard title="Deposit" icon={cashIcon} flush>
+<RailCard tone="invoice" title="Deposit" icon={cashIcon} flush>
 	{#snippet actions()}
 		{#if !canSeePrice || !configured}
 			<!-- Nothing to show beside the title until a deposit exists. -->

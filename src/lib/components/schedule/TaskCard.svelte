@@ -79,7 +79,7 @@
 			titleLabel,
 			clientLabel,
 			assignmentLabel(task.assignee_ids, employeesById),
-			done ? 'Done' : overdue ? 'Overdue' : null
+			done ? 'Completed' : overdue ? 'Late' : null
 		]
 			.filter(Boolean)
 			.join(', ')
@@ -100,12 +100,14 @@
 			<button
 				type="button"
 				class="task-card__tick"
+				aria-busy={completionMutation.isPending}
 				aria-label={toggleLabel}
 				aria-pressed={done}
 				disabled={completionMutation.isPending}
 				onclick={() => completionMutation.mutate(!done)}
 			>
-				{@html done ? squareCheckIcon : squareIcon}
+				{#if completionMutation.isPending}<span class="task-card__spinner" aria-hidden="true"
+					></span>{:else}{@html done ? squareCheckIcon : squareIcon}{/if}
 			</button>
 		{:else}
 			<span class="task-card__marker" aria-hidden="true">
@@ -127,7 +129,7 @@
 						{assignmentLabel(task.assignee_ids, employeesById)}
 					</span>
 				{/if}
-				<span class="task-card__tag">{done ? 'Done' : overdue ? 'Overdue' : 'Task'}</span>
+				<span class="task-card__tag">{done ? 'Completed' : overdue ? 'Late' : 'Task'}</span>
 			</span>
 		{/if}
 	{/if}
@@ -136,6 +138,30 @@
 <!-- eslint-enable svelte/no-at-html-tags, svelte/no-navigation-without-resolve -->
 
 <style lang="scss">
+	.task-card__spinner {
+		width: 13px;
+		height: 13px;
+		box-sizing: border-box;
+		border: 2px solid var(--color-border);
+		border-top-color: var(--color-task);
+		border-radius: var(--radius-circle);
+		animation: task-card-spin 0.8s linear infinite;
+	}
+	@keyframes task-card-spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.task-card__spinner {
+			animation: none;
+		}
+	}
+	.task-card--done .task-card__tag {
+		background: var(--color-success--surface);
+		color: var(--color-success--onSurface);
+	}
+
 	.task-card {
 		position: relative;
 		display: flex;
@@ -147,16 +173,17 @@
 		min-width: 0;
 		padding: 7px var(--space-small) var(--space-small) 9px;
 		overflow: hidden;
-		border: var(--border-base) solid var(--color-border);
+		border: var(--border-base) solid transparent;
 		border-radius: var(--radius-base);
-		background-color: var(--color-surface);
+		background-color: var(--color-task--surface);
 		color: var(--color-text);
 		transition:
 			background-color var(--timing-quick) ease,
 			box-shadow var(--timing-quick) ease;
 
 		&:hover {
-			background-color: var(--color-surface--hover);
+			border-color: var(--color-task);
+			box-shadow: 0 4px 12px color-mix(in srgb, var(--color-heading) 12%, transparent);
 		}
 		// The link fills the card, so its focus ring is drawn on the card.
 		&:has(.task-card__title:focus-visible) {
@@ -169,7 +196,8 @@
 	}
 
 	.task-card--done {
-		background-color: var(--color-surface--background--subtle);
+		border-color: var(--color-border--interactive);
+		background-color: var(--color-surface--active);
 		color: var(--color-text--secondary);
 
 		.task-card__title {
@@ -179,8 +207,7 @@
 	}
 
 	.task-card--overdue {
-		border-color: var(--color-critical);
-		background-color: var(--color-critical--surface);
+		border-left: 4px solid var(--color-critical);
 	}
 
 	.task-card__line {

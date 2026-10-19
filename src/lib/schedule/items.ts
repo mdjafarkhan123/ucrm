@@ -50,8 +50,7 @@ export type AssessmentItem = {
 
 /** A Schedule-owned event on the calendar (Version 1.1) -- a whole-team block with no client and no owner
  * outside Schedule. It exposes the same geometry fields as the other items so the shared layout, grouping and
- * row maths read it without a special case: it never has a crew (`assignee_ids` is always empty) and never
- * completes (`completed_at` is always null), so it groups as unassigned and is never drawn "done". Its day is
+ * row maths read it without a special case: it never has a crew (`assignee_ids` is always empty) and can be marked complete by a schedule editor. Its day is
  * already the organization's own -- a plain stored date, no conversion. */
 export type EventItem = {
 	kind: 'event';
@@ -63,8 +62,8 @@ export type EventItem = {
 	start_time: string | null;
 	end_time: string | null;
 	all_day: boolean;
-	/** Events have no completion. Always null, so the shared status/grouping code reads it uniformly. */
-	completed_at: null;
+	/** Completion is shared with the calendar geometry and filtering code. */
+	completed_at: string | null;
 	/** Events have no individual assignment. Always empty, so the employee filter treats them as whole-team. */
 	assignee_ids: string[];
 };
@@ -96,7 +95,7 @@ export function visitToItem(visit: ScheduleVisit): VisitItem {
 
 // Turn a Schedule-owned event row into a calendar item. Its date and clock are already the organization's own
 // plain values, so unlike an assessment there is nothing to convert -- it is only tagged and given the empty
-// crew and null completion the shared maths expect.
+// crew and completion timestamp the shared maths expect.
 export function eventToItem(event: ScheduleEvent): EventItem {
 	return {
 		kind: 'event',
@@ -107,7 +106,7 @@ export function eventToItem(event: ScheduleEvent): EventItem {
 		start_time: event.start_time,
 		end_time: event.end_time,
 		all_day: event.all_day,
-		completed_at: null,
+		completed_at: event.completed_at ?? null,
 		assignee_ids: []
 	};
 }

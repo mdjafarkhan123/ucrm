@@ -10,6 +10,7 @@
 
 <script lang="ts" generics="T extends { id: string }">
 	import type { Snippet } from 'svelte';
+	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
 	import Popover from '$lib/components/ui/Popover.svelte';
 	import { formatCalendarDay } from '$lib/schedule/labels';
 
@@ -124,7 +125,12 @@
 <div class="calendar-month">
 	<div class="calendar-month__head">
 		{#each weekdays as day (day)}
-			<span class="calendar-month__weekday">{formatCalendarDay(day, { weekday: 'short' })}</span>
+			<span
+				class="calendar-month__weekday"
+				class:calendar-month__weekday--today={new Date(day + 'T12:00:00').getDay() ===
+					new Date(today + 'T12:00:00').getDay()}
+				>{formatCalendarDay(day, { weekday: 'short' })}</span
+			>
 		{/each}
 	</div>
 
@@ -148,11 +154,11 @@
 						>
 							{dateLabel(cell.day)}
 						</span>
-						{#if cell.ordered.length > 0}
+						{#if cell.ordered.length > 0 || cell.closed}
 							<span class="calendar-month__count">
-								{cell.ordered.length}
+								{cell.closed ? 'Closed' : cell.ordered.length}
 								<span class="calendar-month__count-word">
-									{cell.ordered.length === 1 ? 'item' : 'items'}
+									{cell.closed ? '' : cell.ordered.length === 1 ? 'item' : 'items'}
 								</span>
 								{@render attentionMarks(cell.attention)}
 							</span>
@@ -210,6 +216,9 @@
 
 {#if listDay}
 	<Popover
+		concept
+		icon={calendarIcon}
+		iconTone="time"
 		open
 		anchor={listAnchor}
 		title={formatCalendarDay(listDay, dayHeadingFormat)}
@@ -229,8 +238,8 @@
 		// The cell fits the date row, three cards and the + N more line without measuring anything at runtime.
 		// Change the card height and this follows. The grid has no frame of its own: the calendar card around
 		// it draws the edge.
-		--calendar-month-card: 25px;
-		--calendar-month-cell: 150px;
+		--calendar-month-card: 22px;
+		--calendar-month-cell: 154px;
 
 		display: flex;
 		flex: 1 1 auto;
@@ -256,7 +265,7 @@
 		padding: 11px 14px;
 		color: var(--color-text--secondary);
 		font-size: 11px;
-		font-weight: 700;
+		font-weight: 600;
 		letter-spacing: 0.8px;
 		text-transform: uppercase;
 	}
@@ -279,7 +288,7 @@
 		flex-direction: column;
 		gap: 5px;
 		min-width: 0;
-		padding: 10px;
+		padding: var(--space-small);
 		border-top: var(--border-base) solid var(--color-border);
 		border-left: var(--border-base) solid var(--color-border);
 
@@ -308,7 +317,11 @@
 
 	// A day the business is shut recedes too; the key at the bottom of the card says what the shading means.
 	.calendar-month__cell--closed {
-		background-color: var(--color-surface--background--subtle);
+		background: repeating-linear-gradient(
+			135deg,
+			var(--color-surface) 0 11px,
+			var(--color-border) 11px 12px
+		);
 	}
 
 	.calendar-month__date {
@@ -328,8 +341,31 @@
 		padding: 0 var(--space-smaller);
 		border-radius: 999px;
 		color: var(--color-heading);
-		font-size: 14px;
+		font-size: var(--typography--fontSize-label);
 		font-weight: 700;
+	}
+
+	.calendar-month__weekday--today {
+		color: var(--color-interactive);
+		box-shadow: inset 0 -3px var(--color-interactive);
+	}
+	.calendar-month__cell--today {
+		position: relative;
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 4px;
+			pointer-events: none;
+			border: var(--border-base) solid var(--color-interactive);
+			border-radius: 10px;
+			background: var(--color-surface);
+			box-shadow:
+				0 6px 16px color-mix(in srgb, var(--color-interactive) 14%, transparent),
+				0 1px 2px color-mix(in srgb, var(--color-heading) 8%, transparent);
+		}
+		> * {
+			position: relative;
+		}
 	}
 
 	.calendar-month__cell--today .calendar-month__number {
@@ -353,13 +389,18 @@
 		display: inline-flex;
 		align-items: center;
 		gap: var(--space-smaller);
+		padding: 3px 7px;
+		border-radius: var(--radius-circle);
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 600;
 
 		&--late {
-			color: var(--color-critical);
+			color: var(--color-critical--onSurface);
+			background: var(--color-critical--surface);
 		}
 		&--unassigned {
 			color: var(--color-warning--onSurface);
+			background: var(--color-warning--surface);
 		}
 	}
 
@@ -395,7 +436,7 @@
 	.calendar-month__items {
 		display: flex;
 		flex-direction: column;
-		gap: 5px;
+		gap: 3px;
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -411,10 +452,10 @@
 		border: none;
 		border-radius: var(--radius-small);
 		background: none;
-		color: var(--color-text--secondary);
+		color: var(--color-interactive);
 		font-family: inherit;
 		font-size: 11px;
-		font-weight: 700;
+		font-weight: 600;
 		cursor: pointer;
 
 		&:hover {
@@ -431,7 +472,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 6px;
-		width: 300px;
+		width: 100%;
 		margin: 0;
 		padding: 0;
 		max-height: 360px;

@@ -278,6 +278,7 @@
 				<div class="branding__columns">
 					<div class="branding__column">
 						<SectionBlock
+							tone="inactive"
 							title="Logo"
 							icon={paletteIcon}
 							hint="Shown on quotes, invoices, emails, and the client portal."

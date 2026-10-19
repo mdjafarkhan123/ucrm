@@ -22,6 +22,7 @@
 
 <div class="preset-library">
 	<SectionBlock
+		tone="inactive"
 		title="Start from a ready-made automation"
 		icon={sparklesIcon}
 		hint="Presets are editable starting points. Pick one and change anything before you save."

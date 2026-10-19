@@ -3,7 +3,7 @@
 	import Select from '$lib/components/ui/Select.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
-	import { filterBacklog, backlogAgeLabel } from '$lib/schedule/backlog';
+	import { filterBacklog, backlogAgeLabel, waitingDays } from '$lib/schedule/backlog';
 	import {
 		visitAssignmentLabel,
 		visitClientLabel,
@@ -14,12 +14,13 @@
 	import type { UnscheduledVisit } from '$lib/schedule/api';
 	import type { TeamMember } from '$lib/team/api';
 	import closeIcon from '@tabler/icons/outline/x.svg?raw';
+	import hammerIcon from '@tabler/icons/outline/hammer.svg?raw';
 	import gripIcon from '@tabler/icons/outline/grip-vertical.svg?raw';
-	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
+	import inboxIcon from '@tabler/icons/outline/calendar-off.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
 	import mapPinIcon from '@tabler/icons/outline/map-pin.svg?raw';
-	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
+	import calendarIcon from '@tabler/icons/outline/calendar-plus.svg?raw';
 	import zoomCancelIcon from '@tabler/icons/outline/zoom-cancel.svg?raw';
 	import cloudOffIcon from '@tabler/icons/outline/cloud-off.svg?raw';
 	import refreshIcon from '@tabler/icons/outline/refresh.svg?raw';
@@ -202,12 +203,19 @@
 							>
 								<span class="backlog__top">
 									<span class="backlog__client">{visitClientLabel(visit)}</span>
-									<span class="backlog__age">
+									<span
+										class="backlog__age"
+										class:backlog__age--today={waitingDays(visit.created_at.slice(0, 10), today) ===
+											0}
+										class:backlog__age--old={waitingDays(visit.created_at.slice(0, 10), today) >= 7}
+									>
 										<span class="backlog__age-icon" aria-hidden="true">{@html clockIcon}</span>
 										{backlogAgeLabel(visit.created_at.slice(0, 10), today)}
 									</span>
 								</span>
-								<span class="backlog__work">{visitWorkLabel(visit)}</span>
+								<span class="backlog__work"
+									><span aria-hidden="true">{@html hammerIcon}</span>{visitWorkLabel(visit)}</span
+								>
 								{#if visitPlaceLabel(visit)}
 									<span class="backlog__place">
 										<span class="backlog__place-icon" aria-hidden="true">{@html mapPinIcon}</span>
@@ -255,12 +263,12 @@
 	// inside it.
 	.backlog {
 		display: flex;
-		flex: 0 0 340px;
+		flex: 0 0 360px;
 		flex-direction: column;
-		width: 340px;
+		width: 360px;
 		min-height: 0;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border-radius: var(--radius-large);
 		background-color: var(--color-surface);
 		overflow: hidden;
 	}
@@ -278,7 +286,8 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-small);
-		padding: var(--space-base) 20px 0;
+		padding: 14px 14px 14px var(--space-base);
+		border-bottom: var(--border-base) solid var(--color-border);
 	}
 
 	.backlog__title {
@@ -291,12 +300,12 @@
 	.backlog__tile {
 		display: grid;
 		flex: 0 0 auto;
-		width: 36px;
-		height: 36px;
+		width: 32px;
+		height: 32px;
 		place-items: center;
-		border-radius: 10px;
-		background-color: var(--color-warning--surface);
-		color: var(--color-warning--onSurface);
+		border-radius: var(--radius-base);
+		background-color: var(--color-time--surface);
+		color: var(--color-time);
 
 		:global(svg) {
 			width: 18px;
@@ -307,8 +316,8 @@
 	.backlog__heading {
 		margin: 0;
 		color: var(--color-heading);
-		font-size: var(--typography--fontSize-large);
-		font-weight: 700;
+		font-size: 16px;
+		font-weight: 600;
 		letter-spacing: -0.2px;
 		line-height: var(--typography--lineHeight-tight);
 	}
@@ -321,8 +330,8 @@
 		height: 20px;
 		padding: 0 7px;
 		border-radius: 999px;
-		background-color: var(--color-warning--surface);
-		color: var(--color-warning--onSurface);
+		background-color: var(--color-inactive--surface);
+		color: var(--color-inactive--onSurface);
 		font-size: 11px;
 		font-weight: 700;
 	}
@@ -331,8 +340,8 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		gap: 10px;
-		padding: var(--space-base) 20px;
+		gap: var(--space-small);
+		padding: var(--space-slim) var(--space-base);
 		border-bottom: var(--border-base) solid var(--color-border);
 
 		> :global(*) {
@@ -340,15 +349,15 @@
 		}
 
 		> :global(.backlog__select) {
-			align-self: flex-start;
-			width: auto;
+			align-self: stretch;
+			width: 100%;
 		}
 	}
 
 	.backlog__list {
 		flex: 1 1 auto;
 		min-height: 0;
-		padding: var(--space-base) 20px 20px;
+		padding: var(--space-slim) var(--space-base) var(--space-slim) var(--space-small);
 		overflow-y: auto;
 	}
 
@@ -379,7 +388,7 @@
 	.backlog__items {
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
+		gap: 10px;
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -431,7 +440,7 @@
 		flex-direction: column;
 		gap: 10px;
 		min-width: 0;
-		padding: 12px 14px;
+		padding: var(--space-slim);
 	}
 
 	.backlog__card {
@@ -466,7 +475,7 @@
 		min-width: 0;
 		color: var(--color-heading);
 		font-size: var(--typography--fontSize-base);
-		font-weight: 700;
+		font-weight: 600;
 		line-height: 1.3;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -477,12 +486,24 @@
 		display: inline-flex;
 		flex-shrink: 0;
 		align-items: center;
-		gap: 4px;
-		color: var(--color-text--secondary);
-		font-size: 11.5px;
+		gap: 5px;
+		padding: 3px 9px 3px 7px;
+		border-radius: var(--radius-circle);
+		background: var(--color-warning--surface);
+		color: var(--color-warning--onSurface);
+		font-weight: 600;
+		font-size: var(--typography--fontSize-overline);
 		white-space: nowrap;
 	}
 
+	.backlog__age--today {
+		background: var(--color-informative--surface);
+		color: var(--color-informative--onSurface);
+	}
+	.backlog__age--old {
+		background: var(--color-critical--surface);
+		color: var(--color-critical--onSurface);
+	}
 	.backlog__age-icon,
 	.backlog__place-icon {
 		display: inline-flex;
@@ -495,6 +516,15 @@
 	}
 
 	.backlog__work {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+			color: var(--color-job);
+			flex-shrink: 0;
+		}
 		color: var(--color-text);
 		font-size: var(--typography--fontSize-small);
 		line-height: 1.4;
@@ -523,8 +553,7 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-small);
-		padding-top: 10px;
-		border-top: var(--border-base) solid var(--color-border);
+		padding-top: 6px;
 	}
 
 	.backlog__people {
@@ -546,9 +575,9 @@
 		height: 22px;
 		border: 2px solid var(--color-surface);
 		border-radius: 999px;
-		background-color: var(--color-surface--background--subtle);
-		color: var(--color-text--secondary);
-		font-size: 8.5px;
+		background-color: var(--color-heading);
+		color: var(--color-surface);
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 700;
 
 		& + & {
@@ -571,7 +600,8 @@
 		gap: 5px;
 		padding: 4px 9px 4px 8px;
 		border-radius: 999px;
-		background-color: var(--color-warning--surface);
+		background-color: var(--color-surface);
+		border: var(--border-base) solid var(--color-warning);
 		color: var(--color-warning--onSurface);
 		font-size: 11.5px;
 		font-weight: 600;

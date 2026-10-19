@@ -17498,6 +17498,7 @@ export type Database = {
 			schedule_events: {
 				Row: {
 					all_day: boolean;
+					completed_at: string | null;
 					created_at: string;
 					description: string | null;
 					end_time: string | null;
@@ -17510,6 +17511,7 @@ export type Database = {
 				};
 				Insert: {
 					all_day?: boolean;
+					completed_at?: string | null;
 					created_at?: string;
 					description?: string | null;
 					end_time?: string | null;
@@ -17522,6 +17524,7 @@ export type Database = {
 				};
 				Update: {
 					all_day?: boolean;
+					completed_at?: string | null;
 					created_at?: string;
 					description?: string | null;
 					end_time?: string | null;

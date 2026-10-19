@@ -39,7 +39,7 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <div class="package-details">
 	{#if pkg.highlights.length}
-		<SectionBlock title="What you get" icon={sparklesIcon} level={3}>
+		<SectionBlock tone="inactive" title="What you get" icon={sparklesIcon} level={3}>
 			<ul class="package-details__checks">
 				{#each pkg.highlights as highlight (highlight)}
 					<li><span aria-hidden="true">{@html checkIcon}</span>{highlight}</li>
@@ -49,7 +49,7 @@
 	{/if}
 
 	{#if pkg.included_services.length}
-		<SectionBlock title="Services we deliver" icon={briefcaseIcon} level={3}>
+		<SectionBlock tone="inactive" title="Services we deliver" icon={briefcaseIcon} level={3}>
 			<dl class="package-details__items">
 				{#each pkg.included_services as service (service.name)}
 					<div>
@@ -61,7 +61,7 @@
 		</SectionBlock>
 	{/if}
 
-	<SectionBlock title="In the app" icon={appsIcon} level={3}>
+	<SectionBlock tone="inactive" title="In the app" icon={appsIcon} level={3}>
 		{#if extras.length}
 			<dl class="package-details__items">
 				{#each extras as capability (capability.key)}
@@ -84,6 +84,7 @@
 
 	{#if pkg.allowances.length}
 		<SectionBlock
+			tone="inactive"
 			title="Limits"
 			icon={gaugeIcon}
 			level={3}
@@ -100,12 +101,12 @@
 	{/if}
 
 	{#if pkg.exclusions}
-		<SectionBlock title="Not included" icon={alertIcon} level={3}>
+		<SectionBlock tone="inactive" title="Not included" icon={alertIcon} level={3}>
 			<p class="package-details__text">{pkg.exclusions}</p>
 		</SectionBlock>
 	{/if}
 
-	<SectionBlock title="Price and payment" icon={creditCardIcon} level={3}>
+	<SectionBlock tone="inactive" title="Price and payment" icon={creditCardIcon} level={3}>
 		<ul class="package-details__prices">
 			{#each prices as option (option)}
 				{@const offer = pkg.offers[option]}

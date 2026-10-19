@@ -125,6 +125,7 @@
 
 {#if !forbidden && (!setupQuery.isSuccess || setup?.state !== 'ready')}
 	<SectionBlock
+		tone="inactive"
 		title="Set up your business email"
 		hint="Customers see your business name and address, and their replies land in your inbox here."
 		icon={inboxIcon}

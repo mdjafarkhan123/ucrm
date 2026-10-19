@@ -123,7 +123,11 @@
 {:else}
 	<div class="booking-settings">
 		<div class="booking-settings__main">
-			<SectionBlock title="Booking page" hint="Prospects open a meeting's link to book a call.">
+			<SectionBlock
+				tone="inactive"
+				title="Booking page"
+				hint="Prospects open a meeting's link to book a call."
+			>
 				<div class="booking-settings__switch">
 					<div>
 						<p class="booking-settings__switch-title">
@@ -147,7 +151,11 @@
 				</div>
 			</SectionBlock>
 
-			<SectionBlock title="Meeting types" hint="What prospects can book, and who takes it.">
+			<SectionBlock
+				tone="inactive"
+				title="Meeting types"
+				hint="What prospects can book, and who takes it."
+			>
 				{#if settings.meeting_types.length === 0}
 					<p class="booking-settings__note">
 						No meeting types yet. Add one to get a link prospects can book.
@@ -206,11 +214,16 @@
 				</div>
 			</SectionBlock>
 
-			<SectionBlock title="Zoom" hint="Lets a Zoom meeting type make a meeting for each booking.">
+			<SectionBlock
+				tone="inactive"
+				title="Zoom"
+				hint="Lets a Zoom meeting type make a meeting for each booking."
+			>
 				<ZoomConnection />
 			</SectionBlock>
 
 			<SectionBlock
+				tone="inactive"
 				title="Google Meet"
 				hint="Lets a Google Meet meeting type make a Calendar event and Meet link for each booking."
 			>
@@ -218,6 +231,7 @@
 			</SectionBlock>
 
 			<SectionBlock
+				tone="inactive"
 				title="Weekly hours"
 				hint="When each host takes calls, in their own time zone. A teammate appears once they host a meeting."
 			>

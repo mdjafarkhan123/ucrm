@@ -740,6 +740,7 @@
 
 			<!-- When -->
 			<SectionBlock
+				tone="inactive"
 				title="When this happens"
 				icon={boltIcon}
 				hint="Pick what starts the automation."
@@ -884,6 +885,7 @@
 
 			<!-- If -->
 			<SectionBlock
+				tone="inactive"
 				title="Only keep going if"
 				icon={filterIcon}
 				hint="Optional. Add up to six checks that must all be true."
@@ -947,6 +949,7 @@
 
 			<!-- Then -->
 			<SectionBlock
+				tone="inactive"
 				title="Then do this"
 				icon={arrowsSortIcon}
 				hint="The steps run in order. Use Move up and Move down to reorder them."
@@ -1186,6 +1189,7 @@
 
 			<!-- Stop -->
 			<SectionBlock
+				tone="inactive"
 				title="Stop the automation when"
 				icon={handStopIcon}
 				hint="Pick the things that should end the follow-ups early."

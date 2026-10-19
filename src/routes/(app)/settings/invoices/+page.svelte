@@ -128,7 +128,7 @@
 
 		<div class="invoices-page">
 			<div class="invoices-page__grid">
-				<SectionBlock title="Payment terms" icon={receiptIcon} level={2}>
+				<SectionBlock tone="invoice" title="Payment terms" icon={receiptIcon} level={2}>
 					{#snippet actions()}
 						<Button size="small" onclick={() => (termDialog = { term: null })}>Add term</Button>
 					{/snippet}
@@ -174,6 +174,7 @@
 
 				<aside class="invoices-page__rail">
 					<SectionBlock
+						tone="invoice"
 						icon={receiptIcon}
 						title="Defaults"
 						hint="Applied to a new invoice unless the client has their own payment term."
@@ -201,6 +202,7 @@
 					</SectionBlock>
 
 					<SectionBlock
+						tone="invoice"
 						icon={receiptIcon}
 						title="Opening balances"
 						hint="Bring in what a client already owed you, or a credit they already had, from before you started using this CRM."

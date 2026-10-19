@@ -571,7 +571,7 @@
 		{/snippet}
 
 		{#snippet rail()}
-			<RailCard title="Lead source">
+			<RailCard tone="client" title="Lead source">
 				<Select
 					id="client-lead-source"
 					value={form.lead_source}
@@ -581,7 +581,7 @@
 				/>
 			</RailCard>
 
-			<RailCard title="Tags" count={form.tag_ids.length}>
+			<RailCard tone="client" title="Tags" count={form.tag_ids.length}>
 				<ClientTagSelect bind:tagIds={form.tag_ids} />
 			</RailCard>
 

@@ -201,6 +201,7 @@
 </script>
 
 <RailCard
+	tone="invoice"
 	title="Billing"
 	description="How and when this job is invoiced"
 	icon={receiptIcon}
@@ -486,7 +487,9 @@
 		padding: var(--space-base) var(--space-medium);
 		border-top: var(--border-base) solid var(--color-border);
 	}
-	:global(.record-detail--cards .rail-card--concept.job-billing-card > .job-billing__note:last-child) {
+	:global(
+		.record-detail--cards .rail-card--concept.job-billing-card > .job-billing__note:last-child
+	) {
 		padding-top: 0;
 		border-top: 0;
 	}

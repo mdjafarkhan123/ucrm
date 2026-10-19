@@ -277,7 +277,11 @@
 			{/snippet}
 
 			{#snippet tasks()}
-				<SectionBlock title="Your setup tasks" hint="Do them in any order, a little at a time.">
+				<SectionBlock
+					tone="inactive"
+					title="Your setup tasks"
+					hint="Do them in any order, a little at a time."
+				>
 					{#snippet actions()}
 						<span class="setup__count"
 							>{summary.progress.done} of {summary.progress.total} done</span
@@ -399,7 +403,7 @@
 				{#if summary.outside_waits.length}<OutsideWaits waits={summary.outside_waits} />{/if}
 				{@render returned()}
 				{@render tasks()}
-				<SectionBlock title="How setup works">
+				<SectionBlock tone="inactive" title="How setup works">
 					{@render howItWorks()}
 				</SectionBlock>
 				{@render reminders()}

@@ -255,7 +255,7 @@
 					</SectionBlock>
 				</div>
 
-				<SectionBlock title="Notes" level={3}>
+				<SectionBlock tone="conversation" title="Notes" level={3}>
 					<NotesPanel
 						entityType="visit"
 						entityId={visitId}

@@ -647,6 +647,7 @@
 
 					<TabPanel value="details">
 						<SectionBlock
+							tone="client"
 							title="Properties"
 							subtitle="Where the work happens"
 							icon={homeIcon}
@@ -727,7 +728,7 @@
 
 			{#snippet rail()}
 				{#if showHistory}
-					<RailCard title="Client history" icon={clockIcon}>
+					<RailCard tone="client" title="Client history" icon={clockIcon}>
 						{#snippet actions()}
 							<Button size="small" variant="tertiary" onclick={() => (showHistory = false)}>
 								Close
@@ -746,7 +747,7 @@
 						/>
 					{/if}
 
-					<RailCard title="Source and marketing" flush>
+					<RailCard tone="client" title="Source and marketing" flush>
 						<div class="client-detail__row">
 							<span class="client-detail__row-icon" aria-hidden="true">{@html targetIcon}</span>
 							<div class="client-detail__row-text">
@@ -806,7 +807,7 @@
 						</div>
 					</RailCard>
 
-					<RailCard title="Tags" count={tagIds.length}>
+					<RailCard tone="client" title="Tags" count={tagIds.length}>
 						{#snippet actions()}
 							{#if tagsChanged}<Badge size="small" status="warning">Unsaved</Badge>{/if}
 						{/snippet}
@@ -814,7 +815,7 @@
 					</RailCard>
 
 					{#if canSeeCommunication}
-						<RailCard title="Last communication">
+						<RailCard tone="conversation" title="Last communication">
 							{#if lastCommunicationQuery.isPending}
 								<LoadingSkeleton variant="text" />
 							{:else if lastCommunication}
@@ -841,7 +842,7 @@
 						</RailCard>
 					{/if}
 
-					<RailCard title="Notes" description="Only your team sees these" flush>
+					<RailCard tone="conversation" title="Notes" description="Only your team sees these" flush>
 						<NotesPanel
 							compact
 							entityType="client"

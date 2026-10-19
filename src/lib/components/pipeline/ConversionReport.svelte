@@ -135,6 +135,7 @@
 		{/if}
 
 		<SectionBlock
+			tone="growth"
 			title="By lead source"
 			hint="Each request, and each quote made without a request, counted once under where the client came from."
 		>
@@ -170,6 +171,7 @@
 		</SectionBlock>
 
 		<SectionBlock
+			tone="growth"
 			title="Time in each stage"
 			hint="How long a card usually sits in a column before it moves on. Typical is the middle card, so one slow job does not skew it."
 		>

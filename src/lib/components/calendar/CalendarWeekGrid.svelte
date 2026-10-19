@@ -11,6 +11,7 @@
 		count: number;
 		/** Working hours painted as the ordinary surface; the rest of the day recedes. */
 		working: WorkingBand[];
+		closed?: boolean;
 		/** How many of the day's entries need a look, said under the date. Absent where the calendar has none. */
 		attention?: { late: number; unassigned: number };
 	};
@@ -124,9 +125,9 @@
 						{formatCalendarDay(column.day, { day: 'numeric' })}
 					</span>
 				</span>
-				{#if column.count > 0}
+				{#if column.count > 0 || column.closed}
 					<span class="calendar-week__count">
-						{itemCountLabel(column.count)}
+						{column.closed ? 'Closed' : itemCountLabel(column.count)}
 						{#if column.attention && column.attention.late > 0}
 							<span class="calendar-week__attention calendar-week__attention--late">
 								<span class="calendar-week__attention-dot" aria-hidden="true"></span>
@@ -153,6 +154,7 @@
 				<!-- A pointer affordance for a date-only entry; each calendar's header has the keyboard path. -->
 				<div
 					class="calendar-week__anytime-column"
+					class:calendar-week__anytime-column--today={column.day === today}
 					class:calendar-week__anytime-column--target={anytimeTarget(column.day)}
 					class:calendar-week__anytime-column--bookable={bookable}
 					bind:this={anytimeEls[index]}
@@ -189,6 +191,7 @@
 			<div
 				class="calendar-week__column"
 				class:calendar-week__column--bookable={bookable}
+				class:calendar-week__column--today={column.day === today}
 				style:height="{24 * hourHeight}px"
 				bind:this={columnEls[index]}
 				onpointerdown={(event) => oncolumnpointerdown?.(event, index)}
@@ -227,8 +230,13 @@
 					</div>
 				{/each}
 
-				{#if nowMinutes !== null && column.day === today}
-					<div class="calendar-week__now" style:top={percent(nowMinutes)} aria-hidden="true"></div>
+				{#if nowMinutes !== null && !column.closed}
+					<div
+						class="calendar-week__now"
+						class:calendar-week__now--today={column.day === today}
+						style:top={percent(nowMinutes)}
+						aria-hidden="true"
+					></div>
 				{/if}
 			</div>
 		{/each}
@@ -237,7 +245,7 @@
 
 <style lang="scss">
 	.calendar-week {
-		--calendar-week-gutter: 60px;
+		--calendar-week-gutter: 66px;
 
 		display: flex;
 		flex: 1 1 auto;
@@ -309,7 +317,8 @@
 		align-items: flex-start;
 		gap: var(--space-smallest);
 		min-width: 0;
-		padding: 10px 14px 12px;
+		position: relative;
+		padding: 10px var(--space-slim) var(--space-slim);
 		border-left: var(--border-base) solid var(--color-border);
 	}
 
@@ -321,14 +330,14 @@
 		display: flex;
 		align-items: center;
 		gap: 7px;
-		height: 24px;
+		height: 30px;
 	}
 
 	.calendar-week__weekday {
 		color: var(--color-text--secondary);
 		font-size: 11px;
-		font-weight: 700;
-		letter-spacing: 0.8px;
+		font-weight: 600;
+		letter-spacing: 0.6px;
 		text-transform: uppercase;
 	}
 
@@ -336,11 +345,11 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		height: 24px;
+		height: 30px;
 		padding: 0 var(--space-smaller);
 		border-radius: 999px;
 		color: var(--color-heading);
-		font-size: 15px;
+		font-size: var(--typography--fontSize-larger);
 		font-weight: 700;
 	}
 
@@ -349,19 +358,29 @@
 	}
 
 	.calendar-week__day--today .calendar-week__date {
-		padding: 0 7px;
+		width: 30px;
+		padding: 0;
 		background-color: var(--color-interactive);
 		color: var(--color-text--reverse);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-large);
 	}
 
+	.calendar-week__day--today::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: -1px;
+		height: 3px;
+		background: var(--color-interactive);
+	}
 	.calendar-week__count {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: 2px var(--space-small);
+		gap: var(--space-smaller);
 		color: var(--color-text--secondary);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
 		line-height: 1.3;
 	}
@@ -370,13 +389,18 @@
 		display: inline-flex;
 		align-items: center;
 		gap: var(--space-smaller);
+		padding: 3px 7px;
+		border-radius: var(--radius-circle);
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 600;
 
 		&--late {
-			color: var(--color-critical);
+			color: var(--color-critical--onSurface);
+			background: var(--color-critical--surface);
 		}
 		&--unassigned {
 			color: var(--color-warning--onSurface);
+			background: var(--color-warning--surface);
 		}
 	}
 
@@ -414,8 +438,9 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-smaller);
-		padding: var(--space-small);
-		max-height: 132px;
+		box-sizing: border-box;
+		padding: 6px;
+		height: 64px;
 		overflow-y: auto;
 		border-left: var(--border-base) solid var(--color-border);
 	}
@@ -423,7 +448,7 @@
 	// An Anytime pill is the height the design draws; whatever it holds stays on one line.
 	.calendar-week__anytime-column > :global(*) {
 		flex: 0 0 auto;
-		height: 28px;
+		height: 24px;
 	}
 
 	.calendar-week__anytime-label + .calendar-week__anytime-column {
@@ -476,7 +501,11 @@
 		border-left: var(--border-base) solid var(--color-border);
 		// Outside working hours the column recedes; the working band paints itself back to the ordinary
 		// surface. With no known hours nothing is painted and the whole day recedes equally.
-		background-color: var(--color-surface--background--subtle);
+		background: repeating-linear-gradient(
+			135deg,
+			var(--color-surface) 0 11px,
+			var(--color-border) 11px 12px
+		);
 	}
 
 	.calendar-week__times + .calendar-week__column {
@@ -490,6 +519,10 @@
 		background-color: var(--color-surface);
 	}
 
+	.calendar-week__column--today .calendar-week__working,
+	.calendar-week__anytime-column--today {
+		background-color: var(--color-surface--background--subtle);
+	}
 	.calendar-week__lines {
 		position: absolute;
 		inset: 0;
@@ -506,7 +539,7 @@
 	.calendar-week__block {
 		position: absolute;
 		box-sizing: border-box;
-		padding: 2px var(--space-smaller) 2px 3px;
+		padding: var(--space-smallest) var(--space-smaller);
 	}
 
 	.calendar-week__ghost {
@@ -555,16 +588,19 @@
 		z-index: 1;
 		left: 0;
 		width: 100%;
-		border-top: 2px solid var(--color-interactive);
+		border-top: 1px solid var(--color-interactive);
 		pointer-events: none;
 
-		&::before {
+		&--today {
+			border-top-width: 3px;
+		}
+		&--today::before {
 			content: '';
 			position: absolute;
-			top: -5px;
-			left: -4px;
-			width: 8px;
-			height: 8px;
+			top: -6px;
+			left: -5px;
+			width: 10px;
+			height: 10px;
 			border-radius: var(--radius-circle);
 			background-color: var(--color-interactive);
 		}

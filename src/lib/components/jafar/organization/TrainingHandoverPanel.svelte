@@ -222,7 +222,7 @@
 		retry={() => data.refetch()}
 	/>
 {:else}
-	<SectionBlock title="Training and handover" icon={flagIcon}>
+	<SectionBlock tone="inactive" title="Training and handover" icon={flagIcon}>
 		{#snippet actions()}
 			{#if handover?.delivered_at}
 				<StatusBadge status="success">Delivered</StatusBadge>

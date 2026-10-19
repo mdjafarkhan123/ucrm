@@ -133,6 +133,7 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <SectionBlock
+	tone="client"
 	title="Work overview"
 	subtitle={`Latest work for ${clientName}`}
 	icon={briefcaseIcon}

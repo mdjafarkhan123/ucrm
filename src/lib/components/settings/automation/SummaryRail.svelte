@@ -68,7 +68,7 @@
 	const stepLines = $derived(definition.steps.map(stepLine));
 </script>
 
-<SectionBlock title="Summary" icon={listCheckIcon} level={2}>
+<SectionBlock tone="inactive" title="Summary" icon={listCheckIcon} level={2}>
 	<div class="summary">
 		<h3 class="summary__name">{trimmedName || 'Untitled automation'}</h3>
 

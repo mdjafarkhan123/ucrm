@@ -51,6 +51,7 @@
 </script>
 
 <SectionBlock
+	tone="inactive"
 	title="Access comparison"
 	icon={arrowsDiffIcon}
 	hint="What the Package alone gives, beside what this business gets now that its experience takes part. This screen only reads."

@@ -751,10 +751,6 @@
 		max-width: 640px;
 	}
 
-	.public-form :global(.public-form__card) {
-		box-shadow: var(--shadow-base);
-	}
-
 	.public-form__head {
 		display: flex;
 		flex-direction: column;

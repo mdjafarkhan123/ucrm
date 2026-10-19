@@ -105,6 +105,7 @@
 	/>
 {:else if shown.length > 0}
 	<SectionBlock
+		tone="inactive"
 		title="Outside waits"
 		icon={hourglassIcon}
 		hint="Steps Google, the phone carriers or the client's domain company take. The client sees a wait once you start it; none of them moves Uplift's dates or blocks Ready."

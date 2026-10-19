@@ -27,7 +27,7 @@ export const POST: RequestHandler = async (event) => {
 	const { data, error } = await event.locals.supabase
 		.from('schedule_events')
 		.insert({ organization_id: check.auth.organization.id, ...parsed.data })
-		.select('id, title, description, event_date, start_time, end_time, all_day')
+		.select('id, title, description, event_date, start_time, end_time, all_day, completed_at')
 		.single();
 
 	if (error) return databaseError();

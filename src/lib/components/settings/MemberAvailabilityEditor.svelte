@@ -292,7 +292,7 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<SectionBlock title="Availability" icon={calendarIcon} level={2}>
+<SectionBlock tone="inactive" title="Availability" icon={calendarIcon} level={2}>
 	{#snippet actions()}
 		{#if !revealed}
 			<Button

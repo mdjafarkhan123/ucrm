@@ -80,6 +80,7 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <SectionBlock
+	tone="invoice"
 	title="History"
 	hint="Payments and changes on this invoice"
 	level={2}

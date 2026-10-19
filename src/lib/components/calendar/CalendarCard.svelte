@@ -33,14 +33,14 @@
 		min-width: 0;
 		min-height: 0;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border-radius: var(--radius-large);
 		background-color: var(--color-surface);
 		overflow: hidden;
 	}
 
 	.calendar-card__bar {
 		flex: 0 0 auto;
-		padding: var(--space-base) 20px;
+		padding: 14px var(--space-medium);
 		border-bottom: var(--border-base) solid var(--color-border);
 	}
 

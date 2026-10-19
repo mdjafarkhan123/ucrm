@@ -6,7 +6,7 @@
 	import type { CardDensity } from '$lib/schedule/layout';
 	import type { AssessmentItem } from '$lib/schedule/items';
 	import type { TeamMember } from '$lib/team/api';
-	import clipboardListIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
+	import clipboardListIcon from '@tabler/icons/outline/inbox.svg?raw';
 
 	// One on-site assessment, drawn like a visit so a day reads as one calendar. It is Request-owned: the card
 	// is never a drag handle, and its click opens its own preview. The clipboard beside the time is what tells
@@ -15,6 +15,7 @@
 	let {
 		assessment,
 		density,
+		shortTime = false,
 		today,
 		nowMinutes = null,
 		employeesById,
@@ -25,6 +26,7 @@
 	}: {
 		assessment: AssessmentItem;
 		density: CardDensity;
+		shortTime?: boolean;
 		today: string;
 		/** Minutes past midnight in the contractor's timezone; an assessment under way today wears "In progress". */
 		nowMinutes?: number | null;
@@ -75,7 +77,7 @@
 			workLabel,
 			assignmentLabel(assessment.assignee_ids, employeesById),
 			status ? VISIT_STATUS_LABELS[status] : null,
-			state === 'in-progress' ? 'In progress' : null
+			null
 		]
 			.filter(Boolean)
 			.join(', ')
@@ -86,7 +88,7 @@
 	{density}
 	{state}
 	kind="assessment"
-	time={timeLabel}
+	time={shortTime ? startLabel : timeLabel}
 	startTime={startLabel}
 	client={clientLabel}
 	work={workLabel}

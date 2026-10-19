@@ -510,7 +510,7 @@
 		/>
 
 		{#snippet rail()}
-			<RailCard title="Status">
+			<RailCard tone="inactive" title="Status">
 				<dl class="package-builder__status">
 					<div>
 						<dt>Draft</dt>
@@ -577,7 +577,7 @@
 			</RailCard>
 
 			{#if builder.draft}
-				<RailCard title="Preview">
+				<RailCard tone="inactive" title="Preview">
 					<p class="package-builder__muted">
 						{dirty
 							? 'Save your changes first. The preview shows the saved draft.'
@@ -598,7 +598,7 @@
 			{/if}
 
 			{#if builder.draft}
-				<RailCard title="Publish">
+				<RailCard tone="inactive" title="Publish">
 					{#if dirty}
 						<p class="package-builder__muted">
 							Save your changes first. Publishing uses the saved draft, exactly as saved.
@@ -629,7 +629,7 @@
 			{/if}
 
 			{#if builder.package.ever_published}
-				<RailCard title="Catalog">
+				<RailCard tone="inactive" title="Catalog">
 					{#if listing === 'archived'}
 						<p class="package-builder__muted">
 							Restoring lets new customers choose it again{builder.package.visibility === 'private'
@@ -684,12 +684,12 @@
 				</RailCard>
 			{/if}
 
-			<RailCard title="History">
+			<RailCard tone="inactive" title="History">
 				<PackageHistory events={builder.history} />
 			</RailCard>
 
 			{#if builder.draft}
-				<RailCard title={builder.published ? 'Discard draft' : 'Delete draft'}>
+				<RailCard tone="inactive" title={builder.published ? 'Discard draft' : 'Delete draft'}>
 					<p class="package-builder__muted">
 						{builder.published
 							? 'Throw away this draft. The published edition and its customers are not affected.'

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
-	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	import checkIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import errorIcon from '@tabler/icons/outline/alert-circle.svg?raw';
 
@@ -39,9 +39,9 @@
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: var(--space-small) var(--space-base);
-		padding: var(--space-slim) var(--space-base);
-		border-radius: var(--radius-base);
+		gap: var(--space-slim);
+		padding: var(--space-slim);
+		border-radius: var(--radius-large);
 		color: var(--banner-textColor);
 		background: var(--banner-surface);
 
@@ -60,37 +60,38 @@
 		&--warning {
 			--banner-surface: var(--color-warning--surface);
 			--banner-textColor: var(--color-warning--onSurface);
-			--banner-solid: var(--color-warning);
+			--banner-solid: var(--color-warning--onSurface);
 		}
 
 		&--error {
 			--banner-surface: var(--color-critical--surface);
 			--banner-textColor: var(--color-critical--onSurface);
-			--banner-solid: var(--color-destructive);
+			--banner-solid: var(--color-critical);
 		}
 
 		&__icon {
 			display: inline-flex;
 			flex: 0 0 auto;
-			align-self: flex-start;
-			width: 2.4rem;
-			height: 2.4rem;
-			padding: var(--space-smaller);
-			border-radius: var(--radius-circle);
-			color: var(--color-surface);
-			background: var(--banner-solid);
+			align-items: center;
+			justify-content: center;
+			width: 32px;
+			height: 32px;
+			border-radius: var(--radius-base);
+			color: var(--banner-solid);
+			background: var(--color-surface);
 
 			:global(svg) {
-				width: 100%;
-				height: 100%;
+				width: 16px;
+				height: 16px;
 			}
 		}
 
 		&__content {
-			flex: 1 1 24rem;
+			flex: 1 1 200px;
 			min-width: 0;
 			font-size: var(--typography--fontSize-base);
-			line-height: var(--typography--lineHeight-base);
+			font-weight: 500;
+			line-height: 1.45;
 
 			:global(p) {
 				margin: 0;

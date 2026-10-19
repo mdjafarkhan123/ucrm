@@ -57,7 +57,11 @@
 	);
 </script>
 
-<SectionBlock title="Your project" hint="Step {project.position} of {project.total}">
+<SectionBlock
+	tone="inactive"
+	title="Your project"
+	hint="Step {project.position} of {project.total}"
+>
 	<div class="project-tracker">
 		<div class="project-tracker__now" aria-live="polite">
 			<span class="project-tracker__eyebrow">Now</span>

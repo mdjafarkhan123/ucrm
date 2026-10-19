@@ -112,11 +112,11 @@
 		<fieldset class="move-confirm__scope">
 			<legend>This job repeats. Apply to:</legend>
 			<label class="move-confirm__option">
-				<input type="radio" name="move-scope" value="single" bind:group={scope} />
+				<input type="radio" name="move-scope" value="single" bind:group={scope} disabled={saving} />
 				<span>This visit only</span>
 			</label>
 			<label class="move-confirm__option">
-				<input type="radio" name="move-scope" value="future" bind:group={scope} />
+				<input type="radio" name="move-scope" value="future" bind:group={scope} disabled={saving} />
 				<span>
 					This and later visits
 					<span class="move-confirm__hint">
@@ -139,7 +139,7 @@
 	{@render notice?.()}
 
 	<div class="move-confirm__actions">
-		<Button variant="tertiary" size="small" onclick={oncancel} disabled={saving}>Cancel</Button>
+		<Button variant="secondary" size="small" onclick={oncancel} disabled={saving}>Cancel</Button>
 		<Button
 			size="small"
 			onclick={() => onsave(effectiveScope)}
@@ -157,7 +157,7 @@
 	.move-confirm {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-small);
+		gap: var(--space-base);
 	}
 
 	.move-confirm__error {
@@ -175,8 +175,9 @@
 		margin: 0;
 
 		dt {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			color: var(--color-heading);
+			font-weight: 600;
+			font-size: var(--typography--fontSize-label);
 			line-height: var(--typography--lineHeight-tighter);
 		}
 
@@ -235,22 +236,28 @@
 	.move-confirm__scope {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-smaller);
+		gap: var(--space-small);
 		padding: 0;
 		border: none;
 
 		legend {
 			padding: 0 0 var(--space-smaller);
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			color: var(--color-heading);
+			font-weight: 600;
+			font-size: var(--typography--fontSize-label);
 		}
 	}
 
 	.move-confirm__option {
 		display: flex;
 		align-items: flex-start;
-		gap: var(--space-small);
-		color: var(--color-text);
+		gap: 10px;
+		padding: 10px var(--space-slim);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface);
+		color: var(--color-heading);
+		font-weight: 600;
 		font-size: var(--typography--fontSize-small);
 		line-height: var(--typography--lineHeight-tight);
 		cursor: pointer;
@@ -258,8 +265,8 @@
 		input {
 			flex-shrink: 0;
 			margin: 0;
-			width: 16px;
-			height: 16px;
+			width: 18px;
+			height: 18px;
 			accent-color: var(--color-interactive);
 			cursor: pointer;
 
@@ -270,7 +277,14 @@
 		}
 	}
 
+	.move-confirm__option:has(input:checked) {
+		border-color: var(--color-interactive);
+	}
+	.move-confirm__option:hover {
+		border-color: var(--color-interactive);
+	}
 	.move-confirm__hint {
+		font-weight: 400;
 		display: block;
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-smaller);

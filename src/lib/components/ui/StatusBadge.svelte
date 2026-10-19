@@ -8,7 +8,7 @@
 	}: {
 		children: Snippet;
 		status: 'success' | 'warning' | 'critical' | 'inactive' | 'informative';
-		/** `compact` is the smaller pill a dense table row carries; `small` is the concept's status pill. */
+		/** `compact` is retained as an alias for the small pill used by existing tables. */
 		size?: 'base' | 'compact' | 'small';
 	} = $props();
 </script>
@@ -24,43 +24,31 @@
 		align-items: center;
 		gap: 6px;
 		width: fit-content;
-		padding: 6px 10px 6px 8px;
-		border-radius: 12px;
-		font-size: var(--typography--fontSize-small);
-		line-height: 1;
-		white-space: nowrap;
-	}
-
-	.status-badge--compact {
-		gap: 5px;
-		padding: 4px 9px 4px 8px;
-		border-radius: 10px;
-		font-size: 11px;
-		font-weight: 700;
-	}
-	.status-badge--compact .status-badge__dot {
-		width: 6px;
-		height: 6px;
-	}
-
-	.status-badge--small {
-		gap: 6px;
-		padding: 3px 10px;
+		padding: 5px 11px;
 		border-radius: var(--radius-circle);
 		font-size: var(--typography--fontSize-small);
 		font-weight: 600;
-		line-height: 18px;
-	}
-	.status-badge--small .status-badge__dot {
-		width: 6px;
-		height: 6px;
-	}
+		line-height: 1.2;
+		white-space: nowrap;
 
-	.status-badge__dot {
-		width: 8px;
-		height: 8px;
-		flex: 0 0 auto;
-		border-radius: var(--radius-circle);
+		&--compact,
+		&--small {
+			padding: 3px 9px;
+			font-size: var(--typography--fontSize-overline);
+		}
+
+		&__dot {
+			width: 6px;
+			height: 6px;
+			flex: 0 0 auto;
+			border-radius: var(--radius-circle);
+		}
+
+		&--compact &__dot,
+		&--small &__dot {
+			width: 5px;
+			height: 5px;
+		}
 	}
 
 	.status-badge__text {

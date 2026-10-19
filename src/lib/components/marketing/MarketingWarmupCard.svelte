@@ -15,6 +15,7 @@
 </script>
 
 <SectionBlock
+	tone="growth"
 	title="Sending warm-up"
 	icon={flameIcon}
 	hint={card.graduated

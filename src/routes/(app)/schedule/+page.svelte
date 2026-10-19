@@ -4,9 +4,19 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import type { ResolvedPathname } from '$app/types';
+	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
+	import { visitDerivedStatus } from '$lib/schedule/status';
+	import { VISIT_STATUS_LABELS, VISIT_STATUS_TONES } from '$lib/schedule/statuses';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
+	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import unscheduledIcon from '@tabler/icons/outline/calendar-off.svg?raw';
+	import mapIcon from '@tabler/icons/outline/map-2.svg?raw';
+	import visitIcon from '@tabler/icons/outline/hammer.svg?raw';
+	import assessmentIcon from '@tabler/icons/outline/inbox.svg?raw';
+	import eventIcon from '@tabler/icons/outline/calendar-event.svg?raw';
+	import moveIcon from '@tabler/icons/outline/calendar-time.svg?raw';
 	import Popover from '$lib/components/ui/Popover.svelte';
 	import type { PopoverAnchor } from '$lib/components/ui/popover-anchor';
 	import ScheduleControls from '$lib/components/schedule/ScheduleControls.svelte';
@@ -67,6 +77,7 @@
 	import { stageAssessmentSeed, type AssessmentCreateSeed } from '$lib/requests/assessmentSeed';
 	import ScheduleJobCreate from '$lib/components/schedule/ScheduleJobCreate.svelte';
 	import {
+		completeScheduleEvent,
 		createScheduleEvent,
 		deleteScheduleEvent,
 		fetchScheduleContext,
@@ -449,6 +460,7 @@
 	}
 
 	function openEventPreview(event: EventItem, element: HTMLElement) {
+		eventCompletionError = '';
 		selectedVisitId = null;
 		selectedAssessmentId = null;
 		selectedEventId = event.id;
@@ -988,11 +1000,8 @@
 	}
 
 	async function handleReturnCreate(result: { dates: string[]; scheduleLater: boolean }) {
-		// The dialog closes at once and the add runs behind it, the same way the Job page's Add-visits does, so
-		// the picker never lingers over a network call. The job id is captured first because closing clears it.
 		const jobId = returnVisitJobId;
-		if (!jobId) return;
-		closeReturnVisit();
+		if (!jobId) return false;
 		try {
 			const items: AddVisitInput[] = result.scheduleLater
 				? [
@@ -1020,8 +1029,10 @@
 			await addJobVisits(jobId, items, crypto.randomUUID(), fingerprint(items));
 			await refreshAfterWrite(jobId);
 			toast.success(items.length === 1 ? 'Return visit added' : `${items.length} visits added`);
+			closeReturnVisit();
+			return true;
 		} catch (caught) {
-			toast.error((caught as JobWriteError).message ?? 'Those visits could not be added.');
+			throw new Error((caught as JobWriteError).message ?? 'Those visits could not be added.');
 		}
 	}
 
@@ -1190,6 +1201,25 @@
 		await queryClient.invalidateQueries({ queryKey: ['schedule', 'window'] });
 	}
 
+	let eventCompleting = $state(false);
+	let eventCompletionError = $state('');
+	async function markEventComplete() {
+		const target = selectedEvent;
+		if (!target || target.completed_at || !canSchedule || eventCompleting) return;
+		eventCompleting = true;
+		eventCompletionError = '';
+		try {
+			await completeScheduleEvent(target.id);
+			await refreshEvents();
+			if (selectedEvent?.id === target.id) closePreview();
+			toast.success('Event completed');
+		} catch (caught) {
+			eventCompletionError = (caught as Error).message ?? 'The event could not be completed.';
+		} finally {
+			eventCompleting = false;
+		}
+	}
+
 	async function saveEvent(payload: ScheduleEventWrite) {
 		const editing = editingEvent;
 		eventSaving = true;
@@ -1296,13 +1326,6 @@
 		month: 'this month'
 	};
 
-	// What the shaded part of the grid means differs by view, so the key says it once, in the right words.
-	const LEGEND_NOTES = {
-		day: 'Shaded hours are outside your business hours',
-		week: 'Shaded hours are outside your business hours',
-		month: 'Shaded days are closed'
-	} as const;
-
 	const dayHeadingFormat: Intl.DateTimeFormatOptions = {
 		weekday: 'long',
 		month: 'short',
@@ -1380,7 +1403,7 @@
 
 			{#snippet legendKey()}
 				{#if !mapOpen}
-					<ScheduleLegend note={LEGEND_NOTES[filters.view]} shared={filters.view === 'day'} />
+					<ScheduleLegend showNow={filters.view !== 'month'} />
 				{/if}
 			{/snippet}
 
@@ -1454,6 +1477,7 @@
 								/>
 							{:else if filters.view === 'day'}
 								<ScheduleDay
+									{teamHours}
 									bind:this={dayGrid}
 									day={activeWindow!.from}
 									items={visibleItems}
@@ -1529,16 +1553,28 @@
 	</div>
 </PageContainer>
 
+{#snippet previewBadge(item: ScheduleVisit | AssessmentItem)}
+	{@const status = today ? visitDerivedStatus(item, today) : null}
+	{#if status}<StatusBadge status={VISIT_STATUS_TONES[status]} size="small"
+			>{VISIT_STATUS_LABELS[status]}</StatusBadge
+		>{/if}
+{/snippet}
 {#if selectedVisit && today}
+	{#snippet visitBadge()}{@render previewBadge(selectedVisit!)}{/snippet}
 	{#snippet visitSubtitle()}{visitWorkLabel(selectedVisit!)}{/snippet}
 	<Popover
 		open
 		anchor={previewAnchor}
+		concept
+		icon={visitIcon}
+		iconTone="job"
 		title={visitClientLabel(selectedVisit)}
 		subtitle={visitSubtitle}
+		badge={visitBadge}
 		onClose={closePreview}
 	>
 		<VisitPreview
+			headerStatus
 			visit={selectedVisit}
 			{today}
 			dayLabel={selectedVisit.visit_date
@@ -1559,38 +1595,66 @@
 
 {#snippet visitTimer()}
 	{#if selectedVisit}
-		<WorkTimerControl
-			target={{ kind: 'visit', jobId: selectedVisit.job_id, visitId: selectedVisit.id }}
-			completed={Boolean(selectedVisit.completed_at)}
-		/>
+		<div class="schedule-page__timer-row">
+			<div class="schedule-page__timer-label">
+				<strong>Your timer</strong><span
+					>{myTimerQuery.data?.timer?.kind === 'visit' &&
+					myTimerQuery.data.timer.visit_id === selectedVisit.id
+						? 'Running'
+						: 'Not running on this visit'}</span
+				>
+			</div>
+			<WorkTimerControl
+				concept
+				target={{ kind: 'visit', jobId: selectedVisit.job_id, visitId: selectedVisit.id }}
+				completed={Boolean(selectedVisit.completed_at)}
+			/>
+		</div>
 	{/if}
 {/snippet}
 
 {#snippet assessmentTimer()}
 	{#if selectedAssessment}
-		<WorkTimerControl
-			target={{ kind: 'assessment', assessmentId: selectedAssessment.id }}
-			completed={Boolean(selectedAssessment.completed_at) ||
-				selectedAssessment.visit_date !== today}
-		/>
+		<div class="schedule-page__timer-row">
+			<div class="schedule-page__timer-label">
+				<strong>Your timer</strong><span
+					>{myTimerQuery.data?.timer?.kind === 'assessment' &&
+					myTimerQuery.data.timer.assessment_id === selectedAssessment.id
+						? 'Running'
+						: 'Not running on this assessment'}</span
+				>
+			</div>
+			<WorkTimerControl
+				concept
+				target={{ kind: 'assessment', assessmentId: selectedAssessment.id }}
+				completed={Boolean(selectedAssessment.completed_at) ||
+					selectedAssessment.visit_date !== today}
+			/>
+		</div>
 	{/if}
 {/snippet}
 
 <!-- An assessment's own preview. It is Request-owned, so this only reads it and opens the Request; there is no
      reschedule, complete or unschedule here. -->
 {#if selectedAssessment && today}
+	{#snippet assessmentBadge()}{@render previewBadge(selectedAssessment!)}{/snippet}
 	{#snippet assessmentSubtitle()}{selectedAssessment!.request_title?.trim() ||
 			'On-site assessment'}{/snippet}
 	<Popover
 		open
 		anchor={previewAnchor}
+		concept
+		icon={assessmentIcon}
+		iconTone="request"
 		title={selectedAssessment.client_name ??
 			selectedAssessment.client_company_name ??
 			'Client hidden'}
 		subtitle={assessmentSubtitle}
+		badge={assessmentBadge}
 		onClose={closePreview}
 	>
 		<AssessmentPreview
+			headerStatus
 			assessment={selectedAssessment}
 			{today}
 			dayLabel={selectedAssessment.visit_date
@@ -1605,20 +1669,31 @@
 <!-- An event's own preview. Schedule owns it outright, so this offers Edit and Delete in place -- both behind
      the schedule authority, and Delete confirmed because it is permanent. -->
 {#if selectedEvent}
+	{#snippet eventBadge()}{#if selectedEvent?.completed_at}<StatusBadge status="success" size="small"
+				>Completed</StatusBadge
+			>{/if}{/snippet}
 	{#snippet eventSubtitle()}Event{/snippet}
 	<Popover
 		open
 		anchor={previewAnchor}
+		concept
+		icon={eventIcon}
+		iconTone="event"
 		title={selectedEvent.title.trim() || 'Event'}
 		subtitle={eventSubtitle}
+		badge={eventBadge}
 		onClose={closePreview}
 	>
 		<EventPreview
+			headerStatus
 			event={selectedEvent}
 			dayLabel={selectedEvent.visit_date
 				? formatCalendarDay(selectedEvent.visit_date, dayHeadingFormat)
 				: 'No date'}
 			{canSchedule}
+			completing={eventCompleting}
+			completionError={eventCompletionError}
+			oncomplete={() => void markEventComplete()}
 			onedit={() => openEventEdit(selectedEvent)}
 			ondelete={() => askDeleteEvent(selectedEvent)}
 		/>
@@ -1628,7 +1703,14 @@
 <!-- A drag has landed. Nothing is written until this is saved, so the proposal, its consequences and its
      scope all sit in front of the person first. -->
 {#if pending && pendingChange}
-	<Popover open anchor={pending.anchor} title="Move visit" onClose={cancelMove}>
+	<Popover
+		concept
+		icon={moveIcon}
+		open
+		anchor={pending.anchor}
+		title="Move visit"
+		onClose={cancelMove}
+	>
 		<MoveConfirm
 			visit={pending.visit}
 			proposal={pending.proposal}
@@ -1722,6 +1804,9 @@
 <ConfirmDialog
 	open={deleteEventTarget !== null}
 	title="Delete this event?"
+	icon={trashIcon}
+	tone="critical"
+	destructive
 	confirmLabel="Delete event"
 	cancelLabel="Keep event"
 	loading={eventDeleting}
@@ -1774,6 +1859,8 @@
 <ConfirmDialog
 	open={unscheduleVisitId !== null}
 	title="Move to Unscheduled?"
+	icon={unscheduledIcon}
+	tone="warning"
 	confirmLabel="Move to Unscheduled"
 	cancelLabel="Keep on calendar"
 	loading={unscheduleSaving}
@@ -1795,6 +1882,8 @@
 <ConfirmDialog
 	open={mapPickOpen}
 	title="Whose route?"
+	icon={mapIcon}
+	tone="time"
 	confirmLabel="Show route"
 	cancelLabel="Cancel"
 	confirmDisabled={!pendingMapEmployee}
@@ -1827,6 +1916,28 @@
 {/if}
 
 <style lang="scss">
+	.schedule-page__timer-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-small);
+	}
+	.schedule-page__timer-label {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-smallest);
+		strong {
+			font-size: var(--typography--fontSize-label);
+			font-weight: 600;
+			color: var(--color-heading);
+		}
+		span {
+			font-size: var(--typography--fontSize-small);
+			color: var(--color-text--secondary);
+		}
+	}
+
 	// The page is one card that fills the height the shell gives it: the toolbar on top, the grid scrolling
 	// inside, the colour key underneath. The backlog docks beside it as a card of its own.
 	.schedule-page {

@@ -14,6 +14,8 @@
 	import { stopNavPlace } from '$lib/schedule/stops';
 	import { routeDirections } from '$lib/schedule/directions';
 	import { startPointerDrag } from '$lib/schedule/pointer-drag';
+	import { initials } from '$lib/collaboration/format';
+	import externalIcon from '@tabler/icons/outline/external-link.svg?raw';
 	import directionIcon from '@tabler/icons/outline/directions.svg?raw';
 	import saveIcon from '@tabler/icons/outline/device-floppy.svg?raw';
 	import closeIcon from '@tabler/icons/outline/x.svg?raw';
@@ -133,10 +135,11 @@
 	function routeItemLabel(
 		base: string,
 		link: ReturnType<typeof routeDirections>
-	): { label: string; disabled: boolean; onSelect: () => void } {
+	): { label: string; icon: string; disabled: boolean; onSelect: () => void } {
 		if (link.ok) {
 			return {
 				label: base,
+				icon: externalIcon,
 				disabled: false,
 				onSelect: () => window.open(link.url, '_blank', 'noopener')
 			};
@@ -145,7 +148,7 @@
 			link.reason === 'too-many-stops'
 				? ` — too many stops (max ${link.limit})`
 				: ' — no mappable stops';
-		return { label: `${base}${why}`, disabled: true, onSelect: () => {} };
+		return { label: `${base}${why}`, icon: externalIcon, disabled: true, onSelect: () => {} };
 	}
 
 	const routeItems = $derived([
@@ -159,11 +162,14 @@
 <section class="route" aria-label="Route for {employeeName}">
 	<header class="route__header">
 		<div class="route__heading">
-			<h2 class="route__title">{employeeName}'s route</h2>
-			<p class="route__count">
-				{ordered.length}
-				{ordered.length === 1 ? 'stop' : 'stops'}
-			</p>
+			<span class="route__avatar" aria-hidden="true">{initials(employeeName)}</span>
+			<div class="route__heading-text">
+				<h2 class="route__title">{employeeName}'s route</h2>
+				<p class="route__count">
+					{ordered.length}
+					{ordered.length === 1 ? 'stop' : 'stops'}
+				</p>
+			</div>
 		</div>
 		<div class="route__actions">
 			<!-- Save appears only once the dispatcher has rearranged the route, so there is never a permanently
@@ -171,7 +177,7 @@
 			{#if dirty || saving}
 				<Button size="small" onclick={save} disabled={!canSave} loading={saving}>
 					{@html saveIcon}
-					Save Route Order
+					Save route order
 				</Button>
 			{/if}
 			{#if canRouteDirect}
@@ -241,13 +247,32 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-base);
-		padding: var(--space-small) var(--space-base);
+		padding: var(--space-slim) var(--space-medium);
 		border-bottom: var(--border-base) solid var(--color-border);
 	}
 
+	.route__avatar {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 32px;
+		height: 32px;
+		border-radius: var(--radius-circle);
+		background: var(--color-heading);
+		color: var(--color-surface);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 700;
+	}
+	.route__heading-text {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-smallest);
+		min-width: 0;
+	}
 	.route__heading {
 		display: flex;
-		align-items: baseline;
+		align-items: center;
 		gap: var(--space-small);
 		min-width: 0;
 	}
@@ -255,8 +280,8 @@
 	.route__title {
 		margin: 0;
 		color: var(--color-heading);
-		font-size: var(--typography--fontSize-large);
-		font-weight: 700;
+		font-size: 16px;
+		font-weight: 600;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -285,8 +310,9 @@
 	}
 
 	.route__list-pane {
-		flex: 0 0 360px;
+		flex: 0 0 400px;
 		max-width: 45%;
+		background: var(--color-surface--background--subtle);
 		overflow-y: auto;
 		padding: var(--space-base);
 		border-right: var(--border-base) solid var(--color-border);

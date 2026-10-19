@@ -140,6 +140,7 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 {#if requests.data?.length}
 	<RailCard
+		tone="inactive"
 		title={requests.data.length === 1 ? 'Booking request' : 'Booking requests'}
 		icon={calendarQuestionIcon}
 		count={requests.data.length > 1 ? requests.data.length : undefined}

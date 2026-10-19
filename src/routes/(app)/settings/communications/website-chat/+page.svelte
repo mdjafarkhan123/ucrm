@@ -369,7 +369,12 @@
 				description="Ask your platform owner to add Website Chat to your plan."
 			/>
 		{:else}
-			<SectionBlock title="Usage and availability" icon={messageCircleIcon} level={2}>
+			<SectionBlock
+				tone="inactive"
+				title="Usage and availability"
+				icon={messageCircleIcon}
+				level={2}
+			>
 				<div class="website-chat__usage">
 					<div class="website-chat__usage-copy">
 						<span>Accepted conversations</span>
@@ -431,6 +436,7 @@
 			</SectionBlock>
 
 			<SectionBlock
+				tone="inactive"
 				class="section-block--flush"
 				title="Widgets"
 				hint={limit?.is_unlimited

@@ -143,3 +143,6 @@ export const scheduleWindowQuerySchema = z
 		message: `Ask for at most ${SCHEDULE_WINDOW_MAX_DAYS} days at a time.`,
 		path: ['to']
 	});
+
+// Completion owns its timestamp on the server; a caller cannot supply or rewrite it.
+export const scheduleEventCompleteSchema = z.object({}).strict();

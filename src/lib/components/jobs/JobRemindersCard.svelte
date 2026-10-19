@@ -231,13 +231,15 @@
 		<div class="job-reminders-embedded__head">
 			<p class="job-reminders-embedded__title">Invoice reminders</p>
 			{#if editable}
-				<Button variant="secondary" size="small" onclick={openAdd}>{@html plusIcon}Add reminder</Button>
+				<Button variant="secondary" size="small" onclick={openAdd}
+					>{@html plusIcon}Add reminder</Button
+				>
 			{/if}
 		</div>
 		{@render content()}
 	</div>
 {:else}
-	<RailCard title="Invoice reminders" icon={bellIcon} count={reminders.length}>
+	<RailCard tone="invoice" title="Invoice reminders" icon={bellIcon} count={reminders.length}>
 		{#snippet actions()}
 			{#if editable}
 				<Button variant="tertiary" size="small" onclick={openAdd}>Add</Button>
@@ -246,7 +248,7 @@
 
 		{@render content()}
 
-	<p class="job-reminders__hint">
+		<p class="job-reminders__hint">
 			Reminders are prompts for your own team, not messages to the client.
 		</p>
 	</RailCard>

@@ -10,8 +10,11 @@
 		stopWorkLabel
 	} from '$lib/schedule/stops';
 	import { singleStopDirections } from '$lib/schedule/directions';
+	import hammerIcon from '@tabler/icons/outline/hammer.svg?raw';
+	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
 	import gripIcon from '@tabler/icons/outline/grip-vertical.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
+	import externalIcon from '@tabler/icons/outline/external-link.svg?raw';
 	import directionIcon from '@tabler/icons/outline/directions.svg?raw';
 
 	// One row in the Map's stop list: a place the crew has to be, drawn with its route number, when it is, whose
@@ -73,11 +76,13 @@
 	const directionItems = $derived([
 		{
 			label: 'Google Maps',
+			icon: externalIcon,
 			onSelect: () => googleLink.ok && window.open(googleLink.url, '_blank', 'noopener'),
 			disabled: !googleLink.ok
 		},
 		{
 			label: 'Apple Maps',
+			icon: externalIcon,
 			onSelect: () => appleLink.ok && window.open(appleLink.url, '_blank', 'noopener'),
 			disabled: !appleLink.ok
 		}
@@ -100,6 +105,7 @@
 <div
 	class="route-stop"
 	class:route-stop--selected={selected}
+	class:route-stop--assessment={stop.kind === 'assessment'}
 	class:route-stop--anchor={anchor}
 	class:route-stop--unplaced={state !== 'located'}
 >
@@ -133,7 +139,9 @@
 		onclick={(event) => onselect(stop, event.currentTarget)}
 	>
 		<span class="route-stop__line">
-			<span class="route-stop__time">{time}</span>
+			<span class="route-stop__kind" aria-hidden="true"
+				>{@html stop.kind === 'assessment' ? inboxIcon : hammerIcon}</span
+			><span class="route-stop__time">{time}</span>
 			<span class="route-stop__client">{client}</span>
 		</span>
 		<span class="route-stop__work">{work}</span>
@@ -161,8 +169,8 @@
 		display: grid;
 		grid-template-columns: auto auto 1fr auto;
 		align-items: center;
-		gap: var(--space-small);
-		padding: var(--space-small);
+		gap: 10px;
+		padding: 10px var(--space-small);
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 		background-color: var(--color-surface);
@@ -222,13 +230,13 @@
 		width: 24px;
 		height: 24px;
 		border-radius: var(--radius-circle);
-		background-color: var(--color-interactive);
-		color: var(--color-surface);
+		background-color: var(--color-time);
+		color: var(--color-text--reverse);
 		font-size: var(--typography--fontSize-smaller);
 		font-weight: 700;
 	}
 
-	.route-stop--anchor .route-stop__number {
+	.route-stop--unplaced .route-stop__number {
 		// An anchor's number reads calmer than an Anytime stop's, because its order is not the dispatcher's to
 		// change -- it is set by the clock.
 		background-color: var(--color-inactive);
@@ -254,33 +262,51 @@
 		border-radius: var(--radius-small);
 	}
 
+	.route-stop__kind {
+		display: inline-flex;
+		color: var(--color-job);
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+		}
+	}
+	.route-stop--assessment .route-stop__kind {
+		color: var(--color-request);
+	}
+	.route-stop--assessment .route-stop__time {
+		color: var(--color-request--onSurface);
+	}
 	.route-stop__line {
 		display: flex;
-		align-items: baseline;
-		gap: var(--space-small);
+		align-items: center;
+		gap: var(--space-smaller);
 		min-width: 0;
 	}
 
 	.route-stop__time {
 		flex-shrink: 0;
-		color: var(--color-heading);
+		color: var(--color-job--onSurface);
 		font-size: var(--typography--fontSize-small);
-		font-weight: 700;
+		font-weight: 600;
 	}
 
 	.route-stop__client {
 		overflow: hidden;
 		color: var(--color-heading);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 700;
+		font-size: var(--typography--fontSize-base);
+		font-weight: 600;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 
+	.route-stop__work {
+		font-size: var(--typography--fontSize-label);
+		font-weight: 500;
+		color: var(--color-text);
+	}
 	.route-stop__work,
 	.route-stop__address {
 		overflow: hidden;
-		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -298,6 +324,10 @@
 			color: var(--color-warning--onSurface);
 		}
 		&--no-address {
+			border: var(--border-base) solid var(--color-border--interactive);
+			border-radius: var(--radius-circle);
+			padding: 3px 8px;
+			align-self: flex-start;
 			color: var(--color-text--secondary);
 		}
 	}

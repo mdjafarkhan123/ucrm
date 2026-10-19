@@ -187,6 +187,7 @@
 		/>
 
 		<SectionBlock
+			tone="inactive"
 			title="Blocked email addresses"
 			hint="Nothing your team sends reaches these addresses until they are unblocked."
 			icon={mailOffIcon}
@@ -293,6 +294,7 @@
 
 		{#if cleared.length > 0}
 			<SectionBlock
+				tone="inactive"
 				title="Recently unblocked"
 				icon={mailCheckIcon}
 				level={2}

@@ -87,7 +87,7 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<RailCard title="Client" icon={userStarIcon} class="client-panel">
+<RailCard tone="inactive" title="Client" icon={userStarIcon} class="client-panel">
 	<div class="client-panel__status">
 		<Badge status="success" dot={false}>Client</Badge>
 		<span class="client-panel__muted">since {dateFormat.format(new Date(client.won_at))}</span>

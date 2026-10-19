@@ -317,6 +317,7 @@
 		/>
 
 		<SectionBlock
+			tone="inactive"
 			title="Email included this period"
 			hint="Business email is included in your package and resets every billing period."
 			icon={gaugeIcon}
@@ -435,6 +436,7 @@
 		<EmailSetupCard />
 
 		<SectionBlock
+			tone="inactive"
 			class="section-block--flush"
 			title="Sender identities"
 			hint="Domains are provisioned and verified by UCRM."
