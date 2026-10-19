@@ -21,7 +21,7 @@ times show their length from the start ("2 hr after start" chip). Declined: curr
 rows; a 15-minute time list (Jafar: the live hour / minute-in-5s / AM-PM picker is more flexible — keep it,
 improved look; Jafar picked the "indigo dial": hour : minute columns fading from a soft `color-time-surface` band, AM/PM segmented switch, green only on Done; A/C options deleted). Rule: per part, a new look or an improved live look, never a copy (design skill pref 9). Look: indigo
 `color-time` tile at the front of date/time/time-zone boxes, weekday beside the date, raised green picked day,
-today = bold date + green dot, slim quick-date pills (Jafar compared indigo and chose brand green for the picked day), round flags, grey code/offset pills, typed letters in green.
+today = bold date + green dot, slim quick-date pills (Jafar chose green over indigo), round flags, grey code/offset pills, typed letters in green.
 
 ## Approved reference and proof
 
@@ -36,8 +36,7 @@ About 96 form pop-ups keep buttons inside the body, around 120 have no icon, and
 ## Batch 4 (approved 2026-10-19)
 
 Board `j3jDI`; looks are in design modules `layout.md`, `cards.md`, `notices.md`. Build notes: the card tile's
-live default `job` tone must become a per-caller tone; Banner has no close (live has none). Next batches:
-pickers, small controls, then files and lists. Codex builds approved parts and Schedule on its own branch;
+live default `job` tone must become a per-caller tone; Banner has no close (live has none). Codex builds approved parts and Schedule on its own branch;
 Claude draws, reviews and merges (Jafar 2026-10-19).
 
 ## Next
