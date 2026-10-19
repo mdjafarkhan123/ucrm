@@ -19,7 +19,7 @@
 New behaviour approved: quick dates (Today, Tomorrow, Next week = next week-start day) above the month; end
 times show their length from the start ("2 hr after start" chip). Declined: current local time in time-zone
 rows; a 15-minute time list (Jafar: the live hour / minute-in-5s / AM-PM picker is more flexible — keep it,
-improved look; three looks drawn in section "Time pop-up · pick one": A quiet dial, B indigo dial, C tap grid, waiting for Jafar's pick). Rule: per part, a new look or an improved live look, never a copy (design skill pref 9). Look: indigo
+improved look; Jafar picked the "indigo dial": hour : minute columns fading from a soft `color-time-surface` band, AM/PM segmented switch, green only on Done; A/C options deleted). Rule: per part, a new look or an improved live look, never a copy (design skill pref 9). Look: indigo
 `color-time` tile at the front of date/time/time-zone boxes, weekday beside the date, raised green picked day,
 today = green date + dot, round flags, grey code/offset pills, typed letters in green. After approval, delete
 `J3g7hi`.
