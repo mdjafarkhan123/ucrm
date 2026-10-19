@@ -142,7 +142,8 @@ board, "Concept · Schedule · Pop-ups · 1440".
 
 - Book work (from empty time): the form pop-up at 640, the header tile in the chosen kind's colour (job hammer,
   request inbox, event calendar-days). Body starts with a full-width segmented switch Job / Request / Event (each
-  chosen icon in its record colour). Job: Job title, the picked-client card, a "First visit" group (radius 16,
+  chosen icon in its record colour). Job: Job title, the picked-client card (its "Change client" and "Change
+  property" are both small secondary buttons, repeat and map-pin icons), a "First visit" group (radius 16,
   1px `--color-border`, a subtle head row with a 24 `--color-time` tile and 14/600 title; body padding 16), Who is
   going chips, Notify customer under a top line. Footer: secondary "More options" (sliders) at the far left,
   main "Save job" (check) at the right.
@@ -160,3 +161,54 @@ board, "Concept · Schedule · Pop-ups · 1440".
   radius 8, padding 8 10; top row (20 high) the 14 type icon, time 12/600 `--onSurface` ("Anytime" when none) and
   the status pill at the right (outlined Late / Unassigned, filled Completed); then the client 13/600 heading with
   the work 12/500 `--color-text` beside it. Completed rows take the Week card's completed look.
+
+## "Are you sure?" pop-ups
+
+- The `modals.md` pattern: Delete this event? (danger tile, trash), Move to Unscheduled? (`--color-time` tile,
+  calendar-off; green main button), Whose route? (`--color-time` tile, route; one Employee select above the
+  buttons). The record named in the message is bold.
+
+## Filters and Directions menus
+
+- Open 8 under their button; the page is not dimmed. White, 1px `--color-border`, radius 16, `--shadow-base`.
+- Filters panel, 320 wide: header "Filters" 16/600 with a quiet "Clear" at the right (only while a filter is
+  set), padding 12 12 12 16, a line under it; body padding 16, fields 16 apart: Employee and Status selects, then
+  Density as a segmented switch.
+- Directions menu: padding 8, lines 2 apart as the dropdown list (`inputs.md`), each an external-link 16 icon
+  then the app name. A maps app that cannot take the route is a disabled line that says why ("Apple Maps — too
+  many stops (max 4)").
+
+## Unscheduled panel
+
+- Docked beside the calendar (the calendar narrows, nothing dimmed), 360 wide, full height: white, 1px
+  `--color-border`, radius 16, clip.
+- Header padding 14 14 14 16, gap 10, line under it: 32 `--color-time` tile (calendar-off), "Unscheduled" 16/600,
+  count bubble (20 high, `--color-inactive--surface`, 12/600), × icon button at the right.
+- Search and Employee select stacked 8 apart, padding 12 16, line under them. List padding 12 16 12 8, items 10
+  apart: a 16 grip-vertical handle in `--color-icon--secondary`, then the card.
+- Card: white, 1px `--color-border`, radius 12, padding 12, gap 4. Top: client 14/600 heading, then the age pill
+  at the right. Work line: 14 hammer `--color-job`, work 13/500 `--color-text`, gap 6. Place: 14 map-pin
+  `--color-client`, address 12 quiet, gap 4. Foot (6 above): people circles with names 12/500, or the outlined
+  "Unassigned" pill; small secondary "Schedule" (calendar-plus) at the right.
+- Age pill: radius full, padding 3 9 3 7, gap 5, 12 clock in the main colour, 11/600 `--onSurface`. "Added
+  today" `--color-informative`; "Waiting 1–6 days" `--color-warning`; "Waiting 7 days" or more
+  `--color-critical` (Jafar 2026-10-19).
+
+## Map view
+
+- Day view with Map switched on: the toolbar stays; under it the route header, then the stop list (400 wide,
+  `--color-surface--background--subtle`, padding 16, stops 8 apart, 1px `--color-border` on its right) beside the
+  map. No colour key.
+- Route header, padding 12 20, gap 8, line under it: a 32 `--color-heading` circle with initials, "Jake Smith's
+  route" 16/600 and "5 stops" 12 quiet; at the right small main "Save route order" (save; only after the order
+  changes), small secondary "Directions" (signpost) and a 32 × icon button.
+- Stop: white, 1px `--color-border`, radius 8, padding 10 8, gap 10: a 16 lock (`--color-icon--secondary`) for
+  a fixed time or a grip for Anytime work, a 24 `--color-time` number circle (white 12/700), the body (gap 3),
+  and a 32 signpost icon button. Body: 14 type icon in the record colour, the time 12/600 in the record
+  `--onSurface` ("Anytime" when none), client 14/600 heading; work 13/500 `--color-text`; address 12 quiet. A stop
+  without an address has a `--color-inactive` number and the outlined "No address" pill. Chosen stop: 1.5px
+  `--color-interactive` edge.
+- Map: pins 32 `--color-time` circles with a 3px white ring and the number 13/700 white; the chosen pin 40 in
+  `--color-interactive`. Route line `--color-time` over a white casing. A white pill at the top left (radius
+  full, padding 6 12, 1px `--color-border`): 14 map-pin `--color-warning` and "4 of 5 placed · 1 in the list
+  only" 12/600 heading.

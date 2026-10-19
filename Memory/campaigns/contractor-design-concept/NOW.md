@@ -7,9 +7,8 @@
 **Next:**
 1. **Shared parts first** (Jafar 2026-10-19): `parts/c5-shared-parts.md`. Pop-ups and page states built
    2026-10-19; batch 3 fields built and checked in the live app 2026-10-19. Continue remaining shared parts in `stages/list-1a-parts.md`.
-2. Schedule (`parts/c8-schedule.md`): **every drawing is drawn** (2026-10-19). Approved: Week, Day, Month, the
-   pop-ups up to the book-work form. **Waiting for Jafar's yes** on the "are you sure?" pop-ups, Filters and Directions menus, Unscheduled panel and Map
-   screen (review fixes made 2026-10-19, ••• removed), and whether three Jobs pop-ups get drawn first. Then build Schedule in one go (Jafar 2026-10-19).
+2. Schedule (`parts/c8-schedule.md`): **every drawing approved** (2026-10-19). Next: build Schedule in one go
+   (Jafar 2026-10-19). Ask first: draw the three Jobs pop-ups Schedule opens before the build?
 3. Jafar confirms the redesign checklist order and pop-up marks (`stages/list-index.md`, `parts/c5a-redesign-checklist.md`).
 
 **Pencil:** open file only; Ctrl+S saves (`docs/pencil-workflow.md`).
