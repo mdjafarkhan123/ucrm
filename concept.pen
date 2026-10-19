@@ -34221,21 +34221,33 @@
                       "id": "eV4U7",
                       "name": "Form pop-up · ready",
                       "clip": true,
-                      "width": 480,
+                      "width": 400,
                       "fill": "$color-surface",
                       "cornerRadius": "$radius-large",
                       "stroke": "$color-border",
                       "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#1f2a2429",
-                        "offset": {
-                          "x": 0,
-                          "y": 16
+                      "effect": [
+                        {
+                          "type": "shadow",
+                          "shadowType": "outer",
+                          "color": "#0000001a",
+                          "offset": {
+                            "x": 0,
+                            "y": 1
+                          },
+                          "blur": 4
                         },
-                        "blur": 40
-                      },
+                        {
+                          "type": "shadow",
+                          "shadowType": "outer",
+                          "color": "#0000000d",
+                          "offset": {
+                            "x": 0,
+                            "y": 4
+                          },
+                          "blur": 12
+                        }
+                      ],
                       "layout": "vertical",
                       "children": [
                         {
@@ -34263,7 +34275,7 @@
                               "name": "Tile",
                               "descendants": {
                                 "IAbCu": {
-                                  "icon": "receipt"
+                                  "icon": "hammer"
                                 }
                               }
                             },
@@ -34448,7 +34460,7 @@
                       "name": "Caption",
                       "fill": "$color-heading",
                       "textGrowth": "fixed-width",
-                      "width": 480,
+                      "width": 400,
                       "content": "Ready. Title says what you are adding; the hint names the record it belongs to. Cancel left of the green save; the footer stays in view while the body scrolls.",
                       "lineHeight": 1.5,
                       "fontFamily": "Inter",
@@ -34469,21 +34481,33 @@
                       "id": "jWOf6",
                       "name": "Form pop-up · saving",
                       "clip": true,
-                      "width": 480,
+                      "width": 400,
                       "fill": "$color-surface",
                       "cornerRadius": "$radius-large",
                       "stroke": "$color-border",
                       "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#1f2a2429",
-                        "offset": {
-                          "x": 0,
-                          "y": 16
+                      "effect": [
+                        {
+                          "type": "shadow",
+                          "shadowType": "outer",
+                          "color": "#0000001a",
+                          "offset": {
+                            "x": 0,
+                            "y": 1
+                          },
+                          "blur": 4
                         },
-                        "blur": 40
-                      },
+                        {
+                          "type": "shadow",
+                          "shadowType": "outer",
+                          "color": "#0000000d",
+                          "offset": {
+                            "x": 0,
+                            "y": 4
+                          },
+                          "blur": 12
+                        }
+                      ],
                       "layout": "vertical",
                       "children": [
                         {
@@ -34511,7 +34535,7 @@
                               "name": "Tile",
                               "descendants": {
                                 "IAbCu": {
-                                  "icon": "receipt"
+                                  "icon": "hammer"
                                 }
                               }
                             },
@@ -34711,7 +34735,7 @@
                       "name": "Caption",
                       "fill": "$color-heading",
                       "textGrowth": "fixed-width",
-                      "width": 480,
+                      "width": 400,
                       "content": "Saving. The spinner takes the check's place, the label stays, Cancel waits. Escape and the × close it only when nothing is saving.",
                       "lineHeight": 1.5,
                       "fontFamily": "Inter",
@@ -34796,21 +34820,33 @@
                           "type": "frame",
                           "id": "fIDOK",
                           "name": "Confirm · danger",
-                          "width": 440,
+                          "width": 480,
                           "fill": "$color-surface",
                           "cornerRadius": "$radius-large",
                           "stroke": "$color-border",
                           "strokeWidth": 1,
-                          "effect": {
-                            "type": "shadow",
-                            "shadowType": "outer",
-                            "color": "#1f2a2429",
-                            "offset": {
-                              "x": 0,
-                              "y": 16
+                          "effect": [
+                            {
+                              "type": "shadow",
+                              "shadowType": "outer",
+                              "color": "#0000001a",
+                              "offset": {
+                                "x": 0,
+                                "y": 1
+                              },
+                              "blur": 4
                             },
-                            "blur": 40
-                          },
+                            {
+                              "type": "shadow",
+                              "shadowType": "outer",
+                              "color": "#0000000d",
+                              "offset": {
+                                "x": 0,
+                                "y": 4
+                              },
+                              "blur": 12
+                            }
+                          ],
                           "layout": "vertical",
                           "gap": 16,
                           "padding": 24,
@@ -34914,7 +34950,7 @@
                           "name": "Caption",
                           "fill": "$color-heading",
                           "textGrowth": "fixed-width",
-                          "width": 440,
+                          "width": 480,
                           "content": "Danger. Red tile; the red button names the action. Focus starts on Cancel, so Enter never deletes by accident.",
                           "lineHeight": 1.5,
                           "fontFamily": "Inter",
@@ -34934,21 +34970,33 @@
                           "type": "frame",
                           "id": "nO5Ui",
                           "name": "Confirm · go ahead",
-                          "width": 440,
+                          "width": 480,
                           "fill": "$color-surface",
                           "cornerRadius": "$radius-large",
                           "stroke": "$color-border",
                           "strokeWidth": 1,
-                          "effect": {
-                            "type": "shadow",
-                            "shadowType": "outer",
-                            "color": "#1f2a2429",
-                            "offset": {
-                              "x": 0,
-                              "y": 16
+                          "effect": [
+                            {
+                              "type": "shadow",
+                              "shadowType": "outer",
+                              "color": "#0000001a",
+                              "offset": {
+                                "x": 0,
+                                "y": 1
+                              },
+                              "blur": 4
                             },
-                            "blur": 40
-                          },
+                            {
+                              "type": "shadow",
+                              "shadowType": "outer",
+                              "color": "#0000000d",
+                              "offset": {
+                                "x": 0,
+                                "y": 4
+                              },
+                              "blur": 12
+                            }
+                          ],
                           "layout": "vertical",
                           "gap": 16,
                           "padding": 24,
@@ -35056,7 +35104,7 @@
                           "name": "Caption",
                           "fill": "$color-heading",
                           "textGrowth": "fixed-width",
-                          "width": 440,
+                          "width": 480,
                           "content": "Go ahead. The tile shows what you'll end up with, in its record colour; the green button names the action.",
                           "lineHeight": 1.5,
                           "fontFamily": "Inter",
@@ -35084,21 +35132,33 @@
                           "type": "frame",
                           "id": "lhE04",
                           "name": "Confirm · warning",
-                          "width": 440,
+                          "width": 480,
                           "fill": "$color-surface",
                           "cornerRadius": "$radius-large",
                           "stroke": "$color-border",
                           "strokeWidth": 1,
-                          "effect": {
-                            "type": "shadow",
-                            "shadowType": "outer",
-                            "color": "#1f2a2429",
-                            "offset": {
-                              "x": 0,
-                              "y": 16
+                          "effect": [
+                            {
+                              "type": "shadow",
+                              "shadowType": "outer",
+                              "color": "#0000001a",
+                              "offset": {
+                                "x": 0,
+                                "y": 1
+                              },
+                              "blur": 4
                             },
-                            "blur": 40
-                          },
+                            {
+                              "type": "shadow",
+                              "shadowType": "outer",
+                              "color": "#0000000d",
+                              "offset": {
+                                "x": 0,
+                                "y": 4
+                              },
+                              "blur": 12
+                            }
+                          ],
                           "layout": "vertical",
                           "gap": 16,
                           "padding": 24,
@@ -35206,7 +35266,7 @@
                           "name": "Caption",
                           "fill": "$color-heading",
                           "textGrowth": "fixed-width",
-                          "width": 440,
+                          "width": 480,
                           "content": "Warning. Yellow tile when something is missing but you may carry on. Both buttons say what happens.",
                           "lineHeight": 1.5,
                           "fontFamily": "Inter",
@@ -35226,21 +35286,33 @@
                           "type": "frame",
                           "id": "n9kwup",
                           "name": "Confirm · notice",
-                          "width": 440,
+                          "width": 480,
                           "fill": "$color-surface",
                           "cornerRadius": "$radius-large",
                           "stroke": "$color-border",
                           "strokeWidth": 1,
-                          "effect": {
-                            "type": "shadow",
-                            "shadowType": "outer",
-                            "color": "#1f2a2429",
-                            "offset": {
-                              "x": 0,
-                              "y": 16
+                          "effect": [
+                            {
+                              "type": "shadow",
+                              "shadowType": "outer",
+                              "color": "#0000001a",
+                              "offset": {
+                                "x": 0,
+                                "y": 1
+                              },
+                              "blur": 4
                             },
-                            "blur": 40
-                          },
+                            {
+                              "type": "shadow",
+                              "shadowType": "outer",
+                              "color": "#0000000d",
+                              "offset": {
+                                "x": 0,
+                                "y": 4
+                              },
+                              "blur": 12
+                            }
+                          ],
                           "layout": "vertical",
                           "gap": 16,
                           "padding": 24,
@@ -35258,11 +35330,11 @@
                                   "type": "ref",
                                   "ref": "BfB4y",
                                   "name": "Tile",
-                                  "fill": "$color-informative-surface",
+                                  "fill": "$color-client-surface",
                                   "descendants": {
                                     "IAbCu": {
-                                      "icon": "info",
-                                      "fill": "$color-informative-on-surface"
+                                      "icon": "user-round",
+                                      "fill": "$color-client"
                                     }
                                   }
                                 },
@@ -35334,8 +35406,8 @@
                           "name": "Caption",
                           "fill": "$color-heading",
                           "textGrowth": "fixed-width",
-                          "width": 440,
-                          "content": "Notice. Only something to acknowledge, so one button and no second choice.",
+                          "width": 480,
+                          "content": "Notice. Only something to acknowledge, so one button and no second choice. The tile is the record it is about (here the client).",
                           "lineHeight": 1.5,
                           "fontFamily": "Inter",
                           "fontSize": 12,
@@ -35687,16 +35759,28 @@
                   "cornerRadius": "$radius-large",
                   "stroke": "$color-border",
                   "strokeWidth": 1,
-                  "effect": {
-                    "type": "shadow",
-                    "shadowType": "outer",
-                    "color": "#1f2a2429",
-                    "offset": {
-                      "x": 0,
-                      "y": 16
+                  "effect": [
+                    {
+                      "type": "shadow",
+                      "shadowType": "outer",
+                      "color": "#0000001a",
+                      "offset": {
+                        "x": 0,
+                        "y": 1
+                      },
+                      "blur": 4
                     },
-                    "blur": 40
-                  },
+                    {
+                      "type": "shadow",
+                      "shadowType": "outer",
+                      "color": "#0000000d",
+                      "offset": {
+                        "x": 0,
+                        "y": 4
+                      },
+                      "blur": 12
+                    }
+                  ],
                   "layout": "vertical",
                   "children": [
                     {
@@ -36046,6 +36130,706 @@
                       ]
                     }
                   ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "m3kF6",
+          "name": "Page states",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "IQdl1",
+              "name": "Page states heading",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "fxQzr",
+                  "name": "Section title",
+                  "fill": "$color-heading",
+                  "content": "Loading, empty and couldn't load",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "q9Nzg1",
+                  "name": "Section sub",
+                  "fill": "$color-text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "What a list or page shows before its content arrives, when there is nothing yet, and when loading failed. An empty section inside a card keeps its one quiet line (Job details).",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "FCDgA",
+              "name": "Row",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "n4MAt6",
+                  "name": "Loading",
+                  "clip": true,
+                  "width": "fill_container",
+                  "height": 420,
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-large",
+                  "stroke": "$color-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "rLoaV",
+                      "type": "ref",
+                      "ref": "hHVVU",
+                      "name": "Header",
+                      "width": "fill_container",
+                      "descendants": {
+                        "S2bkqw": {
+                          "fill": "$color-client-surface"
+                        },
+                        "M4w5I": {
+                          "icon": "user-round",
+                          "fill": "$color-client"
+                        },
+                        "rdm2s": {
+                          "content": "Clients"
+                        },
+                        "qXDmB": {
+                          "content": "Everyone you work for"
+                        },
+                        "I1guOa": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qkZVH",
+                      "name": "Body",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "padding": 8,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "U48vyY",
+                          "name": "Row bone",
+                          "width": "fill_container",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-border",
+                          "gap": 14,
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": "$radius-base",
+                              "id": "WLobm",
+                              "name": "Tile bone",
+                              "fill": "$color-border",
+                              "width": 32,
+                              "height": 32
+                            },
+                            {
+                              "type": "frame",
+                              "id": "RGBKV",
+                              "name": "Lines",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": "$radius-small",
+                                  "id": "D3ZYm",
+                                  "name": "Bone",
+                                  "fill": "$color-border",
+                                  "width": 160,
+                                  "height": 10
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": "$radius-small",
+                                  "id": "SE5uj",
+                                  "name": "Bone",
+                                  "fill": "$color-border",
+                                  "width": 100,
+                                  "height": 8
+                                }
+                              ]
+                            },
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": "$radius-small",
+                              "id": "JM8gW",
+                              "name": "Bone",
+                              "fill": "$color-border",
+                              "width": 56,
+                              "height": 20
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "gsgmo",
+                          "name": "Row bone",
+                          "width": "fill_container",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-border",
+                          "gap": 14,
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": "$radius-base",
+                              "id": "k8l7o",
+                              "name": "Tile bone",
+                              "fill": "$color-border",
+                              "width": 32,
+                              "height": 32
+                            },
+                            {
+                              "type": "frame",
+                              "id": "gdYhB",
+                              "name": "Lines",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": "$radius-small",
+                                  "id": "suQb3",
+                                  "name": "Bone",
+                                  "fill": "$color-border",
+                                  "width": 120,
+                                  "height": 10
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": "$radius-small",
+                                  "id": "ZVTqb",
+                                  "name": "Bone",
+                                  "fill": "$color-border",
+                                  "width": 80,
+                                  "height": 8
+                                }
+                              ]
+                            },
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": "$radius-small",
+                              "id": "Paq0m",
+                              "name": "Bone",
+                              "fill": "$color-border",
+                              "width": 56,
+                              "height": 20
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "NmbTL",
+                          "name": "Row bone",
+                          "width": "fill_container",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-border",
+                          "gap": 14,
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": "$radius-base",
+                              "id": "Ct7Nc",
+                              "name": "Tile bone",
+                              "fill": "$color-border",
+                              "width": 32,
+                              "height": 32
+                            },
+                            {
+                              "type": "frame",
+                              "id": "rVGfc",
+                              "name": "Lines",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": "$radius-small",
+                                  "id": "oyZul",
+                                  "name": "Bone",
+                                  "fill": "$color-border",
+                                  "width": 180,
+                                  "height": 10
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": "$radius-small",
+                                  "id": "G4r45",
+                                  "name": "Bone",
+                                  "fill": "$color-border",
+                                  "width": 120,
+                                  "height": 8
+                                }
+                              ]
+                            },
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": "$radius-small",
+                              "id": "eEXen",
+                              "name": "Bone",
+                              "fill": "$color-border",
+                              "width": 56,
+                              "height": 20
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "GO32D",
+                          "name": "Row bone",
+                          "width": "fill_container",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-border",
+                          "gap": 14,
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": "$radius-base",
+                              "id": "FnL3w",
+                              "name": "Tile bone",
+                              "fill": "$color-border",
+                              "width": 32,
+                              "height": 32
+                            },
+                            {
+                              "type": "frame",
+                              "id": "jeA88",
+                              "name": "Lines",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": "$radius-small",
+                                  "id": "povBq",
+                                  "name": "Bone",
+                                  "fill": "$color-border",
+                                  "width": 140,
+                                  "height": 10
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": "$radius-small",
+                                  "id": "NOMIZ",
+                                  "name": "Bone",
+                                  "fill": "$color-border",
+                                  "width": 90,
+                                  "height": 8
+                                }
+                              ]
+                            },
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": "$radius-small",
+                              "id": "OqvZS",
+                              "name": "Bone",
+                              "fill": "$color-border",
+                              "width": 56,
+                              "height": 20
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "kqBUV",
+                          "name": "Row bone",
+                          "width": "fill_container",
+                          "cornerRadius": "$radius-base",
+                          "stroke": "$color-border",
+                          "gap": 14,
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": "$radius-base",
+                              "id": "dPe8R",
+                              "name": "Tile bone",
+                              "fill": "$color-border",
+                              "width": 32,
+                              "height": 32
+                            },
+                            {
+                              "type": "frame",
+                              "id": "y2rAW8",
+                              "name": "Lines",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": "$radius-small",
+                                  "id": "mZ1VK",
+                                  "name": "Bone",
+                                  "fill": "$color-border",
+                                  "width": 100,
+                                  "height": 10
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": "$radius-small",
+                                  "id": "q3UnWf",
+                                  "name": "Bone",
+                                  "fill": "$color-border",
+                                  "width": 70,
+                                  "height": 8
+                                }
+                              ]
+                            },
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": "$radius-small",
+                              "id": "nHmgr",
+                              "name": "Bone",
+                              "fill": "$color-border",
+                              "width": 56,
+                              "height": 20
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "M0iV9n",
+                  "name": "Empty",
+                  "clip": true,
+                  "width": "fill_container",
+                  "height": 420,
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-large",
+                  "stroke": "$color-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "syx7K",
+                      "type": "ref",
+                      "ref": "hHVVU",
+                      "name": "Header",
+                      "width": "fill_container",
+                      "descendants": {
+                        "S2bkqw": {
+                          "fill": "$color-client-surface"
+                        },
+                        "M4w5I": {
+                          "icon": "user-round",
+                          "fill": "$color-client"
+                        },
+                        "rdm2s": {
+                          "content": "Clients"
+                        },
+                        "qXDmB": {
+                          "content": "Everyone you work for"
+                        },
+                        "I1guOa": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "c9WlR",
+                      "name": "Empty state",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": [
+                        32,
+                        40
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "E6zZwI",
+                          "type": "ref",
+                          "ref": "BfB4y",
+                          "name": "Tile",
+                          "fill": "$color-client-surface",
+                          "descendants": {
+                            "IAbCu": {
+                              "icon": "user-round-plus",
+                              "fill": "$color-client"
+                            }
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "Qnnqu",
+                          "name": "Title",
+                          "fill": "$color-heading",
+                          "content": "No clients yet",
+                          "fontFamily": "Inter",
+                          "fontSize": 20,
+                          "fontWeight": "600",
+                          "letterSpacing": -0.2
+                        },
+                        {
+                          "type": "text",
+                          "id": "hKLej",
+                          "name": "Description",
+                          "fill": "$color-text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": 320,
+                          "content": "Add the people and businesses you work for. Their quotes, jobs and invoices live under them.",
+                          "lineHeight": 1.5,
+                          "textAlign": "center",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "r66AUb",
+                          "name": "Action",
+                          "padding": [
+                            4,
+                            0,
+                            0,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "id": "TGF3j",
+                              "type": "ref",
+                              "ref": "Qo6GL",
+                              "name": "New client",
+                              "descendants": {
+                                "vaRXs": {
+                                  "content": "New client"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "QELIV",
+                  "name": "Couldn't load",
+                  "clip": true,
+                  "width": "fill_container",
+                  "height": 420,
+                  "fill": "$color-surface",
+                  "cornerRadius": "$radius-large",
+                  "stroke": "$color-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "Dtzat",
+                      "type": "ref",
+                      "ref": "hHVVU",
+                      "name": "Header",
+                      "width": "fill_container",
+                      "descendants": {
+                        "S2bkqw": {
+                          "fill": "$color-client-surface"
+                        },
+                        "M4w5I": {
+                          "icon": "user-round",
+                          "fill": "$color-client"
+                        },
+                        "rdm2s": {
+                          "content": "Clients"
+                        },
+                        "qXDmB": {
+                          "content": "Everyone you work for"
+                        },
+                        "I1guOa": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "J5W22",
+                      "name": "Error state",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": [
+                        32,
+                        40
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "dcAp8",
+                          "type": "ref",
+                          "ref": "BfB4y",
+                          "name": "Tile",
+                          "fill": "$color-critical-surface",
+                          "descendants": {
+                            "IAbCu": {
+                              "icon": "triangle-alert",
+                              "fill": "$color-critical"
+                            }
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "RhmCb",
+                          "name": "Title",
+                          "fill": "$color-heading",
+                          "content": "Something went wrong",
+                          "fontFamily": "Inter",
+                          "fontSize": 20,
+                          "fontWeight": "600",
+                          "letterSpacing": -0.2
+                        },
+                        {
+                          "type": "text",
+                          "id": "k1fXl",
+                          "name": "Description",
+                          "fill": "$color-text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": 320,
+                          "content": "We could not load this information. Try again.",
+                          "lineHeight": 1.5,
+                          "textAlign": "center",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "fDsyT",
+                          "name": "Action",
+                          "padding": [
+                            4,
+                            0,
+                            0,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "id": "N3lsnq",
+                              "type": "ref",
+                              "ref": "qpjlj",
+                              "name": "Try again",
+                              "descendants": {
+                                "lDuWW": {
+                                  "icon": "refresh-cw"
+                                },
+                                "Dpmda": {
+                                  "content": "Try again"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "G1QzKa",
+              "name": "Captions",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "kt8Xl",
+                  "name": "Caption",
+                  "fill": "$color-text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Loading. Grey shapes where the rows will be, with a soft shimmer, so the page never jumps when data arrives. Screen readers hear \"Loading clients\".",
+                  "lineHeight": 1.5,
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "FOqb4",
+                  "name": "Caption",
+                  "fill": "$color-text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Empty. The page's own colour tile, a short title, one line on why it matters, and the one action that fills it. A search or filter with no results says so instead and offers Clear filters.",
+                  "lineHeight": 1.5,
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "vfj07",
+                  "name": "Caption",
+                  "fill": "$color-text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Couldn't load. Red tile, plain words, and Try again. The rest of the page keeps working.",
+                  "lineHeight": 1.5,
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
                 }
               ]
             }

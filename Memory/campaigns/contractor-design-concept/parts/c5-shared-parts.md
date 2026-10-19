@@ -10,7 +10,7 @@ screens reuse them.
 | Batch | Parts | State |
 | --- | --- | --- |
 | 1 Pop-ups | `ui/Dialog` (form pop-up), `ui/ConfirmDialog` ("are you sure?"), `layout/SidePanel` (side drawer) | Drawn 2026-10-19 on `concept.pen` board "Concept · Foundation · Pop-ups · 1440" (`v2Y89`); **approved by Jafar 2026-10-19**; build next |
-| 2 Page states | `data-display/LoadingSkeleton`, `EmptyState`, `ErrorState` | Drawn 2026-10-19, section "Loading, empty and couldn't load" on `v2Y89`; waits for Jafar |
+| 2 Page states | `data-display/LoadingSkeleton`, `EmptyState`, `ErrorState` | Drawn 2026-10-19, section "Loading, empty and couldn't load" on `v2Y89`; **approved by Jafar 2026-10-19** |
 | 3 Fields in code | `ui/Input`, `ui/Select`, `ui/Textarea`, `ui/Badge` (drawn ✅, not built), `ui/SearchInput` | Not started |
 | Then | the remaining `list-1a-parts.md` rows in order | — |
 
@@ -38,4 +38,4 @@ page's colour, title 20/600, one line, the one main action. Couldn't load: red t
 
 ## Next
 
-Jafar approves batch 2; then build batches 1 and 2 in their shared components.
+Build batches 1 and 2 in their shared components (`ui/Dialog`, `ui/ConfirmDialog`, `layout/SidePanel`, `data-display/*`), add a modals module to the design skill, compare live with `v2Y89`. Jafar re-approved batch 1 after the preference check (drawer 480 kept).

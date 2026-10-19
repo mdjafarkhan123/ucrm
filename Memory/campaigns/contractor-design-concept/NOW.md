@@ -5,8 +5,8 @@
 **Stage:** Building, screen by screen (Jafar 2026-10-18). Approved: C1 Foundation, C2 Home, C3 Jobs list, C4 Job details, C5 New job. Built: buttons, Jobs list, Home, Job details and its edit mode, New job 2026-10-19 (leftovers in `parts/c7-build-pilots.md`).
 
 **Next:**
-1. **Shared parts first** (Jafar 2026-10-19): `parts/c5-shared-parts.md`. Batch 1 pop-ups approved 2026-10-19 (`concept.pen`
-   board `v2Y89`); next draw batch 2 page states, then build batches 1–2 together.
+1. **Shared parts first** (Jafar 2026-10-19): `parts/c5-shared-parts.md`. Pop-ups and page states approved 2026-10-19 (`concept.pen`
+   board `v2Y89`); next build them, then batch 3.
 2. Then draw Schedule (`stages/list-2a-daily.md`).
 3. Jafar reads the redesign checklist (`stages/list-index.md`) and confirms the order and pop-up marks: `parts/c5a-redesign-checklist.md`.
 
