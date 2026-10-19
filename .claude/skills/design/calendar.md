@@ -136,6 +136,10 @@ board, "Concept · Schedule · Pop-ups · 1440".
   `--color-warning` and 13/500 `--onSurface`; the repeat question as a radio choice (`inputs.md`); the Notify
   customer checkbox. Footer as the form pop-up's, padding 12 16, small Cancel then small "Save move" (check).
 
+- New event: the form pop-up (`modals.md`) at 600 over the dimmed page, a 40 `--color-event` tile
+  (calendar-days). Fields: Event title; Day and Time side by side; the Anytime checkbox with its hint; Details as
+  a text area. Footer: Cancel then the main "Create event" (check); editing reads "Edit event" / "Save event".
+
 ## Day list
 
 - Opens from "+ N more" beside the Month date; picking an item opens its pop-up in the same place.
