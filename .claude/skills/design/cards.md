@@ -55,6 +55,22 @@
 - Money on the feature card beside it: money in is white, money still to come white 72%, overdue
   `--color-feature--alert`; a figure pill is white with `--color-feature--start` text.
 
+## Number card
+
+A row of counts (campaign sending results, automations); a card may open the list behind its number (Pencil:
+board "Load more, form errors, edit button, number cards", approved 2026-10-19).
+
+- White, 1px `--color-border`, radius 16, padding 16 16 14, gap 12; cards in a row 16 apart, same height.
+- Top row, gap 12: a 40 tile in the card's status colour (`icon-shapes.md`), then the number 26/700 (-0.6)
+  `--color-heading` over its label 13/600 in the status `--onSurface` colour. A card that opens a list adds a
+  16 `arrow-right` `--color-icon--secondary` at the right.
+- Note under it on a band: `--color-surface--background`, radius 8, padding 8 10; text 12/500
+  `--color-text-secondary`.
+- Colour is the status: waiting `warning`, planned `informative`, done `success`, act now `critical`,
+  stopped or draft `inactive`.
+- Link hover: `--color-surface--hover`, border `--color-border--interactive--hover`, arrow `--color-heading`.
+  Focus: the 2px `--color-focus` ring.
+
 ## States
 
 - Static: no hover.

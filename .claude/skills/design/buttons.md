@@ -48,6 +48,11 @@ An icon button is square at the size's height.
 ### Icon button
 - 36×36 (40×40 in the top bar), radius 8, white, bordered; 16–18 icon in `--color-icon`. Needs an `aria-label`.
 
+### Pencil button
+- The icon button holding a 16 `pencil`, at small (32) or base (36) size; it opens a block for editing beside a
+  heading or at the end of a row. Its label is the accessible name and the hover tip. All states as the icon
+  button (approved 2026-10-19).
+
 ### Switched on
 - A white bordered button that works like a light switch (Unscheduled, Map, Filters) stays on while its panel
   shows or its filter is set: border, label and icon `--color-interactive`, background stays `--color-surface`.

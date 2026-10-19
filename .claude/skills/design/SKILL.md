@@ -53,14 +53,14 @@ Jafar 2026-10-17).
 - [chips.md](chips.md) — Filter chip, tag, tag picker
 - [avatars.md](avatars.md) — Avatar
 - [tabs.md](tabs.md) — Tabs
-- [cards.md](cards.md) — Card
-- [lists.md](lists.md) — List row
+- [cards.md](cards.md) — Card, number card
+- [lists.md](lists.md) — List row, Load more footer
 - [tables.md](tables.md) — Table
 - [sidebars.md](sidebars.md) — Sidebar
 - [top-bar.md](top-bar.md) — Top bar
 - [modals.md](modals.md) — Form pop-up, "are you sure?" pop-up, side drawer
 - [page-states.md](page-states.md) — Loading, empty, couldn't load
-- [notices.md](notices.md) — Notice strip
+- [notices.md](notices.md) — Notice strip, form error card
 - [calendar.md](calendar.md) — Schedule calendar: toolbar, grid, cards, now line
 
 Not yet designed in the concept — use the Classic module until it is: accordion, dropdown, pagination,
