@@ -2,63 +2,41 @@
 
 **Campaign:** contractor-design-concept · **Checklist row:** `stages/list-2a-daily.md` → `(app)/schedule`
 **Branch/worktree:** `codex/concept-schedule`, `.worktrees/concept-schedule` · **Claim:** `e4d47ceb5e70`
-**State (2026-10-19, later):** Week view `JpHqG` reviewed and revised (see "Review fixes"). **Not approved yet**: waiting for Jafar's look. Then write the card rules into the design skill, then Day view.
+**State (2026-10-19):** Week `JpHqG` revised after Jafar's review; **not approved yet**. After approval: write
+the card rules into the design skill, then Day view.
 
 ## Research
 
-Jobber screenshots in `Design/schedule-visits-research/jobber/` (week, day, month, visit pop-up, map). Jobber shows
-Month / Week / Day, an Anytime lane, Today and arrows, Type / Team / Status filters, an unscheduled count, Map and
-More; a visit opens a small pop-up (Completed, details, team, place, time, line items, Find a time / Edit / Details).
-Our live Schedule already has the same behaviour, so the drawing needs no new data or behaviour.
+Jobber screenshots in `Design/schedule-visits-research/jobber/`. Jobber: Month / Week / Day, Anytime lane, Today
+and arrows, Type / Team / Status filters, unscheduled count, Map, More; a visit opens a small pop-up. Our live
+Schedule already behaves the same, so the drawing needs no new data except event completion (below).
 
-## Drawn (concept.pen)
+## Week `JpHqG` as drawn
 
-- `JpHqG` "Concept · Schedule · Week · Owner · 1440": Jobs-list shell (sidebar on Schedule), page header with the
-  time-colour calendar tile, one calendar card: approved option-A toolbar (Today, arrows, range, Month/Week/Day
-  switch, Unscheduled 4 switched on, Map, Filters), day headings with item count and a Late / Unassigned pill,
-  Anytime row, 7 AM–6 PM grid (56 per hour), closed Sunday shaded, green now line, colour key.
-- Items (revised 2026-10-19 from Jafar's final recommendation): normal cards are the soft type tint (visit
-  green, assessment orange, event yellow, task grey) with the 14px type icon in the record colour (grey once completed) and **no** thick line. Late: 4px red left
-  line + "Late" pill. Unassigned: 4px amber left line + "Unassigned" pill. Both: red line wins, both pills stay.
-  Completed: warm silver `color-surface-active` card, 1px `color-border-interactive`, crossed-out title (Google Calendar / Tasks convention, so it never looks like a grey task card; Pencil has no strikethrough, so the drawing uses a 1px line per title line; code uses text-decoration), grey text and icon, green "Completed" pill with a check (Jafar 2026-10-19: white looked see-through; not `color-inactive-surface`,
-  because the task tint and the inactive grey are the same colour). No fading, no animation, no "In progress".
-- Today: green weekday, number in a green circle, 3px green line under its heading, column and Anytime cell on
-  `color-surface-background-subtle`. Closed days moved to `color-surface-active` so they differ from today.
+- **No page header** (Jafar 2026-10-19: Jobber and our app have none). The calendar card takes the full height.
+  Toolbar: Today, arrows, range, Month/Week/Day switch, Unscheduled (off), Map, Filters, More (36 icon button,
+  ellipsis). The top bar's New is the only green New.
+- Day headings: weekday, date, item count, small Late / Unassigned pills. Anytime row. Grid 7 AM–7 PM, 64 per hour.
+- Today: green weekday, date in a green circle, 3px green line under it, column on `color-surface-background-subtle`.
+  Closed day: white with light diagonal stripes in `color-border`.
+- Now line behind cards: 1px green across the open days, 3px on today, dot at today's edge, green "10:40" label
+  in the hours column (a line through a title would read as "crossed out").
+- Cards: soft tint of the kind of work (visit green, assessment orange, event yellow, task grey), 14px type icon,
+  time 12/600 always shown, title 12/600, people circles 24 (11/700 initials, 2 apart). Late: 4px red left edge
+  plus outlined "Late" pill. Unassigned: outlined pill only, no edge (event yellow = warning yellow).
+  Completed: `color-surface-active`, 1px `color-border-interactive`, grey icon and text, crossed-out title, green
+  "Completed" pill under the title, people on the bottom row. Late follows `src/lib/schedule/status.ts`.
+- Overlap (Sat): half-width cards side by side, start time only.
 
-## Card colour decision (Jafar delegated to Claude, 2026-10-19)
+## Decisions (2026-10-19)
 
-Jafar proposed colour = status (blue in progress, green done, red late). Compared with Jobber (colour by item
-type, completed faded with a check; https://help.getjobber.com/en/articles/calendar-colors/), Housecall Pro
-(employee colour plus status changes) and dispatch boards (status colour), plus a second opinion from GPT.
-Decided: card colour = kind of work (Jobber default; the colour map's "a record keeps its colour everywhere");
-status always in words; only late and unassigned get a coloured edge; done goes quiet; **no "In progress"
-look**, because the app only infers it from the clock (no real "started" record), and the now line already shows
-the present; no looping animation. The live app today colours cards by status; building this changes that.
-
-## Completed rule and events (Jafar 2026-10-19)
-
-Any completed card turns silver, whatever its kind; the grey type icon still names the kind. Events too:
-Jafar chose option A, follow Jobber (its `Event` has `isComplete`). Monday's "Team meeting" is drawn completed.
-
-**New behaviour to build with the Schedule build (not a look-only change):** events can be marked complete and
-reopened, like tasks: a `completed_at` on events (migration), a write through `/api/*` with Zod, a tick in the
-event pop-up, and the card's completed look. Today the app has no event completion.
-
-## Review fixes (Jafar said "fix", 2026-10-19)
-
-- **No page header** (Jafar: Jobber and our app have none; the calendar takes the full height). More is a 36 icon
-  button (ellipsis) at the toolbar's right end; the top bar's New is the only green New.
-- Grid 64 per hour, 7 AM–7 PM. Unscheduled switch off (no drawer open in Week).
-- Time never hidden: one-hour cards stack time, title, pill. Card time 12/600; people circles 24 with 11/700
-  initials, 2 apart (no overlap). Completed pill sits under the crossed-out title, people on the bottom row.
-- Unassigned: no coloured edge (event yellow = warning yellow), pill only. Only Late has a 4px red edge.
-- Late follows the app rule (`src/lib/schedule/status.ts`: past day, not done), so Tuesday's Anytime "Mailbox repair" is Late (Tue "2 late").
-- Now line behind cards: 1px green across the week (stops at closed days), 3px on today, dot at today's edge,
-  green "10:40" label in the hours column.
-- Upcoming event drawn (Thu "Supplier meeting"); overlap drawn (Sat: two half-width cards, start time only).
-- Closed day: white with light diagonal stripes in `color-border`. Key's hint text removed.
+- Card colour = kind of work, not status (Jafar delegated; Jobber default, colour map "a record keeps its colour").
+  Status always in words; no "In progress" look (the app only guesses it from the clock); no animation.
+- Any completed card turns silver. Events can be completed (Jafar chose Jobber's way).
+  **New behaviour for the build:** `completed_at` on events (migration), `/api/*` write with Zod, a tick in the
+  event pop-up. The live app colours cards by status today; the build changes that.
 
 ## Next
 
-1. Jafar reviews Week. Then, one at a time: Day (people rows), Month, visit pop-up, Unscheduled drawer, Map.
-2. Pencil saves only on Ctrl+S in the app: ask Jafar to save, then commit `concept.pen` under this claim.
+1. Jafar approves Week. Then one at a time: Day (people rows), Month, visit pop-up, Unscheduled drawer, Map.
+2. Jafar saves Pencil (Ctrl+S); commit `concept.pen` from the main folder under this claim.
