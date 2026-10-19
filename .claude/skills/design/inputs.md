@@ -4,21 +4,39 @@
 
 ## Core Specs
 
-- Label above the box: 13/600 `--color-heading`, 6 gap.
+- Label above the box: 13/600 `--color-heading`, 6 gap. A must-fill field adds a red `*` (13/700
+  `--color-critical`) 4 after the label.
 - Box: height 40, padding 0 12, radius 8, `--color-surface`, 1px `--color-border--interactive`.
 - Value 14 `--color-heading`; placeholder `--color-text--secondary`.
+- A word or icon in front (`$`, phone): 14/500 word or 16 icon in `--color-text--secondary` /
+  `--color-icon--secondary`, 8 before the value.
+- Small: 36 high, value 13, for tight spots (quantities, line items).
 
 ## Variants
 
 - **Select:** chevron-down icon at the right, `--color-icon--secondary`.
-- **Search:** search icon at the left; optional ⌘K key hint (11/600 on `--color-surface--background`, radius 4).
+- **Search:** search icon at the left. Once something is typed, a 24 clear button at the right: × 14
+  `--color-icon` on `--color-surface--hover`, radius 6. The ⌘K hint (11/600 on `--color-surface--background`,
+  radius 4) is only in the top bar's search. Inside a table's header: 38 high, 1px `--color-border`, 13/500.
+- **Select with a word in front (filters):** an optional 16 icon, then the word 14/500 `--color-text--secondary`,
+  then the value 14/600 heading ("Status · All").
+- **Big text box:** 96 high (three lines), padding 10 12, line height 1.45, grows when dragged. With a letter
+  limit, a 12/500 `--color-text--secondary` count under the right corner ("408 left"); over the limit it turns
+  12/600 `--color-critical` ("12 too many").
 - **Error:** 1.5px `--color-critical` border; under it a 14px circle-alert icon and a 12px message in
   `--color-critical` that says what to fix.
 
 ## States
 
-Hover: border `--color-border--section`. Focus: `--shadow-focus`. Disabled: `--color-disabled--secondary`
-background.
+Hover: border `--color-border--interactive--hover`. Focus (typing, or a dropdown open): `--shadow-focus`.
+Disabled: `--color-disabled--secondary` background, value and icons `--color-disabled`.
+
+## Dropdown list
+
+- Opens 4 under the box, as wide as it: `--color-surface`, 1px `--color-border`, radius 16, padding 8, 2
+  between lines, `--shadow-base`. The box's chevron turns up.
+- Line: 36 high, padding 0 10, radius 8, 14 `--color-heading`. Mouse over: `--color-surface--hover`. Chosen:
+  600 with a 16 check in `--color-interactive` at the right. Can't be picked: `--color-disabled`.
 
 ## Checkbox
 
