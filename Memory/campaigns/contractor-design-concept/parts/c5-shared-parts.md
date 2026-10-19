@@ -12,7 +12,7 @@
 | 2 Page states | LoadingSkeleton, EmptyState, ErrorState | Approved `v2Y89`; built 2026-10-19 |
 | 3 Fields | Input, Select, Textarea, Badge, SearchInput | Approved `khuNF`, including added interaction states; built and checked 2026-10-19 |
 | 4 Page parts | PageContainer, SectionBlock, RailCard, Breadcrumbs, Banner | Approved `j3jDI` 2026-10-19 (breadcrumb option C); for Codex to build |
-| 5 Pickers | CalendarPicker, TimePickerField, TimePicker, DateTimePicker, TimezonePicker, CountryPicker | `J3g7hi` rejected (traced the live pickers); redrawn as `uSXlT` "Pickers v2" 2026-10-19, **waiting for Jafar** |
+| 5 Pickers | CalendarPicker, TimePickerField, TimePicker, DateTimePicker, TimezonePicker, CountryPicker | Approved `uSXlT` "Pickers v2" 2026-10-19 (old `J3g7hi` deleted); for Codex to build |
 
 ## Batch 5 redraw decisions (Jafar, 2026-10-19)
 
@@ -21,8 +21,7 @@ times show their length from the start ("2 hr after start" chip). Declined: curr
 rows; a 15-minute time list (Jafar: the live hour / minute-in-5s / AM-PM picker is more flexible — keep it,
 improved look; Jafar picked the "indigo dial": hour : minute columns fading from a soft `color-time-surface` band, AM/PM segmented switch, green only on Done; A/C options deleted). Rule: per part, a new look or an improved live look, never a copy (design skill pref 9). Look: indigo
 `color-time` tile at the front of date/time/time-zone boxes, weekday beside the date, raised green picked day,
-today = green date + dot, round flags, grey code/offset pills, typed letters in green. After approval, delete
-`J3g7hi`.
+today = green date + dot, round flags, grey code/offset pills, typed letters in green.
 
 ## Approved reference and proof
 

@@ -28,26 +28,26 @@ Key, tick rule and coverage command: `list-index.md`.
 | `layout/StickyActionBar` |  | ✅ | ✅ |
 | `ui/Avatar` |  | ⬜ | ⬜ |
 | `data-display/ListLoadMore` |  | ⬜ | ⬜ |
-| `ui/CalendarPicker` |  | 🟡 Pickers v2 `uSXlT` | ⬜ |
+| `ui/CalendarPicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `data-display/DataTable` |  | ⬜ | ⬜ |
 | `forms/FormErrorSummary` |  | ⬜ | ⬜ |
 | `layout/RecordFormLayout` |  | ✅ | ✅ |
 | `layout/RailCard` |  | ✅ Page parts board `j3jDI` | ⬜ |
 | `ui/Banner` |  | ✅ Page parts board `j3jDI` | ⬜ |
 | `ui/Lightbox` |  | ⬜ | ⬜ |
-| `ui/TimePickerField` |  | 🟡 Pickers v2 `uSXlT` | ⬜ |
+| `ui/TimePickerField` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `ui/Toggle` |  | ⬜ | ⬜ |
 | `files/FileThumb` |  | ⬜ | ⬜ |
 | `ui/Card` |  | ✅ | ⬜ |
 | `ui/CardHeader` | Pencil "Card header"; on every Home card so far | ✅ | ✅ |
-| `ui/TimePicker` |  | 🟡 Pickers v2 `uSXlT` | ⬜ |
+| `ui/TimePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `ui/PencilButton` |  | ⬜ | ⬜ |
 | `forms/MoneyInput` |  | ⬜ | ⬜ |
 | `ui/FilterChip` |  | ⬜ | ⬜ |
 | `data-display/KpiCard` |  | ⬜ | ⬜ |
 | `layout/SidePanel` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
-| `ui/DateTimePicker` |  | 🟡 Pickers v2 `uSXlT` | ⬜ |
-| `ui/CountryPicker` |  | 🟡 Pickers v2 `uSXlT` | ⬜ |
+| `ui/DateTimePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
+| `ui/CountryPicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `ui/TagSelect` |  | ⬜ | ⬜ |
 | `collaboration/AttachmentSurface` |  | ⬜ | ⬜ |
 | `data-display/RecordListCard` |  | ⬜ | ⬜ |
@@ -60,7 +60,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `quotes/PriceBookDrawer` | 🔁D pop-up · loading, empty, permission-limited, field-worker view | ⬜ | ⬜ |
 | `quotes/ProductsAndServicesBlock` | pop-ups: "Throw away these changes?" 🔁C · menus ×1 · empty, permission-limited, field-worker view | ⬜ | ⬜ |
 | `ui/RadioGroup` |  | ⬜ | ⬜ |
-| `ui/TimezonePicker` |  | 🟡 Pickers v2 `uSXlT` | ⬜ |
+| `ui/TimezonePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `work/ClientPicker` | loading | ✅ | ✅ |
 | `time-clock/RunningClock` |  | ⬜ | ⬜ |
 | `time-clock/TimerElapsed` |  | ⬜ | ⬜ |
