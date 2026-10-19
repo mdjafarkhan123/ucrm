@@ -24,7 +24,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `layout/Breadcrumbs` |  | ⬜ | ⬜ |
 | `ui/ConfirmDialog` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `ui/SegmentedControl` |  | ✅ | ✅ |
-| `ui/StatusBadge` |  | ✅ | ⬜ |
+| `ui/StatusBadge` |  | ✅ | 🟡 Branch build; Pencil comparison pending |
 | `layout/StickyActionBar` |  | ✅ | ✅ |
 | `ui/Avatar` |  | ⬜ | ⬜ |
 | `data-display/ListLoadMore` |  | ⬜ | ⬜ |
@@ -38,7 +38,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/TimePickerField` |  | ⬜ | ⬜ |
 | `ui/Toggle` |  | ⬜ | ⬜ |
 | `files/FileThumb` |  | ⬜ | ⬜ |
-| `ui/Card` |  | ✅ | ⬜ |
+| `ui/Card` |  | ✅ | 🟡 Branch build; Pencil comparison pending |
 | `ui/CardHeader` | Pencil "Card header"; on every Home card so far | ✅ | ✅ |
 | `ui/TimePicker` |  | ⬜ | ⬜ |
 | `ui/PencilButton` |  | ⬜ | ⬜ |

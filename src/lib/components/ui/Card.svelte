@@ -1,36 +1,51 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import CardHeader from './CardHeader.svelte';
+	import layoutIcon from '@tabler/icons/outline/layout.svg?raw';
 
 	let {
 		children,
 		heading,
+		icon = layoutIcon,
+		tone = 'inactive',
+		hint,
+		actions,
 		class: className = ''
 	}: {
 		children?: Snippet;
 		heading?: string;
+		icon?: string;
+		tone?: string;
+		hint?: string;
+		actions?: Snippet;
 		class?: string;
 	} = $props();
 </script>
 
-<article class={`card ${className}`}>
-	{#if heading}<h2 class="card__heading">{heading}</h2>{/if}
+<article class={['card', heading && 'card--headed', className]}>
+	{#if heading}
+		<div class="card__header"><CardHeader title={heading} {icon} {tone} {hint} {actions} /></div>
+	{/if}
 	{#if children}{@render children()}{/if}
 </article>
 
 <style lang="scss">
 	.card {
-		padding: var(--space-large);
+		min-width: 0;
+		padding: var(--space-medium);
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border-radius: var(--radius-large);
 		background: var(--color-surface);
-		box-shadow: var(--shadow-low);
+		box-shadow: none;
 
-		&__heading {
-			margin-bottom: var(--space-base);
-			color: var(--color-heading);
-			font-size: var(--typography--fontSize-larger);
-			font-weight: 700;
-			line-height: var(--typography--lineHeight-tight);
+		&--headed {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-base);
+		}
+
+		&__header {
+			margin: calc(-1 * var(--space-medium)) calc(-1 * var(--space-medium)) var(--space-smaller);
 		}
 	}
 </style>
