@@ -79987,7 +79987,7 @@
                   "fill": "$color-text-secondary",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
-                  "content": "The way back up from a page that lives inside another (18 places, mostly Settings). Sits above the page header. Earlier pages are quiet links; the page you are on is dark and not a link.",
+                  "content": "The way back up from a page that lives inside another (18 places, mostly Settings). One white capsule above the page header: a dark back circle on the first step, a › between steps, each step lights up on hover, and the page you are on is shaded and not a link. Approved option C, 2026-10-19.",
                   "fontFamily": "$font-family",
                   "fontSize": 14,
                   "fontWeight": "normal"
@@ -80022,36 +80022,59 @@
                   "children": [
                     {
                       "type": "frame",
-                      "id": "n9uomS",
-                      "name": "Trail",
-                      "gap": 8,
+                      "id": "EKzaz",
+                      "name": "Capsule",
+                      "theme": {
+                        "mode": "light"
+                      },
+                      "fill": "$color-surface",
+                      "cornerRadius": "$radius-circle",
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "gap": 2,
+                      "padding": 4,
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "frame",
-                          "id": "m3lea",
-                          "name": "Link · Settings",
-                          "cornerRadius": "$radius-small",
-                          "gap": 4,
+                          "id": "dsEIg",
+                          "name": "Step · Settings",
+                          "cornerRadius": "$radius-circle",
+                          "gap": 6,
                           "padding": [
-                            2,
+                            4,
+                            12,
+                            4,
                             4
                           ],
                           "alignItems": "center",
                           "children": [
                             {
-                              "type": "icon",
-                              "id": "ZjWkA",
-                              "name": "Icon arrow-left",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "arrow-left",
-                              "library": "lucide",
-                              "fill": "$color-icon-secondary"
+                              "type": "frame",
+                              "id": "IuG5I",
+                              "name": "Back circle",
+                              "width": 24,
+                              "height": 24,
+                              "fill": "$color-heading",
+                              "cornerRadius": "$radius-circle",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "c1H6Lj",
+                                  "name": "Icon arrow-left",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "arrow-left",
+                                  "library": "lucide",
+                                  "fill": "$color-surface"
+                                }
+                              ]
                             },
                             {
                               "type": "text",
-                              "id": "HLCzk",
+                              "id": "tzTOG",
                               "name": "Label",
                               "fill": "$color-text-secondary",
                               "content": "Settings",
@@ -80063,31 +80086,42 @@
                         },
                         {
                           "type": "icon",
-                          "id": "EkGHu",
+                          "id": "H47Ec0",
                           "name": "Icon chevron-right",
-                          "width": 14,
-                          "height": 14,
+                          "width": 16,
+                          "height": 16,
                           "icon": "chevron-right",
                           "library": "lucide",
-                          "fill": "$color-border-interactive"
+                          "fill": "$color-icon-secondary"
                         },
                         {
                           "type": "frame",
-                          "id": "CjU5l",
-                          "name": "Link · Team",
-                          "cornerRadius": "$radius-small",
-                          "gap": 4,
+                          "id": "ydYnV",
+                          "name": "Step · Team",
+                          "fill": "#00000000",
+                          "cornerRadius": "$radius-circle",
+                          "gap": 6,
                           "padding": [
-                            2,
-                            4
+                            6,
+                            12
                           ],
                           "alignItems": "center",
                           "children": [
                             {
+                              "type": "icon",
+                              "id": "QQxMV",
+                              "name": "Icon users",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "users",
+                              "library": "lucide",
+                              "fill": "$color-icon-secondary"
+                            },
+                            {
                               "type": "text",
-                              "id": "SJClH",
+                              "id": "BHydR",
                               "name": "Label",
-                              "fill": "$color-text-secondary",
+                              "fill": "$color-heading",
                               "content": "Team",
                               "fontFamily": "$font-family",
                               "fontSize": 13,
@@ -80097,23 +80131,48 @@
                         },
                         {
                           "type": "icon",
-                          "id": "kg3tx",
+                          "id": "ONAR3",
                           "name": "Icon chevron-right",
-                          "width": 14,
-                          "height": 14,
+                          "width": 16,
+                          "height": 16,
                           "icon": "chevron-right",
                           "library": "lucide",
-                          "fill": "$color-border-interactive"
+                          "fill": "$color-icon-secondary"
                         },
                         {
-                          "type": "text",
-                          "id": "oCcRN",
-                          "name": "Current page",
-                          "fill": "$color-heading",
-                          "content": "Sarah Lee",
-                          "fontFamily": "$font-family",
-                          "fontSize": 13,
-                          "fontWeight": "600"
+                          "type": "frame",
+                          "id": "YCDyz",
+                          "name": "Step · Sarah Lee",
+                          "fill": "$color-surface-background",
+                          "cornerRadius": "$radius-circle",
+                          "gap": 6,
+                          "padding": [
+                            6,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "JGwV9",
+                              "name": "Icon user",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "user",
+                              "library": "lucide",
+                              "fill": "$color-heading"
+                            },
+                            {
+                              "type": "text",
+                              "id": "KPwD7",
+                              "name": "Label",
+                              "fill": "$color-heading",
+                              "content": "Sarah Lee",
+                              "fontFamily": "$font-family",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            }
+                          ]
                         }
                       ]
                     },
@@ -80195,14 +80254,14 @@
                   "children": [
                     {
                       "type": "frame",
-                      "id": "oCpL6",
+                      "id": "V4SHO",
                       "name": "DEFAULT",
                       "layout": "vertical",
                       "gap": 10,
                       "children": [
                         {
                           "type": "text",
-                          "id": "uXCQD",
+                          "id": "BBdwJ",
                           "name": "Caption",
                           "fill": "$color-text-secondary",
                           "content": "DEFAULT",
@@ -80213,36 +80272,59 @@
                         },
                         {
                           "type": "frame",
-                          "id": "gS9lJ",
-                          "name": "Trail",
-                          "gap": 8,
+                          "id": "i72Rc",
+                          "name": "Capsule",
+                          "theme": {
+                            "mode": "light"
+                          },
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-circle",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "gap": 2,
+                          "padding": 4,
                           "alignItems": "center",
                           "children": [
                             {
                               "type": "frame",
-                              "id": "N2BjZ",
-                              "name": "Link · Settings",
-                              "cornerRadius": "$radius-small",
-                              "gap": 4,
+                              "id": "NPiYK",
+                              "name": "Step · Settings",
+                              "cornerRadius": "$radius-circle",
+                              "gap": 6,
                               "padding": [
-                                2,
+                                4,
+                                12,
+                                4,
                                 4
                               ],
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "icon",
-                                  "id": "RoCoe",
-                                  "name": "Icon arrow-left",
-                                  "width": 14,
-                                  "height": 14,
-                                  "icon": "arrow-left",
-                                  "library": "lucide",
-                                  "fill": "$color-icon-secondary"
+                                  "type": "frame",
+                                  "id": "x3P9F",
+                                  "name": "Back circle",
+                                  "width": 24,
+                                  "height": 24,
+                                  "fill": "$color-heading",
+                                  "cornerRadius": "$radius-circle",
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "j33PHD",
+                                      "name": "Icon arrow-left",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "arrow-left",
+                                      "library": "lucide",
+                                      "fill": "$color-surface"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "text",
-                                  "id": "ETSKL",
+                                  "id": "V6cZf3",
                                   "name": "Label",
                                   "fill": "$color-text-secondary",
                                   "content": "Settings",
@@ -80254,31 +80336,42 @@
                             },
                             {
                               "type": "icon",
-                              "id": "uyLue",
+                              "id": "ykfw6",
                               "name": "Icon chevron-right",
-                              "width": 14,
-                              "height": 14,
+                              "width": 16,
+                              "height": 16,
                               "icon": "chevron-right",
                               "library": "lucide",
-                              "fill": "$color-border-interactive"
+                              "fill": "$color-icon-secondary"
                             },
                             {
                               "type": "frame",
-                              "id": "eoAmq",
-                              "name": "Link · Team",
-                              "cornerRadius": "$radius-small",
-                              "gap": 4,
+                              "id": "h6pVdC",
+                              "name": "Step · Team",
+                              "fill": "#00000000",
+                              "cornerRadius": "$radius-circle",
+                              "gap": 6,
                               "padding": [
-                                2,
-                                4
+                                6,
+                                12
                               ],
                               "alignItems": "center",
                               "children": [
                                 {
+                                  "type": "icon",
+                                  "id": "iGjFR",
+                                  "name": "Icon users",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "users",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
                                   "type": "text",
-                                  "id": "DrIDf",
+                                  "id": "bDPHM",
                                   "name": "Label",
-                                  "fill": "$color-text-secondary",
+                                  "fill": "$color-heading",
                                   "content": "Team",
                                   "fontFamily": "$font-family",
                                   "fontSize": 13,
@@ -80288,23 +80381,48 @@
                             },
                             {
                               "type": "icon",
-                              "id": "SbOsq",
+                              "id": "pxJVm",
                               "name": "Icon chevron-right",
-                              "width": 14,
-                              "height": 14,
+                              "width": 16,
+                              "height": 16,
                               "icon": "chevron-right",
                               "library": "lucide",
-                              "fill": "$color-border-interactive"
+                              "fill": "$color-icon-secondary"
                             },
                             {
-                              "type": "text",
-                              "id": "M9Z66S",
-                              "name": "Current page",
-                              "fill": "$color-heading",
-                              "content": "Sarah Lee",
-                              "fontFamily": "$font-family",
-                              "fontSize": 13,
-                              "fontWeight": "600"
+                              "type": "frame",
+                              "id": "vo0TE",
+                              "name": "Step · Sarah Lee",
+                              "fill": "$color-surface-background",
+                              "cornerRadius": "$radius-circle",
+                              "gap": 6,
+                              "padding": [
+                                6,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "hp2vb",
+                                  "name": "Icon user",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "user",
+                                  "library": "lucide",
+                                  "fill": "$color-heading"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "XFcYc",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "content": "Sarah Lee",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                }
+                              ]
                             }
                           ]
                         }
@@ -80312,17 +80430,17 @@
                     },
                     {
                       "type": "frame",
-                      "id": "fG3KD",
-                      "name": "HOVER · DARK AND UNDERLINED",
+                      "id": "m6xAe9",
+                      "name": "HOVER · STEP LIGHTS UP",
                       "layout": "vertical",
                       "gap": 10,
                       "children": [
                         {
                           "type": "text",
-                          "id": "dwgw2",
+                          "id": "ZPomo",
                           "name": "Caption",
                           "fill": "$color-text-secondary",
-                          "content": "HOVER · DARK AND UNDERLINED",
+                          "content": "HOVER · STEP LIGHTS UP",
                           "fontFamily": "$font-family",
                           "fontSize": 12,
                           "fontWeight": "600",
@@ -80330,38 +80448,61 @@
                         },
                         {
                           "type": "frame",
-                          "id": "RnLcS",
-                          "name": "Trail",
-                          "gap": 8,
+                          "id": "t1mmy2",
+                          "name": "Capsule",
+                          "theme": {
+                            "mode": "light"
+                          },
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-circle",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "gap": 2,
+                          "padding": 4,
                           "alignItems": "center",
                           "children": [
                             {
                               "type": "frame",
-                              "id": "g95qq0",
-                              "name": "Link · Settings",
-                              "cornerRadius": "$radius-small",
-                              "gap": 4,
+                              "id": "j6xHu",
+                              "name": "Step · Settings",
+                              "cornerRadius": "$radius-circle",
+                              "gap": 6,
                               "padding": [
-                                2,
+                                4,
+                                12,
+                                4,
                                 4
                               ],
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "icon",
-                                  "id": "jsSlg",
-                                  "name": "Icon arrow-left",
-                                  "width": 14,
-                                  "height": 14,
-                                  "icon": "arrow-left",
-                                  "library": "lucide",
-                                  "fill": "$color-heading"
+                                  "type": "frame",
+                                  "id": "dhwCb",
+                                  "name": "Back circle",
+                                  "width": 24,
+                                  "height": 24,
+                                  "fill": "$color-heading",
+                                  "cornerRadius": "$radius-circle",
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "FXg3j",
+                                      "name": "Icon arrow-left",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "arrow-left",
+                                      "library": "lucide",
+                                      "fill": "$color-surface"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "text",
-                                  "id": "zdWEO",
+                                  "id": "WOb56",
                                   "name": "Label",
-                                  "fill": "$color-heading",
+                                  "fill": "$color-text-secondary",
                                   "content": "Settings",
                                   "fontFamily": "$font-family",
                                   "fontSize": 13,
@@ -80371,31 +80512,42 @@
                             },
                             {
                               "type": "icon",
-                              "id": "zVIhM",
+                              "id": "NkioT",
                               "name": "Icon chevron-right",
-                              "width": 14,
-                              "height": 14,
+                              "width": 16,
+                              "height": 16,
                               "icon": "chevron-right",
                               "library": "lucide",
-                              "fill": "$color-border-interactive"
+                              "fill": "$color-icon-secondary"
                             },
                             {
                               "type": "frame",
-                              "id": "sE4A9",
-                              "name": "Link · Team",
-                              "cornerRadius": "$radius-small",
-                              "gap": 4,
+                              "id": "Xj4hW",
+                              "name": "Step · Team",
+                              "fill": "$color-surface-hover",
+                              "cornerRadius": "$radius-circle",
+                              "gap": 6,
                               "padding": [
-                                2,
-                                4
+                                6,
+                                12
                               ],
                               "alignItems": "center",
                               "children": [
                                 {
+                                  "type": "icon",
+                                  "id": "GcpFk",
+                                  "name": "Icon users",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "users",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
                                   "type": "text",
-                                  "id": "L8IKzq",
+                                  "id": "jw3Da",
                                   "name": "Label",
-                                  "fill": "$color-text-secondary",
+                                  "fill": "$color-heading",
                                   "content": "Team",
                                   "fontFamily": "$font-family",
                                   "fontSize": 13,
@@ -80405,23 +80557,48 @@
                             },
                             {
                               "type": "icon",
-                              "id": "XNfai",
+                              "id": "InRc8",
                               "name": "Icon chevron-right",
-                              "width": 14,
-                              "height": 14,
+                              "width": 16,
+                              "height": 16,
                               "icon": "chevron-right",
                               "library": "lucide",
-                              "fill": "$color-border-interactive"
+                              "fill": "$color-icon-secondary"
                             },
                             {
-                              "type": "text",
-                              "id": "KBVvf",
-                              "name": "Current page",
-                              "fill": "$color-heading",
-                              "content": "Sarah Lee",
-                              "fontFamily": "$font-family",
-                              "fontSize": 13,
-                              "fontWeight": "600"
+                              "type": "frame",
+                              "id": "amVz1",
+                              "name": "Step · Sarah Lee",
+                              "fill": "$color-surface-background",
+                              "cornerRadius": "$radius-circle",
+                              "gap": 6,
+                              "padding": [
+                                6,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "brxxK",
+                                  "name": "Icon user",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "user",
+                                  "library": "lucide",
+                                  "fill": "$color-heading"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Zn4ZY",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "content": "Sarah Lee",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                }
+                              ]
                             }
                           ]
                         }
@@ -80429,14 +80606,14 @@
                     },
                     {
                       "type": "frame",
-                      "id": "N6yGak",
+                      "id": "IMX9x",
                       "name": "KEYBOARD FOCUS · 2PX RING",
                       "layout": "vertical",
                       "gap": 10,
                       "children": [
                         {
                           "type": "text",
-                          "id": "iEVH6",
+                          "id": "qdNZ1",
                           "name": "Caption",
                           "fill": "$color-text-secondary",
                           "content": "KEYBOARD FOCUS · 2PX RING",
@@ -80447,38 +80624,61 @@
                         },
                         {
                           "type": "frame",
-                          "id": "Y7e4kW",
-                          "name": "Trail",
-                          "gap": 8,
+                          "id": "nmryK",
+                          "name": "Capsule",
+                          "theme": {
+                            "mode": "light"
+                          },
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-circle",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "gap": 2,
+                          "padding": 4,
                           "alignItems": "center",
                           "children": [
                             {
                               "type": "frame",
-                              "id": "CVIIN",
-                              "name": "Link · Settings",
-                              "cornerRadius": "$radius-small",
+                              "id": "p2omt",
+                              "name": "Step · Settings",
+                              "cornerRadius": "$radius-circle",
                               "stroke": "$color-focus",
                               "strokeWidth": 2,
-                              "gap": 4,
+                              "gap": 6,
                               "padding": [
-                                2,
+                                4,
+                                12,
+                                4,
                                 4
                               ],
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "icon",
-                                  "id": "BF1EB",
-                                  "name": "Icon arrow-left",
-                                  "width": 14,
-                                  "height": 14,
-                                  "icon": "arrow-left",
-                                  "library": "lucide",
-                                  "fill": "$color-icon-secondary"
+                                  "type": "frame",
+                                  "id": "gMBRw",
+                                  "name": "Back circle",
+                                  "width": 24,
+                                  "height": 24,
+                                  "fill": "$color-heading",
+                                  "cornerRadius": "$radius-circle",
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "wPYkJ",
+                                      "name": "Icon arrow-left",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "arrow-left",
+                                      "library": "lucide",
+                                      "fill": "$color-surface"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "text",
-                                  "id": "ANzAq",
+                                  "id": "GbXu8",
                                   "name": "Label",
                                   "fill": "$color-text-secondary",
                                   "content": "Settings",
@@ -80490,31 +80690,42 @@
                             },
                             {
                               "type": "icon",
-                              "id": "u4Dm2E",
+                              "id": "r0R6Bj",
                               "name": "Icon chevron-right",
-                              "width": 14,
-                              "height": 14,
+                              "width": 16,
+                              "height": 16,
                               "icon": "chevron-right",
                               "library": "lucide",
-                              "fill": "$color-border-interactive"
+                              "fill": "$color-icon-secondary"
                             },
                             {
                               "type": "frame",
-                              "id": "VUlRT",
-                              "name": "Link · Team",
-                              "cornerRadius": "$radius-small",
-                              "gap": 4,
+                              "id": "sMAK4",
+                              "name": "Step · Team",
+                              "fill": "#00000000",
+                              "cornerRadius": "$radius-circle",
+                              "gap": 6,
                               "padding": [
-                                2,
-                                4
+                                6,
+                                12
                               ],
                               "alignItems": "center",
                               "children": [
                                 {
+                                  "type": "icon",
+                                  "id": "gbUdD",
+                                  "name": "Icon users",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "users",
+                                  "library": "lucide",
+                                  "fill": "$color-icon-secondary"
+                                },
+                                {
                                   "type": "text",
-                                  "id": "jiJAu",
+                                  "id": "x1Me5y",
                                   "name": "Label",
-                                  "fill": "$color-text-secondary",
+                                  "fill": "$color-heading",
                                   "content": "Team",
                                   "fontFamily": "$font-family",
                                   "fontSize": 13,
@@ -80524,948 +80735,52 @@
                             },
                             {
                               "type": "icon",
-                              "id": "yRQ8D",
+                              "id": "wbysw",
                               "name": "Icon chevron-right",
-                              "width": 14,
-                              "height": 14,
+                              "width": 16,
+                              "height": 16,
                               "icon": "chevron-right",
                               "library": "lucide",
-                              "fill": "$color-border-interactive"
+                              "fill": "$color-icon-secondary"
                             },
                             {
-                              "type": "text",
-                              "id": "YdAJ9",
-                              "name": "Current page",
-                              "fill": "$color-heading",
-                              "content": "Sarah Lee",
-                              "fontFamily": "$font-family",
-                              "fontSize": 13,
-                              "fontWeight": "600"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "VblPy",
-                  "name": "Breadcrumb options",
-                  "width": "fill_container",
-                  "layout": "vertical",
-                  "gap": 24,
-                  "padding": [
-                    16,
-                    0,
-                    0,
-                    0
-                  ],
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "gQBiO",
-                      "name": "Option A",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 10,
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "gVNst",
-                          "name": "Label",
-                          "gap": 10,
-                          "alignItems": "center",
-                          "children": [
-                            {
                               "type": "frame",
-                              "id": "GXugV",
-                              "name": "Letter",
-                              "width": 24,
-                              "height": 24,
-                              "fill": "$color-heading",
+                              "id": "bNziu",
+                              "name": "Step · Sarah Lee",
+                              "fill": "$color-surface-background",
                               "cornerRadius": "$radius-circle",
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "GLh0p",
-                                  "name": "Text",
-                                  "fill": "$color-surface",
-                                  "content": "A",
-                                  "fontFamily": "$font-family",
-                                  "fontSize": 12,
-                                  "fontWeight": "700"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "dEPSP",
-                              "name": "Title",
-                              "fill": "$color-heading",
-                              "content": "Back button beside the title",
-                              "fontFamily": "$font-family",
-                              "fontSize": 14,
-                              "fontWeight": "600"
-                            },
-                            {
-                              "type": "text",
-                              "id": "QoBcP",
-                              "name": "Like",
-                              "fill": "$color-text-secondary",
-                              "content": "Like Shopify and Stripe: the way back is a real button, the trail is a small line over the title",
-                              "fontFamily": "$font-family",
-                              "fontSize": 13,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "C2acg",
-                          "name": "In a page",
-                          "width": "fill_container",
-                          "fill": "$color-surface-background",
-                          "cornerRadius": "$radius-large",
-                          "stroke": "$color-border",
-                          "strokeWidth": 1,
-                          "layout": "vertical",
-                          "gap": 14,
-                          "padding": [
-                            20,
-                            32,
-                            24,
-                            32
-                          ],
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "g12QLD",
-                              "name": "Page header",
-                              "width": "fill_container",
-                              "gap": 14,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "dURIz",
-                                  "name": "Back button",
-                                  "width": 40,
-                                  "height": 40,
-                                  "fill": "$color-surface",
-                                  "cornerRadius": "$radius-base",
-                                  "stroke": "$color-border-interactive",
-                                  "strokeWidth": 1,
-                                  "justifyContent": "center",
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "L0ZmzI",
-                                      "name": "Icon arrow-left",
-                                      "width": 18,
-                                      "height": 18,
-                                      "icon": "arrow-left",
-                                      "library": "lucide",
-                                      "fill": "$color-heading"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "rectangle",
-                                  "id": "JehAx",
-                                  "name": "Divider",
-                                  "fill": "$color-border",
-                                  "width": 1,
-                                  "height": 28
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "kx1Zg",
-                                  "name": "Tile",
-                                  "width": 40,
-                                  "height": 40,
-                                  "fill": "$color-inactive-surface",
-                                  "cornerRadius": "$radius-tile-large",
-                                  "justifyContent": "center",
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "Q9xa0Z",
-                                      "name": "Icon user-cog",
-                                      "width": 20,
-                                      "height": 20,
-                                      "icon": "user-cog",
-                                      "library": "lucide",
-                                      "fill": "$color-inactive"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "cZ1TL",
-                                  "name": "Title block",
-                                  "width": "fill_container",
-                                  "layout": "vertical",
-                                  "gap": 2,
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "cZKzG",
-                                      "name": "Trail",
-                                      "gap": 6,
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "text",
-                                          "id": "d3sme",
-                                          "name": "Link",
-                                          "fill": "$color-text-secondary",
-                                          "content": "Settings",
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 12,
-                                          "fontWeight": "600"
-                                        },
-                                        {
-                                          "type": "icon",
-                                          "id": "zIqCh",
-                                          "name": "Icon chevron-right",
-                                          "width": 12,
-                                          "height": 12,
-                                          "icon": "chevron-right",
-                                          "library": "lucide",
-                                          "fill": "$color-border-interactive"
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "CNX7S",
-                                          "name": "Link",
-                                          "fill": "$color-text-secondary",
-                                          "content": "Team",
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 12,
-                                          "fontWeight": "600"
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "DkjUd",
-                                      "name": "Title",
-                                      "fill": "$color-heading",
-                                      "content": "Sarah Lee",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 24,
-                                      "fontWeight": "700",
-                                      "letterSpacing": -0.5
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "ROOXr",
-                                  "name": "Spacer",
-                                  "width": "fill_container",
-                                  "height": 1
-                                },
-                                {
-                                  "id": "hf77b",
-                                  "type": "ref",
-                                  "ref": "Qo6GL",
-                                  "name": "Edit member",
-                                  "descendants": {
-                                    "P99oLT": {
-                                      "icon": "user-pen"
-                                    },
-                                    "vaRXs": {
-                                      "content": "Edit member"
-                                    }
-                                  }
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "djwbb",
-                      "name": "Option B",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 10,
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "B7HYn",
-                          "name": "Label",
-                          "gap": 10,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "n6Z4a",
-                              "name": "Letter",
-                              "width": 24,
-                              "height": 24,
-                              "fill": "$color-heading",
-                              "cornerRadius": "$radius-circle",
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "oqopP",
-                                  "name": "Text",
-                                  "fill": "$color-surface",
-                                  "content": "B",
-                                  "fontFamily": "$font-family",
-                                  "fontSize": 12,
-                                  "fontWeight": "700"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "nShKD",
-                              "name": "Title",
-                              "fill": "$color-heading",
-                              "content": "Trail with coloured icons",
-                              "fontFamily": "$font-family",
-                              "fontSize": 14,
-                              "fontWeight": "600"
-                            },
-                            {
-                              "type": "text",
-                              "id": "i6Vb3r",
-                              "name": "Like",
-                              "fill": "$color-text-secondary",
-                              "content": "Like Linear and Vercel: each step carries its own icon, so you see where you are at a glance",
-                              "fontFamily": "$font-family",
-                              "fontSize": 13,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "f9VzTV",
-                          "name": "In a page",
-                          "width": "fill_container",
-                          "fill": "$color-surface-background",
-                          "cornerRadius": "$radius-large",
-                          "stroke": "$color-border",
-                          "strokeWidth": 1,
-                          "layout": "vertical",
-                          "gap": 14,
-                          "padding": [
-                            20,
-                            32,
-                            24,
-                            32
-                          ],
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "lCbsF",
-                              "name": "Trail",
                               "gap": 6,
+                              "padding": [
+                                6,
+                                12
+                              ],
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "frame",
-                                  "id": "fevgE",
-                                  "name": "Step · Settings",
-                                  "cornerRadius": "$radius-base",
-                                  "gap": 8,
-                                  "padding": [
-                                    4,
-                                    8,
-                                    4,
-                                    4
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "WCd6F",
-                                      "name": "Tile",
-                                      "width": 24,
-                                      "height": 24,
-                                      "fill": "$color-inactive-surface",
-                                      "cornerRadius": "$radius-tile-small",
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "icon",
-                                          "id": "NvNLK",
-                                          "name": "Icon settings",
-                                          "width": 13,
-                                          "height": 13,
-                                          "icon": "settings",
-                                          "library": "lucide",
-                                          "fill": "$color-inactive"
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "UXDgM",
-                                      "name": "Label",
-                                      "fill": "$color-text-secondary",
-                                      "content": "Settings",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 13,
-                                      "fontWeight": "500"
-                                    }
-                                  ]
+                                  "type": "icon",
+                                  "id": "IpRJV",
+                                  "name": "Icon user",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "user",
+                                  "library": "lucide",
+                                  "fill": "$color-heading"
                                 },
                                 {
                                   "type": "text",
-                                  "id": "atzSs",
-                                  "name": "Slash",
-                                  "fill": "$color-border-interactive",
-                                  "content": "/",
+                                  "id": "NLWAI",
+                                  "name": "Label",
+                                  "fill": "$color-heading",
+                                  "content": "Sarah Lee",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 16,
-                                  "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "vz6VU",
-                                  "name": "Step · Team",
-                                  "cornerRadius": "$radius-base",
-                                  "gap": 8,
-                                  "padding": [
-                                    4,
-                                    8,
-                                    4,
-                                    4
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "fXqZZ",
-                                      "name": "Tile",
-                                      "width": 24,
-                                      "height": 24,
-                                      "fill": "$color-client-surface",
-                                      "cornerRadius": "$radius-tile-small",
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "icon",
-                                          "id": "A4OIV",
-                                          "name": "Icon users",
-                                          "width": 13,
-                                          "height": 13,
-                                          "icon": "users",
-                                          "library": "lucide",
-                                          "fill": "$color-client"
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "e9UUcU",
-                                      "name": "Label",
-                                      "fill": "$color-text-secondary",
-                                      "content": "Team",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 13,
-                                      "fontWeight": "500"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "pqek7",
-                                  "name": "Slash",
-                                  "fill": "$color-border-interactive",
-                                  "content": "/",
-                                  "fontFamily": "$font-family",
-                                  "fontSize": 16,
-                                  "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "jXavQ",
-                                  "name": "Step · Sarah Lee",
-                                  "cornerRadius": "$radius-base",
-                                  "gap": 8,
-                                  "padding": [
-                                    4,
-                                    8,
-                                    4,
-                                    4
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "xX1Ls",
-                                      "name": "Tile",
-                                      "width": 24,
-                                      "height": 24,
-                                      "fill": "$color-informative-surface",
-                                      "cornerRadius": "$radius-circle",
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "text",
-                                          "id": "jDYCx",
-                                          "name": "Text",
-                                          "fill": "$color-informative-on-surface",
-                                          "content": "SL",
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 10,
-                                          "fontWeight": "700"
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "v3h1Sh",
-                                      "name": "Label",
-                                      "fill": "$color-heading",
-                                      "content": "Sarah Lee",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 13,
-                                      "fontWeight": "600"
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "MbIM7",
-                              "name": "Page header",
-                              "width": "fill_container",
-                              "gap": 14,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "lIEsL",
-                                  "name": "Tile",
-                                  "width": 40,
-                                  "height": 40,
-                                  "fill": "$color-inactive-surface",
-                                  "cornerRadius": "$radius-tile-large",
-                                  "justifyContent": "center",
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "q4Eib",
-                                      "name": "Icon user-cog",
-                                      "width": 20,
-                                      "height": 20,
-                                      "icon": "user-cog",
-                                      "library": "lucide",
-                                      "fill": "$color-inactive"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "qFIyF",
-                                  "name": "Title block",
-                                  "width": "fill_container",
-                                  "layout": "vertical",
-                                  "gap": 2,
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "ppUoW",
-                                      "name": "Title",
-                                      "fill": "$color-heading",
-                                      "content": "Sarah Lee",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 24,
-                                      "fontWeight": "700",
-                                      "letterSpacing": -0.5
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "jdG5O",
-                                      "name": "Description",
-                                      "fill": "$color-text-secondary",
-                                      "content": "Office manager · can see money and reports",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 14,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "vASci",
-                                  "name": "Spacer",
-                                  "width": "fill_container",
-                                  "height": 1
-                                },
-                                {
-                                  "id": "iK2OG",
-                                  "type": "ref",
-                                  "ref": "Qo6GL",
-                                  "name": "Edit member",
-                                  "descendants": {
-                                    "P99oLT": {
-                                      "icon": "user-pen"
-                                    },
-                                    "vaRXs": {
-                                      "content": "Edit member"
-                                    }
-                                  }
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
                                 }
                               ]
                             }
                           ]
                         }
                       ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "B4e58s",
-                      "name": "Option C",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 10,
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "J7Mjnk",
-                          "name": "Label",
-                          "gap": 10,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "WTwtt",
-                              "name": "Letter",
-                              "width": 24,
-                              "height": 24,
-                              "fill": "$color-heading",
-                              "cornerRadius": "$radius-circle",
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "fkQjV",
-                                  "name": "Text",
-                                  "fill": "$color-surface",
-                                  "content": "C",
-                                  "fontFamily": "$font-family",
-                                  "fontSize": 12,
-                                  "fontWeight": "700"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "EZHvn",
-                              "name": "Title",
-                              "fill": "$color-heading",
-                              "content": "Path in a white capsule",
-                              "fontFamily": "$font-family",
-                              "fontSize": 14,
-                              "fontWeight": "600"
-                            },
-                            {
-                              "type": "text",
-                              "id": "a9Pt3f",
-                              "name": "Like",
-                              "fill": "$color-text-secondary",
-                              "content": "Like the macOS Finder path bar and Attio: the trail sits in one soft white pill; each step lights up on hover",
-                              "fontFamily": "$font-family",
-                              "fontSize": 13,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "TlNfX",
-                          "name": "In a page",
-                          "width": "fill_container",
-                          "fill": "$color-surface-background",
-                          "cornerRadius": "$radius-large",
-                          "stroke": "$color-border",
-                          "strokeWidth": 1,
-                          "layout": "vertical",
-                          "gap": 14,
-                          "padding": [
-                            20,
-                            32,
-                            24,
-                            32
-                          ],
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "VbOIo",
-                              "name": "Capsule",
-                              "theme": {
-                                "mode": "light"
-                              },
-                              "fill": "$color-surface",
-                              "cornerRadius": "$radius-circle",
-                              "stroke": "$color-border",
-                              "strokeWidth": 1,
-                              "gap": 2,
-                              "padding": 4,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "E3NmGI",
-                                  "name": "Step · Settings",
-                                  "cornerRadius": "$radius-circle",
-                                  "gap": 6,
-                                  "padding": [
-                                    4,
-                                    12,
-                                    4,
-                                    4
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "NHyiX",
-                                      "name": "Back circle",
-                                      "width": 24,
-                                      "height": 24,
-                                      "fill": "$color-heading",
-                                      "cornerRadius": "$radius-circle",
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "icon",
-                                          "id": "UAbQw",
-                                          "name": "Icon arrow-left",
-                                          "width": 14,
-                                          "height": 14,
-                                          "icon": "arrow-left",
-                                          "library": "lucide",
-                                          "fill": "$color-surface"
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "FwgYi",
-                                      "name": "Label",
-                                      "fill": "$color-text-secondary",
-                                      "content": "Settings",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 13,
-                                      "fontWeight": "500"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "icon",
-                                  "id": "wqMFC",
-                                  "name": "Icon chevron-right",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "chevron-right",
-                                  "library": "lucide",
-                                  "fill": "$color-icon-secondary"
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "LwsVu",
-                                  "name": "Step · Team",
-                                  "fill": "$color-surface-hover",
-                                  "cornerRadius": "$radius-circle",
-                                  "gap": 6,
-                                  "padding": [
-                                    6,
-                                    12
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "n2ODl",
-                                      "name": "Icon users",
-                                      "width": 14,
-                                      "height": 14,
-                                      "icon": "users",
-                                      "library": "lucide",
-                                      "fill": "$color-icon-secondary"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "vyEk5",
-                                      "name": "Label",
-                                      "fill": "$color-heading",
-                                      "content": "Team",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 13,
-                                      "fontWeight": "500"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "icon",
-                                  "id": "m3lR3m",
-                                  "name": "Icon chevron-right",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "chevron-right",
-                                  "library": "lucide",
-                                  "fill": "$color-icon-secondary"
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "SeTVW",
-                                  "name": "Step · Sarah Lee",
-                                  "fill": "$color-surface-background",
-                                  "cornerRadius": "$radius-circle",
-                                  "gap": 6,
-                                  "padding": [
-                                    6,
-                                    12
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "OzSyz",
-                                      "name": "Icon user",
-                                      "width": 14,
-                                      "height": 14,
-                                      "icon": "user",
-                                      "library": "lucide",
-                                      "fill": "$color-heading"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "BXtt0",
-                                      "name": "Label",
-                                      "fill": "$color-heading",
-                                      "content": "Sarah Lee",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 13,
-                                      "fontWeight": "600"
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "FK6Tj",
-                              "name": "Page header",
-                              "width": "fill_container",
-                              "gap": 14,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "Ct9Km",
-                                  "name": "Tile",
-                                  "width": 40,
-                                  "height": 40,
-                                  "fill": "$color-inactive-surface",
-                                  "cornerRadius": "$radius-tile-large",
-                                  "justifyContent": "center",
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "yMl72",
-                                      "name": "Icon user-cog",
-                                      "width": 20,
-                                      "height": 20,
-                                      "icon": "user-cog",
-                                      "library": "lucide",
-                                      "fill": "$color-inactive"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "z4I7v",
-                                  "name": "Title block",
-                                  "width": "fill_container",
-                                  "layout": "vertical",
-                                  "gap": 2,
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "wrrDz",
-                                      "name": "Title",
-                                      "fill": "$color-heading",
-                                      "content": "Sarah Lee",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 24,
-                                      "fontWeight": "700",
-                                      "letterSpacing": -0.5
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "CM387",
-                                      "name": "Description",
-                                      "fill": "$color-text-secondary",
-                                      "content": "Office manager · can see money and reports",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 14,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "SSe7d",
-                                  "name": "Spacer",
-                                  "width": "fill_container",
-                                  "height": 1
-                                },
-                                {
-                                  "id": "ShxxF",
-                                  "type": "ref",
-                                  "ref": "Qo6GL",
-                                  "name": "Edit member",
-                                  "descendants": {
-                                    "P99oLT": {
-                                      "icon": "user-pen"
-                                    },
-                                    "vaRXs": {
-                                      "content": "Edit member"
-                                    }
-                                  }
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "CPA4o",
-                      "name": "Note",
-                      "fill": "$color-text-secondary",
-                      "content": "In C the middle step shows its hover look, so you can see how a step lights up.",
-                      "fontFamily": "$font-family",
-                      "fontSize": 12,
-                      "fontWeight": "normal"
                     }
                   ]
                 }
