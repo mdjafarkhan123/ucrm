@@ -129,6 +129,13 @@ board, "Concept · Schedule · Pop-ups · 1440".
   When and Details (text-align-start, `--color-event` tile; value 13/400 `--color-text`, line height 1.45); actions
   Mark complete (fills the row), Edit (secondary, pencil) and Delete (danger, trash); no footer.
 
+- Move visit: the same frame; 40 `--color-time` tile (calendar-sync), "Move visit" with "client · work" under it.
+  Body gap 16: a change panel (`--color-surface--background--subtle`, 1px `--color-border`, radius 8) with rows
+  padding 10 14 split by a line, label 12 quiet in a 56 column, "Now" 13/400 `--color-text`, "Move to" 13/600
+  heading; each warning on `--color-warning--surface`, radius 8, padding 10 12, a 16 triangle-alert in
+  `--color-warning` and 13/500 `--onSurface`; the repeat question as a radio choice (`inputs.md`); the Notify
+  customer checkbox. Footer as the form pop-up's, padding 12 16, small Cancel then small "Save move" (check).
+
 ## Day list
 
 - Opens from "+ N more" beside the Month date; picking an item opens its pop-up in the same place.

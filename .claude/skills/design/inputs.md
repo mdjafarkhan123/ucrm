@@ -50,6 +50,15 @@ Dropdown errors use the shared error border and a corrective message below the b
 - 10 gap to the text: the label 14/600 `--color-heading`, an optional 12 `--color-text--secondary` description
   under it, 2 apart. Hover: edge `--color-interactive`. Focus: `--shadow-focus` on the box.
 
+## Radio choice
+
+- For one choice from a short list where options need a sentence ("This visit only" / "This and later visits").
+  A 13/600 heading question above, 8 gap; options stacked 8 apart.
+- Option tile: white, 1px `--color-border`, radius 8, padding 10 12, gap 10, aligned to the top. An 18 circle,
+  1px `--color-border--interactive`; then the label 13/600 heading with an optional 12 quiet hint under it.
+- Chosen: tile edge 1.5px `--color-interactive`; the circle becomes a 5px `--color-interactive` ring around a white
+  centre. Hover: edge `--color-interactive`. Focus: `--shadow-focus` on the tile.
+
 ## Segmented switch
 
 - For two to four choices of one kind (One-off / Recurring, Ends after / Ends on). Field label above, 6 gap.

@@ -64,11 +64,12 @@ Where, today's timer, only "Open request" in the footer) and `QqZfs` (live `Even
 When, Details, Edit, Delete as a danger button; plus "Mark complete", the approved event completion). Approved as
 drawn, so the quote visit keeps the client fact under the title (as live).
 
-## Move visit (drawn 2026-10-19, waiting for Jafar)
+## Move visit (approved by Jafar 2026-10-19)
 
 On the board: `Xdknw`, live `MoveConfirm` with every part: Now / Move to, a double-booking warning, the repeat
-choice, "Notify customer", Cancel + Save move. Ask Jafar: the new line under the title (client · work), and the
-radio option tiles (radios are not yet a concept part; this drawing would set their look).
+choice, "Notify customer", Cancel + Save move. Jafar approved the new line under the title (client · work) and the
+radio option tiles, now the concept's radio look (`inputs.md`). The customer notice is email only (checked
+2026-10-19); a channel choice would be new behaviour.
 
 ## Next
 
