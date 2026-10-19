@@ -4,7 +4,8 @@
 **Branch/worktree:** `codex/concept-schedule`, `.worktrees/concept-schedule` · **Claim:** `f9703c3ae9f0`
 **State (2026-10-19):** Week `a7LTbd` and Day `ziaXI` approved by Jafar (look in `calendar.md`, joined group in
 `buttons.md`, outlined pill in `badges.md`). Month `Ar5jR` "Concept · Schedule · Month · Owner · 1440" approved by
-Jafar 2026-10-19 after adding a today border and weekday line (look in `calendar.md` → Month view). Week start
+Jafar 2026-10-19 with a floating today tile, today's weekday line and bolder day names (Jafar delegated the
+tile look) (look in `calendar.md` → Month view). Week start
 is a business setting (Jafar): drawings use Monday, live default is Sunday.
 
 ## Research

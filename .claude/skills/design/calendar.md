@@ -85,16 +85,17 @@ Pencil: `concept.pen` → "Concept · Schedule · Week · Owner · 1440", "Conce
 ## Month view
 
 - Same page, card and toolbar (Month chosen; the range reads "October 2026"). The colour key leaves out "Now".
-- Weekday row 36 high, 1px `--color-border` underneath: names 11/600 uppercase (0.6 spacing)
-  `--color-text--secondary`, padding 0 12. Today's weekday is `--color-interactive` 11/700 with a 3px
+- Weekday row 36 high, 1px `--color-border` underneath: names 12/700 uppercase (0.6 spacing) `--color-text`,
+  padding 0 12. Today's weekday is `--color-interactive` with a 3px
   `--color-interactive` line along the row's foot.
 - Six week rows of equal height (154), 1px `--color-border` between rows and between days; the grid keeps its
   height and scrolls on short screens rather than squeezing.
 - Date cell, padding 8, gap 4: the date 13/700 heading at the left (the 1st of a month reads "Nov 1"), the item
   count 11/500 quiet at the right ("Closed" on a closed day). Under it, only when needed, the filled "late" and
   "unassigned" pills from the Week day heading.
-- Today: date 12/700 white in a 24 `--color-interactive` circle, cell on `--color-surface--background--subtle`,
-  and a 2px `--color-interactive` border just inside the cell.
+- Today: a floating tile inside the cell, 4 in from the grid lines: white, radius 10, 1px `--color-interactive`
+  edge, a soft green shadow (0 6 16 brand green at 14%) over a hairline one (0 1 2 `--color-heading` at 8%),
+  padding 4. The date is 12/700 white in a 24 `--color-interactive` circle. No tint on the cell.
 - Closed day: the Week view's diagonal stripes across the cell.
 - Days from the months either side: date 13/500 `--color-text--secondary`; their items, pills and "+ N more" at
   60% opacity.
