@@ -49,7 +49,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/DateTimePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `ui/CountryPicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `ui/TagSelect` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
-| `collaboration/AttachmentSurface` |  | ⬜ | ⬜ |
+| `collaboration/AttachmentSurface` |  | ✅ Batch 9 `KuOmH` | ⬜ |
 | `data-display/RecordListCard` |  | ⬜ | ⬜ |
 | `files/PhotoSlot` |  | ✅ Batch 8 `b4BxuV` | ⬜ |
 | `quotes/CatalogItemDialog` | 🔁F pop-up · loading, permission-limited, field-worker view | ⬜ | ⬜ |
@@ -70,11 +70,11 @@ Key, tick rule and coverage command: `list-index.md`.
 | `work/MoneyFeatureCard` |  | ✅ | ✅ |
 | `work/QuickContactButtons` |  | ⬜ | ⬜ |
 | `clients/ClientTagSelect` |  | ⬜ | ⬜ |
-| `collaboration/AuthorMeta` |  | ⬜ | ⬜ |
-| `collaboration/NoteBody` |  | ⬜ | ⬜ |
-| `collaboration/NoteFiles` |  | ⬜ | ⬜ |
+| `collaboration/AuthorMeta` |  | ✅ Batch 9 `KuOmH` | ⬜ |
+| `collaboration/NoteBody` |  | ✅ Batch 9 `KuOmH` | ⬜ |
+| `collaboration/NoteFiles` |  | ✅ Batch 9 `KuOmH` | ⬜ |
 | `files/FileLabelsDialog` | 🔁F pop-up · pop-ups: "confirm" 🔁C · loading | ⬜ | ⬜ |
 | `files/FilePicker` | pop-ups: "You do not have access to the file library" 🔁F · loading, empty, permission-limited | ⬜ | ⬜ |
-| `files/PendingFilesCard` |  | ⬜ | ⬜ |
+| `files/PendingFilesCard` |  | ✅ Batch 9 `KuOmH` | ⬜ |
 | `files/PhotoDescribeForm` | loading, permission-limited | ⬜ | ⬜ |
 | `work/ClientSummaryCard` | menus ×1 | ⬜ | ⬜ |
