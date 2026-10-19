@@ -1,7 +1,8 @@
 # Schedule — concept drawing
 
 **Campaign:** contractor-design-concept · **Checklist row:** `stages/list-2a-daily.md` → `(app)/schedule`
-**Branch/worktree:** `codex/concept-schedule`, `.worktrees/concept-schedule` · **Claim:** `f9703c3ae9f0`
+**Branch/worktree:** `codex/concept-schedule`, `.worktrees/concept-schedule` · **Claim:** `f9703c3ae9f0` (Jafar closed
+that session 2026-10-19; the next session resuming this part takes it over). `concept.pen` commits go on main.
 **State (2026-10-19):** Week `a7LTbd` and Day `ziaXI` approved by Jafar (look in `calendar.md`, joined group in
 `buttons.md`, outlined pill in `badges.md`). Month `Ar5jR` "Concept · Schedule · Month · Owner · 1440" approved by
 Jafar 2026-10-19 with a floating today tile, today's weekday line and bolder day names (Jafar delegated the
@@ -78,7 +79,11 @@ Time, Anytime checkbox, Details (optional), Cancel + Create event. Built from Ne
 
 ## Next
 
-1. Draw the rest onto the board, one at a time (from `(app)/schedule/+page.svelte` and `components/schedule`):
-   new-job form (`ScheduleJobCreate`), Filters, the two menus, "are you sure?" pop-ups (Delete this event?,
-   Move to Unscheduled?, Whose route?) on the shared pattern, Unscheduled drawer. Then Map (a screen).
-2. Jafar saves Pencil (Ctrl+S); commit `concept.pen` from the main folder under this claim.
+1. Ask Jafar whether the new event form (`abdXu`) is approved (saved and committed, not yet answered).
+2. **Order (Jafar 2026-10-19): finish every Schedule drawing first, then build Schedule in one go.** Draw onto
+   the pop-ups board `GsICu`, one at a time (from `(app)/schedule/+page.svelte` and `components/schedule`):
+   the book-work form (`ScheduleJobCreate`: Job / Request / Event switch, light job form, More options, Save
+   job), Filters, the two menus, "are you sure?" pop-ups (Delete this event?, Move to Unscheduled?, Whose
+   route?) on the shared pattern, Unscheduled drawer. Then Map (its own screen).
+3. Then build Schedule (C7), including event completion (migration + `/api/*` + Zod).
+4. Jafar saves Pencil (Ctrl+S) after each drawing; commit `concept.pen` from the main folder.
