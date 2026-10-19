@@ -34,10 +34,10 @@ Key, tick rule and coverage command: `list-index.md`.
 | `layout/RecordFormLayout` |  | ✅ | ✅ |
 | `layout/RailCard` |  | ✅ Page parts board `j3jDI` | ✅ Merged 2026-10-19 |
 | `ui/Banner` |  | ✅ Page parts board `j3jDI` | ✅ Merged 2026-10-19 |
-| `ui/Lightbox` |  | ⬜ | ⬜ |
+| `ui/Lightbox` |  | ✅ Batch 8 `b4BxuV` | ⬜ |
 | `ui/TimePickerField` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `ui/Toggle` |  | ✅ Small controls `GbgcY` | ⬜ |
-| `files/FileThumb` |  | ⬜ | ⬜ |
+| `files/FileThumb` |  | ✅ Batch 8 `b4BxuV` | ⬜ |
 | `ui/Card` |  | ✅ | ✅ Merged 2026-10-19 |
 | `ui/CardHeader` | Pencil "Card header"; on every Home card so far | ✅ | ✅ |
 | `ui/TimePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
@@ -51,7 +51,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/TagSelect` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
 | `collaboration/AttachmentSurface` |  | ⬜ | ⬜ |
 | `data-display/RecordListCard` |  | ⬜ | ⬜ |
-| `files/PhotoSlot` |  | ⬜ | ⬜ |
+| `files/PhotoSlot` |  | ✅ Batch 8 `b4BxuV` | ⬜ |
 | `quotes/CatalogItemDialog` | 🔁F pop-up · loading, permission-limited, field-worker view | ⬜ | ⬜ |
 | `ui/TabPanel` |  | ⬜ | ⬜ |
 | `ui/Tabs` | tabs ×2 | ✅ Small controls `GbgcY` | ⬜ |
@@ -64,7 +64,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `work/ClientPicker` | loading | ✅ | ✅ |
 | `time-clock/RunningClock` |  | ⬜ | ⬜ |
 | `time-clock/TimerElapsed` |  | ⬜ | ⬜ |
-| `files/FileUploader` |  | ⬜ | ⬜ |
+| `files/FileUploader` |  | ✅ Batch 8 `b4BxuV` | ⬜ |
 | `layout/DetailEditBar` |  | ⬜ | ⬜ |
 | `layout/RecordDetailLayout` |  | ⬜ | ⬜ |
 | `work/MoneyFeatureCard` |  | ✅ | ✅ |

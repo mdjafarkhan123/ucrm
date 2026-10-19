@@ -54,6 +54,7 @@ Jafar 2026-10-17).
 - [avatars.md](avatars.md) — Avatar
 - [tabs.md](tabs.md) — Tabs
 - [cards.md](cards.md) — Card, number card
+- [files.md](files.md) — Photo viewer, file picture, photo box, upload list
 - [lists.md](lists.md) — List row, Load more footer
 - [tables.md](tables.md) — Table
 - [sidebars.md](sidebars.md) — Sidebar

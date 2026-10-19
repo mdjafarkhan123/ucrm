@@ -63,6 +63,17 @@ client and invoice pages). The same in light and dark mode.
 
 A profit bar on the card shows each cost in its colour and the profit in white, 10px tall, 3px between parts.
 
+## File Families
+
+Only on a document's type tab (`files.md`), approved 2026-10-19. Photos show as photos.
+
+| Family | Token | Files |
+|---|---|---|
+| Documents | `--color-informative` | PDF, Word, text |
+| Spreadsheets | `--color-success` | Excel, CSV |
+| Videos | `--color-growth` | MP4, MOV |
+| Anything else | `--color-inactive` | Other files |
+
 ## Status Colours
 
 | Meaning | Token family | Examples |
