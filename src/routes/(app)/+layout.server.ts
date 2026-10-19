@@ -44,7 +44,7 @@ export const load: LayoutServerLoad = async (event) => {
 	const [settingsResult, profileResult, navigation] = await Promise.all([
 		event.locals.supabase
 			.from('organization_settings')
-			.select('logo_object_key, branding_revision')
+			.select('logo_object_key, branding_revision, currency_code')
 			.eq('organization_id', context.organization.id)
 			.maybeSingle(),
 		event.locals.supabase
@@ -65,6 +65,7 @@ export const load: LayoutServerLoad = async (event) => {
 	return {
 		presentation,
 		...context,
+		currencyCode: settings?.currency_code ?? 'USD',
 		logoUrl: settings?.logo_object_key ? organizationLogoUrl(settings.branding_revision) : null,
 		account: {
 			name: profileResult.data?.full_name ?? null,

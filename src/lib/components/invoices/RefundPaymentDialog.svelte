@@ -142,6 +142,7 @@
 		</p>
 
 		<MoneyInput
+			{currencyCode}
 			id="refund-payment-amount"
 			label="Amount refunded"
 			bind:value={refundAmountMinor}

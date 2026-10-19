@@ -1,3 +1,4 @@
+import { tagColors } from '$lib/collaboration/tag-colors';
 import { z } from 'zod';
 
 // Shared by notes, tags, tag assignments, and attachments. Jobs and Invoices extend this list when they
@@ -74,7 +75,11 @@ export const tagCreateSchema = z.object({
 	color: z
 		.string()
 		.trim()
-		.regex(/^#[0-9a-fA-F]{6}$/, 'Enter a valid hex color.')
+		.toLowerCase()
+		.refine(
+			(value) => tagColors.some((color) => color.hex === value),
+			'Choose a tag colour from the palette.'
+		)
 		.optional()
 });
 
@@ -168,3 +173,5 @@ export const propertyContactMethodUpdateSchema = z
 		is_primary: z.boolean().optional()
 	})
 	.refine((value) => Object.keys(value).length > 0, { message: 'Nothing to update.' });
+
+export const tagColorUpdateSchema = tagCreateSchema.pick({ color: true }).required();

@@ -118,6 +118,7 @@
 		<div class="invoice-pay__form">
 			{#if payment.partial_allowed}
 				<MoneyInput
+					{currencyCode}
 					id="invoice-pay-amount"
 					label="Payment amount"
 					bind:value={amountMinor}
@@ -165,6 +166,7 @@
 					</div>
 					{#if tipChoice === 'custom'}
 						<MoneyInput
+							{currencyCode}
 							id="invoice-pay-tip-custom"
 							label="Tip amount"
 							bind:value={customTipMinor}

@@ -1,3 +1,4 @@
+import { nextTagColor } from '$lib/collaboration/tag-colors';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -113,9 +114,11 @@ async function resolveTag(
 	if (existingError) return { failed: true };
 	if (existing) return { tag: existing };
 
+	const palette = await supabase.from('tags').select('color').eq('organization_id', organizationId);
+	if (palette.error) return { failed: true };
 	const { data: created, error: createError } = await supabase
 		.from('tags')
-		.insert({ organization_id: organizationId, name })
+		.insert({ organization_id: organizationId, name, color: nextTagColor(palette.data ?? []).hex })
 		.select()
 		.single();
 	if (!createError) return { tag: created };

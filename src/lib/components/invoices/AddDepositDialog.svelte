@@ -176,6 +176,7 @@
 			/>
 
 			<MoneyInput
+				{currencyCode}
 				id="add-deposit-amount"
 				label="Amount to add"
 				bind:value={amountMinor}

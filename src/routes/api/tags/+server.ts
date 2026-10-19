@@ -1,5 +1,8 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { nextTagColor } from '$lib/collaboration/tag-colors';
+import { resolveOrganizationAccess } from '$lib/server/access/effective';
+import { hasPermission } from '$lib/server/access/permission';
 import { requireOrganization } from '$lib/server/auth/organization';
 import { requireClientPermission } from '$lib/server/access/clients';
 import { databaseError, validationError } from '$lib/server/api/errors';
@@ -20,9 +23,15 @@ export const POST: RequestHandler = async (event) => {
 	const parsed = tagCreateSchema.safeParse(body);
 	if (!parsed.success) return validationError(zodFieldErrors(parsed.error));
 
+	const catalog = await event.locals.supabase
+		.from('tags')
+		.select('color')
+		.eq('organization_id', access.auth.organization.id);
+	if (catalog.error) return databaseError();
+	const color = parsed.data.color ?? nextTagColor(catalog.data ?? []).hex;
 	const { data, error } = await event.locals.supabase
 		.from('tags')
-		.insert({ organization_id: access.auth.organization.id, ...parsed.data })
+		.insert({ organization_id: access.auth.organization.id, ...parsed.data, color })
 		.select()
 		.single();
 	if (error) {
@@ -45,5 +54,10 @@ export const GET: RequestHandler = async (event) => {
 		.order('name', { ascending: true });
 	if (error) return databaseError();
 
-	return json({ tags: data ?? [] });
+	const access = await resolveOrganizationAccess(
+		event.locals.supabase,
+		auth.organization.id,
+		auth.user.id
+	);
+	return json({ tags: data ?? [], canManage: hasPermission(access, 'customers.edit') });
 };

@@ -173,7 +173,7 @@
 
 		<div class="expense-dialog__row">
 			<CalendarPicker id="expense-date" label="Date" {locale} bind:value={expenseDate} />
-			<MoneyInput id="expense-total" label={`Total (${currencyCode})`} bind:value={totalMinor} />
+			<MoneyInput {currencyCode} id="expense-total" label="Total" bind:value={totalMinor} />
 		</div>
 
 		<Select

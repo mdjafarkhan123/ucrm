@@ -268,6 +268,7 @@
 			</p>
 		{/if}
 		<MoneyInput
+			{currencyCode}
 			id="collect-payment-amount"
 			label="Amount received"
 			bind:value={() => amountMinor, setAmount}
@@ -294,6 +295,7 @@
 						{#if id in applied}
 							<div class="collect-payment__row-amount">
 								<MoneyInput
+									{currencyCode}
 									id={`collect-payment-amount-${id}`}
 									label="Amount"
 									size="small"

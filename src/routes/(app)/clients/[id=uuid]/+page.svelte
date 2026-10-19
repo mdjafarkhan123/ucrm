@@ -811,7 +811,7 @@
 						{#snippet actions()}
 							{#if tagsChanged}<Badge size="small" status="warning">Unsaved</Badge>{/if}
 						{/snippet}
-						<ClientTagSelect {tagIds} quiet onChange={(next) => (tagIdsDraft = next)} />
+						<ClientTagSelect {tagIds} onChange={(next) => (tagIdsDraft = next)} />
 					</RailCard>
 
 					{#if canSeeCommunication}

@@ -237,6 +237,7 @@
 				/>
 			{:else}
 				<MoneyInput
+					{currencyCode}
 					id="record-discount-amount"
 					label="Amount off"
 					disabled={saving}

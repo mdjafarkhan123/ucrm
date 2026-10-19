@@ -537,6 +537,7 @@
 					/>
 				{:else}
 					<MoneyInput
+						{currencyCode}
 						id="quote-deposit-amount"
 						label="Deposit amount"
 						disabled={configSaving}
@@ -577,6 +578,7 @@
 								/>
 							{:else}
 								<MoneyInput
+									{currencyCode}
 									id={`quote-deposit-row-${index}-amount`}
 									label="Amount"
 									disabled={configSaving}

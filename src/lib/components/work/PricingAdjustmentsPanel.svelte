@@ -201,6 +201,7 @@
 						/>
 					{:else}
 						<MoneyInput
+							{currencyCode}
 							id={`${uid}-discount-fixed`}
 							label="Amount off"
 							{disabled}

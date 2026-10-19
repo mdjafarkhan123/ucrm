@@ -128,7 +128,7 @@
 		flex: 0 0 auto;
 		align-items: center;
 		max-width: 100%;
-		min-height: 44px;
+		min-height: 36px;
 		border: var(--border-base) solid var(--color-border--interactive);
 		border-radius: var(--radius-base);
 		background: var(--color-surface);
@@ -142,13 +142,13 @@
 	}
 	.filter-chip-multi--on {
 		border-color: var(--color-interactive);
-		background: var(--color-surface--active);
+		background: var(--color-surface);
 	}
 
 	.filter-chip-multi :global(.filter-chip-multi__trigger) {
 		display: inline-flex;
 		min-width: 0;
-		min-height: 42px;
+		min-height: 34px;
 		align-items: center;
 		gap: var(--space-small);
 		padding: 0 var(--space-slim);
@@ -317,6 +317,32 @@
 		&:focus-visible {
 			outline: none;
 			box-shadow: var(--shadow-focus);
+		}
+	}
+
+	.filter-chip-multi {
+		box-shadow: var(--shadow-button);
+	}
+	.filter-chip-multi--on .filter-chip-multi__name {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		&::after {
+			content: '';
+			width: 1px;
+			height: 16px;
+			background: var(--color-border--interactive);
+		}
+	}
+	.filter-chip-multi .filter-chip-multi__clear {
+		width: 24px;
+		height: 24px;
+		margin-right: 6px;
+		border-radius: var(--radius-tile-small);
+		background: var(--color-surface--hover);
+		:global(svg) {
+			width: 14px;
+			height: 14px;
 		}
 	}
 </style>

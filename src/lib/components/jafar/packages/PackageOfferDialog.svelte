@@ -243,8 +243,9 @@
 					/>
 				{:else}
 					<MoneyInput
+						currencyCode="USD"
 						id="offer-amount"
-						label="Amount off (USD)"
+						label="Amount off"
 						required
 						disabled={locked}
 						bind:value={amountCents}

@@ -6,6 +6,7 @@
 		value: string;
 		label: string;
 		disabled?: boolean;
+		tone?: string;
 	};
 
 	// One filter in a toolbar, drawn the way Stripe and Linear draw theirs: a chip only as wide as its own
@@ -39,6 +40,14 @@
 	const filtering = $derived(restValue !== undefined && value !== restValue);
 	const resting = $derived(variant === 'default' && restValue !== undefined && value === restValue);
 	const selectedLabel = $derived(options.find((option) => option.value === value)?.label ?? '');
+	function statusTone(value: string) {
+		if (['all', ''].includes(value)) return undefined;
+		if (/overdue|late|failed/.test(value)) return 'critical';
+		if (/paid|completed|approved/.test(value)) return 'success';
+		if (/unscheduled|awaiting|requires|unpaid/.test(value)) return 'warning';
+		if (/scheduled|sent|today|upcoming/.test(value)) return 'informative';
+		return 'inactive';
+	}
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -54,7 +63,10 @@
 		{id}
 		class="filter-chip__select"
 		{value}
-		{options}
+		options={options.map((option) => ({
+			...option,
+			tone: option.tone ?? (label.toLowerCase() === 'status' ? statusTone(option.value) : undefined)
+		}))}
 		{icon}
 		prefix={label}
 		ariaLabel={resting ? label : `${label}: ${selectedLabel}`}
@@ -188,6 +200,56 @@
 		&:focus-visible {
 			outline: none;
 			box-shadow: var(--shadow-focus);
+		}
+	}
+
+	.filter-chip {
+		min-height: 36px;
+		box-shadow: var(--shadow-button);
+		&:hover {
+			border-color: var(--color-border--interactive--hover);
+		}
+	}
+	.filter-chip :global(.filter-chip__select .select__trigger) {
+		min-height: 34px;
+		padding: 0 var(--space-slim);
+		gap: 6px;
+		font-size: var(--typography--fontSize-base);
+	}
+	.filter-chip:not(.filter-chip--resting) :global(.select__prefix) {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		&::after {
+			content: '';
+			width: 1px;
+			height: 16px;
+			background: var(--color-border--interactive);
+		}
+	}
+	.filter-chip--resting :global(.select__prefix) {
+		font-weight: 600;
+	}
+	.filter-chip--on {
+		background: var(--color-surface);
+		border-width: 1.5px;
+		:global(.select__icon) {
+			color: var(--color-interactive);
+		}
+	}
+	.filter-chip .filter-chip__clear {
+		width: 24px;
+		height: 24px;
+		margin-right: 6px;
+		border-radius: var(--radius-tile-small);
+		background: var(--color-surface--hover);
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+		}
+		&:hover,
+		&:active {
+			background: var(--color-surface--active);
 		}
 	}
 </style>

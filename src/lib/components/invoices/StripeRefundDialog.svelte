@@ -102,6 +102,7 @@
 		</p>
 
 		<MoneyInput
+			{currencyCode}
 			id="stripe-refund-amount"
 			label="Amount to refund"
 			bind:value={refundAmountMinor}

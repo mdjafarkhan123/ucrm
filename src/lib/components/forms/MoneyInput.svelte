@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import Input from '$lib/components/ui/Input.svelte';
 
 	// Binds a whole-cents integer (minor units, the shape every quote/catalog amount crosses the API
@@ -14,7 +15,8 @@
 		invalid = false,
 		errorMessage = '',
 		disabled = false,
-		placeholder = '0.00'
+		placeholder = '0.00',
+		currencyCode
 	}: {
 		value?: number;
 		id: string;
@@ -25,10 +27,22 @@
 		errorMessage?: string;
 		disabled?: boolean;
 		placeholder?: string;
+		currencyCode?: string;
 	} = $props();
 
+	const currency = $derived(
+		currencyCode ?? ('currencyCode' in page.data ? (page.data.currencyCode as string) : 'USD')
+	);
+	const symbol = $derived(
+		new Intl.NumberFormat('en-US', { style: 'currency', currency, currencyDisplay: 'narrowSymbol' })
+			.formatToParts(0)
+			.find((part) => part.type === 'currency')?.value ?? currency
+	);
 	function fromMinor(minor: number) {
-		return (minor / 100).toFixed(2);
+		return (minor / 100).toLocaleString('en-US', {
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+		});
 	}
 
 	let draft = $state(fromMinor(value));
@@ -52,21 +66,58 @@
 	}
 </script>
 
-<Input
-	{id}
-	{label}
-	{size}
-	{required}
-	{invalid}
-	{errorMessage}
-	{disabled}
-	type="text"
-	inputmode="decimal"
-	{placeholder}
-	bind:value={draft}
-	onfocus={() => (focused = true)}
-	onblur={commit}
-	onkeydown={(event: KeyboardEvent) => {
-		if (event.key === 'Enter') (event.currentTarget as HTMLInputElement).blur();
-	}}
-/>
+<div class="money-input" class:money-input--small={size === 'small'}>
+	<Input
+		{id}
+		{label}
+		{size}
+		{required}
+		{invalid}
+		{errorMessage}
+		{disabled}
+		type="text"
+		inputmode="decimal"
+		{placeholder}
+		bind:value={draft}
+		onfocus={() => {
+			focused = true;
+			draft = (value / 100).toFixed(2);
+		}}
+		onblur={commit}
+		onkeydown={(event: KeyboardEvent) => {
+			if (event.key === 'Enter') (event.currentTarget as HTMLInputElement).blur();
+		}}
+	>
+		<span class="money-input__currency" aria-hidden="true">{symbol}</span>
+	</Input>
+</div>
+
+<style lang="scss">
+	.money-input {
+		:global(.input__control) {
+			padding-left: 0;
+			overflow: hidden;
+		}
+		:global(input) {
+			text-align: right;
+			font-weight: 600;
+		}
+		&__currency {
+			display: grid;
+			align-self: stretch;
+			place-items: center;
+			min-width: 40px;
+			border-right: var(--border-base) solid var(--color-border--interactive);
+			background: var(--color-surface--background--subtle);
+			color: var(--color-heading);
+			font-weight: 600;
+		}
+		&--small &__currency {
+			min-width: 36px;
+		}
+		:global(.input--disabled) &__currency {
+			color: var(--color-disabled);
+			background: var(--color-disabled--secondary);
+		}
+	}
+</style>

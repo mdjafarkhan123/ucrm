@@ -1121,6 +1121,7 @@
 										}
 									/>
 									<MoneyInput
+										{currencyCode}
 										id={`pricing-price-${line.id}`}
 										label="Unit price"
 										disabled={saving}

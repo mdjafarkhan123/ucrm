@@ -8,6 +8,7 @@
 		value: string;
 		label: string;
 		disabled?: boolean;
+		tone?: string;
 	};
 
 	let {
@@ -118,7 +119,12 @@
 							disabled={option.disabled}
 						>
 							{#snippet children({ selected })}
-								<span class="select__option-label">{option.label}</span>
+								<span class="select__option-label"
+									>{#if option.tone}<span
+											class="select__option-dot"
+											style:background={`var(--color-${option.tone})`}
+										></span>{/if}{option.label}</span
+								>
 								{#if selected}
 									<span class="select__check" aria-hidden="true">{@html checkIcon}</span>
 								{/if}
@@ -344,5 +350,16 @@
 		flex: 0 0 auto;
 		place-items: center;
 		color: var(--color-interactive);
+	}
+	.select__option-label {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-small);
+	}
+	.select__option-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: var(--radius-circle);
+		flex: 0 0 8px;
 	}
 </style>

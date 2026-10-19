@@ -172,6 +172,7 @@
 			{/if}
 
 			<MoneyInput
+				{currencyCode}
 				id="move-payment-amount"
 				label="Amount to move"
 				bind:value={amountMinor}

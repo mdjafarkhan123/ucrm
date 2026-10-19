@@ -138,10 +138,10 @@ export async function fetchTags() {
 
 // Adds a tag to the organization's shared catalog without attaching it to anything. The create/edit form
 // needs this because a client that has not been saved yet has nothing to assign a tag to.
-export async function createTag(name: string) {
+export async function createTag(name: string, color?: string) {
 	const { tag } = await requestJson<{ tag: Tag }>('/api/tags', {
 		method: 'POST',
-		body: JSON.stringify({ name })
+		body: JSON.stringify({ name, color })
 	});
 	return tag;
 }
@@ -313,4 +313,15 @@ export async function fetchProfiles(ids: string[]) {
 		`/api/profiles?ids=${encodeURIComponent(ids.join(','))}`
 	);
 	return profiles;
+}
+
+export async function fetchTagCatalog() {
+	return requestJson<{ tags: Tag[]; canManage: boolean }>('/api/tags');
+}
+export async function updateTagColor(id: string, color: string) {
+	const { tag } = await requestJson<{ tag: Tag }>(`/api/tags/${id}`, {
+		method: 'PATCH',
+		body: JSON.stringify({ color })
+	});
+	return tag;
 }

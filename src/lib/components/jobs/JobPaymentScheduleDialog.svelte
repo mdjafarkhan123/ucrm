@@ -296,6 +296,7 @@
 						/>
 					{:else}
 						<MoneyInput
+							{currencyCode}
 							id={`job-stage-${index}-amount`}
 							label="Amount"
 							disabled={saving || row.locked}

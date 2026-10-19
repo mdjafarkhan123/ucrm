@@ -818,6 +818,7 @@
 								/>
 								{#if form!.monthly_price_usd_cents !== null}
 									<MoneyInput
+										currencyCode="USD"
 										id="package-monthly-price"
 										label="Price per month"
 										bind:value={
@@ -838,6 +839,7 @@
 								/>
 								{#if form!.yearly_price_usd_cents !== null}
 									<MoneyInput
+										currencyCode="USD"
 										id="package-yearly-price"
 										label="Charged once a year"
 										bind:value={
@@ -848,6 +850,7 @@
 										errorMessage={fieldErrors.yearly_price_usd_cents}
 									/>
 									<MoneyInput
+										currencyCode="USD"
 										id="package-yearly-per-month"
 										label="Same as per month"
 										bind:value={
