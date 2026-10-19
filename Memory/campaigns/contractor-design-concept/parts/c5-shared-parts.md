@@ -44,7 +44,7 @@ drawer, Test Folder empty, Reviews loading, Marketing couldn't load.
 
 **Left for later screens (not done here):** ~96 form pop-ups keep their buttons inside the body instead of the
 grey footer bar; ~120 pop-ups have no icon so show no tile; empty states default to the blue tile until each
-screen sets its own colour (`tone`). Each screen's redesign fixes its own.
+screen sets its own colour (`tone`). Each screen's redesign fixes its own: the "Built means the whole piece" rule in `stages/list-index.md`.
 
 ## Next
 
