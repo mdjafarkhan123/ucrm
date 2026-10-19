@@ -9,8 +9,8 @@ screens reuse them.
 
 | Batch | Parts | State |
 | --- | --- | --- |
-| 1 Pop-ups | `ui/Dialog` (form pop-up), `ui/ConfirmDialog` ("are you sure?"), `layout/SidePanel` (side drawer) | Drawn 2026-10-19 on `concept.pen` board "Concept · Foundation · Pop-ups · 1440" (`v2Y89`); **approved by Jafar 2026-10-19**; build next |
-| 2 Page states | `data-display/LoadingSkeleton`, `EmptyState`, `ErrorState` | Drawn 2026-10-19, section "Loading, empty and couldn't load" on `v2Y89`; **approved by Jafar 2026-10-19** |
+| 1 Pop-ups | `ui/Dialog` (form pop-up), `ui/ConfirmDialog` ("are you sure?"), `layout/SidePanel` (side drawer) | Approved 2026-10-19 (`v2Y89`); **built 2026-10-19** |
+| 2 Page states | `data-display/LoadingSkeleton`, `EmptyState`, `ErrorState` | Approved 2026-10-19 (`v2Y89`); **built 2026-10-19** |
 | 3 Fields in code | `ui/Input`, `ui/Select`, `ui/Textarea`, `ui/Badge` (drawn ✅, not built), `ui/SearchInput` | Not started |
 | Then | the remaining `list-1a-parts.md` rows in order | — |
 
@@ -36,6 +36,16 @@ A Clients card in three states. Loading: row-shaped grey shapes (`--color-border
 page's colour, title 20/600, one line, the one main action. Couldn't load: red tile, live wording, Try again
 (secondary, refresh icon). An empty section inside a card keeps the approved one quiet line.
 
+## Built 2026-10-19
+
+Shared `ui/IconTile` and `ui/DialogHeader` (form pop-up and drawer share it); design modules `modals.md`,
+`page-states.md`. Checked live, light and dark: New expense, Delete visit (focus starts on Cancel), file
+drawer, Test Folder empty, Reviews loading, Marketing couldn't load.
+
+**Left for later screens (not done here):** ~96 form pop-ups keep their buttons inside the body instead of the
+grey footer bar; ~120 pop-ups have no icon so show no tile; empty states default to the blue tile until each
+screen sets its own colour (`tone`). Each screen's redesign fixes its own.
+
 ## Next
 
-Build batches 1 and 2 in their shared components (`ui/Dialog`, `ui/ConfirmDialog`, `layout/SidePanel`, `data-display/*`), add a modals module to the design skill, compare live with `v2Y89`. Jafar re-approved batch 1 after the preference check (drawer 480 kept).
+Batch 3 (fields in code), then Schedule.

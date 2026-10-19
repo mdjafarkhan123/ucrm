@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import SidePanel from '$lib/components/layout/SidePanel.svelte';
+	import targetIcon from '@tabler/icons/outline/target-arrow.svg?raw';
 	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import StageAgeChip from './StageAgeChip.svelte';
@@ -98,6 +99,8 @@
 <SidePanel
 	open={opportunity !== null}
 	title={opportunity?.title ?? ''}
+	icon={targetIcon}
+	iconTone="growth"
 	subtitle={clientName}
 	{onClose}
 >
