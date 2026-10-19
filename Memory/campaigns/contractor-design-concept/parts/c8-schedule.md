@@ -27,6 +27,11 @@ Schedule already behaves the same, so the drawing needs no new data except event
 - New event form `abdXu` approved by Jafar 2026-10-19 (live `ScheduleEventDialog`, New job's fields).
 - Book-work form approved by Jafar 2026-10-19, two sections on `GsICu`: Job `OemVt` and Request / Event hand-offs `GTfk2`, `CejfJ`
   (live `ScheduleJobCreate`; same content; Job / Request / Event switch; More options at left, no Cancel as live).
+- Waiting (drawn 2026-10-19, all at once as Jafar asked): on `GsICu` — "are you sure?" pop-ups (Delete this
+  event? `rHBtY`, Move to Unscheduled? `t6PZW`, Whose route? `R76KaR`), Filters panel and the two Directions menus
+  (section `S6RecI`), Unscheduled panel `se5NW` (docked beside the calendar as live, 360 wide). Map screen `FiSuX`
+  "Concept · Schedule · Map · Owner · 1440" (Day toolbar with Map on; route list + map, AI map image).
+- Open question for Jafar: the approved Week/Day toolbar has a ••• button, but live Schedule has no More menu.
 
 ## Decisions
 
@@ -37,9 +42,7 @@ Schedule already behaves the same, so the drawing needs no new data except event
 
 ## Next
 
-1. **Order (Jafar 2026-10-19): finish every Schedule drawing first, then build Schedule in one go.** Draw onto
-   the pop-ups board `GsICu`, one at a time (from `(app)/schedule/+page.svelte` and `components/schedule`):
-   Filters, the two menus, "are you sure?" pop-ups (Delete this event?, Move to Unscheduled?, Whose
-   route?) on the shared pattern, Unscheduled drawer. Then Map (its own screen).
+1. **Order (Jafar 2026-10-19): finish every Schedule drawing first, then build Schedule in one go.** Every
+   drawing is now drawn; get Jafar's yes on the waiting ones and his answer on •••.
 2. Then build Schedule (C7), including event completion (migration + `/api/*` + Zod).
 3. Jafar saves Pencil (Ctrl+S) after each drawing; commit `concept.pen` from the main folder.
