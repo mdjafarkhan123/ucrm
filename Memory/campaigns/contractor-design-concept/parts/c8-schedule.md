@@ -35,6 +35,11 @@ so the drawings need no new data except event completion (below).
   each stop shows its kind icon and the time in the record colour (Chris Hall's quote visit reads orange);
   "Save route order" in normal capitals (the build changes the live label). Unscheduled: calendar-off icon in
   the toolbar and panel (inbox means Request), each card a green hammer before the work line.
+- Jafar's asks 2026-10-19, drawn, waiting for his pick: Unscheduled age as a small pill with a clock — Option A
+  (recommended) blue "Added today", amber 1–6 days, red from 7 days (the 7 is a new rule: Jafar decides);
+  Option B amber only, beside it on the board (delete the loser). Place pin 12 → 14. "Change property" on the
+  picked-client card is now a small secondary button (map-pin) like "Change client" — also on New job's
+  drawings, so the build changes live New job too.
 - Not drawn yet, opened from Schedule: `jobs/FinalVisitDialog`, `jobs/CreateVisitsDialog`,
   `jobs/ApplyToFutureDialog` (shared-parts checklist). Jafar to say: draw before the Schedule build, or later.
 
