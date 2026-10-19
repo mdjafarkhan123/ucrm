@@ -50,7 +50,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/CountryPicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `ui/TagSelect` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
 | `collaboration/AttachmentSurface` |  | ✅ Batch 9 `KuOmH` | ⬜ |
-| `data-display/RecordListCard` |  | ⬜ | ⬜ |
+| `data-display/RecordListCard` |  | 🔁 Jobs list card `t8ULdJ` | ⬜ |
 | `files/PhotoSlot` |  | ✅ Batch 8 `b4BxuV` | ⬜ |
 | `quotes/CatalogItemDialog` | 🔁F pop-up · loading, permission-limited, field-worker view | 🟡 Batch 10 `ZWTSi` | ⬜ |
 | `ui/TabPanel` |  | ⬜ | ⬜ |
@@ -65,10 +65,10 @@ Key, tick rule and coverage command: `list-index.md`.
 | `time-clock/RunningClock` |  | ⬜ | ⬜ |
 | `time-clock/TimerElapsed` |  | ⬜ | ⬜ |
 | `files/FileUploader` |  | ✅ Batch 8 `b4BxuV` | ⬜ |
-| `layout/DetailEditBar` |  | ⬜ | ⬜ |
+| `layout/DetailEditBar` |  | 🔁 Save bar in `jFBRB` | ⬜ |
 | `layout/RecordDetailLayout` |  | ⬜ | ⬜ |
 | `work/MoneyFeatureCard` |  | ✅ | ✅ |
-| `work/QuickContactButtons` |  | ⬜ | ⬜ |
+| `work/QuickContactButtons` |  | 🔁 Job details header `tNdkX` | ⬜ |
 | `clients/ClientTagSelect` |  | ⬜ | ⬜ |
 | `collaboration/AuthorMeta` |  | ✅ Batch 9 `KuOmH` | ⬜ |
 | `collaboration/NoteBody` |  | ✅ Batch 9 `KuOmH` | ⬜ |
@@ -77,4 +77,4 @@ Key, tick rule and coverage command: `list-index.md`.
 | `files/FilePicker` | pop-ups: "You do not have access to the file library" 🔁F · loading, empty, permission-limited | ⬜ | ⬜ |
 | `files/PendingFilesCard` |  | ✅ Batch 9 `KuOmH` | ⬜ |
 | `files/PhotoDescribeForm` | loading, permission-limited | ⬜ | ⬜ |
-| `work/ClientSummaryCard` | menus ×1 | ⬜ | ⬜ |
+| `work/ClientSummaryCard` | menus ×1 | 🔁 Job details client box `tNdkX` | ⬜ |
