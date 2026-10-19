@@ -2,7 +2,7 @@
 
 **Campaign:** contractor-design-concept · **Checklist row:** `stages/list-2a-daily.md` → `(app)/schedule`
 **Branch/worktree:** `codex/concept-schedule`, `.worktrees/concept-schedule` · **Claim:** `e4d47ceb5e70`
-**State (paused 2026-10-19):** Week view `JpHqG` drawn and revised with Jafar (card colours, status pills, completed silver + crossed-out title, events completable, 14px icons, no thick line on completed). **Not approved yet**: Jafar reviews it in a new session. Then write the card rules into the design skill, then Day view.
+**State (2026-10-19, later):** Week view `JpHqG` reviewed and revised (see "Review fixes"). **Not approved yet**: waiting for Jafar's look. Then write the card rules into the design skill, then Day view.
 
 ## Research
 
@@ -43,6 +43,20 @@ Jafar chose option A, follow Jobber (its `Event` has `isComplete`). Monday's "Te
 **New behaviour to build with the Schedule build (not a look-only change):** events can be marked complete and
 reopened, like tasks: a `completed_at` on events (migration), a write through `/api/*` with Zod, a tick in the
 event pop-up, and the card's completed look. Today the app has no event completion.
+
+## Review fixes (Jafar said "fix", 2026-10-19)
+
+- **No page header** (Jafar: Jobber and our app have none; the calendar takes the full height). More is a 36 icon
+  button (ellipsis) at the toolbar's right end; the top bar's New is the only green New.
+- Grid 64 per hour, 7 AM–7 PM. Unscheduled switch off (no drawer open in Week).
+- Time never hidden: one-hour cards stack time, title, pill. Card time 12/600; people circles 24 with 11/700
+  initials, 2 apart (no overlap). Completed pill sits under the crossed-out title, people on the bottom row.
+- Unassigned: no coloured edge (event yellow = warning yellow), pill only. Only Late has a 4px red edge.
+- Late follows the app rule (`src/lib/schedule/status.ts`: past day, not done), so Tuesday's Anytime "Mailbox repair" is Late (Tue "2 late").
+- Now line behind cards: 1px green across the week (stops at closed days), 3px on today, dot at today's edge,
+  green "10:40" label in the hours column.
+- Upcoming event drawn (Thu "Supplier meeting"); overlap drawn (Sat: two half-width cards, start time only).
+- Closed day: white with light diagonal stripes in `color-border`. Key's hint text removed.
 
 ## Next
 
