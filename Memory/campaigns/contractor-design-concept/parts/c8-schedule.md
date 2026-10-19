@@ -49,7 +49,15 @@ Look: 368 wide, form pop-up header (40 job tile, ×), small status pill beside t
 time, client), timer in a subtle panel ("Your timer · Not started on this visit", a new label Jafar approved),
 links in a subtle footer. No arrow (Jafar approved dropping it). Look in `calendar.md` → Visit pop-up. Research: Jobber `02-visit-popover.png`.
 
+## "+ N more" day list (drawn 2026-10-19, waiting for Jafar)
+
+`q98uc` "Concept · Schedule · Month · Day list · Owner · 1440": Month with Oct 21's list open beside its cell.
+Keeps live `CalendarMonthGrid.svelte`: date title (weekday, month, day), item count with late/unassigned
+marks, every item in reading order, a picked item opens its visit pop-up in the same place. Look: 368 wide
+(same as the visit pop-up), header with a 40 `--color-time` calendar tile, rows as compact Week cards (kind's
+surface, radius 8, padding 8 10, 6 apart: icon + time + status pill, then client + work).
+
 ## Next
 
-1. One at a time: the "+ N more" date list, Unscheduled drawer, Map.
+1. Jafar reviews the day list; then Unscheduled drawer, Map, one at a time.
 2. Jafar saves Pencil (Ctrl+S); commit `concept.pen` from the main folder under this claim.
