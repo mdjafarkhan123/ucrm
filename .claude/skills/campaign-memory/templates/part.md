@@ -19,7 +19,8 @@ alone.>
 
 ## Outside actions
 
-<!-- Only actions that would do harm if repeated. Leave this section out when there are none. -->
+<!-- Only actions that would do harm if repeated. Mark one done only after its check confirms it happened.
+     Leave this section out when there are none. -->
 
 - <action> — check: <how to confirm it happened, with its exact identifier> — <pending or done>
 

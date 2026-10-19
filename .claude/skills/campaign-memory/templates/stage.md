@@ -1,4 +1,4 @@
-# <Campaign> — stage <n>: <name>
+# <Campaign> — group <n>: <name>
 
 **Plan:** `<plan file>`
 

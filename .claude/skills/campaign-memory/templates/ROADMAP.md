@@ -10,7 +10,7 @@
 
 <!-- Planning, design, and proof can be parts. Built-but-unverified parts stay unfinished. -->
 
-<!-- A big campaign lists its stages here instead, one line each, and keeps each stage's parts in its file:
-| Stage    | Delivers | State       | Parts                 |
+<!-- A long roadmap lists groups here instead, one line each, and keeps each group's parts in its file:
+| Group    | Delivers | State       | Parts                 |
 | 2 <name> | <…>      | In progress | `stages/2-<name>.md`  |
 -->

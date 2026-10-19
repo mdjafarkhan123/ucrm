@@ -1,73 +1,72 @@
 # Planning a campaign
 
-Read for a new campaign, unfinished planning, plan writing, or dividing approved work. Reuse existing
-answers and approvals; a plan is allowed to grow over several planning parts.
+For a new campaign, unfinished planning, writing the plan, or splitting approved work into parts. Recorded
+answers and approvals stay valid; a plan may grow over several planning parts.
 
 ## Start
 
-1. Search the campaign index and deferred index for matching work; open only matches. Agree a short goal: what actually user wants,
-   who gains what ability, and why it matters. Several independently checkable outcomes or a conversation
-   too crowded for careful work are reasons for a campaign; file count alone is not.
-2. Create the plan, `NOW.md`, and roadmap from their templates in the existing homes. Register the campaign.
-   Point all three Memory records at the same first planning part; approved plans can start at a later stage.
-3. Read `proven-development` skill for unresolved product behavior. Research facts yourself, distinguishing verified
-   behavior, inference, and our proposal. Use `grilling`  skill for remaining choices with recommendations in everyday
-   English. Use  `grill-with-docs` when terms or lasting decisions need recording; its glossary is not the plan.
-4. Record answers in the plan immediately and keep unanswered questions in **Still unclear**. Checkpoint an
-   interrupted interview with its exact pending question and next action. Ask only questions whose answers
-   are not already available; routine technical details belong to the AI.
+1. Search `Memory/INDEX.md` and `Memory/deferred/INDEX.md` for the same work and open only the matches.
+   Continue a matching campaign rather than starting another. A matching deferred note brings its constraints;
+   delete its row and note once the campaign takes it up.
+2. Agree a short goal with Jafar: what the user actually wants, who gains what ability, and why it matters.
+   Work earns a campaign when it has several separately checkable outcomes or would crowd one conversation, not
+   because it touches many files.
+3. Claim the first part. Create the plan, `NOW.md`, and `ROADMAP.md` from the [templates](templates/); `NOW.md`
+   and the roadmap point at the first planning part (an approved plan can start at a later stage). Add the
+   campaign's row to `Memory/INDEX.md`.
+4. For unsettled behaviour, follow the `proven-development` skill: research facts yourself and label each one
+   verified, inferred, or our proposal. Put the remaining choices to Jafar with the `grilling` skill, in
+   everyday English with a recommendation; use `grill-with-docs` when terms or lasting decisions need recording
+   (its glossary is not the plan). Ask only what saved sources don't answer; routine technical details are
+   yours to decide.
+5. Write each answer into the plan at once, and keep open questions under **Still unclear**. If the interview
+   stops, save the exact pending question in the part's note.
 
 ## Specialist contract
 
-When Campaign Memory calls `grill-with-docs`, `wayfinder`, `to-spec`, or `to-tickets`, use their discipline with
-this storage contract. The plan, campaign roadmap, and part notes remain authoritative; keep no competing
-`.scratch` tickets or issue-tracker statuses. Direct standalone invocation retains the helper's own workflow.
-
-Use the relevant saved sources as context instead of requiring the original conversation. Product approval
-and agreed order already recorded count; ask only for new choices or material changes. Publication to an
-outside tracker is not implied by using a planning helper. Record specialist output and hand control back to
-Campaign Memory for verification and checkpointing.
+When this workflow sends you to `grill-with-docs`, `wayfinder`, `to-spec`, or `to-tickets`, use their method but
+keep their output in the plan, the roadmap, and the part notes: no `.scratch` tickets, no issue-tracker
+statuses, nothing published to an outside tracker. Give the helper the saved sources instead of the old
+conversation; recorded approvals and order still count. Then record its output and return to Campaign Memory to
+check and save. Called on its own, outside a campaign, a helper keeps its own workflow.
 
 ## Large planning
 
-Use  `wayfinder` skill when the decision work itself exceeds one session. The campaign's planning roadmap is the
-map: a destination, small decision parts, their dependencies, and links to the plan sections holding answers.
-Keep questions that cannot yet be made precise in **Still unclear**, distinct from deliberate exclusions in
-**Not doing**. Only resolve a question with Jafar when it requires his decision. Research and safe prototypes
-can establish facts; they do not invent owner approval. Load only the active decision's detail. When the map
-clears, write the consolidated plan before splitting build parts.
+Use the `wayfinder` skill when the decisions themselves need more than one session. The roadmap becomes the
+map: the planning goal, small decision parts, what each waits for, and links to the plan sections that hold the
+answers. Questions not yet precise go under **Still unclear**, deliberate exclusions under **Not doing**.
+Research and prototypes settle facts, never Jafar's approval. Load only the active decision's detail. When the
+map is clear, write the full plan before splitting build parts.
 
 ## Write the plan
 
-Use `to-spec` skill to write what is already understood. It is synthesis, not a substitute for unresolved planning.
-Use the plan template and plain English: what user actually want, the problem, audience, first version, journeys, permissions, failure
-states, exclusions, and observable success. Keep proposals and assumptions separate from approved behavior.
-Write guarantees as behavior, such as “retrying does not send the customer a second copy.” Link research and
-design decisions rather than copying them; technical details stay with the current implementation part or ADR.
+The `to-spec` skill writes up what is already understood; it does not replace unfinished planning. Fill the
+plan template in plain English, starting from what the user actually wants, and keep proposals and assumptions
+apart from agreed behaviour. Write promises as behaviour, such as "retrying does not send the customer a second
+copy." Link research and design decisions instead of copying them; technical detail belongs to a build part or
+an ADR.
 
-Before seeking approval, check feasibility against the actual stack and providers. Bring any user-visible
-limit back into the plan. Give a fresh reviewer the plan and named sources without this chat; ask only what
-important questions remain before it could plan the build, and why a wrong guess would matter. With no
-delegation available, do the same read-through yourself and report that limitation. Resolve facts and routine
-technical questions yourself; bring remaining product choices to Jafar together.
+Before asking Jafar to approve:
 
-Planning is complete when no question needed for the first version remains unresolved and Jafar approves
-that scope. Keep the plan as the current agreement; record the scope and approval date in Memory. Later-version questions may remain if explicitly deferred. Existing
-approval counts; uncertainty about changed scope does not undo unrelated approvals.
+1. Check the plan against the real stack and providers, and write any limit users will notice into it.
+2. **Fresh-reader check:** give a fresh agent the plan and its named sources, without this chat, and ask which
+   important questions it still needs answered before planning the build, and what a wrong guess would cost.
+   If you can't start one, read the plan that way yourself and tell Jafar so.
+3. Settle facts and routine technical questions yourself; bring Jafar the remaining product choices together.
+
+Planning is done when no first-version question is open and Jafar approves the scope. Record the scope and
+approval date in Memory; the plan stays the current agreement. Later-version questions may stay open once
+explicitly moved to later. Changing one part of the scope leaves the other approvals standing.
 
 ## Split the work
 
-Use To Tickets to draft parts from the approved plan, reusing already approved parts. Each delivers a thin,
-complete result that can be demonstrated or verified, fits a focused session, points to its plan section,
-names dependencies, and has observable acceptance checks. Put uncertainty early. An essential technical
-foundation may have a technical proof instead of a screen; explain which user result it enables.
+Use the `to-tickets` skill to draft parts from the approved plan, reusing approved parts. Each part delivers a
+thin, complete result that can be shown or checked, fits one focused session, points to its plan section, names
+what it waits for, and has an observable done-check. Put the riskiest unknowns first. A technical foundation may
+be proved technically; say which user result it enables.
 
-Show Jafar each proposed part's name, result, and dependencies; resolve size or order choices before recording
-approval. Mechanical changes spanning the app may use the helper's expand–contract sequence instead of
-forcing broken partial changes. When splitting existing work after an interruption, preserve its approved
-scope and order; only a material change needs a new decision.
-
-Check that every first-version requirement has a part and every part serves a requirement. Flag conflicts,
-missing checks, vague claims, and mismatched names. Save the parts in `ROADMAP.md`; when it exceeds its limit,
-group parts into stage files. An approved design may precede this split or be its first part, depending on
-what is needed to settle the experience.
+Show Jafar each part's name, result, and dependencies, and settle size and order before recording his approval.
+Re-splitting interrupted work keeps its approved scope and order unless something really changed. Every
+first-version requirement needs a part, and every part a requirement; fix conflicts, missing checks, vague
+claims, and mismatched names. Save the parts in `ROADMAP.md`, moving them into group files under `stages/` once
+it outgrows its word limit. An approved design can come before this split or be its first part.
