@@ -18,7 +18,7 @@ Our live Schedule already has the same behaviour, so the drawing needs no new da
   switch, Unscheduled 4 switched on, Map, Filters), day headings with item count and a Late / Unassigned pill,
   Anytime row, 7 AM–6 PM grid (56 per hour), closed Sunday shaded, green now line, colour key.
 - Items (revised 2026-10-19 from Jafar's final recommendation): normal cards are the soft type tint (visit
-  green, assessment orange, event yellow, task grey) with the type icon and **no** thick line. Late: 4px red left
+  green, assessment orange, event yellow, task grey) with the 14px type icon in the record colour (grey once completed) and **no** thick line. Late: 4px red left
   line + "Late" pill. Unassigned: 4px amber left line + "Unassigned" pill. Both: red line wins, both pills stay.
   Completed: warm silver `color-surface-active` card, 1px `color-border-interactive`, grey text and icon, green "Completed" pill with a check (Jafar 2026-10-19: white looked see-through; not `color-inactive-surface`,
   because the task tint and the inactive grey are the same colour). No fading, no animation, no "In progress".
