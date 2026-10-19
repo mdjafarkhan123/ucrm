@@ -42,8 +42,8 @@ without "Now". Card is 1067 tall (frame 1163), so on shorter screens the month s
 
 ## Visit pop-up (approved by Jafar 2026-10-19)
 
-`EGuw7` "Concept · Schedule · Visit pop-up · Owner · 1440": Week with Tom Baker's visit selected (hover edge)
-and its pop-up 10 to the right. Keeps live `VisitPreview.svelte` content and order: client title, work line,
+Board `GsICu` "Concept · Schedule · Pop-ups · 1440" (Jafar 2026-10-19: all Schedule pop-ups on one board, no
+full-screen copies), node `yf6UX` beside the chosen Week card. Keeps live `VisitPreview.svelte` content and order: client title, work line,
 status, When / Team / Where, the reader's timer, Mark complete + Reschedule, Open job # and Move to Unscheduled.
 Look: 368 wide, form pop-up header (40 job tile, ×), small status pill beside the name, 32 fact tiles (time,
 time, client), timer in a subtle panel ("Your timer · Not started on this visit", a new label Jafar approved),
@@ -51,7 +51,7 @@ links in a subtle footer. No arrow (Jafar approved dropping it). Look in `calend
 
 ## "+ N more" day list (drawn 2026-10-19, waiting for Jafar)
 
-`q98uc` "Concept · Schedule · Month · Day list · Owner · 1440": Month with Oct 21's list open beside its cell.
+Same board, node `gDpeK` beside the Oct 21 Month date.
 Keeps live `CalendarMonthGrid.svelte`: date title (weekday, month, day), item count with late/unassigned
 marks, every item in reading order, a picked item opens its visit pop-up in the same place. Look: 368 wide
 (same as the visit pop-up), header with a 40 `--color-time` calendar tile, rows as compact Week cards (kind's
@@ -59,5 +59,9 @@ surface, radius 8, padding 8 10, 6 apart: icon + time + status pill, then client
 
 ## Next
 
-1. Jafar reviews the day list; then Unscheduled drawer, Map, one at a time.
+1. Jafar reviews the day list.
+2. Draw the rest onto the board, one at a time (from `(app)/schedule/+page.svelte` and `components/schedule`):
+   assessment and event pop-ups (visit pattern), Move visit (`MoveConfirm`), event form (`ScheduleEventDialog`),
+   new-job form (`ScheduleJobCreate`), Filters, the two menus, "are you sure?" pop-ups (Delete this event?,
+   Move to Unscheduled?, Whose route?) on the shared pattern, Unscheduled drawer. Then Map (a screen).
 2. Jafar saves Pencil (Ctrl+S); commit `concept.pen` from the main folder under this claim.

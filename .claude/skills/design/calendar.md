@@ -3,7 +3,7 @@
 > Dependencies: `colors.md`, `badges.md`, `buttons.md`, `typography.md`
 
 Pencil: `concept.pen` → "Concept · Schedule · Week · Owner · 1440", "Concept · Schedule · Day · Owner · 1440" and
-"Concept · Schedule · Month · Owner · 1440" and "Concept · Schedule · Visit pop-up · Owner · 1440" (all approved by Jafar
+"Concept · Schedule · Month · Owner · 1440" and "Concept · Schedule · Pop-ups · 1440" (every Schedule pop-up) (all approved by Jafar
 2026-10-19).
 
 ## Page
