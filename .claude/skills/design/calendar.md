@@ -2,8 +2,8 @@
 
 > Dependencies: `colors.md`, `badges.md`, `buttons.md`, `typography.md`
 
-Pencil: `concept.pen` → "Concept · Schedule · Week · Owner · 1440" and "Concept · Schedule · Day · Owner · 1440"
-(both approved by Jafar 2026-10-19).
+Pencil: `concept.pen` → "Concept · Schedule · Week · Owner · 1440", "Concept · Schedule · Day · Owner · 1440" and
+"Concept · Schedule · Month · Owner · 1440" (all approved by Jafar 2026-10-19).
 
 ## Page
 
@@ -81,3 +81,27 @@ Pencil: `concept.pen` → "Concept · Schedule · Week · Owner · 1440" and "Co
   `--onSurface`. Cards under two hours wide show the start time only.
 - The now line is 2px `--color-interactive`, down every row behind the cards.
 - Anytime cell: padding 6, pills 4 apart as in the Week Anytime row.
+
+## Month view
+
+- Same page, card and toolbar (Month chosen; the range reads "October 2026"). The colour key leaves out "Now".
+- Weekday row 36 high, 1px `--color-border` underneath: names 11/600 uppercase (0.6 spacing)
+  `--color-text--secondary`, padding 0 12. Today's weekday is `--color-interactive` 11/700 with a 3px
+  `--color-interactive` line along the row's foot.
+- Six week rows of equal height (154), 1px `--color-border` between rows and between days; the grid keeps its
+  height and scrolls on short screens rather than squeezing.
+- Date cell, padding 8, gap 4: the date 13/700 heading at the left (the 1st of a month reads "Nov 1"), the item
+  count 11/500 quiet at the right ("Closed" on a closed day). Under it, only when needed, the filled "late" and
+  "unassigned" pills from the Week day heading.
+- Today: date 12/700 white in a 24 `--color-interactive` circle, cell on `--color-surface--background--subtle`,
+  and a 2px `--color-interactive` border just inside the cell.
+- Closed day: the Week view's diagonal stripes across the cell.
+- Days from the months either side: date 13/500 `--color-text--secondary`; their items, pills and "+ N more" at
+  60% opacity.
+- Items, 3 at most, 3 apart: 22 high, radius 6, padding 0 6, gap 5, the kind's surface, 12 type icon in the
+  record colour, start time 11/600 in the record `--onSurface` (Anytime items have none), then the client 11/600
+  heading (tasks and events show their title). Text that does not fit ends in "…".
+- Late item: 3px `--color-critical` left edge. Unassigned item: a 6 `--color-warning` dot at the right end.
+  Completed item: `--color-surface--active`, 1px `--color-border--interactive`, icon `--color-icon-secondary`,
+  time and name `--color-text--secondary` and crossed out.
+- More than three: "+ N more" 11/600 `--color-interactive` under the items.
