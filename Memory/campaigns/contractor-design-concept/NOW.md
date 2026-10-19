@@ -7,7 +7,7 @@
 
 **Next:**
 1. **Shared parts first** (Jafar 2026-10-19): `parts/c5-shared-parts.md`. Pop-ups and page states built
-   2026-10-19; batch 3 fields built 2026-10-19; batch 4 page parts approved; batch 5 pickers approved 2026-10-19 (`uSXlT`); next: batch 6a Avatar, Toggle, RadioGroup, Tabs; then 6b FilterChip, MoneyInput, QuantityInput, TagSelect. Codex builds approved parts (Jafar 2026-10-19).
+   2026-10-19; batch 3 fields built 2026-10-19; batch 4 page parts approved; batch 5 pickers approved 2026-10-19 (`uSXlT`); batch 6a small controls approved 2026-10-19 (`GbgcY`); next: 6b FilterChip, MoneyInput, QuantityInput, TagSelect. Codex builds approved parts (Jafar 2026-10-19).
 2. Schedule (`parts/c8-schedule.md`): **every drawing approved** (2026-10-19). Next: build Schedule in one go
    (Jafar 2026-10-19). The three Jobs pop-ups it opens were approved 2026-10-19.
 3. Jafar confirms the redesign checklist order and pop-up marks (`stages/list-index.md`, `parts/c5a-redesign-checklist.md`).

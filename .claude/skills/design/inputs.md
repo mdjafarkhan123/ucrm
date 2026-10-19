@@ -52,12 +52,31 @@ Dropdown errors use the shared error border and a corrective message below the b
 
 ## Radio choice
 
-- For one choice from a short list where options need a sentence ("This visit only" / "This and later visits").
-  A 13/600 heading question above, 8 gap; options stacked 8 apart.
-- Option tile: white, 1px `--color-border`, radius 8, padding 10 12, gap 10, aligned to the top. An 18 circle,
-  1px `--color-border--interactive`; then the label 13/600 heading with an optional 12 quiet hint under it.
-- Chosen: tile edge 1.5px `--color-interactive`; the circle becomes a 5px `--color-interactive` ring around a white
-  centre. Hover: edge `--color-interactive`. Focus: `--shadow-focus` on the tile.
+- One pick from a short list whose words are too long for a segmented switch. Two forms.
+- **Plain:** the question 14/600 heading, 8 above; options side by side 16 apart, wrapping. Option: an 18
+  circle, 10 gap, the label 14 `--color-text` (chosen: `--color-heading`).
+- **Tiles** (Setup questions, "This visit only" / "This and later visits"): a 13/600 heading question above, 8
+  gap; tiles 8 apart. Tile: white, 1px `--color-border`, radius 8, padding 10 12, gap 10, aligned to the top; the
+  circle, then the label 13/600 heading with an optional 12 quiet hint under it.
+- Circle: white, 1px `--color-border--interactive`. Chosen: a 5px `--color-interactive` ring around a white centre;
+  a chosen tile's edge is 1.5px `--color-interactive`.
+- Hover: circle (and tile) edge `--color-interactive`; a tile also fills `--color-surface--hover`. Focus: 2px
+  `--color-focus` ring around the option or tile. Can't change: circle `--color-disabled--secondary` fill with a
+  `--color-disabled` edge or ring, words `--color-disabled`; a tile fills `--color-disabled--secondary` with a
+  1px `--color-border` edge.
+
+## On/off switch
+
+- For a setting that takes effect straight away; a checkbox stays for choices counted when a form is saved.
+- Track 44×24, pill corners, padding 0 3. Off: `--color-border--interactive` (hover
+  `--color-border--interactive--hover`). On: `--color-interactive` (hover `--color-interactive--hover`).
+- Knob: an 18 `--color-surface` circle, shadow 0 1 2 `--color-heading` 20% plus 0 2 6 at 10%. On, it slides
+  right and holds an 11 check in the track's colour. No icons in the track.
+- Focus: 2px `--color-focus` ring, 2 outside the track. Can't change, off: track
+  `--color-surface--background--subtle` with a 1px `--color-border--interactive` edge, knob `--color-disabled`, no
+  shadow. Can't change, on: track `--color-disabled`, knob `--color-surface--background`, check `--color-disabled`.
+- Settings row: the words at the left (label 14/600 heading, description 12 `--color-text--secondary`, 2 apart),
+  the switch at the right; rows padding 14 0, a 1px `--color-border` line between them.
 
 ## Segmented switch
 

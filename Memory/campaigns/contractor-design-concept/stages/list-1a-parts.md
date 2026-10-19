@@ -26,7 +26,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/SegmentedControl` |  | ✅ | ✅ |
 | `ui/StatusBadge` |  | ✅ | ⬜ |
 | `layout/StickyActionBar` |  | ✅ | ✅ |
-| `ui/Avatar` |  | ⬜ | ⬜ |
+| `ui/Avatar` |  | ✅ Small controls `GbgcY` | ⬜ |
 | `data-display/ListLoadMore` |  | ⬜ | ⬜ |
 | `ui/CalendarPicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `data-display/DataTable` |  | ⬜ | ⬜ |
@@ -36,7 +36,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/Banner` |  | ✅ Page parts board `j3jDI` | ⬜ |
 | `ui/Lightbox` |  | ⬜ | ⬜ |
 | `ui/TimePickerField` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
-| `ui/Toggle` |  | ⬜ | ⬜ |
+| `ui/Toggle` |  | ✅ Small controls `GbgcY` | ⬜ |
 | `files/FileThumb` |  | ⬜ | ⬜ |
 | `ui/Card` |  | ✅ | ⬜ |
 | `ui/CardHeader` | Pencil "Card header"; on every Home card so far | ✅ | ✅ |
@@ -54,12 +54,12 @@ Key, tick rule and coverage command: `list-index.md`.
 | `files/PhotoSlot` |  | ⬜ | ⬜ |
 | `quotes/CatalogItemDialog` | 🔁F pop-up · loading, permission-limited, field-worker view | ⬜ | ⬜ |
 | `ui/TabPanel` |  | ⬜ | ⬜ |
-| `ui/Tabs` | tabs ×2 | ⬜ | ⬜ |
+| `ui/Tabs` | tabs ×2 | ✅ Small controls `GbgcY` | ⬜ |
 | `forms/QuantityInput` |  | ⬜ | ⬜ |
 | `quotes/CatalogItemPicker` | loading | ⬜ | ⬜ |
 | `quotes/PriceBookDrawer` | 🔁D pop-up · loading, empty, permission-limited, field-worker view | ⬜ | ⬜ |
 | `quotes/ProductsAndServicesBlock` | pop-ups: "Throw away these changes?" 🔁C · menus ×1 · empty, permission-limited, field-worker view | ⬜ | ⬜ |
-| `ui/RadioGroup` |  | ⬜ | ⬜ |
+| `ui/RadioGroup` |  | ✅ Small controls `GbgcY` | ⬜ |
 | `ui/TimezonePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `work/ClientPicker` | loading | ✅ | ✅ |
 | `time-clock/RunningClock` |  | ⬜ | ⬜ |

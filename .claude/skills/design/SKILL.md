@@ -49,7 +49,9 @@ Jafar 2026-10-17).
 ### Components
 - [buttons.md](buttons.md) — Button
 - [badges.md](badges.md) — Status pill
-- [inputs.md](inputs.md) — Field, checkbox, segmented switch, people pick chips
+- [inputs.md](inputs.md) — Field, checkbox, radio choice, on/off switch, segmented switch, people pick chips
+- [avatars.md](avatars.md) — Avatar
+- [tabs.md](tabs.md) — Tabs
 - [cards.md](cards.md) — Card
 - [lists.md](lists.md) — List row
 - [tables.md](tables.md) — Table
@@ -60,5 +62,5 @@ Jafar 2026-10-17).
 - [notices.md](notices.md) — Notice strip
 - [calendar.md](calendar.md) — Schedule calendar: toolbar, grid, cards, now line
 
-Not yet designed in the concept — use the Classic module until it is: accordion, avatars,
-dropdown, pagination, radios/toggle, tabs, tooltips/popovers.
+Not yet designed in the concept — use the Classic module until it is: accordion, dropdown, pagination,
+tooltips/popovers.
