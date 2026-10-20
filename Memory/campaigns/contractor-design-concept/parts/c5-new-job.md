@@ -94,3 +94,6 @@ total, Discount, Tax, Notes, Attachments. Job: main = The job (title, client, pr
 (+ notify customer), Billing; sidebar = Job total. Invoice: main = header card (client, service property,
 Invoice #), Products, Terms & dates (invoice date, payment terms, due date); sidebar = Invoice total,
 Attachments. Only the top panel gets the new look.
+Jafar (2026-10-20): the Batch 31 New job board is not needed; we start new with one shared create page. Board
+`M0VXo` was already gone from concept.pen when checked. Still on the canvas: `zUFDO`, `TVQzs` (old New job) and
+`U8RY1n` (Batch 25 First block on New forms, approved earlier today); asked Jafar whether these go too.
