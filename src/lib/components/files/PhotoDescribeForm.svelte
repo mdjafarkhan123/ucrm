@@ -10,6 +10,7 @@
 	import settingsIcon from '@tabler/icons/outline/adjustments.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import alertCircleIcon from '@tabler/icons/outline/alert-circle.svg?raw';
+	import quoteIcon from '@tabler/icons/outline/quote.svg?raw';
 	import FileLabelsDialog from './FileLabelsDialog.svelte';
 	import {
 		createFileLabel,
@@ -88,6 +89,17 @@
 		return label;
 	}
 
+	// The caption box is one line until the words need more.
+	function growWithText(element: HTMLTextAreaElement) {
+		const fit = () => {
+			element.style.height = 'auto';
+			element.style.height = `${element.scrollHeight}px`;
+		};
+		fit();
+		element.addEventListener('input', fit);
+		return () => element.removeEventListener('input', fit);
+	}
+
 	function reset() {
 		captionDraft = null;
 		labelDraft = null;
@@ -140,18 +152,35 @@
 				void save();
 			}}
 		>
-			<Textarea
-				disabled={saving}
-				id={`${uid}-caption`}
-				label="Caption"
-				rows={2}
-				maxlength={500}
-				showCount={caption.length > 400}
-				placeholder="e.g. Water damage under the sink"
-				value={caption}
-				oninput={(event: Event) =>
-					(captionDraft = (event.currentTarget as HTMLTextAreaElement).value)}
-			/>
+			{#if inDialog}
+				<label class="photo-describe__caption-box" class:photo-describe__caption-box--busy={saving}>
+					<span class="photo-describe__sr">Caption</span>
+					<span class="photo-describe__quote" aria-hidden="true">{@html quoteIcon}</span>
+					<textarea
+						id={`${uid}-caption`}
+						rows={1}
+						maxlength={500}
+						disabled={saving}
+						placeholder="e.g. Water damage under the sink"
+						value={caption}
+						oninput={(event) => (captionDraft = event.currentTarget.value)}
+						{@attach growWithText}
+					></textarea>
+				</label>
+			{:else}
+				<Textarea
+					disabled={saving}
+					id={`${uid}-caption`}
+					label="Caption"
+					rows={2}
+					maxlength={500}
+					showCount={caption.length > 400}
+					placeholder="e.g. Water damage under the sink"
+					value={caption}
+					oninput={(event: Event) =>
+						(captionDraft = (event.currentTarget as HTMLTextAreaElement).value)}
+				/>
+			{/if}
 
 			<div class="photo-describe__labels">
 				{#if inDialog}
@@ -331,6 +360,82 @@
 			background: var(--color-warning);
 		}
 	}
+	// The caption box (`files.md` → Photo details): a quote mark and the words, growing with them.
+	.photo-describe__caption-box {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		padding: var(--space-slim) 14px;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background--subtle);
+		cursor: text;
+
+		&:focus-within {
+			border-color: var(--color-interactive);
+			background: var(--color-surface);
+			box-shadow: inset 0 0 0 0.5px var(--color-interactive);
+		}
+
+		&--busy {
+			opacity: 0.6;
+		}
+
+		textarea {
+			width: 100%;
+			min-width: 0;
+			min-height: 0;
+			flex: 1 1 auto;
+			margin: 0;
+			padding: 0;
+			border: 0;
+			outline: none;
+			resize: none;
+			overflow: hidden;
+
+			&:focus,
+			&:focus-visible {
+				outline: none;
+				box-shadow: none;
+			}
+			color: var(--color-heading);
+			background: transparent;
+			font: inherit;
+			font-size: var(--typography--fontSize-base);
+			line-height: 1.45;
+
+			&::placeholder {
+				padding-top: 0;
+				color: var(--color-text--secondary);
+			}
+		}
+	}
+
+	.photo-describe__quote {
+		display: inline-flex;
+		flex: 0 0 auto;
+		padding-top: 2px;
+		color: var(--color-icon--secondary);
+
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	.photo-describe__sr {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+	}
+
+	.photo-describe__labels-head :global(button) {
+		color: var(--color-interactive);
+	}
+
 	// Inside the pop-up: no card; the save strip runs edge to edge as the pop-up's footer.
 	.photo-describe--dialog {
 		border: 0;
@@ -362,11 +467,11 @@
 			flex-wrap: wrap;
 		}
 	}
-	.photo-describe__form :global(textarea) {
+	.photo-describe__form :global(.textarea textarea) {
 		background: var(--color-surface--background--subtle);
 	}
-	.photo-describe__form :global(textarea:focus),
-	.photo-describe__form:has(.photo-describe__actions) :global(textarea) {
+	.photo-describe__form :global(.textarea textarea:focus),
+	.photo-describe__form:has(.photo-describe__actions) :global(.textarea textarea) {
 		background: var(--color-surface);
 		border-color: var(--color-interactive);
 	}

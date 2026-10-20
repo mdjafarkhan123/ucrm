@@ -101,7 +101,7 @@
 			padding: 0;
 			border: 0;
 			outline: none;
-			resize: vertical;
+			resize: none;
 			color: var(--color-heading);
 			background: transparent;
 			font: inherit;
@@ -109,6 +109,7 @@
 			line-height: 1.45;
 
 			&::placeholder {
+				padding-top: 0;
 				color: var(--color-text--secondary);
 			}
 		}

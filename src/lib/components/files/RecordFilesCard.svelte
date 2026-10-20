@@ -61,8 +61,11 @@
 		surface = 'rail',
 		compact = false,
 		summary = false,
+		recordName,
 		onChange
 	}: {
+		/** The record by name ("Job #108"), for the caption pop-up's hint line. */
+		recordName?: string;
 		entityType: FileEntityType;
 		entityId: string;
 		recordLabel: string;
@@ -238,7 +241,11 @@
 	{title}
 	icon={paperclipIcon}
 	count={undefined}
-	description={summary ? summaryLine : `${files.length} on this ${entityType.replaceAll('_', ' ')}`}
+	description={filesQuery.isPending
+		? undefined
+		: summary || compact
+			? summaryLine
+			: `${files.length} on this ${entityType.replaceAll('_', ' ')}`}
 	flush={compact}
 >
 	{#snippet actions()}
@@ -475,6 +482,7 @@
 		open={Boolean(describing)}
 		fileId={describing?.id ?? null}
 		fileName={describing?.display_name ?? ''}
+		{recordName}
 		onClose={() => (describing = null)}
 	/>
 {/if}
@@ -673,6 +681,13 @@
 			background: var(--color-surface--background);
 			cursor: pointer;
 
+			:global(.file-thumb) {
+				width: 100%;
+				height: 100%;
+				aspect-ratio: auto;
+				border-radius: 0;
+			}
+
 			:global(img) {
 				width: 100%;
 				height: 100%;
@@ -813,16 +828,16 @@
 	// Record page rail (App look): the body runs edge to edge, photos padded 16.
 	:global(.rail-card--flush) {
 		.record-files__notice {
-			margin: 0 var(--space-base) var(--space-slim);
+			margin: var(--space-base) var(--space-base) 0;
 		}
 
 		.record-files__state,
 		.record-files__empty {
-			margin: 0 var(--space-base) var(--space-base);
+			margin: var(--space-base);
 		}
 
 		.record-files__photos {
-			padding: 0 var(--space-base) var(--space-base);
+			padding: var(--space-base);
 		}
 
 		.record-files__loading .record-files__photos {

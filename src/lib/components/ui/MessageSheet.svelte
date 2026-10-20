@@ -246,6 +246,7 @@
 
 		&__subject-input::placeholder,
 		&__body::placeholder {
+			padding-top: 0;
 			color: var(--color-text--secondary);
 			font-weight: 400;
 		}

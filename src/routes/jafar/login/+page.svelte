@@ -1,4 +1,5 @@
 <script lang="ts">
+	import shieldLockIcon from '@tabler/icons/outline/shield-lock.svg?raw';
 	import authAlertIcon from '@tabler/icons/outline/alert-circle.svg?raw';
 	import { resolve } from '$app/paths';
 	import JafarAuthCard from '$lib/components/jafar/JafarAuthCard.svelte';
@@ -83,7 +84,8 @@
 				<span aria-hidden="true">{@html authAlertIcon}</span>{errorMessage}
 			</p>{/if}
 		<Button type="submit" size="large" fullWidth loading={isSubmitting}>
-			{isSubmitting ? 'Signing in…' : 'Sign in securely'}
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			{@html shieldLockIcon}{isSubmitting ? 'Signing in…' : 'Sign in securely'}
 		</Button>
 	</form>
 </JafarAuthCard>
