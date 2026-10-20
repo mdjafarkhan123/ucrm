@@ -1051,7 +1051,7 @@
 				<WorkTimerControl
 					target={{ kind: 'visit', jobId, visitId: visit.id }}
 					completed={Boolean(visit.completed_at) || jobStatus !== 'active'}
-					concept
+					presentation="inline"
 				/>
 			</div>
 		{/if}
