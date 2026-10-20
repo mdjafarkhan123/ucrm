@@ -32,7 +32,7 @@
 | 20 Pop-over and filter chips | ui/Popover, data-display/DateRangeChip, ui/FilterChipMulti (1b): every state | Approved `e18rX` 2026-10-20: B for all three (pop-over with a coloured top band and an arrow; date chip with the time tile and a 440 From → To panel; multi chip with green +2 and a menu with "3 chosen", count pills and a Clear foot). Looks in `modals.md` → Pop-over, `chips.md`. See § Batch 20 |
 | 21 Activity feed | collaboration/ActivityFeed (1b): with events, loading, nothing yet, couldn't load, dark | Approved `gZ6rR` 2026-10-20: A · Timeline (B Day log deleted). Look in `notes.md` → Activity feed. See § Batch 21 |
 | 22 Files on a message | communications/ConversationAttachments (1b): every state, text message, Chat with Uplift, dark | Approved `mZdBv` 2026-10-20: B · preview cards inside the message (A clean pills deleted). Look in `files.md` → Files on a message. See § Batch 22 |
-| 23 Jafar panel sign-in | jafar/JafarAuthCard (1b): sign in, wrong password, signing in, join, invitation gone, forgot, link sent, new password, link expired, password changed; 1440 light and dark | Drawn `Y0A1Z` 2026-10-20 (A Centred card vs B Split screen), waiting for Jafar's pick. |
+| 23 Jafar panel sign-in | jafar/JafarAuthCard (1b) and the four /jafar sign-in pages: every message state; 1440 light and dark | Approved `Y0A1Z` 2026-10-20: B · Split screen (A deleted). Look in `layout.md` → Sign-in screens. See § Batch 23 |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 
@@ -90,6 +90,15 @@ Board `mZdBv`, B · preview cards (A deleted). Restyle only; same instant upload
   `ManualEmailDialog`, `SupportConversation`) give the cards their place; `display: contents` goes.
 - Card: the approved 40 file picture (`files.md`), name over type · size, round × top-right; uploading has the
   green foot bar; failed has the red edge and the reason. Rejection lines stay under the files.
+
+## Batch 23 Jafar panel sign-in — approved 2026-10-20
+
+Board `Y0A1Z`, B · Split screen (A centred card deleted). Restyle only; same fields, words, buttons and flows on
+`/jafar/login`, `join`, `forgot-password`, `reset-password`. Hand-off for the builder:
+- `JafarAuthCard` becomes the split layout: green brand panel left (fixed content), the page's form right with
+  no card. Its eyebrow prop moves into the panel pill; title and intro stay per page.
+- New: a status tile prop for message screens (done green, expired yellow); the error line becomes the critical box.
+- Phone layout waits for the native apps (desktop only).
 
 ## Batch 21 Activity feed — approved 2026-10-20
 

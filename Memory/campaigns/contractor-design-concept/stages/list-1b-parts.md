@@ -19,7 +19,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `collaboration/ActivityFeed` | loading, empty | ✅ Batch 21 `gZ6rR` A 2026-10-20 | ⬜ |
 | `communications/ConversationAttachments` |  | ✅ Batch 22 `mZdBv` B 2026-10-20 | ⬜ |
 | `data-display/DateRangeChip` |  | ✅ Batch 20 `e18rX` 2026-10-20 | ⬜ |
-| `jafar/JafarAuthCard` |  | ⬜ | ⬜ |
+| `jafar/JafarAuthCard` |  | ✅ Batch 23 `Y0A1Z` B 2026-10-20 | ⬜ |
 | `layout/RailRow` |  | ⬜ | ⬜ |
 | `marketing/MarketingTemplatePreview` | loading | ⬜ | ⬜ |
 | `quotes/QuoteSummaryCard` |  | ⬜ | ⬜ |
