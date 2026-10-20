@@ -12,6 +12,7 @@
 		hourCycle = 12,
 		minValue,
 		maxValue,
+		startTime,
 		disabled = false,
 		readonly = false,
 		required = false,
@@ -26,6 +27,7 @@
 		hourCycle?: 12 | 24;
 		minValue?: Time;
 		maxValue?: Time;
+		startTime?: Time;
 		disabled?: boolean;
 		readonly?: boolean;
 		required?: boolean;
@@ -35,6 +37,23 @@
 	} = $props();
 
 	let open = $state(false);
+	let duration = $derived(
+		startTime && value ? (timeToMinutes(value) ?? 0) - (timeToMinutes(startTime) ?? 0) : undefined
+	);
+	let durationLabel = $derived(
+		duration === undefined
+			? ''
+			: duration <= 0
+				? 'Check end'
+				: `${Math.floor(duration / 60) ? `${Math.floor(duration / 60)} hr` : ''}${duration % 60 ? ` ${duration % 60} min` : ''}`.trim()
+	);
+	function revealSelected() {
+		requestAnimationFrame(() =>
+			document
+				.querySelectorAll<HTMLElement>('.time-picker-field__popover [aria-selected="true"]')
+				.forEach((el) => el.scrollIntoView({ block: 'center' }))
+		);
+	}
 	let touched = $state(false);
 	let localError = $state('');
 	let draft = $derived(formatTimeText(value, hourCycle));
@@ -162,6 +181,14 @@
 			>{label}{#if required}<span class="field-required" aria-hidden="true">*</span>{/if}</label
 		>
 		<div class="time-picker-field__control">
+			<Popover.Trigger
+				class="time-picker-field__trigger"
+				aria-label={`Choose ${label.toLowerCase()}`}
+				disabled={disabled || readonly}
+			>
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html clockIcon}
+			</Popover.Trigger>
 			<input
 				{id}
 				type="text"
@@ -177,14 +204,6 @@
 				onblur={commitDraft}
 				onkeydown={handleInputKeydown}
 			/>
-			<Popover.Trigger
-				class="time-picker-field__trigger"
-				aria-label={`Choose ${label.toLowerCase()}`}
-				disabled={disabled || readonly}
-			>
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-				{@html clockIcon}
-			</Popover.Trigger>
 		</div>
 		{#if shownError}
 			<p class="time-picker-field__error" id={`${id}-error`} role="alert">{shownError}</p>
@@ -197,12 +216,18 @@
 			data-elevation="elevated"
 			sideOffset={6}
 			collisionPadding={8}
+			onOpenAutoFocus={revealSelected}
 		>
 			<div class="time-picker-field__summary" aria-live="polite">
 				<span>{label}</span>
-				<strong>{formatTimeText(selected, hourCycle)}</strong>
+				{#if durationLabel}<strong class="time-picker-field__duration"
+						>{durationLabel}{duration && duration > 0 ? ' after start' : ''}</strong
+					>{/if}
 			</div>
-			<div class="time-picker-field__columns">
+			<div
+				class="time-picker-field__columns"
+				class:time-picker-field__columns--24={hourCycle === 24}
+			>
 				<div class="time-picker-field__column-wrap">
 					<span class="time-picker-field__column-label">Hour</span>
 					<div class="time-picker-field__column" role="listbox" aria-label="Hour">
@@ -219,6 +244,7 @@
 						{/each}
 					</div>
 				</div>
+				<span class="time-picker-field__colon" aria-hidden="true">:</span>
 				<div class="time-picker-field__column-wrap">
 					<span class="time-picker-field__column-label">Minute</span>
 					<div class="time-picker-field__column" role="listbox" aria-label="Minute">
@@ -264,23 +290,14 @@
 	.time-picker-field {
 		position: relative;
 		width: 100%;
-		padding-top: var(--space-small);
+		padding-top: 0;
 
 		&__label {
-			position: absolute;
-			z-index: var(--elevation-base);
-			top: 0;
-			left: var(--space-slim);
-			max-width: calc(100% - var(--space-large));
-			padding: 0 var(--space-smaller);
-			overflow: hidden;
-			color: var(--color-text--secondary);
-			background: var(--color-surface);
-			font-size: var(--typography--fontSize-small);
+			display: block;
+			margin-bottom: 6px;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-label);
 			font-weight: 600;
-			line-height: var(--space-base);
-			text-overflow: ellipsis;
-			white-space: nowrap;
 		}
 
 		&__label--hidden {
@@ -294,7 +311,7 @@
 
 		&__control {
 			display: flex;
-			min-height: var(--space-largest);
+			min-height: 40px;
 			align-items: center;
 			overflow: hidden;
 			border: var(--border-base) solid var(--color-border--interactive);
@@ -312,7 +329,7 @@
 		input {
 			width: 100%;
 			min-width: 0;
-			padding: var(--space-base);
+			padding: var(--space-small) var(--space-slim);
 			border: 0;
 			outline: 0;
 			color: var(--color-heading);
@@ -342,14 +359,15 @@
 
 	:global(.time-picker-field__trigger) {
 		display: grid;
-		width: var(--space-largest);
-		height: var(--space-largest);
+		width: 24px;
+		height: 24px;
+		margin-left: var(--space-small);
 		flex: 0 0 auto;
 		place-items: center;
 		border: 0;
-		border-left: var(--border-base) solid var(--color-border);
-		color: var(--color-icon--secondary);
-		background: transparent;
+		border-radius: var(--radius-tile-small);
+		color: var(--color-time);
+		background: var(--color-time--surface);
 		cursor: pointer;
 		transition:
 			color var(--timing-quick),
@@ -399,7 +417,8 @@
 
 	:global(.time-picker-field__columns) {
 		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+		align-items: center;
 		gap: var(--space-small);
 		padding: var(--space-base) 0;
 	}
@@ -422,9 +441,10 @@
 		max-height: 216px;
 		gap: var(--space-smallest);
 		overflow-y: auto;
-		padding: var(--space-smallest);
+		padding: 90px var(--space-smallest);
+		box-sizing: border-box;
 		border-radius: var(--radius-base);
-		background: var(--color-surface--background--subtle);
+		background: linear-gradient(transparent, var(--color-time--surface), transparent);
 		scrollbar-width: thin;
 	}
 
@@ -448,8 +468,8 @@
 	}
 
 	:global(.time-picker-field__column button[aria-selected='true']) {
-		color: var(--color-surface);
-		background: var(--color-interactive);
+		color: var(--color-time--onSurface);
+		background: var(--color-time--surface);
 	}
 
 	:global(.time-picker-field__footer) {
@@ -467,7 +487,7 @@
 		padding: var(--space-smaller) var(--space-base);
 		border: 0;
 		border-radius: var(--radius-base);
-		color: var(--color-surface);
+		color: var(--color-text--reverse);
 		background: var(--color-interactive);
 		font: inherit;
 		font-weight: 700;
@@ -486,5 +506,51 @@
 		:global(.time-picker-field__footer) {
 			justify-content: flex-end;
 		}
+	}
+
+	:global(.time-picker-field__columns--24) {
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+	}
+	:global(.time-picker-field__colon) {
+		color: var(--color-time);
+		font-size: var(--typography--fontSize-larger);
+		font-weight: 600;
+	}
+	:global(.time-picker-field__column-wrap--period .time-picker-field__column) {
+		background: var(--color-surface--background--subtle);
+		padding: var(--space-smaller);
+	}
+	:global(.time-picker-field__column-wrap--period button[aria-selected='true']) {
+		background: var(--color-surface);
+		box-shadow: var(--shadow-button);
+	}
+	:global(.time-picker-field__trigger svg) {
+		width: 14px;
+		height: 14px;
+	}
+	:global(.time-picker-field__trigger:disabled) {
+		color: var(--color-disabled);
+		background: var(--color-inactive--surface);
+		cursor: default;
+	}
+	.time-picker-field__control:hover {
+		border-color: var(--color-border--interactive--hover);
+	}
+	.time-picker-field--disabled input {
+		color: var(--color-disabled);
+	}
+	:global(.time-picker-field__footer button:hover) {
+		background: var(--color-interactive--hover);
+	}
+	:global(.time-picker-field__footer button:focus-visible) {
+		outline: none;
+		box-shadow: var(--shadow-focus);
+	}
+	:global(.time-picker-field__duration) {
+		border-radius: var(--radius-circle);
+		background: var(--color-time--surface);
+		color: var(--color-time--onSurface);
+		padding: var(--space-smaller) var(--space-small);
+		font-size: var(--typography--fontSize-small);
 	}
 </style>

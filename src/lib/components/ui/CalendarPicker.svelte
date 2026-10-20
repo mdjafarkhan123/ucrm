@@ -1,7 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { DatePicker, Popover } from 'bits-ui';
-	import type { CalendarDate, DateValue } from '@internationalized/date';
+	import {
+		today,
+		getLocalTimeZone,
+		getDayOfWeek,
+		type CalendarDate,
+		type DateValue
+	} from '@internationalized/date';
 	import type { DateMatcher, DateOnInvalid, DateValidator } from 'bits-ui';
 	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
 	import chevronLeftIcon from '@tabler/icons/outline/chevron-left.svg?raw';
@@ -71,6 +77,34 @@
 		hideLabel ? 'calendar-picker__label calendar-picker__label--hidden' : 'calendar-picker__label'
 	);
 
+	let currentDay = $state(today(getLocalTimeZone()));
+	let quickDates = $derived([
+		{ label: 'Today', date: currentDay },
+		{ label: 'Tomorrow', date: currentDay.add({ days: 1 }) },
+		{
+			label: 'Next week',
+			date: currentDay.add({
+				days: (weekStartsOn - getDayOfWeek(currentDay, 'en-US') + 7) % 7 || 7
+			})
+		}
+	]);
+	function cannotPick(date: CalendarDate) {
+		return (
+			disabled ||
+			readonly ||
+			Boolean(minValue && date.compare(minValue) < 0) ||
+			Boolean(maxValue && date.compare(maxValue) > 0) ||
+			Boolean(isDateDisabled?.(date)) ||
+			Boolean(isDateUnavailable?.(date)) ||
+			Boolean(validate?.(date))
+		);
+	}
+	function pickQuickDate(date: CalendarDate) {
+		if (cannotPick(date)) return;
+		handleValueChange(date);
+		open = false;
+	}
+
 	function handleValueChange(nextValue: DateValue | undefined) {
 		value = nextValue as CalendarDate | undefined;
 		onchange?.(value);
@@ -93,7 +127,13 @@
 	<!-- Bits UI reads the language once, so the field is drawn again when the browser's arrives. -->
 	{#key fieldLocale}
 		<DatePicker.Root
-			bind:open
+			bind:open={
+				() => open,
+				(next) => {
+					if (next) currentDay = today(getLocalTimeZone());
+					open = next;
+				}
+			}
 			{value}
 			{placeholder}
 			locale={fieldLocale}
@@ -113,6 +153,13 @@
 			<DatePicker.Label class={labelClass}>{label}</DatePicker.Label>
 
 			<div class="calendar-picker__control">
+				<DatePicker.Trigger
+					class="calendar-picker__trigger"
+					aria-label={`Open ${label.toLowerCase()} calendar`}
+				>
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					{@html calendarIcon}
+				</DatePicker.Trigger>
 				<DatePicker.Input
 					{id}
 					{name}
@@ -133,13 +180,11 @@
 					{/snippet}
 				</DatePicker.Input>
 
-				<DatePicker.Trigger
-					class="calendar-picker__trigger"
-					aria-label={`Open ${label.toLowerCase()} calendar`}
-				>
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					{@html calendarIcon}
-				</DatePicker.Trigger>
+				{#if value}<span class="calendar-picker__date-weekday"
+						>{new Intl.DateTimeFormat(fieldLocale, { weekday: 'short' }).format(
+							value.toDate(getLocalTimeZone())
+						)}</span
+					>{/if}
 			</div>
 
 			<DatePicker.Portal>
@@ -150,6 +195,15 @@
 					collisionPadding={8}
 					onOpenAutoFocus={focusCalendarWithoutScrolling}
 				>
+					<div class="calendar-picker__quick-dates">
+						{#each quickDates as quick (quick.label)}
+							<button
+								type="button"
+								disabled={cannotPick(quick.date)}
+								onclick={() => pickQuickDate(quick.date)}>{quick.label}</button
+							>
+						{/each}
+					</div>
 					<DatePicker.Calendar>
 						{#snippet children({ months, weekdays })}
 							<DatePicker.Header class="calendar-picker__header">
@@ -188,6 +242,7 @@
 																		class={[
 																			'calendar-picker__day',
 																			selected && 'is-selected',
+																			date.compare(currentDay) === 0 && 'is-today',
 																			dayDisabled && 'is-disabled',
 																			unavailable && 'is-unavailable'
 																		]}>{day}</span
@@ -206,7 +261,13 @@
 					</DatePicker.Calendar>
 
 					<footer class="calendar-picker__footer">
-						<span>Use arrow keys to navigate</span>
+						<span
+							>{value
+								? new Intl.DateTimeFormat(fieldLocale, { dateStyle: 'full' }).format(
+										value.toDate(getLocalTimeZone())
+									)
+								: 'Use arrow keys to navigate'}</span
+						>
 						{#if value}<span class="calendar-picker__selected-date">Selected</span>{/if}
 					</footer>
 				</Popover.Content>
@@ -244,7 +305,7 @@
 
 			&__control {
 				display: flex;
-				min-height: var(--space-largest);
+				min-height: 40px;
 				align-items: center;
 				border: var(--border-base) solid var(--color-border--interactive);
 				border-radius: var(--radius-base);
@@ -322,22 +383,23 @@
 			}
 
 			&__trigger {
-				width: var(--space-largest);
-				height: var(--space-largest);
-				margin-right: var(--space-smaller);
+				width: 24px;
+				height: 24px;
+				margin-left: var(--space-small);
 				border-radius: var(--radius-small);
-				border-left: var(--border-base) solid var(--color-border);
+				color: var(--color-time);
+				background: var(--color-time--surface);
 				cursor: pointer;
 			}
 
 			&__trigger :global(svg),
 			&__nav :global(svg) {
-				width: 20px;
-				height: 20px;
+				width: 14px;
+				height: 14px;
 			}
 
 			&--small &__control {
-				min-height: 34px;
+				min-height: 36px;
 			}
 
 			&--small &__input {
@@ -350,8 +412,8 @@
 			}
 
 			&--small &__trigger {
-				width: 32px;
-				height: 32px;
+				width: 24px;
+				height: 24px;
 				margin-right: 0;
 			}
 
@@ -416,7 +478,7 @@
 				height: 36px;
 				place-items: center;
 				border: var(--border-base) solid transparent;
-				border-radius: var(--radius-circle);
+				border-radius: var(--radius-tile-large);
 				color: var(--color-text);
 				font-size: var(--typography--fontSize-base);
 				line-height: 1;
@@ -424,30 +486,6 @@
 					color var(--timing-quick),
 					background-color var(--timing-quick),
 					border-color var(--timing-quick);
-			}
-
-			:global([data-selected] .calendar-picker__day) {
-				border-color: var(--color-interactive);
-				color: var(--color-surface);
-				background: var(--color-interactive);
-				font-weight: 700;
-			}
-
-			:global([data-today]:not([data-selected]) .calendar-picker__day) {
-				border-color: var(--color-interactive);
-				color: var(--color-interactive--subtle);
-				font-weight: 700;
-			}
-
-			:global([data-highlighted] .calendar-picker__day),
-			:global([data-focused] .calendar-picker__day) {
-				background: var(--color-surface--hover);
-			}
-
-			:global([data-disabled] .calendar-picker__day),
-			:global([data-outside-month] .calendar-picker__day) {
-				color: var(--color-disabled);
-				opacity: 0.55;
 			}
 
 			&__footer {
@@ -493,11 +531,97 @@
 		}
 	}
 
-	// Concept look (design skill `inputs.md`): inside a `.concept-fields` area the label is a field label.
-	:global(.concept-fields .calendar-picker__label) {
+	// Approved shared picker labels apply at every call site.
+	:global(.calendar-picker__label) {
 		margin-bottom: 6px;
 		color: var(--color-heading);
 		font-size: var(--typography--fontSize-label);
 		font-weight: 600;
+	}
+
+	:global(.calendar-picker__date-weekday) {
+		padding-right: var(--space-slim);
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+	}
+	:global(.calendar-picker__control:hover) {
+		border-color: var(--color-border--interactive--hover);
+	}
+	:global(.calendar-picker__trigger[data-state='open']) {
+		background: var(--color-time);
+		color: var(--color-surface);
+	}
+	:global(.calendar-picker__trigger:disabled) {
+		background: var(--color-inactive--surface);
+		color: var(--color-disabled);
+	}
+	:global(.calendar-picker__content) {
+		border-radius: var(--radius-large);
+	}
+	:global(.calendar-picker__quick-dates) {
+		display: flex;
+		gap: var(--space-small);
+		margin-bottom: var(--space-base);
+	}
+	:global(.calendar-picker__quick-dates button) {
+		flex: 1;
+		padding: var(--space-smaller) var(--space-small);
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-circle);
+		background: var(--color-surface);
+		color: var(--color-interactive);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		cursor: pointer;
+	}
+	:global(.calendar-picker__quick-dates button:hover:not(:disabled)) {
+		background: var(--color-interactive--background--subtle--hover);
+	}
+	:global(.calendar-picker__quick-dates button:focus-visible) {
+		box-shadow: var(--shadow-focus);
+		outline: none;
+	}
+	:global(.calendar-picker__quick-dates button:active:not(:disabled)) {
+		background: var(--color-surface--active);
+	}
+	:global(.calendar-picker__quick-dates button:disabled) {
+		color: var(--color-disabled);
+		cursor: default;
+	}
+	:global(.calendar-picker__day.is-today:not(.is-selected)::after) {
+		content: '';
+		position: absolute;
+		bottom: 2px;
+		width: 4px;
+		height: 4px;
+		border-radius: var(--radius-circle);
+		background: var(--color-interactive);
+	}
+	:global([data-outside-month] .calendar-picker__day) {
+		visibility: hidden;
+	}
+	:global(.calendar-picker__day.is-selected) {
+		color: var(--color-text--reverse);
+		background: var(--color-interactive);
+		box-shadow: var(--shadow-button--raised);
+		font-weight: 700;
+	}
+	:global(.calendar-picker__day.is-disabled),
+	:global(.calendar-picker__day.is-unavailable) {
+		color: var(--color-disabled);
+	}
+
+	:global(.calendar-picker__day.is-today:not(.is-selected)) {
+		position: relative;
+		color: var(--color-heading);
+		font-weight: 700;
+	}
+	:global([data-focused]:not([data-selected]) > .calendar-picker__day),
+	:global([data-highlighted]:not([data-selected]) > .calendar-picker__day) {
+		background: var(--color-surface--hover);
+	}
+	:global([data-focused] > .calendar-picker__day) {
+		outline: 2px solid var(--color-focus);
+		outline-offset: 1px;
 	}
 </style>

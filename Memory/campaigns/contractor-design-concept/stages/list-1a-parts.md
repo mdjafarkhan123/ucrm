@@ -28,26 +28,26 @@ Key, tick rule and coverage command: `list-index.md`.
 | `layout/StickyActionBar` |  | ✅ | ✅ |
 | `ui/Avatar` |  | ✅ Small controls `GbgcY` | ⬜ |
 | `data-display/ListLoadMore` |  | ✅ Batch 7 `eJ0QQ` | ✅ Merged 2026-10-20 |
-| `ui/CalendarPicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
+| `ui/CalendarPicker` |  | ✅ Pickers v2 `uSXlT` | ✅ |
 | `data-display/DataTable` |  | ⬜ | ⬜ |
 | `forms/FormErrorSummary` |  | ✅ Batch 7 `eJ0QQ` | ✅ Merged 2026-10-20 |
 | `layout/RecordFormLayout` |  | ✅ | ✅ |
 | `layout/RailCard` |  | ✅ Page parts board `j3jDI` | ✅ Merged 2026-10-19 |
 | `ui/Banner` |  | ✅ Page parts board `j3jDI` | ✅ Merged 2026-10-19 |
 | `ui/Lightbox` |  | ✅ Batch 8 `b4BxuV` | ✅ Merged 2026-10-20 |
-| `ui/TimePickerField` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
+| `ui/TimePickerField` |  | ✅ Pickers v2 `uSXlT` | ✅ |
 | `ui/Toggle` |  | ✅ Small controls `GbgcY` | ⬜ |
 | `files/FileThumb` |  | ✅ Batch 8 `b4BxuV` | ✅ Merged 2026-10-20 |
 | `ui/Card` |  | ✅ | ✅ Merged 2026-10-19 |
 | `ui/CardHeader` | Pencil "Card header"; on every Home card so far | ✅ | ✅ |
-| `ui/TimePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
+| `ui/TimePicker` |  | ✅ Pickers v2 `uSXlT` | ✅ |
 | `ui/PencilButton` |  | ✅ Batch 7 `eJ0QQ` | ✅ Merged 2026-10-20 |
 | `forms/MoneyInput` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
 | `ui/FilterChip` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
 | `data-display/KpiCard` |  | ✅ Batch 7 `eJ0QQ` | ✅ Merged 2026-10-20 |
 | `layout/SidePanel` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
-| `ui/DateTimePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
-| `ui/CountryPicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
+| `ui/DateTimePicker` |  | ✅ Pickers v2 `uSXlT` | ✅ |
+| `ui/CountryPicker` |  | ✅ Pickers v2 `uSXlT` | ✅ |
 | `ui/TagSelect` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
 | `collaboration/AttachmentSurface` |  | ✅ Batch 9 `KuOmH` | ✅ Merged 2026-10-20 |
 | `data-display/RecordListCard` |  | 🔁 Jobs list card `t8ULdJ` | ⬜ |
@@ -60,7 +60,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `quotes/PriceBookDrawer` | 🔁D pop-up · loading, empty, permission-limited, field-worker view | ✅ Batch 10 `ZWTSi` | ⬜ |
 | `quotes/ProductsAndServicesBlock` | pop-ups: "Throw away these changes?" 🔁C · menus ×1 · empty, permission-limited, field-worker view | ⬜ | ⬜ |
 | `ui/RadioGroup` |  | ✅ Small controls `GbgcY` | ⬜ |
-| `ui/TimezonePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
+| `ui/TimezonePicker` |  | ✅ Pickers v2 `uSXlT` | ✅ |
 | `work/ClientPicker` | loading | ✅ | ✅ |
 | `time-clock/RunningClock` |  | ✅ Batch 12 `ooCwt` | ⬜ |
 | `time-clock/TimerElapsed` |  | ✅ Batch 12 `ooCwt` | ⬜ |
