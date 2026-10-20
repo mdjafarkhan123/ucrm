@@ -1,4 +1,4 @@
-# Filter Chips and Tags
+# Filter Chips, Tags and Sender Chip
 
 > Dependencies: `colors.md`, `inputs.md` (dropdown list), `radius.md`
 
@@ -43,3 +43,19 @@
   200-wide colour list beside it: "COLOUR" caption, 32 lines with a 14 dot and the name, the current one 600
   with a green check.
 - Error: 14 circle-alert and a 12 `--color-critical` message under the search box.
+
+## Sender chip
+
+The "From" value in an email preview and the inbox composer's From → To line (board `I5mY7I`, Jafar
+2026-10-20).
+
+- A look-only pill: 28 high, padding 0 12 0 8, gap 6, `--radius-circle`, `--color-conversation--surface`, 1px
+  `--color-conversation--surface-edge`; a 14 mail icon `--color-conversation`, the name 13/600
+  `--color-conversation--onSurface`, the address 13/400 `--color-text--secondary`. No angle brackets.
+- Stays one line. A long address ends in "…"; hover or keyboard focus shows the full name and address in
+  the shared tooltip.
+- Loading: a 240×28 pill-shaped bone in `--color-border`.
+- Couldn't load: the same pill in `--color-critical--surface` with its `--surface-edge`, a 14 circle-alert
+  `--color-critical`, the message 13/600 `--color-critical--onSurface`.
+- No address yet: the same pill in `--color-warning--surface` with its `--surface-edge`, a 14 triangle-alert
+  `--color-warning`, the message 13/600 `--color-warning--onSurface`.

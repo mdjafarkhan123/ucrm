@@ -25,7 +25,7 @@
 | 13 Record page frame | TabPanel, RecordDetailLayout, DetailEditBar, ClientTagSelect (🔁 Tag picker); shared header WorkRecordHeader, RecordFactsList, LifecycleTrack (1b) | Approved `eHJn1` 2026-10-20: tabs B (band along the header card's foot), save bar A (white, like New job), opening-tab states, client tags and dark mode as drawn. Header: Jafar rejected the first shared-header drawing (it only redrew today's app, skipping the guide's options rule) and chose ONE header part for all six record pages, client included (today `clients/ClientDetailHeader` is separate from `work/WorkRecordHeader`). Options board `xrJ3f` 2026-10-20: A refined today, B highlights row, C coloured top, D next step panel, C approved 2026-10-20 (see § Batch 13 record header); fold the client header into the shared part when building |
 | 14 Products and services | ProductsAndServicesBlock (states only; saved view `tNdkX` and edit `jFBRB` already approved) | Approved `vsT0H` 2026-10-20: B for all three rows (Empty B two choice tiles, Field worker B crew work list, Quote extras B grouped and signposted), row 4 shared parts as drawn, light and dark. See § Batch 14 |
 | 15 Notes panel | collaboration/NotesPanel (1b): note field, pinned note, note menu, changes waiting for Save, every state | Approved `l9ZBWI` A 2026-10-20 (refined live; B write-at-top with pinned shelf not chosen). Look in `notes.md` → Notes panel. See § Batch 15 |
-| 16 Email From line | communications/EmailSenderLabel (1b): ready, long, loading, couldn't load, no own address, no business address | Board `I5mY7I` drawn 2026-10-20: A refined text line (bold name, grey address, bones, coloured icons) vs B teal sender chip (amber/red chips for problems, long address ends in … with tooltip). Shown in the Preview email pop-up and the inbox composer, light and dark. Waiting for Jafar's pick |
+| 16 Email From line | communications/EmailSenderLabel (1b): every state | Approved `I5mY7I` B 2026-10-20 (teal sender chip; A refined text line not chosen). Look in `chips.md` → Sender chip. See § Batch 16 |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 
@@ -73,6 +73,18 @@ Hand-off for the builder (restyle only; every control is live today):
 - New foot strips use `--color-surface--background`. Lock icons on invoice strips use the invoice colour.
 - Row 4 (line menu, "Throw away these changes?" with Keep editing / Throw them away, loading, couldn't load
   without Try again, invoice Service date box with ×, progress invoice Item total / Due this invoice) as drawn.
+
+## Batch 16 Email From line — approved 2026-10-20
+
+Board `I5mY7I`, B. Restyle of `communications/EmailSenderLabel` only; it keeps today's query, wording and the
+four callers (QuoteEmailPreview, InvoiceEmailDialog, ManualEmailDialog, ConversationComposer).
+Hand-off for the builder:
+- Ready: the sender chip in `chips.md` (mail icon, name, grey address, no angle brackets).
+- Long: one line; the address ends in "…" and `ui/Tooltip` shows the full name and address on hover/focus,
+  so the chip needs to be focusable (tabindex 0) only when cut off, or always — builder's choice.
+- Loading: 240×28 pill bone (replaces "Loading sender…"; keep the words for screen readers).
+- Couldn't load: red chip; no address (manual or business wording as today): amber chip.
+- In the composer route the chip sits before the arrow; the recipient may truncate, the chip never wraps.
 
 ## Batch 15 Notes panel — approved 2026-10-20
 

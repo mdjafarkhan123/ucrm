@@ -6,7 +6,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | --- | --- | --- | --- |
 | `work/RecordFactsList` |  | ✅ Batch 13 header C `xrJ3f` 2026-10-20 | ✅ |
 | `collaboration/NotesPanel` | menus ×1 · loading, empty, permission-limited | ✅ Batch 15 `l9ZBWI` A 2026-10-20 | ⬜ |
-| `communications/EmailSenderLabel` | loading | 🟡 Board `I5mY7I` A vs B drawn 2026-10-20, waiting for pick | ⬜ |
+| `communications/EmailSenderLabel` | loading | ✅ Batch 16 `I5mY7I` B 2026-10-20 | ⬜ |
 | `files/PhotoDescribeDialog` | 🔁F pop-up · loading | ⬜ | ⬜ |
 | `files/RecordFilesCard` | pop-ups: "confirm" 🔁C · menus ×1 · loading, permission-limited | ⬜ | ⬜ |
 | `forms/FormNotesCard` |  | ⬜ | ⬜ |
