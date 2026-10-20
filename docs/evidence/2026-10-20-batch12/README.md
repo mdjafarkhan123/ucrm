@@ -14,3 +14,9 @@ autofixer: no real issues (SCSS-nesting false positives, the existing ticking-cl
 
 Fixture screenshots (temporary route, removed): capsule, panel, visit row and running elsewhere — running and
 over-12-hours at 1440/390 light/dark, plus idle. Live check: see live-*.png.
+
+Live check (owner, Raad LTD, after merge): the Schedule visit pop-up showed the panel inside a second grey box
+left from the old timer row; the pop-ups' wrapper box was removed so the panel draws its own (time-clock.md).
+`live-schedule-panel.png` — Not started panel with indigo Start timer; `live-job-visit-rows.png` — Job page visit
+rows with indigo Start timer. No timer was started on live, so no real time entries were made; running, over
+12 hours and running elsewhere are proven by the fixture screenshots.
