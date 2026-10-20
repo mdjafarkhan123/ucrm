@@ -35,8 +35,8 @@
 - Search list: items with a photo show as picture cards before the rows of their group.
 - New item pop-up C: 940 wide; the left side previews the line live as fields are typed, with the price, a cost
   bar and "You keep $X · N%" worked out from cost and price. People who may not see costs see no bar, legend or
-  cost. Unit moves into the price strip; labor and tax are option rows. Title wording still open (Jafar was asked
-  whether "New price book item" should read "Add product or service").
+  cost. Unit moves into the price strip; labor and tax are option rows. Title "New price book item"
+  (board approved as drawn, 2026-10-20).
 - Drawer: the foot counts lines added since it opened; added rows keep the count chip and an Add again button.
 
 ## Approved reference and proof
