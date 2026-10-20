@@ -31,6 +31,7 @@
 | 19 Writing boxes | forms/FormNotesCard, settings/automation/EmailActionEditor, SmsActionEditor (1b): every state | Approved `qf1uu` 2026-10-20: Notes box B (Notes panel field, taller), email A and text A (one message sheet with value chips; text adds a cost meter). Looks in `notes.md` → Note box on a new record, `inputs.md` → Message sheet. See § Batch 19 |
 | 20 Pop-over and filter chips | ui/Popover, data-display/DateRangeChip, ui/FilterChipMulti (1b): every state | Approved `e18rX` 2026-10-20: B for all three (pop-over with a coloured top band and an arrow; date chip with the time tile and a 440 From → To panel; multi chip with green +2 and a menu with "3 chosen", count pills and a Clear foot). Looks in `modals.md` → Pop-over, `chips.md`. See § Batch 20 |
 | 21 Activity feed | collaboration/ActivityFeed (1b): with events, loading, nothing yet, couldn't load, dark | Approved `gZ6rR` 2026-10-20: A · Timeline (B Day log deleted). Look in `notes.md` → Activity feed. See § Batch 21 |
+| 23 Jafar panel sign-in | jafar/JafarAuthCard (1b): sign in, wrong password, signing in, join, invitation gone, forgot, link sent, new password, link expired, password changed; 1440 light and dark | Drawn `Y0A1Z` 2026-10-20 (A Centred card vs B Split screen), waiting for Jafar's pick. Batch 22 (ConversationAttachments) is another session's |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 
