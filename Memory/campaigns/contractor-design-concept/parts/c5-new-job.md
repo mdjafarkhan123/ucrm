@@ -86,3 +86,11 @@ A/B pick decide its look for all four.
 Jafar decided (2026-10-20): the four create pages (Request, Quote, Job, Invoice) follow Jobber's shared frame,
 plus our own right sidebar. Products/services and visits use our approved components. Jobber's top panel
 (title, client, facts list) is redesigned new: like Jobber's, but improved, following `design/guide.md`.
+Jafar (2026-10-20): every part the live create forms already have stays, in the same place (main column or
+right sidebar). Live today — Request: main = header card (client), Service overview, On-site assessment,
+Products; sidebar = Notes, Attachments. Quote: main = header card (client, property, Quote #), Introduction
+(add-section), Products + Client view, Client message (add-section), Contract disclaimer; sidebar = Quote
+total, Discount, Tax, Notes, Attachments. Job: main = The job (title, client, property), Products, Visits
+(+ notify customer), Billing; sidebar = Job total. Invoice: main = header card (client, service property,
+Invoice #), Products, Terms & dates (invoice date, payment terms, due date); sidebar = Invoice total,
+Attachments. Only the top panel gets the new look.
