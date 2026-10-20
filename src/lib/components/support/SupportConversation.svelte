@@ -95,6 +95,8 @@
 	let timelineEl = $state<HTMLDivElement | null>(null);
 	let inputEl = $state<HTMLTextAreaElement | null>(null);
 	let attachmentsField = $state<ReturnType<typeof ConversationAttachments> | null>(null);
+	// Where the paperclip's files show: under the message words, inside the writing area.
+	let filesEl = $state<HTMLElement | null>(null);
 	let uploading = $state(false);
 	let readyFiles = $state(0);
 
@@ -488,11 +490,13 @@
 				oninput={resizeInput}
 				onkeydown={handleKeydown}
 				onpaste={handlePaste}></textarea>
+			<div class="support-conversation__files" bind:this={filesEl}></div>
 			<div class="support-conversation__tools">
 				<div class="support-conversation__attach">
 					<ConversationAttachments
 						bind:this={attachmentsField}
 						presign={presignAttachment}
+						cardsTarget={filesEl}
 						maxFiles={SUPPORT_MAX_ATTACHMENTS}
 						triggerFirst
 						disabled={failed || Boolean(blockedReason)}
@@ -899,5 +903,9 @@
 				color: var(--color-critical);
 			}
 		}
+	}
+
+	.support-conversation__files:empty {
+		display: none;
 	}
 </style>

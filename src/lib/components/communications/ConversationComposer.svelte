@@ -85,6 +85,8 @@
 	let formError = $state('');
 	let fieldErrors = $state<Record<string, string>>({});
 	let attachmentsField = $state<ConversationAttachments>();
+	// The writing area's slot for the files added with the paperclip, under the message words.
+	let filesEl = $state<HTMLElement | null>(null);
 	let libraryFiles = $state<LibraryFile[]>([]);
 	let pendingTemplate = $state<CommunicationEmailTemplateListItem | null>(null);
 	let estimate = $state<SmsReplyEstimate | null>(null);
@@ -545,6 +547,7 @@
 				aria-describedby={fieldErrors.body ? 'conversation-composer-body-error' : undefined}
 				aria-keyshortcuts={channel === 'website_chat' ? 'Enter' : 'Control+Enter Meta+Enter'}
 				onkeydown={handleKeydown}></textarea>
+			<div class="conversation-composer__files" bind:this={filesEl}></div>
 		</div>
 		{#if fieldErrors.body}<p
 				id="conversation-composer-body-error"
@@ -576,6 +579,7 @@
 				{#if channel === 'email'}
 					<ConversationAttachments
 						bind:this={attachmentsField}
+						cardsTarget={filesEl}
 						disabled={sending}
 						onUploadingChange={(value) => (uploading = value)}
 					/>
@@ -590,6 +594,7 @@
 					<ConversationAttachments
 						bind:this={attachmentsField}
 						variant="sms"
+						cardsTarget={filesEl}
 						disabled={sending}
 						onUploadingChange={(value) => (uploading = value)}
 					/>
@@ -1024,5 +1029,9 @@
 		.conversation-composer__estimate {
 			display: none;
 		}
+	}
+
+	.conversation-composer__files:not(:empty) {
+		padding: 0 var(--space-slim) var(--space-slim);
 	}
 </style>
