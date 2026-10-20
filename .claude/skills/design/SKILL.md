@@ -49,8 +49,8 @@ Jafar 2026-10-17).
 ### Components
 - [buttons.md](buttons.md) — Button
 - [badges.md](badges.md) — Status pill
-- [inputs.md](inputs.md) — Field, money and quantity boxes, checkbox, radio choice, on/off switch, segmented switch, people pick chips, message sheet
-- [chips.md](chips.md) — Filter chip, tag, tag picker, multi-choice filter chip, date range chip, sender chip
+- [inputs.md](inputs.md) — Field, money and quantity boxes, checkbox, radio choice, on/off switch, segmented switch, people pick chips, message sheet, questions on a public form
+- [chips.md](chips.md) — Filter chip, tag, tag picker, multi-choice filter chip, date range chip, sender chip, channel pill
 - [avatars.md](avatars.md) — Avatar
 - [tabs.md](tabs.md) — Tabs
 - [cards.md](cards.md) — Card, number card
@@ -61,7 +61,7 @@ Jafar 2026-10-17).
 - [tables.md](tables.md) — Table
 - [sidebars.md](sidebars.md) — Sidebar
 - [top-bar.md](top-bar.md) — Top bar
-- [modals.md](modals.md) — Form pop-up, "are you sure?" pop-up, side drawer, pop-over
+- [modals.md](modals.md) — Form pop-up, "are you sure?" pop-up, side drawer, pop-over, email preview pop-up, communication settings pop-up
 - [page-states.md](page-states.md) — Loading, empty, couldn't load
 - [notices.md](notices.md) — Notice strip, form error card
 - [calendar.md](calendar.md) — Schedule calendar: toolbar, grid, cards, now line

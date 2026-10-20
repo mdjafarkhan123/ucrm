@@ -50,3 +50,35 @@ which keeps its own approved look.
   action).
 - A 16×10 arrow in `--color-surface` with the `--color-border` edge points at the button that opened it.
 - Loading: row-shaped bones in the body; couldn't load: the page-states small error with Try again.
+
+## Email preview pop-up
+
+The rendered marketing email (board `l62Og`, A, Jafar 2026-10-20): from a template's Preview, Preview while
+writing, and inline in a campaign's Review step (same body inside the Message card, no pop-up chrome).
+
+- Large pop-up (940). Header: 40 tile in `--color-growth` (`mail`), the template or campaign name, a 12 quiet line
+  "Email preview · what customers will see". No footer.
+- Body padding 20, gap 16: the segmented switch Desktop (`monitor`) / Mobile (`smartphone`), the chosen icon in
+  `--color-growth`.
+- Under it a well: `--color-surface--background--subtle`, 1px `--color-border`, radius 8, padding 28 0, the
+  email centred in it (600 on Desktop, 375 on Mobile) on white with a 1px edge, radius 4; the well scrolls.
+- The email keeps its own light colours in dark mode.
+- Loading: an email-shaped bone (bar, image block, heading, lines, button) on white in the well. Couldn't load:
+  the page-states error with Try again.
+
+## Communication settings pop-up
+
+A client's automatic-message ticks (board `DXj9z` Part 2, A, Jafar 2026-10-20).
+
+- Large pop-up (940). Header: 40 tile in `--color-conversation` (`bell-ring`), "Communication settings", 12 quiet
+  line "Automatic messages this client gets". Footer: Done (main) at the right.
+- Body padding 4 20 20: one row per group, padding 18 0, a hairline between groups. Left 240: a 32 tile in the
+  group's record colour (quote `file-text`, job `hammer`, review `star`) and the group name 15/700 heading. Right:
+  the ticks 16 apart, each the approved checkbox with label and description.
+- Not sending: under the description, a strip `--color-warning--surface`, radius 8, padding 6 10, a 14
+  `circle-pause` in `--color-warning`, "Not sending ·" 12/600 `--color-warning--onSurface`, then the Automations
+  link 12/600 `--color-interactive` underlined (people who can't manage Automations get the words instead).
+- Foot: the consent note on `--color-surface--background--subtle`, 1px `--color-border`, radius 10, padding 12 14,
+  a 16 `shield-check` in `--color-growth`, words 12 secondary.
+- Do not disturb: a warning notice strip (`moon`) at the top and every group row at 50%. No marketing: an
+  informative notice strip (`megaphone-off`), rows unchanged.

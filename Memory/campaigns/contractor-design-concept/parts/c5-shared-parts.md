@@ -34,6 +34,9 @@
 | 22 Files on a message | communications/ConversationAttachments (1b): every state, text message, Chat with Uplift, dark | Approved `mZdBv` 2026-10-20: B · preview cards inside the message (A clean pills deleted). Look in `files.md` → Files on a message. See § Batch 22; built, checked and merged 2026-10-20, proof `docs/evidence/2026-10-20-batch16-23/README.md` |
 | 23 Jafar panel sign-in | jafar/JafarAuthCard (1b) and the four /jafar sign-in pages: every message state; 1440 light and dark | Approved `Y0A1Z` 2026-10-20: B · Split screen (A deleted). Look in `layout.md` → Sign-in screens. See § Batch 23; built, checked and merged 2026-10-20, proof `docs/evidence/2026-10-20-batch16-23/README.md` |
 | 25 First block on New forms | work/PrimaryInfoCard (1b) on New request, quote, invoice | Approved `U8RY1n` A 2026-10-20 (fact in the page header pill, like New job; B facts column not chosen). Look in `layout.md` → Create pages. See § Batch 25 |
+| 26 Marketing email preview | marketing/MarketingTemplatePreview, MarketingTemplatePreviewDialog (1b): Review step, loading, couldn't load, dark | Approved `l62Og` A 2026-10-20 (refined pop-up; B inbox line and device stage deleted). Look in `modals.md` → Email preview pop-up. See § Batch 26 |
+| 27 Channel menu and message settings | communications/ComposerChannelMenu, clients/CommunicationSettingsDialog (1b): every state, dark | Approved `DXj9z` A + A 2026-10-20 (B Send-by button and tick tiles deleted). Looks in `chips.md` → Channel pill, `modals.md` → Communication settings pop-up. See § Batch 27 |
+| 28 Questions on a public form | forms/PublicFormQuestion (1b): every question kind, hover, focus, dark | Approved `Y3od0z` B 2026-10-20 (one card per question; A plain deleted). Look in `inputs.md` → Questions on a public form. See § Batch 28 |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 
@@ -100,6 +103,34 @@ Change property and errors. Look in `layout.md` → Create pages. Hand-off for t
 - Its `fields` snippet content leaves the block: Quote # / Invoice # ("Given when you save") and Requested on
   (the date) become the page-header pill New job already uses, tile in the record colour.
 - New job builds its own block in `JobForm`; whether it moves onto `PrimaryInfoCard` is asked of Jafar (not yet agreed).
+
+## Batch 26 Marketing email preview — approved 2026-10-20
+
+Board `l62Og`, A · Refined pop-up (B inbox line and device stage deleted). Restyle only; same switch, render,
+loading and Try again. Look in `modals.md` → Email preview pop-up. Hand-off for the builder:
+- `MarketingTemplatePreviewDialog`: Growth `mail` tile and the quiet line in the header; no footer.
+- `MarketingTemplatePreview`: segmented switch with `monitor` / `smartphone` icons; the frame becomes the subtle
+  well with the email centred on white. The Review step shows the same body inside its Message card.
+
+## Batch 27 Channel menu and message settings — approved 2026-10-20
+
+Board `DXj9z`, A + A (B Send-by button and tick tiles deleted). Restyle only; same channels, ticks, words, link
+and Done. Looks in `chips.md` → Channel pill and `modals.md` → Communication settings pop-up. Hand-off:
+- `ComposerChannelMenu`: white raised pill with the teal icon; dropdown list with teal icons and the check; one
+  channel only is the teal look-only pill. Same in the folded reply box and the review automation's Send by.
+- `CommunicationSettingsDialog`: group rows with record-colour tiles; Not sending becomes the yellow strip; the grey
+  notice becomes the notice strips (warning for Do not disturb with rows at 50%, informative for No marketing);
+  consent note with the shield icon.
+
+## Batch 28 Questions on a public form — approved 2026-10-20
+
+Board `Y3od0z`, B · One card per question (A plain questions deleted). Restyle only; same question kinds, star,
+help and values. Look in `inputs.md` → Questions on a public form. Hand-off:
+- `PublicFormQuestion` takes its number (its place in the form, from the caller) for the orange tile.
+- Choices become tap tiles (the whole tile is the label); pick-one and Yes / No side by side, Yes / No with thumbs tiles.
+- Also used in `reviews/ReviewFeedbackJourney`; photo questions keep the page's upload box.
+
+`work/RecordTrack` is marked 🔁 Batch 13: it only wraps the approved `LifecycleTrack`.
 
 ## Batch 22 Files on a message — approved 2026-10-20
 

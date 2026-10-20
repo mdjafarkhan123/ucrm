@@ -135,3 +135,21 @@ text A). One sheet, like a mail app; the step card around it keeps its number an
 - Send from stays a normal select (`Field · select`) with its hint; when the numbers couldn't load it is disabled
   with the hint in `--color-warning--onSurface`. The optional text inside "Reply by text or email" has two values
   and no Send from.
+
+## Questions on a public form
+
+A business's own questions as a customer answers them (board `Y3od0z`, B, Jafar 2026-10-20).
+
+- One card per question, 12 apart inside the white form card: `--color-surface--background--subtle`, 1px
+  `--color-border`, radius 14, padding 16, gap 12.
+- Head: a 28 number tile (radius 8) in `--color-request--surface` with a 1px `--surface-edge` and the number
+  13/700 `--color-request--onSurface`; 12 to the label 14/600 heading with the red `*`, the help line 12 secondary
+  under it.
+- Text, long text, number and dropdown use the approved boxes.
+- Choices are tap tiles 8 apart: 44 high, padding 0 12, gap 10, radius 10, white, 1px
+  `--color-border--interactive`, `--shadow-button`; the approved checkbox or circle, the label 14/500 heading.
+  Picked: 1.5px `--color-interactive` edge and 600 label. Tick several stack; pick one and Yes / No sit side by
+  side. Yes / No add a 24 tile (`thumbs-up`, `thumbs-down`): `--color-inactive--surface` with an
+  `--color-inactive` icon, picked `--color-success--surface` with an `--color-success` icon.
+- Hover: `--color-surface--hover` with a `--color-interactive` edge. Focus: 2px `--color-focus` ring.
+- Photo questions use the page's approved upload box.
