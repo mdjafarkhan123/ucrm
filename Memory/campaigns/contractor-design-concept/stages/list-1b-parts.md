@@ -23,8 +23,8 @@ Key, tick rule and coverage command: `list-index.md`.
 | `layout/RailRow` |  | ⬜ | ⬜ |
 | `marketing/MarketingTemplatePreview` | loading | ⬜ | ⬜ |
 | `quotes/QuoteSummaryCard` |  | ⬜ | ⬜ |
-| `time-clock/TimerRunningElsewhere` |  | ⬜ | ⬜ |
-| `time-clock/WorkTimerControl` |  | ⬜ | ⬜ |
+| `time-clock/TimerRunningElsewhere` |  | 🟡 Batch 12 `ooCwt` | ⬜ |
+| `time-clock/WorkTimerControl` |  | 🟡 Batch 12 `ooCwt` | ⬜ |
 | `work/LifecycleTrack` |  | ⬜ | ⬜ |
 | `work/PrimaryInfoCard` |  | ⬜ | ⬜ |
 | `work/RecordDiscountCard` | pop-ups: "form" 🔁F | ⬜ | ⬜ |
