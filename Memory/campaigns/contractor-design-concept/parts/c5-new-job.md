@@ -52,3 +52,11 @@ Billing (Remind me to invoice when I close the job; Split into multiple invoices
 Product / Service (name, qty, unit cost, unit price, total, description; Add Line Item; Subtotal, Discount, Tax,
 Total price, Total cost), Notes (dashed empty box). Sticky foot: Cancel, Save Job split (Save and… Create Another,
 Email Booking Confirmation).
+
+Drawn 2026-10-20, waiting for Jafar's pick: board `M0VXo` "Concept · Batch 31 · New job page · A vs B".
+A Job header card (green top with New job, Job # pill and the big title field; client on the white part; then
+Products and services, Visits, Billing, Notes; rail keeps the deep-green Job total). B Steps and a live summary
+(light header with a four-step track Client · Work · Visits · Billing; "Who it is for" card; rail is a Job summary
+card — client, the work, visits, team, invoicing — with the deep-green total at its foot). Shared: "Choosing a
+client" strip (page opens, typing with list and "+ Create new client", nobody matches) and dark mode.
+On approval: replace `zUFDO` and `TVQzs`, update `layout.md` → Create pages, delete the unchosen option.
