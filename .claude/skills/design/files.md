@@ -65,3 +65,31 @@ Pencil: `concept.pen` → board "Photos and files" (`b4BxuV`), approved 2026-10-
   `refresh` (only when trying again can help) and a 32 quiet × button.
 - **Only failures left:** header tile `--color-critical` with `alert-triangle`, "2 files did not upload" over "Try
   again, or clear them", and a small quiet "Clear" button at the right.
+
+## Files card
+
+Approved 2026-10-19 on board `KuOmH`.
+
+- The Card header (`cards.md`) with a grey `--color-inactive` tile, and a count in the hint line ("4 on this job").
+  Side card on record pages; section card (padding 20, photo tiles 4:3) on create pages.
+- At the right a small secondary "Add" button with an `upload` icon.
+
+## Files waiting to save
+
+The files card on a create page; nothing uploads until Save. Approved 2026-10-19 on board `KuOmH`.
+
+- Hint line: "4 waiting · they save with the client", "Saving 4 files", "1 did not save".
+- **Empty:** a box in `--color-surface--background--subtle`, radius 8, 1.5px dashed
+  `--color-border--interactive--hover` edge; centred a 22 `paperclip` in `--color-icon--secondary`, "Add photos and
+  documents" 13/600 heading, and "They save with the rest of the page · up to 100 MB each" 12 quiet. Only a
+  message; the header's Add picks the files.
+- **Photos:** a grid 8 apart in the body (padding 16), tiles 76 high, radius 8, 1px `--color-border`. Each has a
+  status pill centred 6 from the bottom ("Not saved" `--color-warning`; "Saving…" `--color-informative` with a
+  12 spinner) and a 24 round white remove button top-right (14 `x` `--color-icon`, shadow 0 1 3 heading at 16%),
+  always shown.
+- **Files:** upload list lines (above) edge to edge under the photos: name over "180 KB · waits for Save" and a
+  "Not saved" `--color-warning` pill; while saving, the progress ring and the percent pill.
+- **Failed:** inside the body (padding 16) a row with a 1px `--color-critical` edge, radius 8, padding 6, gap 12:
+  a 40 `--color-critical--surface` tile with an 18 `alert-triangle` in `--color-critical`; the name 13/600 heading
+  over the reason 12 `--color-critical--onSurface`; a small quiet "Retry" (only when trying again can help); a
+  28 × button with a 14 `x` in `--color-icon--secondary`.

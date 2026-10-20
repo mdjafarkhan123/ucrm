@@ -49,15 +49,15 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/DateTimePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `ui/CountryPicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `ui/TagSelect` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
-| `collaboration/AttachmentSurface` |  | ⬜ | ⬜ |
-| `data-display/RecordListCard` |  | ⬜ | ⬜ |
+| `collaboration/AttachmentSurface` |  | ✅ Batch 9 `KuOmH` | ⬜ |
+| `data-display/RecordListCard` |  | 🔁 Jobs list card `t8ULdJ` | ⬜ |
 | `files/PhotoSlot` |  | ✅ Batch 8 `b4BxuV` | ⬜ |
-| `quotes/CatalogItemDialog` | 🔁F pop-up · loading, permission-limited, field-worker view | ⬜ | ⬜ |
+| `quotes/CatalogItemDialog` | 🔁F pop-up · loading, permission-limited, field-worker view | ✅ Batch 10 `ZWTSi` | ⬜ |
 | `ui/TabPanel` |  | ⬜ | ⬜ |
 | `ui/Tabs` | tabs ×2 | ✅ Small controls `GbgcY` | ⬜ |
 | `forms/QuantityInput` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
-| `quotes/CatalogItemPicker` | loading | ⬜ | ⬜ |
-| `quotes/PriceBookDrawer` | 🔁D pop-up · loading, empty, permission-limited, field-worker view | ⬜ | ⬜ |
+| `quotes/CatalogItemPicker` | loading | ✅ Batch 10 `ZWTSi` | ⬜ |
+| `quotes/PriceBookDrawer` | 🔁D pop-up · loading, empty, permission-limited, field-worker view | ✅ Batch 10 `ZWTSi` | ⬜ |
 | `quotes/ProductsAndServicesBlock` | pop-ups: "Throw away these changes?" 🔁C · menus ×1 · empty, permission-limited, field-worker view | ⬜ | ⬜ |
 | `ui/RadioGroup` |  | ✅ Small controls `GbgcY` | ⬜ |
 | `ui/TimezonePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
@@ -65,16 +65,16 @@ Key, tick rule and coverage command: `list-index.md`.
 | `time-clock/RunningClock` |  | ⬜ | ⬜ |
 | `time-clock/TimerElapsed` |  | ⬜ | ⬜ |
 | `files/FileUploader` |  | ✅ Batch 8 `b4BxuV` | ⬜ |
-| `layout/DetailEditBar` |  | ⬜ | ⬜ |
+| `layout/DetailEditBar` |  | 🔁 Save bar in `jFBRB` | ⬜ |
 | `layout/RecordDetailLayout` |  | ⬜ | ⬜ |
 | `work/MoneyFeatureCard` |  | ✅ | ✅ |
-| `work/QuickContactButtons` |  | ⬜ | ⬜ |
+| `work/QuickContactButtons` |  | 🔁 Job details header `tNdkX` | ⬜ |
 | `clients/ClientTagSelect` |  | ⬜ | ⬜ |
-| `collaboration/AuthorMeta` |  | ⬜ | ⬜ |
-| `collaboration/NoteBody` |  | ⬜ | ⬜ |
-| `collaboration/NoteFiles` |  | ⬜ | ⬜ |
+| `collaboration/AuthorMeta` |  | ✅ Batch 9 `KuOmH` | ⬜ |
+| `collaboration/NoteBody` |  | ✅ Batch 9 `KuOmH` | ⬜ |
+| `collaboration/NoteFiles` |  | ✅ Batch 9 `KuOmH` | ⬜ |
 | `files/FileLabelsDialog` | 🔁F pop-up · pop-ups: "confirm" 🔁C · loading | ⬜ | ⬜ |
 | `files/FilePicker` | pop-ups: "You do not have access to the file library" 🔁F · loading, empty, permission-limited | ⬜ | ⬜ |
-| `files/PendingFilesCard` |  | ⬜ | ⬜ |
+| `files/PendingFilesCard` |  | ✅ Batch 9 `KuOmH` | ⬜ |
 | `files/PhotoDescribeForm` | loading, permission-limited | ⬜ | ⬜ |
-| `work/ClientSummaryCard` | menus ×1 | ⬜ | ⬜ |
+| `work/ClientSummaryCard` | menus ×1 | 🔁 Job details client box `tNdkX` | ⬜ |
