@@ -1,4 +1,5 @@
 <script lang="ts">
+	import sendLaterIcon from '@tabler/icons/outline/clock.svg?raw';
 	import EmailSenderLabel from '$lib/components/communications/EmailSenderLabel.svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -84,6 +85,8 @@
 	let formError = $state('');
 	let fieldErrors = $state<Record<string, string>>({});
 	let attachmentsField = $state<ConversationAttachments>();
+	// The writing area's slot for the files added with the paperclip, under the message words.
+	let filesEl = $state<HTMLElement | null>(null);
 	let libraryFiles = $state<LibraryFile[]>([]);
 	let pendingTemplate = $state<CommunicationEmailTemplateListItem | null>(null);
 	let estimate = $state<SmsReplyEstimate | null>(null);
@@ -544,6 +547,7 @@
 				aria-describedby={fieldErrors.body ? 'conversation-composer-body-error' : undefined}
 				aria-keyshortcuts={channel === 'website_chat' ? 'Enter' : 'Control+Enter Meta+Enter'}
 				onkeydown={handleKeydown}></textarea>
+			<div class="conversation-composer__files" bind:this={filesEl}></div>
 		</div>
 		{#if fieldErrors.body}<p
 				id="conversation-composer-body-error"
@@ -575,6 +579,7 @@
 				{#if channel === 'email'}
 					<ConversationAttachments
 						bind:this={attachmentsField}
+						cardsTarget={filesEl}
 						disabled={sending}
 						onUploadingChange={(value) => (uploading = value)}
 					/>
@@ -589,6 +594,7 @@
 					<ConversationAttachments
 						bind:this={attachmentsField}
 						variant="sms"
+						cardsTarget={filesEl}
 						disabled={sending}
 						onUploadingChange={(value) => (uploading = value)}
 					/>
@@ -635,6 +641,8 @@
 					open={sendLaterOpen}
 					anchor={sendLaterAnchor}
 					title="Send later"
+					icon={sendLaterIcon}
+					iconTone="conversation"
 					onClose={() => (sendLaterOpen = false)}
 				>
 					<div class="conversation-composer__send-later">
@@ -823,7 +831,9 @@
 	}
 
 	.conversation-composer__route-from {
-		flex: 0 1 auto;
+		display: inline-flex;
+		flex: 0 0 auto;
+		max-width: 70%;
 		min-width: 0;
 		overflow: hidden;
 		color: var(--color-text--secondary);
@@ -1019,5 +1029,9 @@
 		.conversation-composer__estimate {
 			display: none;
 		}
+	}
+
+	.conversation-composer__files:not(:empty) {
+		padding: var(--space-small) 0;
 	}
 </style>

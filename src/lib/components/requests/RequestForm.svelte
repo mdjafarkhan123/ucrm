@@ -345,6 +345,7 @@
 		{#snippet rail()}
 			<FormNotesCard
 				id="request-initial-note"
+				recordNoun="request"
 				bind:value={form.initial_note}
 				error={fieldErrors.initial_note ?? ''}
 			/>

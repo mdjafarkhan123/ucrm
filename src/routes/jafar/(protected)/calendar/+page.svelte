@@ -1,4 +1,5 @@
 <script lang="ts">
+	import addIcon from '@tabler/icons/outline/calendar-plus.svg?raw';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
@@ -437,6 +438,8 @@
 	open={slot !== null}
 	anchor={slot?.anchor ?? null}
 	title="Add"
+	icon={addIcon}
+	iconTone="time"
 	onClose={() => (slot = null)}
 >
 	{#if slot}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import historyCardIcon from '@tabler/icons/outline/history.svg?raw';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -81,7 +82,6 @@
 	import speakerphoneIcon from '@tabler/icons/outline/speakerphone.svg?raw';
 	import messageIcon from '@tabler/icons/outline/message.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
-	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import sendIcon from '@tabler/icons/outline/send.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import xIcon from '@tabler/icons/outline/x.svg?raw';
@@ -1257,7 +1257,7 @@
 
 			{#snippet rail()}
 				{#if showHistory}
-					<RailCard tone="quote" title="Quote history" icon={clockIcon}>
+					<RailCard tone="quote" title="Quote history" icon={historyCardIcon} description="Newest first">
 						{#snippet actions()}
 							<Button size="small" variant="tertiary" onclick={() => (showHistory = false)}>
 								Close

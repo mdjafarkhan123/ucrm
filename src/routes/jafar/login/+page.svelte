@@ -1,4 +1,6 @@
 <script lang="ts">
+	import shieldLockIcon from '@tabler/icons/outline/shield-lock.svg?raw';
+	import authAlertIcon from '@tabler/icons/outline/alert-circle.svg?raw';
 	import { resolve } from '$app/paths';
 	import JafarAuthCard from '$lib/components/jafar/JafarAuthCard.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -77,9 +79,13 @@
 		/>
 		<a class="jafar-login__forgot" href={resolve('/jafar/forgot-password')}>Forgot password?</a>
 
-		{#if errorMessage}<p class="jafar-login__error" role="alert">{errorMessage}</p>{/if}
+		{#if errorMessage}<p class="jafar-login__error jafar-auth__error" role="alert">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				<span aria-hidden="true">{@html authAlertIcon}</span>{errorMessage}
+			</p>{/if}
 		<Button type="submit" size="large" fullWidth loading={isSubmitting}>
-			{isSubmitting ? 'Signing in…' : 'Sign in securely'}
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			{@html shieldLockIcon}{isSubmitting ? 'Signing in…' : 'Sign in securely'}
 		</Button>
 	</form>
 </JafarAuthCard>
@@ -87,8 +93,9 @@
 <style lang="scss">
 	.jafar-login__forgot {
 		justify-self: end;
+		margin-top: calc(-1 * var(--space-smaller));
 		color: var(--color-interactive);
-		font-size: var(--typography--fontSize-small);
+		font-size: var(--typography--fontSize-label);
 		font-weight: 600;
 		text-decoration: none;
 
@@ -101,11 +108,5 @@
 			outline-offset: 2px;
 			border-radius: var(--radius-small);
 		}
-	}
-
-	.jafar-login__error {
-		margin: 0;
-		color: var(--color-critical);
-		font-size: var(--typography--fontSize-small);
 	}
 </style>

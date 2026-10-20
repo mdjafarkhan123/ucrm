@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { tick } from 'svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import MessageSheet from '$lib/components/ui/MessageSheet.svelte';
+	import letterCaseIcon from '@tabler/icons/outline/letter-case.svg?raw';
+	import messagesIcon from '@tabler/icons/outline/messages.svg?raw';
+	import coinIcon from '@tabler/icons/outline/coin.svg?raw';
 	import Select from '$lib/components/ui/Select.svelte';
 	import { AUTOMATION_SMS_VARIABLES } from '$lib/automation/email-variables';
 	import {
@@ -38,27 +39,6 @@
 		onBodyChange: (value: string) => void;
 		onSenderIdChange?: (value: string) => void;
 	} = $props();
-
-	const bodyId = $derived(`${idPrefix}-body`);
-
-	async function insertVariable(token: string) {
-		const id = bodyId;
-		const el = document.getElementById(id) as HTMLTextAreaElement | null;
-		const placeholder = `{{${token}}}`;
-
-		const start = el?.selectionStart ?? body.length;
-		const end = el?.selectionEnd ?? body.length;
-		const next = body.slice(0, start) + placeholder + body.slice(end);
-		onBodyChange(next);
-
-		await tick();
-		const refreshed = document.getElementById(id) as HTMLTextAreaElement | null;
-		if (refreshed) {
-			const caret = start + placeholder.length;
-			refreshed.focus();
-			refreshed.setSelectionRange(caret, caret);
-		}
-	}
 
 	// The live impact line. Debounced so every keystroke does not fire a request; a token guards against a
 	// slower, stale response landing after a faster, newer one already applied (mirrors ConversationComposer's
@@ -125,48 +105,46 @@
 	]);
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
 <div class="sms-editor">
-	<Textarea
-		id={bodyId}
-		label="Message"
+	<MessageSheet
+		{idPrefix}
+		{body}
+		bodyMaxlength={1000}
+		bodyRows={5}
 		{required}
-		rows={5}
-		maxlength={1000}
-		value={body}
-		oninput={(event: Event) => onBodyChange((event.currentTarget as HTMLTextAreaElement).value)}
+		{variables}
+		{errorMessage}
+		hint={'Values in {{ }} are swapped for the real details when it sends.'}
+		{onBodyChange}
 	/>
 
-	<div class="sms-editor__variables">
-		<span class="sms-editor__variables-label">Insert a value</span>
-		<div class="sms-editor__variable-list">
-			{#each variables as variable (variable.token)}
-				<Button
-					variant="secondary"
-					size="small"
-					onmousedown={(event: MouseEvent) => event.preventDefault()}
-					onclick={() => insertVariable(variable.token)}
-				>
-					{variable.label}
-				</Button>
-			{/each}
+	<!-- The cost meter: characters · segments · estimated cost, or the one reason it cannot estimate. -->
+	{#if estimate && !estimate.ready && !estimating}
+		<p class="sms-editor__hint" aria-live="polite">{estimate.reason}</p>
+	{:else}
+		<div class="sms-editor__meter" aria-live="polite">
+			<span class="sms-editor__fact">
+				<span class="sms-editor__fact-tile" aria-hidden="true">{@html letterCaseIcon}</span>
+				<strong>{body.length}</strong>
+				<span>character{body.length === 1 ? '' : 's'}</span>
+			</span>
+			{#if estimating}
+				<span class="sms-editor__fact sms-editor__fact--quiet">Estimating…</span>
+			{:else if estimate?.ready}
+				<span class="sms-editor__fact">
+					<span class="sms-editor__fact-tile" aria-hidden="true">{@html messagesIcon}</span>
+					<strong>{estimate.segment_count}</strong>
+					<span>segment{estimate.segment_count === 1 ? '' : 's'}</span>
+				</span>
+				<span class="sms-editor__fact">
+					<span class="sms-editor__fact-tile" aria-hidden="true">{@html coinIcon}</span>
+					<strong>{formatEstimateCost(estimate)}</strong>
+					<span>estimated from {estimate.sender_phone}</span>
+				</span>
+			{/if}
 		</div>
-		<p class="sms-editor__hint">These get replaced with the real details when the text is sent.</p>
-	</div>
-
-	<p class="sms-editor__impact" aria-live="polite">
-		{#if estimating}
-			Estimating…
-		{:else if estimate?.ready}
-			{body.length} character{body.length === 1 ? '' : 's'} · {estimate.segment_count} segment{estimate.segment_count ===
-			1
-				? ''
-				: 's'} · {formatEstimateCost(estimate)} estimated from {estimate.sender_phone}
-		{:else if estimate && !estimate.ready}
-			{estimate.reason}
-		{:else}
-			{body.length} character{body.length === 1 ? '' : 's'}
-		{/if}
-	</p>
+	{/if}
 
 	{#if showSender}
 		<div class="sms-editor__sender">
@@ -178,7 +156,7 @@
 				disabled={sendersError}
 				onchange={(value) => onSenderIdChange?.(value)}
 			/>
-			<p class="sms-editor__hint">
+			<p class="sms-editor__hint" class:sms-editor__hint--warning={sendersError}>
 				{sendersError
 					? 'The organization’s SMS numbers could not be loaded — the usual number will be used.'
 					: 'Left as the usual number, a text continues whichever number this customer’s texts have been using, or the organization default.'}
@@ -186,9 +164,6 @@
 		</div>
 	{/if}
 
-	{#if errorMessage}
-		<p class="sms-editor__error" role="alert">{errorMessage}</p>
-	{/if}
 </div>
 
 <style lang="scss">
@@ -197,35 +172,56 @@
 		flex-direction: column;
 		gap: var(--space-base);
 
-		&__variables {
-			display: flex;
-			flex-direction: column;
-			gap: var(--space-small);
-		}
-
-		&__variables-label {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-		}
-
-		&__variable-list {
-			display: flex;
-			flex-wrap: wrap;
-			gap: var(--space-small);
-		}
-
 		&__hint {
 			margin: 0;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 		}
 
-		&__impact {
-			margin: 0;
+		&__meter {
+			display: flex;
+			min-height: 44px;
+			box-sizing: border-box;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: var(--space-small) var(--space-base);
+			padding: var(--space-small) var(--space-slim);
+			border-radius: var(--radius-base);
+			background: var(--color-surface--background);
+		}
+
+		&__fact {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 			font-variant-numeric: tabular-nums;
+
+			strong {
+				color: var(--color-heading);
+				font-size: var(--typography--fontSize-label);
+				font-weight: 600;
+			}
+
+			&--quiet {
+				font-size: var(--typography--fontSize-label);
+			}
+		}
+
+		&__fact-tile {
+			display: grid;
+			width: 24px;
+			height: 24px;
+			place-items: center;
+			border-radius: var(--radius-tile-small);
+			color: var(--color-conversation);
+			background: var(--color-surface);
+
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
 		}
 
 		&__sender {
@@ -234,10 +230,8 @@
 			gap: var(--space-smaller);
 		}
 
-		&__error {
-			margin: 0;
-			color: var(--color-critical);
-			font-size: var(--typography--fontSize-small);
+		&__hint--warning {
+			color: var(--color-warning--onSurface);
 		}
 	}
 </style>

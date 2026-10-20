@@ -14,7 +14,7 @@
 		tone?: string;
 		/** 20 is the record header's fact tile; 24, 32 and 40 are the everyday sizes; 56 stands in for a
 		 *  line's photo in the crew's work list. */
-		size?: 20 | 24 | 32 | 40 | 56;
+		size?: 20 | 24 | 32 | 40 | 48 | 56;
 		/** A white tile, for one that sits on its own colour (a tinted band or header top). */
 		white?: boolean;
 		/** Placement only (margins, alignment); the tile's own look stays here. */
@@ -106,6 +106,16 @@
 			:global(svg) {
 				width: 20px;
 				height: 20px;
+			}
+		}
+		&--48 {
+			width: 48px;
+			height: 48px;
+			border-radius: var(--radius-tile-large);
+
+			:global(svg) {
+				width: 24px;
+				height: 24px;
 			}
 		}
 		&--56 {

@@ -336,6 +336,7 @@
 
 			<FormNotesCard
 				id="lead-fit-notes"
+				recordNoun="lead"
 				title="Why they may fit"
 				label="Reviews, team size, services, anything useful"
 				maxlength={4000}

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import authAlertIcon from '@tabler/icons/outline/alert-circle.svg?raw';
+	import linkOffIcon from '@tabler/icons/outline/link-off.svg?raw';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import JafarAuthCard from '$lib/components/jafar/JafarAuthCard.svelte';
@@ -104,7 +106,10 @@
 				errorMessage={fieldErrors.password_confirmation}
 			/>
 
-			{#if errorMessage}<p class="jafar-join__error" role="alert">{errorMessage}</p>{/if}
+			{#if errorMessage}<p class="jafar-join__error jafar-auth__error" role="alert">
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					<span aria-hidden="true">{@html authAlertIcon}</span>{errorMessage}
+				</p>{/if}
 			<Button type="submit" size="large" fullWidth loading={isSubmitting}>
 				{isSubmitting ? 'Setting up…' : 'Join and sign in'}
 			</Button>
@@ -114,6 +119,7 @@
 	<JafarAuthCard
 		eyebrow="Uplift team"
 		title="This invitation is no longer available"
+		status={{ icon: linkOffIcon, tone: 'warning' }}
 		intro="The link may have expired, been used already, or been replaced by a newer one. Ask Jafar to send you a new invitation."
 		titleId="jafar-join-title"
 	>
@@ -124,9 +130,4 @@
 {/if}
 
 <style lang="scss">
-	.jafar-join__error {
-		margin: 0;
-		color: var(--color-critical);
-		font-size: var(--typography--fontSize-small);
-	}
 </style>

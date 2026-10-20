@@ -32,6 +32,8 @@
 	let formError = $state('');
 	let fieldErrors = $state<FieldErrors>({});
 	let attachmentsField = $state<ConversationAttachments>();
+	// Where the paperclip's files show: under the message, not among the footer buttons.
+	let filesEl = $state<HTMLElement | null>(null);
 
 	const selectedRecipient = $derived(
 		emailMethods.find((method) => method.id === contactMethodId)?.value ?? ''
@@ -199,10 +201,12 @@
 				maxlength={20_000}
 				rows={8}
 			/>
+			<div class="manual-email__files" bind:this={filesEl}></div>
 			{#if formError}<p class="manual-email__error" role="alert">{formError}</p>{/if}
 			<footer class="manual-email__footer">
 				<ConversationAttachments
 					bind:this={attachmentsField}
+					cardsTarget={filesEl}
 					disabled={sending}
 					onUploadingChange={(value) => (uploading = value)}
 				/>
@@ -284,5 +288,9 @@
 		align-items: center;
 		gap: var(--space-small);
 		margin-inline-start: auto;
+	}
+
+	.manual-email__files:empty {
+		display: none;
 	}
 </style>

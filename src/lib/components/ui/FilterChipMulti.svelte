@@ -22,11 +22,14 @@
 		label,
 		options,
 		values,
+		icon,
 		size = 'base',
 		onchange
 	}: {
 		id: string;
 		label: string;
+		/** A Tabler icon (raw SVG) before the name, in the interactive colour. */
+		icon?: string;
 		options: ChipOption[];
 		/** The chosen option values, in any order. */
 		values: string[];
@@ -41,7 +44,7 @@
 	const firstLabel = $derived(
 		options.find((option) => option.value === values[0])?.label ?? values[0] ?? ''
 	);
-	const summary = $derived(values.length > 1 ? `${firstLabel} +${values.length - 1}` : firstLabel);
+	const extra = $derived(values.length > 1 ? `+${values.length - 1}` : '');
 
 	// Keeps the list in the options' own order, so the same choice is always the same address in the URL.
 	function toggle(value: string, checked: boolean) {
@@ -64,8 +67,12 @@
 			class="filter-chip-multi__trigger"
 			aria-label={filtering ? `${label}: ${values.length} chosen` : label}
 		>
+			{#if icon}<span class="filter-chip-multi__icon" aria-hidden="true">{@html icon}</span>{/if}
 			<span class="filter-chip-multi__name">{label}</span>
-			{#if filtering}<span class="filter-chip-multi__value">{summary}</span>{/if}
+			{#if filtering}
+				<span class="filter-chip-multi__value">{firstLabel}</span>
+				{#if extra}<span class="filter-chip-multi__extra">{extra}</span>{/if}
+			{/if}
 			{#if !filtering}
 				<span class="filter-chip-multi__chevron" aria-hidden="true">{@html chevronDownIcon}</span>
 			{/if}
@@ -79,9 +86,16 @@
 				sideOffset={4}
 				collisionPadding={8}
 			>
+				<div class="filter-chip-multi__head">
+					<span class="filter-chip-multi__head-name">{label}</span>
+					{#if filtering}<span class="filter-chip-multi__head-count">{values.length} chosen</span>{/if}
+				</div>
 				<ul class="filter-chip-multi__list" aria-label={label}>
 					{#each options as option (option.value)}
-						<li class="filter-chip-multi__row">
+						<li
+							class="filter-chip-multi__row"
+							class:filter-chip-multi__row--on={values.includes(option.value)}
+						>
 							<Checkbox
 								id={`${id}-${option.value}`}
 								label={option.label}
@@ -99,7 +113,7 @@
 				{#if filtering}
 					<footer class="filter-chip-multi__footer">
 						<button type="button" class="filter-chip-multi__reset" onclick={() => onchange([])}>
-							Clear {label.toLowerCase()}
+							<span aria-hidden="true">{@html closeIcon}</span>Clear {label.toLowerCase()}
 						</button>
 					</footer>
 				{/if}
@@ -341,6 +355,117 @@
 		border-radius: var(--radius-tile-small);
 		background: var(--color-surface--hover);
 		:global(svg) {
+			width: 14px;
+			height: 14px;
+		}
+	}
+
+	// Multi-choice filter chip (`chips.md`, board `e18rX` B).
+	.filter-chip-multi--on {
+		border-width: 1.5px;
+	}
+	.filter-chip-multi :global(.filter-chip-multi__trigger) {
+		gap: 6px;
+	}
+	.filter-chip-multi__icon {
+		display: inline-flex;
+		color: var(--color-interactive);
+
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
+	}
+	.filter-chip-multi:not(.filter-chip-multi--on) .filter-chip-multi__name {
+		color: var(--color-heading);
+	}
+	.filter-chip-multi--on .filter-chip-multi__name {
+		color: var(--color-text);
+	}
+	.filter-chip-multi__value {
+		color: var(--color-heading);
+		font-weight: 600;
+	}
+	.filter-chip-multi__extra {
+		color: var(--color-interactive);
+		font-weight: 600;
+	}
+	:global(.filter-chip-multi__content) {
+		width: 250px;
+		min-width: 0;
+		max-height: min(420px, var(--bits-floating-available-height));
+		border-radius: var(--radius-large);
+	}
+	.filter-chip-multi__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-small);
+		padding: var(--space-slim) var(--space-base) var(--space-smaller) 18px;
+	}
+	.filter-chip-multi__head-name {
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		letter-spacing: 0.6px;
+		text-transform: uppercase;
+	}
+	.filter-chip-multi__head-count {
+		color: var(--color-interactive);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+	}
+	.filter-chip-multi__list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-smallest);
+		padding: var(--space-small);
+	}
+	.filter-chip-multi__row {
+		min-height: 36px;
+		box-sizing: border-box;
+		gap: 10px;
+		padding: 0 10px;
+		border-radius: var(--radius-base);
+
+		:global(.checkbox__content) {
+			min-width: 0;
+		}
+
+		:global(.checkbox__label) {
+			display: block;
+			overflow: hidden;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	}
+	.filter-chip-multi__row--on :global(.checkbox__label) {
+		font-weight: 600;
+	}
+	.filter-chip-multi__count {
+		display: inline-grid;
+		min-width: 20px;
+		height: 20px;
+		box-sizing: border-box;
+		place-items: center;
+		padding: 0 6px;
+		border-radius: var(--radius-circle);
+		background: var(--color-surface--background);
+		font-weight: 600;
+	}
+	.filter-chip-multi__footer {
+		background: var(--color-surface--background--subtle);
+	}
+	.filter-chip-multi__reset {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		color: var(--color-text);
+
+		:global(svg) {
+			display: block;
 			width: 14px;
 			height: 14px;
 		}

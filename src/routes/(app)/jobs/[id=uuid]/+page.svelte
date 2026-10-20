@@ -919,6 +919,7 @@
 						recordLabel="this job"
 						pickerLabel="On this job"
 						title="Photos and files"
+						recordName={`Job #${saved.job.job_number}`}
 						compact
 						clientId={saved.job.client?.id ?? null}
 						clientLabel={saved.job.client?.display_name ?? null}

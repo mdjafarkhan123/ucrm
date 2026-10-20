@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { goto, beforeNavigate } from '$app/navigation';
 	import { automationRecipeDetailKey } from '$lib/settings/automation-lifecycle';
@@ -962,9 +963,8 @@
 							<li class="builder__step" class:builder__step--invalid={Boolean(errors.steps[index])}>
 								<div class="builder__step-head">
 									<span class="builder__step-index">{index + 1}</span>
-									<span class="builder__step-icon" aria-hidden="true">
-										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-										{@html step.key === 'action.send_email' ||
+									<IconTile
+										icon={step.key === 'action.send_email' ||
 										step.key === 'action.send_appointment_email' ||
 										step.key === 'action.send_invoice_email' ||
 										step.key === 'action.send_job_email'
@@ -975,7 +975,9 @@
 												: step.key === 'action.send_review_request'
 													? starIcon
 													: clockIcon}
-									</span>
+										tone={step.type === 'action' ? 'conversation' : 'inactive'}
+										size={32}
+									/>
 									<span class="builder__step-title">{label(step.key)}</span>
 									<div class="builder__step-controls">
 										<Button
@@ -1338,16 +1340,6 @@
 			background: var(--color-interactive);
 			font-size: var(--typography--fontSize-small);
 			font-weight: 700;
-		}
-
-		&__step-icon {
-			display: grid;
-			place-items: center;
-			color: var(--color-icon--secondary);
-		}
-		&__step-icon :global(svg) {
-			width: 18px;
-			height: 18px;
 		}
 
 		&__step-controls {

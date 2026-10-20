@@ -1,4 +1,6 @@
 <script lang="ts">
+	import authAlertIcon from '@tabler/icons/outline/alert-circle.svg?raw';
+	import mailCheckIcon from '@tabler/icons/outline/mail-check.svg?raw';
 	import { resolve } from '$app/paths';
 	import JafarAuthCard from '$lib/components/jafar/JafarAuthCard.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -47,6 +49,7 @@
 	<JafarAuthCard
 		eyebrow="Uplift team"
 		title="Check your email"
+		status={{ icon: mailCheckIcon, tone: 'success' }}
 		intro={`If ${email.trim()} belongs to an Uplift teammate, a link to choose a new password is on its way. It works once and expires in one hour.`}
 		titleId="jafar-forgot-title"
 	>
@@ -77,7 +80,10 @@
 				invalid={Boolean(fieldErrors.email)}
 				errorMessage={fieldErrors.email}
 			/>
-			{#if errorMessage}<p class="jafar-forgot__error" role="alert">{errorMessage}</p>{/if}
+			{#if errorMessage}<p class="jafar-forgot__error jafar-auth__error" role="alert">
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					<span aria-hidden="true">{@html authAlertIcon}</span>{errorMessage}
+				</p>{/if}
 			<Button type="submit" size="large" fullWidth loading={isSubmitting}>
 				{isSubmitting ? 'Sending…' : 'Send reset link'}
 			</Button>
@@ -87,9 +93,4 @@
 {/if}
 
 <style lang="scss">
-	.jafar-forgot__error {
-		margin: 0;
-		color: var(--color-critical);
-		font-size: var(--typography--fontSize-small);
-	}
 </style>

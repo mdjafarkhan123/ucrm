@@ -1,4 +1,7 @@
 <script lang="ts">
+	import chipAttentionIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import chipPackageIcon from '@tabler/icons/outline/package.svg?raw';
+	import chipStatusIcon from '@tabler/icons/outline/circle-dot.svg?raw';
 	import { untrack } from 'svelte';
 	import { CalendarDate } from '@internationalized/date';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
@@ -149,6 +152,7 @@
 		<FilterChipMulti
 			id="organization-filter-attention"
 			label="Needs attention"
+			icon={chipAttentionIcon}
 			options={attentionOptions}
 			values={filters.attention}
 			onchange={(values) => update({ attention: values as DirectoryAttentionReason[] })}
@@ -156,6 +160,7 @@
 		<FilterChipMulti
 			id="organization-filter-lifecycle"
 			label="Status"
+			icon={chipStatusIcon}
 			options={lifecycleOptions}
 			values={filters.lifecycle}
 			onchange={(values) => update({ lifecycle: values as DirectoryFilters['lifecycle'] })}
@@ -163,6 +168,7 @@
 		<FilterChipMulti
 			id="organization-filter-package"
 			label="Package"
+			icon={chipPackageIcon}
 			options={packageOptions}
 			values={filters.packages}
 			onchange={(values) => update({ packages: values })}

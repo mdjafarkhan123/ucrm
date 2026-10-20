@@ -1,4 +1,5 @@
 <script lang="ts">
+	import chipPeopleIcon from '@tabler/icons/outline/users.svg?raw';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -348,6 +349,7 @@
 					<FilterChipMulti
 						id="timesheets-people"
 						label="People"
+						icon={chipPeopleIcon}
 						options={peopleOptions}
 						values={chosenHere}
 						size="small"

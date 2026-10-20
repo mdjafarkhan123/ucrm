@@ -48,7 +48,8 @@
 >
 	<PopoverPrimitive.Portal>
 		<PopoverPrimitive.Content
-			class={['popover', concept && 'popover--concept']}
+			class={['popover', concept ? 'popover--concept' : 'popover--band']}
+			style={concept ? undefined : `--popover-tone: var(--color-${iconTone}); --popover-band: var(--color-${iconTone}--surface); --popover-ink: var(--color-${iconTone}--onSurface); --popover-edge: var(--color-${iconTone}--surface-edge);`}
 			customAnchor={anchor}
 			sideOffset={10}
 			collisionPadding={16}
@@ -61,7 +62,7 @@
 			}}
 		>
 			<header class="popover__header">
-				{#if icon}<IconTile {icon} tone={iconTone} />{/if}
+				{#if icon}<IconTile {icon} tone={iconTone} white={!concept} size={concept ? 40 : 32} />{/if}
 				<div class="popover__heading">
 					<div class="popover__heading-line">
 						<h2 class="popover__title">{title}</h2>
@@ -111,6 +112,62 @@
 	:global(.popover--concept .popover__close) {
 		width: 32px;
 		height: 32px;
+	}
+
+	// Pop-over (`modals.md`, board `e18rX` B): a top band in the caller's meaning colour, a white tile, the
+	// title 16/600 and a quiet × in the band; the arrow points at the button that opened it.
+	:global(.popover--band) {
+		width: max-content;
+		min-width: 280px;
+		max-width: min(360px, calc(100vw - var(--space-larger)));
+		border-radius: var(--radius-large);
+		box-shadow: 0 1px 4px rgba(var(--color-black--rgb), 0.1);
+	}
+	:global(.popover--band) .popover__header {
+		align-items: center;
+		gap: 10px;
+		padding: var(--space-slim) var(--space-slim) var(--space-slim) 14px;
+		border-radius: calc(var(--radius-large) - 1px) calc(var(--radius-large) - 1px) 0 0;
+		background: var(--popover-band);
+	}
+	:global(.popover--band) .popover__heading {
+		flex: 1;
+	}
+	:global(.popover--band) .popover__title {
+		font-size: var(--typography--fontSize-large);
+		font-weight: 600;
+		line-height: 1.25;
+	}
+	:global(.popover--band) .popover__subtitle {
+		color: var(--popover-ink);
+	}
+	:global(.popover--band .popover__close) {
+		width: 28px;
+		height: 28px;
+		border-radius: var(--radius-base);
+		color: var(--popover-ink);
+	}
+	:global(.popover--band .popover__close:hover) {
+		background: rgba(var(--color-black--rgb), 0.06);
+		color: var(--popover-ink);
+	}
+	:global(.popover--band) .popover__body {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		padding: var(--space-base);
+	}
+	:global(.popover--band .popover__arrow) {
+		color: var(--color-surface);
+		filter: drop-shadow(0 1px 0 var(--color-border));
+	}
+	:global(.popover--band[data-side='bottom'] .popover__arrow) {
+		color: var(--popover-band);
+		filter: drop-shadow(0 1px 0 var(--popover-edge));
+	}
+	:global(.popover--band .popover__arrow svg) {
+		width: 16px;
+		height: 10px;
 	}
 
 	:global(.popover) {
