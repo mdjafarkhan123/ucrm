@@ -22,7 +22,7 @@
 
 | 11 File pickers | FilePicker, FileLabelsDialog, PhotoDescribeForm | Approved `K04pQm` 2026-10-20: Add files B (places side column, pick boxes, picked-files tray), Photo labels A (improved live), Photo details B (caption card, Not saved strip); looks in `files.md`; built and verified 2026-10-20; proof `docs/evidence/2026-10-20-batch11/README.md` |
 | 12 Time clock | RunningClock, TimerElapsed, TimerRunningElsewhere (1b), WorkTimerControl (1b) | Approved `ooCwt` 2026-10-20 as a mix: Clock B (indigo capsule, breathing ring), Start/Stop A with B's indigo icons, Timer panel B, Running now B, visit row C (indigo-edged clock joined to a normal Stop timer, same height); look in `time-clock.md`; built by Codex, finished, verified and merged by Claude 2026-10-20; proof `docs/evidence/2026-10-20-batch12/README.md` |
-| 13 Record page frame | TabPanel, RecordDetailLayout, DetailEditBar, ClientTagSelect (🔁 Tag picker); shared header WorkRecordHeader, RecordFactsList, LifecycleTrack (1b) | Approved `eHJn1` 2026-10-20: tabs B (band along the header card's foot), save bar A (white, like New job), opening-tab states, client tags and dark mode as drawn. Header: Jafar rejected the first shared-header drawing (it only redrew today's app, skipping the guide's options rule) and chose ONE header part for all six record pages, client included (today `clients/ClientDetailHeader` is separate from `work/WorkRecordHeader`). Options board `xrJ3f` 2026-10-20: A refined today, B highlights row, C coloured top, D next step panel, each on all six records; waiting for his pick. After the pick: delete the others, add dark mode, then fold the client header into the shared part when building |
+| 13 Record page frame | TabPanel, RecordDetailLayout, DetailEditBar, ClientTagSelect (🔁 Tag picker); shared header WorkRecordHeader, RecordFactsList, LifecycleTrack (1b) | Approved `eHJn1` 2026-10-20: tabs B (band along the header card's foot), save bar A (white, like New job), opening-tab states, client tags and dark mode as drawn. Header: Jafar rejected the first shared-header drawing (it only redrew today's app, skipping the guide's options rule) and chose ONE header part for all six record pages, client included (today `clients/ClientDetailHeader` is separate from `work/WorkRecordHeader`). Options board `xrJ3f` 2026-10-20: A refined today, B highlights row, C coloured top, D next step panel, C approved 2026-10-20 (see § Batch 13 record header); fold the client header into the shared part when building |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 
@@ -46,34 +46,23 @@
   The phone, email and address stay as plain text. Building removes `work/QuickContactButtons` from the
   record headers; the client page keeps Message and Request a review.
 
-## Batch 13 record header — paused 2026-10-20, resume here
+## Batch 13 record header — approved 2026-10-20
 
-Jafar picked **option C (coloured top)** on board `xrJ3f`, with two changes still to make before approval:
-1. **Top row:** only the record tile and the status pill, side by side; remove the record info line
-   (number, version, dates) from there and keep that area clean. The pill moves from beside the title to
-   beside the tile. Where the record number / meta should live instead is open: ask Jafar if unclear.
-2. **Facts under the client line:** today's four facts per record (e.g. Job: Job #, Type, Created, Source) may
-   miss what matters. Research Jobber first: Jafar's Jobber trial account is logged in in Chrome; open each
-   record type (client, request, quote, job, invoice, payment), create/edit test records if needed (CRUD is
-   allowed there), and note which facts Jobber shows in each record's header. Propose the facts per record
-   from that, then redraw C.
+Board `xrJ3f` "Record header · C", light and dark. Jafar approved option C (coloured top) 2026-10-20.
 
-**Progress 2026-10-20 (session 2):** change 1 drawn on all six C headers (record info line removed, status
-pill beside the tile). Jobber header facts gathered from saved notes (`.claude/skills/jobber/jobber-08-screen-patterns.md`,
-`jobber-05` payment details, `Design/Jobber Jobs/2026-08-31/17-one-off-detail-top.png`) plus a live look at the
-client and a recurring job; a test request was made and deleted. Jafar said yes to the facts (2026-10-20):
-Client: Main phone · Main email · Payment terms · Lead source. Request: Requested · Assessment · Service ·
-Came from. Quote: Quote # · Created · Sent · Approved/Declined (honest "Waiting for an answer"). Job: Job # ·
-Type · Dates (start → end; recurring shows its repeat) · Invoicing (`billing_timing`). Invoice: Invoice # ·
-Issued · Due · Payment terms. Payment: Paid on · Method · Reference # · For invoice #. Drawn on `xrJ3f`
-(renamed "Record header · C"); A, B, D deleted; dark column added. Waiting for Jafar's yes on the board,
-then a Ctrl+S save and commit of `concept.pen`.
-
-First check `concept.pen` is saved with the quick-contact buttons gone from `xrJ3f` (removed after the 09:46 save); if the file is newer than commit `70e32402`, commit it.
-
-Then: delete options A, B, D from `xrJ3f` (keep only C), add dark mode, get Jafar's yes, record it here and in
-`stages/list-1b-parts.md`. Still to hand the builder: shared header for all six records; client header folds
-into it; no quick contact buttons; tabs band (client) / Request → Paid track as the footer.
+Hand-off for the builder:
+- One shared header for all six records; `clients/ClientDetailHeader` folds into `work/WorkRecordHeader`.
+- Coloured top in the record type's surface colour, never status; the status pill carries status.
+- Top row: record tile + status pill, actions on the right. No record info line (number, version, dates).
+- No call / text / email buttons: remove `work/QuickContactButtons` from headers; contact stays plain text.
+  The client page keeps Message and Request a review.
+- Four facts under the client line (from Jobber, `jobber-08-screen-patterns.md` and the live trial):
+  Client: Main phone · Main email · Payment terms · Lead source. Request: Requested · Assessment · Service ·
+  Came from. Quote: Quote # · Created · Sent · Approved/Declined. Job: Job # · Type · Dates (start → end;
+  recurring shows its repeat) · Invoicing (`billing_timing`). Invoice: Invoice # · Issued · Due · Payment
+  terms. Payment: Paid on · Method · Reference # · For invoice #. Missing facts show honest grey text
+  ("Waiting for an answer", "None given").
+- Footer: tabs band (client) or the Request → Paid track (work records).
 
 ## Batch 10 new behaviour (Jafar, 2026-10-20)
 
