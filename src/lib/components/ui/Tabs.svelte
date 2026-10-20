@@ -2,7 +2,7 @@
 	import { Tabs as TabsPrimitive } from 'bits-ui';
 	import { setContext, type Snippet } from 'svelte';
 
-	// Underline tabs — the only tab style this app has. Use them to split one record's content into groups
+	// Approved soft capsule tabs. Use them to split one record's content into groups
 	// the user opens one at a time, never for moving between pages.
 	//
 	// Panels are `TabPanel.svelte`, passed as children:
@@ -44,8 +44,7 @@
 		/** Give this when the caller owns the open tab itself — a page keeping it in the URL, say. It then
 		 * takes over from `bind:value`, and `value` is only ever read. */
 		onChange?: (value: string) => void;
-		/** The App look's card tabs: 14px labels, set in the card's own side padding, with a pill for each
-		 *  tab's badge and no space reserved above the panel. */
+		/** Compact capsule tabs with 14px labels inside a card. */
 		compact?: boolean;
 		/** Put the tab row somewhere else, e.g. at the foot of a card that sits above the panels. It is
 		 * handed the row to draw, and the panels still follow as children. */
@@ -105,103 +104,78 @@
 <style lang="scss">
 	:global(.tabs) {
 		--tabs-inset: 0px;
-		--tabs-height: 40px;
-
 		width: 100%;
+		min-width: 0;
 	}
-
 	:global(.tabs__list) {
 		display: flex;
-		gap: var(--space-large);
-		padding-inline: var(--tabs-inset);
+		gap: var(--space-smaller);
+		padding: var(--space-smaller);
+		width: 100%;
+		box-sizing: border-box;
 		overflow-x: auto;
-		border-bottom: var(--border-base) solid var(--color-border);
-		// Pulls the row down so its divider sits flush on the panel's top edge.
-		margin-bottom: calc(-1 * var(--border-base));
-		-webkit-overflow-scrolling: touch;
+		border-radius: var(--radius-circle);
+		background: var(--color-surface--background);
 	}
-
 	:global(.tabs__tab) {
-		position: relative;
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-small);
 		flex: 0 0 auto;
-		height: var(--tabs-height);
-		padding: var(--space-smaller) var(--space-small);
-		border: none;
-		border-radius: var(--radius-base) var(--radius-base) 0 0;
-		background: var(--color-surface);
+		border: var(--border-base) solid transparent;
+		border-radius: var(--radius-circle);
+		padding: var(--space-small) 14px;
 		color: var(--color-text--secondary);
+		background: transparent;
 		font-family: var(--typography--fontFamily-normal);
 		font-size: var(--typography--fontSize-large);
 		font-weight: 600;
-		line-height: var(--typography--lineHeight-large);
 		cursor: pointer;
-		transition: all var(--timing-base) ease;
 	}
-
-	:global(.tabs__tab:hover),
-	:global(.tabs__tab:focus) {
-		color: var(--color-heading);
-	}
-
-	:global(.tabs__tab:focus-visible) {
+	:global(.tabs__tab:hover) {
 		background: var(--color-surface--hover);
-		outline: var(--border-base) solid transparent;
-	}
-
-	:global(.tabs__tab[data-state='active']) {
 		color: var(--color-heading);
 	}
-
-	// The active marker sits over the row divider, spanning the full width of its tab.
-	:global(.tabs__tab[data-state='active'])::after {
-		content: '';
-		position: absolute;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		height: var(--space-smaller);
-		background: var(--color-interactive);
+	:global(.tabs__tab:focus-visible) {
+		outline: 2px solid var(--color-focus);
+		outline-offset: -2px;
 	}
-
-	// App look card tabs: set inside a card, the row takes the card's side padding and each tab can carry a
-	// pill. The active marker is a thinner line in the brand colour.
-	:global(.tabs--compact .tabs__list) {
-		gap: 24px;
-		padding-inline: 24px;
-		margin-bottom: 0;
+	:global(.tabs__tab:active) {
+		background: var(--color-surface--active);
+	}
+	:global(.tabs__tab[data-state='active']) {
+		border-color: var(--color-border--interactive);
+		background: var(--color-surface);
+		box-shadow: var(--shadow-button);
+		color: var(--color-heading);
 	}
 	:global(.tabs--compact .tabs__tab) {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		height: auto;
-		padding: 0 0 12px;
-		border-radius: 0;
-		background: transparent;
+		padding: 6px var(--space-slim);
 		font-size: var(--typography--fontSize-base);
-		line-height: var(--typography--lineHeight-base);
-	}
-	:global(.tabs--compact .tabs__tab:focus-visible) {
-		background: transparent;
-		box-shadow: var(--shadow-focus);
-	}
-	:global(.tabs--compact .tabs__tab[data-state='active'])::after {
-		height: 2px;
-	}
-	:global(.tabs--compact .tab-panel:not([hidden])) {
-		padding: 0;
 	}
 	:global(.tabs__badge) {
-		padding: 2px 8px;
-		border-radius: 999px;
+		padding: 2px 7px;
+		border-radius: var(--radius-circle);
 		color: var(--color-text--secondary);
 		background: var(--color-surface--background--subtle);
 		font-size: var(--typography--fontSize-small);
 		font-variant-numeric: tabular-nums;
 		line-height: 15px;
 	}
+	:global(.tabs__tab[data-state='active'] .tabs__badge:not(.tabs__badge--success)) {
+		background: var(--color-interactive);
+		color: var(--color-text--reverse);
+	}
 	:global(.tabs__badge--success) {
-		color: var(--color-interactive);
+		color: var(--color-success--onSurface);
 		background: var(--color-success--surface);
+	}
+	:global(.tabs > .tab-panel:not([hidden])) {
+		padding-top: var(--space-medium);
+	}
+	:global(.tabs__tab:disabled) {
+		color: var(--color-disabled);
+		cursor: default;
+		box-shadow: none;
 	}
 </style>

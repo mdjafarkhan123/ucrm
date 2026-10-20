@@ -2,7 +2,7 @@
 	// One pick from a small set of options whose labels are too long for a SegmentedControl. Options sit
 	// side by side where there is room and stack on a narrow screen. Looks follow the Radio spec in the
 	// design skill (radios-checkboxes-toggle.md).
-	type Option = { value: string; label: string };
+	type Option = { value: string; label: string; description?: string };
 
 	let {
 		value = $bindable(''),
@@ -52,7 +52,10 @@
 					}}
 				/>
 				<span class="radio-group__circle" aria-hidden="true"></span>
-				<span>{option.label}</span>
+				<span class="radio-group__copy"
+					><span>{option.label}</span>{#if option.description}<small>{option.description}</small
+						>{/if}</span
+				>
 			</label>
 		{/each}
 	</div>
@@ -80,7 +83,7 @@
 		&__option {
 			display: flex;
 			align-items: flex-start;
-			gap: var(--space-small);
+			gap: 10px;
 			color: var(--color-text);
 			font-size: var(--typography--fontSize-base);
 			cursor: pointer;
@@ -111,9 +114,9 @@
 
 		&__circle {
 			flex-shrink: 0;
-			width: 20px;
-			height: 20px;
-			border: var(--border-thick) solid var(--color-border--interactive);
+			width: 18px;
+			height: 18px;
+			border: var(--border-base) solid var(--color-border--interactive);
 			border-radius: var(--radius-circle);
 			background: var(--color-surface);
 			box-sizing: border-box;
@@ -122,7 +125,7 @@
 
 		input:checked + &__circle {
 			border-color: var(--color-interactive);
-			border-width: 6px;
+			border-width: 5px;
 		}
 
 		input:focus-visible + &__circle {
@@ -135,8 +138,8 @@
 
 		&--cards &__option {
 			flex: 1 1 180px;
-			align-items: center;
-			padding: var(--space-base);
+			align-items: flex-start;
+			padding: 10px var(--space-slim);
 			border: var(--border-base) solid var(--color-border);
 			border-radius: var(--radius-base);
 			background: var(--color-surface);
@@ -150,8 +153,8 @@
 
 			&:has(input:checked) {
 				border-color: var(--color-interactive);
-				background: var(--color-interactive--background--subtle--hover);
-				box-shadow: inset 0 0 0 1px var(--color-interactive);
+				background: var(--color-surface);
+				box-shadow: inset 0 0 0 0.5px var(--color-interactive);
 				color: var(--color-heading);
 				font-weight: 600;
 			}
@@ -175,5 +178,47 @@
 		.radio-group--cards .radio-group__option {
 			flex: none;
 		}
+	}
+
+	.radio-group__copy {
+		display: grid;
+		gap: 2px;
+		small {
+			font-weight: 400;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+	}
+	.radio-group__option:has(input:checked) {
+		color: var(--color-heading);
+	}
+	.radio-group--cards .radio-group__option {
+		font-size: var(--typography--fontSize-label);
+		font-weight: 600;
+	}
+	.radio-group--cards .radio-group__option:hover:not(.radio-group__option--disabled) {
+		background: var(--color-surface--hover);
+	}
+	.radio-group__option--disabled .radio-group__circle {
+		background: var(--color-disabled--secondary);
+		border-color: var(--color-disabled);
+	}
+	.radio-group__option:has(input:checked:disabled) .radio-group__circle {
+		border-color: var(--color-disabled);
+	}
+	.radio-group--cards .radio-group__option--disabled {
+		background: var(--color-disabled--secondary);
+		border-color: var(--color-border);
+		box-shadow: none;
+		color: var(--color-disabled);
+	}
+	.radio-group__option--disabled small {
+		color: var(--color-disabled);
+	}
+	.radio-group--cards .radio-group__option--disabled:has(input:checked) {
+		background: var(--color-disabled--secondary);
+		border-color: var(--color-border);
+		box-shadow: none;
+		color: var(--color-disabled);
 	}
 </style>

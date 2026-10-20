@@ -34,7 +34,9 @@
 		overflow: hidden;
 		border-radius: var(--radius-circle);
 		background: var(--avatar-bg, var(--color-surface--active));
-		color: var(--avatar-fg, var(--color-brand));
+		color: var(--avatar-fg, var(--color-heading));
+		box-sizing: border-box;
+		border: 2px solid var(--color-surface);
 		font-weight: 600;
 	}
 
@@ -51,18 +53,21 @@
 	}
 
 	:global(.avatar--medium) {
+		letter-spacing: -0.2px;
 		width: 40px;
 		height: 40px;
 		font-size: var(--typography--fontSize-base);
 	}
 
 	:global(.avatar--large) {
+		letter-spacing: -0.2px;
 		width: 44px;
 		height: 44px;
 		font-size: var(--typography--fontSize-base);
 	}
 
 	:global(.avatar--xlarge) {
+		letter-spacing: -0.2px;
 		width: 64px;
 		height: 64px;
 		font-size: var(--typography--fontSize-larger);
@@ -72,6 +77,7 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+		box-shadow: 0 1px 3px color-mix(in srgb, var(--color-heading) 14%, transparent);
 	}
 
 	:global(.avatar__fallback) {

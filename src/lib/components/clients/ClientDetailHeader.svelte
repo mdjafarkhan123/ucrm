@@ -323,29 +323,6 @@
 			border-top: var(--border-base) solid var(--color-border);
 		}
 
-		// The tab row closes the card. Its own divider is the card's edge.
-		&__tabs {
-			:global(.tabs__list) {
-				gap: 28px;
-				margin-bottom: 0;
-				border-bottom: 0;
-			}
-			:global(.tabs__tab) {
-				height: auto;
-				padding: 0 0 12px;
-				border-radius: 0;
-				background: transparent;
-				font-size: var(--typography--fontSize-base);
-			}
-			:global(.tabs__tab:focus-visible) {
-				border-radius: var(--radius-small);
-				background: transparent;
-				box-shadow: var(--shadow-focus);
-			}
-			:global(.tabs__tab[data-state='active'])::after {
-				height: 2px;
-			}
-		}
 	}
 
 	:global(.client-header__button-icon) {
