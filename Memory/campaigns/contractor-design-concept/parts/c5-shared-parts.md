@@ -31,7 +31,8 @@
 | 19 Writing boxes | forms/FormNotesCard, settings/automation/EmailActionEditor, SmsActionEditor (1b): every state | Approved `qf1uu` 2026-10-20: Notes box B (Notes panel field, taller), email A and text A (one message sheet with value chips; text adds a cost meter). Looks in `notes.md` → Note box on a new record, `inputs.md` → Message sheet. See § Batch 19 |
 | 20 Pop-over and filter chips | ui/Popover, data-display/DateRangeChip, ui/FilterChipMulti (1b): every state | Approved `e18rX` 2026-10-20: B for all three (pop-over with a coloured top band and an arrow; date chip with the time tile and a 440 From → To panel; multi chip with green +2 and a menu with "3 chosen", count pills and a Clear foot). Looks in `modals.md` → Pop-over, `chips.md`. See § Batch 20 |
 | 21 Activity feed | collaboration/ActivityFeed (1b): with events, loading, nothing yet, couldn't load, dark | Approved `gZ6rR` 2026-10-20: A · Timeline (B Day log deleted). Look in `notes.md` → Activity feed. See § Batch 21 |
-| 23 Jafar panel sign-in | jafar/JafarAuthCard (1b): sign in, wrong password, signing in, join, invitation gone, forgot, link sent, new password, link expired, password changed; 1440 light and dark | Drawn `Y0A1Z` 2026-10-20 (A Centred card vs B Split screen), waiting for Jafar's pick. Batch 22 (ConversationAttachments) is another session's |
+| 22 Files on a message | communications/ConversationAttachments (1b): every state, text message, Chat with Uplift, dark | Approved `mZdBv` 2026-10-20: B · preview cards inside the message (A clean pills deleted). Look in `files.md` → Files on a message. See § Batch 22 |
+| 23 Jafar panel sign-in | jafar/JafarAuthCard (1b): sign in, wrong password, signing in, join, invitation gone, forgot, link sent, new password, link expired, password changed; 1440 light and dark | Drawn `Y0A1Z` 2026-10-20 (A Centred card vs B Split screen), waiting for Jafar's pick. |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 
@@ -79,6 +80,16 @@ Hand-off for the builder (restyle only; every control is live today):
 - New foot strips use `--color-surface--background`. Lock icons on invoice strips use the invoice colour.
 - Row 4 (line menu, "Throw away these changes?" with Keep editing / Throw them away, loading, couldn't load
   without Try again, invoice Service date box with ×, progress invoice Item total / Due this invoice) as drawn.
+
+## Batch 22 Files on a message — approved 2026-10-20
+
+Board `mZdBv`, B · preview cards (A deleted). Restyle only; same instant upload, caps, error words, remove, and
+`getAttachments`/`reset`. Hand-off for the builder:
+- `ConversationAttachments`: cards 60 high, two across, 8 apart, laid out under the message text, not among the
+  footer buttons; the paperclip stays in the footer (first in Chat with Uplift). Callers (`ConversationComposer`,
+  `ManualEmailDialog`, `SupportConversation`) give the cards their place; `display: contents` goes.
+- Card: the approved 40 file picture (`files.md`), name over type · size, round × top-right; uploading has the
+  green foot bar; failed has the red edge and the reason. Rejection lines stay under the files.
 
 ## Batch 21 Activity feed — approved 2026-10-20
 
@@ -211,13 +222,6 @@ Hand-off for the builder:
   shrink; the address takes the rest of the line on one line and ends in "…". Hover or keyboard focus shows
   the shared `ui/Tooltip` with the full address and "Click to open in Google Maps"; the address is a link
   (underline on hover) opening Google Maps search for it in a new tab. Header height never changes.
-
-## Batch 22 · Files on a message (drawing, waiting for Jafar)
-
-`ConversationAttachments` (Inbox reply box email and text, client Email pop-up, Chat with Uplift). Board
-`mZdBv` in `concept.pen`, drawn 2026-10-20: A clean pills on their own line above the reply box buttons;
-B preview cards (approved 40 file picture) two across under the message. Every state and dark mode drawn.
-Behaviour unchanged. Next: Jafar picks; then record the look in `files.md`, tidy the board, write the hand-off.
 
 ## Batch 10 new behaviour (Jafar, 2026-10-20)
 
