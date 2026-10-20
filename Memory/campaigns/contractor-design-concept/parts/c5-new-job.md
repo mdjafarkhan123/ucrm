@@ -35,3 +35,20 @@ skill modules.
 
 Built third in `parts/c7-build-pilots.md`; its four new parts go onto the Parts board, the design modules and
 code during that build.
+
+## Batch 31 — whole New job page from scratch (Jafar 2026-10-20)
+
+Jafar: redesign the whole New job page from scratch as an improved Jobber, following `design/guide.md`. Keep a
+right rail (Jobber has none). The header is one card in the main column like the record header, never over the rail.
+Approved new behaviour: "+ Create new client" inside the client list (from Jobber).
+
+Jobber live tour (trial, 2026-10-20, /jobs/new): one white top panel with a green top line, hammer + "New Job",
+full-width Title, "Select a client" combobox (list rows: name, address, email · phone, Active/Sample pill; foot
+"+ Create new client"); picked → client card (name, address, phone, email links; "…" menu: View client profile,
+Edit client details, Change property, Change client in red). Right of it: Job # (prefilled, editable), Customize ·
+Add Field. Then Visits (One-off/Recurring, "1 visit", Create Visits; visit: title, date, Schedule later, start/end,
+Anytime, Assigned chips, Visit instructions; checklists prompt; Email team about assignment; Add a Visit, Reset),
+Billing (Remind me to invoice when I close the job; Split into multiple invoices with a payment schedule),
+Product / Service (name, qty, unit cost, unit price, total, description; Add Line Item; Subtotal, Discount, Tax,
+Total price, Total cost), Notes (dashed empty box). Sticky foot: Cancel, Save Job split (Save and… Create Another,
+Email Booking Confirmation).
