@@ -53,7 +53,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `data-display/RecordListCard` |  | 🔁 Jobs list card `t8ULdJ` | ⬜ |
 | `files/PhotoSlot` |  | ✅ Batch 8 `b4BxuV` | ✅ Merged 2026-10-20 |
 | `quotes/CatalogItemDialog` | 🔁F pop-up · loading, permission-limited, field-worker view | ✅ Batch 10 `ZWTSi` | ✅ |
-| `ui/TabPanel` |  | ⬜ | ⬜ |
+| `ui/TabPanel` |  | 🟡 Record page frame `eHJn1` | ⬜ |
 | `ui/Tabs` | tabs ×2 | ✅ Small controls `GbgcY` | ✅ |
 | `forms/QuantityInput` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
 | `quotes/CatalogItemPicker` | loading | ✅ Batch 10 `ZWTSi` | ✅ |
@@ -65,11 +65,11 @@ Key, tick rule and coverage command: `list-index.md`.
 | `time-clock/RunningClock` |  | ✅ Batch 12 `ooCwt` | ✅ 2026-10-20 |
 | `time-clock/TimerElapsed` |  | ✅ Batch 12 `ooCwt` | ✅ 2026-10-20 |
 | `files/FileUploader` |  | ✅ Batch 8 `b4BxuV` | ✅ Merged 2026-10-20 |
-| `layout/DetailEditBar` |  | 🔁 Save bar in `jFBRB` | ⬜ |
-| `layout/RecordDetailLayout` |  | ⬜ | ⬜ |
+| `layout/DetailEditBar` |  | 🟡 Record page frame `eHJn1` | ⬜ |
+| `layout/RecordDetailLayout` |  | 🟡 Record page frame `eHJn1` | ⬜ |
 | `work/MoneyFeatureCard` |  | ✅ | ✅ |
 | `work/QuickContactButtons` |  | 🔁 Job details header `tNdkX` | ⬜ |
-| `clients/ClientTagSelect` |  | ⬜ | ⬜ |
+| `clients/ClientTagSelect` |  | 🔁 Tag picker `OPUPE` (shown in `eHJn1`) | ⬜ |
 | `collaboration/AuthorMeta` |  | ✅ Batch 9 `KuOmH` | ✅ Merged 2026-10-20 |
 | `collaboration/NoteBody` |  | ✅ Batch 9 `KuOmH` | ✅ Merged 2026-10-20 |
 | `collaboration/NoteFiles` |  | ✅ Batch 9 `KuOmH` | ✅ Merged 2026-10-20 |
