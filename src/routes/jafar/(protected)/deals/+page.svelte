@@ -247,6 +247,7 @@
 				</div>
 				{#if closedList.hasNextPage}
 					<ListLoadMore
+ count={closedDeals.length} recordName="deals" recordColor="inactive"
 						hasNextPage={closedList.hasNextPage}
 						isFetchingNextPage={closedList.isFetchingNextPage}
 						onLoadMore={() => closedList.fetchNextPage()}

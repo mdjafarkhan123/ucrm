@@ -195,6 +195,7 @@
 				{/each}
 			</ol>
 			<ListLoadMore
+ count={entries.length} recordName="entries" recordColor="inactive"
 				hasNextPage={activityQuery.hasNextPage}
 				isFetchingNextPage={activityQuery.isFetchingNextPage}
 				onLoadMore={() => void activityQuery.fetchNextPage()}

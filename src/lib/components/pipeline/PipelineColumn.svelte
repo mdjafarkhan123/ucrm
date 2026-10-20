@@ -717,6 +717,7 @@
 		</div>
 		{#if query.hasNextPage}
 			<ListLoadMore
+ count={cards.length} recordName="cards" recordColor="growth"
 				hasNextPage={query.hasNextPage}
 				isFetchingNextPage={query.isFetchingNextPage}
 				onLoadMore={() => query.fetchNextPage()}

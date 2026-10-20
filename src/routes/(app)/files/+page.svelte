@@ -670,6 +670,7 @@
 
 					{#if files.length > 0}
 						<ListLoadMore
+ count={files.length} recordName="files" recordColor="inactive"
 							hasNextPage={filesQuery.hasNextPage}
 							isFetchingNextPage={filesQuery.isFetchingNextPage}
 							onLoadMore={() => filesQuery.fetchNextPage()}

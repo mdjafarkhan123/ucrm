@@ -565,6 +565,7 @@
 					{/snippet}
 					{#snippet footer()}
 						<ListLoadMore
+ count={quotes.length} recordName="quotes" recordColor="quote"
 							variant="card"
 							label="Load more quotes"
 							hasNextPage={quotesQuery.hasNextPage}

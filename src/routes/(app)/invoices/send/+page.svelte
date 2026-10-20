@@ -391,6 +391,7 @@
 					{/snippet}
 					{#snippet footer()}
 						<ListLoadMore
+ count={allInvoices.length} recordName="invoices" recordColor="invoice"
 							hasNextPage={queueQuery.hasNextPage}
 							isFetchingNextPage={queueQuery.isFetchingNextPage}
 							onLoadMore={() => queueQuery.fetchNextPage()}

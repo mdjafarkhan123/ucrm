@@ -383,6 +383,7 @@
 						{/snippet}
 						{#snippet footer()}
 							<ListLoadMore
+ count={recipes.length} recordName="recipes" recordColor="inactive"
 								variant="card"
 								hasNextPage={recipesQuery.hasNextPage}
 								isFetchingNextPage={recipesQuery.isFetchingNextPage}

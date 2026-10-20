@@ -1,4 +1,5 @@
 <script lang="ts">
+ import arrowIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	type KpiTone = 'default' | 'brand' | 'success' | 'warning' | 'informative' | 'critical';
 	type KpiVariant = 'standard' | 'compact';
 
@@ -29,20 +30,10 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 {#snippet body()}
-	<div class="kpi-card__topline">
-		<span>{label}</span>
-		<span class="kpi-card__icon" aria-hidden="true">{@html icon}</span>
-	</div>
-	<strong>{value}</strong>
-	<small>{note}</small>
-	{#if secondaryValue !== undefined}
-		<div class="kpi-card__secondary">
-			<strong>{secondaryValue}</strong>
-			<small>{secondaryNote}</small>
-		</div>
-	{/if}
+ <div class="kpi-card__topline"><span class="kpi-card__icon" aria-hidden="true">{@html icon}</span><div class="kpi-card__figure"><strong>{value}</strong><span>{label}</span></div>{#if href}<span class="kpi-card__arrow" aria-hidden="true">{@html arrowIcon}</span>{/if}</div>
+ <small class="kpi-card__note">{note}</small>
+ {#if secondaryValue !== undefined}<div class="kpi-card__secondary"><strong>{secondaryValue}</strong><small>{secondaryNote}</small></div>{/if}
 {/snippet}
-
 {#if href}
 	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- the caller passes a resolved path. -->
 	<a class={`kpi-card kpi-card--${tone} kpi-card--${variant} kpi-card--link`} {href}>
@@ -57,196 +48,16 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
-	.kpi-card {
-		min-height: 132px;
-		padding: var(--space-large);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background: var(--color-surface);
-	}
-
-	.kpi-card--link {
-		display: block;
-		color: inherit;
-		text-decoration: none;
-		transition:
-			border-color 120ms ease,
-			box-shadow 120ms ease;
-
-		&:hover {
-			border-color: var(--color-border--interactive);
-			box-shadow: var(--shadow-low);
-		}
-
-		&:focus-visible {
-			outline: 2px solid var(--color-interactive);
-			outline-offset: 2px;
-		}
-	}
-
-	.kpi-card--brand {
-		border-color: transparent;
-		color: var(--color-text--reverse);
-		background: var(--color-brand);
-	}
-
-	.kpi-card--compact {
-		min-height: 0;
-		padding: var(--space-base);
-
-		.kpi-card__topline {
-			align-items: center;
-			font-size: var(--typography--fontSize-small);
-		}
-
-		.kpi-card__icon {
-			width: 40px;
-			height: 40px;
-			flex-basis: 40px;
-			border-radius: var(--radius-base);
-			background: transparent;
-		}
-
-		.kpi-card__icon :global(svg) {
-			width: 24px;
-			height: 24px;
-		}
-
-		&.kpi-card--brand .kpi-card__icon {
-			color: var(--color-text--reverse);
-		}
-
-		&.kpi-card--success .kpi-card__icon {
-			color: var(--color-success);
-		}
-
-		&.kpi-card--warning .kpi-card__icon {
-			color: var(--color-warning);
-		}
-
-		&.kpi-card--informative .kpi-card__icon {
-			color: var(--color-informative);
-		}
-
-		&.kpi-card--critical .kpi-card__icon {
-			color: var(--color-critical);
-		}
-
-		> strong {
-			margin: var(--space-small) 0 var(--space-smaller);
-			font-size: 28px;
-		}
-
-		> small {
-			font-size: var(--typography--fontSize-small);
-		}
-	}
-
-	.kpi-card__topline {
-		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
-		gap: var(--space-base);
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-base);
-		font-weight: 600;
-	}
-
-	.kpi-card--brand .kpi-card__topline,
-	.kpi-card--brand small {
-		color: var(--color-text--reverse);
-		opacity: 0.82;
-	}
-
-	.kpi-card__icon {
-		display: inline-flex;
-		width: 48px;
-		height: 48px;
-		flex: 0 0 48px;
-		align-items: center;
-		justify-content: center;
-		border-radius: var(--radius-base);
-		color: var(--color-inactive--onSurface);
-		background: var(--color-inactive--surface);
-	}
-
-	.kpi-card__icon :global(svg) {
-		width: 32px;
-		height: 32px;
-	}
-
-	.kpi-card--success .kpi-card__icon {
-		color: var(--color-success--onSurface);
-		background: var(--color-success--surface);
-	}
-
-	.kpi-card--warning .kpi-card__icon {
-		color: var(--color-warning--onSurface);
-		background: var(--color-warning--surface);
-	}
-
-	.kpi-card--informative .kpi-card__icon {
-		color: var(--color-informative--onSurface);
-		background: var(--color-informative--surface);
-	}
-
-	.kpi-card--critical .kpi-card__icon {
-		color: var(--color-critical--onSurface);
-		background: var(--color-critical--surface);
-	}
-
-	.kpi-card--brand .kpi-card__icon {
-		color: var(--color-brand);
-		background: var(--color-surface);
-	}
-
-	.kpi-card > strong {
-		display: block;
-		margin: var(--space-base) 0 var(--space-small);
-		color: var(--color-heading);
-		font-size: 36px;
-		line-height: 1;
-	}
-
-	.kpi-card--brand > strong {
-		color: var(--color-text--reverse);
-	}
-
-	// The second figure sits under the first, set off by a rule so the two read as two answers.
-	.kpi-card__secondary {
-		margin-top: var(--space-small);
-		padding-top: var(--space-small);
-		border-top: var(--border-base) solid var(--color-border);
-
-		> strong {
-			display: block;
-			color: var(--color-heading);
-			font-size: 20px;
-			line-height: 1.1;
-		}
-
-		> small {
-			display: block;
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-		}
-	}
-
-	.kpi-card > small {
-		display: block;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-base);
-		line-height: var(--typography--lineHeight-base);
-	}
-
-	@media (max-width: 639px) {
-		.kpi-card {
-			min-height: 116px;
-			padding: var(--space-base);
-		}
-
-		.kpi-card > strong {
-			font-size: 30px;
-		}
-	}
+ .kpi-card {
+ --kpi-tone:var(--color-inactive);--kpi-surface:var(--color-inactive--surface);--kpi-text:var(--color-inactive--onSurface);
+ display:flex;flex-direction:column;gap:12px;min-width:0;padding:16px 16px 14px;border:1px solid var(--color-border);border-radius:var(--radius-large);background:var(--color-surface);color:var(--color-heading);text-decoration:none;
+ @each $tone in success,warning,informative,critical {&--#{$tone}{--kpi-tone:var(--color-#{$tone});--kpi-surface:var(--color-#{$tone}--surface);--kpi-text:var(--color-#{$tone}--onSurface);}}
+ &--brand{--kpi-tone:var(--color-interactive);--kpi-surface:var(--color-success--surface);--kpi-text:var(--color-success--onSurface);}
+ &--link:hover{background:var(--color-surface--hover);border-color:var(--color-border--interactive--hover);}&--link:active{background:var(--color-surface--active);}&--link:focus-visible{outline:none;box-shadow:var(--shadow-focus);}
+ &__topline{display:flex;align-items:center;gap:12px;}&__icon{display:grid;place-items:center;flex:0 0 40px;height:40px;border-radius:var(--radius-tile-large);color:var(--kpi-tone);background:var(--kpi-surface);:global(svg){width:20px;height:20px;}}
+ &__figure{display:flex;flex-direction:column;gap:4px;min-width:0;strong{font-size:26px;line-height:1.1;font-weight:700;letter-spacing:-.6px;overflow-wrap:anywhere;}span{font-size:var(--typography--fontSize-label);font-weight:600;color:var(--kpi-text);}}
+ &__arrow{display:flex;margin-left:auto;color:var(--color-icon--secondary);:global(svg){width:16px;height:16px;}}
+ &__note{display:block;margin-top:auto;padding:8px 10px;border-radius:var(--radius-base);background:var(--color-surface--background);color:var(--color-text--secondary);font-size:var(--typography--fontSize-small);font-weight:500;}
+ &__secondary{padding-top:8px;border-top:1px solid var(--color-border);strong,small{display:block;}strong{font-size:20px;}small{font-size:var(--typography--fontSize-small);color:var(--color-text--secondary);}}
+ }
 </style>

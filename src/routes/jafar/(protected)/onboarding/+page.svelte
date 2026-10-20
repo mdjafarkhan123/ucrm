@@ -329,6 +329,7 @@
 			{/snippet}
 			{#snippet footer()}
 				<ListLoadMore
+ count={clientList.length} recordName="clients" recordColor="inactive"
 					hasNextPage={clients.hasNextPage}
 					isFetchingNextPage={clients.isFetchingNextPage}
 					onLoadMore={() => clients.fetchNextPage()}

@@ -212,6 +212,7 @@
 					{/if}
 				{:else}
 					<ListLoadMore
+ count={items.length} recordName="items" recordColor="client"
 						hasNextPage={kindQuery.hasNextPage}
 						isFetchingNextPage={kindQuery.isFetchingNextPage}
 						onLoadMore={() => kindQuery.fetchNextPage()}

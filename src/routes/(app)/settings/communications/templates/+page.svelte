@@ -270,6 +270,7 @@
 						{/snippet}
 						{#snippet footer()}
 							<ListLoadMore
+ count={items.length} recordName="items" recordColor="inactive"
 								variant="card"
 								hasNextPage={itemsQuery.hasNextPage}
 								isFetchingNextPage={itemsQuery.isFetchingNextPage}

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
-	import chevronsDownIcon from '@tabler/icons/outline/chevrons-down.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+ import searchIcon from '@tabler/icons/outline/search.svg?raw';
+ import chevronsDownIcon from '@tabler/icons/outline/chevrons-down.svg?raw';
 
 	let {
 		hasNextPage,
@@ -10,9 +12,10 @@
 		endLabel = 'That is all of them.',
 		searchNarrowed = false,
 		narrowedLabel = 'Many clients match — type more of the name to see the rest.',
-		variant = 'default'
+		count, recordName = 'records', recordColor = 'inactive'
 	}: {
-		hasNextPage: boolean;
+		count?: number; recordName?: string; recordColor?: string;
+ hasNextPage: boolean;
 		isFetchingNextPage: boolean;
 		onLoadMore: () => void;
 		/** The button's words, e.g. "Load more jobs". */
@@ -28,62 +31,16 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div class={['list-load-more', variant === 'card' && 'list-load-more--card']}>
-	{#if hasNextPage}
-		<Button
-			variant="secondary"
-			class={variant === 'card' ? 'list-load-more__button' : ''}
-			onclick={onLoadMore}
-			disabled={isFetchingNextPage}
-		>
-			{#if variant === 'card'}
-				<span class="list-load-more__icon" aria-hidden="true">{@html chevronsDownIcon}</span>
-			{/if}
-			{isFetchingNextPage ? 'Loading…' : label}
-		</Button>
-	{:else}
-		<span class="list-load-more__end">
-			{searchNarrowed ? narrowedLabel : endLabel}
-		</span>
-	{/if}
+<div class="list-load-more" style:--record-color={`var(--color-${recordColor})`}>
+ {#if hasNextPage}
+ <span class="list-load-more__count">{count === undefined ? '' : `Showing ${count} ${recordName}`}</span>
+ <Button variant="secondary" size="small" loading={isFetchingNextPage} onclick={onLoadMore}><span class="list-load-more__icon" aria-hidden="true">{@html chevronsDownIcon}</span>{label}</Button>
+ {:else}<span class={['list-load-more__tile',searchNarrowed && 'list-load-more__tile--search']} aria-hidden="true">{@html searchNarrowed ? searchIcon : checkIcon}</span><span>{searchNarrowed ? narrowedLabel : count === undefined ? endLabel : `All ${count} ${recordName} are showing`}</span>{/if}
 </div>
-
 <!-- eslint-enable svelte/no-at-html-tags -->
-
 <style lang="scss">
-	.list-load-more {
-		display: flex;
-		justify-content: center;
-		padding: var(--space-base);
-
-		&__end {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-		}
-
-		&--card {
-			padding: 14px var(--space-large);
-		}
-		&--card &__end {
-			font-size: 13px;
-		}
-		&__icon {
-			display: inline-flex;
-
-			:global(svg) {
-				display: block;
-				width: 15px;
-				height: 15px;
-			}
-		}
-	}
-	:global(.list-load-more__button) {
-		min-height: 38px;
-		padding: 0 var(--space-base);
-		border-color: var(--color-border);
-		border-radius: 12px;
-		color: var(--color-text);
-		font-size: 13px;
-		gap: 6px;
-	}
+.list-load-more {display:flex;align-items:center;gap:10px;padding:10px 12px 10px 16px;border-top:1px solid var(--color-border);background:var(--color-surface--background--subtle);color:var(--color-heading);font-size:var(--typography--fontSize-small);font-weight:500;
+ &__count{margin-right:auto;color:var(--color-text--secondary);} &__icon{display:flex;color:var(--record-color);:global(svg){width:16px;height:16px;}}
+ &__tile{display:grid;place-items:center;flex:0 0 24px;height:24px;border-radius:var(--radius-tile-small);background:var(--color-success--surface);color:var(--color-success);:global(svg){width:14px;height:14px;}}
+ &__tile--search{background:var(--color-informative--surface);color:var(--color-informative);}}
 </style>

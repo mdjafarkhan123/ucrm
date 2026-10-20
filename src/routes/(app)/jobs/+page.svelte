@@ -422,6 +422,7 @@
 					{/snippet}
 					{#snippet footer()}
 						<ListLoadMore
+ count={jobs.length} recordName="jobs" recordColor="job"
 							variant="card"
 							label="Load more jobs"
 							hasNextPage={jobsQuery.hasNextPage}

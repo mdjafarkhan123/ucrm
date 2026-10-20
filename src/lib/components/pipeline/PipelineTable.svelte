@@ -384,6 +384,7 @@
 		{/snippet}
 		{#snippet footer()}
 			<ListLoadMore
+ count={rows.length} recordName="records" recordColor="growth"
 				hasNextPage={query.hasNextPage}
 				isFetchingNextPage={query.isFetchingNextPage}
 				onLoadMore={() => query.fetchNextPage()}

@@ -542,6 +542,7 @@
 					{/snippet}
 					{#snippet footer()}
 						<ListLoadMore
+ count={requests.length} recordName="requests" recordColor="request"
 							variant="card"
 							label="Load more requests"
 							hasNextPage={requestsQuery.hasNextPage}
