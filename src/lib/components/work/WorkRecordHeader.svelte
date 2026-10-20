@@ -17,7 +17,8 @@
 	// "Record header · C", approved 2026-10-20). One part for all six; only its data changes:
 	//
 	//   coloured top   the record tile and status pill, the actions at the right, then the title. The top
-	//                  takes the record type's own soft colour, never the status's — the pill carries that.
+	//                  takes the record type's own soft colour, never the status's — the pill and a 4px
+	//                  stripe along the card's top carry that.
 	//   client line    who the work is for, with their address, phone and email as plain links. The client
 	//                  page hands in its own line instead (its address and Message / Request a review).
 	//   facts          up to four facts the page chooses, in even columns.
@@ -134,7 +135,8 @@
 		class?: string;
 	} = $props();
 
-	// A payment belongs to the money side, so it shares the invoice's blue.
+	// A payment belongs to the money side, so it shares the invoice's blue. The client's own surface is
+	// the page colour, so its top takes the next palette step to stand apart from the page.
 	const tone = $derived.by(() => {
 		const kind = recordType.toLowerCase();
 		return kind === 'payment' ? 'invoice' : kind;
@@ -156,7 +158,10 @@
 <section
 	class={`record-header ${className}`}
 	style:--record-tone={`var(--color-${tone})`}
-	style:--record-surface={`var(--color-${tone}--surface)`}
+	style:--record-surface={tone === 'client'
+		? 'var(--color-client--surface-edge)'
+		: `var(--color-${tone}--surface)`}
+	style:--record-status={`var(--color-${statusTone})`}
 	aria-label="{recordType} summary"
 >
 	<div class="record-header__top">
@@ -321,6 +326,13 @@
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-large);
 		background: var(--color-surface);
+
+		// The status stripe: the pill's colour along the card's very top; the rounded corners clip it.
+		&::before {
+			flex: 0 0 4px;
+			background: var(--record-status);
+			content: '';
+		}
 
 		&__top {
 			display: flex;
