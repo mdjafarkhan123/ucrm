@@ -97,6 +97,18 @@
 			resetKey++;
 		}
 	});
+	function matchParts(text: string) {
+		const term = normalizedMatch.trim().toLowerCase();
+		const index = term ? text.toLowerCase().indexOf(term) : -1;
+		return index < 0
+			? { before: text, match: '', after: '' }
+			: {
+					before: text.slice(0, index),
+					match: text.slice(index, index + term.length),
+					after: text.slice(index + term.length)
+				};
+	}
+	let normalizedMatch = $derived(searchKey);
 </script>
 
 <!-- The inline SVG strings are trusted build-time Tabler icon imports. -->
@@ -178,14 +190,21 @@
 									class="country-picker__option"
 								>
 									<span class="country-picker__flag" aria-hidden="true">{country.flag}</span>
-									<span class="country-picker__name">{country.name}</span>
+									{@const parts = matchParts(country.name)}
+									<span class="country-picker__name"
+										>{parts.before}{#if parts.match}<mark>{parts.match}</mark
+											>{/if}{parts.after}</span
+									>
 									{#if value === country.code}<span class="country-picker__check" aria-hidden="true"
 											>{@html checkIcon}</span
-										>{:else}<span class="country-picker__code" aria-hidden="true"
-											>{country.code}</span
-										>{/if}
+										>{/if}<span class="country-picker__code" aria-hidden="true">{country.code}</span
+									>
 								</Combobox.Item>
-							{:else}<div class="country-picker__empty">No countries match “{query}”.</div>{/each}
+							{:else}<div class="country-picker__empty">
+									No countries match “{query}”.<small
+										>Try the country’s English name, like Germany.</small
+									>
+								</div>{/each}
 						{/key}
 					</Combobox.Viewport>
 				</Combobox.Content>
@@ -206,10 +225,10 @@
 	}
 	.country-picker > label {
 		display: block;
-		margin-bottom: var(--space-smaller);
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 500;
+		margin-bottom: 6px;
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-label);
+		font-weight: 600;
 	}
 	.country-picker > label span {
 		color: var(--color-critical);
@@ -217,7 +236,7 @@
 	.country-picker__control {
 		position: relative;
 		display: flex;
-		min-height: var(--space-largest);
+		min-height: 40px;
 		align-items: center;
 		border: var(--border-base) solid var(--color-border--interactive);
 		border-radius: var(--radius-base);
@@ -239,7 +258,7 @@
 	.country-picker__control :global(input) {
 		width: 100%;
 		min-width: 0;
-		min-height: calc(var(--space-largest) - (var(--border-base) * 2));
+		min-height: 38px;
 		padding: var(--space-small) var(--space-largest);
 		border: 0;
 		outline: 0;
@@ -317,7 +336,7 @@
 		max-height: min(320px, var(--bits-floating-available-height));
 		overflow: hidden;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border-radius: var(--radius-large);
 		background: var(--color-surface);
 		box-shadow: var(--shadow-base);
 	}
@@ -388,5 +407,49 @@
 		margin: var(--space-smaller) 0 0;
 		color: var(--color-critical);
 		font-size: var(--typography--fontSize-small);
+	}
+
+	.country-picker__control:hover {
+		border-color: var(--color-border--interactive--hover);
+	}
+	.country-picker__control :global(input) {
+		font-size: var(--typography--fontSize-base);
+	}
+	.country-picker__control :global(input[aria-expanded='true']) {
+		color: var(--color-interactive);
+	}
+	:global(.country-picker__option) {
+		min-height: 40px;
+		border-radius: var(--radius-base);
+	}
+	:global(.country-picker__option:active) {
+		background: var(--color-surface--active);
+	}
+	.country-picker__empty small {
+		display: block;
+		margin-top: var(--space-small);
+		line-height: 1.5;
+	}
+	mark {
+		background: transparent;
+		color: var(--color-interactive);
+		font-weight: 700;
+	}
+
+	.country-picker__flag {
+		width: 24px;
+		height: 24px;
+		flex-basis: 24px;
+		overflow: hidden;
+		border-radius: var(--radius-circle);
+		background: var(--color-surface--background);
+	}
+	.country-picker__lead {
+		left: var(--space-small);
+	}
+	.country-picker__code {
+		border-radius: var(--radius-circle);
+		background: var(--color-surface--background--subtle);
+		padding: 2px var(--space-small);
 	}
 </style>

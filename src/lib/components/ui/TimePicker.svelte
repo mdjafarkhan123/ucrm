@@ -2,8 +2,9 @@
 	import type { Time } from '@internationalized/date';
 	import TimePickerField from './TimePickerField.svelte';
 	import type { TimeRangeValue } from './date-time';
-	import { isTimeRangeValid, reconcileTimeRange } from './date-time';
+	import { isTimeRangeValid, reconcileTimeRange, timeToMinutes } from './date-time';
 
+	/* eslint-disable svelte/no-unused-props -- locale is accepted for existing callers; hourCycle controls time text. */
 	let {
 		value = $bindable<Time | TimeRangeValue | undefined>(),
 		id,
@@ -12,6 +13,7 @@
 		hourCycle = 12,
 		minValue,
 		maxValue,
+		startTime,
 		disabled = false,
 		readonly = false,
 		required = false,
@@ -24,10 +26,12 @@
 		id?: string;
 		range?: boolean;
 		label?: string;
+		// Accepted for compatibility; time text follows hourCycle.
 		locale?: string;
 		hourCycle?: 12 | 24;
 		minValue?: Time;
 		maxValue?: Time;
+		startTime?: Time;
 		disabled?: boolean;
 		readonly?: boolean;
 		required?: boolean;
@@ -46,6 +50,18 @@
 		range && !isTimeRangeValid(rangeValue) ? 'End time must be after start time.' : ''
 	);
 
+	let duration = $derived(
+		rangeValue.start && rangeValue.end
+			? (timeToMinutes(rangeValue.end) ?? 0) - (timeToMinutes(rangeValue.start) ?? 0)
+			: undefined
+	);
+	let durationLabel = $derived(
+		duration === undefined
+			? ''
+			: duration <= 0
+				? 'Check end'
+				: `${Math.floor(duration / 60) ? `${Math.floor(duration / 60)} hr` : ''}${duration % 60 ? ` ${duration % 60} min` : ''}`.trim()
+	);
 	function commitSingle(nextValue: Time | undefined) {
 		value = nextValue;
 		onchange?.(value);
@@ -85,6 +101,7 @@
 				<TimePickerField
 					id={`${fieldId}-end`}
 					label="End"
+					startTime={rangeValue.start}
 					value={rangeValue.end}
 					{hourCycle}
 					{minValue}
@@ -96,10 +113,15 @@
 					onchange={commitEnd}
 				/>
 			</div>
+			{#if durationLabel}<span
+					class="time-picker__duration"
+					class:time-picker__duration--invalid={Boolean(rangeError)}>{durationLabel}</span
+				>{/if}
 		</fieldset>
 	{:else}
 		<TimePickerField
 			id={fieldId}
+			{startTime}
 			{label}
 			value={value && !('start' in value) ? value : undefined}
 			{hourCycle}
@@ -167,10 +189,24 @@
 	}
 
 	// Concept look (design skill `inputs.md`): inside a `.concept-fields` area the label is a field label.
-	:global(.concept-fields) legend {
+	.time-picker legend {
 		margin-bottom: 6px;
 		color: var(--color-heading);
 		font-size: var(--typography--fontSize-label);
 		font-weight: 600;
+	}
+	.time-picker__duration {
+		display: inline-block;
+		margin-top: var(--space-small);
+		padding: var(--space-smaller) var(--space-small);
+		border-radius: var(--radius-circle);
+		background: var(--color-time--surface);
+		color: var(--color-time--onSurface);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+	}
+	.time-picker__duration--invalid {
+		background: var(--color-critical--surface);
+		color: var(--color-critical--onSurface);
 	}
 </style>

@@ -3,7 +3,7 @@
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
 	import exclamationCircleIcon from '@tabler/icons/outline/exclamation-circle.svg?raw';
-	import searchIcon from '@tabler/icons/outline/search.svg?raw';
+	import searchIcon from '@tabler/icons/outline/world.svg?raw';
 
 	let {
 		value = $bindable(''),
@@ -29,6 +29,7 @@
 		label: string;
 		city: string;
 		meta: string;
+		offset: string;
 		searchText: string;
 	};
 	const timezoneNames = (
@@ -83,7 +84,8 @@
 			value: timezone,
 			label,
 			city,
-			meta: `${region} · ${offset}`,
+			meta: region,
+			offset,
 			searchText:
 				`${timezone} ${friendlyTimezone(timezone)} ${city} ${region} ${offset}`.toLowerCase()
 		};
@@ -118,6 +120,18 @@
 			resetKey++;
 		}
 	});
+	function matchParts(text: string) {
+		const term = normalizedMatch.trim().toLowerCase();
+		const index = term ? text.toLowerCase().indexOf(term) : -1;
+		return index < 0
+			? { before: text, match: '', after: '' }
+			: {
+					before: text.slice(0, index),
+					match: text.slice(index, index + term.length),
+					after: text.slice(index + term.length)
+				};
+	}
+	let normalizedMatch = $derived(normalizedQuery);
 </script>
 
 <!-- The inline SVG strings are trusted build-time Tabler icon imports. -->
@@ -168,20 +182,29 @@
 				>
 					<Combobox.Viewport class="timezone-picker__viewport">
 						{#each results as timezone (timezone.value)}
+							{@const parts = matchParts(timezone.city)}
 							<Combobox.Item
 								value={timezone.value}
 								label={timezone.label}
 								class="timezone-picker__option"
 							>
 								<span class="timezone-picker__option-copy"
-									><strong>{timezone.city}</strong><small>{timezone.meta}</small></span
+									><strong
+										>{parts.before}{#if parts.match}<mark>{parts.match}</mark
+											>{/if}{parts.after}</strong
+									><small>{timezone.meta}</small></span
 								>
+								<span class="timezone-picker__offset">{timezone.offset}</span>
 								{#if value === timezone.value}<span
 										class="timezone-picker__check"
 										aria-hidden="true">{@html checkIcon}</span
 									>{/if}
 							</Combobox.Item>
-						{:else}<div class="timezone-picker__empty">No time zones match “{query}”.</div>{/each}
+						{:else}<div class="timezone-picker__empty">
+								No time zones match “{query}”.<small
+									>Try a city, like Denver, or an offset, like UTC+5.</small
+								>
+							</div>{/each}
 					</Combobox.Viewport>
 				</Combobox.Content>
 			</Combobox.Portal>
@@ -200,10 +223,10 @@
 	}
 	.timezone-picker > label {
 		display: block;
-		margin-bottom: var(--space-smaller);
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 500;
+		margin-bottom: 6px;
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-label);
+		font-weight: 600;
 	}
 	.timezone-picker > label span {
 		color: var(--color-critical);
@@ -211,7 +234,7 @@
 	.timezone-picker__control {
 		position: relative;
 		display: flex;
-		min-height: var(--space-largest);
+		min-height: 40px;
 		align-items: center;
 		border: var(--border-base) solid var(--color-border--interactive);
 		border-radius: var(--radius-base);
@@ -227,7 +250,7 @@
 	.timezone-picker__control :global(input) {
 		width: 100%;
 		min-width: 0;
-		min-height: calc(var(--space-largest) - (var(--border-base) * 2));
+		min-height: 38px;
 		padding: var(--space-small) var(--space-largest);
 		border: 0;
 		outline: 0;
@@ -286,7 +309,7 @@
 		max-height: min(300px, var(--bits-floating-available-height));
 		overflow: hidden;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border-radius: var(--radius-large);
 		background: var(--color-surface);
 		box-shadow: var(--shadow-base);
 	}
@@ -358,5 +381,49 @@
 		margin: var(--space-smaller) 0 0;
 		color: var(--color-critical);
 		font-size: var(--typography--fontSize-small);
+	}
+
+	.timezone-picker__control:hover {
+		border-color: var(--color-border--interactive--hover);
+	}
+	.timezone-picker__control :global(input) {
+		font-size: var(--typography--fontSize-base);
+	}
+	.timezone-picker__control :global(input[aria-expanded='true']) {
+		color: var(--color-interactive);
+	}
+	:global(.timezone-picker__option) {
+		min-height: 40px;
+		border-radius: var(--radius-base);
+	}
+	:global(.timezone-picker__option:active) {
+		background: var(--color-surface--active);
+	}
+	.timezone-picker__empty small {
+		display: block;
+		margin-top: var(--space-small);
+		line-height: 1.5;
+	}
+	mark {
+		background: transparent;
+		color: var(--color-interactive);
+		font-weight: 700;
+	}
+
+	.timezone-picker__search {
+		left: var(--space-small);
+		width: 24px;
+		height: 24px;
+		border-radius: var(--radius-tile-small);
+		background: var(--color-time--surface);
+		color: var(--color-time);
+	}
+	.timezone-picker__offset {
+		border-radius: var(--radius-circle);
+		background: var(--color-surface--background--subtle);
+		color: var(--color-text--secondary);
+		padding: 2px var(--space-small);
+		font-size: var(--typography--fontSize-small);
+		white-space: nowrap;
 	}
 </style>

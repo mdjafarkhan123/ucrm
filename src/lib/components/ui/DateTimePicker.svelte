@@ -102,6 +102,7 @@
 			<TimePicker
 				id={`${id}-time`}
 				value={timeRole === 'start' ? value.startTime : value.endTime}
+				startTime={timeRole === 'end' ? value.startTime : undefined}
 				label={timeLabel}
 				{hourCycle}
 				{disabled}
