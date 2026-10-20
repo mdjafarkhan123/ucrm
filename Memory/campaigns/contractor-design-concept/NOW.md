@@ -1,16 +1,24 @@
 # Contractor design concept — now
 
-- **Goal:** A design concept for the whole app, drawn in `concept.pen` from the app's own variables: design → review → approve → build.
+- **Goal:** Draw the whole app from its own variables: design → review → approve → build.
 - **Core agreement:** `docs/contractor-design-concept-behavior-contract.md`.
-- **Design preferences:** `.claude/skills/design/SKILL.md` and its modules.
-- **Stage:** Every approved board is built; next is drawing. Pilots built; leftovers in `parts/c7-build-pilots.md`.
+- **Experience:** `.claude/skills/design/SKILL.md` and its modules.
+- **Stage:** Approved shared parts are being built; further screens are being drawn.
+
+**New Request:** A · Quiet white shared top form approved 2026-10-20 for Request, Quote, Job and Invoice;
+existing right rails stay. Full New Job/Quote/Invoice designs are next; app implementation follows. Blueprint,
+branch, proof and integration status:
+`parts/new-request-top-form.md`. This supersedes C5's abandoned Batch 31 drafts.
 
 **Next:**
-1. Shared parts: `parts/c5-shared-parts.md` records approvals and build state. Batches 1–23 are merged, including Batch 14 Products and services (`vsT0H`, proof `docs/evidence/2026-10-20-batch14/README.md`) and Batch 15 Notes panel (`l9ZBWI`, proof `docs/evidence/2026-10-20-batch15/README.md`). Batches 16–23 built, checked and merged 2026-10-20 (proof `docs/evidence/2026-10-20-batch16-23/README.md`); batches 24–30 are approved and waiting to be built. Options on later boards must differ clearly. Approved 2026-10-20 and ready to build: 24 Discount, tax and totals (`qY4yb` A), 25 First block on New forms (`U8RY1n` A), 26 Marketing email preview (`l62Og` A), 27 Channel menu and message settings (`DXj9z` A + A), 28 Questions on a public form (`Y3od0z` B), 29 Import steps (`oxtmi` A), 30 Booking a call (`TC3iU` A). Next drawing: the next ⬜ row in `stages/list-1b-parts.md`. List 1a is fully drawn (DataTable stays ➖). No text under 12px; older drawings and code still need a sweep. Remaining drawings: `stages/list-1a-parts.md`.
-2. Schedule, event completion and its three Jobs pop-ups merged 2026-10-19. Proof: `docs/evidence/2026-10-19-schedule/README.md`. App fills available width; 1440 is the Pencil reference. Migration already applied; do not repeat.
+1. Shared parts: `parts/c5-shared-parts.md`. Batches 1–23 merged; 24–30 approved for building. Proof is linked
+   there. Next drawing: next empty row in `stages/list-1b-parts.md`; List 1a fully drawn (DataTable skipped).
+   Older drawings/code need the 12px minimum-text sweep.
+2. Schedule, event completion and three Jobs pop-ups merged 2026-10-19. Proof:
+   `docs/evidence/2026-10-19-schedule/README.md`. App fills available width; 1440 is the Pencil reference.
+   Migration already applied.
+3. Jafar confirms checklist order/pop-up marks: `stages/list-index.md`, `parts/c5a-redesign-checklist.md`.
 
-3. Jafar confirms checklist order/pop-up marks (`stages/list-index.md`, `parts/c5a-redesign-checklist.md`).
+**Pencil:** builders preserve active drawing work. Pilot leftovers: `parts/c7-build-pilots.md`.
 
-**Pencil:** read-only for builders; preserve Claude's active drawing work.
-
-**Still open:** money cards in dark mode; Changes requested colour; whether to keep two styling-module sets after rollout.
+**Open:** dark-mode money cards; Changes requested colour; keeping two styling-module sets after rollout.

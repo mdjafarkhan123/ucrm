@@ -306,6 +306,18 @@ author, timestamp, a pin/star, and thumbnails for any files attached to a note.
   **Product / Service** section (**Add Line Item** button, Subtotal/Total), and a **Notes** empty-state card.
   One Cancel/Save Request pair at the bottom for the whole page — no per-section save.
 
+#### New Request recheck — observed live 2026-10-20
+
+On `/requests/new`, the title fills the top row; client selection sits on the left with the read-only
+Requested on date on the right. The client list shows name, address, email/phone and an Active or Sample
+Data badge, with **Create new client** at its foot. Choosing a client reveals their property and contact
+links; More options contains View client profile, Edit client details, Change property and Change client.
+The assessment expands inline, initially with Schedule later checked and its date/time controls disabled.
+The whole form has one Cancel / Save Request footer. Inspected without saving a request.
+
+Our approved adaptation keeps Notes and Attachments in the existing right sidebar; the shared top form
+stays in the main column. Its appearance is defined in the Design skill's `layout.md` → Create pages.
+
 ### 4.4 Settings → Requests and Bookings
 
 - **Forms** card lists every form (e.g. "Assessment Booking Form", "Default Form") with a `Booking default` /
