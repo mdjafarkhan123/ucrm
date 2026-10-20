@@ -78,7 +78,7 @@ Board `xrJ3f` "Record header · C", light and dark. Jafar approved option C (col
 
 Hand-off for the builder:
 - One shared header for all six records; `clients/ClientDetailHeader` folds into `work/WorkRecordHeader`.
-- Coloured top in the record type's surface colour, never status; the status pill carries status.
+- Coloured top in the record type's surface colour; status shows in the pill and the 4px stripe.
 - Top row: record tile + status pill, actions on the right. No record info line (number, version, dates).
 - No call / text / email buttons: remove `work/QuickContactButtons` from headers; contact stays plain text.
   The client page keeps Message and Request a review.
@@ -89,6 +89,12 @@ Hand-off for the builder:
   terms. Payment: Paid on · Method · Reference # · For invoice #. Missing facts show honest grey text
   ("Waiting for an answer", "None given").
 - Footer: tabs band (client) or the Request → Paid track (work records).
+- Status stripe (Jafar, 2026-10-20): a 4px band along the very top of the header card in the status pill's
+  main colour (`--color-success`, `--color-warning`, `--color-critical`, `--color-informative`,
+  `--color-inactive`), changing with the status; the card's rounded corners clip it. The tinted top stays the
+  record type's colour.
+- Client top uses `--color-client--surface-edge` (taupe 300), not `--color-client--surface`: the latter is the
+  page colour and melted into the page in the live app.
 - Client line contact (Jafar, 2026-10-20): address, phone and email are separate items, each with a bold icon
   in its meaning colour (map-pin client, phone time, mail conversation; Tabler stroke ≈2.25, 14px) and
   13/500 `--color-text`, 16 apart. Fact tile and address icons are bold too. Was one grey 12px line.
