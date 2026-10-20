@@ -225,6 +225,13 @@
 				>
 					<span
 						class="file-uploader__ring"
+						role={item.status === 'uploading' ? 'progressbar' : undefined}
+						aria-label={item.status === 'uploading' ? `Uploading ${item.name}` : undefined}
+						aria-valuenow={item.status === 'uploading'
+							? Math.round(item.progress * 100)
+							: undefined}
+						aria-valuemin={item.status === 'uploading' ? 0 : undefined}
+						aria-valuemax={item.status === 'uploading' ? 100 : undefined}
 						style:--progress={`${item.status === 'uploading' ? item.progress * 360 : 0}deg`}
 						><span class="file-uploader__item-icon" aria-hidden="true"
 							>{@html item.status === 'error' ? alertTriangleIcon : fileIcon}</span
