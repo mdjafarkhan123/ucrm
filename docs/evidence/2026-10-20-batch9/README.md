@@ -14,12 +14,12 @@ Changes: author names over times with Edited tags and keyboard-accessible exact-
 - Browser assertions: download busy and disabled; rejected file removed; pending file removed; empty state restored; viewer opens and Escape closes. Mocked upload: first attempt fails, Retry shows busy/disabled, second attempt completes, queue empties; exactly two attempts. No storage/database write in this fixture.
 - Visual fixes during review: compact author layout override, pending badge wrapping, checking photo fill, always-visible photo removal.
 
-No full build, full TypeScript check, project-wide lint or test suite. No capacity claim or storage scanning revalidation. Temporary fixture is removed before commit. Main integration remains pending until the main workspace is released by the Pencil designer.
+No full build, full TypeScript check, project-wide lint or test suite. No capacity claim or storage scanning revalidation. Temporary fixture is removed before commit. Main integration is complete.
 
 ## Live branch app
 
 Signed in through the real login as the existing Raad LTD Owner on localhost:5175. Opened existing client WC4 Check1 and its Notes / Photos and files cards. On New client, selected a PDF and a refused executable, removed the refused file, saw the remaining **Not saved** document, removed it, and confirmed the empty message returned. No client was saved, no file uploaded, no page errors. Screenshots: `live-client.png`, `live-new-client-files.png`.
 
-## Integration handoff
+## Integrated main
 
-Branch `codex/concept-batch9`, workspace `/home/jafar/Ucrm/.worktrees/concept-batch9`, reservation `084d9574cc37`; committed and pushed. Combined main's batch 12 documentation without dropping either update. Main integration claim was refused because `claude-batch12-opus` reservation `1138f1df5f74` still owns `/home/jafar/Ucrm`. Jafar has been asked to have that writer save/push and release the folder. Next: claim main integration, merge this branch, mark the five Batch 9 checklist rows merged, update NOW/C5, repeat the brief real-app file-staging check on localhost:5173, commit/push main, release both reservations. Do not repeat full-project checks.
+Jafar confirmed main released. Merged batch 9 while preserving Claude's approved batch 12 design and Pencil workflow updates. Focused main-app proof on localhost:5173: existing owner login, client Notes / Photos and files cards, New client staged PDF with Not saved badge, removal and empty state. No record saved or file uploaded; no page errors. Screenshots: `main-client.png`, `main-new-client-files.png`. `git diff --check` passed. No app code changed during integration, so broad or already-passing component checks were not repeated.
