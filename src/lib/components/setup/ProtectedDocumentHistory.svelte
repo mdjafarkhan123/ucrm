@@ -1,4 +1,5 @@
 <script lang="ts">
+	import historyIcon from '@tabler/icons/outline/history.svg?raw';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Popover from '$lib/components/ui/Popover.svelte';
@@ -65,7 +66,13 @@
 </span>
 
 {#if open}
-	<Popover {open} {anchor} title={`History of ${name}`} onClose={() => (open = false)}>
+	<Popover
+		{open}
+		{anchor}
+		title={`History of ${name}`}
+		icon={historyIcon}
+		iconTone="inactive"
+		onClose={() => (open = false)}>
 		{#if history.isPending}
 			<LoadingSkeleton variant="text" label="Loading history" />
 		{:else if history.isError}

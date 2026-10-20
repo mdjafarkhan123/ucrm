@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Popover } from 'bits-ui';
 	import Button from '$lib/components/ui/Button.svelte';
+	import IconTile from '$lib/components/ui/IconTile.svelte';
+	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
 	import { calendarDateFromString, calendarDateToString } from '$lib/components/ui/date-time';
 	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
@@ -59,8 +61,9 @@
 			class="date-range-chip__trigger"
 			aria-label={active ? `${label}: ${summary}` : label}
 		>
-			<span class="date-range-chip__icon" aria-hidden="true">{@html calendarIcon}</span>
+			<IconTile icon={calendarIcon} tone="time" size={24} />
 			<span class="date-range-chip__label">{label}</span>
+			<span class="date-range-chip__divider" aria-hidden="true"></span>
 			<span class="date-range-chip__value">{summary}</span>
 			{#if !active}
 				<span class="date-range-chip__chevron" aria-hidden="true">{@html chevronDownIcon}</span>
@@ -74,7 +77,10 @@
 				sideOffset={6}
 				collisionPadding={8}
 			>
-				<p class="date-range-chip__panel-title">{label}</p>
+				<div class="date-range-chip__panel-head">
+					<IconTile icon={calendarIcon} tone="time" size={32} />
+					<p class="date-range-chip__panel-title">{label}</p>
+				</div>
 				<div class="date-range-chip__fields">
 					<CalendarPicker
 						id={`${id}-from`}
@@ -83,6 +89,7 @@
 						maxValue={calendarDateFromString(to)}
 						onchange={(value) => onchange({ from: calendarDateToString(value), to })}
 					/>
+					<span class="date-range-chip__arrow" aria-hidden="true">{@html arrowRightIcon}</span>
 					<CalendarPicker
 						id={`${id}-to`}
 						label={`${label} to`}
@@ -92,8 +99,8 @@
 					/>
 				</div>
 				<div class="date-range-chip__panel-foot">
-					<Button variant="secondary" size="small" disabled={!active} onclick={clear}>
-						Clear dates
+					<Button variant="quiet" size="small" disabled={!active} onclick={clear}>
+						{@html closeIcon}Clear dates
 					</Button>
 					<Popover.Close>
 						{#snippet child({ props })}
@@ -120,39 +127,45 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	// Date range chip (`chips.md`, board `e18rX` B): the filter chip with the 24 date tile, so dates read as
+	// dates across the toolbar.
 	.date-range-chip {
 		display: inline-flex;
 		flex: 0 0 auto;
 		align-items: center;
 		max-width: 100%;
-		min-height: 38px;
-		border: var(--border-base) solid var(--color-border);
+		height: 36px;
+		box-sizing: border-box;
+		border: var(--border-base) solid var(--color-border--interactive);
 		border-radius: var(--radius-base);
 		background: var(--color-surface);
+		box-shadow: var(--shadow-button);
 		transition:
 			border-color var(--timing-quick),
 			background-color var(--timing-quick);
 
 		&:hover {
+			border-color: var(--color-border--interactive--hover);
 			background: var(--color-surface--hover);
 		}
-		&--on {
-			border-color: var(--color-interactive);
+		&--on,
+		&--on:hover {
+			border: 1.5px solid var(--color-interactive);
 			background: var(--color-surface);
 		}
 
 		:global(.date-range-chip__trigger) {
 			display: inline-flex;
-			min-height: 36px;
+			height: 34px;
 			align-items: center;
 			gap: 6px;
-			padding: 0 var(--space-slim);
+			padding: 0 10px 0 6px;
 			border: none;
 			border-radius: var(--radius-base);
-			color: var(--color-text--secondary);
+			color: var(--color-text);
 			background: transparent;
 			font: inherit;
-			font-size: 13px;
+			font-size: var(--typography--fontSize-base);
 			font-weight: 500;
 			white-space: nowrap;
 			cursor: pointer;
@@ -162,17 +175,18 @@
 			box-shadow: var(--shadow-focus);
 		}
 	}
-	.date-range-chip--on .date-range-chip__icon {
-		color: var(--color-interactive);
-	}
 	.date-range-chip--on :global(.date-range-chip__trigger) {
-		padding-right: var(--space-smaller);
+		padding-right: 6px;
 	}
-	.date-range-chip__icon,
+	.date-range-chip__divider {
+		width: 1px;
+		height: 16px;
+		background: var(--color-border--interactive);
+	}
 	.date-range-chip__chevron {
 		display: inline-flex;
 		flex: 0 0 auto;
-		color: var(--color-icon--secondary);
+		color: var(--color-icon);
 
 		:global(svg) {
 			display: block;
@@ -188,22 +202,24 @@
 		display: inline-grid;
 		flex: 0 0 auto;
 		place-items: center;
-		width: 28px;
-		height: 36px;
+		width: 24px;
+		height: 24px;
+		margin-right: 6px;
 		padding: 0;
 		border: none;
-		border-radius: var(--radius-base);
-		color: var(--color-icon--secondary);
-		background: transparent;
+		border-radius: var(--radius-tile-small);
+		color: var(--color-icon);
+		background: var(--color-surface--hover);
 		cursor: pointer;
 
 		:global(svg) {
 			display: block;
-			width: 16px;
-			height: 16px;
+			width: 14px;
+			height: 14px;
 		}
 		&:hover {
 			color: var(--color-heading);
+			background: var(--color-surface--active);
 		}
 		&:focus-visible {
 			outline: none;
@@ -214,10 +230,10 @@
 	:global(.date-range-chip__panel) {
 		z-index: var(--elevation-modal);
 		box-sizing: border-box;
-		width: min(320px, calc(100vw - var(--space-large)));
-		padding: var(--space-base);
+		width: min(440px, calc(100vw - var(--space-large)));
+		overflow: hidden;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border-radius: var(--radius-large);
 		background: var(--color-surface);
 		box-shadow: var(--shadow-base);
 		color: var(--color-text);
@@ -225,21 +241,43 @@
 	:global(.date-range-chip__panel:focus-visible) {
 		outline: none;
 	}
+	:global(.date-range-chip__panel-head) {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 14px var(--space-base);
+		border-bottom: var(--border-base) solid var(--color-border);
+	}
 	:global(.date-range-chip__panel-title) {
-		margin-bottom: var(--space-slim);
+		margin: 0;
 		color: var(--color-heading);
 		font-size: var(--typography--fontSize-large);
-		font-weight: 700;
+		font-weight: 600;
 	}
 	:global(.date-range-chip__fields) {
 		display: grid;
-		gap: var(--space-base);
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+		align-items: end;
+		gap: var(--space-small);
+		padding: var(--space-base);
+	}
+	:global(.date-range-chip__arrow) {
+		display: inline-flex;
+		height: 40px;
+		align-items: center;
+		color: var(--color-icon--secondary);
+	}
+	:global(.date-range-chip__arrow svg) {
+		width: 16px;
+		height: 16px;
 	}
 	:global(.date-range-chip__panel-foot) {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-small);
-		margin-top: var(--space-base);
+		padding: 10px var(--space-slim) 10px var(--space-small);
+		border-top: var(--border-base) solid var(--color-border);
+		background: var(--color-surface--background--subtle);
 	}
 </style>

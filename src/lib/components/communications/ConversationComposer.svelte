@@ -1,4 +1,5 @@
 <script lang="ts">
+	import sendLaterIcon from '@tabler/icons/outline/clock.svg?raw';
 	import EmailSenderLabel from '$lib/components/communications/EmailSenderLabel.svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -635,6 +636,8 @@
 					open={sendLaterOpen}
 					anchor={sendLaterAnchor}
 					title="Send later"
+					icon={sendLaterIcon}
+					iconTone="conversation"
 					onClose={() => (sendLaterOpen = false)}
 				>
 					<div class="conversation-composer__send-later">

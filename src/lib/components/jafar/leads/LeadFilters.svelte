@@ -1,4 +1,8 @@
 <script lang="ts">
+	import chipCountryIcon from '@tabler/icons/outline/world.svg?raw';
+	import chipOwnerIcon from '@tabler/icons/outline/user.svg?raw';
+	import chipSourceIcon from '@tabler/icons/outline/route.svg?raw';
+	import chipStatusIcon from '@tabler/icons/outline/circle-dot.svg?raw';
 	import { untrack } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import FilterChip from '$lib/components/ui/FilterChip.svelte';
@@ -131,6 +135,7 @@
 		<FilterChipMulti
 			id="lead-filter-status"
 			label="Status"
+			icon={chipStatusIcon}
 			options={statusOptions}
 			values={filters.statuses}
 			onchange={(values) => onChange({ ...filters, statuses: values as LeadStatus[] })}
@@ -138,6 +143,7 @@
 		<FilterChipMulti
 			id="lead-filter-country"
 			label="Country"
+			icon={chipCountryIcon}
 			options={countryOptions}
 			values={filters.countries}
 			onchange={(values) => onChange({ ...filters, countries: values })}
@@ -145,6 +151,7 @@
 		<FilterChipMulti
 			id="lead-filter-source"
 			label="Source"
+			icon={chipSourceIcon}
 			options={sourceOptions}
 			values={filters.sources}
 			onchange={(values) => onChange({ ...filters, sources: values as LeadSource[] })}
@@ -153,6 +160,7 @@
 			<FilterChipMulti
 				id="lead-filter-owner"
 				label="Owner"
+				icon={chipOwnerIcon}
 				options={ownerOptions}
 				values={filters.owners}
 				onchange={(values) => onChange({ ...filters, owners: values })}
