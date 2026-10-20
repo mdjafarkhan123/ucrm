@@ -33,6 +33,7 @@
 | 21 Activity feed | collaboration/ActivityFeed (1b): with events, loading, nothing yet, couldn't load, dark | Approved `gZ6rR` 2026-10-20: A · Timeline (B Day log deleted). Look in `notes.md` → Activity feed. See § Batch 21; built, checked and merged 2026-10-20, proof `docs/evidence/2026-10-20-batch16-23/README.md` |
 | 22 Files on a message | communications/ConversationAttachments (1b): every state, text message, Chat with Uplift, dark | Approved `mZdBv` 2026-10-20: B · preview cards inside the message (A clean pills deleted). Look in `files.md` → Files on a message. See § Batch 22; built, checked and merged 2026-10-20, proof `docs/evidence/2026-10-20-batch16-23/README.md` |
 | 23 Jafar panel sign-in | jafar/JafarAuthCard (1b) and the four /jafar sign-in pages: every message state; 1440 light and dark | Approved `Y0A1Z` 2026-10-20: B · Split screen (A deleted). Look in `layout.md` → Sign-in screens. See § Batch 23; built, checked and merged 2026-10-20, proof `docs/evidence/2026-10-20-batch16-23/README.md` |
+| 24 Discount, tax and totals | layout/RailRow, work/RecordDiscountCard, work/RecordTaxCard, quotes/QuoteSummaryCard (1b): every state, both pop-ups, dark | Approved `qY4yb` A 2026-10-20 (refined rows, pink Total band; B money tiles not chosen). Looks in `cards.md` → Side card rows, Totals card. See § Batch 24 |
 | 25 First block on New forms | work/PrimaryInfoCard (1b) on New request, quote, invoice | Approved `U8RY1n` A 2026-10-20 (fact in the page header pill, like New job; B facts column not chosen). Look in `layout.md` → Create pages. See § Batch 25 |
 | 26 Marketing email preview | marketing/MarketingTemplatePreview, MarketingTemplatePreviewDialog (1b): Review step, loading, couldn't load, dark | Approved `l62Og` A 2026-10-20 (refined pop-up; B inbox line and device stage deleted). Look in `modals.md` → Email preview pop-up. See § Batch 26 |
 | 27 Channel menu and message settings | communications/ComposerChannelMenu, clients/CommunicationSettingsDialog (1b): every state, dark | Approved `DXj9z` A + A 2026-10-20 (B Send-by button and tick tiles deleted). Looks in `chips.md` → Channel pill, `modals.md` → Communication settings pop-up. See § Batch 27 |
@@ -85,13 +86,21 @@ Hand-off for the builder (restyle only; every control is live today):
 - Row 4 (line menu, "Throw away these changes?" with Keep editing / Throw them away, loading, couldn't load
   without Try again, invoice Service date box with ×, progress invoice Item total / Due this invoice) as drawn.
 
-## Batch 24 · Discount, tax and totals (drawing, waiting for Jafar)
+## Batch 24 Discount, tax and totals — approved 2026-10-20
 
-`layout/RailRow`, `work/RecordDiscountCard`, `work/RecordTaxCard` (and their pop-ups), `quotes/QuoteSummaryCard`.
-Board `qY4yb` in `concept.pen`, drawn 2026-10-20: A refined rows (grey-tiled rows, pink Total band, grey team-only
-panel with margin bar); B money tiles (two tap-to-edit tiles) plus the deep-green total card like New job's,
-and a tax pop-up with the five choices as radio tiles. Every state and dark mode drawn. Both options let the New
-quote form use the one Discount and tax card, like the quote page. Behaviour unchanged. Next: Jafar picks.
+Board `qY4yb`, A · refined rows (B money tiles and green total card deleted). Restyle only; same five tax
+choices, discount fields, instant saves, stale-save message and no-access words. Looks in `cards.md` → Side
+card rows, Totals card; pop-ups follow `modals.md` → Form pop-up. Hand-off for the builder:
+- `RailRow`: 32 tile (inactive; warning when waiting), label over value, optional sub line, amount at the right,
+  pencil. Discount row: "Loyalty · 5% off" with "−$218.00"; Tax row: "Sales tax 8%" over the source
+  ("From the property"), "$331.36". Not configured: warning tile and value, no pill.
+- New quote (and wherever the standalone cards appear) uses the one "Discount and tax" card with rows, like the
+  quote page; the standalone `RailCard` mode with "Add discount" / "Set tax" buttons retires.
+- `QuoteSummaryCard`: "Overview" with calculator tile; Total band in the record colour (invoice blue on
+  `InvoiceForm`); team-only panel with lock, profit green, margin bar.
+- Pop-ups: discount 440 wide (name, Percentage | Amount switch with icons, value; Remove discount at far left);
+  tax 400 (Tax select, custom name + Rate % in one row, reusable checkbox, info note strip). Save buttons get
+  the check icon.
 
 ## Batch 25 First block on New forms — approved 2026-10-20
 

@@ -24,6 +24,28 @@
   goes in the hint line ("3 tags · used to filter clients").
 - The header tile's colour is what the card is about: a record, or a part of the app (`colors.md`).
 
+## Side card rows (Discount and tax)
+
+Approved 2026-10-20, Pencil board "Batch 24 · Discount, tax and totals".
+- One row per setting inside a side card, edge to edge: padding 14 16, gap 12, a 1px `--color-border` line
+  above. A 32 tile (`--color-inactive`; `--color-warning` while it waits on a choice), the label 12/500 quiet
+  over the value 14/600 heading (an optional 12 quiet line under it), the amount 14/600 heading at the right,
+  then a 32 pencil icon button when it can be changed.
+- Nothing chosen: the value is quiet ("None added"); waiting on a choice: the value in `--color-warning--onSurface`
+  ("Not configured"). No pencil when it can't be changed; no access shows "No access to prices" quietly.
+- The card's header tile takes the record colour (quote pink, invoice blue).
+
+## Totals card
+
+- Side card with a calculator tile in the record colour ("Overview"); body padding 16, gap 12.
+- Lines: label 14/500 quiet, figure 14/600 heading, spread apart. Discount and tax lines show only when set.
+- Total band: record `--surface` fill with its `--surface-edge` 1px, radius 8, padding 12 14; "Total" 14/600
+  in the record `--onSurface`, the figure 24/700 heading (-0.4).
+- Team-only panel (cost, estimated profit, margin): `--color-surface--background`, 1px `--color-border`, radius
+  8, padding 12 14, gap 10; a 14 lock and "Only your team sees this" 12/600 quiet; profit in
+  `--color-success--onSurface`; a 6 high margin bar (`--color-border` track, `--color-success` fill).
+- No access: a 16 `eye-off` in `--color-informative` before the quiet sentence.
+
 ## Anatomy (stat card)
 
 1. Header: 32 tile + title 14/600 + quiet open icon (arrow-up-right) at the right.
