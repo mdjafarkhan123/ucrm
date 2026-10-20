@@ -58,7 +58,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `forms/QuantityInput` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
 | `quotes/CatalogItemPicker` | loading | ✅ Batch 10 `ZWTSi` | ✅ |
 | `quotes/PriceBookDrawer` | 🔁D pop-up · loading, empty, permission-limited, field-worker view | ✅ Batch 10 `ZWTSi` | ✅ |
-| `quotes/ProductsAndServicesBlock` | pop-ups: "Throw away these changes?" 🔁C · menus ×1 · empty, permission-limited, field-worker view | ⬜ | ⬜ |
+| `quotes/ProductsAndServicesBlock` | pop-ups: "Throw away these changes?" 🔁C · menus ×1 · empty, permission-limited, field-worker view | ✅ Batch 14 `vsT0H` 2026-10-20 | ⬜ |
 | `ui/RadioGroup` |  | ✅ Small controls `GbgcY` | ✅ |
 | `ui/TimezonePicker` |  | ✅ Pickers v2 `uSXlT` | ✅ |
 | `work/ClientPicker` | loading | ✅ | ✅ |

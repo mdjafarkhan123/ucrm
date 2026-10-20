@@ -310,6 +310,23 @@
 	--color-review: var(--color-base-yellow--600);
 	--color-review--surface: var(--color-base-yellow--200);
 	--color-review--onSurface: var(--color-base-yellow--800);
+	/* Icon tile hairline edge: the next palette step of each surface (Jafar, 2026-10-20). Dark mode keeps plain tiles. */
+	--color-critical--surface-edge: var(--color-base-red--300);
+	--color-warning--surface-edge: var(--color-base-yellow--300);
+	--color-success--surface-edge: var(--color-base-green--300);
+	--color-informative--surface-edge: var(--color-base-lightBlue--300);
+	--color-inactive--surface-edge: var(--color-base-blue--300);
+	--color-request--surface-edge: var(--color-base-orange--300);
+	--color-quote--surface-edge: var(--color-base-pink--300);
+	--color-job--surface-edge: var(--color-base-green--300);
+	--color-task--surface-edge: var(--color-base-blue--300);
+	--color-invoice--surface-edge: var(--color-base-lightBlue--300);
+	--color-event--surface-edge: var(--color-base-yellow--300);
+	--color-client--surface-edge: var(--color-base-taupe--300);
+	--color-conversation--surface-edge: var(--color-base-teal--300);
+	--color-growth--surface-edge: var(--color-base-purple--300);
+	--color-review--surface-edge: var(--color-base-yellow--300);
+	--color-time--surface-edge: var(--color-indigo--lighter);
 	--color-feature--start: var(--color-base-green--800);
 	--color-feature--end: var(--color-base-green--700);
 	--color-feature--text: var(--color-white);
@@ -504,6 +521,22 @@
 		--color-review: var(--color-base-yellow--400);
 		--color-review--surface: var(--color-base-yellow--700);
 		--color-review--onSurface: var(--color-base-yellow--200);
+		--color-critical--surface-edge: var(--color-critical--surface);
+		--color-warning--surface-edge: var(--color-warning--surface);
+		--color-success--surface-edge: var(--color-success--surface);
+		--color-informative--surface-edge: var(--color-informative--surface);
+		--color-inactive--surface-edge: var(--color-inactive--surface);
+		--color-request--surface-edge: var(--color-request--surface);
+		--color-quote--surface-edge: var(--color-quote--surface);
+		--color-job--surface-edge: var(--color-job--surface);
+		--color-task--surface-edge: var(--color-task--surface);
+		--color-invoice--surface-edge: var(--color-invoice--surface);
+		--color-event--surface-edge: var(--color-event--surface);
+		--color-client--surface-edge: var(--color-client--surface);
+		--color-conversation--surface-edge: var(--color-conversation--surface);
+		--color-growth--surface-edge: var(--color-growth--surface);
+		--color-review--surface-edge: var(--color-review--surface);
+		--color-time--surface-edge: var(--color-time--surface);
 		--shadow-low:
 			0px var(--space-minuscule) var(--space-smallest) #00000026,
 			0px 0px var(--space-smallest) #00000040;

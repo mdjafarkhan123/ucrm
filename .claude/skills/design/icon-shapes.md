@@ -5,6 +5,8 @@
 ## Core Specs
 
 - A tile is a rounded square: background `--color-<meaning>--surface`, icon `--color-<meaning>`.
+- Hairline edge, so a tile never fades into a white card: a 1px `--color-<meaning>--surface-edge` border
+  (the next palette step). In dark mode the edge token falls back to the tile colour.
 - Icons: Tabler in code, the Lucide icon with the same meaning in Pencil; icon is half the tile size.
 
 ## Sizes
