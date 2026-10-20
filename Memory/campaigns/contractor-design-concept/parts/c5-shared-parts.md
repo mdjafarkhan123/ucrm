@@ -24,6 +24,7 @@
 | 12 Time clock | RunningClock, TimerElapsed, TimerRunningElsewhere (1b), WorkTimerControl (1b) | Approved `ooCwt` 2026-10-20 as a mix: Clock B (indigo capsule, breathing ring), Start/Stop A with B's indigo icons, Timer panel B, Running now B, visit row C (indigo-edged clock joined to a normal Stop timer, same height); look in `time-clock.md`; built by Codex, finished, verified and merged by Claude 2026-10-20; proof `docs/evidence/2026-10-20-batch12/README.md` |
 | 13 Record page frame | TabPanel, RecordDetailLayout, DetailEditBar, ClientTagSelect (🔁 Tag picker); shared header WorkRecordHeader, RecordFactsList, LifecycleTrack (1b) | Approved `eHJn1` 2026-10-20: tabs B (band along the header card's foot), save bar A (white, like New job), opening-tab states, client tags and dark mode as drawn. Header: Jafar rejected the first shared-header drawing (it only redrew today's app, skipping the guide's options rule) and chose ONE header part for all six record pages, client included (today `clients/ClientDetailHeader` is separate from `work/WorkRecordHeader`). Options board `xrJ3f` 2026-10-20: A refined today, B highlights row, C coloured top, D next step panel, C approved 2026-10-20 (see § Batch 13 record header); fold the client header into the shared part when building |
 | 14 Products and services | ProductsAndServicesBlock (states only; saved view `tNdkX` and edit `jFBRB` already approved) | Approved `vsT0H` 2026-10-20: B for all three rows (Empty B two choice tiles, Field worker B crew work list, Quote extras B grouped and signposted), row 4 shared parts as drawn, light and dark. See § Batch 14 |
+| 15 Notes panel | collaboration/NotesPanel (1b): note field, pinned note, note menu, changes waiting for Save, every state | Approved `l9ZBWI` A 2026-10-20 (refined live; B write-at-top with pinned shelf not chosen). Look in `notes.md` → Notes panel. See § Batch 15 |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 
@@ -71,6 +72,28 @@ Hand-off for the builder (restyle only; every control is live today):
 - New foot strips use `--color-surface--background`. Lock icons on invoice strips use the invoice colour.
 - Row 4 (line menu, "Throw away these changes?" with Keep editing / Throw them away, loading, couldn't load
   without Try again, invoice Service date box with ×, progress invoice Item total / Due this invoice) as drawn.
+
+## Batch 15 Notes panel — approved 2026-10-20
+
+Board `l9ZBWI`, A. Restyle of the compact panel only; every control and the staged-save flow are live today.
+Hand-off for the builder:
+- Field stays at the card's foot under a hairline: `--color-surface--background--subtle`, 1px border, radius 8,
+  padding 4 4 4 12; 14 text; a 32 send square, `--color-interactive` with a white arrow when there is text,
+  `--color-inactive--surface` when empty. Focus: 1.5px `--color-interactive` edge on `--color-surface`.
+- Notes are the approved bands (`notes.md`), 10 apart, the ⋯ as a 28 quiet icon button at the top right. A pinned
+  band is `--color-warning--surface` with a 1px `--color-warning--surface-edge` and a 16 `pin` in `--color-warning`
+  before the ⋯.
+- Menu as the line menu: 184 wide; Pin/Unpin, Edit, divider, Delete in `--color-critical`.
+- Waiting for Save: a status line under the note text (14 icon + 12/600): new note "Not saved yet"
+  (`clock`, warning) with a quiet Remove at the right, the band white with a 1px `--color-warning` edge; edited
+  note "Edit waiting for Save"; deleted note faded (avatar and author at 50%, text struck in secondary)
+  with "Deleted when you save" (`trash`, critical) and a small secondary Undo. Replaces the "Unsaved" and
+  "Not saved yet" badges.
+- Editing: the field replaces the text inside the band (1.5px interactive edge), small Cancel (secondary) and
+  Done (main) at the right.
+- Loading: three note-shaped bones. Empty and can write: "No notes yet" 13/600 + one 12 hint line over the field.
+  Empty and view only: a 32 inactive tile and "No notes yet". Couldn't load: 32 critical tile, title, one line,
+  small secondary Try again (refetches). View only: no field, no ⋯ (⋯ only on notes the person may change).
 
 ## Batch 13 record header decisions (Jafar, 2026-10-20)
 
