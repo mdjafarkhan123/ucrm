@@ -39,6 +39,13 @@
   tags may change a tag's colour from the list's "⋯" menu; colour changes everywhere. Pick-only people see no
   "⋯". Replaces the random `colorForId` colours and the grey `quiet` look.
 
+## Batch 13 record header decisions (Jafar, 2026-10-20)
+
+- One header part for all six record pages, client included.
+- No call / text / email (or call / directions) icon buttons in the header: Jobber does not show them that way.
+  The phone, email and address stay as plain text. Building removes `work/QuickContactButtons` from the
+  record headers; the client page keeps Message and Request a review.
+
 ## Batch 10 new behaviour (Jafar, 2026-10-20)
 
 - Search list: items with a photo show as picture cards before the rows of their group.
