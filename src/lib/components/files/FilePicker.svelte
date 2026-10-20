@@ -9,6 +9,14 @@
 	import ListLoadMore from '$lib/components/data-display/ListLoadMore.svelte';
 	import FileThumb from './FileThumb.svelte';
 	import FileUploader from './FileUploader.svelte';
+	import paperclipIcon from '@tabler/icons/outline/paperclip.svg?raw';
+	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
+	import photoIcon from '@tabler/icons/outline/photo.svg?raw';
+	import documentIcon from '@tabler/icons/outline/file-text.svg?raw';
+	import clientIcon from '@tabler/icons/outline/user.svg?raw';
+	import recordIcon from '@tabler/icons/outline/folder.svg?raw';
+	import xIcon from '@tabler/icons/outline/x.svg?raw';
+	import shieldIcon from '@tabler/icons/outline/shield-check.svg?raw';
 	import filesIcon from '@tabler/icons/outline/files.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import uploadIcon from '@tabler/icons/outline/upload.svg?raw';
@@ -143,6 +151,10 @@
 	let search = $state('');
 	let debouncedSearch = $state('');
 	let selected = $state<string[]>([]);
+	let selectedRecords = $state<Record<string, FileListItem>>({});
+	const pickedFiles = $derived(
+		selected.map((id) => selectedRecords[id]).filter((file): file is FileListItem => Boolean(file))
+	);
 	let attaching = $state(false);
 	let attachError = $state('');
 	let refusals = $state<{ file_id: string; reason: string }[]>([]);
@@ -177,7 +189,7 @@
 		entityId
 	});
 	const attachedQuery = createQuery(() => ({
-		queryKey: filesListKey(attachedFilters),
+		queryKey: [...filesListKey(attachedFilters), 'attached-lookup'],
 		queryFn: () => fetchFiles(attachedFilters),
 		enabled: open && mode === 'attach' && Boolean(entityType && entityId)
 	}));
@@ -193,10 +205,18 @@
 	const alreadyAttached = $derived(
 		new Set((attachedQuery.data?.files ?? []).map((file) => file.id))
 	);
+	const recordTone = $derived(
+		entityType && ['job', 'visit', 'quote', 'invoice', 'request', 'client'].includes(entityType)
+			? entityType === 'visit'
+				? 'job'
+				: entityType
+			: 'inactive'
+	);
 	const isSearching = $derived(debouncedSearch.length > 0);
 
 	function toggle(file: FileListItem) {
-		if (alreadyAttached.has(file.id)) return;
+		if (attaching || alreadyAttached.has(file.id)) return;
+		selectedRecords[file.id] = file;
 		selected = selected.includes(file.id)
 			? selected.filter((id) => id !== file.id)
 			: [...selected, file.id];
@@ -205,7 +225,7 @@
 	async function submit() {
 		if (attaching || selected.length === 0) return;
 		if (mode === 'select') {
-			const picked = files.filter((file) => selected.includes(file.id));
+			const picked = pickedFiles;
 			onSelected?.(picked);
 			selected = [];
 			onClose();
@@ -260,6 +280,8 @@
 	}
 
 	function handleClose() {
+		if (attaching) return;
+		selectedRecords = {};
 		selected = [];
 		attachError = '';
 		refusals = [];
@@ -272,17 +294,49 @@
 <Dialog
 	{open}
 	title={mode === 'select' ? 'Attach a file' : 'Add files'}
+	icon={paperclipIcon}
+	iconTone="inactive"
+	subtitle={recordLabel || undefined}
 	size="large"
 	onClose={handleClose}
 >
-	{#if refused}
-		<EmptyState
-			icon={lockIcon}
-			title="You do not have access to the file library"
-			description="You can still upload a file straight to this record. Ask an owner or admin if you need to pick from the whole library."
-		/>
-	{:else}
-		<div class="file-picker">
+	<div class="file-picker">
+		<nav class="file-picker__sections" aria-label="Where to look">
+			{#each sections as item (item.id)}
+				{#if item.id === 'record'}<span class="file-picker__section-heading">On this record</span
+					>{/if}
+				{#if item.id === 'recent'}<span class="file-picker__section-heading">Library</span>{/if}
+				<button
+					type="button"
+					class="file-picker__section"
+					class:file-picker__section--active={sectionId === item.id}
+					aria-current={sectionId === item.id ? 'true' : undefined}
+					onclick={() => (sectionId = item.id)}
+				>
+					<span
+						class="file-picker__place-icon"
+						class:file-picker__place-icon--client={item.id === 'client'}
+						style:background={item.id === 'record'
+							? `var(--color-${recordTone}--surface)`
+							: undefined}
+						style:color={item.id === 'record' ? `var(--color-${recordTone})` : undefined}
+						aria-hidden="true"
+						>{@html item.id === 'client'
+							? clientIcon
+							: item.id === 'record'
+								? recordIcon
+								: item.id === 'recent'
+									? clockIcon
+									: item.id === 'photos'
+										? photoIcon
+										: item.id === 'documents'
+											? documentIcon
+											: filesIcon}</span
+					>{item.label || 'On this record'}
+				</button>
+			{/each}
+		</nav>
+		<div class="file-picker__content">
 			<div class="file-picker__toolbar">
 				<div class="file-picker__search">
 					<SearchInput
@@ -308,20 +362,6 @@
 				{/if}
 			</div>
 
-			<nav class="file-picker__sections" aria-label="Where to look">
-				{#each sections as item (item.id)}
-					<button
-						type="button"
-						class="file-picker__section"
-						class:file-picker__section--active={sectionId === item.id}
-						aria-current={sectionId === item.id ? 'true' : undefined}
-						onclick={() => (sectionId = item.id)}
-					>
-						{item.label}
-					</button>
-				{/each}
-			</nav>
-
 			{#if canUpload}
 				<FileUploader
 					bind:this={uploader}
@@ -331,6 +371,7 @@
 				/>
 				{#if uploadedHere > 0}
 					<p class="file-picker__note">
+						<span aria-hidden="true">{@html shieldIcon}</span>
 						{uploadedHere === 1 ? 'That file is' : 'Those files are'} in your library now. As soon as
 						the safety check finishes {uploadedHere === 1 ? 'it' : 'they'} can be ticked here and added
 						to this record.
@@ -338,7 +379,12 @@
 				{/if}
 			{/if}
 
-			{#if filesQuery.isPending}
+			{#if refused}<EmptyState
+					icon={lockIcon}
+					title="You do not have access to the file library"
+					description="You can still upload a file straight to this record. Ask an owner or admin if you need to pick from the whole library."
+				/>
+			{:else if filesQuery.isPending}
 				<LoadingSkeleton variant="card" label="Loading files" rows={3} />
 			{:else if filesQuery.isError}
 				<ErrorState
@@ -380,9 +426,14 @@
 										hasThumbnail={file.has_thumbnail}
 										signedSrc={file.thumb_url}
 									/>
-									{#if added || picked}
-										<span class="file-picker__mark" aria-hidden="true">{@html checkIcon}</span>
-									{/if}
+									{#if added}<span class="file-picker__already"
+											><span>{@html checkIcon}Already added</span></span
+										>{:else}<span
+											class="file-picker__mark"
+											class:file-picker__mark--picked={picked}
+											aria-hidden="true"
+											>{#if picked}{@html checkIcon}{/if}</span
+										>{/if}
 								</span>
 								<span class="file-picker__tile-name">{file.display_name}</span>
 								<span class="file-picker__tile-meta">
@@ -414,19 +465,40 @@
 			{#each refusals as refusal (refusal.file_id)}
 				<p class="file-picker__error" role="alert">{refusal.reason}</p>
 			{/each}
-
-			<div class="file-picker__actions">
-				<Button variant="secondary" variation="subtle" onclick={handleClose}>Cancel</Button>
-				<Button loading={attaching} disabled={selected.length === 0} onclick={submit}>
-					{#if mode === 'select'}
-						{selected.length <= 1 ? 'Attach file' : `Attach ${selected.length} files`}
-					{:else}
-						{selected.length <= 1 ? 'Add file' : `Add ${selected.length} files`}
-					{/if}
-				</Button>
-			</div>
 		</div>
-	{/if}
+	</div>
+	{#snippet footer()}
+		<div class="file-picker__footer">
+			<div class="file-picker__tray">
+				<strong>{selected.length} picked</strong>{#each pickedFiles as file (file.id)}<div
+						class="file-picker__picked"
+					>
+						<FileThumb
+							fileId={file.id}
+							displayName={file.display_name}
+							mimeType={file.mime_type}
+							kind={file.kind}
+							processingState={file.processing_state}
+							hasThumbnail={file.has_thumbnail}
+							signedSrc={file.thumb_url}
+							size="row"
+						/><button
+							type="button"
+							aria-label={`Unpick ${file.display_name}`}
+							disabled={attaching}
+							onclick={() => (selected = selected.filter((id) => id !== file.id))}
+							>{@html xIcon}</button
+						>
+					</div>{/each}
+			</div>
+			<Button variant="secondary" disabled={attaching} onclick={handleClose}>Cancel</Button>
+			<Button loading={attaching} disabled={selected.length === 0} onclick={submit}
+				>{@html checkIcon}{mode === 'select' ? 'Attach' : 'Add'}
+				{selected.length || ''}
+				{selected.length === 1 ? 'file' : 'files'}</Button
+			>
+		</div>
+	{/snippet}
 </Dialog>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
@@ -581,16 +653,244 @@
 		color: var(--color-critical);
 		font-size: var(--typography--fontSize-small);
 	}
-	.file-picker__actions {
-		display: flex;
-		justify-content: flex-end;
-		gap: var(--space-small);
-	}
 
 	@media (max-width: 767px) {
 		.file-picker__grid {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 			max-height: none;
 		}
+	}
+
+	.file-picker {
+		display: grid;
+		grid-template-columns: 220px minmax(0, 1fr);
+		gap: 0;
+		margin: calc(-1 * var(--space-medium));
+	}
+	.file-picker__sections {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		overflow-x: hidden;
+		background: var(--color-surface--background--subtle);
+		border-right: var(--border-base) solid var(--color-border);
+		padding: var(--space-base) var(--space-slim);
+	}
+	.file-picker__section-heading {
+		padding: var(--space-small) var(--space-small) 6px;
+		font-size: var(--typography--fontSize-overline);
+		font-weight: 600;
+		letter-spacing: 0.6px;
+		text-transform: uppercase;
+		color: var(--color-text--secondary);
+	}
+	.file-picker__section {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		height: 40px;
+		border: var(--border-base) solid transparent;
+		border-radius: var(--radius-base);
+		padding: 0 var(--space-small);
+		background: transparent;
+		color: var(--color-text);
+		font-size: var(--typography--fontSize-base);
+		font-weight: 500;
+		text-align: left;
+		white-space: normal;
+	}
+	.file-picker__section--active {
+		background: var(--color-surface);
+		border-color: var(--color-border--interactive);
+		box-shadow: var(--shadow-button);
+		font-weight: 600;
+		color: var(--color-heading);
+	}
+	.file-picker__place-icon {
+		display: grid;
+		place-items: center;
+		width: 24px;
+		height: 24px;
+		flex-shrink: 0;
+		border-radius: var(--radius-tile-small);
+		background: var(--color-inactive--surface);
+		color: var(--color-inactive);
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+		}
+	}
+	.file-picker__place-icon--client {
+		background: var(--color-client--surface);
+		color: var(--color-client);
+	}
+	.file-picker__content {
+		padding: var(--space-medium);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-base);
+		min-width: 0;
+	}
+	.file-picker__grid {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: var(--space-slim);
+		max-height: none;
+		padding: 0;
+	}
+	.file-picker__tile {
+		border: 0;
+		padding: 0;
+		gap: var(--space-small);
+		background: transparent;
+	}
+	.file-picker__tile--picked {
+		box-shadow: none;
+	}
+	.file-picker__tile--picked .file-picker__tile-thumb {
+		box-shadow: 0 0 0 2px var(--color-interactive);
+		border-radius: var(--radius-base);
+	}
+	.file-picker__tile-thumb {
+		width: 100%;
+		height: 128px;
+		:global(.file-thumb) {
+			width: 100%;
+			height: 100%;
+			aspect-ratio: auto;
+		}
+	}
+	.file-picker__mark {
+		left: var(--space-small);
+		right: auto;
+		top: var(--space-small);
+		border-radius: var(--radius-tile-small);
+		border: 1.5px solid var(--color-border--interactive);
+		background: var(--color-surface);
+		color: var(--color-text--reverse);
+		box-sizing: border-box;
+	}
+	.file-picker__mark--picked {
+		background: var(--color-interactive);
+		border-color: var(--color-interactive);
+	}
+	.file-picker__already {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		background: color-mix(in srgb, var(--color-surface) 72%, transparent);
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+			color: var(--color-success);
+		}
+	}
+	.file-picker__tile-name {
+		max-width: 100%;
+		font-size: var(--typography--fontSize-label);
+	}
+	.file-picker__tile-meta {
+		font-size: var(--typography--fontSize-small);
+	}
+	.file-picker__note {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+		font-size: var(--typography--fontSize-label);
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+			flex-shrink: 0;
+			color: var(--color-informative);
+		}
+	}
+	.file-picker__footer {
+		display: flex;
+		align-items: center;
+		gap: var(--space-slim);
+		width: 100%;
+	}
+	.file-picker__tray {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+		flex: 1;
+		min-width: 0;
+		flex-wrap: wrap;
+		strong {
+			font-size: var(--typography--fontSize-label);
+			font-weight: 600;
+			color: var(--color-heading);
+			white-space: nowrap;
+		}
+	}
+	.file-picker__picked {
+		position: relative;
+		button {
+			display: grid;
+			place-items: center;
+			position: absolute;
+			top: -5px;
+			right: -5px;
+			width: 18px;
+			height: 18px;
+			padding: 0;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-circle);
+			background: var(--color-surface);
+			color: var(--color-icon);
+			cursor: pointer;
+			:global(svg) {
+				width: 10px;
+				height: 10px;
+			}
+		}
+		button:hover {
+			background: var(--color-surface--hover);
+		}
+		button:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
+	}
+	@media (max-width: 767px) {
+		.file-picker {
+			grid-template-columns: 1fr;
+		}
+		.file-picker__sections {
+			flex-direction: row;
+			overflow-x: auto;
+			border-right: 0;
+			border-bottom: var(--border-base) solid var(--color-border);
+		}
+		.file-picker__section-heading {
+			display: none;
+		}
+		.file-picker__section {
+			white-space: nowrap;
+		}
+		.file-picker__grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+		.file-picker__footer {
+			flex-wrap: wrap;
+		}
+		.file-picker__tray {
+			flex-basis: 100%;
+		}
+	}
+	.file-picker__already > span {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		padding: var(--space-smaller) 10px;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-circle);
+		background: var(--color-surface);
 	}
 </style>

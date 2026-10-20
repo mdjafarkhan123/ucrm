@@ -7,6 +7,7 @@
 	let {
 		open,
 		title,
+		subtitle,
 		size = 'default',
 		initialFocusId,
 		icon,
@@ -17,6 +18,7 @@
 	}: {
 		open: boolean;
 		title: string;
+		subtitle?: string;
 		size?: 'default' | 'small' | 'medium' | 'large';
 		initialFocusId?: string;
 		/** A Tabler icon (raw SVG) on a tile before the title. */
@@ -48,7 +50,7 @@
 				target.focus();
 			}}
 		>
-			<DialogHeader {title} {icon} tone={iconTone} />
+			<DialogHeader {title} {subtitle} {icon} tone={iconTone} />
 			<div class="dialog__body">
 				{@render children()}
 			</div>

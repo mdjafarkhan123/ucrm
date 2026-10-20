@@ -8,6 +8,9 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import TagSelect from '$lib/components/ui/TagSelect.svelte';
+	import tagIcon from '@tabler/icons/outline/tag.svg?raw';
+	import tagsIcon from '@tabler/icons/outline/tags.svg?raw';
+	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 	import {
@@ -114,6 +117,8 @@
 <Dialog
 	{open}
 	title="Photo labels"
+	icon={tagIcon}
+	iconTone="inactive"
 	size="small"
 	initialFocusId={`${uid}-new`}
 	onClose={() => {
@@ -140,12 +145,13 @@
 				placeholder="e.g. Kitchen"
 				maxlength={40}
 				bind:value={newName}
+				disabled={busy}
 			/>
 			<Button
 				type="submit"
 				size="small"
 				loading={busy && !editingId && !removing}
-				disabled={!newName.trim()}>Add</Button
+				disabled={busy || !newName.trim()}>{@html plusIcon}Add</Button
 			>
 		</form>
 
@@ -159,7 +165,11 @@
 				retry={() => labelsQuery.refetch()}
 			/>
 		{:else if labels.length === 0}
-			<p class="file-labels__empty">No labels yet. Add your first one above.</p>
+			<div class="file-labels__empty">
+				<span aria-hidden="true">{@html tagsIcon}</span><strong>No labels yet</strong><span
+					>Add your first one above.</span
+				>
+			</div>
 		{:else}
 			<ul class="file-labels__list">
 				{#each labels as label (label.id)}
@@ -179,12 +189,14 @@
 									label={`Rename ${label.name}`}
 									maxlength={40}
 									bind:value={editName}
+									disabled={busy}
 								/>
 								<div class="file-labels__edit-actions">
 									<Button
 										variant="secondary"
 										variation="subtle"
 										size="small"
+										disabled={busy}
 										onclick={() => (editingId = null)}>Cancel</Button
 									>
 									<Button type="submit" size="small" loading={busy} disabled={!editName.trim()}
@@ -207,6 +219,7 @@
 								size="small"
 								iconOnly
 								label={`Rename ${label.name}`}
+								disabled={busy}
 								onclick={() => startEdit(label)}
 							>
 								{@html pencilIcon}
@@ -217,6 +230,7 @@
 								variation="destructive"
 								iconOnly
 								label={`Remove ${label.name}`}
+								disabled={busy}
 								onclick={() => {
 									error = '';
 									removing = label;
@@ -235,7 +249,8 @@
 {#if removing}
 	<ConfirmDialog
 		open={Boolean(removing)}
-		title={`Remove the "${removing.name}" label?`}
+		title="Remove label"
+		icon={trashIcon}
 		confirmLabel="Remove label"
 		destructive
 		loading={busy}
@@ -317,6 +332,33 @@
 			display: flex;
 			justify-content: flex-end;
 			gap: var(--space-small);
+		}
+	}
+
+	.file-labels__intro {
+		font-size: var(--typography--fontSize-base);
+		line-height: 1.5;
+	}
+	.file-labels__row {
+		padding: 10px 0;
+		gap: 6px;
+	}
+	.file-labels__empty {
+		display: grid;
+		justify-items: center;
+		gap: var(--space-small);
+		padding: var(--space-large);
+		background: var(--color-surface--background--subtle);
+		border: 1.5px dashed var(--color-border--interactive--hover);
+		border-radius: var(--radius-base);
+		strong {
+			font-size: var(--typography--fontSize-label);
+			color: var(--color-heading);
+		}
+		:global(svg) {
+			width: 22px;
+			height: 22px;
+			color: var(--color-icon--secondary);
 		}
 	}
 </style>
