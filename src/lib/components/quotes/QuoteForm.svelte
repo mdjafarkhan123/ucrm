@@ -493,6 +493,7 @@
 
 			<FormNotesCard
 				id="quote-initial-note"
+				recordNoun="quote"
 				bind:value={form.initial_note}
 				error={fieldErrors.initial_note ?? ''}
 			/>

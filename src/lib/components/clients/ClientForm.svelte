@@ -588,6 +588,7 @@
 			{#if !isEdit}
 				<FormNotesCard
 					id="client-initial-note"
+					recordNoun="client"
 					bind:value={form.initial_note}
 					error={fieldErrors.initial_note ?? ''}
 				/>
