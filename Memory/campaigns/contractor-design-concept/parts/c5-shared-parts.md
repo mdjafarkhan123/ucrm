@@ -61,7 +61,13 @@ Jafar picked **option C (coloured top)** on board `xrJ3f`, with two changes stil
 **Progress 2026-10-20 (session 2):** change 1 drawn on all six C headers (record info line removed, status
 pill beside the tile). Jobber header facts gathered from saved notes (`.claude/skills/jobber/jobber-08-screen-patterns.md`,
 `jobber-05` payment details, `Design/Jobber Jobs/2026-08-31/17-one-off-detail-top.png`) plus a live look at the
-client and a recurring job; a test request was made and deleted. Facts proposal waiting for Jafar's answer.
+client and a recurring job; a test request was made and deleted. Jafar said yes to the facts (2026-10-20):
+Client: Main phone · Main email · Payment terms · Lead source. Request: Requested · Assessment · Service ·
+Came from. Quote: Quote # · Created · Sent · Approved/Declined (honest "Waiting for an answer"). Job: Job # ·
+Type · Dates (start → end; recurring shows its repeat) · Invoicing (`billing_timing`). Invoice: Invoice # ·
+Issued · Due · Payment terms. Payment: Paid on · Method · Reference # · For invoice #. Drawn on `xrJ3f`
+(renamed "Record header · C"); A, B, D deleted; dark column added. Waiting for Jafar's yes on the board,
+then a Ctrl+S save and commit of `concept.pen`.
 
 First check `concept.pen` is saved with the quick-contact buttons gone from `xrJ3f` (removed after the 09:46 save); if the file is newer than commit `70e32402`, commit it.
 
