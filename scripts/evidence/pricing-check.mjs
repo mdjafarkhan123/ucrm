@@ -5,9 +5,10 @@ const origin = 'http://localhost:5191';
 const out = process.argv[2];
 const theme = process.argv[3] ?? 'light';
 const only = process.argv[4];
+const role = process.argv[5] ?? 'Contractor owner';
 await mkdir(out, { recursive: true });
 const login = await readFile('/home/jafar/Ucrm/Login.md', 'utf8');
-const [, email, password] = login.match(/Contractor owner: `([^`]+)` \/\s*`([^`]+)`/);
+const [, email, password] = login.match(new RegExp(`${role}: ` + '`([^`]+)` \\/\\s*`([^`]+)`'));
 
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
@@ -24,7 +25,9 @@ await page.waitForURL((u) => !u.pathname.startsWith('/login'), { timeout: 30000 
 
 const card = () =>
 	page
-		.locator('section', { has: page.getByRole('heading', { name: 'Products and services', exact: true }) })
+		.locator('section.section-block.pricing-block--concept', {
+			has: page.getByRole('heading', { name: 'Products and services', exact: true })
+		})
 		.first();
 async function shot(name) {
 	const c = card();
@@ -39,7 +42,9 @@ async function firstLink(list, prefix) {
 	const uuidLink = `a[href^="/${prefix}/"]`;
 	await page.locator(uuidLink).first().waitFor({ timeout: 30000 });
 	await page.waitForTimeout(1500);
-	const hrefs = await page.locator(uuidLink).evaluateAll((as) => as.map((a) => a.getAttribute('href')));
+	const hrefs = await page
+		.locator(uuidLink)
+		.evaluateAll((as) => as.map((a) => a.getAttribute('href')));
 	const href = hrefs.find((h) => /\/[0-9a-f]{8}-[0-9a-f]{4}-/.test(h));
 	return origin + href;
 }
@@ -68,7 +73,11 @@ if (want('job')) {
 	await shot('job-empty');
 	await rewrite(jobApi, (b) => {
 		b.can_see_price = false;
-		b.lines = (b.lines ?? []).map((l) => ({ ...l, unit_price_minor: null, line_total_minor: null }));
+		b.lines = (b.lines ?? []).map((l) => ({
+			...l,
+			unit_price_minor: null,
+			line_total_minor: null
+		}));
 	});
 	await page.goto(jobUrl);
 	await shot('job-crew');
@@ -82,9 +91,20 @@ if (want('quote')) {
 	const build = (b, locked) => {
 		const t = b.lines?.[0];
 		if (!t) return;
-		const mk = (i, o) => ({ ...t, id: `00000000-0000-4000-8000-0000000000${10 + i}`, position: i, ...o });
+		const mk = (i, o) => ({
+			...t,
+			id: `00000000-0000-4000-8000-0000000000${10 + i}`,
+			position: i,
+			image_file_id: null,
+			...o
+		});
 		b.lines = [
-			mk(0, { line_kind: 'heading', name: 'Kitchen', description: null, selection_kind: 'required' }),
+			mk(0, {
+				line_kind: 'heading',
+				name: 'Kitchen',
+				description: null,
+				selection_kind: 'required'
+			}),
 			mk(1, { line_kind: 'priced', selection_kind: 'required' }),
 			mk(2, {
 				line_kind: 'text',
@@ -93,7 +113,12 @@ if (want('quote')) {
 				selection_kind: 'required',
 				image_file_id: null
 			}),
-			mk(3, { line_kind: 'heading', name: 'Extras you can add', description: null, selection_kind: 'required' }),
+			mk(3, {
+				line_kind: 'heading',
+				name: 'Extras you can add',
+				description: null,
+				selection_kind: 'required'
+			}),
 			mk(4, {
 				line_kind: 'priced',
 				name: 'Under-cabinet lights',
@@ -124,16 +149,25 @@ if (want('quote')) {
 	// Line menu and the discard question, on the first quote that can be edited.
 	await page.goto(`${origin}/quotes`);
 	await page.waitForTimeout(2500);
-	const quoteLinks = await page.locator('a[href^="/quotes/"]').evaluateAll((as) =>
-		[...new Set(as.map((a) => a.getAttribute('href')))].filter((h) => /\/[0-9a-f]{8}-[0-9a-f]{4}-/.test(h)).slice(0, 15)
-	);
+	const quoteLinks = await page
+		.locator('a[href^="/quotes/"]')
+		.evaluateAll((as) =>
+			[...new Set(as.map((a) => a.getAttribute('href')))]
+				.filter((h) => /\/[0-9a-f]{8}-[0-9a-f]{4}-/.test(h))
+				.slice(0, 15)
+		);
 	const pencil = page.getByRole('button', { name: 'Edit products and services' });
 	let editable = false;
 	for (const href of quoteLinks) {
 		await page.goto(origin + href);
-		await card().waitFor({ timeout: 20000 }).catch(() => {});
+		await card()
+			.waitFor({ timeout: 20000 })
+			.catch(() => {});
 		await page.waitForTimeout(800);
-		if (await pencil.isVisible().catch(() => false)) { editable = true; break; }
+		if (await pencil.isVisible().catch(() => false)) {
+			editable = true;
+			break;
+		}
 	}
 	if (editable) {
 		await pencil.click();
@@ -161,14 +195,22 @@ if (want('quote')) {
 // --- Invoices: progress, service date on a line ------------------------------------------------------
 if (want('invoice')) {
 	await page.goto(`${origin}/invoices/e2171d67-d2d3-4a30-b26b-3899cbff0db8`);
-	await shot('invoice-progress').catch((e) => console.log('progress invoice not visible', e.message));
-	const ids = ['8b560f3e-e1f7-41cb-a316-8cf3c91f71af', 'b326b539-797f-46ba-a4d2-fe115faf4d38', 'cd5ad6f6-4285-40ec-8dd9-a6510b9298b6'];
+	await shot('invoice-progress').catch((e) =>
+		console.log('progress invoice not visible', e.message)
+	);
+	const ids = [
+		'8b560f3e-e1f7-41cb-a316-8cf3c91f71af',
+		'b326b539-797f-46ba-a4d2-fe115faf4d38',
+		'cd5ad6f6-4285-40ec-8dd9-a6510b9298b6'
+	];
 	for (const id of ids) {
 		await rewrite(`${origin}/api/invoices/${id}`, (body) => {
 			body.lines = (body.lines ?? []).map((l) => ({ ...l, service_date: '2026-10-14' }));
 		});
 		await page.goto(`${origin}/invoices/${id}`);
-		await card().waitFor({ timeout: 20000 }).catch(() => {});
+		await card()
+			.waitFor({ timeout: 20000 })
+			.catch(() => {});
 		await page.waitForTimeout(1000);
 		const pencil = page.getByRole('button', { name: 'Edit products and services' });
 		if (!(await pencil.isVisible().catch(() => false))) continue;
@@ -203,10 +245,20 @@ if (want('request')) {
 }
 
 if (want('forms')) {
-	for (const kind of ['quotes', 'requests', 'invoices']) {
+	for (const kind of ['quotes', 'requests', 'invoices', 'jobs']) {
 		await page.goto(`${origin}/${kind}/new`);
 		await page.waitForTimeout(2500);
-		await shot(`new-${kind}`).catch((e) => console.log('no block on', kind, e.message.split('\n')[0]));
+		await shot(`new-${kind}`).catch((e) =>
+			console.log('no block on', kind, e.message.split('\n')[0])
+		);
+		if (kind === 'quotes') {
+			await page.setViewportSize({ width: 390, height: 844 });
+			await shot('new-quotes-mobile');
+			await card().getByRole('button', { name: 'Add a line item' }).click();
+			await card().locator('[id^="pricing-name-"]').first().waitFor();
+			await shot('new-quotes-line-mobile');
+			await page.setViewportSize({ width: 1440, height: 1000 });
+		}
 	}
 }
 

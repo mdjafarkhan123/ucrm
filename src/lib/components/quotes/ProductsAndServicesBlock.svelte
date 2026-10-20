@@ -1025,6 +1025,34 @@
 	</span>
 {/snippet}
 
+{#snippet emptyChoices(onAdd: () => void, onPick: () => void)}
+	<div class="pricing-empty__choices">
+		<button type="button" class="pricing-empty__choice" disabled={saving} onclick={onAdd}>
+			<IconTile icon={plusIcon} tone="job" />
+			<span class="pricing-empty__choice-text">
+				<span class="pricing-empty__choice-title">Add a line item</span>
+				<span class="pricing-empty__choice-hint">Type a name, quantity and price</span>
+			</span>
+			<span class="pricing-empty__choice-arrow" aria-hidden="true">{@html chevronRightIcon}</span>
+		</button>
+		<button
+			type="button"
+			class="pricing-empty__choice"
+			disabled={saving}
+			onmouseenter={warmPriceBook}
+			onfocus={warmPriceBook}
+			onclick={onPick}
+		>
+			<IconTile icon={bookIcon} tone="quote" />
+			<span class="pricing-empty__choice-text">
+				<span class="pricing-empty__choice-title">Pick from the price book</span>
+				<span class="pricing-empty__choice-hint">Your saved products and services</span>
+			</span>
+			<span class="pricing-empty__choice-arrow" aria-hidden="true">{@html chevronRightIcon}</span>
+		</button>
+	</div>
+{/snippet}
+
 <SectionBlock
 	title="Products and services"
 	icon={icon ?? (concept ? packageIcon : listIcon)}
@@ -1082,9 +1110,16 @@
 	{:else if isEditing}
 		<div class={['pricing-edit', concept && 'pricing-edit--concept concept-fields']}>
 			{#if draftLines.length === 0}
-				<p class="pricing-block__hint">
-					Nothing priced yet. Add a line item, or pick one out of the price book.
-				</p>
+				{#if concept && alwaysEditing}
+					<div class="pricing-empty">
+						<p class="pricing-empty__line">Nothing priced yet. Choose how to start.</p>
+						{@render emptyChoices(addLine, openPriceBook)}
+					</div>
+				{:else}
+					<p class="pricing-block__hint">
+						Nothing priced yet. Add a line item, or pick one out of the price book.
+					</p>
+				{/if}
 			{/if}
 			<div
 				class="pricing-card-list"
@@ -1295,29 +1330,32 @@
 				{/each}
 			</div>
 			<div class="pricing-block__footer">
-				<Button
-					size="small"
-					variant={concept ? 'secondary' : 'tertiary'}
-					disabled={saving}
-					onclick={addLine}
-				>
-					{#if concept}<span class="pricing-block__price-book-icon" aria-hidden="true"
-							>{@html plusIcon}</span
-						>{/if}
-					Add line item
-				</Button>
-				<span bind:this={priceBookButton} class="pricing-block__price-book">
+				{#if !(concept && alwaysEditing && draftLines.length === 0)}
 					<Button
 						size="small"
-						variant="secondary"
+						variant={concept ? 'secondary' : 'tertiary'}
 						disabled={saving}
-						onhover={warmPriceBook}
-						onclick={openPriceBook}
+						onclick={addLine}
 					>
-						<span class="pricing-block__price-book-icon" aria-hidden="true">{@html bookIcon}</span>
-						Price book
+						{#if concept}<span class="pricing-block__price-book-icon" aria-hidden="true"
+								>{@html plusIcon}</span
+							>{/if}
+						Add line item
 					</Button>
-				</span>
+					<span bind:this={priceBookButton} class="pricing-block__price-book">
+						<Button
+							size="small"
+							variant="secondary"
+							disabled={saving}
+							onhover={warmPriceBook}
+							onclick={openPriceBook}
+						>
+							<span class="pricing-block__price-book-icon" aria-hidden="true">{@html bookIcon}</span
+							>
+							Price book
+						</Button>
+					</span>
+				{/if}
 				{#if quoteChoices}
 					<Button
 						size="small"
@@ -1394,34 +1432,7 @@
 		<div class="pricing-empty">
 			<p class="pricing-empty__line">{emptyDescription}</p>
 			{#if editable}
-				<div class="pricing-empty__choices">
-					<button type="button" class="pricing-empty__choice" onclick={openEditWithFirstLine}>
-						<IconTile icon={plusIcon} tone="job" />
-						<span class="pricing-empty__choice-text">
-							<span class="pricing-empty__choice-title">Add a line item</span>
-							<span class="pricing-empty__choice-hint">Type a name, quantity and price</span>
-						</span>
-						<span class="pricing-empty__choice-arrow" aria-hidden="true"
-							>{@html chevronRightIcon}</span
-						>
-					</button>
-					<button
-						type="button"
-						class="pricing-empty__choice"
-						onmouseenter={warmPriceBook}
-						onfocus={warmPriceBook}
-						onclick={openEditWithPriceBook}
-					>
-						<IconTile icon={bookIcon} tone="quote" />
-						<span class="pricing-empty__choice-text">
-							<span class="pricing-empty__choice-title">Pick from the price book</span>
-							<span class="pricing-empty__choice-hint">Your saved products and services</span>
-						</span>
-						<span class="pricing-empty__choice-arrow" aria-hidden="true"
-							>{@html chevronRightIcon}</span
-						>
-					</button>
-				</div>
+				{@render emptyChoices(openEditWithFirstLine, openEditWithPriceBook)}
 			{/if}
 		</div>
 	{:else if concept && !showPrices}
@@ -3005,6 +3016,12 @@
 		.pricing-card__description,
 		.pricing-card__image {
 			grid-column: 1 / -1;
+		}
+	}
+	@container (max-width: 300px) {
+		.pricing-card__row1,
+		.pricing-card--concept .pricing-card__row1 {
+			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 </style>
