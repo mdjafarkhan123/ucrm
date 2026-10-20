@@ -20,7 +20,12 @@
 | 9 Notes and attachments | AuthorMeta, NoteBody, NoteFiles, PendingFilesCard, AttachmentSurface | Approved `KuOmH` 2026-10-19: Author line B (name over time, Edited tag), Note text B (teal mention chip), Note files B (96×72 photos, file chips), Files waiting B (upload list lines) with A's red-edged failed row, Files card B (labelled Add); looks in `notes.md`, `files.md`; to build |
 | 10 Price book | CatalogItemPicker, CatalogItemDialog, PriceBookDrawer | Approved `ZWTSi` 2026-10-20: Search list B with D's picture cards for items with a photo; New item pop-up C (new concept, green live preview); Drawer B with A's type tags on every row; looks in `price-book.md`; to build |
 
-| 11 Files pickers | FilePicker, FileLabelsDialog, PhotoDescribeForm | Drawn 2026-10-20 on `K04pQm` (A improved live, B new concept each, shared states, dark mode); waiting for Jafar's pick |
+| 11 File pickers | FilePicker, FileLabelsDialog, PhotoDescribeForm | Approved `K04pQm` 2026-10-20: Add files B (places side column, pick boxes, picked-files tray), Photo labels A (improved live), Photo details B (caption card, Not saved strip); looks in `files.md`; to build |
+
+## Batch 11 notes (Jafar, 2026-10-20)
+
+- Add files B's tray shows the files already picked, with × to unpick; it adds no new data. Labels stay grey:
+  file labels have no colour column, and colours were not asked for.
 
 ## Batch 6b new behaviour (Jafar, 2026-10-19)
 

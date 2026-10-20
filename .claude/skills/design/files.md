@@ -1,8 +1,8 @@
 # Photos and Files
 
-> Dependencies: `colors.md`, `radius.md`, `buttons.md`, `badges.md`, `icon-shapes.md`
+> Dependencies: `colors.md`, `radius.md`, `buttons.md`, `badges.md`, `icon-shapes.md`, `chips.md`, `modals.md`, `page-states.md`
 
-Pencil: `concept.pen` → board "Photos and files" (`b4BxuV`), approved 2026-10-19.
+Pencil: `concept.pen` → board "Photos and files" (`b4BxuV`), approved 2026-10-19; Add files, photo labels and photo details on `K04pQm`, approved 2026-10-20.
 
 ## Photo viewer
 
@@ -93,3 +93,63 @@ The files card on a create page; nothing uploads until Save. Approved 2026-10-19
   a 40 `--color-critical--surface` tile with an 18 `alert-triangle` in `--color-critical`; the name 13/600 heading
   over the reason 12 `--color-critical--onSurface`; a small quiet "Retry" (only when trying again can help); a
   28 × button with a 14 `x` in `--color-icon--secondary`.
+
+## Add files pop-up
+
+Approved 2026-10-20 on board `K04pQm` (B). A large form pop-up (940): grey `--color-inactive` 40 tile with
+`paperclip`, title "Add files" (message composer: "Attach a file"), the record in the hint line.
+
+- **Places**, a 220 side column, `--color-surface--background--subtle`, 1px `--color-border` on its right,
+  padding 16 12, lines 2 apart. Captions 11/600 quiet, letter-spacing 0.6 ("ON THIS RECORD", "LIBRARY"), padding 8
+  8 6, with 8 extra space before the second. Lines 40 high, radius 8, padding 0 8, gap 10: a 24 tile in the
+  place's colour (this record in its record colour, the customer in `--color-client`, library places
+  `--color-inactive`: `clock`, `photo`, `file-text`, `files`) and the name 14/500 `--color-text`. Open place:
+  `--color-surface`, 1px `--color-border--interactive`, a soft button shadow, name 600 heading.
+- **Files side**, padding 20, gap 16: the search box filling the row with a secondary "Upload" (`upload`) beside it,
+  then file pictures 4 a row, 12 apart, 128 high, name 13/600 heading over type · size 12 quiet, 8 apart.
+- **Pick box** top-left of each picture, 8 in: 22 square, radius 6, `--color-surface` with a 1.5px
+  `--color-border--interactive` edge. Picked: the box `--color-interactive` with a white 14 `check`, and a 2px
+  `--color-interactive` ring round the picture.
+- **Already added:** the picture under a `--color-surface` veil at 72%, centred a white pill (1px `--color-border`,
+  padding 4 10, gap 6) with a 14 `check` in `--color-success` and "Already added" 12/600 heading; no pick box.
+- **Footer**, padding 12 20, gap 12: at the left the tray — "3 picked" 13/600 heading, then each picked file as
+  a 40 picture (radius 8, 1px `--color-border`; a document as a small sheet with its type colour) with an 18 round
+  white unpick × (10 `x` `--color-icon`, 1px `--color-border`) on its top-right corner. Then Cancel and the green
+  "Add 3 files" (`check`).
+- **States** in the files side: no library access is Empty with a grey `lock` tile; nothing here is Empty with a
+  grey `files` tile; files uploaded here show as upload list lines with a note row (16 `shield-check` in
+  `--color-informative`, 13 `--color-text`) saying they can be picked once checked.
+
+## Photo labels pop-up
+
+Approved 2026-10-20 on board `K04pQm` (A). A small form pop-up (400), grey 40 tile with `tag`, title "Photo
+labels", no footer (nothing to save as a whole).
+
+- Body gap 16: the intro line 14 quiet; then the "New label" text box (focus look when open) with a green small
+  "Add" (`plus`) beside it, bottoms aligned.
+- **List:** rows padding 10 0, 1px `--color-border` between them, gap 6: the label as a look-only grey tag
+  (`chips.md`, `--color-inactive` family), then the icon buttons Rename (`pencil`, `--color-icon`) and Remove
+  (`trash`, `--color-destructive`).
+- **Renaming** turns the row into a text box labelled "Rename Gutter" with small Cancel and green Save under it at
+  the right.
+- **No labels yet:** a box in `--color-surface--background--subtle`, radius 8, 1.5px dashed
+  `--color-border--interactive--hover`; a 22 `tags` in `--color-icon--secondary`, "No labels yet" 13/600 heading
+  and a 12 quiet line.
+- **Remove** uses the danger "are you sure?" pop-up (`modals.md`) with a `trash` tile and "Remove label".
+
+## Photo details
+
+Approved 2026-10-20 on board `K04pQm` (B). A photo's caption and labels, in the file details panel and the
+Describe photo pop-up.
+
+- A card (radius 16, 1px `--color-border`, clipped). **Header**, padding 16 16 12 20, gap 12: a 32 grey tile with
+  `photo`, "Caption and labels" 16/600 heading, and at the right a quiet "Manage labels" (14 `settings-2` and 13/600
+  in `--color-interactive`, padding 4 6, radius 6) for people who manage files.
+- **Body**, padding 0 20 20, gap 14. **Caption box:** `--color-surface--background--subtle`, 1px `--color-border`,
+  radius 8, padding 12 14, gap 10: a 16 `quote` in `--color-icon--secondary` and the words 14 heading, line height
+  1.45. Clicked or changed, it becomes a field: `--color-surface` with a 1.5px `--color-interactive` edge.
+- **Labels:** the tag picker (`chips.md`) with grey tags and "Add labels"; it wraps onto a second line.
+- **Save strip**, only once something changed: `--color-surface--background--subtle`, 1px `--color-border` above,
+  padding 12 16 12 20, gap 8: an 8 `--color-warning` dot with "Not saved" 13/600 `--color-warning--onSurface`, then
+  small Cancel and the green Save (`check`).
+- **Look only:** the caption 14 heading, then look-only grey tags; no boxes or buttons.
