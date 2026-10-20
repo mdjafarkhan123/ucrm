@@ -4,7 +4,7 @@ Key, tick rule and coverage command: `list-index.md`.
 
 | Piece | Inside it | Pencil | Built |
 | --- | --- | --- | --- |
-| `work/RecordFactsList` |  | ✅ Batch 13 header C `xrJ3f` 2026-10-20 | ⬜ |
+| `work/RecordFactsList` |  | ✅ Batch 13 header C `xrJ3f` 2026-10-20 | ✅ |
 | `collaboration/NotesPanel` | menus ×1 · loading, empty, permission-limited | ⬜ | ⬜ |
 | `communications/EmailSenderLabel` | loading | ⬜ | ⬜ |
 | `files/PhotoDescribeDialog` | 🔁F pop-up · loading | ⬜ | ⬜ |
@@ -15,7 +15,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `settings/automation/SmsActionEditor` |  | ⬜ | ⬜ |
 | `ui/Popover` |  | ⬜ | ⬜ |
 | `work/AttentionCard` |  | ✅ | ✅ |
-| `work/WorkRecordHeader` | menus ×2 | ✅ Batch 13 header C `xrJ3f` 2026-10-20 | ⬜ |
+| `work/WorkRecordHeader` | menus ×2 | ✅ Batch 13 header C `xrJ3f` 2026-10-20 | ✅ |
 | `collaboration/ActivityFeed` | loading, empty | ⬜ | ⬜ |
 | `communications/ConversationAttachments` |  | ⬜ | ⬜ |
 | `data-display/DateRangeChip` |  | ⬜ | ⬜ |
@@ -25,7 +25,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `quotes/QuoteSummaryCard` |  | ⬜ | ⬜ |
 | `time-clock/TimerRunningElsewhere` |  | ✅ Batch 12 `ooCwt` | ✅ 2026-10-20 |
 | `time-clock/WorkTimerControl` |  | ✅ Batch 12 `ooCwt` | ✅ 2026-10-20 |
-| `work/LifecycleTrack` |  | ✅ Batch 13 header C `xrJ3f` 2026-10-20 | ⬜ |
+| `work/LifecycleTrack` |  | ✅ Batch 13 header C `xrJ3f` 2026-10-20 | ✅ |
 | `work/PrimaryInfoCard` |  | ⬜ | ⬜ |
 | `work/RecordDiscountCard` | pop-ups: "form" 🔁F | ⬜ | ⬜ |
 | `work/RecordTaxCard` | pop-ups: "form" 🔁F · permission-limited | ⬜ | ⬜ |
