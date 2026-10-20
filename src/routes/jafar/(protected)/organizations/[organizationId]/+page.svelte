@@ -420,10 +420,6 @@
 		background: var(--color-surface);
 		box-shadow: var(--shadow-base);
 	}
-	.organization-detail > :global(.tabs) > :global(.tabs__list) {
-		padding: var(--space-small) var(--space-large) 0;
-		background: var(--color-surface--background--subtle);
-	}
 	.organization-detail > :global(.tabs) > :global(.tab-panel:not([hidden])) {
 		gap: var(--space-larger);
 		padding: var(--space-large);

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
-	import xIcon from '@tabler/icons/outline/x.svg?raw';
 
 	// A binary on/off setting. Use Checkbox instead when the answer is "opt in", part of a multi-select
 	// set, or only takes effect once a form is saved — a toggle reads as a switch that acts immediately.
@@ -44,9 +43,7 @@
 	/>
 
 	<span class="toggle__track" aria-hidden="true">
-		<span class="toggle__icon toggle__icon--on">{@html checkIcon}</span>
-		<span class="toggle__icon toggle__icon--off">{@html xIcon}</span>
-		<span class="toggle__pip"></span>
+		<span class="toggle__pip">{@html checkIcon}</span>
 	</span>
 
 	<span class="toggle__content">
@@ -61,177 +58,124 @@
 
 <style lang="scss">
 	.toggle {
-		--toggle--width: 48px;
-		--toggle--height: 24px;
-		--toggle--pip: 16px;
-		--toggle--pip-off: 2px;
-		--toggle--pip-on: 26px;
-
 		display: inline-flex;
-		align-items: flex-start;
-		gap: var(--space-small);
-		color: var(--color-text);
-		font-size: var(--typography--fontSize-base);
-		line-height: var(--typography--lineHeight-base);
+		align-items: center;
+		gap: 10px;
 		cursor: pointer;
 		user-select: none;
-
 		input {
 			position: absolute;
 			width: 1px;
 			height: 1px;
+			clip-path: inset(50%);
 			overflow: hidden;
-			clip: rect(0 0 0 0);
 			white-space: nowrap;
 		}
-
 		&__track {
 			position: relative;
 			display: inline-block;
-			box-sizing: border-box;
-			width: var(--toggle--width);
-			height: var(--toggle--height);
-			flex: 0 0 var(--toggle--width);
-			border: var(--border-thick) solid var(--color-border--interactive);
-			border-radius: var(--toggle--pip);
-			background: var(--color-inactive--surface);
-			transition: all var(--timing-base) ease-in-out;
+			width: 44px;
+			height: 24px;
+			flex: 0 0 44px;
+			border-radius: var(--radius-circle);
+			background: var(--color-border--interactive);
+			transition: background var(--timing-quick);
 		}
-
 		&__pip {
 			position: absolute;
-			top: 2px;
-			left: 0;
-			box-sizing: border-box;
-			width: var(--toggle--pip);
-			height: var(--toggle--pip);
-			border-radius: var(--radius-circle);
-			background: var(--color-inactive--onSurface);
-			transform: translateX(var(--toggle--pip-off));
-			transition: all var(--timing-base) ease-in-out;
-		}
-
-		// Each icon sits on the side the pip is not covering.
-		&__icon {
-			position: absolute;
-			top: 2px;
+			top: 3px;
+			left: 3px;
 			display: grid;
-			width: var(--toggle--pip);
-			height: var(--toggle--pip);
 			place-items: center;
-			opacity: 0;
-			transition: opacity var(--timing-base) ease-in-out;
-
+			width: 18px;
+			height: 18px;
+			border-radius: var(--radius-circle);
+			background: var(--color-surface);
+			color: var(--color-interactive);
+			box-shadow:
+				0 1px 2px color-mix(in srgb, var(--color-heading) 20%, transparent),
+				0 2px 6px color-mix(in srgb, var(--color-heading) 10%, transparent);
+			transition: transform var(--timing-quick);
 			:global(svg) {
-				display: block;
-				width: 12px;
-				height: 12px;
-			}
-
-			&--on {
-				left: 4px;
-				color: var(--color-surface);
-			}
-
-			&--off {
-				right: 4px;
-				color: var(--color-inactive--onSurface);
-				opacity: 1;
+				width: 11px;
+				height: 11px;
+				opacity: 0;
 			}
 		}
-
 		&__content {
 			display: grid;
-			gap: var(--space-smaller);
+			gap: 2px;
 		}
-
 		&__label {
-			color: var(--color-text);
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
 		}
-
 		&__description {
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 		}
-
 		&--label-start {
 			width: 100%;
-			align-items: center;
 			justify-content: space-between;
-
 			.toggle__content {
 				order: -1;
 			}
 		}
-
-		// --- States -------------------------------------------------------------------------------
-
-		&:hover:not(.toggle--disabled) .toggle__track,
-		&:has(input:focus-visible) .toggle__track {
-			border-color: var(--color-interactive);
+		&:hover:not(.toggle--disabled) .toggle__track {
+			background: var(--color-border--interactive--hover);
 		}
-
-		&:has(input:focus-visible) .toggle__track {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-
 		&:has(input:checked) {
 			.toggle__track {
 				background: var(--color-interactive);
 			}
-
 			.toggle__pip {
-				background: var(--color-surface);
-				transform: translateX(var(--toggle--pip-on));
-			}
-
-			.toggle__icon--on {
-				opacity: 1;
-			}
-
-			.toggle__icon--off {
-				opacity: 0;
+				transform: translateX(20px);
+				:global(svg) {
+					opacity: 1;
+				}
 			}
 		}
-
 		&:hover:not(.toggle--disabled):has(input:checked) .toggle__track {
 			background: var(--color-interactive--hover);
 		}
-
+		&:has(input:focus-visible) .toggle__track {
+			outline: 2px solid var(--color-focus);
+			outline-offset: 2px;
+		}
+		&:active:not(.toggle--disabled) .toggle__track {
+			filter: brightness(0.95);
+		}
 		&--disabled {
-			color: var(--color-disabled);
-			cursor: not-allowed;
-
+			cursor: default;
 			.toggle__track {
-				border-color: var(--color-disabled);
-				background: var(--color-surface);
+				background: var(--color-surface--background--subtle);
+				box-shadow: inset 0 0 0 1px var(--color-border--interactive);
 			}
-
 			.toggle__pip {
-				border: var(--border-base) solid var(--color-disabled--secondary);
 				background: var(--color-disabled);
+				box-shadow: none;
 			}
-
-			.toggle__icon--off {
-				color: var(--color-disabled);
-			}
-
 			.toggle__label,
 			.toggle__description {
 				color: var(--color-disabled);
 			}
 		}
-
 		&--disabled:has(input:checked) {
 			.toggle__track {
 				background: var(--color-disabled);
+				box-shadow: none;
 			}
-
 			.toggle__pip {
-				border-color: var(--color-disabled--secondary);
-				background: var(--color-surface);
+				background: var(--color-surface--background);
+				color: var(--color-disabled);
 			}
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.toggle__pip,
+		.toggle__track {
+			transition: none;
 		}
 	}
 </style>

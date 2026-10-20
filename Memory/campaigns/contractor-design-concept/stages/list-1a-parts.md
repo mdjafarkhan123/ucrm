@@ -26,7 +26,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/SegmentedControl` |  | ✅ | ✅ |
 | `ui/StatusBadge` |  | ✅ | ✅ Merged 2026-10-19 |
 | `layout/StickyActionBar` |  | ✅ | ✅ |
-| `ui/Avatar` |  | ✅ Small controls `GbgcY` | ⬜ |
+| `ui/Avatar` |  | ✅ Small controls `GbgcY` | ✅ |
 | `data-display/ListLoadMore` |  | ✅ Batch 7 `eJ0QQ` | ✅ Merged 2026-10-20 |
 | `ui/CalendarPicker` |  | ✅ Pickers v2 `uSXlT` | ✅ |
 | `data-display/DataTable` |  | ⬜ | ⬜ |
@@ -36,7 +36,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/Banner` |  | ✅ Page parts board `j3jDI` | ✅ Merged 2026-10-19 |
 | `ui/Lightbox` |  | ✅ Batch 8 `b4BxuV` | ✅ Merged 2026-10-20 |
 | `ui/TimePickerField` |  | ✅ Pickers v2 `uSXlT` | ✅ |
-| `ui/Toggle` |  | ✅ Small controls `GbgcY` | ⬜ |
+| `ui/Toggle` |  | ✅ Small controls `GbgcY` | ✅ |
 | `files/FileThumb` |  | ✅ Batch 8 `b4BxuV` | ✅ Merged 2026-10-20 |
 | `ui/Card` |  | ✅ | ✅ Merged 2026-10-19 |
 | `ui/CardHeader` | Pencil "Card header"; on every Home card so far | ✅ | ✅ |
@@ -54,12 +54,12 @@ Key, tick rule and coverage command: `list-index.md`.
 | `files/PhotoSlot` |  | ✅ Batch 8 `b4BxuV` | ✅ Merged 2026-10-20 |
 | `quotes/CatalogItemDialog` | 🔁F pop-up · loading, permission-limited, field-worker view | ✅ Batch 10 `ZWTSi` | ⬜ |
 | `ui/TabPanel` |  | ⬜ | ⬜ |
-| `ui/Tabs` | tabs ×2 | ✅ Small controls `GbgcY` | ⬜ |
+| `ui/Tabs` | tabs ×2 | ✅ Small controls `GbgcY` | ✅ |
 | `forms/QuantityInput` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
 | `quotes/CatalogItemPicker` | loading | ✅ Batch 10 `ZWTSi` | ⬜ |
 | `quotes/PriceBookDrawer` | 🔁D pop-up · loading, empty, permission-limited, field-worker view | ✅ Batch 10 `ZWTSi` | ⬜ |
 | `quotes/ProductsAndServicesBlock` | pop-ups: "Throw away these changes?" 🔁C · menus ×1 · empty, permission-limited, field-worker view | ⬜ | ⬜ |
-| `ui/RadioGroup` |  | ✅ Small controls `GbgcY` | ⬜ |
+| `ui/RadioGroup` |  | ✅ Small controls `GbgcY` | ✅ |
 | `ui/TimezonePicker` |  | ✅ Pickers v2 `uSXlT` | ✅ |
 | `work/ClientPicker` | loading | ✅ | ✅ |
 | `time-clock/RunningClock` |  | ✅ Batch 12 `ooCwt` | ⬜ |
