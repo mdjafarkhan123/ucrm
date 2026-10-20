@@ -38,8 +38,8 @@ Key, tick rule and coverage command: `list-index.md`.
 | `imports/ImportReviewStep` |  | ✅ Batch 29 `oxtmi` A 2026-10-20 | ⬜ |
 | `imports/ImportStepper` |  | ✅ Batch 29 `oxtmi` A 2026-10-20 | ⬜ |
 | `imports/ImportUploadStep` |  | ✅ Batch 29 `oxtmi` A 2026-10-20 | ⬜ |
-| `jafar/booking/BookingMonth` |  | ⬜ | ⬜ |
-| `jafar/booking/BookingTimePicker` | loading | ⬜ | ⬜ |
+| `jafar/booking/BookingMonth` |  | 🟡 Batch 30 `TC3iU` A vs B 2026-10-20 | ⬜ |
+| `jafar/booking/BookingTimePicker` | loading | 🟡 Batch 30 `TC3iU` A vs B 2026-10-20 | ⬜ |
 | `jobs/CreateVisitsDialog` | 🔁F pop-up | ✅ Schedule pop-ups `S5TPc` | ✅ Merged 2026-10-19 |
 | `marketing/AsyncMultiPicker` | loading | ⬜ | ⬜ |
 | `marketing/CustomerGroupDialog` | 🔁F pop-up | ⬜ | ⬜ |
@@ -59,10 +59,10 @@ Key, tick rule and coverage command: `list-index.md`.
 | `clients/ClientMergeDialog` | 🔁F pop-up · loading | ⬜ | ⬜ |
 | `invoices/CollectPaymentDialog` | 🔁F pop-up · loading | ⬜ | ⬜ |
 | `jafar/NotificationBell` | loading | ⬜ | ⬜ |
-| `jafar/booking/BookingBackButton` |  | ⬜ | ⬜ |
-| `jafar/booking/BookingFacts` |  | ⬜ | ⬜ |
-| `jafar/booking/BookingFrame` |  | ⬜ | ⬜ |
-| `jafar/booking/BookingStatus` |  | ⬜ | ⬜ |
+| `jafar/booking/BookingBackButton` |  | 🟡 Batch 30 `TC3iU` A vs B 2026-10-20 | ⬜ |
+| `jafar/booking/BookingFacts` |  | 🟡 Batch 30 `TC3iU` A vs B 2026-10-20 | ⬜ |
+| `jafar/booking/BookingFrame` |  | 🟡 Batch 30 `TC3iU` A vs B 2026-10-20 | ⬜ |
+| `jafar/booking/BookingStatus` |  | 🟡 Batch 30 `TC3iU` A vs B 2026-10-20 | ⬜ |
 | `jobs/ApplyToFutureDialog` | ◆ pop-up | ✅ Schedule pop-ups `a03Qm` | ✅ Merged 2026-10-19 |
 | `jobs/FinalVisitDialog` | ◆ pop-up | ✅ Schedule pop-ups `WbpEc` | ✅ Merged 2026-10-19 |
 | `jobs/JobVisitDialog` | ◆ pop-up · loading, permission-limited | ⬜ | ⬜ |
