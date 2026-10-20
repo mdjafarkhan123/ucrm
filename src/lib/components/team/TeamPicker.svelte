@@ -2,6 +2,7 @@
 	import { Combobox } from 'bits-ui';
 	import { createQuery } from '@tanstack/svelte-query';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import PersonPickChip from '$lib/components/ui/PersonPickChip.svelte';
 	import { assignableTeamKey, fetchAssignableTeam, type TeamMember } from '$lib/team/api';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import searchIcon from '@tabler/icons/outline/search.svg?raw';
@@ -17,14 +18,20 @@
 		value = $bindable<string[]>([]),
 		id,
 		open,
-		label = 'Assigned team'
+		label = 'Assigned team',
+		chips = false
 	}: {
 		value?: string[];
 		id: string;
 		/** The owning dialog's open state; the team list is only worth fetching while it is visible. */
 		open: boolean;
 		label?: string;
+		/** Show a small team as one round chip per person ("Who is going", design `inputs.md`); a team larger
+		 *  than CHIP_LIMIT keeps the search box so the list stays short. */
+		chips?: boolean;
 	} = $props();
+
+	const CHIP_LIMIT = 12;
 
 	let query = $state('');
 	let comboboxOpen = $state(false);
@@ -47,6 +54,13 @@
 		filtered.map((member) => ({ value: member.id, label: member.full_name ?? 'A team member' }))
 	);
 	const selectedMembers = $derived(team.filter((member) => value.includes(member.id)));
+	const showChips = $derived(chips && team.length > 0 && team.length <= CHIP_LIMIT);
+
+	function toggleMember(memberId: string, checked: boolean) {
+		value = checked
+			? [...value.filter((entry) => entry !== memberId), memberId]
+			: value.filter((entry) => entry !== memberId);
+	}
 
 	function focusSearch() {
 		comboboxOpen = true;
@@ -72,9 +86,9 @@
 
 <!-- The inline SVG strings are trusted build-time Tabler icon imports. -->
 <!-- eslint-disable svelte/no-at-html-tags -->
-<fieldset class="team-picker">
+<fieldset class={['team-picker', chips && 'team-picker--chips']}>
 	<legend class="team-picker__legend">
-		<span aria-hidden="true">{@html usersIcon}</span>
+		{#if !chips}<span aria-hidden="true">{@html usersIcon}</span>{/if}
 		{label}
 	</legend>
 	{#if teamQuery.isPending}
@@ -85,6 +99,20 @@
 		</p>
 	{:else if team.length === 0}
 		<p class="team-picker__hint">No team members to assign yet.</p>
+	{:else if showChips}
+		<ul class="team-picker__people">
+			{#each team as member (member.id)}
+				<li>
+					<PersonPickChip
+						id={`${id}-member-${member.id}`}
+						personId={member.id}
+						name={member.full_name ?? 'A team member'}
+						checked={value.includes(member.id)}
+						onchange={(checked) => toggleMember(member.id, checked)}
+					/>
+				</li>
+			{/each}
+		</ul>
 	{:else}
 		{#if selectedMembers.length}
 			<div class="team-picker__chips">
@@ -168,6 +196,27 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	// Chips mode: no box around it, the legend is a normal field label, chips 8 apart and wrapping.
+	.team-picker.team-picker--chips {
+		padding: 0;
+		border: 0;
+
+		& .team-picker__legend {
+			margin-bottom: 6px;
+			padding: 0;
+			font-size: var(--typography--fontSize-label);
+		}
+	}
+
+	.team-picker__people {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-small);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
 	.team-picker {
 		display: flex;
 		flex-direction: column;

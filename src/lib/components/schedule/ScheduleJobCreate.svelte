@@ -515,48 +515,51 @@
 					<IconTile icon={calendarTimeIcon} tone="time" size={24} />
 					<h3 class="job-create__group-title" id="job-create-first-visit">First visit</h3>
 				</header>
-
-				<Checkbox
-					id="job-create-later"
-					label="Schedule later"
-					description="Book the job now and give its first visit a date when you know it."
-					bind:checked={scheduleLater}
-				/>
-
-				{#if !scheduleLater}
-					<DateTimePicker
-						id="job-create-when"
-						range
-						showTime={!anytime}
-						dateLabel="Day of the first visit"
-						timeLabel="Time"
-						{locale}
-						bind:value={when}
-					/>
+				<div class="job-create__group-body">
 					<Checkbox
-						id="job-create-anytime"
-						label="Anytime"
-						description="Promise the day without promising an hour."
-						checked={anytime}
-						onchange={(checked) => {
-							anytime = checked;
-							if (checked) when = { ...when, startTime: undefined, endTime: undefined };
-						}}
+						id="job-create-later"
+						label="Schedule later"
+						description="Book the job now and give its first visit a date when you know it."
+						bind:checked={scheduleLater}
 					/>
-				{/if}
 
-				<Textarea
-					id="job-create-notes"
-					label="Notes for the first visit"
-					rows={3}
-					maxlength={2000}
-					bind:value={workNotes}
-				/>
+					{#if !scheduleLater}
+						<DateTimePicker
+							id="job-create-when"
+							range
+							showTime={!anytime}
+							dateLabel="Day of the first visit"
+							timeLabel="Time"
+							{locale}
+							bind:value={when}
+						/>
+						<Checkbox
+							id="job-create-anytime"
+							label="Anytime"
+							description="Promise the day without promising an hour."
+							checked={anytime}
+							onchange={(checked) => {
+								anytime = checked;
+								if (checked) when = { ...when, startTime: undefined, endTime: undefined };
+							}}
+						/>
+					{/if}
+
+					<Textarea
+						id="job-create-notes"
+						label="Notes for the first visit"
+						rows={3}
+						maxlength={2000}
+						bind:value={workNotes}
+					/>
+				</div>
 			</section>
 
-			<TeamPicker id="job-create-team" bind:value={assigneeIds} {open} />
+			<TeamPicker id="job-create-team" label="Who is going" chips bind:value={assigneeIds} {open} />
 
-			{@render notice?.()}
+			{#if notice}
+				<div class="job-create__notice">{@render notice()}</div>
+			{/if}
 		{/if}
 	</div>
 
@@ -612,15 +615,24 @@
 			gap: var(--space-small);
 		}
 
-		// Everything about the first visit, in one tinted group, so the form reads as who it is for, when, and
-		// who is going.
+		// Everything about the first visit in one bordered card with a subtle head row (design `calendar.md`,
+		// Book work), so the form reads as who it is for, when, and who is going.
 		&__group {
+			overflow: hidden;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-large);
+		}
+
+		&__group-body {
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-base);
-			padding: 0;
-			border: 0;
-			background: transparent;
+			padding: var(--space-base);
+		}
+
+		&__notice {
+			padding-top: var(--space-base);
+			border-top: var(--border-base) solid var(--color-border);
 		}
 
 		&__field-label {
@@ -632,8 +644,8 @@
 			}
 		}
 		&__group-head {
-			padding: var(--space-small) var(--space-slim);
-			border-radius: var(--radius-base);
+			padding: 10px var(--space-base);
+			border-bottom: var(--border-base) solid var(--color-border);
 			background: var(--color-surface--background--subtle);
 			display: flex;
 			align-items: center;
@@ -644,7 +656,7 @@
 			margin: 0;
 			color: var(--color-heading);
 			font-size: var(--typography--fontSize-base);
-			font-weight: 700;
+			font-weight: 600;
 		}
 
 		&__button-icon {
@@ -673,9 +685,9 @@
 		&__slot {
 			display: flex;
 			align-items: center;
-			gap: var(--space-base);
+			gap: var(--space-slim);
 			margin: 0;
-			padding: var(--space-small) var(--space-base);
+			padding: var(--space-slim);
 			border: var(--border-base) solid var(--color-border);
 			border-radius: var(--radius-base);
 			background: var(--color-surface--background--subtle);
@@ -686,32 +698,30 @@
 			}
 		}
 
-		// A little calendar page: the month on a green strip, the day under it.
+		// The day as a 44 indigo date tile: month overline over the day number (design `calendar.md`).
 		&__slot-tile {
 			display: flex;
 			flex: 0 0 auto;
 			flex-direction: column;
-			width: 50px;
-			overflow: hidden;
-			border: var(--border-base) solid var(--color-border--interactive);
-			border-radius: var(--radius-small);
-			background: var(--color-surface);
+			align-items: center;
+			justify-content: center;
+			width: 44px;
+			height: 44px;
+			border-radius: var(--radius-tile-large);
+			background: var(--color-time);
+			color: var(--color-surface);
 			text-align: center;
 		}
 
 		&__slot-month {
-			padding: 2px 0;
-			background: var(--color-interactive);
-			color: var(--color-text--reverse);
-			font-size: 10px;
-			font-weight: 700;
-			letter-spacing: 0.8px;
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+			letter-spacing: 0.6px;
+			line-height: 1.1;
 		}
 
 		&__slot-day {
-			padding: 3px 0 4px;
-			color: var(--color-heading);
-			font-size: 20px;
+			font-size: 17px;
 			font-weight: 700;
 			line-height: 1.1;
 		}
@@ -719,13 +729,13 @@
 		&__slot-text {
 			display: flex;
 			flex-direction: column;
-			gap: 3px;
+			gap: 4px;
 		}
 
 		&__slot-label {
 			color: var(--color-heading);
-			font-size: var(--typography--fontSize-large);
-			font-weight: 700;
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
 		}
 
 		&__slot-time {
@@ -733,11 +743,13 @@
 			align-items: center;
 			gap: 6px;
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 500;
 		}
 
 		&__slot-clock {
 			display: inline-flex;
+			color: var(--color-time);
 
 			:global(svg) {
 				width: 14px;

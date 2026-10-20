@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { Popover } from 'bits-ui';
 	import { Time } from '@internationalized/date';
+	import arrowDownIcon from '@tabler/icons/outline/arrow-down.svg?raw';
+	import arrowUpIcon from '@tabler/icons/outline/arrow-up.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
+	import hourglassIcon from '@tabler/icons/outline/hourglass.svg?raw';
 	import { formatTimeText, parseTimeText, timeToMinutes } from './date-time';
 
 	let {
@@ -47,11 +50,17 @@
 				? 'Check end'
 				: `${Math.floor(duration / 60) ? `${Math.floor(duration / 60)} hr` : ''}${duration % 60 ? ` ${duration % 60} min` : ''}`.trim()
 	);
-	function revealSelected() {
+	let panelTitle = $derived(/time/i.test(label) ? label : `${label} time`);
+	let dialEl = $state<HTMLElement>();
+
+	// Turn each column so its picked value sits in the band, like a dial.
+	function centerPicked() {
 		requestAnimationFrame(() =>
-			document
-				.querySelectorAll<HTMLElement>('.time-picker-field__popover [aria-selected="true"]')
-				.forEach((el) => el.scrollIntoView({ block: 'center' }))
+			dialEl?.querySelectorAll<HTMLElement>('[role="listbox"]').forEach((column) => {
+				const picked = column.querySelector<HTMLElement>('[aria-selected="true"]');
+				if (picked)
+					column.scrollTop = picked.offsetTop - (column.clientHeight - picked.offsetHeight) / 2;
+			})
 		);
 	}
 	let touched = $state(false);
@@ -137,10 +146,12 @@
 	function updateHour(hour: number) {
 		const nextHour = hourCycle === 24 ? hour : (hour % 12) + (selectedPeriod === 'PM' ? 12 : 0);
 		commit(new Time(nextHour, selected.minute));
+		centerPicked();
 	}
 
 	function updateMinute(minute: number) {
 		commit(new Time(selected.hour, minute));
+		centerPicked();
 	}
 
 	function updatePeriod(period: 'AM' | 'PM') {
@@ -216,20 +227,25 @@
 			data-elevation="elevated"
 			sideOffset={6}
 			collisionPadding={8}
-			onOpenAutoFocus={revealSelected}
+			onOpenAutoFocus={centerPicked}
 		>
-			<div class="time-picker-field__summary" aria-live="polite">
-				<span>{label}</span>
-				{#if durationLabel}<strong class="time-picker-field__duration"
-						>{durationLabel}{duration && duration > 0 ? ' after start' : ''}</strong
+			<header class="time-picker-field__summary" aria-live="polite">
+				<span class="time-picker-field__title">{panelTitle}</span>
+				{#if durationLabel}<strong
+						class="time-picker-field__duration"
+						class:time-picker-field__duration--invalid={!duration || duration <= 0}
+						><!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html hourglassIcon}{durationLabel}{duration && duration > 0
+							? ' after start'
+							: ''}</strong
 					>{/if}
-			</div>
+			</header>
 			<div
 				class="time-picker-field__columns"
 				class:time-picker-field__columns--24={hourCycle === 24}
 			>
-				<div class="time-picker-field__column-wrap">
-					<span class="time-picker-field__column-label">Hour</span>
+				<div class="time-picker-field__dial" bind:this={dialEl}>
+					<span class="time-picker-field__band" aria-hidden="true"></span>
 					<div class="time-picker-field__column" role="listbox" aria-label="Hour">
 						{#each hourOptions as hour (hour)}
 							<button
@@ -243,10 +259,7 @@
 							>
 						{/each}
 					</div>
-				</div>
-				<span class="time-picker-field__colon" aria-hidden="true">:</span>
-				<div class="time-picker-field__column-wrap">
-					<span class="time-picker-field__column-label">Minute</span>
+					<span class="time-picker-field__colon" aria-hidden="true">:</span>
 					<div class="time-picker-field__column" role="listbox" aria-label="Minute">
 						{#each minuteOptions as minute (minute)}
 							<button
@@ -261,25 +274,27 @@
 					</div>
 				</div>
 				{#if hourCycle === 12}
-					<div class="time-picker-field__column-wrap time-picker-field__column-wrap--period">
-						<span class="time-picker-field__column-label">Period</span>
-						<div class="time-picker-field__column" role="listbox" aria-label="AM or PM">
-							{#each ['AM', 'PM'] as period (period)}
-								<button
-									type="button"
-									role="option"
-									aria-selected={selectedPeriod === period}
-									tabindex={selectedPeriod === period ? 0 : -1}
-									onclick={() => updatePeriod(period as 'AM' | 'PM')}
-									onkeydown={navigateOptions}>{period}</button
-								>
-							{/each}
-						</div>
+					<div class="time-picker-field__period" role="listbox" aria-label="AM or PM">
+						{#each ['AM', 'PM'] as period (period)}
+							<button
+								type="button"
+								role="option"
+								aria-selected={selectedPeriod === period}
+								tabindex={selectedPeriod === period ? 0 : -1}
+								onclick={() => updatePeriod(period as 'AM' | 'PM')}
+								onkeydown={navigateOptions}>{period}</button
+							>
+						{/each}
 					</div>
 				{/if}
 			</div>
 			<footer class="time-picker-field__footer">
-				<span>Arrow keys move through each column</span>
+				<span class="time-picker-field__keys" aria-hidden="true">
+					<!-- eslint-disable svelte/no-at-html-tags -->
+					<kbd>{@html arrowUpIcon}</kbd><kbd>{@html arrowDownIcon}</kbd>
+					<!-- eslint-enable svelte/no-at-html-tags -->
+				</span>
+				<span class="time-picker-field__hint">turn the dial</span>
 				<button type="button" onclick={() => (open = false)}>Done</button>
 			</footer>
 		</Popover.Content>
@@ -374,10 +389,14 @@
 			background-color var(--timing-quick);
 	}
 
-	:global(.time-picker-field__trigger:hover),
-	:global(.time-picker-field__trigger[data-state='open']) {
+	:global(.time-picker-field__trigger:hover) {
 		color: var(--color-heading);
 		background: var(--color-surface--hover);
+	}
+
+	:global(.time-picker-field__trigger[data-state='open']) {
+		color: var(--color-surface);
+		background: var(--color-time);
 	}
 
 	:global(.time-picker-field__trigger:focus-visible) {
@@ -389,10 +408,12 @@
 		height: 20px;
 	}
 
+	// The dial (concept board "Pickers v2", Time box): hour : minute turn behind one soft indigo band,
+	// values fade away from it, AM/PM is a small upright switch, and green appears only on Done.
 	:global(.time-picker-field__popover) {
 		z-index: var(--elevation-tooltip);
 		width: min(320px, calc(100vw - var(--space-large)));
-		padding: var(--space-base);
+		padding: var(--space-base) var(--space-base) var(--space-slim);
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-large);
 		background: var(--color-surface);
@@ -401,129 +422,222 @@
 
 	:global(.time-picker-field__summary) {
 		display: flex;
+		min-height: 28px;
 		align-items: center;
 		justify-content: space-between;
-		gap: var(--space-base);
-		padding-bottom: var(--space-slim);
-		border-bottom: var(--border-base) solid var(--color-border);
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
+		gap: var(--space-small);
 	}
 
-	:global(.time-picker-field__summary strong) {
+	:global(.time-picker-field__title) {
 		color: var(--color-heading);
-		font-size: var(--typography--fontSize-large);
+		font-size: var(--typography--fontSize-base);
+		font-weight: 600;
+	}
+
+	:global(.time-picker-field__duration) {
+		display: inline-flex;
+		height: 28px;
+		align-items: center;
+		gap: 4px;
+		padding: 0 10px;
+		border-radius: var(--radius-circle);
+		background: var(--color-time--surface);
+		color: var(--color-time--onSurface);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		white-space: nowrap;
+	}
+
+	:global(.time-picker-field__duration svg) {
+		width: 14px;
+		height: 14px;
+		color: var(--color-time);
+	}
+
+	:global(.time-picker-field__duration--invalid) {
+		background: var(--color-critical--surface);
+		color: var(--color-critical--onSurface);
+	}
+
+	:global(.time-picker-field__duration--invalid svg) {
+		color: var(--color-critical);
 	}
 
 	:global(.time-picker-field__columns) {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+		grid-template-columns: minmax(0, 1fr) auto;
 		align-items: center;
-		gap: var(--space-small);
-		padding: var(--space-base) 0;
+		gap: var(--space-slim);
+		padding: var(--space-slim) 0;
 	}
 
-	:global(.time-picker-field__column-wrap) {
-		min-width: 0;
+	:global(.time-picker-field__dial) {
+		position: relative;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+		align-items: center;
 	}
 
-	:global(.time-picker-field__column-label) {
-		display: block;
-		padding-bottom: var(--space-smaller);
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-		text-align: center;
+	:global(.time-picker-field__band) {
+		position: absolute;
+		top: 50%;
+		right: 0;
+		left: 0;
+		height: 40px;
+		transform: translateY(-50%);
+		border-radius: var(--radius-base);
+		background: var(--color-time--surface);
+		pointer-events: none;
 	}
 
 	:global(.time-picker-field__column) {
+		position: relative;
 		display: grid;
-		max-height: 216px;
-		gap: var(--space-smallest);
+		height: 180px;
 		overflow-y: auto;
-		padding: 90px var(--space-smallest);
+		padding: 72px 0;
 		box-sizing: border-box;
-		border-radius: var(--radius-base);
-		background: linear-gradient(transparent, var(--color-time--surface), transparent);
-		scrollbar-width: thin;
+		scrollbar-width: none;
+		mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent);
+	}
+
+	:global(.time-picker-field__column::-webkit-scrollbar) {
+		display: none;
 	}
 
 	:global(.time-picker-field__column button) {
 		min-height: 36px;
 		border: 0;
 		border-radius: var(--radius-base);
-		color: var(--color-text);
+		color: var(--color-text--secondary);
 		background: transparent;
 		font: inherit;
-		font-weight: 600;
+		font-size: var(--typography--fontSize-base);
+		font-weight: 500;
 		cursor: pointer;
+		transition:
+			color var(--timing-quick),
+			background-color var(--timing-quick);
 	}
 
-	:global(.time-picker-field__column button:hover),
-	:global(.time-picker-field__column button:focus-visible) {
+	:global(.time-picker-field__column button:hover) {
 		color: var(--color-heading);
 		background: var(--color-surface--hover);
+	}
+
+	:global(.time-picker-field__column button:focus-visible) {
 		outline: none;
 		box-shadow: var(--shadow-focus);
 	}
 
 	:global(.time-picker-field__column button[aria-selected='true']) {
 		color: var(--color-time--onSurface);
-		background: var(--color-time--surface);
+		background: transparent;
+		font-size: 20px;
+		font-weight: 700;
+	}
+
+	:global(.time-picker-field__colon) {
+		position: relative;
+		color: var(--color-time--onSurface);
+		font-size: 20px;
+		font-weight: 700;
+	}
+
+	:global(.time-picker-field__period) {
+		display: grid;
+		gap: 2px;
+		padding: 3px;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background--subtle);
+	}
+
+	:global(.time-picker-field__period button) {
+		width: 48px;
+		height: 36px;
+		border: var(--border-base) solid transparent;
+		border-radius: 6px;
+		color: var(--color-text--secondary);
+		background: transparent;
+		font: inherit;
+		font-size: var(--typography--fontSize-label);
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	:global(.time-picker-field__period button:hover) {
+		color: var(--color-heading);
+		background: var(--color-surface--hover);
+	}
+
+	:global(.time-picker-field__period button:focus-visible) {
+		outline: none;
+		box-shadow: var(--shadow-focus);
+	}
+
+	:global(.time-picker-field__period button[aria-selected='true']) {
+		border-color: var(--color-border--interactive);
+		color: var(--color-heading);
+		background: var(--color-surface);
+		box-shadow: var(--shadow-button);
 	}
 
 	:global(.time-picker-field__footer) {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-base);
+		gap: 6px;
 		padding-top: var(--space-slim);
 		border-top: var(--border-base) solid var(--color-border);
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 	}
 
+	:global(.time-picker-field__keys) {
+		display: inline-flex;
+		gap: 4px;
+	}
+
+	:global(.time-picker-field__keys kbd) {
+		display: grid;
+		width: 22px;
+		height: 22px;
+		place-items: center;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: 6px;
+		color: var(--color-icon--secondary);
+		background: var(--color-surface--background--subtle);
+	}
+
+	:global(.time-picker-field__keys svg) {
+		width: 12px;
+		height: 12px;
+	}
+
 	:global(.time-picker-field__footer button) {
-		padding: var(--space-smaller) var(--space-base);
+		height: 32px;
+		margin-left: auto;
+		padding: 0 var(--space-base);
 		border: 0;
 		border-radius: var(--radius-base);
 		color: var(--color-text--reverse);
 		background: var(--color-interactive);
 		font: inherit;
-		font-weight: 700;
+		font-size: var(--typography--fontSize-label);
+		font-weight: 600;
 		cursor: pointer;
+	}
+
+	:global(.time-picker-field__columns--24) {
+		grid-template-columns: minmax(0, 1fr);
 	}
 
 	@media (max-width: 479px) {
 		:global(.time-picker-field__popover) {
 			width: min(296px, calc(100vw - var(--space-base)));
 		}
-
-		:global(.time-picker-field__footer span) {
-			display: none;
-		}
-
-		:global(.time-picker-field__footer) {
-			justify-content: flex-end;
-		}
 	}
 
-	:global(.time-picker-field__columns--24) {
-		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-	}
-	:global(.time-picker-field__colon) {
-		color: var(--color-time);
-		font-size: var(--typography--fontSize-larger);
-		font-weight: 600;
-	}
-	:global(.time-picker-field__column-wrap--period .time-picker-field__column) {
-		background: var(--color-surface--background--subtle);
-		padding: var(--space-smaller);
-	}
-	:global(.time-picker-field__column-wrap--period button[aria-selected='true']) {
-		background: var(--color-surface);
-		box-shadow: var(--shadow-button);
-	}
 	:global(.time-picker-field__trigger svg) {
 		width: 14px;
 		height: 14px;
@@ -545,12 +659,5 @@
 	:global(.time-picker-field__footer button:focus-visible) {
 		outline: none;
 		box-shadow: var(--shadow-focus);
-	}
-	:global(.time-picker-field__duration) {
-		border-radius: var(--radius-circle);
-		background: var(--color-time--surface);
-		color: var(--color-time--onSurface);
-		padding: var(--space-smaller) var(--space-small);
-		font-size: var(--typography--fontSize-small);
 	}
 </style>
