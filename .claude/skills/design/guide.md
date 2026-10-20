@@ -4,7 +4,8 @@
 ## Design decision
 Before start designing in pencil app see what our app design looks like today. Then pick a type from below and create at least 2 variant
 
-1. New concept: If you think a complete redesign from scratch with new concept would look better, forget what the app design has and make a Completely New Design of your way 
+1. New concept: If you think a complete redesign from scratch with new concept would look better,  dont follow the app current design and Make a Completely New Design of your way  
+
 2. Refine Existing Design: If you think the current look is good, but need tweaks or customizations.
 
 ## Design prefernces that must meet

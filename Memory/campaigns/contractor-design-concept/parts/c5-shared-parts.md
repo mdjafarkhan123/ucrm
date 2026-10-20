@@ -18,7 +18,7 @@
 | 7 Small helpers | ListLoadMore, FormErrorSummary, PencilButton, KpiCard | Approved `eJ0QQ` 2026-10-19: Load more B (footer bar with count), Form error B (checklist card), Pencil button A (icon button), Number cards B with note 12/500; looks in `lists.md`, `notices.md`, `buttons.md`, `cards.md`; to build |
 | 8 Photos and files | Lightbox, FileThumb, PhotoSlot, FileUploader | Approved `b4BxuV` 2026-10-19: Viewer A with B's glass count and joined download/close, File picture B (paper sheets, file-family tab colours) with A's big check/failed boxes, Photo box A, Upload list B; looks in `files.md`, colours in `colors.md`; to build |
 | 9 Notes and attachments | AuthorMeta, NoteBody, NoteFiles, PendingFilesCard, AttachmentSurface | Approved `KuOmH` 2026-10-19: Author line B (name over time, Edited tag), Note text B (teal mention chip), Note files B (96×72 photos, file chips), Files waiting B (upload list lines) with A's red-edged failed row, Files card B (labelled Add); looks in `notes.md`, `files.md`; to build |
-| 10 Price book | CatalogItemPicker, CatalogItemDialog, PriceBookDrawer | Drawn 2026-10-20 on `ZWTSi`: refine A/B per part; at Jafar's request also new-concept pop-ups C (green live preview + form, 940) and D (document style, 640), and new-concept search lists C (list + preview) and D (picture cards); waiting for his pick |
+| 10 Price book | CatalogItemPicker, CatalogItemDialog, PriceBookDrawer | Approved `ZWTSi` 2026-10-20: Search list B with D's picture cards for items with a photo; New item pop-up C (new concept, green live preview); Drawer B with A's type tags on every row; looks in `price-book.md`; to build |
 
 ## Batch 6b new behaviour (Jafar, 2026-10-19)
 
@@ -29,6 +29,15 @@
   mapped to the token family so dark mode follows). A new tag gets the next unused colour; whoever may create
   tags may change a tag's colour from the list's "⋯" menu; colour changes everywhere. Pick-only people see no
   "⋯". Replaces the random `colorForId` colours and the grey `quiet` look.
+
+## Batch 10 new behaviour (Jafar, 2026-10-20)
+
+- Search list: items with a photo show as picture cards before the rows of their group.
+- New item pop-up C: 940 wide; the left side previews the line live as fields are typed, with the price, a cost
+  bar and "You keep $X · N%" worked out from cost and price. People who may not see costs see no bar, legend or
+  cost. Unit moves into the price strip; labor and tax are option rows. Title wording still open (Jafar was asked
+  whether "New price book item" should read "Add product or service").
+- Drawer: the foot counts lines added since it opened; added rows keep the count chip and an Add again button.
 
 ## Approved reference and proof
 
