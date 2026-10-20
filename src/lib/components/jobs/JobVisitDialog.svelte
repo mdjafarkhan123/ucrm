@@ -295,6 +295,7 @@
 					</Button>
 				{:else}
 					<ProductsAndServicesBlock
+						concept
 						lines={savedPricingLines}
 						editable={pricingEditable}
 						alwaysEditing={pricingEditable}

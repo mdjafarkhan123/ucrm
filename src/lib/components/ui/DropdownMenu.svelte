@@ -269,7 +269,9 @@
 		width: 260px;
 	}
 
-	:global(.dropdown-menu__group + .dropdown-menu__group) {
+	:global(.dropdown-menu__group + .dropdown-menu__group),
+	// The footer's divider also follows plain items, not only another group.
+	:global(.dropdown-menu__item + .dropdown-menu__group) {
 		margin-top: var(--space-small);
 		padding-top: var(--space-small);
 		border-top: var(--border-base) solid var(--color-border);

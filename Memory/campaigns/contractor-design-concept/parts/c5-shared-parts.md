@@ -111,6 +111,23 @@ Hand-off for the builder:
 - Couldn't load: red chip; no address (manual or business wording as today): amber chip.
 - In the composer route the chip sits before the arrow; the recipient may truncate, the chip never wraps.
 
+## Batch 14 build — merged 2026-10-20
+
+Rollout: every `ProductsAndServicesBlock` caller now passes `concept` (job, quote, invoice, request pricing,
+new quote/request/invoice/job forms, visit pop-up); concept table rules moved off `.job-detail` to
+`.pricing-table--concept` / `.pricing-block--concept`. Built: empty two choice tiles, crew work list (prices
+hidden) with `IconTile` 56, quote group titles / text lines / tinted add-ons with outlined pill, locked
+informative band, foot strips (client eye, invoice lock, eye-off), loading rows, couldn't load, progress
+"Due this invoice" box, invoice service-date box (CalendarPicker inside, its own button is the icon), card
+tile defaults to quote box (invoices pass receipt/invoice). Light screenshots matched `vsT0H`.
+Proof: `docs/evidence/2026-10-20-batch14/README.md`. Light and dark checks cover job, quote, invoice, request,
+all four new-record forms, and a real per-visit pop-up. The forms' empty state now uses the two choice tiles;
+the narrow visit editor no longer clips unit prices.
+
+## Batch 15 Notes panel — built 2026-10-20
+
+Commit `54d526a1` on `claude/concept-batch14-15`, merged with Batch 14; proof `docs/evidence/2026-10-20-batch15/README.md`.
+
 ## Batch 15 Notes panel — approved 2026-10-20
 
 Board `l9ZBWI`, A. Restyle of the compact panel only; every control and the staged-save flow are live today.

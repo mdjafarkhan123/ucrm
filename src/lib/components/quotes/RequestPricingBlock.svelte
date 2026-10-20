@@ -38,6 +38,7 @@
 </script>
 
 <ProductsAndServicesBlock
+	concept
 	lines={saved?.lines ?? []}
 	revision={saved?.revision ?? 0}
 	editable={saved?.editable ?? false}

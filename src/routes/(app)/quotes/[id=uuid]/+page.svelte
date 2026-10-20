@@ -1111,6 +1111,7 @@
 					</SectionBlock>{/if}
 
 				<ProductsAndServicesBlock
+					concept
 					lines={quoteLines}
 					quoteChoices
 					flush

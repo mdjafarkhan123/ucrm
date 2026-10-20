@@ -6,6 +6,8 @@
 	import { dragHandleZone, dragHandle } from 'svelte-dnd-action';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
+	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
+	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
@@ -62,6 +64,10 @@
 	import toolIcon from '@tabler/icons/outline/tool.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	import eyeOffIcon from '@tabler/icons/outline/eye-off.svg?raw';
+	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
+	import chevronRightIcon from '@tabler/icons/outline/chevron-right.svg?raw';
+	import xIcon from '@tabler/icons/outline/x.svg?raw';
 
 	// One "Products and services" section, matching the real Jobber quote line-item card
 	// (jobber-03-quotes.md §8.1): name/qty/price/total on top, description + a photo underneath, drag to
@@ -94,7 +100,7 @@
 		saveLabel = 'Save pricing',
 		lockedMessage = '',
 		hint,
-		icon = listIcon,
+		icon,
 		tone,
 		clientSees,
 		flush = false,
@@ -431,6 +437,12 @@
 	function openEditWithFirstLine() {
 		openEdit();
 		if (draftLines.length === 0) void addLine();
+	}
+
+	// The empty card's second way in: open the lines and the Price book drawer together.
+	function openEditWithPriceBook() {
+		openEdit();
+		openPriceBook();
 	}
 
 	async function addLine() {
@@ -1004,23 +1016,67 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
+{#snippet addOnPill(recommended: boolean)}
+	<span class={['pricing-addon', recommended && 'pricing-addon--recommended']}>
+		<span class="pricing-addon__icon" aria-hidden="true"
+			>{@html recommended ? starIcon : circlePlusIcon}</span
+		>
+		{recommended ? 'Recommended add-on' : 'Optional add-on'}
+	</span>
+{/snippet}
+
+{#snippet emptyChoices(onAdd: () => void, onPick: () => void)}
+	<div class="pricing-empty__choices">
+		<button type="button" class="pricing-empty__choice" disabled={saving} onclick={onAdd}>
+			<IconTile icon={plusIcon} tone="job" />
+			<span class="pricing-empty__choice-text">
+				<span class="pricing-empty__choice-title">Add a line item</span>
+				<span class="pricing-empty__choice-hint">Type a name, quantity and price</span>
+			</span>
+			<span class="pricing-empty__choice-arrow" aria-hidden="true">{@html chevronRightIcon}</span>
+		</button>
+		<button
+			type="button"
+			class="pricing-empty__choice"
+			disabled={saving}
+			onmouseenter={warmPriceBook}
+			onfocus={warmPriceBook}
+			onclick={onPick}
+		>
+			<IconTile icon={bookIcon} tone="quote" />
+			<span class="pricing-empty__choice-text">
+				<span class="pricing-empty__choice-title">Pick from the price book</span>
+				<span class="pricing-empty__choice-hint">Your saved products and services</span>
+			</span>
+			<span class="pricing-empty__choice-arrow" aria-hidden="true">{@html chevronRightIcon}</span>
+		</button>
+	</div>
+{/snippet}
+
 <SectionBlock
 	title="Products and services"
-	{icon}
-	{tone}
+	icon={icon ?? (concept ? packageIcon : listIcon)}
+	tone={tone ?? (concept ? 'quote' : undefined)}
 	level={2}
 	hint={concept && isEditing && !alwaysEditing
 		? draftLines.length > 1
 			? 'Editing · drag ⠿ to reorder'
 			: 'Editing'
-		: hint}
+		: concept && loading
+			? 'Loading…'
+			: concept && loadFailed
+				? "Couldn't load"
+				: concept && !isEditing && savedLines.length === 0
+					? 'Nothing priced yet'
+					: hint}
 	class={[
 		flush &&
 			(concept
 				? !loading && !loadFailed && (isEditing || savedLines.length > 0)
 				: !isEditing && !loading && !loadFailed && savedLines.length > 0) &&
 			'section-block--flush',
-		concept && isEditing && !alwaysEditing && 'pricing-block--editing'
+		concept && isEditing && !alwaysEditing && 'pricing-block--editing',
+		concept && 'pricing-block--concept'
 	]
 		.filter(Boolean)
 		.join(' ')}
@@ -1033,16 +1089,37 @@
 
 	{#if notice}<p class="pricing-block__notice" role="status">{notice}</p>{/if}
 
-	{#if loading}
+	{#if concept && quoteChoices && !editable && lockedMessage && !loading && !loadFailed}
+		<p class="pricing-block__band">
+			<span class="pricing-block__strip-icon" aria-hidden="true">{@html lockIcon}</span>
+			{lockedMessage}
+		</p>
+	{/if}
+
+	{#if loading && concept}
+		<LoadingSkeleton variant="table" rows={3} label="Loading pricing" />
+	{:else if loading}
 		<p class="pricing-block__hint">Loading pricing…</p>
+	{:else if loadFailed && concept}
+		<ErrorState
+			title="Couldn't load the pricing"
+			description="Something went wrong on our side. Reload the page to try again."
+		/>
 	{:else if loadFailed}
 		<p class="pricing-block__error" role="alert">That pricing could not be loaded.</p>
 	{:else if isEditing}
 		<div class={['pricing-edit', concept && 'pricing-edit--concept concept-fields']}>
 			{#if draftLines.length === 0}
-				<p class="pricing-block__hint">
-					Nothing priced yet. Add a line item, or pick one out of the price book.
-				</p>
+				{#if concept && alwaysEditing}
+					<div class="pricing-empty">
+						<p class="pricing-empty__line">Nothing priced yet. Choose how to start.</p>
+						{@render emptyChoices(addLine, openPriceBook)}
+					</div>
+				{:else}
+					<p class="pricing-block__hint">
+						Nothing priced yet. Add a line item, or pick one out of the price book.
+					</p>
+				{/if}
 			{/if}
 			<div
 				class="pricing-card-list"
@@ -1169,7 +1246,7 @@
 										/>
 									</div>
 								</div>
-								{#if showServiceDate}
+								{#if showServiceDate && !concept}
 									<div class="pricing-card__service-date">
 										<CalendarPicker
 											id={`pricing-service-date-${line.id}`}
@@ -1207,6 +1284,34 @@
 												? ' · from the price book'
 												: ''}</span
 										>
+										{#if showServiceDate}
+											<span class="pricing-card__date">
+												<span class="pricing-card__date-label">Service date</span>
+												<CalendarPicker
+													id={`pricing-service-date-${line.id}`}
+													label="Service date"
+													hideLabel
+													size="small"
+													{locale}
+													disabled={saving}
+													bind:value={
+														() => calendarDateFromString(line.service_date),
+														(value) =>
+															updateLine(line.id, { service_date: calendarDateToString(value) })
+													}
+												/>
+												{#if line.service_date}
+													<button
+														type="button"
+														class="pricing-card__date-clear"
+														aria-label="Clear the service date"
+														disabled={saving}
+														onclick={() => updateLine(line.id, { service_date: null })}
+														>{@html xIcon}</button
+													>
+												{/if}
+											</span>
+										{/if}
 									</div>
 								{/if}
 							{/if}
@@ -1225,29 +1330,32 @@
 				{/each}
 			</div>
 			<div class="pricing-block__footer">
-				<Button
-					size="small"
-					variant={concept ? 'secondary' : 'tertiary'}
-					disabled={saving}
-					onclick={addLine}
-				>
-					{#if concept}<span class="pricing-block__price-book-icon" aria-hidden="true"
-							>{@html plusIcon}</span
-						>{/if}
-					Add line item
-				</Button>
-				<span bind:this={priceBookButton} class="pricing-block__price-book">
+				{#if !(concept && alwaysEditing && draftLines.length === 0)}
 					<Button
 						size="small"
-						variant="secondary"
+						variant={concept ? 'secondary' : 'tertiary'}
 						disabled={saving}
-						onhover={warmPriceBook}
-						onclick={openPriceBook}
+						onclick={addLine}
 					>
-						<span class="pricing-block__price-book-icon" aria-hidden="true">{@html bookIcon}</span>
-						Price book
+						{#if concept}<span class="pricing-block__price-book-icon" aria-hidden="true"
+								>{@html plusIcon}</span
+							>{/if}
+						Add line item
 					</Button>
-				</span>
+					<span bind:this={priceBookButton} class="pricing-block__price-book">
+						<Button
+							size="small"
+							variant="secondary"
+							disabled={saving}
+							onhover={warmPriceBook}
+							onclick={openPriceBook}
+						>
+							<span class="pricing-block__price-book-icon" aria-hidden="true">{@html bookIcon}</span
+							>
+							Price book
+						</Button>
+					</span>
+				{/if}
 				{#if quoteChoices}
 					<Button
 						size="small"
@@ -1268,7 +1376,11 @@
 				{/if}
 			</div>
 			{#if quoteChoices && clientView}
-				{@render clientView()}
+				{#if concept}
+					<div class="pricing-block__client-view">{@render clientView()}</div>
+				{:else}
+					{@render clientView()}
+				{/if}
 			{/if}
 			{#if concept && showPrices}
 				<div class="pricing-block__concept-totals">
@@ -1281,7 +1393,7 @@
 							</div>
 						{:else}
 							<div class="pricing-block__concept-subtotal">
-								<span>Subtotal</span>
+								<span>{quoteChoices ? 'Required subtotal' : 'Subtotal'}</span>
 								<span>{formatMoney(draftSubtotal(draftLines))}</span>
 							</div>
 						{/if}
@@ -1316,6 +1428,65 @@
 				</div>
 			{/if}
 		</div>
+	{:else if savedLines.length === 0 && concept}
+		<div class="pricing-empty">
+			<p class="pricing-empty__line">{emptyDescription}</p>
+			{#if editable}
+				{@render emptyChoices(openEditWithFirstLine, openEditWithPriceBook)}
+			{/if}
+		</div>
+	{:else if concept && !showPrices}
+		<!-- Prices hidden (`vsT0H` row 2): the crew's work list — what to bring and do, without money. -->
+		<ul class="pricing-crew">
+			{#each savedLines as line (line.id)}
+				{#if quoteChoices && line.line_kind === 'heading'}
+					<li class="pricing-crew__group">{line.name}</li>
+				{:else}
+					<li class="pricing-crew__line">
+						{#if quoteChoices && line.line_kind === 'text'}
+							<IconTile icon={fileTextIcon} tone="inactive" size={56} />
+						{:else if line.image_file_id}
+							<img
+								class="pricing-crew__photo"
+								src={fileImageUrl(line.image_file_id, 'thumb')}
+								alt=""
+								loading="lazy"
+							/>
+						{:else}
+							<IconTile
+								icon={line.category === 'service' ? toolIcon : packageIcon}
+								tone={line.category === 'service' ? 'job' : 'quote'}
+								size={56}
+							/>
+						{/if}
+						{#if !(quoteChoices && line.line_kind === 'text')}
+							<span class="pricing-crew__count"
+								>{line.quantity}{line.unit_label ? ` ${line.unit_label}` : '×'}</span
+							>
+						{/if}
+						<span class="pricing-crew__text">
+							<span class="pricing-crew__title">
+								<span class="pricing-crew__name">{line.name}</span>
+								{#if !(quoteChoices && line.line_kind === 'text') && line.category}
+									<span
+										class={[
+											'pricing-table__kind',
+											line.category === 'service' && 'pricing-table__kind--service'
+										]}>{line.category === 'service' ? 'Service' : 'Product'}</span
+									>
+								{/if}
+								{#if quoteChoices && line.selection_kind === 'optional'}
+									{@render addOnPill(line.is_recommended)}
+								{/if}
+							</span>
+							{#if line.description}
+								<span class="pricing-crew__description">{line.description}</span>
+							{/if}
+						</span>
+					</li>
+				{/if}
+			{/each}
+		</ul>
 	{:else if savedLines.length === 0}
 		<EmptyState
 			icon={listIcon}
@@ -1332,7 +1503,7 @@
 		</EmptyState>
 	{:else}
 		<div class="pricing-table__scroll">
-			<table class="pricing-table">
+			<table class={['pricing-table', concept && 'pricing-table--concept']}>
 				<thead>
 					<tr>
 						<th scope="col">{concept ? 'Product or service' : 'Line item'}</th>
@@ -1355,7 +1526,29 @@
 				</thead>
 				<tbody>
 					{#each savedLines as line (line.id)}
-						{#if quoteChoices && line.line_kind !== 'priced'}
+						{#if concept && quoteChoices && line.line_kind === 'heading'}
+							<tr class="pricing-table__group">
+								<th scope="row" colspan={savedColumnCount}>
+									<span class="pricing-table__group-title">{line.name}</span>
+								</th>
+							</tr>
+						{:else if concept && quoteChoices && line.line_kind === 'text'}
+							<tr>
+								<th scope="row" colspan={savedColumnCount}>
+									<span class="pricing-table__cell">
+										<span class="pricing-table__lead">
+											<IconTile icon={fileTextIcon} tone="inactive" />
+										</span>
+										<span class="pricing-table__text">
+											<span class="pricing-table__name">{line.name}</span>
+											{#if line.description}<span class="pricing-table__description"
+													>{line.description}</span
+												>{/if}
+										</span>
+									</span>
+								</th>
+							</tr>
+						{:else if quoteChoices && line.line_kind !== 'priced'}
 							<tr class:pricing-table__heading={line.line_kind === 'heading'}>
 								<th scope="row" colspan={savedColumnCount}>
 									<span class="pricing-table__name">{line.name}</span>
@@ -1365,11 +1558,19 @@
 								</th>
 							</tr>
 						{:else}
-							<tr>
+							{@const addOn = concept && quoteChoices && line.selection_kind === 'optional'}
+							<tr
+								class={[
+									addOn && 'pricing-table__addon',
+									addOn && line.is_recommended && 'pricing-table__addon--recommended'
+								]}
+							>
 								<th scope="row">
 									<span class="pricing-table__cell">
 										{#if concept}
 											<span class="pricing-table__lead">
+												{#if addOn}<span class="pricing-table__stripe" aria-hidden="true"
+													></span>{/if}
 												{#if line.image_file_id}
 													<img
 														class="pricing-table__thumb"
@@ -1396,7 +1597,9 @@
 														]}>{line.category === 'service' ? 'Service' : 'Product'}</span
 													>
 												{/if}
-												{#if quoteChoices && line.selection_kind === 'optional'}
+												{#if addOn}
+													{@render addOnPill(line.is_recommended)}
+												{:else if quoteChoices && line.selection_kind === 'optional'}
 													<span class="pricing-table__choice">
 														<span class="pricing-table__choice-icon" aria-hidden="true"
 															>{@html circlePlusIcon}</span
@@ -1457,6 +1660,15 @@
 					{/each}
 				</dl>
 			</div>
+		{:else if showPrices && concept}
+			<div class="pricing-block__summary">
+				<dl class="pricing-block__summary-list">
+					<div class="pricing-block__summary-row pricing-block__summary-row--total">
+						<dt>{progressColumn ? 'Due this invoice' : totalLabel}</dt>
+						<dd>{formatMoney(savedSubtotal(savedLines))}</dd>
+					</div>
+				</dl>
+			</div>
 		{:else if showPrices}
 			<div class="pricing-block__totals">
 				<div class="pricing-block__totals-row">
@@ -1467,7 +1679,44 @@
 		{/if}
 	{/if}
 
-	{#if !editable && (lockedMessage || clientSees) && !loading && !loadFailed}
+	{#if concept && !loading && !loadFailed && !isEditing && savedLines.length > 0}
+		{@const footLocked = !editable && !quoteChoices ? lockedMessage : ''}
+		{@const footClient = !editable && clientSees ? clientSees : ''}
+		{#if footLocked || footClient || !showPrices}
+			<div class="pricing-block__strip">
+				{#if footLocked}
+					<p class="pricing-block__strip-item">
+						<span
+							class={[
+								'pricing-block__strip-icon',
+								(showServiceDate || progressColumn) && 'pricing-block__strip-icon--invoice'
+							]}
+							aria-hidden="true">{@html lockIcon}</span
+						>
+						{footLocked}
+					</p>
+				{/if}
+				{#if !showPrices}
+					<p class="pricing-block__strip-item">
+						<span
+							class="pricing-block__strip-icon pricing-block__strip-icon--informative"
+							aria-hidden="true">{@html eyeOffIcon}</span
+						>
+						Prices are hidden for your role.
+					</p>
+				{/if}
+				{#if footClient && showPrices}
+					<p class="pricing-block__strip-item">
+						<span
+							class="pricing-block__strip-icon pricing-block__strip-icon--client"
+							aria-hidden="true">{@html eyeIcon}</span
+						>
+						{footClient}
+					</p>
+				{/if}
+			</div>
+		{/if}
+	{:else if !concept && !editable && (lockedMessage || clientSees) && !loading && !loadFailed}
 		<div class="pricing-block__locked">
 			{#if lockedMessage}
 				<p class="pricing-block__hint pricing-block__locked-note">
@@ -2010,9 +2259,9 @@
 		}
 	}
 
-	// Job details concept (`tNdkX`): each line leads with a 40px photo, or a tile in its kind's colour
-	// (Product in the quote colour, Service in the job colour), and names its kind in a pill.
-	:global(.job-detail) .pricing-table {
+	// Concept look (`tNdkX`, every page since Batch 14 `vsT0H`): each line leads with a 40px photo, or a tile
+	// in its kind's colour (Product in the quote colour, Service in the job colour), and names its kind in a pill.
+	.pricing-table.pricing-table--concept {
 		th,
 		td {
 			padding-block: var(--space-slim);
@@ -2034,20 +2283,20 @@
 		tbody tr:last-child td {
 			border-bottom: 0;
 		}
-		&__cell {
+		.pricing-table__cell {
 			display: flex;
 			align-items: center;
 			gap: var(--space-base);
 		}
-		&__text {
+		.pricing-table__text {
 			display: block;
 			min-width: 0;
 		}
-		&__lead {
+		.pricing-table__lead {
 			display: inline-flex;
 			flex: 0 0 auto;
 		}
-		&__thumb {
+		.pricing-table__thumb {
 			display: block;
 			width: 40px;
 			height: 40px;
@@ -2055,7 +2304,7 @@
 			border-radius: var(--radius-tile-large);
 			object-fit: cover;
 		}
-		&__kind {
+		.pricing-table__kind {
 			display: inline-flex;
 			align-items: center;
 			gap: 6px;
@@ -2083,28 +2332,386 @@
 				}
 			}
 		}
-		&__line-total {
+		.pricing-table__line-total {
 			color: var(--color-heading);
 			font-weight: 600;
 		}
+		.pricing-table__description {
+			font-size: var(--typography--fontSize-small);
+		}
+
+		// A heading line is a group title with a short bar in the quote colour, and no rule under it.
+		.pricing-table__group th {
+			padding: 18px var(--space-medium) 6px;
+			border-bottom: 0;
+		}
+		.pricing-table__group-title {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			color: var(--color-heading);
+			font-size: 16px;
+			font-weight: 700;
+
+			&::before {
+				content: '';
+				width: 4px;
+				height: 18px;
+				border-radius: 2px;
+				background: var(--color-quote);
+			}
+		}
+
+		// Add-ons the client may choose: tinted rows with a stripe in the same family; the money reads
+		// quieter, since it is not in the total until the client picks it.
+		.pricing-table__addon {
+			th,
+			td {
+				background: var(--color-inactive--surface);
+			}
+			td,
+			.pricing-table__line-total {
+				color: var(--color-text--secondary);
+			}
+			.pricing-table__stripe {
+				background: var(--color-inactive);
+			}
+			&--recommended {
+				th,
+				td {
+					background: var(--color-warning--surface);
+				}
+				.pricing-table__stripe {
+					background: var(--color-warning);
+				}
+			}
+		}
+		.pricing-table__lead:has(.pricing-table__stripe) {
+			gap: var(--space-slim);
+			align-items: center;
+		}
+		.pricing-table__stripe {
+			width: 3px;
+			height: 40px;
+			border-radius: 2px;
+		}
 	}
-	:global(.job-detail) .pricing-block__summary {
+
+	// The outlined pill naming an add-on: white, edged and iconed in its row's family.
+	.pricing-addon {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		padding: 3px 8px;
+		border: var(--border-base) solid var(--color-inactive);
+		border-radius: var(--radius-circle);
+		color: var(--color-inactive--onSurface);
+		background: var(--color-surface);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+		white-space: nowrap;
+
+		&__icon {
+			display: inline-flex;
+			color: var(--color-inactive);
+
+			:global(svg) {
+				display: block;
+				width: 12px;
+				height: 12px;
+			}
+		}
+
+		&--recommended {
+			border-color: var(--color-warning);
+			color: var(--color-warning--onSurface);
+
+			.pricing-addon__icon {
+				color: var(--color-warning);
+			}
+		}
+	}
+
+	// Empty (`vsT0H` row 1): one quiet line, then two choice tiles side by side.
+	.pricing-empty {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+
+		&__line {
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-base);
+		}
+
+		&__choices {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+			gap: var(--space-slim);
+		}
+
+		&__choice {
+			display: flex;
+			align-items: center;
+			gap: var(--space-slim);
+			padding: 14px var(--space-base);
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-large);
+			color: inherit;
+			background: var(--color-surface--background);
+			font: inherit;
+			text-align: left;
+			cursor: pointer;
+			transition:
+				border-color var(--timing-base),
+				background-color var(--timing-base);
+
+			&:hover {
+				border-color: var(--color-border--interactive--hover);
+				background: var(--color-surface--hover);
+			}
+			&:active {
+				background: var(--color-surface--active);
+			}
+			&:focus-visible {
+				outline: none;
+				box-shadow: var(--shadow-focus);
+			}
+		}
+
+		&__choice-text {
+			display: flex;
+			flex: 1 1 auto;
+			flex-direction: column;
+			gap: 2px;
+			min-width: 0;
+		}
+
+		&__choice-title {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
+		}
+
+		&__choice-hint {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__choice-arrow {
+			display: inline-flex;
+			color: var(--color-icon--secondary);
+
+			:global(svg) {
+				display: block;
+				width: 16px;
+				height: 16px;
+			}
+		}
+	}
+
+	// Prices hidden (`vsT0H` row 2): white line cards on the page colour, a count box, no money.
+	.pricing-crew {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		margin: 0;
+		padding: var(--space-base);
+		border-top: var(--border-base) solid var(--color-border);
+		background: var(--color-surface--background);
+		list-style: none;
+
+		&__group {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			padding: var(--space-small) var(--space-smaller) 0;
+			color: var(--color-heading);
+			font-size: 16px;
+			font-weight: 700;
+
+			&::before {
+				content: '';
+				width: 4px;
+				height: 18px;
+				border-radius: 2px;
+				background: var(--color-quote);
+			}
+		}
+
+		&__line {
+			display: flex;
+			align-items: center;
+			gap: 14px;
+			padding: var(--space-slim);
+			border: var(--border-base) solid var(--color-border);
+			border-radius: 12px;
+			background: var(--color-surface);
+		}
+
+		&__photo {
+			display: block;
+			flex: 0 0 auto;
+			width: 56px;
+			height: 56px;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-tile-large);
+			object-fit: cover;
+		}
+
+		&__count {
+			display: inline-flex;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			min-width: 52px;
+			height: 36px;
+			padding: 0 var(--space-small);
+			border-radius: var(--radius-base);
+			color: var(--color-heading);
+			background: var(--color-surface--background);
+			font-size: 16px;
+			font-weight: 700;
+			font-variant-numeric: tabular-nums;
+			white-space: nowrap;
+		}
+
+		&__text {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-smaller);
+			min-width: 0;
+		}
+
+		&__title {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 4px var(--space-small);
+		}
+
+		&__name {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-large);
+			font-weight: 600;
+		}
+
+		&__description {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-label);
+		}
+
+		// The kind pill borrows the table's look.
+		:global(.pricing-table__kind) {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 3px 10px;
+			border-radius: var(--radius-circle);
+			color: var(--color-quote--onSurface);
+			background: var(--color-quote--surface);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+
+			&::before {
+				content: '';
+				width: 6px;
+				height: 6px;
+				border-radius: var(--radius-circle);
+				background: var(--color-quote);
+			}
+		}
+		:global(.pricing-table__kind--service) {
+			color: var(--color-job--onSurface);
+			background: var(--color-job--surface);
+
+			&::before {
+				background: var(--color-job);
+			}
+		}
+	}
+
+	// A locked quote says so in an informative band right under the header.
+	.pricing-block__band {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+		margin: 0;
+		padding: 10px var(--space-medium);
+		border-top: var(--border-base) solid var(--color-border);
+		color: var(--color-informative--onSurface);
+		background: var(--color-informative--surface);
+		font-size: var(--typography--fontSize-label);
+		font-weight: 500;
+
+		.pricing-block__strip-icon {
+			color: var(--color-informative);
+		}
+	}
+
+	// The foot strip closing a saved card: why it is locked, hidden prices, what the client sees.
+	.pricing-block__strip {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-small) var(--space-base);
+		padding: var(--space-slim) var(--space-medium);
+		border-top: var(--border-base) solid var(--color-border);
+		background: var(--color-surface--background);
+	}
+	.pricing-block__strip-item {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-small);
+		margin: 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-label);
+		font-weight: 500;
+	}
+	.pricing-block__strip-icon {
+		display: inline-flex;
+		flex: 0 0 auto;
+
+		:global(svg) {
+			display: block;
+			width: 16px;
+			height: 16px;
+		}
+
+		color: var(--color-icon--secondary);
+
+		&--invoice {
+			color: var(--color-invoice);
+		}
+		&--informative {
+			color: var(--color-informative);
+		}
+		&--client {
+			color: var(--color-client);
+		}
+	}
+
+	// Concept loading and couldn't load sit inside the card's body.
+	:global(.pricing-block--concept) :global(.loading--table) {
+		padding: 0;
+	}
+	:global(.pricing-block--concept) .pricing-block__summary {
 		border-top: var(--border-base) solid var(--color-border);
 	}
 
-	// Job details concept (`tNdkX`): the totals sit in a soft grey panel under the table, with the Total in a
+	// Concept (`tNdkX`): the totals sit in a soft grey panel under the table, with the Total in a
 	// white box of its own.
-	:global(.job-detail) .pricing-block__summary {
+	:global(.pricing-block--concept) .pricing-block__summary {
 		padding: var(--space-base) var(--space-large) var(--space-large);
 	}
-	:global(.job-detail) .pricing-block__summary-list {
+	:global(.pricing-block--concept) .pricing-block__summary-list {
 		width: min(360px, 100%);
 		gap: var(--space-small);
 		padding: var(--space-slim);
 		border-radius: var(--radius-large);
 		background: var(--color-surface--background--subtle);
 	}
-	:global(.job-detail) .pricing-block__summary-row {
+	:global(.pricing-block--concept) .pricing-block__summary-row {
 		padding: 0 var(--space-small);
 
 		&--total {
@@ -2237,6 +2844,78 @@
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-small);
 	}
+	.pricing-card__kind-row:has(.pricing-card__date) {
+		flex-wrap: wrap;
+	}
+	// A small date box with × (`vsT0H` row 4): the calendar's own field sits inside without its frame.
+	.pricing-card__date {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-small);
+		height: 32px;
+		padding: 0 6px 0 10px;
+		border: var(--border-base) solid var(--color-border--interactive);
+		border-radius: var(--radius-base);
+		background: var(--color-surface);
+
+		&:focus-within {
+			border-color: var(--color-interactive);
+		}
+
+		:global(.calendar-picker) {
+			min-width: 0;
+		}
+		// The picker's own button is the box's calendar icon, in the invoice colour.
+		:global(.calendar-picker__trigger) {
+			color: var(--color-invoice);
+			background: transparent;
+		}
+		:global(.calendar-picker__date-weekday) {
+			display: none;
+		}
+		:global(.calendar-picker__control) {
+			height: 28px;
+			min-height: 0;
+			border: 0;
+			box-shadow: none;
+			background: transparent;
+		}
+	}
+	.pricing-card__date-label {
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-label);
+		font-weight: 500;
+		white-space: nowrap;
+	}
+	.pricing-card__date-clear {
+		display: inline-grid;
+		width: 22px;
+		height: 22px;
+		place-items: center;
+		border: 0;
+		border-radius: var(--radius-small);
+		color: var(--color-icon--secondary);
+		background: transparent;
+		cursor: pointer;
+
+		&:hover:not(:disabled) {
+			color: var(--color-icon);
+			background: var(--color-surface--hover);
+		}
+		&:focus-visible {
+			outline: none;
+			box-shadow: var(--shadow-focus);
+		}
+		&:disabled {
+			cursor: not-allowed;
+		}
+
+		:global(svg) {
+			display: block;
+			width: 14px;
+			height: 14px;
+		}
+	}
 	.pricing-block__concept-totals {
 		display: flex;
 		justify-content: flex-end;
@@ -2299,6 +2978,11 @@
 			color: var(--color-critical);
 		}
 	}
+	// The quote's client-view controls keep the edit's side padding.
+	.pricing-block__client-view {
+		padding: var(--space-small) var(--space-medium);
+		border-bottom: var(--border-base) solid var(--color-border);
+	}
 	.pricing-block__save-status {
 		flex: 1 1 auto;
 		color: var(--color-text--secondary);
@@ -2332,6 +3016,12 @@
 		.pricing-card__description,
 		.pricing-card__image {
 			grid-column: 1 / -1;
+		}
+	}
+	@container (max-width: 300px) {
+		.pricing-card__row1,
+		.pricing-card--concept .pricing-card__row1 {
+			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 </style>
