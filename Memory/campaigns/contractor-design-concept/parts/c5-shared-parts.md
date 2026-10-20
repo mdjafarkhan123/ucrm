@@ -40,6 +40,13 @@
   tags may change a tag's colour from the list's "⋯" menu; colour changes everywhere. Pick-only people see no
   "⋯". Replaces the random `colorForId` colours and the grey `quiet` look.
 
+## Icon tile soft depth — approved 2026-10-20
+
+Board `k4k5Na`; rule in design `icon-shapes.md`; tokens `--color-<meaning>--surface-edge` and
+`--color-tile--highlight` already in `_variables.scss` (dark falls back to the plain tile). Builder: give every
+icon tile in code (shared `IconTile` styles, card header tiles, row tiles, empty-state tiles) the gradient, 1px
+edge and inset top light. Pencil: all tiles in `concept.pen` already follow.
+
 ## Batch 14 Products and services — approved 2026-10-20
 
 Board `vsT0H`. Jafar approved B for rows 1–3 and asked that no fill blends into what is behind it (guide rule 7).
