@@ -11,6 +11,7 @@
 </script>
 
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { tick } from 'svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -134,10 +135,7 @@
 			{#if column.kind === 'protected'}
 				{@const covered = stagesInColumn(column.key)}
 				<li class="stage-list__row stage-list__row--locked">
-					<span class="stage-list__lock" aria-hidden="true">
-						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						{@html lockIcon}
-					</span>
+					<IconTile icon={lockIcon} size={24} white />
 					<div class="stage-list__built-in">
 						<span class="stage-list__name">{BOARD_COLUMN_LABELS[column.key]}</span>
 						{@render warnAfter(
@@ -289,24 +287,6 @@
 				align-items: center;
 				padding: 10px 14px;
 				background: var(--color-surface--background--subtle);
-			}
-		}
-
-		// The lock sits in a small white tile so a built-in row reads as fixed, not as a form.
-		&__lock {
-			display: grid;
-			flex: 0 0 auto;
-			place-items: center;
-			width: 28px;
-			height: 28px;
-			border: var(--border-base) solid var(--color-border);
-			border-radius: 8px;
-			background: var(--color-surface);
-			color: var(--color-icon--secondary);
-
-			:global(svg) {
-				width: 14px;
-				height: 14px;
 			}
 		}
 

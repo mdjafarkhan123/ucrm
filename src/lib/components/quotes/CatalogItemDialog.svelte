@@ -379,9 +379,7 @@
 						<span aria-hidden="true">{@html eyeIcon}</span>On a quote it looks like
 					</div>
 					<div class="catalog-modal__line">
-						<span class="catalog-modal__line-icon" aria-hidden="true"
-							>{@html category === 'product' ? packageIcon : serviceIcon}</span
-						>
+						<IconTile icon={category === 'product' ? packageIcon : serviceIcon} tone="feature" size={40} />
 						<div>
 							<strong>{itemName.trim() || 'Your item name'}</strong>
 							<p>{description.trim() || 'The description your customer sees.'}</p>
@@ -660,19 +658,6 @@
 				line-height: 1.45;
 				margin-top: var(--space-smaller);
 				color: var(--color-feature--text--secondary);
-			}
-		}
-		&__line-icon {
-			display: grid;
-			place-items: center;
-			width: 44px;
-			height: 44px;
-			flex-shrink: 0;
-			border-radius: var(--radius-tile-large);
-			background: var(--color-feature--subtle);
-			:global(svg) {
-				width: 22px;
-				height: 22px;
 			}
 		}
 		&__quiet {

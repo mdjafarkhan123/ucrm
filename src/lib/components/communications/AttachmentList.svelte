@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import { formatFileSize } from '$lib/collaboration/format';
@@ -74,9 +75,7 @@
 			{@const state = 'status' in attachment ? stateOf(attachment) : null}
 			{@const available = isAvailable(attachment)}
 			<li class="attachment-list__item">
-				<span class="attachment-list__icon" aria-hidden="true"
-					>{@html iconForMimeType(attachment.mime_type)}</span
-				>
+				<IconTile icon={iconForMimeType(attachment.mime_type)} size={32} />
 				<span class="attachment-list__body">
 					<span class="attachment-list__name">{attachment.file_name}</span>
 					<span class="attachment-list__meta">
@@ -121,23 +120,6 @@
 			padding: var(--space-small) var(--space-base);
 			border: var(--border-base) solid var(--color-border);
 			border-radius: var(--radius-base);
-		}
-
-		&__icon {
-			display: grid;
-			width: 32px;
-			height: 32px;
-			flex: 0 0 auto;
-			place-items: center;
-			border-radius: var(--radius-base);
-			color: var(--color-icon);
-			background: var(--color-surface--background);
-
-			:global(svg) {
-				display: block;
-				width: 20px;
-				height: 20px;
-			}
 		}
 
 		&__body {

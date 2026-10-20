@@ -14,6 +14,7 @@
 </script>
 
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import arrowUpRightIcon from '@tabler/icons/outline/arrow-up-right.svg?raw';
 	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
@@ -60,15 +61,13 @@
 				></li>
 			{/if}
 			<li class="track__step" aria-current={step.state === 'current' ? 'step' : undefined}>
-				<span
-					class="track__tile"
-					class:track__tile--reached={step.state !== 'todo'}
-					style:--step-tone={known ? `var(--color-${known.kind})` : undefined}
-					style:--step-surface={known ? `var(--color-${known.kind}--surface)` : undefined}
-					aria-hidden="true"
-				>
-					{#if step.state === 'done'}{@html checkIcon}{:else if known}{@html known.icon}{/if}
-				</span>
+				<!-- A step not reached yet is a white tile; a reached one takes its record colour. -->
+				<IconTile
+					icon={step.state === 'done' ? checkIcon : (known?.icon ?? '')}
+					tone={step.state !== 'todo' && known ? known.kind : 'inactive'}
+					size={32}
+					white={step.state === 'todo'}
+				/>
 				<span class="track__text">
 					{#if step.href}
 						<a class="track__label" href={step.href}>{step.label}</a>
@@ -152,30 +151,6 @@
 			flex: 0 1 auto;
 			align-items: center;
 			gap: var(--space-small);
-		}
-
-		&__tile {
-			display: inline-grid;
-			flex: 0 0 auto;
-			width: 32px;
-			height: 32px;
-			place-items: center;
-			border: var(--border-base) solid var(--color-border--interactive);
-			border-radius: var(--radius-base);
-			color: var(--color-icon--secondary);
-			background: var(--color-surface);
-
-			&--reached {
-				border-color: transparent;
-				color: var(--step-tone);
-				background: var(--step-surface);
-			}
-
-			:global(svg) {
-				display: block;
-				width: 16px;
-				height: 16px;
-			}
 		}
 
 		&__text {

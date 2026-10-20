@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import cashIcon from '@tabler/icons/outline/cash.svg?raw';
 	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 	import type { JobCosting } from '$lib/jobs/api';
@@ -87,7 +88,7 @@
 {#if costing || subtotalMinor !== null}
 	<section class="job-total" aria-label="Job total">
 		<header class="job-total__head">
-			<span class="job-total__tile" aria-hidden="true">{@html cashIcon}</span>
+			<IconTile icon={cashIcon} tone="feature" size={40} />
 			<h2 class="job-total__title">Job total</h2>
 			{#if costing}
 				<span class="job-total__team"><span aria-hidden="true">{@html lockIcon}</span>Team only</span>
@@ -225,23 +226,6 @@
 			display: flex;
 			align-items: center;
 			gap: var(--space-slim);
-		}
-
-		&__tile {
-			display: inline-grid;
-			flex: 0 0 auto;
-			width: 40px;
-			height: 40px;
-			place-items: center;
-			border: var(--border-base) solid var(--color-feature--border);
-			border-radius: var(--radius-tile-large);
-			background: var(--color-feature--subtle);
-
-			:global(svg) {
-				display: block;
-				width: 20px;
-				height: 20px;
-			}
 		}
 
 		&__title {

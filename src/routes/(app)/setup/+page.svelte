@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { untrack } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
@@ -232,7 +233,7 @@
 					{#each WELCOME_POINTS as point (point.title)}
 						<li class="setup__point">
 							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							<span class="setup__point-icon" aria-hidden="true">{@html point.icon}</span>
+							<IconTile icon={point.icon} tone="success" size={32} />
 							<div>
 								<strong>{point.title}</strong>
 								<p>{point.body}</p>
@@ -515,23 +516,6 @@
 				color: var(--color-text--secondary);
 				font-size: var(--typography--fontSize-small);
 				line-height: var(--typography--lineHeight-base);
-			}
-		}
-
-		&__point-icon {
-			display: grid;
-			flex: none;
-			place-items: center;
-			width: 32px;
-			height: 32px;
-			border-radius: var(--radius-base);
-			color: var(--color-interactive);
-			background: var(--color-surface);
-			border: var(--border-base) solid var(--color-border);
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
 			}
 		}
 

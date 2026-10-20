@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { onDestroy, untrack } from 'svelte';
 	import AttachmentSurface from '$lib/components/collaboration/AttachmentSurface.svelte';
@@ -529,9 +530,7 @@
 						class="attachments-card__item"
 						class:attachments-card__item--error={item.status === 'error'}
 					>
-						<span class="attachments-card__item-icon" aria-hidden="true">
-							{@html iconForMimeType(item.file.type)}
-						</span>
+						<IconTile icon={iconForMimeType(item.file.type)} size={32} />
 						<div class="attachments-card__item-body">
 							<span class="attachments-card__item-name">{item.file.name}</span>
 							{#if item.status === 'error'}
@@ -569,9 +568,7 @@
 				{#each documentSaved as attachment (attachment.id)}
 					{@const removed = removedIds.includes(attachment.id)}
 					<li class="attachments-card__item" class:attachments-card__item--removed={removed}>
-						<span class="attachments-card__item-icon" aria-hidden="true">
-							{@html iconForMimeType(attachment.mime_type)}
-						</span>
+						<IconTile icon={iconForMimeType(attachment.mime_type)} size={32} />
 						<div class="attachments-card__item-body">
 							<span class="attachments-card__item-name">{attachment.file_name}</span>
 							<span class="attachments-card__item-meta">
@@ -834,23 +831,6 @@
 				.attachments-card__item-name {
 					text-decoration: line-through;
 				}
-			}
-		}
-
-		&__item-icon {
-			display: grid;
-			width: 32px;
-			height: 32px;
-			flex: 0 0 auto;
-			place-items: center;
-			border-radius: var(--radius-base);
-			color: var(--color-icon);
-			background: var(--color-surface--background);
-
-			:global(svg) {
-				display: block;
-				width: 20px;
-				height: 20px;
 			}
 		}
 

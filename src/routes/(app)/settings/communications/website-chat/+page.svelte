@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
@@ -475,17 +476,13 @@
 							{@const widgetStatus = status(widget)}
 							<th scope="row" class="website-chat__widget-cell">
 								<div class="website-chat__widget">
-									<span class="website-chat__widget-icon" aria-hidden="true"
-										>{@html messageCircleIcon}</span
-									>
+									<IconTile icon={messageCircleIcon} tone="conversation" size={32} />
 									<span class="website-chat__widget-name">{widget.name}</span>
 								</div>
 							</th>
 							<td>
 								<div class="website-chat__launcher">
-									<span class="website-chat__launcher-icon" aria-hidden="true"
-										>{@html messageCircleIcon}</span
-									>
+									<IconTile icon={messageCircleIcon} size={24} />
 									{widget.launcher_position === 'bottom_left' ? 'Bottom left' : 'Bottom right'}
 								</div>
 							</td>
@@ -850,21 +847,6 @@
 		gap: var(--space-slim);
 		min-width: 0;
 	}
-	.website-chat__widget-icon {
-		display: inline-grid;
-		flex: 0 0 auto;
-		place-items: center;
-		width: 32px;
-		height: 32px;
-		border-radius: var(--radius-base);
-		color: var(--color-heading);
-		background: var(--color-surface--active);
-
-		:global(svg) {
-			width: 15px;
-			height: 15px;
-		}
-	}
 	.website-chat__widget-name {
 		overflow: hidden;
 		color: var(--color-heading);
@@ -878,21 +860,6 @@
 		gap: var(--space-smaller);
 		color: var(--color-text);
 		font-weight: 500;
-	}
-	.website-chat__launcher-icon {
-		display: inline-grid;
-		flex: 0 0 auto;
-		place-items: center;
-		width: 24px;
-		height: 24px;
-		border-radius: var(--radius-small);
-		color: var(--color-heading);
-		background: var(--color-surface--active);
-
-		:global(svg) {
-			width: 12px;
-			height: 12px;
-		}
 	}
 	.website-chat__origins-cell {
 		color: var(--color-heading);

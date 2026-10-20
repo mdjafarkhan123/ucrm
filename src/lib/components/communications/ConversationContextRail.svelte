@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { Tabs as TabsPrimitive } from 'bits-ui';
 	import { createQuery, useQueryClient, type CreateQueryResult } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
@@ -235,7 +236,7 @@
 							{#if openJob}
 								<section class="context-rail__job" aria-label="Open job">
 									<div class="context-rail__job-eyebrow">
-										<span class="context-rail__job-tile" aria-hidden="true">{@html jobsIcon}</span>
+										<IconTile icon={jobsIcon} tone="feature" size={24} />
 										<span class="context-rail__job-kicker">Open job</span>
 										<span class="context-rail__job-status">
 											<span class="context-rail__job-dot" aria-hidden="true"></span>
@@ -492,22 +493,6 @@
 		display: flex;
 		align-items: center;
 		gap: var(--space-small);
-	}
-
-	.context-rail__job-tile {
-		display: inline-flex;
-		width: 28px;
-		height: 28px;
-		align-items: center;
-		justify-content: center;
-		border: var(--border-base) solid rgb(255 255 255 / 0.08);
-		border-radius: var(--radius-base);
-		background: rgb(255 255 255 / 0.08);
-
-		:global(svg) {
-			width: 14px;
-			height: 14px;
-		}
 	}
 
 	.context-rail__job-kicker {

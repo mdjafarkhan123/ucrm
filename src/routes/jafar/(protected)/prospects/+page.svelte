@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import targetIcon from '@tabler/icons/outline/target.svg?raw';
 	import {
 		createMutation,
@@ -1312,7 +1313,7 @@
 				</div>
 			{:else if prospectDetail.data}
 				{@const detail = prospectDetail.data.prospect}
-				<div class="prospects__review-icon" aria-hidden="true">{@html checkIcon}</div>
+				<IconTile icon={checkIcon} tone="informative" size={40} />
 				<div class="prospects__review-content">
 					<p class="prospects__eyebrow">Application</p>
 					<div class="prospects__review-heading">
@@ -2550,22 +2551,6 @@
 		border: var(--border-base) solid var(--color-informative);
 		border-radius: var(--radius-base);
 		background: var(--color-informative--surface);
-	}
-
-	.prospects__review-icon {
-		display: grid;
-		width: 40px;
-		height: 40px;
-		flex: 0 0 40px;
-		place-items: center;
-		border-radius: var(--radius-base);
-		color: var(--color-informative--onSurface);
-		background: var(--color-surface);
-
-		:global(svg) {
-			width: 20px;
-			height: 20px;
-		}
 	}
 
 	.prospects__review-content {

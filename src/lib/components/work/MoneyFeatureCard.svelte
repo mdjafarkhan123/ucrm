@@ -20,6 +20,7 @@
 </script>
 
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import type { Snippet } from 'svelte';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import trendingUpIcon from '@tabler/icons/outline/trending-up.svg?raw';
@@ -100,7 +101,7 @@
 	<div class="money-card__head">
 		<div class="money-card__top">
 			<div class="money-card__title">
-				<span class="money-card__icon" aria-hidden="true">{@html icon}</span>
+				<IconTile {icon} tone="feature" size={32} />
 				<p class="money-card__eyebrow">{eyebrow}</p>
 			</div>
 			{#if badge}
@@ -238,24 +239,6 @@
 			min-width: 0;
 			align-items: center;
 			gap: var(--space-slim);
-		}
-		&__icon {
-			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-			width: 32px;
-			height: 32px;
-			border: var(--border-base) solid var(--color-feature--border);
-			border-radius: var(--radius-base);
-			color: var(--color-feature--text);
-			background: var(--color-feature--subtle);
-
-			:global(svg) {
-				display: block;
-				width: 16px;
-				height: 16px;
-			}
 		}
 		&__eyebrow {
 			color: var(--color-feature--text--secondary);

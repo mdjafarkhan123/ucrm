@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import type { Snippet } from 'svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -166,7 +167,7 @@
 >
 	<div class="record-header__top">
 		<div class="record-header__row">
-			<span class="record-header__tile" aria-hidden="true">{@html icon}</span>
+			<IconTile {icon} {tone} size={40} white />
 			<div class="record-header__status">
 				<StatusBadge status={statusTone}>{statusLabel}</StatusBadge>
 				{#if badges}{@render badges()}{/if}
@@ -346,23 +347,6 @@
 			display: flex;
 			align-items: center;
 			gap: 10px;
-		}
-
-		&__tile {
-			display: inline-grid;
-			flex: 0 0 auto;
-			width: 40px;
-			height: 40px;
-			place-items: center;
-			border-radius: var(--radius-tile-large);
-			color: var(--record-tone);
-			background: var(--color-surface);
-
-			:global(svg) {
-				display: block;
-				width: 20px;
-				height: 20px;
-			}
 		}
 
 		// The pill sits on white so it reads on any record's colour.

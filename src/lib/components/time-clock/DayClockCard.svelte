@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
 	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
@@ -52,7 +53,7 @@
 		aria-labelledby="day-clock-heading"
 	>
 		{#if feature}
-			<span class="day-clock__tile" aria-hidden="true">{@html clockIcon}</span>
+			<IconTile icon={clockIcon} tone="feature" size={32} />
 		{:else}
 			<span class="day-clock__mark day-clock__mark--off" aria-hidden="true"
 				><span class="day-clock__dot"></span></span
@@ -69,7 +70,7 @@
 		aria-labelledby="day-clock-heading"
 	>
 		{#if feature}
-			<span class="day-clock__tile" aria-hidden="true">{@html clockIcon}</span>
+			<IconTile icon={clockIcon} tone="feature" size={32} />
 		{:else}
 			<span class={['day-clock__mark', timer === null && 'day-clock__mark--off']} aria-hidden="true"
 				><span class="day-clock__dot"></span></span
@@ -272,22 +273,6 @@
 
 		&.day-clock--pending {
 			min-height: 58px;
-		}
-		.day-clock__tile {
-			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-			width: 32px;
-			height: 32px;
-			border-radius: var(--radius-base);
-			color: var(--color-feature--text);
-			background: var(--color-feature--subtle);
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
 		}
 		.day-clock__body {
 			h2 {

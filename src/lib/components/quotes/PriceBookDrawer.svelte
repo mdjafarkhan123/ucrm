@@ -182,7 +182,7 @@
 								hasThumbnail
 								size="row"
 							/>
-						{:else}<span class="price-book__spot" aria-hidden="true">{@html imageIcon}</span>{/if}
+						{:else}<IconTile icon={imageIcon} size={40} />{/if}
 						<div class="price-book__copy">
 							<strong>{item.name}</strong>
 							{#if item.description}<span class="price-book__description">{item.description}</span
@@ -411,20 +411,6 @@
 	.price-book__item--added {
 		background: var(--color-surface--hover);
 		box-shadow: inset 2px 0 0 var(--color-success);
-	}
-	.price-book__spot {
-		display: grid;
-		place-items: center;
-		width: 40px;
-		height: 40px;
-		flex-shrink: 0;
-		background: var(--color-surface--background);
-		border-radius: var(--radius-tile-large);
-		color: var(--color-icon--secondary);
-		:global(svg) {
-			width: 20px;
-			height: 20px;
-		}
 	}
 	.price-book__copy strong,
 	.price-book__price {
