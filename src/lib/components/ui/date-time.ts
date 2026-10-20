@@ -142,9 +142,13 @@ export function addMinutesToTime(time: Time, minutes: number) {
 	return new Time(Math.floor(total / 60), total % 60);
 }
 
-// A fresh start suggests a useful duration, but an end the user already chose is never overwritten.
+// Moving the start carries the end along so the length stays the same (Google Calendar's way); a fresh
+// start with no end gets the default length. An end the user just changed is kept as it is.
 export function reconcileTimeRange(previous: TimeRangeValue, next: TimeRangeValue): TimeRangeValue {
-	if (!next.start || next.end || previous.end) return next;
+	if (!next.start) return next;
+	const startMoved = timeToMinutes(next.start) !== timeToMinutes(previous.start);
+	const endUnchanged = timeToMinutes(next.end) === timeToMinutes(previous.end);
+	if (next.end && !(startMoved && endUnchanged)) return next;
 
 	const previousDuration =
 		previous.start && previous.end

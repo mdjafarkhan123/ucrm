@@ -51,13 +51,29 @@ describe('time range suggestion', () => {
 		expect(timeToString(result.end)).toBe('10:00');
 	});
 
-	it('does not overwrite an existing end', () => {
-		const end = new Time(10, 0);
+	it('moves the end with the start so the length stays the same', () => {
 		const result = reconcileTimeRange(
-			{ start: new Time(9, 0), end },
-			{ start: new Time(11, 0), end }
+			{ start: new Time(9, 0), end: new Time(10, 30) },
+			{ start: new Time(11, 0), end: new Time(10, 30) }
+		);
+		expect(timeToString(result.end)).toBe('12:30');
+		expect(isTimeRangeValid(result)).toBe(true);
+	});
+
+	it('keeps an end the user changed', () => {
+		const end = new Time(13, 0);
+		const result = reconcileTimeRange(
+			{ start: new Time(9, 0), end: new Time(10, 0) },
+			{ start: new Time(9, 0), end }
 		);
 		expect(result.end).toBe(end);
-		expect(isTimeRangeValid(result)).toBe(false);
+	});
+
+	it('stops the end at 11:59 PM rather than running into the next day', () => {
+		const result = reconcileTimeRange(
+			{ start: new Time(9, 0), end: new Time(11, 0) },
+			{ start: new Time(23, 0), end: new Time(11, 0) }
+		);
+		expect(timeToString(result.end)).toBe('23:59');
 	});
 });
