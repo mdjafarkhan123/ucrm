@@ -1,8 +1,8 @@
 # Approved shared batches — active build
 
-**Stage:** Batch 10 verified; next 11 and 12; batches 5 and 6a merged and pushed.
+**Stage:** Batches 10–11 verified; next 12; batches 5 and 6a merged and pushed.
 **Workspace:** codex/concept-batch5, /home/jafar/Ucrm/.worktrees/concept-batch5.
-**Claim:** 3bd922d6becc, codex-shared-remaining.
+**Claim:** c25dac9f3769, codex-shared-remaining.
 
 Use the approvals and component scope in c5-shared-parts.md, and the design modules there. Pencil stays read-only.
 
@@ -12,4 +12,4 @@ Failure paths: price-book item saved/photo failed must retry that item rather th
 
 Checks: SCSS-preprocessed compiler and MCP autofixer, focused ESLint, relevant existing tests, browser fixtures at 1440/390 light/dark, then main journey on the actual owner app. Merge each completed batch into main under a separate integration reservation and push. Remove fixtures. Evidence goes under docs/evidence/2026-10-20-batchN.
 
-**Next:** merge and push batch 10; release its claim before claiming batch 11. Remaining batch approvals are unchanged.
+**Next:** merge and push batch 11; release its claim before claiming batch 12. Remaining batch approvals are unchanged.

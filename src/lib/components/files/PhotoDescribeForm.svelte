@@ -5,6 +5,9 @@
 	import TagSelect from '$lib/components/ui/TagSelect.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
+	import photoIcon from '@tabler/icons/outline/photo.svg?raw';
+	import settingsIcon from '@tabler/icons/outline/adjustments.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import FileLabelsDialog from './FileLabelsDialog.svelte';
 	import {
 		createFileLabel,
@@ -110,7 +113,15 @@
 	}
 </script>
 
-<div class="photo-describe">
+<!-- eslint-disable svelte/no-at-html-tags -->
+<div class="photo-describe" class:photo-describe--readonly={!canEdit}>
+	{#if canEdit}<header class="photo-describe__header">
+			<span class="photo-describe__icon" aria-hidden="true">{@html photoIcon}</span>
+			<h3>Caption and labels</h3>
+			{#if canCurate}<Button variant="quiet" size="small" onclick={() => (manageOpen = true)}
+					>{@html settingsIcon}Manage labels</Button
+				>{/if}
+		</header>{/if}
 	{#if canEdit}
 		<form
 			class="photo-describe__form"
@@ -120,6 +131,7 @@
 			}}
 		>
 			<Textarea
+				disabled={saving}
 				id={`${uid}-caption`}
 				label="Caption"
 				rows={2}
@@ -132,19 +144,12 @@
 			/>
 
 			<div class="photo-describe__labels">
-				<div class="photo-describe__labels-head">
-					<span class="photo-describe__label">Labels</span>
-					{#if canCurate}
-						<Button variant="quiet" size="small" onclick={() => (manageOpen = true)}>
-							Manage labels
-						</Button>
-					{/if}
-				</div>
 				{#if labelsQuery.isPending && detail.file.labels.length === 0}
 					<LoadingSkeleton variant="text" label="Loading labels" rows={1} />
 				{:else}
 					<TagSelect
 						tagIds={labelIds}
+						readonly={saving}
 						onChange={(next) => (labelDraft = next)}
 						{catalog}
 						onCreate={canCurate ? createLabel : undefined}
@@ -159,10 +164,17 @@
 
 			{#if dirty}
 				<div class="photo-describe__actions">
-					<Button variant="secondary" variation="subtle" size="small" onclick={reset}>
+					<span class="photo-describe__unsaved">Not saved</span>
+					<Button
+						variant="secondary"
+						variation="subtle"
+						size="small"
+						disabled={saving}
+						onclick={reset}
+					>
 						Cancel
 					</Button>
-					<Button type="submit" size="small" loading={saving}>Save</Button>
+					<Button type="submit" size="small" loading={saving}>{@html checkIcon}Save</Button>
 				</div>
 			{/if}
 		</form>
@@ -203,19 +215,6 @@
 			gap: var(--space-small);
 		}
 
-		&__labels-head {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			gap: var(--space-small);
-		}
-
-		&__label {
-			color: var(--color-heading);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
-		}
-
 		&__actions {
 			display: flex;
 			justify-content: flex-end;
@@ -231,5 +230,96 @@
 			color: var(--color-text);
 			white-space: pre-line;
 		}
+	}
+
+	.photo-describe {
+		gap: 0;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-large);
+		overflow: hidden;
+	}
+	.photo-describe__header {
+		display: flex;
+		align-items: center;
+		gap: var(--space-slim);
+		padding: var(--space-base) var(--space-base) var(--space-slim) var(--space-medium);
+		h3 {
+			font-size: var(--typography--fontSize-large);
+			font-weight: 600;
+			color: var(--color-heading);
+			flex: 1;
+		}
+	}
+	.photo-describe__icon {
+		display: grid;
+		place-items: center;
+		width: 32px;
+		height: 32px;
+		flex-shrink: 0;
+		border-radius: var(--radius-base);
+		background: var(--color-inactive--surface);
+		color: var(--color-inactive);
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
+	}
+	.photo-describe__form {
+		gap: 14px;
+		padding: 0 var(--space-medium) var(--space-medium);
+	}
+	.photo-describe__form :global(.textarea__control) {
+		background: var(--color-surface--background--subtle);
+	}
+	.photo-describe__form :global(.textarea__control:focus-within) {
+		background: var(--color-surface);
+		border-color: var(--color-interactive);
+	}
+	.photo-describe__actions {
+		align-items: center;
+		margin: 0 calc(-1 * var(--space-medium)) calc(-1 * var(--space-medium));
+		padding: var(--space-slim) var(--space-base) var(--space-slim) var(--space-medium);
+		border-top: var(--border-base) solid var(--color-border);
+		background: var(--color-surface--background--subtle);
+	}
+	.photo-describe__unsaved {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+		margin-right: auto;
+		font-size: var(--typography--fontSize-label);
+		font-weight: 600;
+		color: var(--color-warning--onSurface);
+		&::before {
+			content: '';
+			width: 8px;
+			height: 8px;
+			border-radius: var(--radius-circle);
+			background: var(--color-warning);
+		}
+	}
+	.photo-describe--readonly {
+		border: 0;
+		border-radius: 0;
+		gap: var(--space-small);
+	}
+	@media (max-width: 479px) {
+		.photo-describe__header {
+			flex-wrap: wrap;
+		}
+		.photo-describe__actions {
+			flex-wrap: wrap;
+		}
+	}
+	.photo-describe__form :global(textarea) {
+		background: var(--color-surface--background--subtle);
+	}
+	.photo-describe__form :global(textarea:focus),
+	.photo-describe__form:has(.photo-describe__actions) :global(textarea) {
+		background: var(--color-surface);
+		border-color: var(--color-interactive);
+	}
+	.photo-describe__header :global(button) {
+		color: var(--color-interactive);
 	}
 </style>

@@ -73,8 +73,8 @@ Key, tick rule and coverage command: `list-index.md`.
 | `collaboration/AuthorMeta` |  | ✅ Batch 9 `KuOmH` | ✅ Merged 2026-10-20 |
 | `collaboration/NoteBody` |  | ✅ Batch 9 `KuOmH` | ✅ Merged 2026-10-20 |
 | `collaboration/NoteFiles` |  | ✅ Batch 9 `KuOmH` | ✅ Merged 2026-10-20 |
-| `files/FileLabelsDialog` | 🔁F pop-up · pop-ups: "confirm" 🔁C · loading | ✅ Batch 11 `K04pQm` | ⬜ |
-| `files/FilePicker` | pop-ups: "You do not have access to the file library" 🔁F · loading, empty, permission-limited | ✅ Batch 11 `K04pQm` | ⬜ |
+| `files/FileLabelsDialog` | 🔁F pop-up · pop-ups: "confirm" 🔁C · loading | ✅ Batch 11 `K04pQm` | ✅ |
+| `files/FilePicker` | pop-ups: "You do not have access to the file library" 🔁F · loading, empty, permission-limited | ✅ Batch 11 `K04pQm` | ✅ |
 | `files/PendingFilesCard` |  | ✅ Batch 9 `KuOmH` | ✅ Merged 2026-10-20 |
-| `files/PhotoDescribeForm` | loading, permission-limited | ✅ Batch 11 `K04pQm` | ⬜ |
+| `files/PhotoDescribeForm` | loading, permission-limited | ✅ Batch 11 `K04pQm` | ✅ |
 | `work/ClientSummaryCard` | menus ×1 | 🔁 Job details client box `tNdkX` | ⬜ |
