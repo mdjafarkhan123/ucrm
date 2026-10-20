@@ -58,6 +58,8 @@ Jafar picked **option C (coloured top)** on board `xrJ3f`, with two changes stil
    allowed there), and note which facts Jobber shows in each record's header. Propose the facts per record
    from that, then redraw C.
 
+First check `concept.pen` is saved with the quick-contact buttons gone from `xrJ3f` (removed after the 09:46 save); if the file is newer than commit `70e32402`, commit it.
+
 Then: delete options A, B, D from `xrJ3f` (keep only C), add dark mode, get Jafar's yes, record it here and in
 `stages/list-1b-parts.md`. Still to hand the builder: shared header for all six records; client header folds
 into it; no quick contact buttons; tabs band (client) / Request → Paid track as the footer.
