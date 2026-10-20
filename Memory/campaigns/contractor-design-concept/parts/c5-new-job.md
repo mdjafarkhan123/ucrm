@@ -82,3 +82,7 @@ Our code already shares most of this: all four forms use RecordFormLayout, Secti
 ProductsAndServicesBlock; Request, Quote and Invoice use PrimaryInfoCard, but JobForm draws its own header
 (PickedClient, IconTile). Proposal to Jafar: draw one shared "Create page" in Pencil, and let the Batch 31
 A/B pick decide its look for all four.
+
+Jafar decided (2026-10-20): the four create pages (Request, Quote, Job, Invoice) follow Jobber's shared frame,
+plus our own right sidebar. Products/services and visits use our approved components. Jobber's top panel
+(title, client, facts list) is redesigned new: like Jobber's, but improved, following `design/guide.md`.
