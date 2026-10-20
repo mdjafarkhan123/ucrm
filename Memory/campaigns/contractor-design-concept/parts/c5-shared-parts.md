@@ -23,7 +23,7 @@
 | 11 File pickers | FilePicker, FileLabelsDialog, PhotoDescribeForm | Approved `K04pQm` 2026-10-20: Add files B (places side column, pick boxes, picked-files tray), Photo labels A (improved live), Photo details B (caption card, Not saved strip); looks in `files.md`; built and verified 2026-10-20; proof `docs/evidence/2026-10-20-batch11/README.md` |
 | 12 Time clock | RunningClock, TimerElapsed, TimerRunningElsewhere (1b), WorkTimerControl (1b) | Approved `ooCwt` 2026-10-20 as a mix: Clock B (indigo capsule, breathing ring), Start/Stop A with B's indigo icons, Timer panel B, Running now B, visit row C (indigo-edged clock joined to a normal Stop timer, same height); look in `time-clock.md`; built by Codex, finished, verified and merged by Claude 2026-10-20; proof `docs/evidence/2026-10-20-batch12/README.md` |
 | 13 Record page frame | TabPanel, RecordDetailLayout, DetailEditBar, ClientTagSelect (🔁 Tag picker); shared header WorkRecordHeader, RecordFactsList, LifecycleTrack (1b) | Approved `eHJn1` 2026-10-20: tabs B (band along the header card's foot), save bar A (white, like New job), opening-tab states, client tags and dark mode as drawn. Header: Jafar rejected the first shared-header drawing (it only redrew today's app, skipping the guide's options rule) and chose ONE header part for all six record pages, client included (today `clients/ClientDetailHeader` is separate from `work/WorkRecordHeader`). Options board `xrJ3f` 2026-10-20: A refined today, B highlights row, C coloured top, D next step panel, C approved 2026-10-20 (see § Batch 13 record header); fold the client header into the shared part when building |
-| 14 Products and services | ProductsAndServicesBlock (states only; saved view `tNdkX` and edit `jFBRB` already approved) | 🟡 Board `vsT0H` 2026-10-20 waiting for Jafar: rows 1 Empty, 2 Field worker, 3 Quote extras + lock, each A (refined) / B (new); row 4 shared (line menu, "Throw away these changes?", loading, couldn't load, invoice service date, progress invoice); dark mode. No new controls (couldn't-load has no Try again because the live block has none) |
+| 14 Products and services | ProductsAndServicesBlock (states only; saved view `tNdkX` and edit `jFBRB` already approved) | Approved `vsT0H` 2026-10-20: B for all three rows (Empty B two choice tiles, Field worker B crew work list, Quote extras B grouped and signposted), row 4 shared parts as drawn, light and dark. See § Batch 14 |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 
@@ -39,6 +39,24 @@
   mapped to the token family so dark mode follows). A new tag gets the next unused colour; whoever may create
   tags may change a tag's colour from the list's "⋯" menu; colour changes everywhere. Pick-only people see no
   "⋯". Replaces the random `colorForId` colours and the grey `quiet` look.
+
+## Batch 14 Products and services — approved 2026-10-20
+
+Board `vsT0H`. Jafar approved B for rows 1–3 and asked that no fill blends into what is behind it (guide rule 7).
+Hand-off for the builder (restyle only; every control is live today):
+- Empty, editable: hint "Nothing priced yet", one quiet line, then two choice tiles side by side on
+  `--color-surface--background` with a 1px border: "Add a line item" (job tile, plus) opens a blank line;
+  "Pick from the price book" (quote tile, book-open) opens the Price book drawer. Not editable: the quiet line only.
+- Prices hidden (`showPrices` false): a crew work list on `--color-surface--background`: white line cards
+  (radius 12, padding 12), 56 photo or kind tile, a count box ("12×", 16/700, `--color-surface--background`),
+  name 15/600 + kind pill, description. Foot strip "Prices are hidden for your role." with a blue eye-off icon.
+- Quote: heading lines are group titles 16/700 with a 4×18 quote-coloured bar; text lines show a file-text tile
+  and no numbers; add-on rows tinted (`--color-warning--surface` recommended, `--color-inactive--surface`
+  optional) with a 3px stripe in the same family and an outlined white pill; their money is secondary text.
+  Locked message in an informative band under the header; "Client sees" foot strip with a client-coloured eye.
+- New foot strips use `--color-surface--background`. Lock icons on invoice strips use the invoice colour.
+- Row 4 (line menu, "Throw away these changes?" with Keep editing / Throw them away, loading, couldn't load
+  without Try again, invoice Service date box with ×, progress invoice Item total / Due this invoice) as drawn.
 
 ## Batch 13 record header decisions (Jafar, 2026-10-20)
 
