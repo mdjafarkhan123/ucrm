@@ -66,6 +66,10 @@ Hand-off for the builder:
 - Client line contact (Jafar, 2026-10-20): address, phone and email are separate items, each with a bold icon
   in its meaning colour (map-pin client, phone time, mail conversation; Tabler stroke ≈2.25, 14px) and
   13/500 `--color-text`, 16 apart. Fact tile and address icons are bold too. Was one grey 12px line.
+- Long address (Jafar, 2026-10-20, drawn under the Job header as "Long address stage"): phone and email never
+  shrink; the address takes the rest of the line on one line and ends in "…". Hover or keyboard focus shows
+  the shared `ui/Tooltip` with the full address and "Click to open in Google Maps"; the address is a link
+  (underline on hover) opening Google Maps search for it in a new tab. Header height never changes.
 
 ## Batch 10 new behaviour (Jafar, 2026-10-20)
 
