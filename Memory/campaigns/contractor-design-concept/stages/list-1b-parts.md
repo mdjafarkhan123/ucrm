@@ -8,7 +8,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `collaboration/NotesPanel` | menus ×1 · loading, empty, permission-limited | ✅ Batch 15 `l9ZBWI` A 2026-10-20 | ⬜ |
 | `communications/EmailSenderLabel` | loading | ✅ Batch 16 `I5mY7I` B 2026-10-20 | ⬜ |
 | `files/PhotoDescribeDialog` | 🔁F pop-up · loading | ✅ Batch 17 `Y0ECPJ` A 2026-10-20 | ⬜ |
-| `files/RecordFilesCard` | pop-ups: "confirm" 🔁C · menus ×1 · loading, permission-limited | ⬜ | ⬜ |
+| `files/RecordFilesCard` | pop-ups: "confirm" 🔁C · menus ×1 · loading, permission-limited | 🟡 board `pH9PB` A vs B drawn 2026-10-20, waiting for Jafar's pick | ⬜ |
 | `forms/FormNotesCard` |  | ⬜ | ⬜ |
 | `schedule/NotifyCustomerCheckbox` |  | ✅ | ✅ |
 | `settings/automation/EmailActionEditor` |  | ⬜ | ⬜ |
