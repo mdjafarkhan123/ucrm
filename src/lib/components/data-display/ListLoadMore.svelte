@@ -14,7 +14,8 @@
 		narrowedLabel = 'Many clients match — type more of the name to see the rest.',
 		count,
 		recordName = 'records',
-		recordColor = 'inactive'
+		recordColor = 'inactive',
+		variant = 'default'
 	}: {
 		count?: number;
 		recordName?: string;
@@ -35,7 +36,10 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div class="list-load-more" style:--record-color={`var(--color-${recordColor})`}>
+<div
+	class={['list-load-more', variant === 'card' && 'list-load-more--card']}
+	style:--record-color={`var(--color-${recordColor})`}
+>
 	{#if hasNextPage}
 		<span class="list-load-more__count"
 			>{count === undefined ? '' : `Showing ${count} ${recordName}`}</span

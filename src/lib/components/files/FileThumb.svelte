@@ -11,6 +11,7 @@
 	let {
 		fileId,
 		displayName,
+		mimeType,
 		kind,
 		processingState,
 		hasThumbnail,
@@ -49,7 +50,7 @@
 			? 'growth'
 			: /^(XLSX?|CSV|ODS)$/.test(extension)
 				? 'success'
-				: /^(PDF|DOCX?|TXT|RTF|ODT)$/.test(extension)
+				: /^(PDF|DOCX?|TXT|RTF|ODT)$/.test(extension) || mimeType === 'application/pdf'
 					? 'informative'
 					: 'inactive'
 	);

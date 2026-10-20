@@ -200,8 +200,8 @@
 			place-items: center;
 			border: 0;
 			border-radius: var(--radius-circle);
-			background: var(--color-surface);
-			box-shadow: var(--shadow-low);
+			background: var(--color-white);
+			box-shadow: 0 1px 3px color-mix(in srgb, var(--color-heading) 16%, transparent);
 			cursor: pointer;
 
 			:global(svg) {
@@ -286,7 +286,7 @@
 		font-weight: 600;
 	}
 	.photo-slot__tool--replace {
-		color: var(--color-icon);
+		color: var(--color-base-blue--800);
 	}
 	.photo-slot__add:active:not(:disabled),
 	.photo-slot__tool:active:not(:disabled) {

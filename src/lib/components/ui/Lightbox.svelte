@@ -34,9 +34,19 @@
 		index?: number;
 		onClose: () => void;
 		/** Left out when the office may look but not keep a copy. */
-		onDownload?: (item: LightboxItem) => void;
+		onDownload?: (item: LightboxItem) => void | Promise<void>;
 	} = $props();
 
+	let downloading = $state(false);
+	async function downloadCurrent() {
+		if (!current || !onDownload || downloading) return;
+		downloading = true;
+		try {
+			await onDownload(current);
+		} finally {
+			downloading = false;
+		}
+	}
 	const current = $derived(items[index]);
 	const hasMany = $derived(items.length > 1);
 
@@ -113,9 +123,12 @@
 								type="button"
 								class="lightbox__icon-button"
 								aria-label={`Download ${current.caption}`}
-								onclick={() => onDownload(current)}
+								onclick={downloadCurrent}
+								disabled={downloading}
+								aria-busy={downloading}
 							>
-								{@html downloadIcon}
+								{#if downloading}<span class="lightbox__spinner" aria-hidden="true"
+									></span>{:else}{@html downloadIcon}{/if}
 							</button>
 						{/if}
 						<DialogPrimitive.Close class="lightbox__icon-button" aria-label="Close photo viewer">
@@ -481,6 +494,47 @@
 		}
 		.lightbox__bar {
 			gap: 8px;
+		}
+	}
+
+	:global(.lightbox__icon-button) {
+		display: grid;
+		width: 36px;
+		height: 36px;
+		place-items: center;
+		border: 0;
+		border-radius: var(--radius-circle);
+		color: var(--color-white);
+		background: transparent;
+		cursor: pointer;
+	}
+	:global(.lightbox__icon-button:hover),
+	:global(.lightbox__icon-button:active) {
+		background: rgba(var(--color-white--rgb), 0.2);
+	}
+	:global(.lightbox__icon-button:focus-visible) {
+		outline: none;
+		box-shadow: var(--shadow-focus);
+	}
+	:global(.lightbox__icon-button svg) {
+		display: block;
+		width: 18px;
+		height: 18px;
+	}
+	.lightbox__spinner {
+		width: 16px;
+		height: 16px;
+		border: 2px solid currentColor;
+		border-right-color: transparent;
+		border-radius: var(--radius-circle);
+		animation: lightbox-spin var(--timing-loading) linear infinite;
+	}
+	:global(.lightbox__icon-button:disabled) {
+		cursor: wait;
+	}
+	@keyframes lightbox-spin {
+		to {
+			transform: rotate(360deg);
 		}
 	}
 </style>
