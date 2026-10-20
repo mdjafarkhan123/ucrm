@@ -107,13 +107,9 @@
 		min-width: 260px;
 	}
 
+	// The timer panel draws its own box (time-clock.md); this only gives it the column's width.
 	.assessment-preview__timer {
 		width: 100%;
-		box-sizing: border-box;
-		padding: var(--space-slim) var(--space-slim) var(--space-slim) 14px;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background: var(--color-surface--background--subtle);
 	}
 
 	.assessment-preview__actions {
