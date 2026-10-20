@@ -37,18 +37,25 @@
 
 ## Create pages
 
-- A create page (New job) has the page header, the form's blocks as separate cards 24 apart in the main column,
-  and a 360 rail whose card stays in view while the form scrolls.
+- A create page keeps its form blocks as separate cards 24 apart in the main column, beside a 360 right
+  rail. The first card contains the page title; it stays within the main column rather than spanning the rail.
 - **Floating save bar** at the foot, over the page: white, 1px `--color-border`, radius 16, padding 12 12 12 20,
   `--shadow-high`. Left: an 8 `--color-warning` dot, "New job · not saved yet" 14/600 heading, then a 12 quiet
   hint saying what else the save does ("Sarah gets the booking email when you save"). Right: Cancel (secondary)
   then the main button with a check icon.
-- Every create page (New job, request, quote, invoice) opens with the same first block: a card header in the
-  record colour ("The quote"), the title field, then the picked client card. The record's own fact never sits
-  in that block.
-- That fact shows as a pill at the right of the page header: white, 1px `--color-border`, pill corners,
-  padding 6 12 6 6; a 24 round tile in the record colour, the label 12/600 heading ("Job #", "Quote #",
-  "Invoice #", "Requested on"), then the value 12 quiet ("Given when you save", or the date).
+- **Shared create form**, approved A by Jafar 2026-10-20: Pencil boards "Shared create form · Approved A"
+  (`m4ibfF`) and "Approved record variants" (`pM2Vf`); full New request `el2At`. One white card with a 1px
+  `--color-border`, radius 16, clipped, and a 4px top line in the record colour. Body padding 24, rows 20 apart.
+- Heading row: 40 tile in the record colour, 12 gap to "New request / quote / job / invoice" (24/700, -0.5),
+  then a one-line description underneath (14, `--color-text--secondary`). The title field fills the next row
+  (Invoice: Subject). Below it, the client picker fills the left side; the record's own field is 208 wide on
+  the right, 24 apart. Required field labels keep their red asterisk. Conditional property controls stay
+  under the client picker.
+- Request's **Requested on** is read-only: 63 high, subtle background, radius 8, padding 0 12, a 32 Time
+  calendar tile, then the label 12/500 quiet over the date 14/600 heading, 4 apart. Quote #, Job # and
+  Invoice # use the existing read-only field with "Given when you save". These facts sit inside the form.
+  Invoice dates and payment terms keep their existing Terms & dates card. Each page retains its existing
+  cards and right-sidebar contents. Client creation is outside this shared work-record form's approval.
 
 ## Setup steps
 
