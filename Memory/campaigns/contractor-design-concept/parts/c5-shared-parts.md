@@ -63,6 +63,9 @@ Hand-off for the builder:
   terms. Payment: Paid on · Method · Reference # · For invoice #. Missing facts show honest grey text
   ("Waiting for an answer", "None given").
 - Footer: tabs band (client) or the Request → Paid track (work records).
+- Client line contact (Jafar, 2026-10-20): address, phone and email are separate items, each with a bold icon
+  in its meaning colour (map-pin client, phone time, mail conversation; Tabler stroke ≈2.25, 14px) and
+  13/500 `--color-text`, 16 apart. Fact tile and address icons are bold too. Was one grey 12px line.
 
 ## Batch 10 new behaviour (Jafar, 2026-10-20)
 
