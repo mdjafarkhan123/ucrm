@@ -97,3 +97,12 @@ Attachments. Only the top panel gets the new look.
 Jafar (2026-10-20): the Batch 31 New job board is not needed; we start new with one shared create page. Board
 `M0VXo` was already gone from concept.pen when checked. Still on the canvas: `zUFDO`, `TVQzs` (old New job) and
 `U8RY1n` (Batch 25 First block on New forms, approved earlier today); asked Jafar whether these go too.
+
+Drawn 2026-10-20, waiting for Jafar's pick: board `KiMYd` "Concept · Batch 31 · Create pages · A vs B". Each
+option: a full New job page (copy of `zUFDO`, its page header and "The job" card swapped for the new top panel;
+everything else as approved), the panel on New request, quote, invoice and an empty New job, and dark mode.
+A Record header, in draft (coloured top with tile, "New job", Draft pill and a big title box; client line with
+Change client; facts row: number "Given when you save" + Edit, property + Change). B Split sheet from Jobber
+(4px record-colour line, Card header, title + client card with property strip on the left, a 248 "Details"
+panel on the right: number box, Requested on for requests, Status "Draft until you save").
+On approval: delete the unchosen option, `zUFDO`, `TVQzs` and `U8RY1n`; update `layout.md` → Create pages.
