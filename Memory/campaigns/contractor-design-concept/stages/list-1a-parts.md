@@ -27,31 +27,31 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/StatusBadge` |  | ✅ | ✅ Merged 2026-10-19 |
 | `layout/StickyActionBar` |  | ✅ | ✅ |
 | `ui/Avatar` |  | ✅ Small controls `GbgcY` | ⬜ |
-| `data-display/ListLoadMore` |  | ✅ Batch 7 `eJ0QQ` | ⬜ |
+| `data-display/ListLoadMore` |  | ✅ Batch 7 `eJ0QQ` | ◐ Built on branch; waiting to merge |
 | `ui/CalendarPicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `data-display/DataTable` |  | ⬜ | ⬜ |
-| `forms/FormErrorSummary` |  | ✅ Batch 7 `eJ0QQ` | ⬜ |
+| `forms/FormErrorSummary` |  | ✅ Batch 7 `eJ0QQ` | ◐ Built on branch; waiting to merge |
 | `layout/RecordFormLayout` |  | ✅ | ✅ |
 | `layout/RailCard` |  | ✅ Page parts board `j3jDI` | ✅ Merged 2026-10-19 |
 | `ui/Banner` |  | ✅ Page parts board `j3jDI` | ✅ Merged 2026-10-19 |
-| `ui/Lightbox` |  | ✅ Batch 8 `b4BxuV` | ⬜ |
+| `ui/Lightbox` |  | ✅ Batch 8 `b4BxuV` | ◐ Built on branch; waiting to merge |
 | `ui/TimePickerField` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `ui/Toggle` |  | ✅ Small controls `GbgcY` | ⬜ |
-| `files/FileThumb` |  | ✅ Batch 8 `b4BxuV` | ⬜ |
+| `files/FileThumb` |  | ✅ Batch 8 `b4BxuV` | ◐ Built on branch; waiting to merge |
 | `ui/Card` |  | ✅ | ✅ Merged 2026-10-19 |
 | `ui/CardHeader` | Pencil "Card header"; on every Home card so far | ✅ | ✅ |
 | `ui/TimePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
-| `ui/PencilButton` |  | ✅ Batch 7 `eJ0QQ` | ⬜ |
+| `ui/PencilButton` |  | ✅ Batch 7 `eJ0QQ` | ◐ Built on branch; waiting to merge |
 | `forms/MoneyInput` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
 | `ui/FilterChip` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
-| `data-display/KpiCard` |  | ✅ Batch 7 `eJ0QQ` | ⬜ |
+| `data-display/KpiCard` |  | ✅ Batch 7 `eJ0QQ` | ◐ Built on branch; waiting to merge |
 | `layout/SidePanel` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `ui/DateTimePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `ui/CountryPicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `ui/TagSelect` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
 | `collaboration/AttachmentSurface` |  | ✅ Batch 9 `KuOmH` | ⬜ |
 | `data-display/RecordListCard` |  | 🔁 Jobs list card `t8ULdJ` | ⬜ |
-| `files/PhotoSlot` |  | ✅ Batch 8 `b4BxuV` | ⬜ |
+| `files/PhotoSlot` |  | ✅ Batch 8 `b4BxuV` | ◐ Built on branch; waiting to merge |
 | `quotes/CatalogItemDialog` | 🔁F pop-up · loading, permission-limited, field-worker view | ✅ Batch 10 `ZWTSi` | ⬜ |
 | `ui/TabPanel` |  | ⬜ | ⬜ |
 | `ui/Tabs` | tabs ×2 | ✅ Small controls `GbgcY` | ⬜ |
@@ -64,7 +64,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `work/ClientPicker` | loading | ✅ | ✅ |
 | `time-clock/RunningClock` |  | ⬜ | ⬜ |
 | `time-clock/TimerElapsed` |  | ⬜ | ⬜ |
-| `files/FileUploader` |  | ✅ Batch 8 `b4BxuV` | ⬜ |
+| `files/FileUploader` |  | ✅ Batch 8 `b4BxuV` | ◐ Built on branch; waiting to merge |
 | `layout/DetailEditBar` |  | 🔁 Save bar in `jFBRB` | ⬜ |
 | `layout/RecordDetailLayout` |  | ⬜ | ⬜ |
 | `work/MoneyFeatureCard` |  | ✅ | ✅ |
