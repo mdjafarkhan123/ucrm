@@ -13,6 +13,7 @@
 
 | Tile | Icon | Radius | Use |
 |---|---|---|---|
+| 20 | 12 | 5 | Record header fact labels |
 | 24 | 12–14 | 6 | Small lists, table cells |
 | 32 | 16 | 8 | List rows, card headers |
 | 40 | 20 | 10 | Large cards, page headers |

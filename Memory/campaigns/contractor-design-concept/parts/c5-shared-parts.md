@@ -47,21 +47,13 @@ Board `k4k5Na` (Jafar first picked soft depth, then changed to the hairline edge
 tile colour). Builder: give every icon tile in code (shared tile styles, card header tiles, row tiles,
 empty-state tiles) a 1px `--surface-edge` border; fill stays the plain surface. Pencil already follows.
 
-### Icon tile edge — build progress (2026-10-20, paused)
+### Icon tile edge — built and merged 2026-10-20
 
-Jafar 2026-10-20: no hand-built icon tiles; every one uses `ui/IconTile`. Branch `claude/icon-tile-edge`
-(worktree `.worktrees/concept-batch13`), NOT merged, NOT yet checked on screen.
-- Done: `IconTile` has the 1px `--surface-edge` border, a `class` prop (placement only) and size 20 (5px corner,
-  Pencil fact tile). CardHeader, PageHeader, KpiCard, RecordFactsList and ~40 screen tiles now use it; dead
-  `section-block__icon` CSS removed from Settings pages. Prettier run on the 45 changed files.
-- Left on purpose (not meaning-colour tiles): visit date badge, file thumbs, upload ring, day-clock mark,
-  dark feature-card tiles (JobCosting, MoneyFeature, DayClock, catalog line icon), conversation rail tiles,
-  WorkRecordHeader white tile, Settings 60px solid badge, logos/buttons.
-- Ask Jafar: plain grey/white icon squares (attachments, search results, website chat, shared files, Banner,
-  setup points…) — make them `IconTile tone="inactive"` too? And the calendar/time field trigger buttons.
-- Next: open the dev server (`npx vite dev --port 5181` in the worktree), fix any compile errors, screenshot
-  the changed screens at 1440 light/dark against board `k4k5Na`, update `icon-shapes.md` sizes (add 20),
-  merge to main, push.
+Every meaning tile uses `ui/IconTile` (size 20 added). Proof: `docs/evidence/2026-10-20-icon-tile-edge/README.md`.
+Left on purpose: visit date badge, file thumbs, upload ring, day-clock mark, dark feature-card tiles, conversation
+rail tiles, WorkRecordHeader white tile, Settings 60px solid badge, logos/buttons.
+Still to ask Jafar: plain grey/white icon squares (attachments, search results, website chat, shared files, Banner,
+setup points…) — make them `IconTile tone="inactive"` too? And the calendar/time field trigger buttons.
 
 ## Batch 14 Products and services — approved 2026-10-20
 
