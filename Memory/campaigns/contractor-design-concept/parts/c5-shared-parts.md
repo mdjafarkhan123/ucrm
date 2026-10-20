@@ -27,6 +27,7 @@
 | 15 Notes panel | collaboration/NotesPanel (1b): note field, pinned note, note menu, changes waiting for Save, every state | Approved `l9ZBWI` A 2026-10-20 (refined live; B write-at-top with pinned shelf not chosen). Look in `notes.md` → Notes panel. See § Batch 15 |
 | 16 Email From line | communications/EmailSenderLabel (1b): every state | Approved `I5mY7I` B 2026-10-20 (teal sender chip; A refined text line not chosen). Look in `chips.md` → Sender chip. See § Batch 16 |
 | 17 Caption and labels pop-up | files/PhotoDescribeDialog (1b): every state | Approved `Y0ECPJ` A 2026-10-20 (photo on top; B photo beside not chosen). Look in `files.md` → Caption and labels pop-up. See § Batch 17 |
+| 18 Record files card | files/RecordFilesCard (1b): every state, menu, remove pop-up | Approved `pH9PB` A 2026-10-20 (photos then document lines; B newest-photo gallery not chosen). Look in `files.md` → Record files card. See § Batch 18 |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 
@@ -74,6 +75,19 @@ Hand-off for the builder (restyle only; every control is live today):
 - New foot strips use `--color-surface--background`. Lock icons on invoice strips use the invoice colour.
 - Row 4 (line menu, "Throw away these changes?" with Keep editing / Throw them away, loading, couldn't load
   without Try again, invoice Service date box with ×, progress invoice Item total / Due this invoice) as drawn.
+
+## Batch 18 Record files card — approved 2026-10-20
+
+Board `pH9PB`, A. Restyle of `files/RecordFilesCard`; same queries, picker, lightbox, describe dialog and remove
+flow. Hand-off for the builder:
+- Photo grid 3 a row, 92 high; "+N" on the sixth over `--color-overlay`. Hover/focus: interactive ring, round
+  white `tag` and `x` buttons stacked top-right (today: tiny 20 buttons at two corners).
+- Document lines edge to edge with the 40 file picture line, name, type · size · date, ⋯ `DropdownMenu`
+  (Download; Remove from this record in critical). View only keeps ⋯ with Download.
+- Being-checked and download-failed messages become the warning / critical notice rows in `files.md`.
+- Loading bones replace "Loading files…"; empty, view-only empty and couldn't load as drawn. Couldn't load gains
+  a "Try again" that refetches (drawn from the approved Notes card; Jafar approved the board with it).
+- Remove pop-up: `ConfirmDialog` with an `unlink` tile; the error line sits above the buttons.
 
 ## Batch 17 Caption and labels pop-up — approved 2026-10-20
 

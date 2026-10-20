@@ -2,7 +2,7 @@
 
 > Dependencies: `colors.md`, `radius.md`, `buttons.md`, `badges.md`, `icon-shapes.md`, `chips.md`, `modals.md`, `page-states.md`
 
-Pencil: `concept.pen` → board "Photos and files" (`b4BxuV`), approved 2026-10-19; Add files, photo labels and photo details on `K04pQm`, approved 2026-10-20; Caption and labels pop-up on `Y0ECPJ`, approved 2026-10-20.
+Pencil: `concept.pen` → board "Photos and files" (`b4BxuV`), approved 2026-10-19; Add files, photo labels and photo details on `K04pQm`, approved 2026-10-20; Caption and labels pop-up on `Y0ECPJ`, approved 2026-10-20; record files card on `pH9PB`, approved 2026-10-20.
 
 ## Photo viewer
 
@@ -73,6 +73,31 @@ Approved 2026-10-19 on board `KuOmH`.
 - The Card header (`cards.md`) with a grey `--color-inactive` tile, and a count in the hint line ("4 on this job").
   Side card on record pages; section card (padding 20, photo tiles 4:3) on create pages.
 - At the right a small secondary "Add" button with an `upload` icon.
+
+## Record files card
+
+The files card on a record page, approved 2026-10-20 on board `pH9PB` (A). Hint line "10 photos · 2 files".
+
+- **Photos**, padding 16, 8 apart: 3 a row, 92 high, radius 8, 1px `--color-border`, cover. With more than six,
+  the sixth shows "+4" 20/700 white over `--color-overlay`.
+- **Pointing at a photo:** a 2px `--color-interactive` ring and two 28 round white buttons (soft shadow 0 1 3,
+  heading at 12%) stacked top-right, 6 in: `tag` Caption and labels (job and visit only) and `x` Remove, 14
+  icons in `--color-icon`. Keyboard focus shows them too; touch screens always.
+- **Documents** run edge to edge under the photos, a 1px `--color-border` line above each, padding 12 12 12
+  16, gap 12: the file picture list line (40), the name 13/600 heading over type · size · date 12 quiet ("· used
+  in 2 places" when shared), and a 28 quiet ⋯ (16 `ellipsis`). Open: the ⋯ `--color-surface--active`.
+- **Menu:** the line menu look, 208 wide: Download (`download`), a divider, "Remove from this record" (`unlink`)
+  in `--color-critical`. View only: Download alone, 184 wide.
+- **Notices** at the top of the body, radius 8, padding 10 12, gap 10, 12/500 in the family's `--onSurface`,
+  surface fill with its `--surface-edge`: being checked is warning with a 16 spinner ("1 file is being checked
+  for safety…"), or `clock-alert` once it takes too long; a failed download is critical with `circle-alert`.
+- **Loading:** three 92-high photo bones (radius 8), then two line bones (40 square, two lines); no hint line.
+- **Nothing yet, can add:** the dashed empty box with a 22 `images`, "No photos or files yet" and one quiet line.
+  **View only:** no Add; centred a 32 grey `images` tile, "No files yet" 13/600 and one 12 quiet line.
+- **Couldn't load:** the Notes card's block: 32 critical tile, "Files didn't load", one quiet line, small
+  secondary "Try again" (`refresh`).
+- **Remove:** the danger "are you sure?" pop-up, `unlink` tile, "Remove <file name>?", Cancel and "Remove".
+  Didn't remove: a 14 `circle-alert` and the reason 12/600 `--color-critical` above the buttons.
 
 ## Files waiting to save
 
