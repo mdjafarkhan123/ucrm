@@ -50,6 +50,32 @@
   padding 6 12 6 6; a 24 round tile in the record colour, the label 12/600 heading ("Job #", "Quote #",
   "Invoice #", "Requested on"), then the value 12 quiet ("Given when you save", or the date).
 
+## Setup steps
+
+A step-by-step page such as an import (Pencil: "Batch 29 · Import steps", approved A 2026-10-20). One 760
+column, centred, blocks 24 apart: the page header, the step track, then one card for the current step.
+
+- **Step track:** a white card (radius 16, 1px `--color-border`, padding 14 20), steps 12 apart joined by 2px
+  lines that fill the space (`--color-success` behind a finished step, `--color-border` ahead). Step: a 32 tile
+  (radius 8), then the label 13/600 heading over a 12 quiet hint. Finished: `--color-success--surface` tile
+  with a check. Current: `--color-interactive` tile, white icon, label 700. Ahead: `--color-surface--background--subtle`
+  tile, 1px `--color-border`, `--color-icon--secondary` icon, label quiet.
+- **Step card:** the Card header (tile in the page's colour), a body with padding 20 and gap 16, and the pop-up
+  footer bar: Back (secondary, arrow-left) at the left, a quiet 12 hint or nothing, and the main button at the right.
+- **File box:** `--color-surface--background`, 1.5px `--color-border--interactive`, radius 16, padding 28 20,
+  centred: a 40 `--color-success` spreadsheet tile, "Choose a CSV file or drag it here" 14/600 heading, the row cap
+  12 quiet. Under it a 13/600 `--color-interactive` link with a download icon to the sample file.
+- **Column matching:** rows edge to edge under an uppercase 12 head row (`--color-surface--background--subtle`).
+  Row padding 12 20, gap 12: your column 14/600 heading over samples 12 quiet (240 wide), a 16 arrow-right
+  (`--color-success` when matched, `--color-warning--onSurface` when not), the field box (40 high; matched starts with
+  a 16 `--color-success` circle-check), then "Don't overwrite" (checkbox, 45% opacity when the column isn't
+  matched). An unmatched row fills `--color-warning--surface`, its box edge 1.5px `--color-warning`, with a small
+  "Pick one" warning pill under the samples.
+- **Review:** four count cards in a row (white, radius 16, padding 16, gap 10): a 32 tile in the kind's colour
+  (new: page colour, updates `--color-informative`, skipped `--color-inactive`, attention `--color-warning`), the
+  number 32/700 heading, the label 13/500 quiet. Then notice strips: attention `warning`, "Nothing gets sent"
+  `informative` with shield-check.
+
 ## Record pages
 
 - A record page (client, request, quote, job, invoice, payment) uses the two-column frame: main column of cards,

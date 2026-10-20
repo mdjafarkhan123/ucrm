@@ -38,6 +38,7 @@
 | 26 Marketing email preview | marketing/MarketingTemplatePreview, MarketingTemplatePreviewDialog (1b): Review step, loading, couldn't load, dark | Approved `l62Og` A 2026-10-20 (refined pop-up; B inbox line and device stage deleted). Look in `modals.md` → Email preview pop-up. See § Batch 26 |
 | 27 Channel menu and message settings | communications/ComposerChannelMenu, clients/CommunicationSettingsDialog (1b): every state, dark | Approved `DXj9z` A + A 2026-10-20 (B Send-by button and tick tiles deleted). Looks in `chips.md` → Channel pill, `modals.md` → Communication settings pop-up. See § Batch 27 |
 | 28 Questions on a public form | forms/PublicFormQuestion (1b): every question kind, hover, focus, dark | Approved `Y3od0z` B 2026-10-20 (one card per question; A plain deleted). Look in `inputs.md` → Questions on a public form. See § Batch 28 |
+| 29 Import steps | imports/ImportStepper, ImportUploadStep, ImportMapStep, ImportReviewStep (1b): no file yet, map, review, dark | Approved `oxtmi` A 2026-10-20 (steps on one column; B side panel deleted). Look in `layout.md` → Setup steps. See § Batch 29 |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 
@@ -138,6 +139,16 @@ help and values. Look in `inputs.md` → Questions on a public form. Hand-off:
 - `PublicFormQuestion` takes its number (its place in the form, from the caller) for the orange tile.
 - Choices become tap tiles (the whole tile is the label); pick-one and Yes / No side by side, Yes / No with thumbs tiles.
 - Also used in `reviews/ReviewFeedbackJourney`; photo questions keep the page's upload box.
+
+## Batch 29 Import steps — approved 2026-10-20
+
+Board `oxtmi`, A · Steps on one column (B side panel deleted). Restyle only; same steps, choices, words, caps
+and rules, for client, Price book and opening-balance imports. Look in `layout.md` → Setup steps. Hand-off:
+- Page header gets the 40 tile in the import's colour (client taupe; Price book and balances pick theirs); no eyebrow.
+- Each step panel opens with the shared Card header and ends in the pop-up footer bar; Continue keeps its arrow.
+- Map table: arrow cell between your column and our field; matched boxes start with a green circle-check; an
+  unmatched row is `--color-warning--surface` with a "Pick one" small pill under the samples.
+- Review: four count cards with 32 tiles; attention and "Nothing gets sent" as notice strips.
 
 `work/RecordTrack` is marked 🔁 Batch 13: it only wraps the approved `LifecycleTrack`.
 

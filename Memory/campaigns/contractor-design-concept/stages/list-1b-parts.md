@@ -34,10 +34,10 @@ Key, tick rule and coverage command: `list-index.md`.
 | `clients/CommunicationSettingsDialog` | 🔁F pop-up | ✅ Batch 27 `DXj9z` A 2026-10-20 | ⬜ |
 | `communications/ComposerChannelMenu` | menus ×1 | ✅ Batch 27 `DXj9z` A 2026-10-20 | ⬜ |
 | `forms/PublicFormQuestion` |  | ✅ Batch 28 `Y3od0z` B 2026-10-20 | ⬜ |
-| `imports/ImportMapStep` |  | 🟡 Batch 29 `oxtmi` A vs B, waiting for Jafar | ⬜ |
-| `imports/ImportReviewStep` |  | 🟡 Batch 29 `oxtmi` A vs B, waiting for Jafar | ⬜ |
-| `imports/ImportStepper` |  | 🟡 Batch 29 `oxtmi` A vs B, waiting for Jafar | ⬜ |
-| `imports/ImportUploadStep` |  | 🟡 Batch 29 `oxtmi` A vs B, waiting for Jafar | ⬜ |
+| `imports/ImportMapStep` |  | ✅ Batch 29 `oxtmi` A 2026-10-20 | ⬜ |
+| `imports/ImportReviewStep` |  | ✅ Batch 29 `oxtmi` A 2026-10-20 | ⬜ |
+| `imports/ImportStepper` |  | ✅ Batch 29 `oxtmi` A 2026-10-20 | ⬜ |
+| `imports/ImportUploadStep` |  | ✅ Batch 29 `oxtmi` A 2026-10-20 | ⬜ |
 | `jafar/booking/BookingMonth` |  | ⬜ | ⬜ |
 | `jafar/booking/BookingTimePicker` | loading | ⬜ | ⬜ |
 | `jobs/CreateVisitsDialog` | 🔁F pop-up | ✅ Schedule pop-ups `S5TPc` | ✅ Merged 2026-10-19 |
