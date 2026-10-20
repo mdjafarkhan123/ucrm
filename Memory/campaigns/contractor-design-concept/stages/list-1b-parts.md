@@ -20,15 +20,15 @@ Key, tick rule and coverage command: `list-index.md`.
 | `communications/ConversationAttachments` |  | ✅ Batch 22 `mZdBv` B 2026-10-20 | ✅ |
 | `data-display/DateRangeChip` |  | ✅ Batch 20 `e18rX` 2026-10-20 | ✅ |
 | `jafar/JafarAuthCard` |  | ✅ Batch 23 `Y0A1Z` B 2026-10-20 | ✅ |
-| `layout/RailRow` |  | ⬜ | ⬜ |
+| `layout/RailRow` |  | 🟡 Batch 24 `qY4yb` drawn 2026-10-20 | ⬜ |
 | `marketing/MarketingTemplatePreview` | loading | ⬜ | ⬜ |
-| `quotes/QuoteSummaryCard` |  | ⬜ | ⬜ |
+| `quotes/QuoteSummaryCard` |  | 🟡 Batch 24 `qY4yb` drawn 2026-10-20 | ⬜ |
 | `time-clock/TimerRunningElsewhere` |  | ✅ Batch 12 `ooCwt` | ✅ 2026-10-20 |
 | `time-clock/WorkTimerControl` |  | ✅ Batch 12 `ooCwt` | ✅ 2026-10-20 |
 | `work/LifecycleTrack` |  | ✅ Batch 13 header C `xrJ3f` 2026-10-20 | ✅ |
-| `work/PrimaryInfoCard` |  | ⬜ | ⬜ |
-| `work/RecordDiscountCard` | pop-ups: "form" 🔁F | ⬜ | ⬜ |
-| `work/RecordTaxCard` | pop-ups: "form" 🔁F · permission-limited | ⬜ | ⬜ |
+| `work/PrimaryInfoCard` |  | 🟡 Batch 25 `U8RY1n` drawn 2026-10-20 | ⬜ |
+| `work/RecordDiscountCard` | pop-ups: "form" 🔁F | 🟡 Batch 24 `qY4yb` drawn 2026-10-20 | ⬜ |
+| `work/RecordTaxCard` | pop-ups: "form" 🔁F · permission-limited | 🟡 Batch 24 `qY4yb` drawn 2026-10-20 | ⬜ |
 | `work/RecordTrack` |  | ⬜ | ⬜ |
 | `calendar/CalendarBar` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Merged 2026-10-19 |
 | `clients/CommunicationSettingsDialog` | 🔁F pop-up | ⬜ | ⬜ |

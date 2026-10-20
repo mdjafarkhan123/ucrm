@@ -81,6 +81,20 @@ Hand-off for the builder (restyle only; every control is live today):
 - Row 4 (line menu, "Throw away these changes?" with Keep editing / Throw them away, loading, couldn't load
   without Try again, invoice Service date box with ×, progress invoice Item total / Due this invoice) as drawn.
 
+## Batch 24 · Discount, tax and totals (drawing, waiting for Jafar)
+
+`layout/RailRow`, `work/RecordDiscountCard`, `work/RecordTaxCard` (and their pop-ups), `quotes/QuoteSummaryCard`.
+Board `qY4yb` in `concept.pen`, drawn 2026-10-20: A refined rows (grey-tiled rows, pink Total band, grey team-only
+panel with margin bar); B money tiles (two tap-to-edit tiles) plus the deep-green total card like New job's,
+and a tax pop-up with the five choices as radio tiles. Every state and dark mode drawn. Both options let the New
+quote form use the one Discount and tax card, like the quote page. Behaviour unchanged. Next: Jafar picks.
+
+## Batch 25 · First block on New forms (drawing, waiting for Jafar)
+
+`work/PrimaryInfoCard` on New request, quote and invoice. Board `U8RY1n`, drawn 2026-10-20. Both use the approved
+New job block (title, picked client card). A: the record's fact (Quote #, Requested on, Invoice #) moves to the
+page header chip like New job's Job #; B: a quiet facts column inside the block. Next: Jafar picks.
+
 ## Batch 22 Files on a message — approved 2026-10-20
 
 Board `mZdBv`, B · preview cards (A deleted). Restyle only; same instant upload, caps, error words, remove, and
