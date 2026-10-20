@@ -1595,42 +1595,20 @@
 
 {#snippet visitTimer()}
 	{#if selectedVisit}
-		<div class="schedule-page__timer-row">
-			<div class="schedule-page__timer-label">
-				<strong>Your timer</strong><span
-					>{myTimerQuery.data?.timer?.kind === 'visit' &&
-					myTimerQuery.data.timer.visit_id === selectedVisit.id
-						? 'Running'
-						: 'Not running on this visit'}</span
-				>
-			</div>
-			<WorkTimerControl
-				concept
-				target={{ kind: 'visit', jobId: selectedVisit.job_id, visitId: selectedVisit.id }}
-				completed={Boolean(selectedVisit.completed_at)}
-			/>
-		</div>
+		<WorkTimerControl
+			target={{ kind: 'visit', jobId: selectedVisit.job_id, visitId: selectedVisit.id }}
+			completed={Boolean(selectedVisit.completed_at)}
+		/>
 	{/if}
 {/snippet}
 
 {#snippet assessmentTimer()}
 	{#if selectedAssessment}
-		<div class="schedule-page__timer-row">
-			<div class="schedule-page__timer-label">
-				<strong>Your timer</strong><span
-					>{myTimerQuery.data?.timer?.kind === 'assessment' &&
-					myTimerQuery.data.timer.assessment_id === selectedAssessment.id
-						? 'Running'
-						: 'Not running on this assessment'}</span
-				>
-			</div>
-			<WorkTimerControl
-				concept
-				target={{ kind: 'assessment', assessmentId: selectedAssessment.id }}
-				completed={Boolean(selectedAssessment.completed_at) ||
-					selectedAssessment.visit_date !== today}
-			/>
-		</div>
+		<WorkTimerControl
+			target={{ kind: 'assessment', assessmentId: selectedAssessment.id }}
+			completed={Boolean(selectedAssessment.completed_at) ||
+				selectedAssessment.visit_date !== today}
+		/>
 	{/if}
 {/snippet}
 
@@ -1916,28 +1894,6 @@
 {/if}
 
 <style lang="scss">
-	.schedule-page__timer-row {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-small);
-	}
-	.schedule-page__timer-label {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-smallest);
-		strong {
-			font-size: var(--typography--fontSize-label);
-			font-weight: 600;
-			color: var(--color-heading);
-		}
-		span {
-			font-size: var(--typography--fontSize-small);
-			color: var(--color-text--secondary);
-		}
-	}
-
 	// The page is one card that fills the height the shell gives it: the toolbar on top, the grid scrolling
 	// inside, the colour key underneath. The backlog docks beside it as a card of its own.
 	.schedule-page {

@@ -21,6 +21,7 @@
 	.timer-elapsed {
 		font-variant-numeric: tabular-nums;
 		font-weight: 700;
-		color: var(--color-text);
+		color: var(--timer-elapsed-color, var(--color-text));
+		font-size: var(--timer-elapsed-size, var(--typography--fontSize-base));
 	}
 </style>

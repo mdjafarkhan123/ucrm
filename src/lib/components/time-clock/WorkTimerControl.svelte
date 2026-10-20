@@ -1,11 +1,15 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Button from '$lib/components/ui/Button.svelte';
+	import TimerElapsed from '$lib/components/time-clock/TimerElapsed.svelte';
+	import timerIcon from '@tabler/icons/outline/stopwatch.svg?raw';
+	import stopIcon from '@tabler/icons/outline/player-stop.svg?raw';
 	import RunningClock from '$lib/components/time-clock/RunningClock.svelte';
 	import TimerRunningElsewhere from '$lib/components/time-clock/TimerRunningElsewhere.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import {
 		fetchMyTimer,
+		LONG_TIMER_MS,
 		myTimerKey,
 		refreshAfterTimer,
 		runningWorkTimer,
@@ -30,12 +34,11 @@
 	let {
 		target,
 		completed = false,
-		concept = false
+		presentation = 'panel'
 	}: {
 		target: Target;
-		/** The concept look (Job details `tNdkX`): a small white "Start timer" with a play icon, so the row's
-		 *  green stays with the page's one main action. */
-		concept?: boolean;
+		/** The full timer panel, or the compact control in a visit row. */
+		presentation?: 'panel' | 'inline';
 		/** A completed visit or Assessment, or a visit on a closed Job, cannot be timed. Completing it stopped
 		 *  its timers. An Assessment not booked for today counts as completed here: only today's are timed. */
 		completed?: boolean;
@@ -61,6 +64,22 @@
 	const jobId = $derived(target.kind === 'visit' ? target.jobId : null);
 
 	let busy = $state(false);
+	let now = $state(Date.now());
+	$effect(() => {
+		if (!running) return;
+		const tick = setInterval(() => (now = Date.now()), 30_000);
+		return () => clearInterval(tick);
+	});
+	const long = $derived(
+		Boolean(onThis && running && now + offsetMs - Date.parse(running.started_at) > LONG_TIMER_MS)
+	);
+	const since = $derived(
+		running
+			? new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(
+					new Date(running.started_at)
+				)
+			: ''
+	);
 
 	async function start() {
 		if (busy) return;
@@ -77,8 +96,11 @@
 		} catch (caught) {
 			toast.error((caught as TimerWriteError).message ?? 'The timer did not start.');
 		} finally {
-			busy = false;
-			await refreshAfterTimer(queryClient, jobId);
+			try {
+				await refreshAfterTimer(queryClient, jobId);
+			} finally {
+				busy = false;
+			}
 		}
 	}
 
@@ -92,43 +114,157 @@
 		} catch (caught) {
 			toast.error((caught as TimerWriteError).message ?? 'The timer did not stop.');
 		} finally {
-			busy = false;
-			await refreshAfterTimer(queryClient, running?.job_id ?? jobId);
+			try {
+				await refreshAfterTimer(queryClient, running?.job_id ?? jobId);
+			} finally {
+				busy = false;
+			}
 		}
 	}
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-{#if onThis && running}
+{#if (onThis && running) || (mine?.can_time && !completed)}
 	<div
-		class="work-timer work-timer--running"
+		class={[
+			'work-timer',
+			presentation === 'panel' ? 'work-timer--panel' : 'work-timer--inline',
+			onThis && 'work-timer--running',
+			long && 'work-timer--long'
+		]}
 		role="group"
 		aria-label={target.kind === 'visit'
 			? 'Your timer on this visit'
 			: 'Your timer on this assessment'}
 	>
-		<RunningClock startedAt={running.started_at} {offsetMs} />
-		<Button size="small" variant="secondary" onclick={stop} loading={busy}>Stop timer</Button>
+		{#if presentation === 'panel'}<span class="work-timer__tile" aria-hidden="true"
+				>{@html timerIcon}</span
+			>
+			<div class="work-timer__copy">
+				{#if onThis && running}<strong class="work-timer__elapsed"
+						><TimerElapsed startedAt={running.started_at} {offsetMs} /></strong
+					><span class:work-timer__warning={long}>{long ? 'Over 12 hours' : `Since ${since}`}</span>
+				{:else if running}<TimerRunningElsewhere timer={running} />
+				{:else}<strong>Your timer</strong><span
+						>Not started on this {target.kind === 'visit' ? 'visit' : 'assessment'}</span
+					>{/if}
+			</div>{/if}
+		{#if onThis && running}
+			{#if presentation === 'inline'}<RunningClock
+					startedAt={running.started_at}
+					{offsetMs}
+					joined
+					flagLong
+				/>{/if}
+			<Button size="small" variant="secondary" onclick={stop} loading={busy}
+				><span class="work-timer__button-icon" aria-hidden="true">{@html stopIcon}</span>Stop timer</Button
+			>
+		{:else if running}
+			{#if presentation === 'inline'}<TimerRunningElsewhere timer={running} />{/if}
+		{:else}
+			<Button size="small" variant="secondary" onclick={start} loading={busy}
+				><span class="work-timer__button-icon" aria-hidden="true">{@html playIcon}</span>Start timer</Button
+			>
+		{/if}
 	</div>
-{:else if mine?.can_time && !completed}
-	{#if running}
-		<TimerRunningElsewhere timer={running} />
-	{:else if concept}
-		<Button size="small" variant="secondary" onclick={start} loading={busy}>
-			{@html playIcon}Start timer
-		</Button>
-	{:else}
-		<Button size="small" onclick={start} loading={busy}>Start timer</Button>
-	{/if}
 {/if}
 
 <!-- eslint-enable svelte/no-at-html-tags -->
-
 <style lang="scss">
 	.work-timer {
+		--timer-accent: var(--color-time);
 		display: inline-flex;
-		flex-wrap: wrap;
 		align-items: center;
-		gap: var(--space-small);
+		gap: var(--space-slim);
+		min-width: 0;
+		&--long {
+			--timer-accent: var(--color-warning);
+		}
+		&--panel {
+			display: flex;
+			width: 100%;
+			box-sizing: border-box;
+			padding: var(--space-slim);
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-base);
+			background: var(--color-surface--background--subtle);
+		}
+		&--panel.work-timer--running {
+			border: 1.5px solid var(--timer-accent);
+			background: var(--color-surface);
+		}
+		&__tile {
+			display: grid;
+			place-items: center;
+			width: 32px;
+			height: 32px;
+			flex-shrink: 0;
+			border-radius: var(--radius-base);
+			background: var(--color-time--surface);
+			color: var(--color-time);
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+		}
+		&--long &__tile {
+			background: var(--color-warning--surface);
+			color: var(--color-warning);
+		}
+		&__copy {
+			display: grid;
+			gap: 2px;
+			flex: 1;
+			min-width: 0;
+			strong {
+				color: var(--color-heading);
+				font-size: var(--typography--fontSize-label);
+				font-weight: 600;
+			}
+			> span {
+				color: var(--color-text--secondary);
+				font-size: var(--typography--fontSize-small);
+			}
+		}
+		&__copy &__elapsed {
+			--timer-elapsed-size: var(--typography--fontSize-larger);
+			--timer-elapsed-color: var(--color-heading);
+			letter-spacing: -0.3px;
+			font-weight: 700;
+		}
+		&__copy > .work-timer__warning {
+			color: var(--color-warning--onSurface);
+			font-weight: 600;
+		}
+		&__button-icon {
+			display: inline-flex;
+			color: var(--timer-accent);
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+		}
+		:global(.button__spinner) {
+			color: var(--timer-accent);
+		}
+		&--inline.work-timer--running {
+			gap: 0;
+			:global(button) {
+				border-radius: 0 var(--radius-base) var(--radius-base) 0;
+				border-left: 0;
+				height: 32px;
+			}
+		}
+	}
+	@media (max-width: 479px) {
+		.work-timer--panel {
+			flex-wrap: wrap;
+		}
+		.work-timer__copy {
+			min-width: 100px;
+		}
+		.work-timer--inline {
+			max-width: 100%;
+		}
 	}
 </style>
