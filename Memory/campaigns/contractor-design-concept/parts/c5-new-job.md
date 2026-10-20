@@ -60,3 +60,25 @@ Products and services, Visits, Billing, Notes; rail keeps the deep-green Job tot
 card — client, the work, visits, team, invoicing — with the deep-green total at its foot). Shared: "Choosing a
 client" strip (page opens, typing with list and "+ Create new client", nobody matches) and dark mode.
 On approval: replace `zUFDO` and `TVQzs`, update `layout.md` → Create pages, delete the unchosen option.
+
+## One create page for all four (Jobber live tour, 2026-10-20)
+
+Jobber's /requests/new, /quotes/new, /jobs/new and /invoices/new are one shared page frame. Same: white top
+panel with a coloured top line (Request orange, Quote red, Job green, Invoice blue), type icon + "New X", a
+full-width Title (Invoice: "Subject", prefilled "For Services Rendered"), "Select a client" on the left, a
+label/value list on the right, then section cards, a Product / Service block, Notes (dashed empty box), and the
+sticky foot Cancel + "Save X" (split menu on Quote/Job/Invoice, plain on Request).
+Right-hand list: Request — Requested on (today); Quote — Quote #, Customize · Add Field; Job — Job #,
+Customize; Invoice — Invoice #, Issued date (Date Sent), Payment terms (Due upon receipt), Customize.
+Body per type: Request — Overview (Service details, images), On-site assessment, Product / Service (simple,
+Subtotal/Total), Notes. Quote — "+ Add section" chips (Introduction; later Attachments, Images, Client
+Message), Product / Service with Mark as optional, image, Add Line Item / Add Text, Client view, Subtotal,
+Discount, Tax, Total, Add Deposit or Payment Schedule; Contract / Disclaimer (Apply to all future quotes);
+Notes. Job — Visits, Billing, Product / Service, Notes. Invoice — Product / Service with Add Service Date,
+Invoice Totals (Client view, Subtotal, Discount, Tax, Total, Invoice balance), Add section (Client Message,
+Contract / Disclaimer), Images, Attachments, Notes.
+
+Our code already shares most of this: all four forms use RecordFormLayout, SectionBlock, ClientPicker and
+ProductsAndServicesBlock; Request, Quote and Invoice use PrimaryInfoCard, but JobForm draws its own header
+(PickedClient, IconTile). Proposal to Jafar: draw one shared "Create page" in Pencil, and let the Batch 31
+A/B pick decide its look for all four.
