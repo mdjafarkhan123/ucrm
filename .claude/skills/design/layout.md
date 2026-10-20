@@ -44,7 +44,7 @@
   hint saying what else the save does ("Sarah gets the booking email when you save"). Right: Cancel (secondary)
   then the main button with a check icon.
 - **Shared create form**, approved B by Jafar 2026-10-20 (Pencil: "Create form header · Approved B", `NhVGQ`;
-  it replaces the earlier quiet-white look on `m4ibfF`, `pM2Vf` and `el2At`). One card for Request, Quote, Job
+  reusable "Create form · Shared work-record header" `OjBZG`, shown on `m4ibfF`, `pM2Vf` and New request `el2At`). One card for Request, Quote, Job
   and Invoice, built like the Record header: white, 1px `--color-border`, radius 16, clipped.
 - **Coloured top:** the record type's `--color-<record>--surface`, a 1px `--color-<record>--surface-edge` line
   under it, padding 20 24 22, rows 18 apart. Heading row: a 40 white tile (edge `--color-<record>--surface-edge`,

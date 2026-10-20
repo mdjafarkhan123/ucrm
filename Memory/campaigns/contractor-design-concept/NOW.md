@@ -11,7 +11,7 @@ branch, proof and integration status:
 `parts/new-request-top-form.md`. This supersedes C5's abandoned Batch 31 drafts.
 
 **Next:**
-1. Shared parts: `parts/c5-shared-parts.md`. Batches 1–23 merged; 24–30 approved for building. Proof is linked
+1. Shared parts: `parts/c5-shared-parts.md`. Batches 1–23 merged; 24 and 26–30 approved for building (25 superseded by the shared create form). Proof is linked
    there. Next drawing: next empty row in `stages/list-1b-parts.md`; List 1a fully drawn (DataTable skipped).
    Older drawings/code need the 12px minimum-text sweep.
 2. Schedule, event completion and three Jobs pop-ups merged 2026-10-19. Proof:

@@ -1,8 +1,8 @@
 # C5 — New job in the concept
 
 **Campaign:** contractor-design-concept · **Plan:** `docs/contractor-design-concept-behavior-contract.md` § First version 3
-**Stage:** **Approved by Jafar 2026-10-18** ("approved"), including the four new parts below. Frames in `concept.pen`: New job `zUFDO`, Other states
-`TVQzs` (from a request, recurring). **Done when:** Jafar approves; record his yes and date here.
+**Stage:** **Approved by Jafar 2026-10-18** ("approved"), including the four new parts below. Frames `zUFDO` and `TVQzs` were deleted 2026-10-20 at Jafar's request;
+the shared create form (`parts/new-request-top-form.md`) now leads. **Done when:** Jafar approves; record his yes and date here.
 **Live page:** `src/routes/(app)/jobs/new/+page.svelte` → `src/lib/components/jobs/JobForm.svelte`,
 `JobVisitsBlock.svelte`, `RecurrenceFields.svelte`.
 
@@ -96,7 +96,7 @@ Invoice #), Products, Terms & dates (invoice date, payment terms, due date); sid
 Attachments. Only the top panel gets the new look.
 Jafar (2026-10-20): the Batch 31 New job board is not needed; we start new with one shared create page. Board
 `M0VXo` was already gone from concept.pen when checked. Still on the canvas: `zUFDO`, `TVQzs` (old New job) and
-`U8RY1n` (Batch 25 First block on New forms, approved earlier today); asked Jafar whether these go too.
+`U8RY1n` (Batch 25 First block on New forms, approved earlier today); Jafar 2026-10-20: delete them — done.
 
 Drawn 2026-10-20, waiting for Jafar's pick: board `KiMYd` "Concept · Batch 31 · Create pages · A vs B". Each
 option: a full New job page (copy of `zUFDO`, its page header and "The job" card swapped for the new top panel;

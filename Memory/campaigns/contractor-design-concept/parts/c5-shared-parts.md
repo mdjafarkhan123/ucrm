@@ -34,7 +34,7 @@
 | 22 Files on a message | communications/ConversationAttachments (1b): every state, text message, Chat with Uplift, dark | Approved `mZdBv` 2026-10-20: B · preview cards inside the message (A clean pills deleted). Look in `files.md` → Files on a message. See § Batch 22; built, checked and merged 2026-10-20, proof `docs/evidence/2026-10-20-batch16-23/README.md` |
 | 23 Jafar panel sign-in | jafar/JafarAuthCard (1b) and the four /jafar sign-in pages: every message state; 1440 light and dark | Approved `Y0A1Z` 2026-10-20: B · Split screen (A deleted). Look in `layout.md` → Sign-in screens. See § Batch 23; built, checked and merged 2026-10-20, proof `docs/evidence/2026-10-20-batch16-23/README.md` |
 | 24 Discount, tax and totals | layout/RailRow, work/RecordDiscountCard, work/RecordTaxCard, quotes/QuoteSummaryCard (1b): every state, both pop-ups, dark | Approved `qY4yb` A 2026-10-20 (refined rows, pink Total band; B money tiles not chosen). Looks in `cards.md` → Side card rows, Totals card. See § Batch 24 |
-| 25 First block on New forms | work/PrimaryInfoCard (1b) on New request, quote, invoice | Approved `U8RY1n` A 2026-10-20 (fact in the page header pill, like New job; B facts column not chosen). Look in `layout.md` → Create pages. See § Batch 25 |
+| 25 First block on New forms | work/PrimaryInfoCard (1b) on New request, quote, invoice | **Superseded 2026-10-20** by the shared create form (Approved B, `m4ibfF` / `pM2Vf` / `NhVGQ`, part `new-request-top-form.md`); board `U8RY1n` deleted. Do not build Batch 25 |
 | 26 Marketing email preview | marketing/MarketingTemplatePreview, MarketingTemplatePreviewDialog (1b): Review step, loading, couldn't load, dark | Approved `l62Og` A 2026-10-20 (refined pop-up; B inbox line and device stage deleted). Look in `modals.md` → Email preview pop-up. See § Batch 26 |
 | 27 Channel menu and message settings | communications/ComposerChannelMenu, clients/CommunicationSettingsDialog (1b): every state, dark | Approved `DXj9z` A + A 2026-10-20 (B Send-by button and tick tiles deleted). Looks in `chips.md` → Channel pill, `modals.md` → Communication settings pop-up. See § Batch 27 |
 | 28 Questions on a public form | forms/PublicFormQuestion (1b): every question kind, hover, focus, dark | Approved `Y3od0z` B 2026-10-20 (one card per question; A plain deleted). Look in `inputs.md` → Questions on a public form. See § Batch 28 |
@@ -103,7 +103,9 @@ card rows, Totals card; pop-ups follow `modals.md` → Form pop-up. Hand-off for
   tax 400 (Tax select, custom name + Rate % in one row, reusable checkbox, info note strip). Save buttons get
   the check icon.
 
-## Batch 25 First block on New forms — approved 2026-10-20
+## Batch 25 First block on New forms — approved 2026-10-20, superseded the same day
+
+Superseded by the shared create form (Approved B); board `U8RY1n` deleted. The hand-off below is history only.
 
 Board `U8RY1n`, A · fact in the page header (B facts column deleted). Restyle only; same fields, client picker,
 Change property and errors. Look in `layout.md` → Create pages. Hand-off for the builder:

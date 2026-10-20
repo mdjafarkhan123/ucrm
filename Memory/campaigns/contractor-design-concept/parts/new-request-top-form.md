@@ -31,7 +31,8 @@ Pencil file is `/home/jafar/Ucrm/concept.pen`. Jafar saved the cleaned final des
 the saved copy is committed here as `ac1ec3fe`. No app code changed. Jafar ended the session and requested
 this handover for the next session.
 
-Next: bring `OjBZG`, `m4ibfF`, `pM2Vf` and `el2At` to the approved B look (ask Jafar first), then draw the
+Done 2026-10-20: reusable `OjBZG` rebuilt in the B look, so `m4ibfF`, `pM2Vf` and `el2At` show B; old `zUFDO`,
+`TVQzs`, `U8RY1n` deleted. Next: draw the
 full New Job, New Quote and New Invoice pages using the approved shared header (`NhVGQ`) and existing approved parts,
 preserving each page's sections, sidebar and conditional property behaviour. Review those pages with Jafar.
 Client creation needs a separate fit check; it is outside the current approval. App implementation follows
