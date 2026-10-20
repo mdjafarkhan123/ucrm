@@ -9,17 +9,17 @@ Key, tick rule and coverage command: `list-index.md`.
 | `communications/EmailSenderLabel` | loading | ✅ Batch 16 `I5mY7I` B 2026-10-20 | ⬜ |
 | `files/PhotoDescribeDialog` | 🔁F pop-up · loading | ✅ Batch 17 `Y0ECPJ` A 2026-10-20 | ⬜ |
 | `files/RecordFilesCard` | pop-ups: "confirm" 🔁C · menus ×1 · loading, permission-limited | ✅ Batch 18 `pH9PB` A 2026-10-20 | ⬜ |
-| `forms/FormNotesCard` |  | ⬜ | ⬜ |
+| `forms/FormNotesCard` |  | ✅ Batch 19 `qf1uu` 2026-10-20 | ⬜ |
 | `schedule/NotifyCustomerCheckbox` |  | ✅ | ✅ |
-| `settings/automation/EmailActionEditor` |  | ⬜ | ⬜ |
-| `settings/automation/SmsActionEditor` |  | ⬜ | ⬜ |
-| `ui/Popover` |  | ⬜ | ⬜ |
+| `settings/automation/EmailActionEditor` |  | ✅ Batch 19 `qf1uu` 2026-10-20 | ⬜ |
+| `settings/automation/SmsActionEditor` |  | ✅ Batch 19 `qf1uu` 2026-10-20 | ⬜ |
+| `ui/Popover` |  | ✅ Batch 20 `e18rX` 2026-10-20 | ⬜ |
 | `work/AttentionCard` |  | ✅ | ✅ |
 | `work/WorkRecordHeader` | menus ×2 | ✅ Batch 13 header C `xrJ3f` 2026-10-20 | ✅ |
-| `collaboration/ActivityFeed` | loading, empty | ⬜ | ⬜ |
-| `communications/ConversationAttachments` |  | ⬜ | ⬜ |
-| `data-display/DateRangeChip` |  | ⬜ | ⬜ |
-| `jafar/JafarAuthCard` |  | ⬜ | ⬜ |
+| `collaboration/ActivityFeed` | loading, empty | ✅ Batch 21 `gZ6rR` A 2026-10-20 | ⬜ |
+| `communications/ConversationAttachments` |  | ✅ Batch 22 `mZdBv` B 2026-10-20 | ⬜ |
+| `data-display/DateRangeChip` |  | ✅ Batch 20 `e18rX` 2026-10-20 | ⬜ |
+| `jafar/JafarAuthCard` |  | ✅ Batch 23 `Y0A1Z` B 2026-10-20 | ⬜ |
 | `layout/RailRow` |  | ⬜ | ⬜ |
 | `marketing/MarketingTemplatePreview` | loading | ⬜ | ⬜ |
 | `quotes/QuoteSummaryCard` |  | ⬜ | ⬜ |
@@ -49,7 +49,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `marketing/MarketingTemplatePreviewDialog` | 🔁F pop-up | ⬜ | ⬜ |
 | `profile/ProfilePhotoDialog` | 🔁F pop-up | ⬜ | ⬜ |
 | `settings/WeeklyHoursEditor` |  | ⬜ | ⬜ |
-| `ui/FilterChipMulti` |  | ⬜ | ⬜ |
+| `ui/FilterChipMulti` |  | ✅ Batch 20 `e18rX` 2026-10-20 | ⬜ |
 | `ui/SignaturePad` |  | ⬜ | ⬜ |
 | `automation/InquiryAutomationCard` | pop-ups: "Stop this follow-up?" 🔁C · menus ×1 · loading, empty | ⬜ | ⬜ |
 | `calendar/CalendarCard` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Merged 2026-10-19 |

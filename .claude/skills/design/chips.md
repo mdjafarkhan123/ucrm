@@ -44,6 +44,20 @@
   with a green check.
 - Error: 14 circle-alert and a 12 `--color-critical` message under the search box.
 
+## Multi-choice filter chip
+
+A filter chip where several values can be ticked (`ui/FilterChipMulti`), approved 2026-10-20 on board `e18rX`
+(B). The filter chip family; it takes a 16 icon in `--color-interactive` (the live part needs an icon prop).
+
+- Set: label, divider, the first value 14/600 heading, then "+2" 14/600 `--color-interactive`, and the clear square.
+- Menu, 250 wide: `--color-surface`, 1px `--color-border`, radius 12. Head padding 12 16 4 18: the filter name
+  12/600 uppercase quiet, "3 chosen" 12/600 `--color-interactive` at the right.
+- Lines: padding 8, 2 apart, each 36 high, radius 8, padding 0 10, gap 10: an 18 checkbox (`inputs.md`), the name
+  14 heading (600 when ticked); hover `--color-surface--hover`. Counts: a 20 pill `--color-surface--background`,
+  12/600 quiet.
+- Foot: `--color-surface--background--subtle`, hairline above, padding 8: "Clear people" quiet button with `x`.
+- Nothing to choose: one 12 quiet line in the menu.
+
 ## Sender chip
 
 The "From" value in an email preview and the inbox composer's From → To line (board `I5mY7I`, Jafar
@@ -59,3 +73,17 @@ The "From" value in an email preview and the inbox composer's From → To line (
   `--color-critical`, the message 13/600 `--color-critical--onSurface`.
 - No address yet: the same pill in `--color-warning--surface` with its `--surface-edge`, a 14 triangle-alert
   `--color-warning`, the message 13/600 `--color-warning--onSurface`.
+
+## Date range chip
+
+A filter chip for a date range (`data-display/DateRangeChip`), approved 2026-10-20 on board `e18rX` (B). The
+filter chip's look, except its icon is the 24 date tile in `--color-time--surface` with a `--surface-edge`
+(the same tile as the date box), so dates read as dates across the toolbar.
+
+- Set: label 14/500 `--color-text`, the divider, the range 14/600 heading ("Oct 1, 2026 – Oct 20, 2026"; one end:
+  "From Oct 1, 2026" / "Until Oct 20, 2026"), a 24 clear square (`--color-surface--hover`, 14 `x`).
+- Panel, 440 wide: `--color-surface`, 1px `--color-border`, radius 12. Header padding 14 16 with the time tile and
+  the name 16/600, a hairline under it. Body padding 16: "Created from" → "Created to" on one line, two date
+  boxes with a 16 `arrow-right` in `--color-icon--secondary` between them; each box opens the approved calendar.
+- Foot: `--color-surface--background--subtle`, hairline above, padding 10 12 10 8: Clear dates (quiet, left),
+  Done (main, small, right).

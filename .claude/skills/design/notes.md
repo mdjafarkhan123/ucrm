@@ -3,7 +3,8 @@
 > Dependencies: `colors.md`, `avatars.md`, `files.md`, `buttons.md`, `cards.md`
 
 Pencil: `concept.pen` → board "Notes and attachments" (`KuOmH`), approved 2026-10-19; the Notes panel around
-the notes → board "Notes panel · menu and states" (`l9ZBWI`), approved 2026-10-20.
+the notes → board "Notes panel · menu and states" (`l9ZBWI`), approved 2026-10-20; the note box on new
+records → board "Writing boxes" (`qf1uu`, B), approved 2026-10-20.
 
 ## Notes card
 
@@ -59,3 +60,38 @@ the notes → board "Notes panel · menu and states" (`l9ZBWI`), approved 2026-1
 - Empty: "No notes yet" 13/600 heading over one 12 quiet hint line, centred over the field; with no field, a 32
   inactive tile above the words. Couldn't load: a 32 critical tile (`triangle-alert`), the title, one quiet line
   and a small secondary Try again.
+
+## Note box on a new record
+
+The Notes card on a new client, request, quote or job (the note saves with the record), approved 2026-10-20 on
+board `qf1uu` (B). The Notes panel's field, grown taller, so a note looks the same before and after Save.
+
+- The Notes card (`cards.md` header, conversation tile, hint "Only your team sees this · saves with the client"),
+  body padding 16.
+- Field: `--color-surface--background--subtle`, 1px `--color-border`, radius 8, padding 12 12 10 12, gap 10;
+  three lines of text 14, placeholder `--color-text--secondary`. Hover `--color-surface--hover` with a
+  `--color-border--interactive--hover` edge. Typing:
+  `--color-surface` with the 1.5px `--color-interactive` edge.
+- Inside the field's foot, 8 below the text: a 14 `lock` in `--color-conversation` and "Team only" 12/600
+  `--color-conversation--onSurface`, 6 apart; at the right the letters-left count 12/500 quiet ("500 left"),
+  quiet even when nearly full.
+- Couldn't save: 1.5px `--color-critical` edge, and the error line 12 `--color-critical` under the field.
+
+## Activity feed
+
+The history of a client, request or quote in a 360 side card, "Client history" (Pencil: board `gZ6rR`,
+approved A · Timeline 2026-10-20).
+
+- Side card with the Card header: `--color-client` tile with `history`, "Newest first" hint, quiet Close.
+- Day label: a pill (padding 3 8, `--color-surface--background`, 1px `--color-border`, 12/600 uppercase quiet,
+  0.6 spacing) then a 1px `--color-border` rule filling the row; 10 below it.
+- Each event, gap 12: a 28 rail with a round 28 marker (`--color-<meaning>--surface`, 1px `--surface-edge`,
+  14 icon in `--color-<meaning>`), and a 2px `--color-border` line down to the next marker in the same day.
+  Text: summary 14/500 heading, then 6 below the author line (24 avatar, name 12/600, "·", "2h ago" 12 quiet);
+  16 under each event except the day's last.
+- Meaning colour: quote events `--color-quote`, client events `--color-client`, review events
+  `--color-review`, notes `--color-conversation`, tags and files `--color-inactive`, anything else
+  `--color-inactive` with `history`. The client: `--color-client` avatar with `user-round`; Automatic:
+  `--color-inactive` avatar with `zap`.
+- Loading: a day pill shape, then rows of a 28 circle and two lines (`page-states.md`). Nothing yet and
+  Couldn't load (with Try again) follow `page-states.md` with the `--color-client` tile.

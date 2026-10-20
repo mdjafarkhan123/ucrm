@@ -28,6 +28,11 @@
 | 16 Email From line | communications/EmailSenderLabel (1b): every state | Approved `I5mY7I` B 2026-10-20 (teal sender chip; A refined text line not chosen). Look in `chips.md` → Sender chip. See § Batch 16 |
 | 17 Caption and labels pop-up | files/PhotoDescribeDialog (1b): every state | Approved `Y0ECPJ` A 2026-10-20 (photo on top; B photo beside not chosen). Look in `files.md` → Caption and labels pop-up. See § Batch 17 |
 | 18 Record files card | files/RecordFilesCard (1b): every state, menu, remove pop-up | Approved `pH9PB` A 2026-10-20 (photos then document lines; B newest-photo gallery not chosen). Look in `files.md` → Record files card. See § Batch 18 |
+| 19 Writing boxes | forms/FormNotesCard, settings/automation/EmailActionEditor, SmsActionEditor (1b): every state | Approved `qf1uu` 2026-10-20: Notes box B (Notes panel field, taller), email A and text A (one message sheet with value chips; text adds a cost meter). Looks in `notes.md` → Note box on a new record, `inputs.md` → Message sheet. See § Batch 19 |
+| 20 Pop-over and filter chips | ui/Popover, data-display/DateRangeChip, ui/FilterChipMulti (1b): every state | Approved `e18rX` 2026-10-20: B for all three (pop-over with a coloured top band and an arrow; date chip with the time tile and a 440 From → To panel; multi chip with green +2 and a menu with "3 chosen", count pills and a Clear foot). Looks in `modals.md` → Pop-over, `chips.md`. See § Batch 20 |
+| 21 Activity feed | collaboration/ActivityFeed (1b): with events, loading, nothing yet, couldn't load, dark | Approved `gZ6rR` 2026-10-20: A · Timeline (B Day log deleted). Look in `notes.md` → Activity feed. See § Batch 21 |
+| 22 Files on a message | communications/ConversationAttachments (1b): every state, text message, Chat with Uplift, dark | Approved `mZdBv` 2026-10-20: B · preview cards inside the message (A clean pills deleted). Look in `files.md` → Files on a message. See § Batch 22 |
+| 23 Jafar panel sign-in | jafar/JafarAuthCard (1b) and the four /jafar sign-in pages: every message state; 1440 light and dark | Approved `Y0A1Z` 2026-10-20: B · Split screen (A deleted). Look in `layout.md` → Sign-in screens. See § Batch 23 |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 
@@ -75,6 +80,62 @@ Hand-off for the builder (restyle only; every control is live today):
 - New foot strips use `--color-surface--background`. Lock icons on invoice strips use the invoice colour.
 - Row 4 (line menu, "Throw away these changes?" with Keep editing / Throw them away, loading, couldn't load
   without Try again, invoice Service date box with ×, progress invoice Item total / Due this invoice) as drawn.
+
+## Batch 22 Files on a message — approved 2026-10-20
+
+Board `mZdBv`, B · preview cards (A deleted). Restyle only; same instant upload, caps, error words, remove, and
+`getAttachments`/`reset`. Hand-off for the builder:
+- `ConversationAttachments`: cards 60 high, two across, 8 apart, laid out under the message text, not among the
+  footer buttons; the paperclip stays in the footer (first in Chat with Uplift). Callers (`ConversationComposer`,
+  `ManualEmailDialog`, `SupportConversation`) give the cards their place; `display: contents` goes.
+- Card: the approved 40 file picture (`files.md`), name over type · size, round × top-right; uploading has the
+  green foot bar; failed has the red edge and the reason. Rejection lines stay under the files.
+
+## Batch 23 Jafar panel sign-in — approved 2026-10-20
+
+Board `Y0A1Z`, B · Split screen (A centred card deleted). Restyle only; same fields, words, buttons and flows on
+`/jafar/login`, `join`, `forgot-password`, `reset-password`. Hand-off for the builder:
+- `JafarAuthCard` becomes the split layout: green brand panel left (fixed content), the page's form right with
+  no card. Its eyebrow prop moves into the panel pill; title and intro stay per page.
+- New: a status tile prop for message screens (done green, expired yellow); the error line becomes the critical box.
+- Phone layout waits for the native apps (desktop only).
+
+## Batch 21 Activity feed — approved 2026-10-20
+
+Board `gZ6rR`, A · Timeline (B deleted). The earlier unfinished Batch 21 board `p8S73H` (record money cards) was
+deleted on Jafar's word; those cards are still ⬜. Restyle only; same query, day groups, names and empty words.
+Hand-off for the builder:
+- `ActivityFeed`: day pill + rule; round 28 markers in the event's meaning colour joined by a 2px line; summary
+  14/500 heading; author line with 24 avatar. Map event types to colours per `notes.md` → Activity feed.
+- Loading becomes row-shaped placeholders; Couldn't load becomes the standard page state with Try again
+  (refetch) — Jafar approved the board that shows it.
+
+## Batch 20 Pop-over and filter chips — approved 2026-10-20
+
+Board `e18rX`, B for all three (drawn by a helper agent; A options deleted). Jafar's note: the A and B options
+were too alike ("same look, colour changed in places"); later boards must offer clearly different options.
+Restyle only; same open/close, value, clear and filtering behaviour. Hand-off for the builder:
+- `ui/Popover`: tinted top band in the caller's meaning colour, white 32 tile, 16/600 title, × in the band;
+  arrow towards the trigger. Callers pass the meaning colour and icon. The Visit pop-up keeps its approved look.
+- `DateRangeChip`: icon becomes the 24 time tile; panel 440 with From → To on one line and a foot with Clear
+  dates and Done.
+- `FilterChipMulti`: needs an icon prop (16, `--color-interactive`); "+N" in `--color-interactive`; menu head
+  with name and "N chosen", count pills, Clear foot.
+- Open: quick ranges in the date panel (This week, This month, Last 30 days) — idea on the board, waiting for
+  Jafar's yes. Old boards `uSXlT` and `Fma1f` still have 11px captions (12px sweep).
+
+## Batch 19 Writing boxes — approved 2026-10-20
+
+Board `qf1uu` (Notes B, email A, text A; drawn by a helper agent, unchosen options deleted). Restyle only; same
+fields, value buttons, counts, Send from and save flow. Hand-off for the builder:
+- `FormNotesCard`: the note field gains the Notes panel field look, three lines tall, with "Team only" (lock) and
+  the letters-left count inside its foot; error line under it.
+- `EmailActionEditor`: subject and message in one sheet; the value buttons become chips in a values bar at the
+  sheet's foot with the count; hint line under the sheet.
+- `SmsActionEditor`: the same sheet without subject; the letters · segments · cost line becomes the cost meter;
+  Send from stays a select. Same in the optional text of "Reply by text or email".
+- The step card's grey icon becomes a `--color-conversation` tile (drawn as context; part of the step header).
+- Open: Jafar has not yet answered the "what the customer sees" preview idea (new behaviour, note on the board).
 
 ## Batch 18 Record files card — approved 2026-10-20
 

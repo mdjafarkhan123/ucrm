@@ -40,7 +40,7 @@ Jafar 2026-10-17).
 - [brand.md](brand.md) — Brand
 - [colors.md](colors.md) — Colour
 - [typography.md](typography.md) — Typography
-- [layout.md](layout.md) — Layout and spacing
+- [layout.md](layout.md) — Layout and spacing, sign-in screens
 - [radius.md](radius.md) — Radius
 - [borders.md](borders.md) — Borders
 - [shadows.md](shadows.md) — Shadows
@@ -49,23 +49,23 @@ Jafar 2026-10-17).
 ### Components
 - [buttons.md](buttons.md) — Button
 - [badges.md](badges.md) — Status pill
-- [inputs.md](inputs.md) — Field, money and quantity boxes, checkbox, radio choice, on/off switch, segmented switch, people pick chips
-- [chips.md](chips.md) — Filter chip, tag, tag picker, sender chip
+- [inputs.md](inputs.md) — Field, money and quantity boxes, checkbox, radio choice, on/off switch, segmented switch, people pick chips, message sheet
+- [chips.md](chips.md) — Filter chip, tag, tag picker, multi-choice filter chip, date range chip, sender chip
 - [avatars.md](avatars.md) — Avatar
 - [tabs.md](tabs.md) — Tabs
 - [cards.md](cards.md) — Card, number card
-- [files.md](files.md) — Photo viewer, file picture, photo box, upload list, files card, record files card, files waiting to save, add files pop-up, photo labels pop-up, photo details, caption and labels pop-up
-- [notes.md](notes.md) — Notes card, author line, note text, note files
+- [files.md](files.md) — Photo viewer, file picture, photo box, upload list, files card, record files card, files waiting to save, add files pop-up, photo labels pop-up, photo details, caption and labels pop-up, files on a message
+- [notes.md](notes.md) — Notes card, author line, note text, note files, note box on a new record, activity feed
 - [price-book.md](price-book.md) — Search list under a line's name, new item pop-up, Price book drawer
 - [lists.md](lists.md) — List row, Load more footer
 - [tables.md](tables.md) — Table
 - [sidebars.md](sidebars.md) — Sidebar
 - [top-bar.md](top-bar.md) — Top bar
-- [modals.md](modals.md) — Form pop-up, "are you sure?" pop-up, side drawer
+- [modals.md](modals.md) — Form pop-up, "are you sure?" pop-up, side drawer, pop-over
 - [page-states.md](page-states.md) — Loading, empty, couldn't load
 - [notices.md](notices.md) — Notice strip, form error card
 - [calendar.md](calendar.md) — Schedule calendar: toolbar, grid, cards, now line
 - [time-clock.md](time-clock.md) — Work timer: ticking time, running clock, Start and Stop, your timer panel, visit row clock
 
 Not yet designed in the concept — use the Classic module until it is: accordion, dropdown, pagination,
-tooltips/popovers.
+tooltips.

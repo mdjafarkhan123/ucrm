@@ -96,3 +96,20 @@ for card padding.)
 ## Rules
 
 - Line up columns (status, date, amount) across rows.
+
+## Sign-in screens
+
+The Jafar panel's sign-in, join, forgot-password and new-password screens (Pencil: board `Y0A1Z`, approved
+B · Split screen 2026-10-20).
+
+- The 1440 screen on `--color-surface`, 12 inset, split in two equal halves.
+- Left: the deep-green brand panel (the screen's one feature card, `cards.md`), radius 20, padding 56,
+  content spread top to bottom: the mark (40 tile on `--color-feature--subtle`, 1px `--color-feature--border`,
+  white leaf) and "Uplift" 18/700; in the middle an "UPLIFT TEAM" pill (lock-keyhole, feature-subtle), "The
+  control room" 48/700 (-1.2) and one 16 line in `--color-feature--text--secondary`. The same on every screen.
+- Right: plain `--color-surface`, the form column 400 wide centred, no card, gap 20: title 28/700 (-0.6), intro
+  15 quiet, fields 44 high, 16 apart; the main button full width, 44 high, 15 label; Back to sign in a quiet
+  button; "Forgot password?" a 13/600 `--color-interactive` link at the right under the password.
+- Messages: a 48 tile above the title — done `--color-success` (mail-check, circle-check), expired
+  `--color-warning` (link-2-off, timer-off). A sign-in error is a `--color-critical--surface` box (1px
+  `--surface-edge`, radius 8, padding 10 12, circle-alert, 13/500 `--onSurface` text) above the button.

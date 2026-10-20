@@ -2,7 +2,7 @@
 
 > Dependencies: `colors.md`, `radius.md`, `buttons.md`, `badges.md`, `icon-shapes.md`, `chips.md`, `modals.md`, `page-states.md`
 
-Pencil: `concept.pen` → board "Photos and files" (`b4BxuV`), approved 2026-10-19; Add files, photo labels and photo details on `K04pQm`, approved 2026-10-20; Caption and labels pop-up on `Y0ECPJ`, approved 2026-10-20; record files card on `pH9PB`, approved 2026-10-20.
+Pencil: `concept.pen` → board "Photos and files" (`b4BxuV`), approved 2026-10-19; Add files, photo labels and photo details on `K04pQm`, approved 2026-10-20; Caption and labels pop-up on `Y0ECPJ`, approved 2026-10-20; record files card on `pH9PB`, approved 2026-10-20; files on a message on `mZdBv`, approved 2026-10-20.
 
 ## Photo viewer
 
@@ -197,3 +197,24 @@ with `photo`, title "Caption and labels", the file name and record in the hint l
 - **Didn't save:** a 14 `circle-alert` and the reason 12/600 `--color-critical` under the labels; the strip stays.
 - **Look only:** the caption 14 heading and look-only grey tags. **Nothing yet:** a subtle box (1px
   `--color-border`, radius 8, padding 12 14) with a 16 `quote` and "No caption or labels yet." 14 quiet.
+
+## Files on a message
+
+The files added with the paperclip before Send (Inbox reply box, client Email pop-up, Chat with Uplift),
+approved 2026-10-20 on board `mZdBv` (B).
+
+- **Place:** under the message words, inside the writing area, as cards two across, 8 apart; never among the
+  footer buttons. The paperclip stays in the footer (first in Chat with Uplift).
+- **Card:** 60 high, `--color-surface`, 1px `--color-border--interactive`, radius 12, `--shadow-button`, clipped;
+  padding 0 32 0 10, gap 12: the file picture list line (40; a photo shows itself with a 1px `--color-border`),
+  then the name 13/600 heading over type · size 12 quiet ("PDF · 182 KB", "Photo · 2.4 MB").
+- **Remove:** a 22 round white button top-right, 6 in, 1px `--color-border`, shadow 0 1 3 heading at 12%, a 12
+  `x` in `--color-icon`. Hover: `--color-surface--hover`, `x` heading. Focus: `--shadow-focus`.
+- **Uploading:** the line says "Uploading · 64%" 12/600 `--color-interactive`; along the card's foot a 4 high
+  track `--color-surface--background` filled `--color-interactive` to the percent.
+- **Failed:** 1.5px `--color-critical` edge; the picture becomes a `--color-critical--surface` square with an 18
+  `alert-triangle` in `--color-critical`; the reason 12/600 `--color-critical--onSurface`.
+- **While sending:** the cards at 55% opacity; × does nothing.
+- **Nothing added (too many, too big, type not allowed):** under the cards a 14 `circle-alert` and the message
+  12/600 `--color-critical`.
+- A text message takes one file and the paperclip reads "Attach a file".
