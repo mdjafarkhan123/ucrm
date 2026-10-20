@@ -6,8 +6,9 @@
 - **Stage:** Building. Pilots built; leftovers in `parts/c7-build-pilots.md`.
 
 **Next:**
-1. Shared parts: `parts/c5-shared-parts.md` records approval boards and states. Batches 1–4, 6b and 7–8 merged. Batch 9 built and verified on `codex/concept-batch9` (`.worktrees/concept-batch9`), waiting for main integration; proof: `docs/evidence/2026-10-20-batch9/README.md`. Batches 5, 6a, 10 and 11 approved, to build. Batch 12 Time clock drawn (`ooCwt`), waiting for Jafar's pick. Codex builds approved parts; remaining drawings follow `stages/list-1a-parts.md`.
-2. Schedule, event completion and its three Jobs pop-ups merged 2026-10-19 at Jafar's request. Proof: `docs/evidence/2026-10-19-schedule/README.md`. App fills available width; 1440 is the Pencil reference. Migration already applied; do not repeat.
+1. Shared parts: `parts/c5-shared-parts.md` records approval boards and states. Batches 1–4, 6b and 7–8 merged. Batch 9 built and verified, integrating into main; proof: `docs/evidence/2026-10-20-batch9/README.md`. Batches 5, 6a, 10, 11 and 12 Time clock (`ooCwt`, approved 2026-10-20) approved, to build. Next drawings: Record page frame (TabPanel, RecordDetailLayout, ClientTagSelect) or Products & services; DataTable stays ➖. Remaining drawings: `stages/list-1a-parts.md`.
+2. Schedule, event completion and its three Jobs pop-ups merged 2026-10-19. Proof: `docs/evidence/2026-10-19-schedule/README.md`. App fills available width; 1440 is the Pencil reference. Migration already applied; do not repeat.
+
 3. Jafar confirms checklist order/pop-up marks (`stages/list-index.md`, `parts/c5a-redesign-checklist.md`).
 
 **Pencil:** read-only for builders; preserve Claude's active drawing work.

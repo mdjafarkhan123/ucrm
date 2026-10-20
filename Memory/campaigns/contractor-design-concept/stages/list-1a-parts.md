@@ -62,8 +62,8 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/RadioGroup` |  | ✅ Small controls `GbgcY` | ⬜ |
 | `ui/TimezonePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `work/ClientPicker` | loading | ✅ | ✅ |
-| `time-clock/RunningClock` |  | 🟡 Batch 12 `ooCwt` | ⬜ |
-| `time-clock/TimerElapsed` |  | 🟡 Batch 12 `ooCwt` | ⬜ |
+| `time-clock/RunningClock` |  | ✅ Batch 12 `ooCwt` | ⬜ |
+| `time-clock/TimerElapsed` |  | ✅ Batch 12 `ooCwt` | ⬜ |
 | `files/FileUploader` |  | ✅ Batch 8 `b4BxuV` | ✅ Merged 2026-10-20 |
 | `layout/DetailEditBar` |  | 🔁 Save bar in `jFBRB` | ⬜ |
 | `layout/RecordDetailLayout` |  | ⬜ | ⬜ |
