@@ -47,6 +47,17 @@
   pill corners, padding 6 12 6 6; a 24 round tile in the record colour, "Job #" 12/600 heading, then
   "Given when you save" 12 quiet.
 
+## Record pages
+
+- A record page (client, request, quote, job, invoice, payment) uses the two-column frame: main column of cards,
+  a 336 side column, 24 apart. Request, quote, job, invoice and payment open with the same header card (record
+  tile, status pill, meta line, actions, title, client box, facts, Request → Paid track); only its data changes.
+- Editing on a record page brings up the same floating save bar as a create page: status dot then the state
+  (14/600 heading) and a 12 quiet hint; Cancel (secondary) then Save changes (main, check icon). Dot by state:
+  editing with nothing changed `--color-inactive` and Save disabled; changed or saving `--color-warning` (Save
+  shows its spinner, Cancel disabled); couldn't save `--color-critical` with the hint in
+  `--color-critical--onSurface` 600 (Pencil: "Record page frame", approved 2026-10-20).
+
 ## Spacing
 
 Tokens on a 4px grid: `--space-smaller` 4, `--space-small` 8, `--space-slim` 12, `--space-base` 16,

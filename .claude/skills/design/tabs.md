@@ -12,6 +12,14 @@
 - Count: pill corners, padding 2 7, 12/600, `--color-surface--background--subtle` with
   `--color-text--secondary`. Money that came in: `--color-success--surface` with `--color-success--onSurface`.
 
+## Page tabs on a record
+
+- A record split into groups (Client: Details, Communication) carries its page tabs on a band along the foot of
+  its header card: full width, `--color-surface--background--subtle`, 1px `--color-border` line on top, padding
+  10 20, tabs 4 apart, no track behind them (Pencil: board "Record page frame", approved 2026-10-20).
+- The open tab's cards follow below the header card, 24 apart. While they load, are empty or could not load,
+  each card uses `page-states.md` in the tab's own colour.
+
 ## States
 
 - Open: `--color-surface`, 1px `--color-border--interactive`, `--shadow-button`, label `--color-heading`; its
