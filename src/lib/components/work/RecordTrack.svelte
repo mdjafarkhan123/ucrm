@@ -18,7 +18,7 @@
 		id,
 		clientName,
 		clientIsCompany = false,
-		look = 'bars'
+		look = 'steps'
 	}: {
 		kind: RecordKind;
 		id: string;

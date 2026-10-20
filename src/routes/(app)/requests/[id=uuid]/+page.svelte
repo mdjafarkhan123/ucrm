@@ -18,8 +18,6 @@
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import WorkRecordHeader from '$lib/components/work/WorkRecordHeader.svelte';
-	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
-	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
 	import { myTimerKey } from '$lib/time-clock/api';
 	import { timesheetsKey } from '$lib/time-clock/timesheets';
 	import AssessmentBlock from '$lib/components/requests/AssessmentBlock.svelte';
@@ -50,22 +48,17 @@
 		updateNote,
 		type NoteChange
 	} from '$lib/collaboration/api';
-	import {
-		convertRequestToQuote,
-		fetchRequestPricing,
-		requestPricingKey,
-		type QuoteWriteError
-	} from '$lib/quotes/api';
-	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
+	import { convertRequestToQuote, requestPricingKey, type QuoteWriteError } from '$lib/quotes/api';
+	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
 	import clipboardIcon from '@tabler/icons/outline/clipboard-text.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import quoteIcon from '@tabler/icons/outline/file-invoice.svg?raw';
 	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
 	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
-	import calendarCheckIcon from '@tabler/icons/outline/calendar-check.svg?raw';
+	import calendarCheckIcon from '@tabler/icons/outline/clipboard-check.svg?raw';
+	import worldIcon from '@tabler/icons/outline/world.svg?raw';
 	import toolIcon from '@tabler/icons/outline/tool.svg?raw';
-	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 	import InquiryAutomationCard from '$lib/components/automation/InquiryAutomationCard.svelte';
 	import { AUTOMATION_JOURNEY_READY } from '$lib/automation/journey';
 	import { customerNoticeToast, type CustomerNoticeSent } from '$lib/schedule/customer-notices';
@@ -299,27 +292,21 @@
 			: dateTimeFormat.format(start);
 	});
 
-	// The block below reads the same key, so the two share one fetch. The subtotal is the fourth fact in the
-	// header; while it loads, or when the reader may not see prices, the fact just stays empty.
-	const pricingQuery = createQuery(() => ({
-		queryKey: requestPricingKey(requestId),
-		queryFn: () => fetchRequestPricing(requestId),
-		enabled: Boolean(requestId)
-	}));
-	const subtotalFact = $derived.by(() => {
-		const pricing = pricingQuery.data;
-		if (!pricing || pricing.lines.length === 0) return null;
-		return new Intl.NumberFormat(pricing.locale, {
-			style: 'currency',
-			currency: pricing.currency_code
-		}).format(pricing.subtotal_minor / 100);
+	// Where the request came in from, in words: one the team typed in, or the channel that brought it.
+	const cameFrom = $derived.by(() => {
+		const source = saved?.source;
+		if (!source) return null;
+		if (source === 'staff') return 'Added by your team';
+		const words = source.replace(/[_-]+/g, ' ').trim();
+		return words.charAt(0).toUpperCase() + words.slice(1);
 	});
 
 	const headerFacts = $derived([
 		{
 			label: 'Requested',
 			value: saved ? dateFormat.format(new Date(saved.created_at)) : null,
-			icon: calendarIcon
+			icon: calendarIcon,
+			kind: 'time' as const
 		},
 		// A website booking held for approval carries the customer's own time, which is what the office is
 		// being asked to accept.
@@ -328,20 +315,29 @@
 					label: 'Assessment',
 					value: saved.preferred_time,
 					empty: 'Waiting for approval',
-					icon: calendarCheckIcon
+					icon: calendarCheckIcon,
+					kind: 'time' as const
 				}
 			: {
 					label: 'Assessment',
 					value: assessmentFact,
 					empty: 'Not booked yet',
-					icon: calendarCheckIcon
+					icon: calendarCheckIcon,
+					kind: 'time' as const
 				},
-		{ label: 'Service', value: saved?.service_type, empty: 'Not recorded', icon: toolIcon },
 		{
-			label: 'Request subtotal',
-			value: subtotalFact,
-			empty: pricingQuery.isPending ? '—' : 'Not priced yet',
-			icon: receiptIcon
+			label: 'Service',
+			value: saved?.service_type,
+			empty: 'Not recorded',
+			icon: toolIcon,
+			kind: 'request' as const
+		},
+		{
+			label: 'Came from',
+			value: cameFrom,
+			empty: 'Not recorded',
+			icon: worldIcon,
+			kind: 'request' as const
 		}
 	]);
 
@@ -421,17 +417,6 @@
 		}
 	]);
 
-	const clientMenuItems = $derived(
-		saved?.client
-			? [
-					{
-						label: 'View client profile',
-						onSelect: () => void goto(resolve('/(app)/clients/[id=uuid]', { id: saved.client!.id }))
-					}
-				]
-			: []
-	);
-
 	// --- The rail -------------------------------------------------------------------------------------
 
 	// Jobber swaps the whole rail for the history panel rather than opening it beside the notes, so the
@@ -467,7 +452,7 @@
 		>
 			{#snippet main()}
 				<WorkRecordHeader
-					icon={fileTextIcon}
+					icon={inboxIcon}
 					recordType="Request"
 					{title}
 					statusLabel={REQUEST_STATUS_LABELS[status]}
@@ -482,24 +467,24 @@
 					}}
 					{editingTitle}
 					bind:titleDraft
+					client={{
+						name: saved.client?.display_name ?? 'No client',
+						href: clientHref,
+						avatarId: saved.client?.id,
+						address: propertyLine,
+						addressEmpty: 'No property on this request',
+						phone: saved.phone,
+						email: saved.email
+					}}
+					facts={headerFacts}
 				>
-					{#snippet summary()}
-						<ClientSummaryCard
-							quickContact
-							name={saved.client?.display_name ?? 'No client'}
-							avatarId={saved.client?.id}
-							href={clientHref}
-							addresses={[{ value: propertyLine, empty: 'No property on this request' }]}
-							phone={saved.phone}
-							email={saved.email}
-							menuItems={clientMenuItems}
-						/>
-					{/snippet}
 					{#snippet track()}
-						<RecordTrack kind="request" id={requestId} clientName={saved.client?.display_name} />
-					{/snippet}
-					{#snippet facts()}
-						<RecordFactsList facts={headerFacts} />
+						<RecordTrack
+							kind="request"
+							id={requestId}
+							clientName={saved.client?.display_name}
+							look="steps"
+						/>
 					{/snippet}
 				</WorkRecordHeader>
 

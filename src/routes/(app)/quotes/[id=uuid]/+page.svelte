@@ -16,8 +16,6 @@
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import WorkRecordHeader from '$lib/components/work/WorkRecordHeader.svelte';
-	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
-	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
 	import ProfitCard from '$lib/components/work/ProfitCard.svelte';
 	import RecordTrack from '$lib/components/work/RecordTrack.svelte';
@@ -79,7 +77,6 @@
 	import CollectSignatureDialog from '$lib/components/quotes/CollectSignatureDialog.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import { invalidatePipeline } from '$lib/pipeline/api';
-	import fileDollarIcon from '@tabler/icons/outline/file-dollar.svg?raw';
 	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import speakerphoneIcon from '@tabler/icons/outline/speakerphone.svg?raw';
 	import messageIcon from '@tabler/icons/outline/message.svg?raw';
@@ -101,7 +98,7 @@
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
 	import calendarPlusIcon from '@tabler/icons/outline/calendar-plus.svg?raw';
 	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
-	import walletIcon from '@tabler/icons/outline/wallet.svg?raw';
+	import hashIcon from '@tabler/icons/outline/hash.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -245,7 +242,6 @@
 		minute: '2-digit'
 	});
 
-	const shortDate = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
 	const moneyFormat = $derived(
 		new Intl.NumberFormat('en-US', {
 			style: 'currency',
@@ -281,25 +277,6 @@
 	// What sits beside the status: the quote's number, which version this is, and when it went out. A quote
 	// that has never been published has no versions worth naming, so that part stays away entirely rather
 	// than saying 'Version 1' about a draft nobody has seen.
-	const headerMeta = $derived.by(() => {
-		if (!saved) return [];
-		const parts = [`Quote #${saved.quote.quote_number}`];
-		const published = saved.published_version_number;
-		if (published)
-			parts.push(
-				saved.version?.status === 'published'
-					? `Version ${published}`
-					: `Draft after version ${published}`
-			);
-		if (saved.quote.sent_at) parts.push(`sent ${shortDate.format(new Date(saved.quote.sent_at))}`);
-		return parts;
-	});
-
-	// The facts row follows the quote through its life: created, then sent, then whichever answer came
-	// back, then what it comes to. A date that has not happened yet is not listed at all rather than sitting
-	// there empty - except the answer, which stays visible so the row does not jump when one arrives.
-	// The year is left out for a date in the current year; the facts row is short on room and the year is
-	// only news when it is not this one.
 	function factDate(value: string) {
 		const date = new Date(value);
 		return new Intl.DateTimeFormat(undefined, {
@@ -311,52 +288,41 @@
 		}).format(date);
 	}
 
+	// Quote # · Created · Sent · the answer, as Jobber shows them. A step not reached yet says so in grey,
+	// so the row never jumps when it arrives.
 	const headerFacts = $derived.by(() => {
 		if (!saved) return [];
-		const answered = Boolean(saved.quote.decided_at);
+		const declined = saved.quote.decision === 'declined';
 		return [
+			{
+				label: 'Quote #',
+				value: String(saved.quote.quote_number),
+				icon: hashIcon,
+				kind: 'time' as const
+			},
 			{
 				label: 'Created',
 				value: factDate(saved.quote.created_at),
 				icon: calendarPlusIcon,
-				tone: 'neutral' as const
+				kind: 'time' as const
 			},
-			...(saved.quote.sent_at
-				? [
-						{
-							label: 'Sent',
-							value: factDate(saved.quote.sent_at),
-							icon: sendIcon,
-							tone: 'neutral' as const
-						}
-					]
-				: []),
 			{
-				label: saved.quote.decision === 'declined' ? 'Declined' : 'Approved',
+				label: 'Sent',
+				value: saved.quote.sent_at ? factDate(saved.quote.sent_at) : null,
+				empty: 'Not sent yet',
+				icon: sendIcon,
+				kind: 'warning' as const
+			},
+			{
+				label: declined ? 'Declined' : 'Approved',
 				value: saved.quote.decided_at ? factDate(saved.quote.decided_at) : null,
 				empty:
 					saved.quote.status === 'approved' || saved.quote.status === 'converted'
 						? 'Date not recorded'
-						: 'No answer yet',
+						: 'Waiting for an answer',
 				icon: circleCheckIcon,
-				tone:
-					answered && saved.quote.decision !== 'declined'
-						? ('success' as const)
-						: answered
-							? ('neutral' as const)
-							: ('warning' as const),
-				quiet: !answered
-			},
-			...(saved.can_see_price && saved.version?.total_minor !== undefined
-				? [
-						{
-							label: 'Quote total',
-							value: moneyFormat.format(saved.version.total_minor / 100),
-							icon: walletIcon,
-							tone: 'neutral' as const
-						}
-					]
-				: [])
+				kind: 'quote' as const
+			}
 		];
 	});
 
@@ -885,18 +851,6 @@
 		});
 	}
 
-	const clientMenuItems = $derived(
-		saved?.quote.client
-			? [
-					{
-						label: 'View client profile',
-						onSelect: () =>
-							void goto(resolve('/(app)/clients/[id=uuid]', { id: saved.quote.client!.id }))
-					}
-				]
-			: []
-	);
-
 	function discardDraft() {
 		editingTitle = false;
 		titleDraft = '';
@@ -1040,9 +994,7 @@
 		>
 			{#snippet main()}
 				<WorkRecordHeader
-					look="app"
-					meta={headerMeta}
-					icon={fileDollarIcon}
+					icon={fileTextIcon}
 					recordType="Quote"
 					{title}
 					statusLabel={QUOTE_STATUS_LABELS[saved.quote.status]}
@@ -1059,25 +1011,22 @@
 						: undefined}
 					{editingTitle}
 					bind:titleDraft
+					client={{
+						name:
+							saved.version?.client_display_name ?? saved.quote.client?.display_name ?? 'No client',
+						href: clientHref,
+						avatarId: saved.quote.client?.id,
+						address: propertyLine,
+						addressEmpty: 'No property on this quote',
+						phone: saved.quote.client?.phone,
+						email: saved.quote.client?.email
+					}}
+					facts={headerFacts}
 				>
 					{#snippet badges()}
 						{#if readinessBadge}
 							<StatusBadge status={readinessBadge.tone}>{readinessBadge.label}</StatusBadge>
 						{/if}
-					{/snippet}
-					{#snippet summary()}
-						<ClientSummaryCard
-							quickContact
-							avatarId={saved.quote.client?.id}
-							name={saved.version?.client_display_name ??
-								saved.quote.client?.display_name ??
-								'No client'}
-							href={clientHref}
-							addresses={[{ value: propertyLine, empty: 'No property on this quote' }]}
-							phone={saved.quote.client?.phone}
-							email={saved.quote.client?.email}
-							menuItems={clientMenuItems}
-						/>
 					{/snippet}
 					{#snippet track()}
 						<RecordTrack
@@ -1088,7 +1037,6 @@
 								saved.quote.client?.display_name}
 						/>
 					{/snippet}
-					{#snippet facts()}<RecordFactsList facts={headerFacts} />{/snippet}
 				</WorkRecordHeader>
 
 				{#if saved.signature}

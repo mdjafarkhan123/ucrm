@@ -50,13 +50,35 @@
 ## Record pages
 
 - A record page (client, request, quote, job, invoice, payment) uses the two-column frame: main column of cards,
-  a 336 side column, 24 apart. Request, quote, job, invoice and payment open with the same header card (record
-  tile, status pill, meta line, actions, title, client box, facts, Request → Paid track); only its data changes.
+  a 336 side column, 24 apart. All six open with the same header card; only its data changes (below).
 - Editing on a record page brings up the same floating save bar as a create page: status dot then the state
   (14/600 heading) and a 12 quiet hint; Cancel (secondary) then Save changes (main, check icon). Dot by state:
   editing with nothing changed `--color-inactive` and Save disabled; changed or saving `--color-warning` (Save
   shows its spinner, Cancel disabled); couldn't save `--color-critical` with the hint in
   `--color-critical--onSurface` 600 (Pencil: "Record page frame", approved 2026-10-20).
+
+## Record header
+
+One card for all six records (Pencil: "Record header · C", approved 2026-10-20). White, 1px `--color-border`,
+radius 16, clipped.
+
+- **Coloured top:** the record type's `--color-<record>--surface` (request peach, quote pink, job green, invoice
+  and payment blue, client taupe), never the status's. Padding 20 24 22, rows 14 apart.
+  - Row: a 40 white tile (radius 10, 20 icon in the record colour), the status pill on white, then the actions
+    at the right, 8 apart: pencil and history as 36 white icon buttons, More, then the main button. No record
+    info line (number, version, dates).
+  - Title 26/700, -0.6, `--color-heading`. Renaming puts the field in its place.
+- **Client line** on white, padding 16 24, 1px line under it: a 36 round avatar (`--color-client--surface`,
+  initials 12/600 `--color-client--onSurface`), the name 14/600 over the contact row (13/500 `--color-text`,
+  16 apart): 14 map-pin `--color-client`, phone `--color-time`, mail `--color-conversation`. The address opens in
+  Google Maps and gives way first. No call / text / email buttons. The client page puts its address (16 pin,
+  14/500 heading) here, with Message and Request a review at the right.
+- **Facts:** padding 16 24 20, up to four even columns, 16 inset and a 1px `--color-border` line between them.
+  Each: a 20 tile (radius 5, 12 icon, the fact's own colour family) and label 12/500 `--color-text--secondary`,
+  6 over the value 14/600 heading. A missing value says what it waits for in `--color-text--secondary`.
+- **Foot:** the Request → Paid track (padding 12 24, `--color-surface--background--subtle`, 1px line on top;
+  32 step tiles, label 13/600, 700 on the current step, sub 11 quiet, 2px joining lines) or the client's tab
+  band (`tabs.md`).
 
 ## Spacing
 

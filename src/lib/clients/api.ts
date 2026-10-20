@@ -129,6 +129,8 @@ export type ClientDetail = ClientWriteValues & {
 	/** Every property this client has, primary first. The form uses primary_property; the detail page uses this. */
 	properties: ClientProperty[];
 	property_count: number;
+	/** The payment term this client's next invoice would carry; null when it could not be read. */
+	payment_term_name: string | null;
 	contact_methods: {
 		id: string;
 		kind: 'email' | 'phone';

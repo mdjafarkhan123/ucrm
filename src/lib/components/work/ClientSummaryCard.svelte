@@ -1,16 +1,14 @@
 <script lang="ts">
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import QuickContactButtons from './QuickContactButtons.svelte';
 	import type { SummaryAddress } from './types';
 	import mapPinIcon from '@tabler/icons/outline/map-pin.svg?raw';
 	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
-	import messageIcon from '@tabler/icons/outline/message.svg?raw';
 
-	// Who this piece of work is for, shown on every request, quote, job and invoice. The card names the
-	// client, lists whichever addresses that record carries, and gives the two ways to reach them.
+	// Who a piece of work is for, in a bordered box (the pipeline's brief drawer). The card names the client,
+	// lists whichever addresses that record carries, and gives the two ways to reach them. Record pages show
+	// the client on their header card's client line instead (`WorkRecordHeader`).
 	//
 	// The `...` menu is the page's, not this card's — a request offers "View client profile" and
 	// "Change property", an invoice offers something else — so the items are passed in.
@@ -31,8 +29,6 @@
 		menuItems = [],
 		avatarId,
 		hidePhone = false,
-		quickContact = false,
-		concept = false,
 		class: className = ''
 	}: {
 		name: string;
@@ -46,109 +42,12 @@
 		avatarId?: string;
 		/** For a record that never carries a phone number, so the card does not nag about one. */
 		hidePhone?: boolean;
-		/** App look: phone and email are not listed as text; three round buttons at the end of the row call,
-		 *  text and get directions to the first address instead. A button with nothing behind it is not drawn. */
-		quickContact?: boolean;
-		/** The new concept's client box (Job details): a bordered card with a large avatar, round-cornered
-		 *  call, text and email buttons beside the name, and the address, phone and email on coloured tiles. */
-		concept?: boolean;
 		class?: string;
 	} = $props();
-
-	const firstAddress = $derived(addresses.find((address) => address.value)?.value ?? null);
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-{#if concept}
-	<div class={`client-card ${className}`}>
-		<div class="client-card__top">
-			{#if avatarId}
-				<span class="client-card__avatar" aria-hidden="true">
-					<Avatar id={avatarId} {name} size="medium" />
-				</span>
-			{/if}
-			<h3 class="client-card__name">
-				{#if href}
-					<!-- The caller resolves the path; this card only renders what it is handed. -->
-					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-					<a {href}>{name}</a>
-				{:else}
-					{name}
-				{/if}
-			</h3>
-			<div class="client-card__actions">
-				{#if phone}
-					<Button
-						variant="secondary"
-						size="small"
-						iconOnly
-						label="Call {phone}"
-						href={`tel:${phone}`}
-					>
-						{@html phoneIcon}
-					</Button>
-					<Button
-						variant="secondary"
-						size="small"
-						iconOnly
-						label="Text {phone}"
-						href={`sms:${phone}`}
-					>
-						{@html messageIcon}
-					</Button>
-				{/if}
-				{#if email}
-					<Button
-						variant="secondary"
-						size="small"
-						iconOnly
-						label="Email {email}"
-						href={`mailto:${email}`}
-					>
-						{@html mailIcon}
-					</Button>
-				{/if}
-				{#if menuItems.length > 0}
-					<DropdownMenu items={menuItems} triggerLabel="Actions for {name}" />
-				{/if}
-			</div>
-		</div>
-
-		<ul class="client-card__lines">
-			{#each addresses as address (address)}
-				<li class="client-card__line">
-					<span class="client-card__tile client-card__tile--client" aria-hidden="true">
-						{@html mapPinIcon}
-					</span>
-					{#if address.value}
-						<span>{address.value}</span>
-					{:else}
-						<span class="client-card__blank">{address.empty ?? 'No address yet'}</span>
-					{/if}
-				</li>
-			{/each}
-			{#if !hidePhone}
-				<li class="client-card__line">
-					<span class="client-card__tile" aria-hidden="true">{@html phoneIcon}</span>
-					{#if phone}
-						<a href={`tel:${phone}`}>{phone}</a>
-					{:else}
-						<span class="client-card__blank">No phone number yet</span>
-					{/if}
-				</li>
-			{/if}
-			<li class="client-card__line">
-				<span class="client-card__tile" aria-hidden="true">{@html mailIcon}</span>
-				{#if email}
-					<a href={`mailto:${email}`}>{email}</a>
-				{:else}
-					<span class="client-card__blank">No email address yet</span>
-				{/if}
-			</li>
-		</ul>
-	</div>
-{:else}
-<div class={`client-summary ${className}`} class:client-summary--quick={quickContact}>
+<div class={`client-summary ${className}`}>
 	<div class="client-summary__top">
 		{#if avatarId}
 			<span class="client-summary__avatar" aria-hidden="true">
@@ -209,14 +108,7 @@
 			</span>
 		</li>
 	</ul>
-
-	{#if quickContact && (phone || email || firstAddress)}
-		<div class="client-summary__quick">
-			<QuickContactButtons {phone} {email} address={firstAddress} />
-		</div>
-	{/if}
 </div>
-{/if}
 
 <!-- eslint-enable svelte/no-at-html-tags -->
 
@@ -310,205 +202,5 @@
 			display: inline-flex;
 			flex: 0 0 auto;
 		}
-	}
-
-	// Concept look: the client as its own box, as drawn on the Job details frame.
-	.client-card {
-		display: flex;
-		min-width: 0;
-		flex-direction: column;
-		gap: var(--space-slim);
-		padding: var(--space-base);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-large);
-		background: var(--color-surface);
-
-		&__top {
-			display: flex;
-			align-items: center;
-			gap: var(--space-slim);
-		}
-
-		&__avatar {
-			display: inline-flex;
-			flex: 0 0 auto;
-
-			:global(.avatar) {
-				background: var(--color-client--surface);
-				color: var(--color-client--onSurface);
-				font-weight: 700;
-			}
-		}
-
-		&__name {
-			overflow: hidden;
-			min-width: 0;
-			flex: 1 1 auto;
-			color: var(--color-heading);
-			font-size: var(--typography--fontSize-base);
-			font-weight: 600;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-
-			a {
-				color: inherit;
-				text-decoration: none;
-
-				&:hover {
-					text-decoration: underline;
-				}
-			}
-		}
-
-		&__actions {
-			display: flex;
-			flex: 0 0 auto;
-			align-items: center;
-			gap: var(--space-small);
-
-			:global(.button svg) {
-				width: 16px;
-				height: 16px;
-			}
-		}
-
-		&__lines {
-			display: flex;
-			flex-flow: row wrap;
-			gap: var(--space-small) var(--space-large);
-			margin: 0;
-			padding: 0;
-			list-style: none;
-		}
-
-		&__line {
-			display: flex;
-			min-width: 0;
-			align-items: center;
-			gap: 6px;
-			color: var(--color-text);
-			font-size: var(--typography--fontSize-small);
-			word-break: break-word;
-
-			a {
-				color: inherit;
-				text-decoration: none;
-
-				&:hover {
-					text-decoration: underline;
-				}
-			}
-		}
-
-		&__tile {
-			display: inline-grid;
-			flex: 0 0 auto;
-			width: 24px;
-			height: 24px;
-			place-items: center;
-			border-radius: var(--radius-tile-small);
-			color: var(--color-conversation);
-			background: var(--color-conversation--surface);
-
-			:global(svg) {
-				display: block;
-				width: 14px;
-				height: 14px;
-			}
-
-			&--client {
-				color: var(--color-client);
-				background: var(--color-client--surface);
-			}
-		}
-
-		&__blank {
-			color: var(--color-text--secondary);
-		}
-	}
-
-	// App look: no inner card. The client reads as one row — avatar and name, then address, phone and email
-	// as quiet details beside it — and the actions menu sits at the far end.
-	:global(.record-detail--cards) .client-summary {
-		display: flex;
-		flex-flow: row wrap;
-		align-items: center;
-		gap: 10px 20px;
-		padding: 0;
-		border: 0;
-		border-radius: 0;
-		background: transparent;
-
-		.client-summary__top {
-			display: contents;
-		}
-		.client-summary__name {
-			flex: 0 1 auto;
-			order: 1;
-			font-size: var(--typography--fontSize-base);
-			font-weight: 600;
-		}
-		.client-summary__avatar {
-			order: 0;
-			margin-right: -12px;
-		}
-		.client-summary__lines {
-			display: flex;
-			flex: 1 0 100%;
-			flex-flow: row wrap;
-			gap: 6px 20px;
-			order: 4;
-			min-width: 0;
-		}
-		.client-summary__line {
-			align-items: center;
-			gap: 6px;
-			color: var(--color-text--secondary);
-			font-weight: 500;
-		}
-		.client-summary__icon :global(svg) {
-			width: 15px;
-			height: 15px;
-			margin-top: 0;
-		}
-		.client-summary__text {
-			color: var(--color-text--secondary);
-		}
-		:global(.dropdown-menu__trigger) {
-			order: 3;
-			margin-left: auto;
-		}
-	}
-
-	// App look with quick contact: the client reads as one line — avatar, name, address — with the round
-	// contact buttons at the far end, and no phone or email text.
-	:global(.record-detail--cards) .client-summary--quick {
-		flex-wrap: wrap;
-
-		.client-summary__lines {
-			flex: 1 1 240px;
-			order: 2;
-		}
-		.client-summary__name {
-			max-width: 100%;
-		}
-		.client-summary__line--contact,
-		:global(.dropdown-menu__trigger) {
-			display: none;
-		}
-		.client-summary__quick {
-			display: flex;
-			flex: 0 0 auto;
-			align-items: center;
-			gap: 6px;
-			order: 5;
-			margin-left: auto;
-		}
-	}
-	.client-summary__quick {
-		display: none;
-	}
-	:global(.record-detail--cards) .client-summary--quick .client-summary__quick {
-		display: flex;
 	}
 </style>

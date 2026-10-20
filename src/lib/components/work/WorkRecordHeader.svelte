@@ -1,23 +1,30 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
-	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
-	import type { StatusTone } from './types';
+	import RecordFactsList from './RecordFactsList.svelte';
+	import type { RecordFact, StatusTone } from './types';
 	import historyIcon from '@tabler/icons/outline/history.svg?raw';
+	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
+	import mapPinIcon from '@tabler/icons/outline/map-pin.svg?raw';
+	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
+	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
 
-	// The card at the top of every work record — request, quote, job, invoice. They all draw the same
-	// thing: what kind of record this is and where it stands, the one action that moves it forward, the
-	// title, and then who the work is for beside the few dates that identify it.
+	// The card at the top of every record page — client, request, quote, job, invoice and payment (Pencil
+	// "Record header · C", approved 2026-10-20). One part for all six; only its data changes:
 	//
-	// Nothing here knows about requests. The page hands in its own icon, status wording, action label and
-	// menu, and fills the two columns with `summary` and `facts`.
+	//   coloured top   the record tile and status pill, the actions at the right, then the title. The top
+	//                  takes the record type's own soft colour, never the status's — the pill carries that.
+	//   client line    who the work is for, with their address, phone and email as plain links. The client
+	//                  page hands in its own line instead (its address and Message / Request a review).
+	//   facts          up to four facts the page chooses, in even columns.
+	//   foot           the Request → Paid track on a work record, or the client page's tabs.
 	//
-	// The pencil swaps the heading for a field where the heading sits, the way Jobber does it — no separate
-	// block appears underneath. The page owns the text being typed and saves it with everything else from
-	// the bar at the bottom.
+	// The pencil swaps the title for a field where it sits, the way Jobber does it. The page owns the text
+	// being typed and saves it with everything else from the save bar.
 	type MenuItem = {
 		label: string;
 		icon?: string;
@@ -38,45 +45,73 @@
 		onhover?: () => void;
 	};
 
+	/** Who the record is for, on the line under the coloured top. */
+	export type HeaderClient = {
+		name: string;
+		/** The client's own page. Omit and the name is plain text. */
+		href?: string;
+		/** The client's id, for their initials' avatar. */
+		avatarId?: string;
+		/** The address on one line; it opens in Google Maps. Null shows `addressEmpty`. */
+		address?: string | null;
+		addressEmpty?: string;
+		phone?: string | null;
+		email?: string | null;
+		/** For a record that never carries an address or a phone (a payment), so nothing nags about one. */
+		hideAddress?: boolean;
+		hidePhone?: boolean;
+	};
+
 	let {
 		icon,
 		recordType,
 		title,
 		statusLabel,
 		statusTone = 'informative',
+		badges,
 		primaryAction,
 		menuItems = [],
+		actions,
 		onHistory,
 		onHistoryHover,
 		onEditTitle,
+		editLabel,
 		editingTitle = false,
 		titleDraft = $bindable(''),
 		titleLabel,
 		titleMaxLength = 160,
-		summary,
-		facts,
-		badges,
-		look = 'default',
-		meta = [],
+		client,
+		line,
+		facts = [],
+		factsAction,
+		body,
 		track,
+		tabs,
 		class: className = ''
 	}: {
 		/** Tabler icon for this kind of record, imported with `?raw`. */
 		icon: string;
-		/** What kind of record this is, e.g. "Request". Used to name the controls out loud. */
+		/** "Client", "Request", "Quote", "Job", "Invoice" or "Payment": names the controls out loud and picks
+		 *  the coloured top. */
 		recordType: string;
 		title: string;
 		statusLabel: string;
 		statusTone?: StatusTone;
-		/** The one action that moves this record to its next step. Omit where there isn't one yet. */
+		/** Extra status context beside the pill, e.g. a quote's deposit readiness. */
+		badges?: Snippet;
+		/** The one action that moves this record to its next step. Omit where there isn't one. */
 		primaryAction?: PrimaryAction;
 		menuItems?: MenuItem[];
+		/** Buttons drawn before the pencil, e.g. the client's Restore. */
+		actions?: Snippet;
 		/** Opens the record's history panel. Omit and the button is not drawn. */
 		onHistory?: () => void;
 		/** Fires when the history button is reached, so the panel's own data can start loading. */
 		onHistoryHover?: () => void;
-		/** Omit and the title carries no pencil, for a record nobody may rename. */
+		/** Draws the pencil. Omit it for a record nobody may rename. */
 		onEditTitle?: () => void;
+		/** Names the pencil; defaults to "Edit {title}". */
+		editLabel?: string;
 		/** True while the title is being renamed: the heading becomes a field in the same place. */
 		editingTitle?: boolean;
 		/** The name being typed. Bound, so the page can save it and throw it away. */
@@ -84,28 +119,31 @@
 		/** Defaults to "Request title", "Quote title", and so on. */
 		titleLabel?: string;
 		titleMaxLength?: number;
-		/** The client summary card. Normally `ClientSummaryCard`. */
-		summary?: Snippet;
-		/** The label/value rows beside it. Normally `RecordFactsList`. */
-		facts?: Snippet;
-		/** Extra status context beside the main status badge, e.g. a quote's deposit readiness. Omit and
-		 * nothing extra is drawn — the shared header stays ignorant of what any one record type means. */
-		badges?: Snippet;
-		/** `app` draws the App look header from the approved design: the record's identifiers beside the
-		 *  status, a bordered "More" button, an icon on the main action, and room for a lifecycle track.
-		 *  `concept` is the new concept's header (Job details): the client in its own box beside the facts
-		 *  column, and the lifecycle track as a strip along the bottom edge. */
-		look?: 'default' | 'app' | 'concept';
-		/** Short identifiers shown after the status in the App look, e.g. ["QUOTE #326", "Version 2"]. */
-		meta?: string[];
-		/** The record's place in the Request → Quote → Job → Invoice → Paid line. Normally `LifecycleTrack`. */
+		client?: HeaderClient;
+		/** The client page's own line in place of `client`. */
+		line?: Snippet;
+		facts?: RecordFact[];
+		/** A control at the end of the facts row, e.g. the invoice's "Edit the terms and dates" pencil. */
+		factsAction?: Snippet;
+		/** Drawn in place of the line and facts, e.g. the client details form while it is open. */
+		body?: Snippet;
+		/** The record's place on Request → Quote → Job → Invoice → Paid. Normally `RecordTrack`. */
 		track?: Snippet;
+		/** The page's tab row, drawn on the band along the card's foot. */
+		tabs?: Snippet;
 		class?: string;
 	} = $props();
 
-	const roomy = $derived(look !== 'default');
+	// A payment belongs to the money side, so it shares the invoice's blue.
+	const tone = $derived.by(() => {
+		const kind = recordType.toLowerCase();
+		return kind === 'payment' ? 'invoice' : kind;
+	});
 
 	const titleFieldId = $derived(`${recordType.toLowerCase().replace(/\s+/g, '-')}-title`);
+
+	const mapsHref = (address: string) =>
+		`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
 	// The cursor belongs in the field the pencil just opened, so renaming is one click and then typing.
 	let titleField = $state<HTMLDivElement>();
@@ -116,72 +154,71 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <section
-	class={`work-header ${className}`}
-	class:work-header--app={roomy}
-	class:work-header--concept={look === 'concept'}
+	class={`record-header ${className}`}
+	style:--record-tone={`var(--color-${tone})`}
+	style:--record-surface={`var(--color-${tone}--surface)`}
 	aria-label="{recordType} summary"
 >
-	<div class="work-header__top">
-		<span class="work-header__type" aria-hidden="true">{@html icon}</span>
-		<StatusBadge status={statusTone}>{statusLabel}</StatusBadge>
-		{#if badges}{@render badges()}{/if}
-		{#if meta.length > 0}
-			<p class="work-header__meta">
-				{#each meta as part, index (index)}
-					{#if index > 0}<span class="work-header__meta-dot" aria-hidden="true"></span>{/if}
-					<span class={{ 'work-header__meta-first': index === 0 }}>{part}</span>
-				{/each}
-			</p>
-		{/if}
+	<div class="record-header__top">
+		<div class="record-header__row">
+			<span class="record-header__tile" aria-hidden="true">{@html icon}</span>
+			<div class="record-header__status">
+				<StatusBadge status={statusTone}>{statusLabel}</StatusBadge>
+				{#if badges}{@render badges()}{/if}
+			</div>
 
-		<div class="work-header__actions">
-			{#if onHistory}
-				<Button
-					variant="secondary"
-					size={roomy ? 'base' : 'small'}
-					iconOnly
-					label="{recordType} history"
-					onclick={onHistory}
-					onhover={onHistoryHover}
-				>
-					{@html historyIcon}
-				</Button>
-			{/if}
-			{#if primaryAction}
-				<Button
-					variant="primary"
-					size={roomy ? 'base' : 'small'}
-					href={primaryAction.href}
-					onclick={primaryAction.onclick}
-					disabled={primaryAction.disabled}
-					loading={primaryAction.loading}
-					onhover={primaryAction.onhover}
-				>
-					{#if primaryAction.icon}
-						<span class="work-header__action-icon" aria-hidden="true"
-							>{@html primaryAction.icon}</span
-						>
-					{/if}
-					{primaryAction.label}
-				</Button>
-			{/if}
-			{#if menuItems.length > 0}
-				{#if roomy}
+			<div class="record-header__actions">
+				{#if actions}{@render actions()}{/if}
+				{#if onEditTitle && !editingTitle}
+					<Button
+						variant="secondary"
+						iconOnly
+						label={editLabel ?? `Edit ${title}`}
+						onclick={onEditTitle}
+					>
+						{@html pencilIcon}
+					</Button>
+				{/if}
+				{#if onHistory}
+					<Button
+						variant="secondary"
+						iconOnly
+						label="{recordType} history"
+						onclick={onHistory}
+						onhover={onHistoryHover}
+					>
+						{@html historyIcon}
+					</Button>
+				{/if}
+				{#if menuItems.length > 0}
 					<DropdownMenu
 						items={menuItems}
 						triggerText="More"
 						triggerLabel="More {recordType.toLowerCase()} actions"
 					/>
-				{:else}
-					<DropdownMenu items={menuItems} triggerLabel="More {recordType.toLowerCase()} actions" />
 				{/if}
-			{/if}
+				{#if primaryAction}
+					<Button
+						variant="primary"
+						href={primaryAction.href}
+						onclick={primaryAction.onclick}
+						disabled={primaryAction.disabled}
+						loading={primaryAction.loading}
+						onhover={primaryAction.onhover}
+					>
+						{#if primaryAction.icon}
+							<span class="record-header__action-icon" aria-hidden="true"
+								>{@html primaryAction.icon}</span
+							>
+						{/if}
+						{primaryAction.label}
+					</Button>
+				{/if}
+			</div>
 		</div>
-	</div>
 
-	<div class="work-header__identity">
 		{#if editingTitle}
-			<div class="work-header__title-field" bind:this={titleField}>
+			<div class="record-header__title-field" bind:this={titleField}>
 				<Input
 					id={titleFieldId}
 					label={titleLabel ?? `${recordType} title`}
@@ -190,57 +227,123 @@
 				/>
 			</div>
 		{:else}
-			<h1>{title}</h1>
-			{#if onEditTitle}
-				<PencilButton size="base" onclick={onEditTitle} label="Edit {title}" />
-			{/if}
+			<h1 class="record-header__title">{title}</h1>
 		{/if}
 	</div>
 
-	{#if summary || facts}
-		<div class="work-header__body">
-			<div class="work-header__summary">
-				{#if summary}{@render summary()}{/if}
+	{#if body}
+		<div class="record-header__body">{@render body()}</div>
+	{:else}
+		{#if line}
+			<div class="record-header__line">{@render line()}</div>
+		{:else if client}
+			<div class="record-header__line">
+				{#if client.avatarId}
+					<span class="record-header__avatar" aria-hidden="true">
+						<Avatar id={client.avatarId} name={client.name} size="base" />
+					</span>
+				{/if}
+				<div class="record-header__client">
+					<p class="record-header__name">
+						{#if client.href}
+							<!-- The caller resolves the path; this card only renders what it is handed. -->
+							<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+							<a href={client.href}>{client.name}</a>
+						{:else}
+							{client.name}
+						{/if}
+					</p>
+					<ul class="record-header__contact">
+						{#if !client.hideAddress}
+							<li class="record-header__contact-item record-header__contact-item--address">
+								<span class="record-header__contact-icon" aria-hidden="true"
+									>{@html mapPinIcon}</span
+								>
+								{#if client.address}
+									<a
+										href={mapsHref(client.address)}
+										target="_blank"
+										rel="noopener noreferrer"
+										title="{client.address} · Click to open in Google Maps">{client.address}</a
+									>
+								{:else}
+									<span class="record-header__blank">{client.addressEmpty ?? 'No address yet'}</span
+									>
+								{/if}
+							</li>
+						{/if}
+						{#if !client.hidePhone}
+							<li class="record-header__contact-item record-header__contact-item--phone">
+								<span class="record-header__contact-icon" aria-hidden="true">{@html phoneIcon}</span
+								>
+								{#if client.phone}
+									<a href={`tel:${client.phone}`}>{client.phone}</a>
+								{:else}
+									<span class="record-header__blank">No phone number yet</span>
+								{/if}
+							</li>
+						{/if}
+						<li class="record-header__contact-item record-header__contact-item--email">
+							<span class="record-header__contact-icon" aria-hidden="true">{@html mailIcon}</span>
+							{#if client.email}
+								<a href={`mailto:${client.email}`}>{client.email}</a>
+							{:else}
+								<span class="record-header__blank">No email yet</span>
+							{/if}
+						</li>
+					</ul>
+				</div>
 			</div>
-			{#if track && look !== 'concept'}<div class="work-header__track">{@render track()}</div>{/if}
-			<div class="work-header__facts">
-				{#if facts}{@render facts()}{/if}
+		{/if}
+
+		{#if facts.length > 0}
+			<div class="record-header__facts">
+				<RecordFactsList {facts} />
+				{#if factsAction}<div class="record-header__facts-action">{@render factsAction()}</div>{/if}
 			</div>
-		</div>
+		{/if}
 	{/if}
-	{#if track && look === 'concept'}
-		<div class="work-header__strip">{@render track()}</div>
+
+	{#if tabs}
+		<div class="record-header__tabs">{@render tabs()}</div>
+	{:else if track}
+		<div class="record-header__track">{@render track()}</div>
 	{/if}
 </section>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
-	.work-header {
+	.record-header {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-base);
-		padding: var(--space-large);
+		overflow: hidden;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		background: var(--color-surface--background);
+		border-radius: var(--radius-large);
+		background: var(--color-surface);
 
 		&__top {
 			display: flex;
-			align-items: center;
-			gap: var(--space-small);
+			flex-direction: column;
+			gap: 14px;
+			padding: var(--space-medium) var(--space-large) 22px;
+			background: var(--record-surface);
 		}
 
-		&__type {
-			display: inline-flex;
-			flex: 0 0 auto;
+		&__row {
+			display: flex;
 			align-items: center;
-			justify-content: center;
-			width: var(--space-larger);
-			height: var(--space-larger);
-			border: var(--border-base) solid var(--color-border);
-			border-radius: var(--radius-base);
-			color: var(--color-icon);
+			gap: 10px;
+		}
+
+		&__tile {
+			display: inline-grid;
+			flex: 0 0 auto;
+			width: 40px;
+			height: 40px;
+			place-items: center;
+			border-radius: var(--radius-tile-large);
+			color: var(--record-tone);
 			background: var(--color-surface);
 
 			:global(svg) {
@@ -250,238 +353,245 @@
 			}
 		}
 
-		&__actions {
+		// The pill sits on white so it reads on any record's colour.
+		&__status {
 			display: flex;
+			flex: 1 1 auto;
+			min-width: 0;
+			flex-wrap: wrap;
 			align-items: center;
 			gap: var(--space-small);
-			margin-left: auto;
+
+			> :global(.status-badge) {
+				background: var(--color-surface);
+			}
+		}
+
+		&__actions {
+			display: flex;
+			flex: 0 0 auto;
+			align-items: center;
+			gap: var(--space-small);
+			white-space: nowrap;
 		}
 
 		&__action-icon {
 			display: inline-flex;
 
 			:global(svg) {
-				width: 18px;
-				height: 18px;
+				display: block;
+				width: 16px;
+				height: 16px;
 			}
 		}
 
-		&__identity {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			gap: var(--space-small);
-
-			h1 {
-				overflow: hidden;
-				color: var(--color-heading);
-				font-size: var(--typography--fontSize-largest);
-				font-weight: 700;
-				line-height: var(--typography--lineHeight-tight);
-				text-overflow: ellipsis;
-			}
+		&__title {
+			overflow-wrap: anywhere;
+			color: var(--color-heading);
+			font-size: 26px;
+			font-weight: 700;
+			letter-spacing: -0.6px;
+			line-height: 1.2;
 		}
 
-		// The field takes the whole width the heading and its pencil had between them.
 		&__title-field {
-			flex: 1 1 auto;
 			min-width: 0;
+		}
+
+		&__line {
+			display: flex;
+			min-width: 0;
+			align-items: center;
+			gap: var(--space-slim);
+			padding: var(--space-base) var(--space-large);
+			border-bottom: var(--border-base) solid var(--color-border);
+
+			// Buttons on the line (the client's Message, Request a review) keep their size; the address gives way.
+			> :global(.button) {
+				flex: 0 0 auto;
+				white-space: nowrap;
+			}
+		}
+
+		&__avatar :global(.avatar) {
+			width: 36px;
+			height: 36px;
+			border: 0;
+			color: var(--color-client--onSurface);
+			background: var(--color-client--surface);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__client {
+			display: flex;
+			flex: 1 1 auto;
+			flex-direction: column;
+			gap: 2px;
+			min-width: 0;
+		}
+
+		&__name {
+			overflow: hidden;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+
+			a {
+				color: inherit;
+				text-decoration: none;
+
+				&:hover {
+					color: var(--color-interactive);
+					text-decoration: underline;
+				}
+			}
+		}
+
+		&__contact {
+			display: flex;
+			min-width: 0;
+			align-items: center;
+			gap: var(--space-base);
+			margin: 0;
+			padding: 0;
+			list-style: none;
+		}
+
+		&__contact-item {
+			--contact-tone: var(--color-client);
+			display: inline-flex;
+			flex: 0 0 auto;
+			min-width: 0;
+			align-items: center;
+			gap: 6px;
+			color: var(--color-text);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 500;
+
+			a {
+				overflow: hidden;
+				color: inherit;
+				text-decoration: none;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+
+				&:hover {
+					color: var(--color-interactive);
+					text-decoration: underline;
+				}
+			}
+
+			// A long address gives way first; its whole text is in the link's hover title.
+			&--address {
+				flex: 0 1 auto;
+			}
+
+			&--phone {
+				--contact-tone: var(--color-time);
+			}
+
+			&--email {
+				--contact-tone: var(--color-conversation);
+			}
+		}
+
+		&__contact-icon {
+			display: inline-flex;
+			flex: 0 0 auto;
+			color: var(--contact-tone);
+
+			:global(svg) {
+				display: block;
+				width: 14px;
+				height: 14px;
+			}
+		}
+
+		&__blank {
+			color: var(--color-text--secondary);
+			white-space: nowrap;
+		}
+
+		&__facts {
+			display: flex;
+			align-items: flex-start;
+			gap: var(--space-base);
+			padding: var(--space-base) var(--space-large) var(--space-medium);
+
+			> :global(.record-facts) {
+				flex: 1 1 auto;
+				min-width: 0;
+			}
+		}
+
+		&__facts-action {
+			flex: 0 0 auto;
 		}
 
 		&__body {
-			display: grid;
-			align-items: start;
-			gap: var(--space-large);
-			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			padding: var(--space-base) var(--space-large) var(--space-medium);
 		}
 
-		&__summary,
-		&__facts {
-			min-width: 0;
-		}
-	}
-
-	// App look (inside `RecordDetailLayout cards`): a white card on the grey page. The status and the
-	// record's actions share the first row, the title follows, then the client row, and the facts close the
-	// card as a strip under a hairline. No icon tile and no tinted ground.
-	:global(.record-detail--cards) .work-header {
-		gap: 0;
-		padding: 24px 28px 0;
-		border-color: var(--color-border);
-		border-radius: var(--radius-base);
-		background: var(--color-surface);
-
-		.work-header__type {
-			display: none;
-		}
-		.work-header__top {
-			flex-wrap: wrap;
-			gap: 8px 10px;
-		}
-		.work-header__actions :global(.button) {
-			white-space: nowrap;
-		}
-		.work-header__identity {
-			padding-top: 18px;
-
-			h1 {
-				font-size: var(--typography--fontSize-largest);
-				letter-spacing: -0.8px;
-				line-height: 1.15;
-			}
-		}
-		.work-header__body {
-			display: flex;
-			flex-direction: column;
-			align-items: stretch;
-			gap: 0;
-		}
-		.work-header__summary {
-			padding-top: 14px;
-		}
-		.work-header__facts {
-			margin-top: 20px;
-			padding: 18px 0 22px;
-			border-top: var(--border-base) solid var(--color-border);
-		}
-		.work-header__action-icon :global(svg) {
-			display: block;
-			width: 18px;
-			height: 18px;
-		}
-	}
-
-	// The App look's own parts. Only a header given `look="app"` carries them.
-	.work-header__meta {
-		display: inline-flex;
-		min-width: 0;
-		flex: 1 1 auto;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0 8px;
-		margin: 0;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 500;
-	}
-	.work-header__meta-first {
-		font-weight: 600;
-		letter-spacing: 0.6px;
-		text-transform: uppercase;
-	}
-	.work-header__meta-dot {
-		width: 3px;
-		height: 3px;
-		border-radius: 999px;
-		background: var(--color-icon--secondary);
-	}
-	.work-header__action-icon :global(svg) {
-		display: block;
-		width: 18px;
-		height: 18px;
-	}
-	// A narrow column (a laptop, or a rail beside a long page) wraps the top row rather than squeezing it:
-	// the identifiers drop under the status and the actions keep their full size.
-	:global(.record-detail--cards) .work-header--app .work-header__top {
-		flex-wrap: wrap;
-		row-gap: 12px;
-	}
-	:global(.record-detail--cards) .work-header--app .work-header__actions {
-		flex: 0 1 auto;
-		flex-wrap: wrap;
-		max-width: 100%;
-		white-space: nowrap;
-	}
-	:global(.record-detail--cards) .work-header--app .work-header__top > :global(.status-badge) {
-		flex: 0 0 auto;
-	}
-	:global(.record-detail--cards) .work-header__track {
-		padding: 22px 0 20px;
-	}
-	:global(.record-detail--cards) .work-header__track + .work-header__facts {
-		margin-top: 0;
-	}
-	:global(.record-detail--cards) .work-header--app .work-header__facts {
-		margin-top: 0;
-	}
-
-
-	// Concept look (Job details, `tNdkX`). A white card with the status row and title on top, the client box
-	// beside the facts column, and the lifecycle strip closing the card on a tinted ground.
-	:global(.record-detail--cards) .work-header.work-header--concept {
-		overflow: hidden;
-		padding: 0;
-		border-radius: var(--radius-large);
-
-		.work-header__top {
-			flex-wrap: nowrap;
-			gap: var(--space-slim);
-			padding: var(--space-large) var(--space-large) 0;
-		}
-		.work-header__type {
-			display: inline-flex;
-			width: 40px;
-			height: 40px;
-			border: 0;
-			border-radius: var(--radius-tile-large);
-			color: var(--color-job);
-			background: var(--color-job--surface);
-		}
-		.work-header__meta {
-			flex: 0 1 auto;
-			font-size: var(--typography--fontSize-small);
-			font-weight: 400;
-		}
-		.work-header__meta-first {
-			font-weight: 400;
-			letter-spacing: 0;
-			text-transform: none;
-		}
-		.work-header__identity {
-			padding: var(--space-base) var(--space-large) 0;
-		}
-		.work-header__body {
-			display: grid;
-			align-items: start;
-			gap: var(--space-large);
-			padding: var(--space-medium) var(--space-large) var(--space-large);
-			grid-template-columns: minmax(0, 1fr) 300px;
-		}
-		.work-header__summary {
-			padding-top: 0;
-		}
-		.work-header__facts {
-			margin: 0;
-			padding: var(--space-smaller) 0;
-			border-top: 0;
-		}
-		.work-header__strip {
+		&__track {
 			padding: var(--space-slim) var(--space-large);
 			border-top: var(--border-base) solid var(--color-border);
 			background: var(--color-surface--background--subtle);
 		}
-	}
-	:global(.job-detail) .work-header__type :global(svg) {
-		width: 20px;
-		height: 20px;
+
+		// The page tabs ride the band itself, with no track behind them (tabs.md, "Page tabs on a record").
+		&__tabs {
+			padding: 10px var(--space-medium);
+			border-top: var(--border-base) solid var(--color-border);
+			background: var(--color-surface--background--subtle);
+
+			:global(.tabs__list) {
+				padding: 0;
+				background: transparent;
+			}
+		}
+
+		// The coloured top already ends the card when nothing follows it.
+		&__top:last-child {
+			padding-bottom: var(--space-large);
+		}
 	}
 
 	@media (max-width: 767px) {
-		.work-header {
-			padding: var(--space-base);
-
+		.record-header {
 			&__top {
+				padding: var(--space-base);
+			}
+
+			&__row {
 				flex-wrap: wrap;
 			}
 
 			&__actions {
+				flex-wrap: wrap;
 				width: 100%;
-				margin-left: 0;
 			}
 
-			&__body {
-				gap: var(--space-base);
-				grid-template-columns: 1fr;
+			&__title {
+				font-size: var(--typography--fontSize-largest);
+			}
+
+			&__line,
+			&__facts,
+			&__body,
+			&__track {
+				padding-right: var(--space-base);
+				padding-left: var(--space-base);
+			}
+
+			&__line {
+				flex-wrap: wrap;
+			}
+
+			&__contact {
+				flex-wrap: wrap;
+				gap: 6px var(--space-base);
 			}
 		}
 	}

@@ -17,8 +17,6 @@
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import WorkRecordHeader from '$lib/components/work/WorkRecordHeader.svelte';
-	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
-	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
 	import PricingAdjustmentsPanel from '$lib/components/work/PricingAdjustmentsPanel.svelte';
 	import JobBillingCard from '$lib/components/jobs/JobBillingCard.svelte';
@@ -61,7 +59,7 @@
 	import { createNote, deleteNote, updateNote, type NoteChange } from '$lib/collaboration/api';
 	import clipboardListIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
 	import packageIcon from '@tabler/icons/outline/package.svg?raw';
-	import toolsIcon from '@tabler/icons/outline/tools.svg?raw';
+	import hammerIcon from '@tabler/icons/outline/hammer.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
@@ -71,8 +69,8 @@
 	import linkIcon from '@tabler/icons/outline/link.svg?raw';
 	import hashIcon from '@tabler/icons/outline/hash.svg?raw';
 	import repeatIcon from '@tabler/icons/outline/repeat.svg?raw';
-	import calendarPlusIcon from '@tabler/icons/outline/calendar-plus.svg?raw';
-	import fileDescriptionIcon from '@tabler/icons/outline/file-description.svg?raw';
+	import calendarEventIcon from '@tabler/icons/outline/calendar-event.svg?raw';
+	import { describeRecurrence } from '$lib/jobs/recurrence-summary';
 
 	const queryClient = useQueryClient();
 	setContext('concept-job-details', true);
@@ -171,6 +169,30 @@
 		hour: 'numeric',
 		minute: '2-digit'
 	});
+	// When the job's invoice comes due, in a few words (the Billing card says it in full).
+	const INVOICING_LABELS: Record<string, string> = {
+		on_closure: 'When the job is done',
+		per_completed_visit: 'After each visit',
+		month_end: 'At month end',
+		custom_dates: 'On set dates',
+		manual: 'When we decide'
+	};
+	const dayFormat = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
+
+	// A one-off job runs from its first visit to its last; a recurring one says how it repeats.
+	const datesFact = $derived.by(() => {
+		if (!saved) return null;
+		if (saved.job.job_type === 'recurring') return describeRecurrence(saved.recurrence) || null;
+		const days = saved.visits
+			.map((visit) => visit.starts_at)
+			.filter((start): start is string => Boolean(start))
+			.sort();
+		if (days.length === 0) return null;
+		const first = dayFormat.format(new Date(days[0]));
+		const last = dayFormat.format(new Date(days[days.length - 1]));
+		return first === last ? first : `${first} \u2192 ${last}`;
+	});
+
 	const headerFacts = $derived([
 		{
 			label: 'Job #',
@@ -185,26 +207,19 @@
 			kind: 'time' as const
 		},
 		{
-			label: 'Created',
-			value: saved ? dateTimeFormat.format(new Date(saved.job.created_at)) : null,
-			icon: calendarPlusIcon,
+			label: 'Dates',
+			value: datesFact,
+			empty: 'Not scheduled yet',
+			icon: calendarEventIcon,
 			kind: 'time' as const
 		},
-		...(saved?.job.from_quote
-			? [
-					{
-						label: 'Source',
-						value: 'From a quote',
-						icon: fileDescriptionIcon,
-						kind: 'quote' as const
-					}
-				]
-			: [])
+		{
+			label: 'Invoicing',
+			value: saved ? (INVOICING_LABELS[saved.job.billing_timing] ?? null) : null,
+			icon: receiptIcon,
+			kind: 'quote' as const
+		}
 	]);
-
-	const headerMeta = $derived(
-		saved ? [`Job #${saved.job.job_number}`, JOB_TYPE_LABELS[saved.job.job_type]] : []
-	);
 
 	const propertyLine = $derived.by(() => {
 		const property = saved?.job.property;
@@ -219,18 +234,6 @@
 			.filter(Boolean)
 			.join(', ');
 	});
-
-	const clientMenuItems = $derived(
-		saved?.job.client
-			? [
-					{
-						label: 'View client profile',
-						onSelect: () =>
-							void goto(resolve('/(app)/clients/[id=uuid]', { id: saved.job.client!.id }))
-					}
-				]
-			: []
-	);
 
 	// The header's own ··· menu. Billing needs a client to invoice and the `invoices.create` right; the
 	// composer at /invoices/new reads the client and job off the query and offers this job's billable work.
@@ -578,10 +581,8 @@
 		>
 			{#snippet main()}
 				<WorkRecordHeader
-					icon={toolsIcon}
+					icon={hammerIcon}
 					recordType="Job"
-					look="concept"
-					meta={headerMeta}
 					primaryAction={saved.job.status === 'closed' && saved.can_close
 						? {
 								label: 'Reopen job',
@@ -608,19 +609,17 @@
 						: undefined}
 					{editingTitle}
 					bind:titleDraft
+					client={{
+						name: saved.job.client?.display_name ?? 'No client',
+						href: clientHref,
+						avatarId: saved.job.client?.id,
+						address: propertyLine,
+						addressEmpty: 'No property on this job',
+						phone: saved.job.client?.phone,
+						email: saved.job.client?.email
+					}}
+					facts={headerFacts}
 				>
-					{#snippet summary()}
-						<ClientSummaryCard
-							name={saved.job.client?.display_name ?? 'No client'}
-							avatarId={saved.job.client?.id}
-							href={clientHref}
-							addresses={[{ value: propertyLine, empty: 'No property on this job' }]}
-							phone={saved.job.client?.phone}
-							email={saved.job.client?.email}
-							menuItems={clientMenuItems}
-							concept
-						/>
-					{/snippet}
 					{#snippet track()}
 						<RecordTrack
 							kind="job"
@@ -629,7 +628,6 @@
 							look="steps"
 						/>
 					{/snippet}
-					{#snippet facts()}<RecordFactsList facts={headerFacts} concept />{/snippet}
 					{#snippet badges()}
 						{#if canRequestReview}
 							<RequestReviewButton target={{ jobId: saved.job.id }} variant="tertiary" />

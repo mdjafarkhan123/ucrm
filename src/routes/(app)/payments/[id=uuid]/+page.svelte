@@ -9,8 +9,6 @@
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import WorkRecordHeader from '$lib/components/work/WorkRecordHeader.svelte';
-	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
-	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
 	import PaymentReceiptCard from '$lib/components/invoices/PaymentReceiptCard.svelte';
 	import RefundPaymentDialog from '$lib/components/invoices/RefundPaymentDialog.svelte';
@@ -45,7 +43,6 @@
 	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
 	import creditCardIcon from '@tabler/icons/outline/credit-card.svg?raw';
 	import hashIcon from '@tabler/icons/outline/hash.svg?raw';
-	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
 
 	// One recorded payment. Jobber has this screen and Send Receipt lives on it, so ours is the same idea:
 	// what was paid, how, against which bill, and the two things staff do with it afterwards — send the
@@ -97,21 +94,9 @@
 	// for any other year so an old payment is never mistaken for a recent one.
 	const thisYear = new Date().getFullYear();
 	const factDayFormat = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' });
-	const factDateTimeFormat = new Intl.DateTimeFormat(undefined, {
-		day: 'numeric',
-		month: 'short',
-		hour: 'numeric',
-		minute: '2-digit'
-	});
 	function factDay(value: string) {
 		const date = new Date(`${value}T00:00`);
 		return date.getFullYear() === thisYear ? factDayFormat.format(date) : formatDay(value);
-	}
-	function factDateTime(value: string) {
-		const date = new Date(value);
-		return date.getFullYear() === thisYear
-			? factDateTimeFormat.format(date)
-			: dateTimeFormat.format(date);
 	}
 	function formatShortDay(value: string) {
 		return shortDateFormat.format(new Date(`${value}T00:00`));
@@ -130,27 +115,33 @@
 		saved?.client?.company_name || saved?.client?.display_name || 'No client'
 	);
 
+	// Paid on · Method · Reference # · For invoice #, as Jobber shows them.
 	const headerFacts = $derived([
 		{
-			label: 'Transaction date',
+			label: 'Paid on',
 			value: saved ? factDay(saved.payment.payment_date) : null,
-			icon: calendarIcon
+			icon: calendarIcon,
+			kind: 'time' as const
 		},
 		{
 			label: 'Method',
 			value: saved ? INVOICE_PAYMENT_METHOD_LABELS[saved.payment.method] : null,
-			icon: creditCardIcon
+			icon: creditCardIcon,
+			kind: 'invoice' as const
 		},
 		{
 			label: 'Reference #',
 			value: saved?.payment.reference ?? null,
 			empty: 'None given',
-			icon: hashIcon
+			icon: hashIcon,
+			kind: 'invoice' as const
 		},
 		{
-			label: 'Recorded',
-			value: saved ? factDateTime(saved.payment.created_at) : null,
-			icon: clockIcon
+			label: liveAllocations.length > 1 ? 'For invoices #' : 'For invoice #',
+			value: liveAllocations.map((entry) => entry.invoice_number).join(', ') || null,
+			empty: 'Not on an invoice',
+			icon: receiptIcon,
+			kind: 'time' as const
 		}
 	]);
 
@@ -230,17 +221,6 @@
 			: [])
 	]);
 
-	const clientMenuItems = $derived(
-		saved?.client
-			? [
-					{
-						label: 'View client profile',
-						onSelect: () => void goto(resolve('/(app)/clients/[id=uuid]', { id: saved.client!.id }))
-					}
-				]
-			: []
-	);
-
 	// --- Correcting the ledger (Part 11): refund, take off, move ------------------------------------------
 	// Everything touched here can affect an invoice's status and remaining balance, so a successful correction
 	// invalidates this payment plus the whole 'invoices' prefix (list, counts, and any open invoice detail)
@@ -305,11 +285,6 @@
 			(entry) => entry.entry_type === 'applied' && !entry.is_reversed && entry.invoice_id
 		)
 	);
-	const invoiceCountLabel = $derived.by(() => {
-		const count = liveAllocations.length;
-		if (count === 0) return 'Not on an invoice';
-		return count === 1 ? 'On 1 invoice' : `On ${count} invoices`;
-	});
 
 	// The receipt card draws what the customer's email says, from this payment's own figures.
 	const clientFirstName = $derived(
@@ -400,7 +375,7 @@
 		<RecordDetailLayout class="payment-detail" cards concept>
 			{#snippet main()}
 				<WorkRecordHeader
-					icon={cashIcon}
+					icon={creditCardIcon}
 					recordType="Payment"
 					title={formatMoney(saved.payment.amount_minor)}
 					statusLabel={status.label}
@@ -414,25 +389,16 @@
 								onclick: () => void sendReceipt()
 							}
 						: undefined}
-				>
-					{#snippet badges()}
-						<span class="payment-detail__kind">Payment</span>
-						<span class="payment-detail__dot" aria-hidden="true"></span>
-						<span class="payment-detail__count">{invoiceCountLabel}</span>
-					{/snippet}
-					{#snippet summary()}
-						<ClientSummaryCard
-							name={clientName}
-							avatarId={saved.client?.id}
-							href={clientHref}
-							email={saved.client?.email ?? null}
-							hidePhone
-							class="payment-client"
-							menuItems={clientMenuItems}
-						/>
-					{/snippet}
-					{#snippet facts()}<RecordFactsList facts={headerFacts} class="payment-facts" />{/snippet}
-				</WorkRecordHeader>
+					client={{
+						name: clientName,
+						href: clientHref,
+						avatarId: saved.client?.id,
+						email: saved.client?.email ?? null,
+						hideAddress: true,
+						hidePhone: true
+					}}
+					facts={headerFacts}
+				/>
 
 				{#if saved.correction}
 					<div class="payment-detail__correction" role="note">
@@ -673,29 +639,6 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
-	// The status row's own words: what kind of record this is, and how many invoices the money went on.
-	.payment-detail__kind {
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-		letter-spacing: 0.6px;
-		text-transform: uppercase;
-	}
-
-	.payment-detail__dot {
-		width: 3px;
-		height: 3px;
-		border-radius: var(--radius-circle);
-		background: var(--color-icon--secondary);
-	}
-
-	.payment-detail__count {
-		white-space: nowrap;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 500;
-	}
-
 	.payment-detail__correction {
 		display: flex;
 		flex-direction: column;
@@ -730,33 +673,6 @@
 
 		&:hover {
 			text-decoration: underline;
-		}
-	}
-
-	// One line for the client (name, then email) rather than two.
-	:global(.record-detail--cards .client-summary.payment-client .client-summary__lines) {
-		flex: 0 1 auto;
-		order: 2;
-	}
-
-	// A reference can be a long Stripe id, so the strip never lets it spill into the next column: it breaks
-	// inside the column instead. On a wide screen the four facts sit on one line with the reference taking
-	// whatever room the others leave.
-	:global(.record-detail--cards .record-facts.payment-facts .record-facts__row) {
-		min-width: 0;
-	}
-	:global(.record-detail--cards .record-facts.payment-facts dd) {
-		overflow-wrap: anywhere;
-	}
-	@media (min-width: 1360px) {
-		:global(.record-detail--cards .record-facts.payment-facts) {
-			display: grid;
-			gap: 0;
-			grid-template-columns: max-content max-content minmax(150px, 1fr) max-content;
-		}
-		:global(.record-detail--cards .record-facts.payment-facts dd) {
-			overflow: hidden;
-			text-overflow: ellipsis;
 		}
 	}
 

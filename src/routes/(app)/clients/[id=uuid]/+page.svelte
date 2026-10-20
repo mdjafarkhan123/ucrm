@@ -20,7 +20,10 @@
 	import MoneyFeatureCard from '$lib/components/work/MoneyFeatureCard.svelte';
 	import Tabs, { type Tab } from '$lib/components/ui/Tabs.svelte';
 	import TabPanel from '$lib/components/ui/TabPanel.svelte';
-	import ClientDetailHeader from '$lib/components/clients/ClientDetailHeader.svelte';
+	import WorkRecordHeader from '$lib/components/work/WorkRecordHeader.svelte';
+	import ManualEmailDialog from '$lib/components/clients/ManualEmailDialog.svelte';
+	import RequestReviewButton from '$lib/components/reviews/RequestReviewButton.svelte';
+	import type { RecordFact } from '$lib/components/work/types';
 	import ClientDetailsForm from '$lib/components/clients/ClientDetailsForm.svelte';
 	import ClientWorkOverview from '$lib/components/clients/ClientWorkOverview.svelte';
 	import ClientSchedule from '$lib/components/clients/ClientSchedule.svelte';
@@ -79,6 +82,15 @@
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import cashIcon from '@tabler/icons/outline/cash-banknote.svg?raw';
+	import userIcon from '@tabler/icons/outline/user.svg?raw';
+	import messageIcon from '@tabler/icons/outline/message.svg?raw';
+	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
+	import mapPinIcon from '@tabler/icons/outline/map-pin.svg?raw';
+	import calendarTimeIcon from '@tabler/icons/outline/calendar-time.svg?raw';
+	import speakerphoneIcon from '@tabler/icons/outline/speakerphone.svg?raw';
+	import externalIcon from '@tabler/icons/outline/external-link.svg?raw';
+	import archiveIcon from '@tabler/icons/outline/archive.svg?raw';
+	import mergeIcon from '@tabler/icons/outline/arrow-merge.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -402,6 +414,93 @@
 	const canSeeCommunication = $derived(communicationsAccessQuery.data?.ok ?? true);
 	const canMessage = $derived(communicationsAccessQuery.data?.canSend ?? true);
 
+	// --- The header --------------------------------------------------------------------------------------
+
+	let manualEmailOpen = $state(false);
+
+	// The client's main property on one line, the way a map search reads it.
+	const mainAddress = $derived.by(() => {
+		const property = clientQuery.data?.primary_property ?? clientQuery.data?.properties[0];
+		if (!property) return null;
+		const parts = [
+			property.address_line1,
+			property.address_line2,
+			property.city,
+			property.state_region,
+			property.postal_code
+		].filter((part): part is string => typeof part === 'string' && part.length > 0);
+		return parts.length ? parts.join(', ') : null;
+	});
+
+	// Main phone · Main email · Payment terms · Lead source, as Jobber's client page shows them.
+	const headerFacts = $derived.by((): RecordFact[] => {
+		const current = clientQuery.data;
+		if (!current) return [];
+		return [
+			{
+				label: 'Main phone',
+				value: current.phone,
+				empty: 'Not added yet',
+				icon: phoneIcon,
+				kind: 'time',
+				href: current.phone ? `tel:${current.phone}` : undefined
+			},
+			{
+				label: 'Main email',
+				value: current.email,
+				empty: 'Not added yet',
+				icon: mailIcon,
+				kind: 'conversation',
+				href: current.email ? `mailto:${current.email}` : undefined
+			},
+			{
+				label: 'Payment terms',
+				value: current.payment_term_name,
+				empty: 'Not set',
+				icon: calendarTimeIcon,
+				kind: 'time'
+			},
+			{
+				label: 'Lead source',
+				value: current.lead_source,
+				empty: 'None given',
+				icon: speakerphoneIcon,
+				kind: 'client'
+			}
+		];
+	});
+
+	// Jobber puts Archive in this same More menu, and swaps it for a Restore button once the client is
+	// archived — which is why restoring is a button beside the menu, not an item inside it.
+	const headerMenuItems = $derived.by(() => {
+		const current = clientQuery.data;
+		if (!current) return [];
+		return [
+			{
+				label: 'Edit client details',
+				icon: externalIcon,
+				onSelect: () =>
+					window.open(
+						resolve('/(app)/clients/[id=uuid]/edit', { id: current.id }),
+						'_blank',
+						'noopener'
+					)
+			},
+			...(current.can_merge
+				? [{ label: 'Merge client', icon: mergeIcon, onSelect: () => (mergeOpen = true) }]
+				: []),
+			...(current.can_archive && !current.archived_at
+				? [
+						{
+							label: 'Archive client',
+							icon: archiveIcon,
+							onSelect: () => (archiveConfirmOpen = true)
+						}
+					]
+				: [])
+		];
+	});
+
 	// The rail's own small read: just the newest message, so the card is there the moment the page is
 	// (Jobber's own client rail carries this under Tags), independent of the Communication tab's lazy,
 	// hover-warmed infinite history.
@@ -580,6 +679,14 @@
 	<ClientMergeDialog open initialClient={saved} onClose={() => (mergeOpen = false)} />
 {/if}
 
+{#if manualEmailOpen && saved}
+	<ManualEmailDialog
+		open={manualEmailOpen}
+		client={saved}
+		onClose={() => (manualEmailOpen = false)}
+	/>
+{/if}
+
 <!-- eslint-disable svelte/no-at-html-tags -->
 <PageContainer variant="open">
 	{#if clientQuery.isPending}
@@ -617,33 +724,77 @@
 			{#snippet main()}
 				<Tabs tabs={clientTabs} value={activeTab} onChange={selectTab} label="Client sections">
 					{#snippet header(tabList)}
-						<ClientDetailHeader
-							{client}
-							{canMessage}
-							tabs={tabList}
-							onEdit={() => openBlock('details')}
-							editing={editingBlock === 'details'}
+						{#snippet detailsEditor()}
+							<ClientDetailsForm
+								values={identityOf(client)}
+								wasCustomer={client.lifecycle_status === 'customer'}
+								saving={blockSaving}
+								error={blockError}
+								fieldErrors={blockFieldErrors}
+								onSave={(next) => void saveBlock(next)}
+								onCancel={closeBlock}
+							/>
+						{/snippet}
+						<WorkRecordHeader
+							icon={userIcon}
+							recordType="Client"
+							title={client.display_name}
+							statusLabel={client.archived_at
+								? 'Archived'
+								: client.lifecycle_status === 'customer'
+									? 'Customer'
+									: 'Lead'}
+							statusTone={client.archived_at
+								? 'inactive'
+								: client.lifecycle_status === 'customer'
+									? 'success'
+									: 'informative'}
+							menuItems={headerMenuItems}
+							onEditTitle={editingBlock === 'details' ? undefined : () => openBlock('details')}
 							onHistory={() => (showHistory = !showHistory)}
 							onHistoryHover={warmHistory}
-							onArchive={client.can_archive ? () => (archiveConfirmOpen = true) : undefined}
-							onRestore={client.can_archive
-								? () => archiveMutation.mutate({ archived: false })
-								: undefined}
-							onMerge={client.can_merge ? () => (mergeOpen = true) : undefined}
-							archiving={archiveMutation.isPending}
+							body={editingBlock === 'details' ? detailsEditor : undefined}
+							facts={headerFacts}
+							tabs={tabList}
 						>
-							{#snippet editor()}
-								<ClientDetailsForm
-									values={identityOf(client)}
-									wasCustomer={client.lifecycle_status === 'customer'}
-									saving={blockSaving}
-									error={blockError}
-									fieldErrors={blockFieldErrors}
-									onSave={(next) => void saveBlock(next)}
-									onCancel={closeBlock}
-								/>
+							{#snippet actions()}
+								{#if client.archived_at && client.can_archive}
+									<Button
+										variant="secondary"
+										loading={archiveMutation.isPending}
+										onclick={() => archiveMutation.mutate({ archived: false })}>Restore</Button
+									>
+								{/if}
 							{/snippet}
-						</ClientDetailHeader>
+							{#snippet line()}
+								<p class="client-detail__address">
+									<span class="client-detail__address-icon" aria-hidden="true"
+										>{@html mapPinIcon}</span
+									>
+									{#if mainAddress}
+										<a
+											href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mainAddress)}`}
+											target="_blank"
+											rel="noopener noreferrer"
+											title="{mainAddress} · Click to open in Google Maps">{mainAddress}</a
+										>
+									{:else}
+										<span class="client-detail__address-blank">No property yet</span>
+									{/if}
+								</p>
+								{#if canMessage}
+									<Button variant="secondary" onclick={() => (manualEmailOpen = true)}>
+										<span class="client-detail__action-icon" aria-hidden="true"
+											>{@html mailIcon}</span
+										>
+										Message
+									</Button>
+								{/if}
+								{#if client.can_request_review}
+									<RequestReviewButton target={{ clientId: client.id }} size="base" />
+								{/if}
+							{/snippet}
+						</WorkRecordHeader>
 					{/snippet}
 
 					<TabPanel value="details">
@@ -717,11 +868,19 @@
 
 					{#if canSeeCommunication}
 						<TabPanel value="communication">
-							<ClientCommunicationHistory
-								{clientId}
-								active={activeTab === 'communication'}
-								inbox={communicationsAccessQuery.data?.inbox ?? true}
-							/>
+							<SectionBlock
+								tone="conversation"
+								title="Communication"
+								subtitle={`Texts, emails and calls with ${firstName}`}
+								icon={messageIcon}
+								level={2}
+							>
+								<ClientCommunicationHistory
+									{clientId}
+									active={activeTab === 'communication'}
+									inbox={communicationsAccessQuery.data?.inbox ?? true}
+								/>
+							</SectionBlock>
 						</TabPanel>
 					{/if}
 				</Tabs>
@@ -912,6 +1071,47 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	// The client line of the header: the main property, which opens in Google Maps, then the ways to reach out.
+	.client-detail__address {
+		display: flex;
+		flex: 1 1 auto;
+		min-width: 0;
+		align-items: center;
+		gap: var(--space-small);
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-base);
+		font-weight: 500;
+
+		a {
+			overflow: hidden;
+			color: inherit;
+			text-decoration: none;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+
+			&:hover {
+				color: var(--color-interactive);
+				text-decoration: underline;
+			}
+		}
+	}
+
+	.client-detail__address-icon {
+		display: inline-flex;
+		flex: 0 0 auto;
+		color: var(--color-client);
+
+		:global(svg) {
+			display: block;
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	.client-detail__address-blank {
+		color: var(--color-text--secondary);
+	}
+
 	// The grid, the cards and the rail all live in RecordDetailLayout (`cards`). What is left here is only
 	// what this page's own content needs.
 	// The tab row now sits inside the header card, so the tabs root only stacks the card and its panels.

@@ -16,10 +16,10 @@
 <script lang="ts">
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import arrowUpRightIcon from '@tabler/icons/outline/arrow-up-right.svg?raw';
-	import clipboardTextIcon from '@tabler/icons/outline/clipboard-text.svg?raw';
-	import fileDescriptionIcon from '@tabler/icons/outline/file-description.svg?raw';
-	import toolsIcon from '@tabler/icons/outline/tools.svg?raw';
-	import fileDollarIcon from '@tabler/icons/outline/file-dollar.svg?raw';
+	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
+	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
+	import hammerIcon from '@tabler/icons/outline/hammer.svg?raw';
+	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 	import creditCardIcon from '@tabler/icons/outline/credit-card.svg?raw';
 
 	// A work record's place on the line from Request to Paid: one bar per step, filled for what is done,
@@ -39,10 +39,10 @@
 
 	// The concept strip tells the five steps apart by colour: each takes its record's colour once reached.
 	const stepKinds: Record<string, { kind: string; icon: string }> = {
-		Request: { kind: 'request', icon: clipboardTextIcon },
-		Quote: { kind: 'quote', icon: fileDescriptionIcon },
-		Job: { kind: 'job', icon: toolsIcon },
-		Invoice: { kind: 'invoice', icon: fileDollarIcon },
+		Request: { kind: 'request', icon: inboxIcon },
+		Quote: { kind: 'quote', icon: fileTextIcon },
+		Job: { kind: 'job', icon: hammerIcon },
+		Invoice: { kind: 'invoice', icon: receiptIcon },
 		Paid: { kind: 'invoice', icon: creditCardIcon }
 	};
 </script>
@@ -73,8 +73,12 @@
 					{#if step.href}
 						<a class="track__label" href={step.href}>{step.label}</a>
 					{:else}
-						<span class={['track__label', step.state === 'todo' && 'track__label--todo']}
-							>{step.label}</span
+						<span
+							class={[
+								'track__label',
+								step.state === 'todo' && 'track__label--todo',
+								step.state === 'current' && 'track__label--current'
+							]}>{step.label}</span
 						>
 					{/if}
 					<span class={['track__sub', step.tone === 'critical' && 'track__sub--critical']}>
@@ -85,46 +89,48 @@
 		{/each}
 	</ol>
 {:else}
-<div class="lifecycle-frame">
-	<ol class="lifecycle" aria-label={label}>
-		{#each steps as step (step.label)}
-			<li class="lifecycle__step" aria-current={step.state === 'current' ? 'step' : undefined}>
-				<span class="lifecycle__bar" aria-hidden="true">
-					{#if step.state === 'done'}
-						<span class="lifecycle__fill" style:width="100%"></span>
-					{:else if step.state === 'current'}
-						<span class="lifecycle__fill" style:width="{Math.round((step.progress ?? 0.5) * 100)}%"
-						></span>
-					{/if}
-				</span>
-				<span class="lifecycle__title">
-					{#if step.state === 'done'}
-						<span class="lifecycle__check" aria-hidden="true">{@html checkIcon}</span>
-					{:else if step.state === 'current'}
-						<span class="lifecycle__dot" aria-hidden="true"></span>
-					{/if}
-					{#if step.href}
-						<a class="lifecycle__label lifecycle__label--link" href={step.href}>
-							{step.label}
-							<span class="lifecycle__arrow" aria-hidden="true">{@html arrowUpRightIcon}</span>
-						</a>
-					{:else}
-						<span
-							class={[
-								'lifecycle__label',
-								step.state === 'todo' && 'lifecycle__label--todo',
-								step.state === 'current' && 'lifecycle__label--current'
-							]}>{step.label}</span
-						>
-					{/if}
-				</span>
-				<span class={['lifecycle__sub', step.tone === 'critical' && 'lifecycle__sub--critical']}>
-					{step.sub}
-				</span>
-			</li>
-		{/each}
-	</ol>
-</div>
+	<div class="lifecycle-frame">
+		<ol class="lifecycle" aria-label={label}>
+			{#each steps as step (step.label)}
+				<li class="lifecycle__step" aria-current={step.state === 'current' ? 'step' : undefined}>
+					<span class="lifecycle__bar" aria-hidden="true">
+						{#if step.state === 'done'}
+							<span class="lifecycle__fill" style:width="100%"></span>
+						{:else if step.state === 'current'}
+							<span
+								class="lifecycle__fill"
+								style:width="{Math.round((step.progress ?? 0.5) * 100)}%"
+							></span>
+						{/if}
+					</span>
+					<span class="lifecycle__title">
+						{#if step.state === 'done'}
+							<span class="lifecycle__check" aria-hidden="true">{@html checkIcon}</span>
+						{:else if step.state === 'current'}
+							<span class="lifecycle__dot" aria-hidden="true"></span>
+						{/if}
+						{#if step.href}
+							<a class="lifecycle__label lifecycle__label--link" href={step.href}>
+								{step.label}
+								<span class="lifecycle__arrow" aria-hidden="true">{@html arrowUpRightIcon}</span>
+							</a>
+						{:else}
+							<span
+								class={[
+									'lifecycle__label',
+									step.state === 'todo' && 'lifecycle__label--todo',
+									step.state === 'current' && 'lifecycle__label--current'
+								]}>{step.label}</span
+							>
+						{/if}
+					</span>
+					<span class={['lifecycle__sub', step.tone === 'critical' && 'lifecycle__sub--critical']}>
+						{step.sub}
+					</span>
+				</li>
+			{/each}
+		</ol>
+	</div>
 {/if}
 
 <!-- eslint-enable svelte/no-at-html-tags, svelte/no-navigation-without-resolve -->
@@ -180,7 +186,7 @@
 
 		&__label {
 			color: var(--color-heading);
-			font-size: var(--typography--fontSize-small);
+			font-size: var(--typography--fontSize-label);
 			font-weight: 600;
 			overflow: hidden;
 			text-decoration: none;
@@ -189,6 +195,10 @@
 
 			&--todo {
 				color: var(--color-text--secondary);
+			}
+
+			&--current {
+				font-weight: 700;
 			}
 
 			&:is(a):hover {

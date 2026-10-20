@@ -32,7 +32,7 @@ export const GET: RequestHandler = async (event) => {
 	const { data: client, error } = await supabase
 		.from('clients')
 		.select(
-			'id, display_name, client_type, first_name, last_name, company_name, lifecycle_status, lead_source, lead_temperature, next_follow_up_at, converted_to_customer_at, archived_at, created_at, updated_at'
+			'id, display_name, client_type, first_name, last_name, company_name, lifecycle_status, lead_source, lead_temperature, billing_payment_term_id, next_follow_up_at, converted_to_customer_at, archived_at, created_at, updated_at'
 		)
 		.eq('organization_id', organizationId)
 		.eq('id', clientId)
@@ -55,7 +55,9 @@ export const GET: RequestHandler = async (event) => {
 		{ data: properties, error: propertiesError },
 		{ data: preferences, error: preferencesError },
 		{ data: tagAssignments, error: tagAssignmentsError },
-		{ data: workSummary, error: workSummaryError }
+		{ data: workSummary, error: workSummaryError },
+		{ data: settings },
+		{ data: paymentTerms }
 	] = await Promise.all([
 		supabase
 			.from('client_contact_methods')
@@ -84,7 +86,18 @@ export const GET: RequestHandler = async (event) => {
 			.eq('organization_id', organizationId)
 			.eq('entity_type', 'client')
 			.eq('entity_id', clientId),
-		supabase.rpc('client_work_summary', { target_client_ids: [clientId] })
+		supabase.rpc('client_work_summary', { target_client_ids: [clientId] }),
+		// The payment term the client's next invoice would carry, for the header's "Payment terms" fact. A
+		// member who may not read billing settings simply sees no term named.
+		supabase
+			.from('organization_settings')
+			.select('invoice_default_term_residential_id, invoice_default_term_commercial_id')
+			.eq('organization_id', organizationId)
+			.maybeSingle(),
+		supabase
+			.from('invoice_payment_terms')
+			.select('id, name, rule, is_protected')
+			.eq('organization_id', organizationId)
 	]);
 	if (
 		contactMethodsError ||
@@ -150,6 +163,18 @@ export const GET: RequestHandler = async (event) => {
 		};
 	}
 
+	// Same order as private.resolve_client_payment_term: the client's own term, then the business default
+	// for its client type, then the protected "Due on receipt".
+	const termId =
+		client.billing_payment_term_id ??
+		(client.client_type === 'company'
+			? settings?.invoice_default_term_commercial_id
+			: settings?.invoice_default_term_residential_id);
+	const paymentTerm =
+		(paymentTerms ?? []).find((term) => term.id === termId) ??
+		(paymentTerms ?? []).find((term) => term.rule === 'on_receipt' && term.is_protected) ??
+		null;
+
 	const workSummaryRow = (
 		(workSummary ?? {}) as Record<string, Omit<ClientWorkSummary, 'included'>>
 	)[clientId] ?? {
@@ -178,6 +203,7 @@ export const GET: RequestHandler = async (event) => {
 						: 1
 			),
 			property_count: (properties ?? []).length,
+			payment_term_name: paymentTerm?.name ?? null,
 			preferences,
 			marketing_consent: marketingConsent,
 			tag_ids: (tagAssignments ?? []).map((assignment) => assignment.tag_id),

@@ -19,8 +19,6 @@
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
 	import { calendarDateFromString, calendarDateToString } from '$lib/components/ui/date-time';
 	import WorkRecordHeader from '$lib/components/work/WorkRecordHeader.svelte';
-	import ClientSummaryCard from '$lib/components/work/ClientSummaryCard.svelte';
-	import RecordFactsList from '$lib/components/work/RecordFactsList.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
 	import MoneyFeatureCard from '$lib/components/work/MoneyFeatureCard.svelte';
 	import InvoiceHistoryCard from '$lib/components/invoices/InvoiceHistoryCard.svelte';
@@ -81,6 +79,7 @@
 	import calendarIcon from '@tabler/icons/outline/calendar-event.svg?raw';
 	import creditCardIcon from '@tabler/icons/outline/credit-card.svg?raw';
 	import calendarDueIcon from '@tabler/icons/outline/calendar-due.svg?raw';
+	import hashIcon from '@tabler/icons/outline/hash.svg?raw';
 	import depositIcon from '@tabler/icons/outline/pig-money.svg?raw';
 	import eyeIcon from '@tabler/icons/outline/eye.svg?raw';
 	import printIcon from '@tabler/icons/outline/printer.svg?raw';
@@ -254,68 +253,41 @@
 			...(date.getFullYear() === new Date().getFullYear() ? {} : { year: 'numeric' })
 		}).format(date);
 	}
-	function shortDateTime(iso: string) {
-		const date = new Date(iso);
-		return new Intl.DateTimeFormat(undefined, {
-			day: 'numeric',
-			month: 'short',
-			hour: 'numeric',
-			minute: '2-digit',
-			...(date.getFullYear() === new Date().getFullYear() ? {} : { year: 'numeric' })
-		}).format(date);
-	}
 
-	// "Net 14" beside the due date, when the invoice follows a named term rather than a hand-picked day.
+	// The named term the due date follows ("Net 14"), or null for a hand-picked day.
 	const dueTermName = $derived.by(() => {
 		if (!saved || saved.invoice.due_date_source === 'custom') return null;
 		const name = saved.invoice.payment_term_snapshot?.name;
 		return typeof name === 'string' && name ? name : null;
 	});
 
+	// Invoice # · Issued · Due · Payment terms, as Jobber shows them.
 	const headerFacts = $derived([
-		...(saved?.progress
-			? [
-					{
-						label: 'Payment stage',
-						value: `Payment ${saved.progress.installment_number} \u00b7 ${saved.progress.description}`,
-						wrap: true,
-						icon: receiptIcon
-					}
-				]
-			: []),
 		{
-			label: 'Invoice date',
+			label: 'Invoice #',
+			value: saved ? String(saved.invoice.invoice_number) : null,
+			icon: hashIcon,
+			kind: 'time' as const
+		},
+		{
+			label: 'Issued',
 			value: saved ? shortDay(saved.invoice.issue_date) : null,
-			icon: calendarIcon
+			icon: sendIcon,
+			kind: 'time' as const
 		},
 		{
 			label: 'Due',
-			value: saved
-				? `${shortDay(saved.invoice.due_date)}${dueTermName ? ` \u00b7 ${dueTermName}` : ''}`
-				: null,
-			icon: calendarDueIcon
+			value: saved ? shortDay(saved.invoice.due_date) : null,
+			icon: calendarDueIcon,
+			kind: 'time' as const
 		},
-		// A bill marked as sent by hand has an issue time but no email to name.
-		...(saved?.delivery.last_sent
-			? [
-					{
-						label: 'Sent',
-						value: shortDateTime(saved.delivery.last_sent.sent_at),
-						icon: sendIcon
-					}
-				]
-			: saved?.invoice.issued_at
-				? [{ label: 'Issued', value: shortDateTime(saved.invoice.issued_at), icon: checkIcon }]
-				: []),
-		...(saved?.delivery.views.first_viewed_at
-			? [
-					{
-						label: 'Viewed',
-						value: shortDateTime(saved.delivery.views.first_viewed_at),
-						icon: eyeIcon
-					}
-				]
-			: [])
+		{
+			label: 'Payment terms',
+			value: dueTermName,
+			empty: 'Custom date',
+			icon: fileTextIcon,
+			kind: 'conversation' as const
+		}
 	]);
 
 	// --- The balance card and the totals under the lines ----------------------------------------------------
@@ -427,17 +399,6 @@
 		].filter((part): part is string => typeof part === 'string' && part.length > 0);
 		return parts.length ? parts.join(', ') : null;
 	});
-
-	const clientMenuItems = $derived(
-		saved?.client
-			? [
-					{
-						label: 'View client profile',
-						onSelect: () => void goto(resolve('/(app)/clients/[id=uuid]', { id: saved.client!.id }))
-					}
-				]
-			: []
-	);
 
 	// The client's view of this invoice, in its own tab, with our sidebar left behind. `print` asks that tab
 	// to open the print dialog as soon as it has drawn, so `Print or save PDF` is one press rather than a
@@ -1144,19 +1105,17 @@
 					bind:titleDraft
 					{primaryAction}
 					onHistory={canSeePrice ? showHistory : undefined}
+					client={{
+						name: saved.client?.company_name || saved.client?.display_name || 'No client',
+						href: clientHref,
+						avatarId: saved.client?.id,
+						address: siteLine ?? billingLine,
+						addressEmpty: 'No address on this invoice',
+						phone: saved.client?.phone,
+						email: saved.client?.email
+					}}
+					facts={headerFacts}
 				>
-					{#snippet summary()}
-						<ClientSummaryCard
-							quickContact
-							name={saved.client?.company_name || saved.client?.display_name || 'No client'}
-							avatarId={saved.client?.id}
-							href={clientHref}
-							addresses={[{ value: siteLine ?? billingLine, empty: 'No address on this invoice' }]}
-							phone={saved.client?.phone}
-							email={saved.client?.email}
-							menuItems={clientMenuItems}
-						/>
-					{/snippet}
 					{#snippet track()}
 						<RecordTrack
 							kind="invoice"
@@ -1165,24 +1124,19 @@
 							clientIsCompany={Boolean(saved.client?.company_name)}
 						/>
 					{/snippet}
-					{#snippet facts()}
-						<div class="invoice-detail__facts">
-							<RecordFactsList facts={headerFacts} class="invoice-detail__facts-list" />
-							{#if editable && !editingTerms}
-								<PencilButton
-									size="base"
-									onclick={openTermsEditor}
-									onhover={warmTerms}
-									label="Edit the terms and dates"
-								/>
-							{/if}
-						</div>
+					{#snippet factsAction()}
+						{#if editable && !editingTerms}
+							<PencilButton
+								size="base"
+								onclick={openTermsEditor}
+								onhover={warmTerms}
+								label="Edit the terms and dates"
+							/>
+						{/if}
 					{/snippet}
-					{#snippet badges()}
-						<span class="invoice-detail__number">Invoice #{saved.invoice.invoice_number}</span>
+					{#snippet actions()}
 						{#if draftEditable}
 							<Button
-								size="small"
 								variant="tertiary"
 								variation="destructive"
 								onclick={() => void removeDraft()}
@@ -1655,40 +1609,6 @@
 		color: var(--color-text--secondary);
 		line-height: var(--typography--lineHeight-large);
 		white-space: pre-wrap;
-	}
-
-	.invoice-detail__number {
-		color: var(--color-text--secondary);
-		font-size: 12px;
-		font-weight: 600;
-		letter-spacing: 0.6px;
-		text-transform: uppercase;
-	}
-
-	// The facts and the terms pencil share the strip's row.
-	.invoice-detail__facts {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-	}
-	.invoice-detail__facts :global(.invoice-detail__facts-list) {
-		flex: 1 1 auto;
-		flex-wrap: nowrap;
-		min-width: 0;
-	}
-	// A long value wraps under its label rather than being cut off.
-	.invoice-detail__facts :global(.record-facts__row) {
-		padding-inline: 14px;
-	}
-	.invoice-detail__facts :global(.record-facts__row:first-child) {
-		padding-left: 0;
-	}
-	.invoice-detail__facts :global(.record-facts__row dt) {
-		white-space: nowrap;
-	}
-	.invoice-detail__facts :global(.record-facts__row dd) {
-		overflow: visible;
-		white-space: normal;
 	}
 
 	.invoice-detail__disclaimer-body {

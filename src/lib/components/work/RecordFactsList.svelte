@@ -1,121 +1,91 @@
 <script lang="ts">
-	// The short list of dates and numbers that identify a work record, sitting beside the client card in
-	// the header. Every record type has a different set — a quote shows Quote # / Created / Approved, a
-	// request shows Requested / Assessment — so this is a list of rows, never a fixed pair of slots.
-	//
-	// A row with nothing in it says what it is waiting for rather than showing a blank line.
+	// The facts that identify a record, in the header card under the client line: up to four even columns
+	// split by hairlines, each a small coloured tile and label over the value (Pencil "Record header · C").
+	// Every record type has its own set, so this is a list, never fixed slots. A fact with nothing in it says
+	// in grey what it is waiting for rather than showing a blank.
 	import type { RecordFact } from './types';
 
-	let {
-		facts,
-		neutralIcons = false,
-		concept = false,
-		class: className = ''
-	}: {
-		facts: RecordFact[];
-		/** App look: every icon tile is the same quiet colour, instead of the first one being green. */
-		neutralIcons?: boolean;
-		/** The new concept's column: one row per fact, the icon on a small tile in the fact's own colour
-		 *  (set with `tone`), label then value on one line. */
-		concept?: boolean;
-		class?: string;
-	} = $props();
+	let { facts, class: className = '' }: { facts: RecordFact[]; class?: string } = $props();
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-{#if concept}
-	<dl class={`fact-column ${className}`}>
-		{#each facts as fact (fact.label)}
-			<div class="fact-column__row">
+<dl class={`record-facts ${className}`}>
+	{#each facts as fact (fact.label)}
+		<div class="record-facts__fact">
+			<dt class="record-facts__label">
 				{#if fact.icon}
 					<span
-						class="fact-column__tile"
-						style:--fact-tone={`var(--color-${fact.kind ?? 'client'})`}
-						style:--fact-surface={`var(--color-${fact.kind ?? 'client'}--surface)`}
+						class="record-facts__tile"
+						style:--fact-tone={`var(--color-${fact.kind ?? 'time'})`}
+						style:--fact-surface={`var(--color-${fact.kind ?? 'time'}--surface)`}
 						aria-hidden="true">{@html fact.icon}</span
 					>
 				{/if}
-				<dt>{fact.label}</dt>
-				<dd class:fact-column__empty={!fact.value}>
-					{#if !fact.value}{fact.empty ?? '—'}{:else if fact.href}
-						<!-- The caller builds the link (tel:, mailto:); nothing here is an app route. -->
-						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-						<a href={fact.href}>{fact.value}</a>
-					{:else}{fact.value}{/if}
-				</dd>
-			</div>
-		{/each}
-	</dl>
-{:else}
-<dl class={`record-facts ${className}`} class:record-facts--neutral={neutralIcons}>
-	{#each facts as fact (fact.label)}
-		<div class="record-facts__row" class:record-facts__row--fixed={fact.fixed}>
-			{#if fact.icon}<span
-					class={['record-facts__icon', fact.tone && `record-facts__icon--${fact.tone}`]}
-					aria-hidden="true">{@html fact.icon}</span
-				>{/if}
-			<dt>{fact.label}</dt>
-			{#if fact.value}
-				<dd class:record-facts__wrap={fact.wrap} class:record-facts__quiet={fact.quiet}>
-					{#if fact.href}
-						<!-- The caller builds the link (tel:, mailto:); nothing here is an app route. -->
-						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-						<a class="record-facts__link" href={fact.href}>{fact.value}</a>
-					{:else}{fact.value}{/if}
-				</dd>
-			{:else}
-				<dd class="record-facts__empty">{fact.empty ?? '—'}</dd>
-			{/if}
+				{fact.label}
+			</dt>
+			<dd class:record-facts__quiet={!fact.value || fact.quiet} title={fact.value ?? undefined}>
+				{#if !fact.value}{fact.empty ?? '—'}{:else if fact.href}
+					<!-- The caller builds the link (tel:, mailto:); nothing here is an app route. -->
+					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+					<a href={fact.href}>{fact.value}</a>
+				{:else}{fact.value}{/if}
+			</dd>
 		</div>
 	{/each}
 </dl>
-{/if}
 
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
-	// Concept look: facts stacked, each with its coloured tile, as drawn on the Job details frame.
-	.fact-column {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-small);
+	.record-facts {
+		display: grid;
+		grid-auto-columns: minmax(0, 1fr);
+		grid-auto-flow: column;
 		margin: 0;
 
-		&__row {
+		&__fact {
 			display: flex;
+			flex-direction: column;
+			gap: 6px;
 			min-width: 0;
+
+			& + & {
+				padding-left: var(--space-base);
+				border-left: var(--border-base) solid var(--color-border);
+			}
+		}
+
+		&__label {
+			display: flex;
 			align-items: center;
-			gap: var(--space-small);
+			gap: 6px;
+			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
 		}
 
 		&__tile {
 			display: inline-grid;
 			flex: 0 0 auto;
-			width: 24px;
-			height: 24px;
+			width: 20px;
+			height: 20px;
 			place-items: center;
-			border-radius: var(--radius-tile-small);
+			border-radius: 5px;
 			color: var(--fact-tone);
 			background: var(--fact-surface);
 
 			:global(svg) {
 				display: block;
-				width: 14px;
-				height: 14px;
+				width: 12px;
+				height: 12px;
 			}
-		}
-
-		dt {
-			flex: 0 0 72px;
-			color: var(--color-text--secondary);
 		}
 
 		dd {
 			overflow: hidden;
-			min-width: 0;
 			margin: 0;
 			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
 			font-weight: 600;
 			text-overflow: ellipsis;
 			white-space: nowrap;
@@ -123,178 +93,29 @@
 			a {
 				color: inherit;
 				text-decoration: none;
+
+				&:hover {
+					color: var(--color-interactive);
+					text-decoration: underline;
+				}
 			}
 		}
 
-		&__empty {
+		dd.record-facts__quiet {
 			color: var(--color-text--secondary);
-			font-weight: 400;
 		}
 	}
 
-	.record-facts {
-		display: flex;
-		flex-direction: column;
-
-		&__row {
-			display: flex;
-			align-items: baseline;
-			justify-content: space-between;
-			gap: var(--space-base);
-			padding: var(--space-small) 0;
-
-			& + & {
-				border-top: var(--border-base) solid var(--color-border);
-			}
-
-			dt {
-				color: var(--color-text--secondary);
-			}
-
-			dd {
-				overflow: hidden;
-				color: var(--color-heading);
-				font-weight: 600;
-				text-align: right;
-				text-overflow: ellipsis;
-				white-space: nowrap;
-			}
-		}
-
-		&__empty {
-			color: var(--color-text--secondary);
-			font-weight: 400;
-		}
-
-		&__quiet {
-			color: var(--color-text--secondary);
-		}
-
-		&__link {
-			color: inherit;
-			text-decoration: none;
-
-			&:hover {
-				text-decoration: underline;
-			}
-			&:focus-visible {
-				border-radius: var(--radius-small);
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-		}
-
-		&__wrap {
-			overflow: visible;
-			white-space: normal;
-			overflow-wrap: anywhere;
-		}
-
-		&__icon {
-			display: none;
-		}
-	}
-
-	// App look: the facts become a strip of columns under the client row — a small icon tile, the label
-	// above, the value below — with a hairline between columns.
-	:global(.record-detail--cards) .record-facts {
-		display: flex;
-		flex-flow: row nowrap;
-		align-items: center;
-		gap: 16px 0;
-
-		.record-facts__row {
-			display: grid;
-			flex: 1 1 auto;
-			align-content: center;
-			align-items: center;
-			min-width: 0;
-			row-gap: 2px;
-			padding: 0 16px;
-			column-gap: 10px;
-			grid-template-columns: auto minmax(0, 1fr);
-
-			& + .record-facts__row {
-				border-top: 0;
-				border-left: var(--border-base) solid var(--color-border);
-			}
-			&:first-child {
-				padding-left: 0;
-			}
-			&.record-facts__row--fixed {
-				flex-shrink: 0;
-			}
-			dt {
-				white-space: nowrap;
-				grid-column: 2;
-				grid-row: 1;
-				font-size: var(--typography--fontSize-small);
-				font-weight: 500;
-			}
-			dd {
-				grid-column: 2;
-				grid-row: 2;
-				font-size: var(--typography--fontSize-base);
-				text-align: left;
-			}
-		}
-		.record-facts__icon {
-			display: inline-grid;
-			width: 36px;
-			height: 36px;
-			place-items: center;
-			border-radius: var(--radius-base);
-			color: var(--color-icon--secondary);
-			background: var(--color-surface--background--subtle);
-			grid-column: 1;
-			grid-row: 1 / span 2;
-
-			:global(svg) {
-				width: 17px;
-				height: 17px;
-			}
-		}
-		&:not(.record-facts--neutral) .record-facts__row:first-child .record-facts__icon {
-			color: var(--color-interactive);
-			background: var(--color-success--surface);
-		}
-		// A page that names a tone per fact overrides the first-fact default above.
-		.record-facts__icon--neutral,
-		.record-facts__row:first-child .record-facts__icon--neutral {
-			color: var(--color-icon--secondary);
-			background: var(--color-surface--background--subtle);
-		}
-		.record-facts__icon--success,
-		.record-facts__row:first-child .record-facts__icon--success {
-			color: var(--color-interactive);
-			background: var(--color-success--surface);
-		}
-		.record-facts__icon--warning,
-		.record-facts__row:first-child .record-facts__icon--warning {
-			color: var(--color-warning--onSurface);
-			background: var(--color-warning--surface);
-		}
-		.record-facts__empty {
-			font-weight: 600;
-		}
-	}
-
-	// A narrower laptop leaves the header too little room for four columns: two by two, no hairlines.
-	@media (max-width: 1359px) {
-		:global(.record-detail--cards) .record-facts {
-			display: grid;
-			gap: 16px 24px;
+	// Two facts a row on a phone, the hairline only between the pair.
+	@media (max-width: 767px) {
+		.record-facts {
+			grid-auto-flow: row;
 			grid-template-columns: repeat(2, minmax(0, 1fr));
+			row-gap: var(--space-base);
 
-			.record-facts__row,
-			.record-facts__row + .record-facts__row {
-				padding: 0;
+			&__fact:nth-child(odd) {
+				padding-left: 0;
 				border-left: 0;
-			}
-			dd {
-				overflow: visible;
-				white-space: normal;
-				overflow-wrap: anywhere;
 			}
 		}
 	}

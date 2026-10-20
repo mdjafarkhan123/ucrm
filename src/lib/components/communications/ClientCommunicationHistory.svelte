@@ -58,14 +58,19 @@
 {:else if (historyQuery.error as HttpError | null)?.status === 403}
 	<EmptyState
 		icon={messageIcon}
+		tone="conversation"
 		title="Messages are not part of your role"
 		description="Ask the account owner if you need to see this client's emails and texts."
 	/>
 {:else if historyQuery.isError}
-	<ErrorState description="Communication history could not be loaded. Refresh and try again." />
+	<ErrorState
+		description="Communication history could not be loaded."
+		retry={() => historyQuery.refetch()}
+	/>
 {:else if messages.length === 0}
 	<EmptyState
 		icon={messageIcon}
+		tone="conversation"
 		title="Nothing sent yet"
 		description="Emails with this client will be collected here once sending is switched on."
 	/>

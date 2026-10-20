@@ -5,26 +5,18 @@
 /** One label/value row in the facts column beside the client card. */
 export type RecordFact = {
 	label: string;
-	/** Leave empty and the row falls back to `empty`, or to a dash when that is absent too. */
+	/** Leave empty and the fact falls back to `empty`, or to a dash when that is absent too. */
 	value?: string | null;
-	/** What to say when there is no value yet, e.g. "Not booked yet". */
+	/** What to say when there is no value yet, in honest words, e.g. "Waiting for an answer". */
 	empty?: string;
-	/** Let a long value wrap instead of being clipped. Facts are dates and numbers that fit on one line, so
-	 *  the row clips by default; set this for the few that carry a phrase somebody typed, like a payment
-	 *  stage's name, where the clipped half is the half that identifies it. */
-	wrap?: boolean;
-	/** Tabler icon (`?raw`) drawn in a small tile beside the fact in the App look header. Other looks ignore it. */
+	/** Tabler icon (`?raw`) drawn on the small tile beside the label. */
 	icon?: string;
-	/** Colour of the icon tile in the App look. Left out, the first fact is green and the rest are quiet. */
-	tone?: 'neutral' | 'success' | 'warning';
-	/** Concept look: the record or part of the app this fact belongs to; its colour tints the icon tile. */
-	kind?: 'job' | 'time' | 'quote' | 'client' | 'conversation' | 'request' | 'invoice';
-	/** Draw the value in the quiet colour, for a fact still waiting on something (e.g. "No answer yet"). */
+	/** The record or part of the app this fact belongs to; its colour tints the icon tile. */
+	kind?: 'job' | 'time' | 'quote' | 'client' | 'conversation' | 'request' | 'invoice' | 'warning';
+	/** Draw the value in the quiet colour, for a fact still waiting on something. */
 	quiet?: boolean;
 	/** Makes the value a link, e.g. `tel:` or `mailto:`. */
 	href?: string;
-	/** A short value that must never be clipped (a phone number, a date); the other facts give way first. */
-	fixed?: boolean;
 };
 
 /** One address slot on the client summary card. A quote shows only the property; an invoice shows the
