@@ -46,6 +46,22 @@
   The phone, email and address stay as plain text. Building removes `work/QuickContactButtons` from the
   record headers; the client page keeps Message and Request a review.
 
+## Batch 13 record header — paused 2026-10-20, resume here
+
+Jafar picked **option C (coloured top)** on board `xrJ3f`, with two changes still to make before approval:
+1. **Top row:** only the record tile and the status pill, side by side; remove the record info line
+   (number, version, dates) from there and keep that area clean. The pill moves from beside the title to
+   beside the tile. Where the record number / meta should live instead is open: ask Jafar if unclear.
+2. **Facts under the client line:** today's four facts per record (e.g. Job: Job #, Type, Created, Source) may
+   miss what matters. Research Jobber first: Jafar's Jobber trial account is logged in in Chrome; open each
+   record type (client, request, quote, job, invoice, payment), create/edit test records if needed (CRUD is
+   allowed there), and note which facts Jobber shows in each record's header. Propose the facts per record
+   from that, then redraw C.
+
+Then: delete options A, B, D from `xrJ3f` (keep only C), add dark mode, get Jafar's yes, record it here and in
+`stages/list-1b-parts.md`. Still to hand the builder: shared header for all six records; client header folds
+into it; no quick contact buttons; tabs band (client) / Request → Paid track as the footer.
+
 ## Batch 10 new behaviour (Jafar, 2026-10-20)
 
 - Search list: items with a photo show as picture cards before the rows of their group.
