@@ -1218,6 +1218,9 @@
 				{/if}
 
 				<ProductsAndServicesBlock
+					concept
+					icon={receiptIcon}
+					tone="invoice"
 					lines={invoiceLines}
 					revision={saved.invoice.revision}
 					editable={editable && canSeePrice && !isProgress}

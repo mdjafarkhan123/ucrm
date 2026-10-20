@@ -73,6 +73,24 @@ Hand-off for the builder (restyle only; every control is live today):
 - Row 4 (line menu, "Throw away these changes?" with Keep editing / Throw them away, loading, couldn't load
   without Try again, invoice Service date box with ×, progress invoice Item total / Due this invoice) as drawn.
 
+## Batch 14 build — in progress (branch `claude/concept-batch14-15`, 2026-10-20)
+
+Rollout: every `ProductsAndServicesBlock` caller now passes `concept` (job, quote, invoice, request pricing,
+new quote/request/invoice/job forms, visit pop-up); concept table rules moved off `.job-detail` to
+`.pricing-table--concept` / `.pricing-block--concept`. Built: empty two choice tiles, crew work list (prices
+hidden) with `IconTile` 56, quote group titles / text lines / tinted add-ons with outlined pill, locked
+informative band, foot strips (client eye, invoice lock, eye-off), loading rows, couldn't load, progress
+"Due this invoice" box, invoice service-date box (CalendarPicker inside, its own button is the icon), card
+tile defaults to quote box (invoices pass receipt/invoice). Light screenshots matched `vsT0H`.
+Next: rerun `node scripts/evidence/pricing-check.mjs <out> <light|dark> <job|quote|invoice|request|forms>`
+one part per run (long runs exhaust the browser), with `npx vite dev --port 5191` from the worktree; check the
+date box and Client view padding fixes, dark mode, visit pop-up and new-record forms; write
+`docs/evidence/2026-10-20-batch14/README.md`; merge both batches to main; update NOW.md.
+
+## Batch 15 Notes panel — built 2026-10-20
+
+Commit `54d526a1` on `claude/concept-batch14-15` (not merged yet); proof `docs/evidence/2026-10-20-batch15/README.md`.
+
 ## Batch 15 Notes panel — approved 2026-10-20
 
 Board `l9ZBWI`, A. Restyle of the compact panel only; every control and the staged-save flow are live today.

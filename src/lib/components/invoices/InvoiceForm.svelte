@@ -464,6 +464,9 @@
 
 			{#if installmentMode}
 				<ProductsAndServicesBlock
+					concept
+					icon={receiptIcon}
+					tone="invoice"
 					lines={seededLines}
 					subtotalMinor={seededSubtotalMinor}
 					{currencyCode}
@@ -472,6 +475,9 @@
 				/>
 			{:else}
 				<ProductsAndServicesBlock
+					concept
+					icon={receiptIcon}
+					tone="invoice"
 					alwaysEditing
 					editable
 					showServiceDate

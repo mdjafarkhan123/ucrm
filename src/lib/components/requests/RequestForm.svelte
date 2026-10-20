@@ -331,6 +331,7 @@
 			/>
 
 			<ProductsAndServicesBlock
+				concept
 				bind:this={productsAndServices}
 				alwaysEditing
 				editable
