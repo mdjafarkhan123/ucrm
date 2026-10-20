@@ -106,3 +106,13 @@ Change client; facts row: number "Given when you save" + Edit, property + Change
 (4px record-colour line, Card header, title + client card with property strip on the left, a 248 "Details"
 panel on the right: number box, Requested on for requests, Status "Draft until you save").
 On approval: delete the unchosen option, `zUFDO`, `TVQzs` and `U8RY1n`; update `layout.md` → Create pages.
+
+Jafar (2026-10-20): `KiMYd` did not follow Jobber — a create page is a form (empty fields to type and pick), not
+a details page; follow Jobber's section order (job: top panel, Visits, Billing, Products). Board `KiMYd` deleted.
+Redrawn as board `OVzkZ` "Concept · Batch 31 · Create pages · A vs B", same layout in both, look differs:
+top panel = Title box full width; under it the Client search box (left) and the record's own fields (right:
+Job # / Quote # / Requested on / Invoice # + Issued date + Payment terms, as Jobber). A calm white (4px record
+line, tile + name, label-and-box rows); B tinted head in the record colour, fields on a soft panel with tiles.
+Each: full New job page as it opens (Visits, Billing, Products order; rail unchanged), the panel on all four
+pages, "Choosing a client" (typing list + Create new client, nobody matches, picked card with … menu), dark mode.
+Invoice's issued date and payment terms move into the panel (Jobber); our Terms & dates card would go.
