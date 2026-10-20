@@ -58,6 +58,11 @@ Jafar picked **option C (coloured top)** on board `xrJ3f`, with two changes stil
    allowed there), and note which facts Jobber shows in each record's header. Propose the facts per record
    from that, then redraw C.
 
+**Progress 2026-10-20 (session 2):** change 1 drawn on all six C headers (record info line removed, status
+pill beside the tile). Jobber header facts gathered from saved notes (`.claude/skills/jobber/jobber-08-screen-patterns.md`,
+`jobber-05` payment details, `Design/Jobber Jobs/2026-08-31/17-one-off-detail-top.png`) plus a live look at the
+client and a recurring job; a test request was made and deleted. Facts proposal waiting for Jafar's answer.
+
 First check `concept.pen` is saved with the quick-contact buttons gone from `xrJ3f` (removed after the 09:46 save); if the file is newer than commit `70e32402`, commit it.
 
 Then: delete options A, B, D from `xrJ3f` (keep only C), add dark mode, get Jafar's yes, record it here and in
