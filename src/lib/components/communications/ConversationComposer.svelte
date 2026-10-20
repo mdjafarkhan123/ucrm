@@ -823,7 +823,9 @@
 	}
 
 	.conversation-composer__route-from {
-		flex: 0 1 auto;
+		display: inline-flex;
+		flex: 0 0 auto;
+		max-width: 70%;
 		min-width: 0;
 		overflow: hidden;
 		color: var(--color-text--secondary);

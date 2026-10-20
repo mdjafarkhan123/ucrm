@@ -9,6 +9,7 @@
 	import photoIcon from '@tabler/icons/outline/photo.svg?raw';
 	import settingsIcon from '@tabler/icons/outline/adjustments.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	import alertCircleIcon from '@tabler/icons/outline/alert-circle.svg?raw';
 	import FileLabelsDialog from './FileLabelsDialog.svelte';
 	import {
 		createFileLabel,
@@ -25,9 +26,13 @@
 	// side panel or a dialog, never a detail page with a save bar.
 	let {
 		detail,
+		inDialog = false,
 		onSaved
 	}: {
 		detail: FileDetail;
+		/** Inside the Caption and labels pop-up: no card of its own, a LABELS caption row, and the save strip
+		 *  as the pop-up's footer. */
+		inDialog?: boolean;
 		onSaved?: () => void;
 	} = $props();
 
@@ -115,8 +120,12 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div class="photo-describe" class:photo-describe--readonly={!canEdit}>
-	{#if canEdit}<header class="photo-describe__header">
+<div
+	class="photo-describe"
+	class:photo-describe--readonly={!canEdit}
+	class:photo-describe--dialog={inDialog}
+>
+	{#if canEdit && !inDialog}<header class="photo-describe__header">
 			<IconTile icon={photoIcon} size={32} />
 			<h3>Caption and labels</h3>
 			{#if canCurate}<Button variant="quiet" size="small" onclick={() => (manageOpen = true)}
@@ -145,6 +154,14 @@
 			/>
 
 			<div class="photo-describe__labels">
+				{#if inDialog}
+					<div class="photo-describe__labels-head">
+						<span class="photo-describe__caption-label">Labels</span>
+						{#if canCurate}<Button variant="quiet" size="small" onclick={() => (manageOpen = true)}
+								>{@html settingsIcon}Manage labels</Button
+							>{/if}
+					</div>
+				{/if}
 				{#if labelsQuery.isPending && detail.file.labels.length === 0}
 					<LoadingSkeleton variant="text" label="Loading labels" rows={1} />
 				{:else}
@@ -161,11 +178,15 @@
 				{/if}
 			</div>
 
-			{#if error}<p class="photo-describe__error" role="alert">{error}</p>{/if}
+			{#if error}
+				<p class="photo-describe__error" role="alert">
+					<span aria-hidden="true">{@html alertCircleIcon}</span>{error}
+				</p>
+			{/if}
 
 			{#if dirty}
 				<div class="photo-describe__actions">
-					<span class="photo-describe__unsaved">Not saved</span>
+					<span class="photo-describe__unsaved">{saving ? 'Saving…' : 'Not saved'}</span>
 					<Button
 						variant="secondary"
 						variation="subtle"
@@ -223,8 +244,33 @@
 		}
 
 		&__error {
+			display: flex;
+			align-items: center;
+			gap: 6px;
 			color: var(--color-critical);
 			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+
+			:global(svg) {
+				display: block;
+				width: 14px;
+				height: 14px;
+			}
+		}
+
+		&__labels-head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			min-height: 28px;
+		}
+
+		&__caption-label {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+			letter-spacing: 0.6px;
+			text-transform: uppercase;
 		}
 
 		&__caption {
@@ -285,6 +331,24 @@
 			background: var(--color-warning);
 		}
 	}
+	// Inside the pop-up: no card; the save strip runs edge to edge as the pop-up's footer.
+	.photo-describe--dialog {
+		border: 0;
+		border-radius: 0;
+		overflow: visible;
+
+		.photo-describe__form {
+			padding: 0;
+		}
+
+		.photo-describe__actions {
+			position: sticky;
+			bottom: calc(-1 * var(--space-medium));
+			margin: var(--space-smaller) calc(-1 * var(--space-medium)) calc(-1 * var(--space-medium));
+			padding: var(--space-base) var(--space-medium);
+		}
+	}
+
 	.photo-describe--readonly {
 		border: 0;
 		border-radius: 0;
