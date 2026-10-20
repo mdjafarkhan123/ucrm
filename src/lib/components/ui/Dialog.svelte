@@ -116,7 +116,7 @@
 		background: var(--color-surface--background--subtle);
 
 		// A lone action sits at the right, where the main action of a dialog always is.
-		> :only-child {
+		> :global(:only-child) {
 			margin-left: auto;
 		}
 	}

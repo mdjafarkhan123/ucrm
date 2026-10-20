@@ -1,5 +1,8 @@
 <script lang="ts">
 	import type { Time } from '@internationalized/date';
+	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
+	import alertCircleIcon from '@tabler/icons/outline/alert-circle.svg?raw';
+	import hourglassIcon from '@tabler/icons/outline/hourglass.svg?raw';
 	import TimePickerField from './TimePickerField.svelte';
 	import type { TimeRangeValue } from './date-time';
 	import { isTimeRangeValid, reconcileTimeRange, timeToMinutes } from './date-time';
@@ -94,10 +97,11 @@
 					{disabled}
 					{readonly}
 					{required}
-					invalid={invalid || Boolean(rangeError)}
+					{invalid}
 					onchange={commitStart}
 				/>
-				<span class="time-picker__separator" aria-hidden="true">to</span>
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				<span class="time-picker__separator" aria-hidden="true">{@html arrowRightIcon}</span>
 				<TimePickerField
 					id={`${fieldId}-end`}
 					label="End"
@@ -112,11 +116,13 @@
 					invalid={invalid || Boolean(rangeError)}
 					onchange={commitEnd}
 				/>
+				{#if durationLabel}<span
+						class="time-picker__duration"
+						class:time-picker__duration--invalid={Boolean(rangeError)}
+						><!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html rangeError ? alertCircleIcon : hourglassIcon}{durationLabel}</span
+					>{/if}
 			</div>
-			{#if durationLabel}<span
-					class="time-picker__duration"
-					class:time-picker__duration--invalid={Boolean(rangeError)}>{durationLabel}</span
-				>{/if}
 		</fieldset>
 	{:else}
 		<TimePickerField
@@ -142,6 +148,9 @@
 </div>
 
 <style lang="scss">
+	// Start → End on one line with the length chip after them (concept board "Pickers v2", Time box). The chip
+	// drops under the pair when the row is too narrow. The group's name stays for screen readers only, so the
+	// Start and End labels line up with the fields beside them.
 	.time-picker {
 		width: 100%;
 
@@ -153,22 +162,68 @@
 		}
 
 		legend {
-			margin-bottom: var(--space-smaller);
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-base);
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			padding: 0;
+			overflow: hidden;
+			clip: rect(0 0 0 0);
+			white-space: nowrap;
 		}
 
 		&__range-fields {
-			display: grid;
-			grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-			align-items: end;
-			gap: var(--space-small);
+			display: flex;
+			flex-wrap: wrap;
+			align-items: flex-end;
+			column-gap: var(--space-small);
+			row-gap: var(--space-small);
+
+			> :global(.time-picker-field) {
+				flex: 1 1 128px;
+				width: auto;
+			}
 		}
 
 		&__separator {
-			padding-bottom: calc(var(--space-largest) / 2 - var(--space-small));
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			display: grid;
+			height: 40px;
+			place-items: center;
+			color: var(--color-icon--secondary);
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+		}
+
+		&__duration {
+			display: inline-flex;
+			height: 40px;
+			flex: 0 0 auto;
+			align-items: center;
+			gap: 6px;
+			padding: 0 14px;
+			border-radius: var(--radius-circle);
+			background: var(--color-time--surface);
+			color: var(--color-time--onSurface);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
+			white-space: nowrap;
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+				color: var(--color-time);
+			}
+
+			&--invalid {
+				background: var(--color-critical--surface);
+				color: var(--color-critical--onSurface);
+
+				:global(svg) {
+					color: var(--color-critical);
+				}
+			}
 		}
 
 		&__error {
@@ -176,37 +231,5 @@
 			color: var(--color-critical);
 			font-size: var(--typography--fontSize-small);
 		}
-
-		@media (max-width: 479px) {
-			&__range-fields {
-				grid-template-columns: 1fr;
-			}
-
-			&__separator {
-				display: none;
-			}
-		}
-	}
-
-	// Concept look (design skill `inputs.md`): inside a `.concept-fields` area the label is a field label.
-	.time-picker legend {
-		margin-bottom: 6px;
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-label);
-		font-weight: 600;
-	}
-	.time-picker__duration {
-		display: inline-block;
-		margin-top: var(--space-small);
-		padding: var(--space-smaller) var(--space-small);
-		border-radius: var(--radius-circle);
-		background: var(--color-time--surface);
-		color: var(--color-time--onSurface);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-	}
-	.time-picker__duration--invalid {
-		background: var(--color-critical--surface);
-		color: var(--color-critical--onSurface);
 	}
 </style>

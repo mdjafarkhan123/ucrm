@@ -125,10 +125,13 @@
 		grid-template-columns: minmax(0, 1.1fr) minmax(180px, 0.9fr);
 		align-items: end;
 		gap: var(--space-base);
+		column-gap: var(--space-slim);
 		width: 100%;
 
+		// Date, then Start → End: every label on one line (concept "Pickers v2", date and time together).
 		&--range {
-			grid-template-columns: minmax(170px, 0.8fr) minmax(360px, 1.2fr);
+			grid-template-columns: minmax(188px, 1fr) minmax(0, 2fr);
+			align-items: start;
 		}
 
 		&--date-only {
