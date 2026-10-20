@@ -1117,6 +1117,7 @@
 		<RecordDetailLayout
 			class="invoice-detail"
 			cards
+			concept
 			editing={isEditing}
 			dirty={isDirty}
 			{saving}

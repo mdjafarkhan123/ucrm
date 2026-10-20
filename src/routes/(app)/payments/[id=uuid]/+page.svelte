@@ -397,7 +397,7 @@
 	{:else if paymentQuery.isError}
 		<ErrorState description="That payment could not be loaded. Refresh and try again." />
 	{:else if saved}
-		<RecordDetailLayout class="payment-detail" cards>
+		<RecordDetailLayout class="payment-detail" cards concept>
 			{#snippet main()}
 				<WorkRecordHeader
 					icon={cashIcon}

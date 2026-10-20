@@ -457,6 +457,7 @@
 		<RecordDetailLayout
 			class="request-detail"
 			cards
+			concept
 			editing={isEditing}
 			dirty={isDirty}
 			{saving}

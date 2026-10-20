@@ -1030,6 +1030,7 @@
 		<RecordDetailLayout
 			class="quote-detail"
 			cards
+			concept
 			editing={isEditing}
 			dirty={isDirty}
 			{saving}
