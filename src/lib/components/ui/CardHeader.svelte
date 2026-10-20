@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import IconTile from './IconTile.svelte';
 
 	// The one title area every white card with a title starts with (Pencil: "Card header" on the Parts board):
 	// a 40 icon tile in the card's meaning colour, the title with an optional quiet hint under it, the card's
@@ -32,22 +33,14 @@
 	} = $props();
 </script>
 
-<!-- eslint-disable svelte/no-at-html-tags -->
 <header class={['card-header', compact && 'card-header--compact', className]}>
-	<span
-		class="card-header__tile"
-		style:--card-header-tone={`var(--color-${tone})`}
-		style:--card-header-tone-surface={`var(--color-${tone}--surface)`}
-		aria-hidden="true">{@html icon}</span
-	>
+	<IconTile {icon} {tone} />
 	<div class="card-header__copy">
 		<svelte:element this={`h${level}`} {id} class="card-header__title">{title}</svelte:element>
 		{#if hint}<p class="card-header__hint">{hint}</p>{/if}
 	</div>
 	{#if actions}<div class="card-header__actions">{@render actions()}</div>{/if}
 </header>
-
-<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.card-header {
@@ -59,23 +52,6 @@
 
 		&--compact {
 			padding: 14px var(--space-base);
-		}
-	}
-	.card-header__tile {
-		display: inline-flex;
-		flex: 0 0 auto;
-		align-items: center;
-		justify-content: center;
-		width: 40px;
-		height: 40px;
-		border-radius: var(--radius-tile-large);
-		color: var(--card-header-tone);
-		background: var(--card-header-tone-surface);
-
-		:global(svg) {
-			display: block;
-			width: 20px;
-			height: 20px;
 		}
 	}
 	.card-header__copy {

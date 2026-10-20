@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -365,7 +366,6 @@
 	<title>Payment</title>
 </svelte:head>
 
-<!-- eslint-disable svelte/no-at-html-tags -->
 <PageContainer variant="open">
 	{#if paymentQuery.isPending}
 		<LoadingSkeleton variant="card" label="Loading payment" />
@@ -443,9 +443,7 @@
 						<ul class="payment-detail__applied">
 							{#each saved.applied_to as entry (entry.allocation_id)}
 								<li class="payment-detail__applied-row">
-									<span class="payment-detail__applied-icon" aria-hidden="true"
-										>{@html receiptIcon}</span
-									>
+									<IconTile icon={receiptIcon} tone="informative" size={32} />
 									<div class="payment-detail__applied-main">
 										{#if entry.invoice_id}
 											<a
@@ -636,8 +634,6 @@
 	{/if}
 </PageContainer>
 
-<!-- eslint-enable svelte/no-at-html-tags -->
-
 <style lang="scss">
 	.payment-detail__correction {
 		display: flex;
@@ -709,23 +705,6 @@
 		gap: 14px;
 		padding: 14px 24px;
 		border-top: var(--border-base) solid var(--color-border);
-	}
-
-	.payment-detail__applied-icon {
-		display: grid;
-		flex: 0 0 34px;
-		place-items: center;
-		width: 34px;
-		height: 34px;
-		border-radius: 10px;
-		color: var(--color-informative--onSurface);
-		background: var(--color-informative--surface);
-
-		:global(svg) {
-			display: block;
-			width: 16px;
-			height: 16px;
-		}
 	}
 
 	.payment-detail__applied-main {

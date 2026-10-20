@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { Combobox } from 'bits-ui';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
@@ -153,7 +154,7 @@
 			onValueChange={chooseTimezone}
 		>
 			<div class="timezone-picker__control">
-				<span class="timezone-picker__search" aria-hidden="true">{@html searchIcon}</span>
+				<IconTile icon={searchIcon} tone="time" size={24} class="timezone-picker__search" />
 				<Combobox.Input
 					{id}
 					placeholder="Search by city or UTC offset"
@@ -258,16 +259,6 @@
 		background: transparent;
 		font: inherit;
 	}
-	.timezone-picker__search {
-		position: absolute;
-		left: var(--space-base);
-		display: grid;
-		width: 16px;
-		height: 16px;
-		place-items: center;
-		color: var(--color-icon--secondary);
-		pointer-events: none;
-	}
 	:global(.timezone-picker__trigger) {
 		position: absolute;
 		right: 0;
@@ -296,7 +287,6 @@
 		transition: transform var(--timing-quick);
 	}
 	:global(.timezone-picker__trigger svg),
-	.timezone-picker__search :global(svg),
 	.timezone-picker__check :global(svg),
 	.timezone-picker__error :global(svg) {
 		display: block;
@@ -410,13 +400,11 @@
 		font-weight: 700;
 	}
 
-	.timezone-picker__search {
+	// The search tile sits inside the field, before the typed text.
+	.timezone-picker__control :global(.timezone-picker__search) {
+		position: absolute;
 		left: var(--space-small);
-		width: 24px;
-		height: 24px;
-		border-radius: var(--radius-tile-small);
-		background: var(--color-time--surface);
-		color: var(--color-time);
+		pointer-events: none;
 	}
 	.timezone-picker__offset {
 		border-radius: var(--radius-circle);

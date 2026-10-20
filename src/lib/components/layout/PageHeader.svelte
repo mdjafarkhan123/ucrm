@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import IconTile from '$lib/components/ui/IconTile.svelte';
+
 	let {
 		title,
 		description,
@@ -24,15 +26,9 @@
 
 <!-- The page's title row: the icon tile, a 24 title with the description under it, and the page's actions
      centred at the right. -->
-<!-- eslint-disable svelte/no-at-html-tags -->
 <header class={['page-header', className]}>
 	{#if icon}
-		<span
-			class="page-header__tile"
-			style:--page-header-tone={`var(--color-${tone})`}
-			style:--page-header-tone-surface={`var(--color-${tone}--surface)`}
-			aria-hidden="true">{@html icon}</span
-		>
+		<IconTile {icon} {tone} />
 	{/if}
 	<div class="page-header__copy">
 		<h1 id={titleId}>{title}</h1>
@@ -41,8 +37,6 @@
 	{#if actions}<div class="page-header__actions">{@render actions()}</div>{/if}
 </header>
 
-<!-- eslint-enable svelte/no-at-html-tags -->
-
 <style lang="scss">
 	.page-header {
 		display: flex;
@@ -50,23 +44,6 @@
 		gap: var(--space-base);
 		padding-top: var(--space-small);
 		margin-bottom: var(--space-large);
-	}
-	.page-header__tile {
-		display: inline-flex;
-		flex: 0 0 auto;
-		align-items: center;
-		justify-content: center;
-		width: 40px;
-		height: 40px;
-		border-radius: var(--radius-tile-large);
-		color: var(--page-header-tone);
-		background: var(--page-header-tone-surface);
-
-		:global(svg) {
-			display: block;
-			width: 20px;
-			height: 20px;
-		}
 	}
 	.page-header__copy {
 		display: grid;

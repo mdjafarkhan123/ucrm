@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
@@ -138,8 +139,7 @@
 					{@const required = requiredCount(template)}
 					<li class="checklists-card" class:checklists-card--archived={template.archived}>
 						<div class="checklists-card__top">
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							<span class="checklists-card__icon" aria-hidden="true">{@html checklistIcon}</span>
+							<IconTile icon={checklistIcon} tone={template.archived ? 'inactive' : 'job'} />
 							<StatusBadge status={template.archived ? 'inactive' : 'success'} size="compact">
 								{template.archived ? 'Archived' : 'In use'}
 							</StatusBadge>
@@ -239,20 +239,6 @@
 				margin-left: auto;
 			}
 		}
-		&__icon {
-			display: grid;
-			place-items: center;
-			width: 40px;
-			height: 40px;
-			border-radius: 12px;
-			background: var(--color-job--surface);
-			color: var(--color-job);
-
-			:global(svg) {
-				width: 20px;
-				height: 20px;
-			}
-		}
 		&__name {
 			overflow-wrap: anywhere;
 			color: var(--color-heading);
@@ -314,10 +300,6 @@
 		&--archived {
 			.checklists-card__name,
 			.checklists-card__count strong {
-				color: var(--color-text--secondary);
-			}
-			.checklists-card__icon {
-				background: var(--color-surface--background);
 				color: var(--color-text--secondary);
 			}
 			.checklists-card__required {

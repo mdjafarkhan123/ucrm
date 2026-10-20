@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -43,7 +44,7 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 {#if summary?.welcome_seen && deliveredOn && !hidden}
 	<section class="setup-card" aria-labelledby="setup-card-heading">
-		<span class="setup-card__tile" aria-hidden="true">{@html circleCheckIcon}</span>
+		<IconTile icon={circleCheckIcon} tone="success" />
 		<div class="setup-card__text">
 			<h2 id="setup-card-heading">Project delivered</h2>
 			<p class="setup-card__next">
@@ -60,7 +61,7 @@
 	</section>
 {:else if summary?.welcome_seen && !deliveredOn}
 	<section class="setup-card" aria-labelledby="setup-card-heading">
-		<span class="setup-card__tile" aria-hidden="true">{@html rocketIcon}</span>
+		<IconTile icon={rocketIcon} tone="success" />
 		<div class="setup-card__text">
 			<h2 id="setup-card-heading">Set up your Uplift system</h2>
 			<p class="setup-card__next">
@@ -147,23 +148,6 @@
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-large);
 		background: var(--color-surface);
-
-		&__tile {
-			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-			width: 40px;
-			height: 40px;
-			border-radius: var(--radius-tile-large);
-			color: var(--color-success);
-			background: var(--color-success--surface);
-
-			:global(svg) {
-				width: 20px;
-				height: 20px;
-			}
-		}
 
 		&__text {
 			display: grid;

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import arrowIcon from '@tabler/icons/outline/arrow-right.svg?raw';
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	type KpiTone = 'default' | 'brand' | 'success' | 'warning' | 'informative' | 'critical';
 	type KpiVariant = 'standard' | 'compact';
 
@@ -26,12 +27,15 @@
 		secondaryValue?: string;
 		secondaryNote?: string;
 	} = $props();
+
+	// The tile's colour family: the brand card uses the success green, a plain card the quiet grey.
+	const tileTone = $derived(tone === 'default' ? 'inactive' : tone === 'brand' ? 'success' : tone);
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 {#snippet body()}
 	<div class="kpi-card__topline">
-		<span class="kpi-card__icon" aria-hidden="true">{@html icon}</span>
+		<IconTile {icon} tone={tileTone} />
 		<div class="kpi-card__figure"><strong>{value}</strong><span>{label}</span></div>
 		{#if href}<span class="kpi-card__arrow" aria-hidden="true">{@html arrowIcon}</span>{/if}
 	</div>
@@ -55,8 +59,6 @@
 
 <style lang="scss">
 	.kpi-card {
-		--kpi-tone: var(--color-inactive);
-		--kpi-surface: var(--color-inactive--surface);
 		--kpi-text: var(--color-inactive--onSurface);
 		display: flex;
 		flex-direction: column;
@@ -70,14 +72,10 @@
 		text-decoration: none;
 		@each $tone in success, warning, informative, critical {
 			&--#{$tone} {
-				--kpi-tone: var(--color-#{$tone});
-				--kpi-surface: var(--color-#{$tone}--surface);
 				--kpi-text: var(--color-#{$tone}--onSurface);
 			}
 		}
 		&--brand {
-			--kpi-tone: var(--color-interactive);
-			--kpi-surface: var(--color-success--surface);
 			--kpi-text: var(--color-success--onSurface);
 		}
 		&--link:hover {
@@ -95,19 +93,6 @@
 			display: flex;
 			align-items: center;
 			gap: 12px;
-		}
-		&__icon {
-			display: grid;
-			place-items: center;
-			flex: 0 0 40px;
-			height: 40px;
-			border-radius: var(--radius-tile-large);
-			color: var(--kpi-tone);
-			background: var(--kpi-surface);
-			:global(svg) {
-				width: 20px;
-				height: 20px;
-			}
 		}
 		&__figure {
 			display: flex;

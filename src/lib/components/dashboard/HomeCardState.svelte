@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import alertCircleIcon from '@tabler/icons/outline/alert-circle.svg?raw';
 	import refreshIcon from '@tabler/icons/outline/refresh.svg?raw';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -39,9 +40,10 @@
 	</div>
 {:else}
 	<div class="home-state home-state--message" role={state === 'error' ? 'alert' : undefined}>
-		<span class={['home-state__icon', state === 'error' && 'home-state__icon--error']} aria-hidden="true"
-			>{@html state === 'error' ? alertCircleIcon : (icon ?? '')}</span
-		>
+		<IconTile
+			icon={state === 'error' ? alertCircleIcon : (icon ?? '')}
+			tone={state === 'error' ? 'critical' : 'informative'}
+		/>
 		<p class="home-state__title">{state === 'error' ? `Couldn’t load ${label}` : title}</p>
 		{#if state === 'empty' && description}<p class="home-state__description">{description}</p>{/if}
 		{#if state === 'error' && onretry}
@@ -69,25 +71,6 @@
 			gap: var(--space-small);
 			padding: var(--space-large) var(--space-large);
 			text-align: center;
-		}
-		&__icon {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			width: 40px;
-			height: 40px;
-			border-radius: var(--radius-large);
-			color: var(--color-informative--onSurface);
-			background: var(--color-informative--surface);
-
-			:global(svg) {
-				width: 20px;
-				height: 20px;
-			}
-			&--error {
-				color: var(--color-critical--onSurface);
-				background: var(--color-critical--surface);
-			}
 		}
 		&__title {
 			color: var(--color-heading);

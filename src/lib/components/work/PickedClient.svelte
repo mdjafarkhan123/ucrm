@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import type { Snippet } from 'svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -71,13 +72,13 @@
 		<ul class="picked-client__contact">
 			{#if phone}
 				<li>
-					<span class="picked-client__chip" aria-hidden="true">{@html phoneIcon}</span>
+					<IconTile icon={phoneIcon} tone="conversation" size={24} />
 					{phone}
 				</li>
 			{/if}
 			{#if email}
 				<li>
-					<span class="picked-client__chip" aria-hidden="true">{@html mailIcon}</span>
+					<IconTile icon={mailIcon} tone="conversation" size={24} />
 					{email}
 				</li>
 			{/if}
@@ -85,7 +86,7 @@
 	{/if}
 
 	<div class="picked-client__property">
-		<span class="picked-client__tile" aria-hidden="true">{@html mapPinIcon}</span>
+		<IconTile icon={mapPinIcon} tone="client" size={32} />
 		<div class="picked-client__who">
 			<p class="picked-client__address">{property}</p>
 			{#if propertyHint}<p class="picked-client__hint">{propertyHint}</p>{/if}
@@ -193,40 +194,6 @@
 				gap: 6px;
 				color: var(--color-text);
 				font-size: var(--typography--fontSize-base);
-			}
-		}
-
-		&__chip,
-		&__tile {
-			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-		}
-
-		&__chip {
-			width: 24px;
-			height: 24px;
-			border-radius: var(--radius-tile-small);
-			color: var(--color-conversation);
-			background: var(--color-conversation--surface);
-
-			:global(svg) {
-				width: 14px;
-				height: 14px;
-			}
-		}
-
-		&__tile {
-			width: 32px;
-			height: 32px;
-			border-radius: var(--radius-base);
-			color: var(--color-client);
-			background: var(--color-client--surface);
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
 			}
 		}
 	}

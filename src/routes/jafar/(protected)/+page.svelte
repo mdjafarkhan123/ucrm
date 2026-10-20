@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { createQuery } from '@tanstack/svelte-query';
@@ -325,7 +326,7 @@
 				/>
 			{:else if dueCount === 0}
 				<div class="business-home__empty">
-					<span class="business-home__empty-icon" aria-hidden="true">{@html circleCheckIcon}</span>
+					<IconTile icon={circleCheckIcon} tone="success" />
 					<strong>Nothing due this week</strong>
 					<span
 						>{isJafar
@@ -413,15 +414,15 @@
 						<li>
 							<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- notificationHref() already resolves the path; the target is only known at runtime. -->
 							<a class="business-home__alert" href={notificationHref(alert)}>
-								<span
-									class={[
-										'business-home__alert-icon',
-										alert.severity === 'attention' && 'business-home__alert-icon--warning',
-										alert.severity === 'urgent' && 'business-home__alert-icon--critical'
-									]}
-								>
-									{@html alert.severity === 'info' ? bellIcon : alertIcon}
-								</span>
+								<IconTile
+									icon={alert.severity === 'info' ? bellIcon : alertIcon}
+									tone={alert.severity === 'urgent'
+										? 'critical'
+										: alert.severity === 'attention'
+											? 'warning'
+											: 'informative'}
+									size={32}
+								/>
 								<span class="business-home__alert-content">
 									<strong>{alert.title}</strong>
 									<small title={exactTime(alert.created_at)}
@@ -692,19 +693,6 @@
 			color: var(--color-heading);
 		}
 	}
-	.business-home__empty-icon {
-		display: grid;
-		width: 40px;
-		height: 40px;
-		place-items: center;
-		border-radius: var(--radius-base);
-		color: var(--color-success--onSurface);
-		background: var(--color-success--surface);
-		:global(svg) {
-			width: 22px;
-			height: 22px;
-		}
-	}
 	.business-home__alerts {
 		margin: 0;
 		padding: var(--space-small) var(--space-large);
@@ -723,28 +711,6 @@
 		&:hover strong {
 			color: var(--color-interactive);
 		}
-	}
-	.business-home__alert-icon {
-		display: grid;
-		width: 32px;
-		height: 32px;
-		flex: 0 0 32px;
-		place-items: center;
-		border-radius: var(--radius-base);
-		color: var(--color-informative--onSurface);
-		background: var(--color-informative--surface);
-		:global(svg) {
-			width: 18px;
-			height: 18px;
-		}
-	}
-	.business-home__alert-icon--warning {
-		color: var(--color-warning--onSurface);
-		background: var(--color-warning--surface);
-	}
-	.business-home__alert-icon--critical {
-		color: var(--color-critical--onSurface);
-		background: var(--color-critical--surface);
 	}
 	.business-home__alert-content {
 		display: grid;

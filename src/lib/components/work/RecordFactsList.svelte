@@ -3,23 +3,18 @@
 	// split by hairlines, each a small coloured tile and label over the value (Pencil "Record header · C").
 	// Every record type has its own set, so this is a list, never fixed slots. A fact with nothing in it says
 	// in grey what it is waiting for rather than showing a blank.
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import type { RecordFact } from './types';
 
 	let { facts, class: className = '' }: { facts: RecordFact[]; class?: string } = $props();
 </script>
 
-<!-- eslint-disable svelte/no-at-html-tags -->
 <dl class={`record-facts ${className}`}>
 	{#each facts as fact (fact.label)}
 		<div class="record-facts__fact">
 			<dt class="record-facts__label">
 				{#if fact.icon}
-					<span
-						class="record-facts__tile"
-						style:--fact-tone={`var(--color-${fact.kind ?? 'time'})`}
-						style:--fact-surface={`var(--color-${fact.kind ?? 'time'}--surface)`}
-						aria-hidden="true">{@html fact.icon}</span
-					>
+					<IconTile icon={fact.icon} tone={fact.kind ?? 'time'} size={20} />
 				{/if}
 				{fact.label}
 			</dt>
@@ -33,8 +28,6 @@
 		</div>
 	{/each}
 </dl>
-
-<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.record-facts {
@@ -62,23 +55,6 @@
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
-		}
-
-		&__tile {
-			display: inline-grid;
-			flex: 0 0 auto;
-			width: 20px;
-			height: 20px;
-			place-items: center;
-			border-radius: 5px;
-			color: var(--fact-tone);
-			background: var(--fact-surface);
-
-			:global(svg) {
-				display: block;
-				width: 12px;
-				height: 12px;
-			}
 		}
 
 		dd {

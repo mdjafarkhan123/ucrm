@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -177,7 +178,9 @@
 			<LoadingSkeleton variant="text" label="Loading expenses" rows={3} />
 		</div>
 	{:else if expensesQuery.isError}
-		<p class="job-expenses__note job-expenses__pad">The expenses on this job could not be loaded.</p>
+		<p class="job-expenses__note job-expenses__pad">
+			The expenses on this job could not be loaded.
+		</p>
 	{:else if expenses.length === 0}
 		<div class="job-expenses__pad">
 			<EmptyState
@@ -192,10 +195,7 @@
 		<ul class="job-expenses">
 			{#each expenses as expense (expense.id)}
 				<li class="job-expenses__item" class:job-expenses__item--busy={busyId === expense.id}>
-					<span class="job-expenses__tile" aria-hidden="true">
-						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						{@html receiptIcon}
-					</span>
+					<IconTile icon={receiptIcon} tone="invoice" />
 					<div class="job-expenses__body">
 						<p class="job-expenses__name">
 							{expense.name}
@@ -218,9 +218,7 @@
 
 					<span class="job-expenses__code">{expense.accounting_code ?? ''}</span>
 					{#if data?.can_see_cost}
-						<span class="job-expenses__cost"
-							>{money.format((expense.total_minor ?? 0) / 100)}</span
-						>
+						<span class="job-expenses__cost">{money.format((expense.total_minor ?? 0) / 100)}</span>
 					{/if}
 					<span class="job-expenses__menu">
 						{#if expense.can_edit}
@@ -239,9 +237,7 @@
 			<p class="job-expenses__total">
 				<span
 					>{data?.can_see_cost ? 'Expense cost · ' : ''}{data?.totals.expense_count ?? 0}
-					{(data?.totals.expense_count ?? 0) === 1
-						? 'expense'
-						: 'expenses'}</span
+					{(data?.totals.expense_count ?? 0) === 1 ? 'expense' : 'expenses'}</span
 				>
 				{#if data?.can_see_cost}
 					<strong>{money.format((data.totals.total_minor ?? 0) / 100)}</strong>
@@ -307,23 +303,6 @@
 
 			&--busy {
 				opacity: 0.5;
-			}
-		}
-
-		&__tile {
-			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-			width: 40px;
-			height: 40px;
-			border-radius: var(--radius-base);
-			color: var(--color-invoice);
-			background: var(--color-invoice--surface);
-
-			:global(svg) {
-				width: 20px;
-				height: 20px;
 			}
 		}
 

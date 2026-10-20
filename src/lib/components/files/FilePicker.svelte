@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createInfiniteQuery, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -313,15 +314,8 @@
 					aria-current={sectionId === item.id ? 'true' : undefined}
 					onclick={() => (sectionId = item.id)}
 				>
-					<span
-						class="file-picker__place-icon"
-						class:file-picker__place-icon--client={item.id === 'client'}
-						style:background={item.id === 'record'
-							? `var(--color-${recordTone}--surface)`
-							: undefined}
-						style:color={item.id === 'record' ? `var(--color-${recordTone})` : undefined}
-						aria-hidden="true"
-						>{@html item.id === 'client'
+					<IconTile
+						icon={item.id === 'client'
 							? clientIcon
 							: item.id === 'record'
 								? recordIcon
@@ -331,8 +325,10 @@
 										? photoIcon
 										: item.id === 'documents'
 											? documentIcon
-											: filesIcon}</span
-					>{item.label || 'On this record'}
+											: filesIcon}
+						tone={item.id === 'client' ? 'client' : item.id === 'record' ? recordTone : 'inactive'}
+						size={24}
+					/>{item.label || 'On this record'}
 				</button>
 			{/each}
 		</nav>
@@ -705,24 +701,6 @@
 		box-shadow: var(--shadow-button);
 		font-weight: 600;
 		color: var(--color-heading);
-	}
-	.file-picker__place-icon {
-		display: grid;
-		place-items: center;
-		width: 24px;
-		height: 24px;
-		flex-shrink: 0;
-		border-radius: var(--radius-tile-small);
-		background: var(--color-inactive--surface);
-		color: var(--color-inactive);
-		:global(svg) {
-			width: 14px;
-			height: 14px;
-		}
-	}
-	.file-picker__place-icon--client {
-		background: var(--color-client--surface);
-		color: var(--color-client);
 	}
 	.file-picker__content {
 		padding: var(--space-medium);

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { setContext } from 'svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -561,7 +562,6 @@
 
 <svelte:head><title>{title || 'Job'} · Contractor CRM</title></svelte:head>
 
-<!-- eslint-disable svelte/no-at-html-tags -->
 <PageContainer variant="open">
 	{#if jobQuery.isPending}
 		<LoadingSkeleton variant="card" label="Loading job" />
@@ -706,7 +706,7 @@
 
 				<!-- The money half of the job starts here: what it sells, how it bills, what it cost. -->
 				<div class="job-detail__divider">
-					<span class="job-detail__divider-tile" aria-hidden="true">{@html receiptIcon}</span>
+					<IconTile icon={receiptIcon} tone="invoice" size={24} />
 					<span class="job-detail__divider-label">Money</span>
 				</div>
 
@@ -1016,22 +1016,6 @@
 			flex: 1;
 			height: var(--border-base);
 			background: var(--color-border);
-		}
-	}
-
-	.job-detail__divider-tile {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 24px;
-		height: 24px;
-		border-radius: var(--radius-tile-small);
-		color: var(--color-invoice);
-		background: var(--color-invoice--surface);
-
-		:global(svg) {
-			width: 14px;
-			height: 14px;
 		}
 	}
 

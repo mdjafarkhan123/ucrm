@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { resolve } from '$app/paths';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
@@ -29,10 +30,7 @@
 	>
 		<div class="preset-library__grid">
 			<article class="preset-card preset-card--scratch">
-				<span class="preset-card__icon" aria-hidden="true">
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					{@html pencilPlusIcon}
-				</span>
+				<IconTile icon={pencilPlusIcon} tone="informative" />
 				<h3 class="preset-card__title">Build from scratch</h3>
 				<p class="preset-card__summary">
 					Start with an empty automation and choose every step yourself.
@@ -44,10 +42,7 @@
 
 			{#each AUTOMATION_PRESETS as preset (preset.key)}
 				<article class="preset-card">
-					<span class="preset-card__icon" aria-hidden="true">
-						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						{@html robotIcon}
-					</span>
+					<IconTile icon={robotIcon} tone="informative" />
 					<h3 class="preset-card__title">{preset.name}</h3>
 					<p class="preset-card__summary">{preset.summary}</p>
 
@@ -104,15 +99,6 @@
 			box-shadow: none;
 		}
 
-		&__icon {
-			display: grid;
-			place-items: center;
-			width: 40px;
-			height: 40px;
-			border-radius: var(--radius-base);
-			color: var(--color-informative--onSurface);
-			background: var(--color-informative--surface);
-		}
 		&__icon :global(svg) {
 			width: 22px;
 			height: 22px;

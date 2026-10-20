@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { onDestroy, tick, untrack, type Snippet } from 'svelte';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { flip } from 'svelte/animate';
@@ -1377,15 +1378,10 @@
 														loading="lazy"
 													/>
 												{:else}
-													<span
-														class={[
-															'pricing-table__thumb',
-															'pricing-table__thumb--tile',
-															line.category === 'service' && 'pricing-table__thumb--service'
-														]}
-														aria-hidden="true"
-														>{@html line.category === 'service' ? toolIcon : packageIcon}</span
-													>
+													<IconTile
+														icon={line.category === 'service' ? toolIcon : packageIcon}
+														tone={line.category === 'service' ? 'job' : 'quote'}
+													/>
 												{/if}
 											</span>
 										{/if}
@@ -2058,25 +2054,6 @@
 			border: var(--border-base) solid var(--color-border);
 			border-radius: var(--radius-tile-large);
 			object-fit: cover;
-
-			&--tile {
-				display: inline-flex;
-				align-items: center;
-				justify-content: center;
-				border: 0;
-				color: var(--color-quote);
-				background: var(--color-quote--surface);
-
-				:global(svg) {
-					width: 20px;
-					height: 20px;
-				}
-			}
-
-			&--service {
-				color: var(--color-job);
-				background: var(--color-job--surface);
-			}
 		}
 		&__kind {
 			display: inline-flex;

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createInfiniteQuery, useQueryClient } from '@tanstack/svelte-query';
 	import SidePanel from '$lib/components/layout/SidePanel.svelte';
 	import bookIcon from '@tabler/icons/outline/book.svg?raw';
@@ -246,7 +247,7 @@
 	{#snippet footer()}
 		<div class="price-book__footer">
 			<span class="price-book__session"
-				><span aria-hidden="true">{@html checkIcon}</span>{sessionAdded}
+				><IconTile icon={checkIcon} tone="success" size={24} />{sessionAdded}
 				{sessionAdded === 1 ? 'line' : 'lines'} added</span
 			><Button variant="secondary" size="small" onclick={onAddCustomLine}
 				>{@html plusIcon}Custom line</Button
@@ -476,19 +477,6 @@
 		align-items: center;
 		font-size: var(--typography--fontSize-label);
 		font-weight: 600;
-		span {
-			display: grid;
-			place-items: center;
-			width: 24px;
-			height: 24px;
-			border-radius: var(--radius-tile-small);
-			background: var(--color-success--surface);
-			color: var(--color-success);
-			:global(svg) {
-				width: 14px;
-				height: 14px;
-			}
-		}
 	}
 	@media (max-width: 479px) {
 		.price-book__filters {

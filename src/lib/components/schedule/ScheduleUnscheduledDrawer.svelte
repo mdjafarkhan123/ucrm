@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -108,7 +109,7 @@
 <aside class="backlog" aria-label="Unscheduled work">
 	<header class="backlog__head">
 		<div class="backlog__title">
-			<span class="backlog__tile" aria-hidden="true">{@html inboxIcon}</span>
+			<IconTile icon={inboxIcon} tone="time" size={32} />
 			<h2 class="backlog__heading">Unscheduled</h2>
 			{#if !loading && !error}
 				<span class="backlog__count">{visits.length}</span>
@@ -295,22 +296,6 @@
 		align-items: center;
 		gap: 10px;
 		min-width: 0;
-	}
-
-	.backlog__tile {
-		display: grid;
-		flex: 0 0 auto;
-		width: 32px;
-		height: 32px;
-		place-items: center;
-		border-radius: var(--radius-base);
-		background-color: var(--color-time--surface);
-		color: var(--color-time);
-
-		:global(svg) {
-			width: 18px;
-			height: 18px;
-		}
 	}
 
 	.backlog__heading {
