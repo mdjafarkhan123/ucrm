@@ -55,7 +55,7 @@ Jafar 2026-10-17).
 - [tabs.md](tabs.md) — Tabs
 - [cards.md](cards.md) — Card, number card
 - [files.md](files.md) — Photo viewer, file picture, photo box, upload list, files card, record files card, files waiting to save, add files pop-up, photo labels pop-up, photo details, caption and labels pop-up
-- [notes.md](notes.md) — Notes card, author line, note text, note files, note box on a new record
+- [notes.md](notes.md) — Notes card, author line, note text, note files, note box on a new record, activity feed
 - [price-book.md](price-book.md) — Search list under a line's name, new item pop-up, Price book drawer
 - [lists.md](lists.md) — List row, Load more footer
 - [tables.md](tables.md) — Table

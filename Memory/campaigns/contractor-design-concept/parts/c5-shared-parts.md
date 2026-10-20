@@ -30,7 +30,7 @@
 | 18 Record files card | files/RecordFilesCard (1b): every state, menu, remove pop-up | Approved `pH9PB` A 2026-10-20 (photos then document lines; B newest-photo gallery not chosen). Look in `files.md` → Record files card. See § Batch 18 |
 | 19 Writing boxes | forms/FormNotesCard, settings/automation/EmailActionEditor, SmsActionEditor (1b): every state | Approved `qf1uu` 2026-10-20: Notes box B (Notes panel field, taller), email A and text A (one message sheet with value chips; text adds a cost meter). Looks in `notes.md` → Note box on a new record, `inputs.md` → Message sheet. See § Batch 19 |
 | 20 Pop-over and filter chips | ui/Popover, data-display/DateRangeChip, ui/FilterChipMulti (1b): every state | Approved `e18rX` 2026-10-20: B for all three (pop-over with a coloured top band and an arrow; date chip with the time tile and a 440 From → To panel; multi chip with green +2 and a menu with "3 chosen", count pills and a Clear foot). Looks in `modals.md` → Pop-over, `chips.md`. See § Batch 20 |
-| 21 Activity feed | collaboration/ActivityFeed (1b): with events, loading, nothing yet, couldn't load, dark | Drawn `gZ6rR` 2026-10-20 (A Timeline vs B Day log), waiting for Jafar's pick. Earlier unfinished Batch 21 board `p8S73H` (record money cards) deleted on Jafar's word |
+| 21 Activity feed | collaboration/ActivityFeed (1b): with events, loading, nothing yet, couldn't load, dark | Approved `gZ6rR` 2026-10-20: A · Timeline (B Day log deleted). Look in `notes.md` → Activity feed. See § Batch 21 |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 
@@ -78,6 +78,16 @@ Hand-off for the builder (restyle only; every control is live today):
 - New foot strips use `--color-surface--background`. Lock icons on invoice strips use the invoice colour.
 - Row 4 (line menu, "Throw away these changes?" with Keep editing / Throw them away, loading, couldn't load
   without Try again, invoice Service date box with ×, progress invoice Item total / Due this invoice) as drawn.
+
+## Batch 21 Activity feed — approved 2026-10-20
+
+Board `gZ6rR`, A · Timeline (B deleted). The earlier unfinished Batch 21 board `p8S73H` (record money cards) was
+deleted on Jafar's word; those cards are still ⬜. Restyle only; same query, day groups, names and empty words.
+Hand-off for the builder:
+- `ActivityFeed`: day pill + rule; round 28 markers in the event's meaning colour joined by a 2px line; summary
+  14/500 heading; author line with 24 avatar. Map event types to colours per `notes.md` → Activity feed.
+- Loading becomes row-shaped placeholders; Couldn't load becomes the standard page state with Try again
+  (refetch) — Jafar approved the board that shows it.
 
 ## Batch 20 Pop-over and filter chips — approved 2026-10-20
 
