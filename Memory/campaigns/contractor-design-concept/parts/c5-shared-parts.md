@@ -140,6 +140,19 @@ help and values. Look in `inputs.md` → Questions on a public form. Hand-off:
 - Choices become tap tiles (the whole tile is the label); pick-one and Yes / No side by side, Yes / No with thumbs tiles.
 - Also used in `reviews/ReviewFeedbackJourney`; photo questions keep the page's upload box.
 
+## Batch 30 Booking a call — approved 2026-10-20
+
+Board `TC3iU`, A · One card, refined (B split screen deleted). Restyle only; same steps, fields, words, time-zone
+change, taken-time return and rules on `/book/[slug]` (and the parts `/book/manage/[token]` shares). Look in
+`layout.md` → Booking page. Hand-off:
+- `BookingFrame`: brand mark gets the leaf tile; card radius 20, 1080 wide; summary gets the host avatar row and
+  32 fact tiles (time clock, conversation video/phone); the `meta` snippet's chosen time becomes the time box.
+- `BookingMonth`: open days white ringed circles with a green dot (no light-green fill); chosen solid green; ‹ ›
+  as icon buttons. `BookingTimePicker`: times column 240; hover adds the arrow.
+- `BookingStatus`: 56 status tile on a white top; `BookingFacts` rows get 40 tiles; the change hint moves to the
+  foot band. `BookingBackButton` keeps the quiet button.
+- The month's "8 open times" count was not added; no new words.
+
 ## Batch 29 Import steps — approved 2026-10-20
 
 Board `oxtmi`, A · Steps on one column (B side panel deleted). Restyle only; same steps, choices, words, caps

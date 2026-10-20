@@ -142,3 +142,38 @@ B · Split screen 2026-10-20).
 - Messages: a 48 tile above the title — done `--color-success` (mail-check, circle-check), expired
   `--color-warning` (link-2-off, timer-off). A sign-in error is a `--color-critical--surface` box (1px
   `--surface-edge`, radius 8, padding 10 12, circle-alert, 13/500 `--onSurface` text) above the button.
+
+## Booking page
+
+The public page a prospect uses to book a call (Pencil: "Batch 30 · Booking a call", approved A 2026-10-20).
+On `--color-surface--background`, padding 40 0, centred, 28 apart: the brand (a 32 `--color-interactive` tile,
+radius 9, white 16 leaf, then "Uplift" 18/700 heading), then one card.
+
+- **Card:** white, 1px `--color-border`, radius 20, a soft shadow (0 8 24, heading colour at 6%), clipped; 1080
+  wide with the call's summary, 560 wide for a settled state.
+- **Summary** (left, 340, 1px line at its right, padding 32 28, gap 24): a 44 round avatar
+  (`--color-time--surface`, initials 14/700 `--color-time--onSurface`) with the host 14/600 over "Uplift" 12 quiet;
+  the call's name 28/700 (-0.6) and its description 14 `--color-text` (line height 1.5); then, under a 1px line,
+  fact rows (32 tile, label 12/500 quiet over the value 14/600): length `--color-time` clock, how
+  `--color-conversation` video or phone. The chosen time joins them as a `--color-time--surface` box (1px edge,
+  radius 12, padding 12 14): a white 32 tile with `calendar-check`, the time and date 14/600 and the zone 12, in
+  `--onSurface`.
+- **Steps** (right, padding 32 32 28, gap 24): the step title 20/700. Choosing: the month and a 240 times column,
+  32 apart.
+  - Month: the heading 16/700 with ‹ › as 36 icon buttons; weekday heads 12/600 uppercase quiet; days are 44
+    circles. Open: white, 1.5px `--color-border--interactive`, number 14/700 heading, a 4 `--color-interactive` dot
+    under it. Chosen: `--color-interactive` fill, white number. Closed: no fill, number `--color-disabled`. Today
+    carries a 4 quiet dot. Under the month: a 16 globe, "Times in … time" 13 quiet and "Change" 13/600
+    `--color-interactive`, underlined.
+  - Times: the day 16/700, then buttons 44 high, 8 apart, full width: white, 1px `--color-border--interactive`,
+    radius 8, time 14/600 `--color-interactive`. Hover: 1.5px `--color-interactive` edge, `--color-surface--hover`,
+    and a 16 arrow-right after the time.
+  - Details: the back button (quiet, arrow-left) above the title; fields two per row, 16 apart, 44 high; the note
+    box; a footer under a 1px line with the security check at the left and the large main button at the right.
+- **Settled states** (booked, request sent, link not working): a white top, padding 40 40 28, centred, gap 14: a 56
+  white-edged tile (radius 16, 28 icon) in the status colour (done `--color-success`, waiting `--color-warning`,
+  closed `--color-inactive`), the title 24/700 (-0.5), the message 15 quiet (line height 1.5). Then the facts under a
+  1px line, padding 8 28: rows of a 40 tile (when `--color-time` calendar, how `--color-conversation`), label 12/500
+  quiet, the value 14/600; the join link 13/600 `--color-interactive` with external-link; a pending link line 13
+  quiet. The foot band (`--color-surface--background--subtle`, 1px line on top, padding 14 28): a 16 mail icon and
+  the change-or-cancel hint 13 quiet.
