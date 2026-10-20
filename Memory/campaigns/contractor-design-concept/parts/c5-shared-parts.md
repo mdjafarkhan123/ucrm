@@ -26,6 +26,7 @@
 | 14 Products and services | ProductsAndServicesBlock (states only; saved view `tNdkX` and edit `jFBRB` already approved) | Approved `vsT0H` 2026-10-20: B for all three rows (Empty B two choice tiles, Field worker B crew work list, Quote extras B grouped and signposted), row 4 shared parts as drawn, light and dark. See § Batch 14 |
 | 15 Notes panel | collaboration/NotesPanel (1b): note field, pinned note, note menu, changes waiting for Save, every state | Approved `l9ZBWI` A 2026-10-20 (refined live; B write-at-top with pinned shelf not chosen). Look in `notes.md` → Notes panel. See § Batch 15 |
 | 16 Email From line | communications/EmailSenderLabel (1b): every state | Approved `I5mY7I` B 2026-10-20 (teal sender chip; A refined text line not chosen). Look in `chips.md` → Sender chip. See § Batch 16 |
+| 17 Caption and labels pop-up | files/PhotoDescribeDialog (1b): every state | Approved `Y0ECPJ` A 2026-10-20 (photo on top; B photo beside not chosen). Look in `files.md` → Caption and labels pop-up. See § Batch 17 |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 
@@ -73,6 +74,16 @@ Hand-off for the builder (restyle only; every control is live today):
 - New foot strips use `--color-surface--background`. Lock icons on invoice strips use the invoice colour.
 - Row 4 (line menu, "Throw away these changes?" with Keep editing / Throw them away, loading, couldn't load
   without Try again, invoice Service date box with ×, progress invoice Item total / Due this invoice) as drawn.
+
+## Batch 17 Caption and labels pop-up — approved 2026-10-20
+
+Board `Y0ECPJ`, A. Restyle of `files/PhotoDescribeDialog` and how `PhotoDescribeForm` sits in it; same query,
+controls and save flow. Hand-off for the builder:
+- Pop-up: `ui/Dialog` small, tile `photo` grey, hint line file name · record. Photo 200 high, cover, radius 8, border.
+- Inside the dialog the form drops its card (border, header tile and title); "Manage labels" moves to a LABELS
+  caption row above the tags. The File Manager details panel keeps the card as approved on `K04pQm`.
+- The Not saved strip becomes the dialog footer only while changed; saving shows "Saving…" with Cancel disabled.
+- Loading bones, couldn't load block, didn't-save line, look-only and nothing-yet as in `files.md`.
 
 ## Batch 16 Email From line — approved 2026-10-20
 

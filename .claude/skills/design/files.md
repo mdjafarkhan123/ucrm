@@ -2,7 +2,7 @@
 
 > Dependencies: `colors.md`, `radius.md`, `buttons.md`, `badges.md`, `icon-shapes.md`, `chips.md`, `modals.md`, `page-states.md`
 
-Pencil: `concept.pen` → board "Photos and files" (`b4BxuV`), approved 2026-10-19; Add files, photo labels and photo details on `K04pQm`, approved 2026-10-20.
+Pencil: `concept.pen` → board "Photos and files" (`b4BxuV`), approved 2026-10-19; Add files, photo labels and photo details on `K04pQm`, approved 2026-10-20; Caption and labels pop-up on `Y0ECPJ`, approved 2026-10-20.
 
 ## Photo viewer
 
@@ -153,3 +153,22 @@ Describe photo pop-up.
   padding 12 16 12 20, gap 8: an 8 `--color-warning` dot with "Not saved" 13/600 `--color-warning--onSurface`, then
   small Cancel and the green Save (`check`).
 - **Look only:** the caption 14 heading, then look-only grey tags; no boxes or buttons.
+
+## Caption and labels pop-up
+
+Approved 2026-10-20 on board `Y0ECPJ` (A). Photo details (above) inside a small form pop-up (400): grey 40 tile
+with `photo`, title "Caption and labels", the file name and record in the hint line.
+
+- **Body**, padding 20, gap 14: the photo first, filling the width, 200 high, radius 8, 1px `--color-border`;
+  then the caption box and labels without the Photo details card header. A row with the "LABELS" caption (12/600
+  quiet, letter-spacing 0.6) and, for people who manage files, the quiet "Manage labels" at the right sits
+  above the tags.
+- **Footer:** none until something changes; then the Photo details save strip is the footer (padding 16 20).
+- **Loading:** the photo, then a 46-high caption bone (radius 8), a 56×12 bone and three 28-high pill bones.
+- **Couldn't load:** under the photo, a `--color-surface--background--subtle` block (radius 8, padding 16,
+  centred, gap 10): a 32 `--color-critical` tile, "Couldn't load the caption and labels" 14/600 heading, one 12
+  quiet line, a secondary "Try again" (`refresh`).
+- **Saving:** caption box in the disabled look, Cancel disabled, Save with its spinner; the dot line says "Saving…".
+- **Didn't save:** a 14 `circle-alert` and the reason 12/600 `--color-critical` under the labels; the strip stays.
+- **Look only:** the caption 14 heading and look-only grey tags. **Nothing yet:** a subtle box (1px
+  `--color-border`, radius 8, padding 12 14) with a 16 `quote` and "No caption or labels yet." 14 quiet.
