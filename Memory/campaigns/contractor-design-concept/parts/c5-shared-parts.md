@@ -357,3 +357,13 @@ About 96 form pop-ups keep buttons inside the body, around 120 have no icon, and
 Continue remaining approved rows in `stages/list-1a-parts.md`. Batch 4 and Schedule are integrated; build only approved designs and retain existing page-level journeys.
 
 Earlier approved picker decisions and shared-rollout proof: `docs/contractor-shared-parts-approved-notes.md`.
+
+## Batch 31 New job header (drawn 2026-10-20, waiting for Jafar)
+
+Jafar 2026-10-20: the New job page header spans over the side column and he does not like it; it must be one
+card in the main column like the Job details record header (C), and the old design is replaced. Board `Yh9QW`
+"Concept · Batch 31 · New job header · A vs B": A job card preview (green top with "New job", then the four job
+facts filling in), B header holds the job (title typed in the green top, picked client on the white part, the
+separate "The job" card removed). Both: warning status stripe, "Not saved yet" pill, side column level with the
+header, light and dark. On approval: replace the header on New job `zUFDO` (and New request, quote, invoice in
+their colours), update `layout.md` → Create pages, delete the unchosen option.
