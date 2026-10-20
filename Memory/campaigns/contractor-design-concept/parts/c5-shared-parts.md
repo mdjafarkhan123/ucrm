@@ -18,7 +18,7 @@
 | 7 Small helpers | ListLoadMore, FormErrorSummary, PencilButton, KpiCard | Approved `eJ0QQ` 2026-10-19: Load more B (footer bar with count), Form error B (checklist card), Pencil button A (icon button), Number cards B with note 12/500; looks in `lists.md`, `notices.md`, `buttons.md`, `cards.md`; to build |
 | 8 Photos and files | Lightbox, FileThumb, PhotoSlot, FileUploader | Approved `b4BxuV` 2026-10-19: Viewer A with B's glass count and joined download/close, File picture B (paper sheets, file-family tab colours) with A's big check/failed boxes, Photo box A, Upload list B; looks in `files.md`, colours in `colors.md`; to build |
 | 9 Notes and attachments | AuthorMeta, NoteBody, NoteFiles, PendingFilesCard, AttachmentSurface | Approved `KuOmH` 2026-10-19: Author line B (name over time, Edited tag), Note text B (teal mention chip), Note files B (96×72 photos, file chips), Files waiting B (upload list lines) with A's red-edged failed row, Files card B (labelled Add); looks in `notes.md`, `files.md`; to build |
-| 10 Price book | CatalogItemPicker, CatalogItemDialog, PriceBookDrawer | Drawn 2026-10-20 on `ZWTSi` (option: refine today's look; A and B per part, shared states, dark mode); waiting for Jafar's pick |
+| 10 Price book | CatalogItemPicker, CatalogItemDialog, PriceBookDrawer | Drawn 2026-10-20 on `ZWTSi`: refine A/B per part; at Jafar's request also new-concept pop-ups C (green live preview + form, 940) and D (document style, 640); waiting for his pick |
 
 ## Batch 6b new behaviour (Jafar, 2026-10-19)
 
