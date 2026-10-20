@@ -552,7 +552,7 @@
 
 			{#snippet rail()}
 				{#if showHistory}
-					<RailCard tone="request" title="Request history" icon={clockIcon}>
+					<RailCard tone="request" title="Request history" icon={clockIcon} description="Newest first">
 						{#snippet actions()}
 							<Button size="small" variant="tertiary" onclick={() => (showHistory = false)}>
 								Close

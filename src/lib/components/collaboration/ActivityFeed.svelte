@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
-	import AuthorMeta from '$lib/components/collaboration/AuthorMeta.svelte';
-	import { dayLabel } from '$lib/collaboration/format';
+	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import { dayLabel, exactTime, relativeTime } from '$lib/collaboration/format';
+	import userRoundIcon from '@tabler/icons/outline/user.svg?raw';
+	import zapIcon from '@tabler/icons/outline/bolt.svg?raw';
 	import {
 		activityKey,
 		fetchActivity,
@@ -105,6 +108,21 @@
 
 	// New work brings an archived client back on its own. When a teammate added that work they are named;
 	// a website booking or an automation has nobody behind it.
+	// The event's meaning colour (`notes.md` → Activity feed): what the event is about.
+	function toneFor(eventType: string) {
+		if (eventType.startsWith('quote.')) return 'quote';
+		if (eventType.startsWith('review.')) return 'review';
+		if (eventType.startsWith('client') || eventType === 'property_contact_added') return 'client';
+		if (eventType === 'note_added') return 'conversation';
+		return 'inactive';
+	}
+
+	function nameFor(event: ActivityEvent) {
+		if (!event.actor_user_id) return fallbackNameFor(event.event_type);
+		if (event.actor_user_id === currentUserId) return 'You';
+		return profileById.get(event.actor_user_id)?.full_name ?? 'Team member';
+	}
+
 	function fallbackNameFor(eventType: string) {
 		if (CUSTOMER_EVENTS.has(eventType)) return 'The client';
 		return eventType === 'client.restored_by_new_work' ? 'Automatic' : 'Unknown';
@@ -114,39 +132,70 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <div class="activity-feed">
 	{#if activityQuery.isPending}
-		<p class="activity-feed__muted">Loading activity…</p>
+		<div class="activity-feed__loading" role="status" aria-label="Loading activity">
+			<span class="skeleton activity-feed__bone-pill"></span>
+			{#each [0, 1, 2] as bone (bone)}
+				<div class="activity-feed__bone-row">
+					<span class="skeleton activity-feed__bone-marker"></span>
+					<span class="activity-feed__bone-lines">
+						<span class="skeleton activity-feed__bone-line"></span>
+						<span class="skeleton activity-feed__bone-line activity-feed__bone-line--short"></span>
+					</span>
+				</div>
+			{/each}
+		</div>
 	{:else if activityQuery.isError}
-		<p class="activity-feed__error" role="alert">
-			{activityQuery.error instanceof Error
-				? activityQuery.error.message
-				: 'Activity could not be loaded.'}
-		</p>
+		<ErrorState
+			title="History didn't load"
+			description="Check your connection, then try again."
+			retry={() => activityQuery.refetch()}
+		/>
 	{:else if events.length === 0}
 		<EmptyState
 			title="No activity yet"
 			description="Notes, tags, and files added here will show up as activity."
 			icon={historyIcon}
+			tone="client"
 		/>
 	{:else}
 		{#each groups as [label, groupEvents] (label)}
 			<section class="activity-feed__group">
-				<h3 class="activity-feed__group-label">{label}</h3>
+				<h3 class="activity-feed__day"><span class="activity-feed__day-pill">{label}</span></h3>
 				<ul class="activity-feed__list">
 					{#each groupEvents as event (event.id)}
+						{@const tone = toneFor(event.event_type)}
 						<li class="activity-feed__item">
-							<span class="activity-feed__item-icon" aria-hidden="true"
-								>{@html iconFor(event.event_type)}</span
+							<span
+								class="activity-feed__marker"
+								style={`--marker-surface: var(--color-${tone}--surface); --marker-edge: var(--color-${tone}--surface-edge); --marker-ink: var(--color-${tone});`}
+								aria-hidden="true">{@html iconFor(event.event_type)}</span
 							>
 							<div class="activity-feed__item-body">
 								<p class="activity-feed__item-summary">{event.summary}</p>
-								<AuthorMeta
-									userId={event.actor_user_id}
-									profile={event.actor_user_id ? profileById.get(event.actor_user_id) : undefined}
-									{currentUserId}
-									timestamp={event.created_at}
-									fallbackName={fallbackNameFor(event.event_type)}
-									size="small"
-								/>
+								<span class="activity-feed__author">
+									{#if event.actor_user_id}
+										<Avatar
+											id={event.actor_user_id}
+											name={profileById.get(event.actor_user_id)?.full_name}
+											src={profileById.get(event.actor_user_id)?.avatar_url}
+											size="small"
+										/>
+									{:else}
+										<span
+											class="activity-feed__system"
+											class:activity-feed__system--client={CUSTOMER_EVENTS.has(event.event_type)}
+											aria-hidden="true"
+											>{@html CUSTOMER_EVENTS.has(event.event_type) ? userRoundIcon : zapIcon}</span
+										>
+									{/if}
+									<span class="activity-feed__author-name">{nameFor(event)}</span>
+									<span class="activity-feed__author-dot" aria-hidden="true">·</span>
+									<time
+										class="activity-feed__author-time"
+										datetime={event.created_at}
+										title={exactTime(event.created_at)}>{relativeTime(event.created_at)}</time
+									>
+								</span>
 							</div>
 						</li>
 					{/each}
@@ -159,61 +208,85 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	// Activity feed (`notes.md`, board `gZ6rR` A · Timeline).
 	.activity-feed {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-large);
+		gap: var(--space-medium);
 
-		&__muted {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+		&__day {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
+			margin: 0 0 10px;
+
+			&::after {
+				content: '';
+				flex: 1 1 auto;
+				height: 1px;
+				background: var(--color-border);
+			}
 		}
 
-		&__error {
-			color: var(--color-critical);
-			font-size: var(--typography--fontSize-small);
-		}
-
-		&__group-label {
-			margin-bottom: var(--space-small);
-			padding-bottom: var(--space-smaller);
-			border-bottom: var(--border-base) solid var(--color-border--section);
+		&__day-pill {
+			padding: 3px var(--space-small);
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-circle);
 			color: var(--color-text--secondary);
+			background: var(--color-surface--background);
 			font-size: var(--typography--fontSize-small);
-			font-weight: 700;
+			font-weight: 600;
+			letter-spacing: 0.6px;
 			text-transform: uppercase;
-			letter-spacing: var(--typography--letterSpacing-loose);
 		}
 
 		&__list {
 			display: flex;
 			flex-direction: column;
-			gap: var(--space-base);
 			margin: 0;
 			padding: 0;
 			list-style: none;
 		}
 
 		&__item {
+			position: relative;
 			display: flex;
 			align-items: flex-start;
-			gap: var(--space-small);
+			gap: var(--space-slim);
+			padding-bottom: var(--space-base);
+
+			// The 2px line joining this marker to the next one in the same day.
+			&:not(:last-child)::before {
+				content: '';
+				position: absolute;
+				top: 28px;
+				bottom: 0;
+				left: 13px;
+				width: 2px;
+				background: var(--color-border);
+			}
+
+			&:last-child {
+				padding-bottom: 0;
+			}
 		}
 
-		&__item-icon {
+		&__marker {
 			display: grid;
-			width: 32px;
-			height: 32px;
+			width: 28px;
+			height: 28px;
+			box-sizing: border-box;
 			flex: 0 0 auto;
 			place-items: center;
+			border: var(--border-base) solid var(--marker-edge);
 			border-radius: var(--radius-circle);
-			background: var(--color-surface--background);
-			color: var(--color-icon);
+			color: var(--marker-ink);
+			background: var(--marker-surface);
 
 			:global(svg) {
 				display: block;
-				width: 16px;
-				height: 16px;
+				width: 14px;
+				height: 14px;
 			}
 		}
 
@@ -221,14 +294,103 @@
 			display: flex;
 			min-width: 0;
 			flex-direction: column;
-			gap: var(--space-smaller);
-			padding-top: var(--space-smaller);
+			gap: 6px;
+			padding-top: 4px;
 		}
 
 		&__item-summary {
-			color: var(--color-text);
+			margin: 0;
+			color: var(--color-heading);
 			font-size: var(--typography--fontSize-base);
+			font-weight: 500;
 			line-height: var(--typography--lineHeight-base);
+		}
+
+		&__author {
+			display: inline-flex;
+			min-width: 0;
+			align-items: center;
+			gap: 6px;
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__system {
+			display: grid;
+			width: 24px;
+			height: 24px;
+			flex: 0 0 auto;
+			place-items: center;
+			border-radius: var(--radius-circle);
+			color: var(--color-inactive);
+			background: var(--color-inactive--surface);
+
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
+
+			&--client {
+				color: var(--color-client);
+				background: var(--color-client--surface);
+			}
+		}
+
+		&__author-name {
+			overflow: hidden;
+			color: var(--color-heading);
+			font-weight: 600;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		&__author-dot,
+		&__author-time {
+			flex: 0 0 auto;
+			color: var(--color-text--secondary);
+		}
+
+		&__loading {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-base);
+		}
+
+		&__bone-pill {
+			width: 72px;
+			height: 22px;
+			min-height: 0;
+			border-radius: var(--radius-circle);
+		}
+
+		&__bone-row {
+			display: flex;
+			gap: var(--space-slim);
+		}
+
+		&__bone-marker {
+			width: 28px;
+			height: 28px;
+			min-height: 0;
+			flex: 0 0 auto;
+			border-radius: var(--radius-circle);
+		}
+
+		&__bone-lines {
+			display: flex;
+			flex: 1 1 auto;
+			flex-direction: column;
+			gap: var(--space-small);
+			padding-top: 4px;
+		}
+
+		&__bone-line {
+			width: 80%;
+			height: 10px;
+			min-height: 0;
+
+			&--short {
+				width: 45%;
+			}
 		}
 	}
 </style>

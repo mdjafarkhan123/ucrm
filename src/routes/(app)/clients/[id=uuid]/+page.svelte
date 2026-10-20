@@ -889,7 +889,7 @@
 
 			{#snippet rail()}
 				{#if showHistory}
-					<RailCard tone="client" title="Client history" icon={clockIcon}>
+					<RailCard tone="client" title="Client history" icon={clockIcon} description="Newest first">
 						{#snippet actions()}
 							<Button size="small" variant="tertiary" onclick={() => (showHistory = false)}>
 								Close
