@@ -38,3 +38,9 @@ pill in `badges.md`). Week start is a business setting: drawings use Monday, liv
 1. Build Schedule in one go (C7), with event completion and the three Jobs pop-ups. Then compare live with
    each Pencil frame.
 2. After Built ✅, tidy Pencil drafts per `docs/pencil-workflow.md`.
+
+## Follow-up 2026-10-20
+
+Jafar spotted the Book work pop-up and time picker drifted from the drawing. Fixed to `FTWqY`/`E568E5` and
+Pickers v2 `K5xBS4` (Date | Start → End, the dial, First visit card, Who is going chips, Notify line, hand-off
+date tile). Proof: `docs/evidence/2026-10-20-book-work-fix/README.md`.
