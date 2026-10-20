@@ -37,3 +37,14 @@ full New Job, New Quote and New Invoice pages using the approved shared header (
 preserving each page's sections, sidebar and conditional property behaviour. Review those pages with Jafar.
 Client creation needs a separate fit check; it is outside the current approval. App implementation follows
 the approved screen designs. Resume: `read memory and continue contractor-design-concept`.
+
+## Batch 32 — whole New job page (Jafar 2026-10-20: "improve the whole job new page, quote new, invoice new")
+
+One page per session: New job first; Quote and Invoice reuse whatever is approved. Drawn, waiting for Jafar's
+pick: board `q6Ffc` "Concept · Batch 32 · New job page · A vs B" (light pages `RXUCw` A, `aTFrx` B; dark `z2sHH`,
+`uIcN4`). Both: approved B header (`OjBZG`), Jobber order Visits → Billing → Products, every live field kept,
+rail kept. A refined cards (team names in the open visit's head, Anytime/Schedule later side by side, deep-green
+Job total feature card). B one job sheet (label column left, fields right; Anytime/Schedule later as one
+three-way "When" switch; rail = white totals card with job-green band). Section order changed from live
+(Products was second): Jafar's KiMYd decision. On approval: delete the unchosen option, record the look in
+`layout.md` → Create pages, then New quote.
