@@ -43,19 +43,23 @@
   `--shadow-high`. Left: an 8 `--color-warning` dot, "New job · not saved yet" 14/600 heading, then a 12 quiet
   hint saying what else the save does ("Sarah gets the booking email when you save"). Right: Cancel (secondary)
   then the main button with a check icon.
-- **Shared create form**, approved A by Jafar 2026-10-20: Pencil boards "Shared create form · Approved A"
-  (`m4ibfF`) and "Approved record variants" (`pM2Vf`); full New request `el2At`. One white card with a 1px
-  `--color-border`, radius 16, clipped, and a 4px top line in the record colour. Body padding 24, rows 20 apart.
-- Heading row: 40 tile in the record colour, 12 gap to "New request / quote / job / invoice" (24/700, -0.5),
-  then a one-line description underneath (14, `--color-text--secondary`). The title field fills the next row
-  (Invoice: Subject). Below it, the client picker fills the left side; the record's own field is 208 wide on
-  the right, 24 apart. Required field labels keep their red asterisk. Conditional property controls stay
-  under the client picker.
-- Request's **Requested on** is read-only: 63 high, subtle background, radius 8, padding 0 12, a 32 Time
-  calendar tile, then the label 12/500 quiet over the date 14/600 heading, 4 apart. Quote #, Job # and
-  Invoice # use the existing read-only field with "Given when you save". These facts sit inside the form.
-  Invoice dates and payment terms keep their existing Terms & dates card. Each page retains its existing
-  cards and right-sidebar contents. Client creation is outside this shared work-record form's approval.
+- **Shared create form**, approved B by Jafar 2026-10-20 (Pencil: "Create form header · Approved B", `NhVGQ`;
+  it replaces the earlier quiet-white look on `m4ibfF`, `pM2Vf` and `el2At`). One card for Request, Quote, Job
+  and Invoice, built like the Record header: white, 1px `--color-border`, radius 16, clipped.
+- **Coloured top:** the record type's `--color-<record>--surface`, a 1px `--color-<record>--surface-edge` line
+  under it, padding 20 24 22, rows 18 apart. Heading row: a 40 white tile (edge `--color-<record>--surface-edge`,
+  icon in the record colour), 14 gap to "New request / quote / job / invoice" (24/700, -0.5, heading) over a
+  one-line description (14, `--color-<record>--onSurface`), 2 apart. Then the Title field full width (Invoice:
+  Subject).
+- **White part:** padding 20 24 24, items 24 apart, aligned to the bottom. The client picker fills the left;
+  the record's own fact sits on the right, 208 wide. Required labels keep their red star. Conditional property
+  controls stay under the client picker.
+- **Record fact tile**, read-only, never a field box: 63 high, `--color-surface--background--subtle`, radius 8,
+  padding 0 12, gap 10; a 32 tile (radius 8, 1px edge) then the label 12/500 quiet over the value 14/600 heading,
+  4 apart. Request: Time calendar tile, "Requested on", the date. Quote, Job, Invoice: a `#` tile in the record
+  colour, "Quote # / Job # / Invoice #", "Given when you save".
+- Invoice dates and payment terms keep their existing Terms & dates card. Each page keeps its existing cards
+  and right-sidebar contents. Client creation is outside this shared form's approval.
 
 ## Setup steps
 

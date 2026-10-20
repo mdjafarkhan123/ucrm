@@ -5,8 +5,8 @@
 - **Experience:** `.claude/skills/design/SKILL.md` and its modules.
 - **Stage:** Approved shared parts are being built; further screens are being drawn.
 
-**New Request:** A · Quiet white shared top form approved 2026-10-20 for Request, Quote, Job and Invoice;
-existing right rails stay. Full New Job/Quote/Invoice designs are next; app implementation follows. Blueprint,
+**New Request:** shared top form approved 2026-10-20 for Request, Quote, Job and Invoice; its look is
+B · Coloured top with record-number fact tiles (`NhVGQ`); existing right rails stay. Full New Job/Quote/Invoice designs are next; app implementation follows. Blueprint,
 branch, proof and integration status:
 `parts/new-request-top-form.md`. This supersedes C5's abandoned Batch 31 drafts.
 

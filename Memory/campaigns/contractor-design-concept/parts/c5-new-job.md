@@ -126,5 +126,6 @@ A Quiet white, polished (soft linear wash of `--color-<record>--surface` into wh
 tile, 4px record line kept, tighter heading). B Coloured top like the Record header (record surface top holds the
 heading and the Title field; client and the record's field on white below). Both: request in the page above
 Service overview, job / quote / invoice, dark mode. Required stars 13/700 per `inputs.md`.
-On approval: delete the unchosen option and update `layout.md` → Create pages. Note: the approved look's
-layout.md text is on the Codex branch (`f65583bc`), not yet on main.
+**Approved B by Jafar 2026-10-20** ("B, yes make the number tile change"): Job #, Quote # and Invoice # became
+read-only fact tiles (`#` tile in the record colour) like Requested on. A deleted; board renamed "Create form
+header · Approved B". Look recorded in `layout.md` → Create pages. Next: `parts/new-request-top-form.md`.
