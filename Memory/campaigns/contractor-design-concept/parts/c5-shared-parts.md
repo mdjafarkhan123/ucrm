@@ -33,6 +33,7 @@
 | 21 Activity feed | collaboration/ActivityFeed (1b): with events, loading, nothing yet, couldn't load, dark | Approved `gZ6rR` 2026-10-20: A · Timeline (B Day log deleted). Look in `notes.md` → Activity feed. See § Batch 21; built, checked and merged 2026-10-20, proof `docs/evidence/2026-10-20-batch16-23/README.md` |
 | 22 Files on a message | communications/ConversationAttachments (1b): every state, text message, Chat with Uplift, dark | Approved `mZdBv` 2026-10-20: B · preview cards inside the message (A clean pills deleted). Look in `files.md` → Files on a message. See § Batch 22; built, checked and merged 2026-10-20, proof `docs/evidence/2026-10-20-batch16-23/README.md` |
 | 23 Jafar panel sign-in | jafar/JafarAuthCard (1b) and the four /jafar sign-in pages: every message state; 1440 light and dark | Approved `Y0A1Z` 2026-10-20: B · Split screen (A deleted). Look in `layout.md` → Sign-in screens. See § Batch 23; built, checked and merged 2026-10-20, proof `docs/evidence/2026-10-20-batch16-23/README.md` |
+| 25 First block on New forms | work/PrimaryInfoCard (1b) on New request, quote, invoice | Approved `U8RY1n` A 2026-10-20 (fact in the page header pill, like New job; B facts column not chosen). Look in `layout.md` → Create pages. See § Batch 25 |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 
@@ -89,35 +90,16 @@ panel with margin bar); B money tiles (two tap-to-edit tiles) plus the deep-gree
 and a tax pop-up with the five choices as radio tiles. Every state and dark mode drawn. Both options let the New
 quote form use the one Discount and tax card, like the quote page. Behaviour unchanged. Next: Jafar picks.
 
-## Batch 25 · First block on New forms (drawing, waiting for Jafar)
+## Batch 25 First block on New forms — approved 2026-10-20
 
-`work/PrimaryInfoCard` on New request, quote and invoice. Board `U8RY1n`, drawn 2026-10-20. Both use the approved
-New job block (title, picked client card). A: the record's fact (Quote #, Requested on, Invoice #) moves to the
-page header chip like New job's Job #; B: a quiet facts column inside the block. Next: Jafar picks.
-
-## Batch 26 · Marketing email preview (drawing, waiting for Jafar)
-
-`marketing/MarketingTemplatePreview` and `MarketingTemplatePreviewDialog`. Board `l62Og`, drawn 2026-10-20. A refined
-pop-up (Growth tile, icon switch, grey well); B side column with Desktop / Mobile picture tiles and an inbox line
-(subject + preview text, both already in the campaign content), the email on a purple Growth stage in a mail window
-or a phone. Pop-up, Review step, loading, couldn't load and dark drawn for both. B's From name needs the sender name
-passed in (the Review step has it; Templates would need it). Next: Jafar picks.
-
-## Batch 27 · Channel menu and message settings (drawing, waiting for Jafar)
-
-`communications/ComposerChannelMenu` and `clients/CommunicationSettingsDialog`. Board `DXj9z`, drawn 2026-10-20.
-Channel menu: A white pill + dropdown list; B "Send by" tile button + menu with a teal band, hints and pick marks
-(the review automation row then drops its own "Send by" label). Settings pop-up (ticks stay: saved with the client
-form): A settings rows with group tiles; B one tick tile per message in three columns, consent note under Growth.
-Do not disturb, No marketing, staff "Not sending" and dark drawn. Next: Jafar picks.
-
-## Batch 28 · Questions on a public form (drawing, waiting for Jafar)
-
-`forms/PublicFormQuestion`. Board `Y3od0z`, drawn 2026-10-20. A plain approved fields, ticks and circles; B one soft
-card per question with an orange number tile and 44-high tap tiles (pick-one and Yes / No side by side). Every
-question kind, hover, focus and dark drawn; photo upload stays the page's approved box. Next: Jafar picks.
-
-`work/RecordTrack` is marked 🔁 Batch 13: it only wraps the approved `LifecycleTrack`.
+Board `U8RY1n`, A · fact in the page header (B facts column deleted). Restyle only; same fields, client picker,
+Change property and errors. Look in `layout.md` → Create pages. Hand-off for the builder:
+- `PrimaryInfoCard` (New request, quote, invoice) becomes the approved New job block: card header in the record
+  colour ("The request", "The quote", "The invoice"), the title field ("Subject" on invoices), then the client
+  picker / picked client card full width. No right-hand fields column.
+- Its `fields` snippet content leaves the block: Quote # / Invoice # ("Given when you save") and Requested on
+  (the date) become the page-header pill New job already uses, tile in the record colour.
+- New job builds its own block in `JobForm`; whether it moves onto `PrimaryInfoCard` is asked of Jafar (not yet agreed).
 
 ## Batch 22 Files on a message — approved 2026-10-20
 

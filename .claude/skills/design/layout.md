@@ -43,9 +43,12 @@
   `--shadow-high`. Left: an 8 `--color-warning` dot, "New job · not saved yet" 14/600 heading, then a 12 quiet
   hint saying what else the save does ("Sarah gets the booking email when you save"). Right: Cancel (secondary)
   then the main button with a check icon.
-- A record number given on save shows as a pill at the right of the page header: white, 1px `--color-border`,
-  pill corners, padding 6 12 6 6; a 24 round tile in the record colour, "Job #" 12/600 heading, then
-  "Given when you save" 12 quiet.
+- Every create page (New job, request, quote, invoice) opens with the same first block: a card header in the
+  record colour ("The quote"), the title field, then the picked client card. The record's own fact never sits
+  in that block.
+- That fact shows as a pill at the right of the page header: white, 1px `--color-border`, pill corners,
+  padding 6 12 6 6; a 24 round tile in the record colour, the label 12/600 heading ("Job #", "Quote #",
+  "Invoice #", "Requested on"), then the value 12 quiet ("Given when you save", or the date).
 
 ## Record pages
 

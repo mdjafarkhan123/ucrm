@@ -26,7 +26,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `time-clock/TimerRunningElsewhere` |  | ✅ Batch 12 `ooCwt` | ✅ 2026-10-20 |
 | `time-clock/WorkTimerControl` |  | ✅ Batch 12 `ooCwt` | ✅ 2026-10-20 |
 | `work/LifecycleTrack` |  | ✅ Batch 13 header C `xrJ3f` 2026-10-20 | ✅ |
-| `work/PrimaryInfoCard` |  | 🟡 Batch 25 `U8RY1n` drawn 2026-10-20 | ⬜ |
+| `work/PrimaryInfoCard` |  | ✅ Batch 25 `U8RY1n` A 2026-10-20 | ⬜ |
 | `work/RecordDiscountCard` | pop-ups: "form" 🔁F | 🟡 Batch 24 `qY4yb` drawn 2026-10-20 | ⬜ |
 | `work/RecordTaxCard` | pop-ups: "form" 🔁F · permission-limited | 🟡 Batch 24 `qY4yb` drawn 2026-10-20 | ⬜ |
 | `work/RecordTrack` |  | 🔁 Batch 13 `xrJ3f` (wraps `work/LifecycleTrack`; waiting names, hidden on error) | ⬜ |
