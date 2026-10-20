@@ -1,4 +1,7 @@
 <script lang="ts">
+	import authAlertIcon from '@tabler/icons/outline/alert-circle.svg?raw';
+	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
+	import clockOffIcon from '@tabler/icons/outline/clock-off.svg?raw';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import JafarAuthCard from '$lib/components/jafar/JafarAuthCard.svelte';
@@ -64,6 +67,7 @@
 	<JafarAuthCard
 		eyebrow="Uplift team"
 		title="Your password is changed"
+		status={{ icon: circleCheckIcon, tone: 'success' }}
 		intro="Sign in with your new password. Anywhere else you were signed in has been signed out."
 		titleId="jafar-reset-title"
 	>
@@ -73,6 +77,7 @@
 	<JafarAuthCard
 		eyebrow="Uplift team"
 		title="This reset link no longer works"
+		status={{ icon: clockOffIcon, tone: 'warning' }}
 		intro="Reset links work once and expire after one hour. Ask for a new one and use the newest email."
 		titleId="jafar-reset-title"
 	>
@@ -114,7 +119,10 @@
 				invalid={Boolean(fieldErrors.password_confirmation)}
 				errorMessage={fieldErrors.password_confirmation}
 			/>
-			{#if errorMessage}<p class="jafar-reset__error" role="alert">{errorMessage}</p>{/if}
+			{#if errorMessage}<p class="jafar-reset__error jafar-auth__error" role="alert">
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					<span aria-hidden="true">{@html authAlertIcon}</span>{errorMessage}
+				</p>{/if}
 			<Button type="submit" size="large" fullWidth loading={isSubmitting}>
 				{isSubmitting ? 'Saving…' : 'Save new password'}
 			</Button>
@@ -123,9 +131,4 @@
 {/if}
 
 <style lang="scss">
-	.jafar-reset__error {
-		margin: 0;
-		color: var(--color-critical);
-		font-size: var(--typography--fontSize-small);
-	}
 </style>
