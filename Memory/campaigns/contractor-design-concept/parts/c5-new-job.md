@@ -116,3 +116,15 @@ line, tile + name, label-and-box rows); B tinted head in the record colour, fiel
 Each: full New job page as it opens (Visits, Billing, Products order; rail unchanged), the panel on all four
 pages, "Choosing a client" (typing list + Create new client, nobody matches, picked card with … menu), dark mode.
 Invoice's issued date and payment terms move into the panel (Jobber); our Terms & dates card would go.
+
+## Create form header polish (2026-10-20)
+
+Jafar: the approved shared header (`m4ibfF`, `pM2Vf`, `el2At`) may need a polish or small redesign; refine, at
+least two options, use the approved field, tile and other small parts (no custom boxes). Drawn, waiting for
+Jafar's pick: board `NhVGQ` "Concept · Batch 31 · Create form header polish · A vs B". Same placement as approved.
+A Quiet white, polished (soft linear wash of `--color-<record>--surface` into white behind the heading, white 40
+tile, 4px record line kept, tighter heading). B Coloured top like the Record header (record surface top holds the
+heading and the Title field; client and the record's field on white below). Both: request in the page above
+Service overview, job / quote / invoice, dark mode. Required stars 13/700 per `inputs.md`.
+On approval: delete the unchosen option and update `layout.md` → Create pages. Note: the approved look's
+layout.md text is on the Codex branch (`f65583bc`), not yet on main.
