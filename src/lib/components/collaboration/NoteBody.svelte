@@ -23,7 +23,7 @@
 
 <style lang="scss">
 	.note-body {
-		margin: var(--space-small) 0 0;
+		margin: 6px 0 0;
 		color: var(--color-text);
 		font-size: var(--typography--fontSize-base);
 		line-height: var(--typography--lineHeight-large);
@@ -31,10 +31,10 @@
 		overflow-wrap: anywhere;
 
 		&__mention {
-			padding: 0 2px;
+			padding: 1px var(--space-smaller);
 			border-radius: var(--radius-small);
-			color: var(--color-interactive);
-			background: var(--color-surface--active);
+			color: var(--color-conversation--onSurface);
+			background: var(--color-conversation--surface);
 			font-weight: 600;
 		}
 	}

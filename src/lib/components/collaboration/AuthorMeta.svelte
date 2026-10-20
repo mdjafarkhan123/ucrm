@@ -10,7 +10,7 @@
 		timestamp,
 		suffix,
 		fallbackName = 'Unknown',
-		size = 'small'
+		size = 'base'
 	}: {
 		userId: string | null;
 		profile: Profile | undefined;
@@ -37,9 +37,15 @@
 <span class="author-meta">
 	<Avatar id={userId ?? 'unknown'} name={profile?.full_name} src={profile?.avatar_url} {size} />
 	<span class="author-meta__text">
-		<span class="author-meta__name">{displayName}</span>
-		<span class="author-meta__time" title={exactTime(timestamp)}
-			>{relativeTime(timestamp)}{suffix ? ` · ${suffix}` : ''}</span
+		<span class="author-meta__name-row"
+			><span class="author-meta__name">{displayName}</span>{#if suffix}<span
+					class="author-meta__edited">{suffix === 'edited' ? 'Edited' : suffix}</span
+				>{/if}</span
+		>
+		<button type="button" class="author-meta__time" aria-label={exactTime(timestamp)}
+			>{relativeTime(timestamp)}<span class="author-meta__tooltip" role="tooltip"
+				>{exactTime(timestamp)}</span
+			></button
 		>
 	</span>
 </span>
@@ -58,18 +64,64 @@
 			gap: 1px;
 		}
 
+		&__name-row {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			min-width: 0;
+		}
+		&__edited {
+			flex: 0 0 auto;
+			padding: 1px 5px;
+			border-radius: var(--radius-small);
+			background: var(--color-inactive--surface);
+			color: var(--color-inactive--onSurface);
+			font-size: var(--typography--fontSize-overline);
+			font-weight: 600;
+		}
 		&__name {
 			overflow: hidden;
 			color: var(--color-heading);
-			font-size: var(--typography--fontSize-small);
+			font-size: var(--typography--fontSize-label);
 			font-weight: 600;
 			text-overflow: ellipsis;
 			white-space: nowrap;
 		}
 
+		&__tooltip {
+			display: none;
+			position: absolute;
+			z-index: var(--elevation-tooltip);
+			bottom: calc(100% + 6px);
+			left: 0;
+			width: max-content;
+			max-width: min(280px, 80vw);
+			padding: 5px 8px;
+			border-radius: var(--radius-tile-small);
+			color: var(--color-text--reverse);
+			background: var(--color-surface--reverse);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+		}
+		&__time:hover &__tooltip,
+		&__time:focus-visible &__tooltip {
+			display: block;
+		}
 		&__time {
+			padding: 0;
+			border: 0;
+			background: transparent;
+			font-family: inherit;
+			text-align: left;
+			cursor: help;
+			position: relative;
+			&:focus-visible {
+				outline: none;
+				box-shadow: var(--shadow-focus);
+				border-radius: var(--radius-small);
+			}
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-smaller);
+			font-size: var(--typography--fontSize-small);
 		}
 	}
 </style>

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { getContext, onDestroy } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import AttachmentSurface from '$lib/components/collaboration/AttachmentSurface.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
@@ -27,7 +27,6 @@
 		type FileListItem
 	} from '$lib/files/api';
 	import paperclipIcon from '@tabler/icons/outline/paperclip.svg?raw';
-	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import uploadIcon from '@tabler/icons/outline/upload.svg?raw';
 	import downloadIcon from '@tabler/icons/outline/download.svg?raw';
 	import linkOffIcon from '@tabler/icons/outline/link-off.svg?raw';
@@ -225,9 +224,6 @@
 		lightboxOpen = true;
 	}
 
-	// The new Job details design adds files with an upload icon; the other pages keep the plus.
-	const conceptJob = getContext<boolean>('concept-job-details') ?? false;
-
 	function downloadFromLightbox(item: LightboxItem) {
 		const file = photos.find((entry) => entry.id === item.id);
 		if (file) void download(file);
@@ -239,27 +235,15 @@
 	{surface}
 	{title}
 	icon={paperclipIcon}
-	count={compact || summary ? undefined : files.length}
-	description={(compact || summary) && files.length > 0 ? summaryLine : undefined}
+	count={undefined}
+	description={summary ? summaryLine : `${files.length} on this ${entityType.replaceAll('_', ' ')}`}
 	flush={compact}
 >
 	{#snippet actions()}
 		{#if canManage}
-			{#if compact}
-				<Button
-					variant="secondary"
-					size="small"
-					iconOnly
-					label="Add files"
-					onclick={() => (pickerOpen = true)}
-				>
-					{@html conceptJob ? uploadIcon : plusIcon}
-				</Button>
-			{:else}
-				<Button size="small" variant="secondary" onclick={() => (pickerOpen = true)}>
-					<span class="record-files__button-icon" aria-hidden="true">{@html plusIcon}</span>Add
-				</Button>
-			{/if}
+			<Button size="small" variant="secondary" onclick={() => (pickerOpen = true)}>
+				<span class="record-files__button-icon" aria-hidden="true">{@html uploadIcon}</span>Add
+			</Button>
 		{/if}
 	{/snippet}
 

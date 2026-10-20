@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import AttachmentSurface from '$lib/components/collaboration/AttachmentSurface.svelte';
+	import Badge from '$lib/components/ui/Badge.svelte';
+	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import loaderIcon from '@tabler/icons/outline/loader-2.svg?raw';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Lightbox, { type LightboxItem } from '$lib/components/ui/Lightbox.svelte';
 	import { createImageThumbnail } from '$lib/collaboration/image-thumbnail';
@@ -119,7 +122,7 @@
 	// One file at a time reaching the server, so a failure never touches the others. A file leaves the queue
 	// the moment it lands, which is what keeps a retry from creating the same File twice.
 	async function uploadOne(item: QueuedFile, id: string) {
-		if (!item.retryable) return;
+		if (!item.retryable || item.status === 'uploading') return;
 		patchQueued(item.key, { status: 'uploading', progress: 0, error: '' });
 
 		try {
@@ -147,7 +150,7 @@
 	 *  page can decide whether to move on or keep the office here to retry. */
 	export async function saveAll(id: string) {
 		lastSaveId = id;
-		const waiting = queue.filter((item) => item.retryable);
+		const waiting = queue.filter((item) => item.retryable && item.status !== 'uploading');
 		if (waiting.length > 0) await Promise.all(waiting.map((item) => uploadOne(item, id)));
 		return queue.filter((item) => item.status === 'error').length;
 	}
@@ -160,9 +163,15 @@
 
 	// The page's Save already reported the failure, so a successful retry needs its own visible change; a
 	// failed retry keeps its inline error on the row.
+	let retrying = $state<string[]>([]);
 	async function retry(item: QueuedFile) {
-		if (!lastSaveId) return;
-		await uploadOne(item, lastSaveId);
+		if (!lastSaveId || retrying.includes(item.key)) return;
+		retrying = [...retrying, item.key];
+		try {
+			await uploadOne(item, lastSaveId);
+		} finally {
+			retrying = retrying.filter((key) => key !== item.key);
+		}
 	}
 
 	// --- Photos and documents ---------------------------------------------------------------------------
@@ -188,6 +197,15 @@
 
 	const documentQueue = $derived(queue.filter((item) => !isQueuedImage(item)));
 	const total = $derived(queue.length);
+	const saving = $derived(queue.some((item) => item.status === 'uploading'));
+	const failed = $derived(queue.filter((item) => item.status === 'error').length);
+	const description = $derived(
+		saving
+			? `Saving ${total} ${total === 1 ? 'file' : 'files'}`
+			: failed
+				? `${failed} did not save`
+				: `${total} waiting · they save with the ${entityType.replaceAll('_', ' ')}`
+	);
 
 	const lightboxItems = $derived<LightboxItem[]>(
 		photoTiles.map((tile) => ({
@@ -209,7 +227,7 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<AttachmentSurface {surface} {title} icon={paperclipIcon} count={total}>
+<AttachmentSurface {surface} {title} icon={paperclipIcon} {description} flush>
 	{#snippet actions()}
 		<input
 			bind:this={fileInputEl}
@@ -226,91 +244,119 @@
 		</Button>
 	{/snippet}
 
-	{#if total === 0}
-		<div class="pending-files__empty">
-			<span aria-hidden="true">{@html paperclipIcon}</span>
-			<p>Add photos and documents. They save with the rest of the page.</p>
-			<span class="pending-files__hint">Up to 100 MB per file</span>
-		</div>
-	{:else}
-		{#if photoTiles.length > 0}
-			<ul class="pending-files__photos">
-				{#each photoTiles as tile (tile.key)}
-					<li class="pending-files__photo">
-						<button
-							type="button"
-							class="pending-files__photo-open"
-							aria-label={`View ${tile.caption}`}
-							onclick={() => openLightbox(tile)}
-						>
-							{#if tile.thumbSrc}
-								<img src={tile.thumbSrc} alt="" loading="lazy" />
-							{:else}
-								<span class="pending-files__photo-loading" aria-hidden="true"></span>
-							{/if}
-						</button>
-						<span class="pending-files__photo-badge">
-							{tile.queuedItem.status === 'uploading' ? 'Saving…' : 'Not saved'}
-						</span>
-						<button
-							type="button"
-							class="pending-files__photo-remove"
-							aria-label={`Remove ${tile.caption}`}
-							onclick={() => dropFromQueue(tile.queuedItem.key)}
-						>
-							{@html xIcon}
-						</button>
-					</li>
-				{/each}
-			</ul>
-		{/if}
-
-		{#if documentQueue.length > 0}
-			<ul class="pending-files__list">
-				{#each documentQueue as item (item.key)}
-					<li
-						class="pending-files__item"
-						class:pending-files__item--error={item.status === 'error'}
-					>
-						<span class="pending-files__item-icon" aria-hidden="true">
-							{@html iconForMimeType(item.file.type)}
-						</span>
-						<div class="pending-files__item-body">
-							<span class="pending-files__item-name">{item.file.name}</span>
-							{#if item.status === 'error'}
-								<span class="pending-files__item-error">{item.error}</span>
-							{:else if item.status === 'uploading'}
-								<span class="pending-files__progress">
-									<span
-										class="pending-files__progress-bar"
-										style={`width: ${Math.round(item.progress * 100)}%`}
-									></span>
-								</span>
-							{:else}
-								<span class="pending-files__item-meta">
-									{formatFileSize(item.file.size)} · Waiting for save
-								</span>
-							{/if}
-						</div>
-
-						{#if item.status === 'error' && item.retryable && lastSaveId}
-							<Button variant="quiet" size="small" onclick={() => retry(item)}>Retry</Button>
-						{/if}
-						{#if item.status !== 'uploading'}
+	<div class="pending-files">
+		{#if total === 0}
+			<div class="pending-files__empty">
+				<span aria-hidden="true">{@html paperclipIcon}</span>
+				<p>Add photos and documents</p>
+				<span class="pending-files__hint"
+					>They save with the rest of the page · up to 100 MB each</span
+				>
+			</div>
+		{:else}
+			{#if photoTiles.length > 0}
+				<ul class="pending-files__photos">
+					{#each photoTiles as tile (tile.key)}
+						<li class="pending-files__photo">
 							<button
 								type="button"
-								class="pending-files__remove"
-								aria-label={`Remove ${item.file.name}`}
-								onclick={() => dropFromQueue(item.key)}
+								class="pending-files__photo-open"
+								aria-label={`View ${tile.caption}`}
+								onclick={() => openLightbox(tile)}
+							>
+								{#if tile.thumbSrc}
+									<img src={tile.thumbSrc} alt="" loading="lazy" />
+								{:else}
+									<span class="pending-files__photo-loading" aria-hidden="true"></span>
+								{/if}
+							</button>
+							<span class="pending-files__photo-badge">
+								<Badge
+									size="small"
+									dot={false}
+									status={tile.queuedItem.status === 'uploading' ? 'informative' : 'warning'}
+									>{#if tile.queuedItem.status === 'uploading'}<span
+											class="pending-files__spinner"
+											aria-hidden="true">{@html loaderIcon}</span
+										>{/if}{tile.queuedItem.status === 'uploading' ? 'Saving…' : 'Not saved'}</Badge
+								>
+							</span>
+							<button
+								type="button"
+								class="pending-files__photo-remove"
+								disabled={tile.queuedItem.status === 'uploading'}
+								aria-label={`Remove ${tile.caption}`}
+								onclick={() => dropFromQueue(tile.queuedItem.key)}
 							>
 								{@html xIcon}
 							</button>
-						{/if}
-					</li>
-				{/each}
-			</ul>
+						</li>
+					{/each}
+				</ul>
+			{/if}
+
+			{#if documentQueue.length > 0}
+				<ul class="pending-files__list">
+					{#each documentQueue as item (item.key)}
+						<li
+							class="pending-files__item"
+							class:pending-files__item--error={item.status === 'error'}
+						>
+							<span
+								class="pending-files__ring"
+								style:--progress={`${item.status === 'uploading' ? item.progress * 360 : 0}deg`}
+								><span class="pending-files__item-icon" aria-hidden="true"
+									>{@html item.status === 'error'
+										? alertIcon
+										: iconForMimeType(item.file.type)}</span
+								></span
+							>
+							<div class="pending-files__item-body">
+								<span class="pending-files__item-name">{item.file.name}</span>
+								{#if item.status === 'error'}
+									<span class="pending-files__item-error">{item.error}</span>
+								{:else}
+									<span class="pending-files__item-meta"
+										>{item.status === 'uploading'
+											? `${formatFileSize(item.file.size * item.progress)} of ${formatFileSize(item.file.size)}`
+											: `${formatFileSize(item.file.size)} · waits for Save`}</span
+									>
+								{/if}
+							</div>
+
+							{#if item.status !== 'error'}<Badge
+									size="small"
+									dot={false}
+									status={item.status === 'uploading' ? 'informative' : 'warning'}
+									>{#if item.status === 'uploading'}<span
+											class="pending-files__spinner"
+											aria-hidden="true">{@html loaderIcon}</span
+										>{Math.round(item.progress * 100)}%{:else}Not saved{/if}</Badge
+								>{/if}
+							{#if (item.status === 'error' || retrying.includes(item.key)) && item.retryable && lastSaveId}
+								<Button
+									variant="quiet"
+									size="small"
+									loading={retrying.includes(item.key)}
+									onclick={() => retry(item)}>Retry</Button
+								>
+							{/if}
+							{#if item.status !== 'uploading'}
+								<button
+									type="button"
+									class="pending-files__remove"
+									aria-label={`Remove ${item.file.name}`}
+									onclick={() => dropFromQueue(item.key)}
+								>
+									{@html xIcon}
+								</button>
+							{/if}
+						</li>
+					{/each}
+				</ul>
+			{/if}
 		{/if}
-	{/if}
+	</div>
 </AttachmentSurface>
 
 <Lightbox
@@ -324,6 +370,10 @@
 
 <style lang="scss">
 	.pending-files {
+		:global(.badge) {
+			white-space: nowrap;
+			flex-shrink: 0;
+		}
 		&__file-input {
 			position: absolute;
 			width: 1px;
@@ -345,12 +395,20 @@
 		}
 
 		&__empty {
+			p {
+				margin: 0;
+				color: var(--color-heading);
+				font-size: var(--typography--fontSize-label);
+				font-weight: 600;
+			}
 			display: flex;
 			flex-direction: column;
 			align-items: center;
 			gap: var(--space-small);
 			padding: var(--space-large);
-			border: var(--border-base) dashed var(--color-border--interactive);
+			margin: var(--space-base);
+			background: var(--color-surface--background--subtle);
+			border: 1.5px dashed var(--color-border--interactive--hover);
 			border-radius: var(--radius-base);
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
@@ -364,22 +422,22 @@
 		}
 
 		&__hint {
-			font-size: var(--typography--fontSize-smaller);
+			font-size: var(--typography--fontSize-small);
 		}
 
 		// --- Photos ---------------------------------------------------------------------------------
 		&__photos {
 			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+			grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
 			gap: var(--space-small);
 			margin: 0;
-			padding: 0;
+			padding: var(--space-base);
 			list-style: none;
 		}
 
 		&__photo {
 			position: relative;
-			aspect-ratio: 1;
+			height: 76px;
 		}
 
 		&__photo-open {
@@ -420,15 +478,15 @@
 
 		&__photo-badge {
 			position: absolute;
-			right: var(--space-smaller);
-			bottom: var(--space-smaller);
-			left: var(--space-smaller);
+			right: 0;
+			bottom: 6px;
+			left: 0;
 			overflow: hidden;
-			padding: 2px 4px;
+			padding: 0;
 			border-radius: var(--radius-small);
 			color: var(--color-warning--onSurface);
-			background: var(--color-warning--surface);
-			font-size: var(--typography--fontSize-smaller);
+			background: transparent;
+			font-size: var(--typography--fontSize-small);
 			text-align: center;
 			text-overflow: ellipsis;
 			white-space: nowrap;
@@ -436,25 +494,30 @@
 		}
 
 		&__photo-remove {
+			&:disabled {
+				cursor: default;
+				color: var(--color-disabled);
+				background: var(--color-disabled--secondary);
+			}
 			position: absolute;
-			top: calc(var(--space-smaller) * -1);
-			right: calc(var(--space-smaller) * -1);
+			top: 6px;
+			right: 6px;
 			display: grid;
-			width: 20px;
-			height: 20px;
+			width: 24px;
+			height: 24px;
 			place-items: center;
 			border: var(--border-base) solid var(--color-border);
 			border-radius: var(--radius-circle);
 			color: var(--color-icon--secondary);
 			background: var(--color-surface);
 			cursor: pointer;
-			opacity: 0;
+			opacity: 1;
 			transition: opacity var(--timing-quick);
 
 			:global(svg) {
 				display: block;
-				width: 12px;
-				height: 12px;
+				width: 14px;
+				height: 14px;
 			}
 
 			&:hover {
@@ -476,7 +539,7 @@
 		&__list {
 			display: flex;
 			flex-direction: column;
-			gap: var(--space-small);
+			gap: 0;
 			margin: 0;
 			padding: 0;
 			list-style: none;
@@ -485,23 +548,35 @@
 		&__item {
 			display: flex;
 			align-items: center;
-			gap: var(--space-small);
-			padding: var(--space-small) var(--space-base);
-			border: var(--border-base) solid var(--color-border);
-			border-radius: var(--radius-base);
+			padding: var(--space-slim) var(--space-base) var(--space-slim) var(--space-medium);
+			border-top: var(--border-base) solid var(--color-border);
+			gap: 14px;
 
 			&--error {
-				border-color: var(--color-critical);
+				border: var(--border-base) solid var(--color-critical);
+				border-radius: var(--radius-base);
+				margin: var(--space-base);
+				padding: 6px;
+				.pending-files__ring {
+					width: 40px;
+					height: 40px;
+					background: var(--color-critical--surface);
+					border-radius: var(--radius-base);
+				}
+				.pending-files__item-icon {
+					color: var(--color-critical);
+					background: transparent;
+				}
 			}
 		}
 
 		&__item-icon {
 			display: grid;
-			width: 32px;
-			height: 32px;
+			width: 35px;
+			height: 35px;
 			flex: 0 0 auto;
 			place-items: center;
-			border-radius: var(--radius-base);
+			border-radius: var(--radius-circle);
 			color: var(--color-icon);
 			background: var(--color-surface--background);
 
@@ -523,7 +598,7 @@
 		&__item-name {
 			overflow: hidden;
 			color: var(--color-heading);
-			font-size: var(--typography--fontSize-small);
+			font-size: var(--typography--fontSize-label);
 			font-weight: 600;
 			text-overflow: ellipsis;
 			white-space: nowrap;
@@ -534,33 +609,45 @@
 			align-items: center;
 			gap: var(--space-smaller);
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-smaller);
+			font-size: var(--typography--fontSize-small);
 		}
 
 		&__item-error {
 			color: var(--color-critical);
-			font-size: var(--typography--fontSize-smaller);
+			font-size: var(--typography--fontSize-small);
 		}
 
-		&__progress {
-			display: block;
-			height: 6px;
-			overflow: hidden;
-			border-radius: var(--radius-large);
-			background: var(--color-surface--background);
+		&__ring {
+			display: grid;
+			flex: 0 0 auto;
+			width: 44px;
+			height: 44px;
+			place-items: center;
+			border-radius: var(--radius-circle);
+			background: conic-gradient(
+				var(--color-interactive) var(--progress),
+				var(--color-surface--background) 0
+			);
 		}
-
-		&__progress-bar {
-			display: block;
-			height: 100%;
-			background: var(--color-interactive);
-			transition: width var(--timing-base) ease-out;
+		&__spinner {
+			display: inline-flex;
+			vertical-align: middle;
+			margin-right: var(--space-smaller);
+			animation: pending-spin 1s linear infinite;
+			:global(svg) {
+				width: 12px;
+				height: 12px;
+			}
 		}
 
 		&__remove {
+			&:focus-visible {
+				outline: none;
+				box-shadow: var(--shadow-focus);
+			}
 			display: grid;
-			width: 20px;
-			height: 20px;
+			width: 24px;
+			height: 24px;
 			flex: 0 0 auto;
 			place-items: center;
 			border: 0;
@@ -582,6 +669,16 @@
 		}
 	}
 
+	@keyframes pending-spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.pending-files__spinner {
+			animation: none;
+		}
+	}
 	@media (hover: none) {
 		.pending-files__photo-remove {
 			opacity: 1;

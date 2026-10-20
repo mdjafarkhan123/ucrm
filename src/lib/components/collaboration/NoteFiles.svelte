@@ -4,6 +4,7 @@
 	import FileThumb from '$lib/components/files/FileThumb.svelte';
 	import { formatFileSize, type FileKind, type FileProcessingState } from '$lib/files/api';
 	import type { NoteFile } from '$lib/collaboration/api';
+	import clockIcon from '@tabler/icons/outline/clock.svg?raw';
 	import downloadIcon from '@tabler/icons/outline/download.svg?raw';
 
 	// The photos and files a Note carries, under its text. Photos show as small tiles that open the
@@ -17,13 +18,23 @@
 	}: {
 		files: NoteFile[];
 		imageSrc: (file: NoteFile, size: 'thumb' | 'full') => string;
-		onDownload: (file: NoteFile) => void;
+		onDownload: (file: NoteFile) => void | Promise<void>;
 	} = $props();
 
 	const photos = $derived(files.filter((file) => file.kind === 'image'));
 	const others = $derived(files.filter((file) => file.kind !== 'image'));
 	const viewable = $derived(photos.filter((file) => file.processing_state === 'available'));
 
+	let downloading = $state<string[]>([]);
+	async function download(file: NoteFile) {
+		if (downloading.includes(file.id)) return;
+		downloading = [...downloading, file.id];
+		try {
+			await onDownload(file);
+		} finally {
+			downloading = downloading.filter((id) => id !== file.id);
+		}
+	}
 	let lightboxOpen = $state(false);
 	let lightboxIndex = $state(0);
 
@@ -45,7 +56,7 @@
 
 	function downloadFromLightbox(item: LightboxItem) {
 		const file = viewable.find((entry) => entry.id === item.id);
-		if (file) onDownload(file);
+		if (file) return download(file);
 	}
 </script>
 
@@ -59,22 +70,30 @@
 					<li>
 						<button
 							type="button"
-							class="note-files__photo"
+							class={[
+								'note-files__photo',
+								file.processing_state === 'pending' && 'note-files__photo--checking'
+							]}
 							disabled={!ready}
 							aria-label={ready
 								? `Open ${file.display_name}`
 								: `${file.display_name} is still being checked`}
 							onclick={() => openPhoto(file)}
 						>
-							<FileThumb
-								fileId={file.id}
-								displayName={file.display_name}
-								mimeType={file.mime_type}
-								kind={file.kind as FileKind}
-								processingState={file.processing_state as FileProcessingState}
-								hasThumbnail={file.has_thumbnail}
-								signedSrc={ready ? imageSrc(file, 'thumb') : null}
-							/>
+							{#if file.processing_state === 'pending'}<span
+									class="note-files__checking-icon"
+									aria-hidden="true">{@html clockIcon}</span
+								>{:else}
+								<FileThumb
+									fileId={file.id}
+									displayName={file.display_name}
+									mimeType={file.mime_type}
+									kind={file.kind as FileKind}
+									processingState={file.processing_state as FileProcessingState}
+									hasThumbnail={file.has_thumbnail}
+									signedSrc={ready ? imageSrc(file, 'thumb') : null}
+								/>
+							{/if}
 						</button>
 					</li>
 				{/each}
@@ -85,7 +104,7 @@
 			<ul class="note-files__documents" aria-label="Files">
 				{#each others as file (file.id)}
 					{@const ready = file.processing_state === 'available'}
-					<li class="note-files__document">
+					<li class={['note-files__document', !ready && 'note-files__document--checking']}>
 						<FileThumb
 							fileId={file.id}
 							displayName={file.display_name}
@@ -98,16 +117,17 @@
 						<span class="note-files__document-text">
 							<span class="note-files__document-name">{file.display_name}</span>
 							<span class="note-files__document-meta">
-								{ready ? formatFileSize(file.size_bytes) : 'Still being checked'}
+								{ready ? formatFileSize(file.size_bytes) : 'Being checked'}
 							</span>
 						</span>
 						{#if ready}
 							<Button
-								variant="secondary"
+								variant="quiet"
 								size="small"
 								iconOnly
 								label={`Download ${file.display_name}`}
-								onclick={() => onDownload(file)}
+								loading={downloading.includes(file.id)}
+								onclick={() => download(file)}
 							>
 								{@html downloadIcon}
 							</Button>
@@ -136,9 +156,22 @@
 		gap: var(--space-small);
 		margin-top: var(--space-small);
 
+		&__photo.note-files__photo--checking {
+			background: var(--color-warning--surface);
+			color: var(--color-warning);
+		}
+		&__checking-icon {
+			display: grid;
+			height: 100%;
+			place-items: center;
+			:global(svg) {
+				width: 18px;
+				height: 18px;
+			}
+		}
 		&__photos {
 			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+			grid-template-columns: repeat(auto-fill, 96px);
 			gap: var(--space-small);
 			max-width: 420px;
 			margin: 0;
@@ -148,7 +181,8 @@
 
 		&__photo {
 			display: block;
-			width: 100%;
+			width: 96px;
+			height: 72px;
 			padding: 0;
 			overflow: hidden;
 			border: var(--border-base) solid var(--color-border);
@@ -171,15 +205,16 @@
 			}
 
 			:global(.file-thumb) {
-				aspect-ratio: 1;
+				aspect-ratio: auto;
+				height: 100%;
 				border-radius: 0;
 			}
 		}
 
 		&__documents {
 			display: flex;
-			flex-direction: column;
-			gap: var(--space-smaller);
+			flex-wrap: wrap;
+			gap: var(--space-small);
 			margin: 0;
 			padding: 0;
 			list-style: none;
@@ -188,12 +223,22 @@
 		&__document {
 			display: flex;
 			align-items: center;
-			gap: var(--space-small);
-			padding: var(--space-smaller) var(--space-small);
+			gap: 10px;
+			max-width: 100%;
+			min-width: 0;
+			background: var(--color-surface);
+			padding: 6px 10px 6px 6px;
 			border: var(--border-base) solid var(--color-border);
 			border-radius: var(--radius-base);
 		}
 
+		&__document :global(.file-thumb--row) {
+			width: 32px;
+			height: 32px;
+		}
+		&__document--checking &__document-meta {
+			color: var(--color-warning--onSurface);
+		}
 		&__document-text {
 			display: flex;
 			flex: 1 1 auto;
@@ -203,8 +248,8 @@
 
 		&__document-name {
 			overflow: hidden;
-			color: var(--color-text);
-			font-size: var(--typography--fontSize-small);
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-label);
 			font-weight: 600;
 			text-overflow: ellipsis;
 			white-space: nowrap;
@@ -212,7 +257,7 @@
 
 		&__document-meta {
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-smaller);
+			font-size: var(--typography--fontSize-small);
 		}
 	}
 </style>

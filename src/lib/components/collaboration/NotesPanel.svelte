@@ -413,10 +413,10 @@
 		}
 
 		&__item {
-			padding: var(--space-base);
-			border: var(--border-base) solid var(--color-border);
+			padding: var(--space-slim);
+			border: var(--border-base) solid transparent;
 			border-radius: var(--radius-base);
-			background: var(--color-surface);
+			background: var(--color-surface--background);
 
 			&--pinned {
 				border-color: var(--color-warning);
@@ -499,11 +499,11 @@
 			gap: 0;
 		}
 		.notes-panel__item {
-			padding: 12px 20px;
-			border: 0;
-			border-top: var(--border-base) solid var(--color-border);
-			border-radius: 0;
-			background: transparent;
+			padding: var(--space-slim);
+			margin: 0 var(--space-base) var(--space-slim);
+			border: var(--border-base) solid transparent;
+			border-radius: var(--radius-base);
+			background: var(--color-surface--background);
 		}
 		.notes-panel__item--pinned {
 			background: var(--color-warning--surface);
@@ -530,29 +530,9 @@
 			margin: 0;
 			padding: 0 20px 18px;
 		}
-		:global(.author-meta__text) {
-			flex-direction: row;
-			align-items: baseline;
-			gap: 6px;
-		}
-		:global(.author-meta__name) {
-			color: var(--color-heading);
-			font-size: 13px;
-		}
-		:global(.author-meta__time) {
-			font-size: var(--typography--fontSize-small);
-			font-weight: 500;
-		}
-		// The note's own text, drawn by NoteBody, lines up under the name.
 		:global(.note-body),
 		:global(.note-files) {
-			margin-left: 38px;
-		}
-		:global(.note-body) {
-			margin-top: 2px;
-			font-size: 13px;
-			font-weight: 500;
-			line-height: 1.5;
+			margin-left: 40px;
 		}
 	}
 

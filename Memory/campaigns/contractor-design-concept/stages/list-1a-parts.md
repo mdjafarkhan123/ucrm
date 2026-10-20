@@ -49,7 +49,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/DateTimePicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `ui/CountryPicker` |  | ✅ Pickers v2 `uSXlT` | ⬜ |
 | `ui/TagSelect` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
-| `collaboration/AttachmentSurface` |  | ✅ Batch 9 `KuOmH` | ⬜ |
+| `collaboration/AttachmentSurface` |  | ✅ Batch 9 `KuOmH` | 🔁 Built, waiting to merge |
 | `data-display/RecordListCard` |  | 🔁 Jobs list card `t8ULdJ` | ⬜ |
 | `files/PhotoSlot` |  | ✅ Batch 8 `b4BxuV` | ✅ Merged 2026-10-20 |
 | `quotes/CatalogItemDialog` | 🔁F pop-up · loading, permission-limited, field-worker view | ✅ Batch 10 `ZWTSi` | ⬜ |
@@ -70,11 +70,11 @@ Key, tick rule and coverage command: `list-index.md`.
 | `work/MoneyFeatureCard` |  | ✅ | ✅ |
 | `work/QuickContactButtons` |  | 🔁 Job details header `tNdkX` | ⬜ |
 | `clients/ClientTagSelect` |  | ⬜ | ⬜ |
-| `collaboration/AuthorMeta` |  | ✅ Batch 9 `KuOmH` | ⬜ |
-| `collaboration/NoteBody` |  | ✅ Batch 9 `KuOmH` | ⬜ |
-| `collaboration/NoteFiles` |  | ✅ Batch 9 `KuOmH` | ⬜ |
+| `collaboration/AuthorMeta` |  | ✅ Batch 9 `KuOmH` | 🔁 Built, waiting to merge |
+| `collaboration/NoteBody` |  | ✅ Batch 9 `KuOmH` | 🔁 Built, waiting to merge |
+| `collaboration/NoteFiles` |  | ✅ Batch 9 `KuOmH` | 🔁 Built, waiting to merge |
 | `files/FileLabelsDialog` | 🔁F pop-up · pop-ups: "confirm" 🔁C · loading | ✅ Batch 11 `K04pQm` | ⬜ |
 | `files/FilePicker` | pop-ups: "You do not have access to the file library" 🔁F · loading, empty, permission-limited | ✅ Batch 11 `K04pQm` | ⬜ |
-| `files/PendingFilesCard` |  | ✅ Batch 9 `KuOmH` | ⬜ |
+| `files/PendingFilesCard` |  | ✅ Batch 9 `KuOmH` | 🔁 Built, waiting to merge |
 | `files/PhotoDescribeForm` | loading, permission-limited | ✅ Batch 11 `K04pQm` | ⬜ |
 | `work/ClientSummaryCard` | menus ×1 | 🔁 Job details client box `tNdkX` | ⬜ |
