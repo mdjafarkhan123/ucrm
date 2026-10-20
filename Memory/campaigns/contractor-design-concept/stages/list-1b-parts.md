@@ -21,7 +21,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `data-display/DateRangeChip` |  | ✅ Batch 20 `e18rX` 2026-10-20 | ✅ |
 | `jafar/JafarAuthCard` |  | ✅ Batch 23 `Y0A1Z` B 2026-10-20 | ✅ |
 | `layout/RailRow` |  | 🟡 Batch 24 `qY4yb` drawn 2026-10-20 | ⬜ |
-| `marketing/MarketingTemplatePreview` | loading | ⬜ | ⬜ |
+| `marketing/MarketingTemplatePreview` | loading | 🟡 Batch 26 `l62Og` drawn 2026-10-20 | ⬜ |
 | `quotes/QuoteSummaryCard` |  | 🟡 Batch 24 `qY4yb` drawn 2026-10-20 | ⬜ |
 | `time-clock/TimerRunningElsewhere` |  | ✅ Batch 12 `ooCwt` | ✅ 2026-10-20 |
 | `time-clock/WorkTimerControl` |  | ✅ Batch 12 `ooCwt` | ✅ 2026-10-20 |
@@ -29,11 +29,11 @@ Key, tick rule and coverage command: `list-index.md`.
 | `work/PrimaryInfoCard` |  | 🟡 Batch 25 `U8RY1n` drawn 2026-10-20 | ⬜ |
 | `work/RecordDiscountCard` | pop-ups: "form" 🔁F | 🟡 Batch 24 `qY4yb` drawn 2026-10-20 | ⬜ |
 | `work/RecordTaxCard` | pop-ups: "form" 🔁F · permission-limited | 🟡 Batch 24 `qY4yb` drawn 2026-10-20 | ⬜ |
-| `work/RecordTrack` |  | ⬜ | ⬜ |
+| `work/RecordTrack` |  | 🔁 Batch 13 `xrJ3f` (wraps `work/LifecycleTrack`; waiting names, hidden on error) | ⬜ |
 | `calendar/CalendarBar` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Merged 2026-10-19 |
-| `clients/CommunicationSettingsDialog` | 🔁F pop-up | ⬜ | ⬜ |
-| `communications/ComposerChannelMenu` | menus ×1 | ⬜ | ⬜ |
-| `forms/PublicFormQuestion` |  | ⬜ | ⬜ |
+| `clients/CommunicationSettingsDialog` | 🔁F pop-up | 🟡 Batch 27 `DXj9z` drawn 2026-10-20 | ⬜ |
+| `communications/ComposerChannelMenu` | menus ×1 | 🟡 Batch 27 `DXj9z` drawn 2026-10-20 | ⬜ |
+| `forms/PublicFormQuestion` |  | 🟡 Batch 28 `Y3od0z` drawn 2026-10-20 | ⬜ |
 | `imports/ImportMapStep` |  | ⬜ | ⬜ |
 | `imports/ImportReviewStep` |  | ⬜ | ⬜ |
 | `imports/ImportStepper` |  | ⬜ | ⬜ |
@@ -46,7 +46,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `marketing/CustomerGroupPreview` | loading | ⬜ | ⬜ |
 | `marketing/CustomerGroupRuleBuilder` |  | ⬜ | ⬜ |
 | `marketing/FreeTextChipInput` |  | ⬜ | ⬜ |
-| `marketing/MarketingTemplatePreviewDialog` | 🔁F pop-up | ⬜ | ⬜ |
+| `marketing/MarketingTemplatePreviewDialog` | 🔁F pop-up | 🟡 Batch 26 `l62Og` drawn 2026-10-20 | ⬜ |
 | `profile/ProfilePhotoDialog` | 🔁F pop-up | ⬜ | ⬜ |
 | `settings/WeeklyHoursEditor` |  | ⬜ | ⬜ |
 | `ui/FilterChipMulti` |  | ✅ Batch 20 `e18rX` 2026-10-20 | ✅ |

@@ -95,6 +95,30 @@ quote form use the one Discount and tax card, like the quote page. Behaviour unc
 New job block (title, picked client card). A: the record's fact (Quote #, Requested on, Invoice #) moves to the
 page header chip like New job's Job #; B: a quiet facts column inside the block. Next: Jafar picks.
 
+## Batch 26 · Marketing email preview (drawing, waiting for Jafar)
+
+`marketing/MarketingTemplatePreview` and `MarketingTemplatePreviewDialog`. Board `l62Og`, drawn 2026-10-20. A refined
+pop-up (Growth tile, icon switch, grey well); B side column with Desktop / Mobile picture tiles and an inbox line
+(subject + preview text, both already in the campaign content), the email on a purple Growth stage in a mail window
+or a phone. Pop-up, Review step, loading, couldn't load and dark drawn for both. B's From name needs the sender name
+passed in (the Review step has it; Templates would need it). Next: Jafar picks.
+
+## Batch 27 · Channel menu and message settings (drawing, waiting for Jafar)
+
+`communications/ComposerChannelMenu` and `clients/CommunicationSettingsDialog`. Board `DXj9z`, drawn 2026-10-20.
+Channel menu: A white pill + dropdown list; B "Send by" tile button + menu with a teal band, hints and pick marks
+(the review automation row then drops its own "Send by" label). Settings pop-up (ticks stay: saved with the client
+form): A settings rows with group tiles; B one tick tile per message in three columns, consent note under Growth.
+Do not disturb, No marketing, staff "Not sending" and dark drawn. Next: Jafar picks.
+
+## Batch 28 · Questions on a public form (drawing, waiting for Jafar)
+
+`forms/PublicFormQuestion`. Board `Y3od0z`, drawn 2026-10-20. A plain approved fields, ticks and circles; B one soft
+card per question with an orange number tile and 44-high tap tiles (pick-one and Yes / No side by side). Every
+question kind, hover, focus and dark drawn; photo upload stays the page's approved box. Next: Jafar picks.
+
+`work/RecordTrack` is marked 🔁 Batch 13: it only wraps the approved `LifecycleTrack`.
+
 ## Batch 22 Files on a message — approved 2026-10-20
 
 Board `mZdBv`, B · preview cards (A deleted). Restyle only; same instant upload, caps, error words, remove, and
