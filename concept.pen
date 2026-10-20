@@ -153385,6 +153385,7 @@
                                   "height": 16,
                                   "icon": "map-pin",
                                   "library": "lucide",
+                                  "weight": 600,
                                   "fill": "$color-client"
                                 },
                                 {
@@ -153475,6 +153476,7 @@
                                           "height": 12,
                                           "icon": "phone",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-time"
                                         }
                                       ]
@@ -153549,6 +153551,7 @@
                                           "height": 12,
                                           "icon": "mail",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-conversation"
                                         }
                                       ]
@@ -153623,6 +153626,7 @@
                                           "height": 12,
                                           "icon": "calendar-clock",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-time"
                                         }
                                       ]
@@ -153697,6 +153701,7 @@
                                           "height": 12,
                                           "icon": "megaphone",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-client"
                                         }
                                       ]
@@ -154128,14 +154133,103 @@
                                   "fontWeight": "600"
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "dXQ9d",
+                                  "type": "frame",
+                                  "id": "c71ZfX",
                                   "name": "Contact",
-                                  "fill": "$color-text-secondary",
-                                  "content": "14 Elm Street, Springfield · (217) 555-0142 · sarah.lee@email.com",
-                                  "fontFamily": "$font-family",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
+                                  "gap": 16,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "qMd4l",
+                                      "name": "Contact · map-pin",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "E41P3z",
+                                          "name": "Icon",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "map-pin",
+                                          "library": "lucide",
+                                          "weight": 600,
+                                          "fill": "$color-client"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "mY1iC",
+                                          "name": "Text",
+                                          "fill": "$color-text",
+                                          "content": "14 Elm Street, Springfield",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "tExAQ",
+                                      "name": "Contact · phone",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "Qqre8",
+                                          "name": "Icon",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "phone",
+                                          "library": "lucide",
+                                          "weight": 600,
+                                          "fill": "$color-time"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "bIbyN",
+                                          "name": "Text",
+                                          "fill": "$color-text",
+                                          "content": "(217) 555-0142",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Z2dg3",
+                                      "name": "Contact · mail",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "ehXDW",
+                                          "name": "Icon",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "mail",
+                                          "library": "lucide",
+                                          "weight": 600,
+                                          "fill": "$color-conversation"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "liOL2",
+                                          "name": "Text",
+                                          "fill": "$color-text",
+                                          "content": "sarah.lee@email.com",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -154187,6 +154281,7 @@
                                           "height": 12,
                                           "icon": "calendar",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-time"
                                         }
                                       ]
@@ -154261,6 +154356,7 @@
                                           "height": 12,
                                           "icon": "clipboard-check",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-time"
                                         }
                                       ]
@@ -154335,6 +154431,7 @@
                                           "height": 12,
                                           "icon": "wrench",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-request"
                                         }
                                       ]
@@ -154409,6 +154506,7 @@
                                           "height": 12,
                                           "icon": "globe",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-request"
                                         }
                                       ]
@@ -155100,14 +155198,103 @@
                                   "fontWeight": "600"
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "MUVKr",
+                                  "type": "frame",
+                                  "id": "q5DT0",
                                   "name": "Contact",
-                                  "fill": "$color-text-secondary",
-                                  "content": "14 Elm Street, Springfield · (217) 555-0142 · sarah.lee@email.com",
-                                  "fontFamily": "$font-family",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
+                                  "gap": 16,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "VhEdU",
+                                      "name": "Contact · map-pin",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "Hh6hN",
+                                          "name": "Icon",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "map-pin",
+                                          "library": "lucide",
+                                          "weight": 600,
+                                          "fill": "$color-client"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "p75jL",
+                                          "name": "Text",
+                                          "fill": "$color-text",
+                                          "content": "14 Elm Street, Springfield",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "l0UxEH",
+                                      "name": "Contact · phone",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "O4o1l",
+                                          "name": "Icon",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "phone",
+                                          "library": "lucide",
+                                          "weight": 600,
+                                          "fill": "$color-time"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "KJtAv",
+                                          "name": "Text",
+                                          "fill": "$color-text",
+                                          "content": "(217) 555-0142",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "pCm5b",
+                                      "name": "Contact · mail",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "OPdbF",
+                                          "name": "Icon",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "mail",
+                                          "library": "lucide",
+                                          "weight": 600,
+                                          "fill": "$color-conversation"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "CV1t9",
+                                          "name": "Text",
+                                          "fill": "$color-text",
+                                          "content": "sarah.lee@email.com",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -155159,6 +155346,7 @@
                                           "height": 12,
                                           "icon": "hash",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-time"
                                         }
                                       ]
@@ -155233,6 +155421,7 @@
                                           "height": 12,
                                           "icon": "calendar-plus",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-time"
                                         }
                                       ]
@@ -155307,6 +155496,7 @@
                                           "height": 12,
                                           "icon": "send",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-warning"
                                         }
                                       ]
@@ -155381,6 +155571,7 @@
                                           "height": 12,
                                           "icon": "circle-check",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-quote"
                                         }
                                       ]
@@ -156070,14 +156261,103 @@
                                   "fontWeight": "600"
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "aJEWK",
+                                  "type": "frame",
+                                  "id": "U1TvR",
                                   "name": "Contact",
-                                  "fill": "$color-text-secondary",
-                                  "content": "14 Elm Street, Springfield · (217) 555-0142 · sarah.lee@email.com",
-                                  "fontFamily": "$font-family",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
+                                  "gap": 16,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "mhNXf",
+                                      "name": "Contact · map-pin",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "XJiPI",
+                                          "name": "Icon",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "map-pin",
+                                          "library": "lucide",
+                                          "weight": 600,
+                                          "fill": "$color-client"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "lrIH3",
+                                          "name": "Text",
+                                          "fill": "$color-text",
+                                          "content": "14 Elm Street, Springfield",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "XHRzb",
+                                      "name": "Contact · phone",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "yfBwt",
+                                          "name": "Icon",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "phone",
+                                          "library": "lucide",
+                                          "weight": 600,
+                                          "fill": "$color-time"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Hvmys",
+                                          "name": "Text",
+                                          "fill": "$color-text",
+                                          "content": "(217) 555-0142",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "J4zkW",
+                                      "name": "Contact · mail",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "Tnhf5",
+                                          "name": "Icon",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "mail",
+                                          "library": "lucide",
+                                          "weight": 600,
+                                          "fill": "$color-conversation"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "gTM4v",
+                                          "name": "Text",
+                                          "fill": "$color-text",
+                                          "content": "sarah.lee@email.com",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -156129,6 +156409,7 @@
                                           "height": 12,
                                           "icon": "hash",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-job"
                                         }
                                       ]
@@ -156203,6 +156484,7 @@
                                           "height": 12,
                                           "icon": "repeat",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-time"
                                         }
                                       ]
@@ -156277,6 +156559,7 @@
                                           "height": 12,
                                           "icon": "calendar-range",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-time"
                                         }
                                       ]
@@ -156351,6 +156634,7 @@
                                           "height": 12,
                                           "icon": "receipt-text",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-quote"
                                         }
                                       ]
@@ -157038,14 +157322,103 @@
                                   "fontWeight": "600"
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "YQ5SU",
+                                  "type": "frame",
+                                  "id": "RBURp",
                                   "name": "Contact",
-                                  "fill": "$color-text-secondary",
-                                  "content": "14 Elm Street, Springfield · (217) 555-0142 · sarah.lee@email.com",
-                                  "fontFamily": "$font-family",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
+                                  "gap": 16,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "QYh9z",
+                                      "name": "Contact · map-pin",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "m9Dqv",
+                                          "name": "Icon",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "map-pin",
+                                          "library": "lucide",
+                                          "weight": 600,
+                                          "fill": "$color-client"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "VJIsk",
+                                          "name": "Text",
+                                          "fill": "$color-text",
+                                          "content": "14 Elm Street, Springfield",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "JMoNI",
+                                      "name": "Contact · phone",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "a7WI6h",
+                                          "name": "Icon",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "phone",
+                                          "library": "lucide",
+                                          "weight": 600,
+                                          "fill": "$color-time"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "KCUXL",
+                                          "name": "Text",
+                                          "fill": "$color-text",
+                                          "content": "(217) 555-0142",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "RwjS7",
+                                      "name": "Contact · mail",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "UDj8O",
+                                          "name": "Icon",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "mail",
+                                          "library": "lucide",
+                                          "weight": 600,
+                                          "fill": "$color-conversation"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "z3jpqT",
+                                          "name": "Text",
+                                          "fill": "$color-text",
+                                          "content": "sarah.lee@email.com",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -157097,6 +157470,7 @@
                                           "height": 12,
                                           "icon": "hash",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-time"
                                         }
                                       ]
@@ -157171,6 +157545,7 @@
                                           "height": 12,
                                           "icon": "send",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-time"
                                         }
                                       ]
@@ -157245,6 +157620,7 @@
                                           "height": 12,
                                           "icon": "calendar-clock",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-time"
                                         }
                                       ]
@@ -157319,6 +157695,7 @@
                                           "height": 12,
                                           "icon": "file-text",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-conversation"
                                         }
                                       ]
@@ -157934,14 +158311,43 @@
                                   "fontWeight": "600"
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "l1IeZ",
+                                  "type": "frame",
+                                  "id": "hv2rq",
                                   "name": "Contact",
-                                  "fill": "$color-text-secondary",
-                                  "content": "sarah.lee@email.com",
-                                  "fontFamily": "$font-family",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
+                                  "gap": 16,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "SqoNd",
+                                      "name": "Contact · mail",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "zUlv5",
+                                          "name": "Icon",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "mail",
+                                          "library": "lucide",
+                                          "weight": 600,
+                                          "fill": "$color-conversation"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "qXzzK",
+                                          "name": "Text",
+                                          "fill": "$color-text",
+                                          "content": "sarah.lee@email.com",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -157993,6 +158399,7 @@
                                           "height": 12,
                                           "icon": "calendar",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-time"
                                         }
                                       ]
@@ -158067,6 +158474,7 @@
                                           "height": 12,
                                           "icon": "credit-card",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-invoice"
                                         }
                                       ]
@@ -158141,6 +158549,7 @@
                                           "height": 12,
                                           "icon": "hash",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-invoice"
                                         }
                                       ]
@@ -158215,6 +158624,7 @@
                                           "height": 12,
                                           "icon": "receipt-text",
                                           "library": "lucide",
+                                          "weight": 600,
                                           "fill": "$color-time"
                                         }
                                       ]
@@ -158244,6 +158654,1140 @@
                                   "fontWeight": "600"
                                 }
                               ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "rNqQW",
+                      "name": "Caption · Long address",
+                      "gap": 6,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "laFDx",
+                          "name": "Dot",
+                          "fill": "$color-job",
+                          "width": 8,
+                          "height": 8
+                        },
+                        {
+                          "type": "text",
+                          "id": "A1GtW",
+                          "name": "Label",
+                          "fill": "$color-text-secondary",
+                          "content": "LONG ADDRESS · HOVERED: FULL ADDRESS SHOWS · CLICK OPENS GOOGLE MAPS",
+                          "fontFamily": "$font-family",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.6
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "A17zb",
+                      "name": "Long address stage",
+                      "width": 756,
+                      "height": 330,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "OZ5DA",
+                          "x": 0,
+                          "y": 0,
+                          "name": "Job header · C · long address",
+                          "clip": true,
+                          "width": 756,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-large",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "iJEbm",
+                              "name": "Coloured top",
+                              "width": "fill_container",
+                              "fill": "$color-job-surface",
+                              "layout": "vertical",
+                              "gap": 14,
+                              "padding": [
+                                20,
+                                24,
+                                22,
+                                24
+                              ],
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "f1JA5b",
+                                  "name": "Row 1",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "eUDJS",
+                                      "name": "Tile",
+                                      "width": 40,
+                                      "height": 40,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 10,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "vyGcE",
+                                          "name": "Icon",
+                                          "width": 20,
+                                          "height": 20,
+                                          "icon": "hammer",
+                                          "library": "lucide",
+                                          "fill": "$color-job"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "QOgw7",
+                                      "name": "Kind",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "id": "y5tdd",
+                                          "type": "ref",
+                                          "ref": "z1I4U",
+                                          "name": "Status",
+                                          "fill": "$color-surface",
+                                          "descendants": {
+                                            "rMF3l": {
+                                              "fill": "$color-success"
+                                            },
+                                            "MPxz7": {
+                                              "content": "Today",
+                                              "fill": "$color-success-on-surface"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Obn22",
+                                      "name": "Actions",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "FHk1I",
+                                          "name": "Icon button",
+                                          "width": 36,
+                                          "height": 36,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 8,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "effect": {
+                                            "type": "shadow",
+                                            "shadowType": "outer",
+                                            "color": "#1b1f2314",
+                                            "offset": {
+                                              "x": 0,
+                                              "y": 1
+                                            },
+                                            "blur": 2
+                                          },
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "UeICQ",
+                                              "name": "Icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "pencil",
+                                              "library": "lucide",
+                                              "fill": "$color-heading"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "qpd2y",
+                                          "name": "Icon button",
+                                          "width": 36,
+                                          "height": 36,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 8,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "effect": {
+                                            "type": "shadow",
+                                            "shadowType": "outer",
+                                            "color": "#1b1f2314",
+                                            "offset": {
+                                              "x": 0,
+                                              "y": 1
+                                            },
+                                            "blur": 2
+                                          },
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "p46sty",
+                                              "name": "Icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "history",
+                                              "library": "lucide",
+                                              "fill": "$color-heading"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "uSLdF",
+                                          "type": "ref",
+                                          "ref": "nkuNU",
+                                          "name": "More"
+                                        },
+                                        {
+                                          "id": "vvKrT",
+                                          "type": "ref",
+                                          "ref": "Qo6GL",
+                                          "name": "Create invoice",
+                                          "descendants": {
+                                            "P99oLT": {
+                                              "icon": "receipt-text"
+                                            },
+                                            "vaRXs": {
+                                              "content": "Create invoice"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "q4f1y",
+                                  "name": "Row 2",
+                                  "width": "fill_container",
+                                  "gap": 12,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "lYw7J",
+                                      "name": "Title",
+                                      "fill": "$color-heading",
+                                      "content": "Kitchen remodel — cabinets and countertops",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 26,
+                                      "fontWeight": "700",
+                                      "letterSpacing": -0.6
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "h2fYR",
+                              "name": "Client line",
+                              "width": "fill_container",
+                              "stroke": "$color-border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 12,
+                              "padding": [
+                                16,
+                                24
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "pYwYw",
+                                  "name": "Avatar",
+                                  "width": 36,
+                                  "height": 36,
+                                  "fill": "$color-client-surface",
+                                  "cornerRadius": 999,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ErThC",
+                                      "name": "Initials",
+                                      "fill": "$color-client-on-surface",
+                                      "content": "SL",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "FKmEq",
+                                  "name": "Name",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "bf718",
+                                      "name": "Name",
+                                      "fill": "$color-heading",
+                                      "content": "Sarah Lee",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "D1pnX",
+                                      "name": "Contact",
+                                      "gap": 16,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "p7bJYx",
+                                          "name": "Contact · map-pin",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "clHmu",
+                                              "name": "Icon",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "map-pin",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-client"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "W5wIc",
+                                              "name": "Text",
+                                              "fill": "$color-heading",
+                                              "content": "4521 North Westminster Boulevard, Apartm…",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "X0TyKG",
+                                          "name": "Contact · phone",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "FUiKg",
+                                              "name": "Icon",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "phone",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-time"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "DhVS2",
+                                              "name": "Text",
+                                              "fill": "$color-text",
+                                              "content": "(217) 555-0142",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "sNyg3",
+                                          "name": "Contact · mail",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "mhAYM",
+                                              "name": "Icon",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "mail",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-conversation"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "fpJhZ",
+                                              "name": "Text",
+                                              "fill": "$color-text",
+                                              "content": "sarah.lee@email.com",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "bW4F6",
+                              "name": "Facts",
+                              "width": "fill_container",
+                              "padding": [
+                                16,
+                                24,
+                                20,
+                                24
+                              ],
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "lPYq4",
+                                  "name": "Fact · Job #",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "qzDHk",
+                                      "name": "Label row",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "uOg6V",
+                                          "name": "Tile",
+                                          "width": 20,
+                                          "height": 20,
+                                          "fill": "$color-job-surface",
+                                          "cornerRadius": 5,
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "Rs5uA",
+                                              "name": "Icon",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "hash",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-job"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "uWAZw",
+                                          "name": "Label",
+                                          "fill": "$color-text-secondary",
+                                          "content": "Job #",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 12,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "iXzkQ",
+                                      "name": "Value",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "1042",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "dBDfa",
+                                  "name": "Fact · Type",
+                                  "width": "fill_container",
+                                  "stroke": "$color-border",
+                                  "strokeWidth": {
+                                    "left": 1
+                                  },
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "BBLnG",
+                                      "name": "Label row",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "XlH5v",
+                                          "name": "Tile",
+                                          "width": 20,
+                                          "height": 20,
+                                          "fill": "$color-time-surface",
+                                          "cornerRadius": 5,
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "t58Ux",
+                                              "name": "Icon",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "repeat",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-time"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "j1vQ7",
+                                          "name": "Label",
+                                          "fill": "$color-text-secondary",
+                                          "content": "Type",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 12,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "tBR7G",
+                                      "name": "Value",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "One-off",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "lmsof",
+                                  "name": "Fact · Dates",
+                                  "width": "fill_container",
+                                  "stroke": "$color-border",
+                                  "strokeWidth": {
+                                    "left": 1
+                                  },
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "wKofj",
+                                      "name": "Label row",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "b7bsCR",
+                                          "name": "Tile",
+                                          "width": 20,
+                                          "height": 20,
+                                          "fill": "$color-time-surface",
+                                          "cornerRadius": 5,
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "dDZUI",
+                                              "name": "Icon",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "calendar-range",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-time"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "UqnTz",
+                                          "name": "Label",
+                                          "fill": "$color-text-secondary",
+                                          "content": "Dates",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 12,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "SCaTG",
+                                      "name": "Value",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Oct 14 → Oct 24",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "lNz4v",
+                                  "name": "Fact · Invoicing",
+                                  "width": "fill_container",
+                                  "stroke": "$color-border",
+                                  "strokeWidth": {
+                                    "left": 1
+                                  },
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "mLebS",
+                                      "name": "Label row",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "pA11R",
+                                          "name": "Tile",
+                                          "width": 20,
+                                          "height": 20,
+                                          "fill": "$color-quote-surface",
+                                          "cornerRadius": 5,
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "q1wal",
+                                              "name": "Icon",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "receipt-text",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-quote"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "qR5pj",
+                                          "name": "Label",
+                                          "fill": "$color-text-secondary",
+                                          "content": "Invoicing",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 12,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "mO7fz",
+                                      "name": "Value",
+                                      "fill": "$color-heading",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "When the job is done",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "OjNh2",
+                              "name": "Track",
+                              "width": "fill_container",
+                              "fill": "$color-surface-background-subtle",
+                              "stroke": "$color-border",
+                              "strokeWidth": {
+                                "top": 1
+                              },
+                              "gap": 12,
+                              "padding": [
+                                12,
+                                24
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "kOtbA",
+                                  "name": "Step · Request",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "yHIJJ",
+                                      "name": "Tile",
+                                      "width": 32,
+                                      "height": 32,
+                                      "fill": "$color-request-surface",
+                                      "cornerRadius": 8,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "ZLtqp",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "check",
+                                          "library": "lucide",
+                                          "fill": "$color-request"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "WEGD9",
+                                      "name": "Text",
+                                      "layout": "vertical",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "l07zc",
+                                          "name": "Label",
+                                          "fill": "$color-heading",
+                                          "content": "Request",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "ouE7E",
+                                          "name": "Sub",
+                                          "fill": "$color-text-secondary",
+                                          "content": "Oct 1",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 11,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": 1,
+                                  "id": "tZfyu",
+                                  "name": "Line",
+                                  "fill": "$color-icon-secondary",
+                                  "width": "fill_container",
+                                  "height": 2
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "QO1OU",
+                                  "name": "Step · Quote",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "DAjMm",
+                                      "name": "Tile",
+                                      "width": 32,
+                                      "height": 32,
+                                      "fill": "$color-quote-surface",
+                                      "cornerRadius": 8,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "h875Qi",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "check",
+                                          "library": "lucide",
+                                          "fill": "$color-quote"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "EsKfl",
+                                      "name": "Text",
+                                      "layout": "vertical",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "R5t7m",
+                                          "name": "Label",
+                                          "fill": "$color-heading",
+                                          "content": "Quote",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Wmp2A",
+                                          "name": "Sub",
+                                          "fill": "$color-text-secondary",
+                                          "content": "Approved Oct 2",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 11,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": 1,
+                                  "id": "OyeHD",
+                                  "name": "Line",
+                                  "fill": "$color-icon-secondary",
+                                  "width": "fill_container",
+                                  "height": 2
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ZN1EO",
+                                  "name": "Step · Job",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "oJ0TH",
+                                      "name": "Tile",
+                                      "width": 32,
+                                      "height": 32,
+                                      "fill": "$color-job-surface",
+                                      "cornerRadius": 8,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "qHyWa",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "hammer",
+                                          "library": "lucide",
+                                          "fill": "$color-job"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "ouoJh",
+                                      "name": "Text",
+                                      "layout": "vertical",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "FHzef",
+                                          "name": "Label",
+                                          "fill": "$color-heading",
+                                          "content": "Job",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "ue6l6",
+                                          "name": "Sub",
+                                          "fill": "$color-text-secondary",
+                                          "content": "In progress",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 11,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": 1,
+                                  "id": "EOQJZ",
+                                  "name": "Line",
+                                  "fill": "$color-border",
+                                  "width": "fill_container",
+                                  "height": 2
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Y1CyJ",
+                                  "name": "Step · Invoice",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "tsq8U",
+                                      "name": "Tile",
+                                      "width": 32,
+                                      "height": 32,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 8,
+                                      "stroke": "$color-border-interactive",
+                                      "strokeWidth": 1,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "GKCEj",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "receipt",
+                                          "library": "lucide",
+                                          "fill": "$color-icon-secondary"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "ogmOE",
+                                      "name": "Text",
+                                      "layout": "vertical",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "V5wEK",
+                                          "name": "Label",
+                                          "fill": "$color-text-secondary",
+                                          "content": "Invoice",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "VLXbN",
+                                          "name": "Sub",
+                                          "fill": "$color-text-secondary",
+                                          "content": "Not yet",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 11,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": 1,
+                                  "id": "Ndpjs",
+                                  "name": "Line",
+                                  "fill": "$color-border",
+                                  "width": "fill_container",
+                                  "height": 2
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "n0Jl2",
+                                  "name": "Step · Paid",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "EAcRd",
+                                      "name": "Tile",
+                                      "width": 32,
+                                      "height": 32,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 8,
+                                      "stroke": "$color-border-interactive",
+                                      "strokeWidth": 1,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "ACGsP",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "credit-card",
+                                          "library": "lucide",
+                                          "fill": "$color-icon-secondary"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "RugkI",
+                                      "name": "Text",
+                                      "layout": "vertical",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "bt39W",
+                                          "name": "Label",
+                                          "fill": "$color-text-secondary",
+                                          "content": "Paid",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "YLRpN",
+                                          "name": "Sub",
+                                          "fill": "$color-text-secondary",
+                                          "content": "—",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 11,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "cyHnr",
+                          "x": 66,
+                          "y": 182.5,
+                          "name": "Tooltip · full address",
+                          "width": 493,
+                          "height": 50,
+                          "layout": "none",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Szzit",
+                              "x": 0,
+                              "y": 4,
+                              "name": "Body",
+                              "fill": "$color-surface-reverse",
+                              "cornerRadius": "$radius-base",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "padding": [
+                                8,
+                                12
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "tskOD",
+                                  "name": "Text",
+                                  "fill": "$color-text-reverse",
+                                  "content": "4521 North Westminster Boulevard, Apartment 12B, Springfield Gardens, IL 62704",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "N6jV3d",
+                                  "name": "Hint",
+                                  "opacity": 0.7,
+                                  "fill": "$color-text-reverse",
+                                  "content": "Click to open in Google Maps",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 11,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "path",
+                              "id": "d96OMH",
+                              "x": 12,
+                              "y": -1,
+                              "name": "Arrow",
+                              "geometry": "M0 6l6-6 6 6z",
+                              "fill": "$color-surface-reverse",
+                              "width": 12,
+                              "height": 6
                             }
                           ]
                         }
@@ -158573,6 +160117,7 @@
                                       "height": 16,
                                       "icon": "map-pin",
                                       "library": "lucide",
+                                      "weight": 600,
                                       "fill": "$color-client"
                                     },
                                     {
@@ -158663,6 +160208,7 @@
                                               "height": 12,
                                               "icon": "phone",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-time"
                                             }
                                           ]
@@ -158737,6 +160283,7 @@
                                               "height": 12,
                                               "icon": "mail",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-conversation"
                                             }
                                           ]
@@ -158811,6 +160358,7 @@
                                               "height": 12,
                                               "icon": "calendar-clock",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-time"
                                             }
                                           ]
@@ -158885,6 +160433,7 @@
                                               "height": 12,
                                               "icon": "megaphone",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-client"
                                             }
                                           ]
@@ -159316,14 +160865,103 @@
                                       "fontWeight": "600"
                                     },
                                     {
-                                      "type": "text",
-                                      "id": "y7AlYj",
+                                      "type": "frame",
+                                      "id": "m4aE5w",
                                       "name": "Contact",
-                                      "fill": "$color-text-secondary",
-                                      "content": "14 Elm Street, Springfield · (217) 555-0142 · sarah.lee@email.com",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
+                                      "gap": 16,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "jtXuD",
+                                          "name": "Contact · map-pin",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "qmZ96",
+                                              "name": "Icon",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "map-pin",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-client"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "AVglg",
+                                              "name": "Text",
+                                              "fill": "$color-text",
+                                              "content": "14 Elm Street, Springfield",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "HHLhU",
+                                          "name": "Contact · phone",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "RRYR8",
+                                              "name": "Icon",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "phone",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-time"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "B9Jka",
+                                              "name": "Text",
+                                              "fill": "$color-text",
+                                              "content": "(217) 555-0142",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "YxkwC",
+                                          "name": "Contact · mail",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "i0jlZx",
+                                              "name": "Icon",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "mail",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-conversation"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "j39aa8",
+                                              "name": "Text",
+                                              "fill": "$color-text",
+                                              "content": "sarah.lee@email.com",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        }
+                                      ]
                                     }
                                   ]
                                 }
@@ -159375,6 +161013,7 @@
                                               "height": 12,
                                               "icon": "calendar",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-time"
                                             }
                                           ]
@@ -159449,6 +161088,7 @@
                                               "height": 12,
                                               "icon": "clipboard-check",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-time"
                                             }
                                           ]
@@ -159523,6 +161163,7 @@
                                               "height": 12,
                                               "icon": "wrench",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-request"
                                             }
                                           ]
@@ -159597,6 +161238,7 @@
                                               "height": 12,
                                               "icon": "globe",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-request"
                                             }
                                           ]
@@ -160288,14 +161930,103 @@
                                       "fontWeight": "600"
                                     },
                                     {
-                                      "type": "text",
-                                      "id": "YJr4o",
+                                      "type": "frame",
+                                      "id": "uIs8E",
                                       "name": "Contact",
-                                      "fill": "$color-text-secondary",
-                                      "content": "14 Elm Street, Springfield · (217) 555-0142 · sarah.lee@email.com",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
+                                      "gap": 16,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "pq8Ui",
+                                          "name": "Contact · map-pin",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "n7ku2",
+                                              "name": "Icon",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "map-pin",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-client"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "KYnnX",
+                                              "name": "Text",
+                                              "fill": "$color-text",
+                                              "content": "14 Elm Street, Springfield",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "RdmQQ",
+                                          "name": "Contact · phone",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "R3WN4",
+                                              "name": "Icon",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "phone",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-time"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "krzO5",
+                                              "name": "Text",
+                                              "fill": "$color-text",
+                                              "content": "(217) 555-0142",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "j3eUt6",
+                                          "name": "Contact · mail",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "wa0CE",
+                                              "name": "Icon",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "mail",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-conversation"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "t4CTpJ",
+                                              "name": "Text",
+                                              "fill": "$color-text",
+                                              "content": "sarah.lee@email.com",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        }
+                                      ]
                                     }
                                   ]
                                 }
@@ -160347,6 +162078,7 @@
                                               "height": 12,
                                               "icon": "hash",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-time"
                                             }
                                           ]
@@ -160421,6 +162153,7 @@
                                               "height": 12,
                                               "icon": "calendar-plus",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-time"
                                             }
                                           ]
@@ -160495,6 +162228,7 @@
                                               "height": 12,
                                               "icon": "send",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-warning"
                                             }
                                           ]
@@ -160569,6 +162303,7 @@
                                               "height": 12,
                                               "icon": "circle-check",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-quote"
                                             }
                                           ]
@@ -161258,14 +162993,103 @@
                                       "fontWeight": "600"
                                     },
                                     {
-                                      "type": "text",
-                                      "id": "aX8VQ",
+                                      "type": "frame",
+                                      "id": "n0iyyU",
                                       "name": "Contact",
-                                      "fill": "$color-text-secondary",
-                                      "content": "14 Elm Street, Springfield · (217) 555-0142 · sarah.lee@email.com",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
+                                      "gap": 16,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "k3jmt9",
+                                          "name": "Contact · map-pin",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "WjMnQ",
+                                              "name": "Icon",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "map-pin",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-client"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "Ma7YA",
+                                              "name": "Text",
+                                              "fill": "$color-text",
+                                              "content": "14 Elm Street, Springfield",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "MxYB0",
+                                          "name": "Contact · phone",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "DE6I9",
+                                              "name": "Icon",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "phone",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-time"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "elTaS",
+                                              "name": "Text",
+                                              "fill": "$color-text",
+                                              "content": "(217) 555-0142",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "OYskl",
+                                          "name": "Contact · mail",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "D3PTSL",
+                                              "name": "Icon",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "mail",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-conversation"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "AZIsz",
+                                              "name": "Text",
+                                              "fill": "$color-text",
+                                              "content": "sarah.lee@email.com",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        }
+                                      ]
                                     }
                                   ]
                                 }
@@ -161317,6 +163141,7 @@
                                               "height": 12,
                                               "icon": "hash",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-job"
                                             }
                                           ]
@@ -161391,6 +163216,7 @@
                                               "height": 12,
                                               "icon": "repeat",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-time"
                                             }
                                           ]
@@ -161465,6 +163291,7 @@
                                               "height": 12,
                                               "icon": "calendar-range",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-time"
                                             }
                                           ]
@@ -161539,6 +163366,7 @@
                                               "height": 12,
                                               "icon": "receipt-text",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-quote"
                                             }
                                           ]
@@ -162226,14 +164054,103 @@
                                       "fontWeight": "600"
                                     },
                                     {
-                                      "type": "text",
-                                      "id": "SeNAI",
+                                      "type": "frame",
+                                      "id": "lb8YZ",
                                       "name": "Contact",
-                                      "fill": "$color-text-secondary",
-                                      "content": "14 Elm Street, Springfield · (217) 555-0142 · sarah.lee@email.com",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
+                                      "gap": 16,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "m8CKkq",
+                                          "name": "Contact · map-pin",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "tFJ4o",
+                                              "name": "Icon",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "map-pin",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-client"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "x4U1zY",
+                                              "name": "Text",
+                                              "fill": "$color-text",
+                                              "content": "14 Elm Street, Springfield",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "XYYM5",
+                                          "name": "Contact · phone",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "Nw74E",
+                                              "name": "Icon",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "phone",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-time"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "AgVXm",
+                                              "name": "Text",
+                                              "fill": "$color-text",
+                                              "content": "(217) 555-0142",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "O34KR",
+                                          "name": "Contact · mail",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "IeW9g",
+                                              "name": "Icon",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "mail",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-conversation"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "Lh7S5",
+                                              "name": "Text",
+                                              "fill": "$color-text",
+                                              "content": "sarah.lee@email.com",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        }
+                                      ]
                                     }
                                   ]
                                 }
@@ -162285,6 +164202,7 @@
                                               "height": 12,
                                               "icon": "hash",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-time"
                                             }
                                           ]
@@ -162359,6 +164277,7 @@
                                               "height": 12,
                                               "icon": "send",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-time"
                                             }
                                           ]
@@ -162433,6 +164352,7 @@
                                               "height": 12,
                                               "icon": "calendar-clock",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-time"
                                             }
                                           ]
@@ -162507,6 +164427,7 @@
                                               "height": 12,
                                               "icon": "file-text",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-conversation"
                                             }
                                           ]
@@ -163122,14 +165043,43 @@
                                       "fontWeight": "600"
                                     },
                                     {
-                                      "type": "text",
-                                      "id": "hZ43l",
+                                      "type": "frame",
+                                      "id": "k5KnRx",
                                       "name": "Contact",
-                                      "fill": "$color-text-secondary",
-                                      "content": "sarah.lee@email.com",
-                                      "fontFamily": "$font-family",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
+                                      "gap": 16,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "pCUS7",
+                                          "name": "Contact · mail",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "E6cO2t",
+                                              "name": "Icon",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "mail",
+                                              "library": "lucide",
+                                              "weight": 600,
+                                              "fill": "$color-conversation"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "pPPa4",
+                                              "name": "Text",
+                                              "fill": "$color-text",
+                                              "content": "sarah.lee@email.com",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            }
+                                          ]
+                                        }
+                                      ]
                                     }
                                   ]
                                 }
@@ -163181,6 +165131,7 @@
                                               "height": 12,
                                               "icon": "calendar",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-time"
                                             }
                                           ]
@@ -163255,6 +165206,7 @@
                                               "height": 12,
                                               "icon": "credit-card",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-invoice"
                                             }
                                           ]
@@ -163329,6 +165281,7 @@
                                               "height": 12,
                                               "icon": "hash",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-invoice"
                                             }
                                           ]
@@ -163403,6 +165356,7 @@
                                               "height": 12,
                                               "icon": "receipt-text",
                                               "library": "lucide",
+                                              "weight": 600,
                                               "fill": "$color-time"
                                             }
                                           ]
