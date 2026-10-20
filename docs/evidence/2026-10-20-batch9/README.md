@@ -19,3 +19,7 @@ No full build, full TypeScript check, project-wide lint or test suite. No capaci
 ## Live branch app
 
 Signed in through the real login as the existing Raad LTD Owner on localhost:5175. Opened existing client WC4 Check1 and its Notes / Photos and files cards. On New client, selected a PDF and a refused executable, removed the refused file, saw the remaining **Not saved** document, removed it, and confirmed the empty message returned. No client was saved, no file uploaded, no page errors. Screenshots: `live-client.png`, `live-new-client-files.png`.
+
+## Integration handoff
+
+Branch `codex/concept-batch9`, workspace `/home/jafar/Ucrm/.worktrees/concept-batch9`, reservation `084d9574cc37`; committed and pushed. Combined main's batch 12 documentation without dropping either update. Main integration claim was refused because `claude-batch12-opus` reservation `1138f1df5f74` still owns `/home/jafar/Ucrm`. Jafar has been asked to have that writer save/push and release the folder. Next: claim main integration, merge this branch, mark the five Batch 9 checklist rows merged, update NOW/C5, repeat the brief real-app file-staging check on localhost:5173, commit/push main, release both reservations. Do not repeat full-project checks.
