@@ -216,7 +216,9 @@
 			</ul>
 			{#if itemsQuery.hasNextPage}
 				<ListLoadMore
- count={items.length} recordName="items" recordColor="quote"
+					count={items.length}
+					recordName="items"
+					recordColor="quote"
 					hasNextPage={itemsQuery.hasNextPage}
 					isFetchingNextPage={itemsQuery.isFetchingNextPage}
 					onLoadMore={() => itemsQuery.fetchNextPage()}

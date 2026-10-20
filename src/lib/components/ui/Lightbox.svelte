@@ -13,6 +13,7 @@
 
 <script lang="ts">
 	import { Dialog as DialogPrimitive } from 'bits-ui';
+	import photosIcon from '@tabler/icons/outline/photo.svg?raw';
 	import closeIcon from '@tabler/icons/outline/x.svg?raw';
 	import downloadIcon from '@tabler/icons/outline/download.svg?raw';
 	import chevronLeftIcon from '@tabler/icons/outline/chevron-left.svg?raw';
@@ -97,13 +98,13 @@
 				</DialogPrimitive.Title>
 
 				<header class="lightbox__bar">
+					<span class="lightbox__count"
+						><span aria-hidden="true">{@html photosIcon}</span>{index + 1} of {items.length}</span
+					>
 					<div class="lightbox__title">
 						<span class="lightbox__name">{current.caption}</span>
 						{#if current.description}
 							<span class="lightbox__description">{current.description}</span>
-						{/if}
-						{#if hasMany}
-							<span class="lightbox__count">{index + 1} of {items.length}</span>
 						{/if}
 					</div>
 					<div class="lightbox__bar-actions">
@@ -202,7 +203,7 @@
 		box-sizing: border-box;
 		flex-direction: column;
 		gap: var(--space-base);
-		padding: var(--space-base);
+		padding: var(--space-base) var(--space-medium);
 	}
 
 	:global(.lightbox__sr-only) {
@@ -231,7 +232,7 @@
 
 		&__name {
 			overflow: hidden;
-			color: #fff;
+			color: var(--color-white);
 			font-size: var(--typography--fontSize-base);
 			font-weight: 600;
 			text-overflow: ellipsis;
@@ -240,7 +241,7 @@
 
 		&__description {
 			overflow: hidden;
-			color: rgba(255, 255, 255, 0.86);
+			color: rgba(255, 255, 255, 0.72);
 			font-size: var(--typography--fontSize-small);
 			text-overflow: ellipsis;
 			white-space: nowrap;
@@ -281,14 +282,14 @@
 			place-items: center;
 			border: 0;
 			border-radius: var(--radius-circle);
-			color: #fff;
-			background: rgba(255, 255, 255, 0.14);
+			color: var(--color-white);
+			background: rgba(255, 255, 255, 0.12);
 			cursor: pointer;
 			transform: translateY(-50%);
 			transition: background-color var(--timing-quick);
 
 			&:hover {
-				background: rgba(255, 255, 255, 0.28);
+				background: rgba(255, 255, 255, 0.2);
 			}
 
 			&:focus-visible {
@@ -320,8 +321,8 @@
 		}
 
 		&__thumb {
-			width: 72px;
-			height: 56px;
+			width: 56px;
+			height: 42px;
 			flex: 0 0 auto;
 			overflow: hidden;
 			padding: 0;
@@ -340,12 +341,12 @@
 
 			&:focus-visible {
 				outline: none;
-				border-color: #fff;
+				border-color: var(--color-interactive);
 				opacity: 1;
 			}
 
 			&--active {
-				border-color: #fff;
+				border-color: var(--color-interactive);
 				opacity: 1;
 			}
 
@@ -364,13 +365,13 @@
 			place-items: center;
 			border: 0;
 			border-radius: var(--radius-circle);
-			color: #fff;
-			background: rgba(255, 255, 255, 0.14);
+			color: var(--color-white);
+			background: rgba(255, 255, 255, 0.12);
 			cursor: pointer;
 			transition: background-color var(--timing-quick);
 
 			&:hover {
-				background: rgba(255, 255, 255, 0.28);
+				background: rgba(255, 255, 255, 0.2);
 			}
 
 			&:focus-visible {
@@ -405,6 +406,81 @@
 				width: 20px;
 				height: 20px;
 			}
+		}
+	}
+
+	.lightbox__title {
+		flex: 1;
+	}
+	.lightbox__name {
+		font-size: 15px;
+	}
+	.lightbox__description {
+		font-size: var(--typography--fontSize-label);
+	}
+	.lightbox__count {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		flex-shrink: 0;
+		padding: 8px 14px;
+		border: 1px solid rgba(var(--color-white--rgb), 0.18);
+		border-radius: var(--radius-circle);
+		background: rgba(var(--color-white--rgb), 0.12);
+		color: var(--color-white);
+		font-size: var(--typography--fontSize-label);
+		font-weight: 600;
+		span {
+			display: flex;
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+		}
+	}
+	.lightbox__bar-actions {
+		padding: 4px;
+		gap: 2px;
+		border: 1px solid rgba(var(--color-white--rgb), 0.18);
+		border-radius: var(--radius-circle);
+		background: rgba(var(--color-white--rgb), 0.12);
+	}
+	.lightbox__icon-button {
+		background: transparent;
+	}
+	.lightbox__image {
+		border-radius: var(--radius-base);
+		max-width: calc(100% - 128px);
+	}
+	.lightbox__strip {
+		justify-content: safe center;
+		padding: 16px 0;
+	}
+	.lightbox__thumb {
+		border-radius: 6px;
+	}
+	.lightbox__step :global(svg) {
+		width: 20px;
+		height: 20px;
+	}
+	.lightbox__step:focus-visible,
+	.lightbox__icon-button:focus-visible,
+	.lightbox__thumb:focus-visible {
+		box-shadow: var(--shadow-focus);
+	}
+	.lightbox__step:active,
+	.lightbox__icon-button:active {
+		background: rgba(var(--color-white--rgb), 0.2);
+	}
+	@media (max-width: 767px) {
+		.lightbox__image {
+			max-width: 100%;
+		}
+		.lightbox__count {
+			padding: 8px;
+		}
+		.lightbox__bar {
+			gap: 8px;
 		}
 	}
 </style>

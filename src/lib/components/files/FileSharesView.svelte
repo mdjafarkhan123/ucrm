@@ -213,7 +213,9 @@
 		{/snippet}
 		{#snippet footer()}
 			<ListLoadMore
- count={shares.length} recordName="shares" recordColor="inactive"
+				count={shares.length}
+				recordName="shares"
+				recordColor="inactive"
 				hasNextPage={sharesQuery.hasNextPage}
 				isFetchingNextPage={sharesQuery.isFetchingNextPage}
 				onLoadMore={() => sharesQuery.fetchNextPage()}

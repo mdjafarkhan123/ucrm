@@ -179,7 +179,9 @@
 			{/snippet}
 			{#snippet footer()}
 				<ListLoadMore
- count={recipients.length} recordName="recipients" recordColor="inactive"
+					count={recipients.length}
+					recordName="recipients"
+					recordColor="inactive"
 					hasNextPage={recipientsQuery.hasNextPage}
 					isFetchingNextPage={recipientsQuery.isFetchingNextPage}
 					onLoadMore={() => recipientsQuery.fetchNextPage()}

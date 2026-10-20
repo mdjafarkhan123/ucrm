@@ -329,7 +329,9 @@
 						{/snippet}
 						{#snippet footer()}
 							<ListLoadMore
- count={members.length} recordName="team members" recordColor="inactive"
+								count={members.length}
+								recordName="team members"
+								recordColor="inactive"
 								hasNextPage={teamQuery.hasNextPage}
 								isFetchingNextPage={teamQuery.isFetchingNextPage}
 								onLoadMore={() => teamQuery.fetchNextPage()}

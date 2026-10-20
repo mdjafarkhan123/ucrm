@@ -398,10 +398,7 @@
 			{#snippet actions()}
 				{#if quotesActionsAllowed}
 					<DropdownMenu triggerText="More" unavailableReason={moreActionsReason} />
-					<Button
-						variant="primary"
-						href={resolve('/(app)/quotes/new')}
-					>
+					<Button variant="primary" href={resolve('/(app)/quotes/new')}>
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						<span class="quotes-header__icon" aria-hidden="true">{@html plusIcon}</span>
 						New quote
@@ -565,7 +562,9 @@
 					{/snippet}
 					{#snippet footer()}
 						<ListLoadMore
- count={quotes.length} recordName="quotes" recordColor="quote"
+							count={quotes.length}
+							recordName="quotes"
+							recordColor="quote"
 							variant="card"
 							label="Load more quotes"
 							hasNextPage={quotesQuery.hasNextPage}

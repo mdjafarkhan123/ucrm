@@ -109,7 +109,9 @@
 		>
 	{/if}
 	<ListLoadMore
- count={messages.length} recordName="messages" recordColor="inactive"
+		count={messages.length}
+		recordName="messages"
+		recordColor="inactive"
 		hasNextPage={historyQuery.hasNextPage}
 		isFetchingNextPage={historyQuery.isFetchingNextPage}
 		onLoadMore={() => historyQuery.fetchNextPage()}

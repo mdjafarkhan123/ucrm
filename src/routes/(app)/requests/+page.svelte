@@ -346,10 +346,7 @@
 		>
 			{#snippet actions()}
 				<DropdownMenu triggerText="More" unavailableReason={moreActionsReason} />
-				<Button
-					variant="primary"
-					href={resolve('/(app)/requests/new')}
-				>
+				<Button variant="primary" href={resolve('/(app)/requests/new')}>
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					<span class="requests-header__icon" aria-hidden="true">{@html plusIcon}</span>
 					New request
@@ -542,7 +539,9 @@
 					{/snippet}
 					{#snippet footer()}
 						<ListLoadMore
- count={requests.length} recordName="requests" recordColor="request"
+							count={requests.length}
+							recordName="requests"
+							recordColor="request"
 							variant="card"
 							label="Load more requests"
 							hasNextPage={requestsQuery.hasNextPage}

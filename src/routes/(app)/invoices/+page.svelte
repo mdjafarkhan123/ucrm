@@ -533,7 +533,9 @@
 					{/snippet}
 					{#snippet footer()}
 						<ListLoadMore
- count={invoices.length} recordName="invoices" recordColor="invoice"
+							count={invoices.length}
+							recordName="invoices"
+							recordColor="invoice"
 							variant="card"
 							label="Load more invoices"
 							hasNextPage={invoicesQuery.hasNextPage}

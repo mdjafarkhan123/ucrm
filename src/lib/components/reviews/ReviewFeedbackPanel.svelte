@@ -332,7 +332,9 @@
 			{/each}
 		</ul>
 		<ListLoadMore
- count={items.length} recordName="items" recordColor="review"
+			count={items.length}
+			recordName="items"
+			recordColor="review"
 			hasNextPage={feedbackQuery.hasNextPage}
 			isFetchingNextPage={feedbackQuery.isFetchingNextPage}
 			onLoadMore={() => feedbackQuery.fetchNextPage()}

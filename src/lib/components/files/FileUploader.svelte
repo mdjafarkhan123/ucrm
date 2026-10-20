@@ -3,6 +3,10 @@
 	import { finishFileUpload, formatFileSize, startFileUpload } from '$lib/files/api';
 	import { MAX_FILE_SIZE_BYTES, allowedTypeFor } from '$lib/files/allowlist';
 	import Button from '$lib/components/ui/Button.svelte';
+	import cloudIcon from '@tabler/icons/outline/cloud-upload.svg?raw';
+	import fileIcon from '@tabler/icons/outline/file.svg?raw';
+	import refreshIcon from '@tabler/icons/outline/refresh.svg?raw';
+	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import xIcon from '@tabler/icons/outline/x.svg?raw';
 	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 
@@ -50,6 +54,20 @@
 	const MAX_IN_FLIGHT = 3;
 
 	const active = $derived(queue.filter((item) => item.status !== 'error'));
+	let completed = $state(0);
+	const total = $derived(completed + queue.length);
+	const batchProgress = $derived(
+		total
+			? (completed +
+					queue.reduce(
+						(n, item) =>
+							n +
+							(item.status === 'checking' ? 1 : item.status === 'uploading' ? item.progress : 0),
+						0
+					)) /
+					total
+			: 0
+	);
 	const failed = $derived(queue.filter((item) => item.status === 'error'));
 
 	// Queue items live inside a `$state` array, so they are only reactive when reached through it. Patching
@@ -64,6 +82,7 @@
 
 	export function addFiles(fileList: FileList | File[] | null) {
 		if (!fileList) return;
+		if (!queue.length) completed = 0;
 		for (const file of Array.from(fileList)) {
 			const wrongType = !allowedTypeFor(file.name);
 			const tooBig = file.size > MAX_FILE_SIZE_BYTES;
@@ -128,7 +147,10 @@
 
 			// It has served its purpose on screen; the file itself is now in the library, where its own row
 			// shows whether it is still being checked.
-			setTimeout(() => drop(item.key), 2500);
+			setTimeout(() => {
+				completed += 1;
+				drop(item.key);
+			}, 2500);
 		} catch (error) {
 			const message = error instanceof Error ? error.message : 'That file could not be uploaded.';
 			// A partial batch keeps the files that made it and says which ones did not, rather than
@@ -149,199 +171,272 @@
 
 	function statusLabel(item: QueuedUpload) {
 		if (item.status === 'checking') return 'Uploaded — now being checked';
-		if (item.status === 'uploading') return `${Math.round(item.progress * 100)}%`;
+		if (item.status === 'uploading')
+			return `${formatFileSize(item.sizeBytes * item.progress)} of ${formatFileSize(item.sizeBytes)}`;
 		return `${formatFileSize(item.sizeBytes)} · Waiting`;
 	}
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-{#if queue.length > 0}
+{#if queue.length}
 	<section class="file-uploader" aria-label="Uploads">
 		<div class="file-uploader__heading">
-			<h2 class="file-uploader__title">
-				{#if active.length > 0}
-					Uploading {active.length}
-					{active.length === 1 ? 'file' : 'files'}
-				{:else}
-					{failed.length}
-					{failed.length === 1 ? 'file did not upload' : 'files did not upload'}
-				{/if}
-			</h2>
-			{#if failed.length > 0 && active.length === 0}
-				<Button variant="quiet" size="small" onclick={clearFailed}>Clear</Button>
-			{/if}
+			<span
+				class={[
+					'file-uploader__heading-icon',
+					!active.length && 'file-uploader__heading-icon--error'
+				]}
+				aria-hidden="true">{@html active.length ? cloudIcon : alertTriangleIcon}</span
+			>
+			<div class="file-uploader__heading-body">
+				<h2 class="file-uploader__title">
+					{active.length
+						? `Uploading ${total} ${total === 1 ? 'file' : 'files'}`
+						: `${failed.length} ${failed.length === 1 ? 'file did' : 'files did'} not upload`}
+				</h2>
+				<p class="file-uploader__summary">
+					{active.length
+						? `${completed + queue.filter((item) => item.status === 'checking').length} of ${total} uploaded${failed.length ? ` · ${failed.length} did not upload` : ''}`
+						: 'Try again, or clear them'}
+				</p>
+			</div>
+			{#if failed.length && !active.length}<Button
+					variant="quiet"
+					size="small"
+					onclick={clearFailed}>Clear</Button
+				>{/if}
 		</div>
-
+		{#if active.length}<div class="file-uploader__batch">
+				<div
+					class="file-uploader__track"
+					role="progressbar"
+					aria-label="Batch upload progress"
+					aria-valuenow={Math.round(batchProgress * 100)}
+					aria-valuemin="0"
+					aria-valuemax="100"
+				>
+					<span style:width={`${batchProgress * 100}%`}></span>
+				</div>
+			</div>{/if}
 		<ul class="file-uploader__list">
 			{#each queue as item (item.key)}
-				<li class="file-uploader__item" class:file-uploader__item--error={item.status === 'error'}>
-					{#if item.status === 'error'}
-						<span class="file-uploader__item-icon" aria-hidden="true"
-							>{@html alertTriangleIcon}</span
-						>
-					{/if}
+				<li
+					class={['file-uploader__item', item.status === 'error' && 'file-uploader__item--error']}
+				>
+					<span
+						class="file-uploader__ring"
+						style:--progress={`${item.status === 'uploading' ? item.progress * 360 : 0}deg`}
+						><span class="file-uploader__item-icon" aria-hidden="true"
+							>{@html item.status === 'error' ? alertTriangleIcon : fileIcon}</span
+						></span
+					>
 					<div class="file-uploader__item-body">
-						<span class="file-uploader__item-name">{item.name}</span>
-						{#if item.status === 'error'}
-							<span class="file-uploader__item-error">{item.error}</span>
-						{:else if item.status === 'uploading'}
-							<span
-								class="file-uploader__progress"
-								role="progressbar"
-								aria-label={`Uploading ${item.name}`}
-								aria-valuenow={Math.round(item.progress * 100)}
-								aria-valuemin="0"
-								aria-valuemax="100"
-							>
-								<span
-									class="file-uploader__progress-bar"
-									style={`width: ${Math.round(item.progress * 100)}%`}
-								></span>
-							</span>
-						{:else}
-							<span class="file-uploader__item-meta">{statusLabel(item)}</span>
-						{/if}
-					</div>
-
-					{#if item.status === 'uploading'}
-						<span class="file-uploader__item-meta">{statusLabel(item)}</span>
-					{/if}
-					{#if item.status === 'error' && item.retryable}
-						<Button variant="quiet" size="small" onclick={() => retry(item)}>Try again</Button>
-					{/if}
-					{#if item.status === 'error'}
-						<button
-							type="button"
-							class="file-uploader__remove"
-							aria-label={`Remove ${item.name}`}
-							onclick={() => drop(item.key)}
+						<span class="file-uploader__item-name" title={item.name}>{item.name}</span><span
+							class={item.status === 'error'
+								? 'file-uploader__item-error'
+								: 'file-uploader__item-meta'}
+							>{item.status === 'error' ? item.error : statusLabel(item)}</span
 						>
-							{@html xIcon}
-						</button>
-					{/if}
-				</li>
-			{/each}
+					</div>
+					<StatusBadge
+						status={item.status === 'error'
+							? 'critical'
+							: item.status === 'checking'
+								? 'warning'
+								: item.status === 'uploading'
+									? 'informative'
+									: 'inactive'}
+						>{#if item.status === 'uploading'}<span
+								class="file-uploader__spinner"
+								aria-hidden="true"
+							></span>{/if}{item.status === 'error'
+							? 'Failed'
+							: item.status === 'checking'
+								? 'Checking'
+								: item.status === 'uploading'
+									? `${Math.round(item.progress * 100)}%`
+									: 'Waiting'}</StatusBadge
+					>
+					{#if item.status === 'error' && item.retryable}<Button
+							variant="secondary"
+							size="small"
+							onclick={() => retry(item)}
+							><span class="file-uploader__retry-icon" aria-hidden="true">{@html refreshIcon}</span
+							>Try again</Button
+						>{/if}
+					{#if item.status === 'error'}<Button
+							variant="quiet"
+							size="small"
+							iconOnly
+							label={`Remove ${item.name}`}
+							onclick={() => drop(item.key)}>{@html xIcon}</Button
+						>{/if}
+				</li>{/each}
 		</ul>
-	</section>
-{/if}
+	</section>{/if}
 
 <!-- eslint-enable svelte/no-at-html-tags -->
-
 <style lang="scss">
 	.file-uploader {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-small);
-		padding: var(--space-base);
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		overflow: hidden;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-large);
 		background: var(--color-surface);
-	}
-
-	.file-uploader__heading {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-small);
-	}
-	.file-uploader__title {
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-base);
-		font-weight: 700;
-	}
-	.file-uploader__list {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-smaller);
-		list-style: none;
-	}
-	.file-uploader__item {
-		display: flex;
-		align-items: center;
-		gap: var(--space-small);
-		padding: var(--space-small);
-		border-radius: var(--radius-base);
-		background: var(--color-surface--background);
-
-		&--error {
-			color: var(--color-critical--onSurface);
+		&__heading {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			padding: 16px 16px 12px 20px;
+		}
+		&__heading-icon {
+			display: grid;
+			place-items: center;
+			flex: 0 0 32px;
+			height: 32px;
+			border-radius: var(--radius-base);
+			color: var(--color-inactive);
+			background: var(--color-inactive--surface);
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+			&--error {
+				color: var(--color-critical);
+				background: var(--color-critical--surface);
+			}
+		}
+		&__heading-body {
+			flex: 1;
+			min-width: 0;
+		}
+		&__title {
+			margin: 0;
+			font-size: 16px;
+			font-weight: 600;
+			color: var(--color-heading);
+		}
+		&__summary {
+			margin: 4px 0 0;
+			font-size: var(--typography--fontSize-small);
+			color: var(--color-text--secondary);
+		}
+		&__batch {
+			padding: 0 20px 16px;
+		}
+		&__track {
+			height: 8px;
+			overflow: hidden;
+			border-radius: var(--radius-circle);
+			background: var(--color-surface--background);
+			span {
+				display: block;
+				height: 100%;
+				background: var(--color-interactive);
+				transition: width var(--timing-base);
+			}
+		}
+		&__list {
+			list-style: none;
+			padding: 0;
+			margin: 0;
+		}
+		&__item {
+			display: flex;
+			align-items: center;
+			gap: 14px;
+			padding: 12px 16px 12px 20px;
+			border-top: 1px solid var(--color-border);
+		}
+		&__ring {
+			display: grid;
+			place-items: center;
+			flex: 0 0 44px;
+			height: 44px;
+			border-radius: var(--radius-circle);
+			background: conic-gradient(
+				var(--color-interactive) var(--progress),
+				var(--color-surface--background) 0
+			);
+			position: relative;
+			&::before {
+				content: '';
+				position: absolute;
+				inset: 4px;
+				border-radius: inherit;
+				background: var(--color-surface);
+			}
+		}
+		&__item-icon {
+			position: relative;
+			display: grid;
+			place-items: center;
+			width: 32px;
+			height: 32px;
+			border-radius: var(--radius-circle);
+			background: var(--color-surface--background);
+			color: var(--color-icon);
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+		}
+		&__item--error &__item-icon {
+			color: var(--color-critical);
 			background: var(--color-critical--surface);
 		}
-	}
-	.file-uploader__item-icon {
-		display: inline-flex;
-		flex: 0 0 auto;
-
-		:global(svg) {
-			width: 18px;
-			height: 18px;
+		&__item-body {
+			flex: 1;
+			min-width: 0;
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+		}
+		&__item-name {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
+		}
+		&__item-meta {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+		&__item-error {
+			color: var(--color-critical--onSurface);
+			font-size: var(--typography--fontSize-small);
+		}
+		&__retry-icon {
+			display: flex;
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+		}
+		&__spinner {
+			display: inline-block;
+			vertical-align: middle;
+			width: 12px;
+			height: 12px;
+			border: 2px solid currentColor;
+			border-right-color: transparent;
+			border-radius: var(--radius-circle);
+			animation: upload-spin var(--timing-loading) linear infinite;
+		}
+		@media (max-width: 600px) {
+			&__item {
+				flex-wrap: wrap;
+				gap: 8px;
+			}
+			&__item-body {
+				min-width: 140px;
+			}
 		}
 	}
-	.file-uploader__item-body {
-		display: flex;
-		min-width: 0;
-		flex: 1 1 auto;
-		flex-direction: column;
-		gap: 2px;
-	}
-	.file-uploader__item-name {
-		overflow: hidden;
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-	.file-uploader__item--error .file-uploader__item-name {
-		color: inherit;
-	}
-	.file-uploader__item-meta {
-		flex: 0 0 auto;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-smaller);
-	}
-	.file-uploader__item-error {
-		font-size: var(--typography--fontSize-smaller);
-	}
-
-	.file-uploader__progress {
-		display: block;
-		height: 6px;
-		overflow: hidden;
-		border-radius: var(--radius-large);
-		background: var(--color-surface--hover);
-	}
-	.file-uploader__progress-bar {
-		display: block;
-		height: 100%;
-		background: var(--color-interactive);
-		transition: width var(--timing-base) ease-out;
-	}
-
-	.file-uploader__remove {
-		display: grid;
-		width: 20px;
-		height: 20px;
-		flex: 0 0 auto;
-		place-items: center;
-		border: 0;
-		border-radius: var(--radius-circle);
-		color: inherit;
-		background: transparent;
-		cursor: pointer;
-
-		&:hover {
-			background: var(--color-surface--hover);
-		}
-		&:focus-visible {
-			outline: none;
-			box-shadow: var(--shadow-focus);
-		}
-
-		:global(svg) {
-			display: block;
-			width: 14px;
-			height: 14px;
+	@keyframes upload-spin {
+		to {
+			transform: rotate(360deg);
 		}
 	}
 </style>

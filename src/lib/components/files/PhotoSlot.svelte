@@ -1,7 +1,6 @@
 <script lang="ts">
 	import FileThumb from '$lib/components/files/FileThumb.svelte';
 	import type { FileProcessingState } from '$lib/files/api';
-	import uploadIcon from '@tabler/icons/outline/upload.svg?raw';
 	import pencilIcon from '@tabler/icons/outline/pencil.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 	import photoPlusIcon from '@tabler/icons/outline/photo-plus.svg?raw';
@@ -16,7 +15,7 @@
 		uploading = false,
 		disabled = false,
 		label = 'Photo',
-		addText,
+		addText = 'Add photo',
 		onChoose,
 		onRemove
 	}: {
@@ -53,11 +52,7 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div
-	class="photo-slot"
-	class:photo-slot--filled={filled}
-	class:photo-slot--concept={Boolean(addText)}
->
+<div class="photo-slot" class:photo-slot--filled={filled} class:photo-slot--uploading={uploading}>
 	<input
 		bind:this={input}
 		type="file"
@@ -68,7 +63,9 @@
 		onchange={handleChange}
 	/>
 	{#if uploading}
-		<span class="photo-slot__loading" aria-hidden="true"></span>
+		<div class="photo-slot__upload-status" role="status">
+			<span class="photo-slot__loading" aria-hidden="true"></span><span>Uploading…</span>
+		</div>
 	{:else if filled}
 		{#if previewUrl}
 			<img class="photo-slot__image" src={previewUrl} alt={label} />
@@ -112,11 +109,7 @@
 			{disabled}
 			onclick={openPicker}
 		>
-			{#if addText}
-				{@html photoPlusIcon}<span class="photo-slot__add-text">{addText}</span>
-			{:else}
-				{@html uploadIcon}
-			{/if}
+			{@html photoPlusIcon}<span class="photo-slot__add-text">{addText}</span>
 		</button>
 	{/if}
 </div>
@@ -132,9 +125,9 @@
 		min-height: 96px;
 		place-items: center;
 		overflow: hidden;
-		border: var(--border-base) dashed var(--color-border--interactive);
+		border: var(--border-base) dashed var(--color-border--interactive--hover);
 		border-radius: var(--radius-base);
-		background: var(--color-surface);
+		background: var(--color-surface--background--subtle);
 
 		// Once there is a photo the box stops inviting a drop and just frames what is there.
 		&--filled {
@@ -181,7 +174,7 @@
 			}
 			&:hover:not(:disabled) {
 				color: var(--color-interactive--hover);
-				background: var(--color-interactive--background--subtle--hover);
+				background: var(--color-surface--hover);
 			}
 			&:focus-visible {
 				outline: none;
@@ -194,16 +187,16 @@
 
 		&__tools {
 			position: absolute;
-			top: var(--space-smallest);
-			right: var(--space-smallest);
+			top: var(--space-small);
+			right: var(--space-small);
 			display: grid;
-			gap: var(--space-smallest);
+			gap: var(--space-smaller);
 		}
 
 		&__tool {
 			display: grid;
-			width: 22px;
-			height: 22px;
+			width: 28px;
+			height: 28px;
 			place-items: center;
 			border: 0;
 			border-radius: var(--radius-circle);
@@ -249,21 +242,6 @@
 		}
 	}
 
-	.photo-slot--concept:not(.photo-slot--filled) {
-		border-style: solid;
-		background: var(--color-surface--background--subtle);
-
-		.photo-slot__add {
-			align-content: center;
-			gap: 2px;
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
-		}
-	}
-
 	.photo-slot__add-text {
 		font-size: var(--typography--fontSize-small);
 		font-weight: 600;
@@ -273,5 +251,45 @@
 		to {
 			transform: rotate(360deg);
 		}
+	}
+
+	.photo-slot__add {
+		align-content: center;
+		gap: var(--space-small);
+	}
+	.photo-slot__add-text {
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-label);
+	}
+	.photo-slot__add:disabled {
+		background: var(--color-disabled--secondary);
+		color: var(--color-disabled);
+		.photo-slot__add-text {
+			color: inherit;
+		}
+	}
+	.photo-slot:has(.photo-slot__add:disabled) {
+		border-color: var(--color-disabled);
+	}
+	.photo-slot--uploading {
+		border-style: solid;
+		border-color: var(--color-border);
+		background: var(--color-surface);
+	}
+	.photo-slot__upload-status {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 8px;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+	}
+	.photo-slot__tool--replace {
+		color: var(--color-icon);
+	}
+	.photo-slot__add:active:not(:disabled),
+	.photo-slot__tool:active:not(:disabled) {
+		background: var(--color-surface--active);
 	}
 </style>

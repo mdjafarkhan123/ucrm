@@ -381,7 +381,9 @@
 				{/snippet}
 				{#snippet footer()}
 					<ListLoadMore
- count={jobs.length} recordName="jobs" recordColor="invoice"
+						count={jobs.length}
+						recordName="jobs"
+						recordColor="invoice"
 						hasNextPage={queueQuery.hasNextPage}
 						isFetchingNextPage={queueQuery.isFetchingNextPage}
 						onLoadMore={() => queueQuery.fetchNextPage()}

@@ -473,7 +473,9 @@
 						{/snippet}
 					</DataTable>
 					<ListLoadMore
- count={ledgerEntries.length} recordName="entries" recordColor="inactive"
+						count={ledgerEntries.length}
+						recordName="entries"
+						recordColor="inactive"
 						variant="card"
 						hasNextPage={ledgerQuery.hasNextPage}
 						isFetchingNextPage={ledgerQuery.isFetchingNextPage}

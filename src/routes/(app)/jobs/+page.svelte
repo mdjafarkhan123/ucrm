@@ -287,10 +287,7 @@
 		>
 			{#snippet actions()}
 				<DropdownMenu triggerText="More" unavailableReason={moreActionsReason} />
-				<Button
-					variant="primary"
-					href={resolve('/(app)/jobs/new')}
-				>
+				<Button variant="primary" href={resolve('/(app)/jobs/new')}>
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					<span class="jobs-header__icon" aria-hidden="true">{@html plusIcon}</span>
 					New job
@@ -422,7 +419,9 @@
 					{/snippet}
 					{#snippet footer()}
 						<ListLoadMore
- count={jobs.length} recordName="jobs" recordColor="job"
+							count={jobs.length}
+							recordName="jobs"
+							recordColor="job"
 							variant="card"
 							label="Load more jobs"
 							hasNextPage={jobsQuery.hasNextPage}
