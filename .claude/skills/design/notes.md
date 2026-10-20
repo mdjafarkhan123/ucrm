@@ -15,7 +15,7 @@ Pencil: `concept.pen` → board "Notes and attachments" (`KuOmH`), approved 2026
 - A 32 avatar (`avatars.md`), 8 gap, then the name 13/600 `--color-heading` over the time 12
   `--color-text--secondary`, 1 apart.
 - An edited note: an "Edited" tag 6 after the name: `--color-inactive--surface`, radius 4, padding 1 5,
-  11/600 `--color-inactive--onSurface`.
+  12/600 `--color-inactive--onSurface`.
 - Hovering the time shows the exact date and time in a dark tip: `--color-surface--reverse`, radius 6,
   padding 5 8, 12/500 `--color-text--reverse`.
 

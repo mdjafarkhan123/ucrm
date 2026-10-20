@@ -77,7 +77,7 @@ radius 16, clipped.
   Each: a 20 tile (radius 5, 12 icon, the fact's own colour family) and label 12/500 `--color-text--secondary`,
   6 over the value 14/600 heading. A missing value says what it waits for in `--color-text--secondary`.
 - **Foot:** the Request → Paid track (padding 12 24, `--color-surface--background--subtle`, 1px line on top;
-  32 step tiles, label 13/600, 700 on the current step, sub 11 quiet, 2px joining lines) or the client's tab
+  32 step tiles, label 13/600, 700 on the current step, sub 12 quiet, 2px joining lines) or the client's tab
   band (`tabs.md`).
 
 ## Spacing

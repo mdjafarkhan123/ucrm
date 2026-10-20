@@ -16,7 +16,7 @@
 
 - **Select:** chevron-down icon at the right, `--color-icon--secondary`.
 - **Search:** search icon at the left. Once something is typed, a 24 clear button at the right: × 14
-  `--color-icon` on `--color-surface--hover`, radius 6. The ⌘K hint (11/600 on `--color-surface--background`,
+  `--color-icon` on `--color-surface--hover`, radius 6. The ⌘K hint (12/600 on `--color-surface--background`,
   radius 4) is only in the top bar's search. Inside a table's header: 38 high, 1px `--color-border`, 13/500.
 - **Select with a word in front (filters):** an optional 16 icon, then the word 14/500 `--color-text--secondary`,
   then the value 14/600 heading ("Status · All").
@@ -106,7 +106,7 @@ Dropdown errors use the shared error border and a corrective message below the b
 
 - Picks one or many days on a month (Create visits). In a box: 1px `--color-border`, radius 12, padding 12, rows
   6 apart. Header: 32 icon buttons ‹ › either side of the month 15/600 heading, centred.
-- Weekday names 11/600 uppercase (0.6 spacing) `--color-text--secondary`; the week starts on the business's
+- Weekday names 12/600 uppercase (0.6 spacing) `--color-text--secondary`; the week starts on the business's
   week-start day. Day cells share the width, 40 high, 4 apart, each a 36 circle with the date 13/500 heading.
 - Today: 1.5px `--color-interactive` ring, date 13/700 `--color-interactive`. Picked: `--color-interactive` fill,
   date 13/700 white. Past days that cannot be picked: date `--color-disabled`. Days outside the month are blank.

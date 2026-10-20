@@ -22,9 +22,11 @@
 | Body | 14 (`-base`) | 400–500 | 0 |
 | Field label, small button | 13 (`-label`) | 600 | 0 |
 | Meta, dates, pills | 12 (`-small`) | 400–600 | 0 |
-| Group and table labels | 11 (`-overline`), uppercase | 600 | 0.6–0.8 |
+| Group and table labels | 12 (`-overline`), uppercase | 600 | 0.6–0.8 |
 
 ## Rules
 
+- **Nothing under 12.** Every piece of text is at least 12px: labels, tags, pills, file-type marks, chart
+  axes (Jafar, 2026-10-20). `-overline` and `-smaller` are 12 too.
 - One page title per screen; headings in order.
 - Money and counts use the heading colour and 600–700 weight.

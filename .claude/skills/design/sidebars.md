@@ -15,12 +15,12 @@ The sidebar is the live app's sidebar (Jafar, 2026-10-18). Pencil: `concept.pen`
 - **Workspace switcher:** a bordered box on `--color-surface--background--subtle` (radius 16, padding 10) with a
   40 logo tile (`--color-interactive`, radius 12, white leaf or the business logo), business name 15/700 over
   "Workspace" 12 quiet, and the collapse button (18 icon) at the right.
-- **Groups:** uppercase label 11/700, 0.8 letter-spacing, quiet colour. Order: Overview: Home, Schedule,
+- **Groups:** uppercase label 12/700, 0.8 letter-spacing, quiet colour. Order: Overview: Home, Schedule,
   Timesheets · Customers: Inbox, Clients, Requests, Pipeline · Work & Money: Jobs, Quotes, Invoices, Files ·
   Growth: Marketing, Reviews. Settings sits at the bottom behind a 1px rule.
 - **Item:** height 38, padding 0 10–12, gap 10–12, radius 12; an 18 icon in its meaning colour (`colors.md`), no
   tile behind it; label 14/500 `--color-heading`; optional count pill (20 high, `--color-interactive`, white
-  11/700).
+  12/700).
 
 ## States
 

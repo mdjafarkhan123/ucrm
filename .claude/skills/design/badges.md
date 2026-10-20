@@ -16,8 +16,8 @@ Draft `--color-inactive`; record pills use the record family (e.g. `--color-requ
 
 - **Without a dot:** a plain tinted pill for counts and facts ("3 visits", "Deposit paid").
 - **Plain label:** no status; `--color-inactive--surface` with `--color-heading` text ("Residential").
-- **Small:** padding 3 9, 5px dot, 11/600, for tight spots.
-- **Outlined (on a tinted card):** white, 1px edge in the status main colour, padding 3 8, 5px dot, 11/600
+- **Small:** padding 3 9, 5px dot, 12/600, for tight spots.
+- **Outlined (on a tinted card):** white, 1px edge in the status main colour, padding 3 8, 5px dot, 12/600
   `--onSurface`. For statuses that need you (Late, Unassigned) on a calendar card, where a filled pill could
   vanish into the card's tint (`calendar.md`).
 

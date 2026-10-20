@@ -21,16 +21,16 @@ board, "Concept · Schedule · Pop-ups · 1440".
 
 ## Grid
 
-- Hours column 66 wide, labels 11/500 `--color-text--secondary` at the top right of each hour.
+- Hours column 66 wide, labels 12/500 `--color-text--secondary` at the top right of each hour.
 - 64 per hour, 7 AM–7 PM; hour lines 1px `--color-border`; day columns split by 1px `--color-border`.
-- Day heading: weekday 11/600 uppercase (0.6 spacing) `--color-text--secondary`, date 20/700 heading, item count
+- Day heading: weekday 12/600 uppercase (0.6 spacing) `--color-text--secondary`, date 20/700 heading, item count
   12/500 quiet at the right; under it, small filled pills for "2 late" (`--color-critical`) and "1 unassigned"
   (`--color-warning`).
 - Today: weekday `--color-interactive`, date 15/700 white in a 30 `--color-interactive` circle, 3px
   `--color-interactive` line under the heading, column and Anytime cell on `--color-surface--background--subtle`.
 - Closed day: white with 1px `--color-border` diagonal stripes, 12 apart; "Closed" in place of the count.
 - Now: a 1px `--color-interactive` line across the open days and 3px on today, both behind the cards; a 10 dot at
-  today's left edge; a `--color-interactive` pill in the hours column with the time 11/600 white.
+  today's left edge; a `--color-interactive` pill in the hours column with the time 12/600 white.
 
 ## Cards
 
@@ -41,13 +41,13 @@ board, "Concept · Schedule · Pop-ups · 1440".
   record `--onSurface`, gap 4. The time is always shown.
 - Client 13/600 `--color-heading`, job 12/500 `--color-text` under it, line height 1.25; tasks and events show
   their title in the client style. One-hour cards put client and job on one line, 4 apart.
-- Foot: people circles at the left (24, `--color-heading`, white initials 11/700, 2px ring in the card fill, 2
+- Foot: people circles at the left (24, `--color-heading`, white initials 12/700, 2px ring in the card fill, 2
   apart) and the status pill at the right.
 - Late: 4px `--color-critical` left edge plus an outlined "Late" pill. Unassigned: outlined "Unassigned" pill only,
-  no edge. Outlined pill: white, 1px status-main edge, padding 3 8, 5 dot, 11/600 `--onSurface`.
+  no edge. Outlined pill: white, 1px status-main edge, padding 3 8, 5 dot, 12/600 `--onSurface`.
 - Completed (any kind): `--color-surface--active`, 1px `--color-border--interactive`, icon
   `--color-icon--secondary`, time, client and job `--color-text--secondary` and crossed out, no people circles,
-  and a filled "Completed" pill (`--color-success--surface`, 11 check, 11/600) at the foot.
+  and a filled "Completed" pill (`--color-success--surface`, 11 check, 12/600) at the foot.
 - Two or more at once: they share the column width side by side, 4 apart, padding 6 6, start time only.
 - Hover: 1px edge in the record colour and a soft shadow (0 4 12 `--color-heading` at 12%).
 
@@ -67,7 +67,7 @@ board, "Concept · Schedule · Pop-ups · 1440".
 - Columns: people 208 and Anytime 140, each with a 1px `--color-border` right edge; then the hours, 64 wide each,
   7 AM–7 PM, so the whole working day shows without sideways scrolling.
 - Head row 76 high: the day summary at the left (weekday, today circle, item count, "late" and "unassigned"
-  pills as in a Week day heading), "ANYTIME" 11/600 uppercase, then hour labels 11/500 quiet, 6 right of each
+  pills as in a Week day heading), "ANYTIME" 12/600 uppercase, then hour labels 12/500 quiet, 6 right of each
   hour line, with a short tick between hours. The now pill sits above the labels with a 2px stem.
 - One row per person, Unassigned first; rows 96 high (lanes 88 plus 8), 1px `--color-border` underneath.
   Work that overlaps opens a second lane and the row grows. Hour lines run down every row.
@@ -78,7 +78,7 @@ board, "Concept · Schedule · Pop-ups · 1440".
 - Day off: a plain "Day off" pill (moon icon) in place of the count, and the Anytime cell and hours hatched like
   a closed day.
 - Cards sit 6 from the row edges and 2 from the hour lines, 84 high. No people circles: the row says who. A visit
-  shared with others shows in each person's row with a 20 circle and "With Jake" 11/600 in the record
+  shared with others shows in each person's row with a 20 circle and "With Jake" 12/600 in the record
   `--onSurface`. Cards under two hours wide show the start time only.
 - The now line is 2px `--color-interactive`, down every row behind the cards.
 - Anytime cell: padding 6, pills 4 apart as in the Week Anytime row.
@@ -92,7 +92,7 @@ board, "Concept · Schedule · Pop-ups · 1440".
 - Six week rows of equal height (154), 1px `--color-border` between rows and between days; the grid keeps its
   height and scrolls on short screens rather than squeezing.
 - Date cell, padding 8, gap 4: the date 13/700 heading at the left (the 1st of a month reads "Nov 1"), the item
-  count 11/500 quiet at the right ("Closed" on a closed day). Under it, only when needed, the filled "late" and
+  count 12/500 quiet at the right ("Closed" on a closed day). Under it, only when needed, the filled "late" and
   "unassigned" pills from the Week day heading.
 - Today: a floating tile inside the cell, 4 in from the grid lines: white, radius 10, 1px `--color-interactive`
   edge, a soft green shadow (0 6 16 brand green at 14%) over a hairline one (0 1 2 `--color-heading` at 8%),
@@ -101,12 +101,12 @@ board, "Concept · Schedule · Pop-ups · 1440".
 - Days from the months either side: date 13/500 `--color-text--secondary`; their items, pills and "+ N more" at
   60% opacity.
 - Items, 3 at most, 3 apart: 22 high, radius 6, padding 0 6, gap 5, the kind's surface, 12 type icon in the
-  record colour, start time 11/600 in the record `--onSurface` (Anytime items have none), then the client 11/600
+  record colour, start time 12/600 in the record `--onSurface` (Anytime items have none), then the client 12/600
   heading (tasks and events show their title). Text that does not fit ends in "…".
 - Late item: 3px `--color-critical` left edge. Unassigned item: a 6 `--color-warning` dot at the right end.
   Completed item: `--color-surface--active`, 1px `--color-border--interactive`, icon `--color-icon-secondary`,
   time and name `--color-text--secondary` and crossed out.
-- More than three: "+ N more" 11/600 `--color-interactive` under the items.
+- More than three: "+ N more" 12/600 `--color-interactive` under the items.
 
 ## Visit pop-up
 
@@ -190,7 +190,7 @@ board, "Concept · Schedule · Pop-ups · 1440".
   at the right. Work line: 14 hammer `--color-job`, work 13/500 `--color-text`, gap 6. Place: 14 map-pin
   `--color-client`, address 12 quiet, gap 4. Foot (6 above): people circles with names 12/500, or the outlined
   "Unassigned" pill; small secondary "Schedule" (calendar-plus) at the right.
-- Age pill: radius full, padding 3 9 3 7, gap 5, 12 clock in the main colour, 11/600 `--onSurface`. "Added
+- Age pill: radius full, padding 3 9 3 7, gap 5, 12 clock in the main colour, 12/600 `--onSurface`. "Added
   today" `--color-informative`; "Waiting 1–6 days" `--color-warning`; "Waiting 7 days" or more
   `--color-critical` (Jafar 2026-10-19).
 

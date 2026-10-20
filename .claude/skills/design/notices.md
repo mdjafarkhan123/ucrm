@@ -31,6 +31,6 @@ At the top of a create or edit form; after a failed save it scrolls into view an
   white `triangle-alert`; the title 14/600 ("2 things to fix before saving", or "This job wasn't saved") over a
   12 hint ("Your other changes are kept.", or what to try), both `--color-critical--onSurface`.
 - One row per field to fix: padding 10 14, gap 10, 1px `--color-border` line above. A 20 round number
-  (`--color-critical--surface`, 11/700 `--color-critical--onSurface`), the field name 13/600 heading over what to
+  (`--color-critical--surface`, 12/700 `--color-critical--onSurface`), the field name 13/600 heading over what to
   do 12 quiet, and a 16 `arrow-down-right` `--color-icon--secondary` at the right.
 - Row hover `--color-surface--hover`, arrow `--color-heading`. Focus on the card: the 2px `--color-focus` ring.

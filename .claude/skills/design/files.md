@@ -23,7 +23,7 @@ Pencil: `concept.pen` → board "Photos and files" (`b4BxuV`), approved 2026-10-
 - **Document:** a small white sheet centred in the box: 64×84, radius 6, 1px `--color-border`, soft shadow
   (0 2 6, heading at 8%), a folded top-right corner (18) in `--color-surface--background--subtle`, three grey
   text lines (`--color-border`, 3 high), and a type tab hanging off its left edge: radius 4, padding 2 6,
-  10/700 white, letter-spacing 0.4, filled in the file family's colour (`colors.md` → File families).
+  12/700 white, letter-spacing 0.4, filled in the file family's colour (`colors.md` → File families).
 - **Still being checked:** the whole box `--color-warning--surface`; centred a 40 white tile (radius 10) with a
   20 `clock` in `--color-warning`, then "Still being checked" 12/600 `--color-warning--onSurface`, 8 apart.
 - **Upload failed / blocked:** the same in `--color-critical` (`alert-triangle`, "Upload failed" or "Blocked by
@@ -100,7 +100,7 @@ Approved 2026-10-20 on board `K04pQm` (B). A large form pop-up (940): grey `--co
 `paperclip`, title "Add files" (message composer: "Attach a file"), the record in the hint line.
 
 - **Places**, a 220 side column, `--color-surface--background--subtle`, 1px `--color-border` on its right,
-  padding 16 12, lines 2 apart. Captions 11/600 quiet, letter-spacing 0.6 ("ON THIS RECORD", "LIBRARY"), padding 8
+  padding 16 12, lines 2 apart. Captions 12/600 quiet, letter-spacing 0.6 ("ON THIS RECORD", "LIBRARY"), padding 8
   8 6, with 8 extra space before the second. Lines 40 high, radius 8, padding 0 8, gap 10: a 24 tile in the
   place's colour (this record in its record colour, the customer in `--color-client`, library places
   `--color-inactive`: `clock`, `photo`, `file-text`, `files`) and the name 14/500 `--color-text`. Open place:

@@ -36,7 +36,7 @@ The dropdown list (`inputs.md`) that opens under a line's name box: 4 under the 
 A form pop-up (`modals.md`) 940 wide, in two sides, with no header line.
 
 - **Preview side**, 340 wide, padding 28, gap 20, the feature card's fill (`cards.md`: gradient plus glow), white
-  text. From the top: a 32 feature tile (`eye`) and "ON A QUOTE IT LOOKS LIKE" 11/600 uppercase
+  text. From the top: a 32 feature tile (`eye`) and "ON A QUOTE IT LOOKS LIKE" 12/600 uppercase
   `--color-feature--text--secondary`; the quote line as a `--color-feature--subtle` panel (1px
   `--color-feature--border`, radius 16, padding 14, gap 12) holding a 44 feature tile with the type icon, the
   name 14/600 and the description 12; "Customer pays" 13 over the price 32/700 (-0.8) with the unit 14; the profit
@@ -54,7 +54,7 @@ A form pop-up (`modals.md`) 940 wide, in two sides, with no header line.
 - Name box, then the description box (88 high) with a 112×88 photo box (`files.md`) beside it, 12 apart.
 - **Price strip:** a label "Price" 13/600 with "· markup follows cost and price" 12 quiet; one box 64 high,
   radius 12, 1px `--color-border--interactive`, clipped, split by 1px `--color-border` lines into Unit cost,
-  Markup, Unit price and a 110 Unit cell. Each cell padding 10 14: the label 11/600 uppercase quiet over the value
+  Markup, Unit price and a 110 Unit cell. Each cell padding 10 14: the label 12/600 uppercase quiet over the value
   16/600 heading with its "$" or "%" 16/500 quiet. The Unit price cell fills `--color-surface--background--subtle`
   and its value is 700.
 - **Options:** one bordered list (radius 12, 1px `--color-border`), rows padding 12 16, gap 12, a line between
@@ -71,7 +71,7 @@ you already sell".
 - **Controls**, padding 16 20 12, gap 12: the search box, then the segmented switch (All, Products with a pink
   `package`, Services with a green `wrench`; options 28 high) and a quiet green "+ Create new item" at the right.
 - **Rows** run edge to edge, padding 10 20, gap 12: a 40 photo (radius 10) or a 40 `image` spot, then the name
-  14/600 heading, the description 12 quiet, and a meta line of the type tag (the status pill, padding 2 8, 11/600,
+  14/600 heading, the description 12 quiet, and a meta line of the type tag (the status pill, padding 2 8, 12/600,
   in the type colours) then "unit · Cost $110.00" 12 quiet; the price 14/600 heading at the right.
 - **Add:** a 32 round `--color-interactive` button with a white 16 plus, `--shadow-button--raised`.
 - **Added:** the row fills `--color-surface--hover` with a 2px `--color-success` left edge; the button becomes a
