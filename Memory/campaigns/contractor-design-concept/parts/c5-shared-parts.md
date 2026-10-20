@@ -21,7 +21,7 @@
 | 10 Price book | CatalogItemPicker, CatalogItemDialog, PriceBookDrawer | Approved `ZWTSi` 2026-10-20: Search list B with D's picture cards for items with a photo; New item pop-up C (new concept, green live preview); Drawer B with A's type tags on every row; looks in `price-book.md`; to build |
 
 | 11 File pickers | FilePicker, FileLabelsDialog, PhotoDescribeForm | Approved `K04pQm` 2026-10-20: Add files B (places side column, pick boxes, picked-files tray), Photo labels A (improved live), Photo details B (caption card, Not saved strip); looks in `files.md`; to build |
-| 12 Time clock | RunningClock, TimerElapsed, TimerRunningElsewhere (1b), WorkTimerControl (1b) | Board `ooCwt`. Jafar 2026-10-20: Clock B (indigo capsule, breathing ring; amber over 12 h), Start/Stop A (separate small white buttons) with B's indigo icons, Timer panel B (incl. Not started B), Running now B. Visit row: A, but time and Stop joined — options C joined button, D stopwatch, E clock digits drawn (section `wFIy7`), waiting for his pick |
+| 12 Time clock | RunningClock, TimerElapsed, TimerRunningElsewhere (1b), WorkTimerControl (1b) | Approved `ooCwt` 2026-10-20 as a mix: Clock B (indigo capsule, breathing ring), Start/Stop A with B's indigo icons, Timer panel B, Running now B, visit row C (indigo-edged clock joined to a normal Stop timer, same height); look in `time-clock.md`; to build |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 

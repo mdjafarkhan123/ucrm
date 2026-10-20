@@ -65,6 +65,7 @@ Jafar 2026-10-17).
 - [page-states.md](page-states.md) — Loading, empty, couldn't load
 - [notices.md](notices.md) — Notice strip, form error card
 - [calendar.md](calendar.md) — Schedule calendar: toolbar, grid, cards, now line
+- [time-clock.md](time-clock.md) — Work timer: ticking time, running clock, Start and Stop, your timer panel, visit row clock
 
 Not yet designed in the concept — use the Classic module until it is: accordion, dropdown, pagination,
 tooltips/popovers.
