@@ -73,8 +73,8 @@ Key, tick rule and coverage command: `list-index.md`.
 | `collaboration/AuthorMeta` |  | ✅ Batch 9 `KuOmH` | ⬜ |
 | `collaboration/NoteBody` |  | ✅ Batch 9 `KuOmH` | ⬜ |
 | `collaboration/NoteFiles` |  | ✅ Batch 9 `KuOmH` | ⬜ |
-| `files/FileLabelsDialog` | 🔁F pop-up · pop-ups: "confirm" 🔁C · loading | ⬜ | ⬜ |
-| `files/FilePicker` | pop-ups: "You do not have access to the file library" 🔁F · loading, empty, permission-limited | ⬜ | ⬜ |
+| `files/FileLabelsDialog` | 🔁F pop-up · pop-ups: "confirm" 🔁C · loading | ✅ Batch 11 `K04pQm` | ⬜ |
+| `files/FilePicker` | pop-ups: "You do not have access to the file library" 🔁F · loading, empty, permission-limited | ✅ Batch 11 `K04pQm` | ⬜ |
 | `files/PendingFilesCard` |  | ✅ Batch 9 `KuOmH` | ⬜ |
-| `files/PhotoDescribeForm` | loading, permission-limited | ⬜ | ⬜ |
+| `files/PhotoDescribeForm` | loading, permission-limited | ✅ Batch 11 `K04pQm` | ⬜ |
 | `work/ClientSummaryCard` | menus ×1 | 🔁 Job details client box `tNdkX` | ⬜ |
