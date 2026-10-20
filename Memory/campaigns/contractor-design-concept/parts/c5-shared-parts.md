@@ -29,6 +29,7 @@
 | 17 Caption and labels pop-up | files/PhotoDescribeDialog (1b): every state | Approved `Y0ECPJ` A 2026-10-20 (photo on top; B photo beside not chosen). Look in `files.md` → Caption and labels pop-up. See § Batch 17 |
 | 18 Record files card | files/RecordFilesCard (1b): every state, menu, remove pop-up | Approved `pH9PB` A 2026-10-20 (photos then document lines; B newest-photo gallery not chosen). Look in `files.md` → Record files card. See § Batch 18 |
 | 19 Writing boxes | forms/FormNotesCard, settings/automation/EmailActionEditor, SmsActionEditor (1b): every state | Approved `qf1uu` 2026-10-20: Notes box B (Notes panel field, taller), email A and text A (one message sheet with value chips; text adds a cost meter). Looks in `notes.md` → Note box on a new record, `inputs.md` → Message sheet. See § Batch 19 |
+| 20 Pop-over and filter chips | ui/Popover, data-display/DateRangeChip, ui/FilterChipMulti (1b): every state | Approved `e18rX` 2026-10-20: B for all three (pop-over with a coloured top band and an arrow; date chip with the time tile and a 440 From → To panel; multi chip with green +2 and a menu with "3 chosen", count pills and a Clear foot). Looks in `modals.md` → Pop-over, `chips.md`. See § Batch 20 |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 
@@ -76,6 +77,20 @@ Hand-off for the builder (restyle only; every control is live today):
 - New foot strips use `--color-surface--background`. Lock icons on invoice strips use the invoice colour.
 - Row 4 (line menu, "Throw away these changes?" with Keep editing / Throw them away, loading, couldn't load
   without Try again, invoice Service date box with ×, progress invoice Item total / Due this invoice) as drawn.
+
+## Batch 20 Pop-over and filter chips — approved 2026-10-20
+
+Board `e18rX`, B for all three (drawn by a helper agent; A options deleted). Jafar's note: the A and B options
+were too alike ("same look, colour changed in places"); later boards must offer clearly different options.
+Restyle only; same open/close, value, clear and filtering behaviour. Hand-off for the builder:
+- `ui/Popover`: tinted top band in the caller's meaning colour, white 32 tile, 16/600 title, × in the band;
+  arrow towards the trigger. Callers pass the meaning colour and icon. The Visit pop-up keeps its approved look.
+- `DateRangeChip`: icon becomes the 24 time tile; panel 440 with From → To on one line and a foot with Clear
+  dates and Done.
+- `FilterChipMulti`: needs an icon prop (16, `--color-interactive`); "+N" in `--color-interactive`; menu head
+  with name and "N chosen", count pills, Clear foot.
+- Open: quick ranges in the date panel (This week, This month, Last 30 days) — idea on the board, waiting for
+  Jafar's yes. Old boards `uSXlT` and `Fma1f` still have 11px captions (12px sweep).
 
 ## Batch 19 Writing boxes — approved 2026-10-20
 

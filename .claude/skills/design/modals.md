@@ -35,3 +35,18 @@ drawing.
 
 - 480 wide, full height, floating 12 from the window's top, right and bottom edges.
 - Header as the form pop-up. Body padding 20, blocks 20 apart. Footer as the form pop-up's.
+
+## Pop-over
+
+The small card that opens beside the button you clicked (`ui/Popover`: Send later in the inbox, a document's
+History, Add on the sales calendar), approved 2026-10-20 on board `e18rX` (B). Lighter than the Visit pop-up,
+which keeps its own approved look.
+
+- Card: `--color-surface`, 1px `--color-border`, radius 12, a soft shadow (0 1 4, black 10%), clipped.
+- Top band in the meaning colour's `--surface` (e.g. `--color-conversation--surface` for Send later), padding
+  12 12 12 14, gap 10: a 32 white tile (radius 8, 1px `--surface-edge`, 16 icon in the meaning colour), the title
+  16/600 heading, and a 28 quiet × with its icon in the meaning `--onSurface`.
+- Body padding 16, gap 14; fields and buttons are the normal ones (a main button full width when it is the one
+  action).
+- A 16×10 arrow in `--color-surface` with the `--color-border` edge points at the button that opened it.
+- Loading: row-shaped bones in the body; couldn't load: the page-states small error with Try again.

@@ -13,12 +13,12 @@ Key, tick rule and coverage command: `list-index.md`.
 | `schedule/NotifyCustomerCheckbox` |  | ✅ | ✅ |
 | `settings/automation/EmailActionEditor` |  | ✅ Batch 19 `qf1uu` 2026-10-20 | ⬜ |
 | `settings/automation/SmsActionEditor` |  | ✅ Batch 19 `qf1uu` 2026-10-20 | ⬜ |
-| `ui/Popover` |  | ⬜ | ⬜ |
+| `ui/Popover` |  | ✅ Batch 20 `e18rX` 2026-10-20 | ⬜ |
 | `work/AttentionCard` |  | ✅ | ✅ |
 | `work/WorkRecordHeader` | menus ×2 | ✅ Batch 13 header C `xrJ3f` 2026-10-20 | ✅ |
 | `collaboration/ActivityFeed` | loading, empty | ⬜ | ⬜ |
 | `communications/ConversationAttachments` |  | ⬜ | ⬜ |
-| `data-display/DateRangeChip` |  | ⬜ | ⬜ |
+| `data-display/DateRangeChip` |  | ✅ Batch 20 `e18rX` 2026-10-20 | ⬜ |
 | `jafar/JafarAuthCard` |  | ⬜ | ⬜ |
 | `layout/RailRow` |  | ⬜ | ⬜ |
 | `marketing/MarketingTemplatePreview` | loading | ⬜ | ⬜ |
@@ -49,7 +49,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `marketing/MarketingTemplatePreviewDialog` | 🔁F pop-up | ⬜ | ⬜ |
 | `profile/ProfilePhotoDialog` | 🔁F pop-up | ⬜ | ⬜ |
 | `settings/WeeklyHoursEditor` |  | ⬜ | ⬜ |
-| `ui/FilterChipMulti` |  | ⬜ | ⬜ |
+| `ui/FilterChipMulti` |  | ✅ Batch 20 `e18rX` 2026-10-20 | ⬜ |
 | `ui/SignaturePad` |  | ⬜ | ⬜ |
 | `automation/InquiryAutomationCard` | pop-ups: "Stop this follow-up?" 🔁C · menus ×1 · loading, empty | ⬜ | ⬜ |
 | `calendar/CalendarCard` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Merged 2026-10-19 |

@@ -50,7 +50,7 @@ Jafar 2026-10-17).
 - [buttons.md](buttons.md) — Button
 - [badges.md](badges.md) — Status pill
 - [inputs.md](inputs.md) — Field, money and quantity boxes, checkbox, radio choice, on/off switch, segmented switch, people pick chips, message sheet
-- [chips.md](chips.md) — Filter chip, tag, tag picker, sender chip
+- [chips.md](chips.md) — Filter chip, tag, tag picker, multi-choice filter chip, date range chip, sender chip
 - [avatars.md](avatars.md) — Avatar
 - [tabs.md](tabs.md) — Tabs
 - [cards.md](cards.md) — Card, number card
@@ -61,11 +61,11 @@ Jafar 2026-10-17).
 - [tables.md](tables.md) — Table
 - [sidebars.md](sidebars.md) — Sidebar
 - [top-bar.md](top-bar.md) — Top bar
-- [modals.md](modals.md) — Form pop-up, "are you sure?" pop-up, side drawer
+- [modals.md](modals.md) — Form pop-up, "are you sure?" pop-up, side drawer, pop-over
 - [page-states.md](page-states.md) — Loading, empty, couldn't load
 - [notices.md](notices.md) — Notice strip, form error card
 - [calendar.md](calendar.md) — Schedule calendar: toolbar, grid, cards, now line
 - [time-clock.md](time-clock.md) — Work timer: ticking time, running clock, Start and Stop, your timer panel, visit row clock
 
 Not yet designed in the concept — use the Classic module until it is: accordion, dropdown, pagination,
-tooltips/popovers.
+tooltips.
