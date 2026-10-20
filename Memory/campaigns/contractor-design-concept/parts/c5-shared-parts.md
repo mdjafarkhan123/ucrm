@@ -212,6 +212,13 @@ Hand-off for the builder:
   the shared `ui/Tooltip` with the full address and "Click to open in Google Maps"; the address is a link
   (underline on hover) opening Google Maps search for it in a new tab. Header height never changes.
 
+## Batch 22 · Files on a message (drawing, waiting for Jafar)
+
+`ConversationAttachments` (Inbox reply box email and text, client Email pop-up, Chat with Uplift). Board
+`mZdBv` in `concept.pen`, drawn 2026-10-20: A clean pills on their own line above the reply box buttons;
+B preview cards (approved 40 file picture) two across under the message. Every state and dark mode drawn.
+Behaviour unchanged. Next: Jafar picks; then record the look in `files.md`, tidy the board, write the hand-off.
+
 ## Batch 10 new behaviour (Jafar, 2026-10-20)
 
 - Search list: items with a photo show as picture cards before the rows of their group.

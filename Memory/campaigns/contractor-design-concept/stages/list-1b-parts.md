@@ -17,7 +17,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `work/AttentionCard` |  | ✅ | ✅ |
 | `work/WorkRecordHeader` | menus ×2 | ✅ Batch 13 header C `xrJ3f` 2026-10-20 | ✅ |
 | `collaboration/ActivityFeed` | loading, empty | ✅ Batch 21 `gZ6rR` A 2026-10-20 | ⬜ |
-| `communications/ConversationAttachments` |  | ⬜ | ⬜ |
+| `communications/ConversationAttachments` |  | ✅ Batch 22 `mZdBv` B 2026-10-20 | ⬜ |
 | `data-display/DateRangeChip` |  | ✅ Batch 20 `e18rX` 2026-10-20 | ⬜ |
 | `jafar/JafarAuthCard` |  | ⬜ | ⬜ |
 | `layout/RailRow` |  | ⬜ | ⬜ |
