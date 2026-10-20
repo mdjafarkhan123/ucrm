@@ -236,7 +236,7 @@
 			padding: 0;
 			border: 0;
 			outline: none;
-			resize: vertical;
+			resize: none;
 			color: var(--color-heading);
 			background: transparent;
 			font: inherit;

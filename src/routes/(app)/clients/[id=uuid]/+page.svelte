@@ -1,4 +1,5 @@
 <script lang="ts">
+	import historyCardIcon from '@tabler/icons/outline/history.svg?raw';
 	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { untrack } from 'svelte';
@@ -81,7 +82,6 @@
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
-	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import cashIcon from '@tabler/icons/outline/cash-banknote.svg?raw';
 	import userIcon from '@tabler/icons/outline/user.svg?raw';
 	import messageIcon from '@tabler/icons/outline/message.svg?raw';
@@ -889,7 +889,7 @@
 
 			{#snippet rail()}
 				{#if showHistory}
-					<RailCard tone="client" title="Client history" icon={clockIcon} description="Newest first">
+					<RailCard tone="client" title="Client history" icon={historyCardIcon} description="Newest first">
 						{#snippet actions()}
 							<Button size="small" variant="tertiary" onclick={() => (showHistory = false)}>
 								Close

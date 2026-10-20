@@ -1032,6 +1032,6 @@
 	}
 
 	.conversation-composer__files:not(:empty) {
-		padding: 0 var(--space-slim) var(--space-slim);
+		padding: var(--space-small) 0;
 	}
 </style>

@@ -428,9 +428,17 @@
 		padding: 0 10px;
 		border-radius: var(--radius-base);
 
+		:global(.checkbox__content) {
+			min-width: 0;
+		}
+
 		:global(.checkbox__label) {
+			display: block;
+			overflow: hidden;
 			color: var(--color-heading);
 			font-size: var(--typography--fontSize-base);
+			text-overflow: ellipsis;
+			white-space: nowrap;
 		}
 	}
 	.filter-chip-multi__row--on :global(.checkbox__label) {
