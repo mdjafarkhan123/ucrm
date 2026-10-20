@@ -26,4 +26,9 @@ No page errors were observed. The test-only fixture route and local authenticati
 
 ## Limits and handoff
 
-No full build, full TypeScript check, whole-project lint/test suite, performance audit or capacity claim. This is shared-control verification; it does not certify every page's full layout. Successful storage scanning and provider delivery were not retested because their code did not change. Main integration and its smoke check are still pending: Jafar asked us to wait until he confirms that the Pencil writer has released main. Branch and handoff: `Memory/campaigns/contractor-design-concept/parts/c5-batches7-8-build.md`.
+No full build, full TypeScript check, whole-project lint/test suite, performance audit or capacity claim. This is shared-control verification; it does not certify every page's full layout. Successful storage scanning and provider delivery were not retested because their code did not change. Jafar confirmed main released on 2026-10-20. Batches 7–8 were merged into main, preserving the newer batches 9–11 design approvals. The temporary integration handoff has been closed.
+
+
+## Integrated main check
+
+Signed in through the real login on the main app (localhost:5173, the same server used by the tunnel). Jobs showed **All 17 jobs are showing**, Automation showed **3** number cards with real counts, and Files rendered **27** file pictures. No browser page errors. Screenshots: `main-jobs-footer.png`, `main-automation.png`. `git diff --check` passed. No app code changed during integration, so the already-passing focused compiler, lint and interaction checks were not repeated.
