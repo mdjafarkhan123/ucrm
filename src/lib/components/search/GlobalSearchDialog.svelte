@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
@@ -176,9 +177,7 @@
 										onkeydown={moveResultFocus}
 										onclick={() => selectResult(result)}
 									>
-										<span class="global-search__result-icon" aria-hidden="true"
-											>{@html resultIcons[result.type]}</span
-										>
+										<IconTile icon={resultIcons[result.type]} tone={result.type} size={32} />
 										<span class="global-search__result-copy">
 											<strong>{result.title}</strong>
 											{#if result.subtitle}<small>{result.subtitle}</small>{/if}
@@ -271,20 +270,6 @@
 	.global-search__result:focus-visible {
 		outline: none;
 		box-shadow: var(--shadow-focus);
-	}
-	.global-search__result-icon {
-		display: grid;
-		flex: 0 0 auto;
-		width: 36px;
-		height: 36px;
-		place-items: center;
-		border-radius: var(--radius-base);
-		color: var(--color-interactive--subtle);
-		background: var(--color-surface--active);
-	}
-	.global-search__result-icon :global(svg) {
-		width: 18px;
-		height: 18px;
 	}
 	.global-search__result-copy {
 		display: grid;

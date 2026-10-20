@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Lightbox, { type LightboxItem } from '$lib/components/ui/Lightbox.svelte';
@@ -298,19 +299,18 @@
 								<img src={file.thumb_url} alt="" loading="lazy" />
 							</button>
 						{:else}
-							<span
-								class="setup-files__icon"
-								class:setup-files__icon--spinning={!file || file.state === 'checking'}
-								aria-hidden="true"
-							>
-								{@html problem
+							<IconTile
+								icon={problem
 									? alertTriangleIcon
 									: !file || file.state === 'checking'
 										? loaderIcon
 										: secure
 											? shieldLockIcon
 											: iconForMimeType(file.mime_type)}
-							</span>
+								tone={problem ? 'critical' : 'inactive'}
+								size={40}
+								class={!file || file.state === 'checking' ? 'setup-files__spinning' : ''}
+							/>
 						{/if}
 						<span class="setup-files__text">
 							{#if file?.state === 'ready' && (!secure || canOpen)}
@@ -353,13 +353,12 @@
 				{/each}
 				{#each uploads as upload (upload.key)}
 					<li class="setup-files__item" class:setup-files__item--problem={Boolean(upload.error)}>
-						<span
-							class="setup-files__icon"
-							class:setup-files__icon--spinning={!upload.error}
-							aria-hidden="true"
-						>
-							{@html upload.error ? alertTriangleIcon : loaderIcon}
-						</span>
+						<IconTile
+							icon={upload.error ? alertTriangleIcon : loaderIcon}
+							tone={upload.error ? 'critical' : 'inactive'}
+							size={40}
+							class={upload.error ? '' : 'setup-files__spinning'}
+						/>
 						<span class="setup-files__text">
 							<span class="setup-files__name">{upload.name}</span>
 							<span class="setup-files__meta" role={upload.error ? 'alert' : undefined}>
@@ -525,28 +524,9 @@
 			}
 		}
 
-		&__icon {
-			display: grid;
-			flex: 0 0 auto;
-			place-items: center;
-			width: 44px;
-			height: 44px;
-			border-radius: var(--radius-small);
-			background: var(--color-surface--background);
-			color: var(--color-icon--secondary);
-
-			:global(svg) {
-				width: 22px;
-				height: 22px;
-			}
-
-			&--spinning :global(svg) {
-				animation: setup-files-spin 1s linear infinite;
-			}
-		}
-
-		&__item--problem &__icon {
-			color: var(--color-critical);
+		// The tile is ui/IconTile, so its spinning icon is reached through :global.
+		:global(.setup-files__spinning svg) {
+			animation: setup-files-spin 1s linear infinite;
 		}
 
 		&__text {
@@ -659,7 +639,7 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.setup-files__icon--spinning :global(svg) {
+		:global(.setup-files__spinning svg) {
 			animation: none;
 		}
 	}

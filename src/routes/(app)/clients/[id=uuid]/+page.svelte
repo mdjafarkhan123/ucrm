@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { untrack } from 'svelte';
 	import { page } from '$app/state';
@@ -909,7 +910,7 @@
 
 					<RailCard tone="client" title="Source and marketing" flush>
 						<div class="client-detail__row">
-							<span class="client-detail__row-icon" aria-hidden="true">{@html targetIcon}</span>
+							<IconTile icon={targetIcon} tone="growth" size={32} />
 							<div class="client-detail__row-text">
 								<span class="client-detail__row-label">Lead source</span>
 								{#if editingBlock === 'lead_source'}
@@ -934,7 +935,7 @@
 						</div>
 
 						<div class="client-detail__row">
-							<span class="client-detail__row-icon" aria-hidden="true">{@html mailIcon}</span>
+							<IconTile icon={mailIcon} tone="conversation" size={32} />
 							<div class="client-detail__row-text">
 								<span class="client-detail__row-label">Marketing email</span>
 								{#if !marketingConsent}
@@ -1189,23 +1190,6 @@
 			gap: 12px;
 			padding: 12px 20px;
 			border-top: var(--border-base) solid var(--color-border);
-		}
-
-		&__row-icon {
-			display: inline-grid;
-			flex: 0 0 32px;
-			width: 32px;
-			height: 32px;
-			place-items: center;
-			border: var(--border-base) solid var(--color-informative--surface);
-			border-radius: var(--radius-base);
-			color: var(--color-text);
-			background: var(--color-surface--background--subtle);
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
 		}
 
 		&__row-text {

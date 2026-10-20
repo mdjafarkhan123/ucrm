@@ -50,11 +50,9 @@ empty-state tiles) a 1px `--surface-edge` border; fill stays the plain surface. 
 ### Icon tile edge — built and merged 2026-10-20
 
 Every meaning tile uses `ui/IconTile` (size 20 added). Proof: `docs/evidence/2026-10-20-icon-tile-edge/README.md`.
-Left on purpose: visit date badge, file thumbs, upload ring, day-clock mark, dark feature-card tiles, conversation
-rail tiles, WorkRecordHeader white tile, Settings 60px solid badge, logos/buttons.
-Decided 2026-10-20 (Jafar left it to Claude): plain grey/white icon squares (attachments, search results, website
-chat, shared files, Banner, setup points…) become `IconTile tone="inactive"`, so there is one tile look. The
-calendar/time field trigger buttons stay icon buttons (they act; tiles only label). Builder: sweep when free.
+Follow-up the same day (Jafar: no hand-built tiles): grey, white and dark-card squares also use `IconTile`
+(`white`, `tone="feature"`). Only circles (timeline markers, upload rings), buttons and step numbers stay as they are.
+Calendar/time field trigger buttons stay icon buttons (they act; tiles only label).
 
 ## Batch 14 Products and services — approved 2026-10-20
 

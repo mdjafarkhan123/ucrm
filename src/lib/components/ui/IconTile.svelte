@@ -5,6 +5,7 @@
 		icon,
 		tone = 'inactive',
 		size = 40,
+		white = false,
 		class: className = ''
 	}: {
 		/** A Tabler icon (raw SVG). */
@@ -13,15 +14,30 @@
 		tone?: string;
 		/** 20 is the record header's fact tile; 24, 32 and 40 are the everyday sizes. */
 		size?: 20 | 24 | 32 | 40;
+		/** A white tile, for one that sits on its own colour (a tinted band or header top). */
+		white?: boolean;
 		/** Placement only (margins, alignment); the tile's own look stays here. */
 		class?: string;
 	} = $props();
 
 	// The yellow families are too light for an icon on their own surface, so they use their text colour.
+	// `feature` is the dark green money card: a see-through white tile with its own edge.
 	const ink = $derived(
-		tone === 'warning' || tone === 'event'
-			? `var(--color-${tone}--onSurface)`
-			: `var(--color-${tone})`
+		tone === 'feature'
+			? 'var(--color-feature--text--secondary)'
+			: tone === 'warning' || tone === 'event'
+				? `var(--color-${tone}--onSurface)`
+				: `var(--color-${tone})`
+	);
+	const surface = $derived(
+		tone === 'feature'
+			? 'var(--color-feature--subtle)'
+			: white
+				? 'var(--color-surface)'
+				: `var(--color-${tone}--surface)`
+	);
+	const edge = $derived(
+		tone === 'feature' ? 'var(--color-feature--border)' : `var(--color-${tone}--surface-edge)`
 	);
 </script>
 
@@ -29,8 +45,8 @@
 <span
 	class="icon-tile icon-tile--{size} {className}"
 	style:--icon-tile-ink={ink}
-	style:--icon-tile-surface={`var(--color-${tone}--surface)`}
-	style:--icon-tile-edge={`var(--color-${tone}--surface-edge)`}
+	style:--icon-tile-surface={surface}
+	style:--icon-tile-edge={edge}
 	aria-hidden="true">{@html icon}</span
 >
 

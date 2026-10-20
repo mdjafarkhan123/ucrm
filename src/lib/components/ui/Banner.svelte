@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import type { Snippet } from 'svelte';
 	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
 	import checkIcon from '@tabler/icons/outline/circle-check.svg?raw';
@@ -19,6 +20,9 @@
 		action?: Snippet;
 	} = $props();
 
+	// The tile takes the banner's own colour family.
+	const tones = { notice: 'informative', success: 'success', warning: 'warning', error: 'critical' };
+
 	const defaultIcons = {
 		notice: infoIcon,
 		success: checkIcon,
@@ -29,7 +33,7 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <div class="banner banner--{type}" role={type === 'error' ? 'alert' : 'status'}>
-	<span class="banner__icon" aria-hidden="true">{@html icon ?? defaultIcons[type]}</span>
+	<IconTile icon={icon ?? defaultIcons[type]} tone={tones[type]} size={32} white />
 	<div class="banner__content">{@render children()}</div>
 	{#if action}<div class="banner__action">{@render action()}</div>{/if}
 </div>
@@ -67,23 +71,6 @@
 			--banner-surface: var(--color-critical--surface);
 			--banner-textColor: var(--color-critical--onSurface);
 			--banner-solid: var(--color-critical);
-		}
-
-		&__icon {
-			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-			width: 32px;
-			height: 32px;
-			border-radius: var(--radius-base);
-			color: var(--banner-solid);
-			background: var(--color-surface);
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
 		}
 
 		&__content {

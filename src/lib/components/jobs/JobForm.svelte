@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { setContext, untrack } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
@@ -379,7 +380,7 @@
 	>
 		{#snippet headerAside()}
 			<span class="job-form__number">
-				<span class="job-form__number-tile" aria-hidden="true">{@html hashIcon}</span>
+				<IconTile icon={hashIcon} tone="job" size={24} />
 				<span class="job-form__number-label">Job #</span>
 				Given when you save
 			</span>
@@ -388,7 +389,7 @@
 		{#snippet main()}
 			{#if sourceRequest}
 				<div class="job-form__request" role="note">
-					<span class="job-form__request-tile" aria-hidden="true">{@html inboxIcon}</span>
+					<IconTile icon={inboxIcon} tone="request" size={32} white />
 					<div class="job-form__request-copy">
 						<p class="job-form__request-title">
 							Turning the request “{sourceRequest.title}” into a job
@@ -634,22 +635,6 @@
 			font-size: var(--typography--fontSize-small);
 		}
 
-		&__number-tile {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			width: 24px;
-			height: 24px;
-			border-radius: var(--radius-circle);
-			color: var(--color-job);
-			background: var(--color-job--surface);
-
-			:global(svg) {
-				width: 14px;
-				height: 14px;
-			}
-		}
-
 		&__number-label {
 			color: var(--color-heading);
 			font-weight: 600;
@@ -665,23 +650,6 @@
 			color: var(--color-request--onSurface);
 			background: var(--color-request--surface);
 			font-size: var(--typography--fontSize-small);
-		}
-
-		&__request-tile {
-			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-			width: 32px;
-			height: 32px;
-			border-radius: var(--radius-base);
-			color: var(--color-request);
-			background: var(--color-surface);
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
 		}
 
 		&__request-copy {

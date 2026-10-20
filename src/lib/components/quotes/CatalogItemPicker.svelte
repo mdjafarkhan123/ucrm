@@ -248,7 +248,7 @@
 								</div>
 								{#each group.items.filter((item) => !item.image_file_id) as item (item.id)}
 									<Combobox.Item value={item.id} label={item.name} class="catalog-picker__option">
-										<span class="catalog-picker__spot" aria-hidden="true">{@html imageIcon}</span>
+										<IconTile icon={imageIcon} size={32} />
 										<span class="catalog-picker__option-copy"
 											><strong>{item.name}</strong><small
 												>{[item.description, item.unit_label].filter(Boolean).join(' · ')}</small
@@ -564,20 +564,6 @@
 	}
 	:global(.catalog-picker__option[data-highlighted]) {
 		border-left-color: var(--color-interactive);
-	}
-	.catalog-picker__spot {
-		display: grid;
-		place-items: center;
-		width: 32px;
-		height: 32px;
-		flex-shrink: 0;
-		border-radius: var(--radius-base);
-		background: var(--color-surface--background);
-		color: var(--color-icon--secondary);
-		:global(svg) {
-			width: 14px;
-			height: 14px;
-		}
 	}
 	.catalog-picker__option-copy strong,
 	.catalog-picker__option-price {

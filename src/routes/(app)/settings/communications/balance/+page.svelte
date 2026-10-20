@@ -252,10 +252,7 @@
 			<div class="balance__hero">
 				<article class="balance__available">
 					<div class="balance__available-top">
-						<span class="balance__available-icon" aria-hidden="true">
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-							{@html walletIcon}
-						</span>
+						<IconTile icon={walletIcon} tone="feature" size={32} />
 						<span>Available balance</span>
 					</div>
 					<strong class="balance__available-value">
@@ -588,19 +585,6 @@
 			font-weight: 800;
 			letter-spacing: 1.2px;
 			text-transform: uppercase;
-		}
-		&__available-icon {
-			display: grid;
-			place-items: center;
-			width: 36px;
-			height: 36px;
-			border-radius: 11px;
-			background: color-mix(in srgb, var(--color-base-white) 12%, transparent);
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
 		}
 		&__available-value {
 			display: flex;

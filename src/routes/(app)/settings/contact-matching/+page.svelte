@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { untrack } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { beforeNavigate } from '$app/navigation';
@@ -179,16 +180,12 @@
 							<div class="contact-matching__notes">
 								<div class="contact-matching__note">
 									<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-									<span class="contact-matching__note-icon" aria-hidden="true"
-										>{@html mailIcon}</span
-									>
+									<IconTile icon={mailIcon} tone="informative" size={24} white />
 									<p>{EXPLANATIONS[priority]}</p>
 								</div>
 								<div class="contact-matching__note">
 									<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-									<span class="contact-matching__note-icon" aria-hidden="true"
-										>{@html gitMergeIcon}</span
-									>
+									<IconTile icon={gitMergeIcon} tone="informative" size={24} white />
 									<p>
 										Neither client's details are changed. If the two clients are really the same
 										person, merge them from either client's page.
@@ -283,22 +280,6 @@
 				color: var(--color-text);
 				font-size: 14px;
 				line-height: 1.45;
-			}
-		}
-		&__note-icon {
-			display: grid;
-			flex: 0 0 auto;
-			place-items: center;
-			width: 28px;
-			height: 28px;
-			border: var(--border-base) solid var(--color-border);
-			border-radius: 8px;
-			background: var(--color-surface);
-			color: var(--color-informative);
-
-			:global(svg) {
-				width: 15px;
-				height: 15px;
 			}
 		}
 
