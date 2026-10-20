@@ -10,6 +10,10 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import CatalogItemDialog from './CatalogItemDialog.svelte';
 	import FileThumb from '$lib/components/files/FileThumb.svelte';
+	import imageIcon from '@tabler/icons/outline/photo.svg?raw';
+	import packageIcon from '@tabler/icons/outline/package.svg?raw';
+	import serviceIcon from '@tabler/icons/outline/tool.svg?raw';
+	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 
 	// A line's name field with a catalog search riding underneath it — pick a reusable default, or just
@@ -93,6 +97,7 @@
 		)
 			.map((group) => ({
 				label: group.label,
+				category: group.category,
 				items: results.filter((item) => item.category === group.category)
 			}))
 			.filter((group) => group.items.length > 0)
@@ -186,43 +191,68 @@
 			>
 				<Combobox.Viewport class="catalog-picker__viewport">
 					{#if itemsQuery.isPending}
-						<div class="catalog-picker__empty">Searching…</div>
+						<LoadingSkeleton variant="table" rows={3} label="Searching price book" />
 					{:else if itemsQuery.isError}
 						<div class="catalog-picker__empty">Keep typing to add this as a one-off line.</div>
 					{:else if groups.length === 0}
 						<div class="catalog-picker__empty">
-							{debouncedQuery
-								? `No price list match for “${debouncedQuery}”. Keep typing to add it as a one-off line.`
-								: 'Nothing in the price list yet — keep typing to add a one-off line.'}
+							<strong>Not in your price book</strong><span
+								>{debouncedQuery
+									? `“${debouncedQuery}” will be a one-off line.`
+									: 'Keep typing for a one-off line.'}</span
+							>
 						</div>
 					{:else}
 						{#each groups as group (group.label)}
 							<Combobox.Group>
-								<Combobox.GroupHeading class="catalog-picker__heading">
-									{group.label}
+								<Combobox.GroupHeading
+									class="catalog-picker__heading catalog-picker__heading--{group.category}"
+								>
+									<span class="catalog-picker__type-icon" aria-hidden="true"
+										>{@html group.category === 'product' ? packageIcon : serviceIcon}</span
+									>{group.label}<small>· {group.items.length}</small>
 								</Combobox.GroupHeading>
-								{#each group.items as item (item.id)}
+								<div class="catalog-picker__pictures">
+									{#each group.items.filter((item) => item.image_file_id) as item (item.id)}
+										<Combobox.Item
+											value={item.id}
+											label={item.name}
+											class="catalog-picker__picture"
+										>
+											<div class="catalog-picker__photo">
+												<FileThumb
+													fileId={item.image_file_id!}
+													displayName={item.name}
+													mimeType="image/jpeg"
+													kind="image"
+													processingState="available"
+													hasThumbnail
+												/><span
+													class="catalog-picker__photo-type catalog-picker__heading--{group.category}"
+													aria-hidden="true"
+													>{@html group.category === 'product' ? packageIcon : serviceIcon}</span
+												>
+											</div>
+											<div class="catalog-picker__picture-copy">
+												<strong>{item.name}</strong>{#if moneyFormatter}<span
+														>{formatMoney(item.unit_price_minor)}
+														<small>{item.unit_label ? `per ${item.unit_label}` : ''}</small></span
+													>{/if}
+											</div>
+										</Combobox.Item>
+									{/each}
+								</div>
+								{#each group.items.filter((item) => !item.image_file_id) as item (item.id)}
 									<Combobox.Item value={item.id} label={item.name} class="catalog-picker__option">
-										{#if item.image_file_id}
-											<FileThumb
-												fileId={item.image_file_id}
-												displayName={item.name}
-												mimeType="image/jpeg"
-												kind="image"
-												processingState="available"
-												hasThumbnail
-												size="row"
-											/>
-										{/if}
-										<span class="catalog-picker__option-copy">
-											<strong>{item.name}</strong>
-											{#if item.description}<small>{item.description}</small>{/if}
-										</span>
-										{#if moneyFormatter}
-											<span class="catalog-picker__option-price"
+										<span class="catalog-picker__spot" aria-hidden="true">{@html imageIcon}</span>
+										<span class="catalog-picker__option-copy"
+											><strong>{item.name}</strong><small
+												>{[item.description, item.unit_label].filter(Boolean).join(' · ')}</small
+											></span
+										>
+										{#if moneyFormatter}<span class="catalog-picker__option-price"
 												>{formatMoney(item.unit_price_minor)}</span
-											>
-										{/if}
+											>{/if}
 									</Combobox.Item>
 								{/each}
 							</Combobox.Group>
@@ -230,9 +260,14 @@
 					{/if}
 				</Combobox.Viewport>
 				<div class="catalog-picker__footer">
+					<span class="catalog-picker__footer-note"
+						>{groups.length
+							? 'Or keep typing for a one-off line.'
+							: 'Sell it often? Save it to the price book.'}</span
+					>
 					<button type="button" class="catalog-picker__create" onclick={startCreate}>
 						<span aria-hidden="true">{@html plusIcon}</span>
-						Create new item
+						New item
 					</button>
 				</div>
 			</Combobox.Content>
@@ -247,6 +282,7 @@
 	<CatalogItemDialog
 		open={creating}
 		name={value}
+		canViewCost={itemsQuery.data?.can_view_cost ?? false}
 		onSaved={created}
 		onClose={() => (creating = false)}
 	/>
@@ -320,12 +356,12 @@
 	:global(.catalog-picker__menu) {
 		z-index: var(--elevation-modal);
 		display: flex;
-		width: var(--bits-floating-anchor-width);
+		width: min(max(var(--bits-floating-anchor-width), 360px), calc(100vw - var(--space-large)));
 		flex-direction: column;
-		max-height: min(320px, var(--bits-floating-available-height));
+		max-height: min(480px, var(--bits-floating-available-height));
 		overflow: hidden;
 		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
+		border-radius: var(--radius-large);
 		background: var(--color-surface);
 		box-shadow: var(--shadow-base);
 	}
@@ -423,7 +459,7 @@
 	}
 
 	// Concept look (design skill `inputs.md`): inside a `.concept-fields` area the label sits above a 40px box.
-	:global(.concept-fields) .catalog-picker {
+	.catalog-picker {
 		.catalog-picker__label,
 		&:focus-within .catalog-picker__label,
 		&.catalog-picker--has-value .catalog-picker__label {
@@ -447,6 +483,152 @@
 		}
 		.catalog-picker__control:hover:not(:focus-within) {
 			border-color: var(--color-border--section);
+		}
+	}
+
+	:global(.catalog-picker__heading) {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+		padding: var(--space-small) 10px var(--space-smaller);
+	}
+	:global(.catalog-picker__heading--product) {
+		--item-color: var(--color-quote);
+		--item-surface: var(--color-quote--surface);
+		color: var(--color-quote--onSurface);
+	}
+	:global(.catalog-picker__heading--service) {
+		--item-color: var(--color-job);
+		--item-surface: var(--color-job--surface);
+		color: var(--color-job--onSurface);
+	}
+	.catalog-picker__type-icon,
+	.catalog-picker__photo-type {
+		display: grid;
+		place-items: center;
+		background: var(--item-surface);
+		color: var(--item-color);
+		border-radius: var(--radius-tile-small);
+		width: 20px;
+		height: 20px;
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+		}
+	}
+	.catalog-picker__pictures {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 10px;
+	}
+	:global(.catalog-picker__picture) {
+		overflow: hidden;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-tile-large);
+		background: var(--color-surface);
+		cursor: pointer;
+		outline: none;
+	}
+	:global(.catalog-picker__picture[data-highlighted]) {
+		box-shadow: inset 0 0 0 2px var(--color-interactive);
+	}
+	.catalog-picker__photo {
+		height: 84px;
+		position: relative;
+		overflow: hidden;
+		:global(.file-thumb) {
+			height: 100%;
+			width: 100%;
+			border-radius: 0;
+			aspect-ratio: auto;
+		}
+	}
+	.catalog-picker__photo-type {
+		position: absolute;
+		top: var(--space-small);
+		left: var(--space-small);
+		width: 22px;
+		height: 22px;
+	}
+	.catalog-picker__picture-copy {
+		display: grid;
+		gap: var(--space-smaller);
+		padding: 10px var(--space-slim) var(--space-slim);
+		strong {
+			font-size: var(--typography--fontSize-label);
+			color: var(--color-heading);
+			font-weight: 600;
+			overflow-wrap: anywhere;
+		}
+		span {
+			font-size: var(--typography--fontSize-base);
+			font-weight: 700;
+			color: var(--color-heading);
+		}
+		small {
+			font-size: var(--typography--fontSize-overline);
+			font-weight: 400;
+			color: var(--color-text--secondary);
+		}
+	}
+	:global(.catalog-picker__option) {
+		min-height: 44px;
+		gap: 10px;
+		padding: var(--space-small) 10px;
+		border-radius: var(--radius-base);
+		border-left: 2px solid transparent;
+	}
+	:global(.catalog-picker__option[data-highlighted]) {
+		border-left-color: var(--color-interactive);
+	}
+	.catalog-picker__spot {
+		display: grid;
+		place-items: center;
+		width: 32px;
+		height: 32px;
+		flex-shrink: 0;
+		border-radius: var(--radius-base);
+		background: var(--color-surface--background);
+		color: var(--color-icon--secondary);
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+		}
+	}
+	.catalog-picker__option-copy strong,
+	.catalog-picker__option-price {
+		font-weight: 600;
+	}
+	.catalog-picker__footer {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		background: var(--color-surface--background--subtle);
+	}
+	.catalog-picker__footer-note {
+		font-size: var(--typography--fontSize-small);
+		color: var(--color-text--secondary);
+		flex: 1;
+	}
+	.catalog-picker__create {
+		width: auto;
+		flex-shrink: 0;
+		border: var(--border-base) solid var(--color-border--interactive);
+		border-radius: var(--radius-base);
+		background: var(--color-surface);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 600;
+	}
+	.catalog-picker__create:focus-visible {
+		outline: none;
+		box-shadow: var(--shadow-focus);
+	}
+	.catalog-picker__empty {
+		display: grid;
+		gap: var(--space-small);
+		text-align: left;
+		strong {
+			color: var(--color-heading);
 		}
 	}
 </style>

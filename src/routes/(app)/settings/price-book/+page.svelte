@@ -24,7 +24,7 @@
 	import FileThumb from '$lib/components/files/FileThumb.svelte';
 	import { relativeTime, exactTime } from '$lib/collaboration/format';
 	import {
-		catalogItemsKey,
+		catalogItemsPagesKey,
 		fetchCatalogItems,
 		fetchQuoteOverview,
 		quoteCountsKey,
@@ -85,7 +85,7 @@
 	});
 
 	const itemsQuery = createInfiniteQuery(() => ({
-		queryKey: catalogItemsKey(filters),
+		queryKey: catalogItemsPagesKey(filters),
 		queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
 			fetchCatalogItems(filters, pageParam),
 		initialPageParam: undefined as string | undefined,

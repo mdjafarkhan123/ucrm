@@ -31,7 +31,7 @@
 	import type { FileProcessingState } from '$lib/files/api';
 	import PhotoSlot from '$lib/components/files/PhotoSlot.svelte';
 	import {
-		catalogItemsKey,
+		catalogItemsPagesKey,
 		fetchCatalogItems,
 		type RequestPricingLine,
 		type RequestPricingLineInput,
@@ -679,7 +679,7 @@
 	// price list. The click usually lands on a list that is already there.
 	function warmPriceBook() {
 		void queryClient.prefetchInfiniteQuery({
-			queryKey: catalogItemsKey({}),
+			queryKey: catalogItemsPagesKey({}),
 			queryFn: () => fetchCatalogItems({}),
 			initialPageParam: undefined as string | undefined,
 			staleTime: 30_000
@@ -1531,6 +1531,8 @@
 		unitCostMinor={catalogDraftLine.unit_cost_minor}
 		canViewCost={!catalogDraftLine.costHidden}
 		isTaxable={catalogDraftLine.is_taxable}
+		isLabor={catalogDraftLine.is_labor}
+		imageFileId={catalogDraftLine.image_file_id}
 		onSaved={catalogSaved}
 		onClose={() => (catalogDraft = null)}
 	/>

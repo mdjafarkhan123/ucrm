@@ -12,7 +12,7 @@
 	import CatalogItemDialog from './CatalogItemDialog.svelte';
 	import FileThumb from '$lib/components/files/FileThumb.svelte';
 	import {
-		catalogItemsKey,
+		catalogItemsPagesKey,
 		fetchCatalogItems,
 		type CatalogItem,
 		type CatalogItemPage,
@@ -20,6 +20,7 @@
 	} from '$lib/quotes/api';
 	import listIcon from '@tabler/icons/outline/list-details.svg?raw';
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
+	import imageIcon from '@tabler/icons/outline/photo.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 
 	// The price book: browse what this business already sells and drop it onto the document you are
@@ -57,6 +58,14 @@
 	let debouncedSearch = $state('');
 	let filter = $state<'all' | PricingCategory>('all');
 	let creating = $state(false);
+	let sessionAdded = $state(0);
+	$effect(() => {
+		if (open) sessionAdded = 0;
+	});
+	function addItem(item: CatalogItem) {
+		onAdd(item);
+		sessionAdded += 1;
+	}
 
 	$effect(() => {
 		const term = search.trim();
@@ -72,7 +81,7 @@
 	});
 
 	const itemsQuery = createInfiniteQuery(() => ({
-		queryKey: catalogItemsKey(query),
+		queryKey: catalogItemsPagesKey(query),
 		queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
 			fetchCatalogItems(query, pageParam),
 		initialPageParam: undefined as string | undefined,
@@ -111,7 +120,7 @@
 		toast.success(`“${item.name}” added to the price book`);
 		// The new item has to turn up the next time anybody searches for it, here or on a line's name.
 		void queryClient.invalidateQueries({ queryKey: ['catalog-items'] });
-		onAdd(item);
+		addItem(item);
 	}
 </script>
 
@@ -161,7 +170,7 @@
 			<ul class="price-book__list">
 				{#each items as item (item.id)}
 					{@const added = addedCounts[item.id] ?? 0}
-					<li class="price-book__item">
+					<li class="price-book__item" class:price-book__item--added={added > 0}>
 						{#if item.image_file_id}
 							<FileThumb
 								fileId={item.image_file_id}
@@ -172,13 +181,13 @@
 								hasThumbnail
 								size="row"
 							/>
-						{/if}
+						{:else}<span class="price-book__spot" aria-hidden="true">{@html imageIcon}</span>{/if}
 						<div class="price-book__copy">
 							<strong>{item.name}</strong>
 							{#if item.description}<span class="price-book__description">{item.description}</span
 								>{/if}
 							<span class="price-book__meta">
-								<span class="price-book__category">
+								<span class="price-book__category price-book__category--{item.category}">
 									{item.category === 'product' ? 'Product' : 'Service'}
 								</span>
 								{#if item.unit_label}<span>per {item.unit_label}</span>{/if}
@@ -197,18 +206,24 @@
 								     of something is a different, deliberate control. -->
 								<span class="price-book__added">
 									<span aria-hidden="true">{@html checkIcon}</span>
-									{added > 1 ? `Added ${added}×` : 'Added'}
+									{added}
 								</span>
 								<Button
-									variant="quiet"
+									variant="secondary"
 									size="small"
+									iconOnly
 									label={`Add another ${item.name}`}
-									onclick={() => onAdd(item)}
+									onclick={() => addItem(item)}
 								>
-									Add again
+									{@html plusIcon}
 								</Button>
 							{:else}
-								<Button size="small" variant="secondary" onclick={() => onAdd(item)}>Add</Button>
+								<Button
+									size="small"
+									iconOnly
+									label={`Add ${item.name}`}
+									onclick={() => addItem(item)}>{@html plusIcon}</Button
+								>
 							{/if}
 						</div>
 					</li>
@@ -230,7 +245,12 @@
 
 	{#snippet footer()}
 		<div class="price-book__footer">
-			<Button variant="tertiary" onclick={onAddCustomLine}>Add custom line</Button>
+			<span class="price-book__session"
+				><span aria-hidden="true">{@html checkIcon}</span>{sessionAdded}
+				{sessionAdded === 1 ? 'line' : 'lines'} added</span
+			><Button variant="secondary" size="small" onclick={onAddCustomLine}
+				>{@html plusIcon}Custom line</Button
+			>
 			<Button variant="primary" onclick={onClose}>Done</Button>
 		</div>
 	{/snippet}
@@ -379,6 +399,103 @@
 				width: 16px;
 				height: 16px;
 			}
+		}
+	}
+
+	.price-book__item {
+		align-items: center;
+		padding: 10px 0;
+		gap: var(--space-slim);
+	}
+	.price-book__item--added {
+		background: var(--color-surface--hover);
+		box-shadow: inset 2px 0 0 var(--color-success);
+	}
+	.price-book__spot {
+		display: grid;
+		place-items: center;
+		width: 40px;
+		height: 40px;
+		flex-shrink: 0;
+		background: var(--color-surface--background);
+		border-radius: var(--radius-tile-large);
+		color: var(--color-icon--secondary);
+		:global(svg) {
+			width: 20px;
+			height: 20px;
+		}
+	}
+	.price-book__copy strong,
+	.price-book__price {
+		font-weight: 600;
+	}
+	.price-book__category {
+		border-radius: var(--radius-circle);
+		padding: 2px var(--space-small);
+		font-size: var(--typography--fontSize-overline);
+		font-weight: 600;
+	}
+	.price-book__category--product {
+		background: var(--color-quote--surface);
+		color: var(--color-quote--onSurface);
+	}
+	.price-book__category--service {
+		background: var(--color-job--surface);
+		color: var(--color-job--onSurface);
+	}
+	.price-book__added {
+		background: var(--color-success);
+		color: var(--color-text--reverse);
+		border-radius: var(--radius-circle);
+		padding: 0 10px;
+		height: 32px;
+	}
+	.price-book__figures {
+		flex-direction: row;
+		align-items: center;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		max-width: 42%;
+	}
+	.price-book__price {
+		width: 100%;
+		text-align: right;
+	}
+	.price-book__figures :global(button) {
+		border-radius: var(--radius-circle);
+	}
+	.price-book__footer {
+		width: 100%;
+		gap: var(--space-small);
+		flex-wrap: wrap;
+	}
+	.price-book__session {
+		margin-right: auto;
+		display: flex;
+		gap: var(--space-small);
+		align-items: center;
+		font-size: var(--typography--fontSize-label);
+		font-weight: 600;
+		span {
+			display: grid;
+			place-items: center;
+			width: 24px;
+			height: 24px;
+			border-radius: var(--radius-tile-small);
+			background: var(--color-success--surface);
+			color: var(--color-success);
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
+		}
+	}
+	@media (max-width: 479px) {
+		.price-book__filters {
+			flex-wrap: wrap;
+		}
+		.price-book__session {
+			flex-basis: 100%;
 		}
 	}
 </style>

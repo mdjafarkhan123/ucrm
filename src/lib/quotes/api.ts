@@ -189,6 +189,10 @@ export const catalogItemsKey = (query: CatalogItemSearch = {}) =>
 		query.dir ?? 'asc'
 	] as const;
 
+// Infinite pages have a different shape from a single picker result.
+export const catalogItemsPagesKey = (query: CatalogItemSearch = {}) =>
+	[...catalogItemsKey(query), 'pages'] as const;
+
 export async function fetchCatalogItems(
 	query: CatalogItemSearch = {},
 	cursor?: string
@@ -206,6 +210,7 @@ export async function fetchCatalogItems(
 }
 
 export type CatalogItemInput = {
+	is_labor?: boolean;
 	category: PricingCategory;
 	name: string;
 	description?: string | null;

@@ -52,12 +52,12 @@ Key, tick rule and coverage command: `list-index.md`.
 | `collaboration/AttachmentSurface` |  | ✅ Batch 9 `KuOmH` | ✅ Merged 2026-10-20 |
 | `data-display/RecordListCard` |  | 🔁 Jobs list card `t8ULdJ` | ⬜ |
 | `files/PhotoSlot` |  | ✅ Batch 8 `b4BxuV` | ✅ Merged 2026-10-20 |
-| `quotes/CatalogItemDialog` | 🔁F pop-up · loading, permission-limited, field-worker view | ✅ Batch 10 `ZWTSi` | ⬜ |
+| `quotes/CatalogItemDialog` | 🔁F pop-up · loading, permission-limited, field-worker view | ✅ Batch 10 `ZWTSi` | ✅ |
 | `ui/TabPanel` |  | ⬜ | ⬜ |
 | `ui/Tabs` | tabs ×2 | ✅ Small controls `GbgcY` | ✅ |
 | `forms/QuantityInput` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
-| `quotes/CatalogItemPicker` | loading | ✅ Batch 10 `ZWTSi` | ⬜ |
-| `quotes/PriceBookDrawer` | 🔁D pop-up · loading, empty, permission-limited, field-worker view | ✅ Batch 10 `ZWTSi` | ⬜ |
+| `quotes/CatalogItemPicker` | loading | ✅ Batch 10 `ZWTSi` | ✅ |
+| `quotes/PriceBookDrawer` | 🔁D pop-up · loading, empty, permission-limited, field-worker view | ✅ Batch 10 `ZWTSi` | ✅ |
 | `quotes/ProductsAndServicesBlock` | pop-ups: "Throw away these changes?" 🔁C · menus ×1 · empty, permission-limited, field-worker view | ⬜ | ⬜ |
 | `ui/RadioGroup` |  | ✅ Small controls `GbgcY` | ✅ |
 | `ui/TimezonePicker` |  | ✅ Pickers v2 `uSXlT` | ✅ |
