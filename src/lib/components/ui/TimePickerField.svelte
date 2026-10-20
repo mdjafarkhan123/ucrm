@@ -144,7 +144,9 @@
 	}
 
 	function updateHour(hour: number) {
-		const nextHour = hourCycle === 24 ? hour : (hour % 12) + (selectedPeriod === 'PM' ? 12 : 0);
+		// Picking 12 means noon; pressing AM afterwards still gives midnight.
+		const nextHour =
+			hourCycle === 24 ? hour : hour === 12 ? 12 : (hour % 12) + (selectedPeriod === 'PM' ? 12 : 0);
 		commit(new Time(nextHour, selected.minute));
 		centerPicked();
 	}
