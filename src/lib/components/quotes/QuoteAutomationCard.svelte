@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -235,7 +236,7 @@
 				<ul class="quote-automation__list">
 					{#each enrollments as enrollment (enrollment.enrollment_id)}
 						<li class="quote-automation__row">
-							<span class="quote-automation__icon" aria-hidden="true">{@html robotIcon}</span>
+							<IconTile icon={robotIcon} tone="warning" size={32} />
 							<div class="quote-automation__body">
 								<div class="quote-automation__heading">
 									<span class="quote-automation__name">{enrollment.recipe_name}</span>
@@ -335,23 +336,6 @@
 		gap: 12px;
 		padding: 14px 20px 18px;
 		border-top: var(--border-base) solid var(--color-border);
-	}
-
-	.quote-automation__icon {
-		display: inline-grid;
-		flex: 0 0 auto;
-		width: 32px;
-		height: 32px;
-		place-items: center;
-		border-radius: var(--radius-base);
-		color: var(--color-warning--onSurface);
-		background: var(--color-warning--surface);
-
-		:global(svg) {
-			display: block;
-			width: 16px;
-			height: 16px;
-		}
 	}
 
 	.quote-automation__body {

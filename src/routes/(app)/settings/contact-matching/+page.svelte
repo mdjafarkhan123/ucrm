@@ -326,23 +326,6 @@
 		:global(.section-block:has(> .section-block__hint) > .section-block__hint) {
 			margin-left: 72px;
 		}
-		:global(.section-block .section-block__icon) {
-			position: absolute;
-			top: 20px;
-			left: 24px;
-			display: grid;
-			place-items: center;
-			width: 36px;
-			height: 36px;
-			border-radius: 11px;
-			background: var(--color-informative--surface);
-		}
-		:global(.section-block .section-block__icon svg) {
-			width: 18px;
-			height: 18px;
-			color: var(--color-informative--onSurface);
-		}
-
 		// ---- Dark save bar with its own words, centred under the content like the design. ----
 		:global(.sticky-action-bar) {
 			max-width: 720px;

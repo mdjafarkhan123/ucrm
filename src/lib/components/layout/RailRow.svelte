@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import type { Snippet } from 'svelte';
 
 	// One row inside a flush rail card (App look): a small icon tile, a quiet label above and the value
@@ -25,12 +26,9 @@
 	} = $props();
 </script>
 
-<!-- eslint-disable svelte/no-at-html-tags -->
 <div class={`rail-row ${className}`}>
 	{#if icon}
-		<span class={['rail-row__icon', `rail-row__icon--${tone}`]} aria-hidden="true"
-			>{@html icon}</span
-		>
+		<IconTile {icon} tone={tone === 'warning' ? 'warning' : 'inactive'} size={32} />
 	{/if}
 	<div class="rail-row__text">
 		<span class="rail-row__label">{label}</span>
@@ -40,8 +38,6 @@
 	{#if actions}<div class="rail-row__actions">{@render actions()}</div>{/if}
 </div>
 
-<!-- eslint-enable svelte/no-at-html-tags -->
-
 <style lang="scss">
 	.rail-row {
 		display: flex;
@@ -49,28 +45,6 @@
 		gap: 12px;
 		padding: 12px 20px;
 		border-top: var(--border-base) solid var(--color-border);
-
-		&__icon {
-			display: inline-grid;
-			flex: 0 0 auto;
-			width: 32px;
-			height: 32px;
-			place-items: center;
-			border-radius: var(--radius-base);
-			color: var(--color-text);
-			background: var(--color-surface--background--subtle);
-
-			:global(svg) {
-				display: block;
-				width: 16px;
-				height: 16px;
-			}
-
-			&--warning {
-				color: var(--color-warning--onSurface);
-				background: var(--color-warning--surface);
-			}
-		}
 
 		&__text {
 			display: flex;

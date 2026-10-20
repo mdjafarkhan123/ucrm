@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { onMount } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
@@ -90,34 +91,14 @@
 	);
 
 	// Each group's tile carries its meaning: the record colour of what the alerts are about.
-	const GROUP_LOOK: Record<string, { icon: string; tone: string; surface: string }> = {
-		schedule: {
-			icon: calendarIcon,
-			tone: 'var(--color-job)',
-			surface: 'var(--color-job--surface)'
-		},
-		messages: {
-			icon: messageIcon,
-			tone: 'var(--color-informative--onSurface)',
-			surface: 'var(--color-informative--surface)'
-		},
-		sales: {
-			icon: fileTextIcon,
-			tone: 'var(--color-quote)',
-			surface: 'var(--color-quote--surface)'
-		},
-		money: {
-			icon: cashIcon,
-			tone: 'var(--color-invoice)',
-			surface: 'var(--color-invoice--surface)'
-		},
-		team: { icon: usersIcon, tone: 'var(--color-task)', surface: 'var(--color-task--surface)' },
-		reviews: {
-			icon: starIcon,
-			tone: 'var(--color-warning--onSurface)',
-			surface: 'var(--color-warning--surface)'
-		},
-		time: { icon: stopwatchIcon, tone: 'var(--color-job)', surface: 'var(--color-job--surface)' }
+	const GROUP_LOOK: Record<string, { icon: string; tone: string }> = {
+		schedule: { icon: calendarIcon, tone: 'job' },
+		messages: { icon: messageIcon, tone: 'informative' },
+		sales: { icon: fileTextIcon, tone: 'quote' },
+		money: { icon: cashIcon, tone: 'invoice' },
+		team: { icon: usersIcon, tone: 'task' },
+		reviews: { icon: starIcon, tone: 'warning' },
+		time: { icon: stopwatchIcon, tone: 'job' }
 	};
 
 	// Two columns that keep the groups in order: the computers card plus the first groups fill the left
@@ -246,7 +227,7 @@
 			<div class="alerts-page__column">
 				<section class="alerts-card" aria-labelledby="browser-title">
 					<div class="alerts-card__heading">
-						<span class="alerts-card__icon" aria-hidden="true">{@html deviceIcon}</span>
+						<IconTile icon={deviceIcon} tone="job" />
 						<div>
 							<h2 id="browser-title">Browser alerts on your computers</h2>
 							<p>
@@ -370,12 +351,7 @@
 	<section class="alerts-card" aria-labelledby={`group-${group.id}`}>
 		<div class="alerts-card__heading">
 			{#if look}
-				<span
-					class="alerts-card__icon"
-					style={`--alerts-tone: ${look.tone}; --alerts-tone-surface: ${look.surface}`}
-					aria-hidden="true"
-					><!-- eslint-disable-next-line svelte/no-at-html-tags -->{@html look.icon}</span
-				>
+				<IconTile icon={look.icon} tone={look.tone} />
 			{/if}
 			<h2 id={`group-${group.id}`}>{group.label}</h2>
 		</div>
@@ -494,23 +470,6 @@
 				color: var(--color-text--secondary);
 				font-size: 13px;
 				font-weight: 500;
-			}
-		}
-
-		&__icon {
-			display: grid;
-			flex: 0 0 auto;
-			place-items: center;
-			width: 36px;
-			height: 36px;
-			border-radius: var(--radius-base);
-			color: var(--alerts-tone, var(--color-job));
-			background: var(--alerts-tone-surface, var(--color-job--surface));
-
-			:global(svg) {
-				display: block;
-				width: 18px;
-				height: 18px;
 			}
 		}
 

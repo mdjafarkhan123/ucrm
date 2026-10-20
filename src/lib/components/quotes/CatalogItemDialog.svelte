@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { untrack } from 'svelte';
 	import { Dialog as DialogPrimitive } from 'bits-ui';
 	import { page } from '$app/state';
@@ -464,9 +465,10 @@
 											category = kind as PricingCategory;
 											if (category === 'product') isLaborDraft = false;
 										}}
-										><span class="catalog-item-dialog__type-icon" aria-hidden="true"
-											>{@html kind === 'product' ? packageIcon : serviceIcon}</span
-										><span
+										><IconTile
+											icon={kind === 'product' ? packageIcon : serviceIcon}
+											tone={kind === 'product' ? 'quote' : 'job'}
+										/><span
 											><strong>{kind === 'product' ? 'Product' : 'Service'}</strong><small
 												>{kind === 'product' ? 'Something you sell' : 'Work you do'}</small
 											></span
@@ -547,10 +549,7 @@
 							</div>
 							<div class="catalog-item-dialog__options">
 								{#if category === 'service'}<div>
-										<span
-											class="catalog-item-dialog__option-icon catalog-item-dialog__option-icon--labor"
-											aria-hidden="true">{@html laborIcon}</span
-										><Checkbox
+										<IconTile icon={laborIcon} tone="time" size={32} /><Checkbox
 											id="catalog-item-labor"
 											label="This is labor"
 											description="Track this as work, rather than materials."
@@ -559,9 +558,7 @@
 										/>
 									</div>{/if}
 								<div>
-									<span class="catalog-item-dialog__option-icon" aria-hidden="true"
-										>{@html taxIcon}</span
-									><Checkbox
+									<IconTile icon={taxIcon} tone="invoice" size={32} /><Checkbox
 										id="catalog-item-tax-exempt"
 										label="Exempt from tax"
 										description="Leave tax off this item."
@@ -838,24 +835,6 @@
 			opacity: 0.6;
 			cursor: default;
 		}
-		&__type-icon {
-			width: 40px;
-			height: 40px;
-			flex-shrink: 0;
-			border-radius: var(--radius-tile-large);
-			display: grid;
-			place-items: center;
-			background: var(--color-job--surface);
-			color: var(--color-job);
-			:global(svg) {
-				width: 20px;
-				height: 20px;
-			}
-		}
-		&__type--product &__type-icon {
-			background: var(--color-quote--surface);
-			color: var(--color-quote);
-		}
 		&__type-check {
 			display: grid;
 			place-items: center;
@@ -917,24 +896,6 @@
 					border-top: var(--border-base) solid var(--color-border);
 				}
 			}
-		}
-		&__option-icon {
-			display: grid;
-			place-items: center;
-			width: 32px;
-			height: 32px;
-			flex-shrink: 0;
-			border-radius: var(--radius-base);
-			background: var(--color-invoice--surface);
-			color: var(--color-invoice);
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
-		}
-		&__option-icon--labor {
-			background: var(--color-time--surface);
-			color: var(--color-time);
 		}
 		&__error,
 		&__conflict {

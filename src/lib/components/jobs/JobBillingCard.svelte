@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import type { Snippet } from 'svelte';
 	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
@@ -242,8 +243,7 @@
 				<ul class="job-billing__stages">
 					{#each stages as stage (stage.installment_id)}
 						<li class="job-billing__stage">
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							<span class="job-billing__stage-tile" aria-hidden="true">{@html cardIcon}</span>
+							<IconTile icon={cardIcon} tone="invoice" size={32} />
 							<span class="job-billing__stage-name">{stage.description}</span>
 							{#if stage.amount_minor !== null}
 								<span class="job-billing__stage-amount">
@@ -504,23 +504,6 @@
 
 			& + & {
 				padding-top: var(--space-small);
-			}
-		}
-
-		&__stage-tile {
-			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-			width: 32px;
-			height: 32px;
-			border-radius: var(--radius-base);
-			color: var(--color-invoice);
-			background: var(--color-invoice--surface);
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
 			}
 		}
 

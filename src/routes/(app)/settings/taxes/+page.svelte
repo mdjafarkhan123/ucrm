@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import SettingsPresentation from '$lib/components/settings/SettingsPresentation.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -220,9 +221,11 @@
 						{#snippet row(rate: TaxRate)}
 							<th scope="row"
 								><span class="taxes-page__name"
-									><span class="taxes-page__rate-icon" aria-hidden="true"
-										>{@html receiptTaxIcon}</span
-									>{rate.name}{#if taxes.default.source === 'rate' && taxes.default.rate_id === rate.id}<span
+									><IconTile
+										icon={receiptTaxIcon}
+										tone="job"
+										size={32}
+									/>{rate.name}{#if taxes.default.source === 'rate' && taxes.default.rate_id === rate.id}<span
 											class="taxes-page__default-badge">Default</span
 										>{/if}</span
 								></th
@@ -464,20 +467,6 @@
 			display: flex;
 			align-items: center;
 			gap: 12px;
-		}
-		&__rate-icon {
-			display: grid;
-			place-items: center;
-			width: 30px;
-			height: 30px;
-			flex: 0 0 auto;
-			border-radius: var(--radius-base);
-			background: var(--color-job--surface);
-			color: var(--color-job--onSurface);
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
 		}
 		&__default-badge {
 			padding: 3px 8px;

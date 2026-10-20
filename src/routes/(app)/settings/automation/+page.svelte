@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createQuery, createInfiniteQuery } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
@@ -220,9 +221,7 @@
 			{/if}
 
 			<div class="automation-settings__strip">
-				<span class="automation-settings__strip-icon" aria-hidden="true">
-					{@html boltIcon}
-				</span>
+				<IconTile icon={boltIcon} tone="warning" />
 				<span class="automation-settings__strip-label"
 					>{activeRecipesLabel(access.limits.automation_active_recipes)}</span
 				>
@@ -267,7 +266,7 @@
 				padBody={recipesQuery.isPending || recipesQuery.isError || recipes.length === 0}
 			>
 				{#snippet headingIcon()}
-					<span class="automation-settings__list-icon">{@html robotIcon}</span>
+					<IconTile icon={robotIcon} tone="warning" size={32} />
 				{/snippet}
 				{#snippet toolbar()}
 					<div class="automation-settings__search">
@@ -461,19 +460,6 @@
 		&__strip-label {
 			flex: 1;
 		}
-		&__strip-icon {
-			display: grid;
-			place-items: center;
-			width: 36px;
-			height: 36px;
-			border-radius: 10px;
-			color: var(--color-warning--onSurface);
-			background: var(--color-warning--surface);
-		}
-		&__strip-icon :global(svg) {
-			width: 18px;
-			height: 18px;
-		}
 		&__meter {
 			display: flex;
 			gap: 6px;
@@ -529,19 +515,6 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 10px;
-	}
-	.automation-settings__list-icon {
-		display: grid;
-		place-items: center;
-		width: 32px;
-		height: 32px;
-		border-radius: var(--radius-base);
-		color: var(--color-warning--onSurface);
-		background: var(--color-warning--surface);
-		:global(svg) {
-			width: 16px;
-			height: 16px;
-		}
 	}
 	.automation-table__trigger-icon {
 		display: inline-flex;

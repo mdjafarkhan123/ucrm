@@ -755,31 +755,6 @@
 			font-size: 16px;
 			letter-spacing: -0.2px;
 		}
-		:global(.pipeline-card .section-block__icon) {
-			position: absolute;
-			top: 20px;
-			left: 24px;
-			display: grid;
-			place-items: center;
-			width: 36px;
-			height: 36px;
-			border-radius: 11px;
-			background: var(--color-informative--surface);
-			color: var(--color-informative);
-		}
-		:global(.pipeline-card .section-block__icon svg) {
-			width: 18px;
-			height: 18px;
-			color: inherit;
-		}
-		:global(.pipeline-card--request .section-block__icon) {
-			background: var(--color-request--surface);
-			color: var(--color-request);
-		}
-		:global(.pipeline-card--quote .section-block__icon) {
-			background: var(--color-quote--surface);
-			color: var(--color-quote);
-		}
 		:global(.pipeline-card .section-block__hint) {
 			margin: 2px 24px 18px 72px;
 			font-size: 13px;

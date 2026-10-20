@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import SettingsPageHeader from '$lib/components/settings/SettingsPageHeader.svelte';
@@ -484,10 +485,7 @@
 			<section class="sms-settings__readiness" aria-labelledby="sms-readiness-title">
 				<div class="sms-settings__readiness-row">
 					<div class="sms-settings__readiness-head">
-						<span class="sms-settings__readiness-icon" aria-hidden="true">
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-							{@html deviceMobileMessageIcon}
-						</span>
+						<IconTile icon={deviceMobileMessageIcon} tone="informative" />
 						<h2 id="sms-readiness-title">Readiness</h2>
 					</div>
 					<div class="sms-settings__facts">
@@ -887,10 +885,7 @@
 							<ul class="sms-settings__numbers">
 								{#each numbersQuery.data.numbers as number (number.id)}
 									<li class="sms-settings__number-row">
-										<span class="sms-settings__number-icon" aria-hidden="true">
-											<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-											{@html phoneIcon}
-										</span>
+										<IconTile icon={phoneIcon} tone="informative" />
 										<div class="sms-settings__number-main">
 											{#if renamingId === number.id}
 												<Input
@@ -1139,21 +1134,6 @@
 	.sms-settings.record-detail--cards :global(.section-block) :global(.section-block__title) {
 		gap: var(--space-slim);
 	}
-	.sms-settings.record-detail--cards :global(.section-block) :global(.section-block__icon) {
-		display: grid;
-		place-items: center;
-		flex: 0 0 auto;
-		width: 36px;
-		height: 36px;
-		border-radius: var(--radius-base);
-		background: var(--color-informative--surface);
-	}
-	.sms-settings.record-detail--cards :global(.section-block) :global(.section-block__icon svg) {
-		width: 18px;
-		height: 18px;
-		color: var(--color-informative--onSurface);
-	}
-
 	/* Page header: a 60px blue tile beside the breadcrumb, 36px title and sentence, as in the approved frame. */
 
 	/* Readiness strip: the framed heading and the four facts share one row, with thin dividers between. */
@@ -1176,20 +1156,6 @@
 		flex: 0 0 auto;
 		align-items: center;
 		gap: var(--space-slim);
-	}
-	.sms-settings__readiness-icon {
-		display: grid;
-		place-items: center;
-		width: 36px;
-		height: 36px;
-		border-radius: var(--radius-base);
-		color: var(--color-informative--onSurface);
-		background: var(--color-informative--surface);
-	}
-	.sms-settings__readiness-icon :global(svg) {
-		display: block;
-		width: 18px;
-		height: 18px;
 	}
 	.sms-settings__readiness-head h2 {
 		margin: 0;
@@ -1422,21 +1388,6 @@
 		padding: 14px 16px;
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
-	}
-	.sms-settings__number-icon {
-		display: grid;
-		place-items: center;
-		width: 36px;
-		height: 36px;
-		flex: 0 0 auto;
-		border-radius: var(--radius-base);
-		color: var(--color-informative--onSurface);
-		background: var(--color-informative--surface);
-	}
-	.sms-settings__number-icon :global(svg) {
-		display: block;
-		width: 18px;
-		height: 18px;
 	}
 	.sms-settings__number-main {
 		display: grid;

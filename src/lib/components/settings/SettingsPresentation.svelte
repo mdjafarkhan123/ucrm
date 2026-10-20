@@ -16,10 +16,7 @@
 	} = $props();
 </script>
 
-<div
-	class="business-settings"
-	style={`--settings-icon-color: var(--color-${iconTone}); --settings-icon-surface: var(--color-${iconTone}--surface)`}
->
+<div class="business-settings">
 	<SettingsPageHeader {title} {description} {icon} tone={iconTone} presentation="business" />
 	{@render children()}
 </div>
@@ -57,17 +54,6 @@
 		}
 		:global(.section-block__hint) {
 			margin: -8px 0 0;
-		}
-		:global(.section-block__icon) {
-			display: grid;
-			place-items: center;
-			width: 32px;
-			height: 32px;
-			border-radius: var(--radius-base);
-			background: var(--settings-icon-surface);
-		}
-		:global(.section-block__icon svg) {
-			color: var(--settings-icon-color);
 		}
 		:global(.sticky-action-bar) {
 			max-width: 720px;

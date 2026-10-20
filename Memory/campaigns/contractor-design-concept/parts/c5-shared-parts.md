@@ -47,6 +47,14 @@ Board `k4k5Na` (Jafar first picked soft depth, then changed to the hairline edge
 tile colour). Builder: give every icon tile in code (shared tile styles, card header tiles, row tiles,
 empty-state tiles) a 1px `--surface-edge` border; fill stays the plain surface. Pencil already follows.
 
+### Icon tile edge — built and merged 2026-10-20
+
+Every meaning tile uses `ui/IconTile` (size 20 added). Proof: `docs/evidence/2026-10-20-icon-tile-edge/README.md`.
+Left on purpose: visit date badge, file thumbs, upload ring, day-clock mark, dark feature-card tiles, conversation
+rail tiles, WorkRecordHeader white tile, Settings 60px solid badge, logos/buttons.
+Still to ask Jafar: plain grey/white icon squares (attachments, search results, website chat, shared files, Banner,
+setup points…) — make them `IconTile tone="inactive"` too? And the calendar/time field trigger buttons.
+
 ## Batch 14 Products and services — approved 2026-10-20
 
 Board `vsT0H`. Jafar approved B for rows 1–3 and asked that no fill blends into what is behind it (guide rule 7).

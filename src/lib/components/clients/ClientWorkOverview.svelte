@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createInfiniteQuery, createQuery } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
@@ -129,9 +130,16 @@
 		{ key: 'status', label: 'Status', width: '150px' },
 		{ key: 'amount', label: 'Amount', align: 'end', width: '104px' }
 	];
+
+	// Each kind keeps its status-family colour on the list's tile.
+	const KIND_TONES: Record<ClientWorkKind, string> = {
+		job: 'success',
+		quote: 'critical',
+		request: 'warning',
+		invoice: 'informative'
+	};
 </script>
 
-<!-- eslint-disable svelte/no-at-html-tags -->
 <SectionBlock
 	tone="client"
 	title="Work overview"
@@ -181,9 +189,7 @@
 			{#snippet row(item: ClientWorkItem)}
 				<th scope="row" class="client-work__fluid client-work__fluid--item">
 					<div class="client-work__item">
-						<span class={`client-work__icon client-work__icon--${item.kind}`} aria-hidden="true"
-							>{@html KIND_ICONS[item.kind]}</span
-						>
+						<IconTile icon={KIND_ICONS[item.kind]} tone={KIND_TONES[item.kind]} size={32} />
 						<div class="client-work__text">
 							<a class="client-work__link" href={recordHref(item)}>{item.label}</a>
 							{#if item.title}<span class="client-work__title">{item.title}</span>{/if}
@@ -250,35 +256,6 @@
 		}
 
 		// A tile in the colour of the record's kind, as on every list and summary elsewhere in the app.
-		&__icon {
-			display: inline-grid;
-			flex: 0 0 32px;
-			width: 32px;
-			height: 32px;
-			place-items: center;
-			border-radius: 10px;
-			color: var(--color-success--onSurface);
-			background: var(--color-success--surface);
-
-			:global(svg) {
-				width: 15px;
-				height: 15px;
-			}
-
-			&--quote {
-				color: var(--color-critical);
-				background: var(--color-critical--surface);
-			}
-			&--request {
-				color: var(--color-warning--onSurface);
-				background: var(--color-warning--surface);
-			}
-			&--invoice {
-				color: var(--color-informative--onSurface);
-				background: var(--color-informative--surface);
-			}
-		}
-
 		&__text {
 			display: flex;
 			flex-direction: column;

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import {
 		createInfiniteQuery,
 		createMutation,
@@ -266,10 +267,7 @@
 					{#each stats as stat (stat.label)}
 						<article class="balance__stat">
 							<div class="balance__stat-top">
-								<span class="balance__tile balance__tile--informative" aria-hidden="true">
-									<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-									{@html stat.icon}
-								</span>
+								<IconTile icon={stat.icon} tone="informative" size={40} />
 								<span>{stat.label}</span>
 							</div>
 							<strong>{stat.amount} <small>{stat.currency}</small></strong>
@@ -278,13 +276,11 @@
 					{/each}
 					<article class="balance__stat">
 						<div class="balance__stat-top">
-							<span
-								class={`balance__tile balance__tile--${smsAvailabilityTone[usage.availability.state]}`}
-								aria-hidden="true"
-							>
-								<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-								{@html historyIcon}
-							</span>
+							<IconTile
+								icon={historyIcon}
+								tone={smsAvailabilityTone[usage.availability.state]}
+								size={40}
+							/>
 							<span>Sending availability</span>
 						</div>
 						<strong
@@ -299,10 +295,7 @@
 			</div>
 
 			<div class="balance__add-credit">
-				<span class="balance__tile balance__tile--informative" aria-hidden="true">
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-					{@html handCoinIcon}
-				</span>
+				<IconTile icon={handCoinIcon} tone="informative" size={40} />
 				<div class="balance__add-credit-copy">
 					<p class="balance__add-credit-title">Need more balance?</p>
 					<p>
@@ -356,13 +349,11 @@
 					<ul class="balance__topups">
 						{#each topupsQuery.data.requests as request (request.id)}
 							<li class="balance__topup">
-								<span
-									class={`balance__tile balance__tile--${smsCreditTopupStatusTone[request.status]}`}
-									aria-hidden="true"
-								>
-									<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-									{@html topupStatusIcon[request.status]}
-								</span>
+								<IconTile
+									icon={topupStatusIcon[request.status]}
+									tone={smsCreditTopupStatusTone[request.status]}
+									size={40}
+								/>
 								<div class="balance__topup-copy">
 									<p class="balance__topup-amount">
 										{formatSmsMoney(request.requested_amount_minor, request.currency_code)} requested
@@ -450,13 +441,13 @@
 							<td>{formatTime(entry.occurred_at)}</td>
 							<td>
 								<span class="balance__kind">
-									<span
-										class={`balance__kind-icon balance__kind-icon--${entry.entry_kind}`}
-										aria-hidden="true"
-									>
-										<!-- eslint-disable-next-line svelte/no-at-html-tags -- a build-time Tabler icon, not user content -->
-										{@html ledgerKindIcon[entry.entry_kind]}
-									</span>
+									<IconTile
+										icon={ledgerKindIcon[entry.entry_kind]}
+										tone={entry.entry_kind === 'credit' || entry.entry_kind === 'refund'
+											? 'success'
+											: 'inactive'}
+										size={24}
+									/>
 									{smsLedgerEntryKindLabel[entry.entry_kind]}
 								</span>
 							</td>
@@ -542,41 +533,6 @@
 		gap: 20px;
 
 		/* One framed icon tile, used wherever the approved frame puts a soft coloured square. */
-		&__tile {
-			display: grid;
-			flex: 0 0 auto;
-			place-items: center;
-			width: 36px;
-			height: 36px;
-			border-radius: 11px;
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
-			&--informative,
-			&--inactive {
-				color: var(--color-informative--onSurface);
-				background: var(--color-informative--surface);
-			}
-			&--success {
-				color: var(--color-success--onSurface);
-				background: var(--color-success--surface);
-			}
-			&--warning {
-				color: var(--color-warning--onSurface);
-				background: var(--color-warning--surface);
-			}
-			&--critical {
-				color: var(--color-critical--onSurface);
-				background: var(--color-critical--surface);
-			}
-			&--inactive {
-				color: var(--color-text--secondary);
-				background: var(--color-surface--background);
-			}
-		}
-
 		&__hero {
 			display: grid;
 			grid-template-columns: minmax(0, 420fr) minmax(0, 712fr);
@@ -857,25 +813,6 @@
 			gap: 10px;
 			font-weight: 600;
 		}
-		&__kind-icon {
-			display: grid;
-			place-items: center;
-			width: 26px;
-			height: 26px;
-			border-radius: 8px;
-			color: var(--color-text--secondary);
-			background: var(--color-surface--background);
-
-			:global(svg) {
-				width: 15px;
-				height: 15px;
-			}
-			&--credit,
-			&--refund {
-				color: var(--color-success--onSurface);
-				background: var(--color-success--surface);
-			}
-		}
 		&__reference {
 			max-width: 0;
 			overflow: hidden;
@@ -910,22 +847,6 @@
 		}
 		&.record-detail--cards :global(.section-block > .section-block__subtitle) {
 			padding-left: 72px;
-		}
-		&.record-detail--cards :global(.section-block .section-block__icon) {
-			position: absolute;
-			top: 20px;
-			left: 24px;
-			display: grid;
-			place-items: center;
-			width: 36px;
-			height: 36px;
-			border-radius: 11px;
-			background: var(--color-informative--surface);
-		}
-		&.record-detail--cards :global(.section-block .section-block__icon svg) {
-			width: 18px;
-			height: 18px;
-			color: var(--color-informative--onSurface);
 		}
 		&.record-detail--cards :global(.section-block--flush > .section-block__actions) {
 			padding-right: 24px;

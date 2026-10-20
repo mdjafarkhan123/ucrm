@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import type { MatchAction } from '$lib/imports/api';
@@ -98,7 +99,7 @@
 
 			{#if file}
 				<div class="file-row">
-					<span class="file-row__icon" aria-hidden="true">{@html fileIcon}</span>
+					<IconTile icon={fileIcon} tone="success" />
 					<span class="file-row__meta">
 						<b>{file.name}</b>
 						<span>{fileSize(file.size)}</span>
@@ -275,22 +276,6 @@
 		border-radius: var(--radius-base);
 		padding: var(--space-slim) var(--space-base);
 		background: var(--color-surface);
-
-		&__icon {
-			flex: none;
-			width: 42px;
-			height: 42px;
-			border-radius: var(--radius-base);
-			background: var(--color-success--surface);
-			color: var(--color-success--onSurface);
-			display: grid;
-			place-items: center;
-
-			:global(svg) {
-				width: 22px;
-				height: 22px;
-			}
-		}
 
 		&__meta {
 			flex: 1;

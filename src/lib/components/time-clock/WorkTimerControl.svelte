@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Button from '$lib/components/ui/Button.svelte';
 	import TimerElapsed from '$lib/components/time-clock/TimerElapsed.svelte';
@@ -137,9 +138,7 @@
 			? 'Your timer on this visit'
 			: 'Your timer on this assessment'}
 	>
-		{#if presentation === 'panel'}<span class="work-timer__tile" aria-hidden="true"
-				>{@html timerIcon}</span
-			>
+		{#if presentation === 'panel'}<IconTile icon={timerIcon} tone="time" size={32} />
 			<div class="work-timer__copy">
 				{#if onThis && running}<strong class="work-timer__elapsed"
 						><TimerElapsed startedAt={running.started_at} {offsetMs} /></strong
@@ -192,20 +191,6 @@
 		&--panel.work-timer--running {
 			border: 1.5px solid var(--timer-accent);
 			background: var(--color-surface);
-		}
-		&__tile {
-			display: grid;
-			place-items: center;
-			width: 32px;
-			height: 32px;
-			flex-shrink: 0;
-			border-radius: var(--radius-base);
-			background: var(--color-time--surface);
-			color: var(--color-time);
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
 		}
 		&--long &__tile {
 			background: var(--color-warning--surface);

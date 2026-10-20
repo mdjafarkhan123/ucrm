@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { Combobox } from 'bits-ui';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -208,9 +209,11 @@
 								<Combobox.GroupHeading
 									class="catalog-picker__heading catalog-picker__heading--{group.category}"
 								>
-									<span class="catalog-picker__type-icon" aria-hidden="true"
-										>{@html group.category === 'product' ? packageIcon : serviceIcon}</span
-									>{group.label}<small>· {group.items.length}</small>
+									<IconTile
+										icon={group.category === 'product' ? packageIcon : serviceIcon}
+										tone={group.category === 'product' ? 'quote' : 'job'}
+										size={20}
+									/>{group.label}<small>· {group.items.length}</small>
 								</Combobox.GroupHeading>
 								<div class="catalog-picker__pictures">
 									{#each group.items.filter((item) => item.image_file_id) as item (item.id)}
@@ -227,11 +230,12 @@
 													kind="image"
 													processingState="available"
 													hasThumbnail
-												/><span
-													class="catalog-picker__photo-type catalog-picker__heading--{group.category}"
-													aria-hidden="true"
-													>{@html group.category === 'product' ? packageIcon : serviceIcon}</span
-												>
+												/><IconTile
+													icon={group.category === 'product' ? packageIcon : serviceIcon}
+													tone={group.category === 'product' ? 'quote' : 'job'}
+													size={20}
+													class="catalog-picker__photo-type"
+												/>
 											</div>
 											<div class="catalog-picker__picture-copy">
 												<strong>{item.name}</strong>{#if moneyFormatter}<span
@@ -493,28 +497,10 @@
 		padding: var(--space-small) 10px var(--space-smaller);
 	}
 	:global(.catalog-picker__heading--product) {
-		--item-color: var(--color-quote);
-		--item-surface: var(--color-quote--surface);
 		color: var(--color-quote--onSurface);
 	}
 	:global(.catalog-picker__heading--service) {
-		--item-color: var(--color-job);
-		--item-surface: var(--color-job--surface);
 		color: var(--color-job--onSurface);
-	}
-	.catalog-picker__type-icon,
-	.catalog-picker__photo-type {
-		display: grid;
-		place-items: center;
-		background: var(--item-surface);
-		color: var(--item-color);
-		border-radius: var(--radius-tile-small);
-		width: 20px;
-		height: 20px;
-		:global(svg) {
-			width: 14px;
-			height: 14px;
-		}
 	}
 	.catalog-picker__pictures {
 		display: grid;
@@ -543,12 +529,10 @@
 			aspect-ratio: auto;
 		}
 	}
-	.catalog-picker__photo-type {
+	.catalog-picker__photo :global(.catalog-picker__photo-type) {
 		position: absolute;
 		top: var(--space-small);
 		left: var(--space-small);
-		width: 22px;
-		height: 22px;
 	}
 	.catalog-picker__picture-copy {
 		display: grid;

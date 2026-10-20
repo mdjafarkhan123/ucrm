@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import type { Snippet } from 'svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
@@ -511,7 +512,7 @@
 
 			<section class="job-create__group" aria-labelledby="job-create-first-visit">
 				<header class="job-create__group-head">
-					<span class="job-create__group-icon" aria-hidden="true">{@html calendarTimeIcon}</span>
+					<IconTile icon={calendarTimeIcon} tone="time" size={24} />
 					<h3 class="job-create__group-title" id="job-create-first-visit">First visit</h3>
 				</header>
 
@@ -637,22 +638,6 @@
 			display: flex;
 			align-items: center;
 			gap: 10px;
-		}
-
-		&__group-icon {
-			display: grid;
-			width: 24px;
-			height: 24px;
-			place-items: center;
-			border: 0;
-			border-radius: var(--radius-tile-small);
-			background: var(--color-time--surface);
-			color: var(--color-time);
-
-			:global(svg) {
-				width: 15px;
-				height: 15px;
-			}
 		}
 
 		&__group-title {

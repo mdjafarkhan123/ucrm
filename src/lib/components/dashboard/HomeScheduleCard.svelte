@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { resolve } from '$app/paths';
 	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import arrowUpRightIcon from '@tabler/icons/outline/arrow-up-right.svg?raw';
@@ -97,9 +98,7 @@
 				<span class="home-row__time-top">{item.timeTop}</span>
 				{#if item.timeBottom}<span class="home-row__time-bottom">{item.timeBottom}</span>{/if}
 			</span>
-			<span class="home-row__tile home-row__tile--{kindLook[item.kind].tone}" aria-hidden="true"
-				>{@html kindLook[item.kind].icon}</span
-			>
+			<IconTile icon={kindLook[item.kind].icon} tone={kindLook[item.kind].tone} size={32} />
 			<span class="home-row__main">
 				<span class="home-row__title">{item.work}</span>
 				<span class="home-row__meta">
@@ -352,27 +351,6 @@
 		&__time-bottom {
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
-		}
-
-		&__tile {
-			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-			width: 32px;
-			height: 32px;
-			border-radius: var(--radius-base);
-
-			:global(svg) {
-				width: 16px;
-				height: 16px;
-			}
-			@each $tone in job, request, task {
-				&--#{$tone} {
-					color: var(--color-#{$tone});
-					background: var(--color-#{$tone}--surface);
-				}
-			}
 		}
 
 		&__main {

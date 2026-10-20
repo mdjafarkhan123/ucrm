@@ -732,20 +732,6 @@
 	.website-chat.record-detail--cards :global(.section-block) :global(.section-block__title) {
 		gap: var(--space-slim);
 	}
-	.website-chat.record-detail--cards :global(.section-block) :global(.section-block__icon) {
-		display: grid;
-		place-items: center;
-		flex: 0 0 auto;
-		width: 36px;
-		height: 36px;
-		border-radius: var(--radius-base);
-		background: var(--color-informative--surface);
-	}
-	.website-chat.record-detail--cards :global(.section-block) :global(.section-block__icon svg) {
-		width: 18px;
-		height: 18px;
-		color: var(--color-informative--onSurface);
-	}
 	.website-chat.record-detail--cards
 		:global(.section-block:has(> .section-block__hint))
 		> :global(.section-block__hint) {

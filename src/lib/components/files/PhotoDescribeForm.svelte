@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
@@ -116,7 +117,7 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 <div class="photo-describe" class:photo-describe--readonly={!canEdit}>
 	{#if canEdit}<header class="photo-describe__header">
-			<span class="photo-describe__icon" aria-hidden="true">{@html photoIcon}</span>
+			<IconTile icon={photoIcon} size={32} />
 			<h3>Caption and labels</h3>
 			{#if canCurate}<Button variant="quiet" size="small" onclick={() => (manageOpen = true)}
 					>{@html settingsIcon}Manage labels</Button
@@ -248,20 +249,6 @@
 			font-weight: 600;
 			color: var(--color-heading);
 			flex: 1;
-		}
-	}
-	.photo-describe__icon {
-		display: grid;
-		place-items: center;
-		width: 32px;
-		height: 32px;
-		flex-shrink: 0;
-		border-radius: var(--radius-base);
-		background: var(--color-inactive--surface);
-		color: var(--color-inactive);
-		:global(svg) {
-			width: 16px;
-			height: 16px;
 		}
 	}
 	.photo-describe__form {

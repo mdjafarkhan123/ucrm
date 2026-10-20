@@ -37,6 +37,7 @@
 </script>
 
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import type { Snippet } from 'svelte';
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 
@@ -129,7 +130,7 @@
 					onclick={tile.href ? undefined : () => onSelect?.(selected ? '' : tile.key)}
 				>
 					<span class="attention-card__top">
-						<span class="attention-card__icon" aria-hidden="true">{@html tile.icon}</span>
+						<IconTile icon={tile.icon} tone={tile.tone} size={32} />
 						<span class="attention-card__arrow" aria-hidden="true">{@html arrowRightIcon}</span>
 					</span>
 					<span class="attention-card__count">{loading ? '—' : tile.count}</span>
@@ -152,7 +153,13 @@
 						fact.tone && `attention-card__fact--${fact.tone}`
 					]}
 				>
-					<span class="attention-card__fact-icon" aria-hidden="true">{@html fact.icon}</span>
+					{#if fact.tone === 'time' || fact.tone === 'success'}<IconTile
+							icon={fact.icon}
+							tone={fact.tone}
+							size={24}
+						/>{:else}<span class="attention-card__fact-icon" aria-hidden="true"
+							>{@html fact.icon}</span
+						>{/if}
 					{#if fact.value}<strong>{fact.value}</strong>{/if}
 					{#if fact.label}<span>{fact.label}</span>{/if}
 				</li>
@@ -329,42 +336,7 @@
 			justify-content: space-between;
 			gap: var(--space-small);
 		}
-		/* The status's own colour on a soft tile of the same family; the yellow family uses its darker text
-		   shade so the icon does not fade into the tile. */
-		&__icon {
-			display: inline-flex;
-			flex: 0 0 auto;
-			align-items: center;
-			justify-content: center;
-			width: 32px;
-			height: 32px;
-			border-radius: var(--radius-base);
-			color: var(--color-inactive);
-			background: var(--color-inactive--surface);
-
-			:global(svg) {
-				display: block;
-				width: 16px;
-				height: 16px;
-			}
-		}
-		&__tile--warning &__icon {
-			color: var(--color-warning--onSurface);
-			background: var(--color-warning--surface);
-		}
-		&__tile--success &__icon {
-			color: var(--color-success);
-			background: var(--color-success--surface);
-		}
-		&__tile--informative &__icon {
-			color: var(--color-informative);
-			background: var(--color-informative--surface);
-		}
-		&__tile--critical &__icon {
-			color: var(--color-critical);
-			background: var(--color-critical--surface);
-		}
-		&__tile--alert &__icon {
+		&__tile--alert &__top :global(.icon-tile) {
 			background: var(--color-surface);
 		}
 		&__top &__arrow {
@@ -457,27 +429,6 @@
 		}
 		&__fact--end {
 			margin-inline-start: auto;
-		}
-		&__fact--time &__fact-icon,
-		&__fact--success &__fact-icon {
-			align-items: center;
-			justify-content: center;
-			width: 24px;
-			height: 24px;
-			border-radius: var(--radius-tile-small);
-
-			:global(svg) {
-				width: 13px;
-				height: 13px;
-			}
-		}
-		&__fact--time &__fact-icon {
-			color: var(--color-time);
-			background: var(--color-time--surface);
-		}
-		&__fact--success &__fact-icon {
-			color: var(--color-success);
-			background: var(--color-success--surface);
 		}
 		&__fact--warning &__fact-icon {
 			color: var(--color-warning--onSurface);

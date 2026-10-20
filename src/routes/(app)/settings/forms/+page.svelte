@@ -1,4 +1,5 @@
 <script lang="ts">
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -140,6 +141,13 @@
 		{ key: 'type', label: 'Type', width: '260px' },
 		{ key: 'status', label: 'Status', width: '260px' }
 	];
+
+	// Each form's tile takes the colour of what it creates; an assessment uses the yellow family.
+	const outcomeTones: Record<FormOutcome, string> = {
+		request: 'request',
+		assessment: 'warning',
+		job: 'job'
+	};
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -187,10 +195,11 @@
 						{@const badge = statusOf(form)}
 						<th scope="row">
 							<span class="forms-page__form">
-								<span
-									class={`forms-page__icon forms-page__icon--${form.outcome}`}
-									aria-hidden="true">{@html outcomeIcons[form.outcome]}</span
-								>
+								<IconTile
+									icon={outcomeIcons[form.outcome]}
+									tone={outcomeTones[form.outcome]}
+									size={32}
+								/>
 								<a class="forms-page__name" href={builderHref(form.id)}>{form.name}</a>
 								{#if form.is_default}
 									<span class="forms-page__default">
@@ -226,33 +235,6 @@
 			display: flex;
 			align-items: center;
 			gap: 12px;
-		}
-
-		&__icon {
-			display: grid;
-			flex: 0 0 auto;
-			place-items: center;
-			width: 36px;
-			height: 36px;
-			border-radius: 10px;
-
-			:global(svg) {
-				width: 18px;
-				height: 18px;
-			}
-
-			&--request {
-				background: var(--color-request--surface);
-				color: var(--color-request);
-			}
-			&--assessment {
-				background: var(--color-warning--surface);
-				color: var(--color-warning--onSurface);
-			}
-			&--job {
-				background: var(--color-job--surface);
-				color: var(--color-job);
-			}
 		}
 
 		&__name {
