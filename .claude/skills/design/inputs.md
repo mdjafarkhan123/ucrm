@@ -110,3 +110,28 @@ Dropdown errors use the shared error border and a corrective message below the b
   week-start day. Day cells share the width, 40 high, 4 apart, each a 36 circle with the date 13/500 heading.
 - Today: 1.5px `--color-interactive` ring, date 13/700 `--color-interactive`. Picked: `--color-interactive` fill,
   date 13/700 white. Past days that cannot be picked: date `--color-disabled`. Days outside the month are blank.
+
+## Message sheet
+
+The email and text an automation sends (Settings → Automation), approved 2026-10-20 on board `qf1uu` (email A,
+text A). One sheet, like a mail app; the step card around it keeps its number and a `--color-conversation` tile.
+
+- Sheet: `--color-surface`, 1px `--color-border--interactive`, radius 8, clipped. Email: a 44 subject row (padding 0 12, gap 10, the
+  label "Subject" 13/600 quiet with a critical `*`, the value 14/600 heading), a 1px hairline, then the message
+  (padding 12, label "Message" 13/600 quiet, body 14 heading). Text: the message only.
+- Values bar at the sheet's foot: `--color-surface--background--subtle`, padding 8 12, gap 8, a 1px hairline
+  above: 14 `braces` in `--color-conversation`, "Insert" 12/600 quiet, the value chips 6 apart, and the
+  letters-left count 12/500 quiet at the right.
+- Value chip: 28 high, pill, white, 1px `--color-border--interactive`, `--shadow-button`, padding 0 12 0 9, gap 6, a 14 icon in
+  `--color-conversation`, label 12/600 heading. Hover `--color-surface--hover`; focus `--shadow-focus`;
+  pressed `--color-surface--active`. It inserts the value at the cursor, as today.
+- Typing: a 2px `--color-focus` ring 4 outside the sheet, radius 12. Under the sheet, one 12
+  quiet hint line ("Values in {{ }} are swapped for the real details when it sends").
+- Unknown value or can't save: 1.5px `--color-critical` edge, the error line 12 `--color-critical` under the sheet.
+- Text only, cost meter under the sheet: `--color-surface--background`, radius 8, 44 high, three facts 8
+  apart, each a 24 white tile with its icon in `--color-conversation` and the fact 13/600 heading with a 12
+  quiet word: characters · segments · estimated cost ("estimated from (555) 201-4417"). Estimating…: the facts
+  after characters become "Estimating…" quiet; no texting number yet: one 12 quiet line instead.
+- Send from stays a normal select (`Field · select`) with its hint; when the numbers couldn't load it is disabled
+  with the hint in `--color-warning--onSurface`. The optional text inside "Reply by text or email" has two values
+  and no Send from.

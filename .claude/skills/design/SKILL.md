@@ -49,13 +49,13 @@ Jafar 2026-10-17).
 ### Components
 - [buttons.md](buttons.md) — Button
 - [badges.md](badges.md) — Status pill
-- [inputs.md](inputs.md) — Field, money and quantity boxes, checkbox, radio choice, on/off switch, segmented switch, people pick chips
+- [inputs.md](inputs.md) — Field, money and quantity boxes, checkbox, radio choice, on/off switch, segmented switch, people pick chips, message sheet
 - [chips.md](chips.md) — Filter chip, tag, tag picker, sender chip
 - [avatars.md](avatars.md) — Avatar
 - [tabs.md](tabs.md) — Tabs
 - [cards.md](cards.md) — Card, number card
 - [files.md](files.md) — Photo viewer, file picture, photo box, upload list, files card, record files card, files waiting to save, add files pop-up, photo labels pop-up, photo details, caption and labels pop-up
-- [notes.md](notes.md) — Notes card, author line, note text, note files
+- [notes.md](notes.md) — Notes card, author line, note text, note files, note box on a new record
 - [price-book.md](price-book.md) — Search list under a line's name, new item pop-up, Price book drawer
 - [lists.md](lists.md) — List row, Load more footer
 - [tables.md](tables.md) — Table

@@ -28,6 +28,7 @@
 | 16 Email From line | communications/EmailSenderLabel (1b): every state | Approved `I5mY7I` B 2026-10-20 (teal sender chip; A refined text line not chosen). Look in `chips.md` → Sender chip. See § Batch 16 |
 | 17 Caption and labels pop-up | files/PhotoDescribeDialog (1b): every state | Approved `Y0ECPJ` A 2026-10-20 (photo on top; B photo beside not chosen). Look in `files.md` → Caption and labels pop-up. See § Batch 17 |
 | 18 Record files card | files/RecordFilesCard (1b): every state, menu, remove pop-up | Approved `pH9PB` A 2026-10-20 (photos then document lines; B newest-photo gallery not chosen). Look in `files.md` → Record files card. See § Batch 18 |
+| 19 Writing boxes | forms/FormNotesCard, settings/automation/EmailActionEditor, SmsActionEditor (1b): every state | Approved `qf1uu` 2026-10-20: Notes box B (Notes panel field, taller), email A and text A (one message sheet with value chips; text adds a cost meter). Looks in `notes.md` → Note box on a new record, `inputs.md` → Message sheet. See § Batch 19 |
 
 ## Batch 11 notes (Jafar, 2026-10-20)
 
@@ -75,6 +76,19 @@ Hand-off for the builder (restyle only; every control is live today):
 - New foot strips use `--color-surface--background`. Lock icons on invoice strips use the invoice colour.
 - Row 4 (line menu, "Throw away these changes?" with Keep editing / Throw them away, loading, couldn't load
   without Try again, invoice Service date box with ×, progress invoice Item total / Due this invoice) as drawn.
+
+## Batch 19 Writing boxes — approved 2026-10-20
+
+Board `qf1uu` (Notes B, email A, text A; drawn by a helper agent, unchosen options deleted). Restyle only; same
+fields, value buttons, counts, Send from and save flow. Hand-off for the builder:
+- `FormNotesCard`: the note field gains the Notes panel field look, three lines tall, with "Team only" (lock) and
+  the letters-left count inside its foot; error line under it.
+- `EmailActionEditor`: subject and message in one sheet; the value buttons become chips in a values bar at the
+  sheet's foot with the count; hint line under the sheet.
+- `SmsActionEditor`: the same sheet without subject; the letters · segments · cost line becomes the cost meter;
+  Send from stays a select. Same in the optional text of "Reply by text or email".
+- The step card's grey icon becomes a `--color-conversation` tile (drawn as context; part of the step header).
+- Open: Jafar has not yet answered the "what the customer sees" preview idea (new behaviour, note on the board).
 
 ## Batch 18 Record files card — approved 2026-10-20
 
