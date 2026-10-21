@@ -16,7 +16,9 @@
    1440 light/dark: New request, saved request, no-day error, a real Save visit, Schedule, Invoices). The panel now
    closes after Save/Remove visit (Jafar 2026-10-21), merged to main (proven live by the earlier session).
    Batch 50 Job billing pop-ups (Billing setup, Payment schedule, Add an invoice reminder) built 2026-10-21 on branch
-   `claude/job-billing-popups-build`, **waiting to merge** (`docs/evidence/2026-10-21-batch50/`).
+   `claude/job-billing-popups-build`, **waiting to merge** (`docs/evidence/2026-10-21-batch50/`): worktree `.worktrees/job-billing-popups-build`,
+   reservation `70ce4fde6dcb`. Main's folder holds the design session's unsaved `concept.pen` and its claim
+   `fb18a7abdbfd`, so merge once that session releases, then release `70ce4fde6dcb`.
 2. **Draw:** next empty row in `stages/list-1b-parts.md` (app frame left out by Jafar 2026-10-21). Gaps: Field-worker Home
    (`list-2a-daily.md`), Select work pop-up and payment-stage New invoice (`list-2b-daily.md`); 12px text sweep.
 3. **Jafar decides:** checklist order and pop-up marks
