@@ -253567,6 +253567,4034 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "vIjf0",
+      "x": 3484,
+      "y": 20965,
+      "name": "Concept · Batch 35 · Shared money summary card · Approved B · 2026-10-21",
+      "fill": "$color-surface-background",
+      "layout": "vertical",
+      "gap": 40,
+      "padding": 48,
+      "children": [
+        {
+          "type": "frame",
+          "id": "Je6re",
+          "name": "Board header",
+          "width": 1512,
+          "layout": "vertical",
+          "gap": 8,
+          "children": [
+            {
+              "type": "text",
+              "id": "jc5lx",
+              "name": "Title",
+              "fill": "$color-heading",
+              "content": "Batch 35 · Shared money summary card · Approved B · 2026-10-21",
+              "fontFamily": "$font-family",
+              "fontSize": "$font-size-display",
+              "fontWeight": "700",
+              "letterSpacing": -0.6
+            },
+            {
+              "type": "text",
+              "id": "LwQCD",
+              "name": "Intro",
+              "fill": "$color-text-secondary",
+              "textGrowth": "fixed-width",
+              "width": 1512,
+              "content": "Approved by Jafar 2026-10-21: one card on the right rail of every job, quote and invoice. The frame stays the same; the title, big number, bar and rows answer the record's question. Job: am I making money, and is it slipping as time and expenses come in? Quote: is this price right before I send it? Invoice: how much will I collect, and when? Followed Jobber (profit bar from line cost + labour + expenses, minimum-profit warning, deposits applied to the invoice), Buildertrend (projected profit; invoiced vs left to invoice) and Stripe (amount due after credits). Colours: each cost its own bright colour, profit green, loss red, amber only for the below-target warning.",
+              "lineHeight": 1.5,
+              "fontFamily": "$font-family",
+              "fontSize": "$font-size-base",
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "xD1F8",
+          "name": "Colour key",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "vO5uv",
+              "name": "Key title",
+              "fill": "$color-heading",
+              "content": "What each colour means",
+              "fontFamily": "$font-family",
+              "fontSize": "$font-size-larger",
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "cSLDj",
+              "name": "Key strip",
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": -110,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "$color-money-start",
+                    "position": 0
+                  },
+                  {
+                    "color": "$color-money-end",
+                    "position": 1
+                  }
+                ]
+              },
+              "cornerRadius": "$radius-large",
+              "stroke": "$color-money-border",
+              "strokeWidth": 1,
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "sOTu6",
+                  "name": "Key Item cost",
+                  "width": 228,
+                  "fill": "$color-feature-subtle",
+                  "cornerRadius": "$radius-base",
+                  "stroke": "$color-feature-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "aL1Rn",
+                      "name": "Swatch",
+                      "width": "fill_container",
+                      "height": 10,
+                      "fill": "$color-money-items",
+                      "cornerRadius": "$radius-circle"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Syvsq",
+                      "name": "Label",
+                      "fill": "$color-feature-text",
+                      "content": "Item cost",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-base",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "eody8",
+                      "name": "Hint",
+                      "fill": "$color-feature-text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Materials and products on the lines",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-small",
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "D2pvqz",
+                  "name": "Key Expenses",
+                  "width": 228,
+                  "fill": "$color-feature-subtle",
+                  "cornerRadius": "$radius-base",
+                  "stroke": "$color-feature-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "I0nk7",
+                      "name": "Swatch",
+                      "width": "fill_container",
+                      "height": 10,
+                      "fill": "$color-money-expenses",
+                      "cornerRadius": "$radius-circle"
+                    },
+                    {
+                      "type": "text",
+                      "id": "qxQOn",
+                      "name": "Label",
+                      "fill": "$color-feature-text",
+                      "content": "Expenses",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-base",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Z8mWdN",
+                      "name": "Hint",
+                      "fill": "$color-feature-text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Money paid out for the job",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-small",
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "HbDbJ",
+                  "name": "Key Labour",
+                  "width": 228,
+                  "fill": "$color-feature-subtle",
+                  "cornerRadius": "$radius-base",
+                  "stroke": "$color-feature-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "cfAWw",
+                      "name": "Swatch",
+                      "width": "fill_container",
+                      "height": 10,
+                      "fill": "$color-money-labor",
+                      "cornerRadius": "$radius-circle"
+                    },
+                    {
+                      "type": "text",
+                      "id": "hJbqk",
+                      "name": "Label",
+                      "fill": "$color-feature-text",
+                      "content": "Labour",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-base",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "fQXqa",
+                      "name": "Hint",
+                      "fill": "$color-feature-text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Crew time × hourly cost",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-small",
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ZDYZR",
+                  "name": "Key Profit",
+                  "width": 228,
+                  "fill": "$color-feature-subtle",
+                  "cornerRadius": "$radius-base",
+                  "stroke": "$color-feature-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "BR3bt",
+                      "name": "Swatch",
+                      "width": "fill_container",
+                      "height": 10,
+                      "fill": "$color-money-profit",
+                      "cornerRadius": "$radius-circle"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Hjwax",
+                      "name": "Label",
+                      "fill": "$color-feature-text",
+                      "content": "Profit",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-base",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "cNZ7c",
+                      "name": "Hint",
+                      "fill": "$color-feature-text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "What you keep",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-small",
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "RFXjw",
+                  "name": "Key Loss",
+                  "width": 228,
+                  "fill": "$color-feature-subtle",
+                  "cornerRadius": "$radius-base",
+                  "stroke": "$color-feature-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "K0SdKH",
+                      "name": "Swatch",
+                      "width": "fill_container",
+                      "height": 10,
+                      "fill": "$color-money-loss",
+                      "cornerRadius": "$radius-circle"
+                    },
+                    {
+                      "type": "text",
+                      "id": "RHcsS",
+                      "name": "Label",
+                      "fill": "$color-feature-text",
+                      "content": "Loss",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-base",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "S8I5G",
+                      "name": "Hint",
+                      "fill": "$color-feature-text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Costs are more than the price",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-small",
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "X8cSIs",
+                  "name": "Key Below target",
+                  "width": 228,
+                  "fill": "$color-feature-subtle",
+                  "cornerRadius": "$radius-base",
+                  "stroke": "$color-feature-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "AutWl",
+                      "name": "Swatch",
+                      "width": "fill_container",
+                      "height": 10,
+                      "fill": "$color-money-warning",
+                      "cornerRadius": "$radius-circle"
+                    },
+                    {
+                      "type": "text",
+                      "id": "h1EYK",
+                      "name": "Label",
+                      "fill": "$color-feature-text",
+                      "content": "Below target",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-base",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "OhLBo",
+                      "name": "Hint",
+                      "fill": "$color-feature-text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Warning pill only, never a bar",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-small",
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Am89q",
+          "name": "Option B",
+          "layout": "vertical",
+          "gap": 20,
+          "children": [
+            {
+              "type": "frame",
+              "id": "A250wn",
+              "name": "Option head",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "CDXbq",
+                  "name": "Option title",
+                  "fill": "$color-heading",
+                  "content": "Classic layout on ink blue, bright colours by meaning",
+                  "fontFamily": "$font-family",
+                  "fontSize": "$font-size-larger",
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "agMPG",
+                  "name": "Option note",
+                  "fill": "$color-text-secondary",
+                  "content": "Leads with the record's question: profit on a job or quote, balance due on an invoice. Bar order: item cost · expenses · labour · profit.",
+                  "fontFamily": "$font-family",
+                  "fontSize": "$font-size-base",
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "g6oMF",
+              "name": "Cards 1",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "wjtqi",
+                  "name": "Column New job",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "h2eRm",
+                      "name": "Caption",
+                      "fill": "$color-text-secondary",
+                      "content": "New job",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-label",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "T6lUcs",
+                      "name": "Money summary · New job",
+                      "theme": {
+                        "mode": "dark"
+                      },
+                      "width": 360,
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": -110,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "$color-money-start",
+                            "position": 0
+                          },
+                          {
+                            "color": "$color-money-end",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-money-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": "$space-medium",
+                      "padding": "$space-large",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "V2t8M",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "gap": "$space-slim",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "F5S6u",
+                              "name": "Eyebrow",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "PROJECTED PROFIT",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-small",
+                              "fontWeight": "600",
+                              "letterSpacing": 0.8
+                            },
+                            {
+                              "type": "frame",
+                              "id": "HGnpY",
+                              "name": "Pill",
+                              "fill": "$color-feature-subtle",
+                              "cornerRadius": "$radius-circle",
+                              "stroke": "$color-feature-border",
+                              "strokeWidth": 1,
+                              "gap": 4,
+                              "padding": [
+                                4,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "N1Zrq",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "lock",
+                                  "library": "lucide",
+                                  "fill": "$color-feature-text"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "iA8FH",
+                                  "name": "Team only",
+                                  "fill": "$color-feature-text",
+                                  "content": "Team only",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "JYA43",
+                          "name": "Figure",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": "$space-smaller",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Ujf1c",
+                              "name": "Figure row",
+                              "gap": "$space-slim",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ggQmZ",
+                                  "name": "Value",
+                                  "fill": "$color-feature-text",
+                                  "content": "$3,440",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-stat",
+                                  "fontWeight": "700",
+                                  "letterSpacing": -0.6
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "x8agkz",
+                                  "name": "Pill",
+                                  "fill": "$color-money-profit",
+                                  "cornerRadius": "$radius-circle",
+                                  "gap": 4,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "PdS6S",
+                                      "name": "Icon",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "trending-up",
+                                      "library": "lucide",
+                                      "fill": "$color-money-start"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "obcBz",
+                                      "name": "43% margin",
+                                      "fill": "$color-money-start",
+                                      "content": "43% margin",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "N5avu",
+                              "name": "Note",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "On $8,000 of work, before tax",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-label",
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ispKH",
+                          "name": "Bar",
+                          "width": "fill_container",
+                          "height": 10,
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "m0OcU7",
+                              "name": "Segment",
+                              "width": 176,
+                              "height": 10,
+                              "fill": "$color-money-items",
+                              "cornerRadius": "$radius-circle"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "NhMfS",
+                              "name": "Segment",
+                              "width": "fill_container",
+                              "height": 10,
+                              "fill": "$color-money-profit",
+                              "cornerRadius": "$radius-circle"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "IH5FI",
+                          "name": "Legend",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "I54zt",
+                              "name": "Legend Item cost",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "i2lqW",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-money-items",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "USDAQ",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Item cost",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "oJUP9",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "57%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "K6Ij0h",
+                                  "name": "Amount",
+                                  "fill": "$color-feature-text",
+                                  "content": "$4,560",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "wRcpJ",
+                              "name": "Legend Projected profit",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "MGPHo",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-money-profit",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "n2Ijp",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Projected profit",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "IMvLy",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "43%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "LOdNy",
+                                  "name": "Amount",
+                                  "fill": "$color-money-profit",
+                                  "content": "$3,440",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "odYbB",
+                          "name": "Divider",
+                          "width": "fill_container",
+                          "height": 1,
+                          "fill": "$color-feature-border"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "qnaPh",
+                          "name": "Row Job total",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "ZOwAn",
+                              "name": "Label",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Job total",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "rOFkN",
+                              "name": "Value",
+                              "fill": "$color-feature-text",
+                              "content": "$8,000.00",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "C3yzPF",
+                          "name": "Row Deposit already paid",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "r0uYd",
+                              "name": "Icon",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "wallet",
+                              "library": "lucide",
+                              "fill": "$color-feature-text-secondary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "guEgM",
+                              "name": "Label",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Deposit already paid",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "hgJQn",
+                              "name": "Value",
+                              "fill": "$color-feature-text",
+                              "content": "$800.00",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "dbAAY",
+                          "name": "Footnote",
+                          "fill": "$color-feature-text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Labour and expenses come off the profit as your crew logs them.",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-family",
+                          "fontSize": "$font-size-small",
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Zoxl7",
+                  "name": "Column Job in progress",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "MYojd",
+                      "name": "Caption",
+                      "fill": "$color-text-secondary",
+                      "content": "Job in progress",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-label",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Z0i85m",
+                      "name": "Money summary · Job in progress",
+                      "theme": {
+                        "mode": "dark"
+                      },
+                      "width": 360,
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": -110,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "$color-money-start",
+                            "position": 0
+                          },
+                          {
+                            "color": "$color-money-end",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-money-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": "$space-medium",
+                      "padding": "$space-large",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "kE8OM",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "gap": "$space-slim",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "b88RN",
+                              "name": "Eyebrow",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "PROFIT SO FAR",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-small",
+                              "fontWeight": "600",
+                              "letterSpacing": 0.8
+                            },
+                            {
+                              "type": "frame",
+                              "id": "wNI8U",
+                              "name": "Pill",
+                              "fill": "$color-feature-subtle",
+                              "cornerRadius": "$radius-circle",
+                              "stroke": "$color-feature-border",
+                              "strokeWidth": 1,
+                              "gap": 4,
+                              "padding": [
+                                4,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "PNLOx",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "lock",
+                                  "library": "lucide",
+                                  "fill": "$color-feature-text"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Z2W93u",
+                                  "name": "Team only",
+                                  "fill": "$color-feature-text",
+                                  "content": "Team only",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "G8q4QD",
+                          "name": "Figure",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": "$space-smaller",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "dpvst",
+                              "name": "Figure row",
+                              "gap": "$space-slim",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "MKPOm",
+                                  "name": "Value",
+                                  "fill": "$color-feature-text",
+                                  "content": "$2,210",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-stat",
+                                  "fontWeight": "700",
+                                  "letterSpacing": -0.6
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "bLHBk",
+                                  "name": "Pill",
+                                  "fill": "$color-money-warning",
+                                  "cornerRadius": "$radius-circle",
+                                  "gap": 4,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "A6s19j",
+                                      "name": "Icon",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "triangle-alert",
+                                      "library": "lucide",
+                                      "fill": "$color-money-start"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "RRk7m",
+                                      "name": "28% · target 35%",
+                                      "fill": "$color-money-start",
+                                      "content": "28% · target 35%",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "Igaas",
+                              "name": "Note",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "On $8,000 of work, before tax",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-label",
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Fre2R",
+                          "name": "Bar",
+                          "width": "fill_container",
+                          "height": 10,
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "YwAGK",
+                              "name": "Segment",
+                              "width": 173,
+                              "height": 10,
+                              "fill": "$color-money-items",
+                              "cornerRadius": "$radius-circle"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "gf317",
+                              "name": "Segment",
+                              "width": 12,
+                              "height": 10,
+                              "fill": "$color-money-expenses",
+                              "cornerRadius": "$radius-circle"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "pnCV7",
+                              "name": "Segment",
+                              "width": 35,
+                              "height": 10,
+                              "fill": "$color-money-labor",
+                              "cornerRadius": "$radius-circle"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "NCHnB",
+                              "name": "Segment",
+                              "width": "fill_container",
+                              "height": 10,
+                              "fill": "$color-money-profit",
+                              "cornerRadius": "$radius-circle"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "sU0j2",
+                          "name": "Legend",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "mGP3h",
+                              "name": "Legend Item cost",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "KwsfR",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-money-items",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Eckcv",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Item cost",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "WVQIG",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "57%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "bkKbh",
+                                  "name": "Amount",
+                                  "fill": "$color-feature-text",
+                                  "content": "$4,560",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "dunCW",
+                              "name": "Legend Expenses",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "m5cPD",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-money-expenses",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "oz7ck",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Expenses",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "s5HSRN",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "4%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "yeQAB",
+                                  "name": "Amount",
+                                  "fill": "$color-feature-text",
+                                  "content": "$310",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "w2ts8",
+                              "name": "Legend Labour · 14.5 h",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Lt9tv",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-money-labor",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "L6rYJ",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Labour · 14.5 h",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "JKoPD",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "12%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "ZEtAY",
+                                  "name": "Amount",
+                                  "fill": "$color-feature-text",
+                                  "content": "$920",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "kfowO",
+                              "name": "Legend Profit so far",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "ghvGF",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-money-profit",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "cJOrp",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Profit so far",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "leYg6",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "28%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "M27ibd",
+                                  "name": "Amount",
+                                  "fill": "$color-money-profit",
+                                  "content": "$2,210",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "DIEZN",
+                          "name": "Divider",
+                          "width": "fill_container",
+                          "height": 1,
+                          "fill": "$color-feature-border"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "B57zX",
+                          "name": "Row Invoiced",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "fxCqf",
+                              "name": "Icon",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "receipt",
+                              "library": "lucide",
+                              "fill": "$color-feature-text-secondary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "nsUyt",
+                              "name": "Label",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Invoiced",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "AeZ2Z",
+                              "name": "Value",
+                              "fill": "$color-feature-text",
+                              "content": "$3,200 of $8,000",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "M3EERr",
+                  "name": "Column Job finished",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "JQTmM",
+                      "name": "Caption",
+                      "fill": "$color-text-secondary",
+                      "content": "Job finished",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-label",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "lHbSh",
+                      "name": "Money summary · Job finished",
+                      "theme": {
+                        "mode": "dark"
+                      },
+                      "width": 360,
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": -110,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "$color-money-start",
+                            "position": 0
+                          },
+                          {
+                            "color": "$color-money-end",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-money-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": "$space-medium",
+                      "padding": "$space-large",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "b12Tj",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "gap": "$space-slim",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "ooCrO",
+                              "name": "Eyebrow",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "FINAL PROFIT",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-small",
+                              "fontWeight": "600",
+                              "letterSpacing": 0.8
+                            },
+                            {
+                              "type": "frame",
+                              "id": "lA4Ep",
+                              "name": "Pill",
+                              "fill": "$color-feature-subtle",
+                              "cornerRadius": "$radius-circle",
+                              "stroke": "$color-feature-border",
+                              "strokeWidth": 1,
+                              "gap": 4,
+                              "padding": [
+                                4,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "k0YNBp",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "lock",
+                                  "library": "lucide",
+                                  "fill": "$color-feature-text"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "k6LddW",
+                                  "name": "Team only",
+                                  "fill": "$color-feature-text",
+                                  "content": "Team only",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Uq2zI",
+                          "name": "Figure",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": "$space-smaller",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "GE6SL",
+                              "name": "Figure row",
+                              "gap": "$space-slim",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ENa3l",
+                                  "name": "Value",
+                                  "fill": "$color-feature-text",
+                                  "content": "$1,890",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-stat",
+                                  "fontWeight": "700",
+                                  "letterSpacing": -0.6
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "uLzkT",
+                                  "name": "Pill",
+                                  "fill": "$color-money-warning",
+                                  "cornerRadius": "$radius-circle",
+                                  "gap": 4,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "G5ONxd",
+                                      "name": "Icon",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "triangle-alert",
+                                      "library": "lucide",
+                                      "fill": "$color-money-start"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "yBcxY",
+                                      "name": "24% · target 35%",
+                                      "fill": "$color-money-start",
+                                      "content": "24% · target 35%",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "APESO",
+                              "name": "Note",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "On $8,000 of work, before tax",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-label",
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "S9OWW",
+                          "name": "Bar",
+                          "width": "fill_container",
+                          "height": 10,
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "lTyWo",
+                              "name": "Segment",
+                              "width": 173,
+                              "height": 10,
+                              "fill": "$color-money-items",
+                              "cornerRadius": "$radius-circle"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Ovxjm",
+                              "name": "Segment",
+                              "width": 12,
+                              "height": 10,
+                              "fill": "$color-money-expenses",
+                              "cornerRadius": "$radius-circle"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ulCAI",
+                              "name": "Segment",
+                              "width": 47,
+                              "height": 10,
+                              "fill": "$color-money-labor",
+                              "cornerRadius": "$radius-circle"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "qnmWn",
+                              "name": "Segment",
+                              "width": "fill_container",
+                              "height": 10,
+                              "fill": "$color-money-profit",
+                              "cornerRadius": "$radius-circle"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "f2P1zn",
+                          "name": "Legend",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "GpOrQ",
+                              "name": "Legend Item cost",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "TBN1F",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-money-items",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "nZUJK",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Item cost",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "NnLfW",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "57%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "r5rVRI",
+                                  "name": "Amount",
+                                  "fill": "$color-feature-text",
+                                  "content": "$4,560",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "LepJn",
+                              "name": "Legend Expenses",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "w80vCT",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-money-expenses",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "z7xPxE",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Expenses",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "iHbCS",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "4%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "B7zQPa",
+                                  "name": "Amount",
+                                  "fill": "$color-feature-text",
+                                  "content": "$310",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "P1eeNb",
+                              "name": "Legend Labour · 19.5 h",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "eSrTq",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-money-labor",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "wBYsY",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Labour · 19.5 h",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "XhuQW",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "16%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "jEoEL",
+                                  "name": "Amount",
+                                  "fill": "$color-feature-text",
+                                  "content": "$1,240",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "g3en6",
+                              "name": "Legend Final profit",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "pp3Jp",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-money-profit",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Rm1PN",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Final profit",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "WYuZ0",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "24%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "oWCjC",
+                                  "name": "Amount",
+                                  "fill": "$color-money-profit",
+                                  "content": "$1,890",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "KZPfM",
+                          "name": "Divider",
+                          "width": "fill_container",
+                          "height": 1,
+                          "fill": "$color-feature-border"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "sobah",
+                          "name": "Row Invoiced",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "dogvb",
+                              "name": "Icon",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "receipt",
+                              "library": "lucide",
+                              "fill": "$color-feature-text-secondary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "N1rZnV",
+                              "name": "Label",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Invoiced",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "QM8zQ",
+                              "name": "Value",
+                              "fill": "$color-feature-text",
+                              "content": "$8,000 of $8,000",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "R0Dcmh",
+                          "name": "Row Still owed",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "c2IYy",
+                              "name": "Icon",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "hourglass",
+                              "library": "lucide",
+                              "fill": "$color-feature-text-secondary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "MdI0N",
+                              "name": "Label",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Still owed",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Jj9uK",
+                              "name": "Value",
+                              "fill": "$color-feature-text",
+                              "content": "$1,600.00",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "PY6r0",
+                  "name": "Column Nothing priced",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "pkkIW",
+                      "name": "Caption",
+                      "fill": "$color-text-secondary",
+                      "content": "Nothing priced",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-label",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "mBj0w",
+                      "name": "Money summary · Nothing priced",
+                      "theme": {
+                        "mode": "dark"
+                      },
+                      "width": 360,
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": -110,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "$color-money-start",
+                            "position": 0
+                          },
+                          {
+                            "color": "$color-money-end",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-money-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": "$space-medium",
+                      "padding": "$space-large",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "flGE7",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "gap": "$space-slim",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "zmLgp",
+                              "name": "Eyebrow",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "PROJECTED PROFIT",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-small",
+                              "fontWeight": "600",
+                              "letterSpacing": 0.8
+                            },
+                            {
+                              "type": "frame",
+                              "id": "F3rEA",
+                              "name": "Pill",
+                              "fill": "$color-feature-subtle",
+                              "cornerRadius": "$radius-circle",
+                              "stroke": "$color-feature-border",
+                              "strokeWidth": 1,
+                              "gap": 4,
+                              "padding": [
+                                4,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "kbx4d",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "lock",
+                                  "library": "lucide",
+                                  "fill": "$color-feature-text"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "YeflG",
+                                  "name": "Team only",
+                                  "fill": "$color-feature-text",
+                                  "content": "Team only",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "F7xNI3",
+                          "name": "Figure",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": "$space-smaller",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "jRWkd",
+                              "name": "Figure row",
+                              "gap": "$space-slim",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Piuew",
+                                  "name": "Value",
+                                  "fill": "$color-feature-text",
+                                  "content": "$0",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-stat",
+                                  "fontWeight": "700",
+                                  "letterSpacing": -0.6
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "SlVLo",
+                              "name": "Note",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Add a priced line to see your profit",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-label",
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "TpDM9",
+                          "name": "Bar",
+                          "width": "fill_container",
+                          "height": 10,
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "ntxXS",
+                              "name": "Segment",
+                              "width": "fill_container",
+                              "height": 10,
+                              "fill": "$color-feature-border",
+                              "cornerRadius": "$radius-circle"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "pJbxh",
+                          "name": "Divider",
+                          "width": "fill_container",
+                          "height": 1,
+                          "fill": "$color-feature-border"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "unMMT",
+                          "name": "Row Job total",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "FQsV5",
+                              "name": "Label",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Job total",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "bvnRj",
+                              "name": "Value",
+                              "fill": "$color-feature-text",
+                              "content": "$0.00",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "hBqr7",
+              "name": "Cards 2",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "O0SAXF",
+                  "name": "Column New quote",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "aWV5w",
+                      "name": "Caption",
+                      "fill": "$color-text-secondary",
+                      "content": "New quote",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-label",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "SYEpA",
+                      "name": "Money summary · New quote",
+                      "theme": {
+                        "mode": "dark"
+                      },
+                      "width": 360,
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": -110,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "$color-money-start",
+                            "position": 0
+                          },
+                          {
+                            "color": "$color-money-end",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-money-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": "$space-medium",
+                      "padding": "$space-large",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "gXaSY",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "gap": "$space-slim",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "n9wKZx",
+                              "name": "Eyebrow",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "ESTIMATED PROFIT",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-small",
+                              "fontWeight": "600",
+                              "letterSpacing": 0.8
+                            },
+                            {
+                              "type": "frame",
+                              "id": "KJj7b",
+                              "name": "Pill",
+                              "fill": "$color-feature-subtle",
+                              "cornerRadius": "$radius-circle",
+                              "stroke": "$color-feature-border",
+                              "strokeWidth": 1,
+                              "gap": 4,
+                              "padding": [
+                                4,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "s18er",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "lock",
+                                  "library": "lucide",
+                                  "fill": "$color-feature-text"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "IZS7H",
+                                  "name": "Team only",
+                                  "fill": "$color-feature-text",
+                                  "content": "Team only",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "oZLOS",
+                          "name": "Figure",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": "$space-smaller",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "I9LmUh",
+                              "name": "Figure row",
+                              "gap": "$space-slim",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "lt0bV",
+                                  "name": "Value",
+                                  "fill": "$color-feature-text",
+                                  "content": "$3,680",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-stat",
+                                  "fontWeight": "700",
+                                  "letterSpacing": -0.6
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Keou3",
+                                  "name": "Pill",
+                                  "fill": "$color-money-profit",
+                                  "cornerRadius": "$radius-circle",
+                                  "gap": 4,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "g9Uz3c",
+                                      "name": "Icon",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "trending-up",
+                                      "library": "lucide",
+                                      "fill": "$color-money-start"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "ZKd9Q",
+                                      "name": "41% margin",
+                                      "fill": "$color-money-start",
+                                      "content": "41% margin",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "HmIpe",
+                              "name": "Note",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "On $9,000 of work, after discount, before tax",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-label",
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "EerRb",
+                          "name": "Bar",
+                          "width": "fill_container",
+                          "height": 10,
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "L6lzH4",
+                              "name": "Segment",
+                              "width": 182,
+                              "height": 10,
+                              "fill": "$color-money-items",
+                              "cornerRadius": "$radius-circle"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Q2F01v",
+                              "name": "Segment",
+                              "width": "fill_container",
+                              "height": 10,
+                              "fill": "$color-money-profit",
+                              "cornerRadius": "$radius-circle"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "eowfO",
+                          "name": "Legend",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "gLB5y",
+                              "name": "Legend Cost",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "BKEH0",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-money-items",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "n8mmU0",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Cost",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "R6ATG",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "59%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "kPWj9",
+                                  "name": "Amount",
+                                  "fill": "$color-feature-text",
+                                  "content": "$5,320",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "k5dO3H",
+                              "name": "Legend Estimated profit",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "vtbPt",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-money-profit",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "OTaCQ",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Estimated profit",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "O7GytV",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "41%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "cwJYX",
+                                  "name": "Amount",
+                                  "fill": "$color-money-profit",
+                                  "content": "$3,680",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "e4lrk",
+                          "name": "Divider",
+                          "width": "fill_container",
+                          "height": 1,
+                          "fill": "$color-feature-border"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "TtRiO",
+                          "name": "Row Client pays, with GST",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "l4ZYd",
+                              "name": "Label",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Client pays, with GST",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "iJY8i",
+                              "name": "Value",
+                              "fill": "$color-feature-text",
+                              "content": "$9,450.00",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "yqy3j",
+                          "name": "Row Deposit on approval · 25%",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "m2fmxM",
+                              "name": "Icon",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "wallet",
+                              "library": "lucide",
+                              "fill": "$color-feature-text-secondary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "fT6Lj",
+                              "name": "Label",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Deposit on approval · 25%",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "f6r6Gl",
+                              "name": "Value",
+                              "fill": "$color-feature-text",
+                              "content": "$2,362.50",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "dUgjX",
+                  "name": "Column Quote losing money",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "w4cdh",
+                      "name": "Caption",
+                      "fill": "$color-text-secondary",
+                      "content": "Quote losing money",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-label",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "u4x1ME",
+                      "name": "Money summary · Quote losing money",
+                      "theme": {
+                        "mode": "dark"
+                      },
+                      "width": 360,
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": -110,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "$color-money-start",
+                            "position": 0
+                          },
+                          {
+                            "color": "$color-money-end",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-money-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": "$space-medium",
+                      "padding": "$space-large",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "hjOdI",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "gap": "$space-slim",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "De2br",
+                              "name": "Eyebrow",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "ESTIMATED PROFIT",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-small",
+                              "fontWeight": "600",
+                              "letterSpacing": 0.8
+                            },
+                            {
+                              "type": "frame",
+                              "id": "vhocU",
+                              "name": "Pill",
+                              "fill": "$color-feature-subtle",
+                              "cornerRadius": "$radius-circle",
+                              "stroke": "$color-feature-border",
+                              "strokeWidth": 1,
+                              "gap": 4,
+                              "padding": [
+                                4,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "Tveg8",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "lock",
+                                  "library": "lucide",
+                                  "fill": "$color-feature-text"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "E0JYFY",
+                                  "name": "Team only",
+                                  "fill": "$color-feature-text",
+                                  "content": "Team only",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "doGel",
+                          "name": "Figure",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": "$space-smaller",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "fQuIb",
+                              "name": "Figure row",
+                              "gap": "$space-slim",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "MRTac",
+                                  "name": "Value",
+                                  "fill": "$color-money-loss",
+                                  "content": "−$600",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-stat",
+                                  "fontWeight": "700",
+                                  "letterSpacing": -0.6
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ppCoc",
+                                  "name": "Pill",
+                                  "fill": "$color-money-loss",
+                                  "cornerRadius": "$radius-circle",
+                                  "gap": 4,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "oeVO3",
+                                      "name": "Icon",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "trending-down",
+                                      "library": "lucide",
+                                      "fill": "$color-money-start"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "H3Ftz0",
+                                      "name": "Losing money",
+                                      "fill": "$color-money-start",
+                                      "content": "Losing money",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "aW0iB",
+                              "name": "Note",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "On $5,200 of work — costs are $600 more",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-label",
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "IEBRb",
+                          "name": "Bar",
+                          "width": "fill_container",
+                          "height": 10,
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Q1bFn",
+                              "name": "Segment",
+                              "width": 278,
+                              "height": 10,
+                              "fill": "$color-money-items",
+                              "cornerRadius": "$radius-circle"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "PvI8Q",
+                              "name": "Segment",
+                              "width": "fill_container",
+                              "height": 10,
+                              "fill": "$color-money-loss",
+                              "cornerRadius": "$radius-circle"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "RwccU",
+                          "name": "Legend",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "KsJbt",
+                              "name": "Legend Cost",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "I5dt0",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-money-items",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "uBOS4",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Cost",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "c8vmS9",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "112%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "WbLdX",
+                                  "name": "Amount",
+                                  "fill": "$color-feature-text",
+                                  "content": "$5,800",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "GCqP7",
+                              "name": "Legend Loss",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "GlLjC",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-money-loss",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "I1iZOU",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Loss",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "r7oIW",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "−12%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "AVtrG",
+                                  "name": "Amount",
+                                  "fill": "$color-money-loss",
+                                  "content": "−$600",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "r0GP8H",
+                          "name": "Divider",
+                          "width": "fill_container",
+                          "height": 1,
+                          "fill": "$color-feature-border"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "CCtwb",
+                          "name": "Row Client pays, with GST",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "MgACp",
+                              "name": "Label",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Client pays, with GST",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "UiiGa",
+                              "name": "Value",
+                              "fill": "$color-feature-text",
+                              "content": "$5,460.00",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "I3V2E",
+                  "name": "Column New invoice",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "IH8dC",
+                      "name": "Caption",
+                      "fill": "$color-text-secondary",
+                      "content": "New invoice",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-label",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "tNlft",
+                      "name": "Money summary · New invoice",
+                      "theme": {
+                        "mode": "dark"
+                      },
+                      "width": 360,
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": -110,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "$color-money-start",
+                            "position": 0
+                          },
+                          {
+                            "color": "$color-money-end",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-money-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": "$space-medium",
+                      "padding": "$space-large",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "O9oraX",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "gap": "$space-slim",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "N54eI",
+                              "name": "Eyebrow",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "BALANCE DUE",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-small",
+                              "fontWeight": "600",
+                              "letterSpacing": 0.8
+                            },
+                            {
+                              "type": "frame",
+                              "id": "d9HvS",
+                              "name": "Pill",
+                              "fill": "$color-feature-subtle",
+                              "cornerRadius": "$radius-circle",
+                              "stroke": "$color-feature-border",
+                              "strokeWidth": 1,
+                              "gap": 4,
+                              "padding": [
+                                4,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "lOhkE",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "calendar-clock",
+                                  "library": "lucide",
+                                  "fill": "$color-feature-text"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "QlSwB",
+                                  "name": "Due in 14 days",
+                                  "fill": "$color-feature-text",
+                                  "content": "Due in 14 days",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "GKeg3",
+                          "name": "Figure",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": "$space-smaller",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "R53dm",
+                              "name": "Figure row",
+                              "gap": "$space-slim",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "LkqEs",
+                                  "name": "Value",
+                                  "fill": "$color-feature-text",
+                                  "content": "$4,240.00",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-stat",
+                                  "fontWeight": "700",
+                                  "letterSpacing": -0.6
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "GOuxF",
+                              "name": "Note",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "$5,040 invoice, with GST, less the $800 deposit",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-label",
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "GMeIZ",
+                          "name": "Bar",
+                          "width": "fill_container",
+                          "height": 10,
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "H6yiJ9",
+                              "name": "Segment",
+                              "width": 124,
+                              "height": 10,
+                              "fill": "$color-feature-text-secondary",
+                              "cornerRadius": "$radius-circle"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "MMFSE",
+                              "name": "Segment",
+                              "width": "fill_container",
+                              "height": 10,
+                              "fill": "$color-feature-text",
+                              "cornerRadius": "$radius-circle"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "R3Vq3u",
+                          "name": "Legend",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "VYFJp",
+                              "name": "Legend Billed before",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "uaSMS",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-feature-text-secondary",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "EgtO1",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Billed before",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Bn04E",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "40%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "aVxta",
+                                  "name": "Amount",
+                                  "fill": "$color-feature-text",
+                                  "content": "$3,200",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "kz09H",
+                              "name": "Legend This invoice · final",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "HPw9F",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-feature-text",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "T587S",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "This invoice · final",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Tlps9",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "60%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "n1juGj",
+                                  "name": "Amount",
+                                  "fill": "$color-feature-text",
+                                  "content": "$4,800",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "R1LWtH",
+                          "name": "Divider",
+                          "width": "fill_container",
+                          "height": 1,
+                          "fill": "$color-feature-border"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "XMCTx",
+                          "name": "Row Deposit applied",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "lZAtM",
+                              "name": "Icon",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "wallet",
+                              "library": "lucide",
+                              "fill": "$color-feature-text-secondary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "T6SON",
+                              "name": "Label",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Deposit applied",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "j5LYWv",
+                              "name": "Value",
+                              "fill": "$color-feature-text",
+                              "content": "−$800.00",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "r2mRi",
+                          "name": "Row Profit · team only",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "O7eUA",
+                              "name": "Icon",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "lock",
+                              "library": "lucide",
+                              "fill": "$color-feature-text-secondary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "JPAnw",
+                              "name": "Label",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Profit · team only",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "AoKt4",
+                              "name": "Value",
+                              "fill": "$color-money-profit",
+                              "content": "$1,134 · 24%",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "KWLg2",
+                  "name": "Column No cost access",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ixFqK",
+                      "name": "Caption",
+                      "fill": "$color-text-secondary",
+                      "content": "No cost access",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-label",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "K3p7RY",
+                      "name": "Money summary · No cost access",
+                      "theme": {
+                        "mode": "dark"
+                      },
+                      "width": 360,
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": -110,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "$color-money-start",
+                            "position": 0
+                          },
+                          {
+                            "color": "$color-money-end",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-money-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": "$space-medium",
+                      "padding": "$space-large",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "HXMbB",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "gap": "$space-slim",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "TuVSx",
+                              "name": "Eyebrow",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "JOB TOTAL",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-small",
+                              "fontWeight": "600",
+                              "letterSpacing": 0.8
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "vNP2n",
+                          "name": "Figure",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": "$space-smaller",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "ihDe3",
+                              "name": "Figure row",
+                              "gap": "$space-slim",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "MWExx",
+                                  "name": "Value",
+                                  "fill": "$color-feature-text",
+                                  "content": "$8,000.00",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-stat",
+                                  "fontWeight": "700",
+                                  "letterSpacing": -0.6
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "ekIKQ",
+                              "name": "Note",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Job subtotal, before discount and tax",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-label",
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "uJzUy",
+                          "name": "Divider",
+                          "width": "fill_container",
+                          "height": 1,
+                          "fill": "$color-feature-border"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "IB8V7",
+                          "name": "Row Invoiced",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "hGxO2",
+                              "name": "Icon",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "receipt",
+                              "library": "lucide",
+                              "fill": "$color-feature-text-secondary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "LRd6P",
+                              "name": "Label",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Invoiced",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "T6OIKU",
+                              "name": "Value",
+                              "fill": "$color-feature-text",
+                              "content": "$3,200 of $8,000",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "SFfk1",
+                          "name": "Note",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "xSyDJ",
+                              "name": "Icon",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "eye-off",
+                              "library": "lucide",
+                              "fill": "$color-feature-text-secondary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "vetAd",
+                              "name": "Text",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Cost and profit show only to people allowed to see costs.",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-label",
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "GMV82",
+          "name": "Dark mode",
+          "theme": {
+            "mode": "dark"
+          },
+          "fill": "$color-surface-background",
+          "cornerRadius": "$radius-large",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": 32,
+          "children": [
+            {
+              "type": "text",
+              "id": "nviBF",
+              "name": "Dark title",
+              "fill": "$color-heading",
+              "content": "Dark mode · Job in progress",
+              "fontFamily": "$font-family",
+              "fontSize": "$font-size-larger",
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "IvlNT",
+              "name": "Cards",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "S4Rlt",
+                  "name": "Column B",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "qmLTD",
+                      "name": "Caption",
+                      "fill": "$color-text-secondary",
+                      "content": "Same card on the dark page",
+                      "fontFamily": "$font-family",
+                      "fontSize": "$font-size-label",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "jbXy2",
+                      "name": "Money summary · Job in progress",
+                      "theme": {
+                        "mode": "dark"
+                      },
+                      "width": 360,
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": -110,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "$color-money-start",
+                            "position": 0
+                          },
+                          {
+                            "color": "$color-money-end",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "cornerRadius": "$radius-large",
+                      "stroke": "$color-money-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": "$space-medium",
+                      "padding": "$space-large",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "v70t3I",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "gap": "$space-slim",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "MVV5a",
+                              "name": "Eyebrow",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "PROFIT SO FAR",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-small",
+                              "fontWeight": "600",
+                              "letterSpacing": 0.8
+                            },
+                            {
+                              "type": "frame",
+                              "id": "t5Vnui",
+                              "name": "Pill",
+                              "fill": "$color-feature-subtle",
+                              "cornerRadius": "$radius-circle",
+                              "stroke": "$color-feature-border",
+                              "strokeWidth": 1,
+                              "gap": 4,
+                              "padding": [
+                                4,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "eJuL8",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "lock",
+                                  "library": "lucide",
+                                  "fill": "$color-feature-text"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "BoPyz",
+                                  "name": "Team only",
+                                  "fill": "$color-feature-text",
+                                  "content": "Team only",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-label",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "hmOsr",
+                          "name": "Figure",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": "$space-smaller",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "JVBOF",
+                              "name": "Figure row",
+                              "gap": "$space-slim",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "LZTyU",
+                                  "name": "Value",
+                                  "fill": "$color-feature-text",
+                                  "content": "$2,210",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-stat",
+                                  "fontWeight": "700",
+                                  "letterSpacing": -0.6
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ka3UQ",
+                                  "name": "Pill",
+                                  "fill": "$color-money-warning",
+                                  "cornerRadius": "$radius-circle",
+                                  "gap": 4,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "KBxMT",
+                                      "name": "Icon",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "triangle-alert",
+                                      "library": "lucide",
+                                      "fill": "$color-money-start"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "Js9JT",
+                                      "name": "28% · target 35%",
+                                      "fill": "$color-money-start",
+                                      "content": "28% · target 35%",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "aBbQg",
+                              "name": "Note",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "On $8,000 of work, before tax",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-label",
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "CouWw",
+                          "name": "Bar",
+                          "width": "fill_container",
+                          "height": 10,
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "hdnM3",
+                              "name": "Segment",
+                              "width": 173,
+                              "height": 10,
+                              "fill": "$color-money-items",
+                              "cornerRadius": "$radius-circle"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "cMUG1",
+                              "name": "Segment",
+                              "width": 12,
+                              "height": 10,
+                              "fill": "$color-money-expenses",
+                              "cornerRadius": "$radius-circle"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "yCyng",
+                              "name": "Segment",
+                              "width": 35,
+                              "height": 10,
+                              "fill": "$color-money-labor",
+                              "cornerRadius": "$radius-circle"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ZAzqG",
+                              "name": "Segment",
+                              "width": "fill_container",
+                              "height": 10,
+                              "fill": "$color-money-profit",
+                              "cornerRadius": "$radius-circle"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "V6QjP",
+                          "name": "Legend",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "frpBT",
+                              "name": "Legend Item cost",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "gAwpH",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-money-items",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "MgaBt",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Item cost",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "KSI9y",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "57%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "wg2DN",
+                                  "name": "Amount",
+                                  "fill": "$color-feature-text",
+                                  "content": "$4,560",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "XN0UA",
+                              "name": "Legend Expenses",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "b9KJhE",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-money-expenses",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "phkTI",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Expenses",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "a8u16",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "4%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "SLv5o",
+                                  "name": "Amount",
+                                  "fill": "$color-feature-text",
+                                  "content": "$310",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AiwzV",
+                              "name": "Legend Labour · 14.5 h",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "GbYGS",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-money-labor",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "E3mVb",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Labour · 14.5 h",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "U644S",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "12%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "qTJ5z",
+                                  "name": "Amount",
+                                  "fill": "$color-feature-text",
+                                  "content": "$920",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "JIApE",
+                              "name": "Legend Profit so far",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Vm9WN",
+                                  "name": "Dot",
+                                  "width": 8,
+                                  "height": 8,
+                                  "fill": "$color-money-profit",
+                                  "cornerRadius": 2
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "tIy0D",
+                                  "name": "Label",
+                                  "fill": "$color-feature-text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Profit so far",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "uG7bz",
+                                  "name": "Share",
+                                  "fill": "$color-feature-text-secondary",
+                                  "content": "28%",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "zK2UN",
+                                  "name": "Amount",
+                                  "fill": "$color-money-profit",
+                                  "content": "$2,210",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": "$font-size-base",
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "phTr4",
+                          "name": "Divider",
+                          "width": "fill_container",
+                          "height": 1,
+                          "fill": "$color-feature-border"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "MycS5",
+                          "name": "Row Invoiced",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "HdwZN",
+                              "name": "Icon",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "receipt",
+                              "library": "lucide",
+                              "fill": "$color-feature-text-secondary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "q2XrCj",
+                              "name": "Label",
+                              "fill": "$color-feature-text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Invoiced",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Q3K6hg",
+                              "name": "Value",
+                              "fill": "$color-feature-text",
+                              "content": "$3,200 of $8,000",
+                              "fontFamily": "$font-family",
+                              "fontSize": "$font-size-base",
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "themes": {
@@ -255304,6 +259332,30 @@
     "color-money-border": {
       "type": "color",
       "value": "#ffffff2e"
+    },
+    "color-money-items": {
+      "type": "color",
+      "value": "#22d3ee"
+    },
+    "color-money-expenses": {
+      "type": "color",
+      "value": "#fb923c"
+    },
+    "color-money-labor": {
+      "type": "color",
+      "value": "#a78bfa"
+    },
+    "color-money-profit": {
+      "type": "color",
+      "value": "#4ade80"
+    },
+    "color-money-loss": {
+      "type": "color",
+      "value": "#f43f5e"
+    },
+    "color-money-warning": {
+      "type": "color",
+      "value": "#facc15"
     }
   },
   "fileToken": "269eca33-e771-47c2-908b-86cba8e82453"
