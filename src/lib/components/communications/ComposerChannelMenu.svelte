@@ -28,16 +28,17 @@
 		channels.map((value) => ({
 			label: channelDetails(value).label,
 			icon: channelDetails(value).icon,
+			current: value === channel,
 			onSelect: () => onSelect(value)
 		}))
 	);
 </script>
 
+<!-- The channel pill (design `chips.md`): white and raised when it opens a menu, a teal look-only pill when the
+     conversation has one channel. -->
 <!-- eslint-disable svelte/no-at-html-tags -->
 {#snippet trigger()}
-	<span class="composer-channel-menu__icon composer-channel-menu__icon--{channel}" aria-hidden="true"
-		>{@html current.icon}</span
-	>
+	<span class="composer-channel-menu__icon" aria-hidden="true">{@html current.icon}</span>
 	<span>{current.label}</span>
 	<span class="composer-channel-menu__chevron" aria-hidden="true">{@html chevronDownIcon}</span>
 {/snippet}
@@ -47,14 +48,13 @@
 		{items}
 		triggerLabel={`Change message channel, current: ${current.label}`}
 		triggerClass="composer-channel-menu__trigger"
+		contentClass="composer-channel-menu__content"
 		{trigger}
 		align="start"
 	/>
 {:else}
 	<span class="composer-channel-menu__static">
-		<span class="composer-channel-menu__icon composer-channel-menu__icon--{channel}" aria-hidden="true"
-			>{@html current.icon}</span
-		>
+		<span class="composer-channel-menu__icon" aria-hidden="true">{@html current.icon}</span>
 		<span>{current.label}</span>
 	</span>
 {/if}
@@ -65,68 +65,83 @@
 	:global(.composer-channel-menu__trigger),
 	.composer-channel-menu__static {
 		display: inline-flex;
+		box-sizing: border-box;
 		height: 32px;
 		align-items: center;
 		gap: 6px;
-		padding: 0 10px 0 8px;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: 999px;
-		color: var(--color-text);
-		background: var(--color-surface--background--subtle);
+		padding: 0 10px;
+		border: var(--border-base) solid var(--color-border--interactive);
+		border-radius: var(--radius-circle);
+		color: var(--color-heading);
+		background: var(--color-surface);
 		font: inherit;
-		font-size: 12px;
-		font-weight: 700;
+		font-size: var(--typography--fontSize-label);
+		font-weight: 600;
+		white-space: nowrap;
 	}
 
 	:global(.composer-channel-menu__trigger) {
+		box-shadow: var(--shadow-button);
 		cursor: pointer;
 		transition:
 			background-color var(--timing-quick),
 			border-color var(--timing-quick);
 
-		&:hover,
-		&:focus-visible {
-			border-color: var(--color-border--interactive);
+		&:hover {
 			background: var(--color-surface--hover);
 		}
 
 		&:focus-visible {
 			outline: none;
-			box-shadow: var(--shadow-focus);
+			border-color: var(--color-interactive);
+			box-shadow: 0 0 0 0.5px var(--color-interactive);
 		}
 	}
 
 	:global(.composer-channel-menu__trigger[data-state='open']) {
-		border-color: var(--color-border--interactive);
 		background: var(--color-surface--hover);
+	}
+
+	:global(.composer-channel-menu__trigger[data-state='open']) .composer-channel-menu__chevron {
+		transform: rotate(180deg);
+	}
+
+	// One channel only: nothing to pick, so the pill is a tinted label.
+	.composer-channel-menu__static {
+		border-color: var(--color-conversation--surface-edge);
+		background: var(--color-conversation--surface);
 	}
 
 	.composer-channel-menu__icon,
 	.composer-channel-menu__chevron {
 		display: inline-grid;
 		place-items: center;
+	}
+
+	.composer-channel-menu__icon {
+		color: var(--color-conversation);
+
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	.composer-channel-menu__chevron {
 		color: var(--color-icon--secondary);
+		transition: transform var(--timing-quick);
+
+		:global(svg) {
+			width: 14px;
+			height: 14px;
+		}
 	}
 
-	.composer-channel-menu__icon--email {
-		color: var(--color-informative--onSurface);
+	:global(.composer-channel-menu__content.dropdown-menu__content) {
+		width: 216px;
 	}
 
-	.composer-channel-menu__icon--sms {
-		color: var(--color-interactive);
-	}
-
-	.composer-channel-menu__icon--website_chat {
-		color: var(--color-dataViz--categorical--2);
-	}
-
-	.composer-channel-menu__icon :global(svg) {
-		width: 14px;
-		height: 14px;
-	}
-
-	.composer-channel-menu__chevron :global(svg) {
-		width: 13px;
-		height: 13px;
+	:global(.composer-channel-menu__content .dropdown-menu__item-icon:first-child) {
+		color: var(--color-conversation);
 	}
 </style>

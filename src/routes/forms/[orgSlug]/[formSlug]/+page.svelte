@@ -60,6 +60,14 @@
 	}
 
 	let answers = $state<Record<string, unknown>>(initialAnswers());
+	// Each question's place in the whole form, counted on across sections, for its number tile.
+	const questionNumbers = $derived(
+		new Map(
+			data.content.sections
+				.flatMap((section) => section.questions)
+				.map((question, index) => [question.id, index + 1])
+		)
+	);
 	let topLevelPhotos = $state<PhotoSlot[]>([]);
 	let questionPhotos = $state<Record<string, PhotoSlot[]>>({});
 
@@ -603,9 +611,14 @@
 					{#each data.content.sections as section (section.id)}
 						<section class="public-form__section">
 							<h2 class="public-form__section-title">{section.title}</h2>
-							<div class="public-form__fields">
+							<div class="public-form__fields public-form__fields--questions">
 								{#each section.questions as question (question.id)}
-									<PublicFormQuestion {question} bind:value={answers[question.id]} {imageUpload} />
+									<PublicFormQuestion
+										{question}
+										number={questionNumbers.get(question.id) ?? 0}
+										bind:value={answers[question.id]}
+										{imageUpload}
+									/>
 								{/each}
 							</div>
 						</section>
@@ -800,6 +813,10 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-base);
+	}
+
+	.public-form__fields--questions {
+		gap: var(--space-slim);
 	}
 
 	.public-form__photos {

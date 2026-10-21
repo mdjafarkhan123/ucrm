@@ -11,7 +11,7 @@ rails retained. New Job built. New Quote built and merged 2026-10-21:
 Batch 35 money-card scope: `parts/new-request-top-form.md` (supersedes abandoned Batch 31 drafts).
 
 **Next:**
-1. Shared parts: `parts/c5-shared-parts.md`. Batches 1–23 and 33 merged; 24 and 26–30 approved (25 superseded).
+1. Shared parts: `parts/c5-shared-parts.md`. Batches 1–23, 26–28 and 33 merged; 24, 29, 30 approved (25 superseded).
    Batch 35 summary appearance implemented in the Quote branch; complete content unfinished. Batch 37 customer
    group pop-up approved B. Batch 38 profile photo pop-up approved B (`n2ujB`). Next drawing: empty row in `stages/list-1b-parts.md`;
    List 1a drawn, DataTable skipped. Older work needs the 12px text sweep.

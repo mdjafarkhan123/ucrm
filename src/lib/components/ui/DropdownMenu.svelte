@@ -3,6 +3,7 @@
 	import type { Snippet } from 'svelte';
 	import dotsIcon from '@tabler/icons/outline/dots.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import Button from './Button.svelte';
 
 	type MenuItem = {
@@ -18,6 +19,8 @@
 		muted?: boolean;
 		trailingIcon?: string;
 		note?: string;
+		// The chosen one in a pick-one menu: bold, with a green check at the end, read out as current.
+		current?: boolean;
 	};
 
 	type MenuGroup = { heading: string; items: MenuItem[] };
@@ -36,6 +39,7 @@
 		triggerSize,
 		triggerClass,
 		trigger,
+		contentClass = '',
 		align = 'end',
 		disabled = false,
 		unavailableReason,
@@ -64,6 +68,8 @@
 		// travel together, so it never inherits the button's box. Leave both out for the shared Button.
 		triggerClass?: string;
 		trigger?: Snippet;
+		// Placement and size of the open list only (a menu that needs its own width); the look stays here.
+		contentClass?: string;
 		align?: 'start' | 'center' | 'end';
 		disabled?: boolean;
 		/** Nothing is behind this menu yet: the trigger shows disabled and says why, on hover and to a screen
@@ -88,7 +94,7 @@
 
 {#snippet menuItem(item: MenuItem)}
 	<DropdownMenuPrimitive.Item
-		class={`dropdown-menu__item ${item.destructive ? 'dropdown-menu__item--destructive' : ''} ${item.muted ? 'dropdown-menu__item--muted' : ''}`}
+		class={`dropdown-menu__item ${item.destructive ? 'dropdown-menu__item--destructive' : ''} ${item.muted ? 'dropdown-menu__item--muted' : ''} ${item.current ? 'dropdown-menu__item--current' : ''}`}
 		disabled={item.disabled}
 		onSelect={() => item.onSelect()}
 	>
@@ -98,6 +104,12 @@
 		<span class="dropdown-menu__item-label">{item.label}</span>
 		{#if item.note}
 			<span class="dropdown-menu__item-note">, {item.note}</span>
+		{/if}
+		{#if item.current}
+			<span class="dropdown-menu__item-note">, current</span>
+			<span class="dropdown-menu__item-icon dropdown-menu__item-check" aria-hidden="true">
+				{@html checkIcon}
+			</span>
 		{/if}
 		{#if item.trailingIcon}
 			<span class="dropdown-menu__item-icon" aria-hidden="true" title={item.note}>
@@ -154,7 +166,7 @@
 		{/if}
 		<DropdownMenuPrimitive.Portal>
 			<DropdownMenuPrimitive.Content
-				class={`dropdown-menu__content ${wide ? 'dropdown-menu__content--wide' : ''}`}
+				class={`dropdown-menu__content ${wide ? 'dropdown-menu__content--wide' : ''} ${contentClass}`}
 				data-elevation="elevated"
 				{align}
 				sideOffset={4}
@@ -321,6 +333,15 @@
 	:global(.dropdown-menu__item--destructive[data-highlighted]) {
 		color: var(--color-destructive--hover);
 		background: var(--color-critical--surface);
+	}
+
+	:global(.dropdown-menu__item--current) .dropdown-menu__item-label {
+		color: var(--color-heading);
+		font-weight: 600;
+	}
+
+	.dropdown-menu__item-check {
+		color: var(--color-interactive);
 	}
 
 	.dropdown-menu__item-label {

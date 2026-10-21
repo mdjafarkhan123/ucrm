@@ -247,9 +247,10 @@
 
 			<form class="review-journey__form" onsubmit={submit} novalidate>
 				<FormErrorSummary bind:this={errorSummary} message={errorMessage} />
-				{#each form.questions as question (question.id)}
+				{#each form.questions as question, index (question.id)}
 					<PublicFormQuestion
 						{question}
+						number={index + 1}
 						bind:value={
 							() => answerFor(question.id, question.type), (value) => (answers[question.id] = value)
 						}
