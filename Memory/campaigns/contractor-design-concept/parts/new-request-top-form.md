@@ -46,5 +46,7 @@ pick: board `q6Ffc` "Concept · Batch 32 · New job page · A vs B" (light pages
 rail kept. A refined cards (team names in the open visit's head, Anytime/Schedule later side by side, deep-green
 Job total feature card). B one job sheet (label column left, fields right; Anytime/Schedule later as one
 three-way "When" switch; rail = white totals card with job-green band). Section order changed from live
-(Products was second): Jafar's KiMYd decision. On approval: delete the unchosen option, record the look in
-`layout.md` → Create pages, then New quote.
+(Products was second): Jafar's KiMYd decision. **Approved A by Jafar 2026-10-20** ("A"); B and its dark copy
+deleted; board renamed "… · Approved A". Look in `layout.md` → Create pages. Jafar also approved the live
+Products empty-state padding fix (flush New job block), done in `ProductsAndServicesBlock.svelte`.
+Next: New quote page, same way (one page per session), then New invoice; build after the drawings.

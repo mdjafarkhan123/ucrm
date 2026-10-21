@@ -2740,6 +2740,10 @@
 	:global(.section-block--concept.pricing-block--editing) {
 		border-color: var(--color-interactive);
 	}
+	// A flush block (New job) has no body padding, so the empty start needs the card body's own padding back.
+	:global(.section-block--flush) .pricing-edit--concept .pricing-empty {
+		padding: var(--space-medium);
+	}
 	.pricing-edit--concept {
 		.pricing-block__hint {
 			padding: var(--space-base) var(--space-medium);

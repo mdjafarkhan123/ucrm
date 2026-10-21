@@ -58,6 +58,16 @@
   padding 0 12, gap 10; a 32 tile (radius 8, 1px edge) then the label 12/500 quiet over the value 14/600 heading,
   4 apart. Request: Time calendar tile, "Requested on", the date. Quote, Job, Invoice: a `#` tile in the record
   colour, "Quote # / Job # / Invoice #", "Given when you save".
+- **New job page**, approved A by Jafar 2026-10-20 (Pencil: "Batch 32 · New job page · Approved A", `q6Ffc`):
+  the shared create form, then separate section cards in Jobber's order: Visits, Billing, Products and services;
+  rail: the deep-green Job total feature card. Visits card: Card header (Time tile, "1 visit · first on …",
+  Create visits), body padding 20 gap 16: the Schedule segmented switch; the open visit in a radius 12 panel with
+  a 1px `--color-time--surface-edge` edge, its head on `--color-time--surface` (44 `--color-time` date tile with
+  weekday 12/600 over the day 16/700 in white; "Visit 1" 14/600 over the day and time 12 in
+  `--color-time--onSurface`; who is going at the right 12/500 `--color-time--onSurface`, or "Nobody assigned yet"
+  quiet; a chevron), body padding 16 gap 16: Visit title, Day · Start → End on one row, Anytime and Schedule
+  later checkboxes side by side, Instructions with its count, Who is going chips, Remove visit (danger, small).
+  Notify customer closes the card under a 1px line. Billing: Card header (Invoice receipt tile) and its checkbox.
 - Invoice dates and payment terms keep their existing Terms & dates card. Each page keeps its existing cards
   and right-sidebar contents. Client creation is outside this shared form's approval.
 
