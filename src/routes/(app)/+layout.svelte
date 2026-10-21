@@ -63,6 +63,17 @@
 		navigating.to !== null && navigating.to.url.pathname !== page.url.pathname
 	);
 
+	// The skeleton takes the shape of the page being opened: the five lists and the record pages behind them.
+	const LIST_ROUTES = new Set(['clients', 'requests', 'quotes', 'jobs', 'invoices']);
+	const RECORD_ROUTES = new Set([...LIST_ROUTES, 'payments']);
+	const skeletonKind = $derived.by(() => {
+		const parts = (navigating.to?.route.id ?? '').replace('/(app)/', '').split('/');
+		if (parts.length === 1 && LIST_ROUTES.has(parts[0])) return 'list';
+		if (parts.length === 2 && RECORD_ROUTES.has(parts[0]) && parts[1] === '[id=uuid]')
+			return 'record';
+		return 'plain';
+	});
+
 	$effect(() => {
 		if (!navigatingToAnotherPage) {
 			slowNavigation = false;
@@ -98,7 +109,9 @@
 			{/if}
 		{/snippet}
 		{#if slowNavigation}
-			<PageContainer variant="fill"><RouteSkeleton /></PageContainer>
+			<PageContainer variant={skeletonKind === 'plain' ? 'fill' : 'open'}>
+				<RouteSkeleton kind={skeletonKind} />
+			</PageContainer>
 		{/if}
 		<div class="route-content" hidden={slowNavigation}>{@render children()}</div>
 		<!-- Inside the shell so it lines up with the content column. Only for someone with an organization:
