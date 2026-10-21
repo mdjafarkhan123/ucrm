@@ -116,10 +116,9 @@ Placed 2026-10-21 (Jafar's yes): New job `q6Ffc` light/dark and New quote `OzXHh
 nothing-priced card (`UHIua`, `aMze2`, `AjDJ2`, `NFtQl`); Job details `tNdkX` shows the in-progress card `Y9nc2`
 (profit so far $1,486 · 36%, deposit paid 30%, left to invoice) in place of Job money `M8lNu5`.
 
-## Batch 36 — whole New invoice page (drawn 2026-10-21, waiting for Jafar's pick)
+## Batch 36 — whole New invoice page (**approved A by Jafar 2026-10-21**)
 
-Board `EBLIe` "Concept · Batch 36 · New invoice page · A vs B" (light `C75AJ` A, `ELHi2` B; dark `kLaPi`,
-`l8YFp`). Both: approved B header in invoice colour (Subject, client, Invoice #), every live field kept and in
+Board `EBLIe` "Concept · Batch 36 · New invoice page · Approved A · 2026-10-21" (light `C75AJ`, dark `kLaPi`). Both: approved B header in invoice colour (Subject, client, Invoice #), every live field kept and in
 live order (Products and services with a service date on each line, Add line item, Price book, Invoice subtotal;
 Terms & dates: Invoice date "today if blank", Payment terms, Due date), rail = the approved money summary card's
 invoice version (replaces Invoice total) + Attachments. No Notes, discount/tax, Client view or text/heading on
@@ -128,5 +127,8 @@ A refined cards: each line open in the editor; Terms & dates on one row with the
 (worked out from the terms; Custom date keeps today's date picker). B new concept: dated ledger rows, click one to
 open the same editor in place (one open at a time); Terms & dates as a timeline Invoice date → terms chip → Due
 date. Live sources: `src/routes/(app)/invoices/new/+page.svelte`, `src/lib/components/invoices/InvoiceForm.svelte`.
-Jobber: `jobber-05` → Live screen confirmation. Not drawn: the Select work pop-up and the payment-stage
+Jobber: `jobber-05` → Live screen confirmation. Jafar chose A ("I choose A"); B and its dark copy deleted. The service
+date box in A is the live one (checked on the live page), so the shared Products component needs no change.
+Look in `layout.md` → Create pages. Next: build New quote and New invoice on the concept frame (shared form
+`CreateFormHeader`, money summary card), then remove `PrimaryInfoCard`. Not drawn: the Select work pop-up and the payment-stage
 (locked amounts) state; draw them after the pick if Jafar wants.

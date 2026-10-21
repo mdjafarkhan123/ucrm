@@ -78,6 +78,15 @@
   the client sees, a quiet green "Change" at the right) above the Quote subtotal foot. Contract disclaimer: Card
   header (file-check tile), a writing box and a foot with a 12 quiet hint and the count. Rail: the Batch 24
   totals card, one Discount and tax card, Notes, Attachments.
+- **New invoice page**, approved A by Jafar 2026-10-21 (Pencil: "Batch 36 · New invoice page · Approved A", `EBLIe`):
+  the shared create form in invoice colour (Subject, client, Invoice #), then separate cards: Products and
+  services, Terms & dates. Products and services: Card header (package tile in invoice colour), each line open in
+  the editor with its optional Service date box on the line's bottom row beside the kind pill, the Add row, and
+  the Invoice subtotal foot. Terms & dates: Card header (calendar tile), body padding 20 gap 16, three equal
+  columns on one row: Invoice date field with a 12 quiet "Today if left blank." hint; Payment terms select; Due
+  date as a read-only 40 high tile (`--color-surface--background--subtle`, radius 8, padding 0 12, gap 10: a 16
+  calendar-check icon in `--color-invoice`, the date 14/600 heading, "in 14 days" 12 quiet) with a 12 quiet hint;
+  Custom date swaps the tile for a date field. Rail: the shared money summary card (`cards.md`), Attachments.
 - Invoice dates and payment terms keep their existing Terms & dates card. Each page keeps its existing cards
   and right-sidebar contents. Client creation is outside this shared form's approval.
 
