@@ -68,7 +68,7 @@ Automatic follow-up card · Approved B", `jXc9n`, Jafar 2026-10-21).
 
 - Card header with a 40 `--color-conversation` tile (`bot`) and a 12 quiet hint; body padding 16, gap 14.
 - Each running follow-up is a panel in its status colour: `--surface` fill, 1px `--surface-edge`, radius 12,
-  padding 14, gap 12. Waiting `informative`, paused or stuck `warning`, needs attention `critical`.
+  padding 14, gap 12. Waiting `informative` (stuck too: the amber strip sits inside the blue panel), paused `warning`, needs attention `critical`.
   - Top: the follow-up name 13/600 in the status `--onSurface`, the outlined status pill at the right.
   - When: a 12/500 quiet kicker ("Next step", "On hold") over the big line 24/700 heading (-0.4): the next send
     time; when paused or failed the reason is the big line at 20/700 with a 12 `--color-text` line under it.
