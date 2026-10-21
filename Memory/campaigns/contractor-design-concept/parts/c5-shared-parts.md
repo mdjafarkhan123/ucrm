@@ -402,3 +402,9 @@ cards, white on the page or a coloured top (`inputs.md`); every segmented switch
 (`inputs.md`); Notes field and empty Files box on `--color-surface--background`; top bar a white bordered panel
 (`top-bar.md`). Builder: update `_variables.scss` client tokens and the shared `ui/SegmentedControl`, `ui/Button`,
 `ui/Input`, `ui/Select`, top bar, Notes and Files parts once; check every screen at 1440 light and dark.
+
+## Switch component — approved 2026-10-21
+
+Jafar approved the switch component board `SnDlF` and asked for every hand-drawn switch to use it: all 34
+(Parts, Schedule views and pop-ups, Pickers AM/PM, Price book, New job, Signature pad, Client form) are now
+instances, keeping each one's size and direction. Look in `inputs.md` → Segmented switch.

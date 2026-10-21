@@ -88,6 +88,11 @@ Dropdown errors use the shared error border and a corrective message below the b
 
 ## Segmented switch
 
+One Pencil component with variants (board "Concept · Foundation · Switch · component and variants",
+`SnDlF`, approved by Jafar 2026-10-21): `Switch / Option / Not chosen · Chosen · Hover · Focus · Can't pick`,
+`Switch / 2 choices · 3 choices · 4 choices`, and `Switch / Field` (label, switch, optional hint). Every switch in
+`concept.pen` is an instance; draw new ones from it, never by hand. In code it is `ui/SegmentedControl`.
+
 - For two to four choices of one kind (One-off / Recurring, Ends after / Ends on). Field label above, 6 gap.
 - Track: `--color-surface--background` on a white card, `--color-surface` on the page or a coloured top; 1px
   `--color-border`, radius 8, padding 3, 2 between options.
