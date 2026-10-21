@@ -17,7 +17,10 @@
    closes after Save/Remove visit (Jafar 2026-10-21), merged to main (proven live by the earlier session).
    Batch 50 Job billing pop-ups (Billing setup, Payment schedule, Add an invoice reminder) built and merged to
    main 2026-10-21 (`docs/evidence/2026-10-21-batch50/`); its Pencil board `aJGHA` still needs the step-6 tidy-up.
-2. **Draw:** Batch 51 New campaign · Goal step `t0L1xo` approved A 2026-10-21, waiting to be built
+2. **Draw:** Batch 52 record header change (Jafar 2026-10-21: white top, no stripe; facts icon-left 40 tile;
+   bigger text) drawn in place on `xrJ3f` at 840 wide, waiting for his yes and his Ctrl+S in Pencil; on yes,
+   update `layout.md` Record header, `badges.md` (header pill 14), `icon-shapes.md` and `c5-shared-parts.md`.
+   Batch 51 New campaign · Goal step `t0L1xo` approved A 2026-10-21, waiting to be built
    (`parts/c5-shared-parts.md`). Next drawing: the Customers step on the same frame, then Email, Delivery, Review
    (`stages/list-1c-parts.md`). Gaps: Field-worker Home
    (`list-2a-daily.md`), Select work pop-up and payment-stage New invoice (`list-2b-daily.md`); 12px text sweep.
