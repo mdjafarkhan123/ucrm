@@ -128,7 +128,11 @@
 			const base = Math.floor(exact);
 			return { base, fraction: exact - base };
 		});
-		let residual = totalMinor - shares.reduce((sum, share) => sum + share.base, 0);
+		// Only the rounding leftover is handed out. While the percentages are still short of 100% the rest of the
+		// total is unassigned, not a cent per stage; at exactly 100% the target is the job total, as on the server.
+		const basisPoints = rows.reduce((sum, row) => sum + rawValue(row), 0);
+		const target = Math.round((totalMinor * basisPoints) / 10000);
+		let residual = target - shares.reduce((sum, share) => sum + share.base, 0);
 		const order = shares
 			.map((share, index) => ({ index, fraction: share.fraction }))
 			.sort((a, b) => b.fraction - a.fraction || a.index - b.index);

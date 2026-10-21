@@ -78,6 +78,28 @@
 	);
 
 	let currentDay = $state(today(getLocalTimeZone()));
+
+	// An empty box shows "Pick a day" over its month, day and year slots. A half-typed date is not a value yet,
+	// so the words stay away once any slot holds a number, and focus entering an empty box starts at the first
+	// slot rather than whichever slot sat under the click.
+	let field = $state<HTMLElement>();
+	let partlyTyped = $state(false);
+	const showEmpty = $derived(!value && !partlyTyped);
+
+	function segmentsOf(element: HTMLElement | undefined) {
+		return [...(element?.querySelectorAll<HTMLElement>('.calendar-picker__segment') ?? [])];
+	}
+
+	function startAtFirstSlot(event: FocusEvent) {
+		if (!showEmpty) return;
+		const [first] = segmentsOf(field);
+		if (first && event.target !== first) first.focus();
+	}
+
+	function notePartlyTyped() {
+		partlyTyped =
+			!value && segmentsOf(field).some((segment) => /\d/.test(segment.textContent ?? ''));
+	}
 	let quickDates = $derived([
 		{ label: 'Today', date: currentDay },
 		{ label: 'Tomorrow', date: currentDay.add({ days: 1 }) },
@@ -152,7 +174,7 @@
 		>
 			<DatePicker.Label class={labelClass}>{label}</DatePicker.Label>
 
-			<div class="calendar-picker__control">
+			<div class="calendar-picker__control" class:calendar-picker__control--empty={showEmpty}>
 				<DatePicker.Trigger
 					class="calendar-picker__trigger"
 					aria-label={`Open ${label.toLowerCase()} calendar`}
@@ -160,25 +182,36 @@
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					{@html calendarIcon}
 				</DatePicker.Trigger>
-				<DatePicker.Input
-					{id}
-					{name}
-					class="calendar-picker__input"
-					aria-invalid={invalid}
-					aria-describedby={errorMessage ? `${id}-error` : undefined}
+				<span
+					class="calendar-picker__field"
+					bind:this={field}
+					onfocusin={startAtFirstSlot}
+					onfocusout={notePartlyTyped}
 				>
-					{#snippet children({ segments })}
-						{#each segments as segment, segmentIndex (segment.part + '-' + segmentIndex)}
-							{#if segment.part === 'literal'}
-								<span class="calendar-picker__literal" aria-hidden="true">{segment.value}</span>
-							{:else}
-								<DatePicker.Segment class="calendar-picker__segment" part={segment.part}>
-									{segment.value}
-								</DatePicker.Segment>
-							{/if}
-						{/each}
-					{/snippet}
-				</DatePicker.Input>
+					<DatePicker.Input
+						{id}
+						{name}
+						class="calendar-picker__input"
+						aria-invalid={invalid}
+						aria-describedby={errorMessage ? `${id}-error` : undefined}
+					>
+						{#snippet children({ segments })}
+							{#each segments as segment, segmentIndex (segment.part + '-' + segmentIndex)}
+								{#if segment.part === 'literal'}
+									<span class="calendar-picker__literal" aria-hidden="true">{segment.value}</span>
+								{:else}
+									<DatePicker.Segment class="calendar-picker__segment" part={segment.part}>
+										{segment.value}
+									</DatePicker.Segment>
+								{/if}
+							{/each}
+						{/snippet}
+					</DatePicker.Input>
+					<!-- An empty box reads as words until it is clicked; the month, day and year slots are still there
+				     underneath, so a click or Tab lands in them and typing works as before. -->
+					{#if showEmpty}<span class="calendar-picker__empty" aria-hidden="true">Pick a day</span
+						>{/if}
+				</span>
 
 				{#if value}<span class="calendar-picker__date-weekday"
 						>{new Intl.DateTimeFormat(fieldLocale, { weekday: 'short' }).format(
@@ -334,6 +367,34 @@
 				outline: none;
 			}
 
+			&__field {
+				position: relative;
+				display: flex;
+				min-width: 0;
+				flex: 1;
+			}
+
+			&__empty {
+				position: absolute;
+				inset: 0;
+				display: flex;
+				align-items: center;
+				padding: 0 var(--space-base);
+				overflow: hidden;
+				color: var(--color-text--secondary);
+				font-size: var(--typography--fontSize-base);
+				white-space: nowrap;
+				pointer-events: none;
+			}
+
+			&__control:focus-within &__empty {
+				display: none;
+			}
+
+			&__control--empty:not(:focus-within) &__input {
+				opacity: 0;
+			}
+
 			&__segment,
 			&__literal {
 				white-space: pre;
@@ -403,6 +464,11 @@
 			}
 
 			&--small &__input {
+				padding: 0 var(--space-small);
+				font-size: var(--typography--fontSize-small);
+			}
+
+			&--small &__empty {
 				padding: 0 var(--space-small);
 				font-size: var(--typography--fontSize-small);
 			}
