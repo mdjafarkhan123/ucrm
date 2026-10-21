@@ -91,7 +91,7 @@
 			min-height: 38px;
 			padding: 0 var(--space-slim);
 			border-color: var(--color-border);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-base);
 			font-weight: 500;
 
 			.search-input__icon :global(svg) {

@@ -264,7 +264,7 @@
 	.calendar-month__weekday {
 		padding: 11px 14px;
 		color: var(--color-text--secondary);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 600;
 		letter-spacing: 0.8px;
 		text-transform: uppercase;
@@ -380,7 +380,7 @@
 		flex-wrap: wrap;
 		justify-content: flex-end;
 		color: var(--color-text--secondary);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 500;
 		white-space: nowrap;
 	}
@@ -454,7 +454,7 @@
 		background: none;
 		color: var(--color-interactive);
 		font-family: inherit;
-		font-size: 11px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 600;
 		cursor: pointer;
 

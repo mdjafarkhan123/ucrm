@@ -537,14 +537,14 @@
 	:global(.time-picker-field__column button[aria-selected='true']) {
 		color: var(--color-time--onSurface);
 		background: transparent;
-		font-size: 20px;
+		font-size: var(--typography--fontSize-larger);
 		font-weight: 700;
 	}
 
 	:global(.time-picker-field__colon) {
 		position: relative;
 		color: var(--color-time--onSurface);
-		font-size: 20px;
+		font-size: var(--typography--fontSize-larger);
 		font-weight: 700;
 	}
 

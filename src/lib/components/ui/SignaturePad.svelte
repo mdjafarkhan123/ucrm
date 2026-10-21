@@ -250,7 +250,7 @@
 		padding-left: var(--space-small);
 		overflow: hidden;
 		color: #111827;
-		font-size: 36px;
+		font-size: var(--typography--fontSize-jumbo);
 		font-family: 'Segoe Script', 'Brush Script MT', cursive;
 		white-space: nowrap;
 	}

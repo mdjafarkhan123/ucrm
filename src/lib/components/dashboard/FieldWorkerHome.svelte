@@ -606,7 +606,7 @@
 		display: block;
 		margin: 10px 0 4px;
 		color: var(--color-heading);
-		font-size: 32px;
+		font-size: var(--typography--fontSize-stat);
 	}
 	/* Holds the number's exact line box, so the card doesn't jump when the count arrives. */
 	.stat-card__pending {
@@ -614,7 +614,7 @@
 		align-items: center;
 		height: 1.2em;
 		margin: 10px 0 4px;
-		font-size: 32px;
+		font-size: var(--typography--fontSize-stat);
 	}
 	.stat-card--request {
 		border-top: 3px solid var(--color-request);
@@ -640,7 +640,7 @@
 	}
 	.panel h2 {
 		color: var(--color-heading);
-		font-size: 20px;
+		font-size: var(--typography--fontSize-larger);
 	}
 	.record-list {
 		display: grid;
@@ -696,7 +696,7 @@
 		border-radius: 999px;
 		color: var(--color-client--onSurface);
 		background: var(--color-client--surface);
-		font-size: 10px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 700;
 		text-transform: capitalize;
 	}
@@ -810,7 +810,7 @@
 	}
 	.modal h2 {
 		color: var(--color-heading);
-		font-size: 24px;
+		font-size: var(--typography--fontSize-largest);
 	}
 	.modal form {
 		display: grid;

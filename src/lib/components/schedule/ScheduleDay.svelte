@@ -1000,7 +1000,7 @@
 
 	.day__weekday {
 		color: var(--color-text--secondary);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 600;
 		letter-spacing: 0.6px;
 		text-transform: uppercase;
@@ -1036,7 +1036,7 @@
 		align-items: center;
 		gap: 2px var(--space-small);
 		color: var(--color-text--secondary);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
 		line-height: 1.3;
 	}
@@ -1079,7 +1079,7 @@
 		padding: 0 14px;
 		border-left: var(--border-base) solid var(--color-border);
 		color: var(--color-text--secondary);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 600;
 	}
 
@@ -1098,7 +1098,7 @@
 		border-radius: 999px;
 		background-color: var(--color-interactive);
 		color: var(--color-text--reverse);
-		font-size: 10.5px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 700;
 		line-height: 1.3;
 		white-space: nowrap;
@@ -1110,7 +1110,7 @@
 		// Sat on its own line rather than inside the hour it opens, so a label reads as the line's time.
 		transform: translate(var(--space-small), -50%);
 		color: var(--color-text--secondary);
-		font-size: 11.5px;
+		font-size: var(--typography--fontSize-overline);
 		line-height: var(--typography--lineHeight-tight);
 		white-space: nowrap;
 	}
@@ -1198,7 +1198,7 @@
 
 	.day__count {
 		color: var(--color-text--secondary);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 		line-height: var(--typography--lineHeight-tight);
 	}
 
@@ -1212,7 +1212,7 @@
 		border-radius: var(--radius-circle);
 		background-color: var(--color-heading);
 		color: var(--color-surface);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 700;
 
 		:global(svg) {

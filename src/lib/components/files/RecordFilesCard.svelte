@@ -759,7 +759,7 @@
 			place-items: center;
 			color: var(--color-white);
 			background: var(--color-overlay);
-			font-size: 20px;
+			font-size: var(--typography--fontSize-larger);
 			font-weight: 700;
 		}
 

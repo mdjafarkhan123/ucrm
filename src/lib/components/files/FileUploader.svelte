@@ -318,7 +318,7 @@
 		}
 		&__title {
 			margin: 0;
-			font-size: 16px;
+			font-size: var(--typography--fontSize-large);
 			font-weight: 600;
 			color: var(--color-heading);
 		}

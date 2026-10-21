@@ -377,7 +377,7 @@
 	.data-table--card :global(thead td) {
 		padding: 10px var(--space-base);
 		color: var(--color-text--secondary);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 600;
 		letter-spacing: 0.6px;
 		text-transform: uppercase;

@@ -406,7 +406,7 @@
 		.item-card__avatar {
 			width: 20px;
 			height: 20px;
-			font-size: 9px;
+			font-size: var(--typography--fontSize-overline);
 		}
 	}
 	.item-card__badge {

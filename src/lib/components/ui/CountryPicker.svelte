@@ -289,7 +289,7 @@
 		width: 20px;
 		flex: 0 0 20px;
 		place-items: center;
-		font-size: 16px;
+		font-size: var(--typography--fontSize-large);
 		line-height: 1;
 	}
 	:global(.country-picker__trigger) {

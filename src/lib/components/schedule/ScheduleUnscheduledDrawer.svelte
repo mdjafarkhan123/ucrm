@@ -301,7 +301,7 @@
 	.backlog__heading {
 		margin: 0;
 		color: var(--color-heading);
-		font-size: 16px;
+		font-size: var(--typography--fontSize-large);
 		font-weight: 600;
 		letter-spacing: -0.2px;
 		line-height: var(--typography--lineHeight-tight);
@@ -317,7 +317,7 @@
 		border-radius: 999px;
 		background-color: var(--color-inactive--surface);
 		color: var(--color-inactive--onSurface);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 700;
 	}
 
@@ -355,7 +355,7 @@
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
 		color: var(--color-text--secondary);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 		line-height: 1.4;
 	}
 
@@ -524,7 +524,7 @@
 		gap: 5px;
 		min-width: 0;
 		color: var(--color-text--secondary);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 	}
 
 	.backlog__place-text {
@@ -572,7 +572,7 @@
 
 	.backlog__assignment {
 		color: var(--color-text--secondary);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -588,7 +588,7 @@
 		background-color: var(--color-surface);
 		border: var(--border-base) solid var(--color-warning);
 		color: var(--color-warning--onSurface);
-		font-size: 11.5px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 600;
 	}
 

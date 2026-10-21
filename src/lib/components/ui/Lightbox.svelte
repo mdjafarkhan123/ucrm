@@ -426,7 +426,7 @@
 		flex: 1;
 	}
 	.lightbox__name {
-		font-size: 15px;
+		font-size: var(--typography--fontSize-large);
 	}
 	.lightbox__description {
 		font-size: var(--typography--fontSize-label);

@@ -80,7 +80,7 @@
 		&__description {
 			max-width: 36ch;
 			color: var(--color-text--secondary);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 		}
 		&__retry-icon {

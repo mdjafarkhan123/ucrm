@@ -79,7 +79,7 @@
 			}
 			p {
 				color: var(--color-text--secondary);
-				font-size: 13px;
+				font-size: var(--typography--fontSize-base);
 				font-weight: 500;
 			}
 		}

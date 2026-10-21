@@ -200,7 +200,7 @@
 			display: block;
 			overflow: hidden;
 			color: var(--color-heading);
-			font-size: 15px;
+			font-size: var(--typography--fontSize-large);
 			font-weight: 700;
 			line-height: 1.2;
 			text-overflow: ellipsis;
@@ -267,7 +267,7 @@
 			margin-bottom: var(--space-smaller);
 			padding: 0 var(--space-slim);
 			color: var(--color-text--secondary);
-			font-size: 11px;
+			font-size: var(--typography--fontSize-overline);
 			font-weight: 700;
 			letter-spacing: 0.8px;
 			text-transform: uppercase;
@@ -356,7 +356,7 @@
 			border-radius: 10px;
 			color: var(--color-surface);
 			background: var(--color-interactive);
-			font-size: 11px;
+			font-size: var(--typography--fontSize-overline);
 			font-weight: 700;
 			line-height: 20px;
 			text-align: center;

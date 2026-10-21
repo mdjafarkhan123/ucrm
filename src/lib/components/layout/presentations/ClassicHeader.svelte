@@ -118,7 +118,7 @@
 		color: var(--color-text--secondary);
 		background: var(--color-surface--background--subtle);
 		font: inherit;
-		font-size: 11px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 600;
 		line-height: 1.2;
 	}

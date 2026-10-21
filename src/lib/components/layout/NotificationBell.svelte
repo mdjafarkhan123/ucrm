@@ -351,7 +351,7 @@
 
 		h2 {
 			color: var(--color-heading);
-			font-size: 20px;
+			font-size: var(--typography--fontSize-larger);
 			font-weight: 700;
 			letter-spacing: -0.3px;
 			line-height: 1.2;
@@ -364,7 +364,7 @@
 		align-items: center;
 		gap: 6px 12px;
 		color: var(--color-text--secondary);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 	}
 
 	.notification-bell__summary-part {
@@ -418,7 +418,7 @@
 		align-items: center;
 		gap: 6px;
 		color: var(--color-text--secondary);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 600;
 		letter-spacing: 0.6px;
 		text-transform: uppercase;
@@ -500,16 +500,16 @@
 	}
 
 	.notification-bell__card-title {
-		font-size: 14px;
+		font-size: var(--typography--fontSize-base);
 		font-weight: 600;
 	}
 
 	.notification-bell__card-detail {
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 	}
 
 	.notification-bell__card-time {
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 		opacity: 0.8;
 	}
 
@@ -566,7 +566,7 @@
 		flex: 0 0 auto;
 		padding-top: 8px;
 		color: var(--color-text--secondary);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 		text-align: right;
 
 		.notification-bell__row--unread & {
@@ -642,7 +642,7 @@
 
 	.notification-bell__row-title {
 		color: var(--color-text);
-		font-size: 14px;
+		font-size: var(--typography--fontSize-base);
 		font-weight: 500;
 
 		.notification-bell__row--unread & {
@@ -655,7 +655,7 @@
 		display: -webkit-box;
 		overflow: hidden;
 		color: var(--color-text--secondary);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 		-webkit-box-orient: vertical;
 		-webkit-line-clamp: 2;
 		line-clamp: 2;
@@ -719,14 +719,14 @@
 
 		h3 {
 			color: var(--color-heading);
-			font-size: 16px;
+			font-size: var(--typography--fontSize-large);
 			font-weight: 600;
 		}
 
 		p {
 			max-width: 320px;
 			color: var(--color-text--secondary);
-			font-size: 14px;
+			font-size: var(--typography--fontSize-base);
 		}
 	}
 

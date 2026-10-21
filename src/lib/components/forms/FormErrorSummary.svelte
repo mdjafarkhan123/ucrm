@@ -134,7 +134,7 @@
 			border-radius: var(--radius-circle);
 			background: var(--color-critical--surface);
 			color: var(--color-critical--onSurface);
-			font-size: 11px;
+			font-size: var(--typography--fontSize-overline);
 			font-weight: 700;
 		}
 		&__field {

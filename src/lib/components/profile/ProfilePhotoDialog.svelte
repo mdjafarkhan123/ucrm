@@ -452,7 +452,7 @@
 				width: 176px;
 				height: 176px;
 				border: 0;
-				font-size: 52px;
+				font-size: var(--typography--fontSize-extravagant);
 			}
 		}
 

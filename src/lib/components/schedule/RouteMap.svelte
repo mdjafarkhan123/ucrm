@@ -400,7 +400,7 @@
 		border-radius: var(--radius-circle);
 		background-color: var(--color-time);
 		color: var(--color-white);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 700;
 		line-height: 1;
 		box-shadow: 0 1px 4px #0000004d;

@@ -213,7 +213,7 @@
 		border-radius: var(--radius-small);
 		background: var(--file-color);
 		color: var(--color-white);
-		font-size: 10px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 700;
 		letter-spacing: 0.4px;
 	}
@@ -241,7 +241,7 @@
 		top: 10px;
 		left: -4px;
 		padding: 1px 2px;
-		font-size: 6px;
+		font-size: var(--typography--fontSize-overline);
 	}
 	.file-thumb--row .file-thumb__lines {
 		display: none;
@@ -252,7 +252,7 @@
 		border-radius: var(--radius-base);
 	}
 	.file-thumb--panel .file-thumb__tab {
-		font-size: 12px;
+		font-size: var(--typography--fontSize-overline);
 		top: 40px;
 	}
 	.file-thumb--pending .file-thumb__icon,

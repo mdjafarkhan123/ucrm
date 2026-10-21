@@ -156,7 +156,7 @@
 			min-height: 36px;
 			padding: 0 var(--space-slim);
 			gap: 6px;
-			font-size: 13px;
+			font-size: var(--typography--fontSize-label);
 			font-weight: 500;
 		}
 		:global(.filter-chip__select .select__value) {

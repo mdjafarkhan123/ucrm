@@ -269,17 +269,17 @@
 		}
 
 		.calendar-week__weekday {
-			font-size: 9px;
+			font-size: var(--typography--fontSize-overline);
 			letter-spacing: 0.3px;
 		}
 
 		.calendar-week__count {
-			font-size: 9.5px;
+			font-size: var(--typography--fontSize-overline);
 		}
 
 		.calendar-week__anytime-label {
 			padding: var(--space-slim) 3px 0 0;
-			font-size: 8.5px;
+			font-size: var(--typography--fontSize-overline);
 			letter-spacing: -0.2px;
 		}
 
@@ -335,7 +335,7 @@
 
 	.calendar-week__weekday {
 		color: var(--color-text--secondary);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 600;
 		letter-spacing: 0.6px;
 		text-transform: uppercase;
@@ -429,7 +429,7 @@
 		padding: var(--space-slim) var(--space-small) 0 var(--space-smaller);
 		border-right: var(--border-base) solid var(--color-border);
 		color: var(--color-text--secondary);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 600;
 		text-align: right;
 	}
@@ -475,7 +475,7 @@
 		// Sat on its own line rather than inside the hour it opens, so a label reads as the line's time.
 		transform: translateY(-50%);
 		color: var(--color-text--secondary);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 500;
 		line-height: var(--typography--lineHeight-tight);
 		white-space: nowrap;
@@ -490,7 +490,7 @@
 		border-radius: 999px;
 		background-color: var(--color-interactive);
 		color: var(--color-text--reverse);
-		font-size: 10.5px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 700;
 		line-height: 1.3;
 		white-space: nowrap;

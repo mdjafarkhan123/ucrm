@@ -720,7 +720,7 @@
 		}
 
 		&__slot-day {
-			font-size: 17px;
+			font-size: var(--typography--fontSize-large);
 			font-weight: 700;
 			line-height: 1.1;
 		}
