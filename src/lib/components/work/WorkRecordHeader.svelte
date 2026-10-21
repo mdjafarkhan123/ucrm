@@ -15,14 +15,14 @@
 	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
 
 	// The card at the top of every record page — client, request, quote, job, invoice and payment (Pencil
-	// "Record header · C", approved 2026-10-20). One part for all six; only its data changes:
+	// "Record header · C · White top", approved 2026-10-21). One part for all six; only its data changes:
 	//
-	//   coloured top   the record tile and status pill, the actions at the right, then the title. The top
-	//                  takes the record type's own soft colour, never the status's — the pill and a 4px
-	//                  stripe along the card's top carry that.
+	//   top            the record tile and status pill, the actions at the right, then the title. The top is
+	//                  white like the rest of the card, so the pill always shows in its own status colour;
+	//                  only the record tile carries the record type's colour.
 	//   client line    who the work is for, with their address, phone and email as plain links. The client
 	//                  page hands in its own line instead (its address and Message / Request a review).
-	//   facts          up to four facts the page chooses, in even columns.
+	//   facts          up to four facts the page chooses, in one row.
 	//   foot           the Request → Paid track on a work record, or the client page's tabs.
 	//
 	// The pencil swaps the title for a field where it sits, the way Jobber does it. The page owns the text
@@ -156,18 +156,12 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<section
-	class={`record-header ${className}`}
-	style:--record-tone={`var(--color-${tone})`}
-	style:--record-surface={`var(--color-${tone}--surface)`}
-	style:--record-status={`var(--color-${statusTone})`}
-	aria-label="{recordType} summary"
->
-	<div class="record-header__top tinted-surface">
+<section class={`record-header ${className}`} aria-label="{recordType} summary">
+	<div class="record-header__top">
 		<div class="record-header__row">
-			<IconTile {icon} {tone} size={40} white />
+			<IconTile {icon} {tone} size={40} />
 			<div class="record-header__status">
-				<StatusBadge status={statusTone}>{statusLabel}</StatusBadge>
+				<StatusBadge status={statusTone} size="large">{statusLabel}</StatusBadge>
 				{#if badges}{@render badges()}{/if}
 			</div>
 
@@ -326,19 +320,12 @@
 		border-radius: var(--radius-large);
 		background: var(--color-surface);
 
-		// The status stripe: the pill's colour along the card's very top; the rounded corners clip it.
-		&::before {
-			flex: 0 0 4px;
-			background: var(--record-status);
-			content: '';
-		}
-
 		&__top {
 			display: flex;
 			flex-direction: column;
-			gap: 14px;
-			padding: var(--space-medium) var(--space-large) 22px;
-			background: var(--record-surface);
+			gap: var(--space-base);
+			padding: var(--space-medium) var(--space-large);
+			border-bottom: var(--border-base) solid var(--color-border);
 		}
 
 		&__row {
@@ -347,7 +334,6 @@
 			gap: 10px;
 		}
 
-		// The pill sits on white so it reads on any record's colour.
 		&__status {
 			display: flex;
 			flex: 1 1 auto;
@@ -355,10 +341,6 @@
 			flex-wrap: wrap;
 			align-items: center;
 			gap: var(--space-small);
-
-			> :global(.status-badge) {
-				background: var(--color-surface);
-			}
 		}
 
 		&__actions {
@@ -382,7 +364,7 @@
 		&__title {
 			overflow-wrap: anywhere;
 			color: var(--color-heading);
-			font-size: 26px;
+			font-size: var(--typography--fontSize-display);
 			font-weight: 700;
 			letter-spacing: -0.6px;
 			line-height: 1.2;
@@ -396,7 +378,7 @@
 			display: flex;
 			min-width: 0;
 			align-items: center;
-			gap: var(--space-slim);
+			gap: 14px;
 			padding: var(--space-base) var(--space-large);
 			border-bottom: var(--border-base) solid var(--color-border);
 
@@ -408,26 +390,27 @@
 		}
 
 		&__avatar :global(.avatar) {
-			width: 36px;
-			height: 36px;
+			width: 44px;
+			height: 44px;
 			border: 0;
 			color: var(--color-client--onSurface);
 			background: var(--color-client--surface);
 			font-size: var(--typography--fontSize-small);
+			letter-spacing: -0.2px;
 		}
 
 		&__client {
 			display: flex;
 			flex: 1 1 auto;
 			flex-direction: column;
-			gap: 2px;
+			gap: var(--space-smaller);
 			min-width: 0;
 		}
 
 		&__name {
 			overflow: hidden;
 			color: var(--color-heading);
-			font-size: var(--typography--fontSize-base);
+			font-size: var(--typography--fontSize-large);
 			font-weight: 600;
 			text-overflow: ellipsis;
 			white-space: nowrap;
@@ -447,7 +430,7 @@
 			display: flex;
 			min-width: 0;
 			align-items: center;
-			gap: var(--space-base);
+			gap: var(--space-medium);
 			margin: 0;
 			padding: 0;
 			list-style: none;
@@ -459,9 +442,9 @@
 			flex: 0 0 auto;
 			min-width: 0;
 			align-items: center;
-			gap: 6px;
+			gap: var(--space-small);
 			color: var(--color-text);
-			font-size: var(--typography--fontSize-label);
+			font-size: var(--typography--fontSize-base);
 			font-weight: 500;
 
 			a {
@@ -498,8 +481,8 @@
 
 			:global(svg) {
 				display: block;
-				width: 14px;
-				height: 14px;
+				width: 16px;
+				height: 16px;
 			}
 		}
 
@@ -512,7 +495,7 @@
 			display: flex;
 			align-items: flex-start;
 			gap: var(--space-base);
-			padding: var(--space-base) var(--space-large) var(--space-medium);
+			padding: var(--space-medium) var(--space-large);
 
 			> :global(.record-facts) {
 				flex: 1 1 auto;
@@ -546,9 +529,10 @@
 			}
 		}
 
-		// The coloured top already ends the card when nothing follows it.
+		// Nothing follows the top: it ends the card, with no line under it.
 		&__top:last-child {
 			padding-bottom: var(--space-large);
+			border-bottom: 0;
 		}
 	}
 

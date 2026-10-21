@@ -5,7 +5,7 @@
 ## Core Specs
 
 - Radius full; padding 5 11 (24 high); gap 6.
-- 6px dot in the status main colour; text 12/600 in `--onSurface`; background `--surface`.
+- 6px dot in the status main colour; text `-small`/600 in `--onSurface`; background `--surface`.
 
 ## Variants
 
@@ -16,7 +16,8 @@ Draft `--color-inactive`; record pills use the record family (e.g. `--color-requ
 
 - **Without a dot:** a plain tinted pill for counts and facts ("3 visits", "Deposit paid").
 - **Plain label:** no status; `--color-inactive--surface` with `--color-heading` text ("Residential").
-- **Small:** padding 3 9, 5px dot, 12/600, for tight spots.
+- **Small:** padding 3 9, 5px dot, `-overline`/600, for tight spots.
+- **Large:** padding 6 12, gap 8, 8px dot, `-small`/600, for the record header's status.
 - **Outlined (on a tinted card):** white, 1px edge in the status main colour, padding 3 8, 5px dot, 12/600
   `--onSurface`. For statuses that need you (Late, Unassigned) on a calendar card, where a filled pill could
   vanish into the card's tint (`calendar.md`).

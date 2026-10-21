@@ -9,8 +9,9 @@
 	}: {
 		children: Snippet;
 		status: 'success' | 'warning' | 'critical' | 'inactive' | 'informative';
-		/** `compact` is retained as an alias for the small pill used by existing tables. */
-		size?: 'base' | 'compact' | 'small';
+		/** `compact` is retained as an alias for the small pill used by existing tables. `large` is the record
+		 *  header's pill. */
+		size?: 'base' | 'compact' | 'small' | 'large';
 		/** White with an edge in the status colour, for a pill on a tinted card where a filled one would vanish. */
 		outlined?: boolean;
 	} = $props();
@@ -44,6 +45,11 @@
 			font-size: var(--typography--fontSize-overline);
 		}
 
+		&--large {
+			gap: var(--space-small);
+			padding: 6px var(--space-slim);
+		}
+
 		&__dot {
 			width: 6px;
 			height: 6px;
@@ -55,6 +61,11 @@
 		&--small &__dot {
 			width: 5px;
 			height: 5px;
+		}
+
+		&--large &__dot {
+			width: 8px;
+			height: 8px;
 		}
 	}
 

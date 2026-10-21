@@ -164,26 +164,29 @@ column, centred, blocks 24 apart: the page header, the step track, then one card
 
 ## Record header
 
-One card for all six records (Pencil: "Record header · C", approved 2026-10-20). White, 1px `--color-border`,
-radius 16, clipped.
+One card for all six records (Pencil: "Record header · C · White top", approved 2026-10-20, white top approved
+2026-10-21). White, 1px `--color-border`, radius 16, clipped. Drawn 840 wide, the page's main column.
 
-- **Coloured top:** the record type's `--color-<record>--surface` (request peach, quote pink, job green, invoice
-  and payment blue, client taupe), never the status's. Padding 20 24 22, rows 14 apart.
-  - Row: a 40 white tile (radius 10, 20 icon in the record colour), the status pill on white, then the actions
-    at the right, 8 apart: pencil and history as 36 white icon buttons, More, then the main button. No record
-    info line (number, version, dates).
-  - Title 26/700, -0.6, `--color-heading`. Renaming puts the field in its place.
-- **Client line** on white, padding 16 24, 1px line under it: a 36 round avatar (`--color-client--surface`,
-  initials 12/600 `--color-client--onSurface`), the name 14/600 over the contact row (13/500 `--color-text`,
-  16 apart): 14 map-pin `--color-client`, phone `--color-time`, mail `--color-conversation`. The address opens in
-  Google Maps and gives way first. No call / text / email buttons. The client page puts its address (16 pin,
-  14/500 heading) here, with Message and Request a review at the right.
-- **Facts:** padding 16 24 20, up to four even columns, 16 inset and a 1px `--color-border` line between them.
-  Each: a 20 tile (radius 5, 12 icon, the fact's own colour family) and label 12/500 `--color-text--secondary`,
-  6 over the value 14/600 heading. A missing value says what it waits for in `--color-text--secondary`.
+- **Top:** white like the rest of the card, with a 1px line under it; no record colour and no status stripe, so
+  the status pill always shows in its own colour (Jafar, 2026-10-21). Padding 20 24, rows 16 apart.
+  - Row: a 40 record tile (radius 10, `--color-<record>--surface` with its edge, 20 icon in the record colour;
+    payment uses the invoice family), the large status pill, then the actions at the right, 8 apart: pencil and
+    history as 36 icon buttons, More, then the main button. No record info line (number, version, dates).
+  - Title `-display`, 700, -0.6, `--color-heading`. Renaming puts the field in its place.
+- **Client line** padding 16 24, 1px line under it, 14 gap: a 44 round avatar (`--color-client--surface`, initials
+  `-small` 600 `--color-client--onSurface`), the name `-large` 600 over the contact row (`-base` 500 `--color-text`,
+  20 apart, 8 between icon and text): 16 map-pin `--color-client`, phone `--color-time`, mail
+  `--color-conversation`. The address opens in Google Maps and gives way first. No call / text / email buttons.
+  The client page puts its address (18 pin, `-base` 500 heading) here, with Message and Request a review at the
+  right.
+- **Facts:** padding 20 24, up to four facts in one row, 24 apart; each takes the room its words need and the
+  spare room goes between them, with a 1px `--color-border` line and 20 inset before each fact after the first.
+  Each: a 40 tile at the left (radius 10, 20 icon, the fact's own colour family), 12 gap, then the label
+  `-small` 500 `--color-text--secondary` over the value `-base` 600 heading, 4 apart. A value too long for its
+  room ends in "…". A missing value says what it waits for in `--color-text--secondary`.
 - **Foot:** the Request → Paid track (padding 12 24, `--color-surface--background--subtle`, 1px line on top;
-  32 step tiles, label 13/600, 700 on the current step, sub 12 quiet, 2px joining lines) or the client's tab
-  band (`tabs.md`).
+  32 step tiles, label `-label` 600, 700 on the current step, sub `-overline` quiet, 2px joining lines) or the
+  client's tab band (`tabs.md`).
 
 ## Spacing
 
