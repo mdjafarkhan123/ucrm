@@ -24,6 +24,8 @@ Not pressed: the stage-already-invoiced look (needs an invoice on a stage), coul
 view without money access; those share the same notice strip and disabled looks as the states above, and the save
 logic is unchanged.
 
-Differences from the drawings: the date box keeps the live date field (month, day, year segments and the calendar)
-instead of the drawing's text box, as on Collect payment. Icons use Tabler names (`coin`, `list-numbers`,
-`stack-2`, `cash-banknote`, `percentage`, `trash`, `alert-triangle`).
+Differences from the drawings: icons use Tabler names (`coin`, `list-numbers`, `stack-2`, `cash-banknote`,
+`percentage`, `trash`, `alert-triangle`) because the drawing's icon names do not exist in Tabler. The date box still
+shows the app's month, day and year field; making it read "Pick a day" like the drawing, the percentages "$0.01"
+quirk and the Select text size belong to session `claude-batch50-fixes` (claim `f4bd30a984d2`, worktree
+`.worktrees/batch50-followup-fixes`). Every Invoice reminder sentence in the Billing setup panel is the drawn one.

@@ -171,17 +171,14 @@
 	let error = $state('');
 
 	const draftSummary = $derived(summaryFor(draftBasis));
-	// The decisions panel reads each saved choice back in a sentence, so it moves with the boxes. A job that
-	// is never reminded has nothing to say about "a reminder for your team".
+	// The decisions panel reads each choice back in a sentence, so it moves with the boxes.
 	const priceDecision = $derived(
 		canSeePrice && totalMinor !== null
 			? `${BASIS_LABEL[draftBasis] ?? draftBasis}: ${money.format(totalMinor / 100)}.`
 			: `${BASIS_LABEL[draftBasis] ?? draftBasis}.`
 	);
 	const reminderDecision = $derived(
-		draftTiming === 'manual'
-			? `${TIMING_LABEL.manual}. Nothing goes to the client.`
-			: `${TIMING_LABEL[draftTiming] ?? draftTiming}. A reminder for your team, nothing goes to the client.`
+		`${TIMING_LABEL[draftTiming] ?? draftTiming}. A reminder for your team, nothing goes to the client.`
 	);
 	const changed = $derived(draftBasis !== priceBasis || draftTiming !== billingTiming);
 
