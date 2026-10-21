@@ -1,7 +1,8 @@
 # Batch 42 client form and no-blend parts — build
 
 **Campaign:** contractor-design-concept · **Plan:** `docs/contractor-design-concept-behavior-contract.md` § First version 3.
-**Approved:** Jafar 2026-10-21 (records in `parts/c5-shared-parts.md`). **Stage:** waiting to be built.
+**Approved:** Jafar 2026-10-21 (records in `parts/c5-shared-parts.md`). **Stage:** built 2026-10-21, proof
+`docs/evidence/2026-10-21-no-blend/README.md`.
 **Done when:** every step below matches its Pencil board at 1440 light and dark, Built ticks updated, Pencil
 drafts tidied (`docs/pencil-workflow.md` step 6), committed and pushed.
 
@@ -33,3 +34,13 @@ drafts tidied (`docs/pencil-workflow.md` step 6), committed and pushed.
 Screenshots of every step beside its Pencil frame at 1440 light and dark (memory: compare live with Pencil),
 in `docs/evidence/2026-10-2x-no-blend/README.md`. Run the design blend check idea: no part's fill equals what is
 behind it.
+
+## Built (2026-10-21, branch `claude/batch42-no-blend`)
+
+- One shared rule: `.tinted-surface` (app.scss) turns grey buttons, field boxes and switch tracks white on a
+  coloured top; record header, create form and client form tops carry it. `white` prop on Button, Input,
+  Select, SearchInput, SegmentedControl does the same one at a time (joined Schedule buttons; page-level
+  search on Pipeline, Send invoices, Ready to bill).
+- Field fill `--field--fill` (default `--color-surface--background`) on every field box, pickers included.
+- Client record header now uses `--color-client--surface` (the old edge-colour workaround removed).
+- Pencil: no drafts left to tidy on `fJ8Mx` (B already deleted); `concept.pen` not touched by this build.
