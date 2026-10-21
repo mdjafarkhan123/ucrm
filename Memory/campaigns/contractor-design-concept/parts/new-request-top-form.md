@@ -72,4 +72,4 @@ neither shows cost or profit although every line carries a unit cost.
 Board `UN1hM` "Concept · Batch 35 · Money summary card · A vs B": A `VttVX` green Job total card with a profit
 panel (like Job details `tNdkX`); B `Pqiry` new concept, deeper forest green (new Pencil variable
 `color-feature-deep` #012a17, not yet in code) with a margin ring and two tiles. States: priced job, quote and
-invoice, nothing priced, loss, no cost rights; dark mode `f4UDf`. Jafar asked for his own look, not classic.pen's colours.
+invoice, nothing priced, loss, no cost rights; dark mode `f4UDf`. Jafar asked for his own look, not classic.pen's colours, but bar colours that stand out: cost `color-warning` (amber), profit white on A and `color-success` on B.
