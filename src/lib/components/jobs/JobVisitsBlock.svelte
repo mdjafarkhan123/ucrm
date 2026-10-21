@@ -12,7 +12,6 @@
 	import RecurrenceFields from '$lib/components/jobs/RecurrenceFields.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import PersonPickChip from '$lib/components/ui/PersonPickChip.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import {
 		calendarDateFromString,
 		calendarDateToString,
@@ -447,13 +446,8 @@
 								<span class="job-visits__summary-when">{whenLine(draft)}</span>
 							</span>
 							{#if people.length > 0}
-								<span
-									class="job-visits__people"
-									aria-label={people.map((person) => person.name).join(', ')}
-								>
-									{#each people as person (person.id)}
-										<Avatar id={person.id} name={person.name} size="small" />
-									{/each}
+								<span class="job-visits__people">
+									{people.map((person) => person.name).join(', ')}
 								</span>
 							{:else}
 								<span class="job-visits__nobody">Nobody assigned yet</span>
@@ -612,6 +606,10 @@
 			border-radius: var(--radius-large);
 		}
 
+		&__item--open {
+			border-color: var(--color-time--surface-edge);
+		}
+
 		&__summary {
 			display: flex;
 			width: 100%;
@@ -637,6 +635,7 @@
 
 		// The open visit's row takes the Schedule colour, with its date tile filled.
 		&__item--open &__summary {
+			padding: var(--space-slim) var(--space-base);
 			background: var(--color-time--surface);
 		}
 
@@ -700,16 +699,21 @@
 			font-size: var(--typography--fontSize-small);
 		}
 
+		// Who is going, by name, at the right of the visit's head.
 		&__people {
-			display: inline-flex;
-			flex: 0 0 auto;
+			overflow: hidden;
+			flex: 0 1 auto;
+			max-width: 40%;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
 
-			:global(.avatar) {
-				box-shadow: 0 0 0 2px var(--color-surface);
-			}
-			:global(.avatar + .avatar) {
-				margin-left: -6px;
-			}
+		&__item--open &__people,
+		&__item--open &__summary-when {
+			color: var(--color-time--onSurface);
 		}
 
 		&__nobody {
@@ -740,14 +744,15 @@
 			flex-direction: column;
 			gap: var(--space-base);
 			padding: var(--space-base);
-			border-top: var(--border-base) solid var(--color-border);
+			border-top: var(--border-base) solid var(--color-time--surface-edge);
 			background: var(--color-surface);
 		}
 
+		// Anytime and Schedule later side by side.
 		&__choices {
-			display: flex;
-			flex-direction: column;
-			gap: var(--space-slim);
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: var(--space-slim) var(--space-large);
 		}
 
 		&__editor-actions {

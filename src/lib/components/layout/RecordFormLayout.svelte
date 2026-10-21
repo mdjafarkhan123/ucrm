@@ -25,6 +25,8 @@
 		tone = 'inactive',
 		headerAside,
 		status,
+		pageHeader = true,
+		labelledBy,
 		class: className = ''
 	}: {
 		title: string;
@@ -46,11 +48,16 @@
 		headerAside?: Snippet;
 		/** Concept only: the save bar's left side, saying where the form stands. */
 		status?: Snippet;
+		/** Concept only: false when the main column opens with the shared create form, which carries the
+		 *  page title itself (`CreateFormHeader`). */
+		pageHeader?: boolean;
+		/** Concept only, with `pageHeader` off: the id of that page title. */
+		labelledBy?: string;
 		class?: string;
 	} = $props();
 
 	const uid = $props.id();
-	const titleId = `${uid}-title`;
+	const titleId = $derived(labelledBy ?? `${uid}-title`);
 
 	let errorSummary = $state<FormErrorSummary>();
 
@@ -62,15 +69,17 @@
 <!-- eslint-disable svelte/no-at-html-tags -->
 {#if concept}
 	<div class={`record-form record-form--concept ${className}`}>
-		<PageHeader
-			{title}
-			{description}
-			{icon}
-			{tone}
-			{titleId}
-			actions={headerAside}
-			class="record-form__page-header"
-		/>
+		{#if pageHeader}
+			<PageHeader
+				{title}
+				{description}
+				{icon}
+				{tone}
+				{titleId}
+				actions={headerAside}
+				class="record-form__page-header"
+			/>
+		{/if}
 		<FormErrorSummary bind:this={errorSummary} message={error} fields={errorFields} />
 		<div class="record-form__grid" class:record-form__grid--no-rail={!rail}>
 			<section class="record-form__main" aria-labelledby={titleId}>{@render main()}</section>

@@ -114,11 +114,15 @@
 		clientView,
 		conceptTotals,
 		pendingChanges = false,
+		totalFoot = false,
 		concept = false
 	}: {
 		/** The concept look (Job details `tNdkX`): each saved line leads with its photo, or a Product /
 		 *  Service tile, and carries a Product / Service pill after its name. */
 		concept?: boolean;
+		/** Concept only, always editing: the subtotal as a full-width foot along the card's bottom edge
+		 *  (New job, Pencil `q6Ffc`) instead of the totals panel. */
+		totalFoot?: boolean;
 		lines?: RequestPricingLine[];
 		/** Enables Quote-only add-ons, text/headings and tax exemption controls. */
 		quoteChoices?: boolean;
@@ -1329,52 +1333,56 @@
 					</div>
 				{/each}
 			</div>
-			<div class="pricing-block__footer">
-				{#if !(concept && alwaysEditing && draftLines.length === 0)}
-					<Button
-						size="small"
-						variant={concept ? 'secondary' : 'tertiary'}
-						disabled={saving}
-						onclick={addLine}
-					>
-						{#if concept}<span class="pricing-block__price-book-icon" aria-hidden="true"
-								>{@html plusIcon}</span
-							>{/if}
-						Add line item
-					</Button>
-					<span bind:this={priceBookButton} class="pricing-block__price-book">
+			<!-- With the subtotal as a foot, an empty row of nothing would only leave a gap above it. -->
+			{#if !(totalFoot && concept && alwaysEditing && draftLines.length === 0) || quoteChoices}
+				<div class="pricing-block__footer">
+					{#if !(concept && alwaysEditing && draftLines.length === 0)}
 						<Button
 							size="small"
-							variant="secondary"
+							variant={concept ? 'secondary' : 'tertiary'}
 							disabled={saving}
-							onhover={warmPriceBook}
-							onclick={openPriceBook}
+							onclick={addLine}
 						>
-							<span class="pricing-block__price-book-icon" aria-hidden="true">{@html bookIcon}</span
-							>
-							Price book
+							{#if concept}<span class="pricing-block__price-book-icon" aria-hidden="true"
+									>{@html plusIcon}</span
+								>{/if}
+							Add line item
 						</Button>
-					</span>
-				{/if}
-				{#if quoteChoices}
-					<Button
-						size="small"
-						variant="tertiary"
-						disabled={saving}
-						onclick={() => addCopyLine('text')}
-					>
-						Add text
-					</Button>
-					<Button
-						size="small"
-						variant="tertiary"
-						disabled={saving}
-						onclick={() => addCopyLine('heading')}
-					>
-						Add heading
-					</Button>
-				{/if}
-			</div>
+						<span bind:this={priceBookButton} class="pricing-block__price-book">
+							<Button
+								size="small"
+								variant="secondary"
+								disabled={saving}
+								onhover={warmPriceBook}
+								onclick={openPriceBook}
+							>
+								<span class="pricing-block__price-book-icon" aria-hidden="true"
+									>{@html bookIcon}</span
+								>
+								Price book
+							</Button>
+						</span>
+					{/if}
+					{#if quoteChoices}
+						<Button
+							size="small"
+							variant="tertiary"
+							disabled={saving}
+							onclick={() => addCopyLine('text')}
+						>
+							Add text
+						</Button>
+						<Button
+							size="small"
+							variant="tertiary"
+							disabled={saving}
+							onclick={() => addCopyLine('heading')}
+						>
+							Add heading
+						</Button>
+					{/if}
+				</div>
+			{/if}
 			{#if quoteChoices && clientView}
 				{#if concept}
 					<div class="pricing-block__client-view">{@render clientView()}</div>
@@ -1382,7 +1390,12 @@
 					{@render clientView()}
 				{/if}
 			{/if}
-			{#if concept && showPrices}
+			{#if concept && showPrices && totalFoot && alwaysEditing}
+				<div class="pricing-block__total-foot">
+					<span>{editorTotalLabel}</span>
+					<span>{formatMoney(draftSubtotal(draftLines))}</span>
+				</div>
+			{:else if concept && showPrices}
 				<div class="pricing-block__concept-totals">
 					<div class="pricing-block__concept-panel">
 						{#if alwaysEditing}
@@ -2934,6 +2947,23 @@
 		border-radius: var(--radius-large);
 		background: var(--color-surface--background--subtle);
 	}
+	.pricing-block__total-foot {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-slim);
+		padding: var(--space-slim) var(--space-medium);
+		border-top: var(--border-base) solid var(--color-border);
+		color: var(--color-heading);
+		background: var(--color-surface--background--subtle);
+		font-weight: 600;
+
+		span:last-child {
+			font-size: var(--typography--fontSize-larger);
+			font-weight: 700;
+			font-variant-numeric: tabular-nums;
+		}
+	}
 	.pricing-block__concept-subtotal {
 		display: flex;
 		align-items: center;
@@ -2994,7 +3024,8 @@
 	}
 	// A block that is not flush (New quote, request, invoice) already pads its body, so while it is empty the
 	// footer, the client-view row and the totals drop their own side padding and line up with the choices.
-	:global(.section-block--concept:not(.section-block--flush)) .pricing-edit--concept:has(.pricing-empty) {
+	:global(.section-block--concept:not(.section-block--flush))
+		.pricing-edit--concept:has(.pricing-empty) {
 		.pricing-block__footer,
 		.pricing-block__client-view,
 		.pricing-block__concept-totals {

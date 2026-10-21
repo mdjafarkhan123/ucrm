@@ -50,6 +50,11 @@ three-way "When" switch; rail = white totals card with job-green band). Section 
 deleted; board renamed "… · Approved A". Look in `layout.md` → Create pages. Jafar also approved the live
 Products empty-state padding fix (flush New job block), done in `ProductsAndServicesBlock.svelte`.
 Next: New quote page, same way (one page per session), then New invoice; build after the drawings.
+**Built 2026-10-21** (Jafar asked to build New job before the other drawings): shared form as
+`work/CreateFormHeader.svelte`, used by New job only so far; Request, Quote and Invoice still use
+`PrimaryInfoCard` inside the old white sheet, so they move to the shared form when their pages move to the
+concept frame, then `PrimaryInfoCard` is removed. Job total rail card left as it was (another session is
+redesigning the totals card). Proof `docs/evidence/2026-10-21-new-job-page/README.md`.
 
 ## Batch 34 — whole New quote page (**approved A by Jafar 2026-10-21**)
 
