@@ -9,7 +9,7 @@
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
 	import QuoteClientViewBlock from '$lib/components/quotes/QuoteClientViewBlock.svelte';
 	import AddSectionControl from '$lib/components/work/AddSectionControl.svelte';
-	import QuoteSummaryCard from '$lib/components/quotes/QuoteSummaryCard.svelte';
+	import DraftMoneyCard from '$lib/components/work/DraftMoneyCard.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -173,6 +173,33 @@
 					? picker?.property_default
 					: picker?.business_default;
 		return { name: resolved?.name ?? null, rateBasisPoints: resolved?.rate_basis_points ?? 0 };
+	});
+
+	// A preview of the chosen discount and tax for the money card, the way the line editor previews line
+	// totals. The tax falls only on taxable lines, spread across the discount. The database works out the
+	// real figures when the quote saves.
+	const discountPreviewMinor = $derived.by(() => {
+		if (!discount?.type || discount.value === null) return 0;
+		const off =
+			discount.type === 'percentage'
+				? Math.round((subtotalMinor * discount.value) / 10_000)
+				: discount.value;
+		return Math.min(subtotalMinor, Math.max(0, off));
+	});
+	const taxPreviewMinor = $derived.by(() => {
+		if (!tax || tax.source === 'no_tax' || taxPreview.rateBasisPoints <= 0 || subtotalMinor <= 0)
+			return null;
+		const taxable = lines.reduce(
+			(sum, line) =>
+				(line.line_kind ?? 'priced') === 'priced' &&
+				(line.selection_kind ?? 'required') === 'required' &&
+				(line.is_taxable ?? true)
+					? sum + Math.round(line.quantity * line.unit_price_minor)
+					: sum,
+			0
+		);
+		const afterDiscount = taxable * ((subtotalMinor - discountPreviewMinor) / subtotalMinor);
+		return Math.round((afterDiscount * taxPreview.rateBasisPoints) / 10_000);
 	});
 
 	function snapshot(values: FormState) {
@@ -509,7 +536,16 @@
 		{/snippet}
 
 		{#snippet rail()}
-			<QuoteSummaryCard {subtotalMinor} {currencyCode} {locale} draft />
+			<DraftMoneyCard
+				kind="quote"
+				{lines}
+				{subtotalMinor}
+				discountMinor={discountPreviewMinor}
+				taxMinor={taxPreviewMinor}
+				taxLabel={taxPreview.name}
+				{currencyCode}
+				{locale}
+			/>
 
 			<RailCard
 				tone="quote"

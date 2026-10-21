@@ -9,6 +9,7 @@
 	import DateTimePicker from '$lib/components/ui/DateTimePicker.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import {
 		calendarDateFromString,
 		emptyDateTimePickerValue,
@@ -24,6 +25,7 @@
 	import WorkTimerControl from '$lib/components/time-clock/WorkTimerControl.svelte';
 	import { fetchMyTimer, myTimerKey } from '$lib/time-clock/api';
 	import truckIcon from '@tabler/icons/outline/truck.svg?raw';
+	import calendarPlusIcon from '@tabler/icons/outline/calendar-plus.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 	import calendarIcon from '@tabler/icons/outline/calendar-question.svg?raw';
 
@@ -345,7 +347,8 @@
 	icon={truckIcon}
 	level={2}
 	form={editing && draft}
-	hint={draft ? undefined : 'Visit the property before you price the work'}
+	tone={draft ? 'time' : undefined}
+	hint={draft ? 'Book a visit before you price the work.' : 'Visit the property before you price the work'}
 >
 	{#snippet actions()}
 		{#if assessment && !editing}
@@ -451,6 +454,21 @@
 				{/if}
 			</div>
 		</div>
+	{:else if !assessment && draft}
+		<!-- A new request's empty visit is one slim row (layout.md → Create pages), not a page-sized empty state. -->
+		<div class="assessment__empty-row">
+			<IconTile icon={truckIcon} tone="time" size={40} />
+			<div class="assessment__empty-words">
+				<p class="assessment__empty-title">No visit booked</p>
+				<p class="assessment__empty-text">
+					Visit the property to assess the job before you do the work.
+				</p>
+			</div>
+			<Button variant="secondary" onclick={openPanel} onhover={warm}>
+				<span class="assessment__button-icon" aria-hidden="true">{@html calendarPlusIcon}</span>
+				Book a visit
+			</Button>
+		</div>
 	{:else if !assessment}
 		<EmptyState
 			icon={truckIcon}
@@ -530,6 +548,41 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	.assessment__empty-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-base);
+	}
+
+	.assessment__empty-words {
+		display: grid;
+		flex: 1 1 auto;
+		gap: var(--space-smaller);
+		min-width: 0;
+	}
+
+	.assessment__empty-title {
+		margin: 0;
+		color: var(--color-heading);
+		font-size: var(--typography--fontSize-base);
+		font-weight: 600;
+	}
+
+	.assessment__empty-text {
+		margin: 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-base);
+	}
+
+	.assessment__button-icon {
+		display: inline-flex;
+
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
 	.assessment {
 		&__panel {
 			display: flex;

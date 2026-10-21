@@ -3,13 +3,12 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
-	import PrimaryInfoCard from '$lib/components/work/PrimaryInfoCard.svelte';
+	import CreateFormHeader from '$lib/components/work/CreateFormHeader.svelte';
 	import ClientPicker from '$lib/components/work/ClientPicker.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
-	import QuoteSummaryCard from '$lib/components/quotes/QuoteSummaryCard.svelte';
+	import DraftMoneyCard from '$lib/components/work/DraftMoneyCard.svelte';
 	import PendingFilesCard from '$lib/components/files/PendingFilesCard.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
-	import Input from '$lib/components/ui/Input.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
 	import { calendarDateFromString, calendarDateToString } from '$lib/components/ui/date-time';
@@ -27,6 +26,10 @@
 	import { firstLineProblem } from '$lib/quotes/lines';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 	import calendarIcon from '@tabler/icons/outline/calendar-event.svg?raw';
+	import calendarDueIcon from '@tabler/icons/outline/calendar-due.svg?raw';
+	import hashIcon from '@tabler/icons/outline/hash.svg?raw';
+	import packageIcon from '@tabler/icons/outline/package.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 
 	// Billing a customer directly, without a job behind it. The invoice number, its snapshots and all its money
 	// come from the database the moment it saves, so nothing here guesses at them. The whole thing — the bill,
@@ -43,7 +46,8 @@
 		onCancel,
 		currencyCode = 'USD',
 		locale = 'en-US',
-		seed = null
+		seed = null,
+		jobTotalMinor = null
 	}: {
 		onSaved: (invoice: { id: string; number: number }) => void;
 		onCancel: () => void;
@@ -59,6 +63,8 @@
 			/** Set only when the bill is one payment-schedule stage; its money is fixed and read-only. */
 			installmentId?: string | null;
 		} | null;
+		/** Billing one job: that job's total before tax, so the money card can show this bill's share of it. */
+		jobTotalMinor?: number | null;
 	} = $props();
 
 	const queryClient = useQueryClient();
@@ -189,6 +195,59 @@
 		...(termsQuery.data ?? []).map((term) => ({ value: term.id, label: term.name })),
 		{ value: 'custom', label: 'Custom due date' }
 	]);
+
+	// The due date a named term gives, worked out the way the database does when the invoice saves, so the
+	// form can show it read-only. The client's default term is not known here, so that choice names no date.
+	function todayString() {
+		const now = new Date();
+		const pad = (value: number) => String(value).padStart(2, '0');
+		return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+	}
+	function addDays(date: string, days: number) {
+		const [year, month, day] = date.split('-').map(Number);
+		return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+	}
+	function monthEnd(date: string, monthsAhead: number) {
+		const [year, month] = date.split('-').map(Number);
+		return new Date(Date.UTC(year, month + monthsAhead, 0)).toISOString().slice(0, 10);
+	}
+	const issueDate = $derived(form.issue_date || todayString());
+	const dueDate = $derived.by(() => {
+		if (form.term_choice === 'custom') return form.custom_due_date || null;
+		const term = (termsQuery.data ?? []).find((option) => option.id === form.term_choice);
+		if (!term) return null;
+		if (term.rule === 'on_receipt') return issueDate;
+		if (term.rule === 'net_days') return addDays(issueDate, term.net_days ?? 0);
+		if (term.rule === 'month_end') return monthEnd(issueDate, 0);
+		if (term.rule === 'next_month_end') return monthEnd(issueDate, 1);
+		return null;
+	});
+	const dueInDays = $derived(
+		dueDate ? Math.round((Date.parse(dueDate) - Date.parse(issueDate)) / 86_400_000) : null
+	);
+	const dueLabel = $derived(
+		dueDate
+			? new Intl.DateTimeFormat(locale, {
+					month: 'short',
+					day: 'numeric',
+					year: 'numeric',
+					timeZone: 'UTC'
+				}).format(new Date(`${dueDate}T00:00:00Z`))
+			: ''
+	);
+	const dueText = $derived(
+		dueInDays === null
+			? null
+			: dueInDays <= 0
+				? 'Due on receipt'
+				: `Due in ${dueInDays} ${dueInDays === 1 ? 'day' : 'days'}`
+	);
+	const productsHint = $derived.by(() => {
+		const count = installmentMode ? seededLines.length : lines.length;
+		if (count === 0) return 'Nothing billed yet';
+		const words = `${count} ${count === 1 ? 'line' : 'lines'}`;
+		return seed ? `${words} from the job · change anything before you save` : words;
+	});
 
 	// Most clients have one property, so this only asks which when there is a real choice to make.
 	const clientPropertiesQuery = createQuery(() => ({
@@ -402,20 +461,40 @@
 	}
 </script>
 
+<!-- SVGs below are trusted build-time Tabler icon imports. -->
+<!-- eslint-disable svelte/no-at-html-tags -->
+
 <form
-	class="invoice-form"
+	class="invoice-form concept-fields"
 	onsubmit={(event) => {
 		event.preventDefault();
 		void submit().finally(() => layout?.revealError());
 	}}
 >
-	<RecordFormLayout title="New Invoice" icon={receiptIcon} bind:this={layout} error={formError}>
+	<RecordFormLayout
+		title="New invoice"
+		icon={receiptIcon}
+		bind:this={layout}
+		error={formError}
+		concept
+		pageHeader={false}
+		labelledBy="new-invoice-title"
+		tone="invoice"
+	>
 		{#snippet main()}
-			<PrimaryInfoCard
+			<CreateFormHeader
 				id="invoice-primary"
+				titleId="new-invoice-title"
+				tone="invoice"
+				heading="New invoice"
+				description="Choose who you are billing and what for."
+				titleLabel="Subject"
+				titlePlaceholder="e.g. Kitchen cabinet refit"
+				factIcon={hashIcon}
+				factLabel="Invoice #"
+				factValue="Given when you save"
 				icon={receiptIcon}
 				bind:title={form.subject}
-				titleLabel="Subject"
 				titleRequired
 				titleInvalid={Boolean(fieldErrors.subject)}
 				titleError={fieldErrors.subject ?? ''}
@@ -450,23 +529,16 @@
 						{/if}
 					{/if}
 				{/snippet}
-				{#snippet fields()}
-					<Input
-						id="invoice-number"
-						label="Invoice #"
-						readonly
-						tabindex={-1}
-						value=""
-						placeholder="Given when you save"
-					/>
-				{/snippet}
-			</PrimaryInfoCard>
+			</CreateFormHeader>
 
 			{#if installmentMode}
 				<ProductsAndServicesBlock
 					concept
-					icon={receiptIcon}
+					flush
+					totalFoot
+					icon={packageIcon}
 					tone="invoice"
+					hint={productsHint}
 					lines={seededLines}
 					subtotalMinor={seededSubtotalMinor}
 					{currencyCode}
@@ -476,8 +548,11 @@
 			{:else}
 				<ProductsAndServicesBlock
 					concept
-					icon={receiptIcon}
+					flush
+					totalFoot
+					icon={packageIcon}
 					tone="invoice"
+					hint={productsHint}
 					alwaysEditing
 					editable
 					showServiceDate
@@ -490,7 +565,12 @@
 				/>
 			{/if}
 
-			<SectionBlock title="Terms & dates" icon={calendarIcon} form>
+			<SectionBlock
+				title="Terms & dates"
+				icon={calendarIcon}
+				tone="invoice"
+				hint="When you bill and when the client should pay"
+			>
 				<div class="invoice-form__dates">
 					<div class="invoice-form__date">
 						<CalendarPicker
@@ -499,7 +579,7 @@
 							value={calendarDateFromString(form.issue_date)}
 							onchange={(value) => (form.issue_date = calendarDateToString(value))}
 						/>
-						<p class="invoice-form__hint">Defaults to today if left blank.</p>
+						<p class="invoice-form__hint">Today if left blank.</p>
 					</div>
 
 					<Select
@@ -522,15 +602,37 @@
 								<p class="invoice-form__error">{fieldErrors.custom_due_date}</p>
 							{/if}
 						</div>
+					{:else}
+						<div class="invoice-form__date">
+							<span class="invoice-form__due-label" id="invoice-due-label">Due date</span>
+							<div class="invoice-form__due" aria-labelledby="invoice-due-label" role="group">
+								<span class="invoice-form__due-icon" aria-hidden="true">{@html calendarDueIcon}</span
+								>
+								{#if dueDate}
+									<strong>{dueLabel}</strong>
+									{#if dueInDays !== null && dueInDays > 0}
+										<span class="invoice-form__due-days">in {dueInDays} {dueInDays === 1 ? 'day' : 'days'}</span>
+									{/if}
+								{:else}
+									<span class="invoice-form__due-days">From the client's terms</span>
+								{/if}
+							</div>
+							<p class="invoice-form__hint">
+								Worked out from the terms. Choose Custom due date to set your own.
+							</p>
+						</div>
 					{/if}
 				</div>
 			</SectionBlock>
 		{/snippet}
 
 		{#snippet rail()}
-			<QuoteSummaryCard
-				title="Invoice total"
+			<DraftMoneyCard
+				kind="invoice"
+				lines={installmentMode ? seededLines : lines}
 				subtotalMinor={shownSubtotalMinor}
+				{dueText}
+				{jobTotalMinor}
 				{currencyCode}
 				{locale}
 			/>
@@ -542,10 +644,21 @@
 			/>
 		{/snippet}
 
+		{#snippet status()}
+			<span class="invoice-form__status-dot" aria-hidden="true"></span>
+			<div class="invoice-form__status-copy">
+				<span class="invoice-form__status-title">New invoice · not saved yet</span>
+				<span class="invoice-form__status-hint"
+					>It saves as a draft. You send it to the client from the invoice page.</span
+				>
+			</div>
+		{/snippet}
+
 		{#snippet actions()}
-			<Button variant="tertiary" onclick={onCancel} disabled={saving}>Cancel</Button>
+			<Button variant="secondary" onclick={onCancel} disabled={saving}>Cancel</Button>
 			<Button variant="primary" type="submit" loading={saving} disabled={!isDirty}>
-				Save Invoice
+				<span class="invoice-form__button-icon" aria-hidden="true">{@html checkIcon}</span>
+				Save invoice
 			</Button>
 		{/snippet}
 	</RecordFormLayout>
@@ -556,21 +669,29 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-large);
+		height: 100%;
+		min-height: 0;
 
 		&__property {
 			margin-top: var(--space-small);
 		}
 
+		&__change-property {
+			margin-top: var(--space-smaller);
+		}
+
 		&__dates {
-			display: flex;
-			flex-direction: column;
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
 			gap: var(--space-base);
+			align-items: start;
 		}
 
 		&__date {
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-smaller);
+			min-width: 0;
 		}
 
 		&__hint {
@@ -585,8 +706,79 @@
 			font-size: var(--typography--fontSize-small);
 		}
 
-		&__change-property {
-			margin-top: var(--space-smaller);
+		&__due-label {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
+		}
+
+		&__due {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
+			min-height: 40px;
+			padding: 0 var(--space-base);
+			border-radius: var(--radius-base);
+			background: var(--color-surface--background--subtle);
+			color: var(--color-heading);
+
+			strong {
+				font-weight: 600;
+			}
+		}
+
+		&__due-icon {
+			display: inline-flex;
+			color: var(--color-text--secondary);
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+		}
+
+		&__due-days {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__status-dot {
+			width: 8px;
+			height: 8px;
+			flex: 0 0 auto;
+			border-radius: var(--radius-circle);
+			background: var(--color-warning);
+		}
+
+		&__status-copy {
+			display: grid;
+			gap: var(--space-smaller);
+			min-width: 0;
+		}
+
+		&__status-title {
+			color: var(--color-heading);
+			font-weight: 600;
+		}
+
+		&__status-hint {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__button-icon {
+			display: inline-flex;
+		}
+
+		&__button-icon :global(svg) {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	@media (max-width: 960px) {
+		.invoice-form__dates {
+			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 </style>

@@ -25,7 +25,14 @@
 		value: string;
 	};
 
-	export type MoneyDetailRow = { label: string; value: string };
+	export type MoneyDetailRow = {
+		label: string;
+		value: string;
+		/** A Tabler icon (raw SVG) before the label. */
+		icon?: string;
+		/** Colours the figure by meaning: what you keep, or what you lose. */
+		tone?: 'profit' | 'loss';
+	};
 </script>
 
 <script lang="ts">
@@ -35,6 +42,7 @@
 	import trendingUpIcon from '@tabler/icons/outline/trending-up.svg?raw';
 	import trendingDownIcon from '@tabler/icons/outline/trending-down.svg?raw';
 	import equalIcon from '@tabler/icons/outline/equal.svg?raw';
+	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 
 	// The green money card beside a work list's overview: one big figure with a line under it, and a
 	// second figure below a hairline. It is the screen's one feature card, so it reads from the feature
@@ -53,6 +61,7 @@
 		badge,
 		badgeIcon,
 		pill,
+		pillTone,
 		details,
 		children,
 		record = false,
@@ -84,6 +93,8 @@
 		badgeIcon?: string;
 		/** A green pill beside the figure, e.g. "54% paid". */
 		pill?: string;
+		/** The money summary's pill by meaning: a healthy margin, below the target, or losing money. */
+		pillTone?: 'profit' | 'warning' | 'loss';
 		/** More label/value rows under a hairline, below the breakdown. */
 		details?: MoneyDetailRow[];
 		/** Extra content at the foot of the card, such as an inset call to action. */
@@ -101,6 +112,7 @@
 	} = $props();
 
 	const changeIcons = { up: trendingUpIcon, down: trendingDownIcon, same: equalIcon };
+	const pillIcons = { profit: trendingUpIcon, warning: alertTriangleIcon, loss: trendingDownIcon };
 	const progressPercent = $derived(
 		progress === null || progress === undefined
 			? null
@@ -139,8 +151,10 @@
 				<div class="money-card__figure-row">
 					{#if value !== undefined}<p class="money-card__value">{value}</p>{/if}
 					{#if pill}
-						<span class="money-card__pill">
-							<span class="money-card__pill-icon" aria-hidden="true">{@html checkIcon}</span>
+						<span class={['money-card__pill', pillTone && `money-card__pill--${pillTone}`]}>
+							<span class="money-card__pill-icon" aria-hidden="true"
+								>{@html pillTone ? pillIcons[pillTone] : checkIcon}</span
+							>
 							{pill}
 						</span>
 					{/if}
@@ -218,8 +232,13 @@
 				<dl class="money-card__foot-rows">
 					{#each details as row (row.label)}
 						<div class="money-card__legend-row">
-							<dt>{row.label}</dt>
-							<dd>{row.value}</dd>
+							<dt>
+								{#if row.icon}<span class="money-card__row-icon" aria-hidden="true"
+										>{@html row.icon}</span
+									>{/if}
+								{row.label}
+							</dt>
+							<dd class={row.tone && `money-card__amount--${row.tone}`}>{row.value}</dd>
 						</div>
 					{/each}
 				</dl>
@@ -569,8 +588,28 @@
 		.money-card__amount--loss {
 			color: var(--color-money--loss);
 		}
-		&.money-card--loss .money-card__pill {
+		&.money-card--loss .money-card__pill,
+		.money-card__pill--loss {
+			color: var(--color-white);
 			background: var(--color-money--loss);
+		}
+		.money-card__pill--warning {
+			color: var(--color-money--start);
+			background: var(--color-money--warning);
+		}
+		.money-card__foot-rows dt {
+			display: inline-flex;
+			align-items: center;
+			gap: var(--space-small);
+			color: var(--color-feature--text--secondary);
+		}
+		.money-card__row-icon {
+			display: inline-flex;
+
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
 		}
 	}
 	.money-card__segment--items {

@@ -34,7 +34,7 @@
 
 <svelte:head><title>New request · Contractor CRM</title></svelte:head>
 
-<PageContainer variant="fill">
+<PageContainer variant="open" class="request-create-page">
 	{#key formKey}
 		<RequestForm
 			currencyCode={overviewQuery.data?.currency_code ?? 'USD'}
@@ -46,3 +46,12 @@
 		/>
 	{/key}
 </PageContainer>
+
+<style lang="scss">
+	:global(.request-create-page) {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		min-height: 0;
+	}
+</style>

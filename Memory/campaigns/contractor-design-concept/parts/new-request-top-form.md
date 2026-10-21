@@ -132,3 +132,17 @@ date box in A is the live one (checked on the live page), so the shared Products
 Look in `layout.md` → Create pages. Next: build New quote and New invoice on the concept frame (shared form
 `CreateFormHeader`, money summary card), then remove `PrimaryInfoCard`. Not drawn: the Select work pop-up and the payment-stage
 (locked amounts) state; draw them after the pick if Jafar wants.
+
+## Built 2026-10-21 — Request, Invoice and the create-page money card
+
+All four create pages now use `work/CreateFormHeader`; `PrimaryInfoCard` is deleted. New request follows `el2At`
+(slim "No visit booked" row inside `AssessmentBlock`'s draft state). New invoice follows `C75AJ` / `kLaPi`: Terms &
+dates on one row; the due date shows read-only from the picked term (Custom keeps the picker; the client's default
+names no date). One shared `work/DraftMoneyCard` (Batch 35 look) sits on New job, quote and invoice: profit and
+margin from the lines' unit cost, the target pill from the quote target margin, Losing money, cost hidden without
+`jobs.view_cost` / `quotes.view_cost` (read via `GET /api/records/money-access`). Invoice: balance due before tax,
+due-date chip, this bill's share of one job, profit · team only. Proof `docs/evidence/2026-10-21-create-pages-finish/`.
+
+**Batch 35 still open:** saved job, quote and invoice pages (job in progress / finished: labour, expenses,
+invoiced, still owed, deposits) need server figures not sent today; New invoice cannot show billed-before or
+deposits until saved. Not drawn: Select work pop-up, payment-stage state.

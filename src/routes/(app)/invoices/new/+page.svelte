@@ -89,6 +89,23 @@
 			'this client'
 	);
 
+	// The money card shows this bill's share of the job it bills, when it bills exactly one. The job is
+	// usually the one the contractor came from, so this is normally already cached.
+	const billedJobId = $derived.by(() => {
+		const jobIds = new Set((seed?.sources ?? []).map((source) => source.job_id));
+		return jobIds.size === 1 ? [...jobIds][0] : null;
+	});
+	const billedJobQuery = createQuery(() => ({
+		queryKey: jobDetailKey(billedJobId ?? ''),
+		queryFn: () => fetchJob(billedJobId!),
+		enabled: Boolean(billedJobId),
+		staleTime: 30_000
+	}));
+	const jobTotalMinor = $derived.by(() => {
+		const money = billedJobId ? billedJobQuery.data?.money : null;
+		return money ? money.subtotal_minor - money.discount_minor : null;
+	});
+
 	// A job's priced lines become the invoice's opening lines, editable like any other. Headings and notes
 	// stay behind: an invoice line bills work, and the contract says only priced work is billable.
 	function pricedLines(lines: Awaited<ReturnType<typeof fetchJob>>['lines']) {
@@ -368,11 +385,12 @@
 
 <svelte:head><title>New invoice · Contractor CRM</title></svelte:head>
 
-<PageContainer variant="fill">
+<PageContainer variant="open" class="invoice-create-page">
 	<InvoiceForm
 		currencyCode={overviewQuery.data?.currency_code ?? 'USD'}
 		locale={overviewQuery.data?.locale ?? 'en-US'}
 		{seed}
+		{jobTotalMinor}
 		onSaved={handleSaved}
 		onCancel={leave}
 	/>
@@ -390,3 +408,12 @@
 		onContinue={continueWith}
 	/>
 {/if}
+
+<style lang="scss">
+	:global(.invoice-create-page) {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		min-height: 0;
+	}
+</style>

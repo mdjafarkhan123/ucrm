@@ -9,7 +9,7 @@
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import { customerNoticeToast } from '$lib/schedule/customer-notices';
 	import PickedClient from '$lib/components/work/PickedClient.svelte';
-	import MoneyFeatureCard from '$lib/components/work/MoneyFeatureCard.svelte';
+	import DraftMoneyCard from '$lib/components/work/DraftMoneyCard.svelte';
 	import ClientPicker from '$lib/components/work/ClientPicker.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
 	import JobVisitsBlock from '$lib/components/jobs/JobVisitsBlock.svelte';
@@ -35,7 +35,6 @@
 	import hammerIcon from '@tabler/icons/outline/hammer.svg?raw';
 	import packageIcon from '@tabler/icons/outline/package.svg?raw';
 	import receiptIcon from '@tabler/icons/outline/file-dollar.svg?raw';
-	import cashIcon from '@tabler/icons/outline/cash-banknote.svg?raw';
 	import hashIcon from '@tabler/icons/outline/hash.svg?raw';
 	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
 	import externalLinkIcon from '@tabler/icons/outline/external-link.svg?raw';
@@ -192,27 +191,6 @@
 		propertiesWanted = true;
 		choosingProperty = true;
 	}
-
-	// The rail's Job total card lists each line with the same preview arithmetic the line editor shows; the
-	// database works out the real figures when the job saves.
-	const money = $derived(
-		new Intl.NumberFormat(locale, { style: 'currency', currency: currencyCode })
-	);
-	// The card keys its rows by label, so a name used twice is numbered.
-	const railRows = $derived.by(() => {
-		const seen = new Map<string, number>();
-		return lines
-			.filter((line) => line.name.trim())
-			.map((line) => {
-				const name = line.name.trim();
-				const times = (seen.get(name) ?? 0) + 1;
-				seen.set(name, times);
-				return {
-					label: times > 1 ? `${name} (${times})` : name,
-					value: money.format(Math.round(line.quantity * line.unit_price_minor) / 100)
-				};
-			});
-	});
 
 	// What the save bar says will happen besides saving the job.
 	const saveHint = $derived.by(() => {
@@ -528,15 +506,7 @@
 		{/snippet}
 
 		{#snippet rail()}
-			<MoneyFeatureCard
-				eyebrow="Job total"
-				icon={cashIcon}
-				value={money.format(subtotalMinor / 100)}
-				note="Job subtotal, before discount and tax"
-				rows={railRows}
-				footnote="Updates as you add or change lines."
-				record
-			/>
+			<DraftMoneyCard kind="job" {lines} {subtotalMinor} {currencyCode} {locale} />
 		{/snippet}
 
 		{#snippet status()}

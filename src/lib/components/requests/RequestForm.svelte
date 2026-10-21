@@ -3,7 +3,7 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
-	import PrimaryInfoCard from '$lib/components/work/PrimaryInfoCard.svelte';
+	import CreateFormHeader from '$lib/components/work/CreateFormHeader.svelte';
 	import ClientPicker from '$lib/components/work/ClientPicker.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
@@ -30,8 +30,11 @@
 	import { firstLineProblem } from '$lib/quotes/lines';
 	import type { AssessmentCreateSeed } from '$lib/requests/assessmentSeed';
 	import { invalidatePipeline } from '$lib/pipeline/api';
-	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
-	import clipboardIcon from '@tabler/icons/outline/clipboard-text.svg?raw';
+	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
+	import clipboardIcon from '@tabler/icons/outline/clipboard-list.svg?raw';
+	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
+	import packageIcon from '@tabler/icons/outline/package.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 
 	// The whole New Request page, the way Jobber writes one: title, client, what they are asking for, the
 	// on-site visit and the line items all on one page, with a single Save at the bottom. The visit and the
@@ -259,19 +262,41 @@
 	});
 	const requestedOn = dateFormat.format(new Date());
 
-	const title = 'New Request';
 </script>
 
+<!-- SVGs below are trusted build-time Tabler icon imports. -->
+<!-- eslint-disable svelte/no-at-html-tags -->
+
 <form
-	class="request-form"
+	class="request-form concept-fields"
 	onsubmit={(event) => {
 		event.preventDefault();
 		void submit(false).finally(() => layout?.revealError());
 	}}
 >
-	<RecordFormLayout {title} icon={fileTextIcon} bind:this={layout} error={formError}>
+	<RecordFormLayout
+		title="New request"
+		icon={inboxIcon}
+		bind:this={layout}
+		error={formError}
+		concept
+		pageHeader={false}
+		labelledBy="new-request-title"
+		tone="request"
+	>
 		{#snippet main()}
-			<PrimaryInfoCard
+			<CreateFormHeader
+				id="request-primary"
+				titleId="new-request-title"
+				tone="request"
+				heading="New request"
+				description="Capture the work your client needs."
+				titlePlaceholder="e.g. Backyard lighting installation"
+				factIcon={calendarIcon}
+				factTone="time"
+				factLabel="Requested on"
+				factValue={requestedOn}
+				icon={inboxIcon}
 				bind:title={form.title}
 				titleRequired
 				titleInvalid={Boolean(fieldErrors.title)}
@@ -306,16 +331,19 @@
 						{/if}
 					{/if}
 				{/snippet}
-				{#snippet fields()}
-					<p class="request-form__requested-on">Requested on: <strong>{requestedOn}</strong></p>
-				{/snippet}
-			</PrimaryInfoCard>
+			</CreateFormHeader>
 
-			<SectionBlock title="Service overview" icon={clipboardIcon} form>
+			<SectionBlock
+				title="Service overview"
+				icon={clipboardIcon}
+				tone="request"
+				hint="Tell your team what the client needs."
+			>
 				<Textarea
 					id="request-description"
-					label="Please provide as much information as you can"
-					rows={6}
+					label="Service details"
+					placeholder="Describe the work, the problem, and anything your team should know."
+					rows={5}
 					bind:value={form.description}
 				/>
 			</SectionBlock>
@@ -332,6 +360,13 @@
 
 			<ProductsAndServicesBlock
 				concept
+				flush
+				totalFoot
+				icon={packageIcon}
+				tone="quote"
+				hint={lines.length
+					? `${lines.length} ${lines.length === 1 ? 'line' : 'lines'}`
+					: 'Nothing priced yet'}
 				bind:this={productsAndServices}
 				alwaysEditing
 				editable
@@ -357,22 +392,29 @@
 			/>
 		{/snippet}
 
-		{#snippet actions()}
-			<Button variant="tertiary" onclick={onCancel} disabled={saving}>Cancel</Button>
-			<div class="request-form__actions-primary">
-				{#if !savedRequestId}
-					<Button
-						variant="secondary"
-						onclick={() => void submit(true).finally(() => layout?.revealError())}
-						disabled={saving || !isDirty}
-					>
-						Save & Create Another
-					</Button>
-				{/if}
-				<Button variant="primary" type="submit" loading={saving} disabled={!isDirty}>
-					{savedRequestId ? 'Save changes' : 'Save Request'}
-				</Button>
+		{#snippet status()}
+			<span class="request-form__status-dot" aria-hidden="true"></span>
+			<div class="request-form__status-copy">
+				<span class="request-form__status-title">New request · not saved yet</span>
+				<span class="request-form__status-hint">Notes and attachments save with this request.</span>
 			</div>
+		{/snippet}
+
+		{#snippet actions()}
+			<Button variant="secondary" onclick={onCancel} disabled={saving}>Cancel</Button>
+			{#if !savedRequestId}
+				<Button
+					variant="secondary"
+					onclick={() => void submit(true).finally(() => layout?.revealError())}
+					disabled={saving || !isDirty}
+				>
+					Save & create another
+				</Button>
+			{/if}
+			<Button variant="primary" type="submit" loading={saving} disabled={!isDirty}>
+				<span class="request-form__button-icon" aria-hidden="true">{@html checkIcon}</span>
+				{savedRequestId ? 'Save changes' : 'Save request'}
+			</Button>
 		{/snippet}
 	</RecordFormLayout>
 </form>
@@ -382,17 +424,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-large);
-
-		&__requested-on {
-			margin: 0;
-			padding: var(--space-small) 0;
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-
-			strong {
-				color: var(--color-heading);
-			}
-		}
+		height: 100%;
+		min-height: 0;
 
 		&__property {
 			margin-top: var(--space-small);
@@ -402,15 +435,37 @@
 			margin-top: var(--space-smaller);
 		}
 
-		&__actions-primary {
-			display: flex;
-			gap: var(--space-small);
+		&__status-dot {
+			width: 8px;
+			height: 8px;
+			flex: 0 0 auto;
+			border-radius: var(--radius-circle);
+			background: var(--color-warning);
 		}
-	}
 
-	@media (max-width: 767px) {
-		.request-form__actions-primary {
-			flex-direction: column;
+		&__status-copy {
+			display: grid;
+			gap: var(--space-smaller);
+			min-width: 0;
+		}
+
+		&__status-title {
+			color: var(--color-heading);
+			font-weight: 600;
+		}
+
+		&__status-hint {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__button-icon {
+			display: inline-flex;
+		}
+
+		&__button-icon :global(svg) {
+			width: 16px;
+			height: 16px;
 		}
 	}
 </style>
