@@ -1,12 +1,6 @@
 
 # Jafar's Design Preferences
 
-## Design decision
-Before start designing in pencil app see what our app design looks like today. Then pick a type from below and create at least 2 variant
-
-1. New concept: If you think a complete redesign from scratch with new concept would look better,  dont follow the app current design and Make a Completely New Design of your way  
-
-2. Refine Existing Design: If you think the current look is good, but need tweaks or customizations.
 
 ## Design prefernces that must meet
 1. **Premium, polished & modern.** Not a plain design. Design must looks like the work of a top Dribbble product designer
@@ -22,4 +16,13 @@ Before start designing in pencil app see what our app design looks like today. T
 7. **Nothing blends in.** Every element's fill differs from the colour behind it, in light and dark mode.
 8. **Built from the app's own colours and sizes** (`src/lib/styles/_variables.scss`). Add a new one only when
    nothing fits.
-11. **Desktop web app.** Design at 1440px wide; phone layouts wait for the native apps.
+11. **Desktop web app.** Design at 1440px wide; No need to check phone version
+12. Research realted top industry to know what to show, what works, what not etc.. Not to copy design.
+
+
+## Design 
+Before start designing in pencil app see what our app has and its design looks like today. Then pick a type from below and create at least 2 variants
+
+1. New creative concept: Forget what is the current app design looks like rather make a creative design from scratch to show your creativity, a whole new idea/concept/design
+2. Refine Existing Design: If you think the current look is good, but need tweaks or customizations.
+ive apps.
