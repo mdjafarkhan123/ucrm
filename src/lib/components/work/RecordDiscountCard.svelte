@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import RailRow from '$lib/components/layout/RailRow.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
@@ -15,8 +14,10 @@
 		discountDraftFrom,
 		type DiscountPayload
 	} from '$lib/work/pricing-adjustments';
-	import discountIcon from '@tabler/icons/outline/discount.svg?raw';
-	import tagIcon from '@tabler/icons/outline/tag.svg?raw';
+	import discountIcon from '@tabler/icons/outline/rosette-discount.svg?raw';
+	import percentIcon from '@tabler/icons/outline/percentage.svg?raw';
+	import dollarIcon from '@tabler/icons/outline/currency-dollar.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 
 	// The one discount a priced record carries, named the way the customer reads it. The card shows what is
 	// set and how much came off; the dialog is where it is changed. Like any dialog that owns a piece of the
@@ -39,7 +40,8 @@
 		canSeePrice = true,
 		recordNoun = 'quote',
 		staged = false,
-		embedded = false,
+		dialogHint,
+		recordTone = 'quote',
 		onSave,
 		onSaved
 	}: {
@@ -60,8 +62,10 @@
 		/** The record does not exist yet. The page holds the choice and writes it when the record is saved, so
 		 * there is nothing to announce as saved here. */
 		staged?: boolean;
-		/** App look: draw one row to sit inside a shared "Discount and tax" card instead of a card. */
-		embedded?: boolean;
+		/** The record line under the pop-up's title, e.g. "Quote #1042 · Gutter cleaning". */
+		dialogHint?: string;
+		/** The record colour of the pop-up's icon tile (`quote`, `invoice`, `job`). */
+		recordTone?: string;
 		/** Writes the discount against the revision it is handed. */
 		onSave: (revision: number, payload: DiscountPayload) => Promise<unknown>;
 		onSaved: (result: unknown) => Promise<void> | void;
@@ -146,59 +150,41 @@
 	}
 </script>
 
-{#if embedded}
-	<RailRow
-		icon={tagIcon}
-		label="Discount"
-		value={!canSeePrice
-			? 'No access to prices'
-			: configured
-				? `${name || 'Discount'}${discountMinor !== null ? ` · −${money.format(discountMinor / 100)}` : ` · ${valueText} off`}`
-				: editable
-					? 'None added'
-					: `No discount on this ${recordNoun}`}
-	>
-		{#snippet actions()}
-			{#if editable && canSeePrice}
-				<PencilButton
-					onclick={openDialog}
-					label={configured ? 'Edit the discount' : 'Add a discount'}
-				/>
-			{/if}
-		{/snippet}
-	</RailRow>
-{:else}
-	<RailCard tone="invoice" title="Discount" icon={discountIcon}>
-		{#snippet actions()}
-			{#if editable && canSeePrice && configured}
-				<Button variant="tertiary" size="small" onclick={openDialog}>Edit</Button>
-			{/if}
-		{/snippet}
-
-		{#if !canSeePrice}
-			<p class="record-discount__muted">You do not have access to these prices.</p>
-		{:else if configured}
-			<div class="record-discount__set">
-				<p class="record-discount__name">{name || 'Discount'}</p>
-				<p class="record-discount__value">
-					{valueText} off
-					{#if discountMinor !== null}
-						<span class="record-discount__amount">−{money.format(discountMinor / 100)}</span>
-					{/if}
-				</p>
-			</div>
-		{:else if editable}
-			<Button variant="secondary" variation="subtle" fullWidth onclick={openDialog}>
-				Add discount
-			</Button>
-		{:else}
-			<p class="record-discount__muted">No discount on this {recordNoun}.</p>
+<RailRow
+	icon={discountIcon}
+	label="Discount"
+	value={!canSeePrice
+		? 'No access to prices'
+		: configured
+			? `${name || 'Discount'} · ${valueText} off`
+			: editable
+				? 'None added'
+				: `No discount on this ${recordNoun}`}
+	valueTone={canSeePrice && configured ? 'default' : 'quiet'}
+	amount={canSeePrice && configured && discountMinor !== null
+		? `−${money.format(discountMinor / 100)}`
+		: undefined}
+>
+	{#snippet actions()}
+		{#if editable && canSeePrice}
+			<PencilButton
+				onclick={openDialog}
+				label={configured ? 'Edit the discount' : 'Add a discount'}
+			/>
 		{/if}
-	</RailCard>
-{/if}
+	{/snippet}
+</RailRow>
 
 {#if open}
-	<Dialog {open} title={configured ? 'Edit discount' : 'Add discount'} size="small" onClose={close}>
+	<Dialog
+		{open}
+		title={configured ? 'Edit discount' : 'Add discount'}
+		subtitle={dialogHint}
+		icon={discountIcon}
+		iconTone={recordTone}
+		width={440}
+		onClose={close}
+	>
 		<div class="record-discount-dialog">
 			{#if error}<p class="record-discount-dialog__error" role="alert">{error}</p>{/if}
 
@@ -215,9 +201,10 @@
 				label="Discount type"
 				value={draftType}
 				options={[
-					{ value: 'percentage', label: 'Percentage' },
-					{ value: 'fixed', label: 'Amount' }
+					{ value: 'percentage', label: 'Percentage', icon: percentIcon },
+					{ value: 'fixed', label: 'Amount', icon: dollarIcon }
 				]}
+				fullWidth
 				disabled={saving}
 				onchange={(next) => {
 					draftType = next as QuoteDiscountType;
@@ -246,11 +233,13 @@
 					errorMessage={fieldErrors.value ?? ''}
 				/>
 			{/if}
+		</div>
 
+		{#snippet footer()}
 			<div class="record-discount-dialog__actions">
 				{#if configured}
 					<Button
-						variant="tertiary"
+						variant="quiet"
 						variation="destructive"
 						disabled={saving}
 						onclick={() => void write({ name: null, type: null, value: null })}
@@ -262,47 +251,17 @@
 					<Button variant="secondary" variation="subtle" disabled={saving} onclick={close}>
 						Cancel
 					</Button>
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					<Button variant="primary" loading={saving} onclick={save}
-						>{staged ? 'Apply to draft' : 'Save discount'}</Button
+						>{@html checkIcon}{staged ? 'Apply to draft' : 'Save discount'}</Button
 					>
 				</div>
 			</div>
-		</div>
+		{/snippet}
 	</Dialog>
 {/if}
 
 <style lang="scss">
-	.record-discount__muted {
-		margin: 0;
-		color: var(--color-text--secondary);
-	}
-
-	.record-discount__set {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-smallest);
-	}
-
-	.record-discount__name {
-		margin: 0;
-		color: var(--color-heading);
-		font-weight: 600;
-	}
-
-	.record-discount__value {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: var(--space-base);
-		margin: 0;
-		color: var(--color-text--secondary);
-	}
-
-	.record-discount__amount {
-		color: var(--color-heading);
-		font-weight: 600;
-	}
-
 	.record-discount-dialog {
 		display: flex;
 		flex-direction: column;
@@ -315,14 +274,11 @@
 
 		&__actions {
 			display: flex;
+			flex: 1 1 auto;
 			flex-wrap: wrap;
 			align-items: center;
-			justify-content: space-between;
 			gap: var(--space-small);
-			margin-top: var(--space-small);
 
-			/* Each verb stays on one line. The small dialog cannot hold "Remove discount", Cancel and Save side
-			   by side, so Cancel and Save drop to a second row and keep the right edge instead of running off it. */
 			:global(.button) {
 				white-space: nowrap;
 			}

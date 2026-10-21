@@ -9,6 +9,7 @@
 		title,
 		subtitle,
 		size = 'default',
+		width,
 		initialFocusId,
 		icon,
 		iconTone = 'success',
@@ -20,6 +21,8 @@
 		title: string;
 		subtitle?: string;
 		size?: 'default' | 'small' | 'medium' | 'large';
+		/** A drawn width in pixels between the named sizes, e.g. 440 for the discount pop-up. */
+		width?: number;
 		initialFocusId?: string;
 		/** A Tabler icon (raw SVG) on a tile before the title. */
 		icon?: string;
@@ -42,6 +45,7 @@
 		<DialogPrimitive.Overlay class="dialog__overlay" />
 		<DialogPrimitive.Content
 			class="dialog__content dialog__content--{size}"
+			style={width ? `--modal--width: ${width}px` : undefined}
 			onOpenAutoFocus={(event) => {
 				if (!initialFocusId) return;
 				const target = document.getElementById(initialFocusId);
