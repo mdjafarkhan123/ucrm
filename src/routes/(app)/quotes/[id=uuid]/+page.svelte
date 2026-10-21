@@ -18,7 +18,7 @@
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import WorkRecordHeader from '$lib/components/work/WorkRecordHeader.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
-	import ProfitCard from '$lib/components/work/ProfitCard.svelte';
+	import RecordMoneyCard from '$lib/components/work/RecordMoneyCard.svelte';
 	import RecordTrack from '$lib/components/work/RecordTrack.svelte';
 	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
 	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
@@ -1257,7 +1257,12 @@
 
 			{#snippet rail()}
 				{#if showHistory}
-					<RailCard tone="quote" title="Quote history" icon={historyCardIcon} description="Newest first">
+					<RailCard
+						tone="quote"
+						title="Quote history"
+						icon={historyCardIcon}
+						description="Newest first"
+					>
 						{#snippet actions()}
 							<Button size="small" variant="tertiary" onclick={() => (showHistory = false)}>
 								Close
@@ -1267,14 +1272,25 @@
 					</RailCard>
 				{/if}
 
-				{#if saved.can_see_cost && saved.can_see_price && saved.version?.profit_minor !== undefined && saved.version?.cost_minor !== undefined}
+				{#if saved.can_see_price && saved.version}
 					{@const version = saved.version}
-					<ProfitCard
-						costMinor={version.cost_minor ?? 0}
-						profitMinor={version.profit_minor ?? 0}
-						revenueMinor={(version.subtotal_minor ?? 0) - (version.discount_minor ?? 0)}
-						marginBasisPoints={version.margin_basis_points ?? null}
+					{@const canSeeCost =
+						saved.can_see_cost &&
+						version.profit_minor !== undefined &&
+						version.cost_minor !== undefined}
+					<RecordMoneyCard
 						currencyCode={version.currency_code ?? saved.quote.currency_code}
+						record={{
+							kind: 'quote',
+							revenueMinor: (version.subtotal_minor ?? 0) - (version.discount_minor ?? 0),
+							costMinor: canSeeCost ? (version.cost_minor ?? 0) : null,
+							profitMinor: canSeeCost ? (version.profit_minor ?? 0) : null,
+							totalMinor: version.total_minor ?? 0,
+							taxMinor: version.tax_minor ?? 0,
+							taxName: version.tax_name ?? null,
+							depositMinor: version.deposit_required_minor ?? 0,
+							discounted: (version.discount_minor ?? 0) > 0
+						}}
 					/>
 				{/if}
 

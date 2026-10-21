@@ -13,7 +13,7 @@ import { updateJobDetailsSchema } from '$lib/server/validation/jobs.schema';
 import { updateJobError } from '$lib/server/jobs/errors';
 import { organizationFormatting } from '$lib/server/requests/timezone';
 import { asMoneyMap, withMoney } from '$lib/server/quotes/money';
-import type { JobCosting } from '$lib/jobs/api';
+import type { JobBillingSummary, JobCosting } from '$lib/jobs/api';
 
 const toNumber = (value: unknown): number =>
 	typeof value === 'number' ? value : Number(value ?? 0);
@@ -58,6 +58,7 @@ export const GET: RequestHandler = async (event) => {
 		jobMoney,
 		lineMoney,
 		jobCosting,
+		billingSummary,
 		formatting,
 		billedVisitRows,
 		scheduleStages
@@ -148,6 +149,12 @@ export const GET: RequestHandler = async (event) => {
 					target_job_id: jobId
 				})
 			: Promise.resolve({ data: null, error: null }),
+		// What has been invoiced of the job and what is still owed on it, for the money card's foot. Definer,
+		// it applies invoices.view and invoices.view_price for itself and answers null for anyone without them.
+		supabase.rpc('job_billing_summary', {
+			target_organization_id: organizationId,
+			target_job_id: jobId
+		}),
 		organizationFormatting(organizationId),
 		// Which of this job's visits an invoice already claims. Scoped to one job and served by
 		// invoice_sources_job_idx, the same index the claim command itself relies on.
@@ -182,6 +189,7 @@ export const GET: RequestHandler = async (event) => {
 		jobMoney.error ||
 		lineMoney.error ||
 		jobCosting.error ||
+		billingSummary.error ||
 		billedVisitRows.error ||
 		scheduleStages.error
 	) {
@@ -246,6 +254,7 @@ export const GET: RequestHandler = async (event) => {
 				revenue_minor: nullableMinor(answer.revenue_minor),
 				item_cost_minor: toNumber(answer.item_cost_minor),
 				labor_cost_minor: toNumber(answer.labor_cost_minor),
+				labor_minutes: toNumber(answer.labor_minutes),
 				expense_cost_minor: toNumber(answer.expense_cost_minor),
 				total_cost_minor: toNumber(answer.total_cost_minor),
 				profit_minor: nullableMinor(answer.profit_minor),
@@ -260,6 +269,7 @@ export const GET: RequestHandler = async (event) => {
 			revenue_minor: toNumber(answer.revenue_minor),
 			item_cost_minor: toNumber(answer.item_cost_minor),
 			labor_cost_minor: toNumber(answer.labor_cost_minor),
+			labor_minutes: toNumber(answer.labor_minutes),
 			expense_cost_minor: toNumber(answer.expense_cost_minor),
 			total_cost_minor: toNumber(answer.total_cost_minor),
 			profit_minor: toNumber(answer.profit_minor),
@@ -268,6 +278,17 @@ export const GET: RequestHandler = async (event) => {
 			labor_line_and_time: Boolean(answer.labor_line_and_time)
 		};
 	})();
+
+	// Before tax, like the job revenue it sits beside; null when the reader may not see invoice money.
+	const billing = (): JobBillingSummary | null => {
+		const answer = billingSummary.data as Record<string, unknown> | null;
+		if (!answer || typeof answer !== 'object') return null;
+		return {
+			invoice_count: toNumber(answer.invoice_count),
+			invoiced_minor: toNumber(answer.invoiced_minor),
+			owed_minor: toNumber(answer.owed_minor)
+		};
+	};
 
 	const billedVisitIds = new Set(
 		(billedVisitRows.data ?? []).map((claim) => claim.visit_id as string)
@@ -415,6 +436,7 @@ export const GET: RequestHandler = async (event) => {
 			organization_today: organizationToday,
 			money,
 			costing,
+			billing: billing(),
 			locale: formatting.ok ? formatting.formatting.locale : 'en-US',
 			can_edit: canEdit,
 			can_schedule: canSchedule,

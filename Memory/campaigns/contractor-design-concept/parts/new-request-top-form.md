@@ -143,6 +143,6 @@ margin from the lines' unit cost, the target pill from the quote target margin, 
 `jobs.view_cost` / `quotes.view_cost` (read via `GET /api/records/money-access`). Invoice: balance due before tax,
 due-date chip, this bill's share of one job, profit · team only. Proof `docs/evidence/2026-10-21-create-pages-finish/`.
 
-**Batch 35 still open:** saved job, quote and invoice pages (job in progress / finished: labour, expenses,
-invoiced, still owed, deposits) need server figures not sent today; New invoice cannot show billed-before or
-deposits until saved. Not drawn: Select work pop-up, payment-stage state.
+**Batch 35 saved pages built 2026-10-21:** `work/RecordMoneyCard` on saved job, quote and invoice rails (old
+`JobCostingCard`, `ProfitCard` deleted); new server figures in migration `20261221090000`. Proof
+`docs/evidence/2026-10-21-saved-money-card/`. Not drawn: Select work pop-up, payment-stage state.

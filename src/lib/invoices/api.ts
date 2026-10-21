@@ -586,6 +586,18 @@ export type InvoiceDocumentHistoryEntry = {
 	after: InvoiceDocumentSnapshot;
 };
 
+// The money card's place in the job (null when the reader may not see invoice money). The job fields are null
+// unless the bill comes from exactly one job the reader may price; cost is null without job-cost rights.
+// Amounts are before tax.
+export type InvoiceMoneyContext = {
+	deposit_applied_minor: number;
+	job_id: string | null;
+	job_number: number | null;
+	job_revenue_minor: number | null;
+	billed_before_minor: number | null;
+	cost_minor: number | null;
+};
+
 export type InvoiceDetail = {
 	invoice: {
 		id: string;
@@ -634,6 +646,7 @@ export type InvoiceDetail = {
 	lines: InvoiceLineItem[];
 	delivery: InvoiceDelivery;
 	client_balance: InvoiceClientBalance | null;
+	money_context: InvoiceMoneyContext | null;
 	/** Whether the customer's copy offers online payment, and this invoice's partial-payment switch. */
 	online_payments: { offered: boolean; partial_allowed: boolean };
 	locale: string;

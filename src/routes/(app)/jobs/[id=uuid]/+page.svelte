@@ -31,7 +31,7 @@
 	import JobVisitsSection from '$lib/components/jobs/JobVisitsSection.svelte';
 	import JobLaborSection from '$lib/components/jobs/JobLaborSection.svelte';
 	import JobExpensesSection from '$lib/components/jobs/JobExpensesSection.svelte';
-	import JobCostingCard from '$lib/components/jobs/JobCostingCard.svelte';
+	import RecordMoneyCard from '$lib/components/work/RecordMoneyCard.svelte';
 	import RequestReviewButton from '$lib/components/reviews/RequestReviewButton.svelte';
 	import NotesPanel from '$lib/components/collaboration/NotesPanel.svelte';
 	import RecordFilesCard from '$lib/components/files/RecordFilesCard.svelte';
@@ -880,17 +880,22 @@
 				{/if}
 
 				<!--
-					What the job actually cost us against what it sells for. Its own card, below the selling
-					total: the breakdown, the open-vs-closed wording and the double-count heads-up do not fit
-					the shared quote summary. Renders only when the payload carried costing (jobs.view_cost).
+					The shared money summary: profit so far (or final) with item cost, expenses and labor, then
+					what has been invoiced and is still owed. Without jobs.view_cost it shows the job total only.
 				-->
-				<JobCostingCard
-					costing={saved.costing}
-					subtotalMinor={saved.can_see_price ? (saved.money?.subtotal_minor ?? 0) : null}
-					taxMinor={saved.money?.tax_minor ?? 0}
-					totalMinor={saved.money?.total_minor ?? null}
+				<RecordMoneyCard
 					currencyCode={saved.job.currency_code}
 					locale={saved.locale}
+					record={{
+						kind: 'job',
+						costing: saved.costing,
+						billing: saved.billing,
+						revenueMinor:
+							saved.can_see_price && saved.money
+								? saved.money.subtotal_minor - saved.money.discount_minor
+								: null,
+						discounted: (saved.money?.discount_minor ?? 0) > 0
+					}}
 				/>
 
 				{#if !showHistory}

@@ -20,7 +20,7 @@
 	import { calendarDateFromString, calendarDateToString } from '$lib/components/ui/date-time';
 	import WorkRecordHeader from '$lib/components/work/WorkRecordHeader.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
-	import MoneyFeatureCard from '$lib/components/work/MoneyFeatureCard.svelte';
+	import RecordMoneyCard from '$lib/components/work/RecordMoneyCard.svelte';
 	import InvoiceHistoryCard from '$lib/components/invoices/InvoiceHistoryCard.svelte';
 	import RecordDiscountCard from '$lib/components/work/RecordDiscountCard.svelte';
 	import RecordTaxCard from '$lib/components/work/RecordTaxCard.svelte';
@@ -1332,41 +1332,23 @@
 
 			{#snippet rail()}
 				{#if canSeePrice && saved.money}
-					<MoneyFeatureCard
-						record
-						icon={receiptIcon}
-						eyebrow="Balance due"
-						value={formatMoney(remainingMinor)}
-						badge={dueChip}
-						badgeIcon={calendarDueIcon}
-						pill={paidPercent > 0 ? `${paidPercent}% paid` : undefined}
-						note={`of the ${formatMoney(saved.money.total_minor)} invoice total`}
-						breakdown={saved.money.total_minor > 0 && !settledAway
-							? [
-									{
-										label: 'Paid',
-										value: formatMoney(paidMinor),
-										share: paidMinor,
-										tone: 'success',
-										percent: `${paidPercent}%`
-									},
-									{
-										label: 'Balance',
-										value: formatMoney(remainingMinor),
-										share: remainingMinor,
-										tone: 'muted',
-										percent: `${100 - paidPercent}%`
-									}
-								]
-							: undefined}
-						details={saved.client_balance
-							? [
-									{
-										label: 'Client account balance',
-										value: formatMoney(saved.client_balance.account_balance_minor)
-									}
-								]
-							: undefined}
+					<RecordMoneyCard
+						currencyCode={saved.invoice.currency_code}
+						locale={saved.locale}
+						record={{
+							kind: 'invoice',
+							subtotalMinor: saved.money.subtotal_minor,
+							discountMinor: saved.money.discount_minor,
+							taxMinor: saved.money.tax_minor,
+							taxName: saved.money.tax_name ?? null,
+							totalMinor: saved.money.total_minor,
+							remainingMinor,
+							paidMinor,
+							collectable: !settledAway,
+							dueText: dueChip ?? null,
+							context: saved.money_context,
+							clientBalanceMinor: saved.client_balance?.account_balance_minor ?? null
+						}}
 					>
 						{#if canAddDeposit && saved.client_balance}
 							<p class="invoice-detail__credit-note">
@@ -1386,7 +1368,7 @@
 								</Button>
 							</div>
 						{/if}
-					</MoneyFeatureCard>
+					</RecordMoneyCard>
 				{/if}
 
 				{#if showOnlinePayments}

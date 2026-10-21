@@ -316,6 +316,14 @@ export type JobMoney = {
 // A one-off job is measured over its whole life. A recurring job has no end to total up against, so it is
 // measured over the last 30 days, pairing costs with the revenue its pricing basis defines — per completed
 // visit, or per billing period.
+// What has been invoiced of a job (issued, not voided or replaced) and what is still owed on those bills.
+// Invoiced is before tax, like the job revenue it sits beside.
+export type JobBillingSummary = {
+	invoice_count: number;
+	invoiced_minor: number;
+	owed_minor: number;
+};
+
 export type JobCosting =
 	| {
 			// A recurring agreement never ends, so it is measured over the last 30 days instead of over its
@@ -332,6 +340,8 @@ export type JobCosting =
 			revenue_minor: number | null;
 			item_cost_minor: number;
 			labor_cost_minor: number;
+			// The crew minutes behind the labour cost, over the same entries.
+			labor_minutes: number;
 			expense_cost_minor: number;
 			total_cost_minor: number;
 			profit_minor: number | null;
@@ -346,6 +356,8 @@ export type JobCosting =
 			revenue_minor: number;
 			item_cost_minor: number;
 			labor_cost_minor: number;
+			// The crew minutes behind the labour cost, over the same entries.
+			labor_minutes: number;
 			expense_cost_minor: number;
 			total_cost_minor: number;
 			profit_minor: number;
@@ -455,6 +467,7 @@ export type JobDetail = {
 	money: JobMoney | null;
 	// The job's costing card. Null for a reader without jobs.view_cost.
 	costing: JobCosting | null;
+	billing: JobBillingSummary | null;
 	locale: string;
 	can_edit: boolean;
 	can_schedule: boolean;

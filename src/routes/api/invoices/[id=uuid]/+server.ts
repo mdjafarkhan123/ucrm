@@ -53,34 +53,42 @@ export const GET: RequestHandler = async (event) => {
 	// The client's whole-account balance, gated in the same call: a reader without invoices.view_price gets an
 	// empty map and the rail simply shows no balance. Only one client is asked for, so this is a single row.
 	const clientId = document.invoice.client_id;
-	const [balanceResult, formatting, partialResult, onlineOffered, phoneResult] = await Promise.all([
-		canSeePrice && clientId
-			? supabase.rpc('client_account_balance', { target_client_ids: [clientId] })
-			: Promise.resolve({ data: {} as Record<string, unknown>, error: null }),
-		organizationFormatting(organizationId),
-		supabase
-			.from('invoices')
-			.select('online_partial_payments_allowed')
-			.eq('organization_id', organizationId)
-			.eq('id', invoiceId)
-			.maybeSingle(),
-		onlineInvoicePaymentsOffered(organizationId),
-		// The Call and Text buttons in the header. Read under the member's own access, so someone who may not
-		// open the client's contact details simply gets no buttons rather than a refusal.
-		clientId
-			? supabase
-					.from('client_contact_methods')
-					.select('value')
-					.eq('organization_id', organizationId)
-					.eq('client_id', clientId)
-					.eq('kind', 'phone')
-					.order('is_primary', { ascending: false })
-					.order('created_at')
-					.limit(1)
-					.maybeSingle()
-			: Promise.resolve({ data: null, error: null })
-	]);
-	if (balanceResult.error || partialResult.error) return databaseError();
+	const [balanceResult, formatting, partialResult, onlineOffered, phoneResult, contextResult] =
+		await Promise.all([
+			canSeePrice && clientId
+				? supabase.rpc('client_account_balance', { target_client_ids: [clientId] })
+				: Promise.resolve({ data: {} as Record<string, unknown>, error: null }),
+			organizationFormatting(organizationId),
+			supabase
+				.from('invoices')
+				.select('online_partial_payments_allowed')
+				.eq('organization_id', organizationId)
+				.eq('id', invoiceId)
+				.maybeSingle(),
+			onlineInvoicePaymentsOffered(organizationId),
+			// The Call and Text buttons in the header. Read under the member's own access, so someone who may not
+			// open the client's contact details simply gets no buttons rather than a refusal.
+			clientId
+				? supabase
+						.from('client_contact_methods')
+						.select('value')
+						.eq('organization_id', organizationId)
+						.eq('client_id', clientId)
+						.eq('kind', 'phone')
+						.order('is_primary', { ascending: false })
+						.order('created_at')
+						.limit(1)
+						.maybeSingle()
+				: Promise.resolve({ data: null, error: null }),
+			// The money card's place in the job: billed before, this bill's share, deposits applied and the profit
+			// on its job lines. Definer; it applies the invoice, job price and job cost rights for itself and
+			// answers null (or leaves a figure null) for a reader without them.
+			supabase.rpc('invoice_money_context', {
+				target_organization_id: organizationId,
+				target_invoice_id: invoiceId
+			})
+		]);
+	if (balanceResult.error || partialResult.error || contextResult.error) return databaseError();
 	const balances = (balanceResult.data ?? {}) as Record<string, unknown>;
 	const clientBalance = clientId ? (balances[clientId] ?? null) : null;
 
@@ -91,6 +99,7 @@ export const GET: RequestHandler = async (event) => {
 			...document,
 			client: client ? { ...client, phone: phoneResult.data?.value ?? null } : null,
 			client_balance: clientBalance,
+			money_context: contextResult.data ?? null,
 			online_payments: {
 				offered: onlineOffered,
 				partial_allowed: partialResult.data?.online_partial_payments_allowed ?? false
