@@ -50,3 +50,14 @@ three-way "When" switch; rail = white totals card with job-green band). Section 
 deleted; board renamed "… · Approved A". Look in `layout.md` → Create pages. Jafar also approved the live
 Products empty-state padding fix (flush New job block), done in `ProductsAndServicesBlock.svelte`.
 Next: New quote page, same way (one page per session), then New invoice; build after the drawings.
+
+## Batch 34 — whole New quote page (drawn 2026-10-21, waiting for Jafar's pick)
+
+Board `OzXHh` "Concept · Batch 34 · New quote page · A vs B" (light `B5DLv` A, `z6BYiM` B; dark `q7Cn1w`,
+`raDUx`). ("Batch 33" was taken by another session's Number cards board `fzPaM`.) Both: approved B header in
+quote pink, every live field kept (Introduction, Products and services with Add text/heading and Client view,
+Client message, Contract disclaimer, 5000 limit), rail = Batch 24 Overview + one Discount and tax card, Notes,
+Attachments. A refined cards: optional parts as slim cards marked Optional where they will appear; Client view
+row above the subtotal. B one quote sheet: the four parts numbered down a quote-pink line in reading order,
+hollow numbers for optional parts, "Client sees" tags, Client view chip in the sheet head. Disclaimer starts
+empty (no settings default today). Next: Jafar picks; delete the unchosen option; then New invoice.
