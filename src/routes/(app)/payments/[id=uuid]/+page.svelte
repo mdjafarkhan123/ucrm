@@ -575,6 +575,7 @@
 				}}
 				currencyCode={saved.payment.currency_code}
 				locale={saved.locale}
+				clientName={saved.client.display_name ?? ''}
 				onClose={() => (fixOpen = false)}
 				onSave={saveFix}
 				onSaved={(result) => onFixed(result)}

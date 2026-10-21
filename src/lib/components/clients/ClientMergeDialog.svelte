@@ -14,9 +14,29 @@
 		mergeClients,
 		type ClientMergePreview
 	} from '$lib/clients/api';
-	import swapIcon from '@tabler/icons/outline/arrows-up-down.svg?raw';
+	import IconTile from '$lib/components/ui/IconTile.svelte';
+	import Banner from '$lib/components/ui/Banner.svelte';
+	import swapIcon from '@tabler/icons/outline/arrows-left-right.svg?raw';
 	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import errorIcon from '@tabler/icons/outline/alert-circle.svg?raw';
 	import blockedIcon from '@tabler/icons/outline/ban.svg?raw';
+	import mergeIcon from '@tabler/icons/outline/git-merge.svg?raw';
+	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import keepIcon from '@tabler/icons/outline/user-check.svg?raw';
+	import arrowIcon from '@tabler/icons/outline/arrow-right.svg?raw';
+	import propertyIcon from '@tabler/icons/outline/home.svg?raw';
+	import requestIcon from '@tabler/icons/outline/inbox.svg?raw';
+	import quoteIcon from '@tabler/icons/outline/file-text.svg?raw';
+	import jobIcon from '@tabler/icons/outline/hammer.svg?raw';
+	import invoiceIcon from '@tabler/icons/outline/receipt.svg?raw';
+	import paymentIcon from '@tabler/icons/outline/credit-card.svg?raw';
+	import messageIcon from '@tabler/icons/outline/message-circle.svg?raw';
+	import noteIcon from '@tabler/icons/outline/note.svg?raw';
+	import fileIcon from '@tabler/icons/outline/file.svg?raw';
+	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
+	import emailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import contactsIcon from '@tabler/icons/outline/users.svg?raw';
+	import tagIcon from '@tabler/icons/outline/tag.svg?raw';
 
 	// Jobber's "Merge client": pick two clients, say which one stays, read what will move, confirm. The client
 	// kept gets everything the other one had, and the other one is deleted. It cannot be undone, so the
@@ -65,27 +85,36 @@
 	}));
 	const preview = $derived(ready ? previewQuery.data : undefined);
 
-	const MOVE_LABELS: [keyof ClientMergePreview['moves'], string, string][] = [
-		['properties', 'property', 'properties'],
-		['requests', 'request', 'requests'],
-		['quotes', 'quote', 'quotes'],
-		['jobs', 'job', 'jobs'],
-		['invoices', 'invoice', 'invoices'],
-		['payments', 'payment', 'payments'],
-		['messages', 'message', 'messages'],
-		['notes', 'note', 'notes'],
-		['files', 'file', 'files'],
-		['phones', 'phone number', 'phone numbers'],
-		['emails', 'email address', 'email addresses'],
-		['contacts', 'contact person', 'contact people'],
-		['tags', 'tag', 'tags']
+	// Each kind of thing that moves, shown as a tile in the colour of its record (`modals.md` → Merge clients).
+	const MOVE_KINDS: {
+		key: keyof ClientMergePreview['moves'];
+		one: string;
+		many: string;
+		icon: string;
+		tone: string;
+	}[] = [
+		{ key: 'properties', one: 'property', many: 'properties', icon: propertyIcon, tone: 'client' },
+		{ key: 'requests', one: 'request', many: 'requests', icon: requestIcon, tone: 'request' },
+		{ key: 'quotes', one: 'quote', many: 'quotes', icon: quoteIcon, tone: 'quote' },
+		{ key: 'jobs', one: 'job', many: 'jobs', icon: jobIcon, tone: 'job' },
+		{ key: 'invoices', one: 'invoice', many: 'invoices', icon: invoiceIcon, tone: 'invoice' },
+		{ key: 'payments', one: 'payment', many: 'payments', icon: paymentIcon, tone: 'invoice' },
+		{ key: 'messages', one: 'message', many: 'messages', icon: messageIcon, tone: 'conversation' },
+		{ key: 'notes', one: 'note', many: 'notes', icon: noteIcon, tone: 'inactive' },
+		{ key: 'files', one: 'file', many: 'files', icon: fileIcon, tone: 'informative' },
+		{ key: 'phones', one: 'phone number', many: 'phone numbers', icon: phoneIcon, tone: 'time' },
+		{ key: 'emails', one: 'email address', many: 'email addresses', icon: emailIcon, tone: 'conversation' },
+		{ key: 'contacts', one: 'contact person', many: 'contact people', icon: contactsIcon, tone: 'client' },
+		{ key: 'tags', one: 'tag', many: 'tags', icon: tagIcon, tone: 'inactive' }
 	];
 
 	const moves = $derived(
 		preview
-			? MOVE_LABELS.filter(([key]) => preview.moves[key] > 0).map(
-					([key, one, many]) => `${preview.moves[key]} ${preview.moves[key] === 1 ? one : many}`
-				)
+			? MOVE_KINDS.filter(({ key }) => preview.moves[key] > 0).map((kind) => ({
+					...kind,
+					count: preview.moves[kind.key],
+					label: preview.moves[kind.key] === 1 ? kind.one : kind.many
+				}))
 			: []
 	);
 	const blocked = $derived((preview?.blockers.length ?? 0) > 0);
@@ -116,129 +145,210 @@
 
 <!-- The inline SVG strings are trusted build-time Tabler icon imports. -->
 <!-- eslint-disable svelte/no-at-html-tags -->
-<Dialog {open} title="Merge clients" {onClose}>
-	<p class="client-merge__intro">
-		Everything the duplicate has moves to the client you keep — work, invoices, payments, messages,
-		notes and contact details. Then the duplicate is deleted.
-	</p>
+<Dialog {open} title="Merge clients" size="large" icon={mergeIcon} iconTone="client" {onClose}>
+	<div class="client-merge">
+		<p class="client-merge__intro">
+			Everything the duplicate has moves to the client you keep — work, invoices, payments, messages,
+			notes and contact details. Then the duplicate is deleted.
+		</p>
 
-	<div class="client-merge__slots">
-		{#key swapCount}
-			<ClientPicker
-				id="client-merge-keep"
-				label="Client to keep"
-				value={keep?.id ?? ''}
-				initialLabel={keep?.name ?? ''}
-				onSelect={(client) => (keep = client ? { id: client.id, name: client.display_name } : null)}
-			/>
-			<div class="client-merge__swap">
-				<Button variant="tertiary" size="small" onclick={swap}>
-					<span class="client-merge__swap-icon" aria-hidden="true">{@html swapIcon}</span>
-					Swap
-				</Button>
-			</div>
-			<ClientPicker
-				id="client-merge-in"
-				label="Duplicate to merge in and delete"
-				value={mergeIn?.id ?? ''}
-				initialLabel={mergeIn?.name ?? ''}
-				invalid={sameClient}
-				errorMessage={sameClient ? 'Choose a different client.' : ''}
-				onSelect={(client) =>
-					(mergeIn = client ? { id: client.id, name: client.display_name } : null)}
-			/>
-		{/key}
-	</div>
+		<div class="client-merge__slots">
+			{#key swapCount}
+				<section class="client-merge__slot client-merge__slot--duplicate">
+					<header class="client-merge__band">
+						<IconTile icon={trashIcon} tone="critical" size={24} white />
+						Duplicate to merge in and delete
+					</header>
+					<div class="client-merge__pick">
+						<ClientPicker
+							id="client-merge-in"
+							label="Duplicate to merge in and delete"
+							hideLabel
+							avatar
+							value={mergeIn?.id ?? ''}
+							initialLabel={mergeIn?.name ?? ''}
+							invalid={sameClient}
+							errorMessage={sameClient ? 'Choose a different client.' : ''}
+							onSelect={(client) =>
+								(mergeIn = client ? { id: client.id, name: client.display_name } : null)}
+						/>
+					</div>
+				</section>
+				<div class="client-merge__between">
+					<span class="client-merge__arrow" aria-hidden="true">{@html arrowIcon}</span>
+					<Button variant="quiet" size="small" onclick={swap}>
+						{@html swapIcon}
+						Swap
+					</Button>
+				</div>
+				<section class="client-merge__slot client-merge__slot--keep">
+					<header class="client-merge__band">
+						<IconTile icon={keepIcon} tone="client" size={24} white />
+						Client to keep
+					</header>
+					<div class="client-merge__pick">
+						<ClientPicker
+							id="client-merge-keep"
+							label="Client to keep"
+							hideLabel
+							avatar
+							value={keep?.id ?? ''}
+							initialLabel={keep?.name ?? ''}
+							onSelect={(client) =>
+								(keep = client ? { id: client.id, name: client.display_name } : null)}
+						/>
+					</div>
+				</section>
+			{/key}
+		</div>
 
-	{#if ready && keep && mergeIn}
-		<section class="client-merge__review" aria-live="polite">
-			{#if previewQuery.isPending}
-				<p class="client-merge__muted">Checking what {mergeIn.name} has…</p>
-			{:else if previewQuery.isError}
-				<p class="client-merge__banner client-merge__banner--error" role="alert">
-					{previewQuery.error.message}
-				</p>
-			{:else if preview}
-				{#if blocked}
+		{#if ready && keep && mergeIn}
+			<section class="client-merge__review" aria-live="polite">
+				{#if previewQuery.isPending}
+					<p class="client-merge__muted">Checking what {mergeIn.name} has…</p>
+					<div class="client-merge__moves" aria-hidden="true">
+						{#each { length: 5 } as _, index (index)}
+							<div class="client-merge__move client-merge__move--bone">
+								<span class="client-merge__bone client-merge__bone--tile"></span>
+								<span class="client-merge__bone-lines">
+									<span class="client-merge__bone client-merge__bone--short"></span>
+									<span class="client-merge__bone client-merge__bone--long"></span>
+								</span>
+							</div>
+						{/each}
+					</div>
+				{:else if previewQuery.isError}
+					<Banner type="error" icon={errorIcon}>{previewQuery.error.message}</Banner>
+				{:else if preview}
 					{#each preview.blockers as blocker (blocker)}
-						<p class="client-merge__banner client-merge__banner--error" role="alert">
-							<span class="client-merge__banner-icon" aria-hidden="true">{@html blockedIcon}</span>
-							{blocker}
+						<Banner type="error" icon={blockedIcon}>{blocker}</Banner>
+					{/each}
+
+					<h3 class="client-merge__heading">Moves to {keep.name}</h3>
+					{#if moves.length > 0}
+						<ul class="client-merge__moves">
+							{#each moves as move (move.key)}
+								<li class="client-merge__move">
+									<IconTile icon={move.icon} tone={move.tone} size={32} />
+									<span class="client-merge__move-copy">
+										<strong>{move.count}</strong>
+										{move.label}
+									</span>
+								</li>
+							{/each}
+						</ul>
+					{:else}
+						<p class="client-merge__muted">
+							{mergeIn.name} has no work, messages or contact details to move.
 						</p>
+					{/if}
+
+					<ul class="client-merge__rules">
+						<li>
+							<span class="client-merge__rule-icon client-merge__rule-icon--client" aria-hidden="true"
+								>{@html keepIcon}</span
+							>
+							Where both have a value, {keep.name}'s stays. Anything only {mergeIn.name} has is added.
+						</li>
+						<li>
+							<span class="client-merge__rule-icon client-merge__rule-icon--invoice" aria-hidden="true"
+								>{@html invoiceIcon}</span
+							>
+							Invoices and payments keep their amounts. Only the client they belong to changes.
+						</li>
+					</ul>
+
+					{#each preview.warnings as warning (warning)}
+						<Banner type="warning" icon={alertIcon}>{warning}</Banner>
 					{/each}
 				{/if}
+			</section>
+		{/if}
+	</div>
 
-				<h3 class="client-merge__heading">Moves to {keep.name}</h3>
-				{#if moves.length > 0}
-					<ul class="client-merge__moves">
-						{#each moves as move (move)}
-							<li>{move}</li>
-						{/each}
-					</ul>
-				{:else}
-					<p class="client-merge__muted">
-						{mergeIn.name} has no work, messages or contact details to move.
-					</p>
-				{/if}
-
-				<ul class="client-merge__rules">
-					<li>
-						Where both have a value, {keep.name}'s stays. Anything only {mergeIn.name} has is added.
-					</li>
-					<li>Invoices and payments keep their amounts. Only the client they belong to changes.</li>
-				</ul>
-
-				{#each preview.warnings as warning (warning)}
-					<p class="client-merge__banner client-merge__banner--warning" role="status">
-						<span class="client-merge__banner-icon" aria-hidden="true">{@html alertIcon}</span>
-						{warning}
-					</p>
-				{/each}
-
-				<p class="client-merge__final">
-					{mergeIn.name} will be deleted. This can't be undone.
-				</p>
-			{/if}
-		</section>
-	{/if}
-
-	<footer class="client-merge__footer">
-		<Button variant="secondary" onclick={onClose}>Cancel</Button>
-		<Button
-			variant="primary"
-			variation="destructive"
-			disabled={!preview || blocked || previewQuery.isFetching}
-			loading={mergeMutation.isPending}
-			onclick={confirm}
-		>
-			Merge clients
-		</Button>
-	</footer>
+	{#snippet footer()}
+		{#if ready && preview && mergeIn}
+			<p class="client-merge__final">
+				<span aria-hidden="true">{@html trashIcon}</span>
+				{mergeIn.name} will be deleted. This can't be undone.
+			</p>
+		{:else}
+			<span></span>
+		{/if}
+		<div class="client-merge__actions">
+			<Button variant="secondary" onclick={onClose} disabled={mergeMutation.isPending}>Cancel</Button>
+			<Button
+				variant="primary"
+				variation="destructive"
+				disabled={!preview || blocked || previewQuery.isFetching}
+				loading={mergeMutation.isPending}
+				onclick={confirm}
+			>
+				{@html mergeIcon}
+				Merge clients
+			</Button>
+		</div>
+	{/snippet}
 </Dialog>
 
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.client-merge {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-medium);
+
 		&__intro {
-			margin-bottom: var(--space-base);
+			margin: 0;
 			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			font-size: var(--typography--fontSize-base);
+			line-height: 1.45;
 		}
 
 		&__slots {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) 96px minmax(0, 1fr);
+			align-items: center;
+		}
+
+		&__slot {
+			--slot-color: var(--color-client);
+			--slot-surface: var(--color-client--surface);
+			--slot-ink: var(--color-client--onSurface);
+			overflow: hidden;
+			align-self: stretch;
+			border: var(--border-base) solid var(--color-client--surface-edge);
+			border-radius: 12px;
+			background: var(--color-surface);
+
+			&--duplicate {
+				--slot-surface: var(--color-critical--surface);
+				--slot-ink: var(--color-critical--onSurface);
+				border-color: var(--color-critical--surface-edge);
+			}
+		}
+
+		&__band {
+			display: flex;
+			align-items: center;
+			gap: var(--space-slim);
+			padding: 10px 14px;
+			color: var(--slot-ink);
+			background: var(--slot-surface);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 600;
+		}
+
+		&__pick {
+			padding: 14px;
+		}
+
+		&__between {
 			display: flex;
 			flex-direction: column;
+			align-items: center;
 			gap: var(--space-small);
-		}
-
-		&__swap {
-			display: flex;
-			justify-content: center;
-		}
-
-		&__swap-icon {
-			display: inline-flex;
 
 			:global(svg) {
 				width: 16px;
@@ -246,95 +356,163 @@
 			}
 		}
 
+		&__arrow {
+			display: grid;
+			width: 40px;
+			height: 40px;
+			place-items: center;
+			border: var(--border-base) solid var(--color-client--surface-edge);
+			border-radius: var(--radius-circle);
+			color: var(--color-client);
+			background: var(--color-client--surface);
+
+			:global(svg) {
+				width: 20px;
+				height: 20px;
+			}
+		}
+
 		&__review {
 			display: flex;
 			flex-direction: column;
-			gap: var(--space-small);
-			margin-top: var(--space-large);
-			padding-top: var(--space-base);
+			gap: 14px;
+			padding-top: var(--space-medium);
 			border-top: var(--border-base) solid var(--color-border);
 		}
 
 		&__heading {
+			margin: 0;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
-			font-weight: 700;
-			letter-spacing: 0.04em;
+			font-weight: 600;
+			letter-spacing: 0.06em;
 			text-transform: uppercase;
 		}
 
 		&__moves {
-			display: flex;
-			flex-wrap: wrap;
-			gap: var(--space-smaller) var(--space-small);
+			display: grid;
+			grid-template-columns: repeat(5, minmax(0, 1fr));
+			gap: var(--space-small) 14px;
 			margin: 0;
 			padding: 0;
 			list-style: none;
+		}
 
-			li {
-				padding: var(--space-smallest) var(--space-small);
-				border-radius: var(--radius-base);
-				color: var(--color-text);
-				background: var(--color-surface--active);
-				font-size: var(--typography--fontSize-small);
+		&__move {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			min-width: 0;
+			padding: var(--space-slim);
+			border: var(--border-base) solid var(--color-border);
+			border-radius: 12px;
+			background: var(--color-surface--background--subtle);
+		}
+
+		&__move-copy {
+			display: grid;
+			min-width: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+
+			strong {
+				color: var(--color-heading);
+				font-size: 18px;
+				font-weight: 700;
+				line-height: 1.2;
 			}
+		}
+
+		&__bone {
+			display: block;
+			border-radius: var(--radius-small);
+			background: var(--color-border);
+
+			&--tile {
+				width: 32px;
+				height: 32px;
+				border-radius: var(--radius-base);
+			}
+
+			&--short {
+				width: 24px;
+				height: 12px;
+			}
+
+			&--long {
+				width: 60px;
+				height: 8px;
+			}
+		}
+
+		&__bone-lines {
+			display: grid;
+			gap: 6px;
 		}
 
 		&__rules {
-			display: flex;
-			flex-direction: column;
-			gap: var(--space-smallest);
-			margin: 0;
-			padding-left: var(--space-base);
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-		}
-
-		&__muted {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-		}
-
-		&__banner {
-			display: flex;
+			display: grid;
 			gap: var(--space-small);
-			align-items: center;
-			padding: var(--space-slim) var(--space-base);
-			border-radius: var(--radius-base);
-			font-size: var(--typography--fontSize-small);
+			margin: 0;
+			padding: 0;
+			list-style: none;
+			color: var(--color-text);
+			font-size: var(--typography--fontSize-label);
 
-			&--warning {
-				color: var(--color-warning--onSurface);
-				background: var(--color-warning--surface);
-			}
-
-			&--error {
-				color: var(--color-critical--onSurface);
-				background: var(--color-critical--surface);
+			li {
+				display: flex;
+				align-items: center;
+				gap: 10px;
 			}
 		}
 
-		&__banner-icon {
+		&__rule-icon {
 			display: inline-flex;
 			flex: 0 0 auto;
 
 			:global(svg) {
-				width: 18px;
-				height: 18px;
+				width: 16px;
+				height: 16px;
+			}
+
+			&--client {
+				color: var(--color-client);
+			}
+
+			&--invoice {
+				color: var(--color-invoice);
 			}
 		}
 
-		&__final {
-			color: var(--color-text);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
+		&__muted {
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-label);
 		}
 
-		&__footer {
+		&__final {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
+			margin: 0;
+			color: var(--color-critical);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 600;
+
+			span {
+				display: inline-flex;
+			}
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+		}
+
+		&__actions {
 			display: flex;
 			gap: var(--space-small);
-			justify-content: flex-end;
-			margin-top: var(--space-large);
 		}
 	}
 </style>

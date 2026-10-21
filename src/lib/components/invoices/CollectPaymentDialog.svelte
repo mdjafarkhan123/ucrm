@@ -9,6 +9,15 @@
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import MoneyInput from '$lib/components/forms/MoneyInput.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
+	import IconTile from '$lib/components/ui/IconTile.svelte';
+	import Banner from '$lib/components/ui/Banner.svelte';
+	import cardIcon from '@tabler/icons/outline/credit-card.svg?raw';
+	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
+	import bankIcon from '@tabler/icons/outline/building-bank.svg?raw';
+	import hashIcon from '@tabler/icons/outline/hash.svg?raw';
+	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	import errorIcon from '@tabler/icons/outline/alert-circle.svg?raw';
 	import { calendarDateFromString, calendarDateToString } from '$lib/components/ui/date-time';
 	import {
 		INVOICE_PAYMENT_METHOD_OPTIONS,
@@ -50,6 +59,7 @@
 		initial,
 		currencyCode,
 		locale,
+		clientName = '',
 		onClose,
 		onSave,
 		onSaved
@@ -69,6 +79,8 @@
 		};
 		currencyCode: string;
 		locale: string;
+		/** Named in the quiet line under the title, with the invoice (or, when fixing, the payment). */
+		clientName?: string;
 		onClose: () => void;
 		onSave: (payload: PaymentPayload) => Promise<RecordInvoicePaymentResult>;
 		/** Handed the recorded payment and whether staff asked for the customer's receipt to go out with it.
@@ -163,8 +175,25 @@
 		return otherInvoices.find((invoice) => invoice.id === id)?.remaining_minor ?? 0;
 	}
 
+	const subtitle = $derived(
+		[
+			fixing
+				? `${money.format((initial?.amountMinor ?? amountMinor) / 100)} payment`
+				: pinned[0]
+					? `Invoice #${pinned[0].number}`
+					: '',
+			clientName
+		]
+			.filter(Boolean)
+			.join(' · ')
+	);
+
 	const appliedMinor = $derived(Object.values(applied).reduce((sum, value) => sum + value, 0));
 	const creditMinor = $derived(Math.max(amountMinor - appliedMinor, 0));
+	// The foot card's bar: blue for what is applied, sand for what stays as credit.
+	const appliedShare = $derived(
+		appliedMinor + creditMinor > 0 ? appliedMinor / (appliedMinor + creditMinor) : 1
+	);
 
 	// A new total is spread again over the ticked bills, pinned ones first, each up to what it owes — so typing
 	// the transfer amount is usually all staff need to do.
@@ -259,50 +288,128 @@
 	}
 </script>
 
-<Dialog {open} title={fixing ? 'Fix payment' : 'Collect payment'} size="default" onClose={close}>
+<!-- The inline SVG strings are trusted build-time Tabler icon imports. -->
+<!-- eslint-disable svelte/no-at-html-tags -->
+<Dialog
+	{open}
+	title={fixing ? 'Fix payment' : 'Collect payment'}
+	{subtitle}
+	size="large"
+	icon={cardIcon}
+	iconTone="invoice"
+	onClose={close}
+>
 	<div class="collect-payment">
-		{#if fixing}
-			<p class="collect-payment__intro">
-				Enter the payment as it really happened. The mistyped one stays in history, marked as
-				corrected.
-			</p>
-		{/if}
-		<MoneyInput
-			{currencyCode}
-			id="collect-payment-amount"
-			label="Amount received"
-			bind:value={() => amountMinor, setAmount}
-			disabled={saving}
-			invalid={Boolean(fieldErrors.amount_minor)}
-			errorMessage={fieldErrors.amount_minor ?? ''}
-		/>
+		<div class="collect-payment__form">
+			{#if fixing}
+				<p class="collect-payment__intro">
+					Enter the payment as it really happened. The mistyped one stays in history, marked as
+					corrected.
+				</p>
+			{/if}
+			<div class="collect-payment__amount">
+				<MoneyInput
+					{currencyCode}
+					id="collect-payment-amount"
+					label="Amount received"
+					bind:value={() => amountMinor, setAmount}
+					disabled={saving}
+					invalid={Boolean(fieldErrors.amount_minor)}
+					errorMessage={fieldErrors.amount_minor ?? ''}
+				/>
+			</div>
 
-		<section class="collect-payment__apply" aria-labelledby="collect-payment-apply-title">
-			<h3 id="collect-payment-apply-title" class="collect-payment__apply-title">
-				Apply to invoices
-			</h3>
+			<div class="collect-payment__pair">
+				<div class="collect-payment__method">
+					<Select
+						id="collect-payment-method"
+						label="Payment method"
+						icon={bankIcon}
+						bind:value={method}
+						options={INVOICE_PAYMENT_METHOD_OPTIONS}
+						disabled={saving}
+					/>
+				</div>
+				<div class="collect-payment__date">
+					<CalendarPicker
+						id="collect-payment-date"
+						label="Payment date"
+						value={calendarDateFromString(paymentDate)}
+						onchange={(value) => (paymentDate = calendarDateToString(value))}
+					/>
+				</div>
+			</div>
+
+			<Input
+				id="collect-payment-reference"
+				label="Reference # (optional)"
+				bind:value={reference}
+				disabled={saving}
+				invalid={Boolean(fieldErrors.reference)}
+				errorMessage={fieldErrors.reference ?? ''}
+			>
+				{@html hashIcon}
+			</Input>
+
+			<Textarea
+				id="collect-payment-note"
+				label="Details (optional)"
+				placeholder="Anything to remember about this payment"
+				rows={4}
+				bind:value={note}
+				disabled={saving}
+			/>
+
+			{#if fixing}
+				<Textarea
+					id="collect-payment-reason"
+					label="Why is it being fixed? (optional)"
+					rows={2}
+					maxlength={2000}
+					bind:value={reason}
+					disabled={saving}
+				/>
+			{/if}
+
+			{#if error}<Banner type="error" icon={errorIcon}>{error}</Banner>{/if}
+		</div>
+
+		<section class="collect-payment__panel" aria-labelledby="collect-payment-apply-title">
+			<header class="collect-payment__panel-head">
+				<IconTile icon={receiptIcon} tone="invoice" size={32} white />
+				<h3 id="collect-payment-apply-title">Apply to invoices</h3>
+			</header>
 			<ul class="collect-payment__rows">
 				{#snippet row(id: string, number: number, detail: string, owed: number)}
-					<li class="collect-payment__row">
-						<Checkbox
-							id={`collect-payment-pick-${id}`}
-							label={`Invoice #${number}`}
-							description={`${detail} · owes ${money.format(owed / 100)}`}
-							checked={id in applied}
-							onchange={(checked) => toggle(id, checked)}
-							disabled={saving}
-						/>
+					{@const rowError = fieldErrors[`applied_${id}`]}
+					<li
+						class="collect-payment__row"
+						class:collect-payment__row--ticked={id in applied}
+						class:collect-payment__row--invalid={Boolean(rowError)}
+					>
+						<div class="collect-payment__row-pick">
+							<Checkbox
+								id={`collect-payment-pick-${id}`}
+								label={`Invoice #${number}`}
+								description={`${detail} · owes ${money.format(owed / 100)}`}
+								checked={id in applied}
+								onchange={(checked) => toggle(id, checked)}
+								disabled={saving}
+							/>
+							{#if rowError}<p class="collect-payment__row-error" role="alert">
+									<span aria-hidden="true">{@html errorIcon}</span>{rowError}
+								</p>{/if}
+						</div>
 						{#if id in applied}
 							<div class="collect-payment__row-amount">
 								<MoneyInput
 									{currencyCode}
 									id={`collect-payment-amount-${id}`}
-									label="Amount"
+									label={`Amount for invoice #${number}`}
 									size="small"
 									bind:value={() => applied[id] ?? 0, (value) => (applied[id] = value)}
 									disabled={saving}
-									invalid={Boolean(fieldErrors[`applied_${id}`])}
-									errorMessage={fieldErrors[`applied_${id}`] ?? ''}
+									invalid={Boolean(rowError)}
 								/>
 							</div>
 						{/if}
@@ -313,8 +420,12 @@
 					{@render row(entry.id, entry.number, entry.detail, entry.owedMinor)}
 				{/each}
 				{#if openInvoicesQuery.isPending}
-					<li class="collect-payment__row" aria-hidden="true">
-						<span class="skeleton skeleton--text skeleton--text-short"></span>
+					<li class="collect-payment__row collect-payment__row--bone" aria-hidden="true">
+						<span class="collect-payment__bone collect-payment__bone--box"></span>
+						<span class="collect-payment__bone-lines">
+							<span class="collect-payment__bone collect-payment__bone--title"></span>
+							<span class="collect-payment__bone collect-payment__bone--line"></span>
+						</span>
 					</li>
 				{:else}
 					{#each otherInvoices as invoice (invoice.id)}
@@ -327,60 +438,34 @@
 					{/each}
 				{/if}
 			</ul>
-			<p class="collect-payment__summary">
-				Applied <strong>{money.format(appliedMinor / 100)}</strong>
+
+			<div class="collect-payment__summary">
+				<div class="collect-payment__bar" aria-hidden="true">
+					{#if appliedShare > 0}<span
+							class="collect-payment__bar-applied"
+							style:flex-grow={appliedShare}
+						></span>{/if}
+					{#if creditMinor > 0}<span
+							class="collect-payment__bar-credit"
+							style:flex-grow={1 - appliedShare}
+						></span>{/if}
+				</div>
+				<p class="collect-payment__line">
+					<span class="collect-payment__dot"></span>Applied
+					<strong>{money.format(appliedMinor / 100)}</strong>
+				</p>
 				{#if creditMinor > 0}
-					· <strong>{money.format(creditMinor / 100)}</strong> kept as client credit
+					<p class="collect-payment__line collect-payment__line--credit">
+						<span class="collect-payment__dot"></span>Kept as client credit
+						<strong>{money.format(creditMinor / 100)}</strong>
+					</p>
 				{/if}
-			</p>
+			</div>
 		</section>
+	</div>
 
-		<Select
-			id="collect-payment-method"
-			label="Payment method"
-			bind:value={method}
-			options={INVOICE_PAYMENT_METHOD_OPTIONS}
-			disabled={saving}
-		/>
-
-		<CalendarPicker
-			id="collect-payment-date"
-			label="Payment date"
-			value={calendarDateFromString(paymentDate)}
-			onchange={(value) => (paymentDate = calendarDateToString(value))}
-		/>
-
-		<Input
-			id="collect-payment-reference"
-			label="Reference # (optional)"
-			bind:value={reference}
-			disabled={saving}
-			invalid={Boolean(fieldErrors.reference)}
-			errorMessage={fieldErrors.reference ?? ''}
-		/>
-
-		<Textarea
-			id="collect-payment-note"
-			label="Details (optional)"
-			rows={3}
-			bind:value={note}
-			disabled={saving}
-		/>
-
-		{#if fixing}
-			<Textarea
-				id="collect-payment-reason"
-				label="Why is it being fixed? (optional)"
-				rows={2}
-				maxlength={2000}
-				bind:value={reason}
-				disabled={saving}
-			/>
-		{/if}
-
-		{#if error}<p class="collect-payment__error" role="alert">{error}</p>{/if}
-
-		<footer class="collect-payment__footer">
+	{#snippet footer()}
+		<div class="collect-payment__actions">
 			<Button variant="secondary" onclick={close} disabled={saving}>Cancel</Button>
 			{#if !fixing}
 				<Button
@@ -389,6 +474,7 @@
 					disabled={savingMode === 'save'}
 					loading={savingMode === 'receipt'}
 				>
+					{@html mailIcon}
 					Save and email receipt
 				</Button>
 			{/if}
@@ -398,84 +484,253 @@
 				disabled={savingMode === 'receipt'}
 				loading={savingMode === 'save'}
 			>
+				{@html checkIcon}
 				{fixing ? 'Save corrected payment' : 'Collect payment'}
 			</Button>
-		</footer>
-	</div>
+		</div>
+	{/snippet}
 </Dialog>
 
+<!-- eslint-enable svelte/no-at-html-tags -->
+
 <style lang="scss">
-	:global(.collect-payment) {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-base);
-	}
+	.collect-payment {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 400px;
+		// The two sides run to the pop-up's edges, so the body's own 20 padding is taken back.
+		margin: calc(var(--space-medium) * -1);
 
-	:global(.collect-payment__intro) {
-		margin: 0;
-		color: var(--color-text--secondary);
-	}
+		&__form {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-base);
+			min-width: 0;
+			padding: var(--space-medium);
+		}
 
-	:global(.collect-payment__apply) {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-small);
-	}
+		&__intro {
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-base);
+		}
 
-	:global(.collect-payment__apply-title) {
-		margin: 0;
-		color: var(--color-heading);
-		font-size: var(--typography--fontSize-base);
-		font-weight: 600;
-	}
+		// app.scss pushes every placeholder 24 down; the drawing has the Details hint at the top of its box.
+		:global(textarea::placeholder) {
+			padding-top: 0;
+		}
 
-	:global(.collect-payment__rows) {
-		display: flex;
-		flex-direction: column;
-		margin: 0;
-		padding: 0;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-base);
-		list-style: none;
-	}
+		// Amount received: the 56 high money box, its sign in a 48 block, the amount large at the right.
+		&__amount {
+			:global(.input__control) {
+				min-height: 56px;
+			}
 
-	:global(.collect-payment__row) {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-small);
-		padding: var(--space-small) var(--space-base);
-	}
+			:global(input) {
+				font-size: var(--typography--fontSize-largest);
+				font-weight: 700;
+				letter-spacing: -0.4px;
+			}
 
-	:global(.collect-payment__row + .collect-payment__row) {
-		border-top: var(--border-base) solid var(--color-border);
-	}
+			:global(.money-input__currency) {
+				min-width: 48px;
+				font-size: 18px;
+			}
+		}
 
-	:global(.collect-payment__row-amount) {
-		width: 9rem;
-	}
+		&__pair {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: var(--space-base);
+		}
 
-	:global(.collect-payment__summary) {
-		margin: 0;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-	}
+		&__method {
+			:global(.select__icon) {
+				color: var(--color-invoice);
+			}
 
-	:global(.collect-payment__summary strong) {
-		color: var(--color-heading);
-	}
+			// The chosen method sits next to its icon, not centred between icon and chevron.
+			:global(.select__value) {
+				flex: 1 1 auto;
+			}
+		}
 
-	:global(.collect-payment__error) {
-		color: var(--color-critical);
-		font-size: var(--typography--fontSize-small);
-	}
+		&__date :global(.calendar-picker__trigger) {
+			color: var(--color-time);
+		}
 
-	:global(.collect-payment__footer) {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: flex-end;
-		gap: var(--space-small);
-		margin-top: var(--space-small);
+		&__panel {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-slim);
+			padding: var(--space-medium);
+			border-left: var(--border-base) solid var(--color-invoice--surface-edge);
+			background: var(--color-invoice--surface);
+		}
+
+		&__panel-head {
+			display: flex;
+			align-items: center;
+			gap: var(--space-slim);
+
+			h3 {
+				margin: 0;
+				color: var(--color-heading);
+				font-size: 16px;
+				font-weight: 600;
+			}
+		}
+
+		&__rows {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-slim);
+			margin: 0;
+			padding: 0;
+			list-style: none;
+		}
+
+		&__row {
+			display: flex;
+			align-items: center;
+			gap: var(--space-slim);
+			padding: var(--space-slim) var(--space-slim) var(--space-slim) 14px;
+			border: var(--border-base) solid var(--color-invoice--surface-edge);
+			border-radius: 12px;
+			background: var(--color-surface);
+
+			&--ticked {
+				border: 1.5px solid var(--color-invoice);
+			}
+
+			&--invalid {
+				border: 1.5px solid var(--color-critical);
+			}
+		}
+
+		&__row-pick {
+			flex: 1 1 auto;
+			min-width: 0;
+		}
+
+		&__row-error {
+			display: flex;
+			gap: 6px;
+			align-items: flex-start;
+			margin: var(--space-smaller) 0 0 28px;
+			color: var(--color-critical);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+
+			span {
+				display: inline-flex;
+				padding-top: 1px;
+			}
+
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
+		}
+
+		&__row-amount {
+			flex: 0 0 120px;
+
+			:global(.input__label) {
+				position: absolute;
+				width: 1px;
+				height: 1px;
+				overflow: hidden;
+				clip-path: inset(50%);
+				white-space: nowrap;
+			}
+		}
+
+		&__bone-lines {
+			display: grid;
+			gap: 6px;
+		}
+
+		&__bone {
+			display: block;
+			border-radius: var(--radius-small);
+			background: var(--color-border);
+
+			&--box {
+				width: 18px;
+				height: 18px;
+			}
+
+			&--title {
+				width: 96px;
+				height: 12px;
+			}
+
+			&--line {
+				width: 150px;
+				height: 8px;
+			}
+		}
+
+		&__summary {
+			display: grid;
+			gap: var(--space-slim);
+			padding: 14px;
+			border: var(--border-base) solid var(--color-invoice--surface-edge);
+			border-radius: 12px;
+			background: var(--color-surface);
+		}
+
+		&__bar {
+			display: flex;
+			gap: 3px;
+			height: 8px;
+
+			span {
+				border-radius: var(--radius-small);
+			}
+		}
+
+		&__bar-applied {
+			background: var(--color-invoice);
+		}
+
+		&__bar-credit {
+			background: var(--color-client);
+		}
+
+		&__line {
+			--line-dot: var(--color-invoice);
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
+			margin: 0;
+			color: var(--color-text);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 500;
+
+			strong {
+				margin-left: auto;
+				color: var(--color-heading);
+				font-size: var(--typography--fontSize-base);
+				font-weight: 700;
+			}
+
+			&--credit {
+				--line-dot: var(--color-client);
+			}
+		}
+
+		&__dot {
+			width: 8px;
+			height: 8px;
+			border-radius: var(--radius-circle);
+			background: var(--line-dot);
+		}
+
+		&__actions {
+			display: flex;
+			gap: var(--space-small);
+			margin-left: auto;
+		}
 	}
 </style>

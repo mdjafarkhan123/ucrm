@@ -1481,6 +1481,7 @@
 				]}
 				currencyCode={saved.invoice.currency_code}
 				locale={saved.locale}
+				clientName={saved.client?.display_name ?? ''}
 				onClose={() => (collectPaymentOpen = false)}
 				onSave={saveInvoicePayment}
 				onSaved={onPaymentSaved}
