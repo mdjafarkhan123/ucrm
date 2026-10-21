@@ -433,7 +433,6 @@
 			options={typeOptions}
 			ariaLabel="What are you booking?"
 			size="small"
-			tone="plain"
 			fullWidth
 			onchange={(value) => (createType = value as CreateType)}
 		/>

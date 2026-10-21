@@ -71,7 +71,7 @@
 		padding: var(--space-slim) var(--space-slim) 10px;
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
-		background: var(--color-surface--background--subtle);
+		background: var(--color-surface--background);
 		cursor: text;
 		transition:
 			background var(--timing-quick),
@@ -79,7 +79,6 @@
 
 		&:hover {
 			border-color: var(--color-border--interactive--hover);
-			background: var(--color-surface--hover);
 		}
 
 		&:focus-within {

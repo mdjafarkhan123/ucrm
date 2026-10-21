@@ -12,6 +12,7 @@
 		fullWidth = false,
 		iconOnly = false,
 		pressed,
+		white = false,
 		count,
 		label,
 		href,
@@ -22,7 +23,7 @@
 		...rest
 	}: {
 		children: Snippet;
-		/** `primary` is the green main button (red when `destructive`). `secondary` and `tertiary` are the white
+		/** `primary` is the green main button (red when `destructive`). `secondary` and `tertiary` are the grey
 		 *  bordered button (red text when `destructive`). `quiet` is for link-like actions such as Clear filters. */
 		variant?: 'primary' | 'secondary' | 'tertiary' | 'quiet';
 		variation?: 'work' | 'learning' | 'subtle' | 'destructive';
@@ -37,6 +38,9 @@
 		 *  for the white bordered kinds. Sets `aria-pressed`, except on a menu or popover trigger, whose own
 		 *  `aria-expanded` already tells a screen reader it is open. */
 		pressed?: boolean;
+		/** The grey kinds turn white: on a coloured top (record header, create-form header), where grey would
+		 *  muddy the tint, and in a joined group (‹ Today ›), which is one white box. */
+		white?: boolean;
 		/** A number bubble after the label, e.g. how many filters are set. Hidden when null. */
 		count?: number | null;
 		/** The accessible name and hover title. Required for an icon-only button, which has no text. */
@@ -57,7 +61,7 @@
 	} = $props();
 
 	const classes = $derived(
-		`button button--${variant} button--${variation} button--${size} ${iconOnly ? 'button--icon-only' : ''} ${pressed ? 'button--pressed' : ''} ${className}`
+		`button button--${variant} button--${variation} button--${size} ${iconOnly ? 'button--icon-only' : ''} ${pressed ? 'button--pressed' : ''} ${white ? 'button--white' : ''} ${className}`
 	);
 	const ariaPressed = $derived(
 		pressed === undefined || 'aria-expanded' in rest ? undefined : pressed
@@ -198,21 +202,27 @@
 			}
 		}
 
-		// White bordered: secondary, and danger when destructive.
+		// Grey bordered: secondary, and danger when destructive. Stone grey so it never blends into a white card
+		// or the page. White instead with `white`, or inside a `.tinted-surface` (app.scss).
+		&--white {
+			--button--grey-fill: var(--color-surface);
+			--button--grey-fill--hover: var(--color-surface--hover);
+			--button--grey-fill--active: var(--color-surface--active);
+		}
 		&--secondary,
 		&--tertiary {
 			color: var(--color-heading);
 			border-color: var(--color-border--interactive);
-			background: var(--color-surface);
+			background: var(--button--grey-fill, var(--color-interactive--background));
 			box-shadow: var(--shadow-button);
 
 			&:hover {
 				border-color: var(--color-border--interactive--hover);
-				background: var(--color-surface--hover);
+				background: var(--button--grey-fill--hover, var(--color-surface--active));
 			}
 			&:active {
 				border-color: var(--color-border--interactive--hover);
-				background: var(--color-surface--active);
+				background: var(--button--grey-fill--active, var(--color-interactive--background));
 				box-shadow: none;
 			}
 		}
@@ -230,16 +240,18 @@
 			}
 		}
 
-		// Switched on: brand-green border, label and icon, while its panel shows or its filter is set.
+		// Switched on: brand-green border, label and icon on white, while its panel shows or its filter is set.
 		&--pressed.button--secondary,
 		&--pressed.button--tertiary {
 			color: var(--color-interactive);
 			border-color: var(--color-interactive);
+			background: var(--color-surface);
 
 			&:hover,
 			&:active {
 				color: var(--color-interactive--hover);
 				border-color: var(--color-interactive--hover);
+				background: var(--color-surface);
 			}
 			&:active {
 				box-shadow: inset 0 1px 3px color-mix(in srgb, var(--color-heading) 12%, transparent);

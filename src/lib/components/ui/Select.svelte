@@ -24,6 +24,7 @@
 		invalid = false,
 		errorMessage = '',
 		name,
+		white = false,
 		class: className = '',
 		contentClass = '',
 		prefix,
@@ -44,6 +45,8 @@
 		invalid?: boolean;
 		errorMessage?: string;
 		name?: string;
+		/** A white box, for a field on the page colour. Inside a `.tinted-surface` it is white without it. */
+		white?: boolean;
 		class?: string;
 		/** Extra class for the floating options list, e.g. to out-rank a popover this Select is nested in. */
 		contentClass?: string;
@@ -70,7 +73,7 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <div
-	class={['select', label && 'select--labelled', isInvalid && 'select--invalid', className]}
+	class={['select', label && 'select--labelled', isInvalid && 'select--invalid', white && 'select--white', className]}
 	data-disabled={disabled || undefined}
 >
 	{#if label}
@@ -172,6 +175,10 @@
 			height: 14px;
 		}
 
+		&.select--white {
+			--field--fill: var(--color-surface);
+		}
+
 		:global(.select__trigger) {
 			display: flex;
 			width: 100%;
@@ -184,7 +191,7 @@
 			border-radius: var(--radius-base);
 			outline: none;
 			color: inherit;
-			background: var(--color-surface);
+			background: var(--field--fill, var(--color-surface--background));
 			font: inherit;
 			line-height: var(--typography--lineHeight-base);
 			text-align: left;

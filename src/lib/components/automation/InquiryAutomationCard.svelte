@@ -2,7 +2,8 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
-	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
@@ -22,7 +23,11 @@
 	import pauseIcon from '@tabler/icons/outline/player-pause.svg?raw';
 	import playIcon from '@tabler/icons/outline/player-play.svg?raw';
 	import skipIcon from '@tabler/icons/outline/player-skip-forward.svg?raw';
-	import stopIcon from '@tabler/icons/outline/player-stop.svg?raw';
+	import stopIcon from '@tabler/icons/outline/circle-square.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	import finishedIcon from '@tabler/icons/outline/circle-check.svg?raw';
+	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import mailAlertIcon from '@tabler/icons/outline/mail-exclamation.svg?raw';
 
 	// CRM launch readiness Part 4 Stage 6: a website inquiry's automatic follow-up, shown on the Request it became or
 	// its chat conversation (HighLevel's contact Workflows panel). Staff see whether the reply is waiting, paused and
@@ -88,25 +93,63 @@
 		action_not_available: 'This step cannot run. Skip it or stop the follow-up.'
 	};
 
-	function detailLine(enrollment: InquiryEnrollment): string {
-		if (enrollment.state === 'paused') {
+	// A follow-up still running gets the big panel; finished and stopped ones are one line each under EARLIER.
+	const RUNNING = new Set(['active', 'paused', 'failed']);
+	const running = $derived(enrollments.filter((enrollment) => RUNNING.has(enrollment.state)));
+	const earlier = $derived(enrollments.filter((enrollment) => !RUNNING.has(enrollment.state)));
+
+	// The panel takes the colour of what it needs: planned is blue, on hold is amber, failed is red. A stuck
+	// step stays blue with an amber strip inside, so the strip never blends into its panel.
+	function panelTone(enrollment: InquiryEnrollment) {
+		if (enrollment.state === 'failed') return 'critical';
+		if (enrollment.state === 'paused') return 'warning';
+		return 'informative';
+	}
+
+	// The panel's big line and the words under it.
+	function when(enrollment: InquiryEnrollment): { kicker: string; big: string; under?: string } | null {
+		if (enrollment.state === 'paused')
 			return enrollment.paused_reason === 'customer_reply'
-				? 'The customer replied, so the next message is on hold. Resume to send it anyway.'
-				: 'Paused by your team. Resume to continue.';
-		}
-		if (enrollment.state === 'active' && enrollment.next_due_at)
-			return `Next step ${dateTimeFormat.format(new Date(enrollment.next_due_at))}`;
+				? {
+						kicker: 'On hold',
+						big: 'The customer replied',
+						under: 'The next message is on hold. Resume to send it anyway.'
+					}
+				: { kicker: 'On hold', big: 'Paused by your team', under: 'Resume to continue.' };
+		if (enrollment.state === 'failed')
+			return {
+				kicker: 'Last try',
+				big: 'The last try did not go through',
+				under: (enrollment.held_reason && HELD_REASON[enrollment.held_reason]) || 'It will try again.'
+			};
+		if (enrollment.next_due_at)
+			return { kicker: 'Next step', big: dateTimeFormat.format(new Date(enrollment.next_due_at)) };
+		return null;
+	}
+
+	function sentLine(enrollment: InquiryEnrollment) {
 		const sent = enrollment.customer_messages_sent;
 		return `${sent} message${sent === 1 ? '' : 's'} sent`;
 	}
 
+	function earlierLine(enrollment: InquiryEnrollment) {
+		if (enrollment.state === 'stopped' && enrollment.stop_reason)
+			return STOP_REASON[enrollment.stop_reason] ?? enrollment.stop_reason;
+		return sentLine(enrollment);
+	}
+
+	// One filled circle per message sent, kept to a row's width.
+	const TRAIL_MAX = 6;
+
 	let pendingId = $state<string | null>(null);
+	let pendingAction = $state<EnrollmentControl['action'] | null>(null);
 	let stoppingId = $state<string | null>(null);
 	let stopReason = $state('');
 
 	async function runControl(enrollmentId: string, control: EnrollmentControl, done: string) {
 		if (pendingId) return;
 		pendingId = enrollmentId;
+		pendingAction = control.action;
 		try {
 			await controlInquiryEnrollment(enrollmentId, control);
 			await Promise.all([
@@ -118,45 +161,16 @@
 			toast.error(error instanceof Error ? error.message : 'That change could not be applied.');
 		} finally {
 			pendingId = null;
+			pendingAction = null;
 		}
 	}
 
-	function menuItems(enrollment: InquiryEnrollment) {
-		const disabled = pendingId !== null;
-		const id = enrollment.enrollment_id;
-		const items = [];
-		if (enrollment.state === 'active')
-			items.push({
-				label: 'Pause',
-				icon: pauseIcon,
-				disabled,
-				onSelect: () => void runControl(id, { action: 'pause' }, 'Follow-up paused')
-			});
-		if (enrollment.state === 'paused')
-			items.push({
-				label: 'Resume',
-				icon: playIcon,
-				disabled,
-				onSelect: () => void runControl(id, { action: 'resume' }, 'Follow-up resumed')
-			});
-		items.push({
-			label: 'Skip next step',
-			icon: skipIcon,
-			disabled,
-			onSelect: () => void runControl(id, { action: 'skip' }, 'Next step skipped')
-		});
-		items.push({
-			label: 'Stop',
-			icon: stopIcon,
-			destructive: true,
-			disabled,
-			onSelect: () => {
-				stopReason = '';
-				stoppingId = id;
-			}
-		});
-		return items;
+	function askStop(enrollmentId: string) {
+		stopReason = '';
+		stoppingId = enrollmentId;
 	}
+
+	const stopping = $derived(enrollments.find((enrollment) => enrollment.enrollment_id === stoppingId));
 
 	async function confirmStop() {
 		if (!stoppingId) return;
@@ -170,15 +184,14 @@
 	}
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
 {#if !accessDenied}
 	<div role="presentation" onmouseenter={() => (warm = true)} onfocusin={() => (warm = true)}>
 		<RailCard
-			tone="inactive"
+			tone="conversation"
 			title="Automatic follow-up"
+			description="Messages sent for you"
 			icon={robotIcon}
-			class={enrollments.length > 0 && warm && !query.isPending
-				? 'inquiry-automation__feature'
-				: ''}
 		>
 			{#if !warm || query.isPending}
 				<LoadingSkeleton variant="table" rows={2} label="Loading automatic follow-up" />
@@ -194,39 +207,141 @@
 					description="No automation is following up on this inquiry."
 				/>
 			{:else}
-				<ul class="inquiry-automation__list">
-					{#each enrollments as enrollment (enrollment.enrollment_id)}
-						{@const state = STATE[enrollment.state] ?? {
-							tone: 'inactive',
-							label: enrollment.state
-						}}
-						<li class="inquiry-automation__row">
-							<div class="inquiry-automation__body">
+				<div class="inquiry-automation">
+					{#each running as enrollment (enrollment.enrollment_id)}
+						{@const state = STATE[enrollment.state] ?? { tone: 'inactive', label: enrollment.state }}
+						{@const tone = panelTone(enrollment)}
+						{@const time = when(enrollment)}
+						{@const busy = pendingId === enrollment.enrollment_id}
+						<section
+							class="inquiry-automation__panel tinted-surface"
+							style:--panel-tone={`var(--color-${tone})`}
+							style:--panel-surface={`var(--color-${tone}--surface)`}
+							style:--panel-edge={`var(--color-${tone}--surface-edge)`}
+							style:--panel-on={`var(--color-${tone}--onSurface)`}
+							aria-label={enrollment.recipe_name}
+						>
+							<div class="inquiry-automation__top">
 								<span class="inquiry-automation__name">{enrollment.recipe_name}</span>
-								<StatusBadge status={state.tone}>{state.label}</StatusBadge>
-								<p class="inquiry-automation__meta">{detailLine(enrollment)}</p>
-								{#if enrollment.state === 'stopped' && enrollment.stop_reason}
-									<p class="inquiry-automation__meta">
-										{STOP_REASON[enrollment.stop_reason] ?? enrollment.stop_reason}
-									</p>
-								{/if}
-								{#if enrollment.held_reason && (enrollment.state === 'active' || enrollment.state === 'failed')}
-									<p class="inquiry-automation__held" role="status">
-										{HELD_REASON[enrollment.held_reason] ??
-											'The last try did not go through. It will try again.'}
-									</p>
-								{/if}
+								<StatusBadge status={state.tone} outlined>{state.label}</StatusBadge>
 							</div>
-							{#if canControl && (enrollment.state === 'active' || enrollment.state === 'paused')}
-								<DropdownMenu
-									items={menuItems(enrollment)}
-									triggerLabel="Follow-up actions"
-									disabled={pendingId !== null}
-								/>
+
+							{#if time}
+								<div class="inquiry-automation__when">
+									<span class="inquiry-automation__kicker">{time.kicker}</span>
+									<span
+										class="inquiry-automation__big"
+										class:inquiry-automation__big--reason={Boolean(time.under)}>{time.big}</span
+									>
+									{#if time.under}<span class="inquiry-automation__under">{time.under}</span>{/if}
+								</div>
 							{/if}
-						</li>
+
+							<div class="inquiry-automation__trail">
+								<span class="inquiry-automation__steps" aria-hidden="true">
+									{#each { length: Math.min(enrollment.customer_messages_sent, TRAIL_MAX) }, index (index)}
+										{#if index > 0}<span class="inquiry-automation__link"></span>{/if}
+										<span class="inquiry-automation__sent">{@html checkIcon}</span>
+									{/each}
+									{#if enrollment.state !== 'failed'}
+										{#if enrollment.customer_messages_sent > 0}<span
+												class="inquiry-automation__link"
+											></span>{/if}
+										<span class="inquiry-automation__next"></span>
+									{/if}
+								</span>
+								<span class="inquiry-automation__count">{sentLine(enrollment)}</span>
+							</div>
+
+							{#if enrollment.state === 'active' && enrollment.held_reason}
+								<p class="inquiry-automation__strip" role="status">
+									<span aria-hidden="true"
+										>{@html enrollment.held_reason === 'email_sender_not_ready'
+											? mailAlertIcon
+											: alertIcon}</span
+									>
+									{HELD_REASON[enrollment.held_reason] ??
+										'The last try did not go through. It will try again.'}
+								</p>
+							{/if}
+
+							{#if canControl && (enrollment.state === 'active' || enrollment.state === 'paused')}
+								<div class="inquiry-automation__actions">
+									{#if enrollment.state === 'active'}
+										<Button
+											variant="secondary"
+											size="small"
+											loading={busy && pendingAction === 'pause'}
+											disabled={pendingId !== null && !(busy && pendingAction === 'pause')}
+											onclick={() =>
+												void runControl(enrollment.enrollment_id, { action: 'pause' }, 'Follow-up paused')}
+										>
+											{@html pauseIcon}Pause
+										</Button>
+									{:else}
+										<Button
+											variant="primary"
+											size="small"
+											loading={busy && pendingAction === 'resume'}
+											disabled={pendingId !== null && !(busy && pendingAction === 'resume')}
+											onclick={() =>
+												void runControl(
+													enrollment.enrollment_id,
+													{ action: 'resume' },
+													'Follow-up resumed'
+												)}
+										>
+											{@html playIcon}Resume
+										</Button>
+									{/if}
+									<Button
+										variant="secondary"
+										size="small"
+										label="Skip next step"
+										loading={busy && pendingAction === 'skip'}
+										disabled={pendingId !== null && !(busy && pendingAction === 'skip')}
+										onclick={() =>
+											void runControl(enrollment.enrollment_id, { action: 'skip' }, 'Next step skipped')}
+									>
+										{@html skipIcon}Skip
+									</Button>
+									<Button
+										variant="secondary"
+										variation="destructive"
+										size="small"
+										disabled={pendingId !== null}
+										onclick={() => askStop(enrollment.enrollment_id)}
+									>
+										{@html stopIcon}Stop
+									</Button>
+								</div>
+							{/if}
+						</section>
 					{/each}
-				</ul>
+
+					{#if earlier.length > 0}
+						<div class="inquiry-automation__earlier" class:inquiry-automation__earlier--lined={running.length > 0}>
+							<span class="inquiry-automation__overline">Earlier</span>
+							<ul class="inquiry-automation__list">
+								{#each earlier as enrollment (enrollment.enrollment_id)}
+									{@const state = STATE[enrollment.state] ?? { tone: 'inactive', label: enrollment.state }}
+									<li class="inquiry-automation__row">
+										<IconTile
+											icon={enrollment.state === 'completed' ? finishedIcon : stopIcon}
+											tone={state.tone}
+											size={24}
+										/>
+										<div class="inquiry-automation__row-words">
+											<span class="inquiry-automation__row-name">{enrollment.recipe_name}</span>
+											<span class="inquiry-automation__row-line">{earlierLine(enrollment)}</span>
+										</div>
+										<StatusBadge status={state.tone} size="small">{state.label}</StatusBadge>
+									</li>
+								{/each}
+							</ul>
+						</div>
+					{/if}
+				</div>
 			{/if}
 		</RailCard>
 	</div>
@@ -243,6 +358,19 @@
 		onConfirm={confirmStop}
 		onClose={() => (stoppingId = null)}
 	>
+		{#if stopping}
+			<div class="inquiry-automation__slip">
+				<IconTile icon={robotIcon} tone="conversation" size={32} />
+				<div class="inquiry-automation__row-words">
+					<span class="inquiry-automation__slip-name">{stopping.recipe_name}</span>
+					<span class="inquiry-automation__row-line"
+						>{sentLine(stopping)}{stopping.next_due_at
+							? ` · next ${dateTimeFormat.format(new Date(stopping.next_due_at))}`
+							: ''}</span
+					>
+				</div>
+			</div>
+		{/if}
 		<p>
 			No more automatic messages will go to this customer for this inquiry. Messages already sent
 			are not recalled.
@@ -257,12 +385,187 @@
 	</ConfirmDialog>
 {/if}
 
+<!-- eslint-enable svelte/no-at-html-tags -->
+
 <style lang="scss">
+	// Design skill `cards.md` → Automatic follow-up card; Pencil `jXc9n` (Approved B, "Next message first").
 	.inquiry-automation {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+
+		&__panel {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-slim);
+			padding: 14px;
+			border: var(--border-base) solid var(--panel-edge);
+			border-radius: 12px;
+			background: var(--panel-surface);
+		}
+
+		&__top {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
+		}
+
+		&__name {
+			flex: 1 1 auto;
+			min-width: 0;
+			overflow: hidden;
+			color: var(--panel-on);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 600;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		&__when {
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
+		}
+
+		&__kicker {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+		}
+
+		&__big {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-largest);
+			font-weight: 700;
+			letter-spacing: -0.4px;
+			line-height: var(--typography--lineHeight-tight);
+
+			&--reason {
+				font-size: var(--typography--fontSize-larger);
+			}
+		}
+
+		&__under {
+			color: var(--color-text);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__trail {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+		&__steps {
+			display: inline-flex;
+			align-items: center;
+		}
+
+		&__sent,
+		&__next {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 20px;
+			height: 20px;
+			box-sizing: border-box;
+			border-radius: var(--radius-circle);
+		}
+
+		&__sent {
+			color: var(--color-surface);
+			background: var(--panel-tone);
+
+			:global(svg) {
+				width: 12px;
+				height: 12px;
+				stroke-width: 3;
+			}
+		}
+
+		&__next {
+			border: 2px solid var(--panel-tone);
+			background: var(--color-surface);
+
+			&::after {
+				width: 6px;
+				height: 6px;
+				border-radius: var(--radius-circle);
+				background: var(--panel-tone);
+				content: '';
+			}
+		}
+
+		&__link {
+			width: 14px;
+			height: 2px;
+			background: var(--panel-tone);
+		}
+
+		&__count {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+		}
+
+		&__strip {
+			display: flex;
+			align-items: flex-start;
+			gap: var(--space-small);
+			margin: 0;
+			padding: 7px 10px;
+			border: var(--border-base) solid var(--color-warning--surface-edge);
+			border-radius: var(--radius-base);
+			color: var(--color-warning--onSurface);
+			background: var(--color-warning--surface);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 500;
+
+			span {
+				display: inline-flex;
+				flex: 0 0 auto;
+				padding-top: 1px;
+			}
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
+		}
+
+		&__actions {
+			display: flex;
+			gap: 6px;
+
+			> :global(.button) {
+				flex: 1 1 0;
+				min-width: 0;
+				padding: 0 10px;
+			}
+		}
+
+		&__earlier {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+
+			&--lined {
+				padding-top: var(--space-slim);
+				border-top: var(--border-base) solid var(--color-border);
+			}
+		}
+
+		&__overline {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+			letter-spacing: 0.6px;
+			text-transform: uppercase;
+		}
+
 		&__list {
 			display: flex;
 			flex-direction: column;
-			gap: var(--space-base);
+			gap: 10px;
 			margin: 0;
 			padding: 0;
 			list-style: none;
@@ -270,81 +573,44 @@
 
 		&__row {
 			display: flex;
-			align-items: flex-start;
-			justify-content: space-between;
-			gap: var(--space-small);
-			padding-bottom: var(--space-base);
-			border-bottom: var(--border-base) solid var(--color-border);
-
-			&:last-child {
-				padding-bottom: 0;
-				border-bottom: 0;
-			}
+			align-items: center;
+			gap: 10px;
 		}
 
-		&__body {
+		&__row-words {
 			display: flex;
-			flex-direction: column;
-			align-items: flex-start;
-			gap: var(--space-smaller);
+			flex: 1 1 auto;
 			min-width: 0;
+			flex-direction: column;
+			gap: 1px;
 		}
 
-		&__name {
-			max-width: 100%;
-			overflow: hidden;
+		&__row-name {
 			color: var(--color-heading);
+			font-size: var(--typography--fontSize-label);
 			font-weight: 600;
-			text-overflow: ellipsis;
-			white-space: nowrap;
 		}
 
-		&__meta {
-			margin: 0;
+		&__row-line {
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 		}
 
-		&__held {
-			margin: 0;
-			color: var(--color-warning--onSurface);
-			font-size: var(--typography--fontSize-small);
-		}
-	}
-
-	// App look: a live follow-up is the dark feature card in the rail. Re-pointing the text tokens inside it
-	// keeps every line readable in light and dark without a second set of colours.
-	:global(.record-detail--cards) :global(.inquiry-automation__feature) {
-		--color-heading: var(--color-white);
-		--color-text: var(--color-white);
-		--color-text--secondary: var(--color-base-blue--300);
-		--color-border: color-mix(in srgb, var(--color-white) 16%, transparent);
-		--color-icon--secondary: var(--color-base-blue--300);
-		--color-icon: var(--color-white);
-		--color-surface--hover: color-mix(in srgb, var(--color-white) 12%, transparent);
-		--color-surface--active: color-mix(in srgb, var(--color-white) 18%, transparent);
-
-		padding: 24px;
-		border-color: transparent;
-		background: var(--color-base-blue--900);
-
-		:global(.rail-card__title) {
-			color: var(--color-base-blue--300);
-			font-size: 11px;
-			font-weight: 700;
-			letter-spacing: 0.8px;
-			text-transform: uppercase;
+		&__slip {
+			display: flex;
+			align-items: center;
+			gap: var(--space-slim);
+			margin-bottom: var(--space-base);
+			padding: var(--space-slim) 14px;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-base);
+			background: var(--color-surface--background);
 		}
 
-		.inquiry-automation__name {
-			overflow: visible;
-			font-size: 20px;
-			font-weight: 700;
-			letter-spacing: -0.3px;
-			white-space: normal;
-		}
-		.inquiry-automation__row {
-			border-bottom-color: var(--color-border);
+		&__slip-name {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
 		}
 	}
 </style>

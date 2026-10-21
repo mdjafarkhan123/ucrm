@@ -930,7 +930,7 @@
 		padding: var(--space-smaller) var(--space-smaller) var(--space-smaller) var(--space-slim);
 		border: var(--border-base) solid var(--color-border);
 		border-radius: var(--radius-base);
-		background: var(--color-surface--background--subtle);
+		background: var(--color-surface--background);
 		transition:
 			border-color var(--timing-base),
 			background-color var(--timing-base);

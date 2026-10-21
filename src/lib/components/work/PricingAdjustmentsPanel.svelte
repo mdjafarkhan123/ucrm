@@ -176,7 +176,6 @@
 					<span class="pricing-adjustments__label" id={`${uid}-discount-type`}>Type</span>
 					<SegmentedControl
 						ariaLabel="Discount type"
-						tone="plain"
 						value={discountDraft.type}
 						options={[
 							{ value: 'percentage', label: '%', title: 'Percentage off' },

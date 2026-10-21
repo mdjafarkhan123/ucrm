@@ -22,7 +22,7 @@
 		ariaLabel,
 		name,
 		size = 'base',
-		tone = 'accent',
+		white = false,
 		fullWidth = false,
 		disabled = false,
 		onchange
@@ -35,9 +35,9 @@
 		ariaLabel?: string;
 		name?: string;
 		size?: 'small' | 'base';
-		/** `accent` outlines the chosen segment in the brand green; `plain` shows it as a white pill, for toolbars
-		 * where the chosen view should not compete with the page's one green action. */
-		tone?: 'accent' | 'plain';
+		/** A white track, for a switch on the page colour, so it never matches what it sits on. Inside a
+		 * `.tinted-surface` (a coloured record top) the track is white without it. */
+		white?: boolean;
 		fullWidth?: boolean;
 		disabled?: boolean;
 		onchange?: (value: string) => void;
@@ -92,7 +92,8 @@
 
 	<div
 		bind:this={trackEl}
-		class={`segmented__track segmented__track--${size} segmented__track--${tone}`}
+		class={`segmented__track segmented__track--${size}`}
+		class:segmented__track--white={white}
 		class:segmented__track--disabled={disabled}
 		role="radiogroup"
 		aria-labelledby={labelId}
@@ -264,14 +265,6 @@
 			font-size: var(--typography--fontSize-small);
 		}
 
-		&__track--plain &__thumb {
-			border-color: transparent;
-		}
-
-		&__track--plain &__option--active {
-			color: var(--color-heading);
-		}
-
 		&__track--disabled &__thumb {
 			border-color: var(--color-disabled--secondary);
 		}
@@ -281,7 +274,8 @@
 		}
 	}
 
-	// Approved shared appearance applies at every call site.
+	// Approved shared appearance applies at every call site (board `SnDlF`, Jafar 2026-10-21): the chosen option is
+	// a brand-green fill, and the track takes the opposite colour of whatever it sits on.
 	.segmented {
 		gap: 6px;
 
@@ -295,13 +289,20 @@
 		.segmented__track {
 			gap: 2px;
 			padding: 3px;
+			border-color: var(--color-border);
+			border-radius: 8px;
+			background: var(--switch--track-fill, var(--color-surface--background));
+		}
+		.segmented__track--white {
+			background: var(--color-surface);
 		}
 		.segmented__thumb {
 			top: 3px;
 			bottom: 3px;
-			border-color: var(--color-border--interactive);
+			border: 0;
 			border-radius: 6px;
-			box-shadow: var(--shadow-button);
+			background: var(--color-interactive);
+			box-shadow: var(--shadow-button--raised);
 		}
 		.segmented__track--base .segmented__option {
 			min-height: 32px;
@@ -312,11 +313,35 @@
 		.segmented__icon {
 			margin-right: 6px;
 		}
+		.segmented__option {
+			transition:
+				color var(--timing-base) ease-out,
+				background-color var(--timing-base) ease-out;
+		}
 		.segmented__option:not(.segmented__option--active) .segmented__icon {
 			color: var(--color-icon--secondary);
 		}
-		.segmented__option--active {
+		.segmented__option:hover:not(.segmented__option--disabled):not(.segmented__option--active) {
+			background: var(--color-surface--hover);
 			color: var(--color-heading);
+
+			.segmented__icon {
+				color: var(--color-icon);
+			}
+		}
+		.segmented__option--active,
+		.segmented__option--active .segmented__icon {
+			color: var(--color-surface);
+		}
+		.segmented__option--disabled .segmented__icon {
+			color: var(--color-disabled);
+		}
+		.segmented__track--disabled {
+			background: var(--color-disabled--secondary);
+		}
+		.segmented__track--disabled .segmented__thumb {
+			background: var(--color-disabled--secondary);
+			box-shadow: none;
 		}
 	}
 

@@ -201,6 +201,7 @@
 		{@render leading?.()}
 
 		<SearchInput
+			white
 			id="pipeline-search"
 			class="board-controls__search"
 			bind:value={search}

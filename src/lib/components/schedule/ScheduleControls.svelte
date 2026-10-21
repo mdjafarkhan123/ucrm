@@ -146,7 +146,7 @@
 
 		<div class="schedule-controls__joined">
 			{#if onmap}
-				<Button variant="secondary" pressed={mapOpen} onclick={onmap}>
+				<Button variant="secondary" white pressed={mapOpen} onclick={onmap}>
 					{@html mapIcon}
 					Map
 				</Button>
@@ -158,6 +158,7 @@
 						<Button
 							{...props}
 							variant="secondary"
+							white
 							pressed={filtersOpen || activeFilterCount > 0}
 							count={activeFilterCount > 0 ? activeFilterCount : null}
 							label={activeFilterCount > 0 ? `Filters, ${activeFilterCount} active` : undefined}

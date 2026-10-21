@@ -6,6 +6,8 @@
 	import CountryPicker from '$lib/components/ui/CountryPicker.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import IconTile from '$lib/components/ui/IconTile.svelte';
+	import Banner from '$lib/components/ui/Banner.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
@@ -30,6 +32,13 @@
 	import mapPinIcon from '@tabler/icons/outline/map-pin.svg?raw';
 	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
 	import settingsIcon from '@tabler/icons/outline/settings.svg?raw';
+	import buildingIcon from '@tabler/icons/outline/building.svg?raw';
+	import seedlingIcon from '@tabler/icons/outline/seedling.svg?raw';
+	import customerIcon from '@tabler/icons/outline/rosette-discount-check.svg?raw';
+	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import phoneIcon from '@tabler/icons/outline/phone.svg?raw';
+	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 
 	// Creates a client, or — given `client` — edits one as a whole page. That full edit page is Jobber's
 	// third edit pattern, opened from the client page's ... menu; the client page itself edits block by
@@ -329,8 +338,8 @@
 	]);
 
 	const CLIENT_TYPE_OPTIONS = [
-		{ value: 'person', label: 'Person' },
-		{ value: 'company', label: 'Company' }
+		{ value: 'person', label: 'Person', icon: userIcon },
+		{ value: 'company', label: 'Company', icon: buildingIcon }
 	];
 
 	// A client who has already bought cannot be pushed back to Lead.
@@ -339,10 +348,11 @@
 		{
 			value: 'lead',
 			label: 'Lead',
+			icon: seedlingIcon,
 			disabled: wasCustomer,
 			title: wasCustomer ? 'A customer cannot be turned back into a lead.' : undefined
 		},
-		{ value: 'customer', label: 'Customer' }
+		{ value: 'customer', label: 'Customer', icon: customerIcon }
 	]);
 
 	const policyOptions = [
@@ -352,6 +362,19 @@
 	];
 
 	const title = $derived(client ? `Edit ${client.display_name}` : 'New client');
+	const titleId = 'client-form-title';
+
+	// An exact match blocks the save, so the box holding the matched value gets the error edge.
+	const exactField = $derived(exactMatches[0]?.matched_on);
+
+	// The save bar's left side says where the form stands.
+	const saveName = $derived(
+		(isCompany ? form.company_name : form.first_name).trim() || 'this client'
+	);
+	const saveHint = $derived(
+		`Saves ${saveName} as a ${form.lifecycle_status}.` +
+			(hasAnyAddress ? ' The address becomes their first property.' : '')
+	);
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
@@ -362,166 +385,211 @@
 		void submit(false).finally(() => layout?.revealError());
 	}}
 >
-	<RecordFormLayout {title} icon={userIcon} bind:this={layout} error={formError}>
+	<RecordFormLayout
+		{title}
+		icon={userIcon}
+		bind:this={layout}
+		error={formError}
+		concept
+		pageHeader={false}
+		labelledBy={titleId}
+		tone="client"
+	>
 		{#snippet main()}
-			<SectionBlock title="Primary details" icon={userIcon} variant="filled" form>
-				<div class="client-form__choices">
-					<SegmentedControl
-						label="Client type"
-						value={form.client_type}
-						options={CLIENT_TYPE_OPTIONS}
-						onchange={(next) => (form.client_type = next as 'person' | 'company')}
-					/>
-					<SegmentedControl
-						label="Status"
-						value={form.lifecycle_status}
-						options={LIFECYCLE_OPTIONS}
-						onchange={(next) => (form.lifecycle_status = next as 'lead' | 'customer')}
-					/>
+			<section class="client-form__card">
+				<div class="client-form__top tinted-surface">
+					<div class="client-form__heading">
+						<IconTile icon={userIcon} tone="client" size={40} white />
+						<div class="client-form__words">
+							<h1 id={titleId} class="client-form__title">{title}</h1>
+							<p class="client-form__description">Who they are and how to reach them</p>
+						</div>
+					</div>
+					<div class="client-form__choices">
+						<SegmentedControl
+							label="Client type"
+							value={form.client_type}
+							options={CLIENT_TYPE_OPTIONS}
+							onchange={(next) => (form.client_type = next as 'person' | 'company')}
+						/>
+						<div class="client-form__choice">
+							<SegmentedControl
+								label="Status"
+								value={form.lifecycle_status}
+								options={LIFECYCLE_OPTIONS}
+								onchange={(next) => (form.lifecycle_status = next as 'lead' | 'customer')}
+							/>
+							{#if wasCustomer}
+								<p class="client-form__hint">A customer cannot be turned back into a lead.</p>
+							{/if}
+						</div>
+					</div>
 				</div>
 
-				<div class="client-form__grid">
-					{#if isCompany}
+				<div class="client-form__body">
+					<h2 class="client-form__group-title">Primary details</h2>
+					<div class="client-form__grid">
+						{#if isCompany}
+							<div class="client-form__grid-full">
+								<Input
+									id="client-company-name"
+									label="Company name"
+									required
+									bind:value={form.company_name}
+									invalid={Boolean(fieldErrors.company_name)}
+									errorMessage={fieldErrors.company_name ?? ''}
+									autocomplete="organization"
+								>
+									<span class="client-form__field-icon client-form__field-icon--client" aria-hidden="true"
+										>{@html buildingIcon}</span
+									>
+								</Input>
+							</div>
+							<Input
+								id="client-first-name"
+								label="Contact first name (optional)"
+								bind:value={form.first_name}
+								invalid={Boolean(fieldErrors.first_name)}
+								errorMessage={fieldErrors.first_name ?? ''}
+								autocomplete="given-name"
+							/>
+							<Input
+								id="client-last-name"
+								label="Contact last name (optional)"
+								bind:value={form.last_name}
+								invalid={Boolean(fieldErrors.last_name)}
+								errorMessage={fieldErrors.last_name ?? ''}
+								autocomplete="family-name"
+							/>
+						{:else}
+							<Input
+								id="client-first-name"
+								label="First name"
+								required
+								bind:value={form.first_name}
+								invalid={Boolean(fieldErrors.first_name)}
+								errorMessage={fieldErrors.first_name ?? ''}
+								autocomplete="given-name"
+							/>
+							<Input
+								id="client-last-name"
+								label="Last name"
+								required
+								bind:value={form.last_name}
+								invalid={Boolean(fieldErrors.last_name)}
+								errorMessage={fieldErrors.last_name ?? ''}
+								autocomplete="family-name"
+							/>
+						{/if}
+
+						<Input
+							id="client-email"
+							label="Email address"
+							type="email"
+							bind:value={form.email}
+							invalid={Boolean(fieldErrors.email) || exactField === 'email'}
+							errorMessage={fieldErrors.email ?? ''}
+							autocomplete="email"
+						>
+							<span class="client-form__field-icon client-form__field-icon--conversation" aria-hidden="true"
+								>{@html mailIcon}</span
+							>
+						</Input>
+						<Input
+							id="client-phone"
+							label="Phone number"
+							type="tel"
+							bind:value={form.phone}
+							invalid={Boolean(fieldErrors.phone) || exactField === 'phone'}
+							errorMessage={fieldErrors.phone ?? ''}
+							autocomplete="tel"
+						>
+							<span class="client-form__field-icon client-form__field-icon--time" aria-hidden="true"
+								>{@html phoneIcon}</span
+							>
+						</Input>
+
 						<div class="client-form__grid-full">
 							<Input
+								id="client-billing-email"
+								label="Billing email (optional)"
+								type="email"
+								bind:value={form.billing_email}
+								invalid={Boolean(fieldErrors.billing_email) || exactField === 'billing_email'}
+								errorMessage={fieldErrors.billing_email ?? ''}
+								autocomplete="email"
+							>
+								<span class="client-form__field-icon client-form__field-icon--invoice" aria-hidden="true"
+									>{@html receiptIcon}</span
+								>
+							</Input>
+							<p class="client-form__hint">Also send invoices and quotes here.</p>
+						</div>
+
+						{#if !isCompany}
+							<Input
 								id="client-company-name"
-								label="Company name"
-								required
+								label="Company name (optional)"
 								bind:value={form.company_name}
 								invalid={Boolean(fieldErrors.company_name)}
 								errorMessage={fieldErrors.company_name ?? ''}
 								autocomplete="organization"
-							/>
-						</div>
-						<Input
-							id="client-first-name"
-							label="Contact first name (optional)"
-							bind:value={form.first_name}
-							invalid={Boolean(fieldErrors.first_name)}
-							errorMessage={fieldErrors.first_name ?? ''}
-							autocomplete="given-name"
-						/>
-						<Input
-							id="client-last-name"
-							label="Contact last name (optional)"
-							bind:value={form.last_name}
-							invalid={Boolean(fieldErrors.last_name)}
-							errorMessage={fieldErrors.last_name ?? ''}
-							autocomplete="family-name"
-						/>
-					{:else}
-						<Input
-							id="client-first-name"
-							label="First name"
-							required
-							bind:value={form.first_name}
-							invalid={Boolean(fieldErrors.first_name)}
-							errorMessage={fieldErrors.first_name ?? ''}
-							autocomplete="given-name"
-						/>
-						<Input
-							id="client-last-name"
-							label="Last name"
-							required
-							bind:value={form.last_name}
-							invalid={Boolean(fieldErrors.last_name)}
-							errorMessage={fieldErrors.last_name ?? ''}
-							autocomplete="family-name"
-						/>
-					{/if}
-
-					<Input
-						id="client-email"
-						label="Email address"
-						type="email"
-						bind:value={form.email}
-						invalid={Boolean(fieldErrors.email)}
-						errorMessage={fieldErrors.email ?? ''}
-						autocomplete="email"
-					/>
-					<Input
-						id="client-phone"
-						label="Phone number"
-						type="tel"
-						bind:value={form.phone}
-						invalid={Boolean(fieldErrors.phone)}
-						errorMessage={fieldErrors.phone ?? ''}
-						autocomplete="tel"
-					/>
-
-					<div class="client-form__grid-full">
-						<Input
-							id="client-billing-email"
-							label="Billing email (optional)"
-							type="email"
-							bind:value={form.billing_email}
-							invalid={Boolean(fieldErrors.billing_email)}
-							errorMessage={fieldErrors.billing_email ?? ''}
-							autocomplete="email"
-						/>
-						<p class="client-form__hint">Also send invoices and quotes here.</p>
-					</div>
-
-					{#if !isCompany}
-						<Input
-							id="client-company-name"
-							label="Company name (optional)"
-							bind:value={form.company_name}
-							invalid={Boolean(fieldErrors.company_name)}
-							errorMessage={fieldErrors.company_name ?? ''}
-							autocomplete="organization"
-						/>
-					{/if}
-
-					<div class="client-form__policy">
-						<label class="client-form__policy-label" for="client-contact-policy">
-							Communication setting
-						</label>
-						<div class="client-form__policy-row">
-							<Select
-								id="client-contact-policy"
-								value={form.preferences.contact_policy}
-								options={policyOptions}
-								onchange={(value) =>
-									(form.preferences = {
-										...form.preferences,
-										contact_policy: value as ClientPreferences['contact_policy']
-									})}
-							/>
-							<Button
-								variant="secondary"
-								onhover={prefetchMessageStatus}
-								onclick={() => (settingsOpen = true)}
 							>
-								{@html settingsIcon}Configure
-							</Button>
+								<span class="client-form__field-icon client-form__field-icon--client" aria-hidden="true"
+									>{@html buildingIcon}</span
+								>
+							</Input>
+						{/if}
+
+						<div class="client-form__policy">
+							<label class="client-form__policy-label" for="client-contact-policy">
+								Communication setting
+							</label>
+							<div class="client-form__policy-row">
+								<Select
+									id="client-contact-policy"
+									value={form.preferences.contact_policy}
+									options={policyOptions}
+									onchange={(value) =>
+										(form.preferences = {
+											...form.preferences,
+											contact_policy: value as ClientPreferences['contact_policy']
+										})}
+								/>
+								<Button
+									variant="secondary"
+									onhover={prefetchMessageStatus}
+									onclick={() => (settingsOpen = true)}
+								>
+									<span class="client-form__configure-icon" aria-hidden="true">{@html settingsIcon}</span
+									>Configure
+								</Button>
+							</div>
 						</div>
 					</div>
-				</div>
 
-				{#if exactMatches.length > 0}
-					<p class="client-form__warning client-form__warning--blocking" role="alert">
-						<span aria-hidden="true">{@html alertTriangleIcon}</span>
-						{exactMatches[0].display_name} already uses that {matchLabel(exactMatches[0])}. Change
-						it before saving.
-					</p>
-				{:else if similarMatches.length > 0}
-					<p class="client-form__warning">
-						<span aria-hidden="true">{@html alertTriangleIcon}</span>
-						Looks similar to {similarMatches
-							.slice(0, 3)
-							.map((match) => match.display_name)
-							.join(', ')}. Carry on if this is someone new.
-					</p>
-				{/if}
-			</SectionBlock>
+					{#if exactMatches.length > 0}
+						<Banner type="error">
+							{exactMatches[0].display_name} already uses that {matchLabel(exactMatches[0])}. Change it
+							before saving.
+						</Banner>
+					{:else if similarMatches.length > 0}
+						<Banner type="warning">
+							Looks similar to {similarMatches
+								.slice(0, 3)
+								.map((match) => match.display_name)
+								.join(', ')}. Carry on if this is someone new.
+						</Banner>
+					{/if}
+				</div>
+			</section>
 
 			{#if !isEdit}
 				<SectionBlock
 					title="Client address"
 					icon={mapPinIcon}
+					tone="client"
 					hint="Optional. Filling this in creates the client's first property."
-					form
 				>
 					<div class="client-form__grid">
 						<Input
@@ -601,22 +669,40 @@
 			{/if}
 		{/snippet}
 
-		{#snippet actions()}
-			<Button variant="tertiary" onclick={onCancel} disabled={saving}>Cancel</Button>
-			<div class="client-form__actions-primary">
-				{#if !savedClientId}
-					<Button
-						variant="secondary"
-						onclick={() => void submit(true).finally(() => layout?.revealError())}
-						disabled={saving || !isDirty}
+		{#snippet status()}
+			<span
+				class="client-form__status-dot"
+				class:client-form__status-dot--quiet={isEdit && !isDirty}
+				aria-hidden="true"
+			></span>
+			<div class="client-form__status-copy">
+				{#if isEdit}
+					<span class="client-form__status-title">Editing {client?.display_name}</span>
+					<span class="client-form__status-hint"
+						>{isDirty ? 'Changes not saved yet' : 'Nothing changed yet'}</span
 					>
-						Save & create another
-					</Button>
+				{:else}
+					<span class="client-form__status-title">New client · not saved yet</span>
+					<span class="client-form__status-hint">{saveHint}</span>
 				{/if}
-				<Button variant="primary" type="submit" loading={saving} disabled={!isDirty}>
-					{savedClientId ? 'Save changes' : 'Save client'}
-				</Button>
 			</div>
+		{/snippet}
+
+		{#snippet actions()}
+			<Button variant="secondary" onclick={onCancel} disabled={saving}>Cancel</Button>
+			{#if !savedClientId}
+				<Button
+					variant="secondary"
+					onclick={() => void submit(true).finally(() => layout?.revealError())}
+					disabled={saving || !isDirty}
+				>
+					Save & create another
+				</Button>
+			{/if}
+			<Button variant="primary" type="submit" loading={saving} disabled={!isDirty}>
+				<span class="client-form__button-icon" aria-hidden="true">{@html checkIcon}</span>
+				{savedClientId ? 'Save changes' : 'Save client'}
+			</Button>
 		{/snippet}
 	</RecordFormLayout>
 </form>
@@ -630,15 +716,81 @@
 <!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
+	// Design skill `layout.md` → New client page; Pencil `fJ8Mx`.
 	.client-form {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-large);
 
+		&__card {
+			overflow: hidden;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-large);
+			background: var(--color-surface);
+		}
+
+		&__top {
+			display: flex;
+			flex-direction: column;
+			gap: 18px;
+			padding: var(--space-medium) var(--space-large) 22px;
+			border-bottom: var(--border-base) solid var(--color-client--surface-edge);
+			background: var(--color-client--surface);
+		}
+
+		&__heading {
+			display: flex;
+			align-items: center;
+			gap: 14px;
+		}
+
+		&__words {
+			display: flex;
+			min-width: 0;
+			flex-direction: column;
+			gap: 2px;
+		}
+
+		&__title {
+			margin: 0;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-largest);
+			font-weight: 700;
+			letter-spacing: -0.5px;
+			line-height: var(--typography--lineHeight-tight);
+		}
+
+		&__description {
+			margin: 0;
+			color: var(--color-client--onSurface);
+			font-size: var(--typography--fontSize-base);
+		}
+
 		&__choices {
 			display: flex;
 			flex-wrap: wrap;
+			align-items: flex-start;
 			gap: var(--space-large);
+		}
+
+		&__choice {
+			display: flex;
+			flex-direction: column;
+		}
+
+		&__body {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-base);
+			font-size: var(--typography--fontSize-base);
+			padding: var(--space-medium) var(--space-large) var(--space-large);
+		}
+
+		&__group-title {
+			margin: 0;
+			color: var(--color-heading);
+			font-size: 16px;
+			font-weight: 600;
 		}
 
 		&__grid {
@@ -651,15 +803,39 @@
 			grid-column: 1 / -1;
 		}
 
+		// The front icon says what kind of contact each box holds, in that kind's colour (Input reads it).
+		&__field-icon {
+			display: inline-flex;
+			flex: 0 0 auto;
+
+			&--conversation {
+				--field-icon-color: var(--color-conversation);
+			}
+			&--time {
+				--field-icon-color: var(--color-time);
+			}
+			&--invoice {
+				--field-icon-color: var(--color-invoice);
+			}
+			&--client {
+				--field-icon-color: var(--color-client);
+			}
+		}
+
+		&__configure-icon {
+			display: inline-flex;
+			color: var(--color-conversation);
+		}
+
 		&__policy {
 			display: flex;
 			flex-direction: column;
-			gap: var(--space-smaller);
+			gap: 6px;
 		}
 
 		&__policy-label {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-label);
 			font-weight: 600;
 		}
 
@@ -667,49 +843,58 @@
 			display: flex;
 			align-items: center;
 			gap: var(--space-small);
+
+			> :global(.select) {
+				flex: 1 1 auto;
+				min-width: 0;
+			}
+			> :global(.button) {
+				min-height: 40px;
+			}
 		}
 
 		&__hint {
-			margin-top: var(--space-smaller);
+			margin: var(--space-smaller) 0 0;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 		}
 
-		&__warning {
-			display: flex;
-			align-items: center;
-			gap: var(--space-small);
-			padding: var(--space-slim) var(--space-base);
-			border-radius: var(--radius-base);
-			color: var(--color-text);
-			background: var(--color-surface--active);
-			font-size: var(--typography--fontSize-small);
+		&__status-dot {
+			width: 8px;
+			height: 8px;
+			flex: 0 0 auto;
+			border-radius: var(--radius-circle);
+			background: var(--color-warning);
 
-			:global(svg) {
-				display: block;
-				width: 18px;
-				height: 18px;
-				flex: 0 0 auto;
-			}
-
-			&--blocking {
-				color: var(--color-critical--onSurface);
-				background: var(--color-critical--surface);
+			&--quiet {
+				background: var(--color-icon--secondary);
 			}
 		}
 
-		&__actions-primary {
-			display: flex;
-			gap: var(--space-small);
+		&__status-copy {
+			display: grid;
+			gap: var(--space-smaller);
+			min-width: 0;
+		}
+
+		&__status-title {
+			color: var(--color-heading);
+			font-weight: 600;
+		}
+
+		&__status-hint {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__button-icon {
+			display: inline-flex;
 		}
 	}
 
 	@media (max-width: 767px) {
 		.client-form__grid {
 			grid-template-columns: 1fr;
-		}
-		.client-form__actions-primary {
-			flex-direction: column;
 		}
 	}
 </style>

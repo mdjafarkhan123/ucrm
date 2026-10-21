@@ -310,6 +310,7 @@
 		{:else if queueQuery.isPending}
 			<div class="send-toolbar">
 				<SearchInput
+					white
 					id="send-search"
 					bind:value={search}
 					placeholder="Search by client or invoice"
@@ -327,6 +328,7 @@
 		{:else}
 			<div class="send-toolbar">
 				<SearchInput
+					white
 					id="send-search"
 					bind:value={search}
 					placeholder="Search by client or invoice"

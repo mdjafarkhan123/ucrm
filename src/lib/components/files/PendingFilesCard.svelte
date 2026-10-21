@@ -407,7 +407,7 @@
 			gap: var(--space-small);
 			padding: var(--space-large);
 			margin: var(--space-base);
-			background: var(--color-surface--background--subtle);
+			background: var(--color-surface--background);
 			border: 1.5px dashed var(--color-border--interactive--hover);
 			border-radius: var(--radius-base);
 			color: var(--color-text--secondary);

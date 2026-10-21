@@ -137,7 +137,6 @@
 			<SegmentedControl
 				ariaLabel="Group today's schedule"
 				size="small"
-				tone="plain"
 				bind:value={view}
 				options={[
 					{ value: 'visit', label: 'By visit' },

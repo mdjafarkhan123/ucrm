@@ -4,16 +4,23 @@
 	let {
 		children,
 		status,
-		size = 'base'
+		size = 'base',
+		outlined = false
 	}: {
 		children: Snippet;
 		status: 'success' | 'warning' | 'critical' | 'inactive' | 'informative';
 		/** `compact` is retained as an alias for the small pill used by existing tables. */
 		size?: 'base' | 'compact' | 'small';
+		/** White with an edge in the status colour, for a pill on a tinted card where a filled one would vanish. */
+		outlined?: boolean;
 	} = $props();
 </script>
 
-<span class={`status-badge status-badge--${status} status-badge--${size}`} role="status">
+<span
+	class={`status-badge status-badge--${status} status-badge--${size}`}
+	class:status-badge--outlined={outlined}
+	role="status"
+>
 	<span class="status-badge__dot" aria-hidden="true"></span>
 	<span class="status-badge__text">{@render children()}</span>
 </span>
@@ -55,7 +62,21 @@
 		color: inherit;
 	}
 
+	// The edge takes the dot's colour (each status sets it below).
+	.status-badge.status-badge--outlined {
+		padding: 3px 8px;
+		border: var(--border-base) solid var(--status-badge-main);
+		background: var(--color-surface);
+		font-size: var(--typography--fontSize-small);
+
+		.status-badge__dot {
+			width: 5px;
+			height: 5px;
+		}
+	}
+
 	.status-badge--success {
+		--status-badge-main: var(--color-success);
 		color: var(--color-success--onSurface);
 		background: var(--color-success--surface);
 	}
@@ -65,6 +86,7 @@
 	}
 
 	.status-badge--warning {
+		--status-badge-main: var(--color-warning);
 		color: var(--color-warning--onSurface);
 		background: var(--color-warning--surface);
 	}
@@ -74,6 +96,7 @@
 	}
 
 	.status-badge--critical {
+		--status-badge-main: var(--color-critical);
 		color: var(--color-critical--onSurface);
 		background: var(--color-critical--surface);
 	}
@@ -83,6 +106,7 @@
 	}
 
 	.status-badge--inactive {
+		--status-badge-main: var(--color-inactive);
 		color: var(--color-inactive--onSurface);
 		background: var(--color-inactive--surface);
 	}
@@ -92,6 +116,7 @@
 	}
 
 	.status-badge--informative {
+		--status-badge-main: var(--color-informative);
 		color: var(--color-informative--onSurface);
 		background: var(--color-informative--surface);
 	}

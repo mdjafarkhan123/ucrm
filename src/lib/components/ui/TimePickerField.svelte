@@ -335,7 +335,7 @@
 			overflow: hidden;
 			border: var(--border-base) solid var(--color-border--interactive);
 			border-radius: var(--radius-base);
-			background: var(--color-surface);
+			background: var(--field--fill, var(--color-surface--background));
 			transition:
 				border-color var(--timing-quick),
 				box-shadow var(--timing-quick);
