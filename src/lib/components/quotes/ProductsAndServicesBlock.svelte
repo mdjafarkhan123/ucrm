@@ -102,6 +102,7 @@
 		hint,
 		icon,
 		tone,
+		title = 'Products and services',
 		clientSees,
 		flush = false,
 		emptyDescription = 'Add the products and services this job needs before it becomes a quote.',
@@ -166,6 +167,8 @@
 		/** The title tile's icon (a Tabler SVG) and colour family, for a page that gives the block its own. */
 		icon?: string;
 		tone?: string;
+		/** The block's title, for a page that names it for its own job, e.g. "What this visit bills". */
+		title?: string;
 		/** What the client's copy shows, e.g. "Client sees every figure". Sits at the end of the locked strip. */
 		clientSees?: string;
 		/** App look: the saved table runs edge to edge in the card and the totals and locked note close it
@@ -1059,7 +1062,7 @@
 {/snippet}
 
 <SectionBlock
-	title="Products and services"
+	{title}
 	icon={icon ?? (concept ? packageIcon : listIcon)}
 	tone={tone ?? (concept ? 'quote' : undefined)}
 	level={2}

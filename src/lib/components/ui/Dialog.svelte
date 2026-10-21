@@ -13,6 +13,8 @@
 		initialFocusId,
 		icon,
 		iconTone = 'success',
+		flush = false,
+		badge,
 		onClose,
 		children,
 		footer
@@ -28,6 +30,10 @@
 		icon?: string;
 		/** The tile's colour family: the record the dialog is about (`job`, `invoice`…), or a status. */
 		iconTone?: string;
+		/** No padding round the body, for a body that lays out its own panels edge to edge. */
+		flush?: boolean;
+		/** A small pill beside the title, e.g. "Recurring". */
+		badge?: Snippet;
 		onClose: () => void;
 		children: Snippet;
 		/** A bar under the body for the dialog's actions, so they stay in view while the body scrolls. */
@@ -54,8 +60,8 @@
 				target.focus();
 			}}
 		>
-			<DialogHeader {title} {subtitle} {icon} tone={iconTone} />
-			<div class="dialog__body">
+			<DialogHeader {title} {subtitle} {icon} tone={iconTone} {badge} />
+			<div class="dialog__body" class:dialog__body--flush={flush}>
 				{@render children()}
 			</div>
 			{#if footer}
@@ -107,6 +113,10 @@
 		flex: 1 1 auto;
 		overflow-y: auto;
 		padding: var(--space-medium);
+	}
+
+	:global(.dialog__body--flush) {
+		padding: 0;
 	}
 
 	:global(.dialog__footer) {

@@ -9,8 +9,8 @@
 1. **Build:** Batches 43 Merge clients and 44 Collect payment pop-ups built 2026-10-21
    (`docs/evidence/2026-10-21-popups/`). Batch 45 Notification bell pop-up built and merged 2026-10-21
    (`docs/evidence/2026-10-21-batch45/`); its Pencil board `FGYzU` still needs the
-   step-6 tidy-up. Waiting: Batch 47 Edit visit pop-up `PbkWT` B (`modals.md`); Batch 48 Page loading `x8nYl` A
-   (`page-states.md`; a page-shaped skeleton per page kind, chosen by the route). Shared-part history:
+   step-6 tidy-up. Batches 47 Edit visit `PbkWT` B and 48 Page loading `x8nYl` A built 2026-10-21 (Pencil boards still need the step-6 tidy-up;
+   page skeletons chosen by route: lists and record pages). Shared-part history:
    `parts/c5-shared-parts.md`. Create pages: `parts/new-request-top-form.md`.
    White buttons and boxes app-wide and Batch 46 assessment panel A built and merged 2026-10-21 (checked live
    1440 light/dark: New request, saved request, no-day error, a real Save visit, Schedule, Invoices). The panel now

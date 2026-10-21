@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { Dialog as DialogPrimitive } from 'bits-ui';
 	import closeIcon from '@tabler/icons/outline/x.svg?raw';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -11,12 +12,15 @@
 		title,
 		subtitle,
 		icon,
-		tone
+		tone,
+		badge
 	}: {
 		title: string;
 		subtitle?: string;
 		icon?: string;
 		tone?: string;
+		/** A small pill beside the title. */
+		badge?: Snippet;
 	} = $props();
 </script>
 
@@ -24,7 +28,10 @@
 <header class="dialog-header">
 	{#if icon}<IconTile {icon} {tone} />{/if}
 	<div class="dialog-header__copy">
-		<DialogPrimitive.Title level={2} class="dialog-header__title">{title}</DialogPrimitive.Title>
+		<div class="dialog-header__title-row">
+			<DialogPrimitive.Title level={2} class="dialog-header__title">{title}</DialogPrimitive.Title>
+			{@render badge?.()}
+		</div>
 		{#if subtitle}<p class="dialog-header__subtitle">{subtitle}</p>{/if}
 	</div>
 	<DialogPrimitive.Close>
@@ -50,6 +57,12 @@
 		flex: 1 1 auto;
 		min-width: 0;
 		gap: 2px;
+	}
+	.dialog-header__title-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-small);
+		min-width: 0;
 	}
 	:global(.dialog-header__title) {
 		margin: 0;
