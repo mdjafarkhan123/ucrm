@@ -18,8 +18,8 @@
    Batch 50 Job billing pop-ups (Billing setup, Payment schedule, Add an invoice reminder) built and merged to
    main 2026-10-21 (`docs/evidence/2026-10-21-batch50/`); its Pencil board `aJGHA` still needs the step-6 tidy-up.
 2. **Draw:** Batch 52 record header white top and Jafar's type-size table approved and built 2026-10-21
-   (`parts/c5-shared-parts.md` § Batch 52). **Next build, approved, starts next session:** `parts/type-sweep.md`
-   (318 typed-in font sizes to variables). Batch 52's Pencil changes (`xrJ3f`, variables) wait for Jafar's Ctrl+S
+   (`parts/c5-shared-parts.md` § Batch 52). Type sweep (301 typed-in font sizes to variables) built and checked 2026-10-21
+   (`parts/type-sweep.md`); Botanical, emails and the chat widget kept. Batch 52's Pencil changes (`xrJ3f`, variables) wait for Jafar's Ctrl+S
    in Pencil, then a commit of `concept.pen`; design claim `13f52b282f7e` stays until then.
    Batch 51 New campaign · Goal step `t0L1xo` approved A 2026-10-21, waiting to be built
    (`parts/c5-shared-parts.md`). Next drawing: the Customers step on the same frame, then Email, Delivery, Review

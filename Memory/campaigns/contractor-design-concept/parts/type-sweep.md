@@ -1,7 +1,7 @@
 # Type sweep — typed-in font sizes to the variables
 
 **Campaign:** contractor-design-concept. **Approved:** Jafar 2026-10-21 ("yes do the sweep, use variable"); he
-chose to start it in the next session. **Stage:** not started; nothing claimed.
+chose to start it in the next session. **Stage:** built and screen-checked 2026-10-21 (`docs/evidence/2026-10-21-type-sweep/`); Pencil's off-scale text (~400) is the separate later sweep.
 **Table (Jafar, 2026-10-21):** `typography.md` → Scale; tokens in `src/lib/styles/_variables.scss` are already set
 (smaller 12, overline 12, small 14, label 14, base 14, large 16, larger 20, largest 24, display 28, stat 34).
 
