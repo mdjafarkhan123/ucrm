@@ -28,5 +28,4 @@ steps, fields, words, writes and rules.
   look). The open states were checked on a temporary fixture page (removed before commit) that ran the real booking
   page with sample times: pick, hover, details, booked, manage view, cancelled, dark. Fixed one difference: the Book
   button sat at the left when no security check is shown.
-- Found, not fixed (waits for Jafar): `/book/manage/[token]` renders `BookingFacts` before its time zone is set, so
-  `Intl.DateTimeFormat` throws "Invalid time zone specified" on first render. Same code on main before this batch.
+- Found and fixed afterwards (commit `b2d3ba9f`, Jafar asked 2026-10-21): `/book/manage/[token]` crashed on first render because its time zone started empty; it now starts as the booking's own zone. Regression test `src/routes/book/manage/[token]/page.spec.ts`.
