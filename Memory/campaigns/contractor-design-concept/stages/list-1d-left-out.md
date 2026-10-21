@@ -19,6 +19,7 @@ Phone layouts are also left out (the contract's "Not doing": the native apps com
 | `demo/modal` | developer page, never shown to customers |
 | `demo/playwright` | developer page, never shown to customers |
 | `demo/table` | developer page, never shown to customers |
+| `layout/MobileNav` | phone-only menu; phone layouts are left out (desktop only, Jafar 2026-10-20) |
 | `layout/presentations/BotanicalFrame` | Botanical look, not in this concept |
 | `layout/presentations/BotanicalHeader` | Botanical look, not in this concept |
 | `layout/presentations/BotanicalSidebar` | Botanical look, not in this concept |

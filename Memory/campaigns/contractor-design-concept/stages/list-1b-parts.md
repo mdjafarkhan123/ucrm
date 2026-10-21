@@ -67,9 +67,8 @@ Key, tick rule and coverage command: `list-index.md`.
 | `jobs/FinalVisitDialog` | ◆ pop-up | ✅ Schedule pop-ups `WbpEc` | ✅ Merged 2026-10-19 |
 | `jobs/JobVisitDialog` | ◆ pop-up · loading, permission-limited | ✅ Batch 47 `PbkWT` B 2026-10-21 | ⬜ |
 | `jobs/RecurrenceFields` | loading | ✅ | ✅ |
-| `layout/MobileNav` |  | ⬜ | ⬜ |
 | `layout/NotificationBell` |  | ✅ Batch 45 `FGYzU` B 2026-10-21 | ⬜ |
-| `layout/RouteSkeleton` | loading | ⬜ | ⬜ |
+| `layout/RouteSkeleton` | loading | 🟡 Batch 48 `x8nYl` A or B, 2026-10-21 | ⬜ |
 | `layout/SharedAppShell` | permission-limited, owner view | ⬜ | ⬜ |
 | `layout/Sidebar` |  | ✅ | ✅ |
 | `layout/Topbar` | menus ×9 · owner view | ✅ (stays on the page colour, Jafar 2026-10-21) | ⬜ |
