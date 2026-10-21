@@ -1,6 +1,6 @@
 # New Quote — implementation
 
-**Stage:** Verified in preview, waiting to merge. Approved A: Batch 34 `B5DLv` / `q7Cn1w`; shared money-card
+**Stage:** Built and merged to main (`c10e08aa`, pushed) 2026-10-21; live `/quotes/new` checked (`public-quote-live.png`). Approved A: Batch 34 `B5DLv` / `q7Cn1w`; shared money-card
 look: Batch 35. Parent agreement: `docs/contractor-design-concept-behavior-contract.md`.
 
 **Scope:** Reuse the existing shared header, layout, pricing, notes, files, rail rows and save bar. Preserve
@@ -19,8 +19,5 @@ Do not create a duplicate proof record.
 Save; the card explains this. The complete Batch 35 job-stage/invoice-context content and pre-save profit
 preview remain unfinished. New Invoice and Request still need their approved page/header rollout.
 
-**Next:** Main is reserved by `3237d361e057` (Customer group Pencil session). Asked Jafar if that session is
-closed; no answer yet. Do not release it by age. Once released or Jafar confirms it closed, update against
-main, claim integration, merge and push, then recheck the public `/quotes/new`, update the Built tick and tidy
-Pencil (no canvas edits were made in this build). The current worktree preview runs on port 5174; process ID
-is in `/tmp/ucrm-new-quote-preview.pid`.
+**Next:** Done. Remaining Batch 35 content and pre-save profit preview are listed under Limits; New Invoice and
+New Request page rollouts are their own parts.

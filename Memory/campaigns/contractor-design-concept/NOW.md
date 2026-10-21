@@ -6,7 +6,7 @@
 - **Stage:** Approved parts are being built; further screens are being drawn.
 
 **Create pages:** Shared coloured header approved for Request, Quote, Job and Invoice (`NhVGQ`), existing
-rails retained. New Job built. New Quote verified in preview, waiting to merge:
+rails retained. New Job built. New Quote built and merged 2026-10-21:
 `parts/new-quote-build.md`. New Invoice approved A (`EBLIe`), waiting to build. Blueprint, approvals and
 Batch 35 money-card scope: `parts/new-request-top-form.md` (supersedes abandoned Batch 31 drafts).
 

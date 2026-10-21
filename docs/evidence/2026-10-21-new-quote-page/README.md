@@ -52,5 +52,5 @@ worked out when saved; it does not fabricate profit. The saved quote shows the s
 Batch 35's complete job-stage/invoice-context content and a live pre-save profit preview remain unfinished.
 New Invoice and New Request have not been rebuilt onto their approved full-page/shared-header designs.
 
-After main is available, merge, recheck `/quotes/new` on the public tunnel, then mark the page Built and tidy
-its Pencil board. Do not create another verification quote; #47 already proves the journey.
+Merged to main as `c10e08aa`; `/quotes/new` rechecked on the public tunnel (`public-quote-live.png`, dark mode).
+Do not create another verification quote; #47 already proves the journey.
