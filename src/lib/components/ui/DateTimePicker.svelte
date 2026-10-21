@@ -22,6 +22,8 @@
 		readonly = false,
 		required = false,
 		invalid = false,
+		dateInvalid = false,
+		timeInvalid = false,
 		errorMessage = '',
 		class: className = '',
 		onchange
@@ -39,6 +41,10 @@
 		readonly?: boolean;
 		required?: boolean;
 		invalid?: boolean;
+		/** Marks only the day box, e.g. when the day is what is missing. */
+		dateInvalid?: boolean;
+		/** Marks only the time boxes. */
+		timeInvalid?: boolean;
 		errorMessage?: string;
 		class?: string;
 		onchange?: (value: DateTimePickerValue) => void;
@@ -80,7 +86,7 @@
 		{disabled}
 		{readonly}
 		{required}
-		{invalid}
+		invalid={invalid || dateInvalid}
 		onchange={handleDateChange}
 	/>
 
@@ -95,7 +101,7 @@
 				{disabled}
 				{readonly}
 				{required}
-				{invalid}
+				invalid={invalid || timeInvalid}
 				onchange={handleRangeTimeChange}
 			/>
 		{:else}
@@ -108,7 +114,7 @@
 				{disabled}
 				{readonly}
 				{required}
-				{invalid}
+				invalid={invalid || timeInvalid}
 				onchange={handleSingleTimeChange}
 			/>
 		{/if}
