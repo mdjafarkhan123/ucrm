@@ -34,17 +34,17 @@ Counts are rows and ✅ ticks only (🔁 and 🟡 are not counted).
 | --- | --- | --- | --- | --- | --- |
 | 1 | `list-1a-parts.md` | Shared parts used on more than one page, most used first (1) | 72 | 67 | 67 |
 | 1 | `list-1b-parts.md` | Shared parts (2) | 71 | 60 | 35 |
-| 1 | `list-1c-parts.md` | Shared parts (3) | 54 | 0 | 0 |
+| 1 | `list-1c-parts.md` | Shared parts (3) | 61 | 7 | 7 |
 | 1 | `list-1d-left-out.md` | Pieces left out, with the reason | 32 | — | — |
-| 2 | `list-2a-daily.md` | Home, Schedule, Inbox, Clients, Requests, Quotes, Jobs (and record, new pages) | 26 | 7 | 5 |
-| 2 | `list-2b-daily.md` | Invoices and Payment | 11 | 1 | 0 |
+| 2 | `list-2a-daily.md` | Home, Schedule, Inbox, Clients, Requests, Quotes, Jobs (and record, new pages) | 27 | 7 | 5 |
+| 2 | `list-2b-daily.md` | Invoices and Payment | 13 | 1 | 0 |
 | 3 | `list-3-customers-see.md` | Customer pages, customer emails, error pages, login and sign-up | 30 | 0 | 0 |
 | 4 | `list-4-weekly.md` | Files, Pipeline, Timesheets | 8 | 0 | 0 |
 | 5 | `list-5-growth.md` | Marketing, Reviews (Reports has no page yet) | 7 | 0 | 0 |
 | 6 | `list-6a-setup-once.md`, `list-6b-setup-once.md` | Settings and Setup | 54 | 0 | 0 |
 | 7 | `list-7a-jafar-panel.md`, `list-7b-…`, `list-7c-…` | Jafar's admin panel | 54 | 0 | 0 |
 
-Plus 30 pop-up rows (a pop-up marked ◆ inside a page or part, listed under it as `↳ "Title" pop-up`).
+Plus 31 pop-up rows (a pop-up marked ◆ inside a page or part, listed under it as `↳ "Title" pop-up`).
 
 ## How the pieces were sorted (2026-10-18, from the code)
 

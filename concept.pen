@@ -287215,6 +287215,2833 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "alWwd",
+      "x": 11448,
+      "y": 20965,
+      "name": "Concept · Batch 40 · Signature pad · Approved A · 2026-10-21",
+      "width": 1488,
+      "fill": "$color-surface-background",
+      "layout": "vertical",
+      "gap": 48,
+      "padding": 64,
+      "children": [
+        {
+          "type": "frame",
+          "id": "HXHh1",
+          "name": "Intro",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "BiPJ6",
+              "name": "Eyebrow",
+              "fill": "$color-interactive",
+              "content": "NEW CONCEPT · BATCH 40 · SIGNATURE PAD · APPROVED A · 2026-10-21",
+              "fontFamily": "$font-family",
+              "fontSize": 12,
+              "fontWeight": "600",
+              "letterSpacing": 0.8
+            },
+            {
+              "type": "text",
+              "id": "zsCyB",
+              "name": "Title",
+              "fill": "$color-heading",
+              "content": "Signature pad",
+              "fontFamily": "$font-family",
+              "fontSize": 36,
+              "fontWeight": "700",
+              "letterSpacing": -0.8
+            },
+            {
+              "type": "text",
+              "id": "A9JrKG",
+              "name": "Lead",
+              "fill": "$color-text-secondary",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Approved by Jafar 2026-10-21: A · Refined pad (B signing slip deleted). ui/SignaturePad, in Collect signature on a quote and on a job and on the quote the customer opens online. Restyle only: the same Type it / Draw it choice, the paper, the line, the same caption words, Full name and Clear. Nothing is added or taken away. The switch and Clear share one row above the paper; the paper has 12 corners, room to sign and a × mark at the start of the line; Full name sits under the paper. The paper stays white with dark ink in both modes, as today, because the signature ends up in a PDF and on a printout. The chosen switch icon takes the record's colour (Quote pink here; Job green on a job). Researched against DocuSign, Dropbox Sign, Adobe Acrobat Sign and Jobber.",
+              "lineHeight": 1.45,
+              "fontFamily": "$font-family",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "N0cR1",
+          "name": "Part 1 · Pick a look",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "children": [
+            {
+              "type": "frame",
+              "id": "S4KXC3",
+              "name": "Heading",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "hi4F1",
+                  "name": "Title",
+                  "fill": "$color-heading",
+                  "content": "Part 1 · Approved A",
+                  "fontFamily": "$font-family",
+                  "fontSize": 24,
+                  "fontWeight": "700",
+                  "letterSpacing": -0.4
+                },
+                {
+                  "type": "text",
+                  "id": "wISeR",
+                  "name": "Desc",
+                  "fill": "$color-text-secondary",
+                  "content": "Inside the Collect signature pop-up on a quote (600 wide, body 560). Maria has drawn her signature.",
+                  "fontFamily": "$font-family",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "zL09x",
+              "name": "Options",
+              "width": "fill_container",
+              "gap": 40,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ok52t",
+                  "name": "Option A · Refined pad",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "f7USo",
+                      "name": "Option heading",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "T9QSrD",
+                          "name": "Title",
+                          "fill": "$color-heading",
+                          "content": "A · Refined pad · approved",
+                          "fontFamily": "$font-family",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "JLo7U",
+                          "name": "Desc",
+                          "fill": "$color-text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Improves today's pad: the Type it / Draw it switch and Clear share one row above the paper; the paper gets softer corners, more room to sign and a × mark at the start of the line. Full name sits under the paper, as today.",
+                          "lineHeight": 1.45,
+                          "fontFamily": "$font-family",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "NKCXg",
+                      "name": "Pop-up body",
+                      "width": 600,
+                      "fill": "$color-surface",
+                      "cornerRadius": 16,
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "zAN65",
+                          "name": "Signature pad · A",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 12,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "w1ojT",
+                              "name": "Top row",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "UZLHf",
+                                  "name": "Type it / Draw it",
+                                  "fill": "$color-surface-background-subtle",
+                                  "cornerRadius": "$radius-base",
+                                  "stroke": "$color-border",
+                                  "strokeWidth": 1,
+                                  "gap": 2,
+                                  "padding": 3,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "l5uit2",
+                                      "name": "Option · Type it",
+                                      "height": 32,
+                                      "cornerRadius": 6,
+                                      "gap": 6,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "sqGGy",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "keyboard",
+                                          "library": "lucide",
+                                          "fill": "$color-icon-secondary"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "jzm6q",
+                                          "name": "Label",
+                                          "fill": "$color-text-secondary",
+                                          "content": "Type it",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-label",
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "L5h0Y2",
+                                      "name": "Option · Draw it",
+                                      "height": 32,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 6,
+                                      "stroke": "$color-border-interactive",
+                                      "strokeWidth": 1,
+                                      "effect": {
+                                        "type": "shadow",
+                                        "shadowType": "outer",
+                                        "color": "#1f2a2414",
+                                        "offset": {
+                                          "x": 0,
+                                          "y": 1
+                                        },
+                                        "blur": 2
+                                      },
+                                      "gap": 6,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "q1mh9",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "signature",
+                                          "library": "lucide",
+                                          "fill": "$color-quote"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "z2stk",
+                                          "name": "Label",
+                                          "fill": "$color-heading",
+                                          "content": "Draw it",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-label",
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ybzMX",
+                                  "name": "Clear",
+                                  "height": 32,
+                                  "fill": "$color-surface",
+                                  "cornerRadius": "$radius-base",
+                                  "stroke": "$color-border-interactive",
+                                  "strokeWidth": 1,
+                                  "effect": {
+                                    "type": "shadow",
+                                    "shadowType": "outer",
+                                    "color": "#032b3a14",
+                                    "offset": {
+                                      "x": 0,
+                                      "y": 1
+                                    },
+                                    "blur": 2
+                                  },
+                                  "gap": 6,
+                                  "padding": [
+                                    0,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "PlNBl",
+                                      "name": "Icon",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "eraser",
+                                      "library": "lucide",
+                                      "fill": "$color-icon"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "FGv1m",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "content": "Clear",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "XBmRy",
+                              "name": "Sheet · paper",
+                              "theme": {
+                                "mode": "light"
+                              },
+                              "width": "fill_container",
+                              "fill": "#ffffff",
+                              "cornerRadius": 12,
+                              "stroke": "$color-border-interactive",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": 8,
+                              "padding": [
+                                16,
+                                20,
+                                14,
+                                20
+                              ],
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "G2U1e",
+                                  "name": "Signature area",
+                                  "width": "fill_container",
+                                  "height": 128,
+                                  "layout": "vertical",
+                                  "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    8
+                                  ],
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "BH7Fb",
+                                      "name": "Drawn signature",
+                                      "fill": "#111827",
+                                      "content": "Maria Gonzalez",
+                                      "lineHeight": 1,
+                                      "fontFamily": "Herr Von Muellerhoff",
+                                      "fontSize": 64,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "cQKuf",
+                                  "name": "Baseline",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "bxB0H",
+                                      "name": "Sign mark ×",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "x",
+                                      "library": "lucide",
+                                      "fill": "$color-icon-secondary"
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "id": "Kl7uM",
+                                      "name": "Line",
+                                      "fill": "$color-border-interactive",
+                                      "width": "fill_container",
+                                      "height": 1
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "p5OeP",
+                                  "name": "Caption",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Sign above with your finger or mouse",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "l7VY1",
+                              "type": "ref",
+                              "ref": "WQADE",
+                              "name": "Full name",
+                              "width": "fill_container",
+                              "descendants": {
+                                "lAbk4": {
+                                  "content": "Full name",
+                                  "fill": "$color-heading"
+                                },
+                                "X0Di91": {
+                                  "content": "Maria Gonzalez",
+                                  "fill": "$color-heading"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "D2wtM3",
+          "name": "Part 2 · Every state",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "children": [
+            {
+              "type": "frame",
+              "id": "nkU1D",
+              "name": "Heading",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "rlBXM",
+                  "name": "Title",
+                  "fill": "$color-heading",
+                  "content": "Part 2 · Every state",
+                  "fontFamily": "$font-family",
+                  "fontSize": 24,
+                  "fontWeight": "700",
+                  "letterSpacing": -0.4
+                },
+                {
+                  "type": "text",
+                  "id": "MYd7K",
+                  "name": "Desc",
+                  "fill": "$color-text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Six moments, as the pad behaves today: it opens on Type it; switching to Draw it starts an empty paper; Clear wakes up once there is ink; everything locks while the signature saves.",
+                  "lineHeight": 1.45,
+                  "fontFamily": "$font-family",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "U9E0Al",
+              "name": "Option A · states",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "kPuA5",
+                  "name": "Option title",
+                  "fill": "$color-heading",
+                  "content": "A · Refined pad",
+                  "fontFamily": "$font-family",
+                  "fontSize": 18,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "MBvrM",
+                  "name": "Row",
+                  "width": "fill_container",
+                  "gap": 40,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ugRy1",
+                      "name": "A · Type it · no name yet · mouse over Draw it",
+                      "width": 600,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "jpsoJ",
+                          "name": "State label",
+                          "fill": "$color-heading",
+                          "content": "A · Type it · no name yet · mouse over Draw it",
+                          "fontFamily": "$font-family",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Mi73n",
+                          "name": "Pop-up body",
+                          "width": 600,
+                          "fill": "$color-surface",
+                          "cornerRadius": 16,
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "padding": 20,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "lRw99",
+                              "name": "Signature pad · A",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "p3oTC",
+                                  "name": "Top row",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "BmFv8",
+                                      "name": "Type it / Draw it",
+                                      "fill": "$color-surface-background-subtle",
+                                      "cornerRadius": "$radius-base",
+                                      "stroke": "$color-border",
+                                      "strokeWidth": 1,
+                                      "gap": 2,
+                                      "padding": 3,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "peDKH",
+                                          "name": "Option · Type it",
+                                          "height": 32,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 6,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "effect": {
+                                            "type": "shadow",
+                                            "shadowType": "outer",
+                                            "color": "#1f2a2414",
+                                            "offset": {
+                                              "x": 0,
+                                              "y": 1
+                                            },
+                                            "blur": 2
+                                          },
+                                          "gap": 6,
+                                          "padding": [
+                                            0,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "UK38M",
+                                              "name": "Icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "keyboard",
+                                              "library": "lucide",
+                                              "fill": "$color-quote"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "X05bB",
+                                              "name": "Label",
+                                              "fill": "$color-heading",
+                                              "content": "Type it",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "hIwMi",
+                                          "name": "Option · Draw it · hover",
+                                          "height": 32,
+                                          "fill": "$color-surface-hover",
+                                          "cornerRadius": 6,
+                                          "gap": 6,
+                                          "padding": [
+                                            0,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "H92EPf",
+                                              "name": "Icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "signature",
+                                              "library": "lucide",
+                                              "fill": "$color-icon-secondary"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "IhnFB",
+                                              "name": "Label",
+                                              "fill": "$color-heading",
+                                              "content": "Draw it",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "F5tHCq",
+                                  "name": "Sheet · paper",
+                                  "theme": {
+                                    "mode": "light"
+                                  },
+                                  "width": "fill_container",
+                                  "fill": "#ffffff",
+                                  "cornerRadius": 12,
+                                  "stroke": "$color-border-interactive",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "padding": [
+                                    16,
+                                    20,
+                                    14,
+                                    20
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "q1zHNO",
+                                      "name": "Signature area",
+                                      "width": "fill_container",
+                                      "height": 128,
+                                      "layout": "vertical",
+                                      "padding": [
+                                        0,
+                                        0,
+                                        0,
+                                        8
+                                      ],
+                                      "justifyContent": "end"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "ttubY",
+                                      "name": "Baseline",
+                                      "width": "fill_container",
+                                      "gap": 10,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "Ru54g",
+                                          "name": "Sign mark ×",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "x",
+                                          "library": "lucide",
+                                          "fill": "$color-icon-secondary"
+                                        },
+                                        {
+                                          "type": "rectangle",
+                                          "id": "diaXa",
+                                          "name": "Line",
+                                          "fill": "$color-border-interactive",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "knqXw",
+                                      "name": "Caption",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Your name is your signature",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "R9Y5DF",
+                                  "type": "ref",
+                                  "ref": "WQADE",
+                                  "name": "Full name",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "lAbk4": {
+                                      "content": "Full name",
+                                      "fill": "$color-heading"
+                                    },
+                                    "X0Di91": {
+                                      "content": " ",
+                                      "fill": "$color-heading"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "tg9eS",
+                      "name": "A · Type it · typing the name",
+                      "width": 600,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "l1H4hl",
+                          "name": "State label",
+                          "fill": "$color-heading",
+                          "content": "A · Type it · typing the name",
+                          "fontFamily": "$font-family",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ow1Zj",
+                          "name": "Pop-up body",
+                          "width": 600,
+                          "fill": "$color-surface",
+                          "cornerRadius": 16,
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "padding": 20,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "yHWv6",
+                              "name": "Signature pad · A",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "ULmIW",
+                                  "name": "Top row",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "EBYId",
+                                      "name": "Type it / Draw it",
+                                      "fill": "$color-surface-background-subtle",
+                                      "cornerRadius": "$radius-base",
+                                      "stroke": "$color-border",
+                                      "strokeWidth": 1,
+                                      "gap": 2,
+                                      "padding": 3,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "Iexij",
+                                          "name": "Option · Type it",
+                                          "height": 32,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 6,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "effect": {
+                                            "type": "shadow",
+                                            "shadowType": "outer",
+                                            "color": "#1f2a2414",
+                                            "offset": {
+                                              "x": 0,
+                                              "y": 1
+                                            },
+                                            "blur": 2
+                                          },
+                                          "gap": 6,
+                                          "padding": [
+                                            0,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "K67UND",
+                                              "name": "Icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "keyboard",
+                                              "library": "lucide",
+                                              "fill": "$color-quote"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "txlMP",
+                                              "name": "Label",
+                                              "fill": "$color-heading",
+                                              "content": "Type it",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "cxFxl",
+                                          "name": "Option · Draw it",
+                                          "height": 32,
+                                          "cornerRadius": 6,
+                                          "gap": 6,
+                                          "padding": [
+                                            0,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "w31LcW",
+                                              "name": "Icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "signature",
+                                              "library": "lucide",
+                                              "fill": "$color-icon-secondary"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "IJaNh",
+                                              "name": "Label",
+                                              "fill": "$color-text-secondary",
+                                              "content": "Draw it",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "mpzib",
+                                  "name": "Sheet · paper",
+                                  "theme": {
+                                    "mode": "light"
+                                  },
+                                  "width": "fill_container",
+                                  "fill": "#ffffff",
+                                  "cornerRadius": 12,
+                                  "stroke": "$color-border-interactive",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "padding": [
+                                    16,
+                                    20,
+                                    14,
+                                    20
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "MeBZL",
+                                      "name": "Signature area",
+                                      "width": "fill_container",
+                                      "height": 128,
+                                      "layout": "vertical",
+                                      "padding": [
+                                        0,
+                                        0,
+                                        0,
+                                        8
+                                      ],
+                                      "justifyContent": "end",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "cM3u9",
+                                          "name": "Typed signature",
+                                          "fill": "#111827",
+                                          "content": "Maria Gonzalez",
+                                          "lineHeight": 1.1,
+                                          "fontFamily": "Dancing Script",
+                                          "fontSize": 36,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "bhnYg",
+                                      "name": "Baseline",
+                                      "width": "fill_container",
+                                      "gap": 10,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "K5EZbv",
+                                          "name": "Sign mark ×",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "x",
+                                          "library": "lucide",
+                                          "fill": "$color-icon-secondary"
+                                        },
+                                        {
+                                          "type": "rectangle",
+                                          "id": "vUh1F",
+                                          "name": "Line",
+                                          "fill": "$color-border-interactive",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "LH812",
+                                      "name": "Caption",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Your name is your signature",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "XTyqE",
+                                  "type": "ref",
+                                  "ref": "WQADE",
+                                  "name": "Full name · typing",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "lAbk4": {
+                                      "content": "Full name",
+                                      "fill": "$color-heading"
+                                    },
+                                    "H4g7H": {
+                                      "stroke": "$color-focus",
+                                      "strokeWidth": 2
+                                    },
+                                    "X0Di91": {
+                                      "content": "Maria Gonzalez|",
+                                      "fill": "$color-heading"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "YJluh",
+                  "name": "Row",
+                  "width": "fill_container",
+                  "gap": 40,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ENcWY",
+                      "name": "A · Draw it · nothing drawn (Clear can't be pressed)",
+                      "width": 600,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "N0O3tq",
+                          "name": "State label",
+                          "fill": "$color-heading",
+                          "content": "A · Draw it · nothing drawn (Clear can't be pressed)",
+                          "fontFamily": "$font-family",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "XtjLA",
+                          "name": "Pop-up body",
+                          "width": 600,
+                          "fill": "$color-surface",
+                          "cornerRadius": 16,
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "padding": 20,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "WGyFK",
+                              "name": "Signature pad · A",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "y5G6yE",
+                                  "name": "Top row",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "oPjJo",
+                                      "name": "Type it / Draw it",
+                                      "fill": "$color-surface-background-subtle",
+                                      "cornerRadius": "$radius-base",
+                                      "stroke": "$color-border",
+                                      "strokeWidth": 1,
+                                      "gap": 2,
+                                      "padding": 3,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "Y30Ql",
+                                          "name": "Option · Type it",
+                                          "height": 32,
+                                          "cornerRadius": 6,
+                                          "gap": 6,
+                                          "padding": [
+                                            0,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "zsJeE",
+                                              "name": "Icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "keyboard",
+                                              "library": "lucide",
+                                              "fill": "$color-icon-secondary"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "MLDNB",
+                                              "name": "Label",
+                                              "fill": "$color-text-secondary",
+                                              "content": "Type it",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "uMrk9",
+                                          "name": "Option · Draw it",
+                                          "height": 32,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 6,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "effect": {
+                                            "type": "shadow",
+                                            "shadowType": "outer",
+                                            "color": "#1f2a2414",
+                                            "offset": {
+                                              "x": 0,
+                                              "y": 1
+                                            },
+                                            "blur": 2
+                                          },
+                                          "gap": 6,
+                                          "padding": [
+                                            0,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "O2xOec",
+                                              "name": "Icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "signature",
+                                              "library": "lucide",
+                                              "fill": "$color-quote"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "UYeJu",
+                                              "name": "Label",
+                                              "fill": "$color-heading",
+                                              "content": "Draw it",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "v3wj7J",
+                                      "name": "Clear · can't press",
+                                      "height": 32,
+                                      "fill": "$color-disabled-secondary",
+                                      "cornerRadius": "$radius-base",
+                                      "stroke": "$color-disabled-secondary",
+                                      "strokeWidth": 1,
+                                      "gap": 6,
+                                      "padding": [
+                                        0,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "FPfbe",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "eraser",
+                                          "library": "lucide",
+                                          "fill": "$color-disabled"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "BzQuP",
+                                          "name": "Label",
+                                          "fill": "$color-disabled",
+                                          "content": "Clear",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-label",
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "h4VR29",
+                                  "name": "Sheet · paper",
+                                  "theme": {
+                                    "mode": "light"
+                                  },
+                                  "width": "fill_container",
+                                  "fill": "#ffffff",
+                                  "cornerRadius": 12,
+                                  "stroke": "$color-border-interactive",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "padding": [
+                                    16,
+                                    20,
+                                    14,
+                                    20
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "O7wmpS",
+                                      "name": "Signature area",
+                                      "width": "fill_container",
+                                      "height": 128,
+                                      "layout": "vertical",
+                                      "padding": [
+                                        0,
+                                        0,
+                                        0,
+                                        8
+                                      ],
+                                      "justifyContent": "end"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "zpY8W",
+                                      "name": "Baseline",
+                                      "width": "fill_container",
+                                      "gap": 10,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "L6kD0",
+                                          "name": "Sign mark ×",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "x",
+                                          "library": "lucide",
+                                          "fill": "$color-icon-secondary"
+                                        },
+                                        {
+                                          "type": "rectangle",
+                                          "id": "u1fZq",
+                                          "name": "Line",
+                                          "fill": "$color-border-interactive",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "tsfKp",
+                                      "name": "Caption",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Sign above with your finger or mouse",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "eQNse",
+                                  "type": "ref",
+                                  "ref": "WQADE",
+                                  "name": "Full name",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "lAbk4": {
+                                      "content": "Full name",
+                                      "fill": "$color-heading"
+                                    },
+                                    "X0Di91": {
+                                      "content": " ",
+                                      "fill": "$color-heading"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "J6idSH",
+                      "name": "A · Draw it · signing (finger on the paper)",
+                      "width": 600,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "NKWpp",
+                          "name": "State label",
+                          "fill": "$color-heading",
+                          "content": "A · Draw it · signing (finger on the paper)",
+                          "fontFamily": "$font-family",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "W4L2U4",
+                          "name": "Pop-up body",
+                          "width": 600,
+                          "fill": "$color-surface",
+                          "cornerRadius": 16,
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "padding": 20,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "iE7pB",
+                              "name": "Signature pad · A",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "O7GMPR",
+                                  "name": "Top row",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "NJsnr",
+                                      "name": "Type it / Draw it",
+                                      "fill": "$color-surface-background-subtle",
+                                      "cornerRadius": "$radius-base",
+                                      "stroke": "$color-border",
+                                      "strokeWidth": 1,
+                                      "gap": 2,
+                                      "padding": 3,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "uRW69",
+                                          "name": "Option · Type it",
+                                          "height": 32,
+                                          "cornerRadius": 6,
+                                          "gap": 6,
+                                          "padding": [
+                                            0,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "ZmjVy",
+                                              "name": "Icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "keyboard",
+                                              "library": "lucide",
+                                              "fill": "$color-icon-secondary"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "oCUad",
+                                              "name": "Label",
+                                              "fill": "$color-text-secondary",
+                                              "content": "Type it",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "DDidT",
+                                          "name": "Option · Draw it",
+                                          "height": 32,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 6,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "effect": {
+                                            "type": "shadow",
+                                            "shadowType": "outer",
+                                            "color": "#1f2a2414",
+                                            "offset": {
+                                              "x": 0,
+                                              "y": 1
+                                            },
+                                            "blur": 2
+                                          },
+                                          "gap": 6,
+                                          "padding": [
+                                            0,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "j2FrHg",
+                                              "name": "Icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "signature",
+                                              "library": "lucide",
+                                              "fill": "$color-quote"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "G28rXs",
+                                              "name": "Label",
+                                              "fill": "$color-heading",
+                                              "content": "Draw it",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "ZLxfp",
+                                      "name": "Clear",
+                                      "height": 32,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": "$radius-base",
+                                      "stroke": "$color-border-interactive",
+                                      "strokeWidth": 1,
+                                      "effect": {
+                                        "type": "shadow",
+                                        "shadowType": "outer",
+                                        "color": "#032b3a14",
+                                        "offset": {
+                                          "x": 0,
+                                          "y": 1
+                                        },
+                                        "blur": 2
+                                      },
+                                      "gap": 6,
+                                      "padding": [
+                                        0,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "W3EAv7",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "eraser",
+                                          "library": "lucide",
+                                          "fill": "$color-icon"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "eAu2W",
+                                          "name": "Label",
+                                          "fill": "$color-heading",
+                                          "content": "Clear",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-label",
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "OKhE4",
+                                  "name": "Sheet · paper · signing",
+                                  "theme": {
+                                    "mode": "light"
+                                  },
+                                  "width": "fill_container",
+                                  "fill": "#ffffff",
+                                  "cornerRadius": 12,
+                                  "stroke": "$color-focus",
+                                  "strokeWidth": 2,
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "padding": [
+                                    16,
+                                    20,
+                                    14,
+                                    20
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "lyoYI",
+                                      "name": "Signature area",
+                                      "width": "fill_container",
+                                      "height": 128,
+                                      "layout": "vertical",
+                                      "padding": [
+                                        0,
+                                        0,
+                                        0,
+                                        8
+                                      ],
+                                      "justifyContent": "end",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "hfzwV",
+                                          "name": "Drawn signature",
+                                          "fill": "#111827",
+                                          "content": "Maria Gonz",
+                                          "lineHeight": 1,
+                                          "fontFamily": "Herr Von Muellerhoff",
+                                          "fontSize": 64,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "j6f3s",
+                                      "name": "Baseline",
+                                      "width": "fill_container",
+                                      "gap": 10,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "VD0B1",
+                                          "name": "Sign mark ×",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "x",
+                                          "library": "lucide",
+                                          "fill": "$color-icon-secondary"
+                                        },
+                                        {
+                                          "type": "rectangle",
+                                          "id": "NLnX0",
+                                          "name": "Line",
+                                          "fill": "$color-border-interactive",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "klVvF",
+                                      "name": "Caption",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Sign above with your finger or mouse",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "xDzzl",
+                                  "type": "ref",
+                                  "ref": "WQADE",
+                                  "name": "Full name",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "lAbk4": {
+                                      "content": "Full name",
+                                      "fill": "$color-heading"
+                                    },
+                                    "X0Di91": {
+                                      "content": " ",
+                                      "fill": "$color-heading"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Bvedk",
+                  "name": "Row",
+                  "width": "fill_container",
+                  "gap": 40,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ZnKd0",
+                      "name": "A · Draw it · signed · mouse over Clear",
+                      "width": 600,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "N5opu6",
+                          "name": "State label",
+                          "fill": "$color-heading",
+                          "content": "A · Draw it · signed · mouse over Clear",
+                          "fontFamily": "$font-family",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "DXuul",
+                          "name": "Pop-up body",
+                          "width": 600,
+                          "fill": "$color-surface",
+                          "cornerRadius": 16,
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "padding": 20,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "YLCMu",
+                              "name": "Signature pad · A",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "cFmY5",
+                                  "name": "Top row",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "ozj36",
+                                      "name": "Type it / Draw it",
+                                      "fill": "$color-surface-background-subtle",
+                                      "cornerRadius": "$radius-base",
+                                      "stroke": "$color-border",
+                                      "strokeWidth": 1,
+                                      "gap": 2,
+                                      "padding": 3,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "zteKw",
+                                          "name": "Option · Type it",
+                                          "height": 32,
+                                          "cornerRadius": 6,
+                                          "gap": 6,
+                                          "padding": [
+                                            0,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "XKQMz",
+                                              "name": "Icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "keyboard",
+                                              "library": "lucide",
+                                              "fill": "$color-icon-secondary"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "IielL",
+                                              "name": "Label",
+                                              "fill": "$color-text-secondary",
+                                              "content": "Type it",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "dBacM",
+                                          "name": "Option · Draw it",
+                                          "height": 32,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 6,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "effect": {
+                                            "type": "shadow",
+                                            "shadowType": "outer",
+                                            "color": "#1f2a2414",
+                                            "offset": {
+                                              "x": 0,
+                                              "y": 1
+                                            },
+                                            "blur": 2
+                                          },
+                                          "gap": 6,
+                                          "padding": [
+                                            0,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "x0jYdc",
+                                              "name": "Icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "signature",
+                                              "library": "lucide",
+                                              "fill": "$color-quote"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "XVsEy",
+                                              "name": "Label",
+                                              "fill": "$color-heading",
+                                              "content": "Draw it",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "tJm91",
+                                      "name": "Clear · hover",
+                                      "height": 32,
+                                      "fill": "$color-surface-hover",
+                                      "cornerRadius": "$radius-base",
+                                      "stroke": "$color-border-interactive-hover",
+                                      "strokeWidth": 1,
+                                      "effect": {
+                                        "type": "shadow",
+                                        "shadowType": "outer",
+                                        "color": "#032b3a14",
+                                        "offset": {
+                                          "x": 0,
+                                          "y": 1
+                                        },
+                                        "blur": 2
+                                      },
+                                      "gap": 6,
+                                      "padding": [
+                                        0,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "ZnIrt",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "eraser",
+                                          "library": "lucide",
+                                          "fill": "$color-icon"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "iVmbE",
+                                          "name": "Label",
+                                          "fill": "$color-heading",
+                                          "content": "Clear",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-label",
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "aYqZv",
+                                  "name": "Sheet · paper",
+                                  "theme": {
+                                    "mode": "light"
+                                  },
+                                  "width": "fill_container",
+                                  "fill": "#ffffff",
+                                  "cornerRadius": 12,
+                                  "stroke": "$color-border-interactive",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "padding": [
+                                    16,
+                                    20,
+                                    14,
+                                    20
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "RrRVK",
+                                      "name": "Signature area",
+                                      "width": "fill_container",
+                                      "height": 128,
+                                      "layout": "vertical",
+                                      "padding": [
+                                        0,
+                                        0,
+                                        0,
+                                        8
+                                      ],
+                                      "justifyContent": "end",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Q5zqD",
+                                          "name": "Drawn signature",
+                                          "fill": "#111827",
+                                          "content": "Maria Gonzalez",
+                                          "lineHeight": 1,
+                                          "fontFamily": "Herr Von Muellerhoff",
+                                          "fontSize": 64,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "FUkiU",
+                                      "name": "Baseline",
+                                      "width": "fill_container",
+                                      "gap": 10,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "QFkAk",
+                                          "name": "Sign mark ×",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "x",
+                                          "library": "lucide",
+                                          "fill": "$color-icon-secondary"
+                                        },
+                                        {
+                                          "type": "rectangle",
+                                          "id": "Oqw7k",
+                                          "name": "Line",
+                                          "fill": "$color-border-interactive",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "h2etXn",
+                                      "name": "Caption",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Sign above with your finger or mouse",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "mzZPS",
+                                  "type": "ref",
+                                  "ref": "WQADE",
+                                  "name": "Full name",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "lAbk4": {
+                                      "content": "Full name",
+                                      "fill": "$color-heading"
+                                    },
+                                    "X0Di91": {
+                                      "content": "Maria Gonzalez",
+                                      "fill": "$color-heading"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "hcwYe",
+                      "name": "A · Saving · can't change",
+                      "width": 600,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "mJumL",
+                          "name": "State label",
+                          "fill": "$color-heading",
+                          "content": "A · Saving · can't change",
+                          "fontFamily": "$font-family",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "EX1Dz",
+                          "name": "Pop-up body",
+                          "width": 600,
+                          "fill": "$color-surface",
+                          "cornerRadius": 16,
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "padding": 20,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "oToK1",
+                              "name": "Signature pad · A",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Fjnwd",
+                                  "name": "Top row",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "Fjfxg",
+                                      "name": "Type it / Draw it",
+                                      "fill": "$color-surface-background-subtle",
+                                      "cornerRadius": "$radius-base",
+                                      "stroke": "$color-border",
+                                      "strokeWidth": 1,
+                                      "gap": 2,
+                                      "padding": 3,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "s8eiB0",
+                                          "name": "Option · Type it",
+                                          "height": 32,
+                                          "cornerRadius": 6,
+                                          "gap": 6,
+                                          "padding": [
+                                            0,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "oUXrc",
+                                              "name": "Icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "keyboard",
+                                              "library": "lucide",
+                                              "fill": "$color-disabled"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "sAKQv",
+                                              "name": "Label",
+                                              "fill": "$color-disabled",
+                                              "content": "Type it",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "OvYpW",
+                                          "name": "Option · Draw it",
+                                          "height": 32,
+                                          "fill": "$color-disabled-secondary",
+                                          "cornerRadius": 6,
+                                          "stroke": "$color-border",
+                                          "strokeWidth": 1,
+                                          "gap": 6,
+                                          "padding": [
+                                            0,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "fnWTP",
+                                              "name": "Icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "signature",
+                                              "library": "lucide",
+                                              "fill": "$color-disabled"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "ZSYnu",
+                                              "name": "Label",
+                                              "fill": "$color-disabled",
+                                              "content": "Draw it",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": "$font-size-label",
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "eTYfQ",
+                                      "name": "Clear · can't press",
+                                      "height": 32,
+                                      "fill": "$color-disabled-secondary",
+                                      "cornerRadius": "$radius-base",
+                                      "stroke": "$color-disabled-secondary",
+                                      "strokeWidth": 1,
+                                      "gap": 6,
+                                      "padding": [
+                                        0,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "I63ntc",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "eraser",
+                                          "library": "lucide",
+                                          "fill": "$color-disabled"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "TSu0s",
+                                          "name": "Label",
+                                          "fill": "$color-disabled",
+                                          "content": "Clear",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-label",
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "rRibw",
+                                  "name": "Sheet · paper",
+                                  "theme": {
+                                    "mode": "light"
+                                  },
+                                  "width": "fill_container",
+                                  "fill": "#ffffff",
+                                  "cornerRadius": 12,
+                                  "stroke": "$color-border",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "padding": [
+                                    16,
+                                    20,
+                                    14,
+                                    20
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "koyaY",
+                                      "name": "Signature area",
+                                      "width": "fill_container",
+                                      "height": 128,
+                                      "layout": "vertical",
+                                      "padding": [
+                                        0,
+                                        0,
+                                        0,
+                                        8
+                                      ],
+                                      "justifyContent": "end",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "fRFrM",
+                                          "name": "Drawn signature",
+                                          "fill": "#11182780",
+                                          "content": "Maria Gonzalez",
+                                          "lineHeight": 1,
+                                          "fontFamily": "Herr Von Muellerhoff",
+                                          "fontSize": 64,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "wgbe7",
+                                      "name": "Baseline",
+                                      "width": "fill_container",
+                                      "gap": 10,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "hzIYd",
+                                          "name": "Sign mark ×",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "x",
+                                          "library": "lucide",
+                                          "fill": "$color-icon-secondary"
+                                        },
+                                        {
+                                          "type": "rectangle",
+                                          "id": "SOgnu",
+                                          "name": "Line",
+                                          "fill": "$color-border-interactive",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "wdprT",
+                                      "name": "Caption",
+                                      "fill": "$color-disabled",
+                                      "content": "Sign above with your finger or mouse",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "xyc4M",
+                                  "type": "ref",
+                                  "ref": "WQADE",
+                                  "name": "Full name",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "lAbk4": {
+                                      "content": "Full name",
+                                      "fill": "$color-disabled"
+                                    },
+                                    "H4g7H": {
+                                      "fill": "$color-disabled-secondary",
+                                      "stroke": "$color-border"
+                                    },
+                                    "X0Di91": {
+                                      "content": "Maria Gonzalez",
+                                      "fill": "$color-disabled"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "cFbm1",
+          "name": "Part 3 · Dark mode",
+          "theme": {
+            "mode": "dark"
+          },
+          "width": "fill_container",
+          "fill": "$color-surface-background",
+          "cornerRadius": 24,
+          "layout": "vertical",
+          "gap": 24,
+          "padding": 32,
+          "children": [
+            {
+              "type": "frame",
+              "id": "W89nto",
+              "name": "Heading",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "MHa7d",
+                  "name": "Title",
+                  "fill": "$color-heading",
+                  "content": "Part 3 · Dark mode",
+                  "fontFamily": "$font-family",
+                  "fontSize": 24,
+                  "fontWeight": "700",
+                  "letterSpacing": -0.4
+                },
+                {
+                  "type": "text",
+                  "id": "uywPw",
+                  "name": "Desc",
+                  "fill": "$color-text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Everything around the paper follows dark mode; the paper itself stays white with dark ink, as today, because the signature is saved as a picture for the PDF and the printout.",
+                  "lineHeight": 1.45,
+                  "fontFamily": "$font-family",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "R1pL3",
+              "name": "Option A · dark",
+              "width": "fill_container",
+              "gap": 40,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "olqXv",
+                  "name": "A · Type it · typed",
+                  "width": 600,
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "SQELl",
+                      "name": "State label",
+                      "fill": "$color-heading",
+                      "content": "A · Type it · typed",
+                      "fontFamily": "$font-family",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "b7BMSS",
+                      "name": "Pop-up body",
+                      "width": 600,
+                      "fill": "$color-surface",
+                      "cornerRadius": 16,
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "HNBAG",
+                          "name": "Signature pad · A",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 12,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "RwADy",
+                              "name": "Top row",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "t22aGu",
+                                  "name": "Type it / Draw it",
+                                  "fill": "$color-surface-background-subtle",
+                                  "cornerRadius": "$radius-base",
+                                  "stroke": "$color-border",
+                                  "strokeWidth": 1,
+                                  "gap": 2,
+                                  "padding": 3,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "y6o6x",
+                                      "name": "Option · Type it",
+                                      "height": 32,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 6,
+                                      "stroke": "$color-border-interactive",
+                                      "strokeWidth": 1,
+                                      "effect": {
+                                        "type": "shadow",
+                                        "shadowType": "outer",
+                                        "color": "#1f2a2414",
+                                        "offset": {
+                                          "x": 0,
+                                          "y": 1
+                                        },
+                                        "blur": 2
+                                      },
+                                      "gap": 6,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "sjYvG",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "keyboard",
+                                          "library": "lucide",
+                                          "fill": "$color-quote"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "I6mrU",
+                                          "name": "Label",
+                                          "fill": "$color-heading",
+                                          "content": "Type it",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-label",
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "GcseO",
+                                      "name": "Option · Draw it",
+                                      "height": 32,
+                                      "cornerRadius": 6,
+                                      "gap": 6,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "NwrV7",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "signature",
+                                          "library": "lucide",
+                                          "fill": "$color-icon-secondary"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "h7HfQ",
+                                          "name": "Label",
+                                          "fill": "$color-text-secondary",
+                                          "content": "Draw it",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-label",
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "nEy55",
+                              "name": "Sheet · paper",
+                              "theme": {
+                                "mode": "light"
+                              },
+                              "width": "fill_container",
+                              "fill": "#ffffff",
+                              "cornerRadius": 12,
+                              "stroke": "$color-border-interactive",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": 8,
+                              "padding": [
+                                16,
+                                20,
+                                14,
+                                20
+                              ],
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "ARei4",
+                                  "name": "Signature area",
+                                  "width": "fill_container",
+                                  "height": 128,
+                                  "layout": "vertical",
+                                  "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    8
+                                  ],
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "XSD1N",
+                                      "name": "Typed signature",
+                                      "fill": "#111827",
+                                      "content": "Maria Gonzalez",
+                                      "lineHeight": 1.1,
+                                      "fontFamily": "Dancing Script",
+                                      "fontSize": 36,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "etHGv",
+                                  "name": "Baseline",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "apkhX",
+                                      "name": "Sign mark ×",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "x",
+                                      "library": "lucide",
+                                      "fill": "$color-icon-secondary"
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "id": "P95Ao",
+                                      "name": "Line",
+                                      "fill": "$color-border-interactive",
+                                      "width": "fill_container",
+                                      "height": 1
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "wXIyr",
+                                  "name": "Caption",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Your name is your signature",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "ZTyA5",
+                              "type": "ref",
+                              "ref": "WQADE",
+                              "name": "Full name",
+                              "width": "fill_container",
+                              "descendants": {
+                                "lAbk4": {
+                                  "content": "Full name",
+                                  "fill": "$color-heading"
+                                },
+                                "X0Di91": {
+                                  "content": "Maria Gonzalez",
+                                  "fill": "$color-heading"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "JjSgV",
+                  "name": "A · Draw it · signed",
+                  "width": 600,
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "w2kpa",
+                      "name": "State label",
+                      "fill": "$color-heading",
+                      "content": "A · Draw it · signed",
+                      "fontFamily": "$font-family",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "GeTti",
+                      "name": "Pop-up body",
+                      "width": 600,
+                      "fill": "$color-surface",
+                      "cornerRadius": 16,
+                      "stroke": "$color-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "t4W4gg",
+                          "name": "Signature pad · A",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 12,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Yqkxr",
+                              "name": "Top row",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "o1pw6J",
+                                  "name": "Type it / Draw it",
+                                  "fill": "$color-surface-background-subtle",
+                                  "cornerRadius": "$radius-base",
+                                  "stroke": "$color-border",
+                                  "strokeWidth": 1,
+                                  "gap": 2,
+                                  "padding": 3,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "UkOJP",
+                                      "name": "Option · Type it",
+                                      "height": 32,
+                                      "cornerRadius": 6,
+                                      "gap": 6,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "klhmd",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "keyboard",
+                                          "library": "lucide",
+                                          "fill": "$color-icon-secondary"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "cPHzh",
+                                          "name": "Label",
+                                          "fill": "$color-text-secondary",
+                                          "content": "Type it",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-label",
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "z4OBO",
+                                      "name": "Option · Draw it",
+                                      "height": 32,
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 6,
+                                      "stroke": "$color-border-interactive",
+                                      "strokeWidth": 1,
+                                      "effect": {
+                                        "type": "shadow",
+                                        "shadowType": "outer",
+                                        "color": "#1f2a2414",
+                                        "offset": {
+                                          "x": 0,
+                                          "y": 1
+                                        },
+                                        "blur": 2
+                                      },
+                                      "gap": 6,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "ix3sa",
+                                          "name": "Icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "signature",
+                                          "library": "lucide",
+                                          "fill": "$color-quote"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "UJMS8",
+                                          "name": "Label",
+                                          "fill": "$color-heading",
+                                          "content": "Draw it",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": "$font-size-label",
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "suRAK",
+                                  "name": "Clear",
+                                  "height": 32,
+                                  "fill": "$color-surface",
+                                  "cornerRadius": "$radius-base",
+                                  "stroke": "$color-border-interactive",
+                                  "strokeWidth": 1,
+                                  "effect": {
+                                    "type": "shadow",
+                                    "shadowType": "outer",
+                                    "color": "#032b3a14",
+                                    "offset": {
+                                      "x": 0,
+                                      "y": 1
+                                    },
+                                    "blur": 2
+                                  },
+                                  "gap": 6,
+                                  "padding": [
+                                    0,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "HBcg0",
+                                      "name": "Icon",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "eraser",
+                                      "library": "lucide",
+                                      "fill": "$color-icon"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "f8Gb0o",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "content": "Clear",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": "$font-size-label",
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "W9NFp",
+                              "name": "Sheet · paper",
+                              "theme": {
+                                "mode": "light"
+                              },
+                              "width": "fill_container",
+                              "fill": "#ffffff",
+                              "cornerRadius": 12,
+                              "stroke": "$color-border-interactive",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": 8,
+                              "padding": [
+                                16,
+                                20,
+                                14,
+                                20
+                              ],
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "baefY",
+                                  "name": "Signature area",
+                                  "width": "fill_container",
+                                  "height": 128,
+                                  "layout": "vertical",
+                                  "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    8
+                                  ],
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "nMgpL",
+                                      "name": "Drawn signature",
+                                      "fill": "#111827",
+                                      "content": "Maria Gonzalez",
+                                      "lineHeight": 1,
+                                      "fontFamily": "Herr Von Muellerhoff",
+                                      "fontSize": 64,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "GSLnW",
+                                  "name": "Baseline",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "X2eJQZ",
+                                      "name": "Sign mark ×",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "x",
+                                      "library": "lucide",
+                                      "fill": "$color-icon-secondary"
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "id": "UXXXl",
+                                      "name": "Line",
+                                      "fill": "$color-border-interactive",
+                                      "width": "fill_container",
+                                      "height": 1
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "GtcZt",
+                                  "name": "Caption",
+                                  "fill": "$color-text-secondary",
+                                  "content": "Sign above with your finger or mouse",
+                                  "fontFamily": "$font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "L2tRKz",
+                              "type": "ref",
+                              "ref": "WQADE",
+                              "name": "Full name",
+                              "width": "fill_container",
+                              "descendants": {
+                                "lAbk4": {
+                                  "content": "Full name",
+                                  "fill": "$color-heading"
+                                },
+                                "X0Di91": {
+                                  "content": "Maria Gonzalez",
+                                  "fill": "$color-heading"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "themes": {

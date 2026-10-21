@@ -9,6 +9,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | ↳ `invoices/InvoiceEmailDialog` | ◆ pop-up | ⬜ | ⬜ |
 | `(app)/invoices/new` | `invoices/InvoiceForm` · pop-ups: "form" 🔁F · loading | ✅ Batch 36 `EBLIe` A 2026-10-21 | ✅ Built 2026-10-21 (`parts/new-request-top-form.md`); Select work pop-up not redrawn |
 | ↳ `invoices/SelectWorkDialog` | ◆ pop-up · loading, couldn't load, empty (added 2026-10-21: still the old look after the New invoice build) | ⬜ | ⬜ |
+| ↳ Payment-stage state of New invoice | locked amounts after a deposit or earlier bill (added 2026-10-21: left undrawn by Batch 36) | ⬜ | ⬜ |
 | `(app)/invoices/ready-to-bill` | `invoices/ReadyToBillVisitsPanel` · loading, empty | ⬜ | ⬜ |
 | `(app)/invoices/send` | loading, empty | ⬜ | ⬜ |
 | `(app)/payments/[id=uuid]` | `invoices/PaymentReceiptCard`, `invoices/UnapplyPaymentDialog` 🔁C · pop-ups: "confirm" 🔁C · menus ×1 · loading | ⬜ | ⬜ |

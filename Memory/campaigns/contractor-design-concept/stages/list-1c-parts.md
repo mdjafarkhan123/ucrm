@@ -57,3 +57,10 @@ Key, tick rule and coverage command: `list-index.md`.
 | `layout/AccountGraceBanner` |  | ⬜ | ⬜ |
 | `layout/PausedAccountScreen` |  | ⬜ | ⬜ |
 | `support/SupportMessenger` | loading | ⬜ | ⬜ |
+| `ui/DialogHeader` | added 2026-10-21, built from the pop-up board `v2Y89` | ✅ | ✅ |
+| `ui/IconTile` | added 2026-10-21, built from the pop-up board `v2Y89` | ✅ | ✅ |
+| `ui/MessageSheet` | added 2026-10-21, built from Batch 19 | ✅ | ✅ |
+| `work/CreateFormHeader` | added 2026-10-21, shared create form `NhVGQ` | ✅ | ✅ |
+| `work/DraftMoneyCard` | added 2026-10-21, Batch 35 on create pages | ✅ | ✅ |
+| `work/PricingAdjustmentsPanel` | added 2026-10-21, Job details edit mode `jFBRB` | ✅ | ✅ |
+| `work/RecordMoneyCard` | added 2026-10-21, Batch 35 on saved pages | ✅ | ✅ |

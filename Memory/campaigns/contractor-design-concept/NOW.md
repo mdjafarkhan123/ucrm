@@ -14,7 +14,8 @@ money card before save; `PrimaryInfoCard` deleted. Saved job/quote/invoice pages
 1. Shared parts: `parts/c5-shared-parts.md`. Batches 1–23, 26–28 and 33 merged; 24, 29, 30 approved (25 superseded).
    Batch 35 built on create and saved record pages (2026-10-21). Next, in order, 24, 29, 30. Batches 37
    (customer group), 38 (profile photo, `n2ujB`), 39 (weekly hours, `DhRBV`) approved B; 40 (signature pad, `alWwd`) approved A. Next drawing: empty row in `stages/list-1b-parts.md`;
-   List 1a drawn, DataTable skipped. Older work needs the 12px text sweep.
+   List 1a drawn, DataTable skipped. Gaps found 2026-10-21, waiting to be drawn: Field-worker Home
+   (`list-2a-daily.md`), Select work pop-up and payment-stage state of New invoice (`list-2b-daily.md`). Older work needs the 12px text sweep.
 2. Schedule, event completion and Jobs pop-ups merged; proof `docs/evidence/2026-10-19-schedule/README.md`.
    App fills available width; 1440 is the reference. Migration applied.
 3. Jafar confirms checklist order/pop-up marks: `stages/list-index.md`, `parts/c5a-redesign-checklist.md`.
