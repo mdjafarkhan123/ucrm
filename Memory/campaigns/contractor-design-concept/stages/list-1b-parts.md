@@ -50,7 +50,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `profile/ProfilePhotoDialog` | 🔁F pop-up | ✅ Batch 38 `n2ujB` B 2026-10-21 | ⬜ |
 | `settings/WeeklyHoursEditor` |  | ✅ Batch 39 `DhRBV` B 2026-10-21 | ⬜ |
 | `ui/FilterChipMulti` |  | ✅ Batch 20 `e18rX` 2026-10-20 | ✅ |
-| `ui/SignaturePad` |  | ⬜ | ⬜ |
+| `ui/SignaturePad` |  | 🟡 Batch 40 `alWwd` A/B drawn 2026-10-21 | ⬜ |
 | `automation/InquiryAutomationCard` | pop-ups: "Stop this follow-up?" 🔁C · menus ×1 · loading, empty | ⬜ | ⬜ |
 | `calendar/CalendarCard` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Merged 2026-10-19 |
 | `calendar/CalendarMonthGrid` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Merged 2026-10-19 |
