@@ -1,34 +1,42 @@
 <script lang="ts">
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	import targetIcon from '@tabler/icons/outline/target.svg?raw';
+	import usersIcon from '@tabler/icons/outline/users.svg?raw';
+	import mailIcon from '@tabler/icons/outline/mail.svg?raw';
+	import calendarClockIcon from '@tabler/icons/outline/calendar-clock.svg?raw';
+	import listCheckIcon from '@tabler/icons/outline/list-check.svg?raw';
 
-	// Display-only progress rail for the campaign journey (blueprint §8) -- same contract as
-	// ImportStepper: it never navigates. The draft lives in local state across all five steps and only
-	// Save draft or Back/Continue changes it, so a click on the rail itself does nothing.
+	// Display-only progress track for the campaign journey (design skill `layout.md` → Setup steps → New
+	// campaign): each step stacks its tile over the label and hint, joined by lines level with the tiles. Same
+	// contract as ImportStepper: it never navigates. The draft lives in local state across all five steps and
+	// only Save draft or Back/Continue changes it, so a click on the track itself does nothing.
 	let { current }: { current: number } = $props();
 
 	const steps = [
-		{ n: 1, title: 'Goal', hint: 'Why this campaign' },
-		{ n: 2, title: 'Customers', hint: 'Who receives it' },
-		{ n: 3, title: 'Email', hint: 'Build the message' },
-		{ n: 4, title: 'Delivery', hint: 'When it sends' },
-		{ n: 5, title: 'Review', hint: 'Check and launch' }
+		{ n: 1, title: 'Goal', hint: 'Why this campaign', icon: targetIcon },
+		{ n: 2, title: 'Customers', hint: 'Who receives it', icon: usersIcon },
+		{ n: 3, title: 'Email', hint: 'Build the message', icon: mailIcon },
+		{ n: 4, title: 'Delivery', hint: 'When it sends', icon: calendarClockIcon },
+		{ n: 5, title: 'Review', hint: 'Check and launch', icon: listCheckIcon }
 	];
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
 <ol class="campaign-stepper" aria-label="Campaign steps">
-	{#each steps as step (step.n)}
+	{#each steps as step, index (step.n)}
 		{@const state = step.n < current ? 'done' : step.n === current ? 'active' : 'upcoming'}
+		{#if index > 0}
+			<li
+				class={['campaign-stepper__line', step.n <= current && 'campaign-stepper__line--done']}
+				aria-hidden="true"
+			></li>
+		{/if}
 		<li
 			class="campaign-stepper__step campaign-stepper__step--{state}"
 			aria-current={state === 'active' ? 'step' : undefined}
 		>
-			<span class="campaign-stepper__num" aria-hidden="true">
-				{#if state === 'done'}
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					{@html checkIcon}
-				{:else}
-					{step.n}
-				{/if}
+			<span class="campaign-stepper__tile" aria-hidden="true">
+				{@html state === 'done' ? checkIcon : step.icon}
 			</span>
 			<span class="campaign-stepper__label">
 				<b>{step.title}</b>
@@ -41,72 +49,88 @@
 <style lang="scss">
 	.campaign-stepper {
 		display: flex;
-		gap: var(--space-small);
-		margin: 0 0 var(--space-large);
-		padding: 0;
+		align-items: flex-start;
+		margin: 0;
+		padding: var(--space-base) var(--space-medium);
 		list-style: none;
-		flex-wrap: wrap;
+		border: var(--border-base) solid var(--color-border);
+		border-radius: var(--radius-large);
+		background: var(--color-surface);
 
 		&__step {
-			flex: 1 1 150px;
 			display: flex;
+			flex: 0 0 112px;
+			flex-direction: column;
 			align-items: center;
-			gap: var(--space-slim);
-			background: var(--color-surface);
-			border: 1px solid var(--color-border);
-			border-radius: var(--radius-base);
-			padding: var(--space-slim) var(--space-base);
+			gap: var(--space-small);
+			text-align: center;
+		}
 
-			&--active {
-				border-color: var(--color-interactive);
-				box-shadow: 0 0 0 1px var(--color-interactive);
+		// Level with the middle of the 32 tiles, so it reads as one line through the steps.
+		&__line {
+			flex: 1 1 24px;
+			min-width: 12px;
+			height: 2px;
+			margin-top: 15px;
+			border-radius: var(--radius-circle);
+			background: var(--color-border);
+
+			&--done {
+				background: var(--color-success);
 			}
 		}
 
-		&__num {
-			flex: none;
-			width: 26px;
-			height: 26px;
-			border-radius: var(--radius-circle);
+		&__tile {
 			display: grid;
+			flex: none;
 			place-items: center;
-			font-size: var(--typography--fontSize-small);
-			font-weight: 700;
+			width: 32px;
+			height: 32px;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-base);
 			background: var(--color-surface--background--subtle);
-			color: var(--color-text--secondary);
-			border: 1px solid var(--color-border);
+			color: var(--color-icon--secondary);
 
 			:global(svg) {
-				width: 15px;
-				height: 15px;
+				width: 16px;
+				height: 16px;
 			}
 
 			.campaign-stepper__step--done & {
+				border-color: var(--color-success--surface-edge);
 				background: var(--color-success--surface);
-				color: var(--color-success--onSurface);
-				border-color: transparent;
+				color: var(--color-success);
 			}
 			.campaign-stepper__step--active & {
+				border-color: transparent;
 				background: var(--color-interactive);
 				color: var(--color-text--reverse);
-				border-color: transparent;
 			}
 		}
 
+		// The hint can be a little wider than its 112 slot; it overhangs the line gap evenly on both sides.
 		&__label {
 			display: flex;
 			flex-direction: column;
+			align-items: center;
+			gap: 1px;
 			line-height: var(--typography--lineHeight-tight);
-			min-width: 0;
+			white-space: nowrap;
 
 			b {
-				font-family: var(--typography--fontFamily-display);
-				font-weight: 600;
-				font-size: var(--typography--fontSize-base);
 				color: var(--color-heading);
+				font-size: var(--typography--fontSize-label);
+				font-weight: 600;
 			}
 			span {
+				color: var(--color-text--secondary);
 				font-size: var(--typography--fontSize-small);
+			}
+
+			.campaign-stepper__step--active & b {
+				font-weight: 700;
+			}
+			.campaign-stepper__step--upcoming & b {
 				color: var(--color-text--secondary);
 			}
 		}

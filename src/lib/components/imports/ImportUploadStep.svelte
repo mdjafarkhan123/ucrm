@@ -2,7 +2,7 @@
 	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
-	import ImportStepCard from './ImportStepCard.svelte';
+	import SetupStepCard from '$lib/components/layout/SetupStepCard.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import type { MatchAction } from '$lib/imports/api';
 	import fileIcon from '@tabler/icons/outline/file-spreadsheet.svg?raw';
@@ -72,7 +72,7 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<ImportStepCard {title} hint={subtitle} icon={uploadIcon} {tone}>
+<SetupStepCard {title} hint={subtitle} icon={uploadIcon} {tone}>
 	{#if showMatchAction}
 		<div class="field">
 			<Select
@@ -151,7 +151,7 @@
 			Continue <span class="btn-icon" aria-hidden="true">{@html arrowRightIcon}</span>
 		</Button>
 	{/snippet}
-</ImportStepCard>
+</SetupStepCard>
 
 <style lang="scss">
 	.field {

@@ -2,7 +2,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
-	import ImportStepCard from './ImportStepCard.svelte';
+	import SetupStepCard from '$lib/components/layout/SetupStepCard.svelte';
 	import { IMPORT_FIELD_OPTIONS } from '$lib/imports/api';
 
 	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
@@ -80,7 +80,7 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<ImportStepCard
+<SetupStepCard
 	title="Match your columns to our fields"
 	hint={`${matchedCount} of your ${headers.length} columns are matched. Check them, and pick a field for any that aren't.`}
 	icon={columnsIcon}
@@ -151,7 +151,7 @@
 			Review import <span class="btn-icon" aria-hidden="true">{@html arrowRightIcon}</span>
 		</Button>
 	{/snippet}
-</ImportStepCard>
+</SetupStepCard>
 
 <style lang="scss">
 	.map {
