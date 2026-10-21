@@ -22,7 +22,7 @@
    (318 typed-in font sizes to variables). Batch 52's Pencil changes (`xrJ3f`, variables) wait for Jafar's Ctrl+S
    in Pencil, then a commit of `concept.pen`; design claim `13f52b282f7e` stays until then.
    Batch 51 New campaign · Goal step `t0L1xo` approved A 2026-10-21, waiting to be built
-   (`parts/c5-shared-parts.md`). Batch 53 Customers step drawn on `RPlkr` (A/B), waiting for Jafar's choice; then Email, Delivery, Review
+   (`parts/c5-shared-parts.md`). Batch 53 Customers step `RPlkr` approved B 2026-10-21, waiting to be built. Next drawing: the Email step on the same frame, then Delivery, Review
    (`stages/list-1c-parts.md`). Gaps: Field-worker Home
    (`list-2a-daily.md`), Select work pop-up and payment-stage New invoice (`list-2b-daily.md`); 12px text sweep.
 3. **Jafar decides:** checklist order and pop-up marks
