@@ -34,3 +34,11 @@ browser tour or broad campaign checks were run.
 - Prettier on changed Svelte files; git diff whitespace check clean.
 
 At Jafar's 2026-10-21 instruction, further long checks are deferred to campaign closing.
+
+## Integrated live proof
+
+2026-10-21: Jafar authorised integration while preserving Claude's design files. Merged into main,
+then opened `https://app.upliftcontractor.com/jobs` in the integrated browser: six KPI cards with real
+owner data. Screenshot: `main-jobs-live.jpg`. The pre/post merge hashes of `concept.pen` and the unsaved
+`design/guide.md` match. New Money summary card design guidance from main was retained. No further
+long checks were run after Jafar's instruction.

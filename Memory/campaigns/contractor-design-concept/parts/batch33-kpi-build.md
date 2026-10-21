@@ -1,6 +1,6 @@
 # Batch 33 — shared number cards
 
-**Stage:** Built and browser-verified; final live integration in progress.
+**Stage:** Done — merged into main and confirmed on the live app 2026-10-21.
 **Approval:** B, `concept.pen` board `fzPaM`, Jafar 2026-10-21.
 **Branch:** `codex/concept-kpi-cards`.
 **Workspace:** `/home/jafar/.codex/worktrees/concept-kpi-cards/Ucrm`; claim `8aca80f71684`.
@@ -23,5 +23,9 @@ were untouched. The design modules now describe the approved number-card appeara
 on 2026-10-21. Integration branch `codex/kpi-integration`, claim `b4549b3c7e32`, combines the current main
 and the built branch. The new approved Money summary card guidance from Claude is retained.
 
-**Next:** advance main, confirm the live Jobs page, save that proof and push main, then release both KPI
-claims and archive the temporary worktrees. Keep Claude's claim and working files untouched.
+**Live proof:** `https://app.upliftcontractor.com/jobs` shows all six shared number cards with real owner
+data; screenshot `docs/evidence/2026-10-21-kpi-cards/main-jobs-live.jpg`. Guide and Pencil file hashes were
+unchanged through the merge. No further long checks ran.
+
+**Next:** the remaining approved shared batches (24, 26–30), New Quote, or the newly approved Batch 35 money
+summary card. This KPI delivery is complete; claims can release and temporary worktrees can archive.
