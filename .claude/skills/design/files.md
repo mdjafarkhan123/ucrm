@@ -104,7 +104,7 @@ The files card on a record page, approved 2026-10-20 on board `pH9PB` (A). Hint 
 The files card on a create page; nothing uploads until Save. Approved 2026-10-19 on board `KuOmH`.
 
 - Hint line: "4 waiting · they save with the client", "Saving 4 files", "1 did not save".
-- **Empty:** a box in `--color-surface--background--subtle`, radius 8, 1.5px dashed
+- **Empty:** a box in `--color-surface--background`, radius 8, 1.5px dashed
   `--color-border--interactive--hover` edge; centred a 22 `paperclip` in `--color-icon--secondary`, "Add photos and
   documents" 13/600 heading, and "They save with the rest of the page · up to 100 MB each" 12 quiet. Only a
   message; the header's Add picks the files.

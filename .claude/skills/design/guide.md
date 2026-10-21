@@ -14,6 +14,8 @@
 5. Colourful icons across the whole app.
 6. The main button of each area is brand green, with white text. Light greens appear only in dark mode.
 7. **Nothing blends in.** Every element's fill differs from the colour behind it, in light and dark mode.
+   A part takes the opposite of what it sits on: on a white card it is grey or sunken, on the page or a
+   coloured top it is white.
 8. **Built from the app's own colours and sizes** (`src/lib/styles/_variables.scss`). Add a new one only when
    nothing fits.
 11. **Desktop web app.** Design at 1440px wide; No need to check phone version

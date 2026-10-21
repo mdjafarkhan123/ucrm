@@ -391,3 +391,14 @@ period, the range error and `disabled`. Look in `inputs.md` → Weekly hours. Ha
 - `singleColumn` (setup wizard, 640): the day heading row carries Open 24 hours then Open at the right; the bar and
   periods (130 boxes) sit under it.
 - Card header on Business hours: Time tile with the clock.
+
+## No-blend shared parts — approved 2026-10-21, waiting to be built
+
+Jafar said yes (2026-10-21) to fixing, at the source, the shared parts that broke guide rule 7, and asked for the
+switch's chosen option in brand green. Changed in `concept.pen` and the design skill: client colour family now
+sand (`colors.md` → Client colour; the old surface equalled the page colour); secondary, danger, menu and icon
+buttons on `--color-interactive-background`, white on coloured tops (`buttons.md`); field boxes sunken on white
+cards, white on the page or a coloured top (`inputs.md`); every segmented switch's chosen option brand green
+(`inputs.md`); Notes field and empty Files box on `--color-surface--background`; top bar a white bordered panel
+(`top-bar.md`). Builder: update `_variables.scss` client tokens and the shared `ui/SegmentedControl`, `ui/Button`,
+`ui/Input`, `ui/Select`, top bar, Notes and Files parts once; check every screen at 1440 light and dark.

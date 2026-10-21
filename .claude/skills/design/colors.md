@@ -27,7 +27,7 @@
 | Quote | `--color-quote` (pink) | file-text |
 | Job, Visit | `--color-job` (green) | hammer |
 | Invoice, Payment | `--color-invoice` (blue) | receipt, credit-card |
-| Client | `--color-client` (taupe) | user-round |
+| Client | `--color-client` (sand) | user-round |
 | Task | `--color-task` | square-check |
 | Event | `--color-event` (yellow; tile icon uses `--onSurface`) | calendar-days |
 
@@ -110,6 +110,18 @@ Only on a document's type tab (`files.md`), approved 2026-10-19. Photos show as 
 | Act now | `--color-critical` | Overdue, Failed, Late |
 | Planned | `--color-informative` | Scheduled, Sent, Upcoming |
 | Draft or archived | `--color-inactive` | Draft, Archived, Cancelled |
+
+## Client colour (changed 2026-10-21)
+
+The old taupe surface was the page colour in light mode and the subtle grey in dark mode, so a client header
+blended into the page (Jafar, 2026-10-21). New values, in `concept.pen`; put them in `_variables.scss` with the build:
+
+| Token | Light | Dark |
+|---|---|---|
+| `--color-client` | `#8a6a4b` | `#cfae88` |
+| `--color-client--surface` | `#e8dbc8` | `#4a3d2f` |
+| `--color-client--surface-edge` | `#d6c4aa` | `#5e4e3c` |
+| `--color-client--onSurface` | `#4a3826` | `#efe3d2` |
 
 ## Rules
 

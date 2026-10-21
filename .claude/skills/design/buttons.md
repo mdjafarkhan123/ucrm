@@ -27,7 +27,9 @@ An icon button is square at the size's height.
 - Background `--color-interactive`; text and icon `--color-surface`. One per area.
 
 ### Secondary
-- Background `--color-surface`; 1px `--color-border--interactive`; text and icon `--color-heading`.
+- Background `--color-interactive-background` (stone grey, so it never blends into a white card or the page);
+  1px `--color-border--interactive`; text and icon `--color-heading`. On a coloured top (record header, create
+  form) the grey kinds are white (`--color-surface`) instead (Jafar, 2026-10-21).
 - Cancel is always a secondary button, left of the action it dismisses (save bar, dialog footer).
 
 ### Quiet
@@ -46,7 +48,7 @@ An icon button is square at the size's height.
   the area's less-used actions.
 
 ### Icon button
-- 36×36 (40×40 in the top bar), radius 8, white, bordered; 16–18 icon in `--color-icon`. Needs an `aria-label`.
+- 36×36 (40×40 in the top bar), radius 8, the secondary fill, bordered; 16–18 icon in `--color-icon`. Needs an `aria-label`.
 
 ### Pencil button
 - The icon button holding a 16 `pencil`, at small (32) or base (36) size; it opens a block for editing beside a
@@ -71,10 +73,10 @@ An icon button is square at the size's height.
 
 Every kind has all six states.
 
-| State | Main / Danger · confirm | White kinds (secondary, danger, menu, icon) | Quiet |
+| State | Main / Danger · confirm | Grey kinds (secondary, danger, menu, icon) | Quiet |
 |---|---|---|---|
-| Hover | `--color-interactive--hover` / `--color-destructive--hover` | `--color-surface--hover` and border `--color-border--interactive--hover`; danger uses `--color-critical-surface` and a `--color-destructive` border | `--color-surface--hover` |
-| Pressed | Hover colour with a soft inner shadow | `--color-surface--active`, border `--color-border--interactive--hover`, no shadow; danger keeps its hover look without shadow | `--color-surface--active` |
+| Hover | `--color-interactive--hover` / `--color-destructive--hover` | `--color-surface--active` and border `--color-border--interactive--hover`; danger uses `--color-critical-surface` and a `--color-destructive` border | `--color-surface--hover` |
+| Pressed | Hover colour with a soft inner shadow | `--color-interactive-background`, border `--color-border--interactive--hover`, no shadow; danger keeps its hover look without shadow | `--color-surface--active` |
 | Focus | `--shadow-focus`: 2px gap, then a 2px `--color-focus` ring | same | same |
 | Disabled | Background `--color-disabled--secondary`, text and icon `--color-disabled`, no shadow | same, border `--color-disabled--secondary` | text `--color-disabled` |
 | Loading | see below | see below | see below |

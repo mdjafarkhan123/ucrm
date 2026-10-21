@@ -6,7 +6,8 @@
 
 - Label above the box: 13/600 `--color-heading`, 6 gap. A must-fill field adds a red `*` (13/700
   `--color-critical`) 4 after the label.
-- Box: height 40, padding 0 12, radius 8, `--color-surface`, 1px `--color-border--interactive`.
+- Box: height 40, padding 0 12, radius 8, 1px `--color-border--interactive`. Fill: sunken
+  `--color-surface--background` on a white card; `--color-surface` on the page or a coloured top (Jafar, 2026-10-21).
 - Value 14 `--color-heading`; placeholder `--color-text--secondary`.
 - A word or icon in front (`$`, phone): 14/500 word or 16 icon in `--color-text--secondary` /
   `--color-icon--secondary`, 8 before the value.
@@ -88,11 +89,12 @@ Dropdown errors use the shared error border and a corrective message below the b
 ## Segmented switch
 
 - For two to four choices of one kind (One-off / Recurring, Ends after / Ends on). Field label above, 6 gap.
-- Track: `--color-surface--background--subtle`, 1px `--color-border`, radius 8, padding 3, 2 between options.
+- Track: `--color-surface--background` on a white card, `--color-surface` on the page or a coloured top; 1px
+  `--color-border`, radius 8, padding 3, 2 between options.
 - Option: 32 high, padding 0 14, radius 6, 13/600; an optional 16 icon 6 before the label. Not chosen: text
-  `--color-text--secondary`, icon `--color-icon--secondary`, no fill. Chosen: white, 1px
-  `--color-border--interactive`, `--shadow-button`, text `--color-heading`, icon in the meaning colour of the
-  section (e.g. `--color-time` on Visits).
+  `--color-text--secondary`, icon `--color-icon--secondary`, no fill. Chosen: brand `--color-interactive` fill,
+  text and icon `--color-surface`, `--shadow-button--raised` (Jafar, 2026-10-21). The same for every two-to-four
+  way switch: Schedule views, AM/PM, Type it / Draw it, booking type, density.
 
 ## People pick chips
 

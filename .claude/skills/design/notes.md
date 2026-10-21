@@ -68,7 +68,7 @@ board `qf1uu` (B). The Notes panel's field, grown taller, so a note looks the sa
 
 - The Notes card (`cards.md` header, conversation tile, hint "Only your team sees this · saves with the client"),
   body padding 16.
-- Field: `--color-surface--background--subtle`, 1px `--color-border`, radius 8, padding 12 12 10 12, gap 10;
+- Field: `--color-surface--background`, 1px `--color-border`, radius 8, padding 12 12 10 12, gap 10;
   three lines of text 14, placeholder `--color-text--secondary`. Hover `--color-surface--hover` with a
   `--color-border--interactive--hover` edge. Typing:
   `--color-surface` with the 1.5px `--color-interactive` edge.
