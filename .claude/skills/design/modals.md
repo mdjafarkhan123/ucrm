@@ -245,3 +245,44 @@ The panel under the top bar's bell (`layout/NotificationBell`, used by the team 
   the same with the critical tile, "Notifications couldn't load" and a secondary Try again (`refresh-cw`).
   Marking all read: the button spins and can't be pressed. Mark all read failed: a critical notice strip
   (`notices.md`) under the header, everything stays unread.
+
+## Edit visit pop-up
+
+One visit of a job (`jobs/JobVisitDialog`), from a Job page's visits and from Schedule (board `PbkWT`, B, Jafar
+2026-10-21). Same fields, rules, words and buttons as the live app, with two approved changes: one three-way
+switch replaces the Schedule later and Anytime ticks, and the no-day error ends "or choose Later".
+
+- Large pop-up (940), always. Header: 40 tile in `--color-job` (`calendar-cog`), "Edit visit", a 12 quiet line
+  with the job title (a per-visit billed job adds " · billed per visit"). A recurring job puts a small pill beside
+  the title: `--color-informative--surface`, padding 3 9, a 12 `repeat` and "Recurring" 12/600 `--onSurface`.
+- Body splits in two. Left, the When panel, 340 wide, `--color-time--surface` with a 1px `--surface-edge` line on
+  its right, padding 20, gap 16: a 32 white tile (`calendar-clock`, `--color-time`) and "When" 16/600; the date
+  card; the switch; Day of the visit; Time.
+- Date card: white, radius 12, 1px `--color-time--surface-edge`, padding 14, gap 14. A 56×60 date tile in
+  `--color-time`, radius 12: month 12/700 (0.8) white 80%, day 24/700 white. Then the weekday 18/700 heading over
+  a 14 `clock-3` in `--color-time` and the hours with their length 13/500 `--color-text` ("8:00 AM – 12:00 PM · 4
+  hrs"). It reads back what is picked as it changes.
+- Switch (`inputs.md` segmented switch, full width): Set a time (`clock-3`) · Anytime (`sun`) · Later
+  (`calendar-off`). Anytime: hours line "Anytime that day" with `sun`, Time hidden. Later: the tile turns
+  `--color-time--surface` with a 24 `calendar-off`, "No date yet" and the live hint 13; Day and Time hidden.
+- Right, the details (padding 20, gap 16): Visit title, Instructions for this visit (big text box), Who is going
+  chips. A recurring job opens with an informative notice strip ("Changes here affect this visit only…").
+- What this visit bills (per-visit billing only), under Who is going: a group box like Book work's First visit
+  (radius 16, 1px `--color-border`, subtle head with a 24 `--color-invoice` tile `receipt` and 14/600 title).
+  Body padding 16, gap 10: 12/600 quiet column names (Name · Quantity · Unit price · Total), then one row per line,
+  36 high boxes, the name box with the line's 14 icon in `--color-job`, a changed quantity with a 1.5px
+  `--color-interactive` edge, the total 14/600 at the right. Foot on `--color-surface--background--subtle` with a
+  top line: "Use the job’s lines again" as a quiet green button at the left (only when the visit has its own
+  lines), "This visit" 14/600 quiet and the amount 18/700 at the right.
+- Its states: loading, bone rows (`page-states.md`), no foot; couldn't load, a critical strip (radius 8, padding
+  10 12, 16 icon, 13/500 `--onSurface`) with the live words; fixed (invoiced or completed), an informative strip
+  with `lock` and the live words, the boxes on `--color-surface--background--subtle` with `--color-border`, no
+  reset button; going back to the job's lines, an informative strip (`rotate-ccw`) and a quiet "Keep this visit’s
+  own lines"; can't see prices, names and quantities only, no price columns and no foot.
+- Footer: Notify customer (the approved checkbox with its live hint) fills the left; Cancel, then Save and update
+  future visits (secondary, 16 `calendar-sync` in `--color-time`; recurring jobs, hidden when Later), then Save visit
+  (main, `check`).
+- Errors (checked on Save): the Day or Time box gets the field error with the live words; with an empty day the
+  date tile turns `--color-time--surface` with "—" and "?" and the weekday reads "Pick a day" quiet. Couldn't save:
+  a critical notice strip at the top of the details, fields kept. Saving: the pressed save buttons spin together,
+  Cancel is disabled.
