@@ -29,6 +29,8 @@
 	const currentPath = $derived(navigating.to?.url.pathname ?? page.url.pathname);
 	const activeHref = $derived(activeNavigationHref(groups, currentPath));
 	const isActive = (href: string) => activeHref === href;
+	// Keeps the dot with "Workspace" so a wrapped role starts the second line.
+	const eyebrowText = $derived(eyebrow.replace(' · ', '\u00A0· '));
 	const brandHref = $derived(allItems.find((item) => !item.unavailable)?.href ?? '/');
 </script>
 
@@ -49,7 +51,9 @@
 					>{/if}</span
 			>
 			<span class="sidebar__brand-text"
-				><strong>{brand}</strong><span class="sidebar__eyebrow">{eyebrow}</span></span
+				><strong>{brand}</strong><span class="sidebar__eyebrow"
+					>{eyebrowText}</span
+				></span
 			>
 		</a>
 		{#if collapsible}
@@ -206,15 +210,16 @@
 			text-overflow: ellipsis;
 			white-space: nowrap;
 		}
+		// A teammate's role follows the name ("Workspace · Administrator"), so this line wraps to a second
+		// line instead of being cut off.
 		&__eyebrow {
 			display: block;
-			overflow: hidden;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 			line-height: 1.25;
-			text-overflow: ellipsis;
-			white-space: nowrap;
+			overflow-wrap: anywhere;
+			text-wrap: balance;
 		}
 		&__collapse {
 			display: inline-grid;

@@ -7823,7 +7823,7 @@
                               "fill": "$color-heading",
                               "content": "Reed Ltd",
                               "fontFamily": "$font-family",
-                              "fontSize": 15,
+                              "fontSize": "$font-size-large",
                               "fontWeight": "700"
                             },
                             {
@@ -9251,7 +9251,7 @@
               "content": "Same sidebar as the live app. Only the icon colours change: each icon takes the colour of what it opens (colour map in the Foundation). The current page stays brand green with a white icon.",
               "lineHeight": 1.5,
               "fontFamily": "$font-family",
-              "fontSize": 15,
+              "fontSize": "$font-size-base",
               "fontWeight": "normal"
             }
           ]
@@ -9357,7 +9357,7 @@
                                   "fill": "$color-heading",
                                   "content": "Reed Ltd",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "700"
                                 },
                                 {
@@ -10215,7 +10215,7 @@
                                   "fill": "$color-heading",
                                   "content": "Reed Ltd",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "700"
                                 },
                                 {
@@ -11076,7 +11076,7 @@
                                   "fill": "$color-heading",
                                   "content": "Reed Ltd",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "700"
                                 },
                                 {
@@ -11882,7 +11882,7 @@
               "content": "Some buttons work like a light switch: Unscheduled, Map and Filters on the Schedule stay on while their panel is open (Filters also stays on while a filter is set). Three ways to show \"on\". In each bar, Unscheduled and Filters are on and Map is off, so you can compare.",
               "lineHeight": 1.5,
               "fontFamily": "$font-family",
-              "fontSize": 15,
+              "fontSize": "$font-size-base",
               "fontWeight": "normal"
             }
           ]
@@ -11909,7 +11909,7 @@
                   "fill": "$color-heading",
                   "content": "A · Green outline",
                   "fontFamily": "$font-family",
-                  "fontSize": 18,
+                  "fontSize": "$font-size-large",
                   "fontWeight": "700"
                 },
                 {
@@ -12091,7 +12091,7 @@
                       "fill": "$color-heading",
                       "content": "Oct 13 – 19",
                       "fontFamily": "$font-family",
-                      "fontSize": 15,
+                      "fontSize": "$font-size-large",
                       "fontWeight": "700"
                     },
                     {
@@ -12434,7 +12434,7 @@
                       "fill": "$color-heading",
                       "content": "Oct 13 – 19",
                       "fontFamily": "$font-family",
-                      "fontSize": 15,
+                      "fontSize": "$font-size-large",
                       "fontWeight": "700"
                     },
                     {
@@ -13319,7 +13319,7 @@
                   "fill": "$color-heading",
                   "content": "B · Dark fill",
                   "fontFamily": "$font-family",
-                  "fontSize": 18,
+                  "fontSize": "$font-size-large",
                   "fontWeight": "700"
                 }
               ]
@@ -13476,7 +13476,7 @@
                       "fill": "$color-heading",
                       "content": "Oct 13 – 19",
                       "fontFamily": "$font-family",
-                      "fontSize": 15,
+                      "fontSize": "$font-size-large",
                       "fontWeight": "700"
                     },
                     {
@@ -13819,7 +13819,7 @@
                       "fill": "$color-heading",
                       "content": "Oct 13 – 19",
                       "fontFamily": "$font-family",
-                      "fontSize": 15,
+                      "fontSize": "$font-size-large",
                       "fontWeight": "700"
                     },
                     {
@@ -14056,7 +14056,7 @@
                   "fill": "$color-heading",
                   "content": "C · Pressed in",
                   "fontFamily": "$font-family",
-                  "fontSize": 18,
+                  "fontSize": "$font-size-large",
                   "fontWeight": "700"
                 }
               ]
@@ -14213,7 +14213,7 @@
                       "fill": "$color-heading",
                       "content": "Oct 13 – 19",
                       "fontFamily": "$font-family",
-                      "fontSize": 15,
+                      "fontSize": "$font-size-large",
                       "fontWeight": "700"
                     },
                     {
@@ -14556,7 +14556,7 @@
                       "fill": "$color-heading",
                       "content": "Oct 13 – 19",
                       "fontFamily": "$font-family",
-                      "fontSize": 15,
+                      "fontSize": "$font-size-large",
                       "fontWeight": "700"
                     },
                     {
@@ -33532,7 +33532,7 @@
                               "fill": "$color-heading",
                               "content": "Oct 19 – 25, 2026",
                               "fontFamily": "$font-family",
-                              "fontSize": 18,
+                              "fontSize": "$font-size-larger",
                               "fontWeight": "700",
                               "letterSpacing": -0.3
                             },
@@ -34078,7 +34078,7 @@
                                       "fill": "$color-surface",
                                       "content": "21",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
+                                      "fontSize": "$font-size-large",
                                       "fontWeight": "700"
                                     }
                                   ]
@@ -39480,7 +39480,7 @@
                               "fill": "$color-heading",
                               "content": "Wednesday, Oct 21, 2026",
                               "fontFamily": "$font-family",
-                              "fontSize": 18,
+                              "fontSize": "$font-size-larger",
                               "fontWeight": "700",
                               "letterSpacing": -0.3
                             },
@@ -39834,7 +39834,7 @@
                                           "fill": "$color-surface",
                                           "content": "21",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 15,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700"
                                         }
                                       ]
@@ -41268,7 +41268,7 @@
                                                   "fill": "$color-surface",
                                                   "content": "JS",
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 9,
+                                                  "fontSize": "$font-size-overline",
                                                   "fontWeight": "700"
                                                 }
                                               ]
@@ -41939,7 +41939,7 @@
                                                   "fill": "$color-surface",
                                                   "content": "MR",
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 9,
+                                                  "fontSize": "$font-size-overline",
                                                   "fontWeight": "700"
                                                 }
                                               ]
@@ -44788,7 +44788,7 @@
                               "fill": "$color-heading",
                               "content": "October 2026",
                               "fontFamily": "$font-family",
-                              "fontSize": 18,
+                              "fontSize": "$font-size-larger",
                               "fontWeight": "700",
                               "letterSpacing": -0.3
                             },
@@ -58576,7 +58576,7 @@
                                           "fill": "$color-heading",
                                           "content": "Sarah Lee",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 15,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "600"
                                         },
                                         {
@@ -59789,7 +59789,7 @@
                                   "content": "21",
                                   "lineHeight": 1.1,
                                   "fontFamily": "$font-family",
-                                  "fontSize": 17,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "700"
                                 }
                               ]
@@ -60129,7 +60129,7 @@
                                   "content": "21",
                                   "lineHeight": 1.1,
                                   "fontFamily": "$font-family",
-                                  "fontSize": 17,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "700"
                                 }
                               ]
@@ -64089,7 +64089,7 @@
                                       "content": "October 2026",
                                       "textAlign": "center",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
+                                      "fontSize": "$font-size-large",
                                       "fontWeight": "600"
                                     },
                                     {
@@ -66074,7 +66074,7 @@
                               "fill": "$color-heading",
                               "content": "Wednesday, Oct 21, 2026",
                               "fontFamily": "$font-family",
-                              "fontSize": 18,
+                              "fontSize": "$font-size-larger",
                               "fontWeight": "700",
                               "letterSpacing": -0.3
                             },
@@ -66419,7 +66419,7 @@
                                   "fill": "$color-heading",
                                   "content": "Jake Smith's route",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 18,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "700",
                                   "letterSpacing": -0.2
                                 },
@@ -67323,7 +67323,7 @@
                                       "fill": "$color-surface",
                                       "content": "2",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
+                                      "fontSize": "$font-size-large",
                                       "fontWeight": "700"
                                     }
                                   ]
@@ -72392,7 +72392,7 @@
                                       "fill": "$color-heading",
                                       "content": "October",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 18,
+                                      "fontSize": "$font-size-larger",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.3
                                     },
@@ -72403,7 +72403,7 @@
                                       "fill": "$color-text-secondary",
                                       "content": "2026",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 18,
+                                      "fontSize": "$font-size-larger",
                                       "fontWeight": "500",
                                       "letterSpacing": -0.3
                                     }
@@ -75080,7 +75080,7 @@
                                               "fill": "$color-text-secondary",
                                               "content": "8",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 15,
+                                              "fontSize": "$font-size-base",
                                               "fontWeight": "500"
                                             }
                                           ]
@@ -75123,7 +75123,7 @@
                                               "fill": "$color-text-secondary",
                                               "content": "10",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 15,
+                                              "fontSize": "$font-size-base",
                                               "fontWeight": "500"
                                             }
                                           ]
@@ -75217,7 +75217,7 @@
                                               "fill": "$color-text-secondary",
                                               "content": "25",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 15,
+                                              "fontSize": "$font-size-base",
                                               "fontWeight": "500"
                                             }
                                           ]
@@ -75260,7 +75260,7 @@
                                               "fill": "$color-text-secondary",
                                               "content": "35",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 15,
+                                              "fontSize": "$font-size-base",
                                               "fontWeight": "500"
                                             }
                                           ]
@@ -75793,7 +75793,7 @@
                                               "fill": "$color-text-secondary",
                                               "content": "10",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 15,
+                                              "fontSize": "$font-size-base",
                                               "fontWeight": "500"
                                             }
                                           ]
@@ -75836,7 +75836,7 @@
                                               "fill": "$color-text-secondary",
                                               "content": "12",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 15,
+                                              "fontSize": "$font-size-base",
                                               "fontWeight": "500"
                                             }
                                           ]
@@ -75930,7 +75930,7 @@
                                               "fill": "$color-text-secondary",
                                               "content": "25",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 15,
+                                              "fontSize": "$font-size-base",
                                               "fontWeight": "500"
                                             }
                                           ]
@@ -75973,7 +75973,7 @@
                                               "fill": "$color-text-secondary",
                                               "content": "35",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 15,
+                                              "fontSize": "$font-size-base",
                                               "fontWeight": "500"
                                             }
                                           ]
@@ -79788,7 +79788,7 @@
                                   "fill": "$color-heading",
                                   "content": "October",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 18,
+                                  "fontSize": "$font-size-larger",
                                   "fontWeight": "700",
                                   "letterSpacing": -0.3
                                 },
@@ -79799,7 +79799,7 @@
                                   "fill": "$color-text-secondary",
                                   "content": "2026",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 18,
+                                  "fontSize": "$font-size-larger",
                                   "fontWeight": "500",
                                   "letterSpacing": -0.3
                                 }
@@ -81332,7 +81332,7 @@
                                           "fill": "$color-text-secondary",
                                           "content": "10",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 15,
+                                          "fontSize": "$font-size-base",
                                           "fontWeight": "500"
                                         }
                                       ]
@@ -81375,7 +81375,7 @@
                                           "fill": "$color-text-secondary",
                                           "content": "12",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 15,
+                                          "fontSize": "$font-size-base",
                                           "fontWeight": "500"
                                         }
                                       ]
@@ -81469,7 +81469,7 @@
                                           "fill": "$color-text-secondary",
                                           "content": "25",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 15,
+                                          "fontSize": "$font-size-base",
                                           "fontWeight": "500"
                                         }
                                       ]
@@ -81512,7 +81512,7 @@
                                           "fill": "$color-text-secondary",
                                           "content": "35",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 15,
+                                          "fontSize": "$font-size-base",
                                           "fontWeight": "500"
                                         }
                                       ]
@@ -98867,7 +98867,7 @@
                   "fill": "$color-heading",
                   "content": "Load more",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -99547,7 +99547,7 @@
                   "fill": "$color-heading",
                   "content": "Form error box",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -100342,7 +100342,7 @@
                   "fill": "$color-heading",
                   "content": "Pencil button",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -101111,7 +101111,7 @@
                   "fill": "$color-heading",
                   "content": "Number cards",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -101281,7 +101281,7 @@
                                       "fill": "$color-heading",
                                       "content": "4",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 26,
+                                      "fontSize": "$font-size-largest",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.6
                                     },
@@ -101394,7 +101394,7 @@
                                       "fill": "$color-heading",
                                       "content": "118",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 26,
+                                      "fontSize": "$font-size-largest",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.6
                                     },
@@ -101507,7 +101507,7 @@
                                       "fill": "$color-heading",
                                       "content": "96",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 26,
+                                      "fontSize": "$font-size-largest",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.6
                                     },
@@ -101620,7 +101620,7 @@
                                       "fill": "$color-heading",
                                       "content": "3",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 26,
+                                      "fontSize": "$font-size-largest",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.6
                                     },
@@ -101733,7 +101733,7 @@
                                       "fill": "$color-heading",
                                       "content": "0",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 26,
+                                      "fontSize": "$font-size-largest",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.6
                                     },
@@ -101866,7 +101866,7 @@
                                       "fill": "$color-heading",
                                       "content": "12",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 26,
+                                      "fontSize": "$font-size-largest",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.6
                                     },
@@ -101989,7 +101989,7 @@
                                       "fill": "$color-heading",
                                       "content": "5",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 26,
+                                      "fontSize": "$font-size-largest",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.6
                                     },
@@ -102124,7 +102124,7 @@
                                           "fill": "$color-heading",
                                           "content": "2",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 26,
+                                          "fontSize": "$font-size-largest",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.6
                                         },
@@ -102228,7 +102228,7 @@
                   "fill": "$color-heading",
                   "content": "Dark mode",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -103087,7 +103087,7 @@
                                       "fill": "$color-heading",
                                       "content": "4",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 26,
+                                      "fontSize": "$font-size-largest",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.6
                                     },
@@ -103200,7 +103200,7 @@
                                       "fill": "$color-heading",
                                       "content": "96",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 26,
+                                      "fontSize": "$font-size-largest",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.6
                                     },
@@ -103313,7 +103313,7 @@
                                       "fill": "$color-heading",
                                       "content": "3",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 26,
+                                      "fontSize": "$font-size-largest",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.6
                                     },
@@ -103453,7 +103453,7 @@
                   "fill": "$color-heading",
                   "content": "Photo viewer",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -103656,7 +103656,7 @@
                                                   "fill": "#ffffff",
                                                   "content": "Front roof · before",
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 15,
+                                                  "fontSize": "$font-size-large",
                                                   "fontWeight": "600"
                                                 }
                                               ]
@@ -104033,7 +104033,7 @@
                   "fill": "$color-heading",
                   "content": "File picture",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -104872,7 +104872,7 @@
                                                   "fill": "#ffffff",
                                                   "content": "PDF",
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 7,
+                                                  "fontSize": "$font-size-overline",
                                                   "fontWeight": "700"
                                                 }
                                               ]
@@ -104969,7 +104969,7 @@
                                                   "fill": "#ffffff",
                                                   "content": "XLS",
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 7,
+                                                  "fontSize": "$font-size-overline",
                                                   "fontWeight": "700"
                                                 }
                                               ]
@@ -105260,7 +105260,7 @@
                   "fill": "$color-heading",
                   "content": "Photo box",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -105898,7 +105898,7 @@
                   "fill": "$color-heading",
                   "content": "Upload list",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -107298,7 +107298,7 @@
                   "fill": "$color-heading",
                   "content": "Dark mode",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -108089,7 +108089,7 @@
                                               "fill": "#ffffff",
                                               "content": "PDF",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 7,
+                                              "fontSize": "$font-size-overline",
                                               "fontWeight": "700"
                                             }
                                           ]
@@ -108186,7 +108186,7 @@
                                               "fill": "#ffffff",
                                               "content": "XLS",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 7,
+                                              "fontSize": "$font-size-overline",
                                               "fontWeight": "700"
                                             }
                                           ]
@@ -110341,7 +110341,7 @@
                   "fill": "$color-heading",
                   "content": "Author line",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -111020,7 +111020,7 @@
                   "fill": "$color-heading",
                   "content": "Note text",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -111500,7 +111500,7 @@
                   "fill": "$color-heading",
                   "content": "Note files",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -111742,7 +111742,7 @@
                                                       "fill": "#ffffff",
                                                       "content": "PDF",
                                                       "fontFamily": "$font-family",
-                                                      "fontSize": 7,
+                                                      "fontSize": "$font-size-overline",
                                                       "fontWeight": "700"
                                                     }
                                                   ]
@@ -111852,7 +111852,7 @@
                                                       "fill": "#ffffff",
                                                       "content": "XLS",
                                                       "fontFamily": "$font-family",
-                                                      "fontSize": 7,
+                                                      "fontSize": "$font-size-overline",
                                                       "fontWeight": "700"
                                                     }
                                                   ]
@@ -112064,7 +112064,7 @@
                                                       "fill": "#ffffff",
                                                       "content": "PDF",
                                                       "fontFamily": "$font-family",
-                                                      "fontSize": 7,
+                                                      "fontSize": "$font-size-overline",
                                                       "fontWeight": "700"
                                                     }
                                                   ]
@@ -112342,7 +112342,7 @@
                                                       "fill": "#ffffff",
                                                       "content": "PDF",
                                                       "fontFamily": "$font-family",
-                                                      "fontSize": 7,
+                                                      "fontSize": "$font-size-overline",
                                                       "fontWeight": "700"
                                                     }
                                                   ]
@@ -112452,7 +112452,7 @@
                                                       "fill": "#ffffff",
                                                       "content": "XLS",
                                                       "fontFamily": "$font-family",
-                                                      "fontSize": 7,
+                                                      "fontSize": "$font-size-overline",
                                                       "fontWeight": "700"
                                                     }
                                                   ]
@@ -112539,7 +112539,7 @@
                   "fill": "$color-heading",
                   "content": "Files waiting to save",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -114104,7 +114104,7 @@
                   "fill": "$color-heading",
                   "content": "Files card",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -114667,7 +114667,7 @@
                   "fill": "$color-heading",
                   "content": "Together in a note",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -115094,7 +115094,7 @@
                                                               "fill": "#ffffff",
                                                               "content": "PDF",
                                                               "fontFamily": "$font-family",
-                                                              "fontSize": 7,
+                                                              "fontSize": "$font-size-overline",
                                                               "fontWeight": "700"
                                                             }
                                                           ]
@@ -115558,7 +115558,7 @@
                                                               "fill": "#ffffff",
                                                               "content": "PDF",
                                                               "fontFamily": "$font-family",
-                                                              "fontSize": 7,
+                                                              "fontSize": "$font-size-overline",
                                                               "fontWeight": "700"
                                                             }
                                                           ]
@@ -115711,7 +115711,7 @@
                   "fill": "$color-heading",
                   "content": "Search list under a line's name",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -117128,7 +117128,7 @@
                   "fill": "$color-heading",
                   "content": "New item pop-up",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -119456,7 +119456,7 @@
                   "fill": "$color-heading",
                   "content": "Price book drawer",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -121321,7 +121321,7 @@
                   "fill": "$color-heading",
                   "content": "Dark mode",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -124980,7 +124980,7 @@
                   "fill": "$color-heading",
                   "content": "Add files",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -127475,7 +127475,7 @@
                   "fill": "$color-heading",
                   "content": "Photo labels",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -128589,7 +128589,7 @@
                   "fill": "$color-heading",
                   "content": "Photo details",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -129643,7 +129643,7 @@
               "fill": "$color-heading",
               "content": "Dark mode",
               "fontFamily": "$font-family",
-              "fontSize": 22,
+              "fontSize": "$font-size-larger",
               "fontWeight": "700",
               "letterSpacing": -0.3
             },
@@ -132940,7 +132940,7 @@
                   "fill": "$color-heading",
                   "content": "Time clock · approved",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -134169,7 +134169,7 @@
                                       "content": "21",
                                       "lineHeight": 1.1,
                                       "fontFamily": "$font-family",
-                                      "fontSize": 17,
+                                      "fontSize": "$font-size-large",
                                       "fontWeight": "700"
                                     }
                                   ]
@@ -135300,7 +135300,7 @@
               "fill": "$color-heading",
               "content": "Dark mode",
               "fontFamily": "$font-family",
-              "fontSize": 22,
+              "fontSize": "$font-size-larger",
               "fontWeight": "700",
               "letterSpacing": -0.3
             },
@@ -136235,7 +136235,7 @@
                                           "content": "21",
                                           "lineHeight": 1.1,
                                           "fontFamily": "$font-family",
-                                          "fontSize": 17,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700"
                                         }
                                       ]
@@ -137438,7 +137438,7 @@
                   "fill": "$color-heading",
                   "content": "1 · The page and its tabs",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -138377,7 +138377,7 @@
                                       "fill": "$color-heading",
                                       "content": "1",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 26,
+                                      "fontSize": "$font-size-largest",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.6
                                     },
@@ -138431,7 +138431,7 @@
                                       "fill": "$color-heading",
                                       "content": "2",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 26,
+                                      "fontSize": "$font-size-largest",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.6
                                     },
@@ -138485,7 +138485,7 @@
                                       "fill": "$color-heading",
                                       "content": "3",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 26,
+                                      "fontSize": "$font-size-largest",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.6
                                     },
@@ -138539,7 +138539,7 @@
                                       "fill": "$color-heading",
                                       "content": "4",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 26,
+                                      "fontSize": "$font-size-largest",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.6
                                     },
@@ -138876,7 +138876,7 @@
                   "fill": "$color-heading",
                   "content": "2 · Opening a tab",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -139767,7 +139767,7 @@
                   "fill": "$color-heading",
                   "content": "3 · Save bar on a record page",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -140478,7 +140478,7 @@
                   "fill": "$color-heading",
                   "content": "4 · Client tags · follows the approved Tag picker",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -141432,7 +141432,7 @@
                   "fill": "$color-heading",
                   "content": "Dark mode",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -155716,7 +155716,7 @@
                   "fill": "$color-heading",
                   "content": "1 · Empty — nothing priced yet",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -156330,7 +156330,7 @@
                   "fill": "$color-heading",
                   "content": "2 · Field worker — no prices",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -156526,7 +156526,7 @@
                                           "fill": "$color-heading",
                                           "content": "Base cabinets — supply and install",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 15,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "600"
                                         },
                                         {
@@ -156661,7 +156661,7 @@
                                           "fill": "$color-heading",
                                           "content": "Quartz countertop",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 15,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "600"
                                         },
                                         {
@@ -156797,7 +156797,7 @@
                                           "fill": "$color-heading",
                                           "content": "Old cabinet removal and disposal",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 15,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "600"
                                         },
                                         {
@@ -157051,7 +157051,7 @@
                                               "fill": "$color-heading",
                                               "content": "Base cabinets — supply and install",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 15,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "600"
                                             },
                                             {
@@ -157186,7 +157186,7 @@
                                               "fill": "$color-heading",
                                               "content": "Quartz countertop",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 15,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "600"
                                             },
                                             {
@@ -157322,7 +157322,7 @@
                                               "fill": "$color-heading",
                                               "content": "Old cabinet removal and disposal",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 15,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "600"
                                             },
                                             {
@@ -157444,7 +157444,7 @@
                   "fill": "$color-heading",
                   "content": "3 · A quote: headings, notes, add-ons and the lock",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -159836,7 +159836,7 @@
                   "fill": "$color-heading",
                   "content": "4 · Shared parts",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -162083,7 +162083,7 @@
           "content": "Jafar approved the hairline edge on 2026-10-20: every icon tile keeps its tint and gains a 1px edge in the next palette step, so tiles stand apart from white cards. Applied to the three tile parts and every tile in this file. Dark mode keeps plain tiles.",
           "lineHeight": 1.45,
           "fontFamily": "$font-family",
-          "fontSize": 15,
+          "fontSize": "$font-size-base",
           "fontWeight": "normal"
         },
         {
@@ -162132,7 +162132,7 @@
                       "fill": "$color-heading",
                       "content": "Today",
                       "fontFamily": "$font-family",
-                      "fontSize": 15,
+                      "fontSize": "$font-size-large",
                       "fontWeight": "700"
                     },
                     {
@@ -162428,7 +162428,7 @@
                       "fill": "$color-heading",
                       "content": "Approved · Hairline edge",
                       "fontFamily": "$font-family",
-                      "fontSize": 15,
+                      "fontSize": "$font-size-large",
                       "fontWeight": "700"
                     },
                     {
@@ -162804,7 +162804,7 @@
                   "fill": "$color-heading",
                   "content": "The approved look",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -164338,7 +164338,7 @@
                   "fill": "$color-heading",
                   "content": "Every state",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -167573,7 +167573,7 @@
                   "fill": "$color-heading",
                   "content": "The approved look, in the two places it appears",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -168292,7 +168292,7 @@
                   "fill": "$color-heading",
                   "content": "Every state",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -169091,7 +169091,7 @@
               "fill": "$color-heading",
               "content": "Dark mode",
               "fontFamily": "$font-family",
-              "fontSize": 22,
+              "fontSize": "$font-size-larger",
               "fontWeight": "700",
               "letterSpacing": -0.3
             },
@@ -169934,7 +169934,7 @@
                   "fill": "$color-heading",
                   "content": "The approved look",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -169989,7 +169989,7 @@
                           "fill": "$color-heading",
                           "content": "Approved 2026-10-20 · A: the photo on top, words under it",
                           "fontFamily": "$font-family",
-                          "fontSize": 18,
+                          "fontSize": "$font-size-large",
                           "fontWeight": "700"
                         },
                         {
@@ -171122,7 +171122,7 @@
                   "fill": "$color-heading",
                   "content": "Every state",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -173309,7 +173309,7 @@
               "fill": "$color-heading",
               "content": "Dark mode",
               "fontFamily": "$font-family",
-              "fontSize": 22,
+              "fontSize": "$font-size-larger",
               "fontWeight": "700",
               "letterSpacing": -0.3
             },
@@ -174666,7 +174666,7 @@
                   "fill": "$color-heading",
                   "content": "The approved look",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -176736,7 +176736,7 @@
                   "fill": "$color-heading",
                   "content": "Every state",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -179626,7 +179626,7 @@
               "fill": "$color-heading",
               "content": "Dark mode",
               "fontFamily": "$font-family",
-              "fontSize": 22,
+              "fontSize": "$font-size-larger",
               "fontWeight": "700",
               "letterSpacing": -0.3
             },
@@ -181683,7 +181683,7 @@
                   "fill": "$color-heading",
                   "content": "Part 1 · Notes on a new record",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -183029,7 +183029,7 @@
                   "fill": "$color-heading",
                   "content": "Part 2 · Automation email",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -185899,7 +185899,7 @@
                   "fill": "$color-heading",
                   "content": "Part 3 · Automation text message",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -189457,7 +189457,7 @@
                   "content": "Part 1 · Pop-over",
                   "lineHeight": 1.21,
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700"
                 },
                 {
@@ -192242,7 +192242,7 @@
                   "content": "Part 2 · Date range chip",
                   "lineHeight": 1.21,
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700"
                 },
                 {
@@ -194948,7 +194948,7 @@
                   "content": "Part 3 · Multi-choice filter chip",
                   "lineHeight": 1.21,
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700"
                 },
                 {
@@ -202136,7 +202136,7 @@
                   "content": "Part 1 · The look",
                   "lineHeight": 1.21,
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700"
                 },
                 {
@@ -203325,7 +203325,7 @@
                   "content": "Part 2 · Every state",
                   "lineHeight": 1.21,
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700"
                 },
                 {
@@ -205779,7 +205779,7 @@
                   "content": "Part 3 · Dark mode",
                   "lineHeight": 1.21,
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700"
                 },
                 {
@@ -206979,7 +206979,7 @@
                                   "fill": "$color-feature-text",
                                   "content": "Uplift",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 18,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "700"
                                 }
                               ]
@@ -207115,7 +207115,7 @@
                                       "content": "Run Uplift's business and the platform from this private workspace.",
                                       "lineHeight": 1.5,
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
+                                      "fontSize": "$font-size-base",
                                       "fontWeight": "normal"
                                     }
                                   ]
@@ -207351,7 +207351,7 @@
                                   "fill": "$color-feature-text",
                                   "content": "Uplift",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 18,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "700"
                                 }
                               ]
@@ -207487,7 +207487,7 @@
                                       "content": "Run Uplift's business and the platform from this private workspace.",
                                       "lineHeight": 1.5,
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
+                                      "fontSize": "$font-size-base",
                                       "fontWeight": "normal"
                                     }
                                   ]
@@ -207675,7 +207675,7 @@
                                   "content": "Run Uplift's business and the platform from this private workspace.",
                                   "lineHeight": 1.5,
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-base",
                                   "fontWeight": "normal"
                                 }
                               ]
@@ -207884,7 +207884,7 @@
                                   "content": "Run Uplift's business and the platform from this private workspace.",
                                   "lineHeight": 1.5,
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-base",
                                   "fontWeight": "normal"
                                 }
                               ]
@@ -208056,7 +208056,7 @@
                                   "content": "You're invited as Sales, using m•••@uplift.team. Add your name and choose a password to sign in.",
                                   "lineHeight": 1.5,
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-base",
                                   "fontWeight": "normal"
                                 }
                               ]
@@ -208252,7 +208252,7 @@
                                   "content": "The link may have expired, been used already, or been replaced by a newer one. Ask Jafar to send you a new invitation.",
                                   "lineHeight": 1.5,
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-base",
                                   "fontWeight": "normal"
                                 }
                               ]
@@ -208361,7 +208361,7 @@
                                   "content": "Enter the email you sign in with and we'll send you a link to choose a new password.",
                                   "lineHeight": 1.5,
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-base",
                                   "fontWeight": "normal"
                                 }
                               ]
@@ -208537,7 +208537,7 @@
                                   "content": "If maya@uplift.team belongs to an Uplift teammate, a link to choose a new password is on its way. It works once and expires in one hour.",
                                   "lineHeight": 1.5,
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-base",
                                   "fontWeight": "normal"
                                 }
                               ]
@@ -208646,7 +208646,7 @@
                                   "content": "Use 8 characters or more.",
                                   "lineHeight": 1.5,
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-base",
                                   "fontWeight": "normal"
                                 }
                               ]
@@ -208821,7 +208821,7 @@
                                   "content": "Reset links work once and expire after one hour. Ask for a new one and use the newest email.",
                                   "lineHeight": 1.5,
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-base",
                                   "fontWeight": "normal"
                                 }
                               ]
@@ -208956,7 +208956,7 @@
                                   "content": "Sign in with your new password. Anywhere else you were signed in has been signed out.",
                                   "lineHeight": 1.5,
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-base",
                                   "fontWeight": "normal"
                                 }
                               ]
@@ -209094,7 +209094,7 @@
                   "content": "Part 1 · The look and every state",
                   "lineHeight": 1.3,
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700"
                 },
                 {
@@ -211344,7 +211344,7 @@
                   "content": "Part 2 · Dark mode",
                   "lineHeight": 1.3,
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700"
                 },
                 {
@@ -213081,7 +213081,7 @@
                                           "content": "G",
                                           "lineHeight": 1.4,
                                           "fontFamily": "$font-family",
-                                          "fontSize": 15,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700"
                                         }
                                       ]
@@ -213094,7 +213094,7 @@
                                       "content": "Greenline Lawn & Garden",
                                       "lineHeight": 1.4,
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
+                                      "fontSize": "$font-size-large",
                                       "fontWeight": "700"
                                     }
                                   ]
@@ -213156,7 +213156,7 @@
                                       "content": "Winter left its mark. We'll clear leaves and branches, edge the beds and give your lawn its first cut of the year, so it's ready for summer. Book this week and the first visit is 10% off.",
                                       "lineHeight": 1.55,
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
+                                      "fontSize": "$font-size-base",
                                       "fontWeight": "normal"
                                     },
                                     {
@@ -213189,7 +213189,7 @@
                                               "content": "Book my spring visit",
                                               "lineHeight": 1.4,
                                               "fontFamily": "$font-family",
-                                              "fontSize": 15,
+                                              "fontSize": "$font-size-base",
                                               "fontWeight": "600"
                                             }
                                           ]
@@ -213528,7 +213528,7 @@
                                               "content": "G",
                                               "lineHeight": 1.4,
                                               "fontFamily": "$font-family",
-                                              "fontSize": 15,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700"
                                             }
                                           ]
@@ -213541,7 +213541,7 @@
                                           "content": "Greenline Lawn & Garden",
                                           "lineHeight": 1.4,
                                           "fontFamily": "$font-family",
-                                          "fontSize": 15,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700"
                                         }
                                       ]
@@ -213603,7 +213603,7 @@
                                           "content": "Winter left its mark. We'll clear leaves and branches, edge the beds and give your lawn its first cut of the year, so it's ready for summer. Book this week and the first visit is 10% off.",
                                           "lineHeight": 1.55,
                                           "fontFamily": "$font-family",
-                                          "fontSize": 15,
+                                          "fontSize": "$font-size-base",
                                           "fontWeight": "normal"
                                         },
                                         {
@@ -213636,7 +213636,7 @@
                                                   "content": "Book my spring visit",
                                                   "lineHeight": 1.4,
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 15,
+                                                  "fontSize": "$font-size-base",
                                                   "fontWeight": "600"
                                                 }
                                               ]
@@ -213977,7 +213977,7 @@
                                               "content": "G",
                                               "lineHeight": 1.4,
                                               "fontFamily": "$font-family",
-                                              "fontSize": 15,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700"
                                             }
                                           ]
@@ -213990,7 +213990,7 @@
                                           "content": "Greenline Lawn & Garden",
                                           "lineHeight": 1.4,
                                           "fontFamily": "$font-family",
-                                          "fontSize": 15,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700"
                                         }
                                       ]
@@ -214052,7 +214052,7 @@
                                           "content": "Winter left its mark. We'll clear leaves and branches, edge the beds and give your lawn its first cut of the year, so it's ready for summer. Book this week and the first visit is 10% off.",
                                           "lineHeight": 1.55,
                                           "fontFamily": "$font-family",
-                                          "fontSize": 15,
+                                          "fontSize": "$font-size-base",
                                           "fontWeight": "normal"
                                         },
                                         {
@@ -214085,7 +214085,7 @@
                                                   "content": "Book my spring visit",
                                                   "lineHeight": 1.4,
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 15,
+                                                  "fontSize": "$font-size-base",
                                                   "fontWeight": "600"
                                                 }
                                               ]
@@ -214862,7 +214862,7 @@
                                       "content": "G",
                                       "lineHeight": 1.4,
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
+                                      "fontSize": "$font-size-large",
                                       "fontWeight": "700"
                                     }
                                   ]
@@ -214875,7 +214875,7 @@
                                   "content": "Greenline Lawn & Garden",
                                   "lineHeight": 1.4,
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "700"
                                 }
                               ]
@@ -214937,7 +214937,7 @@
                                   "content": "Winter left its mark. We'll clear leaves and branches, edge the beds and give your lawn its first cut of the year, so it's ready for summer. Book this week and the first visit is 10% off.",
                                   "lineHeight": 1.55,
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-base",
                                   "fontWeight": "normal"
                                 },
                                 {
@@ -214970,7 +214970,7 @@
                                           "content": "Book my spring visit",
                                           "lineHeight": 1.4,
                                           "fontFamily": "$font-family",
-                                          "fontSize": 15,
+                                          "fontSize": "$font-size-base",
                                           "fontWeight": "600"
                                         }
                                       ]
@@ -216454,7 +216454,7 @@
                                       "content": "Quotes & invoices",
                                       "lineHeight": 1.4,
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
+                                      "fontSize": "$font-size-large",
                                       "fontWeight": "700"
                                     }
                                   ]
@@ -216674,7 +216674,7 @@
                                       "content": "Jobs & visits",
                                       "lineHeight": 1.4,
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
+                                      "fontSize": "$font-size-large",
                                       "fontWeight": "700"
                                     }
                                   ]
@@ -216951,7 +216951,7 @@
                                       "content": "Growth",
                                       "lineHeight": 1.4,
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
+                                      "fontSize": "$font-size-large",
                                       "fontWeight": "700"
                                     }
                                   ]
@@ -217462,7 +217462,7 @@
                                               "content": "Quotes & invoices",
                                               "lineHeight": 1.4,
                                               "fontFamily": "$font-family",
-                                              "fontSize": 15,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700"
                                             }
                                           ]
@@ -217683,7 +217683,7 @@
                                               "content": "Jobs & visits",
                                               "lineHeight": 1.4,
                                               "fontFamily": "$font-family",
-                                              "fontSize": 15,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700"
                                             }
                                           ]
@@ -217966,7 +217966,7 @@
                                               "content": "Growth",
                                               "lineHeight": 1.4,
                                               "fontFamily": "$font-family",
-                                              "fontSize": 15,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700"
                                             }
                                           ]
@@ -218790,7 +218790,7 @@
                               "content": "Quotes & invoices",
                               "lineHeight": 1.4,
                               "fontFamily": "$font-family",
-                              "fontSize": 15,
+                              "fontSize": "$font-size-large",
                               "fontWeight": "700"
                             }
                           ]
@@ -219010,7 +219010,7 @@
                               "content": "Jobs & visits",
                               "lineHeight": 1.4,
                               "fontFamily": "$font-family",
-                              "fontSize": 15,
+                              "fontSize": "$font-size-large",
                               "fontWeight": "700"
                             }
                           ]
@@ -219287,7 +219287,7 @@
                               "content": "Growth",
                               "lineHeight": 1.4,
                               "fontFamily": "$font-family",
-                              "fontSize": 15,
+                              "fontSize": "$font-size-large",
                               "fontWeight": "700"
                             }
                           ]
@@ -227777,7 +227777,7 @@
                               "fill": "$color-heading",
                               "content": "Uplift",
                               "fontFamily": "$font-family",
-                              "fontSize": 18,
+                              "fontSize": "$font-size-large",
                               "fontWeight": "700"
                             }
                           ]
@@ -230070,7 +230070,7 @@
                               "fill": "$color-heading",
                               "content": "Uplift",
                               "fontFamily": "$font-family",
-                              "fontSize": 18,
+                              "fontSize": "$font-size-large",
                               "fontWeight": "700"
                             }
                           ]
@@ -231176,7 +231176,7 @@
                               "fill": "$color-heading",
                               "content": "Uplift",
                               "fontFamily": "$font-family",
-                              "fontSize": 18,
+                              "fontSize": "$font-size-large",
                               "fontWeight": "700"
                             }
                           ]
@@ -231266,7 +231266,7 @@
                                   "lineHeight": 1.5,
                                   "textAlign": "center",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-base",
                                   "fontWeight": "normal"
                                 }
                               ]
@@ -231594,7 +231594,7 @@
                               "fill": "$color-heading",
                               "content": "Uplift",
                               "fontFamily": "$font-family",
-                              "fontSize": 18,
+                              "fontSize": "$font-size-large",
                               "fontWeight": "700"
                             }
                           ]
@@ -231684,7 +231684,7 @@
                                   "lineHeight": 1.5,
                                   "textAlign": "center",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-base",
                                   "fontWeight": "normal"
                                 }
                               ]
@@ -231996,7 +231996,7 @@
                               "fill": "$color-heading",
                               "content": "Uplift",
                               "fontFamily": "$font-family",
-                              "fontSize": 18,
+                              "fontSize": "$font-size-large",
                               "fontWeight": "700"
                             }
                           ]
@@ -241673,7 +241673,7 @@
                                           "content": "1",
                                           "lineHeight": 1,
                                           "fontFamily": "$font-family",
-                                          "fontSize": 30,
+                                          "fontSize": "$font-size-stat",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.8
                                         },
@@ -241828,7 +241828,7 @@
                                           "content": "3",
                                           "lineHeight": 1,
                                           "fontFamily": "$font-family",
-                                          "fontSize": 30,
+                                          "fontSize": "$font-size-stat",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.8
                                         },
@@ -241983,7 +241983,7 @@
                                           "content": "2",
                                           "lineHeight": 1,
                                           "fontFamily": "$font-family",
-                                          "fontSize": 30,
+                                          "fontSize": "$font-size-stat",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.8
                                         },
@@ -242138,7 +242138,7 @@
                                           "content": "4",
                                           "lineHeight": 1,
                                           "fontFamily": "$font-family",
-                                          "fontSize": 30,
+                                          "fontSize": "$font-size-stat",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.8
                                         },
@@ -242293,7 +242293,7 @@
                                           "content": "1",
                                           "lineHeight": 1,
                                           "fontFamily": "$font-family",
-                                          "fontSize": 30,
+                                          "fontSize": "$font-size-stat",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.8
                                         },
@@ -242489,7 +242489,7 @@
                                           "content": "$15,200",
                                           "lineHeight": 1,
                                           "fontFamily": "$font-family",
-                                          "fontSize": 30,
+                                          "fontSize": "$font-size-stat",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.8
                                         },
@@ -242665,7 +242665,7 @@
                                       "content": "24",
                                       "lineHeight": 1,
                                       "fontFamily": "$font-family",
-                                      "fontSize": 30,
+                                      "fontSize": "$font-size-stat",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.8
                                     },
@@ -242820,7 +242820,7 @@
                                       "content": "18",
                                       "lineHeight": 1,
                                       "fontFamily": "$font-family",
-                                      "fontSize": 30,
+                                      "fontSize": "$font-size-stat",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.8
                                     },
@@ -242975,7 +242975,7 @@
                                       "content": "11",
                                       "lineHeight": 1,
                                       "fontFamily": "$font-family",
-                                      "fontSize": 30,
+                                      "fontSize": "$font-size-stat",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.8
                                     },
@@ -243130,7 +243130,7 @@
                                       "content": "2",
                                       "lineHeight": 1,
                                       "fontFamily": "$font-family",
-                                      "fontSize": 30,
+                                      "fontSize": "$font-size-stat",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.8
                                     },
@@ -243305,7 +243305,7 @@
                                       "content": "3",
                                       "lineHeight": 1,
                                       "fontFamily": "$font-family",
-                                      "fontSize": 30,
+                                      "fontSize": "$font-size-stat",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.8
                                     },
@@ -243460,7 +243460,7 @@
                                       "content": "3",
                                       "lineHeight": 1,
                                       "fontFamily": "$font-family",
-                                      "fontSize": 30,
+                                      "fontSize": "$font-size-stat",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.8
                                     },
@@ -243615,7 +243615,7 @@
                                       "content": "3",
                                       "lineHeight": 1,
                                       "fontFamily": "$font-family",
-                                      "fontSize": 30,
+                                      "fontSize": "$font-size-stat",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.8
                                     },
@@ -243770,7 +243770,7 @@
                                       "content": "1",
                                       "lineHeight": 1,
                                       "fontFamily": "$font-family",
-                                      "fontSize": 30,
+                                      "fontSize": "$font-size-stat",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.8
                                     },
@@ -255320,7 +255320,7 @@
                           "fill": "$color-heading",
                           "content": "Approved B · Rules beside a live recipients panel",
                           "fontFamily": "$font-family",
-                          "fontSize": 18,
+                          "fontSize": "$font-size-large",
                           "fontWeight": "700"
                         },
                         {
@@ -257036,7 +257036,7 @@
                                               "content": "112",
                                               "lineHeight": 1,
                                               "fontFamily": "$font-family",
-                                              "fontSize": 40,
+                                              "fontSize": "$font-size-jumbo",
                                               "fontWeight": "700",
                                               "letterSpacing": -1
                                             },
@@ -259729,7 +259729,7 @@
                       "fill": "$color-heading",
                       "content": "Approved B · every state",
                       "fontFamily": "$font-family",
-                      "fontSize": 18,
+                      "fontSize": "$font-size-large",
                       "fontWeight": "700"
                     },
                     {
@@ -264327,7 +264327,7 @@
                                       "content": "112",
                                       "lineHeight": 1,
                                       "fontFamily": "$font-family",
-                                      "fontSize": 40,
+                                      "fontSize": "$font-size-jumbo",
                                       "fontWeight": "700",
                                       "letterSpacing": -1
                                     },
@@ -264786,7 +264786,7 @@
                       "fill": "$color-heading",
                       "content": "Approved B · Photo studio with a live preview",
                       "fontFamily": "$font-family",
-                      "fontSize": 18,
+                      "fontSize": "$font-size-large",
                       "fontWeight": "700"
                     },
                     {
@@ -266440,7 +266440,7 @@
                   "fill": "$color-heading",
                   "content": "No photo yet · initials, no Remove, Choose a photo",
                   "fontFamily": "$font-family",
-                  "fontSize": 15,
+                  "fontSize": "$font-size-large",
                   "fontWeight": "600"
                 },
                 {
@@ -266652,7 +266652,7 @@
                                           "fill": "$color-growth-on-surface",
                                           "content": "MR",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 52,
+                                          "fontSize": "$font-size-extravagant",
                                           "fontWeight": "600",
                                           "letterSpacing": -0.6
                                         }
@@ -267234,7 +267234,7 @@
                   "fill": "$color-heading",
                   "content": "Not a photo · after choosing a file that isn't JPG, PNG or WEBP",
                   "fontFamily": "$font-family",
-                  "fontSize": 15,
+                  "fontSize": "$font-size-large",
                   "fontWeight": "600"
                 },
                 {
@@ -268023,7 +268023,7 @@
                   "fill": "$color-heading",
                   "content": "Saving · Save photo spins, everything else waits",
                   "fontFamily": "$font-family",
-                  "fontSize": 15,
+                  "fontSize": "$font-size-large",
                   "fontWeight": "600"
                 },
                 {
@@ -268917,7 +268917,7 @@
                   "fill": "$color-heading",
                   "content": "Couldn't save · the crop stays so nothing is lost; Save photo again",
                   "fontFamily": "$font-family",
-                  "fontSize": 15,
+                  "fontSize": "$font-size-large",
                   "fontWeight": "600"
                 },
                 {
@@ -269827,7 +269827,7 @@
                   "fill": "$color-heading",
                   "content": "Removing · Remove spins, Choose new photo waits",
                   "fontFamily": "$font-family",
-                  "fontSize": 15,
+                  "fontSize": "$font-size-large",
                   "fontWeight": "600"
                 },
                 {
@@ -272309,7 +272309,7 @@
                       "fill": "$color-heading",
                       "content": "B · Week planner · approved",
                       "fontFamily": "$font-family",
-                      "fontSize": 18,
+                      "fontSize": "$font-size-large",
                       "fontWeight": "700"
                     },
                     {
@@ -272512,7 +272512,7 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Sunday",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "600"
                                 }
                               ]
@@ -272727,7 +272727,7 @@
                                   "fill": "$color-heading",
                                   "content": "Monday",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "600"
                                 }
                               ]
@@ -273304,7 +273304,7 @@
                                   "fill": "$color-heading",
                                   "content": "Tuesday",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "600"
                                 }
                               ]
@@ -273881,7 +273881,7 @@
                                   "fill": "$color-heading",
                                   "content": "Wednesday",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "600"
                                 }
                               ]
@@ -274933,7 +274933,7 @@
                                   "fill": "$color-heading",
                                   "content": "Thursday",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "600"
                                 }
                               ]
@@ -275510,7 +275510,7 @@
                                   "fill": "$color-heading",
                                   "content": "Friday",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "600"
                                 }
                               ]
@@ -276336,7 +276336,7 @@
                                   "fill": "$color-heading",
                                   "content": "Saturday",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "600"
                                 }
                               ]
@@ -276887,7 +276887,7 @@
                                       "fill": "$color-heading",
                                       "content": "Monday",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
+                                      "fontSize": "$font-size-large",
                                       "fontWeight": "600"
                                     }
                                   ]
@@ -277478,7 +277478,7 @@
                                       "fill": "$color-heading",
                                       "content": "Tuesday",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
+                                      "fontSize": "$font-size-large",
                                       "fontWeight": "600"
                                     }
                                   ]
@@ -278205,7 +278205,7 @@
                                       "fill": "$color-text-secondary",
                                       "content": "Sunday",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
+                                      "fontSize": "$font-size-large",
                                       "fontWeight": "600"
                                     }
                                   ]
@@ -278400,7 +278400,7 @@
                                       "fill": "$color-heading",
                                       "content": "Monday",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
+                                      "fontSize": "$font-size-large",
                                       "fontWeight": "600"
                                     }
                                   ]
@@ -278887,7 +278887,7 @@
                                       "fill": "$color-heading",
                                       "content": "Friday",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
+                                      "fontSize": "$font-size-large",
                                       "fontWeight": "600"
                                     }
                                   ]
@@ -279598,7 +279598,7 @@
                                       "fill": "$color-heading",
                                       "content": "Saturday",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 15,
+                                      "fontSize": "$font-size-large",
                                       "fontWeight": "600"
                                     }
                                   ]
@@ -279996,7 +279996,7 @@
                                   "width": "fill_container",
                                   "content": "Sunday",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "600"
                                 },
                                 {
@@ -280174,7 +280174,7 @@
                                   "width": "fill_container",
                                   "content": "Monday",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "600"
                                 },
                                 {
@@ -280714,7 +280714,7 @@
                                   "width": "fill_container",
                                   "content": "Friday",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "600"
                                 },
                                 {
@@ -281503,7 +281503,7 @@
                                   "width": "fill_container",
                                   "content": "Saturday",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "600"
                                 },
                                 {
@@ -281980,7 +281980,7 @@
                                   "fill": "$color-text-secondary",
                                   "content": "Sunday",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "600"
                                 }
                               ]
@@ -282195,7 +282195,7 @@
                                   "fill": "$color-heading",
                                   "content": "Monday",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "600"
                                 }
                               ]
@@ -282772,7 +282772,7 @@
                                   "fill": "$color-heading",
                                   "content": "Tuesday",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "600"
                                 }
                               ]
@@ -283349,7 +283349,7 @@
                                   "fill": "$color-heading",
                                   "content": "Wednesday",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "600"
                                 }
                               ]
@@ -284401,7 +284401,7 @@
                                   "fill": "$color-heading",
                                   "content": "Thursday",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "600"
                                 }
                               ]
@@ -284978,7 +284978,7 @@
                                   "fill": "$color-heading",
                                   "content": "Friday",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "600"
                                 }
                               ]
@@ -285804,7 +285804,7 @@
                                   "fill": "$color-heading",
                                   "content": "Saturday",
                                   "fontFamily": "$font-family",
-                                  "fontSize": 15,
+                                  "fontSize": "$font-size-large",
                                   "fontWeight": "600"
                                 }
                               ]
@@ -286211,7 +286211,7 @@
                           "fill": "$color-heading",
                           "content": "A · Refined pad · approved",
                           "fontFamily": "$font-family",
-                          "fontSize": 18,
+                          "fontSize": "$font-size-large",
                           "fontWeight": "700"
                         },
                         {
@@ -286516,7 +286516,7 @@
                   "fill": "$color-heading",
                   "content": "A · Refined pad",
                   "fontFamily": "$font-family",
-                  "fontSize": 18,
+                  "fontSize": "$font-size-large",
                   "fontWeight": "700"
                 },
                 {
@@ -288507,7 +288507,7 @@
                       "content": "B · Next message first · approved",
                       "lineHeight": 1.35,
                       "fontFamily": "$font-family",
-                      "fontSize": 18,
+                      "fontSize": "$font-size-large",
                       "fontWeight": "700"
                     },
                     {
@@ -289787,7 +289787,7 @@
                   "content": "B · Next message first · approved",
                   "lineHeight": 1.35,
                   "fontFamily": "$font-family",
-                  "fontSize": 18,
+                  "fontSize": "$font-size-large",
                   "fontWeight": "700"
                 },
                 {
@@ -296084,7 +296084,7 @@
                       "fill": "$color-heading",
                       "content": "A · Every state",
                       "fontFamily": "$font-family",
-                      "fontSize": 18,
+                      "fontSize": "$font-size-large",
                       "fontWeight": "700"
                     },
                     {
@@ -299794,7 +299794,7 @@
               "fill": "$color-heading",
               "content": "Option · 5 variants",
               "fontFamily": "$font-family",
-              "fontSize": 18,
+              "fontSize": "$font-size-large",
               "fontWeight": "700"
             },
             {
@@ -300220,7 +300220,7 @@
               "fill": "$color-heading",
               "content": "Switch · 2, 3 and 4 choices",
               "fontFamily": "$font-family",
-              "fontSize": 18,
+              "fontSize": "$font-size-large",
               "fontWeight": "700"
             },
             {
@@ -300495,7 +300495,7 @@
               "fill": "$color-heading",
               "content": "Switch field · label above, optional hint under",
               "fontFamily": "$font-family",
-              "fontSize": 18,
+              "fontSize": "$font-size-large",
               "fontWeight": "700"
             },
             {
@@ -301562,7 +301562,7 @@
                                                   "fill": "$color-heading",
                                                   "content": "1",
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 18,
+                                                  "fontSize": "$font-size-large",
                                                   "fontWeight": "700",
                                                   "letterSpacing": -0.3
                                                 },
@@ -301632,7 +301632,7 @@
                                                   "fill": "$color-heading",
                                                   "content": "2",
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 18,
+                                                  "fontSize": "$font-size-large",
                                                   "fontWeight": "700",
                                                   "letterSpacing": -0.3
                                                 },
@@ -301702,7 +301702,7 @@
                                                   "fill": "$color-heading",
                                                   "content": "1",
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 18,
+                                                  "fontSize": "$font-size-large",
                                                   "fontWeight": "700",
                                                   "letterSpacing": -0.3
                                                 },
@@ -301772,7 +301772,7 @@
                                                   "fill": "$color-heading",
                                                   "content": "1",
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 18,
+                                                  "fontSize": "$font-size-large",
                                                   "fontWeight": "700",
                                                   "letterSpacing": -0.3
                                                 },
@@ -301842,7 +301842,7 @@
                                                   "fill": "$color-heading",
                                                   "content": "1",
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 18,
+                                                  "fontSize": "$font-size-large",
                                                   "fontWeight": "700",
                                                   "letterSpacing": -0.3
                                                 },
@@ -301921,7 +301921,7 @@
                                                   "fill": "$color-heading",
                                                   "content": "1",
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 18,
+                                                  "fontSize": "$font-size-large",
                                                   "fontWeight": "700",
                                                   "letterSpacing": -0.3
                                                 },
@@ -301991,7 +301991,7 @@
                                                   "fill": "$color-heading",
                                                   "content": "6",
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 18,
+                                                  "fontSize": "$font-size-large",
                                                   "fontWeight": "700",
                                                   "letterSpacing": -0.3
                                                 },
@@ -302061,7 +302061,7 @@
                                                   "fill": "$color-heading",
                                                   "content": "2",
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 18,
+                                                  "fontSize": "$font-size-large",
                                                   "fontWeight": "700",
                                                   "letterSpacing": -0.3
                                                 },
@@ -302131,7 +302131,7 @@
                                                   "fill": "$color-heading",
                                                   "content": "1",
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 18,
+                                                  "fontSize": "$font-size-large",
                                                   "fontWeight": "700",
                                                   "letterSpacing": -0.3
                                                 },
@@ -302201,7 +302201,7 @@
                                                   "fill": "$color-heading",
                                                   "content": "1",
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 18,
+                                                  "fontSize": "$font-size-large",
                                                   "fontWeight": "700",
                                                   "letterSpacing": -0.3
                                                 },
@@ -303133,7 +303133,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -303203,7 +303203,7 @@
                                               "fill": "$color-heading",
                                               "content": "2",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -303273,7 +303273,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -303343,7 +303343,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -303413,7 +303413,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -303492,7 +303492,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -303562,7 +303562,7 @@
                                               "fill": "$color-heading",
                                               "content": "6",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -303632,7 +303632,7 @@
                                               "fill": "$color-heading",
                                               "content": "2",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -303702,7 +303702,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -303772,7 +303772,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -304685,7 +304685,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -304755,7 +304755,7 @@
                                               "fill": "$color-heading",
                                               "content": "2",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -304825,7 +304825,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -304895,7 +304895,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -304965,7 +304965,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -305044,7 +305044,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -305114,7 +305114,7 @@
                                               "fill": "$color-heading",
                                               "content": "6",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -305184,7 +305184,7 @@
                                               "fill": "$color-heading",
                                               "content": "2",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -305254,7 +305254,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -305324,7 +305324,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -306209,7 +306209,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -306279,7 +306279,7 @@
                                               "fill": "$color-heading",
                                               "content": "2",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -306349,7 +306349,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -306419,7 +306419,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -306489,7 +306489,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -306571,7 +306571,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -306641,7 +306641,7 @@
                                               "fill": "$color-heading",
                                               "content": "6",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -306711,7 +306711,7 @@
                                               "fill": "$color-heading",
                                               "content": "2",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -306781,7 +306781,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -306851,7 +306851,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -308016,7 +308016,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -308086,7 +308086,7 @@
                                               "fill": "$color-heading",
                                               "content": "2",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -308156,7 +308156,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -308226,7 +308226,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -308296,7 +308296,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -308378,7 +308378,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -308448,7 +308448,7 @@
                                               "fill": "$color-heading",
                                               "content": "6",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -308518,7 +308518,7 @@
                                               "fill": "$color-heading",
                                               "content": "2",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -308588,7 +308588,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -308658,7 +308658,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -309641,7 +309641,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -309711,7 +309711,7 @@
                                               "fill": "$color-heading",
                                               "content": "2",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -309781,7 +309781,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -309851,7 +309851,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -309921,7 +309921,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -310000,7 +310000,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -310070,7 +310070,7 @@
                                               "fill": "$color-heading",
                                               "content": "6",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -310140,7 +310140,7 @@
                                               "fill": "$color-heading",
                                               "content": "2",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -310210,7 +310210,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -310280,7 +310280,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -311172,7 +311172,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -311242,7 +311242,7 @@
                                               "fill": "$color-heading",
                                               "content": "2",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -311312,7 +311312,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -311382,7 +311382,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -311452,7 +311452,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -311534,7 +311534,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -311604,7 +311604,7 @@
                                               "fill": "$color-heading",
                                               "content": "6",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -311674,7 +311674,7 @@
                                               "fill": "$color-heading",
                                               "content": "2",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -311744,7 +311744,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -311814,7 +311814,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -312686,7 +312686,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -312756,7 +312756,7 @@
                                               "fill": "$color-heading",
                                               "content": "2",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -312826,7 +312826,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -312896,7 +312896,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -312966,7 +312966,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -313045,7 +313045,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -313115,7 +313115,7 @@
                                               "fill": "$color-heading",
                                               "content": "6",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -313185,7 +313185,7 @@
                                               "fill": "$color-heading",
                                               "content": "2",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -313255,7 +313255,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -313325,7 +313325,7 @@
                                               "fill": "$color-heading",
                                               "content": "1",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.3
                                             },
@@ -314196,7 +314196,7 @@
                                           "fill": "$color-heading",
                                           "content": "1",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -314266,7 +314266,7 @@
                                           "fill": "$color-heading",
                                           "content": "2",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -314336,7 +314336,7 @@
                                           "fill": "$color-heading",
                                           "content": "1",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -314406,7 +314406,7 @@
                                           "fill": "$color-heading",
                                           "content": "1",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -314476,7 +314476,7 @@
                                           "fill": "$color-heading",
                                           "content": "1",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -314555,7 +314555,7 @@
                                           "fill": "$color-heading",
                                           "content": "1",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -314625,7 +314625,7 @@
                                           "fill": "$color-heading",
                                           "content": "6",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -314695,7 +314695,7 @@
                                           "fill": "$color-heading",
                                           "content": "2",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -314765,7 +314765,7 @@
                                           "fill": "$color-heading",
                                           "content": "1",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -314835,7 +314835,7 @@
                                           "fill": "$color-heading",
                                           "content": "1",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -315698,7 +315698,7 @@
                                           "fill": "$color-heading",
                                           "content": "1",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -315768,7 +315768,7 @@
                                           "fill": "$color-heading",
                                           "content": "2",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -315838,7 +315838,7 @@
                                           "fill": "$color-heading",
                                           "content": "1",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -315908,7 +315908,7 @@
                                           "fill": "$color-heading",
                                           "content": "1",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -315978,7 +315978,7 @@
                                           "fill": "$color-heading",
                                           "content": "1",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -316057,7 +316057,7 @@
                                           "fill": "$color-heading",
                                           "content": "1",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -316127,7 +316127,7 @@
                                           "fill": "$color-heading",
                                           "content": "6",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -316197,7 +316197,7 @@
                                           "fill": "$color-heading",
                                           "content": "2",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -316267,7 +316267,7 @@
                                           "fill": "$color-heading",
                                           "content": "1",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -316337,7 +316337,7 @@
                                           "fill": "$color-heading",
                                           "content": "1",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.3
                                         },
@@ -316928,7 +316928,7 @@
                                                   "fill": "$color-heading",
                                                   "content": "$",
                                                   "fontFamily": "$font-family",
-                                                  "fontSize": 18,
+                                                  "fontSize": "$font-size-large",
                                                   "fontWeight": "600"
                                                 }
                                               ]
@@ -318041,7 +318041,7 @@
                                               "fill": "$color-heading",
                                               "content": "$",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "600"
                                             }
                                           ]
@@ -319160,7 +319160,7 @@
                                               "fill": "$color-heading",
                                               "content": "$",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "600"
                                             }
                                           ]
@@ -320229,7 +320229,7 @@
                                               "fill": "$color-heading",
                                               "content": "$",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "600"
                                             }
                                           ]
@@ -321321,7 +321321,7 @@
                                               "fill": "$color-heading",
                                               "content": "$",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "600"
                                             }
                                           ]
@@ -322409,7 +322409,7 @@
                                               "fill": "$color-heading",
                                               "content": "$",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "600"
                                             }
                                           ]
@@ -323515,7 +323515,7 @@
                                               "fill": "$color-heading",
                                               "content": "$",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "600"
                                             }
                                           ]
@@ -324592,7 +324592,7 @@
                                               "fill": "$color-heading",
                                               "content": "$",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "600"
                                             }
                                           ]
@@ -325681,7 +325681,7 @@
                                               "fill": "$color-heading",
                                               "content": "$",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "600"
                                             }
                                           ]
@@ -326784,7 +326784,7 @@
                                           "fill": "$color-heading",
                                           "content": "$",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "600"
                                         }
                                       ]
@@ -327783,7 +327783,7 @@
                                           "fill": "$color-heading",
                                           "content": "$",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "600"
                                         }
                                       ]
@@ -328683,7 +328683,7 @@
               "content": "layout/NotificationBell — the pop-up under the top bar's bell. One look serves the team bell (team/TeamNotificationBell: new website inquiries, customer replies, quote decisions, online payments, schedule changes, messages, feedback) and Jafar's bell (jafar/NotificationBell, which adds \"View all\" at the foot). Same behaviour as live: newest first, title, up to two lines of detail and the time; unread is bold with a dot; an alert that needs a look keeps its orange or red dot; Mark all read (with loading); clicking an alert opens its record. New look, following Linear, Atlassian and SaaS notification-centre guidance: a coloured tile tells you what the alert is about before you read it (inquiry orange, quote pink, invoice blue, inbox teal, schedule indigo, review olive), and alerts are split by day. The bell button itself is the approved top bar one (8px red dot).",
               "lineHeight": 1.45,
               "fontFamily": "$font-family",
-              "fontSize": 15,
+              "fontSize": "$font-size-base",
               "fontWeight": "normal"
             }
           ]
@@ -328711,7 +328711,7 @@
                   "fill": "$color-heading",
                   "content": "Part 1 · Approved B",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -328760,7 +328760,7 @@
                           "fill": "$color-heading",
                           "content": "B · Needs you first",
                           "fontFamily": "$font-family",
-                          "fontSize": 17,
+                          "fontSize": "$font-size-large",
                           "fontWeight": "700"
                         },
                         {
@@ -330316,7 +330316,7 @@
                   "fill": "$color-heading",
                   "content": "Part 2 · Every state",
                   "fontFamily": "$font-family",
-                  "fontSize": 22,
+                  "fontSize": "$font-size-larger",
                   "fontWeight": "700",
                   "letterSpacing": -0.3
                 },
@@ -330365,7 +330365,7 @@
                           "fill": "$color-heading",
                           "content": "Loading",
                           "fontFamily": "$font-family",
-                          "fontSize": 15,
+                          "fontSize": "$font-size-large",
                           "fontWeight": "700"
                         },
                         {
@@ -331136,7 +331136,7 @@
                           "fill": "$color-heading",
                           "content": "Empty",
                           "fontFamily": "$font-family",
-                          "fontSize": 15,
+                          "fontSize": "$font-size-large",
                           "fontWeight": "700"
                         },
                         {
@@ -331351,7 +331351,7 @@
                           "fill": "$color-heading",
                           "content": "Couldn't load",
                           "fontFamily": "$font-family",
-                          "fontSize": 15,
+                          "fontSize": "$font-size-large",
                           "fontWeight": "700"
                         },
                         {
@@ -331650,7 +331650,7 @@
                           "fill": "$color-heading",
                           "content": "All read",
                           "fontFamily": "$font-family",
-                          "fontSize": 15,
+                          "fontSize": "$font-size-large",
                           "fontWeight": "700"
                         },
                         {
@@ -332455,7 +332455,7 @@
                           "fill": "$color-heading",
                           "content": "Marking all read",
                           "fontFamily": "$font-family",
-                          "fontSize": 15,
+                          "fontSize": "$font-size-large",
                           "fontWeight": "700"
                         },
                         {
@@ -333261,7 +333261,7 @@
                           "fill": "$color-heading",
                           "content": "Mark all read failed",
                           "fontFamily": "$font-family",
-                          "fontSize": 15,
+                          "fontSize": "$font-size-large",
                           "fontWeight": "700"
                         },
                         {
@@ -334133,7 +334133,7 @@
               "fill": "$color-heading",
               "content": "Part 3 · Dark mode",
               "fontFamily": "$font-family",
-              "fontSize": 22,
+              "fontSize": "$font-size-larger",
               "fontWeight": "700",
               "letterSpacing": -0.3
             },
@@ -341395,7 +341395,7 @@
                                           "fill": "$color-heading",
                                           "content": "Tuesday",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.2
                                         },
@@ -342362,7 +342362,7 @@
                                           "fill": "$color-heading",
                                           "content": "Thursday",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.2
                                         },
@@ -343383,7 +343383,7 @@
                                               "fill": "$color-heading",
                                               "content": "$105.00",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.2
                                             }
@@ -343884,7 +343884,7 @@
                                           "fill": "$color-heading",
                                           "content": "No date yet",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.2
                                         },
@@ -344839,7 +344839,7 @@
                                           "fill": "$color-heading",
                                           "content": "Tuesday",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.2
                                         },
@@ -345806,7 +345806,7 @@
                                           "fill": "$color-heading",
                                           "content": "Tuesday",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.2
                                         },
@@ -346800,7 +346800,7 @@
                                           "fill": "$color-text-secondary",
                                           "content": "Pick a day",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.2
                                         },
@@ -347795,7 +347795,7 @@
                                           "fill": "$color-heading",
                                           "content": "Tuesday",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.2
                                         },
@@ -348853,7 +348853,7 @@
                                           "fill": "$color-heading",
                                           "content": "Thursday",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.2
                                         },
@@ -349874,7 +349874,7 @@
                                               "fill": "$color-heading",
                                               "content": "$105.00",
                                               "fontFamily": "$font-family",
-                                              "fontSize": 18,
+                                              "fontSize": "$font-size-large",
                                               "fontWeight": "700",
                                               "letterSpacing": -0.2
                                             }
@@ -350425,7 +350425,7 @@
                                           "fill": "$color-heading",
                                           "content": "$105.00",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.2
                                         }
@@ -350618,7 +350618,7 @@
                                           "fill": "$color-heading",
                                           "content": "$105.00",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.2
                                         }
@@ -351120,7 +351120,7 @@
                                           "fill": "$color-heading",
                                           "content": "$105.00",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.2
                                         }
@@ -351325,7 +351325,7 @@
                                           "fill": "$color-heading",
                                           "content": "$105.00",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.2
                                         }
@@ -351808,7 +351808,7 @@
                                           "fill": "$color-heading",
                                           "content": "$105.00",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.2
                                         }
@@ -352262,7 +352262,7 @@
                                           "fill": "$color-heading",
                                           "content": "$85.00",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.2
                                         }
@@ -352627,7 +352627,7 @@
                                       "fill": "$color-heading",
                                       "content": "Thursday",
                                       "fontFamily": "$font-family",
-                                      "fontSize": 18,
+                                      "fontSize": "$font-size-large",
                                       "fontWeight": "700",
                                       "letterSpacing": -0.2
                                     },
@@ -353648,7 +353648,7 @@
                                           "fill": "$color-heading",
                                           "content": "$105.00",
                                           "fontFamily": "$font-family",
-                                          "fontSize": 18,
+                                          "fontSize": "$font-size-large",
                                           "fontWeight": "700",
                                           "letterSpacing": -0.2
                                         }
@@ -369952,7 +369952,7 @@
                                           "fill": "$color-heading",
                                           "content": "$4,373.36",
                                           "fontFamily": "Inter",
-                                          "fontSize": 40,
+                                          "fontSize": "$font-size-jumbo",
                                           "fontWeight": "700",
                                           "letterSpacing": -1
                                         },
@@ -370988,7 +370988,7 @@
                                           "fill": "$color-heading",
                                           "content": "$4,373.36",
                                           "fontFamily": "Inter",
-                                          "fontSize": 40,
+                                          "fontSize": "$font-size-jumbo",
                                           "fontWeight": "700",
                                           "letterSpacing": -1
                                         },
@@ -371999,7 +371999,7 @@
                                           "fill": "$color-heading",
                                           "content": "$4,373.36",
                                           "fontFamily": "Inter",
-                                          "fontSize": 40,
+                                          "fontSize": "$font-size-jumbo",
                                           "fontWeight": "700",
                                           "letterSpacing": -1
                                         },
@@ -373232,7 +373232,7 @@
                                           "fill": "$color-heading",
                                           "content": "$4,373.36",
                                           "fontFamily": "Inter",
-                                          "fontSize": 40,
+                                          "fontSize": "$font-size-jumbo",
                                           "fontWeight": "700",
                                           "letterSpacing": -1
                                         },
@@ -374497,7 +374497,7 @@
                                           "fill": "$color-heading",
                                           "content": "$4,373.36",
                                           "fontFamily": "Inter",
-                                          "fontSize": 40,
+                                          "fontSize": "$font-size-jumbo",
                                           "fontWeight": "700",
                                           "letterSpacing": -1
                                         },
@@ -375659,7 +375659,7 @@
                                           "fill": "$color-heading",
                                           "content": "$4,373.36",
                                           "fontFamily": "Inter",
-                                          "fontSize": 40,
+                                          "fontSize": "$font-size-jumbo",
                                           "fontWeight": "700",
                                           "letterSpacing": -1
                                         },
@@ -376912,7 +376912,7 @@
                                           "fill": "$color-heading",
                                           "content": "$4,373.36",
                                           "fontFamily": "Inter",
-                                          "fontSize": 40,
+                                          "fontSize": "$font-size-jumbo",
                                           "fontWeight": "700",
                                           "letterSpacing": -1
                                         },
@@ -381003,7 +381003,7 @@
                                   "fill": "$color-heading",
                                   "content": "$4,373.36",
                                   "fontFamily": "Inter",
-                                  "fontSize": 40,
+                                  "fontSize": "$font-size-jumbo",
                                   "fontWeight": "700",
                                   "letterSpacing": -1
                                 },
@@ -382217,7 +382217,7 @@
                                   "fill": "$color-heading",
                                   "content": "$4,373.36",
                                   "fontFamily": "Inter",
-                                  "fontSize": 40,
+                                  "fontSize": "$font-size-jumbo",
                                   "fontWeight": "700",
                                   "letterSpacing": -1
                                 },

@@ -11,8 +11,8 @@
 
 - Three Botanical theme files (18 lines): Jafar's "Classic only" rule.
 - Emails (`src/lib/server/**`, inline `font-size:13px`) and the website chat widget (`src/widget/website-chat.ts`):
-  they run outside the app's stylesheet, so the variables cannot reach them. The widget has 11px text, under the
-  12px rule; waits for Jafar's yes to raise it to 12.
+  they run outside the app's stylesheet, so the variables cannot reach them. The widget's four 11px lines (footer,
+  day divider, message time, retry link) are now 12px, Jafar's yes, same day.
 - `KpiCard` and `SupportConversation` already mix variables inside `clamp`/`max`.
 
 ## Checked
@@ -25,5 +25,8 @@ notification pop-up; the New request form; Home, a job, Inbox, Schedule and Bala
 - No page scrolls sideways.
 - Text that ends in "…" or is clipped was listed for every page: it is screen-reader-only text, or long emails,
   street addresses and message previews that end in "…" by design.
-- Not from this sweep: the sidebar line "Workspace · O…" is cut off on every page since the table made
-  `-small` 14px (`Sidebar.svelte` `&__eyebrow`, not changed here).
+- Follow-up, Jafar's yes the same day: the sidebar line "Workspace · O…" was cut off on every page since the
+  table made `-small` 14px (it needs 131px and has 116). It now wraps ("Workspace ·" / "Owner"; "Workspace ·" /
+  "Administrator"), the dot kept with "Workspace" (`Sidebar.svelte`). Checked live at 1440, light, dark and collapsed:
+  `sidebar-owner-after.png`, `sidebar-administrator-after.png`. The Botanical sidebar is not changed.
+- Pencil: 393 typed-in text sizes in `concept.pen` bound to the variables (see `parts/type-sweep.md`).
