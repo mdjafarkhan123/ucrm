@@ -12,7 +12,7 @@ money card before save; `PrimaryInfoCard` deleted. Saved job/quote/invoice pages
 
 **Next:**
 1. Shared parts: `parts/c5-shared-parts.md`. Batches 1–24, 26–30, 33, 35 and 37–40 built (25 superseded);
-   every approved batch up to 40 is built. Batch 41 follow-up card approved B `jXc9n`, waiting to be built. Batch 42 Client form approved A `fJ8Mx`, waiting to be built; no-blend shared parts approved, waiting to be built (`parts/c5-shared-parts.md`). Next drawing after it: next empty row in `stages/list-1b-parts.md` (`clients/ClientMergeDialog`);
+   every approved batch up to 40 is built. Batch 41 follow-up card approved B `jXc9n`, waiting to be built. Batch 42 Client form approved A `fJ8Mx` and the no-blend shared parts (client colour, switch, buttons, fields), waiting to be built: work order `parts/batch42-no-blend-build.md`. Top bar on hold until Jafar decides. Next drawing after it: next empty row in `stages/list-1b-parts.md` (`clients/ClientMergeDialog`);
    List 1a drawn, DataTable skipped. Gaps found 2026-10-21, waiting to be drawn: Field-worker Home
    (`list-2a-daily.md`), Select work pop-up and payment-stage state of New invoice (`list-2b-daily.md`). Older work needs the 12px text sweep.
 2. Schedule, event completion and Jobs pop-ups merged; proof `docs/evidence/2026-10-19-schedule/README.md`.

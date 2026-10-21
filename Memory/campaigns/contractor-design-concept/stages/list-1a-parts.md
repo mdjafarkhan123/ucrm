@@ -6,11 +6,11 @@ Key, tick rule and coverage command: `list-index.md`.
 
 | Piece | Inside it | Pencil | Built |
 | --- | --- | --- | --- |
-| `ui/Button` |  | ✅ | ✅ |
+| `ui/Button` |  | ✅ (grey secondary kinds 2026-10-21) | ⬜ Rebuild: no-blend 2026-10-21 (`parts/batch42-no-blend-build.md`) |
 | `data-display/LoadingSkeleton` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `data-display/ErrorState` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
-| `ui/Input` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
-| `ui/Select` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
+| `ui/Input` |  | ✅ Fields board `khuNF` (sunken box 2026-10-21) | ⬜ Rebuild: no-blend 2026-10-21 (`parts/batch42-no-blend-build.md`) |
+| `ui/Select` |  | ✅ Fields board `khuNF` (sunken box 2026-10-21) | ⬜ Rebuild: no-blend 2026-10-21 (`parts/batch42-no-blend-build.md`) |
 | `ui/Checkbox` |  | ✅ | ✅ |
 | `data-display/EmptyState` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `layout/SectionBlock` |  | ✅ Page parts board `j3jDI` | ✅ Merged 2026-10-19 |
@@ -19,11 +19,11 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/Badge` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
 | `ui/Dialog` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `ui/Textarea` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
-| `ui/SearchInput` |  | ✅ Fields board `khuNF` | ✅ 2026-10-19 |
+| `ui/SearchInput` |  | ✅ Fields board `khuNF` (sunken box 2026-10-21) | ⬜ Rebuild: no-blend 2026-10-21 (`parts/batch42-no-blend-build.md`) |
 | `ui/DropdownMenu` |  | ✅ | ✅ |
 | `layout/Breadcrumbs` |  | ✅ Page parts board `j3jDI` | ✅ Merged 2026-10-19 |
 | `ui/ConfirmDialog` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
-| `ui/SegmentedControl` |  | ✅ | ✅ |
+| `ui/SegmentedControl` |  | ✅ Switch component `SnDlF` 2026-10-21 (brand-green choice) | ⬜ Rebuild: no-blend 2026-10-21 (`parts/batch42-no-blend-build.md`) |
 | `ui/StatusBadge` |  | ✅ | ✅ Merged 2026-10-19 |
 | `layout/StickyActionBar` |  | ✅ | ✅ |
 | `ui/Avatar` |  | ✅ Small controls `GbgcY` | ✅ |
@@ -75,6 +75,6 @@ Key, tick rule and coverage command: `list-index.md`.
 | `collaboration/NoteFiles` |  | ✅ Batch 9 `KuOmH` | ✅ Merged 2026-10-20 |
 | `files/FileLabelsDialog` | 🔁F pop-up · pop-ups: "confirm" 🔁C · loading | ✅ Batch 11 `K04pQm` | ✅ |
 | `files/FilePicker` | pop-ups: "You do not have access to the file library" 🔁F · loading, empty, permission-limited | ✅ Batch 11 `K04pQm` | ✅ |
-| `files/PendingFilesCard` |  | ✅ Batch 9 `KuOmH` | ✅ Merged 2026-10-20 |
+| `files/PendingFilesCard` |  | ✅ Batch 9 `KuOmH` (empty box on page colour 2026-10-21) | ⬜ Rebuild: no-blend 2026-10-21 (`parts/batch42-no-blend-build.md`) |
 | `files/PhotoDescribeForm` | loading, permission-limited | ✅ Batch 11 `K04pQm` | ✅ |
 | `work/ClientSummaryCard` | menus ×1 | 🔁 Job details client box `tNdkX` | ⬜ |

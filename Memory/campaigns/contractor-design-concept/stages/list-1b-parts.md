@@ -9,7 +9,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `communications/EmailSenderLabel` | loading | ✅ Batch 16 `I5mY7I` B 2026-10-20 | ✅ |
 | `files/PhotoDescribeDialog` | 🔁F pop-up · loading | ✅ Batch 17 `Y0ECPJ` A 2026-10-20 | ✅ |
 | `files/RecordFilesCard` | pop-ups: "confirm" 🔁C · menus ×1 · loading, permission-limited | ✅ Batch 18 `pH9PB` A 2026-10-20 | ✅ |
-| `forms/FormNotesCard` |  | ✅ Batch 19 `qf1uu` 2026-10-20 | ✅ |
+| `forms/FormNotesCard` |  | ✅ Batch 19 `qf1uu` (field on page colour 2026-10-21) | ⬜ Rebuild: no-blend 2026-10-21 (`parts/batch42-no-blend-build.md`) |
 | `schedule/NotifyCustomerCheckbox` |  | ✅ | ✅ |
 | `settings/automation/EmailActionEditor` |  | ✅ Batch 19 `qf1uu` 2026-10-20 | ✅ |
 | `settings/automation/SmsActionEditor` |  | ✅ Batch 19 `qf1uu` 2026-10-20 | ✅ |
@@ -72,6 +72,6 @@ Key, tick rule and coverage command: `list-index.md`.
 | `layout/RouteSkeleton` | loading | ⬜ | ⬜ |
 | `layout/SharedAppShell` | permission-limited, owner view | ⬜ | ⬜ |
 | `layout/Sidebar` |  | ✅ | ✅ |
-| `layout/Topbar` | menus ×9 · owner view | ✅ | ⬜ |
+| `layout/Topbar` | menus ×9 · owner view | ⏸ White panel drawn 2026-10-21; Jafar deciding keep or put back. Don't build until he decides | ⬜ |
 | `ui/PersonPickChip` |  | ✅ | ✅ |
 | `work/PickedClient` |  | ✅ | ✅ |
