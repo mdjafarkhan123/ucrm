@@ -1,5 +1,6 @@
 <script lang="ts">
 	import IconTile from '$lib/components/ui/IconTile.svelte';
+	import CreateFormHeader from '$lib/components/work/CreateFormHeader.svelte';
 	import { setContext, untrack } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
@@ -13,7 +14,6 @@
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
 	import JobVisitsBlock from '$lib/components/jobs/JobVisitsBlock.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
-	import Input from '$lib/components/ui/Input.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
@@ -372,20 +372,11 @@
 	<RecordFormLayout
 		concept
 		title="New job"
-		description="Who it is for, what you will do and when. Deposits, notes and files are added on the job once it is saved."
-		icon={hammerIcon}
-		tone="job"
+		pageHeader={false}
+		labelledBy="job-form-title"
 		bind:this={layout}
 		error={formError}
 	>
-		{#snippet headerAside()}
-			<span class="job-form__number">
-				<IconTile icon={hashIcon} tone="job" size={24} />
-				<span class="job-form__number-label">Job #</span>
-				Given when you save
-			</span>
-		{/snippet}
-
 		{#snippet main()}
 			{#if sourceRequest}
 				<div class="job-form__request" role="note">
@@ -408,23 +399,23 @@
 				</div>
 			{/if}
 
-			<SectionBlock
+			<CreateFormHeader
 				id="job-primary"
-				title="The job"
-				subtitle="What the work is and who it is for"
-				icon={hammerIcon}
 				tone="job"
+				icon={hammerIcon}
+				heading="New job"
+				description="Describe the work and choose your client."
+				titleId="job-form-title"
+				titlePlaceholder="e.g. Backyard lighting installation"
+				bind:title={form.title}
+				titleRequired
+				titleInvalid={Boolean(fieldErrors.title)}
+				titleError={fieldErrors.title ?? ''}
+				factIcon={hashIcon}
+				factLabel="Job #"
+				factValue="Given when you save"
 			>
-				<div class="job-form__fields concept-fields">
-					<Input
-						id="job-primary-title"
-						label="Job title"
-						bind:value={form.title}
-						required
-						invalid={Boolean(fieldErrors.title)}
-						errorMessage={fieldErrors.title ?? ''}
-					/>
-
+				{#snippet client()}
 					{#if selectedClient && !changingClient}
 						<div class="job-form__client">
 							<span class="job-form__label">Client <span aria-hidden="true">*</span></span>
@@ -465,32 +456,8 @@
 							{/if}
 						</div>
 					{/if}
-				</div>
-			</SectionBlock>
-
-			<ProductsAndServicesBlock
-				lines={sourceRequest?.lines ?? []}
-				alwaysEditing
-				editable
-				concept
-				flush
-				icon={packageIcon}
-				tone="quote"
-				hint={lines.length > 1
-					? `${lines.length} lines · drag ⠿ to reorder`
-					: `${lines.length} ${lines.length === 1 ? 'line' : 'lines'}`}
-				{currencyCode}
-				{locale}
-				editorTotalLabel="Job subtotal"
-				emptyDescription="Add the products and services this job includes."
-				onDraftChange={readDraftLines}
-			>
-				{#snippet conceptTotals()}
-					<p class="job-form__totals-note">
-						Discount and tax are added on the job once it is saved.
-					</p>
 				{/snippet}
-			</ProductsAndServicesBlock>
+			</CreateFormHeader>
 
 			<JobVisitsBlock
 				bind:this={visitsBlock}
@@ -537,6 +504,27 @@
 					</div>
 				{/if}
 			</SectionBlock>
+
+			<ProductsAndServicesBlock
+				lines={sourceRequest?.lines ?? []}
+				alwaysEditing
+				editable
+				concept
+				flush
+				icon={packageIcon}
+				tone="quote"
+				hint={lines.length > 1
+					? `${lines.length} lines · drag ⠿ to reorder`
+					: lines.length === 1
+						? '1 line'
+						: 'Nothing priced yet'}
+				totalFoot
+				{currencyCode}
+				{locale}
+				editorTotalLabel="Job subtotal"
+				emptyDescription="Add the products and services this job includes."
+				onDraftChange={readDraftLines}
+			/>
 		{/snippet}
 
 		{#snippet rail()}
@@ -622,24 +610,6 @@
 			}
 		}
 
-		// The "Job #" pill at the right of the page header: the number is the database's, given on save.
-		&__number {
-			display: inline-flex;
-			align-items: center;
-			gap: var(--space-small);
-			padding: 6px var(--space-slim) 6px 6px;
-			border: var(--border-base) solid var(--color-border);
-			border-radius: var(--radius-circle);
-			color: var(--color-text--secondary);
-			background: var(--color-surface);
-			font-size: var(--typography--fontSize-small);
-		}
-
-		&__number-label {
-			color: var(--color-heading);
-			font-weight: 600;
-		}
-
 		// "From a request": a request-coloured strip above the form, saying what saving will do.
 		&__request {
 			display: flex;
@@ -660,12 +630,6 @@
 		&__request-title {
 			font-size: var(--typography--fontSize-base);
 			font-weight: 600;
-		}
-
-		&__totals-note {
-			margin: 0;
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
 		}
 
 		// The Notify customer box closes the Visits card under a hairline, once it shows.
