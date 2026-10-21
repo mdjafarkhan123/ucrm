@@ -4,6 +4,7 @@
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
+	import Banner from '$lib/components/ui/Banner.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import CalendarPicker from '$lib/components/ui/CalendarPicker.svelte';
 	import { calendarDateFromString, calendarDateToString } from '$lib/components/ui/date-time';
@@ -19,6 +20,7 @@
 	import plusIcon from '@tabler/icons/outline/plus.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import bellPlusIcon from '@tabler/icons/outline/bell-plus.svg?raw';
 
 	// Invoice reminders are internal to-dos for our own team, never messages to the client — the card says
 	// so in those words. A due reminder is what puts the job in "Requires invoicing"; clearing it means
@@ -34,6 +36,7 @@
 		billingTiming,
 		jobClosed = false,
 		embedded = false,
+		jobLine = '',
 		onChanged
 	}: {
 		jobId: string;
@@ -47,6 +50,8 @@
 		editable?: boolean;
 		/** Drawn inside the Billing card, under its payment schedule, instead of as a card of its own. */
 		embedded?: boolean;
+		/** "Job #1042 · Kitchen cabinet refit", the quiet line under the pop-up's title. */
+		jobLine?: string;
 		onChanged: () => Promise<void> | void;
 	} = $props();
 
@@ -255,9 +260,17 @@
 {/if}
 
 {#if addOpen}
-	<Dialog open={addOpen} title="Add an invoice reminder" size="small" onClose={closeAdd}>
+	<Dialog
+		open={addOpen}
+		title="Add an invoice reminder"
+		subtitle={jobLine || undefined}
+		size="small"
+		icon={bellPlusIcon}
+		iconTone="invoice"
+		onClose={closeAdd}
+	>
 		<div class="job-reminders-dialog">
-			{#if addError}<p class="job-reminders-dialog__error" role="alert">{addError}</p>{/if}
+			{#if addError}<Banner type="error">{addError}</Banner>{/if}
 
 			<CalendarPicker
 				id="job-reminder-date"
@@ -265,6 +278,7 @@
 				minValue={todayValue}
 				value={calendarDateFromString(draftDate)}
 				onchange={(value) => (draftDate = calendarDateToString(value))}
+				disabled={saving}
 				{locale}
 			/>
 
@@ -273,22 +287,26 @@
 				label="Note (optional)"
 				placeholder="e.g. bill with the March statement"
 				maxlength={200}
+				disabled={saving}
 				bind:value={draftNote}
 			/>
 
-			<p class="job-reminders-dialog__hint">
+			<Banner type="notice">
 				This is a reminder for your own team on the date you pick — nothing is sent to the client.
-			</p>
+			</Banner>
+		</div>
 
+		{#snippet footer()}
 			<div class="job-reminders-dialog__actions">
 				<Button variant="secondary" variation="subtle" disabled={saving} onclick={closeAdd}>
 					Cancel
 				</Button>
 				<Button variant="primary" loading={saving} disabled={!draftDate} onclick={saveReminder}>
+					{@html plusIcon}
 					Add reminder
 				</Button>
 			</div>
-		</div>
+		{/snippet}
 	</Dialog>
 {/if}
 
@@ -433,22 +451,10 @@
 		flex-direction: column;
 		gap: var(--space-base);
 
-		&__error {
-			margin: 0;
-			color: var(--color-destructive);
-		}
-
-		&__hint {
-			margin: 0;
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-		}
-
 		&__actions {
 			display: flex;
-			justify-content: flex-end;
 			gap: var(--space-small);
-			margin-top: var(--space-small);
+			margin-left: auto;
 		}
 	}
 </style>

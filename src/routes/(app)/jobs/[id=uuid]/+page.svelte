@@ -137,6 +137,12 @@
 		)
 	);
 	const title = $derived(saved?.job.title?.trim() || `Job #${saved?.job.job_number ?? ''}`);
+	// The quiet line under the billing pop-ups' titles: "Job #1042 · Kitchen cabinet refit".
+	const jobLine = $derived(
+		saved
+			? [`Job #${saved.job.job_number}`, saved.job.title?.trim()].filter(Boolean).join(' · ')
+			: ''
+	);
 	const titleChanged = $derived(
 		editingTitle && titleDraft.trim() !== (saved?.job.title?.trim() ?? '')
 	);
@@ -782,6 +788,7 @@
 					canSeePrice={saved.can_see_price}
 					canInvoice={saved.can_invoice}
 					clientId={saved.job.client?.id ?? null}
+					{jobLine}
 					onSaved={refreshJob}
 				>
 					{#snippet extra()}
@@ -794,6 +801,7 @@
 							today={saved.organization_today}
 							locale={saved.locale}
 							{editable}
+							{jobLine}
 							onChanged={refreshJob}
 						/>
 					{/snippet}

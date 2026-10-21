@@ -2,6 +2,8 @@
 	import { untrack } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
+	import Banner from '$lib/components/ui/Banner.svelte';
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
@@ -12,6 +14,15 @@
 		type JobPaymentStageInput,
 		type JobWriteError
 	} from '$lib/jobs/api';
+	import stackIcon from '@tabler/icons/outline/stack-2.svg?raw';
+	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
+	import cashIcon from '@tabler/icons/outline/cash-banknote.svg?raw';
+	import percentIcon from '@tabler/icons/outline/percentage.svg?raw';
+	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import circlePlusIcon from '@tabler/icons/outline/circle-plus.svg?raw';
+	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
+	import alertTriangleIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 
 	// The editor for a one-off job's payment stages. It is the quote's installment editor with one thing
 	// added: a stage that already has an invoice is history, so it is shown as a fixed row that cannot be
@@ -29,6 +40,7 @@
 		totalMinor,
 		currencyCode = 'USD',
 		locale = 'en-US',
+		jobLine = '',
 		onClose,
 		onSaved
 	}: {
@@ -42,6 +54,8 @@
 		totalMinor: number;
 		currencyCode?: string;
 		locale?: string;
+		/** "Job #1042 · Kitchen cabinet refit", the quiet line under the pop-up's title. */
+		jobLine?: string;
 		onClose: () => void;
 		onSaved: () => Promise<void> | void;
 	} = $props();
@@ -64,6 +78,8 @@
 	};
 
 	let saving = $state(false);
+	// Which button is waiting, so Remove schedule spins on its own press and Save schedule on its own.
+	let removing = $state(false);
 	let error = $state('');
 	// The draft a refusal was about. Once the stages change, that message no longer describes the screen
 	// (the live "Adds up to" line is the truth), so the banner steps aside until the next save says otherwise.
@@ -145,6 +161,13 @@
 	});
 
 	const plannedTotal = $derived(rowAmounts.reduce((sum, amount) => sum + amount, 0));
+	const leftMinor = $derived(totalMinor - plannedTotal);
+
+	// The Job total panel's bar: one part per stage in the invoice colour, each lighter than the last, and
+	// the part of the total no stage has claimed yet in the border colour.
+	const PART_OPACITY = [1, 0.7, 0.45, 0.3, 0.2];
+	const partOpacity = (index: number) => PART_OPACITY[Math.min(index, PART_OPACITY.length - 1)];
+	const unassignedMinor = $derived(Math.max(leftMinor, 0));
 
 	const draftKey = $derived(
 		JSON.stringify([mode, rows.map((row) => [row.description, row.fixedValue, row.percentDraft])])
@@ -176,9 +199,10 @@
 		rows = rows.filter((_, rowIndex) => rowIndex !== index);
 	}
 
-	async function write(stagesToSave: JobPaymentStageInput[]) {
+	async function write(stagesToSave: JobPaymentStageInput[], removal = false) {
 		if (saving) return;
 		saving = true;
+		removing = removal;
 		error = '';
 		try {
 			await saveJobPaymentSchedule(
@@ -197,6 +221,7 @@
 			);
 		} finally {
 			saving = false;
+			removing = false;
 		}
 	}
 
@@ -247,169 +272,484 @@
 	}
 </script>
 
+<!-- The inline SVG strings are trusted build-time Tabler icon imports. -->
+<!-- eslint-disable svelte/no-at-html-tags -->
 <Dialog
 	{open}
 	title={configured ? 'Edit payment schedule' : 'Add a payment schedule'}
-	size="default"
+	subtitle={jobLine || undefined}
+	size="large"
+	icon={stackIcon}
+	iconTone="invoice"
+	flush
 	onClose={saving ? () => {} : onClose}
 >
 	<div class="schedule-dialog">
-		{#if visibleError}<p class="schedule-dialog__error" role="alert">{visibleError}</p>{/if}
+		<div class="schedule-dialog__stages">
+			{#if visibleError}<Banner type="error">{visibleError}</Banner>{/if}
 
-		<p class="schedule-dialog__intro">
-			Split this job into stages you invoice one at a time. Every stage together has to come to the
-			job total, {money.format(totalMinor / 100)}.
-		</p>
-
-		<SegmentedControl
-			label="How is each stage set?"
-			value={mode}
-			options={[
-				{ value: 'fixed', label: 'Amounts' },
-				{ value: 'percentage', label: 'Percentages' }
-			]}
-			disabled={saving || hasBilledStage}
-			onchange={(next) => {
-				mode = next as 'fixed' | 'percentage';
-				error = '';
-			}}
-		/>
-		{#if hasBilledStage}
-			<p class="schedule-dialog__note">
-				One of these stages has already been invoiced, so the schedule stays as it is set and that
-				stage cannot be changed.
+			<p class="schedule-dialog__intro">
+				Split this job into stages you invoice one at a time. Every stage together has to come to
+				the job total, {money.format(totalMinor / 100)}.
 			</p>
-		{/if}
 
-		<div class="schedule-dialog__rows">
-			{#each rows as row, index (row.key)}
-				<div class="schedule-dialog__row">
-					<Input
-						id={`job-stage-${index}-description`}
-						label="Stage"
-						disabled={saving || row.locked}
-						bind:value={row.description}
-					/>
-					{#if mode === 'percentage'}
-						<Input
-							id={`job-stage-${index}-percent`}
-							label="Percent"
-							inputmode="decimal"
-							disabled={saving || row.locked}
-							bind:value={row.percentDraft}
-						/>
-					{:else}
-						<MoneyInput
-							{currencyCode}
-							id={`job-stage-${index}-amount`}
-							label="Amount"
-							disabled={saving || row.locked}
-							bind:value={row.fixedValue}
-						/>
-					{/if}
-					<span class="schedule-dialog__amount">{money.format(rowAmounts[index] / 100)}</span>
-					{#if row.locked}
-						<Badge size="small" status="informative">Invoiced</Badge>
-					{:else}
-						<Button
-							variant="tertiary"
-							variation="destructive"
-							size="small"
-							disabled={saving || !canRemove(index)}
-							onclick={() => removeRow(index)}
-						>
-							Remove
-						</Button>
-					{/if}
-				</div>
-			{/each}
-		</div>
-
-		<Button
-			variant="secondary"
-			variation="subtle"
-			disabled={saving || rows.length >= 12 || allStagesBilled}
-			onclick={addRow}
-		>
-			Add stage
-		</Button>
-
-		<p class="schedule-dialog__note">
-			Adds up to {money.format(plannedTotal / 100)} of {money.format(totalMinor / 100)}.
-		</p>
-
-		<div class="schedule-dialog__actions">
-			{#if configured && !hasBilledStage}
-				<Button
-					variant="tertiary"
-					variation="destructive"
-					disabled={saving}
-					onclick={() => void write([])}
-				>
-					Remove schedule
-				</Button>
+			<SegmentedControl
+				label="How is each stage set?"
+				fullWidth
+				value={mode}
+				options={[
+					{
+						value: 'fixed',
+						label: 'Amounts',
+						icon: cashIcon,
+						disabled: hasBilledStage && mode !== 'fixed'
+					},
+					{
+						value: 'percentage',
+						label: 'Percentages',
+						icon: percentIcon,
+						disabled: hasBilledStage && mode !== 'percentage'
+					}
+				]}
+				disabled={saving}
+				onchange={(next) => {
+					mode = next as 'fixed' | 'percentage';
+					error = '';
+				}}
+			/>
+			{#if hasBilledStage}
+				<Banner type="notice">
+					One of these stages has already been invoiced, so the schedule stays as it is set and that
+					stage cannot be changed.
+				</Banner>
 			{/if}
-			<div class="schedule-dialog__confirm">
-				<Button variant="secondary" variation="subtle" disabled={saving} onclick={onClose}>
-					Cancel
-				</Button>
-				<Button variant="primary" loading={saving} onclick={save}>Save schedule</Button>
+
+			<div
+				class="schedule-dialog__list"
+				class:schedule-dialog__list--percent={mode === 'percentage'}
+				class:schedule-dialog__list--billed={hasBilledStage}
+			>
+				<div class="schedule-dialog__head" aria-hidden="true">
+					<span>Stage</span>
+					<span>{mode === 'percentage' ? 'Percent' : 'Amount'}</span>
+					{#if mode === 'percentage'}<span class="schedule-dialog__head-amount">Amount</span>{/if}
+					<span></span>
+				</div>
+				{#each rows as row, index (row.key)}
+					<div class="schedule-dialog__row">
+						<Input
+							id={`job-stage-${index}-description`}
+							label="Stage"
+							size="small"
+							disabled={saving || row.locked}
+							bind:value={row.description}
+						/>
+						{#if mode === 'percentage'}
+							<div class="schedule-dialog__percent">
+								<Input
+									id={`job-stage-${index}-percent`}
+									label="Percent"
+									size="small"
+									inputmode="decimal"
+									disabled={saving || row.locked}
+									bind:value={row.percentDraft}
+								/>
+								<span class="schedule-dialog__percent-sign" aria-hidden="true">%</span>
+							</div>
+						{:else}
+							<MoneyInput
+								{currencyCode}
+								id={`job-stage-${index}-amount`}
+								label="Amount"
+								size="small"
+								disabled={saving || row.locked}
+								bind:value={row.fixedValue}
+							/>
+						{/if}
+						{#if mode === 'percentage'}
+							<span class="schedule-dialog__amount">{money.format(rowAmounts[index] / 100)}</span>
+						{/if}
+						<span class="schedule-dialog__trail">
+							{#if row.locked}
+								<Badge size="small" status="informative">Invoiced</Badge>
+							{:else}
+								<Button
+									variant="quiet"
+									size="small"
+									iconOnly
+									label="Remove stage"
+									class="schedule-dialog__remove"
+									disabled={saving || !canRemove(index)}
+									onclick={() => removeRow(index)}
+								>
+									{@html trashIcon}
+								</Button>
+							{/if}
+						</span>
+					</div>
+				{/each}
+				<div class="schedule-dialog__add">
+					<Button
+						variant="quiet"
+						size="small"
+						class="schedule-dialog__add-button"
+						disabled={saving || rows.length >= 12 || allStagesBilled}
+						onclick={addRow}
+					>
+						{@html circlePlusIcon}
+						Add stage
+					</Button>
+				</div>
 			</div>
 		</div>
+
+		<section class="schedule-dialog__panel" aria-labelledby="job-schedule-total-title">
+			<header class="schedule-dialog__panel-head">
+				<IconTile icon={receiptIcon} tone="invoice" size={32} white />
+				<h3 id="job-schedule-total-title">Job total</h3>
+			</header>
+			<div class="schedule-dialog__total">
+				<p class="schedule-dialog__total-amount">{money.format(totalMinor / 100)}</p>
+				<div class="schedule-dialog__bar" aria-hidden="true">
+					{#each rowAmounts as amount, index (rows[index].key)}
+						{#if amount > 0}
+							<span
+								class="schedule-dialog__bar-part"
+								style:flex-grow={amount}
+								style:opacity={partOpacity(index)}
+							></span>
+						{/if}
+					{/each}
+					{#if unassignedMinor > 0}
+						<span
+							class="schedule-dialog__bar-part schedule-dialog__bar-part--rest"
+							style:flex-grow={unassignedMinor}
+						></span>
+					{/if}
+				</div>
+				<ul class="schedule-dialog__legend">
+					{#each rows as row, index (row.key)}
+						<li class="schedule-dialog__legend-line">
+							<span class="schedule-dialog__dot" style:opacity={partOpacity(index)}></span>
+							<span class="schedule-dialog__legend-name">
+								{row.description.trim() || `Stage ${index + 1}`}
+							</span>
+							<strong>{money.format(rowAmounts[index] / 100)}</strong>
+						</li>
+					{/each}
+				</ul>
+				<p
+					class="schedule-dialog__left"
+					class:schedule-dialog__left--done={leftMinor === 0}
+					role="status"
+				>
+					<span class="schedule-dialog__left-icon" aria-hidden="true">
+						{@html leftMinor === 0 ? circleCheckIcon : alertTriangleIcon}
+					</span>
+					<span class="schedule-dialog__left-name">Left to assign</span>
+					<strong>{money.format(leftMinor / 100)}</strong>
+				</p>
+			</div>
+		</section>
 	</div>
+
+	{#snippet footer()}
+		{#if configured && !hasBilledStage}
+			<Button
+				variant="secondary"
+				variation="destructive"
+				loading={removing}
+				disabled={saving && !removing}
+				onclick={() => void write([], true)}
+			>
+				{@html trashIcon}
+				Remove schedule
+			</Button>
+		{/if}
+		<div class="schedule-dialog__actions">
+			<Button variant="secondary" variation="subtle" disabled={saving} onclick={onClose}>
+				Cancel
+			</Button>
+			<Button variant="primary" loading={saving && !removing} disabled={removing} onclick={save}>
+				{@html checkIcon}
+				Save schedule
+			</Button>
+		</div>
+	{/snippet}
 </Dialog>
 
+<!-- eslint-enable svelte/no-at-html-tags -->
+
 <style lang="scss">
+	// Payment schedule pop-up (Batch 50 B): the stages at the left, a "Job total" panel at the right that
+	// shows how the stages share the total. Both sides run to the pop-up's edges, so the body is flush.
 	.schedule-dialog {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-base);
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 340px;
 
-		&__error {
-			margin: 0;
-			color: var(--color-destructive);
-		}
-
-		&__intro,
-		&__note {
-			margin: 0;
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-		}
-
-		&__rows {
+		&__stages {
 			display: flex;
 			flex-direction: column;
-			gap: var(--space-small);
+			gap: var(--space-base);
+			min-width: 0;
+			padding: var(--space-medium);
+		}
+
+		&__intro {
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-base);
+		}
+
+		// One box holds the column names, every stage and the Add stage band. The trailing column holds the
+		// remove button, or the "Invoiced" pill, which is wider, so every row gives it the same room.
+		&__list {
+			--schedule-trail: 32px;
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: 12px;
+
+			&--billed {
+				--schedule-trail: 84px;
+			}
+		}
+
+		&__head,
+		&__row {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) 150px var(--schedule-trail);
+			align-items: center;
+			gap: var(--space-slim);
+			padding: 10px var(--space-small) 10px 14px;
+		}
+
+		&__list--percent &__head,
+		&__list--percent &__row {
+			grid-template-columns: minmax(0, 1fr) 110px 100px var(--schedule-trail);
+		}
+
+		&__head {
+			background: var(--color-surface--background--subtle);
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+		}
+
+		&__head-amount {
+			text-align: right;
 		}
 
 		&__row {
-			display: grid;
-			grid-template-columns: 2fr 1fr auto auto;
-			align-items: end;
-			gap: var(--space-small);
-		}
+			border-top: var(--border-base) solid var(--color-border);
 
-		&__amount {
-			padding-bottom: var(--space-small);
-			color: var(--color-text--secondary);
-			font-variant-numeric: tabular-nums;
-			white-space: nowrap;
-		}
-
-		&__actions {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			gap: var(--space-small);
-			margin-top: var(--space-small);
-
-			:global(.button) {
+			// Boxes are 36 high, so the labels they carry for screen readers stay out of sight.
+			:global(.input__label) {
+				position: absolute;
+				width: 1px;
+				height: 1px;
+				overflow: hidden;
+				clip-path: inset(50%);
 				white-space: nowrap;
 			}
 		}
 
-		&__confirm {
+		&__percent {
+			position: relative;
+
+			:global(input) {
+				padding-right: 18px;
+				text-align: right;
+				font-weight: 600;
+			}
+		}
+
+		&__percent-sign {
+			position: absolute;
+			top: 50%;
+			right: var(--space-slim);
+			transform: translateY(-50%);
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 600;
+			pointer-events: none;
+		}
+
+		&__amount {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
+			font-variant-numeric: tabular-nums;
+			text-align: right;
+			white-space: nowrap;
+		}
+
+		&__trail {
+			display: flex;
+			justify-content: flex-end;
+		}
+
+		:global(.schedule-dialog__remove) {
+			color: var(--color-icon--secondary);
+
+			&:hover:not(:disabled) {
+				color: var(--color-critical);
+			}
+		}
+
+		&__add {
+			padding: var(--space-small) var(--space-small);
+			border-top: var(--border-base) solid var(--color-border);
+			background: var(--color-surface--background--subtle);
+		}
+
+		:global(.schedule-dialog__add-button) {
+			color: var(--color-interactive);
+		}
+
+		&__panel {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-slim);
+			padding: var(--space-medium);
+			border-left: var(--border-base) solid var(--color-invoice--surface-edge);
+			background: var(--color-invoice--surface);
+		}
+
+		&__panel-head {
+			display: flex;
+			align-items: center;
+			gap: var(--space-slim);
+
+			h3 {
+				margin: 0;
+				color: var(--color-heading);
+				font-size: 16px;
+				font-weight: 600;
+			}
+		}
+
+		&__total {
+			display: flex;
+			flex-direction: column;
+			gap: 14px;
+			padding: var(--space-base);
+			border: var(--border-base) solid var(--color-invoice--surface-edge);
+			border-radius: 12px;
+			background: var(--color-surface);
+		}
+
+		&__total-amount {
+			margin: 0;
+			color: var(--color-heading);
+			font-size: 40px;
+			font-weight: 700;
+			letter-spacing: -1px;
+			font-variant-numeric: tabular-nums;
+		}
+
+		&__bar {
+			display: flex;
+			gap: 3px;
+			height: 8px;
+		}
+
+		&__bar-part {
+			flex: 1 1 0;
+			min-width: 0;
+			border-radius: var(--radius-small);
+			background: var(--color-invoice);
+
+			&--rest {
+				background: var(--color-border);
+			}
+		}
+
+		&__legend {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-small);
+			margin: 0;
+			padding: 0;
+			list-style: none;
+		}
+
+		&__legend-line {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
+			color: var(--color-text);
+			font-size: 13px;
+			font-weight: 500;
+
+			strong {
+				margin-left: auto;
+				color: var(--color-heading);
+				font-size: var(--typography--fontSize-base);
+				font-weight: 700;
+				font-variant-numeric: tabular-nums;
+			}
+		}
+
+		&__legend-name {
+			min-width: 0;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		&__dot {
+			flex: 0 0 auto;
+			width: 8px;
+			height: 8px;
+			border-radius: var(--radius-circle);
+			background: var(--color-invoice);
+		}
+
+		&__left {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
+			margin: 0;
+			padding-top: 14px;
+			border-top: var(--border-base) solid var(--color-border);
+			color: var(--color-warning);
+			font-size: 13px;
+			font-weight: 500;
+
+			// The icon keeps the state colour; the amount takes its on-surface shade so it reads on white.
+			strong {
+				margin-left: auto;
+				color: var(--color-warning--onSurface);
+				font-size: var(--typography--fontSize-base);
+				font-weight: 700;
+				font-variant-numeric: tabular-nums;
+			}
+
+			&--done {
+				color: var(--color-success);
+
+				strong {
+					color: var(--color-success--onSurface);
+				}
+			}
+		}
+
+		&__left-name {
+			color: var(--color-text);
+		}
+
+		&__left-icon {
+			display: inline-flex;
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+		}
+
+		&__actions {
 			display: flex;
 			gap: var(--space-small);
 			margin-left: auto;

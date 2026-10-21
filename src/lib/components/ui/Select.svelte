@@ -3,6 +3,7 @@
 	import alertIcon from '@tabler/icons/outline/exclamation-circle.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
+	import lockIcon from '@tabler/icons/outline/lock.svg?raw';
 
 	type SelectOption = {
 		value: string;
@@ -29,6 +30,7 @@
 		prefix,
 		icon,
 		fitOptions = false,
+		locked = false,
 		onchange
 	}: {
 		value?: string;
@@ -53,6 +55,8 @@
 		icon?: string;
 		/** The open list is as wide as its longest option (never narrower than the trigger) instead of matching the trigger. */
 		fitOptions?: boolean;
+		/** Only one choice exists, so the box shows a lock where the chevron would be. */
+		locked?: boolean;
 		onchange?: (value: string) => void;
 	} = $props();
 
@@ -99,7 +103,9 @@
 			{#if icon}<span class="select__icon" aria-hidden="true">{@html icon}</span>{/if}
 			{#if prefix}<span class="select__prefix">{prefix}</span>{/if}
 			<span class="select__value">{selectedLabel}</span>
-			<span class="select__chevron" aria-hidden="true">{@html chevronDownIcon}</span>
+			<span class="select__chevron" aria-hidden="true"
+				>{@html locked ? lockIcon : chevronDownIcon}</span
+			>
 		</SelectPrimitive.Trigger>
 
 		<SelectPrimitive.Portal>
