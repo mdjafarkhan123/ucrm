@@ -21,7 +21,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `data-display/DateRangeChip` |  | ✅ Batch 20 `e18rX` 2026-10-20 | ✅ |
 | `jafar/JafarAuthCard` |  | ✅ Batch 23 `Y0A1Z` B 2026-10-20 | ✅ |
 | `layout/RailRow` |  | ✅ Batch 24 `qY4yb` A 2026-10-20 | ⬜ |
-| `marketing/MarketingTemplatePreview` | loading | ✅ Batch 26 `l62Og` A 2026-10-20 | ⬜ |
+| `marketing/MarketingTemplatePreview` | loading | ✅ Batch 26 `l62Og` A 2026-10-20 | ✅ Built 2026-10-21 |
 | `quotes/QuoteSummaryCard` |  | ✅ Batch 24 `qY4yb` A 2026-10-20 | ⬜ |
 | `time-clock/TimerRunningElsewhere` |  | ✅ Batch 12 `ooCwt` | ✅ 2026-10-20 |
 | `time-clock/WorkTimerControl` |  | ✅ Batch 12 `ooCwt` | ✅ 2026-10-20 |
@@ -31,9 +31,9 @@ Key, tick rule and coverage command: `list-index.md`.
 | `work/RecordTaxCard` | pop-ups: "form" 🔁F · permission-limited | ✅ Batch 24 `qY4yb` A 2026-10-20 | ⬜ |
 | `work/RecordTrack` |  | 🔁 Batch 13 `xrJ3f` (wraps `work/LifecycleTrack`; waiting names, hidden on error) | ⬜ |
 | `calendar/CalendarBar` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Merged 2026-10-19 |
-| `clients/CommunicationSettingsDialog` | 🔁F pop-up | ✅ Batch 27 `DXj9z` A 2026-10-20 | ⬜ |
-| `communications/ComposerChannelMenu` | menus ×1 | ✅ Batch 27 `DXj9z` A 2026-10-20 | ⬜ |
-| `forms/PublicFormQuestion` |  | ✅ Batch 28 `Y3od0z` B 2026-10-20 | ⬜ |
+| `clients/CommunicationSettingsDialog` | 🔁F pop-up | ✅ Batch 27 `DXj9z` A 2026-10-20 | ✅ Built 2026-10-21 |
+| `communications/ComposerChannelMenu` | menus ×1 | ✅ Batch 27 `DXj9z` A 2026-10-20 | ✅ Built 2026-10-21 |
+| `forms/PublicFormQuestion` |  | ✅ Batch 28 `Y3od0z` B 2026-10-20 | ✅ Built 2026-10-21 |
 | `imports/ImportMapStep` |  | ✅ Batch 29 `oxtmi` A 2026-10-20 | ⬜ |
 | `imports/ImportReviewStep` |  | ✅ Batch 29 `oxtmi` A 2026-10-20 | ⬜ |
 | `imports/ImportStepper` |  | ✅ Batch 29 `oxtmi` A 2026-10-20 | ⬜ |
@@ -46,7 +46,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `marketing/CustomerGroupPreview` | loading | ✅ Batch 37 `PLExJ` B 2026-10-21 | ⬜ |
 | `marketing/CustomerGroupRuleBuilder` |  | ✅ Batch 37 `PLExJ` B 2026-10-21 | ⬜ |
 | `marketing/FreeTextChipInput` |  | ✅ Batch 37 `PLExJ` B 2026-10-21 | ⬜ |
-| `marketing/MarketingTemplatePreviewDialog` | 🔁F pop-up | ✅ Batch 26 `l62Og` A 2026-10-20 | ⬜ |
+| `marketing/MarketingTemplatePreviewDialog` | 🔁F pop-up | ✅ Batch 26 `l62Og` A 2026-10-20 | ✅ Built 2026-10-21 |
 | `profile/ProfilePhotoDialog` | 🔁F pop-up | ✅ Batch 38 `n2ujB` B 2026-10-21 | ⬜ |
 | `settings/WeeklyHoursEditor` |  | ⬜ | ⬜ |
 | `ui/FilterChipMulti` |  | ✅ Batch 20 `e18rX` 2026-10-20 | ✅ |
