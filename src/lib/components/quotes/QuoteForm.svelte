@@ -3,14 +3,14 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import RecordFormLayout from '$lib/components/layout/RecordFormLayout.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
-	import PrimaryInfoCard from '$lib/components/work/PrimaryInfoCard.svelte';
+	import CreateFormHeader from '$lib/components/work/CreateFormHeader.svelte';
+	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import ClientPicker from '$lib/components/work/ClientPicker.svelte';
 	import ProductsAndServicesBlock from '$lib/components/quotes/ProductsAndServicesBlock.svelte';
 	import QuoteClientViewBlock from '$lib/components/quotes/QuoteClientViewBlock.svelte';
 	import AddSectionControl from '$lib/components/work/AddSectionControl.svelte';
 	import QuoteSummaryCard from '$lib/components/quotes/QuoteSummaryCard.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
-	import Input from '$lib/components/ui/Input.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
@@ -39,7 +39,11 @@
 	import { firstLineProblem } from '$lib/quotes/lines';
 	import { invalidatePipeline } from '$lib/pipeline/api';
 	import fileDollarIcon from '@tabler/icons/outline/file-dollar.svg?raw';
-	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
+	import fileTextIcon from '@tabler/icons/outline/file-check.svg?raw';
+	import hashIcon from '@tabler/icons/outline/hash.svg?raw';
+	import packageIcon from '@tabler/icons/outline/package.svg?raw';
+	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import speakerphoneIcon from '@tabler/icons/outline/speakerphone.svg?raw';
 	import messageIcon from '@tabler/icons/outline/message.svg?raw';
 
@@ -59,8 +63,18 @@
 
 	const queryClient = useQueryClient();
 	const sectionOptions = [
-		{ id: 'introduction', label: 'Introduction', icon: speakerphoneIcon },
-		{ id: 'client_message', label: 'Client Message', icon: messageIcon }
+		{
+			id: 'introduction',
+			label: 'Introduction',
+			icon: speakerphoneIcon,
+			hint: 'How the quote opens, above the pricing'
+		},
+		{
+			id: 'client_message',
+			label: 'Client message',
+			icon: messageIcon,
+			hint: 'A short note to the client, under the pricing'
+		}
 	];
 	const introductionOption = sectionOptions.filter((option) => option.id === 'introduction');
 
@@ -322,17 +336,37 @@
 	}
 </script>
 
+<!-- SVGs below are trusted build-time Tabler icon imports. -->
+<!-- eslint-disable svelte/no-at-html-tags -->
+
 <form
-	class="quote-form"
+	class="quote-form concept-fields"
 	onsubmit={(event) => {
 		event.preventDefault();
 		void submit().finally(() => layout?.revealError());
 	}}
 >
-	<RecordFormLayout title="New Quote" icon={fileDollarIcon} bind:this={layout} error={formError}>
+	<RecordFormLayout
+		title="New quote"
+		icon={fileDollarIcon}
+		bind:this={layout}
+		error={formError}
+		concept
+		pageHeader={false}
+		labelledBy="new-quote-title"
+		tone="quote"
+	>
 		{#snippet main()}
-			<PrimaryInfoCard
+			<CreateFormHeader
 				id="quote-primary"
+				titleId="new-quote-title"
+				tone="quote"
+				heading="New quote"
+				description="Set out the work and its price."
+				titlePlaceholder="e.g. Backyard lighting installation"
+				factIcon={hashIcon}
+				factLabel="Quote #"
+				factValue={savedQuote ? String(savedQuote.number) : 'Given when you save'}
 				icon={fileDollarIcon}
 				bind:title={form.title}
 				titleRequired
@@ -368,22 +402,22 @@
 						{/if}
 					{/if}
 				{/snippet}
-				{#snippet fields()}
-					<Input
-						id="quote-number"
-						label="Quote #"
-						readonly
-						tabindex={-1}
-						value={savedQuote ? String(savedQuote.number) : ''}
-						placeholder="Given when you save"
-					/>
-				{/snippet}
-			</PrimaryInfoCard>
+			</CreateFormHeader>
 
 			{#if !showIntroduction}
-				<AddSectionControl options={introductionOption} onAdd={() => (showIntroduction = true)} />
+				<AddSectionControl
+					options={introductionOption}
+					onAdd={() => (showIntroduction = true)}
+					cards
+					tone="quote"
+				/>
 			{:else}
-				<SectionBlock title="Introduction" icon={speakerphoneIcon} form>
+				<SectionBlock
+					title="Introduction"
+					icon={speakerphoneIcon}
+					tone="quote"
+					hint="How the quote opens, above the pricing"
+				>
 					<Textarea
 						id="quote-introduction"
 						label="How this quote opens, above the pricing"
@@ -396,6 +430,14 @@
 
 			<ProductsAndServicesBlock
 				concept
+				flush
+				totalFoot
+				icon={packageIcon}
+				tone="quote"
+				hint={lines.length
+					? `${lines.length} ${lines.length === 1 ? 'line' : 'lines'}`
+					: 'Nothing priced yet'}
+				emptyDescription="Add the products and services this quote includes."
 				bind:this={productsAndServices}
 				alwaysEditing
 				editable
@@ -423,13 +465,20 @@
 
 			<AddSectionControl
 				options={optionalSectionOptions}
+				cards
+				tone="quote"
 				onAdd={(section) => {
 					if (section === 'client_message') showClientMessage = true;
 				}}
 			/>
 
 			{#if showClientMessage}
-				<SectionBlock title="Client message" icon={messageIcon} form>
+				<SectionBlock
+					title="Client message"
+					icon={messageIcon}
+					tone="quote"
+					hint="A short note to the client, under the pricing"
+				>
 					<Textarea
 						id="quote-client-message"
 						label="A short note to the client, under the pricing"
@@ -440,10 +489,16 @@
 				</SectionBlock>
 			{/if}
 
-			<SectionBlock title="Contract disclaimer" icon={fileTextIcon} form>
+			<SectionBlock
+				title="Contract disclaimer"
+				icon={fileTextIcon}
+				tone="quote"
+				hint="What the client agrees to when they approve this quote"
+			>
 				<Textarea
 					id="quote-disclaimer"
-					label="What the client is agreeing to when they approve this quote"
+					aria-label="What the client is agreeing to when they approve this quote"
+					placeholder="Warranty, payment and cancellation terms the client agrees to by approving…"
 					rows={5}
 					maxlength={5000}
 					bind:value={form.contract_disclaimer}
@@ -454,42 +509,52 @@
 		{/snippet}
 
 		{#snippet rail()}
-			<QuoteSummaryCard {subtotalMinor} {currencyCode} {locale} />
+			<QuoteSummaryCard {subtotalMinor} {currencyCode} {locale} draft />
 
-			<RecordDiscountCard
-				revision={0}
-				name={discount?.name ?? null}
-				type={discount?.type ?? null}
-				value={discount?.value ?? null}
-				{currencyCode}
-				{locale}
-				editable
-				staged
-				onSave={async (_revision, payload) => {
-					discount = payload.type === null ? null : payload;
-					discountPending = true;
-				}}
-				onSaved={() => {}}
-			/>
+			<RailCard
+				tone="quote"
+				title="Discount and tax"
+				icon={receiptIcon}
+				description="Saves with the quote"
+				flush
+			>
+				<RecordDiscountCard
+					embedded
+					revision={0}
+					name={discount?.name ?? null}
+					type={discount?.type ?? null}
+					value={discount?.value ?? null}
+					{currencyCode}
+					{locale}
+					editable
+					staged
+					onSave={async (_revision, payload) => {
+						discount = payload.type === null ? null : payload;
+						discountPending = true;
+					}}
+					onSaved={() => {}}
+				/>
 
-			<RecordTaxCard
-				revision={0}
-				propertyId={form.property_id}
-				taxSource={tax?.source ?? 'not_configured'}
-				rateId={tax?.rate_id ?? null}
-				name={taxPreview.name}
-				rateBasisPoints={taxPreview.rateBasisPoints}
-				{currencyCode}
-				{locale}
-				editable={Boolean(form.property_id)}
-				staged
-				unsetHint="Required before sending this quote."
-				onSave={async (_revision, payload) => {
-					tax = payload;
-					taxPending = true;
-				}}
-				onSaved={() => {}}
-			/>
+				<RecordTaxCard
+					embedded
+					revision={0}
+					propertyId={form.property_id}
+					taxSource={tax?.source ?? 'not_configured'}
+					rateId={tax?.rate_id ?? null}
+					name={taxPreview.name}
+					rateBasisPoints={taxPreview.rateBasisPoints}
+					{currencyCode}
+					{locale}
+					editable={Boolean(form.property_id)}
+					staged
+					unsetHint="Required before sending this quote."
+					onSave={async (_revision, payload) => {
+						tax = payload;
+						taxPending = true;
+					}}
+					onSaved={() => {}}
+				/>
+			</RailCard>
 
 			<FormNotesCard
 				id="quote-initial-note"
@@ -505,10 +570,21 @@
 			/>
 		{/snippet}
 
+		{#snippet status()}
+			<span class="quote-form__status-dot" aria-hidden="true"></span>
+			<div class="quote-form__status-copy">
+				<span class="quote-form__status-title">New quote · not saved yet</span>
+				<span class="quote-form__status-hint"
+					>It saves as a draft. Send it to the client from the quote page.</span
+				>
+			</div>
+		{/snippet}
+
 		{#snippet actions()}
-			<Button variant="tertiary" onclick={onCancel} disabled={saving}>Cancel</Button>
+			<Button variant="secondary" onclick={onCancel} disabled={saving}>Cancel</Button>
 			<Button variant="primary" type="submit" loading={saving} disabled={!isDirty}>
-				{savedQuote ? 'Save changes' : 'Save Quote'}
+				<span class="quote-form__button-icon" aria-hidden="true">{@html checkIcon}</span>
+				{savedQuote ? 'Save changes' : 'Save quote'}
 			</Button>
 		{/snippet}
 	</RecordFormLayout>
@@ -519,6 +595,36 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-large);
+		height: 100%;
+		min-height: 0;
+
+		&__status-dot {
+			width: 8px;
+			height: 8px;
+			flex: 0 0 auto;
+			border-radius: var(--radius-circle);
+			background: var(--color-warning);
+		}
+		&__status-copy {
+			display: grid;
+			gap: var(--space-smaller);
+			min-width: 0;
+		}
+		&__status-title {
+			color: var(--color-heading);
+			font-weight: 600;
+		}
+		&__status-hint {
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+		&__button-icon {
+			display: inline-flex;
+		}
+		&__button-icon :global(svg) {
+			width: 16px;
+			height: 16px;
+		}
 
 		&__property {
 			margin-top: var(--space-small);

@@ -28,6 +28,8 @@
 		onChange: (next: QuoteVisibility) => void;
 	} = $props();
 
+	const visible = $derived(editing || changed ? draft : saved);
+
 	const switches = [
 		{ key: 'show_quantities', label: 'Quantities' },
 		{ key: 'show_unit_prices', label: 'Unit prices' },
@@ -36,6 +38,8 @@
 	] as const;
 </script>
 
+<!-- The SVG is a trusted build-time Tabler icon import. -->
+<!-- eslint-disable svelte/no-at-html-tags -->
 <!-- Jobber keeps this inside the Product / Service editor, not as a separate document section. -->
 <div class="quote-client-view">
 	<div class="quote-client-view__heading">
@@ -43,6 +47,12 @@
 			<span class="quote-client-view__icon" aria-hidden="true">{@html eyeIcon}</span>
 			Client view
 		</span>
+		{#if !editing}<p class="quote-client-view__summary">
+				{switches
+					.filter((entry) => visible[entry.key])
+					.map((entry) => entry.label.toLowerCase())
+					.join(', ') || 'Prices hidden from the client'}
+			</p>{/if}
 		{#if editable}
 			<Button variant="quiet" size="small" onclick={onEdit}>
 				{editing ? 'Cancel' : 'Change'}
@@ -71,7 +81,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-small);
-		padding-block: var(--space-base);
+		padding-block: var(--space-slim);
 		border-top: var(--border-base) solid var(--color-border);
 
 		&__heading,
@@ -95,10 +105,16 @@
 			display: block;
 			width: 18px;
 			height: 18px;
-			color: var(--color-icon--secondary);
+			color: var(--color-client);
 		}
 	}
 
+	.quote-client-view__summary {
+		flex: 1;
+		margin: 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+	}
 	.quote-client-view__hint {
 		margin: 0;
 		color: var(--color-text--secondary);

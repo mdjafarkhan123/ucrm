@@ -5,7 +5,16 @@
 		value: string;
 		/** How much of the whole bar this part fills; only the proportions between parts matter. */
 		share: number;
-		tone: 'critical' | 'neutral' | 'success' | 'muted';
+		tone:
+			| 'critical'
+			| 'neutral'
+			| 'success'
+			| 'muted'
+			| 'items'
+			| 'expenses'
+			| 'labor'
+			| 'profit'
+			| 'loss';
 		/** A quiet share figure before the value, e.g. "54%". */
 		percent?: string;
 	};
@@ -47,6 +56,9 @@
 		details,
 		children,
 		record = false,
+		summary = record,
+		emptyBar = false,
+		loss = false,
 		footnote,
 		loading = false
 	}: {
@@ -65,7 +77,7 @@
 		/** A pill beside the big figure comparing it with the period before. */
 		change?: { direction: 'up' | 'down' | 'same'; text: string } | null;
 		/** A Tabler icon (raw SVG) on a soft tile before the eyebrow, naming what the money is. */
-		icon: string;
+		icon?: string;
 		/** A small chip at the end of the eyebrow row, e.g. "Due in 7 days". */
 		badge?: string;
 		/** A Tabler icon (raw SVG) drawn in the chip. */
@@ -79,6 +91,10 @@
 		/** The record-page rail version: the breakdown sits straight under the figure and the hairline moves
 		 *  above the extra rows. */
 		record?: boolean;
+		/** Approved ink-blue money summary, shared by job, quote and invoice records. */
+		summary?: boolean;
+		emptyBar?: boolean;
+		loss?: boolean;
 		/** A quiet line at the very foot, e.g. "Updates as you add or change lines." */
 		footnote?: string;
 		loading?: boolean;
@@ -94,14 +110,19 @@
 
 <!-- eslint-disable svelte/no-at-html-tags -->
 <section
-	class={['money-card', record && 'money-card--record']}
+	class={[
+		'money-card',
+		record && 'money-card--record',
+		summary && 'money-card--summary',
+		loss && 'money-card--loss'
+	]}
 	aria-label={eyebrow}
 	aria-busy={loading}
 >
 	<div class="money-card__head">
 		<div class="money-card__top">
 			<div class="money-card__title">
-				<IconTile {icon} tone="feature" size={32} />
+				{#if icon && !summary}<IconTile {icon} tone="feature" size={32} />{/if}
 				<p class="money-card__eyebrow">{eyebrow}</p>
 			</div>
 			{#if badge}
@@ -136,6 +157,9 @@
 			</div>
 		{/if}
 	</div>
+	{#if emptyBar}<div class="money-card__bar" aria-hidden="true">
+			<span class="money-card__segment money-card__segment--muted"></span>
+		</div>{/if}
 	{#if breakdown && breakdown.length > 0}
 		<div class="money-card__breakdown">
 			<div class="money-card__bar" aria-hidden="true">
@@ -155,7 +179,7 @@
 							<span class={['money-card__swatch', `money-card__segment--${part.tone}`]}></span>
 							{part.label}
 						</dt>
-						<dd>
+						<dd class={`money-card__amount--${part.tone}`}>
 							{#if part.percent}<span class="money-card__percent">{part.percent}</span>{/if}
 							{part.value}
 						</dd>
@@ -498,5 +522,70 @@
 				font-weight: 700;
 			}
 		}
+	}
+	.money-card--summary {
+		gap: var(--space-medium);
+		border: var(--border-base) solid var(--color-money--border);
+		background: linear-gradient(200deg, var(--color-money--start), var(--color-money--end));
+		.money-card__eyebrow {
+			font-size: var(--typography--fontSize-small);
+		}
+		.money-card__head {
+			gap: var(--space-medium);
+		}
+		.money-card__value {
+			font-size: var(--typography--fontSize-stat);
+		}
+		.money-card__badge {
+			border: var(--border-base) solid var(--color-feature--border);
+			font-size: var(--typography--fontSize-label);
+		}
+		.money-card__badge-icon :global(svg) {
+			width: 14px;
+			height: 14px;
+		}
+		.money-card__breakdown {
+			padding: 0;
+			border: 0;
+			background: none;
+		}
+		.money-card__bar {
+			height: 10px;
+		}
+		.money-card__legend,
+		.money-card__foot-rows {
+			font-size: var(--typography--fontSize-base);
+		}
+		.money-card__swatch {
+			border-radius: var(--radius-small);
+		}
+		.money-card__pill {
+			color: var(--color-money--start);
+			background: var(--color-money--profit);
+		}
+		.money-card__amount--profit {
+			color: var(--color-money--profit);
+		}
+		.money-card__amount--loss {
+			color: var(--color-money--loss);
+		}
+		&.money-card--loss .money-card__pill {
+			background: var(--color-money--loss);
+		}
+	}
+	.money-card__segment--items {
+		background: var(--color-money--items);
+	}
+	.money-card__segment--expenses {
+		background: var(--color-money--expenses);
+	}
+	.money-card__segment--labor {
+		background: var(--color-money--labor);
+	}
+	.money-card__segment--profit {
+		background: var(--color-money--profit);
+	}
+	.money-card__segment--loss {
+		background: var(--color-money--loss);
 	}
 </style>

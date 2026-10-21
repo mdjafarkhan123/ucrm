@@ -21,7 +21,7 @@
 
 <svelte:head><title>New quote · Contractor CRM</title></svelte:head>
 
-<PageContainer variant="fill">
+<PageContainer variant="open" class="quote-create-page">
 	<QuoteForm
 		currencyCode={overviewQuery.data?.currency_code ?? 'USD'}
 		locale={overviewQuery.data?.locale ?? 'en-US'}
@@ -29,3 +29,12 @@
 		onCancel={() => goto(resolve('/(app)/quotes'))}
 	/>
 </PageContainer>
+
+<style lang="scss">
+	:global(.quote-create-page) {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		min-height: 0;
+	}
+</style>

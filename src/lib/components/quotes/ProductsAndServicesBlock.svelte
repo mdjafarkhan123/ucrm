@@ -248,6 +248,7 @@
 	// Photos uploaded during this edit session that have not been claimed by a save yet. Cancelling, or
 	// swapping/removing one before Save, deletes it so a picked-then-discarded photo does not sit in
 	// storage forever. Never touches a photo that was already on a saved line before this session started.
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity -- Upload cleanup only; no rendered state reads this set.
 	const uploadedThisSession = new Set<string>();
 	// Photo file ids already on savedLines when this edit session opened. Save diffs this against what it
 	// is about to persist and releases each one it drops. A line photo is shared -- a quote's is its
@@ -1489,7 +1490,7 @@
 									>
 								{/if}
 								{#if quoteChoices && line.selection_kind === 'optional'}
-									{@render addOnPill(line.is_recommended)}
+									{@render addOnPill(line.is_recommended ?? false)}
 								{/if}
 							</span>
 							{#if line.description}
@@ -1611,7 +1612,7 @@
 													>
 												{/if}
 												{#if addOn}
-													{@render addOnPill(line.is_recommended)}
+													{@render addOnPill(line.is_recommended ?? false)}
 												{:else if quoteChoices && line.selection_kind === 'optional'}
 													<span class="pricing-table__choice">
 														<span class="pricing-table__choice-icon" aria-hidden="true"

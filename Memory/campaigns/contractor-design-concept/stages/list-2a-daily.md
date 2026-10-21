@@ -24,7 +24,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | ↳ `quotes/QuoteEmailDialog` | ◆ pop-up | ⬜ | ⬜ |
 | ↳ "Record deposit received" pop-up in QuoteDepositCard | | ⬜ | ⬜ |
 | ↳ "Reverse deposit" pop-up in QuoteDepositCard | | ⬜ | ⬜ |
-| `(app)/quotes/new` | `quotes/QuoteForm` | ⬜ | ⬜ |
+| `(app)/quotes/new` | `quotes/QuoteForm` | ✅ Batch 34 A | 🟡 Verified in preview; waiting to merge (`parts/new-quote-build.md`) |
 | `(app)/jobs` | menus ×1 · loading, empty | ✅ | ✅ |
 | `(app)/jobs/[id=uuid]` | `jobs/CollectJobSignatureDialog` 🔁F, `jobs/EditJobReportDialog` 🔁F, `jobs/JobBillingCard`, `jobs/JobChecklistsCard`, `jobs/JobCostingCard`, `jobs/JobExpenseDialog` 🔁F, `jobs/JobExpensesSection`, `jobs/JobLaborSection`, `jobs/JobPaymentScheduleDialog` 🔁F, `jobs/JobPeriodsToBillCard`, `jobs/JobRemindersCard`, `jobs/JobReportPhotoLayout`, `jobs/JobSignaturesCard`, `jobs/JobTimeEntryDialog` 🔁F, `jobs/JobVisitsSection`, `jobs/JobVisitsToBillCard`, `jobs/JobWorkReportCard` · pop-ups: "Collect signature" 🔁F, "Edit work report" 🔁F, "Billing setup" ◆, "Remove this checklist?" 🔁C, "form" 🔁F, "Remove this expense?" 🔁C, "Remove these hours?" 🔁C, "Add an invoice reminder" ◆, "Delete this reminder?" 🔁C, "Signed document" 🔁F, "Required checklist answers are blank" 🔁C, "Delete this visit?" 🔁C · menus ×5 · loading, empty, permission-limited | ✅ | 🟡 page and edit mode `jFBRB` built 2026-10-18 (light and dark); its pop-ups not yet |
 | ↳ `jobs/EditAllVisitsDialog` | ◆ pop-up | ⬜ | ⬜ |
