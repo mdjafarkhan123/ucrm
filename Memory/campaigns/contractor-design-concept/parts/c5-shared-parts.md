@@ -421,6 +421,6 @@ instances, keeping each one's size and direction. Look in `inputs.md` → Segmen
 
 Merged to main `187ab555`: dropdown value 14 (`ui/Select`), empty date box "Pick a day" (`ui/CalendarPicker`),
 percent stages show $0.00 while empty (`jobs/JobPaymentScheduleDialog`, cents spread only to the rounding target).
-Still for the Batch 50 builder, after its branch merges: in Payment schedule's "Left to assign" line the amount takes
-the state colour like the drawing (`$color-warning-on-surface` while short, `$color-success-on-surface` at $0.00);
-the icon stays `--color-warning` / `--color-success`.
+The Payment schedule's "Left to assign" amount takes the state colour like the drawing (`--color-warning--onSurface`
+while short, `--color-success--onSurface` at $0.00; icon `--color-warning` / `--color-success`): done by the Batch 50
+builder 2026-10-21, checked live light and dark.

@@ -718,9 +718,10 @@
 			font-size: 13px;
 			font-weight: 500;
 
+			// The icon keeps the state colour; the amount takes its on-surface shade so it reads on white.
 			strong {
 				margin-left: auto;
-				color: var(--color-heading);
+				color: var(--color-warning--onSurface);
 				font-size: var(--typography--fontSize-base);
 				font-weight: 700;
 				font-variant-numeric: tabular-nums;
@@ -728,6 +729,10 @@
 
 			&--done {
 				color: var(--color-success);
+
+				strong {
+					color: var(--color-success--onSurface);
+				}
 			}
 		}
 
