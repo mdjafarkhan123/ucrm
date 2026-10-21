@@ -237,7 +237,9 @@
 		};
 	}
 
-	function submit() {
+	// A saved visit closes back to its booked view, as Jobber does. The page reports a failed write through
+	// `error` rather than throwing, so the panel stays open with that message when there is one.
+	async function submit() {
 		fieldError = '';
 		fieldErrorAt = null;
 		const built = buildDraft();
@@ -246,7 +248,13 @@
 			fieldErrorAt = built.at;
 			return;
 		}
-		void onSave?.(built.draft);
+		await onSave?.(built.draft);
+		if (!error) closePanel();
+	}
+
+	async function remove() {
+		await onRemove?.();
+		if (!error) closePanel();
 	}
 
 	// --- Draft mode -----------------------------------------------------------------------------------
@@ -549,7 +557,7 @@
 					<Button
 						variant="secondary"
 						variation="destructive"
-						onclick={() => void onRemove?.()}
+						onclick={() => void remove()}
 						disabled={saving}
 					>
 						<span class="assessment__button-icon" aria-hidden="true">{@html trashIcon}</span>
@@ -558,7 +566,7 @@
 				{/if}
 				<span class="assessment__spacer"></span>
 				<Button variant="secondary" onclick={closePanel} disabled={saving}>Cancel</Button>
-				<Button variant="primary" onclick={submit} loading={saving}>
+				<Button variant="primary" onclick={() => void submit()} loading={saving}>
 					<span class="assessment__button-icon" aria-hidden="true">{@html checkIcon}</span>
 					Save visit
 				</Button>
