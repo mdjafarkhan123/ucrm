@@ -12,8 +12,14 @@
 		// Needed only where two items in one menu can carry the same label.
 		key?: string;
 		icon?: string;
-		/** Draws `icon` on a 24 tile in this colour family, for a list of kinds of thing (`job`, `client`…). */
+		/** The colour of a plain `icon`, when it says what the choice is about (a client's detail, a business's). */
+		iconColor?: string;
+		/** Draws `icon` on a tile in this colour family, for a list of kinds of thing (`job`, `client`…). */
 		tile?: string;
+		/** 24 by default; 32 for a menu whose rows carry a `hint`. */
+		tileSize?: 24 | 32;
+		/** A quiet line under the label, saying what the choice makes. */
+		hint?: string;
 		onSelect: () => void;
 		destructive?: boolean;
 		disabled?: boolean;
@@ -33,6 +39,7 @@
 		groups = [],
 		footer = [],
 		wide = false,
+		roomy = false,
 		triggerLabel,
 		triggerIcon = dotsIcon,
 		triggerText,
@@ -46,7 +53,8 @@
 		align = 'end',
 		disabled = false,
 		unavailableReason,
-		open = $bindable(false)
+		open = $bindable(false),
+		onCloseAutoFocus
 	}: {
 		items?: MenuItem[];
 		// Items under a heading each, drawn after `items`. For a menu long enough to need signposts.
@@ -55,6 +63,8 @@
 		footer?: MenuItem[];
 		// Room for longer labels than a short action list needs.
 		wide?: boolean;
+		// A rounder, airier menu with taller rows, for a short list of kinds of thing to make or insert.
+		roomy?: boolean;
 		// Names an icon-only trigger. A text trigger is named by its text unless this says more.
 		triggerLabel?: string;
 		// The icon of the default icon-only trigger (three dots).
@@ -79,6 +89,9 @@
 		 *  reader, instead of sitting there dead. */
 		unavailableReason?: string;
 		open?: boolean;
+		/** Runs when the menu closes and focus is about to go back to its trigger. `preventDefault` keeps focus
+		 *  where the chosen item put it (a field the choice was inserted into). */
+		onCloseAutoFocus?: (event: Event) => void;
 	} = $props();
 
 	const customTrigger = $derived(Boolean(trigger || triggerClass));
@@ -97,16 +110,29 @@
 
 {#snippet menuItem(item: MenuItem)}
 	<DropdownMenuPrimitive.Item
-		class={`dropdown-menu__item ${item.destructive ? 'dropdown-menu__item--destructive' : ''} ${item.muted ? 'dropdown-menu__item--muted' : ''} ${item.current ? 'dropdown-menu__item--current' : ''}`}
+		class={`dropdown-menu__item ${item.destructive ? 'dropdown-menu__item--destructive' : ''} ${item.muted ? 'dropdown-menu__item--muted' : ''} ${item.current ? 'dropdown-menu__item--current' : ''} ${item.hint ? 'dropdown-menu__item--detailed' : ''}`}
 		disabled={item.disabled}
 		onSelect={() => item.onSelect()}
 	>
 		{#if item.icon && item.tile}
-			<span aria-hidden="true"><IconTile icon={item.icon} tone={item.tile} size={24} /></span>
+			<span aria-hidden="true"
+				><IconTile icon={item.icon} tone={item.tile} size={item.tileSize ?? 24} /></span
+			>
 		{:else if item.icon}
-			<span class="dropdown-menu__item-icon" aria-hidden="true">{@html item.icon}</span>
+			<span
+				class="dropdown-menu__item-icon"
+				style:color={item.iconColor}
+				aria-hidden="true">{@html item.icon}</span
+			>
 		{/if}
-		<span class="dropdown-menu__item-label">{item.label}</span>
+		{#if item.hint}
+			<span class="dropdown-menu__item-text">
+				<span class="dropdown-menu__item-label">{item.label}</span>
+				<span class="dropdown-menu__item-hint">{item.hint}</span>
+			</span>
+		{:else}
+			<span class="dropdown-menu__item-label">{item.label}</span>
+		{/if}
 		{#if item.note}
 			<span class="dropdown-menu__item-note">, {item.note}</span>
 		{/if}
@@ -171,8 +197,9 @@
 		{/if}
 		<DropdownMenuPrimitive.Portal>
 			<DropdownMenuPrimitive.Content
-				class={`dropdown-menu__content ${wide ? 'dropdown-menu__content--wide' : ''} ${contentClass}`}
+				class={`dropdown-menu__content ${wide ? 'dropdown-menu__content--wide' : ''} ${roomy ? 'dropdown-menu__content--roomy' : ''} ${contentClass}`}
 				data-elevation="elevated"
+				{onCloseAutoFocus}
 				{align}
 				sideOffset={4}
 				collisionPadding={8}
@@ -286,6 +313,24 @@
 		width: 260px;
 	}
 
+	// A short list of kinds of thing: radius 16, 8 inside, rows 2 apart, each row 36 high (48 with a hint).
+	:global(.dropdown-menu__content--roomy) {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-smallest);
+		border-radius: var(--radius-large);
+
+		:global(.dropdown-menu__item) {
+			min-height: 36px;
+			padding: 0 10px;
+			gap: 10px;
+			border-radius: var(--radius-base);
+		}
+		:global(.dropdown-menu__item--detailed) {
+			min-height: 48px;
+		}
+	}
+
 	:global(.dropdown-menu__group + .dropdown-menu__group),
 	// The footer's divider also follows plain items, not only another group.
 	:global(.dropdown-menu__item + .dropdown-menu__group) {
@@ -353,6 +398,27 @@
 		flex: 1 1 auto;
 		min-width: 0;
 		overflow-wrap: anywhere;
+	}
+
+	// The label over its hint: 14/600 over 12 quiet.
+	.dropdown-menu__item-text {
+		display: flex;
+		flex: 1 1 auto;
+		min-width: 0;
+		flex-direction: column;
+		gap: 1px;
+
+		.dropdown-menu__item-label {
+			flex: none;
+			color: var(--color-heading);
+			font-weight: 600;
+		}
+	}
+
+	.dropdown-menu__item-hint {
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-smaller);
+		line-height: var(--typography--lineHeight-tight);
 	}
 
 	/* Read out, never drawn: the trailing icon says the same thing to the eye. */

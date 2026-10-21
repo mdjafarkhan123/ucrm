@@ -4,6 +4,7 @@
 	import mobileIcon from '@tabler/icons/outline/device-mobile.svg?raw';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import SegmentedControl from '$lib/components/ui/SegmentedControl.svelte';
+	import EmailPreviewBone from './EmailPreviewBone.svelte';
 	import { previewCampaignContent } from '$lib/marketing/api';
 	import {
 		marketingCampaignPreviewKey,
@@ -53,15 +54,7 @@
 				class:template-preview__paper--mobile={viewport === 'mobile'}
 			>
 				{#if query.isPending}
-					<div class="template-preview__bone" role="status" aria-label="Rendering preview" aria-busy="true">
-						<span class="skeleton template-preview__bone-bar"></span>
-						<span class="skeleton template-preview__bone-image"></span>
-						<span class="skeleton skeleton--heading"></span>
-						<span class="skeleton skeleton--text"></span>
-						<span class="skeleton skeleton--text"></span>
-						<span class="skeleton skeleton--text skeleton--text-short"></span>
-						<span class="skeleton template-preview__bone-button"></span>
-					</div>
+					<EmailPreviewBone />
 				{:else}
 					<iframe title={`${title} preview`} srcdoc={query.data.html} sandbox=""></iframe>
 				{/if}
@@ -123,28 +116,5 @@
 			border: 0;
 			background: var(--color-white);
 		}
-	}
-
-	.template-preview__bone {
-		display: grid;
-		gap: var(--space-slim);
-		padding: var(--space-medium);
-	}
-
-	.template-preview__bone-bar {
-		width: 45%;
-		height: var(--space-large);
-	}
-
-	.template-preview__bone-image {
-		height: 160px;
-		border-radius: var(--radius-base);
-	}
-
-	.template-preview__bone-button {
-		width: 140px;
-		height: 36px;
-		margin-top: var(--space-small);
-		border-radius: var(--radius-base);
 	}
 </style>

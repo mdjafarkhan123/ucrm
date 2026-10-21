@@ -48,6 +48,9 @@ export type MarketingRenderContext = {
 	// The campaign's primary action, rendered as one button after the content blocks. null when no action
 	// was chosen or its target no longer exists.
 	cta: MarketingCtaTarget | null;
+	// The editor's live preview only: each block carries a `ucrm-block-<id>` class so the page can outline the
+	// block being edited. A real send or test send leaves it off, so customers get no extra markup.
+	markBlocks?: boolean;
 };
 
 export type MarketingRenderedEmail = {
@@ -89,10 +92,11 @@ function resolveVariablesHtml(
 }
 
 function renderBlockMjml(block: MarketingBlock, ctx: MarketingRenderContext): string {
+	const mark = ctx.markBlocks ? ` css-class="ucrm-block-${block.id}"` : '';
 	switch (block.type) {
 		case 'heading': {
 			const fontSize = block.level === 'h1' ? '28px' : '22px';
-			return `<mj-text font-size="${fontSize}" font-weight="700" padding="16px 24px 8px">${resolveVariablesHtml(block.text, ctx.variables)}</mj-text>`;
+			return `<mj-text${mark} font-size="${fontSize}" font-weight="700" padding="16px 24px 8px">${resolveVariablesHtml(block.text, ctx.variables)}</mj-text>`;
 		}
 		case 'text': {
 			const paragraphs = block.text
@@ -102,16 +106,16 @@ function renderBlockMjml(block: MarketingBlock, ctx: MarketingRenderContext): st
 						`<p style="margin:0 0 12px">${resolveVariablesHtml(paragraph, ctx.variables).replace(/\n/g, '<br/>')}</p>`
 				)
 				.join('');
-			return `<mj-text padding="8px 24px">${paragraphs}</mj-text>`;
+			return `<mj-text${mark} padding="8px 24px">${paragraphs}</mj-text>`;
 		}
 		case 'button':
-			return `<mj-button href="${escapeHtml(block.url)}" padding="16px 24px" background-color="#2563eb">${resolveVariablesHtml(block.label, ctx.variables)}</mj-button>`;
+			return `<mj-button${mark} href="${escapeHtml(block.url)}" padding="16px 24px" background-color="#2563eb">${resolveVariablesHtml(block.label, ctx.variables)}</mj-button>`;
 		case 'image':
-			return `<mj-image src="${escapeHtml(ctx.imageUrls[block.file_id] ?? '')}" alt="${escapeHtml(block.alt)}"${
+			return `<mj-image${mark} src="${escapeHtml(ctx.imageUrls[block.file_id] ?? '')}" alt="${escapeHtml(block.alt)}"${
 				block.link_url ? ` href="${escapeHtml(block.link_url)}"` : ''
 			} padding="8px 24px" />`;
 		case 'divider':
-			return `<mj-divider border-color="#e5e7eb" padding="8px 24px" />`;
+			return `<mj-divider${mark} border-color="#e5e7eb" padding="8px 24px" />`;
 		case 'service_summary': {
 			const items = block.catalog_item_ids
 				.map((id) => ctx.serviceNames[id])
@@ -120,7 +124,7 @@ function renderBlockMjml(block: MarketingBlock, ctx: MarketingRenderContext): st
 				items.length > 0
 					? `<ul style="margin:8px 0 0;padding-left:20px">${items.map((name) => `<li>${escapeHtml(name)}</li>`).join('')}</ul>`
 					: `<p style="margin:8px 0 0;color:#6b7280">No services selected yet.</p>`;
-			return `<mj-text padding="8px 24px"><strong>${escapeHtml(block.title)}</strong>${list}</mj-text>`;
+			return `<mj-text${mark} padding="8px 24px"><strong>${escapeHtml(block.title)}</strong>${list}</mj-text>`;
 		}
 	}
 }

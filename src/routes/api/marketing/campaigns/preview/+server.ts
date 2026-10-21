@@ -7,7 +7,10 @@ import { zodFieldErrors } from '$lib/server/validation/foundation.schema';
 import { marketingCampaignContentSchema } from '$lib/marketing/campaign-content';
 import { hydrateRuleLabels } from '$lib/server/marketing/customer-groups';
 import { getMarketingBusinessIdentity } from '$lib/server/marketing/business-identity';
-import { renderCampaignEmail } from '$lib/server/marketing/render-email';
+import {
+	renderCampaignEmail,
+	resolveMarketingVariablesPlainText
+} from '$lib/server/marketing/render-email';
 import { resolveMarketingCtaTarget } from '$lib/server/marketing/call-to-action';
 import { createPresignedPreviewImageUrl } from '$lib/server/storage/r2';
 
@@ -16,7 +19,12 @@ import { createPresignedPreviewImageUrl } from '$lib/server/storage/r2';
 // preview route. Uses a representative sample name and the organization's real business identity, never a
 // raw {{token}}, matching the blueprint's "no leaking a placeholder" rule.
 
-const previewSchema = z.object({ content: marketingCampaignContentSchema });
+// `mark_blocks` is the editor's own switch (see MarketingRenderContext.markBlocks); the review step and the
+// template pop-up leave it off.
+const previewSchema = z.object({
+	content: marketingCampaignContentSchema,
+	mark_blocks: z.boolean().optional()
+});
 
 export const POST: RequestHandler = async (event) => {
 	const access = await requireOrganizationPermission(event, 'marketing.view');
@@ -68,15 +76,27 @@ export const POST: RequestHandler = async (event) => {
 			}
 		}
 
+		const variables = { customer_first_name: 'Alex', business_name: business.name };
 		const rendered = await renderCampaignEmail(content, {
-			variables: { customer_first_name: 'Alex', business_name: business.name },
+			variables,
 			serviceNames,
 			imageUrls,
 			business,
 			unsubscribeUrl: null,
-			cta
+			cta,
+			markBlocks: parsed.data.mark_blocks
 		});
-		return json(rendered, { headers: NO_STORE_HEADERS });
+		// The inbox line above the email in the editor: the sender, and the subject and preview text as a
+		// customer would read them (variables filled with the same sample values).
+		return json(
+			{
+				...rendered,
+				sender_name: business.name,
+				subject: resolveMarketingVariablesPlainText(content.subject, variables),
+				preview_text: resolveMarketingVariablesPlainText(content.preview_text ?? '', variables)
+			},
+			{ headers: NO_STORE_HEADERS }
+		);
 	} catch (error) {
 		console.error('Could not render a marketing campaign preview.', error);
 		return databaseError();

@@ -142,6 +142,20 @@ describe('renderCampaignEmail', () => {
 	});
 });
 
+describe('renderCampaignEmail block marks', () => {
+	const id = '55555555-5555-5555-5555-555555555555';
+	const blocks: MarketingCampaignContent['blocks'] = [{ id, type: 'text', text: 'Body copy.' }];
+
+	it('marks each block with its id only when asked, for the editor preview', async () => {
+		const marked = await renderCampaignEmail(contentWith(blocks), { ...baseCtx, markBlocks: true });
+		expect(marked.errors).toEqual([]);
+		expect(marked.html).toContain(`ucrm-block-${id}`);
+
+		const plain = await renderCampaignEmail(contentWith(blocks), baseCtx);
+		expect(plain.html).not.toContain('ucrm-block-');
+	});
+});
+
 describe('resolveMarketingVariablesPlainText', () => {
 	it('substitutes without HTML-escaping, for building a real Subject header', () => {
 		expect(

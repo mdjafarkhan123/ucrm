@@ -136,8 +136,10 @@
 	// Block array edits are owned here (not the step or its row editor) for the same reason form-builder
 	// question edits are owned by its page: a child reassigning an array on a plain, non-$bindable prop
 	// updates the underlying $state but doesn't re-render that child's own template.
-	function addBlock(type: MarketingBlockType) {
-		content.blocks = [...content.blocks, blankBlock(type)];
+	function addBlock(type: MarketingBlockType): string {
+		const block = blankBlock(type);
+		content.blocks = [...content.blocks, block];
+		return block.id;
 	}
 	function moveBlock(index: number, by: number) {
 		const target = index + by;
@@ -359,7 +361,7 @@
 <svelte:head><title>{name || 'New campaign'} · Marketing · Contractor CRM</title></svelte:head>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div class="journey">
+<div class={['journey', step === 3 && 'journey--wide']}>
 	<Breadcrumbs
 		items={[
 			{ label: 'Campaigns', href: campaignsHref },
@@ -389,7 +391,8 @@
 		</div>
 	</header>
 
-	{#if saveError}
+	<!-- The Email step shows a failed save at the top of its own editor. -->
+	{#if saveError && step !== 3}
 		<p class="journey__error" role="alert">{saveError}</p>
 	{/if}
 
@@ -460,6 +463,8 @@
 
 <style lang="scss">
 	// The setup-steps frame (design skill `layout.md` → Setup steps): one 760 column with its blocks 24 apart.
+	// The Email step widens it to 1092 for the editor and the live email side by side; the header and the step
+	// track stretch with it.
 	.journey {
 		display: flex;
 		flex-direction: column;
@@ -469,6 +474,10 @@
 		padding-block: var(--space-large);
 		padding-inline: var(--space-base);
 		box-sizing: content-box;
+
+		&--wide {
+			max-width: 1092px;
+		}
 
 		// The trail is a block of the column, so the column's gap sets the space under it.
 		> :global(.breadcrumbs) {

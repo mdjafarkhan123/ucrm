@@ -51,6 +51,30 @@ export const MARKETING_VARIABLE_LABELS: Record<MarketingVariable, string> = {
 	business_name: 'Your business name'
 };
 
+// What a variable reads as when it sits in a field as a tag (design skill `layout.md` → New campaign · Email step).
+export const MARKETING_VARIABLE_TAG_LABELS: Record<MarketingVariable, string> = {
+	customer_first_name: 'First name',
+	business_name: 'Business name'
+};
+
+export type MarketingTextPart =
+	{ kind: 'text'; text: string } | { kind: 'variable'; variable: MarketingVariable };
+
+// Splits a saved string at its approved `{{variable}}` tokens, so a field can draw each as a tag. A token this
+// app does not know stays plain text: the server still refuses it on save, naming it, as before.
+export function splitMarketingVariables(value: string): MarketingTextPart[] {
+	const parts: MarketingTextPart[] = [];
+	let from = 0;
+	for (const match of value.matchAll(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g)) {
+		if (!(MARKETING_VARIABLES as readonly string[]).includes(match[1])) continue;
+		if (match.index > from) parts.push({ kind: 'text', text: value.slice(from, match.index) });
+		parts.push({ kind: 'variable', variable: match[1] as MarketingVariable });
+		from = match.index + match[0].length;
+	}
+	if (from < value.length) parts.push({ kind: 'text', text: value.slice(from) });
+	return parts;
+}
+
 const httpUrl = z
 	.string()
 	.trim()

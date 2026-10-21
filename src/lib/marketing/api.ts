@@ -287,15 +287,21 @@ export type MarketingRenderedEmailPreview = {
 	html: string;
 	text: string;
 	errors: { message: string; formattedMessage?: string }[];
+	sender_name: string;
+	/** The subject and preview text with the sample customer's values filled in. */
+	subject: string;
+	preview_text: string;
 };
 
 export async function previewCampaignContent(
-	content: MarketingCampaignContent
+	content: MarketingCampaignContent,
+	options: { markBlocks?: boolean; signal?: AbortSignal } = {}
 ): Promise<MarketingRenderedEmailPreview> {
 	const response = await fetch('/api/marketing/campaigns/preview', {
 		method: 'POST',
 		headers: { 'content-type': 'application/json' },
-		body: JSON.stringify({ content })
+		body: JSON.stringify({ content, mark_blocks: options.markBlocks }),
+		signal: options.signal
 	});
 	if (!response.ok) throw await readMarketingError(response, 'That preview could not be rendered.');
 	return response.json();
