@@ -77,6 +77,10 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
+	.card-header--compact .card-header__hint {
+		white-space: normal;
+		overflow-wrap: anywhere;
+	}
 	.card-header__actions {
 		display: flex;
 		flex: 0 0 auto;

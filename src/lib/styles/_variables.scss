@@ -336,6 +336,16 @@
 	--color-feature--alert: var(--color-base-red--400);
 	--color-feature--glow: rgba(var(--color-white--rgb), 0.12);
 	--color-feature--glow-end: rgba(var(--color-white--rgb), 0);
+	// Approved shared money summary; these stay bright on the ink-blue card in both themes.
+	--color-money--start: #032b3a;
+	--color-money--end: #0b4559;
+	--color-money--border: rgba(var(--color-white--rgb), 0.18);
+	--color-money--items: #22d3ee;
+	--color-money--expenses: #fb923c;
+	--color-money--labor: #a78bfa;
+	--color-money--profit: #4ade80;
+	--color-money--loss: #f43f5e;
+	--color-money--warning: #facc15;
 	--color-feature--items: var(--color-base-pink--400);
 	--color-feature--labor: #8897db;
 	--color-feature--expenses: var(--color-base-lightBlue--400);

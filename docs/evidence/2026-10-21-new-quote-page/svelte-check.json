@@ -1,0 +1,18 @@
+{
+  "extends": "../../../tsconfig.json",
+  "include": [
+    "../../../src/lib/components/quotes/QuoteForm.svelte",
+    "../../../src/lib/components/quotes/QuoteSummaryCard.svelte",
+    "../../../src/lib/components/quotes/QuoteClientViewBlock.svelte",
+    "../../../src/lib/components/work/AddSectionControl.svelte",
+    "../../../src/lib/components/work/MoneyFeatureCard.svelte",
+    "../../../src/lib/components/work/ProfitCard.svelte",
+    "../../../src/lib/components/layout/RecordFormLayout.svelte",
+    "../../../src/lib/components/ui/CardHeader.svelte",
+    "../../../src/routes/(app)/quotes/new/+page.svelte",
+    "../../../src/**/*.d.ts",
+    "../../../.svelte-kit/ambient.d.ts",
+    "../../../.svelte-kit/non-ambient.d.ts",
+    "../../../src/lib/components/quotes/ProductsAndServicesBlock.svelte"
+  ]
+}

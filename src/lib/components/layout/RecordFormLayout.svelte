@@ -81,7 +81,7 @@
 			/>
 		{/if}
 		<FormErrorSummary bind:this={errorSummary} message={error} fields={errorFields} />
-		<div class="record-form__grid" class:record-form__grid--no-rail={!rail}>
+		<div class={['record-form__grid', !rail && 'record-form__grid--no-rail']}>
 			<section class="record-form__main" aria-labelledby={titleId}>{@render main()}</section>
 			{#if rail}
 				<aside class="record-form__rail">{@render rail()}</aside>
@@ -97,7 +97,7 @@
 	</div>
 {:else}
 	<div class={`record-form ${className}`}>
-		<div class="record-form__grid" class:record-form__grid--no-rail={!rail}>
+		<div class={['record-form__grid', !rail && 'record-form__grid--no-rail']}>
 			<section class="record-form__main" aria-labelledby={titleId}>
 				<header class="record-form__header">
 					{#if icon}<span class="record-form__icon" aria-hidden="true">{@html icon}</span>{/if}
@@ -171,7 +171,11 @@
 		&__rail {
 			display: flex;
 			flex-direction: column;
-			gap: var(--space-base);
+			gap: var(--space-large);
+
+			> :global(*) {
+				flex-shrink: 0;
+			}
 		}
 	}
 
