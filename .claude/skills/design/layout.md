@@ -175,6 +175,40 @@ column, centred, blocks 24 apart: the page header, the step track, then one card
   - States: loading groups (bones for every block, the meter as one radius-16 block); counting (meter bones in
     `--color-growth--surface-edge`, hint "Counting who will get this email…"); no groups (Empty, Growth tile, New
     group main); couldn't load (`page-states.md`, Try again).
+- **New campaign · Email step**, approved B by Jafar 2026-10-21 (Pencil: "Batch 54 · New campaign · Email step ·
+  Approved B", `Nuydc`). For this step the column widens to 1092 (header and step track stretch with it); the
+  track shows Goal and Customers finished, Email current. Card header: Growth `mail` tile. The body splits in two,
+  the same height:
+  - Editor (left, 440, padding 20, gap 20, 1px `--color-border` line on its right): Subject line and Preview text
+    fields (label row with a 12/500 quiet "N left" at the right). Inside the box at the right a 28 square Variable
+    button (radius 6, `--color-surface--background--subtle`, 1px `--color-border`, 14 `braces` `--color-growth`;
+    open: `--color-growth` fill, white icon). A variable shows in the text as a tag: 24 high, padding 0 8, radius 6,
+    `--color-growth--surface`, 1px `--surface-edge`, 12 `braces` and the name 12/600 `--color-growth--onSurface`.
+  - Blocks: a hairline, then "Blocks" 16/600 with "N of 30" 14/500 quiet at the right. One row per block, 6 apart
+    (`--color-surface--background--subtle`, 1px `--color-border`, radius 10, padding 8 12 8 8, gap 10): a 32
+    Growth tile with the type's icon (image `image`, heading `heading`, text `pilcrow`, button
+    `mouse-pointer-click`, divider `separator-horizontal`, service summary `list-checks`), the type 14/600, a short
+    summary 14 quiet. The open block is white with a 1.5px `--color-growth` edge, padding 8 8 12 8: a filled
+    `--color-growth` tile with a white icon, the type 14/700, then Move up / Move down as a joined group (32) and
+    Remove (32 icon button, `--color-destructive` edge and `trash-2`); under it the block's fields, then the
+    Variable button (28, Growth surface, `braces` and "Variable" 12/600) with the letter count at the right.
+  - Add a block: a full-width secondary button (`plus`). Its menu opens above it when there is no room below,
+    radius 16, padding 8: rows 48 high with a 32 Growth tile, the type 14/600 over a 12 quiet hint.
+  - Live preview (right): `--color-surface--background--subtle`, padding 20 24 24, gap 16, centred. Toolbar: the
+    Desktop (`monitor`) / Mobile (`smartphone`) switch, then at the right a pill (28 high, radius 14, white, 1px
+    `--color-border`): an 8 `--color-success` dot and "Updates as you type" 12/600; while re-rendering a 16
+    spinner and "Updating…", the last render staying in place. Then the inbox row (600 wide, white, radius 10,
+    1px `--color-border`, padding 12 14): a 36 round `--color-interactive` avatar with the business initial, the
+    sender 14/700 with the time at the right, the subject 14/600, the preview text 14 quiet. Then the email as in
+    the email preview pop-up (`modals.md`); the block being edited has a 2px `--color-growth` outline (radius 6, 8
+    outside the block) and at its top right a `--color-growth` tag (radius 6 6 0 0, 22 high) with the white type
+    icon and "Text · editing" 12/600.
+  - Footer: Back, the hint "Variables fill in with each customer's own details.", Continue.
+  - States: no blocks (a quiet box "No blocks yet" with one line; the preview shows the business bar, a
+    placeholder "Your blocks show here" and the footer); first preview loading (the email bone, pill "Loading the
+    preview…"); couldn't render (page-states error with Try again, pill hidden); couldn't save (the form error card
+    at the top of the editor, its hint the reason); photo block (photo box `files.md`: uploading, too big with the
+    field error); 30 blocks (Add a block disabled).
 
 ## Record pages
 
