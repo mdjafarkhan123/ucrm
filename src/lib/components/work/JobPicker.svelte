@@ -193,7 +193,7 @@
 		align-items: center;
 		border: var(--border-base) solid var(--color-border--interactive);
 		border-radius: var(--radius-base);
-		background: var(--color-surface);
+		background: var(--field--fill, var(--color-surface--background));
 	}
 	.job-picker__control:focus-within {
 		z-index: var(--elevation-base);

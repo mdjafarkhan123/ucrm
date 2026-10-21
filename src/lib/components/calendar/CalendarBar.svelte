@@ -52,7 +52,6 @@
 			value={view}
 			options={views}
 			size="small"
-			white
 			ariaLabel="Calendar view"
 			onchange={(next) => onview(next as V)}
 		/>

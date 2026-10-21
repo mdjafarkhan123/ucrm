@@ -328,7 +328,7 @@
 		min-height: var(--space-largest);
 		border: var(--border-base) solid var(--color-border--interactive);
 		border-radius: var(--radius-base);
-		background: var(--color-surface);
+		background: var(--field--fill, var(--color-surface--background));
 	}
 	.catalog-picker__control:focus-within {
 		box-shadow: var(--shadow-focus);

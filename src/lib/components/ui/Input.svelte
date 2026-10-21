@@ -119,10 +119,11 @@
 			&:focus-within {
 				box-shadow: var(--shadow-focus);
 			}
+			// A front icon is quiet grey unless the caller gives it a meaning colour (`--field-icon-color`).
 			:global(svg) {
 				width: 16px;
 				height: 16px;
-				color: var(--color-icon--secondary);
+				color: var(--field-icon-color, var(--color-icon--secondary));
 			}
 		}
 		input {
