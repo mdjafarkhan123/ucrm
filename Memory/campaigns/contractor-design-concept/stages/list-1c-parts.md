@@ -50,7 +50,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `support/SupportPeople` | loading | ⬜ | ⬜ |
 | `support/SupportTopicMenu` | menus ×1 | ⬜ | ⬜ |
 | `support/SupportTopicPicker` |  | ⬜ | ⬜ |
-| `team/TeamNotificationBell` | loading | ⬜ | ⬜ |
+| `team/TeamNotificationBell` | loading | 🟡 Batch 45 `FGYzU` 2026-10-21 | ⬜ |
 | `team/TeamPicker` | loading | ⬜ | ⬜ |
 | `time-clock/HeaderTimer` |  | ⬜ | ⬜ |
 | `work/AddSectionControl` |  | ⬜ | ⬜ |
