@@ -6,8 +6,8 @@
 - **Stage:** Approved parts are being built; further screens are being drawn.
 
 **Next:**
-1. **Build (waiting):** Batch 43 Merge clients pop-up `XddjD`; Batch 44 Collect payment pop-up `b5ZAe` (both in `modals.md`). Batches 41
-   and 42 and the no-blend parts built 2026-10-21 (`parts/batch42-no-blend-build.md`). Shared-part history:
+1. **Build:** Batches 43 Merge clients and 44 Collect payment pop-ups built 2026-10-21
+   (`docs/evidence/2026-10-21-popups/`); nothing approved is waiting. Shared-part history:
    `parts/c5-shared-parts.md`. Create pages: `parts/new-request-top-form.md`.
 2. **Jafar picks:** Batch 45 Notification bell pop-up `FGYzU` (A grouped list / B needs-you-first panel); after his pick
    draw every state (loading, empty, couldn't load, mark-all failed and loading, no unread) and dark. Then **Draw:** next
