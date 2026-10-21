@@ -17,6 +17,7 @@
 | 24 | 12–14 | 6 | Small lists, table cells |
 | 32 | 16 | 8 | List rows, card headers |
 | 40 | 20 | 10 | Large cards, page headers |
+| 48 | 24 | 12 | Number cards |
 
 ## States
 

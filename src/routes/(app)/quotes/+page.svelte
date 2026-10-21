@@ -22,13 +22,11 @@
 	import RecordListCard from '$lib/components/data-display/RecordListCard.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import AttentionCard, {
-		type AttentionBarPart,
 		type AttentionFact,
 		type AttentionTile
 	} from '$lib/components/work/AttentionCard.svelte';
-	import MoneyFeatureCard, {
-		type MoneyFigureRow
-	} from '$lib/components/work/MoneyFeatureCard.svelte';
+	import KpiCard from '$lib/components/data-display/KpiCard.svelte';
+	import type { MoneyFigureRow } from '$lib/components/work/MoneyFeatureCard.svelte';
 	import {
 		conversionChange,
 		fetchQuoteListOverview,
@@ -249,15 +247,6 @@
 				}
 			: undefined
 	);
-	// Slices by value; by count for someone who may not see prices, so the bar never hints at money.
-	const valueBar = $derived<AttentionBarPart[]>(
-		QUOTE_OVERVIEW_STATUSES.map((key) => ({
-			key,
-			label: QUOTE_STATUS_LABELS[key],
-			share: statusMoney ? statusMoney[key] : (countsQuery.data?.counts[key] ?? 0),
-			tone: QUOTE_STATUS_TONES[key]
-		}))
-	);
 	const followUpFacts = $derived<AttentionFact[]>(
 		overview
 			? [
@@ -409,27 +398,32 @@
 
 		<div class="quotes-overview">
 			<AttentionCard
+				icon={fileTextPageIcon}
+				tone="quote"
 				title="Open quotes"
 				description="Where every unfinished quote stands. Pick one to see only those quotes."
 				tiles={attentionTiles}
 				selectedKey={selectedTile}
 				onSelect={(key) => (status = key as StoredQuoteStatus | '')}
 				summary={openSummary}
-				bar={valueBar}
 				facts={followUpFacts}
 				loading={countsQuery.isPending || overviewLoading}
-			/>
-			<MoneyFeatureCard
-				icon={trendingUpIcon}
-				eyebrow="Conversion rate · past 30 days"
-				value={conversionValue}
-				change={overview
-					? conversionChange(overview.rate_basis_points, overview.prior_rate_basis_points)
-					: null}
-				note={conversionNote}
-				rows={conversionRows}
-				loading={overviewLoading}
-			/>
+			>
+				{#snippet feature()}
+					<KpiCard
+						tone="feature"
+						icon={trendingUpIcon}
+						label="Conversion rate · past 30 days"
+						value={conversionValue}
+						change={overview
+							? conversionChange(overview.rate_basis_points, overview.prior_rate_basis_points)
+							: null}
+						note={conversionNote}
+						rows={conversionRows}
+						loading={overviewLoading}
+					/>
+				{/snippet}
+			</AttentionCard>
 		</div>
 
 		<RecordListCard
@@ -610,9 +604,6 @@
 
 	/* Open quotes takes the room it needs; the conversion card keeps a steady width beside it. */
 	.quotes-overview {
-		display: grid;
-		gap: var(--space-large);
-		grid-template-columns: minmax(0, 1fr) 336px;
 		margin-bottom: var(--space-large);
 	}
 
@@ -723,8 +714,5 @@
 	}
 
 	@media (max-width: 1199px) {
-		.quotes-overview {
-			grid-template-columns: minmax(0, 1fr);
-		}
 	}
 </style>
