@@ -119,3 +119,38 @@ as the live app.
   search.", "No matches for “…”." and the red "Could not search. Try again." are 13 lines in the list. The
   type-and-add pop-over is 280 wide, radius 12: a text box, the suggestions, "Press Enter to add." 12 quiet.
 - Name missing: the field error. Someone else changed the group: a critical notice strip at the top of the form.
+
+## Profile photo pop-up
+
+Your own photo, from the top bar's account menu and Settings (board `n2ujB`, B, Jafar 2026-10-21). Same steps and
+words as the live app.
+
+- Medium pop-up (640). Header: 40 tile in `--color-inactive` (`user-round`), "Profile photo", 12 quiet line "Shown
+  next to your name across the app". Footer: Remove (danger, `trash-2`) at the far left when there is a photo, then
+  Choose new photo (Choose a photo when there is none) as the main button with `image`. While moving: Back
+  (secondary) then Save photo (main, `check`).
+- Body splits in two, 420 high. Left, a 320 studio: `--color-photo-studio` with a soft white glow from the upper
+  middle (white 12% → 0), padding 24, gap 18, everything centred. Right, the preview panel:
+  `--color-surface--background--subtle`, a 1px `--color-border` line on its left, padding 20, gap 12.
+- Your photo: a 176 avatar with a 4 white ring and a deep shadow (0 10 28, black 35%); under it the hint 13 white
+  72%, centred, 200 wide. No photo yet: the initials 52/600 in the person's avatar family (`avatars.md`).
+- Moving and zooming: the hint on top, then the 240 crop square (radius 12): the photo, black 50% outside the
+  circle, a 2px white 90% circle edge. Under it the 240 zoom row: 18 `zoom-out` and `zoom-in` in white 72%, a 4 high
+  white 22% track, its filled part `--color-interactive`, a 16 white handle with a 2px `--color-interactive` ring.
+  Then Choose a different photo as a quiet button, 13/600 white.
+- Preview panel: "How your teammates see you" 14/600 heading and a 12 quiet line ("Your photo across the app";
+  while moving, "Follows your photo as you move and zoom"). Three white cards (radius 12, 1px `--color-border`,
+  padding 12, gap 10), each opening with a 14 icon and a 12/600 quiet label:
+  - Top bar (`panel-top`, `--color-inactive`): a search box and the account chip (32 avatar, first name 13/600,
+    `chevron-down`).
+  - Schedule (`calendar-days`, `--color-time`): a visit on `--color-job--surface` with a 3px `--color-job` left
+    edge, title 13/600 and time 12 in `--color-job--onSurface`, the 24 avatar at the right.
+  - Inbox (`message-circle`, `--color-conversation`): a client's 32 initials avatar, name 13/600, last message 12
+    quiet, the 24 assigned avatar at the right.
+  The previews show the crop as it moves and have no controls.
+- Saving: Save photo spins, Back is disabled, the zoom row and Choose a different photo drop to 45%. Removing:
+  Remove spins in red, Choose new photo is disabled.
+- Not a photo / couldn't save: a strip at the left of the footer, `--color-critical--surface`, 1px edge, radius 8,
+  padding 7 12, a 16 `circle-alert` in `--color-critical` and the live words 13/500 `--color-critical--onSurface`.
+  After a failed save the crop stays.
+- Dark mode: the studio keeps its colour; everything else follows the tokens.

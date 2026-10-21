@@ -47,7 +47,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `marketing/CustomerGroupRuleBuilder` |  | ✅ Batch 37 `PLExJ` B 2026-10-21 | ⬜ |
 | `marketing/FreeTextChipInput` |  | ✅ Batch 37 `PLExJ` B 2026-10-21 | ⬜ |
 | `marketing/MarketingTemplatePreviewDialog` | 🔁F pop-up | ✅ Batch 26 `l62Og` A 2026-10-20 | ⬜ |
-| `profile/ProfilePhotoDialog` | 🔁F pop-up | ⬜ | ⬜ |
+| `profile/ProfilePhotoDialog` | 🔁F pop-up | ✅ Batch 38 `n2ujB` B 2026-10-21 | ⬜ |
 | `settings/WeeklyHoursEditor` |  | ⬜ | ⬜ |
 | `ui/FilterChipMulti` |  | ✅ Batch 20 `e18rX` 2026-10-20 | ✅ |
 | `ui/SignaturePad` |  | ⬜ | ⬜ |

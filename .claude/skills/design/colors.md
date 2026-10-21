@@ -82,6 +82,14 @@ summary card · Approved B", approved 2026-10-21). The same in light and dark mo
 Bar order: item cost · expenses · labour · profit (or loss). Pills on profit, loss and warning fills use
 `--color-money--start` text. Other figures and labels stay white or white 72%.
 
+## Photo Studio Colour
+
+| Token | Value | Use |
+|---|---|---|
+| `--color-photo-studio` | `#032b3a`, the same in light and dark | The dark panel a photo sits on in the profile photo pop-up (`modals.md`), so a photo and its white words read the same in both modes |
+
+In `concept.pen`; add it to `_variables.scss` with the build.
+
 ## File Families
 
 Only on a document's type tab (`files.md`), approved 2026-10-19. Photos show as photos.
