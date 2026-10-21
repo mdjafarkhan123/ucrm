@@ -6,15 +6,15 @@ Key, tick rule and coverage command: `list-index.md`.
 | --- | --- | --- | --- |
 | `marketing/CampaignBlockEditor` |  | ✅ Batch 54 `Nuydc` B 2026-10-21 | ⬜ |
 | `marketing/CampaignCustomersStep` | loading, empty | ✅ Batch 53 `RPlkr` B 2026-10-21 | ✅ built 2026-10-21 |
-| `marketing/CampaignDeliveryStep` | loading | 🟡 Batch 55 `DWtO4` A/B drawn 2026-10-21, waiting for pick | ⬜ |
+| `marketing/CampaignDeliveryStep` | loading | ✅ Batch 55 `DWtO4` B 2026-10-21 | ⬜ |
 | `marketing/CampaignEmailStep` | menus ×1 | ✅ Batch 54 `Nuydc` B 2026-10-21 | ⬜ |
 | `marketing/CampaignGoalStep` |  | ✅ Batch 51 `t0L1xo` A 2026-10-21 | ✅ built 2026-10-21 |
 | `marketing/CampaignJourney` | loading | ✅ Batch 51 `t0L1xo` A 2026-10-21 | ✅ built 2026-10-21 |
 | `marketing/CampaignReviewStep` | loading, owner view | ⬜ | ⬜ |
 | `marketing/CampaignStepper` |  | ✅ Batch 51 `t0L1xo` A 2026-10-21 | ✅ built 2026-10-21 |
 | `marketing/InsertVariableMenu` | menus ×1 | ✅ Batch 54 `Nuydc` B 2026-10-21 | ⬜ |
-| `marketing/MarketingAllowanceNotice` |  | 🟡 Batch 55 `DWtO4` (inside Delivery step) | ⬜ |
-| `marketing/MarketingSenderSummary` |  | 🟡 Batch 55 `DWtO4` (inside Delivery step) | ⬜ |
+| `marketing/MarketingAllowanceNotice` |  | ✅ Batch 55 `DWtO4` B 2026-10-21 | ⬜ |
+| `marketing/MarketingSenderSummary` |  | ✅ Batch 55 `DWtO4` B 2026-10-21 | ⬜ |
 | `packages/PackageDetails` |  | ⬜ | ⬜ |
 | `packages/PackagePrice` |  | ⬜ | ⬜ |
 | `payments/OtherWaysToPay` |  | ⬜ | ⬜ |
