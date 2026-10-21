@@ -9,7 +9,7 @@
 1. **Build (waiting):** Batch 43 Merge clients pop-up `XddjD` (`modals.md` → Merge clients pop-up). Batches 41
    and 42 and the no-blend parts built 2026-10-21 (`parts/batch42-no-blend-build.md`). Shared-part history:
    `parts/c5-shared-parts.md`. Create pages: `parts/new-request-top-form.md`.
-2. **Draw:** next empty row in `stages/list-1b-parts.md` (`invoices/CollectPaymentDialog`). Gaps: Field-worker Home
+2. **Draw:** Batch 44 Collect payment `b5ZAe` waits for Jafar's A/B pick, then its states and dark (`parts/c5-shared-parts.md` row 44); then the next empty row in `stages/list-1b-parts.md`. Gaps: Field-worker Home
    (`list-2a-daily.md`), Select work pop-up and payment-stage New invoice (`list-2b-daily.md`); 12px text sweep.
 3. **Jafar decides:** checklist order and pop-up marks
    (`stages/list-index.md`, `parts/c5a-redesign-checklist.md`).
