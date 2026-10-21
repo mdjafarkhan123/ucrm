@@ -5,6 +5,8 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Button from '$lib/components/ui/Button.svelte';
+	import IconTile from '$lib/components/ui/IconTile.svelte';
+	import Breadcrumbs from '$lib/components/layout/Breadcrumbs.svelte';
 	import { getToastManager } from '$lib/components/ui/ToastManager.svelte';
 	import CampaignStepper from './CampaignStepper.svelte';
 	import CampaignGoalStep from './CampaignGoalStep.svelte';
@@ -28,6 +30,10 @@
 		type MarketingApiError,
 		type RuleLabel
 	} from '$lib/marketing/api';
+	import speakerphoneIcon from '@tabler/icons/outline/speakerphone.svg?raw';
+	import deviceFloppyIcon from '@tabler/icons/outline/device-floppy.svg?raw';
+	import cloudCheckIcon from '@tabler/icons/outline/cloud-check.svg?raw';
+	import cloudUploadIcon from '@tabler/icons/outline/cloud-upload.svg?raw';
 	import { startFileUpload, finishFileUpload, trashFile } from '$lib/files/api';
 	import { uploadAttachmentFile } from '$lib/collaboration/api';
 	import {
@@ -352,18 +358,34 @@
 
 <svelte:head><title>{name || 'New campaign'} · Marketing · Contractor CRM</title></svelte:head>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
 <div class="journey">
+	<Breadcrumbs
+		items={[
+			{ label: 'Campaigns', href: campaignsHref },
+			{ label: name || 'New campaign', icon: speakerphoneIcon }
+		]}
+	/>
+
 	<header class="journey__head">
+		<IconTile icon={speakerphoneIcon} tone="growth" />
 		<div class="journey__head-copy">
-			<p class="journey__eyebrow">Marketing</p>
 			<h1>{name || 'New campaign'}</h1>
+			<p>Email a group of your customers in five short steps.</p>
 		</div>
 		<div class="journey__head-actions">
-			<span class="journey__save-state" role="status">
+			<span
+				class={['journey__save-state', (saving || dirty) && 'journey__save-state--unsaved']}
+				role="status"
+			>
+				<span class="journey__save-icon" aria-hidden="true"
+					>{@html saving || dirty ? cloudUploadIcon : cloudCheckIcon}</span
+				>
 				{#if saving}Saving…{:else if dirty}Unsaved changes{:else}All changes saved{/if}
 			</span>
-			<Button variant="secondary" variation="subtle" href={campaignsHref}>Back to campaigns</Button>
-			<Button onclick={() => void saveDraft()} loading={saving}>Save draft</Button>
+			<Button variant="secondary" onclick={() => void saveDraft()} loading={saving}>
+				<span class="journey__button-icon" aria-hidden="true">{@html deviceFloppyIcon}</span> Save draft
+			</Button>
 		</div>
 	</header>
 
@@ -437,53 +459,89 @@
 </div>
 
 <style lang="scss">
+	// The setup-steps frame (design skill `layout.md` → Setup steps): one 760 column with its blocks 24 apart.
 	.journey {
-		max-width: 1040px;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-large);
+		max-width: 760px;
 		margin-inline: auto;
 		padding-block: var(--space-large);
 		padding-inline: var(--space-base);
+		box-sizing: content-box;
+
+		// The trail is a block of the column, so the column's gap sets the space under it.
+		> :global(.breadcrumbs) {
+			align-self: flex-start;
+			margin-bottom: 0;
+		}
 	}
 
 	.journey__head {
 		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
-		flex-wrap: wrap;
-		gap: var(--space-base);
-		margin-bottom: var(--space-large);
+		align-items: center;
+		gap: 14px;
 	}
 
-	.journey__eyebrow {
-		font-size: var(--typography--fontSize-small);
-		font-weight: 600;
-		letter-spacing: var(--typography--letterSpacing-loose);
-		text-transform: uppercase;
-		color: var(--color-interactive);
-		margin: 0;
-	}
+	.journey__head-copy {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
 
-	.journey__head h1 {
-		font-family: var(--typography--fontFamily-display);
-		font-size: var(--typography--fontSize-largest);
-		font-weight: 600;
-		color: var(--color-heading);
-		margin: var(--space-smaller) 0 0;
+		h1 {
+			margin: 0;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-largest);
+			font-weight: 700;
+			letter-spacing: -0.5px;
+		}
+		p {
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-base);
+			line-height: 1.45;
+		}
 	}
 
 	.journey__head-actions {
 		display: flex;
+		flex: none;
 		align-items: center;
-		gap: var(--space-base);
-		flex-wrap: wrap;
+		gap: var(--space-slim);
 	}
 
 	.journey__save-state {
-		font-size: var(--typography--fontSize-small);
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
 		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+		font-weight: 500;
+		white-space: nowrap;
+	}
+
+	.journey__save-icon {
+		display: inline-flex;
+		color: var(--color-success);
+
+		:global(svg) {
+			width: 16px;
+			height: 16px;
+		}
+
+		.journey__save-state--unsaved & {
+			color: var(--color-warning--onSurface);
+		}
+	}
+
+	.journey__button-icon {
+		display: inline-flex;
 	}
 
 	.journey__error {
-		margin: 0 0 var(--space-base);
+		margin: 0;
 		padding: var(--space-small) var(--space-base);
 		border-radius: var(--radius-base);
 		color: var(--color-critical--onSurface);

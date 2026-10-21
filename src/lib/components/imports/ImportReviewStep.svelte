@@ -2,7 +2,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Banner from '$lib/components/ui/Banner.svelte';
 	import IconTile from '$lib/components/ui/IconTile.svelte';
-	import ImportStepCard from './ImportStepCard.svelte';
+	import SetupStepCard from '$lib/components/layout/SetupStepCard.svelte';
 	import type { ReviewSummary } from '$lib/imports/api';
 	import listCheckIcon from '@tabler/icons/outline/list-check.svg?raw';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
@@ -68,7 +68,7 @@
 </script>
 
 <!-- eslint-disable svelte/no-at-html-tags -->
-<ImportStepCard
+<SetupStepCard
 	title="Here's what will happen"
 	hint={`Review before anything is saved. ${rowCount} rows in your file.`}
 	icon={listCheckIcon}
@@ -103,7 +103,7 @@
 			{willImport === 0 ? 'Nothing to import' : `Import ${willImport} ${itemLabel}`}
 		</Button>
 	{/snippet}
-</ImportStepCard>
+</SetupStepCard>
 
 <style lang="scss">
 	.counts {

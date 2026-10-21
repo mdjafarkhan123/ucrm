@@ -21,8 +21,8 @@
    (`parts/c5-shared-parts.md` § Batch 52). Type sweep (301 typed-in font sizes to variables) built and checked 2026-10-21
    (`parts/type-sweep.md`); Botanical, emails and the chat widget kept. Batch 52's Pencil changes (`xrJ3f`, variables) wait for Jafar's Ctrl+S
    in Pencil, then a commit of `concept.pen`; design claim `13f52b282f7e` stays until then.
-   Batch 51 New campaign · Goal step `t0L1xo` approved A 2026-10-21, waiting to be built
-   (`parts/c5-shared-parts.md`). Next drawing: the Customers step on the same frame, then Email, Delivery, Review
+   Batch 51 New campaign · Goal step `t0L1xo` approved A, built 2026-10-21 (`docs/evidence/2026-10-21-batch51/`;
+   Pencil board still needs the step-6 tidy-up). Next drawing: the Customers step on the same frame, then Email, Delivery, Review
    (`stages/list-1c-parts.md`). Gaps: Field-worker Home
    (`list-2a-daily.md`), Select work pop-up and payment-stage New invoice (`list-2b-daily.md`); 12px text sweep.
 3. **Jafar decides:** checklist order and pop-up marks
