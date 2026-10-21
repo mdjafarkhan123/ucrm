@@ -39,3 +39,4 @@ Phone layouts are also left out (the contract's "Not doing": the native apps com
 | `collaboration/TagPicker` | used only by developer pages |
 | `ui/Toast` | used only by developer pages |
 | `ui/ToastViewport` | used only by developer pages |
+| `layout/SharedAppShell` | Jafar 2026-10-21: only the approved sidebar, top bar and notice strip put together, nothing to design; removed from the campaign |
