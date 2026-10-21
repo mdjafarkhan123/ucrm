@@ -62,3 +62,14 @@ row above the subtotal. B one quote sheet: the four parts numbered down a quote-
 hollow numbers for optional parts, "Client sees" tags, Client view chip in the sheet head. Disclaimer starts
 empty (no settings default today). Jafar chose A ("A"); B and its dark copy deleted; board renamed "… · Approved A".
 Look in `layout.md` → Create pages. Next: New invoice page, same way (one page per session); build after.
+
+## Batch 35 — shared money summary card (drawn 2026-10-21, waiting for Jafar's pick)
+
+Jafar 2026-10-21: one shared rail card for New job, New quote and New invoice showing revenue, cost and profit
+with a bar, like Jobber (Jobber: Total price / Total cost under the lines on New job; Revenue vs Cost bar card
+on the job page). Today: New job has the green Job total card, New quote and New invoice the plain Overview card;
+neither shows cost or profit although every line carries a unit cost.
+Board `UN1hM` "Concept · Batch 35 · Money summary card · A vs B": A `VttVX` green Job total card with a profit
+panel (like Job details `tNdkX`); B `Pqiry` new concept, deeper forest green (new Pencil variable
+`color-feature-deep` #012a17, not yet in code) with a margin ring and two tiles. States: priced job, quote and
+invoice, nothing priced, loss, no cost rights; dark mode `f4UDf`. Jafar asked for his own look, not classic.pen's colours.
