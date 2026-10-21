@@ -106,4 +106,9 @@ New Pencil variables (not yet in code): `color-money-items` #22d3ee, `color-mone
 `color-money-labor` #a78bfa, `color-money-profit` #4ade80, `color-money-loss` #f43f5e, `color-money-warning`
 #facc15 (below-target pill only). Bar order items · expenses · labour · profit so neighbours stay apart. Checked
 with the dataviz validator on #073848: all pairs ≥3:1 contrast, colour-blind separation pass (the lightness-band
-check is tuned for near-black surfaces and is deliberately exceeded so marks stand out). Waiting for Jafar's yes.
+check is tuned for near-black surfaces and is deliberately exceeded so marks stand out).
+**Approved 2026-10-21:** Jafar said yes to B with the proposed colours. Option A and the colour board `phm5q`
+were deleted; board `vIjf0` is now "Concept · Batch 35 · Shared money summary card · Approved B · 2026-10-21"
+(colour key, eight B cards, dark mode). Look recorded in `colors.md` (Money Card Colours) and `cards.md` (Money
+summary card). Waiting to be built: one shared rail card on New job/quote/invoice and the job, quote and invoice
+pages, replacing the Job total, Overview and Job money cards; add the `--color-money--*` tokens to `_variables.scss`.

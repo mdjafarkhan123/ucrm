@@ -46,6 +46,21 @@ Approved 2026-10-20, Pencil board "Batch 24 · Discount, tax and totals".
   `--color-success--onSurface`; a 6 high margin bar (`--color-border` track, `--color-success` fill).
 - No access: a 16 `eye-off` in `--color-informative` before the quiet sentence.
 
+## Money summary card
+
+The one card at the top of the rail on job, quote and invoice pages; the frame stays the same and the content
+follows the record (colours in `colors.md` → Money Card Colours).
+
+- Gradient `--color-money--start` → `--end`, 1px `--color-money--border`, radius 16, padding 24, gap 20, 360 wide.
+- Header: a 12/600 uppercase eyebrow (0.8 tracking, white 72%) and a right chip (`--color-feature--subtle`,
+  1px `--color-feature--border`, round, 14 icon + 13/600 white): "Team only" with a lock, or the invoice due date.
+- Figure: the big number 32/700 (-0.6) white with a pill beside it (margin, below target, losing money, or the
+  invoice's share of the job); a 13 white 72% line under it ("On $8,000 of work, before tax").
+- Bar: 10 tall, 3 apart, round ends; then legend rows (8 square dot radius 2, label 14 white, share 14 white 72%,
+  amount 14/600 white, profit and loss amounts in their colour).
+- Foot: a 1px `--color-feature--border` line, then rows (14 icon white 72%, label 14 white 72%, value 14/600).
+- Without cost rights: only the total and a quiet eye-off line; no bar, no profit.
+
 ## Anatomy (stat card)
 
 1. Header: 32 tile + title 14/600 + quiet open icon (arrow-up-right) at the right.

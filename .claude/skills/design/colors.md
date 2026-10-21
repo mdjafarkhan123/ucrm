@@ -63,6 +63,25 @@ client and invoice pages). The same in light and dark mode.
 
 A profit bar on the card shows each cost in its colour and the profit in white, 10px tall, 3px between parts.
 
+## Money Card Colours
+
+The shared money summary card on job, quote and invoice pages (Pencil: board "Concept · Batch 35 · Shared money
+summary card · Approved B", approved 2026-10-21). The same in light and dark mode. Each colour means one thing.
+
+| Token | Value | Use |
+|---|---|---|
+| `--color-money--start` / `--end` | `#032b3a` → `#0b4559` | Card gradient (ink blue) |
+| `--color-money--border` | white 18% | Card edge, so it stays visible on the dark page |
+| `--color-money--items` | cyan `#22d3ee` | Item cost on the bar (materials and products on the lines) |
+| `--color-money--expenses` | orange `#fb923c` | Expenses (money paid out) |
+| `--color-money--labor` | violet `#a78bfa` | Labour (crew time) |
+| `--color-money--profit` | green `#4ade80` | Profit: bar, profit amounts, margin pill fill |
+| `--color-money--loss` | red `#f43f5e` | Loss: bar, loss figure, "Losing money" pill fill |
+| `--color-money--warning` | yellow `#facc15` | "Below target" pill only, never a bar part |
+
+Bar order: item cost · expenses · labour · profit (or loss). Pills on profit, loss and warning fills use
+`--color-money--start` text. Other figures and labels stay white or white 72%.
+
 ## File Families
 
 Only on a document's type tab (`files.md`), approved 2026-10-19. Photos show as photos.

@@ -14,6 +14,7 @@ branch, proof and integration status:
 1. Shared parts: `parts/c5-shared-parts.md`. Batches 1–23 merged; 24, 26–30 and 33 (number cards on list pages) approved for building (25 superseded by the shared create form). Proof is linked
    there. Next drawing: next empty row in `stages/list-1b-parts.md`; List 1a fully drawn (DataTable skipped).
    Older drawings/code need the 12px minimum-text sweep.
+   Batch 35 shared money summary card approved B 2026-10-21 (`vIjf0`), waiting to be built: `parts/new-request-top-form.md`.
 2. Schedule, event completion and three Jobs pop-ups merged 2026-10-19. Proof:
    `docs/evidence/2026-10-19-schedule/README.md`. App fills available width; 1440 is the Pencil reference.
    Migration already applied.
