@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+	completeGroupRules,
+	incompleteGroupConditions,
 	marketingExclusionReasonLabels,
 	marketingExclusionReasons,
 	marketingGroupRulesSchema
@@ -64,5 +66,35 @@ describe('marketing customer group rules', () => {
 		for (const reason of marketingExclusionReasons) {
 			expect(marketingExclusionReasonLabels[reason]).toBeTruthy();
 		}
+	});
+
+	it('names the list conditions that have nothing picked yet', () => {
+		expect(
+			incompleteGroupConditions({
+				version: '1',
+				lifecycle: ['customer'],
+				cities: [],
+				services: [],
+				upcoming_work: true
+			})
+		).toEqual(['cities', 'services']);
+		expect(incompleteGroupConditions({ version: '1', upcoming_work: false })).toEqual([]);
+	});
+
+	it('counts without the unfinished conditions, and the result is a valid rule set', () => {
+		const rules = completeGroupRules({
+			version: '1',
+			lifecycle: ['customer'],
+			cities: [],
+			exclude_client_ids: [],
+			upcoming_work: true
+		});
+		expect(rules).toEqual({ version: '1', lifecycle: ['customer'], upcoming_work: true });
+		expect(marketingGroupRulesSchema.safeParse(rules).success).toBe(true);
+	});
+
+	it('leaves finished rules as they are', () => {
+		const rules = { version: '1' as const, cities: ['Austin'] };
+		expect(completeGroupRules(rules)).toBe(rules);
 	});
 });

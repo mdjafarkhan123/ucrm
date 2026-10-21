@@ -18,6 +18,7 @@
 	} from '$lib/marketing/api';
 	import {
 		emptyMarketingGroupRules,
+		incompleteGroupConditions,
 		type MarketingCustomerGroup,
 		type MarketingGroupRules
 	} from '$lib/marketing/customer-groups';
@@ -72,13 +73,20 @@
 	let nameError = $state('');
 	let formError = $state('');
 	let saving = $state(false);
+	let showIncomplete = $state(false);
 
 	async function save() {
 		nameError = '';
 		formError = '';
 		const trimmedName = name.trim();
-		if (!trimmedName) {
-			nameError = 'Give this group a name.';
+		const incomplete = incompleteGroupConditions(rules);
+		showIncomplete = incomplete.length > 0;
+		if (!trimmedName) nameError = 'Give this group a name.';
+		if (!trimmedName || incomplete.length > 0) {
+			if (trimmedName)
+				document
+					.getElementById(`rule-${incomplete[0]}-incomplete`)
+					?.scrollIntoView({ block: 'center', behavior: 'smooth' });
 			return;
 		}
 
@@ -139,7 +147,7 @@
 				/>
 			</div>
 
-			<CustomerGroupRuleBuilder bind:rules {labels} />
+			<CustomerGroupRuleBuilder bind:rules {labels} {showIncomplete} />
 		</div>
 
 		<div class="group-dialog__recipients">

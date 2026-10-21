@@ -11,6 +11,7 @@
 		type RecipientPreviewPage
 	} from '$lib/marketing/api';
 	import {
+		completeGroupRules,
 		marketingExclusionReasonLabels,
 		marketingGroupPreviewKey,
 		type MarketingExclusionReason,
@@ -40,7 +41,8 @@
 	let debouncedRules = $state(rules);
 	$effect(() => {
 		const snapshot = JSON.parse(JSON.stringify(rules)) as MarketingGroupRules;
-		const handle = setTimeout(() => (debouncedRules = snapshot), 400);
+		// A condition with nothing picked yet is left out, so the count keeps working while it's being filled.
+		const handle = setTimeout(() => (debouncedRules = completeGroupRules(snapshot)), 400);
 		return () => clearTimeout(handle);
 	});
 
