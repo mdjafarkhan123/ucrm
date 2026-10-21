@@ -5,7 +5,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | Piece | Inside it | Pencil | Built |
 | --- | --- | --- | --- |
 | `marketing/CampaignBlockEditor` |  | ⬜ | ⬜ |
-| `marketing/CampaignCustomersStep` | loading, empty | ✅ Batch 53 `RPlkr` B 2026-10-21 | ⬜ |
+| `marketing/CampaignCustomersStep` | loading, empty | ✅ Batch 53 `RPlkr` B 2026-10-21 | ✅ built 2026-10-21 |
 | `marketing/CampaignDeliveryStep` | loading | ⬜ | ⬜ |
 | `marketing/CampaignEmailStep` | menus ×1 | ⬜ | ⬜ |
 | `marketing/CampaignGoalStep` |  | ✅ Batch 51 `t0L1xo` A 2026-10-21 | ✅ built 2026-10-21 |
