@@ -2986,12 +2986,18 @@
 	.pricing-block__client-view {
 		padding: var(--space-small) var(--space-medium);
 		border-bottom: var(--border-base) solid var(--color-border);
+
+		// The footer above already draws the line, so the client view's own top line would double it.
+		:global(.quote-client-view) {
+			border-top: 0;
+		}
 	}
 	// A block that is not flush (New quote, request, invoice) already pads its body, so while it is empty the
-	// footer and the client-view row drop their own side padding and line up with the two choices above them.
+	// footer, the client-view row and the totals drop their own side padding and line up with the choices.
 	:global(.section-block--concept:not(.section-block--flush)) .pricing-edit--concept:has(.pricing-empty) {
 		.pricing-block__footer,
-		.pricing-block__client-view {
+		.pricing-block__client-view,
+		.pricing-block__concept-totals {
 			padding-inline: 0;
 		}
 	}
