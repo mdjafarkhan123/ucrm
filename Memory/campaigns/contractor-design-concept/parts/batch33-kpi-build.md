@@ -1,6 +1,6 @@
 # Batch 33 — shared number cards
 
-**Stage:** Built and browser-verified; waiting to merge into the live app.
+**Stage:** Built and browser-verified; final live integration in progress.
 **Approval:** B, `concept.pen` board `fzPaM`, Jafar 2026-10-21.
 **Branch:** `codex/concept-kpi-cards`.
 **Workspace:** `/home/jafar/.codex/worktrees/concept-kpi-cards/Ucrm`; claim `8aca80f71684`.
@@ -19,6 +19,9 @@ were untouched. The design modules now describe the approved number-card appeara
 900; filter/keyboard proof and temporary fixture states. Compiler/MCP clean for shared cards; focused types
 0 errors/warnings; 22 existing tests passed. Further long checks deferred per Jafar's instruction.
 
-**Next:** merge and push when main is available. Main is still reserved by Claude's design session
-(`2acb18fc222c`) and has unsaved Pencil/guide changes. Preserve those changes; coordinate the integration
-under `docs/agent-concurrency.md`. Update the approved-batch row and NOW once combined; release afterward.
+**Integration:** Jafar explicitly authorised merging while preserving Claude Code's unsaved design files
+on 2026-10-21. Integration branch `codex/kpi-integration`, claim `b4549b3c7e32`, combines the current main
+and the built branch. The new approved Money summary card guidance from Claude is retained.
+
+**Next:** advance main, confirm the live Jobs page, save that proof and push main, then release both KPI
+claims and archive the temporary worktrees. Keep Claude's claim and working files untouched.

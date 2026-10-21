@@ -44,7 +44,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/PencilButton` |  | ✅ Batch 7 `eJ0QQ` | ✅ Merged 2026-10-20 |
 | `forms/MoneyInput` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
 | `ui/FilterChip` |  | ✅ Inputs and chips `Fma1f` | ✅ 2026-10-19 |
-| `data-display/KpiCard` |  | ✅ Batch 7 `eJ0QQ` | ✅ Merged 2026-10-20 |
+| `data-display/KpiCard` |  | ✅ Batch 7 `eJ0QQ`; Batch 33 B `fzPaM` | ✅ Batch 33 merged 2026-10-21 |
 | `layout/SidePanel` |  | ✅ Pop-ups board `v2Y89` | ✅ 2026-10-19 |
 | `ui/DateTimePicker` |  | ✅ Pickers v2 `uSXlT` | ✅ |
 | `ui/CountryPicker` |  | ✅ Pickers v2 `uSXlT` | ✅ |
