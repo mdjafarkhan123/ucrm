@@ -411,7 +411,7 @@ svg { display: block; }
 	border-top: 1px solid var(--wc-color-border);
 	background: var(--wc-color-surface-subtle);
 	text-align: center;
-	font-size: 11px;
+	font-size: 12px;
 	line-height: var(--wc-line-height-base);
 	color: var(--wc-color-icon-secondary);
 }
@@ -697,7 +697,7 @@ svg { display: block; }
 	padding: 2px 10px;
 	border-radius: 100px;
 	background: var(--wc-color-surface-subtle);
-	font-size: 11px;
+	font-size: 12px;
 	font-weight: 600;
 	line-height: 1.6;
 	color: var(--wc-color-icon-secondary);
@@ -745,7 +745,7 @@ svg { display: block; }
 .wc-msg--sending .wc-msg__bubble { opacity: 0.65; }
 
 .wc-msg__meta {
-	font-size: 11px;
+	font-size: 12px;
 	line-height: 1.45;
 	color: var(--wc-color-icon-secondary);
 }
@@ -756,7 +756,7 @@ svg { display: block; }
 	padding: 0;
 	border: none;
 	background: none;
-	font-size: 11px;
+	font-size: 12px;
 	line-height: 1.45;
 	color: var(--wc-color-critical);
 	text-decoration: underline;
