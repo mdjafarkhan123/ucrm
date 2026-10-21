@@ -153,6 +153,8 @@
 		position: relative;
 		width: 100%;
 		color: var(--color-heading);
+		// The trigger inherits its font, so the box's value is 14 like every other field, not the page's 16.
+		font-size: var(--typography--fontSize-base);
 
 		.select__label {
 			display: block;
