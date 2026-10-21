@@ -514,11 +514,6 @@
 			font-size: var(--typography--fontSize-base);
 		}
 
-		// app.scss pushes every placeholder 24 down; the drawing has the Details hint at the top of its box.
-		:global(textarea::placeholder) {
-			padding-top: 0;
-		}
-
 		// Amount received: the 56 high money box, its sign in a 48 block, the amount large at the right.
 		&__amount {
 			:global(.input__control) {

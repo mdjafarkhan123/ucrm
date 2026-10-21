@@ -168,10 +168,6 @@ a:hover {
 	border-radius: var(--radius-base);
 }
 
-*::placeholder {
-	padding-top: 24px;
-}
-
 // =============================================================================
 // REQUIRED MARKER — the asterisk after a required field's label. Lives here so
 // every label renders it identically; field components add it from `required`.
