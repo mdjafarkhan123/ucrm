@@ -26,7 +26,7 @@ drafts tidied (`docs/pencil-workflow.md` step 6), committed and pushed.
    SectionBlock (coloured top with the two switches, then the fields); front icons on email, phone, billing
    email, company; exact duplicate gives the email box the error edge.
 
-**Not now:** `layout/Topbar` is on hold until Jafar decides (white panel or page colour).
+**Top bar:** unchanged. Jafar chose to keep it on the page colour (2026-10-21); the white-panel try was undone.
 
 ## Proof
 

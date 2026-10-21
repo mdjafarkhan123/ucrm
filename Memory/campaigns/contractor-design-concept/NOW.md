@@ -11,7 +11,7 @@
    `parts/c5-shared-parts.md`. Create pages: `parts/new-request-top-form.md`.
 2. **Draw:** next empty row in `stages/list-1b-parts.md` (`clients/ClientMergeDialog`). Gaps: Field-worker Home
    (`list-2a-daily.md`), Select work pop-up and payment-stage New invoice (`list-2b-daily.md`); 12px text sweep.
-3. **Jafar decides:** top bar white panel or page colour (on hold, don't build); checklist order and pop-up marks
+3. **Jafar decides:** checklist order and pop-up marks
    (`stages/list-index.md`, `parts/c5a-redesign-checklist.md`).
 
 **Pencil:** `concept.pen`; every switch is the `SnDlF` component. Pilot leftovers: `parts/c7-build-pilots.md`.

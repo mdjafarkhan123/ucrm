@@ -72,6 +72,6 @@ Key, tick rule and coverage command: `list-index.md`.
 | `layout/RouteSkeleton` | loading | ⬜ | ⬜ |
 | `layout/SharedAppShell` | permission-limited, owner view | ⬜ | ⬜ |
 | `layout/Sidebar` |  | ✅ | ✅ |
-| `layout/Topbar` | menus ×9 · owner view | ⏸ White panel drawn 2026-10-21; Jafar deciding keep or put back. Don't build until he decides | ⬜ |
+| `layout/Topbar` | menus ×9 · owner view | ✅ (stays on the page colour, Jafar 2026-10-21) | ⬜ |
 | `ui/PersonPickChip` |  | ✅ | ✅ |
 | `work/PickedClient` |  | ✅ | ✅ |

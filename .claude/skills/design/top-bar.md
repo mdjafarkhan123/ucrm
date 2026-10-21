@@ -4,10 +4,8 @@
 
 ## Core Specs
 
-- **On hold (2026-10-21):** Jafar is deciding between this white panel and the earlier page-colour bar with a
-  white search box. Don't build the top bar until he decides.
-- Height 64; padding 0 24; gap 12; a white panel like the sidebar: `--color-surface`, 1px `--color-border`,
-  radius 16 (Jafar, 2026-10-21: nothing blends into the page).
-- Left: search field 420 wide, sunken `--color-surface--background`, with a white ⌘K hint ("Search clients, jobs, invoices…").
-- Right: help and alerts icon buttons (40, the grey icon button); alerts shows an 8px `--color-critical` dot when unread;
+- Height 64; padding 0 24; gap 12; sits on the page colour (Jafar, 2026-10-21: it is the page's top strip, not
+  a panel; the white search box and the buttons are what stand out).
+- Left: search field 420 wide, white `--color-surface`, with a ⌘K hint on `--color-surface--background` ("Search clients, jobs, invoices…").
+- Right: help and alerts icon buttons (40, no fill, no border); alerts shows an 8px `--color-critical` dot when unread;
   green "New" main button; 36 avatar (`--color-heading` background, white initials 13/700).
