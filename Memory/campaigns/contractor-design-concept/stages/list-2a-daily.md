@@ -31,7 +31,8 @@ Key, tick rule and coverage command: `list-index.md`.
 | ↳ `jobs/EditAllVisitsDialog` | ◆ pop-up | ⬜ | ⬜ |
 | ↳ `jobs/VisitInvoicePromptDialog` | ◆ pop-up | ⬜ | ⬜ |
 | ↳ `jobs/VisitRecordsDialog` | ◆ pop-up · loading, empty, permission-limited | ⬜ | ⬜ |
-| ↳ "Billing setup" pop-up in JobBillingCard | | ⬜ | ⬜ |
-| ↳ "Add an invoice reminder" pop-up in JobRemindersCard | | ⬜ | ⬜ |
+| ↳ "Billing setup" pop-up in JobBillingCard | | ✅ Batch 50 `aJGHA` B 2026-10-21 | ✅ Built 2026-10-21 (checked live light/dark, `docs/evidence/2026-10-21-batch50/`) |
+| ↳ "Add an invoice reminder" pop-up in JobRemindersCard | | ✅ Batch 50 `aJGHA` A 2026-10-21 | ✅ Built 2026-10-21 (checked live light/dark, `docs/evidence/2026-10-21-batch50/`) |
+| ↳ "Add / Edit payment schedule" pop-up in `jobs/JobPaymentScheduleDialog` | ◆ pop-up | ✅ Batch 50 `aJGHA` B 2026-10-21 | ✅ Built 2026-10-21 (checked live light/dark; invoiced-stage look checked by code only, `docs/evidence/2026-10-21-batch50/`) |
 | `(app)/jobs/new` | `jobs/JobForm`, `jobs/JobVisitsBlock` · loading, empty | ✅ | ✅ |
 | `(app)/invoices` | loading, empty | 🔁 | 🟡 |

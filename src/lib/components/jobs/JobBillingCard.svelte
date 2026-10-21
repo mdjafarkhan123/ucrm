@@ -8,6 +8,7 @@
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import Banner from '$lib/components/ui/Banner.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import JobPaymentScheduleDialog from '$lib/components/jobs/JobPaymentScheduleDialog.svelte';
@@ -17,6 +18,10 @@
 	import type { JobType } from '$lib/jobs/statuses';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 	import cardIcon from '@tabler/icons/outline/credit-card.svg?raw';
+	import coinIcon from '@tabler/icons/outline/coin.svg?raw';
+	import bellIcon from '@tabler/icons/outline/bell.svg?raw';
+	import listNumbersIcon from '@tabler/icons/outline/list-numbers.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 
 	// The job's billing setup, which the contract insists is *three* separate decisions and never one
 	// selector: how the work is priced, when we invoice, and how the money is collected. This card owns the
@@ -39,6 +44,7 @@
 		canSeePrice = true,
 		canInvoice = false,
 		clientId = null,
+		jobLine = '',
 		extra,
 		onSaved
 	}: {
@@ -61,6 +67,8 @@
 		canInvoice?: boolean;
 		/** The job's client, which the invoice composer needs. Null on a job that somehow has none. */
 		clientId?: string | null;
+		/** "Job #1042 · Kitchen cabinet refit", the quiet line under each pop-up's title. */
+		jobLine?: string;
 		/** More to draw inside the card, after the payment schedule (the job's invoice reminders). */
 		extra?: Snippet;
 		onSaved: () => Promise<void> | void;
@@ -163,6 +171,18 @@
 	let error = $state('');
 
 	const draftSummary = $derived(summaryFor(draftBasis));
+	// The decisions panel reads each saved choice back in a sentence, so it moves with the boxes. A job that
+	// is never reminded has nothing to say about "a reminder for your team".
+	const priceDecision = $derived(
+		canSeePrice && totalMinor !== null
+			? `${BASIS_LABEL[draftBasis] ?? draftBasis}: ${money.format(totalMinor / 100)}.`
+			: `${BASIS_LABEL[draftBasis] ?? draftBasis}.`
+	);
+	const reminderDecision = $derived(
+		draftTiming === 'manual'
+			? `${TIMING_LABEL.manual}. Nothing goes to the client.`
+			: `${TIMING_LABEL[draftTiming] ?? draftTiming}. A reminder for your team, nothing goes to the client.`
+	);
 	const changed = $derived(draftBasis !== priceBasis || draftTiming !== billingTiming);
 
 	function openDialog() {
@@ -319,50 +339,109 @@
 		totalMinor={scheduleTotalMinor}
 		{currencyCode}
 		{locale}
+		{jobLine}
 		onClose={() => (scheduleOpen = false)}
 		{onSaved}
 	/>
 {/if}
 
 {#if open}
-	<Dialog {open} title="Billing setup" size="small" onClose={close}>
+	<!-- The inline SVG strings are trusted build-time Tabler icon imports. -->
+	<!-- eslint-disable svelte/no-at-html-tags -->
+	<Dialog
+		{open}
+		title="Billing setup"
+		subtitle={jobLine || undefined}
+		size="medium"
+		icon={receiptIcon}
+		iconTone="invoice"
+		flush
+		onClose={close}
+	>
 		<div class="job-billing-dialog">
-			{#if error}<p class="job-billing-dialog__error" role="alert">{error}</p>{/if}
+			<div class="job-billing-dialog__form">
+				{#if error}<Banner type="error">{error}</Banner>{/if}
 
-			<Select
-				id="job-billing-basis"
-				label="How is this work priced?"
-				options={basisOptions}
-				disabled={saving || basisOptions.length === 1}
-				bind:value={draftBasis}
-			/>
-			{#if draftSummary}
-				<p class="job-billing-dialog__summary">{draftSummary}</p>
-			{/if}
+				<Select
+					id="job-billing-basis"
+					label="How is this work priced?"
+					options={basisOptions}
+					disabled={saving || basisOptions.length === 1}
+					locked={basisOptions.length === 1}
+					bind:value={draftBasis}
+				/>
+				{#if draftSummary}
+					<p class="job-billing-dialog__summary">
+						<IconTile icon={coinIcon} tone="invoice" size={24} white />
+						{draftSummary}
+					</p>
+				{/if}
 
-			<Select
-				id="job-billing-timing"
-				label="When should we be reminded to invoice?"
-				options={timingOptions}
-				disabled={saving}
-				bind:value={draftTiming}
-			/>
+				<Select
+					id="job-billing-timing"
+					label="When should we be reminded to invoice?"
+					options={timingOptions}
+					disabled={saving}
+					bind:value={draftTiming}
+				/>
+			</div>
 
-			<p class="job-billing-dialog__note">
-				Collecting the money is a separate decision and lives with Payments. Nothing here charges a
-				client.
-			</p>
+			<section class="job-billing-dialog__panel" aria-labelledby="job-billing-decisions">
+				<header class="job-billing-dialog__panel-head">
+					<IconTile icon={listNumbersIcon} tone="invoice" size={32} white />
+					<h3 id="job-billing-decisions">Three decisions</h3>
+				</header>
+				<ol class="job-billing-dialog__decisions">
+					<li class="job-billing-dialog__decision">
+						<p class="job-billing-dialog__decision-head">
+							<span class="job-billing-dialog__decision-icon" aria-hidden="true"
+								>{@html coinIcon}</span
+							>
+							<span class="job-billing-dialog__decision-title">Price</span>
+							<span class="job-billing-dialog__decision-number">1</span>
+						</p>
+						<p class="job-billing-dialog__decision-text">{priceDecision}</p>
+					</li>
+					<li class="job-billing-dialog__decision">
+						<p class="job-billing-dialog__decision-head">
+							<span class="job-billing-dialog__decision-icon" aria-hidden="true"
+								>{@html bellIcon}</span
+							>
+							<span class="job-billing-dialog__decision-title">Invoice reminder</span>
+							<span class="job-billing-dialog__decision-number">2</span>
+						</p>
+						<p class="job-billing-dialog__decision-text">{reminderDecision}</p>
+					</li>
+					<li class="job-billing-dialog__decision job-billing-dialog__decision--elsewhere">
+						<p class="job-billing-dialog__decision-head">
+							<span
+								class="job-billing-dialog__decision-icon job-billing-dialog__decision-icon--quiet"
+								aria-hidden="true">{@html cardIcon}</span
+							>
+							<span class="job-billing-dialog__decision-title">Collect the money</span>
+							<Badge size="small" status="inactive">Not set here</Badge>
+						</p>
+						<p class="job-billing-dialog__decision-text">
+							Lives with Payments. Nothing here charges a client.
+						</p>
+					</li>
+				</ol>
+			</section>
+		</div>
 
+		{#snippet footer()}
 			<div class="job-billing-dialog__actions">
 				<Button variant="secondary" variation="subtle" disabled={saving} onclick={close}>
 					Cancel
 				</Button>
 				<Button variant="primary" loading={saving} disabled={!changed} onclick={save}>
+					{@html checkIcon}
 					Save billing
 				</Button>
 			</div>
-		</div>
+		{/snippet}
 	</Dialog>
+	<!-- eslint-enable svelte/no-at-html-tags -->
 {/if}
 
 <style lang="scss">
@@ -523,32 +602,126 @@
 		}
 	}
 
+	// Billing setup pop-up (Batch 50 B): the two boxes at the left, the three decisions the card keeps apart at
+	// the right. Both sides run to the pop-up's edges, so the body is flush and each side pads itself.
 	.job-billing-dialog {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-base);
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 330px;
 
-		&__error {
-			margin: 0;
-			color: var(--color-destructive);
+		&__form {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-base);
+			min-width: 0;
+			padding: var(--space-medium);
 		}
 
+		// The saved choice said back in money, so it is checkable before saving.
 		&__summary {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
 			margin: 0;
-			color: var(--color-text--secondary);
+			padding: 10px var(--space-slim);
+			border: var(--border-base) solid var(--color-invoice--surface-edge);
+			border-radius: 12px;
+			background: var(--color-invoice--surface);
+			color: var(--color-invoice--onSurface);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
 		}
 
-		&__note {
+		&__panel {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-slim);
+			padding: var(--space-medium);
+			border-left: var(--border-base) solid var(--color-invoice--surface-edge);
+			background: var(--color-invoice--surface);
+		}
+
+		&__panel-head {
+			display: flex;
+			align-items: center;
+			gap: var(--space-slim);
+
+			h3 {
+				margin: 0;
+				color: var(--color-heading);
+				font-size: 16px;
+				font-weight: 600;
+			}
+		}
+
+		&__decisions {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-slim);
 			margin: 0;
-			color: var(--color-text--secondary);
+			padding: 0;
+			list-style: none;
+		}
+
+		&__decision {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			padding: var(--space-slim) var(--space-slim) var(--space-slim) 14px;
+			border: var(--border-base) solid var(--color-invoice--surface-edge);
+			border-radius: 12px;
+			background: var(--color-surface);
+
+			// Not decided here: the card stays but steps back.
+			&--elsewhere {
+				opacity: 0.8;
+			}
+		}
+
+		&__decision-head {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
+			margin: 0;
+		}
+
+		&__decision-icon {
+			display: inline-flex;
+			color: var(--color-invoice);
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+
+			&--quiet {
+				color: var(--color-icon--secondary);
+			}
+		}
+
+		&__decision-title {
+			flex: 1 1 auto;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-base);
+			font-weight: 600;
+		}
+
+		&__decision-number {
+			color: var(--color-invoice);
 			font-size: var(--typography--fontSize-small);
+			font-weight: 700;
+		}
+
+		&__decision-text {
+			margin: 0;
+			color: var(--color-text);
+			font-size: 13px;
+			line-height: 1.45;
 		}
 
 		&__actions {
 			display: flex;
-			justify-content: flex-end;
 			gap: var(--space-small);
-			margin-top: var(--space-small);
+			margin-left: auto;
 		}
 	}
 </style>
