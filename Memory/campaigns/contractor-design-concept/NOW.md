@@ -12,6 +12,8 @@
    `parts/c5-shared-parts.md`. Create pages: `parts/new-request-top-form.md`.
    White buttons and boxes app-wide and Batch 46 assessment panel A built and merged 2026-10-21 (checked live
    1440 light/dark: New request, saved request, no-day error, a real Save visit, Schedule, Invoices).
+   **Waiting to merge:** panel closes after Save/Remove visit (Jafar 2026-10-21), branch
+   `claude/assessment-close-on-save`, claim `8ec36c0e3efc`; proven live. Merge when main has no writer.
 2. **Draw:** next empty row in `stages/list-1b-parts.md` (`layout/MobileNav` is phone-only: check `list-1d-left-out.md`
    first, else `layout/RouteSkeleton`). Gaps: Field-worker Home
    (`list-2a-daily.md`), Select work pop-up and payment-stage New invoice (`list-2b-daily.md`); 12px text sweep.
