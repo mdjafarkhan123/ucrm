@@ -26,9 +26,8 @@
 	import { averagePaidFact, invoiceRowNote, overdueReminderFact } from '$lib/invoices/list-facts';
 	import hourglassIcon from '@tabler/icons/outline/hourglass.svg?raw';
 	import boltIcon from '@tabler/icons/outline/bolt.svg?raw';
-	import MoneyFeatureCard, {
-		type MoneyBreakdownPart
-	} from '$lib/components/work/MoneyFeatureCard.svelte';
+	import KpiCard from '$lib/components/data-display/KpiCard.svelte';
+	import type { MoneyBreakdownPart } from '$lib/components/work/MoneyFeatureCard.svelte';
 	import {
 		fetchInvoiceOverview,
 		fetchInvoices,
@@ -396,6 +395,8 @@
 
 		<div class="invoices-overview">
 			<AttentionCard
+				icon={receiptIcon}
+				tone="invoice"
 				title="Getting paid"
 				description="Where every bill stands. Pick one to see only those invoices."
 				tiles={attentionTiles}
@@ -403,15 +404,19 @@
 				onSelect={(key) => (status = key as InvoiceDerivedStatus | '')}
 				facts={gettingPaidFacts}
 				loading={countsQuery.isPending}
-			/>
-			<MoneyFeatureCard
-				icon={receiptIcon}
-				eyebrow={moneyEyebrow}
-				value={formatWhole(outstandingMinor)}
-				note={moneyNote}
-				breakdown={moneyBreakdown}
-				loading={countsQuery.isPending}
-			/>
+			>
+				{#snippet feature()}
+					<KpiCard
+						tone="feature"
+						icon={receiptIcon}
+						label={moneyEyebrow}
+						value={formatWhole(outstandingMinor)}
+						note={moneyNote}
+						rows={moneyBreakdown}
+						loading={countsQuery.isPending}
+					/>
+				{/snippet}
+			</AttentionCard>
 		</div>
 
 		<RecordListCard
@@ -577,9 +582,6 @@
 
 	/* Getting paid takes the room it needs; the money card keeps a steady width beside it. */
 	.invoices-overview {
-		display: grid;
-		gap: var(--space-large);
-		grid-template-columns: minmax(0, 1fr) 336px;
 		margin-bottom: var(--space-large);
 	}
 
@@ -681,8 +683,5 @@
 	}
 
 	@media (max-width: 1199px) {
-		.invoices-overview {
-			grid-template-columns: minmax(0, 1fr);
-		}
 	}
 </style>

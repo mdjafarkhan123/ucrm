@@ -28,7 +28,7 @@
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
 	import AttentionCard, { type AttentionTile } from '$lib/components/work/AttentionCard.svelte';
-	import MoneyFeatureCard from '$lib/components/work/MoneyFeatureCard.svelte';
+	import KpiCard from '$lib/components/data-display/KpiCard.svelte';
 	import { newClientsChange, periodLabel } from '$lib/clients/overview';
 	import {
 		fetchClients,
@@ -375,6 +375,7 @@
 							items={moreClientActions}
 						/>
 						<Button variant="primary" href={resolve('/clients/new')}>
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 							{@html plusIcon}
 							New client
 						</Button>
@@ -392,6 +393,8 @@
 		{:else}
 			<div class="clients-overview">
 				<AttentionCard
+					icon={usersPageIcon}
+					tone="client"
 					title="Client book"
 					description="Leads and customers you work with. Pick one to see only those clients."
 					tiles={bookTiles}
@@ -429,25 +432,28 @@
 							</ul>
 						{/if}
 					{/snippet}
+					{#snippet feature()}
+						<KpiCard
+							tone="feature"
+							icon={userPlusIcon}
+							label="New clients · past 30 days"
+							value={overview ? String(overview.new_clients.current) : '—'}
+							change={newClientsTrend}
+							note={newClientsNote}
+							rows={[
+								{
+									label: 'New leads · past 30 days',
+									value: overview ? String(overview.new_leads_30_days) : '—'
+								},
+								{
+									label: 'New clients this year',
+									value: overview ? String(overview.new_clients_this_year) : '—'
+								}
+							]}
+							loading={overviewQuery.isPending}
+						/>
+					{/snippet}
 				</AttentionCard>
-				<MoneyFeatureCard
-					icon={userPlusIcon}
-					eyebrow="New clients · past 30 days"
-					value={overview ? String(overview.new_clients.current) : '—'}
-					change={newClientsTrend}
-					note={newClientsNote}
-					rows={[
-						{
-							label: 'New leads · past 30 days',
-							value: overview ? String(overview.new_leads_30_days) : '—'
-						},
-						{
-							label: 'New clients this year',
-							value: overview ? String(overview.new_clients_this_year) : '—'
-						}
-					]}
-					loading={overviewQuery.isPending}
-				/>
 			</div>
 
 			{#if selectedIds.size > 0}
@@ -679,9 +685,6 @@
 
 	/* The Client book takes the room it needs; the New clients card keeps a steady width beside it. */
 	.clients-overview {
-		display: grid;
-		gap: var(--space-large);
-		grid-template-columns: minmax(0, 1fr) 336px;
 		margin-bottom: var(--space-large);
 	}
 
@@ -747,9 +750,6 @@
 	}
 
 	@media (max-width: 1199px) {
-		.clients-overview {
-			grid-template-columns: minmax(0, 1fr);
-		}
 	}
 
 	.clients-card__search {

@@ -24,7 +24,7 @@
 		type AttentionFact,
 		type AttentionTile
 	} from '$lib/components/work/AttentionCard.svelte';
-	import MoneyFeatureCard from '$lib/components/work/MoneyFeatureCard.svelte';
+	import KpiCard from '$lib/components/data-display/KpiCard.svelte';
 	import { conversionChange, conversionShare } from '$lib/requests/metrics';
 	import { waitingLabel } from '$lib/requests/waiting';
 	import {
@@ -356,6 +356,8 @@
 
 		<div class="requests-overview">
 			<AttentionCard
+				icon={inboxPageIcon}
+				tone="request"
 				title="Waiting on you"
 				description="Requests that need a reply or a visit. Pick one to see only those requests."
 				tiles={attentionTiles}
@@ -363,26 +365,29 @@
 				onSelect={(key) => (status = key as DisplayRequestStatus | '')}
 				facts={attentionFacts}
 				loading={countsQuery.isPending}
-			/>
-			<MoneyFeatureCard
-				icon={trendingUpIcon}
-				eyebrow="Conversion · past 30 days"
-				value={conversionValue}
-				change={conversionPill}
-				note={conversionNote}
-				progress={conversionShareValue}
-				rows={[
-					{
-						label: 'New requests · past 30 days',
-						value: lastWindow ? String(lastWindow.new) : '—'
-					},
-					{
-						label: 'Turned into a quote or job',
-						value: lastWindow ? String(lastWindow.converted) : '—'
-					}
-				]}
-				loading={countsQuery.isPending}
-			/>
+			>
+				{#snippet feature()}
+					<KpiCard
+						tone="feature"
+						icon={trendingUpIcon}
+						label="Conversion · past 30 days"
+						value={conversionValue}
+						change={conversionPill}
+						note={conversionNote}
+						rows={[
+							{
+								label: 'New requests · past 30 days',
+								value: lastWindow ? String(lastWindow.new) : '—'
+							},
+							{
+								label: 'Turned into a quote or job',
+								value: lastWindow ? String(lastWindow.converted) : '—'
+							}
+						]}
+						loading={countsQuery.isPending}
+					/>
+				{/snippet}
+			</AttentionCard>
 		</div>
 
 		{#if selectedIds.size > 0}
@@ -587,11 +592,7 @@
 		}
 	}
 
-	/* Waiting on you takes the room it needs; the conversion card keeps a steady width beside it. */
 	.requests-overview {
-		display: grid;
-		gap: var(--space-large);
-		grid-template-columns: minmax(0, 1fr) 336px;
 		margin-bottom: var(--space-large);
 	}
 
@@ -717,8 +718,5 @@
 	}
 
 	@media (max-width: 1199px) {
-		.requests-overview {
-			grid-template-columns: minmax(0, 1fr);
-		}
 	}
 </style>

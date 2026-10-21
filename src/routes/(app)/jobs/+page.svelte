@@ -24,7 +24,7 @@
 		type AttentionFact,
 		type AttentionTile
 	} from '$lib/components/work/AttentionCard.svelte';
-	import MoneyFeatureCard from '$lib/components/work/MoneyFeatureCard.svelte';
+	import KpiCard from '$lib/components/data-display/KpiCard.svelte';
 	import {
 		fetchJobOverview,
 		fetchJobs,
@@ -297,22 +297,28 @@
 
 		<div class="jobs-overview">
 			<AttentionCard
+				icon={hammerIcon}
+				tone="job"
 				description="Jobs waiting on you. Pick one to see only those jobs."
 				tiles={attentionTiles}
 				selectedKey={selectedTile}
 				onSelect={(key) => (status = key as JobDerivedStatus | '')}
 				facts={attentionFacts}
 				loading={countsQuery.isPending}
-			/>
-			<MoneyFeatureCard
-				icon={cashIcon}
-				eyebrow="Collected this month"
-				value={collectedValue}
-				note={collectedNote}
-				detailLabel="Left to collect on open invoices"
-				detailValue={outstandingValue}
-				loading={countsQuery.isPending}
-			/>
+			>
+				{#snippet feature()}
+					<KpiCard
+						tone="feature"
+						icon={cashIcon}
+						label="Collected this month"
+						value={collectedValue}
+						note={collectedNote}
+						secondaryNote="Left to collect on open invoices"
+						secondaryValue={outstandingValue}
+						loading={countsQuery.isPending}
+					/>
+				{/snippet}
+			</AttentionCard>
 		</div>
 
 		<RecordListCard
@@ -453,11 +459,7 @@
 		}
 	}
 
-	/* Needs attention takes the room it needs; the money card keeps a steady width beside it. */
 	.jobs-overview {
-		display: grid;
-		gap: var(--space-large);
-		grid-template-columns: minmax(0, 1fr) 312px;
 		margin-bottom: var(--space-large);
 	}
 
@@ -540,8 +542,5 @@
 	}
 
 	@media (max-width: 1199px) {
-		.jobs-overview {
-			grid-template-columns: minmax(0, 1fr);
-		}
 	}
 </style>

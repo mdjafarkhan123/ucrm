@@ -77,36 +77,29 @@ follows the record (colours in `colors.md` → Money Card Colours).
   `--color-feature--text--secondary`. Panels inside: `--color-feature--subtle` with 1px `--color-feature--border`,
   radius 16; their icons white. A white secondary button sits on it unchanged.
 
-## Status tiles (overview card)
-
-- The clickable tiles in a list's overview card (Jobs "Needs attention"): white, 1px `--color-border`, radius 16,
-  padding 14 12, gap 12, 8 apart inside 16 card padding.
-- Top row: a 32 icon tile in the status colour (`icon-shapes.md`; the yellow family uses its `--onSurface` icon)
-  and a 16 arrow-right at the right. Then the count 32/700, the label 13/600 heading, the hint 12 quiet.
-- Hover: `--color-surface--hover`, border `--color-border--interactive--hover`. Picked: 2px inner
-  `--color-interactive` ring. An act-now tile with a count is filled `--color-critical--surface`, its icon tile
-  white and its text `--color-critical--onSurface`.
-- The feature card beside it: a 32 tile (`--color-feature--subtle`, 1px `--color-feature--border`, white
-  icon) before an 12/600 uppercase eyebrow; the figure 28/700 under it; the second figure or the legend rows in a
-  `--color-feature--subtle` panel (1px `--color-feature--border`, radius 8, padding 12 16) at the card's foot.
-- Money on the feature card beside it: money in is white, money still to come white 72%, overdue
-  `--color-feature--alert`; a figure pill is white with `--color-feature--start` text.
-
 ## Number card
 
-A row of counts (campaign sending results, automations); a card may open the list behind its number (Pencil:
-board "Load more, form errors, edit button, number cards", approved 2026-10-19).
+Approved B, 2026-10-21: `concept.pen` → "Batch 33 · Number cards on list pages" (`fzPaM`).
+The same card shows status counts, report numbers and the green summary at the end of a list overview.
 
-- White, 1px `--color-border`, radius 16, padding 16 16 14, gap 12; cards in a row 16 apart, same height.
-- Top row, gap 12: a 40 tile in the card's status colour (`icon-shapes.md`), then the number 26/700 (-0.6)
-  `--color-heading` over its label 13/600 in the status `--onSurface` colour. A card that opens a list adds a
-  16 `arrow-right` `--color-icon--secondary` at the right.
-- Note under it on a band: `--color-surface--background`, radius 8, padding 8 10; text 12/500
-  `--color-text-secondary`.
-- Colour is the status: waiting `warning`, planned `informative`, done `success`, act now `critical`,
-  stopped or draft `inactive`.
-- Link hover: `--color-surface--hover`, border `--color-border--interactive--hover`, arrow `--color-heading`.
-  Focus: the 2px `--color-focus` ring.
+- White, 1px `--color-border`, radius 16, padding 16 12 14, gap 12. Cards stand directly on the page,
+  12 apart and the same height within a row. No outer white overview card.
+- Head: a 48 tile with a 24 icon, then the number 30/700 (-0.8), with its short label 13/600 right under it,
+  4 apart, beside the tile. Head gap 10. Number uses `--color-heading`; label uses the status `--onSurface`.
+- A clickable card has a 16 arrow in its top-right corner. Its whole area is the link or filter button.
+  Hover uses `--color-surface--hover` and the interactive hover border; active uses `--color-surface--active`.
+  A picked filter has a 2px inset `--color-interactive` ring; keyboard focus keeps `--shadow-focus` outside it.
+- Note band at the bottom: `--color-surface--background`, radius 8, padding 8 10, text 12/500 quiet,
+  line height 1.4. Supporting figures share this band, with their figures 14/700.
+- Status colours: waiting `warning`, planned `informative`, done `success`, act now `critical`,
+  stopped or draft `inactive`. An act-now card with a count uses `--color-critical--surface`, its edge and
+  `--onSurface` text, with a white icon tile and white note band. Zero keeps the white card.
+- Green summary: the same anatomy, `--color-feature` gradient and text tokens, feature tile and a bordered
+  feature-subtle note band. A little wider on desktop so the figure fits. The same in light and dark mode.
+- Fixed sets: Clients 4, Quotes 5, Invoices 5, Requests 6, Jobs 6, Reviews 4 (subject to existing permission).
+  Narrow layouts wrap evenly: six cards become 3+3, then 2+2+2. All text stays at least 12px.
+- The overview's title and facts sit above the row on the page: a 32 record tile beside title 16/600 over
+  hint 12; facts use a 24 tile, figure 14/700 and label 13 quiet. Tags remain below when present.
 
 ## States
 

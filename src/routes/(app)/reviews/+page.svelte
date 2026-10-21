@@ -350,6 +350,7 @@
 						icon={card.icon}
 						tone={card.tone}
 						variant="compact"
+						loading={countsQuery.isPending}
 					/>
 				{/each}
 			</div>
@@ -566,7 +567,7 @@
 
 	.reviews__stats {
 		display: grid;
-		gap: var(--space-base);
+		gap: var(--space-slim);
 		grid-template-columns: repeat(4, minmax(0, 1fr));
 	}
 
@@ -671,7 +672,7 @@
 
 	@media (max-width: 639px) {
 		.reviews__stats {
-			grid-template-columns: minmax(0, 1fr);
+			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 
 		.reviews__select {

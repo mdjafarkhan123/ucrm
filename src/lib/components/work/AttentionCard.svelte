@@ -38,410 +38,180 @@
 
 <script lang="ts">
 	import IconTile from '$lib/components/ui/IconTile.svelte';
+	import KpiCard from '$lib/components/data-display/KpiCard.svelte';
 	import type { Snippet } from 'svelte';
-	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 
-	// The "Needs attention" card above a work list: the few statuses the office acts on, each as a tile
-	// with its count. Picking a tile shows only those records in the list below; picking it again clears
-	// it. A thin strip under the tiles carries two plain facts about today and the recent past.
 	let {
 		title = 'Needs attention',
 		description,
+		icon,
+		tone = 'inactive',
 		tiles,
 		selectedKey = '',
 		onSelect,
 		facts = [],
 		footer,
 		summary,
-		bar = [],
+		feature,
 		loading = false
 	}: {
 		title?: string;
 		description: string;
+		icon?: string;
+		tone?: string;
 		tiles: AttentionTile[];
-		/** The tile whose records the list is showing, or empty for none. */
 		selectedKey?: string;
-		/** Called with a tile's key when it is picked, or with an empty key when the picked one is picked
-		 *  again. Tiles that carry an `href` are links and never call it. */
 		onSelect?: (key: string) => void;
 		facts?: AttentionFact[];
-		/** Your own content for the strip under the tiles, in place of `facts` (the Clients page's tags). */
 		footer?: Snippet;
-		/** A headline figure at the end of the header, with a line under it. */
 		summary?: { value: string; label: string };
-		/** A thin proportion bar under the header, one slice per part with a share above zero. */
-		bar?: AttentionBarPart[];
+		/** The final card in the row, using KpiCard's green feature tone. */
+		feature?: Snippet;
 		loading?: boolean;
 	} = $props();
-
-	const barParts = $derived(bar.filter((part) => part.share > 0));
-	const barTotal = $derived(barParts.reduce((sum, part) => sum + part.share, 0) || 1);
-	const barLabel = $derived(
-		barParts.map((part) => `${part.label} ${Math.round((part.share / barTotal) * 100)}%`).join(', ')
-	);
 
 	const uid = $props.id();
 	const titleId = `${uid}-title`;
 </script>
 
-<!-- eslint-disable svelte/no-at-html-tags -->
 <section class="attention-card" aria-labelledby={titleId}>
 	<header class="attention-card__header">
 		<div class="attention-card__heading">
-			<h2 id={titleId}>{title}</h2>
-			<p>{description}</p>
-		</div>
-		{#if summary}
-			<div class="attention-card__summary">
-				<p class="attention-card__summary-value">{summary.value}</p>
-				<p class="attention-card__summary-label">{summary.label}</p>
+			{#if icon}<IconTile {icon} {tone} size={32} />{/if}
+			<div>
+				<h2 id={titleId}>{title}</h2>
+				<p>{description}</p>
 			</div>
+		</div>
+		{#if summary}<p class="attention-card__summary">
+				<strong>{summary.value}</strong>
+				{summary.label}
+			</p>{/if}
+		{#if facts.length > 0}
+			<ul class="attention-card__facts">
+				{#each facts as fact (`${fact.value}|${fact.label}`)}
+					<li>
+						<IconTile icon={fact.icon} tone={fact.tone ?? 'inactive'} size={24} />
+						{#if fact.value}<strong>{fact.value}</strong>{/if}<span>{fact.label}</span>
+					</li>
+				{/each}
+			</ul>
 		{/if}
 	</header>
-	{#if barParts.length > 0}
-		<div class="attention-card__bar" role="img" aria-label={barLabel}>
-			{#each barParts as part (part.key)}
-				<span
-					class={['attention-card__bar-part', `attention-card__bar-part--${part.tone}`]}
-					style:flex-grow={part.share}
-				></span>
-			{/each}
-		</div>
-	{/if}
-	<ul class="attention-card__tiles" style:--attention-columns={tiles.length}>
+	<ul
+		class="attention-card__tiles"
+		style:--kpi-template={`repeat(${tiles.length}, minmax(0, 1fr))${feature ? ' minmax(0, 1.4fr)' : ''}`}
+		style:--kpi-columns={tiles.length + (feature ? 1 : 0)}
+	>
 		{#each tiles as tile (tile.key)}
-			{@const selected = selectedKey === tile.key}
 			<li>
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<svelte:element
-					this={tile.href ? 'a' : 'button'}
-					type={tile.href ? undefined : 'button'}
+				<KpiCard
+					label={tile.label}
+					value={String(tile.count)}
+					icon={tile.icon}
+					tone={tile.tone}
+					note={`${tile.amount && !loading ? `${tile.amount} ` : ''}${tile.hint}`}
 					href={tile.href}
-					class={[
-						'attention-card__tile',
-						`attention-card__tile--${tile.tone}`,
-						tile.tone === 'critical' && tile.count > 0 && 'attention-card__tile--alert',
-						selected && 'attention-card__tile--selected'
-					]}
-					aria-pressed={tile.href ? undefined : selected}
-					aria-label={loading
-						? `${tile.label}: ${tile.hint}`
-						: `${tile.label}: ${tile.count}. ${tile.amount ? `${tile.amount} ` : ''}${tile.hint}`}
-					onclick={tile.href ? undefined : () => onSelect?.(selected ? '' : tile.key)}
-				>
-					<span class="attention-card__top">
-						<IconTile icon={tile.icon} tone={tile.tone} size={32} />
-						<span class="attention-card__arrow" aria-hidden="true">{@html arrowRightIcon}</span>
-					</span>
-					<span class="attention-card__count">{loading ? '—' : tile.count}</span>
-					<span class="attention-card__label">{tile.label}</span>
-					<span class="attention-card__hint"
-						>{#if tile.amount && !loading}<strong>{tile.amount}</strong>&#32;{/if}{tile.hint}</span
-					>
-				</svelte:element>
+					onclick={onSelect ? () => onSelect(selectedKey === tile.key ? '' : tile.key) : undefined}
+					selected={selectedKey === tile.key}
+					alert={tile.tone === 'critical' && tile.count > 0 && !loading}
+					{loading}
+				/>
 			</li>
 		{/each}
+		{#if feature}<li>{@render feature()}</li>{/if}
 	</ul>
-	{#if footer}
-		<div class="attention-card__strip">{@render footer()}</div>
-	{:else if facts.length > 0}
-		<ul class="attention-card__strip attention-card__facts">
-			{#each facts as fact (`${fact.value}|${fact.label}`)}
-				<li
-					class={[
-						fact.align === 'end' && 'attention-card__fact--end',
-						fact.tone && `attention-card__fact--${fact.tone}`
-					]}
-				>
-					{#if fact.tone === 'time' || fact.tone === 'success'}<IconTile
-							icon={fact.icon}
-							tone={fact.tone}
-							size={24}
-						/>{:else}<span class="attention-card__fact-icon" aria-hidden="true"
-							>{@html fact.icon}</span
-						>{/if}
-					{#if fact.value}<strong>{fact.value}</strong>{/if}
-					{#if fact.label}<span>{fact.label}</span>{/if}
-				</li>
-			{/each}
-		</ul>
-	{/if}
+	{#if footer}<div class="attention-card__footer">{@render footer()}</div>{/if}
 </section>
-
-<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.attention-card {
 		container-type: inline-size;
+		display: grid;
+		gap: var(--space-base);
 		min-width: 0;
-		overflow: hidden;
-		border: var(--border-base) solid var(--color-border);
-		border-radius: var(--radius-large);
-		background: var(--color-surface);
-
 		&__header {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			gap: var(--space-base);
-			padding: var(--space-medium) var(--space-medium) 0;
-		}
-		&__heading {
-			display: grid;
-			gap: 3px;
-			min-width: 0;
-
-			h2 {
-				color: var(--color-heading);
-				font-size: var(--typography--fontSize-large);
-				font-weight: 700;
-				letter-spacing: -0.2px;
-			}
-			p {
-				color: var(--color-text--secondary);
-				font-size: 13px;
-				font-weight: 500;
-			}
-		}
-
-		&__summary {
-			display: grid;
-			flex: 0 0 auto;
-			gap: 3px;
-			justify-items: end;
-			text-align: end;
-		}
-		&__summary-value {
-			color: var(--color-heading);
-			font-size: 20px;
-			font-variant-numeric: tabular-nums;
-			font-weight: 700;
-			letter-spacing: -0.4px;
-		}
-		&__summary-label {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 500;
-		}
-
-		&__bar {
-			display: flex;
-			gap: 4px;
-			height: 26px;
-			padding: 0 var(--space-large) 18px;
-			border-bottom: var(--border-base) solid var(--color-border);
-		}
-		&__bar-part {
-			flex: 1 1 0;
-			min-width: 8px;
-			border-radius: 4px;
-			background: var(--color-icon--secondary);
-
-			&--warning {
-				background: var(--color-warning);
-			}
-			&--success {
-				background: var(--color-success);
-			}
-			&--critical {
-				background: var(--color-critical);
-			}
-			&--informative {
-				background: var(--color-informative);
-			}
-		}
-
-		&__tiles {
-			display: grid;
-			/* One column per tile (five when nothing says otherwise), so four tiles fill the row too. */
-			grid-template-columns: repeat(var(--attention-columns, 5), minmax(0, 1fr));
-			gap: var(--space-small);
-			margin: 0;
-			padding: var(--space-base);
-			list-style: none;
-
-			@container (max-width: 700px) {
-				grid-template-columns: repeat(3, minmax(0, 1fr));
-			}
-			@container (max-width: 440px) {
-				grid-template-columns: repeat(2, minmax(0, 1fr));
-			}
-		}
-
-		&__tile {
-			display: grid;
-			align-content: start;
-			gap: var(--space-slim);
-			width: 100%;
-			height: 100%;
-			padding: 14px var(--space-slim);
-			border: var(--border-base) solid var(--color-border);
-			border-radius: var(--radius-large);
-			color: inherit;
-			text-decoration: none;
-			background: var(--color-surface);
-			font: inherit;
-			text-align: start;
-			cursor: pointer;
-			transition:
-				background-color var(--timing-quick),
-				box-shadow var(--timing-quick);
-
-			&:hover {
-				border-color: var(--color-border--interactive--hover);
-				background: var(--color-surface--hover);
-			}
-			&:focus-visible {
-				outline: none;
-				box-shadow: var(--shadow-focus);
-			}
-			&--alert {
-				border-color: var(--color-critical--surface);
-
-				background: var(--color-critical--surface);
-
-				&:hover {
-					border-color: var(--color-critical);
-					background: var(--color-critical--surface);
-				}
-			}
-			&--selected {
-				box-shadow: inset 0 0 0 2px var(--color-interactive);
-
-				&:focus-visible {
-					box-shadow:
-						inset 0 0 0 2px var(--color-interactive),
-						var(--shadow-focus);
-				}
-			}
-		}
-
-		&__label {
-			display: flex;
-			align-items: center;
-			gap: 6px;
-			color: var(--color-text);
-			font-size: 13px;
-			font-weight: 600;
-			letter-spacing: -0.1px;
-		}
-		&__tile--critical &__label,
-		&__tile--critical &__count {
-			color: var(--color-critical);
-		}
-
-		&__top {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			gap: var(--space-small);
-		}
-		&__tile--alert &__top :global(.icon-tile) {
-			background: var(--color-surface);
-		}
-		&__top &__arrow {
-			margin-bottom: 0;
-		}
-		&__top ~ &__count {
-			font-size: var(--typography--fontSize-stat);
-			letter-spacing: -0.8px;
-			line-height: 1;
-		}
-		&__top ~ &__label {
-			color: var(--color-heading);
-		}
-		&__tile--alert &__top ~ &__label,
-		&__tile--alert &__top ~ &__count,
-		&__tile--alert &__top ~ &__hint {
-			color: var(--color-critical--onSurface);
-		}
-
-		&__count {
-			color: var(--color-heading);
-			font-size: 30px;
-			font-variant-numeric: tabular-nums;
-			font-weight: 700;
-			letter-spacing: -0.6px;
-			line-height: 1.2;
-		}
-		&__arrow {
-			display: inline-flex;
-			flex: 0 0 auto;
-			margin-bottom: 6px;
-			color: var(--color-icon--secondary);
-			transition:
-				color var(--timing-quick),
-				transform var(--timing-quick);
-
-			:global(svg) {
-				display: block;
-				width: 16px;
-				height: 16px;
-			}
-		}
-		&__tile:hover &__arrow {
-			color: var(--color-interactive);
-			transform: translateX(2px);
-		}
-		&__tile--critical &__arrow {
-			color: var(--color-critical);
-		}
-		&__tile--selected &__arrow {
-			color: var(--color-interactive);
-		}
-		&__hint {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 500;
-			line-height: 1.25;
-
-			strong {
-				color: var(--color-heading);
-				font-variant-numeric: tabular-nums;
-				font-weight: 700;
-			}
-		}
-
-		&__strip {
 			display: flex;
 			flex-wrap: wrap;
 			align-items: center;
-			gap: var(--space-small) var(--space-large);
+			justify-content: space-between;
+			gap: var(--space-base);
+		}
+		&__heading {
+			display: flex;
+			align-items: center;
+			gap: var(--space-slim);
+			h2 {
+				margin: 0;
+				color: var(--color-heading);
+				font-size: var(--space-base);
+				font-weight: 600;
+			}
+			p {
+				margin: var(--space-smallest) 0 0;
+				color: var(--color-text--secondary);
+				font-size: var(--typography--fontSize-small);
+			}
+		}
+		&__summary {
 			margin: 0;
-			padding: var(--space-slim) var(--space-large);
-			border-top: var(--border-base) solid var(--color-border);
-			background: var(--color-surface--background--subtle);
-			list-style: none;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-label);
+			strong {
+				color: var(--color-heading);
+			}
 		}
 		&__facts {
+			display: flex;
+			flex-wrap: wrap;
+			gap: var(--space-small) var(--space-medium);
+			margin: 0;
+			padding: 0;
+			list-style: none;
 			li {
 				display: flex;
 				align-items: center;
 				gap: var(--space-small);
+				font-size: var(--typography--fontSize-label);
 				color: var(--color-text--secondary);
-				font-size: 13px;
-				font-weight: 500;
 			}
 			strong {
 				color: var(--color-heading);
-				font-weight: 700;
 			}
 		}
-		&__fact--end {
-			margin-inline-start: auto;
-		}
-		&__fact--warning &__fact-icon {
-			color: var(--color-warning--onSurface);
-		}
-		&__fact-icon {
-			display: inline-flex;
-			color: var(--color-icon--secondary);
-
-			:global(svg) {
-				display: block;
-				width: 15px;
-				height: 15px;
+		&__tiles {
+			display: grid;
+			grid-template-columns: var(--kpi-template);
+			align-items: stretch;
+			gap: var(--space-slim);
+			margin: 0;
+			padding: 0;
+			list-style: none;
+			li {
+				display: flex;
+				min-width: 0;
 			}
+		}
+		&__footer {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: var(--space-slim);
+		}
+	}
+	@container (max-width: 1000px) {
+		.attention-card__tiles {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+	}
+	@container (max-width: 580px) {
+		.attention-card__tiles {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+	@container (max-width: 280px) {
+		.attention-card__tiles {
+			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 </style>
