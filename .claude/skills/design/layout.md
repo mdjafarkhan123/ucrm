@@ -68,6 +68,16 @@
   quiet; a chevron), body padding 16 gap 16: Visit title, Day · Start → End on one row, Anytime and Schedule
   later checkboxes side by side, Instructions with its count, Who is going chips, Remove visit (danger, small).
   Notify customer closes the card under a 1px line. Billing: Card header (Invoice receipt tile) and its checkbox.
+- **New quote page**, approved A by Jafar 2026-10-21 (Pencil: "Batch 34 · New quote page · Approved A", `OzXHh`):
+  the shared create form in quote pink, then separate cards: Introduction, Products and services, Client message,
+  Contract disclaimer. An optional part not yet added is a slim card (padding 14 20, gap 14): a 40 quote tile,
+  the title 16/600 beside an "Optional" tag (pill, `--color-surface--background--subtle`, 1px `--color-border`,
+  12/500 quiet), a 12 quiet hint under it, and a small secondary "Add …" button at the right. Products and
+  services: under the start choices, small secondary Add text and Add heading buttons; then a Client view row
+  (1px line above, padding 12 20: an 18 eye in `--color-client`, "Client view" 14/600, a 12 quiet summary of what
+  the client sees, a quiet green "Change" at the right) above the Quote subtotal foot. Contract disclaimer: Card
+  header (file-check tile), a writing box and a foot with a 12 quiet hint and the count. Rail: the Batch 24
+  totals card, one Discount and tax card, Notes, Attachments.
 - Invoice dates and payment terms keep their existing Terms & dates card. Each page keeps its existing cards
   and right-sidebar contents. Client creation is outside this shared form's approval.
 
