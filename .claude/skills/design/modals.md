@@ -154,3 +154,32 @@ words as the live app.
   padding 7 12, a 16 `circle-alert` in `--color-critical` and the live words 13/500 `--color-critical--onSurface`.
   After a failed save the crop stays.
 - Dark mode: the studio keeps its colour; everything else follows the tokens.
+
+## Merge clients pop-up
+
+Picking the client to keep and the duplicate, then merging (board `XddjD`, A, Jafar 2026-10-21). Same words,
+moves, rules, warnings and blockers as the live app.
+
+- Large pop-up (940). Header: 40 tile in `--color-client` (`git-merge`), "Merge clients". Footer: at the left a
+  16 `trash-2` and "… will be deleted. This can't be undone." 13/600 `--color-critical` (shown once the preview
+  has loaded); Cancel, then Merge clients as the danger · confirm button with `git-merge`.
+- Body padding 20, gap 20: the intro 14 secondary, then From → To in one row. Left the duplicate card, right the
+  client to keep, each radius 12 with a 1px `--surface-edge`, clipped: a top band in the meaning `--surface`
+  (duplicate `--color-critical`, `trash-2`; keep `--color-client`, `user-check`), padding 10 14, a 24 white tile
+  and the live label 13/600 `--onSurface`; under it, padding 14, the client search box 44 high on
+  `--color-surface--background` with a 28 initials avatar, the name 14/500 and `chevron-down`.
+- Between the cards, 96 wide: a 40 round `--color-client--surface` circle with a 20 `arrow-right` in
+  `--color-client`, and Swap under it as a quiet small button (`arrow-left-right`).
+- Review under a hairline, padding 20 0 0, gap 14: "MOVES TO …" 12/600 uppercase quiet; the moves as tiles, five
+  to a row, each `--color-surface--background--subtle`, 1px `--color-border`, radius 12, padding 12, gap 10: a 32
+  tile in the record's colour (property `house` client, request, quote, job, invoice, payment `credit-card`
+  invoice, messages `message-circle` and email `mail` conversation, notes `sticky-note` inactive, phone `phone`
+  time, contacts `users` client, files `file` informative, tags `tag` inactive), the count 18/700 heading and
+  the kind 12/500 quiet. Then the two rules 13, each with a 16 icon (`user-check` client, `receipt` invoice), and
+  each warning as a warning notice strip (`notices.md`).
+- Opened from a client page: the duplicate box shows "Search by name or company", no review, Merge clients
+  disabled. Same client: the duplicate box gets a `--color-critical` edge and "Choose a different client." 12/500
+  red with a 14 `circle-alert`. Checking: the live line 13 quiet and five bone tiles (`--color-border` bones).
+  Couldn't check / blocked: a critical notice strip (`circle-alert` / `ban`) with the live words; when blocked
+  the moves stay and Merge clients is disabled. Nothing to move: the live line replaces the tiles. Merging: the
+  spinner takes the merge icon's place, Cancel is disabled.
