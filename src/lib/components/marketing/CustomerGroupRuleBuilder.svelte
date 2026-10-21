@@ -15,6 +15,7 @@
 	} from '$lib/marketing/api';
 	import { LEAD_SOURCES } from '$lib/clients/lead-sources';
 	import {
+		incompleteGroupConditions,
 		MARKETING_GROUP_RULE_CONDITIONS,
 		type MarketingGroupRuleConditionKey,
 		type MarketingGroupRules
@@ -39,12 +40,17 @@
 	// needs, remove one without hunting through nine always-visible fields.
 	let {
 		rules = $bindable<MarketingGroupRules>(),
-		labels = { catalog_items: [], clients: [] }
+		labels = { catalog_items: [], clients: [] },
+		showIncomplete = false
 	}: {
 		rules?: MarketingGroupRules;
 		/** Names for ids a reopened saved group already holds, so their chips show a name, not an id. */
 		labels?: { catalog_items: RuleLabel[]; clients: RuleLabel[] };
+		/** After a save attempt: an empty condition's hint turns into an error. */
+		showIncomplete?: boolean;
 	} = $props();
+
+	const incompleteKeys = $derived(incompleteGroupConditions(rules));
 
 	type ConditionKey = MarketingGroupRuleConditionKey;
 
@@ -311,6 +317,16 @@
 									onChange={(next) => setListOrRemove('exclude_client_ids', next)}
 								/>
 							{/if}
+							{#if incompleteKeys.includes(key)}
+								<p
+									id={`rule-${key}-incomplete`}
+									class="rule-builder__incomplete"
+									class:rule-builder__incomplete--error={showIncomplete}
+									role={showIncomplete ? 'alert' : undefined}
+								>
+									Pick at least one, or remove this condition.
+								</p>
+							{/if}
 						</div>
 						<button
 							type="button"
@@ -515,6 +531,16 @@
 	.rule-builder__inline-suffix {
 		color: var(--color-text--secondary);
 		font-size: var(--typography--fontSize-label);
+	}
+
+	.rule-builder__incomplete {
+		margin: 6px 0 0;
+		color: var(--color-text--secondary);
+		font-size: var(--typography--fontSize-small);
+
+		&--error {
+			color: var(--color-critical);
+		}
 	}
 
 	.rule-builder__add {

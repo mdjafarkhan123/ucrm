@@ -70,6 +70,36 @@ export const MARKETING_GROUP_RULE_CONDITIONS: {
 	{ key: 'exclude_client_ids', label: 'Always exclude these customers' }
 ];
 
+// A list condition just added in the editor starts with nothing picked. It isn't a rule yet: the count
+// leaves it out (as list builders like HubSpot's and Klaviyo's do with an unfinished filter) and saving
+// waits until a value is picked or the condition is removed.
+const LIST_CONDITIONS = [
+	'lifecycle',
+	'tags',
+	'cities',
+	'lead_sources',
+	'services',
+	'include_client_ids',
+	'exclude_client_ids'
+] as const satisfies readonly MarketingGroupRuleConditionKey[];
+
+export function incompleteGroupConditions(
+	rules: MarketingGroupRules
+): MarketingGroupRuleConditionKey[] {
+	return LIST_CONDITIONS.filter((key) => {
+		const value = rules[key];
+		return Array.isArray(value) && value.length === 0;
+	});
+}
+
+export function completeGroupRules(rules: MarketingGroupRules): MarketingGroupRules {
+	const incomplete = incompleteGroupConditions(rules);
+	if (incomplete.length === 0) return rules;
+	const complete: Record<string, unknown> = { ...rules };
+	for (const key of incomplete) delete complete[key];
+	return complete as MarketingGroupRules;
+}
+
 // Every reason a matched customer would not receive the campaign. `recent_marketing` is always 0 until
 // launched campaigns exist (M4) and give "already emailed in the last 7 days" a source of truth.
 export const marketingExclusionReasons = [

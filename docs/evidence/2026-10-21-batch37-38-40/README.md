@@ -24,3 +24,18 @@ campaign steps keep their current look. New token `--color-photo-studio`.
 
 Known, unchanged from live: while a list condition has nothing picked yet, the count shows "could not be
 checked". Not run, by Jafar's rule: type check and lint (once at campaign end).
+
+## Follow-up fix: unfinished conditions (2026-10-21)
+
+Cause: a list condition (city, tags, services, lead source, include / exclude customers) starts with nothing
+picked, and the rule check only accepts lists with at least one value, so the whole count was refused ("could
+not be checked") and Save would have failed with a vague error.
+
+Fix, following how HubSpot and Klaviyo list builders treat an unfinished filter: `completeGroupRules` leaves
+empty conditions out of the count; each empty row shows "Pick at least one, or remove this condition."; Save
+stops and turns those hints red (`incompleteGroupConditions`) instead of sending a request that would fail.
+
+Checked live (`group-unfinished-conditions.jpg`): with City and Services still empty the panel counted 1
+eligible; Save with a name kept the pop-up open with both hints red; after removing City and picking a service,
+Save showed busy, closed the pop-up and the group "Check unfinished conditions" appeared in the list (left in
+Raad LTD as test data). `npx vitest run src/lib/marketing/customer-groups.spec.ts` — 11 passed (3 new).
