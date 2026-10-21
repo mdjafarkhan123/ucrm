@@ -2,6 +2,7 @@
 	import { untrack } from 'svelte';
 	import { Combobox } from 'bits-ui';
 	import { createQuery } from '@tanstack/svelte-query';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import { fetchClients, type ClientListItem, type ClientReadError } from '$lib/clients/api';
 	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 	import chevronDownIcon from '@tabler/icons/outline/chevron-down.svg?raw';
@@ -22,6 +23,8 @@
 		placeholder = 'Search by name or company',
 		initialClient = null,
 		label = 'Client',
+		hideLabel = false,
+		avatar = false,
 		onSelect
 	}: {
 		value?: string;
@@ -38,6 +41,10 @@
 		initialLabel?: string;
 		/** The field's visible label. */
 		label?: string;
+		/** The label is read out but not shown, when the card around the picker already names it. */
+		hideLabel?: boolean;
+		/** A taller box that leads with the picked client's initials instead of the search icon. */
+		avatar?: boolean;
 		onSelect?: (client: ClientListItem | null) => void;
 	} = $props();
 
@@ -115,7 +122,12 @@
 
 <!-- The inline SVG strings are trusted build-time Tabler icon imports. -->
 <!-- eslint-disable svelte/no-at-html-tags -->
-<div class="client-picker" class:client-picker--invalid={invalid}>
+<div
+	class="client-picker"
+	class:client-picker--invalid={invalid}
+	class:client-picker--avatar={avatar}
+	class:client-picker--hide-label={hideLabel}
+>
 	<label for={id}
 		>{label}{#if required}<span aria-hidden="true">*</span>{/if}</label
 	>
@@ -128,7 +140,13 @@
 		onValueChange={chooseClient}
 	>
 		<div class="client-picker__control">
-			<span class="client-picker__search" aria-hidden="true">{@html searchIcon}</span>
+			{#if avatar && !open && value && inputValue}
+				<span class="client-picker__avatar" aria-hidden="true"
+					><Avatar id={value} name={inputValue} size="small" /></span
+				>
+			{:else}
+				<span class="client-picker__search" aria-hidden="true">{@html searchIcon}</span>
+			{/if}
 			<Combobox.Input
 				{id}
 				{placeholder}
@@ -379,6 +397,39 @@
 		}
 		.client-picker__search {
 			left: var(--space-slim);
+		}
+	}
+
+	.client-picker--hide-label > label {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	// The merge pop-up's client boxes: 44 high, the picked client's 28 initials at the front.
+	.client-picker--avatar {
+		.client-picker__control {
+			min-height: 44px;
+		}
+		.client-picker__control :global(input) {
+			min-height: 42px;
+			padding-left: 44px;
+			font-size: var(--typography--fontSize-base);
+			font-weight: 500;
+		}
+	}
+	.client-picker__avatar {
+		position: absolute;
+		left: var(--space-small);
+		display: flex;
+		pointer-events: none;
+
+		:global(.avatar) {
+			width: 28px;
+			height: 28px;
 		}
 	}
 </style>
