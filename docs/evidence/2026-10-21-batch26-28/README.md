@@ -33,3 +33,11 @@ centred the couldn't-load state. Screenshots in this folder.
 - Changed components compiled through SCSS + Svelte compiler: 8 files, 0 errors, 0 warnings.
 - Svelte MCP autofixer (style blocks removed): no issues on all changed components.
 - Full type check and lint deferred to campaign close (Jafar, 2026-10-21).
+
+## Live check (main, public tunnel, 2026-10-21)
+
+Merged as `9ecb2149`. Checked as the Raad LTD owner in Chrome at 1440 light: public form `kitchen-remodel-request`
+(numbered card, tile picks; not submitted), inbox reply box channel menu (teal icons, check on Email), a starter
+template's email preview (real render, Desktop and Mobile), and Greenfield Property Group's communication
+settings (real "Not sending" strip; closed with Done and the edit cancelled, nothing saved). The main dev
+server had missed `DropdownMenu.svelte` after the merge; touching the merged files reloaded it.
