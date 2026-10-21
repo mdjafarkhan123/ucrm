@@ -100,3 +100,10 @@ billed before / this invoice share of the job, profit as one team-only line. Edg
 money, no cost access. The amber "target 35%" pill reuses the existing quote target-margin setting on jobs.
 A = live green card, total-led, profit panel; B = classic layout on ink blue, question-led. Dark mode row shows
 Job in progress. Waiting for Jafar's pick.
+Jafar picked **B** 2026-10-21 and asked for colours that clearly stand out and help the contractor. Board
+`phm5q` "Concept · Batch 35 · B money card colours · now vs proposed": amber stops meaning both cost and warning.
+New Pencil variables (not yet in code): `color-money-items` #22d3ee, `color-money-expenses` #fb923c,
+`color-money-labor` #a78bfa, `color-money-profit` #4ade80, `color-money-loss` #f43f5e, `color-money-warning`
+#facc15 (below-target pill only). Bar order items · expenses · labour · profit so neighbours stay apart. Checked
+with the dataviz validator on #073848: all pairs ≥3:1 contrast, colour-blind separation pass (the lightness-band
+check is tuned for near-black surfaces and is deliberately exceeded so marks stand out). Waiting for Jafar's yes.
