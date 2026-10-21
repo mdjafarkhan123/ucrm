@@ -24,16 +24,7 @@
 	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 	import circlePlusIcon from '@tabler/icons/outline/circle-plus.svg?raw';
-	import userIcon from '@tabler/icons/outline/user.svg?raw';
-	import tagIcon from '@tabler/icons/outline/tag.svg?raw';
-	import mapPinIcon from '@tabler/icons/outline/map-pin.svg?raw';
-	import inboxIcon from '@tabler/icons/outline/inbox.svg?raw';
-	import toolIcon from '@tabler/icons/outline/tool.svg?raw';
-	import repeatIcon from '@tabler/icons/outline/repeat.svg?raw';
-	import calendarCheckIcon from '@tabler/icons/outline/calendar-check.svg?raw';
-	import calendarClockIcon from '@tabler/icons/outline/calendar-clock.svg?raw';
-	import userPlusIcon from '@tabler/icons/outline/user-plus.svg?raw';
-	import userXIcon from '@tabler/icons/outline/user-x.svg?raw';
+	import { CONDITION_TILES } from './group-rule-tiles';
 
 	// One AND-only condition list, the same "add a condition" shape as
 	// `settings/automation/RecipeBuilder.svelte`'s If block: start empty, add only the checks this group
@@ -55,21 +46,6 @@
 	type ConditionKey = MarketingGroupRuleConditionKey;
 
 	const CONDITIONS = MARKETING_GROUP_RULE_CONDITIONS;
-
-	// Each condition's tile is coloured by what it checks: the client, where they came from, their work,
-	// their schedule, or a hand-picked include / exclude.
-	const CONDITION_TILES: Record<ConditionKey, { icon: string; tone: string }> = {
-		lifecycle: { icon: userIcon, tone: 'client' },
-		tags: { icon: tagIcon, tone: 'client' },
-		cities: { icon: mapPinIcon, tone: 'client' },
-		lead_sources: { icon: inboxIcon, tone: 'request' },
-		services: { icon: toolIcon, tone: 'job' },
-		work_type: { icon: repeatIcon, tone: 'job' },
-		last_completed_job: { icon: calendarCheckIcon, tone: 'job' },
-		upcoming_work: { icon: calendarClockIcon, tone: 'time' },
-		include_client_ids: { icon: userPlusIcon, tone: 'success' },
-		exclude_client_ids: { icon: userXIcon, tone: 'critical' }
-	};
 
 	function conditionLabel(key: ConditionKey) {
 		return CONDITIONS.find((entry) => entry.key === key)?.label ?? key;
