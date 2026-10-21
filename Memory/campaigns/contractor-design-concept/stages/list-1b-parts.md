@@ -48,7 +48,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `marketing/FreeTextChipInput` |  | ✅ Batch 37 `PLExJ` B 2026-10-21 | ⬜ |
 | `marketing/MarketingTemplatePreviewDialog` | 🔁F pop-up | ✅ Batch 26 `l62Og` A 2026-10-20 | ✅ Built 2026-10-21 |
 | `profile/ProfilePhotoDialog` | 🔁F pop-up | ✅ Batch 38 `n2ujB` B 2026-10-21 | ⬜ |
-| `settings/WeeklyHoursEditor` |  | ✅ Batch 39 `DhRBV` B 2026-10-21 | ⬜ |
+| `settings/WeeklyHoursEditor` |  | ✅ Batch 39 `DhRBV` B 2026-10-21 | ✅ Built 2026-10-21 (`docs/evidence/2026-10-21-batch39/`) |
 | `ui/FilterChipMulti` |  | ✅ Batch 20 `e18rX` 2026-10-20 | ✅ |
 | `ui/SignaturePad` |  | ✅ Batch 40 `alWwd` A 2026-10-21 | ⬜ |
 | `automation/InquiryAutomationCard` | pop-ups: "Stop this follow-up?" 🔁C · menus ×1 · loading, empty | ⬜ | ⬜ |
