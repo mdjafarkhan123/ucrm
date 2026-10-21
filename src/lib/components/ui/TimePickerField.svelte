@@ -318,6 +318,8 @@
 		}
 
 		&__label--hidden {
+			position: absolute;
+			margin: 0;
 			width: 1px;
 			height: 1px;
 			padding: 0;

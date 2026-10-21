@@ -12,6 +12,7 @@
 		value = $bindable<Time | TimeRangeValue | undefined>(),
 		id,
 		range = false,
+		hideRangeLabels = false,
 		label = 'Time',
 		hourCycle = 12,
 		minValue,
@@ -28,6 +29,8 @@
 		value?: Time | TimeRangeValue;
 		id?: string;
 		range?: boolean;
+		/** Hide the Start and End words above a range's boxes; screen readers still hear them. */
+		hideRangeLabels?: boolean;
 		label?: string;
 		// Accepted for compatibility; time text follows hourCycle.
 		locale?: string;
@@ -90,6 +93,7 @@
 				<TimePickerField
 					id={`${fieldId}-start`}
 					label="Start"
+					hideLabel={hideRangeLabels}
 					value={rangeValue.start}
 					{hourCycle}
 					{minValue}
@@ -105,6 +109,7 @@
 				<TimePickerField
 					id={`${fieldId}-end`}
 					label="End"
+					hideLabel={hideRangeLabels}
 					startTime={rangeValue.start}
 					value={rangeValue.end}
 					{hourCycle}

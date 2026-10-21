@@ -267,10 +267,11 @@
 					</SectionBlock>
 				{:else if days}
 					<SectionBlock
+						tone="time"
 						title="Weekly hours"
 						icon={clockIcon}
 						hint="Up to three periods a day. Mark a day closed or open 24 hours."
-						form
+						class="section-block--flush"
 					>
 						<WeeklyHoursEditor bind:days disabled={!canEdit} />
 					</SectionBlock>
