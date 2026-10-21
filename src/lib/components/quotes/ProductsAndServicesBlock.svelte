@@ -2987,6 +2987,14 @@
 		padding: var(--space-small) var(--space-medium);
 		border-bottom: var(--border-base) solid var(--color-border);
 	}
+	// A block that is not flush (New quote, request, invoice) already pads its body, so while it is empty the
+	// footer and the client-view row drop their own side padding and line up with the two choices above them.
+	:global(.section-block--concept:not(.section-block--flush)) .pricing-edit--concept:has(.pricing-empty) {
+		.pricing-block__footer,
+		.pricing-block__client-view {
+			padding-inline: 0;
+		}
+	}
 	.pricing-block__save-status {
 		flex: 1 1 auto;
 		color: var(--color-text--secondary);
