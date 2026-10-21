@@ -142,6 +142,15 @@ column, centred, blocks 24 apart: the page header, the step track, then one card
   (new: page colour, updates `--color-informative`, skipped `--color-inactive`, attention `--color-warning`), the
   number 32/700 heading, the label 13/500 quiet. Then notice strips: attention `warning`, "Nothing gets sent"
   `informative` with shield-check.
+- **New campaign**, approved A by Jafar 2026-10-21 (Pencil: "Batch 51 · New campaign · Goal step · Approved A",
+  `t0L1xo`): the setup-steps frame in the Growth colour. Above the header, the breadcrumb trail ("Campaigns ›
+  New campaign", megaphone on the current step). Header: a 40 `--color-growth` megaphone tile; at the right the
+  save state (16 `cloud-check` `--color-success`, 12/500 quiet "All changes saved") then Save draft (secondary,
+  `save`). The step track stacks each step: the 32 tile over the label and hint, centred, steps 112 wide, the 2px
+  lines level with the tiles. Goal step card: Card header (Growth `target` tile), body gap 20: the goals as radio
+  tiles two to a row, 12 apart (white, radius 12, 1px `--color-border`, padding 16, gap 14: a 40 Growth tile, the
+  title 14/600 over the description 12 quiet, the 18 circle at the top right; chosen 1.5px `--color-interactive`
+  edge), then the name field; the footer bar holds the hint and Continue (main, arrow-right).
 
 ## Record pages
 

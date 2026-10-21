@@ -8,10 +8,10 @@ Key, tick rule and coverage command: `list-index.md`.
 | `marketing/CampaignCustomersStep` | loading, empty | ⬜ | ⬜ |
 | `marketing/CampaignDeliveryStep` | loading | ⬜ | ⬜ |
 | `marketing/CampaignEmailStep` | menus ×1 | ⬜ | ⬜ |
-| `marketing/CampaignGoalStep` |  | 🟡 Batch 51 `t0L1xo` drawn 2026-10-21, waiting for A or B | ⬜ |
-| `marketing/CampaignJourney` | loading | 🟡 Batch 51 `t0L1xo` drawn 2026-10-21, waiting for A or B | ⬜ |
+| `marketing/CampaignGoalStep` |  | ✅ Batch 51 `t0L1xo` A 2026-10-21 | ⬜ |
+| `marketing/CampaignJourney` | loading | ✅ Batch 51 `t0L1xo` A 2026-10-21 | ⬜ |
 | `marketing/CampaignReviewStep` | loading, owner view | ⬜ | ⬜ |
-| `marketing/CampaignStepper` |  | 🟡 Batch 51 `t0L1xo` drawn 2026-10-21, waiting for A or B | ⬜ |
+| `marketing/CampaignStepper` |  | ✅ Batch 51 `t0L1xo` A 2026-10-21 | ⬜ |
 | `marketing/InsertVariableMenu` | menus ×1 | ⬜ | ⬜ |
 | `marketing/MarketingAllowanceNotice` |  | ⬜ | ⬜ |
 | `marketing/MarketingSenderSummary` |  | ⬜ | ⬜ |
