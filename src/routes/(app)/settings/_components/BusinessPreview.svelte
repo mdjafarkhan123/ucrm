@@ -69,13 +69,13 @@
 			background: var(--color-surface);
 		}
 		h2 {
-			font-size: 16px;
+			font-size: var(--typography--fontSize-large);
 			font-weight: 700;
 			color: var(--color-heading);
 		}
 		p,
 		&__usage span {
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 			color: var(--color-text--secondary);
 			line-height: 1.6;
 		}
@@ -92,11 +92,11 @@
 			margin-bottom: 12px;
 			strong {
 				flex: 1;
-				font-size: 14px;
+				font-size: var(--typography--fontSize-base);
 				color: var(--color-interactive);
 			}
 			b {
-				font-size: 11px;
+				font-size: var(--typography--fontSize-overline);
 				color: var(--color-quote);
 			}
 			span {

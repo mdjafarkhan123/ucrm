@@ -691,7 +691,7 @@
 	.clients-tags__label,
 	.clients-tags__empty {
 		color: var(--color-text--secondary);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
 	}
 	.clients-tags {
@@ -842,7 +842,7 @@
 	.clients-table__line {
 		margin-bottom: 3px;
 		color: var(--color-text);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-base);
 		font-weight: 500;
 	}
 	.clients-table__street {
@@ -853,7 +853,7 @@
 		-webkit-line-clamp: 2;
 		line-clamp: 2;
 		color: var(--color-text);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
 	}
 	.clients-table__more {
@@ -870,7 +870,7 @@
 		border-radius: 6px;
 		color: var(--color-text);
 		background: var(--color-surface--background--subtle);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 600;
 		white-space: nowrap;
 
@@ -883,7 +883,7 @@
 	}
 	.clients-table__date {
 		color: var(--color-text);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
 		white-space: nowrap;
 	}

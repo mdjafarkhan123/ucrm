@@ -575,7 +575,7 @@
 		border-radius: 10px;
 		color: var(--color-warning--onSurface);
 		background: var(--color-warning--surface);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 700;
 		line-height: 1.2;
 	}
@@ -648,13 +648,13 @@
 	}
 	.invoices-table__date {
 		color: var(--color-text);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
 		white-space: nowrap;
 	}
 	.invoices-table__total {
 		color: var(--color-text--secondary);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-base);
 		font-variant-numeric: tabular-nums;
 		font-weight: 500;
 		text-align: end;

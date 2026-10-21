@@ -422,7 +422,7 @@
 	}
 	.team__heading :global(.breadcrumbs) {
 		margin-bottom: 4px;
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 	}
 	.team__heading :global(.page-header) {
 		margin-bottom: 0;
@@ -485,12 +485,12 @@
 	}
 	.team__seat-copy strong {
 		color: var(--color-heading);
-		font-size: 15px;
+		font-size: var(--typography--fontSize-large);
 	}
 	.team__summary-label,
 	.team__summary-loading {
 		color: var(--color-text--secondary);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 	}
 	.team__summary-label {
 		font-weight: 600;
@@ -533,7 +533,7 @@
 	}
 	.team__card-header h2 {
 		color: var(--color-heading);
-		font-size: 16px;
+		font-size: var(--typography--fontSize-large);
 		font-weight: 700;
 	}
 	.team__toolbar {
@@ -565,7 +565,7 @@
 	}
 	.team__work-details {
 		color: var(--color-text--secondary);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 	}
 
 	.team__member {

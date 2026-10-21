@@ -504,7 +504,7 @@
 		-webkit-line-clamp: 2;
 		line-clamp: 2;
 		color: var(--color-text);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
 	}
 	.jobs-table__meta {
@@ -515,7 +515,7 @@
 	}
 	.jobs-table__date {
 		color: var(--color-text);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
 		white-space: nowrap;
 	}

@@ -111,7 +111,7 @@
 		&__field {
 			display: grid;
 			gap: 8px;
-			font-size: 13px;
+			font-size: var(--typography--fontSize-label);
 			color: var(--color-heading);
 			input {
 				width: 100%;

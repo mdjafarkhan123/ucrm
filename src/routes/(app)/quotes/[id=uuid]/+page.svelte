@@ -1557,7 +1557,7 @@
 	// The smaller, quieter copy under the client message and disclaimer headings.
 	.quote-detail__copy--small {
 		color: var(--color-text--secondary);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 	}
 
 	// One card, two parts under hairlines: each has its own heading row with the pencil at the end.
@@ -1578,7 +1578,7 @@
 		h3 {
 			margin: 0;
 			color: var(--color-heading);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-base);
 			font-weight: 600;
 		}
 	}

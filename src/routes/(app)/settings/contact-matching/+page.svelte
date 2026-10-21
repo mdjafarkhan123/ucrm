@@ -255,7 +255,7 @@
 		}
 		&__choice :global(.segmented__caption) {
 			color: var(--color-heading);
-			font-size: 14px;
+			font-size: var(--typography--fontSize-label);
 			font-weight: 600;
 			text-transform: none;
 			letter-spacing: 0;
@@ -278,7 +278,7 @@
 			p {
 				margin: 0;
 				color: var(--color-text);
-				font-size: 14px;
+				font-size: var(--typography--fontSize-base);
 				line-height: 1.45;
 			}
 		}
@@ -364,12 +364,12 @@
 
 			strong {
 				color: var(--color-base-white);
-				font-size: 14px;
+				font-size: var(--typography--fontSize-base);
 				font-weight: 600;
 			}
 			span {
 				color: var(--color-base-blue--300);
-				font-size: 12px;
+				font-size: var(--typography--fontSize-small);
 			}
 		}
 		&__buttons {

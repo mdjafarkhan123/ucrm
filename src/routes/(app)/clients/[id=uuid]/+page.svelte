@@ -1164,7 +1164,7 @@
 			gap: var(--space-small);
 			margin-top: 3px;
 			color: var(--color-text--secondary);
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 		}
 
@@ -1173,7 +1173,7 @@
 			border-radius: 999px;
 			color: var(--color-text--secondary);
 			background: var(--color-surface--background--subtle);
-			font-size: 11px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 600;
 		}
 
@@ -1203,13 +1203,13 @@
 
 		&__row-label {
 			color: var(--color-text--secondary);
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 		}
 
 		&__row-value {
 			color: var(--color-heading);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-base);
 			font-weight: 600;
 			overflow-wrap: anywhere;
 		}
@@ -1217,7 +1217,7 @@
 		&__row-blank,
 		&__row-note {
 			color: var(--color-text--secondary);
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 		}
 
@@ -1250,7 +1250,7 @@
 			align-items: center;
 			gap: 6px;
 			color: var(--color-text--secondary);
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 		}
 

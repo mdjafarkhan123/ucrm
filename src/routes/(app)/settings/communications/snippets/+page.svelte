@@ -293,7 +293,7 @@
 		display: -webkit-box;
 		overflow: hidden;
 		color: var(--color-text);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 		line-height: 1.55;
 		-webkit-box-orient: vertical;
 		-webkit-line-clamp: 2;

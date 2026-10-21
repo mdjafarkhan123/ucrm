@@ -1190,7 +1190,7 @@
 			align-items: center;
 			gap: var(--space-smaller);
 			color: var(--color-heading);
-			font-size: 17px;
+			font-size: var(--typography--fontSize-large);
 			font-weight: 700;
 		}
 	}

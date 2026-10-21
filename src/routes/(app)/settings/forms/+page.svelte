@@ -261,7 +261,7 @@
 			border-radius: var(--radius-large);
 			background: var(--color-surface--reverse);
 			color: var(--color-text--reverse);
-			font-size: 11px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 700;
 
 			:global(svg) {

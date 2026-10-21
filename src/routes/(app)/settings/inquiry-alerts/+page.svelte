@@ -303,12 +303,12 @@
 				align-items: center;
 				gap: 6px;
 				color: var(--color-heading);
-				font-size: 14px;
+				font-size: var(--typography--fontSize-base);
 				font-weight: 600;
 			}
 			span {
 				color: var(--color-text--secondary);
-				font-size: 13px;
+				font-size: var(--typography--fontSize-base);
 				font-weight: 500;
 			}
 		}
@@ -410,12 +410,12 @@
 
 			strong {
 				color: var(--color-base-white);
-				font-size: 14px;
+				font-size: var(--typography--fontSize-base);
 				font-weight: 600;
 			}
 			span {
 				color: var(--color-base-blue--300);
-				font-size: 12px;
+				font-size: var(--typography--fontSize-small);
 			}
 		}
 		&__buttons {

@@ -606,7 +606,7 @@
 			gap: 12px;
 			padding: 0 4px;
 			color: var(--color-text--secondary);
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 			line-height: 1.6;
 
 			p {
@@ -615,7 +615,7 @@
 			strong {
 				display: block;
 				color: var(--color-heading);
-				font-size: 13px;
+				font-size: var(--typography--fontSize-base);
 				font-weight: 600;
 			}
 		}
@@ -668,12 +668,12 @@
 
 			strong {
 				color: var(--color-base-white);
-				font-size: 14px;
+				font-size: var(--typography--fontSize-base);
 				font-weight: 600;
 			}
 			span {
 				color: var(--color-base-blue--300);
-				font-size: 12px;
+				font-size: var(--typography--fontSize-small);
 			}
 		}
 		&__buttons {
@@ -752,12 +752,12 @@
 			padding: 20px 24px 0 72px;
 			background: transparent;
 			transform: none;
-			font-size: 16px;
+			font-size: var(--typography--fontSize-large);
 			letter-spacing: -0.2px;
 		}
 		:global(.pipeline-card .section-block__hint) {
 			margin: 2px 24px 18px 72px;
-			font-size: 13px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
 			line-height: 1.4;
 		}

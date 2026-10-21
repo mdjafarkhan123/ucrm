@@ -344,7 +344,7 @@
 			display: -webkit-box;
 			overflow: hidden;
 			color: var(--color-text);
-			font-size: 14px;
+			font-size: var(--typography--fontSize-base);
 			-webkit-box-orient: vertical;
 			-webkit-line-clamp: 2;
 			line-clamp: 2;

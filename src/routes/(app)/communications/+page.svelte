@@ -2018,7 +2018,7 @@
 		border: 0;
 		color: var(--color-text--secondary);
 		font: inherit;
-		font-size: 13px;
+		font-size: var(--typography--fontSize-base);
 		font-weight: 600;
 		background: transparent;
 		cursor: pointer;
@@ -2052,13 +2052,13 @@
 		border-radius: var(--radius-large);
 		color: #fff;
 		background: var(--color-base-lightBlue--700);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 700;
 	}
 	.communications__list-count {
 		margin: 0 var(--space-smallest) 10px 0;
 		color: var(--color-text--secondary);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
 		white-space: nowrap;
 	}
@@ -2113,7 +2113,7 @@
 	.communications__row-avatar :global(.avatar--medium) {
 		width: 40px;
 		height: 40px;
-		font-size: 13px;
+		font-size: var(--typography--fontSize-base);
 		font-weight: 700;
 	}
 	/* The channel the last message came in on, on the avatar's corner, in that channel's own colour. */
@@ -2176,7 +2176,7 @@
 	.communications__row-line time {
 		flex: 0 0 auto;
 		color: var(--color-text--secondary);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
 		white-space: nowrap;
 	}
@@ -2187,7 +2187,7 @@
 	.communications__row-subject {
 		overflow: hidden;
 		color: var(--color-heading);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -2200,7 +2200,7 @@
 		flex: 1;
 		overflow: hidden;
 		color: var(--color-text--secondary);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 		line-height: 1.35;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -2220,7 +2220,7 @@
 		border-radius: var(--radius-circle);
 		color: #fff;
 		background: var(--color-base-blue--900);
-		font-size: 8px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 700;
 	}
 	/* A real unread count: bold and blue, the way an unread badge reads in any messaging app -- distinct
@@ -2235,7 +2235,7 @@
 		border-radius: 10px;
 		background: var(--color-base-lightBlue--700);
 		color: #fff;
-		font-size: 11px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 700;
 		line-height: 1;
 	}
@@ -2251,7 +2251,7 @@
 		border-radius: 10px;
 		color: var(--color-warning--onSurface);
 		background: var(--color-warning--surface);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 700;
 		line-height: 1.3;
 	}
@@ -2284,14 +2284,14 @@
 		min-width: 0;
 	}
 	.communications__recipient :global(.avatar--large) {
-		font-size: 15px;
+		font-size: var(--typography--fontSize-large);
 		font-weight: 700;
 	}
 	.communications__recipient h2 {
 		margin: 0;
 		overflow: hidden;
 		color: var(--color-heading);
-		font-size: 17px;
+		font-size: var(--typography--fontSize-large);
 		font-weight: 700;
 		line-height: 1.25;
 		text-overflow: ellipsis;
@@ -2303,7 +2303,7 @@
 		align-items: center;
 		gap: 6px;
 		color: var(--color-text--secondary);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
 		white-space: nowrap;
 	}
@@ -2372,7 +2372,7 @@
 		gap: 6px;
 		margin: 0;
 		color: var(--message-heading, var(--color-heading));
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 700;
 		line-height: 1.4;
 	}
@@ -2421,7 +2421,7 @@
 		gap: 4px;
 		overflow: hidden;
 		color: var(--color-informative--onSurface);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 700;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -2436,7 +2436,7 @@
 	.communications__quote-copy > span {
 		overflow: hidden;
 		color: var(--color-text--secondary);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
@@ -2452,7 +2452,7 @@
 		gap: var(--space-slim);
 		width: 100%;
 		color: var(--color-text--secondary);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-overline);
 		font-weight: 700;
 		text-align: center;
 	}
@@ -2493,7 +2493,7 @@
 		border-radius: 10px;
 		color: var(--color-warning--onSurface);
 		background: var(--color-warning--surface);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 		line-height: 1.4;
 	}
 	.communications__notice--quiet {
@@ -2524,7 +2524,7 @@
 	.communications__chat-note {
 		margin: 0;
 		color: var(--color-text--secondary);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 		text-align: center;
 	}
 	.communications__stop-note {
@@ -2535,7 +2535,7 @@
 		gap: var(--space-smaller);
 		margin: 0;
 		color: var(--color-text--secondary);
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 		text-align: center;
 	}
 	.communications__stop-note-icon {
@@ -2557,7 +2557,7 @@
 		align-items: center;
 		gap: var(--space-small);
 		color: var(--color-text--secondary);
-		font-size: 11px;
+		font-size: var(--typography--fontSize-overline);
 		text-align: center;
 	}
 	.communications__chat-divider::before,

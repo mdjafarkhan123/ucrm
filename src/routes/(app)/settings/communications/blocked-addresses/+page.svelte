@@ -480,7 +480,7 @@
 	}
 	.blocked__address-copy small {
 		color: var(--color-text--secondary);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 400;
 	}
 	.blocked__by {

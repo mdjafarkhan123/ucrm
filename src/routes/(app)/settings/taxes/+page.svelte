@@ -392,7 +392,7 @@
 			p {
 				margin: 0;
 				color: rgb(255 255 255 / 70%);
-				font-size: 13px;
+				font-size: var(--typography--fontSize-base);
 			}
 		}
 		&__eyebrow {
@@ -401,7 +401,7 @@
 			gap: 12px;
 			color: rgb(255 255 255 / 70%);
 			text-transform: uppercase;
-			font-size: 12px;
+			font-size: var(--typography--fontSize-overline);
 			font-weight: 700;
 			letter-spacing: 1.2px;
 		}
@@ -426,7 +426,7 @@
 			h2 {
 				margin: 0;
 				color: inherit;
-				font-size: 34px;
+				font-size: var(--typography--fontSize-stat);
 				font-weight: 800;
 				overflow-wrap: anywhere;
 			}
@@ -436,7 +436,7 @@
 			border: 1px solid rgb(255 255 255 / 15%);
 			border-radius: 999px;
 			background: rgb(255 255 255 / 10%);
-			font-size: 13px;
+			font-size: var(--typography--fontSize-base);
 			font-weight: 700;
 		}
 		&__counts {
@@ -452,11 +452,11 @@
 			}
 			dt {
 				color: rgb(255 255 255 / 70%);
-				font-size: 12px;
+				font-size: var(--typography--fontSize-small);
 			}
 			dd {
 				margin: 6px 0 0;
-				font-size: 24px;
+				font-size: var(--typography--fontSize-largest);
 				font-weight: 800;
 			}
 		}
@@ -473,7 +473,7 @@
 			border-radius: 999px;
 			background: var(--color-base-lightBlue--800);
 			color: var(--color-white);
-			font-size: 11px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 700;
 		}
 	}

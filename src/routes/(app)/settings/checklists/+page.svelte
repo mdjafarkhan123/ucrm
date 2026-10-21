@@ -198,7 +198,7 @@
 			align-items: center;
 			gap: 10px;
 			color: var(--color-heading);
-			font-size: 20px;
+			font-size: var(--typography--fontSize-larger);
 			font-weight: 800;
 		}
 		&__count {
@@ -207,7 +207,7 @@
 			border-radius: 12px;
 			background: var(--color-surface);
 			color: var(--color-text);
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 700;
 		}
 		&__grid {
@@ -242,7 +242,7 @@
 		&__name {
 			overflow-wrap: anywhere;
 			color: var(--color-heading);
-			font-size: 17px;
+			font-size: var(--typography--fontSize-large);
 			font-weight: 800;
 			line-height: 1.25;
 		}
@@ -252,18 +252,18 @@
 			justify-content: space-between;
 			gap: 8px;
 			color: var(--color-text--secondary);
-			font-size: 14px;
+			font-size: var(--typography--fontSize-base);
 
 			strong {
 				color: var(--color-heading);
-				font-size: 26px;
+				font-size: var(--typography--fontSize-largest);
 				font-weight: 800;
 				letter-spacing: -0.5px;
 			}
 		}
 		&__required {
 			color: var(--color-interactive);
-			font-size: 12px;
+			font-size: var(--typography--fontSize-small);
 			font-weight: 700;
 		}
 		&__bar {
@@ -293,7 +293,7 @@
 				border-radius: 6px;
 				background: var(--color-surface--background--subtle);
 				color: var(--color-text--secondary);
-				font-size: 12px;
+				font-size: var(--typography--fontSize-small);
 				font-weight: 500;
 			}
 		}

@@ -738,7 +738,7 @@
 
 	.payment-detail__applied-meta {
 		overflow: hidden;
-		font-size: 12px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
 		color: var(--color-text--secondary);
 		text-overflow: ellipsis;

@@ -659,7 +659,7 @@
 		-webkit-line-clamp: 2;
 		line-clamp: 2;
 		color: var(--color-text);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
 	}
 	.requests-table__meta {
@@ -671,7 +671,7 @@
 	}
 	.requests-table__text {
 		color: var(--color-text);
-		font-size: 13px;
+		font-size: var(--typography--fontSize-small);
 		font-weight: 500;
 	}
 	.requests-table__text--muted {
