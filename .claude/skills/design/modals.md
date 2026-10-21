@@ -286,3 +286,66 @@ switch replaces the Schedule later and Anytime ticks, and the no-day error ends 
   date tile turns `--color-time--surface` with "—" and "?" and the weekday reads "Pick a day" quiet. Couldn't save:
   a critical notice strip at the top of the details, fields kept. Saving: the pressed save buttons spin together,
   Cancel is disabled.
+
+## Billing setup pop-up
+
+From the Billing card on a job page (`jobs/JobBillingCard`; board `aJGHA`, B, Jafar 2026-10-21 "ok continue" to the
+suggested picks). Same boxes, words and buttons as the live app.
+
+- Medium pop-up (640). Header: 40 tile in `--color-invoice` (`receipt`), "Billing setup", a 12 quiet line "Job #1042 ·
+  title". Footer: Cancel, then Save billing (main, `check`); Save billing is off until something changes.
+- Body splits in two. Left, the form (padding 20, gap 16): "How is this work priced?" select, with under it a
+  read-back strip (radius 12, `--color-invoice--surface`, 1px `--surface-edge`, padding 10 12, a 24 white
+  `badge-dollar-sign` tile, 14/600 `--onSurface`: "$4,373.36 for the whole job", "… per completed visit", "… each
+  billing period, whatever the visit count"); then "When should we be reminded to invoice?" select. A one-off job's
+  price box has one choice, so it shows disabled with a `lock` in place of the chevron.
+- Right, a 330 "Three decisions" panel: `--color-invoice--surface`, 1px `--surface-edge` line on its left, padding 20,
+  gap 12; a 32 white tile (`list-ordered`) and the title 16/600. Three white cards (radius 12, 1px `--surface-edge`,
+  padding 12 12 12 14, gap 10): Price (`badge-dollar-sign`, number 1) and Invoice reminder (`bell`, number 2) read the
+  two choices back (the reminder adds "A reminder for your team, nothing goes to the client."); Collect the money
+  (`credit-card` in `--color-icon--secondary`, a grey "Not set here" pill, 80% opacity) says "Lives with Payments.
+  Nothing here charges a client."
+- Without money access the read-back and the amount in the card are left out. Saving: Save billing spins, Cancel and
+  both boxes go disabled grey. Couldn't save: a critical notice strip (`notices.md`) tops the form with the live words.
+
+## Payment schedule pop-up
+
+Add or Edit payment schedule, from the Billing card of a one-off job (`jobs/JobPaymentScheduleDialog`; board
+`aJGHA`, B, Jafar 2026-10-21). Same boxes, words, rules and buttons as the live app.
+
+- Large pop-up (940). Header: 40 tile in `--color-invoice` (`layers`), "Add a payment schedule" or "Edit payment
+  schedule", the job line. Footer: at the left Remove schedule (danger, `trash-2`; only on a saved schedule with no
+  invoiced stage); Cancel, then Save schedule (main, `check`).
+- Body splits in two. Left, the stages (padding 20, gap 16): the live intro 14 secondary, the "How is each stage
+  set?" switch full width (Amounts `banknote` / Percentages `percent`, `inputs.md`), then one list box (radius 12,
+  1px `--color-border`, clipped): a `--color-surface--background--subtle` row of 12/600 quiet column names, one row
+  per stage (padding 10 8 10 14, gap 12, a hairline above), and an Add stage band (`--color-surface--background--subtle`,
+  a quiet green `circle-plus` button). Amounts mode: Stage box · money box 150 (sign block 36) · a 32 quiet
+  `trash-2` (red on hover). Percentages mode: Stage box · Percent box 110 with a `%` · the stage's amount 14/600
+  right-aligned in 100 · the trash. Boxes are 36 high.
+- Right, a 340 panel: `--color-invoice--surface`, 1px `--surface-edge` line on its left, padding 20, gap 12; a
+  32 white tile (`receipt`) and "Job total" 16/600. One white card (radius 12, padding 16, gap 14): the job total
+  40/700 (-1); an 8 high bar, one part per stage in `--color-invoice` at 100%, 70%, 45% (then 30%, 20%), 3 apart,
+  radius 4, the unassigned rest in `--color-border`; a legend line per stage (8 dot, name 13/500, amount 14/700);
+  under a hairline "Left to assign" with its amount, 14/700: `circle-check` and `--color-success` at $0.00, or
+  `triangle-alert` and `--color-warning` otherwise.
+- Stage already invoiced: its boxes are disabled grey with an informative "Invoiced" pill in the trash's place (all
+  rows give that trailing space 84), the other switch choice shows the can't-pick look, an informative notice strip
+  (`notices.md`) under the switch gives the live reason, and Remove schedule is gone.
+- Stages do not add up and Couldn't save: a critical notice strip tops the left side with the live words; the strip
+  clears when anything is edited. Saving: the Save button spins, everything else goes disabled grey.
+- First schedule: two blank stages, no Remove schedule; the whole total is left to assign.
+
+## Add an invoice reminder pop-up
+
+From the reminders inside the Billing card (`jobs/JobRemindersCard`; board `aJGHA`, A, Jafar 2026-10-21). A reminder
+for the team, never a message to the client.
+
+- Small pop-up (400). Header: 40 tile in `--color-invoice` (`bell-plus`), "Add an invoice reminder", the job
+  line. Footer: Cancel, then Add reminder (main, `plus`), off until a day is picked.
+- Body padding 20, gap 16: "Remind our team on" date box (a quiet "Pick a day" until chosen), "Note (optional)" box
+  (placeholder "e.g. bill with the March statement", 200 letters), then an informative notice strip with the live
+  sentence ("This is a reminder for your own team on the date you pick — nothing is sent to the client.").
+- Saving: Add reminder spins, Cancel goes disabled grey. Couldn't save: a critical notice strip at the top of the body
+  with the server's words; the day and note stay.
+
