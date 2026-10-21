@@ -15,6 +15,7 @@ branch, proof and integration status:
    there. Next drawing: next empty row in `stages/list-1b-parts.md`; List 1a fully drawn (DataTable skipped).
    Older drawings/code need the 12px minimum-text sweep.
    Batch 35 shared money summary card approved B 2026-10-21 (`vIjf0`), waiting to be built: `parts/new-request-top-form.md`.
+   Batch 37 customer group pop-up drawn 2026-10-21 (`PLExJ`, A vs B), waiting for Jafar's pick.
 2. Schedule, event completion and three Jobs pop-ups merged 2026-10-19. Proof:
    `docs/evidence/2026-10-19-schedule/README.md`. App fills available width; 1440 is the Pencil reference.
    Migration already applied.
