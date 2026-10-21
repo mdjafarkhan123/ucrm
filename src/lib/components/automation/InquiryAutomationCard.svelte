@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import { page } from '$app/state';
+	import RecordCard from '$lib/components/layout/RecordCard.svelte';
+	import ProfitFeatureCard from '$lib/components/work/ProfitFeatureCard.svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import DropdownMenu from '$lib/components/ui/DropdownMenu.svelte';
@@ -23,12 +26,25 @@
 	import playIcon from '@tabler/icons/outline/player-play.svg?raw';
 	import skipIcon from '@tabler/icons/outline/player-skip-forward.svg?raw';
 	import stopIcon from '@tabler/icons/outline/player-stop.svg?raw';
+	import hourglassIcon from '@tabler/icons/outline/hourglass.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	import alertIcon from '@tabler/icons/outline/alert-triangle.svg?raw';
+	import adjustmentsIcon from '@tabler/icons/outline/adjustments-horizontal.svg?raw';
 
 	// CRM launch readiness Part 4 Stage 6: a website inquiry's automatic follow-up, shown on the Request it became or
 	// its chat conversation (HighLevel's contact Workflows panel). Staff see whether the reply is waiting, paused and
 	// why, sent, or stopped and why, and can Pause, Resume, Skip or Stop it. Like the Quote card, nothing loads with
 	// the page: it fetches once the pointer reaches it, and hides itself for a viewer without Automation access.
-	let { record }: { record: InquiryRecord } = $props();
+	let {
+		record,
+		customerName = null
+	}: {
+		record: InquiryRecord;
+		/** Classic: whose messages the card counts ("Messages sent to Daniel"). */
+		customerName?: string | null;
+	} = $props();
+
+	const classic = $derived(page.data.presentation === 'classic');
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -100,6 +116,26 @@
 		return `${sent} message${sent === 1 ? '' : 's'} sent`;
 	}
 
+	// classic.pen "Follow-up card": the newest follow-up as the page's dark featured card, any older ones as
+	// a line under it. Loading, errors and "none" stay a small plain card.
+	const STATE_ICON: Record<string, string> = {
+		active: hourglassIcon,
+		paused: pauseIcon,
+		completed: checkIcon,
+		stopped: stopIcon,
+		failed: alertIcon
+	};
+	const lead = $derived(enrollments[0]);
+	const older = $derived(enrollments.slice(1));
+	const firstName = $derived(customerName?.trim().split(/\s+/)[0] || 'the customer');
+	const leadSubline = $derived.by(() => {
+		if (!lead) return '';
+		if (lead.state === 'stopped' && lead.stop_reason)
+			return STOP_REASON[lead.stop_reason] ?? lead.stop_reason;
+		if (lead.state === 'completed') return 'Every step has run';
+		return detailLine(lead);
+	});
+
 	let pendingId = $state<string | null>(null);
 	let stoppingId = $state<string | null>(null);
 	let stopReason = $state('');
@@ -170,7 +206,81 @@
 	}
 </script>
 
-{#if !accessDenied}
+<!-- eslint-disable svelte/no-at-html-tags -->
+{#if !accessDenied && classic}
+	<div role="presentation" onmouseenter={() => (warm = true)} onfocusin={() => (warm = true)}>
+		{#if lead && warm && !query.isPending && !query.isError}
+			{@const state = STATE[lead.state] ?? { tone: 'inactive', label: lead.state }}
+			<ProfitFeatureCard
+				label="Automatic follow-up"
+				eyebrow="Automatic follow-up"
+				value={lead.recipe_name}
+				compact
+				chip={{ label: state.label, icon: STATE_ICON[lead.state] ?? hourglassIcon }}
+				subline={leadSubline}
+				showBar={false}
+				parts={[
+					{
+						key: 'sent',
+						label: `Messages sent to ${firstName}`,
+						amount: String(lead.customer_messages_sent),
+						share: 0,
+						percent: null,
+						tone: 'none'
+					}
+				]}
+			>
+				{#if lead.held_reason && (lead.state === 'active' || lead.state === 'failed')}
+					<p class="profit-card__note profit-card__note--warn" role="status">
+						{HELD_REASON[lead.held_reason] ?? 'The last try did not go through. It will try again.'}
+					</p>
+				{/if}
+				{#if older.length > 0}
+					<p class="profit-card__note">
+						Also on this inquiry: {older
+							.map((entry) => `${entry.recipe_name} (${STATE[entry.state]?.label ?? entry.state})`)
+							.join(', ')}
+					</p>
+				{/if}
+				{#if canControl && (lead.state === 'active' || lead.state === 'paused')}
+					<div class="inquiry-automation__controls">
+						<DropdownMenu
+							items={menuItems(lead)}
+							triggerLabel="Follow-up actions"
+							triggerClass="inquiry-automation__control"
+							disabled={pendingId !== null}
+						>
+							{#snippet trigger()}
+								<span aria-hidden="true">{@html adjustmentsIcon}</span>
+								{lead.state === 'paused' ? 'Resume, skip or stop' : 'Pause, skip or stop'}
+							{/snippet}
+						</DropdownMenu>
+					</div>
+				{/if}
+			</ProfitFeatureCard>
+		{:else}
+			<RecordCard
+				title="Automatic follow-up"
+				subtitle="Replies sent for you"
+				size="rail"
+				id="request-follow-up"
+			>
+				<div class="inquiry-automation__pad">
+					{#if !warm || query.isPending}
+						<LoadingSkeleton variant="text" label="Loading automatic follow-up" />
+					{:else if query.isError}
+						<ErrorState
+							description="Automation history could not be loaded."
+							retry={() => query.refetch()}
+						/>
+					{:else}
+						<p class="inquiry-automation__empty">No automation is following up on this inquiry.</p>
+					{/if}
+				</div>
+			</RecordCard>
+		{/if}
+	</div>
+{:else if !accessDenied}
 	<div role="presentation" onmouseenter={() => (warm = true)} onfocusin={() => (warm = true)}>
 		<RailCard title="Automatic follow-up" icon={robotIcon}>
 			{#if !warm || query.isPending}
@@ -224,6 +334,8 @@
 		</RailCard>
 	</div>
 {/if}
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 {#if stoppingId}
 	<ConfirmDialog
@@ -298,10 +410,61 @@
 			font-size: var(--typography--fontSize-small);
 		}
 
+		&__pad {
+			padding: 0 20px 18px;
+		}
+
+		&__empty {
+			margin: 0;
+			color: var(--classic2-secondary);
+			font-family: var(--classic2-font);
+			font-size: var(--classic2-font-label);
+		}
+
+		&__controls {
+			display: flex;
+		}
+
 		&__held {
 			margin: 0;
 			color: var(--color-warning--onSurface);
 			font-size: var(--typography--fontSize-small);
 		}
+	}
+
+	// The Classic card's white button sits in ProfitFeatureCard's markup, so it is styled globally by class.
+	:global(.inquiry-automation__control) {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		height: 34px;
+		padding: 0 14px;
+		border: 0;
+		border-radius: var(--classic2-radius-control);
+		background: var(--classic2-white);
+		color: var(--classic2-on-white);
+		font-family: var(--classic2-font);
+		font-size: var(--classic2-font-label);
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	:global(.inquiry-automation__control svg) {
+		width: 16px;
+		height: 16px;
+	}
+
+	:global(.inquiry-automation__control:hover:not(:disabled)) {
+		background: var(--classic2-feature-label);
+	}
+
+	:global(.inquiry-automation__control:focus-visible) {
+		outline: 2px solid var(--classic2-white);
+		outline-offset: 2px;
+	}
+
+	:global(.inquiry-automation__control:disabled) {
+		opacity: 0.6;
+		cursor: not-allowed;
 	}
 </style>

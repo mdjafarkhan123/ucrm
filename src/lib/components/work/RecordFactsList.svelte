@@ -135,7 +135,8 @@
 			transform: translateY(-50%);
 		}
 		&__row:first-child .record-facts__icon,
-		&__row--number + .record-facts__row .record-facts__icon {
+		&__row--number + .record-facts__row .record-facts__icon,
+		&__row.record-facts__row--brand .record-facts__icon {
 			border-color: var(--classic2-green-soft);
 			background: var(--classic2-green-tint);
 			color: var(--classic2-green);

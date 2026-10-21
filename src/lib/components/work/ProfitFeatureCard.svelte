@@ -8,7 +8,8 @@
 		share: number;
 		/** Whole-number percent shown before the amount, or null to leave it out. */
 		percent: number | null;
-		tone: 'violet' | 'blue' | 'amber' | 'green' | 'muted';
+		/** `none` draws a plain legend row with no swatch, e.g. a count. */
+		tone: 'violet' | 'blue' | 'amber' | 'green' | 'muted' | 'none';
 	};
 </script>
 
@@ -31,6 +32,7 @@
 		showBar = true,
 		chip,
 		pillIcon = trendIcon,
+		compact = false,
 		children
 	}: {
 		/** Names the card out loud, e.g. "Job profit". */
@@ -46,6 +48,8 @@
 		chip?: { label: string; icon: string };
 		/** The icon inside the margin pill. */
 		pillIcon?: string;
+		/** A name rather than a figure in the headline (the request's follow-up card): a smaller size. */
+		compact?: boolean;
 		/** Notes under the legend. */
 		children?: Snippet;
 	} = $props();
@@ -62,7 +66,13 @@
 
 	<div class="profit-card__figure">
 		<div class="profit-card__figure-row">
-			<p class="profit-card__value" class:profit-card__value--loss={loss}>{value}</p>
+			<p
+				class="profit-card__value"
+				class:profit-card__value--loss={loss}
+				class:profit-card__value--compact={compact}
+			>
+				{value}
+			</p>
 			{#if margin}
 				<span class="profit-card__margin">
 					<span aria-hidden="true">{@html pillIcon}</span>{margin}
@@ -72,7 +82,7 @@
 		<p class="profit-card__sub">{subline}</p>
 	</div>
 
-	{#if showBar}
+	{#if showBar && parts.length > 0}
 		<div class="profit-card__bar" aria-hidden="true">
 			{#each parts as part (part.key)}
 				{#if part.share > 0}
@@ -85,19 +95,23 @@
 		</div>
 	{/if}
 
-	<dl class="profit-card__legend">
-		{#each parts as part (part.key)}
-			<div class="profit-card__row">
-				<dt>
-					<span class={`profit-card__swatch profit-card__segment--${part.tone}`}></span>{part.label}
-				</dt>
-				<dd>
-					{#if part.percent !== null}<span>{part.percent}%</span>{/if}
-					<strong>{part.amount}</strong>
-				</dd>
-			</div>
-		{/each}
-	</dl>
+	{#if parts.length > 0}
+		<dl class="profit-card__legend">
+			{#each parts as part (part.key)}
+				<div class="profit-card__row">
+					<dt>
+						{#if part.tone !== 'none'}<span
+								class={`profit-card__swatch profit-card__segment--${part.tone}`}
+							></span>{/if}{part.label}
+					</dt>
+					<dd>
+						{#if part.percent !== null}<span>{part.percent}%</span>{/if}
+						<strong>{part.amount}</strong>
+					</dd>
+				</div>
+			{/each}
+		</dl>
+	{/if}
 
 	{#if children}{@render children()}{/if}
 </section>
@@ -182,6 +196,12 @@
 
 			&--loss {
 				color: var(--classic2-savebar-error);
+			}
+
+			&--compact {
+				font-size: 24px;
+				letter-spacing: -0.6px;
+				line-height: 1.2;
 			}
 		}
 

@@ -7,6 +7,7 @@
 	import PageContainer from '$lib/components/layout/PageContainer.svelte';
 	import RecordDetailLayout from '$lib/components/layout/RecordDetailLayout.svelte';
 	import RailCard from '$lib/components/layout/RailCard.svelte';
+	import RecordCard from '$lib/components/layout/RecordCard.svelte';
 	import SectionBlock from '$lib/components/layout/SectionBlock.svelte';
 	import ErrorState from '$lib/components/data-display/ErrorState.svelte';
 	import LoadingSkeleton from '$lib/components/data-display/LoadingSkeleton.svelte';
@@ -49,13 +50,26 @@
 		updateNote,
 		type NoteChange
 	} from '$lib/collaboration/api';
-	import { convertRequestToQuote, requestPricingKey, type QuoteWriteError } from '$lib/quotes/api';
+	import {
+		convertRequestToQuote,
+		fetchRequestPricing,
+		requestPricingKey,
+		type QuoteWriteError
+	} from '$lib/quotes/api';
+	import type { RecordFact } from '$lib/components/work/types';
 	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
 	import clipboardIcon from '@tabler/icons/outline/clipboard-text.svg?raw';
 	import notesIcon from '@tabler/icons/outline/notes.svg?raw';
 	import clockIcon from '@tabler/icons/outline/clock-hour-4.svg?raw';
 	import quoteIcon from '@tabler/icons/outline/file-invoice.svg?raw';
 	import briefcaseIcon from '@tabler/icons/outline/briefcase.svg?raw';
+	import calendarIcon from '@tabler/icons/outline/calendar.svg?raw';
+	import calendarClockIcon from '@tabler/icons/outline/calendar-time.svg?raw';
+	import toolIcon from '@tabler/icons/outline/tool.svg?raw';
+	import walletIcon from '@tabler/icons/outline/wallet.svg?raw';
+	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
+	import calendarPlusIcon from '@tabler/icons/outline/calendar-plus.svg?raw';
+	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import InquiryAutomationCard from '$lib/components/automation/InquiryAutomationCard.svelte';
 	import { AUTOMATION_JOURNEY_READY } from '$lib/automation/journey';
 	import { customerNoticeToast, type CustomerNoticeSent } from '$lib/schedule/customer-notices';
@@ -64,6 +78,7 @@
 	const toast = getToastManager();
 	const requestId = $derived(page.params.id ?? '');
 	const currentUserId = $derived(page.data.user?.id as string | undefined);
+	const classic = $derived(page.data.presentation === 'classic');
 
 	const requestQuery = createQuery(() => ({
 		queryKey: requestDetailKey(requestId),
@@ -392,6 +407,159 @@
 			: []
 	);
 
+	// --- Classic header (classic.pen "Request details · 1440") ------------------------------------------
+	// The journey says when the visit is, the facts add the service and the priced subtotal, and the next
+	// step names what follows the visit. Requests carry no number and their source is not recorded reliably,
+	// so the header leaves the "REQUEST #" line out rather than invent one.
+
+	// The same query the Products and services card reads, so the subtotal costs no extra fetch.
+	const pricingQuery = createQuery(() => ({
+		queryKey: requestPricingKey(requestId),
+		queryFn: () => fetchRequestPricing(requestId),
+		enabled: classic && Boolean(requestId)
+	}));
+	const subtotalText = $derived.by(() => {
+		const pricing = pricingQuery.data;
+		if (!pricing || pricing.lines.length === 0) return null;
+		return new Intl.NumberFormat(pricing.locale, {
+			style: 'currency',
+			currency: pricing.currency_code
+		}).format(pricing.subtotal_minor / 100);
+	});
+
+	const zone = $derived(saved?.timezone ?? 'UTC');
+	const monthDay = $derived(
+		new Intl.DateTimeFormat(undefined, { timeZone: zone, month: 'short', day: 'numeric' })
+	);
+	const clock = $derived(
+		new Intl.DateTimeFormat(undefined, { timeZone: zone, hour: 'numeric', minute: '2-digit' })
+	);
+	const zoneDay = $derived(
+		new Intl.DateTimeFormat('en-CA', {
+			timeZone: zone,
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit'
+		})
+	);
+	// "Today" or "Oct 20", in the office's own calendar.
+	function visitDay(iso: string) {
+		const day = new Date(iso);
+		return zoneDay.format(day) === zoneDay.format(new Date()) ? 'Today' : monthDay.format(day);
+	}
+
+	const classicAssessmentFact = $derived.by(() => {
+		const assessment = saved?.assessment;
+		if (!assessment) return null;
+		if (!assessment.starts_at) return 'Booked, no date yet';
+		const day = visitDay(assessment.starts_at);
+		return assessment.all_day
+			? `${day}, anytime`
+			: `${day}, ${clock.format(new Date(assessment.starts_at))}`;
+	});
+
+	const classicFacts = $derived.by<RecordFact[]>(() => {
+		if (!saved) return [];
+		const waitingApproval = saved.stored_status === 'needs_approval' && !saved.assessment;
+		return [
+			{
+				label: 'Requested',
+				value: monthDay.format(new Date(saved.created_at)),
+				icon: calendarIcon,
+				tone: 'neutral'
+			},
+			waitingApproval
+				? {
+						label: 'Assessment',
+						value: saved.preferred_time,
+						empty: 'Waiting for approval',
+						icon: calendarClockIcon,
+						tone: 'waiting'
+					}
+				: {
+						label: 'Assessment',
+						value: classicAssessmentFact,
+						empty: 'Not booked yet',
+						icon: calendarClockIcon,
+						tone: saved.assessment ? 'brand' : 'neutral'
+					},
+			{
+				label: 'Service',
+				value: saved.service_type,
+				empty: 'Not recorded',
+				icon: toolIcon,
+				tone: 'neutral'
+			},
+			{
+				label: 'Request subtotal',
+				value: subtotalText,
+				empty: 'Not priced yet',
+				icon: walletIcon,
+				tone: 'neutral'
+			}
+		];
+	});
+
+	// The request step says where the visit stands ("Visit today · 2:00 PM"); later steps say "Not yet".
+	const requestStepDetail = $derived.by(() => {
+		const assessment = saved?.assessment;
+		if (!saved) return '';
+		if (saved.stored_status === 'converted') return 'Converted';
+		if (assessment?.completed_at) return 'Assessed';
+		if (assessment?.starts_at) {
+			const day = visitDay(assessment.starts_at);
+			const when = day === 'Today' ? 'today' : day;
+			return assessment.all_day
+				? `Visit ${when}`
+				: `Visit ${when} · ${clock.format(new Date(assessment.starts_at))}`;
+		}
+		return REQUEST_STATUS_LABELS[status];
+	});
+
+	const classicLifecycle = $derived.by(() => {
+		if (!saved) return [];
+		const target = saved.converted_to;
+		const open = saved.stored_status !== 'converted' && saved.stored_status !== 'archived';
+		const later = { detail: 'Not yet' };
+		const visitPending = Boolean(saved.assessment && !saved.assessment.completed_at);
+		return recordLifecycle('request', requestStepDetail, {
+			quote:
+				target?.kind === 'quote'
+					? {
+							label: `Quote #${target.number}`,
+							detail: 'Converted from this request',
+							href: convertedHref,
+							complete: true
+						}
+					: { detail: open && visitPending ? 'After the visit' : open ? 'Next step' : 'Not yet' },
+			job:
+				target?.kind === 'job'
+					? {
+							label: `Job #${target.number}`,
+							detail: 'Converted from this request',
+							href: convertedHref,
+							complete: true
+						}
+					: later,
+			invoice: later,
+			paid: later
+		});
+	});
+
+	// Classic's main button carries an icon for the step it takes.
+	const classicPrimaryAction = $derived.by(() => {
+		const action = primaryAction;
+		if (!action || !saved) return action;
+		if (saved.stored_status === 'converted') return { ...action, icon: arrowRightIcon };
+		if (!saved.assessment) return { ...action, icon: calendarPlusIcon };
+		if (!saved.assessment.completed_at) return { ...action, icon: circleCheckIcon };
+		return { ...action, icon: quoteIcon };
+	});
+
+	const clientFirstName = $derived(
+		saved?.client?.display_name?.trim().split(/\s+/)[0] || 'the client'
+	);
+
 	// --- The rail -------------------------------------------------------------------------------------
 
 	// Jobber swaps the whole rail for the history panel rather than opening it beside the notes, so the
@@ -407,6 +575,41 @@
 		});
 	}
 </script>
+
+{#snippet overviewActions()}
+	{#if !editingOverview}
+		<PencilButton
+			onclick={() => {
+				descriptionDraft = saved?.description ?? '';
+				editingOverview = true;
+			}}
+			label="Edit the service overview"
+		/>
+	{:else if overviewChanged}
+		<Badge size="small" status="warning">Unsaved</Badge>
+	{/if}
+{/snippet}
+
+{#snippet overviewEditor()}
+	<Textarea
+		id="request-description"
+		label="Please provide as much information as you can"
+		rows={6}
+		bind:value={descriptionDraft}
+	/>
+{/snippet}
+
+{#snippet notesPanel()}
+	<NotesPanel
+		entityType="request"
+		entityId={requestId}
+		canManage
+		{currentUserId}
+		pending={notePending}
+		look={classic ? 'record' : 'default'}
+		onChange={(next: NoteChange[]) => (notePending = next)}
+	/>
+{/snippet}
 
 <PageContainer>
 	{#if requestQuery.isPending}
@@ -425,25 +628,27 @@
 		>
 			{#snippet main()}
 				<WorkRecordHeader
-					lifecycle={recordLifecycle(
-						'request',
-						REQUEST_STATUS_LABELS[status],
-						saved.converted_to
-							? {
-									[saved.converted_to.kind]: {
-										label: `${saved.converted_to.kind === 'job' ? 'Job' : 'Quote'} #${saved.converted_to.number}`,
-										href: convertedHref,
-										detail: 'Converted from this request'
-									}
-								}
-							: {}
-					)}
+					lifecycle={classic
+						? classicLifecycle
+						: recordLifecycle(
+								'request',
+								REQUEST_STATUS_LABELS[status],
+								saved.converted_to
+									? {
+											[saved.converted_to.kind]: {
+												label: `${saved.converted_to.kind === 'job' ? 'Job' : 'Quote'} #${saved.converted_to.number}`,
+												href: convertedHref,
+												detail: 'Converted from this request'
+											}
+										}
+									: {}
+							)}
 					icon={fileTextIcon}
 					recordType="Request"
 					{title}
 					statusLabel={REQUEST_STATUS_LABELS[status]}
 					statusTone={REQUEST_STATUS_TONES[status]}
-					{primaryAction}
+					primaryAction={classic ? classicPrimaryAction : primaryAction}
 					{menuItems}
 					onHistory={() => (showHistory = !showHistory)}
 					onHistoryHover={warmHistory}
@@ -467,47 +672,54 @@
 						/>
 					{/snippet}
 					{#snippet facts()}
-						<RecordFactsList facts={headerFacts} />
+						<RecordFactsList facts={classic ? classicFacts : headerFacts} />
 					{/snippet}
 				</WorkRecordHeader>
 
-				<SectionBlock
-					title="Service overview"
-					icon={clipboardIcon}
-					level={2}
-					form={editingOverview}
-				>
-					{#snippet actions()}
-						{#if !editingOverview}
-							<PencilButton
-								onclick={() => {
-									descriptionDraft = saved.description ?? '';
-									editingOverview = true;
-								}}
-								label="Edit the service overview"
-							/>
-						{:else if overviewChanged}
-							<Badge size="small" status="warning">Unsaved</Badge>
-						{/if}
-					{/snippet}
+				{#if classic}
+					<RecordCard
+						title="Service overview"
+						subtitle={`What ${clientFirstName} is asking for`}
+						id="request-overview"
+					>
+						{#snippet actions()}{@render overviewActions()}{/snippet}
+						<div class="request-record__row">
+							{#if editingOverview}
+								{@render overviewEditor()}
+							{:else if description}
+								<p class="request-detail__overview">{description}</p>
+							{:else}
+								<p class="request-record__empty">
+									Nothing written down yet. Say what the client is asking for, so whoever visits
+									knows what they are looking at.
+								</p>
+							{/if}
+						</div>
+					</RecordCard>
+				{:else}
+					<SectionBlock
+						title="Service overview"
+						icon={clipboardIcon}
+						level={2}
+						form={editingOverview}
+					>
+						{#snippet actions()}
+							{@render overviewActions()}
+						{/snippet}
 
-					{#if editingOverview}
-						<Textarea
-							id="request-description"
-							label="Please provide as much information as you can"
-							rows={6}
-							bind:value={descriptionDraft}
-						/>
-					{:else if description}
-						<p class="request-detail__overview">{description}</p>
-					{:else}
-						<EmptyState
-							icon={clipboardIcon}
-							title="Nothing written down yet"
-							description="Say what the client is asking for, so whoever visits knows what they are looking at."
-						/>
-					{/if}
-				</SectionBlock>
+						{#if editingOverview}
+							{@render overviewEditor()}
+						{:else if description}
+							<p class="request-detail__overview">{description}</p>
+						{:else}
+							<EmptyState
+								icon={clipboardIcon}
+								title="Nothing written down yet"
+								description="Say what the client is asking for, so whoever visits knows what they are looking at."
+							/>
+						{/if}
+					</SectionBlock>
+				{/if}
 
 				<AssessmentBlock
 					bind:this={assessmentBlock}
@@ -522,6 +734,7 @@
 							'Visit saved'
 						)}
 					onRemove={() => runAssessmentWrite(() => removeAssessment(requestId), 'Visit removed')}
+					look="record"
 					onComplete={(complete: boolean) =>
 						runAssessmentWrite(
 							() => completeAssessment(requestId, complete),
@@ -544,19 +757,26 @@
 					</RailCard>
 				{:else}
 					{#if AUTOMATION_JOURNEY_READY}
-						<InquiryAutomationCard record={{ kind: 'request', id: requestId }} />
+						<InquiryAutomationCard
+							record={{ kind: 'request', id: requestId }}
+							customerName={saved.client?.display_name}
+						/>
 					{/if}
 
-					<RailCard title="Notes" icon={notesIcon} count={notesQuery.data?.length}>
-						<NotesPanel
-							entityType="request"
-							entityId={requestId}
-							canManage
-							{currentUserId}
-							pending={notePending}
-							onChange={(next: NoteChange[]) => (notePending = next)}
-						/>
-					</RailCard>
+					{#if classic}
+						<RecordCard
+							title="Notes"
+							subtitle="Only your team sees these"
+							size="rail"
+							id="request-notes-card"
+						>
+							{@render notesPanel()}
+						</RecordCard>
+					{:else}
+						<RailCard title="Notes" icon={notesIcon} count={notesQuery.data?.length}>
+							{@render notesPanel()}
+						</RailCard>
+					{/if}
 
 					<RecordFilesCard
 						entityType="request"
@@ -565,6 +785,8 @@
 						pickerLabel="On this request"
 						clientId={saved.client?.id ?? null}
 						clientLabel={saved.client?.display_name ?? null}
+						title={classic ? 'Photos and files' : undefined}
+						look={classic ? 'record' : 'default'}
 					/>
 				{/if}
 			{/snippet}
@@ -578,6 +800,30 @@
 			margin: 0;
 			color: var(--color-text);
 			white-space: pre-wrap;
+		}
+	}
+
+	// classic.pen "Request details · 1440" ------------------------------------------------------------------
+	.request-record {
+		&__row {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+			padding: 18px 24px 22px;
+			border-top: 1px solid var(--classic2-divider);
+			font-family: var(--classic2-font);
+
+			.request-detail__overview {
+				color: var(--classic2-body);
+				font-size: var(--classic2-font-body);
+				line-height: 1.6;
+			}
+		}
+
+		&__empty {
+			margin: 0;
+			color: var(--classic2-secondary);
+			font-size: var(--classic2-font-label);
 		}
 	}
 </style>
