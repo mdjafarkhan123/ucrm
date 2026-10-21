@@ -65,7 +65,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `jafar/booking/BookingStatus` |  | ✅ Batch 30 `TC3iU` A 2026-10-20 | ✅ |
 | `jobs/ApplyToFutureDialog` | ◆ pop-up | ✅ Schedule pop-ups `a03Qm` | ✅ Merged 2026-10-19 |
 | `jobs/FinalVisitDialog` | ◆ pop-up | ✅ Schedule pop-ups `WbpEc` | ✅ Merged 2026-10-19 |
-| `jobs/JobVisitDialog` | ◆ pop-up · loading, permission-limited | ⬜ | ⬜ |
+| `jobs/JobVisitDialog` | ◆ pop-up · loading, permission-limited | 🟡 Batch 47 `PbkWT` A or B, waiting for Jafar 2026-10-21 | ⬜ |
 | `jobs/RecurrenceFields` | loading | ✅ | ✅ |
 | `layout/MobileNav` |  | ⬜ | ⬜ |
 | `layout/NotificationBell` |  | ✅ Batch 45 `FGYzU` B 2026-10-21 | ⬜ |
