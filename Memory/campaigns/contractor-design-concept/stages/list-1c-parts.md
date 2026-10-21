@@ -25,7 +25,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `quotes/QuoteClientViewBlock` |  | ⬜ | ⬜ |
 | `quotes/QuoteEmailPreview` |  | ⬜ | ⬜ |
 | `quotes/SendQuoteDialog` | ◆ pop-up · loading | ⬜ | ⬜ |
-| `requests/AssessmentBlock` | loading, empty | ⬜ | ⬜ |
+| `requests/AssessmentBlock` | loading, empty, open panel (new and saved request), errors, team states | ✅ Batch 46 A `PLgAR` (2026-10-21) | ⬜ |
 | `reviews/RequestReviewButton` | pop-ups: "Request a review" 🔁F · loading | ⬜ | ⬜ |
 | `reviews/ReviewFeedbackJourney` |  | ⬜ | ⬜ |
 | `reviews/ReviewRequestForm` |  | ⬜ | ⬜ |

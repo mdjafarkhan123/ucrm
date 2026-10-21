@@ -68,6 +68,20 @@
   quiet; a chevron), body padding 16 gap 16: Visit title, Day · Start → End on one row, Anytime and Schedule
   later checkboxes side by side, Instructions with its count, Who is going chips, Remove visit (danger, small).
   Notify customer closes the card under a 1px line. Billing: Card header (Invoice receipt tile) and its checkbox.
+- **On-site assessment panel**, approved A by Jafar 2026-10-21 (Pencil: "Batch 46 · On-site assessment panel ·
+  Approved A", `PLgAR`): what Book a visit opens, on New request and on a saved request page. It stays inside its
+  white card under the Card header (Time tile, truck icon). Body padding 20 gap 16 holds the open visit exactly like
+  the New job open visit panel above: radius 12 panel, 1px `--color-time--surface-edge`, head on
+  `--color-time--surface` (44 `--color-time` day tile, or a white tile with a 20 calendar-clock in `--color-time`
+  when there is no day; "Assessment" 14/600 over the day and time or "No day yet" 12 `--color-time--onSurface`;
+  who is going at the right, or "Nobody assigned yet" quiet), no chevron. Panel body padding 16 gap 16: Day ·
+  Start → End on one row (hidden with Schedule later; Start and End hidden with Anytime), Anytime and Schedule
+  later checkboxes side by side (only Schedule later while it is ticked), Instructions with its count, Who is going
+  people pick chips, then Remove visit (danger, small). Notify customer closes the card under a 1px line (dated
+  visits only). A saved request's panel ends in a 1px-topped actions row: Remove visit left; Cancel and Save visit
+  (main, check icon) right. Errors: the field's error border plus a 12 `--color-critical` line with a 14
+  circle-alert under the row; team loading, couldn't load and nobody else are one 13/500 line with a 16 icon under
+  "Who is going".
 - **New quote page**, approved A by Jafar 2026-10-21 (Pencil: "Batch 34 · New quote page · Approved A", `OzXHh`):
   the shared create form in quote pink, then separate cards: Introduction, Products and services, Client message,
   Contract disclaimer. An optional part not yet added is a slim card (padding 14 20, gap 14): a 40 quote tile,
