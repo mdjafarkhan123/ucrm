@@ -316691,6 +316691,2260 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "b5ZAe",
+      "x": 19356,
+      "y": 20965,
+      "name": "Concept · Batch 44 · Collect payment pop-up · Pick A or B",
+      "width": 1180,
+      "fill": "$color-surface-background",
+      "layout": "vertical",
+      "gap": 48,
+      "padding": 64,
+      "children": [
+        {
+          "type": "frame",
+          "id": "iu7qA",
+          "name": "Intro",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "xxNmv",
+              "name": "Eyebrow",
+              "fill": "$color-interactive",
+              "content": "NEW CONCEPT · BATCH 44 · COLLECT PAYMENT POP-UP · PICK A OR B",
+              "fontFamily": "$font-family",
+              "fontSize": 12,
+              "fontWeight": "600",
+              "letterSpacing": 0.8
+            },
+            {
+              "type": "text",
+              "id": "ORx2u",
+              "name": "Title",
+              "fill": "$color-heading",
+              "content": "Collect payment pop-up",
+              "fontFamily": "$font-family",
+              "fontSize": 36,
+              "fontWeight": "700",
+              "letterSpacing": -0.8
+            },
+            {
+              "type": "text",
+              "id": "TsE5f",
+              "name": "Lead",
+              "fill": "$color-text-secondary",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "invoices/CollectPaymentDialog, opened from an invoice's Collect payment (that invoice is pinned and ticked first) and, as Fix payment, from a payment page. Jobber's New payment shape: one received payment spread across the client's bills that still owe; whatever isn't applied stays with the client as credit. Same fields, words and buttons as the live app: Amount received, Apply to invoices (tick a bill, adjust its amount), Payment method (ten methods, so it stays a dropdown), Payment date, Reference #, Details, then Cancel · Save and email receipt · Collect payment. A · Money in, split out: the payment's own details at the left, a blue panel at the right where the money is applied to invoices, with a bar showing applied and credit. B · One column, refined: the live order, the invoice list as one card with the applied/credit line as its foot, method and date side by side.",
+              "lineHeight": 1.45,
+              "fontFamily": "$font-family",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "PUQ3l",
+          "name": "Part 1 · Pick a look",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 32,
+          "children": [
+            {
+              "type": "frame",
+              "id": "GznaF",
+              "name": "Heading",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "g83W1u",
+                  "name": "Title",
+                  "fill": "$color-heading",
+                  "content": "Part 1 · Pick a look",
+                  "fontFamily": "$font-family",
+                  "fontSize": 24,
+                  "fontWeight": "700",
+                  "letterSpacing": -0.4
+                },
+                {
+                  "type": "text",
+                  "id": "BMsdO",
+                  "name": "Desc",
+                  "fill": "$color-text-secondary",
+                  "content": "Both drawn from Invoice #1042 (owes $1,250.00): Sarah Lee sent $1,500.00 by bank transfer, so $250.00 stays as client credit.",
+                  "fontFamily": "$font-family",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "bqUvT",
+              "name": "Option A",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "q1US63",
+                  "name": "Option heading",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "K0OAr",
+                      "name": "Option name",
+                      "fill": "$color-heading",
+                      "content": "A · Money in, split out (new concept)",
+                      "fontFamily": "$font-family",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "aPf8W",
+                      "name": "Option description",
+                      "fill": "$color-text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Large pop-up (940). Left: what came in — a big Amount received box, then method and date side by side, Reference # and Details. Right: a blue invoice panel where the money goes — one white card per bill (tick it, adjust its amount), and a foot card with a bar: blue for what's applied, sand for what stays as client credit.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font-family",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Tt5uF",
+                  "name": "Stage",
+                  "width": "fill_container",
+                  "fill": [
+                    "$color-surface-background",
+                    "$color-overlay"
+                  ],
+                  "cornerRadius": "$radius-large",
+                  "padding": 56,
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ZToIA",
+                      "name": "Column",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "CODbw",
+                          "name": "A · Collect payment · ready",
+                          "clip": true,
+                          "width": 940,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-large",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "effect": [
+                            {
+                              "type": "shadow",
+                              "shadowType": "outer",
+                              "color": "#0000001a",
+                              "offset": {
+                                "x": 0,
+                                "y": 1
+                              },
+                              "blur": 4
+                            },
+                            {
+                              "type": "shadow",
+                              "shadowType": "outer",
+                              "color": "#0000000d",
+                              "offset": {
+                                "x": 0,
+                                "y": 4
+                              },
+                              "blur": 12
+                            }
+                          ],
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Zjkhg",
+                              "name": "Header",
+                              "width": "fill_container",
+                              "stroke": "$color-border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 12,
+                              "padding": [
+                                16,
+                                16,
+                                16,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "ypTWf",
+                                  "name": "Tile · credit-card",
+                                  "width": 40,
+                                  "height": 40,
+                                  "fill": "$color-invoice-surface",
+                                  "cornerRadius": 10,
+                                  "stroke": "$color-invoice-surface-edge",
+                                  "strokeWidth": 1,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "ZtWX5",
+                                      "name": "Icon",
+                                      "width": 20,
+                                      "height": 20,
+                                      "icon": "credit-card",
+                                      "library": "lucide",
+                                      "fill": "$color-invoice"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Qfr5E",
+                                  "name": "Heading",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "jfAw7",
+                                      "name": "Title",
+                                      "fill": "$color-heading",
+                                      "content": "Collect payment",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 20,
+                                      "fontWeight": "600",
+                                      "letterSpacing": -0.2
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "Y9TqW",
+                                      "name": "Hint",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Invoice #1042 · Sarah Lee",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "mnUgo",
+                                  "type": "ref",
+                                  "ref": "nIDZt",
+                                  "name": "Close",
+                                  "descendants": {
+                                    "IW9bL": {
+                                      "icon": "x"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "tLBW5",
+                              "name": "Body · split",
+                              "width": "fill_container",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "MbP5V",
+                                  "name": "Payment",
+                                  "width": "fill_container",
+                                  "height": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 16,
+                                  "padding": 20,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "sPmXe",
+                                      "name": "Field · Amount received",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 6,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "ciCgg",
+                                          "name": "Label",
+                                          "fill": "$color-heading",
+                                          "content": "Amount received",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "ryVxc",
+                                          "name": "Money box",
+                                          "clip": true,
+                                          "width": "fill_container",
+                                          "height": 56,
+                                          "fill": "$color-surface-background",
+                                          "cornerRadius": 8,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "V2VTB",
+                                              "name": "Sign",
+                                              "width": 48,
+                                              "height": "fill_container",
+                                              "fill": "$color-surface-background-subtle",
+                                              "stroke": "$color-border-interactive",
+                                              "strokeWidth": {
+                                                "right": 1
+                                              },
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "EztIu",
+                                                  "name": "Sign",
+                                                  "fill": "$color-heading",
+                                                  "content": "$",
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": 18,
+                                                  "fontWeight": "600"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "mkoVB",
+                                              "name": "Amount",
+                                              "width": "fill_container",
+                                              "padding": [
+                                                0,
+                                                12
+                                              ],
+                                              "justifyContent": "end",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "U4wepY",
+                                                  "name": "Value",
+                                                  "fill": "$color-heading",
+                                                  "content": "1,500.00",
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": 24,
+                                                  "fontWeight": "700",
+                                                  "letterSpacing": -0.4
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "ezJFP",
+                                      "name": "Method and date",
+                                      "width": "fill_container",
+                                      "gap": 12,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "BhKTt",
+                                          "name": "Field · Payment method",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 6,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "c65kha",
+                                              "name": "Label",
+                                              "fill": "$color-heading",
+                                              "content": "Payment method",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "V4mtn",
+                                              "name": "Box",
+                                              "width": "fill_container",
+                                              "height": 40,
+                                              "fill": "$color-surface-background",
+                                              "cornerRadius": 8,
+                                              "stroke": "$color-border-interactive",
+                                              "strokeWidth": 1,
+                                              "gap": 8,
+                                              "padding": [
+                                                0,
+                                                12
+                                              ],
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "Jg5iM",
+                                                  "name": "Lead icon",
+                                                  "width": 16,
+                                                  "height": 16,
+                                                  "icon": "landmark",
+                                                  "library": "lucide",
+                                                  "fill": "$color-invoice"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "ff26y",
+                                                  "name": "Value",
+                                                  "fill": "$color-heading",
+                                                  "textGrowth": "fixed-width",
+                                                  "width": "fill_container",
+                                                  "content": "Bank transfer",
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": 14,
+                                                  "fontWeight": "normal"
+                                                },
+                                                {
+                                                  "type": "icon",
+                                                  "id": "Id1fW",
+                                                  "name": "Trail",
+                                                  "width": 16,
+                                                  "height": 16,
+                                                  "icon": "chevron-down",
+                                                  "library": "lucide",
+                                                  "fill": "$color-icon-secondary"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "xF2p3",
+                                          "name": "Field · Payment date",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 6,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "v3OuN",
+                                              "name": "Label",
+                                              "fill": "$color-heading",
+                                              "content": "Payment date",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "AQJek",
+                                              "name": "Box",
+                                              "width": "fill_container",
+                                              "height": 40,
+                                              "fill": "$color-surface-background",
+                                              "cornerRadius": 8,
+                                              "stroke": "$color-border-interactive",
+                                              "strokeWidth": 1,
+                                              "gap": 8,
+                                              "padding": [
+                                                0,
+                                                12
+                                              ],
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "arBy4",
+                                                  "name": "Lead icon",
+                                                  "width": 16,
+                                                  "height": 16,
+                                                  "icon": "calendar-days",
+                                                  "library": "lucide",
+                                                  "fill": "$color-time"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "qQhVT",
+                                                  "name": "Value",
+                                                  "fill": "$color-heading",
+                                                  "textGrowth": "fixed-width",
+                                                  "width": "fill_container",
+                                                  "content": "Oct 21, 2026",
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": 14,
+                                                  "fontWeight": "normal"
+                                                },
+                                                {
+                                                  "type": "icon",
+                                                  "id": "BNPjR",
+                                                  "name": "Trail",
+                                                  "width": 16,
+                                                  "height": 16,
+                                                  "icon": "chevron-down",
+                                                  "library": "lucide",
+                                                  "fill": "$color-icon-secondary"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "VllJY",
+                                      "name": "Field · Reference # (optional)",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 6,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "EKKOp",
+                                          "name": "Label",
+                                          "fill": "$color-heading",
+                                          "content": "Reference # (optional)",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "D23LxY",
+                                          "name": "Box",
+                                          "width": "fill_container",
+                                          "height": 40,
+                                          "fill": "$color-surface-background",
+                                          "cornerRadius": 8,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "gap": 8,
+                                          "padding": [
+                                            0,
+                                            12
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "A35h5",
+                                              "name": "Lead icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "hash",
+                                              "library": "lucide",
+                                              "fill": "$color-icon-secondary"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "hI0OB",
+                                              "name": "Value",
+                                              "fill": "$color-heading",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "TRX-88214",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "lRTcb",
+                                      "name": "Field · Details (optional)",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 6,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "YCVy1",
+                                          "name": "Label",
+                                          "fill": "$color-heading",
+                                          "content": "Details (optional)",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "d3zPk",
+                                          "name": "Box",
+                                          "width": "fill_container",
+                                          "height": 96,
+                                          "fill": "$color-surface-background",
+                                          "cornerRadius": 8,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "gap": 8,
+                                          "padding": [
+                                            10,
+                                            12
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "g8aTQp",
+                                              "name": "Value",
+                                              "fill": "$color-text-secondary",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Anything to remember about this payment",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "oUPW2",
+                                  "name": "Apply panel",
+                                  "width": 400,
+                                  "fill": "$color-invoice-surface",
+                                  "stroke": "$color-invoice-surface-edge",
+                                  "strokeWidth": {
+                                    "left": 1
+                                  },
+                                  "layout": "vertical",
+                                  "gap": 12,
+                                  "padding": 20,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "CPqUi",
+                                      "name": "Panel heading",
+                                      "width": "fill_container",
+                                      "gap": 10,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "kSSrL",
+                                          "name": "Tile · receipt",
+                                          "width": 32,
+                                          "height": 32,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 8,
+                                          "stroke": "$color-invoice-surface-edge",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "NYExX",
+                                              "name": "Icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "receipt",
+                                              "library": "lucide",
+                                              "fill": "$color-invoice"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "zkrgR",
+                                          "name": "Heading",
+                                          "fill": "$color-heading",
+                                          "content": "Apply to invoices",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 16,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "vVBvq",
+                                      "name": "Bill · #1042",
+                                      "width": "fill_container",
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$color-invoice",
+                                      "strokeWidth": 1.5,
+                                      "gap": 12,
+                                      "padding": [
+                                        12,
+                                        12,
+                                        12,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "qHQsT",
+                                          "name": "Checkbox · ticked",
+                                          "width": 18,
+                                          "height": 18,
+                                          "fill": "$color-interactive",
+                                          "cornerRadius": 4,
+                                          "stroke": "$color-interactive",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "JJjST",
+                                              "name": "Check",
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "check",
+                                              "library": "lucide",
+                                              "fill": "$color-surface"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "L5fzeT",
+                                          "name": "Words",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 2,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "UEAOH",
+                                              "name": "Label",
+                                              "fill": "$color-heading",
+                                              "content": "Invoice #1042",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "FhDXb",
+                                              "name": "Description",
+                                              "fill": "$color-text-secondary",
+                                              "content": "This invoice · owes $1,250.00",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "IFj3T",
+                                          "name": "Money box",
+                                          "clip": true,
+                                          "width": 120,
+                                          "height": 36,
+                                          "fill": "$color-surface-background",
+                                          "cornerRadius": 8,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "f1QGv",
+                                              "name": "Sign",
+                                              "width": 36,
+                                              "height": "fill_container",
+                                              "fill": "$color-surface-background-subtle",
+                                              "stroke": "$color-border-interactive",
+                                              "strokeWidth": {
+                                                "right": 1
+                                              },
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "v8orrc",
+                                                  "name": "Sign",
+                                                  "fill": "$color-heading",
+                                                  "content": "$",
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": 14,
+                                                  "fontWeight": "600"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "saRSP",
+                                              "name": "Amount",
+                                              "width": "fill_container",
+                                              "padding": [
+                                                0,
+                                                12
+                                              ],
+                                              "justifyContent": "end",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "xeFmh",
+                                                  "name": "Value",
+                                                  "fill": "$color-heading",
+                                                  "content": "1,250.00",
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": 13,
+                                                  "fontWeight": "600"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "nLhgf",
+                                      "name": "Bill · #1038",
+                                      "width": "fill_container",
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$color-invoice-surface-edge",
+                                      "strokeWidth": 1,
+                                      "gap": 12,
+                                      "padding": [
+                                        12,
+                                        12,
+                                        12,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "ri0d6",
+                                          "name": "Checkbox",
+                                          "width": 18,
+                                          "height": 18,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 4,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "B6OdOD",
+                                          "name": "Words",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 2,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "wazpC",
+                                              "name": "Label",
+                                              "fill": "$color-heading",
+                                              "content": "Invoice #1038",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "Fok46",
+                                              "name": "Description",
+                                              "fill": "$color-text-secondary",
+                                              "content": "Due Oct 3 · owes $480.00",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "GwL3X",
+                                      "name": "Bill · #1045",
+                                      "width": "fill_container",
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$color-invoice-surface-edge",
+                                      "strokeWidth": 1,
+                                      "gap": 12,
+                                      "padding": [
+                                        12,
+                                        12,
+                                        12,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "nrL6D",
+                                          "name": "Checkbox",
+                                          "width": 18,
+                                          "height": 18,
+                                          "fill": "$color-surface",
+                                          "cornerRadius": 4,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "justifyContent": "center",
+                                          "alignItems": "center"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "JPKUy",
+                                          "name": "Words",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 2,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "HPPwQ",
+                                              "name": "Label",
+                                              "fill": "$color-heading",
+                                              "content": "Invoice #1045",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "GE5Ey",
+                                              "name": "Description",
+                                              "fill": "$color-text-secondary",
+                                              "content": "Due Nov 4 · owes $320.00",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "IF1xU",
+                                      "name": "Applied and credit",
+                                      "width": "fill_container",
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$color-invoice-surface-edge",
+                                      "strokeWidth": 1,
+                                      "layout": "vertical",
+                                      "gap": 12,
+                                      "padding": 14,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "fiti7",
+                                          "name": "Bar",
+                                          "width": "fill_container",
+                                          "gap": 3,
+                                          "children": [
+                                            {
+                                              "type": "rectangle",
+                                              "cornerRadius": 4,
+                                              "id": "Oy6qe",
+                                              "name": "Applied",
+                                              "fill": "$color-invoice",
+                                              "width": 274,
+                                              "height": 8
+                                            },
+                                            {
+                                              "type": "rectangle",
+                                              "cornerRadius": 4,
+                                              "id": "a6o25",
+                                              "name": "Credit",
+                                              "fill": "$color-client",
+                                              "width": "fill_container",
+                                              "height": 8
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "ZfSXI",
+                                          "name": "Line · Applied",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "ellipse",
+                                              "id": "k9JFxM",
+                                              "name": "Dot",
+                                              "fill": "$color-invoice",
+                                              "width": 8,
+                                              "height": 8
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "YJsO4",
+                                              "name": "What",
+                                              "fill": "$color-text",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Applied",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "g1ACp",
+                                              "name": "Amount",
+                                              "fill": "$color-heading",
+                                              "content": "$1,250.00",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "XseWb",
+                                          "name": "Line · Kept as client credit",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "ellipse",
+                                              "id": "kp8pM",
+                                              "name": "Dot",
+                                              "fill": "$color-client",
+                                              "width": 8,
+                                              "height": 8
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "a8wruf",
+                                              "name": "What",
+                                              "fill": "$color-text",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Kept as client credit",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "NKLc6",
+                                              "name": "Amount",
+                                              "fill": "$color-heading",
+                                              "content": "$250.00",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "E4CN7",
+                              "name": "Footer",
+                              "width": "fill_container",
+                              "fill": "$color-surface-background-subtle",
+                              "stroke": "$color-border",
+                              "strokeWidth": {
+                                "top": 1
+                              },
+                              "gap": 8,
+                              "padding": [
+                                16,
+                                20
+                              ],
+                              "justifyContent": "end",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "AFXGD",
+                                  "type": "ref",
+                                  "ref": "qpjlj",
+                                  "name": "Cancel",
+                                  "descendants": {
+                                    "lDuWW": {
+                                      "enabled": false
+                                    },
+                                    "Dpmda": {
+                                      "content": "Cancel"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "wfilc",
+                                  "type": "ref",
+                                  "ref": "qpjlj",
+                                  "name": "Save and email receipt",
+                                  "descendants": {
+                                    "lDuWW": {
+                                      "icon": "mail"
+                                    },
+                                    "Dpmda": {
+                                      "content": "Save and email receipt"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "lwgI6",
+                                  "type": "ref",
+                                  "ref": "Qo6GL",
+                                  "name": "Collect payment",
+                                  "descendants": {
+                                    "P99oLT": {
+                                      "icon": "check"
+                                    },
+                                    "vaRXs": {
+                                      "content": "Collect payment"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "EFOJE",
+                          "name": "Caption",
+                          "fill": "$color-heading",
+                          "textGrowth": "fixed-width",
+                          "width": 940,
+                          "content": "Ready. Opened from Invoice #1042, so it is pinned first and ticked for what it owes. $1,500.00 came in, so the extra $250.00 stays as Sarah Lee's credit. Ticking #1038 would give it the $250.00 not yet applied.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-family",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "z33VkW",
+              "name": "Option B",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "PExtQ",
+                  "name": "Option heading",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "vD2lS",
+                      "name": "Option name",
+                      "fill": "$color-heading",
+                      "content": "B · One column, refined (improved live)",
+                      "fontFamily": "$font-family",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "uxaIz",
+                      "name": "Option description",
+                      "fill": "$color-text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Default pop-up (640) in the live order. Amount received, then Apply to invoices as one list card: each bill a row with a blue invoice tile, its amount box when ticked, and the applied / client-credit line as the card's grey foot. Payment method and date share a row; Reference # and Details follow.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font-family",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "hF1cU",
+                  "name": "Stage",
+                  "width": "fill_container",
+                  "fill": [
+                    "$color-surface-background",
+                    "$color-overlay"
+                  ],
+                  "cornerRadius": "$radius-large",
+                  "padding": 56,
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "FXuq9",
+                      "name": "Column",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "feMAt",
+                          "name": "B · Collect payment · ready",
+                          "clip": true,
+                          "width": 640,
+                          "fill": "$color-surface",
+                          "cornerRadius": "$radius-large",
+                          "stroke": "$color-border",
+                          "strokeWidth": 1,
+                          "effect": [
+                            {
+                              "type": "shadow",
+                              "shadowType": "outer",
+                              "color": "#0000001a",
+                              "offset": {
+                                "x": 0,
+                                "y": 1
+                              },
+                              "blur": 4
+                            },
+                            {
+                              "type": "shadow",
+                              "shadowType": "outer",
+                              "color": "#0000000d",
+                              "offset": {
+                                "x": 0,
+                                "y": 4
+                              },
+                              "blur": 12
+                            }
+                          ],
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "PamkX",
+                              "name": "Header",
+                              "width": "fill_container",
+                              "stroke": "$color-border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 12,
+                              "padding": [
+                                16,
+                                16,
+                                16,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "rcnVv",
+                                  "name": "Tile · credit-card",
+                                  "width": 40,
+                                  "height": 40,
+                                  "fill": "$color-invoice-surface",
+                                  "cornerRadius": 10,
+                                  "stroke": "$color-invoice-surface-edge",
+                                  "strokeWidth": 1,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "SRWdJ",
+                                      "name": "Icon",
+                                      "width": 20,
+                                      "height": 20,
+                                      "icon": "credit-card",
+                                      "library": "lucide",
+                                      "fill": "$color-invoice"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "elfXL",
+                                  "name": "Heading",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "E9isD",
+                                      "name": "Title",
+                                      "fill": "$color-heading",
+                                      "content": "Collect payment",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 20,
+                                      "fontWeight": "600",
+                                      "letterSpacing": -0.2
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "f6w33",
+                                      "name": "Hint",
+                                      "fill": "$color-text-secondary",
+                                      "content": "Invoice #1042 · Sarah Lee",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "L0vprf",
+                                  "type": "ref",
+                                  "ref": "nIDZt",
+                                  "name": "Close",
+                                  "descendants": {
+                                    "IW9bL": {
+                                      "icon": "x"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "IXkDb",
+                              "name": "Body",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 16,
+                              "padding": 20,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "zCN9Q",
+                                  "name": "Field · Amount received",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "BpHEO",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "content": "Amount received",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "xi3c5",
+                                      "name": "Money box",
+                                      "clip": true,
+                                      "width": "fill_container",
+                                      "height": 40,
+                                      "fill": "$color-surface-background",
+                                      "cornerRadius": 8,
+                                      "stroke": "$color-border-interactive",
+                                      "strokeWidth": 1,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "rPxjQ",
+                                          "name": "Sign",
+                                          "width": 40,
+                                          "height": "fill_container",
+                                          "fill": "$color-surface-background-subtle",
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": {
+                                            "right": 1
+                                          },
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "NEhap",
+                                              "name": "Sign",
+                                              "fill": "$color-heading",
+                                              "content": "$",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "cyi4A",
+                                          "name": "Amount",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            0,
+                                            12
+                                          ],
+                                          "justifyContent": "end",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "x3W26I",
+                                              "name": "Value",
+                                              "fill": "$color-heading",
+                                              "content": "1,500.00",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "NvZ7N",
+                                  "name": "Apply to invoices",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "rkJfO",
+                                      "name": "Title",
+                                      "fill": "$color-heading",
+                                      "content": "Apply to invoices",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "hgHmP",
+                                      "name": "List card",
+                                      "clip": true,
+                                      "width": "fill_container",
+                                      "fill": "$color-surface",
+                                      "cornerRadius": 12,
+                                      "stroke": "$color-border",
+                                      "strokeWidth": 1,
+                                      "layout": "vertical",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "tjAwY",
+                                          "name": "Bill · #1042",
+                                          "width": "fill_container",
+                                          "height": 60,
+                                          "stroke": "$color-border",
+                                          "strokeWidth": {
+                                            "bottom": 1
+                                          },
+                                          "gap": 12,
+                                          "padding": [
+                                            0,
+                                            12,
+                                            0,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "e1G9q",
+                                              "name": "Checkbox · ticked",
+                                              "width": 18,
+                                              "height": 18,
+                                              "fill": "$color-interactive",
+                                              "cornerRadius": 4,
+                                              "stroke": "$color-interactive",
+                                              "strokeWidth": 1,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "ozahq",
+                                                  "name": "Check",
+                                                  "width": 12,
+                                                  "height": 12,
+                                                  "icon": "check",
+                                                  "library": "lucide",
+                                                  "fill": "$color-surface"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "B5oqWx",
+                                              "name": "Tile · receipt",
+                                              "width": 32,
+                                              "height": 32,
+                                              "fill": "$color-invoice-surface",
+                                              "cornerRadius": 8,
+                                              "stroke": "$color-invoice-surface-edge",
+                                              "strokeWidth": 1,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "j8hgy4",
+                                                  "name": "Icon",
+                                                  "width": 16,
+                                                  "height": 16,
+                                                  "icon": "receipt",
+                                                  "library": "lucide",
+                                                  "fill": "$color-invoice"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "EDniG",
+                                              "name": "Words",
+                                              "width": "fill_container",
+                                              "layout": "vertical",
+                                              "gap": 2,
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "Y410D",
+                                                  "name": "Label",
+                                                  "fill": "$color-heading",
+                                                  "content": "Invoice #1042",
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": 14,
+                                                  "fontWeight": "600"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "oW8TW",
+                                                  "name": "Description",
+                                                  "fill": "$color-text-secondary",
+                                                  "content": "This invoice · owes $1,250.00",
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "Nfu44",
+                                              "name": "Money box",
+                                              "clip": true,
+                                              "width": 136,
+                                              "height": 36,
+                                              "fill": "$color-surface-background",
+                                              "cornerRadius": 8,
+                                              "stroke": "$color-border-interactive",
+                                              "strokeWidth": 1,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "RgE4E",
+                                                  "name": "Sign",
+                                                  "width": 36,
+                                                  "height": "fill_container",
+                                                  "fill": "$color-surface-background-subtle",
+                                                  "stroke": "$color-border-interactive",
+                                                  "strokeWidth": {
+                                                    "right": 1
+                                                  },
+                                                  "justifyContent": "center",
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "XbznC",
+                                                      "name": "Sign",
+                                                      "fill": "$color-heading",
+                                                      "content": "$",
+                                                      "fontFamily": "$font-family",
+                                                      "fontSize": 14,
+                                                      "fontWeight": "600"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "type": "frame",
+                                                  "id": "I84b0K",
+                                                  "name": "Amount",
+                                                  "width": "fill_container",
+                                                  "padding": [
+                                                    0,
+                                                    12
+                                                  ],
+                                                  "justifyContent": "end",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "VSq5j",
+                                                      "name": "Value",
+                                                      "fill": "$color-heading",
+                                                      "content": "1,250.00",
+                                                      "fontFamily": "$font-family",
+                                                      "fontSize": 13,
+                                                      "fontWeight": "600"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "JrWwP",
+                                          "name": "Bill · #1038",
+                                          "width": "fill_container",
+                                          "height": 60,
+                                          "stroke": "$color-border",
+                                          "strokeWidth": {
+                                            "bottom": 1
+                                          },
+                                          "gap": 12,
+                                          "padding": [
+                                            0,
+                                            12,
+                                            0,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "Q1cuj",
+                                              "name": "Checkbox",
+                                              "width": 18,
+                                              "height": 18,
+                                              "fill": "$color-surface",
+                                              "cornerRadius": 4,
+                                              "stroke": "$color-border-interactive",
+                                              "strokeWidth": 1,
+                                              "justifyContent": "center",
+                                              "alignItems": "center"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "dPj0n",
+                                              "name": "Tile · receipt",
+                                              "width": 32,
+                                              "height": 32,
+                                              "fill": "$color-invoice-surface",
+                                              "cornerRadius": 8,
+                                              "stroke": "$color-invoice-surface-edge",
+                                              "strokeWidth": 1,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "mxq45",
+                                                  "name": "Icon",
+                                                  "width": 16,
+                                                  "height": 16,
+                                                  "icon": "receipt",
+                                                  "library": "lucide",
+                                                  "fill": "$color-invoice"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "iSbp4",
+                                              "name": "Words",
+                                              "width": "fill_container",
+                                              "layout": "vertical",
+                                              "gap": 2,
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "p2pyR2",
+                                                  "name": "Label",
+                                                  "fill": "$color-heading",
+                                                  "content": "Invoice #1038",
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": 14,
+                                                  "fontWeight": "600"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "LGD7B",
+                                                  "name": "Description",
+                                                  "fill": "$color-text-secondary",
+                                                  "content": "Due Oct 3 · owes $480.00",
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "kCepm",
+                                          "name": "Bill · #1045",
+                                          "width": "fill_container",
+                                          "height": 60,
+                                          "stroke": "$color-border",
+                                          "strokeWidth": {
+                                            "bottom": 1
+                                          },
+                                          "gap": 12,
+                                          "padding": [
+                                            0,
+                                            12,
+                                            0,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "h1PVsW",
+                                              "name": "Checkbox",
+                                              "width": 18,
+                                              "height": 18,
+                                              "fill": "$color-surface",
+                                              "cornerRadius": 4,
+                                              "stroke": "$color-border-interactive",
+                                              "strokeWidth": 1,
+                                              "justifyContent": "center",
+                                              "alignItems": "center"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "VqDth",
+                                              "name": "Tile · receipt",
+                                              "width": 32,
+                                              "height": 32,
+                                              "fill": "$color-invoice-surface",
+                                              "cornerRadius": 8,
+                                              "stroke": "$color-invoice-surface-edge",
+                                              "strokeWidth": 1,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "Q46E5Z",
+                                                  "name": "Icon",
+                                                  "width": 16,
+                                                  "height": 16,
+                                                  "icon": "receipt",
+                                                  "library": "lucide",
+                                                  "fill": "$color-invoice"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "WUrZ5",
+                                              "name": "Words",
+                                              "width": "fill_container",
+                                              "layout": "vertical",
+                                              "gap": 2,
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "YH7KS",
+                                                  "name": "Label",
+                                                  "fill": "$color-heading",
+                                                  "content": "Invoice #1045",
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": 14,
+                                                  "fontWeight": "600"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "RbDTu",
+                                                  "name": "Description",
+                                                  "fill": "$color-text-secondary",
+                                                  "content": "Due Nov 4 · owes $320.00",
+                                                  "fontFamily": "$font-family",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "a93HJo",
+                                          "name": "Foot · applied and credit",
+                                          "width": "fill_container",
+                                          "fill": "$color-surface-background-subtle",
+                                          "gap": 8,
+                                          "padding": [
+                                            10,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "QLPCJ",
+                                              "name": "Icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "wallet",
+                                              "library": "lucide",
+                                              "fill": "$color-client"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "BzQJv",
+                                              "name": "Applied",
+                                              "fill": "$color-text-secondary",
+                                              "content": "Applied",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "owSZ5",
+                                              "name": "Applied amount",
+                                              "fill": "$color-heading",
+                                              "content": "$1,250.00",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "rXhxN",
+                                              "name": "Dot",
+                                              "fill": "$color-text-secondary",
+                                              "content": "·",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "ytClo",
+                                              "name": "Credit amount",
+                                              "fill": "$color-client-on-surface",
+                                              "content": "$250.00",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "e2X6p",
+                                              "name": "Credit",
+                                              "fill": "$color-text-secondary",
+                                              "content": "kept as client credit",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 13,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "wb7B9",
+                                  "name": "Method and date",
+                                  "width": "fill_container",
+                                  "gap": 12,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "EBL9f",
+                                      "name": "Field · Payment method",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 6,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "xrsup",
+                                          "name": "Label",
+                                          "fill": "$color-heading",
+                                          "content": "Payment method",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "m7uWxS",
+                                          "name": "Box",
+                                          "width": "fill_container",
+                                          "height": 40,
+                                          "fill": "$color-surface-background",
+                                          "cornerRadius": 8,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "gap": 8,
+                                          "padding": [
+                                            0,
+                                            12
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "BblSY",
+                                              "name": "Lead icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "landmark",
+                                              "library": "lucide",
+                                              "fill": "$color-invoice"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "YY9QC",
+                                              "name": "Value",
+                                              "fill": "$color-heading",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Bank transfer",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "icon",
+                                              "id": "sF7NM",
+                                              "name": "Trail",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "chevron-down",
+                                              "library": "lucide",
+                                              "fill": "$color-icon-secondary"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "hEU7r",
+                                      "name": "Field · Payment date",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 6,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "KFTar",
+                                          "name": "Label",
+                                          "fill": "$color-heading",
+                                          "content": "Payment date",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 13,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "T8QtW",
+                                          "name": "Box",
+                                          "width": "fill_container",
+                                          "height": 40,
+                                          "fill": "$color-surface-background",
+                                          "cornerRadius": 8,
+                                          "stroke": "$color-border-interactive",
+                                          "strokeWidth": 1,
+                                          "gap": 8,
+                                          "padding": [
+                                            0,
+                                            12
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "qNMzL",
+                                              "name": "Lead icon",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "calendar-days",
+                                              "library": "lucide",
+                                              "fill": "$color-time"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "b1aer",
+                                              "name": "Value",
+                                              "fill": "$color-heading",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Oct 21, 2026",
+                                              "fontFamily": "$font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "icon",
+                                              "id": "rt6l1",
+                                              "name": "Trail",
+                                              "width": 16,
+                                              "height": 16,
+                                              "icon": "chevron-down",
+                                              "library": "lucide",
+                                              "fill": "$color-icon-secondary"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "fFk0U",
+                                  "name": "Field · Reference # (optional)",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ghcwx",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "content": "Reference # (optional)",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "D895v",
+                                      "name": "Box",
+                                      "width": "fill_container",
+                                      "height": 40,
+                                      "fill": "$color-surface-background",
+                                      "cornerRadius": 8,
+                                      "stroke": "$color-border-interactive",
+                                      "strokeWidth": 1,
+                                      "gap": 8,
+                                      "padding": [
+                                        0,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "E1w8M6",
+                                          "name": "Lead icon",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "hash",
+                                          "library": "lucide",
+                                          "fill": "$color-icon-secondary"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Mp3uY",
+                                          "name": "Value",
+                                          "fill": "$color-heading",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "TRX-88214",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "J2wjH",
+                                  "name": "Field · Details (optional)",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Uy805",
+                                      "name": "Label",
+                                      "fill": "$color-heading",
+                                      "content": "Details (optional)",
+                                      "fontFamily": "$font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "E4J5pL",
+                                      "name": "Box",
+                                      "width": "fill_container",
+                                      "height": 72,
+                                      "fill": "$color-surface-background",
+                                      "cornerRadius": 8,
+                                      "stroke": "$color-border-interactive",
+                                      "strokeWidth": 1,
+                                      "gap": 8,
+                                      "padding": [
+                                        10,
+                                        12
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "tItGD",
+                                          "name": "Value",
+                                          "fill": "$color-text-secondary",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "Anything to remember about this payment",
+                                          "fontFamily": "$font-family",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "YZOgx",
+                              "name": "Footer",
+                              "width": "fill_container",
+                              "fill": "$color-surface-background-subtle",
+                              "stroke": "$color-border",
+                              "strokeWidth": {
+                                "top": 1
+                              },
+                              "gap": 8,
+                              "padding": [
+                                16,
+                                20
+                              ],
+                              "justifyContent": "end",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "vtrxm",
+                                  "type": "ref",
+                                  "ref": "qpjlj",
+                                  "name": "Cancel",
+                                  "descendants": {
+                                    "lDuWW": {
+                                      "enabled": false
+                                    },
+                                    "Dpmda": {
+                                      "content": "Cancel"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "FsHjG",
+                                  "type": "ref",
+                                  "ref": "qpjlj",
+                                  "name": "Save and email receipt",
+                                  "descendants": {
+                                    "lDuWW": {
+                                      "icon": "mail"
+                                    },
+                                    "Dpmda": {
+                                      "content": "Save and email receipt"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "iyAaF",
+                                  "type": "ref",
+                                  "ref": "Qo6GL",
+                                  "name": "Collect payment",
+                                  "descendants": {
+                                    "P99oLT": {
+                                      "icon": "check"
+                                    },
+                                    "vaRXs": {
+                                      "content": "Collect payment"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "h8y205",
+                          "name": "Caption",
+                          "fill": "$color-heading",
+                          "textGrowth": "fixed-width",
+                          "width": 640,
+                          "content": "Ready. Same data as A. Everything reads top to bottom like today; the credit amount takes the client's sand colour so leftover money stands out.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-family",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "themes": {
