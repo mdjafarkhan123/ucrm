@@ -1,8 +1,9 @@
 <script lang="ts">
-	// The facts that identify a record, in the header card under the client line: up to four even columns
-	// split by hairlines, each a small coloured tile and label over the value (Pencil "Record header · C").
-	// Every record type has its own set, so this is a list, never fixed slots. A fact with nothing in it says
-	// in grey what it is waiting for rather than showing a blank.
+	// The facts that identify a record, in the header card under the client line: up to four facts in one row
+	// split by hairlines, each a coloured tile at the left with its label over the value beside it (Pencil
+	// "Record header · C · White top"). Each fact takes the room its words need and the spare room goes between
+	// them. Every record type has its own set, so this is a list, never fixed slots. A fact with nothing in it
+	// says in grey what it is waiting for rather than showing a blank.
 	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import type { RecordFact } from './types';
 
@@ -11,10 +12,15 @@
 
 <dl class={`record-facts ${className}`}>
 	{#each facts as fact (fact.label)}
-		<div class="record-facts__fact">
+		<div class="record-facts__fact" class:record-facts__fact--tile={!!fact.icon}>
 			<dt class="record-facts__label">
 				{#if fact.icon}
-					<IconTile icon={fact.icon} tone={fact.kind ?? 'time'} size={20} />
+					<IconTile
+						icon={fact.icon}
+						tone={fact.kind ?? 'time'}
+						size={40}
+						class="record-facts__tile"
+					/>
 				{/if}
 				{fact.label}
 			</dt>
@@ -31,30 +37,46 @@
 
 <style lang="scss">
 	.record-facts {
-		display: grid;
-		grid-auto-columns: minmax(0, 1fr);
-		grid-auto-flow: column;
+		display: flex;
+		justify-content: space-between;
+		gap: var(--space-large);
 		margin: 0;
 
+		// The tile sits in the fact's own left gutter, so the label and value stay a plain dt/dd pair.
 		&__fact {
+			--fact-inset: 0px;
+			position: relative;
 			display: flex;
+			flex: 0 1 auto;
 			flex-direction: column;
-			gap: 6px;
+			gap: var(--space-smaller);
 			min-width: 0;
+			padding-left: var(--fact-inset);
 
 			& + & {
-				padding-left: var(--space-base);
+				--fact-inset: var(--space-medium);
 				border-left: var(--border-base) solid var(--color-border);
+			}
+
+			&--tile {
+				min-height: 40px;
+				padding-left: calc(var(--fact-inset) + 40px + var(--space-slim));
 			}
 		}
 
+		:global(.record-facts__tile) {
+			position: absolute;
+			top: 0;
+			left: var(--fact-inset);
+		}
+
 		&__label {
-			display: flex;
-			align-items: center;
-			gap: 6px;
+			overflow: hidden;
 			color: var(--color-text--secondary);
 			font-size: var(--typography--fontSize-small);
 			font-weight: 500;
+			text-overflow: ellipsis;
+			white-space: nowrap;
 		}
 
 		dd {
@@ -85,12 +107,12 @@
 	// Two facts a row on a phone, the hairline only between the pair.
 	@media (max-width: 767px) {
 		.record-facts {
-			grid-auto-flow: row;
+			display: grid;
 			grid-template-columns: repeat(2, minmax(0, 1fr));
-			row-gap: var(--space-base);
+			gap: var(--space-base);
 
 			&__fact:nth-child(odd) {
-				padding-left: 0;
+				--fact-inset: 0px;
 				border-left: 0;
 			}
 		}

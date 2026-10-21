@@ -348,6 +348,22 @@ Hand-off for the builder:
   the shared `ui/Tooltip` with the full address and "Click to open in Google Maps"; the address is a link
   (underline on hover) opening Google Maps search for it in a new tab. Header height never changes.
 
+## Batch 52 record header white top — approved and built 2026-10-21
+
+Jafar asked (2026-10-21) for no colour at the top of the record header, because the tinted top limited which
+colours the status pill could have; bigger fact icons with the title and value beside them in one row; and
+bigger text for older contractors. Drawn in place on `xrJ3f` (no options, at his request), approved "100%" the
+same day, built on branch `claude/batch52-record-header`. Look: `layout.md` → Record header, `badges.md` → Large.
+The § Batch 13 hand-off above is replaced where they differ: no coloured top, no status stripe, white tile
+gone (record tile in its own surface), facts icon-left at 40.
+
+**Type scale (Jafar 2026-10-21):** after a Pencil preview at 16 he chose main text 15. Pencil variables and
+`_variables.scss` now match: smaller 12, overline 12, small 14, label 15, base 15, large 18, larger 22,
+largest 26, display 30, stat 34 (`typography.md`). About 7,550 Pencil texts were linked to the size variables
+first. Left for later: ~400 Pencil texts on off-scale sizes (15, 18, 22…) and ~319 hard-coded `font-size` px
+values in code do not follow the scale yet; 89 Pencil texts on 24 boards now clip; the record page loading
+skeleton (Batch 48) still has the old header shape.
+
 ## Batch 10 new behaviour (Jafar, 2026-10-20)
 
 - Search list: items with a photo show as picture cards before the rows of their group.
