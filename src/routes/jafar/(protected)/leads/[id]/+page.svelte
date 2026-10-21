@@ -1462,7 +1462,7 @@
 
 	@media (max-width: 639px) {
 		.lead-page h1 {
-			font-size: 28px;
+			font-size: var(--typography--fontSize-display);
 		}
 
 		.lead-page__hero {

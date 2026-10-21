@@ -584,7 +584,7 @@
 
 	@media (max-width: 639px) {
 		.email-safety h1 {
-			font-size: 28px;
+			font-size: var(--typography--fontSize-display);
 		}
 
 		.email-safety__summary {

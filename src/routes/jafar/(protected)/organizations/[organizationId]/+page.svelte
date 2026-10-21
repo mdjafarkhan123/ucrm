@@ -698,7 +698,7 @@
 	}
 	@media (max-width: 639px) {
 		h1 {
-			font-size: 28px;
+			font-size: var(--typography--fontSize-display);
 		}
 		.organization-detail__overview-grid {
 			grid-template-columns: 1fr;

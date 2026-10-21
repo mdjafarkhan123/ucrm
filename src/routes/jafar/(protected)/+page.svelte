@@ -748,7 +748,7 @@
 	}
 	@media (max-width: 639px) {
 		h1 {
-			font-size: 28px;
+			font-size: var(--typography--fontSize-display);
 		}
 		// A row to swipe through, so the to-do list stays near the top of a phone screen.
 		.business-home__tiles {

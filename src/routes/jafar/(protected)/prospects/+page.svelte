@@ -3069,7 +3069,7 @@
 
 	@media (max-width: 639px) {
 		.prospects h1 {
-			font-size: 28px;
+			font-size: var(--typography--fontSize-display);
 		}
 
 		.prospects__summary,

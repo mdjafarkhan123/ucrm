@@ -564,7 +564,7 @@
 
 	@media (max-width: 639px) {
 		.organization-directory h1 {
-			font-size: 28px;
+			font-size: var(--typography--fontSize-display);
 		}
 
 		.organization-directory__summary {

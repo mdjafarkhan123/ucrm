@@ -823,7 +823,7 @@
 
 	@media (max-width: 639px) {
 		.operations h1 {
-			font-size: 28px;
+			font-size: var(--typography--fontSize-display);
 		}
 
 		.operations__summary,

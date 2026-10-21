@@ -427,7 +427,7 @@
 
 	@media (max-width: 639px) {
 		.review h1 {
-			font-size: 28px;
+			font-size: var(--typography--fontSize-display);
 		}
 	}
 </style>

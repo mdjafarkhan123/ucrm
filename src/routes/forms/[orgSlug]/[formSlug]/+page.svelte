@@ -850,7 +850,7 @@
 		padding: 2px var(--space-smaller);
 		background: color-mix(in srgb, black 55%, transparent);
 		color: white;
-		font-size: 10px;
+		font-size: var(--typography--fontSize-small);
 		text-align: center;
 	}
 

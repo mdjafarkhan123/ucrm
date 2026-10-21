@@ -93,7 +93,7 @@
 	h1 {
 		margin-bottom: var(--space-small);
 		color: var(--color-heading);
-		font-size: clamp(28px, 5vw, 40px);
+		font-size: clamp(var(--typography--fontSize-display), 5vw, var(--typography--fontSize-jumbo));
 		line-height: 1.1;
 	}
 	.auth-card__intro {
