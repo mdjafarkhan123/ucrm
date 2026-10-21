@@ -280,7 +280,6 @@
 
 		<div class="ready-toolbar">
 			<SearchInput
-				white
 				id="ready-to-bill-search"
 				bind:value={search}
 				placeholder="Search by client or job"

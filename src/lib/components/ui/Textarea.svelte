@@ -109,7 +109,7 @@
 			border-radius: var(--radius-base);
 			outline: 0;
 			color: var(--color-heading);
-			background: var(--field--fill, var(--color-surface--background));
+			background: var(--color-surface);
 			font: inherit;
 			line-height: 1.45;
 			resize: vertical;

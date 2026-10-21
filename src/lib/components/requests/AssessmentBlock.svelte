@@ -5,6 +5,7 @@
 	import EmptyState from '$lib/components/data-display/EmptyState.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
+	import PersonPickChip from '$lib/components/ui/PersonPickChip.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import DateTimePicker from '$lib/components/ui/DateTimePicker.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
@@ -16,6 +17,7 @@
 		timeFromString,
 		timeToString,
 		calendarDateToString,
+		formatTimeText,
 		type DateTimePickerValue
 	} from '$lib/components/ui/date-time';
 	import { calendarDay, clockMinutesInZone, zonedTimeToUtc } from '$lib/time/calendar-day';
@@ -28,6 +30,11 @@
 	import calendarPlusIcon from '@tabler/icons/outline/calendar-plus.svg?raw';
 	import usersIcon from '@tabler/icons/outline/users.svg?raw';
 	import calendarIcon from '@tabler/icons/outline/calendar-question.svg?raw';
+	import calendarClockIcon from '@tabler/icons/outline/calendar-clock.svg?raw';
+	import trashIcon from '@tabler/icons/outline/trash.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
+	import alertCircleIcon from '@tabler/icons/outline/alert-circle.svg?raw';
+	import loaderIcon from '@tabler/icons/outline/loader-2.svg?raw';
 
 	// The on-site assessment, the way Jobber does it: an empty card inviting you to book the visit, which
 	// opens into a panel on the page itself rather than a dialog. The panel owns its own Save, because an
@@ -86,6 +93,8 @@
 	let when = $state<DateTimePickerValue>(emptyDateTimePickerValue());
 	let assigneeIds = $state<string[]>([]);
 	let fieldError = $state('');
+	// Which box the message is about, so that box alone gets the error edge.
+	let fieldErrorAt = $state<'date' | 'time' | null>(null);
 
 	// The team list waits until it is actually needed — someone opening the panel, or a booked visit that
 	// has names to read out — and is cached from then on.
@@ -149,6 +158,7 @@
 	function closePanel() {
 		editing = false;
 		fieldError = '';
+		fieldErrorAt = null;
 	}
 
 	// The stored instants are UTC; the office books in its own clock, so both directions go through the
@@ -177,7 +187,9 @@
 	// Reads the panel's fields into the shape the API wants, or returns the one thing that stops it. Both
 	// the panel's own Save and the New Request page's action bar go through here, so a visit is checked the
 	// same way whichever button ends up writing it.
-	function buildDraft(): { draft: AssessmentDraft } | { message: string } {
+	function buildDraft():
+		| { draft: AssessmentDraft }
+		| { message: string; at: 'date' | 'time' | null } {
 		if (scheduleLater) {
 			return {
 				draft: {
@@ -192,23 +204,26 @@
 
 		const day = calendarDateToString(when.date);
 		if (!day) {
-			return { message: 'Pick the day of the visit, or tick "Schedule later".' };
+			return { message: 'Pick the day of the visit, or tick "Schedule later".', at: 'date' };
 		}
 
 		// "Anytime" is Jobber's arrival-window state: the day is booked, the hour is not promised.
 		const startTime = anytime ? '00:00' : timeToString(when.startTime);
 		const endTime = anytime ? '23:59' : timeToString(when.endTime);
 		if (!startTime || !endTime) {
-			return { message: 'Set a start and an end time, or tick "Anytime".' };
+			return { message: 'Set a start and an end time, or tick "Anytime".', at: 'time' };
 		}
 
 		const startsAt = isoFrom(day, startTime);
 		const endsAt = isoFrom(day, endTime);
 		if (!startsAt || !endsAt) {
-			return { message: 'That date and time could not be read. Try picking them again.' };
+			return {
+				message: 'That date and time could not be read. Try picking them again.',
+				at: null
+			};
 		}
 		if (Date.parse(endsAt) <= Date.parse(startsAt)) {
-			return { message: 'The end time has to come after the start time.' };
+			return { message: 'The end time has to come after the start time.', at: 'time' };
 		}
 
 		return {
@@ -224,9 +239,11 @@
 
 	function submit() {
 		fieldError = '';
+		fieldErrorAt = null;
 		const built = buildDraft();
 		if ('message' in built) {
 			fieldError = built.message;
+			fieldErrorAt = built.at;
 			return;
 		}
 		void onSave?.(built.draft);
@@ -242,9 +259,11 @@
 		const built = buildDraft();
 		if ('message' in built) {
 			fieldError = built.message;
+			fieldErrorAt = built.at;
 			return { ok: false, message: built.message };
 		}
 		fieldError = '';
+		fieldErrorAt = null;
 		return { ok: true, draft: built.draft };
 	}
 
@@ -258,6 +277,32 @@
 		assigneeIds = [];
 		onDraftChange?.(false);
 	}
+
+	// --- The open panel's head ------------------------------------------------------------------------
+
+	// The Time-tinted head reads the visit back as it is filled in: the day tile, when, and who is going,
+	// the same head as an open visit on New job.
+	const headDay = $derived(
+		!scheduleLater && when.date ? new Date(when.date.year, when.date.month - 1, when.date.day) : null
+	);
+	const headLine = $derived.by(() => {
+		if (scheduleLater) return 'No day yet · pick it once the client comes back to you';
+		if (!headDay) return 'No day yet';
+		const day = new Intl.DateTimeFormat('en-US', {
+			weekday: 'short',
+			month: 'short',
+			day: 'numeric'
+		}).format(headDay);
+		if (anytime) return `${day} · Anytime`;
+		const start = formatTimeText(when.startTime);
+		const end = formatTimeText(when.endTime);
+		if (!start) return day;
+		return `${day} · ${end ? `${start} – ${end}` : start}`;
+	});
+	const headPeople = $derived.by(() => {
+		const byId = new Map(team.map((member) => [member.id, member]));
+		return assigneeIds.map((id) => byId.get(id)?.full_name ?? 'A team member').join(', ');
+	});
 
 	// --- What the booked card reads out ---------------------------------------------------------------
 
@@ -346,8 +391,7 @@
 	title="On-site assessment"
 	icon={truckIcon}
 	level={2}
-	form={editing && draft}
-	tone={draft ? 'time' : undefined}
+	tone="time"
 	hint={draft ? 'Book a visit before you price the work.' : 'Visit the property before you price the work'}
 >
 	{#snippet actions()}
@@ -357,70 +401,138 @@
 	{/snippet}
 
 	{#if editing}
+		<!-- The open visit, exactly like an open visit on New job: a Time-tinted head that reads the visit
+		     back, then its fields. -->
 		<div class="assessment__panel">
-			<Textarea
-				id="assessment-instructions"
-				label="Instructions"
-				rows={3}
-				maxlength={2000}
-				bind:value={instructions}
-				placeholder="Anything whoever visits needs to know before they arrive"
-			/>
-
-			<Checkbox
-				id="assessment-schedule-later"
-				label="Schedule later"
-				description="Book the visit now and pick the day once the client comes back to you."
-				bind:checked={scheduleLater}
-			/>
-
-			{#if !scheduleLater}
-				<DateTimePicker
-					id="assessment-when"
-					range={!anytime}
-					dateLabel="Day of the visit"
-					timeLabel="Time"
-					bind:value={when}
-				/>
-				<Checkbox
-					id="assessment-anytime"
-					label="Anytime"
-					description="Tell the client which day you are coming without promising an hour."
-					bind:checked={anytime}
-				/>
-			{/if}
-
-			<fieldset class="assessment__team">
-				<legend class="assessment__team-title">Who is going</legend>
-				{#if teamQuery.isPending}
-					<p class="assessment__hint">Loading your team…</p>
-				{:else if teamQuery.isError}
-					<p class="assessment__error">
-						Your team could not be loaded. You can still save the visit.
-					</p>
-				{:else if team.length === 0}
-					<p class="assessment__hint">Nobody else is on your team yet.</p>
+			<div class="assessment__head">
+				{#if headDay}
+					<span class="assessment__head-tile" aria-hidden="true">
+						<span class="assessment__head-weekday"
+							>{new Intl.DateTimeFormat('en-US', { weekday: 'short' })
+								.format(headDay)
+								.toUpperCase()}</span
+						>
+						<span class="assessment__head-day">{headDay.getDate()}</span>
+					</span>
 				{:else}
-					<ul class="assessment__team-list">
-						{#each team as member (member.id)}
-							<li>
-								<Checkbox
-									id={`assessment-assignee-${member.id}`}
-									label={member.full_name ?? 'Unnamed team member'}
-									checked={assigneeIds.includes(member.id)}
-									onchange={(checked) => toggleAssignee(member.id, checked)}
-								/>
-							</li>
-						{/each}
-					</ul>
+					<span class="assessment__head-tile assessment__head-tile--open" aria-hidden="true"
+						>{@html calendarClockIcon}</span
+					>
 				{/if}
-			</fieldset>
+				<span class="assessment__head-text">
+					<span class="assessment__head-title">Assessment</span>
+					<span class="assessment__head-when">{headLine}</span>
+				</span>
+				{#if headPeople}
+					<span class="assessment__head-people">{headPeople}</span>
+				{:else}
+					<span class="assessment__head-nobody">Nobody assigned yet</span>
+				{/if}
+			</div>
 
-			{#if fieldError || error}
-				<p class="assessment__error" role="alert">{fieldError || error}</p>
-			{/if}
+			<div class="assessment__editor">
+				{#if !scheduleLater}
+					<div class="assessment__schedule">
+						<DateTimePicker
+							id="assessment-when"
+							range
+							showTime={!anytime}
+							dateLabel="Day of the visit"
+							timeLabel="Time"
+							dateInvalid={fieldErrorAt === 'date'}
+							timeInvalid={fieldErrorAt === 'time'}
+							bind:value={when}
+						/>
+						{#if fieldError && fieldErrorAt}
+							<p class="assessment__field-error" role="alert">
+								<span aria-hidden="true">{@html alertCircleIcon}</span>{fieldError}
+							</p>
+						{/if}
+					</div>
+				{/if}
 
-			{#if !scheduleLater}
+				<div class="assessment__choices">
+					{#if !scheduleLater}
+						<Checkbox
+							id="assessment-anytime"
+							label="Anytime"
+							description="Tell the client the day without promising an hour."
+							bind:checked={anytime}
+						/>
+					{/if}
+					<Checkbox
+						id="assessment-schedule-later"
+						label="Schedule later"
+						description="Book the visit now and pick the day once the client comes back to you."
+						bind:checked={scheduleLater}
+					/>
+				</div>
+
+				<Textarea
+					id="assessment-instructions"
+					label="Instructions"
+					rows={3}
+					maxlength={2000}
+					bind:value={instructions}
+					placeholder="Anything whoever visits needs to know before they arrive"
+				/>
+
+				<fieldset class="assessment__team">
+					<legend class="assessment__team-title">Who is going</legend>
+					{#if teamQuery.isPending}
+						<p class="assessment__team-state">
+							<span class="assessment__team-icon assessment__team-icon--loading" aria-hidden="true"
+								>{@html loaderIcon}</span
+							>Loading your team…
+						</p>
+					{:else if teamQuery.isError}
+						<p class="assessment__team-state assessment__team-state--error">
+							<span class="assessment__team-icon" aria-hidden="true">{@html alertCircleIcon}</span>Your
+							team could not be loaded. You can still save the visit.
+						</p>
+					{:else if team.length === 0}
+						<p class="assessment__team-state">
+							<span class="assessment__team-icon" aria-hidden="true">{@html usersIcon}</span>Nobody
+							else is on your team yet.
+						</p>
+					{:else}
+						<ul class="assessment__team-list">
+							{#each team as member (member.id)}
+								<li>
+									<PersonPickChip
+										id={`assessment-assignee-${member.id}`}
+										personId={member.id}
+										name={member.full_name ?? 'Unnamed team member'}
+										checked={assigneeIds.includes(member.id)}
+										onchange={(checked) => toggleAssignee(member.id, checked)}
+									/>
+								</li>
+							{/each}
+						</ul>
+					{/if}
+				</fieldset>
+
+				{#if (fieldError && !fieldErrorAt) || (!fieldError && error)}
+					<p class="assessment__field-error" role="alert">
+						<span aria-hidden="true">{@html alertCircleIcon}</span>{fieldError || error}
+					</p>
+				{/if}
+
+				{#if draft}
+					<!-- The New Request page's own bar saves this panel, so it gets no Save of its own —
+					     only Jobber's ✕, spelled out. -->
+					<div class="assessment__editor-actions">
+						<Button variant="secondary" variation="destructive" size="small" onclick={discardDraft}>
+							<span class="assessment__button-icon" aria-hidden="true">{@html trashIcon}</span>
+							Remove visit
+						</Button>
+					</div>
+				{/if}
+			</div>
+		</div>
+
+		{#if !scheduleLater}
+			<div class="assessment__notify">
 				<NotifyCustomerCheckbox
 					id="assessment-notify-customer"
 					bind:checked={notifyCustomer}
@@ -428,32 +540,30 @@
 					kinds={assessment?.starts_at ? ['rescheduled'] : ['booked']}
 					disabled={saving}
 				/>
-			{/if}
+			</div>
+		{/if}
 
-			<div class="assessment__panel-actions">
-				{#if draft}
-					<!-- The New Request page's own bar saves this panel, so it gets no Save of its own —
-					     only Jobber's ✕, spelled out. -->
-					<Button variant="tertiary" variation="destructive" onclick={discardDraft}>
+		{#if !draft}
+			<div class="assessment__actions">
+				{#if assessment}
+					<Button
+						variant="secondary"
+						variation="destructive"
+						onclick={() => void onRemove?.()}
+						disabled={saving}
+					>
+						<span class="assessment__button-icon" aria-hidden="true">{@html trashIcon}</span>
 						Remove visit
 					</Button>
-				{:else}
-					{#if assessment}
-						<Button
-							variant="tertiary"
-							variation="destructive"
-							onclick={() => void onRemove?.()}
-							disabled={saving}
-						>
-							Remove visit
-						</Button>
-					{/if}
-					<span class="assessment__spacer"></span>
-					<Button variant="tertiary" onclick={closePanel} disabled={saving}>Cancel</Button>
-					<Button variant="primary" onclick={submit} loading={saving}>Save visit</Button>
 				{/if}
+				<span class="assessment__spacer"></span>
+				<Button variant="secondary" onclick={closePanel} disabled={saving}>Cancel</Button>
+				<Button variant="primary" onclick={submit} loading={saving}>
+					<span class="assessment__button-icon" aria-hidden="true">{@html checkIcon}</span>
+					Save visit
+				</Button>
 			</div>
-		</div>
+		{/if}
 	{:else if !assessment && draft}
 		<!-- A new request's empty visit is one slim row (layout.md → Create pages), not a page-sized empty state. -->
 		<div class="assessment__empty-row">
@@ -584,17 +694,147 @@
 	}
 
 	.assessment {
+		// The open visit: the New job open-visit panel (layout.md → On-site assessment panel).
 		&__panel {
+			overflow: hidden;
+			border: var(--border-base) solid var(--color-time--surface-edge);
+			border-radius: var(--radius-large);
+		}
+
+		&__head {
+			display: flex;
+			align-items: center;
+			gap: 14px;
+			padding: var(--space-slim) var(--space-base);
+			border-bottom: var(--border-base) solid var(--color-time--surface-edge);
+			background: var(--color-time--surface);
+		}
+
+		&__head-tile {
+			display: flex;
+			flex: 0 0 auto;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			width: 44px;
+			height: 44px;
+			border-radius: var(--radius-tile-large);
+			color: var(--color-surface);
+			background: var(--color-time);
+
+			&--open {
+				border: var(--border-base) solid var(--color-time--surface-edge);
+				color: var(--color-time);
+				background: var(--color-surface);
+
+				:global(svg) {
+					width: 20px;
+					height: 20px;
+				}
+			}
+		}
+
+		&__head-weekday {
+			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+			line-height: 1.2;
+		}
+
+		&__head-day {
+			font-size: 17px;
+			font-weight: 700;
+			line-height: 1.1;
+		}
+
+		&__head-text {
+			display: flex;
+			min-width: 0;
+			flex: 1 1 auto;
+			flex-direction: column;
+			gap: 2px;
+		}
+
+		&__head-title {
+			color: var(--color-time--onSurface);
+			font-weight: 600;
+		}
+
+		&__head-when,
+		&__head-people {
+			color: var(--color-time--onSurface);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__head-people {
+			overflow: hidden;
+			flex: 0 1 auto;
+			max-width: 40%;
+			font-weight: 500;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		&__head-nobody {
+			flex: 0 0 auto;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+		}
+
+		&__editor {
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-base);
+			padding: var(--space-base);
+			background: var(--color-surface);
 		}
 
-		&__panel-actions {
+		&__schedule {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+		}
+
+		// Anytime and Schedule later side by side.
+		&__choices {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: var(--space-slim) var(--space-large);
+		}
+
+		&__editor-actions {
+			display: flex;
+		}
+
+		&__field-error {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			margin: 0;
+			color: var(--color-critical);
+			font-size: var(--typography--fontSize-small);
+
+			:global(svg) {
+				flex: 0 0 auto;
+				width: 14px;
+				height: 14px;
+			}
+		}
+
+		// Notify customer closes the card under a line; it only shows for a dated visit it can tell about.
+		&__notify {
+			padding-top: var(--space-base);
+			border-top: var(--border-base) solid var(--color-border);
+
+			&:not(:has(input)) {
+				display: none;
+			}
+		}
+
+		&__actions {
 			display: flex;
 			align-items: center;
 			gap: var(--space-small);
-			padding-top: var(--space-small);
+			padding-top: var(--space-base);
 			border-top: var(--border-base) solid var(--color-border);
 		}
 
@@ -603,26 +843,58 @@
 		}
 
 		&__team {
-			border: 0;
+			min-width: 0;
 			margin: 0;
 			padding: 0;
-			min-width: 0;
+			border: 0;
 		}
 
 		&__team-title {
-			padding: 0 0 var(--space-small);
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+			padding: 0 0 6px;
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-label);
 			font-weight: 600;
 		}
 
 		&__team-list {
 			display: flex;
 			flex-wrap: wrap;
-			gap: var(--space-small) var(--space-large);
+			gap: var(--space-small);
 			margin: 0;
 			padding: 0;
 			list-style: none;
+		}
+
+		&__team-state {
+			display: flex;
+			align-items: center;
+			gap: var(--space-small);
+			margin: 0;
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-label);
+			font-weight: 500;
+
+			&--error {
+				color: var(--color-critical);
+			}
+		}
+
+		&__team-icon {
+			display: inline-flex;
+			color: var(--color-icon--secondary);
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
+
+			&--loading {
+				animation: spinning var(--timing-loading) linear infinite;
+			}
+		}
+
+		&__team-state--error &__team-icon {
+			color: var(--color-critical);
 		}
 
 		// The booked visit: a tinted strip with the date tile, what and who, and the timer at the far end,
@@ -735,12 +1007,6 @@
 			width: 15px;
 			height: 15px;
 			color: var(--color-icon--secondary);
-		}
-
-		&__hint {
-			margin: 0;
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
 		}
 
 		&__error {

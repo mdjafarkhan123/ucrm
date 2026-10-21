@@ -12,7 +12,6 @@
 		invalid = false,
 		errorMessage = '',
 		disabled = false,
-		white = false,
 		class: className = '',
 		children,
 		...rest
@@ -28,8 +27,6 @@
 		invalid?: boolean;
 		errorMessage?: string;
 		disabled?: boolean;
-		/** A white box, for a field on the page colour. Inside a `.tinted-surface` it is white without it. */
-		white?: boolean;
 		class?: string;
 		children?: Snippet;
 		[key: string]: unknown;
@@ -48,7 +45,6 @@
 	class:input--labeled={Boolean(label) && size !== 'small'}
 	class:input--invalid={isInvalid}
 	class:input--disabled={disabled}
-	class:input--white={white}
 >
 	{#if label}<label class="input__label" for={id}
 			>{label}{#if required}<span class="field-required" aria-hidden="true">*</span>{/if}</label
@@ -112,7 +108,7 @@
 			padding: 0 var(--space-slim);
 			border: var(--border-base) solid var(--color-border--interactive);
 			border-radius: var(--radius-base);
-			background: var(--field--fill, var(--color-surface--background));
+			background: var(--color-surface);
 			&:hover {
 				border-color: var(--color-border--interactive--hover);
 			}
@@ -168,9 +164,6 @@
 		&--disabled input {
 			color: var(--color-disabled);
 			-webkit-text-fill-color: var(--color-disabled);
-		}
-		&--white {
-			--field--fill: var(--color-surface);
 		}
 		&__control:has(input[readonly]) {
 			background: var(--color-surface--background--subtle);

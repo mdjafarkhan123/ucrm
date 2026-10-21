@@ -309,7 +309,7 @@
 				align-items: center;
 				border: var(--border-base) solid var(--color-border--interactive);
 				border-radius: var(--radius-base);
-				background: var(--field--fill, var(--color-surface--background));
+				background: var(--color-surface);
 				cursor: text;
 				transition:
 					border-color var(--timing-quick),

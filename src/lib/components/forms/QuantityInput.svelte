@@ -102,7 +102,7 @@
 			padding: 3px;
 			border: var(--border-base) solid var(--color-border--interactive);
 			border-radius: var(--radius-base);
-			background: var(--field--fill, var(--color-surface--background));
+			background: var(--color-surface);
 			&:hover {
 				border-color: var(--color-border--interactive--hover);
 			}
