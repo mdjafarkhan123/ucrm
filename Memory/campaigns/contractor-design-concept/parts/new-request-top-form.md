@@ -86,10 +86,17 @@ Redraw 2026-10-21 (Jafar: "design like the classic design… use other color wit
 classic.pen's Projected profit layout (profit + margin pill, "On $X of work", one cost/profit bar, legend with
 shares) on an ink-blue card. New Pencil variables, not yet in code: `color-money-start` #032b3a,
 `color-money-end` #0b4559, `color-money-border` #ffffff2e (edge stays visible in dark mode). `color-feature-deep` is unused now.
-Redraw 2 2026-10-21: Jafar deleted board `UN1hM` and chose "make it change with the record" — one shared card
-whose frame stays fixed while its title, big number, bar and rows follow the record, like the Job/Quote/Invoice
-details cards in classic.pen (`X02qby`, `CmMUl`, `CTXLC`). New board `K5Ps7x` "Concept · Batch 35 · Shared money
-summary card · A vs B": A (refine the live green Job total card: leads with what the client pays, team-only
-profit panel) and B (classic layout on ink blue: profit-led on job and quote, balance-due-led on invoice with
-"This invoice / Left to bill on the job" bar). Each shows New job, New quote, New invoice (deposit stage), nothing
-priced, losing money, no cost access; dark mode row. Waiting for Jafar's pick.
+Redraw 2 2026-10-21: Jafar deleted board `UN1hM`, chose one shared card that changes with the record (like the
+classic.pen details cards `X02qby`, `CmMUl`, `CTXLC`), and told us to research what it should show rather than ask
+him. Board `K5Ps7x` was replaced by `vIjf0` "Concept · Batch 35 · Shared money summary card · A vs B".
+Research: Jobber job costing (profit bar = pre-tax line price − line-item cost − timesheet labour − expenses,
+updates as costs are logged, job-costing permission only, minimum-profit flag), Jobber quote markups (cost and
+estimated margin shown while quoting), Jobber deposits (held, then applied to the invoice), Buildertrend budget
+(projected profit; invoiced vs left to invoice), Stripe invoices (amount due after credits).
+What each record shows: **Job** projected profit + margin vs target (new), profit so far with labour hours and
+expenses (in progress), final profit + invoiced/still owed (finished), deposit already paid; **Quote** estimated
+profit + margin, client pays with tax, deposit on approval; **Invoice** balance due after deposits, due date,
+billed before / this invoice share of the job, profit as one team-only line. Edge states: nothing priced, losing
+money, no cost access. The amber "target 35%" pill reuses the existing quote target-margin setting on jobs.
+A = live green card, total-led, profit panel; B = classic layout on ink blue, question-led. Dark mode row shows
+Job in progress. Waiting for Jafar's pick.
