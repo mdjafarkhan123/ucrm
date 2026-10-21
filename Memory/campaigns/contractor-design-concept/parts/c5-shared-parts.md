@@ -416,3 +416,11 @@ Builder: `ui/Button` white kinds and `ui/Input`/`ui/Select`/`Textarea` boxes.
 Jafar approved the switch component board `SnDlF` and asked for every hand-drawn switch to use it: all 34
 (Parts, Schedule views and pop-ups, Pickers AM/PM, Price book, New job, Signature pad, Client form) are now
 instances, keeping each one's size and direction. Look in `inputs.md` → Segmented switch.
+
+## Batch 50 follow-ups (Jafar "yes fix all", 2026-10-21)
+
+Merged to main `187ab555`: dropdown value 14 (`ui/Select`), empty date box "Pick a day" (`ui/CalendarPicker`),
+percent stages show $0.00 while empty (`jobs/JobPaymentScheduleDialog`, cents spread only to the rounding target).
+Still for the Batch 50 builder, after its branch merges: in Payment schedule's "Left to assign" line the amount takes
+the state colour like the drawing (`$color-warning-on-surface` while short, `$color-success-on-surface` at $0.00);
+the icon stays `--color-warning` / `--color-success`.
