@@ -51,7 +51,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `settings/WeeklyHoursEditor` |  | ✅ Batch 39 `DhRBV` B 2026-10-21 | ✅ Built 2026-10-21 (`docs/evidence/2026-10-21-batch39/`) |
 | `ui/FilterChipMulti` |  | ✅ Batch 20 `e18rX` 2026-10-20 | ✅ |
 | `ui/SignaturePad` |  | ✅ Batch 40 `alWwd` A 2026-10-21 | ✅ Built 2026-10-21 (`docs/evidence/2026-10-21-batch37-38-40/`) |
-| `automation/InquiryAutomationCard` | pop-ups: "Stop this follow-up?" 🔁C · menus ×1 · loading, empty | ⬜ | ⬜ |
+| `automation/InquiryAutomationCard` | pop-ups: "Stop this follow-up?" 🔁C · menus ×1 · loading, empty | 🟡 Batch 41 `jXc9n` A/B drawn 2026-10-21 | ⬜ |
 | `calendar/CalendarCard` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Merged 2026-10-19 |
 | `calendar/CalendarMonthGrid` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Merged 2026-10-19 |
 | `calendar/CalendarWeekGrid` |  | ✅ Schedule frames, see `parts/c8-schedule.md` | ✅ Merged 2026-10-19 |
