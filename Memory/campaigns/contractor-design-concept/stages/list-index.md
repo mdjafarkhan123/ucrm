@@ -33,8 +33,8 @@ Counts are rows and ✅ ticks only (🔁 and 🟡 are not counted).
 | Tier | File | Covers | Rows | Pencil ✅ | Built ✅ |
 | --- | --- | --- | --- | --- | --- |
 | 1 | `list-1a-parts.md` | Shared parts used on more than one page, most used first (1) | 72 | 67 | 67 |
-| 1 | `list-1b-parts.md` | Shared parts (2) | 71 | 60 | 49 |
-| 1 | `list-1c-parts.md` | Shared parts (3) | 61 | 7 | 7 |
+| 1 | `list-1b-parts.md` | Shared parts (2) | 71 | 62 | 49 |
+| 1 | `list-1c-parts.md` | Shared parts (3) | 61 | 8 | 7 |
 | 1 | `list-1d-left-out.md` | Pieces left out, with the reason | 32 | — | — |
 | 2 | `list-2a-daily.md` | Home, Schedule, Inbox, Clients, Requests, Quotes, Jobs (and record, new pages) | 27 | 7 | 5 |
 | 2 | `list-2b-daily.md` | Invoices and Payment | 13 | 1 | 0 |

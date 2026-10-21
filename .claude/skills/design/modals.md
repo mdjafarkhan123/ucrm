@@ -209,3 +209,39 @@ Recording money received and applying it to a client's bills, and Fix payment (b
   how much was paid."). Over what a bill owes: the card's edge and its box turn `--color-critical`, the live
   error under its words. Couldn't save: a critical notice strip at the foot of the left side, fields kept.
   Saving: only the pressed button spins; the other two are disabled.
+
+## Notification bell pop-up
+
+The panel under the top bar's bell (`layout/NotificationBell`, used by the team bell and Jafar's bell; board
+`FGYzU`, B, Jafar 2026-10-21). Same behaviour as live; only Jafar's bell has the foot.
+
+- Panel 440 wide, at most 640 tall (or 80% of the window), `--color-surface`, 1px `--color-border`, radius 16,
+  shadow 0 12 32 black 14%, clipped; a 16×10 `--color-surface` arrow points at the bell. The list scrolls; the
+  header and foot stay.
+- Header padding 20 16 14 20: "Notifications" 20/700 (-0.3) over a 13 quiet summary with 8 dots ("5 unread" with
+  an `--color-interactive` dot · "2 need you" with a `--color-critical` dot; none unread: a 14 `circle-check` in
+  `--color-success` and "All caught up"). At the right, Mark all read as a small secondary button (16
+  `check-check` in `--color-interactive`), shown only while something is unread, then a 32 quiet ×.
+- Needs you (padding 4 16 16): a 14 `triangle-alert` `--color-critical` and "NEEDS YOU" 12/600 (0.6) quiet; then
+  each unread alert with an orange or red tone as a card: radius 12, padding 12, gap 12, `--color-<tone>--surface`
+  with its 1px `--surface-edge` (tone `critical` or `warning`); a 36 white tile (radius 9) with the record's 18
+  icon in the record colour; title 14/600, detail 13, time 12 at 80%, all `--color-<tone>--onSurface`; a 16
+  chevron-right. Once read it leaves the cards for the timeline. A 1px `--color-border` line under the section.
+- Latest (padding 14 16 8): "LATEST" label, then a timeline row per alert, newest first (padding 0 8 0 4, gap
+  12, radius 10): the time 12 right-aligned in a 60 column (unread 600 heading; a read alert with a tone keeps
+  its time 600 in the tone colour); a rail with the 32 record tile and a 2 wide `--color-border` line down to the
+  next row; title 14 (unread 600 heading, read 500 `--color-text`) over detail 13 quiet, 2 lines at most, 16
+  below. Unread: a 10 `--color-interactive` dot with a 2 `--color-surface` ring on the tile's top-right corner
+  (a read alert with a tone: the dot in the tone colour).
+- Record tiles by alert: inquiry and customer reply `--color-request` (`inbox`, `reply`), quote
+  `--color-quote` (`file-check`), invoice and payment `--color-invoice` (`credit-card`, `receipt`), message
+  `--color-conversation` (`message-circle`), schedule and timer `--color-time` (`calendar-days`, `timer`),
+  feedback `--color-review` (`star`), pipeline task or mention `--color-growth` (`square-check`, `at-sign`).
+- Jafar's foot: `--color-surface--background--subtle`, 1px `--color-border` line above, padding 12 16 16, a full
+  width secondary "View all notifications" with a 16 `arrow-right` in `--color-interactive`.
+- Row hover `--color-surface--hover`; focus `--shadow-focus`.
+- Loading: timeline bones (a 36×8 time, the 32 tile, 10 and 8 lines); no Mark all read. Empty: page-states
+  empty in the business grey with a `bell` tile, "No notifications yet" 16/600 and the live line. Couldn't load:
+  the same with the critical tile, "Notifications couldn't load" and a secondary Try again (`refresh-cw`).
+  Marking all read: the button spins and can't be pressed. Mark all read failed: a critical notice strip
+  (`notices.md`) under the header, everything stays unread.

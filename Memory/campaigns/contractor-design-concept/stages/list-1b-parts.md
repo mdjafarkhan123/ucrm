@@ -58,7 +58,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `clients/ClientForm` | New client and Edit client pages · duplicate warnings, couldn't save, edit | ✅ Batch 42 `fJ8Mx` A 2026-10-21 | ✅ |
 | `clients/ClientMergeDialog` | 🔁F pop-up · loading | ✅ Batch 43 `XddjD` A 2026-10-21 | ✅ 2026-10-21 |
 | `invoices/CollectPaymentDialog` | 🔁F pop-up · loading | ✅ Batch 44 `b5ZAe` A 2026-10-21 | ✅ 2026-10-21 |
-| `jafar/NotificationBell` | loading | 🟡 Batch 45 `FGYzU` 2026-10-21 | ⬜ |
+| `jafar/NotificationBell` | loading | ✅ Batch 45 `FGYzU` B 2026-10-21 | ⬜ |
 | `jafar/booking/BookingBackButton` |  | ✅ Batch 30 `TC3iU` A 2026-10-20 | ✅ |
 | `jafar/booking/BookingFacts` |  | ✅ Batch 30 `TC3iU` A 2026-10-20 | ✅ |
 | `jafar/booking/BookingFrame` |  | ✅ Batch 30 `TC3iU` A 2026-10-20 | ✅ |
@@ -68,7 +68,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `jobs/JobVisitDialog` | ◆ pop-up · loading, permission-limited | ⬜ | ⬜ |
 | `jobs/RecurrenceFields` | loading | ✅ | ✅ |
 | `layout/MobileNav` |  | ⬜ | ⬜ |
-| `layout/NotificationBell` |  | 🟡 Batch 45 `FGYzU` 2026-10-21 | ⬜ |
+| `layout/NotificationBell` |  | ✅ Batch 45 `FGYzU` B 2026-10-21 | ⬜ |
 | `layout/RouteSkeleton` | loading | ⬜ | ⬜ |
 | `layout/SharedAppShell` | permission-limited, owner view | ⬜ | ⬜ |
 | `layout/Sidebar` |  | ✅ | ✅ |
