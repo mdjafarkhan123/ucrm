@@ -60,7 +60,7 @@
   colour, "Quote # / Job # / Invoice #", "Given when you save".
 - **New job page**, approved A by Jafar 2026-10-20 (Pencil: "Batch 32 · New job page · Approved A", `q6Ffc`):
   the shared create form, then separate section cards in Jobber's order: Visits, Billing, Products and services;
-  rail: the deep-green Job total feature card. Visits card: Card header (Time tile, "1 visit · first on …",
+  rail: the shared money summary card (`cards.md`). Visits card: Card header (Time tile, "1 visit · first on …",
   Create visits), body padding 20 gap 16: the Schedule segmented switch; the open visit in a radius 12 panel with
   a 1px `--color-time--surface-edge` edge, its head on `--color-time--surface` (44 `--color-time` date tile with
   weekday 12/600 over the day 16/700 in white; "Visit 1" 14/600 over the day and time 12 in

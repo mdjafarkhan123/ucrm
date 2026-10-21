@@ -112,3 +112,6 @@ were deleted; board `vIjf0` is now "Concept · Batch 35 · Shared money summary 
 (colour key, eight B cards, dark mode). Look recorded in `colors.md` (Money Card Colours) and `cards.md` (Money
 summary card). Waiting to be built: one shared rail card on New job/quote/invoice and the job, quote and invoice
 pages, replacing the Job total, Overview and Job money cards; add the `--color-money--*` tokens to `_variables.scss`.
+Placed 2026-10-21 (Jafar's yes): New job `q6Ffc` light/dark and New quote `OzXHh` light/dark now show the
+nothing-priced card (`UHIua`, `aMze2`, `AjDJ2`, `NFtQl`); Job details `tNdkX` shows the in-progress card `Y9nc2`
+(profit so far $1,486 · 36%, deposit paid 30%, left to invoice) in place of Job money `M8lNu5`.

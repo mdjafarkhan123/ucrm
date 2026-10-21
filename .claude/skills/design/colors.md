@@ -46,7 +46,7 @@ They are in `concept.pen`; add them to `_variables.scss` with the first screen t
 ## Feature Card Colours
 
 One deep-green card per screen at most (Home's Today card; the money card beside a list's overview and on
-client and invoice pages). The same in light and dark mode.
+client pages). Job, quote and invoice pages use the money summary card instead (Money Card Colours below). The same in light and dark mode.
 
 | Token | Value | Use |
 |---|---|---|
