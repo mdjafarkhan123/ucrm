@@ -40,3 +40,5 @@ Phone layouts are also left out (the contract's "Not doing": the native apps com
 | `ui/Toast` | used only by developer pages |
 | `ui/ToastViewport` | used only by developer pages |
 | `layout/SharedAppShell` | Jafar 2026-10-21: only the approved sidebar, top bar and notice strip put together, nothing to design; removed from the campaign |
+| `layout/presentations/ClassicFrame` | the app frame (sidebar, top bar, notice strip put together), left out with `layout/SharedAppShell` (Jafar 2026-10-21) |
+| `layout/presentations/ClassicHeader` | the top bar's Classic wrapper, part of the same app frame (Jafar 2026-10-21) |
