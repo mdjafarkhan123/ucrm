@@ -29,7 +29,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `ui/Avatar` |  | ✅ Small controls `GbgcY` | ✅ |
 | `data-display/ListLoadMore` |  | ✅ Batch 7 `eJ0QQ` | ✅ Merged 2026-10-20 |
 | `ui/CalendarPicker` |  | ✅ Pickers v2 `uSXlT` | ✅ |
-| `data-display/DataTable` |  | ⬜ | ⬜ |
+| `data-display/DataTable` |  | ➖ Tables keep today's look (Jafar 2026-10-17); skipped 2026-10-21 | ➖ |
 | `forms/FormErrorSummary` |  | ✅ Batch 7 `eJ0QQ` | ✅ Merged 2026-10-20 |
 | `layout/RecordFormLayout` |  | ✅ | ✅ |
 | `layout/RailCard` |  | ✅ Page parts board `j3jDI` | ✅ Merged 2026-10-19 |

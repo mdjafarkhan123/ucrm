@@ -18,7 +18,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `(app)/clients/[id=uuid]/edit` | loading, empty | ⬜ | ⬜ |
 | `(app)/requests` | menus ×2 · loading, empty | 🔁 | 🟡 |
 | `(app)/requests/[id=uuid]` | `quotes/RequestPricingBlock` · loading, empty, permission-limited | ⬜ | ⬜ |
-| `(app)/requests/new` | `requests/RequestForm` | ⬜ | ⬜ |
+| `(app)/requests/new` | `requests/RequestForm` | ✅ Shared create form B `m4ibfF`, page `el2At` 2026-10-20 | ⬜ |
 | `(app)/quotes` | menus ×1 · loading, empty | 🔁 | 🟡 |
 | `(app)/quotes/[id=uuid]` | `quotes/CollectSignatureDialog` 🔁F, `quotes/QuoteAutomationCard`, `quotes/QuoteAutomationEnrollDialog` 🔁F, `quotes/QuoteDepositCard`, `work/ProfitCard` · pop-ups: "Archive this quote?" 🔁C, "Mark this quote as declined?" 🔁C, "Delete this quote?" 🔁C, "Convert this quote to a job?" 🔁C, "Collect signature" 🔁F, "Stop this automation?" 🔁C, "Enrol this quote" 🔁F, "form" 🔁F, "Record deposit received" ◆, "Reverse deposit" ◆ · menus ×1 · loading, empty, permission-limited | ⬜ | ⬜ |
 | ↳ `quotes/QuoteEmailDialog` | ◆ pop-up | ⬜ | ⬜ |
