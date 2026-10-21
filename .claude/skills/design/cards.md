@@ -61,6 +61,28 @@ follows the record (colours in `colors.md` → Money Card Colours).
 - Foot: a 1px `--color-feature--border` line, then rows (14 icon white 72%, label 14 white 72%, value 14/600).
 - Without cost rights: only the total and a quiet eye-off line; no bar, no profit.
 
+## Automatic follow-up card
+
+The side card on a Request and a website chat that shows an inquiry's automatic reply (board "Concept · Batch 41 ·
+Automatic follow-up card · Approved B", `jXc9n`, Jafar 2026-10-21).
+
+- Card header with a 40 `--color-conversation` tile (`bot`) and a 12 quiet hint; body padding 16, gap 14.
+- Each running follow-up is a panel in its status colour: `--surface` fill, 1px `--surface-edge`, radius 12,
+  padding 14, gap 12. Waiting `informative`, paused or stuck `warning`, needs attention `critical`.
+  - Top: the follow-up name 13/600 in the status `--onSurface`, the outlined status pill at the right.
+  - When: a 12/500 quiet kicker ("Next step", "On hold") over the big line 24/700 heading (-0.4): the next send
+    time; when paused or failed the reason is the big line at 20/700 with a 12 `--color-text` line under it.
+  - Trail: a 20 filled circle with a white 12 check per message sent, joined by 14×2 lines, then a 20 white ring
+    (2px status colour, 6 dot) for the next step, and "1 message sent" 12/500 quiet.
+  - Stuck or failed: a strip (`--surface`, 1px edge, radius 8, padding 7 10, 14 icon, 12/500 `--onSurface`).
+  - Actions: three small buttons sharing the width, 6 apart: Pause (secondary; Resume as the green main button
+    when paused), Skip, Stop (danger). No buttons for view-only people or a failed follow-up.
+- Finished and stopped follow-ups: under a 1px line, an EARLIER overline, then one line each: a 24 tile,
+  name 13/600 over the outcome or stop reason 12 quiet, the status pill at the right.
+- The Stop pop-up is the danger "are you sure?" pop-up with a slip under the heading naming what stops
+  (`--color-surface--background`, 1px edge, radius 8, padding 12 14: 32 conversation tile, name 14/600, sent
+  count and next step 12 quiet), then the message and the optional reason box.
+
 ## Anatomy (stat card)
 
 1. Header: 32 tile + title 14/600 + quiet open icon (arrow-up-right) at the right.

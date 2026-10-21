@@ -53,7 +53,7 @@ Jafar 2026-10-17).
 - [chips.md](chips.md) — Filter chip, tag, tag picker, multi-choice filter chip, date range chip, sender chip, channel pill
 - [avatars.md](avatars.md) — Avatar
 - [tabs.md](tabs.md) — Tabs
-- [cards.md](cards.md) — Card, number card, side card rows, totals card
+- [cards.md](cards.md) — Card, number card, side card rows, totals card, automatic follow-up card
 - [files.md](files.md) — Photo viewer, file picture, photo box, upload list, files card, record files card, files waiting to save, add files pop-up, photo labels pop-up, photo details, caption and labels pop-up, files on a message
 - [notes.md](notes.md) — Notes card, author line, note text, note files, note box on a new record, activity feed
 - [price-book.md](price-book.md) — Search list under a line's name, new item pop-up, Price book drawer
