@@ -1,7 +1,17 @@
 <script lang="ts">
+	import bellRingingIcon from '@tabler/icons/outline/bell-ringing.svg?raw';
+	import fileTextIcon from '@tabler/icons/outline/file-text.svg?raw';
+	import hammerIcon from '@tabler/icons/outline/hammer.svg?raw';
+	import starIcon from '@tabler/icons/outline/star.svg?raw';
+	import pauseIcon from '@tabler/icons/outline/player-pause.svg?raw';
+	import moonIcon from '@tabler/icons/outline/moon.svg?raw';
+	import noMarketingIcon from '@tabler/icons/outline/ad-off.svg?raw';
+	import shieldCheckIcon from '@tabler/icons/outline/shield-check.svg?raw';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
+	import Banner from '$lib/components/ui/Banner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
+	import IconTile from '$lib/components/ui/IconTile.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
 	import {
@@ -45,12 +55,17 @@
 		return !status.sending[key as MessageSwitch];
 	}
 
+	// Each group wears the colour of the record its messages are about (design `modals.md`).
 	const groups: {
 		title: string;
+		icon: string;
+		tone: string;
 		items: { key: PreferenceFlag; label: string; description: string }[];
 	}[] = [
 		{
 			title: 'Quotes & invoices',
+			icon: fileTextIcon,
+			tone: 'quote',
 			items: [
 				{
 					key: 'quote_follow_ups',
@@ -66,6 +81,8 @@
 		},
 		{
 			title: 'Jobs & visits',
+			icon: hammerIcon,
+			tone: 'job',
 			items: [
 				{
 					key: 'appointment_reminders',
@@ -81,6 +98,8 @@
 		},
 		{
 			title: 'Growth',
+			icon: starIcon,
+			tone: 'review',
 			items: [
 				{
 					key: 'review_requests',
@@ -92,89 +111,148 @@
 	];
 </script>
 
-<Dialog {open} title="Communication settings" size="large" {onClose}>
-	{#if allPaused}
-		<p class="communication-settings__notice">
-			This client is set to <strong>Do not disturb</strong>, so none of these are sent. Your choices
-			are still saved and come back the moment you switch to Allow.
-		</p>
-	{:else if marketingPaused}
-		<p class="communication-settings__notice">
-			This client is set to <strong>No marketing</strong>, so marketing messages are held back. The
-			rest still go out as normal.
-		</p>
-	{/if}
+<!-- eslint-disable svelte/no-at-html-tags -->
+<Dialog
+	{open}
+	title="Communication settings"
+	subtitle="Automatic messages this client gets"
+	icon={bellRingingIcon}
+	iconTone="conversation"
+	size="large"
+	{onClose}
+>
+	<div class="communication-settings">
+		{#if allPaused}
+			<Banner type="warning" icon={moonIcon}>
+				This client is set to <strong>Do not disturb</strong>, so none of these are sent. Your choices
+				are still saved and come back the moment you switch to Allow.
+			</Banner>
+		{:else if marketingPaused}
+			<Banner type="notice" icon={noMarketingIcon}>
+				This client is set to <strong>No marketing</strong>, so marketing messages are held back. The
+				rest still go out as normal.
+			</Banner>
+		{/if}
 
-	{#each groups as group (group.title)}
-		<section class="communication-settings__group">
-			<h3 class="communication-settings__group-title">{group.title}</h3>
-			{#each group.items as item (item.key)}
-				<div
-					class="communication-settings__item"
-					class:communication-settings__item--paused={allPaused}
+		<div class="communication-settings__groups">
+			{#each groups as group (group.title)}
+				<section
+					class="communication-settings__group"
+					class:communication-settings__group--paused={allPaused}
 				>
-					<Checkbox
-						id={`client-pref-${item.key}`}
-						label={item.label}
-						description={item.description}
-						bind:checked={preferences[item.key]}
-					/>
-					{#if notSending(item.key)}
-						<p class="communication-settings__not-sending">
-							Not sending — {#if statusQuery.data?.can_manage}<a
-									class="communication-settings__link"
-									href={automationsHref}>turn it on in Automations</a
-								>{:else}your business has this automation turned off{/if}.
-						</p>
-					{/if}
-				</div>
+					<div class="communication-settings__group-head">
+						<IconTile icon={group.icon} tone={group.tone} size={32} />
+						<h3 class="communication-settings__group-title">{group.title}</h3>
+					</div>
+					<div class="communication-settings__items">
+						{#each group.items as item (item.key)}
+							<div class="communication-settings__item">
+								<Checkbox
+									id={`client-pref-${item.key}`}
+									label={item.label}
+									description={item.description}
+									bind:checked={preferences[item.key]}
+								/>
+								{#if notSending(item.key)}
+									<p class="communication-settings__not-sending">
+										<span class="communication-settings__not-sending-icon" aria-hidden="true"
+											>{@html pauseIcon}</span
+										>
+										<span
+											>Not sending · {#if statusQuery.data?.can_manage}<a
+													class="communication-settings__link"
+													href={automationsHref}>turn it on in Automations</a
+												>{:else}your business has this automation turned off{/if}</span
+										>
+									</p>
+								{/if}
+							</div>
+						{/each}
+					</div>
+				</section>
 			{/each}
-		</section>
-	{/each}
+		</div>
 
-	<p class="communication-settings__hint">
-		Marketing email consent is kept as a dated record on the <strong>Marketing email</strong> card, not
-		as a tick here — so you always know who agreed, when, and how.
-	</p>
+		<p class="communication-settings__hint">
+			<span class="communication-settings__hint-icon" aria-hidden="true">{@html shieldCheckIcon}</span>
+			<span>
+				Marketing email consent is kept as a dated record on the <strong>Marketing email</strong> card,
+				not as a tick here, so you always know who agreed, when, and how.
+			</span>
+		</p>
+	</div>
 
-	<footer class="communication-settings__footer">
+	{#snippet footer()}
 		<Button variant="primary" onclick={onClose}>Done</Button>
-	</footer>
+	{/snippet}
 </Dialog>
+
+<!-- eslint-enable svelte/no-at-html-tags -->
 
 <style lang="scss">
 	.communication-settings {
-		&__notice {
-			margin-bottom: var(--space-base);
-			padding: var(--space-slim) var(--space-base);
-			border-radius: var(--radius-base);
-			color: var(--color-text);
-			background: var(--color-surface--active);
-			font-size: var(--typography--fontSize-small);
+		// The pop-up body's own padding is 20 all round; this list starts closer to the header (4 20 20).
+		margin-top: calc(var(--space-smaller) - var(--space-medium));
+
+		> :global(.banner) {
+			margin-top: var(--space-base);
 		}
 
 		&__group {
-			display: flex;
-			flex-direction: column;
-			gap: var(--space-slim);
+			display: grid;
+			grid-template-columns: 240px minmax(0, 1fr);
+			gap: var(--space-base);
+			padding: 18px 0;
 
 			& + & {
-				margin-top: var(--space-large);
+				border-top: var(--border-base) solid var(--color-border);
+			}
+
+			&--paused {
+				opacity: 0.5;
 			}
 		}
 
-		&__group-title {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 700;
-			letter-spacing: 0.04em;
-			text-transform: uppercase;
+		&__group-head {
+			display: flex;
+			align-items: center;
+			align-self: start;
+			gap: var(--space-slim);
 		}
 
+		&__group-title {
+			color: var(--color-heading);
+			font-size: var(--typography--fontSize-large);
+			font-weight: 700;
+		}
+
+		&__items {
+			display: grid;
+			gap: var(--space-base);
+		}
+
+		// Lines up under the tick's label: the 18 box and its 10 gap.
 		&__not-sending {
-			margin: var(--space-smallest) 0 0 calc(var(--space-large) + var(--space-smaller));
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			margin: var(--space-small) 0 0 28px;
+			padding: 6px 10px;
+			border-radius: var(--radius-base);
 			color: var(--color-warning--onSurface);
+			background: var(--color-warning--surface);
 			font-size: var(--typography--fontSize-small);
+			font-weight: 600;
+		}
+
+		&__not-sending-icon {
+			display: inline-grid;
+			color: var(--color-warning);
+
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
 		}
 
 		&__link {
@@ -183,20 +261,27 @@
 			text-decoration: underline;
 		}
 
-		&__item--paused {
-			opacity: 0.55;
-		}
-
 		&__hint {
-			margin-top: var(--space-large);
+			display: flex;
+			align-items: flex-start;
+			gap: var(--space-small);
+			padding: var(--space-slim) 14px;
+			border: var(--border-base) solid var(--color-border);
+			border-radius: var(--radius-tile-large);
 			color: var(--color-text--secondary);
+			background: var(--color-surface--background--subtle);
 			font-size: var(--typography--fontSize-small);
 		}
 
-		&__footer {
-			display: flex;
-			justify-content: flex-end;
-			margin-top: var(--space-large);
+		&__hint-icon {
+			display: inline-grid;
+			flex: 0 0 auto;
+			color: var(--color-growth);
+
+			:global(svg) {
+				width: 16px;
+				height: 16px;
+			}
 		}
 	}
 </style>
