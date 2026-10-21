@@ -10,10 +10,13 @@
    (`docs/evidence/2026-10-21-popups/`). Waiting: Batch 45 Notification bell pop-up `FGYzU` B (`modals.md`; look
    only, plus a kind→tile map and Needs-you pinning). Shared-part history:
    `parts/c5-shared-parts.md`. Create pages: `parts/new-request-top-form.md`.
-2. **Draw:** next empty row in `stages/list-1b-parts.md` (`layout/MobileNav` is phone-only: check `list-1d-left-out.md`
+   **Build next too:** white buttons with a thin brand edge and white field boxes (Jafar 2026-10-21; see
+   `parts/c5-shared-parts.md` → No-blend, Superseded).
+2. **Waiting pick:** Batch 46 On-site assessment panel A vs B `PLgAR` (`parts/c5-shared-parts.md`).
+3. **Draw:** next empty row in `stages/list-1b-parts.md` (`layout/MobileNav` is phone-only: check `list-1d-left-out.md`
    first, else `layout/RouteSkeleton`). Gaps: Field-worker Home
    (`list-2a-daily.md`), Select work pop-up and payment-stage New invoice (`list-2b-daily.md`); 12px text sweep.
-3. **Jafar decides:** checklist order and pop-up marks
+4. **Jafar decides:** checklist order and pop-up marks
    (`stages/list-index.md`, `parts/c5a-redesign-checklist.md`).
 
 **Pencil:** `concept.pen`; every switch is the `SnDlF` component. Pilot leftovers: `parts/c7-build-pilots.md`.

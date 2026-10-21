@@ -6,8 +6,8 @@
 
 - Label above the box: 13/600 `--color-heading`, 6 gap. A must-fill field adds a red `*` (13/700
   `--color-critical`) 4 after the label.
-- Box: height 40, padding 0 12, radius 8, 1px `--color-border--interactive`. Fill: sunken
-  `--color-surface--background` on a white card; `--color-surface` on the page or a coloured top (Jafar, 2026-10-21).
+- Box: height 40, padding 0 12, radius 8, white `--color-surface` with a 1px `--color-border--interactive` edge,
+  on a card, the page or a coloured top alike; the edge keeps it apart (Jafar, 2026-10-21, like Jobber).
 - Value 14 `--color-heading`; placeholder `--color-text--secondary`.
 - A word or icon in front (`$`, phone): 14/500 word or 16 icon in `--color-text--secondary` /
   `--color-icon--secondary`, 8 before the value.
