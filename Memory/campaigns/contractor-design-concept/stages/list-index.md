@@ -32,12 +32,12 @@ Counts are rows and ✅ ticks only (🔁 and 🟡 are not counted).
 
 | Tier | File | Covers | Rows | Pencil ✅ | Built ✅ |
 | --- | --- | --- | --- | --- | --- |
-| 1 | `list-1a-parts.md` | Shared parts used on more than one page, most used first (1) | 72 | 63 | 63 |
-| 1 | `list-1b-parts.md` | Shared parts (2) | 71 | 46 | 18 |
+| 1 | `list-1a-parts.md` | Shared parts used on more than one page, most used first (1) | 72 | 67 | 67 |
+| 1 | `list-1b-parts.md` | Shared parts (2) | 71 | 60 | 35 |
 | 1 | `list-1c-parts.md` | Shared parts (3) | 54 | 0 | 0 |
 | 1 | `list-1d-left-out.md` | Pieces left out, with the reason | 32 | — | — |
-| 2 | `list-2a-daily.md` | Home, Schedule, Inbox, Clients, Requests, Quotes, Jobs (and record, new pages) | 26 | 2 | 2 |
-| 2 | `list-2b-daily.md` | Invoices and Payment | 11 | 0 | 0 |
+| 2 | `list-2a-daily.md` | Home, Schedule, Inbox, Clients, Requests, Quotes, Jobs (and record, new pages) | 26 | 7 | 5 |
+| 2 | `list-2b-daily.md` | Invoices and Payment | 11 | 1 | 0 |
 | 3 | `list-3-customers-see.md` | Customer pages, customer emails, error pages, login and sign-up | 30 | 0 | 0 |
 | 4 | `list-4-weekly.md` | Files, Pipeline, Timesheets | 8 | 0 | 0 |
 | 5 | `list-5-growth.md` | Marketing, Reviews (Reports has no page yet) | 7 | 0 | 0 |

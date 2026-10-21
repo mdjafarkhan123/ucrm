@@ -175,3 +175,19 @@ A business's normal week (Settings → Business hours, the setup wizard), approv
   secondary "Add another period" with a plus. The range error follows the time box rules.
 - One column (640): the day heading row has Open 24 hours, then Open, at the right; the bar and periods (130
   boxes) sit under it.
+
+## Signature pad
+
+Where a customer signs (Collect signature on a quote or job, the customer's quote page), approved A on board
+`alWwd` (Jafar 2026-10-21). Three stacked parts, 12 apart.
+
+- Top row: the segmented switch Type it (`keyboard`) / Draw it (`signature`) at the left, the chosen icon in the
+  record's colour (`--color-quote` on a quote, `--color-job` on a job). Draw it only: a small secondary Clear with a
+  16 `eraser` at the right; it can't be pressed until there is ink.
+- Paper: white with dark ink (`#111827`) in both modes, because the signature is saved as a picture for the PDF;
+  1px `--color-border--interactive`, radius 12, padding 16 20 14, gap 8. A 128 signing area; the drawn or typed
+  signature sits on the line (typed in a script face, 36). Under it the line: a 14 `x` in `--color-icon--secondary`,
+  10 to a 1px `--color-border--interactive` rule. Then the caption 12 `--color-text--secondary`.
+- Signing: the paper edge turns 2px `--color-focus`. Can't change (saving): switch, Clear and Full name use the
+  disabled look, the paper edge `--color-border`, the ink at half strength.
+- Full name: the approved text box, full width, under the paper.

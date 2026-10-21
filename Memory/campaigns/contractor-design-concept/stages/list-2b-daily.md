@@ -7,7 +7,7 @@ Key, tick rule and coverage command: `list-index.md`.
 | `(app)/invoices/[id=uuid]` | `invoices/InvoiceHistoryCard`, `invoices/InvoiceLifecycleDialog` 🔁C, `invoices/ReplaceInvoiceDialog` 🔁F · pop-ups: "confirm" 🔁C, "form" 🔁F · tabs ×1 · loading, empty, permission-limited | ⬜ | ⬜ |
 | ↳ `invoices/AddDepositDialog` | ◆ pop-up · loading | ⬜ | ⬜ |
 | ↳ `invoices/InvoiceEmailDialog` | ◆ pop-up | ⬜ | ⬜ |
-| `(app)/invoices/new` | `invoices/InvoiceForm`, `invoices/SelectWorkDialog` 🔁F · pop-ups: "form" 🔁F · loading | ✅ Batch 36 A | ✅ Built 2026-10-21 (`parts/new-request-top-form.md`); Select work pop-up not redrawn |
+| `(app)/invoices/new` | `invoices/InvoiceForm`, `invoices/SelectWorkDialog` 🔁F · pop-ups: "form" 🔁F · loading | ✅ Batch 36 `EBLIe` A 2026-10-21 | ✅ Built 2026-10-21 (`parts/new-request-top-form.md`); Select work pop-up not redrawn |
 | `(app)/invoices/ready-to-bill` | `invoices/ReadyToBillVisitsPanel` · loading, empty | ⬜ | ⬜ |
 | `(app)/invoices/send` | loading, empty | ⬜ | ⬜ |
 | `(app)/payments/[id=uuid]` | `invoices/PaymentReceiptCard`, `invoices/UnapplyPaymentDialog` 🔁C · pop-ups: "confirm" 🔁C · menus ×1 · loading | ⬜ | ⬜ |
