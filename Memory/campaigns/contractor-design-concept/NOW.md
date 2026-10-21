@@ -7,8 +7,9 @@
 
 **Next:**
 1. **Build:** Batches 43 Merge clients and 44 Collect payment pop-ups built 2026-10-21
-   (`docs/evidence/2026-10-21-popups/`). Waiting: Batch 45 Notification bell pop-up `FGYzU` B (`modals.md`; look
-   only, plus a kind→tile map and Needs-you pinning). Shared-part history:
+   (`docs/evidence/2026-10-21-popups/`). Batch 45 Notification bell pop-up built 2026-10-21 on branch
+   `claude/notification-bell-build` (`docs/evidence/2026-10-21-batch45/`; **waiting to merge**). Its Pencil board
+   `FGYzU` still needs the step-6 tidy-up. Shared-part history:
    `parts/c5-shared-parts.md`. Create pages: `parts/new-request-top-form.md`.
    White buttons and boxes app-wide and Batch 46 assessment panel A built and merged 2026-10-21 (checked live
    1440 light/dark: New request, saved request, no-day error, a real Save visit, Schedule, Invoices).

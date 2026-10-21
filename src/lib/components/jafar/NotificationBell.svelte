@@ -2,14 +2,15 @@
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import Button from '$lib/components/ui/Button.svelte';
+	import { compactTime, ownerNotificationTile } from '$lib/notifications/bell-tiles';
+	import arrowRightIcon from '@tabler/icons/outline/arrow-right.svg?raw';
 	import NotificationBell from '$lib/components/layout/NotificationBell.svelte';
 	import {
 		exactTime,
 		fetchNotifications,
 		notificationHref,
 		notificationsKey,
-		relativeTime,
-		severityLabel,
 		updateNotificationRead,
 		type NotificationListResponse,
 		type OwnerNotification
@@ -39,9 +40,10 @@
 			id: notification.id,
 			title: notification.title,
 			body: notification.body,
-			meta: `${severityLabel(notification.severity)} · ${relativeTime(notification.created_at)}`,
-			metaTitle: exactTime(notification.created_at),
+			time: compactTime(notification.created_at),
+			timeTitle: exactTime(notification.created_at),
 			unread: !notification.read_at,
+			...ownerNotificationTile(notification.target_kind),
 			tone:
 				notification.severity === 'attention' || notification.severity === 'urgent'
 					? notification.severity
@@ -77,6 +79,7 @@
 	}
 </script>
 
+<!-- eslint-disable svelte/no-at-html-tags -->
 <NotificationBell
 	bind:open
 	{items}
@@ -88,6 +91,7 @@
 			: 'Notifications could not be loaded.'
 		: ''}
 	{actionError}
+	onRetry={() => void recent.refetch()}
 	emptyText="Nothing yet. Reminders and anything that needs you land here."
 	markingAll={markAllRead.isPending}
 	onMarkAll={() => markAllRead.mutate()}
@@ -97,6 +101,22 @@
 	}}
 >
 	{#snippet footer()}
-		<a href={resolve('/jafar/notifications')} onclick={() => (open = false)}>View all</a>
+		<Button
+			variant="secondary"
+			fullWidth
+			href={resolve('/jafar/notifications')}
+			onclick={() => (open = false)}
+		>
+			View all notifications
+			<span class="notification-bell__view-all-icon">{@html arrowRightIcon}</span>
+		</Button>
 	{/snippet}
 </NotificationBell>
+<!-- eslint-enable svelte/no-at-html-tags -->
+
+<style lang="scss">
+	.notification-bell__view-all-icon {
+		display: inline-flex;
+		color: var(--color-interactive);
+	}
+</style>

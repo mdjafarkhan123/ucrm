@@ -2,7 +2,8 @@
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
 	import NotificationBell from '$lib/components/layout/NotificationBell.svelte';
-	import { exactTime, relativeTime } from '$lib/jafar/notifications';
+	import { exactTime } from '$lib/jafar/notifications';
+	import { compactTime, teamNotificationTile } from '$lib/notifications/bell-tiles';
 	import {
 		fetchTeamNotifications,
 		markTeamNotificationsRead,
@@ -33,9 +34,10 @@
 			id: notification.id,
 			title: notification.title,
 			body: notification.body,
-			meta: relativeTime(notification.created_at),
-			metaTitle: exactTime(notification.created_at),
+			time: compactTime(notification.created_at),
+			timeTitle: exactTime(notification.created_at),
 			unread: !notification.read_at,
+			...teamNotificationTile(notification.kind),
 			tone:
 				notification.kind === 'website_inquiry.customer_replied' ||
 				notification.kind === 'invoice.online_payment_failed' ||
@@ -82,6 +84,7 @@
 	loading={alerts.isPending}
 	loadError={alerts.isError ? 'Alerts could not be loaded.' : ''}
 	{actionError}
+	onRetry={() => void alerts.refetch()}
 	emptyText="Nothing yet. New website inquiries land here."
 	markingAll={markAllRead.isPending}
 	onMarkAll={() => markAllRead.mutate()}
