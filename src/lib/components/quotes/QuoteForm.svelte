@@ -555,7 +555,7 @@
 				flush
 			>
 				<RecordDiscountCard
-					embedded
+					dialogHint="New quote"
 					revision={0}
 					name={discount?.name ?? null}
 					type={discount?.type ?? null}
@@ -572,7 +572,7 @@
 				/>
 
 				<RecordTaxCard
-					embedded
+					dialogHint="New quote"
 					revision={0}
 					propertyId={form.property_id}
 					taxSource={tax?.source ?? 'not_configured'}
@@ -583,7 +583,6 @@
 					{locale}
 					editable={Boolean(form.property_id)}
 					staged
-					unsetHint="Required before sending this quote."
 					onSave={async (_revision, payload) => {
 						tax = payload;
 						taxPending = true;

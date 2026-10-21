@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import RailCard from '$lib/components/layout/RailCard.svelte';
 	import RailRow from '$lib/components/layout/RailRow.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import PencilButton from '$lib/components/ui/PencilButton.svelte';
-	import Badge from '$lib/components/ui/Badge.svelte';
 	import Dialog from '$lib/components/ui/Dialog.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
@@ -20,8 +18,9 @@
 		taxSourceOptions,
 		type TaxPayload
 	} from '$lib/work/pricing-adjustments';
-	import taxIcon from '@tabler/icons/outline/receipt-tax.svg?raw';
 	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
+	import infoIcon from '@tabler/icons/outline/info-circle.svg?raw';
+	import checkIcon from '@tabler/icons/outline/check.svg?raw';
 
 	// Five ways a priced record's tax can be set: follow the Business default, follow this property's own
 	// pin, freeze one saved rate, freeze a one-off custom rate, or say explicitly there is no tax. Whichever
@@ -45,8 +44,8 @@
 		canManageTaxes = false,
 		recordNoun = 'quote',
 		staged = false,
-		unsetHint = 'Required before sending this quote.',
-		embedded = false,
+		dialogHint,
+		recordTone = 'quote',
 		onSave,
 		onSaved
 	}: {
@@ -69,10 +68,10 @@
 		/** The record does not exist yet. The page holds the choice and writes it when the record is saved, so
 		 * there is nothing to announce as saved here. */
 		staged?: boolean;
-		/** Why an unset tax matters here. A quote cannot be sent without one; a job simply is not taxed yet. */
-		unsetHint?: string;
-		/** App look: draw one row to sit inside a shared "Discount and tax" card instead of a card. */
-		embedded?: boolean;
+		/** The record line under the pop-up's title, e.g. "Quote #1042 · Gutter cleaning". */
+		dialogHint?: string;
+		/** The record colour of the pop-up's icon tile (`quote`, `invoice`, `job`). */
+		recordTone?: string;
 		/** Writes the tax choice against the revision it is handed. */
 		onSave: (revision: number, payload: TaxPayload) => Promise<unknown>;
 		onSaved: (result: unknown) => Promise<void> | void;
@@ -83,11 +82,13 @@
 	);
 	const configured = $derived(taxSource !== 'not_configured');
 	const rateText = $derived(`${percentText(rateBasisPoints)}%`);
+	/** Still waiting on someone to choose: the row's tile and value turn yellow. */
+	const waiting = $derived(taxSource === 'not_configured' && canSeePrice);
 
 	const SOURCE_LABEL: Record<QuoteTaxSource, string> = {
 		not_configured: 'Not configured',
 		business_default: 'Business default',
-		property_default: 'Property default',
+		property_default: 'From the property',
 		saved_rate: 'Saved rate',
 		no_tax: 'No tax',
 		custom: 'Custom'
@@ -183,107 +184,77 @@
 	}
 </script>
 
-{#if embedded}
-	<RailRow
-		icon={receiptIcon}
-		label="Tax"
-		tone={taxSource === 'not_configured' && canSeePrice ? 'warning' : 'neutral'}
-		value={!canSeePrice
-			? 'No access to prices'
-			: taxSource === 'not_configured'
-				? 'Not configured'
-				: taxSource === 'no_tax'
-					? 'No tax'
-					: `${name || 'Tax'} ${rateText}${taxMinor !== null ? ` · ${money.format(taxMinor / 100)}` : ''}`}
-	>
-		{#snippet actions()}
-			{#if editable && canSeePrice}
-				<PencilButton
-					onclick={openDialog}
-					onhover={warm}
-					label={taxSource === 'not_configured' ? 'Set the tax' : 'Edit the tax'}
-				/>
-			{/if}
-		{/snippet}
-	</RailRow>
-{:else}
-	<RailCard tone="invoice" title="Tax" icon={taxIcon}>
-		{#snippet actions()}
-			{#if editable && canSeePrice && configured}
-				<Button variant="tertiary" size="small" onclick={openDialog} onhover={warm}>Edit</Button>
-			{/if}
-		{/snippet}
-
-		{#if !canSeePrice}
-			<p class="record-tax__muted">You do not have access to these prices.</p>
-		{:else if taxSource === 'not_configured'}
-			<div class="record-tax__unset">
-				<Badge status="warning" dot={false}>Not configured</Badge>
-				{#if editable}
-					<p class="record-tax__hint">{unsetHint}</p>
-				{/if}
-			</div>
-			{#if editable}
-				<Button
-					variant="secondary"
-					variation="subtle"
-					fullWidth
-					onclick={openDialog}
-					onhover={warm}
-				>
-					Set tax
-				</Button>
-			{/if}
-		{:else if taxSource === 'no_tax'}
-			<p class="record-tax__name">No tax</p>
-		{:else}
-			<div class="record-tax__set">
-				<p class="record-tax__name">{name || 'Tax'}</p>
-				<p class="record-tax__value">
-					{rateText}
-					{#if taxMinor !== null}
-						<span class="record-tax__amount">{money.format(taxMinor / 100)}</span>
-					{/if}
-				</p>
-				<p class="record-tax__source">{SOURCE_LABEL[taxSource]}</p>
-			</div>
+<RailRow
+	icon={receiptIcon}
+	label="Tax"
+	tone={waiting ? 'warning' : 'neutral'}
+	value={!canSeePrice
+		? 'No access to prices'
+		: taxSource === 'not_configured'
+			? 'Not configured'
+			: taxSource === 'no_tax'
+				? 'No tax'
+				: `${name || 'Tax'} ${rateText}`}
+	valueTone={!canSeePrice ? 'quiet' : waiting ? 'warning' : 'default'}
+	sub={canSeePrice && configured && taxSource !== 'no_tax' ? SOURCE_LABEL[taxSource] : undefined}
+	amount={canSeePrice && configured && taxSource !== 'no_tax' && taxMinor !== null
+		? money.format(taxMinor / 100)
+		: undefined}
+>
+	{#snippet actions()}
+		{#if editable && canSeePrice}
+			<PencilButton
+				onclick={openDialog}
+				onhover={warm}
+				label={taxSource === 'not_configured' ? 'Set the tax' : 'Edit the tax'}
+			/>
 		{/if}
-	</RailCard>
-{/if}
+	{/snippet}
+</RailRow>
 
 {#if open}
-	<Dialog {open} title={configured ? 'Edit tax' : 'Set tax'} size="small" onClose={close}>
+	<Dialog
+		{open}
+		title={configured ? 'Edit tax' : 'Set tax'}
+		subtitle={dialogHint}
+		icon={receiptIcon}
+		iconTone={recordTone}
+		size="small"
+		onClose={close}
+	>
 		<div class="record-tax-dialog">
 			{#if error}<p class="record-tax-dialog__error" role="alert">{error}</p>{/if}
 
-			<div class="record-tax-dialog__field">
-				<label class="record-tax-dialog__label" for="record-tax-source">Tax</label>
-				<Select
-					id="record-tax-source"
-					bind:value={draftValue}
-					options={sourceOptions}
-					disabled={saving}
-				/>
-			</div>
+			<Select
+				id="record-tax-source"
+				label="Tax"
+				bind:value={draftValue}
+				options={sourceOptions}
+				disabled={saving}
+			/>
 
 			{#if draftValue === 'custom'}
-				<Input
-					id="record-tax-custom-name"
-					label="What the client sees this called"
-					disabled={saving}
-					bind:value={draftCustomName}
-					invalid={Boolean(fieldErrors.custom_name)}
-					errorMessage={fieldErrors.custom_name ?? ''}
-				/>
-				<Input
-					id="record-tax-custom-rate"
-					label="Rate %"
-					inputmode="decimal"
-					disabled={saving}
-					bind:value={draftCustomRate}
-					invalid={Boolean(fieldErrors.custom_rate_basis_points)}
-					errorMessage={fieldErrors.custom_rate_basis_points ?? ''}
-				/>
+				<div class="record-tax-dialog__row">
+					<Input
+						id="record-tax-custom-name"
+						label="What the client sees this called"
+						disabled={saving}
+						bind:value={draftCustomName}
+						invalid={Boolean(fieldErrors.custom_name)}
+						errorMessage={fieldErrors.custom_name ?? ''}
+					/>
+					<div class="record-tax-dialog__rate">
+						<Input
+							id="record-tax-custom-rate"
+							label="Rate %"
+							inputmode="decimal"
+							disabled={saving}
+							bind:value={draftCustomRate}
+							invalid={Boolean(fieldErrors.custom_rate_basis_points)}
+							errorMessage={fieldErrors.custom_rate_basis_points ?? ''}
+						/>
+					</div>
+				</div>
 				{#if canManageTaxes}
 					<Checkbox
 						id="record-tax-save-reusable"
@@ -296,87 +267,36 @@
 			{/if}
 
 			<p class="record-tax-dialog__note">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				<span class="record-tax-dialog__note-icon" aria-hidden="true">{@html infoIcon}</span>
 				Tax is added on top of the price and skips any line marked exempt.
 			</p>
+		</div>
 
+		{#snippet footer()}
 			<div class="record-tax-dialog__actions">
 				<Button variant="secondary" variation="subtle" disabled={saving} onclick={close}>
 					Cancel
 				</Button>
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				<Button variant="primary" loading={saving} onclick={save}
-					>{staged ? 'Apply to draft' : 'Save tax'}</Button
+					>{@html checkIcon}{staged ? 'Apply to draft' : 'Save tax'}</Button
 				>
 			</div>
-		</div>
+		{/snippet}
 	</Dialog>
 {/if}
 
 <style lang="scss">
-	.record-tax__muted {
-		margin: 0;
-		color: var(--color-text--secondary);
-	}
-
-	.record-tax__unset {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-smallest);
-		margin-bottom: var(--space-small);
-	}
-
-	.record-tax__hint {
-		margin: 0;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-	}
-
-	.record-tax__set {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-smallest);
-	}
-
-	.record-tax__name {
-		margin: 0;
-		color: var(--color-heading);
-		font-weight: 600;
-	}
-
-	.record-tax__value {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: var(--space-base);
-		margin: 0;
-		color: var(--color-text--secondary);
-	}
-
-	.record-tax__amount {
-		color: var(--color-heading);
-		font-weight: 600;
-	}
-
-	.record-tax__source {
-		margin: 0;
-		color: var(--color-text--secondary);
-		font-size: var(--typography--fontSize-small);
-	}
-
 	.record-tax-dialog {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-base);
 
-		&__field {
+		/* Cancel and Save sit together on the right, as in every form pop-up. */
+		&__actions {
 			display: flex;
-			flex-direction: column;
-			gap: var(--space-smaller);
-		}
-
-		&__label {
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
-			font-weight: 600;
+			gap: var(--space-small);
 		}
 
 		&__error {
@@ -384,17 +304,44 @@
 			color: var(--color-destructive);
 		}
 
-		&__note {
-			margin: 0;
-			color: var(--color-text--secondary);
-			font-size: var(--typography--fontSize-small);
+		/* The name the client reads and its rate sit on one line; the rate needs only a few digits. */
+		&__row {
+			display: flex;
+			align-items: flex-start;
+			gap: var(--space-small);
+
+			> :global(:first-child) {
+				flex: 1 1 auto;
+				min-width: 0;
+			}
 		}
 
-		&__actions {
+		&__rate {
+			flex: 0 0 96px;
+		}
+
+		&__note {
 			display: flex;
-			justify-content: flex-end;
+			align-items: flex-start;
 			gap: var(--space-small);
-			margin-top: var(--space-small);
+			margin: 0;
+			padding: 10px 12px;
+			border-radius: var(--radius-base);
+			background: var(--color-surface--background);
+			color: var(--color-text--secondary);
+			font-size: var(--typography--fontSize-small);
+			line-height: 1.4;
+		}
+
+		&__note-icon {
+			display: inline-flex;
+			flex: 0 0 auto;
+			color: var(--color-informative);
+
+			:global(svg) {
+				width: 14px;
+				height: 14px;
+			}
 		}
 	}
 </style>

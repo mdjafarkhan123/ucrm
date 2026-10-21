@@ -132,6 +132,12 @@
 	const subject = $derived(
 		saved?.invoice.subject?.trim() || `Invoice #${saved?.invoice.invoice_number ?? ''}`
 	);
+	/** The record line under the discount and tax pop-ups' titles: "Invoice #1042 · Gutter cleaning". */
+	const dialogHint = $derived(
+		[`Invoice #${saved?.invoice.invoice_number ?? ''}`, saved?.invoice.subject?.trim()]
+			.filter(Boolean)
+			.join(' · ')
+	);
 	// A plain `if`/`return`, not a ternary: checking resolve()'s own route-id type together with
 	// `undefined` in one conditional expression is what tips TypeScript over its complexity limit
 	// (svelte-check: "union type that is too complex to represent"). A separate return per branch
@@ -1391,9 +1397,16 @@
 					</RailCard>
 				{/if}
 
-				<RailCard tone="invoice" title="Discount and tax" flush>
+				<RailCard
+					tone="invoice"
+					title="Discount and tax"
+					icon={receiptIcon}
+					description="Saves the moment you press Save"
+					flush
+				>
 					<RecordDiscountCard
-						embedded
+						{dialogHint}
+						recordTone="invoice"
 						revision={saved.invoice.revision}
 						name={saved.money?.discount_name ?? null}
 						type={saved.money?.discount_type ?? null}
@@ -1408,7 +1421,8 @@
 						onSaved={refreshInvoice}
 					/>
 					<RecordTaxCard
-						embedded
+						{dialogHint}
+						recordTone="invoice"
 						revision={saved.invoice.revision}
 						propertyId={(saved.invoice.service_properties?.[0]?.property_id as string) ?? ''}
 						taxSource={(saved.money?.tax_source ?? 'not_configured') as QuoteTaxSource}
@@ -1422,7 +1436,6 @@
 						{canSeePrice}
 						canManageTaxes={false}
 						recordNoun="invoice"
-						unsetHint="This invoice is not taxed yet."
 						onSave={(revision, payload) => saveInvoiceTax(invoiceId, revision, payload)}
 						onSaved={refreshInvoice}
 					/>

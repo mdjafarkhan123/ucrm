@@ -99,6 +99,7 @@
 	import calendarPlusIcon from '@tabler/icons/outline/calendar-plus.svg?raw';
 	import circleCheckIcon from '@tabler/icons/outline/circle-check.svg?raw';
 	import hashIcon from '@tabler/icons/outline/hash.svg?raw';
+	import receiptIcon from '@tabler/icons/outline/receipt.svg?raw';
 
 	const queryClient = useQueryClient();
 	const toast = getToastManager();
@@ -149,6 +150,10 @@
 	let saveError = $state('');
 
 	const title = $derived(saved?.quote.title?.trim() || `Quote #${saved?.quote.quote_number ?? ''}`);
+	/** The record line under the discount and tax pop-ups' titles: "Quote #1042 · Gutter cleaning". */
+	const dialogHint = $derived(
+		[`Quote #${saved?.quote.quote_number ?? ''}`, saved?.quote.title?.trim()].filter(Boolean).join(' · ')
+	);
 	const titleChanged = $derived(
 		editingTitle && titleDraft.trim() !== (saved?.quote.title?.trim() ?? '')
 	);
@@ -1312,9 +1317,15 @@
 					onSaved={refreshQuote}
 				/>
 
-				<RailCard tone="quote" title="Discount and tax" flush>
+				<RailCard
+					tone="quote"
+					title="Discount and tax"
+					icon={receiptIcon}
+					description="Saves the moment you press Save"
+					flush
+				>
 					<RecordDiscountCard
-						embedded
+						{dialogHint}
 						revision={saved.version?.revision ?? 0}
 						name={saved.version?.discount_name ?? null}
 						type={saved.version?.discount_type ?? null}
@@ -1328,7 +1339,7 @@
 					/>
 
 					<RecordTaxCard
-						embedded
+						{dialogHint}
 						revision={saved.version?.revision ?? 0}
 						propertyId={saved.quote.property_id}
 						taxSource={saved.version?.tax_source ?? 'not_configured'}
